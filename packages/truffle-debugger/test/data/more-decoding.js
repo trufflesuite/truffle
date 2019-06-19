@@ -191,11 +191,44 @@ contract ComplexMappingTest {
 }
 `;
 
+const __OVERFLOW = `
+pragma solidity ^0.5.0;
+
+contract OverflowTest {
+
+  event Unsigned(uint8);
+  event Raw(byte);
+  event Signed(int8);
+
+  function unsignedTest() public {
+    uint8[1] memory memoryByte;
+    uint8 byte1 = 255;
+    uint8 byte2 = 255;
+    uint8 sum = byte1 + byte2;
+    emit Unsigned(sum); //BREAK UNSIGNED
+  }
+
+  function rawTest() public {
+    byte full = 0xff;
+    byte right = full >> 1;
+    emit Raw(right); //BREAK RAW
+  }
+
+  function signedTest() public {
+    int8 byte1 = -128;
+    int8 byte2 = -128;
+    int8 sum = byte1 + byte2;
+    emit Signed(sum); //BREAK SIGNED
+  }
+}
+`;
+
 let sources = {
   "ContainersTest.sol": __CONTAINERS,
   "ElementaryTest.sol": __KEYSANDBYTES,
   "SpliceTest.sol": __SPLICING,
-  "ComplexMappingsTest.sol": __INNERMAPS
+  "ComplexMappingsTest.sol": __INNERMAPS,
+  "OverflowTest.sol": __OVERFLOW
 };
 
 describe("Further Decoding", function() {
@@ -483,5 +516,112 @@ describe("Further Decoding", function() {
       //the top-level variables
       assert.deepInclude(startingOffsets, slot.offset);
     }
+  });
+
+  describe("Overflow", function() {
+    it("Discards padding on unsigned integers", async function() {
+      let instance = await abstractions.OverflowTest.deployed();
+      let receipt = await instance.unsignedTest();
+      let txHash = receipt.tx;
+
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        files,
+        contracts: artifacts
+      });
+
+      let session = bugger.connect();
+
+      let sourceId = session.view(solidity.current.source).id;
+      let source = session.view(solidity.current.source).source;
+      await session.addBreakpoint({
+        sourceId,
+        line: lineOf("BREAK UNSIGNED", source)
+      });
+
+      await session.continueUntilBreakpoint();
+
+      const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+        await session.variables()
+      ); //get rid of BNs for simplicity
+      debug("variables %O", variables);
+
+      const expectedResult = {
+        byte1: 255,
+        byte2: 255,
+        sum: 254
+      };
+
+      assert.include(variables, expectedResult);
+    });
+
+    it("Discards padding on signed integers", async function() {
+      let instance = await abstractions.OverflowTest.deployed();
+      let receipt = await instance.signedTest();
+      let txHash = receipt.tx;
+
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        files,
+        contracts: artifacts
+      });
+
+      let session = bugger.connect();
+
+      let sourceId = session.view(solidity.current.source).id;
+      let source = session.view(solidity.current.source).source;
+      await session.addBreakpoint({
+        sourceId,
+        line: lineOf("BREAK SIGNED", source)
+      });
+
+      await session.continueUntilBreakpoint();
+
+      const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+        await session.variables()
+      ); //get rid of BNs for simplicity
+      debug("variables %O", variables);
+
+      const expectedResult = {
+        byte1: -128,
+        byte2: -128,
+        sum: 0
+      };
+
+      assert.include(variables, expectedResult);
+    });
+
+    it("Discards padding on static bytestrings", async function() {
+      let instance = await abstractions.OverflowTest.deployed();
+      let receipt = await instance.rawTest();
+      let txHash = receipt.tx;
+
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        files,
+        contracts: artifacts
+      });
+
+      let session = bugger.connect();
+
+      let sourceId = session.view(solidity.current.source).id;
+      let source = session.view(solidity.current.source).source;
+      await session.addBreakpoint({
+        sourceId,
+        line: lineOf("BREAK RAW", source)
+      });
+
+      await session.continueUntilBreakpoint();
+
+      const variables = await session.variables();
+      debug("variables %O", variables);
+
+      const expectedResult = {
+        full: "0xff",
+        right: "0x7f"
+      };
+
+      assert.include(variables, expectedResult);
+    });
   });
 });

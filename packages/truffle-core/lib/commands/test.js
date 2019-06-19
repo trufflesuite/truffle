@@ -47,12 +47,11 @@ const command = {
     const temp = require("temp").track();
     const Config = require("truffle-config");
     const Artifactor = require("truffle-artifactor");
-    const Develop = require("../develop");
     const Test = require("../test");
     const fs = require("fs");
     const { promisify } = require("util");
     const promisifiedCopy = promisify(require("../copy"));
-    const Environment = require("../environment");
+    const { Environment, Develop } = require("truffle-environment");
 
     var config = Config.detect(options);
 
