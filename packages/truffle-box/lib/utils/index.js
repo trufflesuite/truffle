@@ -52,7 +52,7 @@ module.exports = {
   },
 
   unpackBox: async (tempDir, destination, boxConfig, unpackBoxOptions) => {
-    await unbox.prepareToCopyFiles(tempDir, boxConfig);
+    unbox.prepareToCopyFiles(tempDir, boxConfig);
     await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
   },
 
