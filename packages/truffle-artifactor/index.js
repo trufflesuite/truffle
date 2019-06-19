@@ -1,8 +1,7 @@
 const Schema = require("truffle-contract-schema");
 const fse = require("fs-extra");
 const path = require("path");
-const _ = require("lodash");
-const { writeArtifact } = require("./utils");
+const { writeArtifact, finalizeArtifact } = require("./utils");
 const debug = require("debug")("artifactor");
 
 class Artifactor {
@@ -25,18 +24,10 @@ class Artifactor {
         existingArtifactObject
       );
 
-      const knownNetworks = _.merge(
-        {},
-        normalizedExistingArtifact.networks,
-        normalizedNewArtifact.networks
-      );
-      const completeArtifact = _.assign(
-        {},
+      const completeArtifact = finalizeArtifact(
         normalizedExistingArtifact,
-        normalizedNewArtifact,
-        { networks: knownNetworks }
+        normalizedNewArtifact
       );
-
       writeArtifact(completeArtifact, outputPath);
     } catch (e) {
       // if artifact doesn't already exist, write new file
