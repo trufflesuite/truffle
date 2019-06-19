@@ -448,6 +448,14 @@ function* variablesAndMappingsSaga() {
         else if (indexDefinition.kind === "typeConversion") {
           indexDefinition = indexDefinition.arguments[0];
         }
+        //...also prior to 0.5.0, unary + was legal, which needs to be accounted
+        //for for the same reason
+        else if (
+          indexDefinition.nodeType === "UnaryOperation" &&
+          indexDefinition.operator === "+"
+        ) {
+          indexDefinition = indexDefinition.subExpression;
+        }
         //otherwise, we've just totally failed to decode it, so we mark
         //indexValue as null (as distinct from undefined) to indicate this.  In
         //the future, we should be able to decode all mapping keys, but we're
