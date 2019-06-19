@@ -307,7 +307,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
 }
 
 //like storageSize, but for a Type object; also assumes you've already done allocation
-export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefinedTypes: DecodeUtils.Types.TypesById, allocations: StorageAllocations): StorageLength {
+export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefinedTypes?: DecodeUtils.Types.TypesById, allocations?: StorageAllocations): StorageLength {
   switch(dataType.typeClass) {
     case "bool":
       return {bytes: 1};

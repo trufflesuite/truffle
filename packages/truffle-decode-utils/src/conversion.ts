@@ -103,11 +103,11 @@ export namespace Conversion {
     return Web3.utils.toChecksumAddress(toHexString(bytes, Constants.ADDRESS_SIZE));
   }
 
-  export function toBytes(data: BN | string, length: number = 0): Uint8Array {
+  export function toBytes(data: BN | string | number, length: number = 0): Uint8Array {
     //note that length is a minimum output length
     //strings will be 0-padded on left
-    //BN will be sign-padded on left
-    //NOTE: if a BN is passed in that is too big for the given length,
+    //numbers/BNs will be sign-padded on left
+    //NOTE: if a number/BN is passed in that is too big for the given length,
     //you will get an error!
     //(note that strings passed in should be hex strings; this is not for converting
     //generic strings to hex)
@@ -138,14 +138,16 @@ export namespace Conversion {
       if (bytes.length < length) {
         let prior = bytes;
         bytes = new Uint8Array(length);
-        bytes.fill(0);
         bytes.set(prior, length - prior.length);
       }
 
       return bytes;
     }
     else {
-      // BN case
+      // BN/number case
+      if(typeof data === "number") {
+        data = new BN(data);
+      }
 
       //note that the argument for toTwos is given in bits
       return new Uint8Array(data.toTwos(length * 8).toArrayLike(Buffer, "be", length)); //big-endian

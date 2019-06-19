@@ -163,7 +163,7 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
 //like abiSize, but for a Type object; also assumes you've already done allocation
 //(note: function for dynamic is separate, see below)
 //also, does not attempt to handle types that don't occur in calldata
-export function abiSizeForType(dataType: DecodeUtils.Types.Type, allocations: Allocations.AbiAllocations): number {
+export function abiSizeForType(dataType: DecodeUtils.Types.Type, allocations?: Allocations.AbiAllocations): number {
   switch(dataType.typeClass) {
     case "array":
       switch(dataType.kind) {
@@ -188,7 +188,7 @@ export function abiSizeForType(dataType: DecodeUtils.Types.Type, allocations: Al
 }
 
 //again, this function does not attempt to handle types that don't occur in the abi
-export function isTypeDynamic(dataType: DecodeUtils.Types.Type, allocations: Allocations.AbiAllocations): boolean {
+export function isTypeDynamic(dataType: DecodeUtils.Types.Type, allocations?: Allocations.AbiAllocations): boolean {
   switch(dataType.typeClass) {
     case "string":
       return true;

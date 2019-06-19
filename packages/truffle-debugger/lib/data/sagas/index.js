@@ -59,8 +59,7 @@ export function* decode(definition, ref, forceNonPayable = false) {
   );
   let blockNumber = yield select(data.views.blockNumber);
 
-  let ZERO_WORD = new Uint8Array(DecodeUtils.EVM.WORD_SIZE);
-  ZERO_WORD.fill(0);
+  let ZERO_WORD = new Uint8Array(DecodeUtils.EVM.WORD_SIZE); //automatically filled with zeroes
   let NO_CODE = new Uint8Array(); //empty array
 
   if (forceNonPayable) {

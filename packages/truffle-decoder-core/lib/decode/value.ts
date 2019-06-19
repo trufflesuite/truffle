@@ -111,6 +111,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "string":
       //there is no padding check for strings
+      //HACK WARNING: we don't convert UTF-8 to UTF-16! we need to find some way to do that
+      //that doesn't throw an error, since we *don't* want to return an error value for
+      //invalid UTF-8 (since this can be generated via normal Solidity)
       return new Values.StringValue(dataType, String.fromCharCode.apply(undefined, bytes));
 
     case "function":
