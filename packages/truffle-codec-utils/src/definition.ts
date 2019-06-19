@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decode-utils:definition");
+const debug = debugModule("codec-utils:definition");
 
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition, AstReferences, Scopes } from "./ast";

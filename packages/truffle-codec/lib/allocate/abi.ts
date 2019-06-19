@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decoder-core:allocate:abi");
+const debug = debugModule("codec:allocate:abi");
 
 import * as Pointer from "../types/pointer";
 import * as Allocations from "../types/allocation";

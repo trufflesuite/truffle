@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decode-utils:abi");
+const debug = debugModule("codec-utils:abi");
 
 import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import { EVM as EVMUtils } from "./evm";

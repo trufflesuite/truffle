@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decoder-core:decode:abi");
+const debug = debugModule("codec:decode:abi");
 
 import read from "../read";
 import * as CodecUtils from "truffle-codec-utils";

@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decode-utils:types");
+const debug = debugModule("codec-utils:types");
 
 //type objects for Solidity types
 //these will just be defined as interfaces; there's not any particular need for

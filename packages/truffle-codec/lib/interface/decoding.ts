@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decoder-core:interface");
+const debug = debugModule("codec:interface");
 
 import { AstDefinition, Types, Values } from "truffle-codec-utils";
 import * as CodecUtils from "truffle-codec-utils";

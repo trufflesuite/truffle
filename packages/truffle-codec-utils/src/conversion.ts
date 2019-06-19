@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("codec-utils:conversion");
+
 import BN from "bn.js";
 import Web3 from "web3";
 import { Constants } from "./constants";
@@ -62,7 +65,7 @@ export namespace Conversion {
       bytes.set(prior, padLength - prior.length);
     }
 
-    // debug("bytes: %o", bytes);
+    debug("bytes: %o", bytes);
 
     let string = bytes.reduce(
       (str, byte) => `${str}${pad(byte.toString(16))}`, ""

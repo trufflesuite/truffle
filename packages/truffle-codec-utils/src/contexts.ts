@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decode-utils:contexts");
+const debug = debugModule("codec-utils:contexts");
 
 import escapeRegExp from "lodash.escaperegexp";
 
