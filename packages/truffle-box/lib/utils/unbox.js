@@ -126,15 +126,8 @@ async function copyTempIntoDestination(tmpDir, destination, options) {
 function installBoxDependencies({ hooks }, destination) {
   const postUnpack = hooks["post-unpack"];
 
-  if (postUnpack.length === 0) {
-    return;
-  }
-
-  try {
-    execSync(postUnpack, { cwd: destination });
-  } catch (error) {
-    throw error;
-  }
+  if (postUnpack.length === 0) return;
+  execSync(postUnpack, { cwd: destination });
 }
 
 module.exports = {
