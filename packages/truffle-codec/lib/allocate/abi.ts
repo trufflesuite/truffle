@@ -3,8 +3,8 @@ const debug = debugModule("decoder-core:allocate:abi");
 
 import * as Pointer from "../types/pointer";
 import * as Allocations from "../types/allocation";
-import { AstDefinition, AstReferences } from "truffle-decode-utils";
-import * as DecodeUtils from "truffle-decode-utils";
+import { AstDefinition, AstReferences } from "truffle-codec-utils";
+import * as CodecUtils from "truffle-codec-utils";
 import partition from "lodash.partition";
 
 import { AbiCoder } from "web3-eth-abi";
@@ -70,7 +70,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
   allocations[parentNode.id] = {
     definition: parentNode,
     members: memberAllocations,
-    length: dynamic ? DecodeUtils.EVM.WORD_SIZE : start,
+    length: dynamic ? CodecUtils.EVM.WORD_SIZE : start,
     dynamic
   };
 
@@ -92,7 +92,7 @@ export function abiSize(definition: AstDefinition, referenceDeclarations?: AstRe
 //third return value is resulting allocations, INCLUDING the ones passed in
 //TODO: add error handling
 function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: Allocations.AbiAllocations): [number | undefined, boolean | undefined, Allocations.AbiAllocations] {
-  switch (DecodeUtils.Definition.typeClass(definition)) {
+  switch (CodecUtils.Definition.typeClass(definition)) {
     case "bool":
     case "address":
     case "contract":
@@ -101,33 +101,33 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
     case "fixed":
     case "ufixed":
     case "enum":
-      return [DecodeUtils.EVM.WORD_SIZE, false, existingAllocations];
+      return [CodecUtils.EVM.WORD_SIZE, false, existingAllocations];
 
     case "string":
-      return [DecodeUtils.EVM.WORD_SIZE, true, existingAllocations];
+      return [CodecUtils.EVM.WORD_SIZE, true, existingAllocations];
 
     case "bytes":
-      return [DecodeUtils.EVM.WORD_SIZE, DecodeUtils.Definition.specifiedSize(definition) == null,
+      return [CodecUtils.EVM.WORD_SIZE, CodecUtils.Definition.specifiedSize(definition) == null,
         existingAllocations];
 
     case "mapping":
       return [undefined, undefined, existingAllocations];
 
     case "function":
-      switch (DecodeUtils.Definition.visibility(definition)) {
+      switch (CodecUtils.Definition.visibility(definition)) {
         case "external":
-          return [DecodeUtils.EVM.WORD_SIZE, false, existingAllocations];
+          return [CodecUtils.EVM.WORD_SIZE, false, existingAllocations];
         case "internal":
           return [undefined, undefined, existingAllocations];
       }
 
     case "array": {
-      if(DecodeUtils.Definition.isDynamicArray(definition)) {
-        return [DecodeUtils.EVM.WORD_SIZE, true, existingAllocations];
+      if(CodecUtils.Definition.isDynamicArray(definition)) {
+        return [CodecUtils.EVM.WORD_SIZE, true, existingAllocations];
       }
       else {
         //static array case
-        const length: number = DecodeUtils.Definition.staticLength(definition);
+        const length: number = CodecUtils.Definition.staticLength(definition);
         if(length === 0) {
           //arrays of length 0 are static regardless of base type
           return [0, false, existingAllocations];
@@ -139,7 +139,7 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
     }
 
     case "struct": {
-      const referenceId: number = DecodeUtils.Definition.typeId(definition);
+      const referenceId: number = CodecUtils.Definition.typeId(definition);
       let allocations: Allocations.AbiAllocations = existingAllocations;
       let allocation: Allocations.AbiAllocation | null | undefined = allocations[referenceId];
       if(allocation === undefined) {
@@ -163,12 +163,12 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
 //like abiSize, but for a Type object; also assumes you've already done allocation
 //(note: function for dynamic is separate, see below)
 //also, does not attempt to handle types that don't occur in calldata
-export function abiSizeForType(dataType: DecodeUtils.Types.Type, allocations?: Allocations.AbiAllocations): number {
+export function abiSizeForType(dataType: CodecUtils.Types.Type, allocations?: Allocations.AbiAllocations): number {
   switch(dataType.typeClass) {
     case "array":
       switch(dataType.kind) {
         case "dynamic":
-          return DecodeUtils.EVM.WORD_SIZE;
+          return CodecUtils.EVM.WORD_SIZE;
         case "static":
           const length = dataType.length.toNumber(); //if this is too big, we have a problem!
           const baseSize = abiSizeForType(dataType.baseType, allocations);
@@ -177,18 +177,18 @@ export function abiSizeForType(dataType: DecodeUtils.Types.Type, allocations?: A
     case "struct":
       const allocation = allocations[dataType.id];
       if(!allocation) {
-        throw new DecodeUtils.Values.DecodingError(
-          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType)
+        throw new CodecUtils.Values.DecodingError(
+          new CodecUtils.Values.UserDefinedTypeNotFoundError(dataType)
         );
       }
       return allocation.length;
     default:
-      return DecodeUtils.EVM.WORD_SIZE;
+      return CodecUtils.EVM.WORD_SIZE;
   }
 }
 
 //again, this function does not attempt to handle types that don't occur in the abi
-export function isTypeDynamic(dataType: DecodeUtils.Types.Type, allocations?: Allocations.AbiAllocations): boolean {
+export function isTypeDynamic(dataType: CodecUtils.Types.Type, allocations?: Allocations.AbiAllocations): boolean {
   switch(dataType.typeClass) {
     case "string":
       return true;
@@ -199,8 +199,8 @@ export function isTypeDynamic(dataType: DecodeUtils.Types.Type, allocations?: Al
     case "struct":
       const allocation = allocations[dataType.id];
       if(!allocation) {
-        throw new DecodeUtils.Values.DecodingError(
-          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType)
+        throw new CodecUtils.Values.DecodingError(
+          new CodecUtils.Values.UserDefinedTypeNotFoundError(dataType)
         );
       }
       return allocation.dynamic;
@@ -218,7 +218,7 @@ function allocateCalldata(
   contractId: number,
   referenceDeclarations: AstReferences,
   abiAllocations: Allocations.AbiAllocations,
-  constructorContext?: DecodeUtils.Contexts.DecoderContext
+  constructorContext?: CodecUtils.Contexts.DecoderContext
 ): Allocations.CalldataAllocation {
   const linearizedBaseContracts = referenceDeclarations[contractId].linearizedBaseContracts;
   //first: determine the corresponding function node
@@ -232,18 +232,18 @@ function allocateCalldata(
       //for a constructor, we only want to search the particular contract, which
       let contractNode = referenceDeclarations[contractId];
       node = contractNode.nodes.find(
-        functionNode => DecodeUtils.Contexts.matchesAbi(
+        functionNode => CodecUtils.Contexts.matchesAbi(
           abiEntry, functionNode, referenceDeclarations
         )
       );
       //TODO: handle case if node undefined
       break;
     case "function":
-      offset = DecodeUtils.EVM.SELECTOR_SIZE;
+      offset = CodecUtils.EVM.SELECTOR_SIZE;
       //search through base contracts, from most derived (right) to most base (left)
       node = linearizedBaseContracts.reduceRight(
         (foundNode, baseContractId) => foundNode || referenceDeclarations[baseContractId].nodes.find(
-          functionNode => DecodeUtils.Contexts.matchesAbi(
+          functionNode => CodecUtils.Contexts.matchesAbi(
             abiEntry, functionNode, referenceDeclarations
           )
         ),
@@ -291,7 +291,7 @@ function allocateEvent(
   //search through base contracts, from most derived (right) to most base (left)
   const node: AstDefinition = linearizedBaseContracts.reduceRight(
     (foundNode, baseContractId) => foundNode || referenceDeclarations[baseContractId].nodes.find(
-      eventNode => DecodeUtils.Contexts.matchesAbi(
+      eventNode => CodecUtils.Contexts.matchesAbi(
         abiEntry, eventNode, referenceDeclarations
       )
     ),
@@ -343,7 +343,7 @@ function allocateEvent(
 function getCalldataAllocationsForContract(
   abi: AbiItem[],
   contractId: number,
-  constructorContext: DecodeUtils.Contexts.DecoderContext,
+  constructorContext: CodecUtils.Contexts.DecoderContext,
   referenceDeclarations: AstReferences,
   abiAllocations: Allocations.AbiAllocations
 ): Allocations.CalldataContractAllocation {
@@ -377,7 +377,7 @@ function getCalldataAllocationsForContract(
   return allocations;
 }
 
-function defaultConstructorAllocation(constructorContext: DecodeUtils.Contexts.DecoderContext) {
+function defaultConstructorAllocation(constructorContext: CodecUtils.Contexts.DecoderContext) {
   let rawLength = constructorContext.binary.length;
   let offset = (rawLength - 2)/2; //number of bytes in 0x-prefixed bytestring
   return {

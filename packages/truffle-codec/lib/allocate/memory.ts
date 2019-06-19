@@ -3,8 +3,8 @@ const debug = debugModule("decoder-core:allocate:memory");
 
 import { MemoryPointer } from "../types/pointer";
 import { MemoryAllocations, MemoryAllocation, MemoryMemberAllocation } from "../types/allocation";
-import { AstDefinition, AstReferences } from "truffle-decode-utils";
-import * as DecodeUtils from "truffle-decode-utils";
+import { AstDefinition, AstReferences } from "truffle-codec-utils";
+import * as CodecUtils from "truffle-codec-utils";
 
 export function getMemoryAllocations(referenceDeclarations: AstReferences): MemoryAllocations {
   let allocations: MemoryAllocations = {};
@@ -22,7 +22,7 @@ function allocateStruct(definition: AstDefinition): MemoryAllocation {
   let memberAllocations: MemoryMemberAllocation[] = [];
   let nonMappingIndex = 0;
   for(const member of definition.members) {
-    if(DecodeUtils.Definition.isMapping(member)) {
+    if(CodecUtils.Definition.isMapping(member)) {
       memberAllocations.push({
         definition: member,
         pointer: null
@@ -33,8 +33,8 @@ function allocateStruct(definition: AstDefinition): MemoryAllocation {
         definition: member,
         pointer: {
           location: "memory",
-          start: nonMappingIndex * DecodeUtils.EVM.WORD_SIZE,
-          length: DecodeUtils.EVM.WORD_SIZE
+          start: nonMappingIndex * CodecUtils.EVM.WORD_SIZE,
+          length: CodecUtils.EVM.WORD_SIZE
         }
       });
       nonMappingIndex++;

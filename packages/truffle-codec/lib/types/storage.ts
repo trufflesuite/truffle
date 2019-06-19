@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decoder-core:types:storage");
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as CodecUtils from "truffle-codec-utils";
 import BN from "bn.js";
 
 export type StorageLength = {bytes: number} | {words: number};
@@ -13,7 +13,7 @@ export function isWordsLength(size: StorageLength): size is {words: number} {
 export function storageLengthToBytes(size: StorageLength): number {
   if(isWordsLength(size)) {
     debug("size.words %d", size.words);
-    return size.words * DecodeUtils.EVM.WORD_SIZE;
+    return size.words * CodecUtils.EVM.WORD_SIZE;
   }
   else {
     return size.bytes;
@@ -32,7 +32,7 @@ export interface StoragePosition {
 };
 
 export interface Slot {
-  key?: DecodeUtils.Values.ElementaryResult;
+  key?: CodecUtils.Values.ElementaryResult;
   path?: Slot;
   hashPath?: boolean;
   offset: BN;

@@ -1,7 +1,7 @@
 {
-  "name": "truffle-decode-utils",
+  "name": "truffle-codec-utils",
   "version": "1.0.14",
-  "description": "Utilities for decoding data from the EVM",
+  "description": "Utilities for decoding data from the EVM or encoding it for the EVM",
   "dependencies": {
     "bn.js": "^4.11.8",
     "json-schema-to-typescript": "^6.1.3",
@@ -20,13 +20,13 @@
     "start": "node_modules/.bin/tsc --watch",
     "test": "echo \"No test specified\" && exit 0;"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-decode-utils",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-codec-utils",
   "author": "Truffle Suite <inquiry@trufflesuite.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-decode-utils/issues"
+    "url": "https://github.com/trufflesuite/truffle-codec-utils/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-decode-utils#readme",
+  "homepage": "https://github.com/trufflesuite/truffle-codec-utils#readme",
   "publishConfig": {
     "access": "public"
   },

@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("decoder-core:decode:constant");
 
-import * as DecodeUtils from "truffle-decode-utils";
-import { Types, Values } from "truffle-decode-utils";
+import * as CodecUtils from "truffle-codec-utils";
+import { Types, Values } from "truffle-codec-utils";
 import read from "../read";
 import decodeValue from "./value";
 import { ConstantDefinitionPointer} from "../types/pointer";
@@ -30,10 +30,10 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
       return Values.makeGenericErrorResult(dataType, error.error);
     }
     //not bothering to check padding; shouldn't be necessary
-    let bytes = word.slice(DecodeUtils.EVM.WORD_SIZE - size);
+    let bytes = word.slice(CodecUtils.EVM.WORD_SIZE - size);
     return new Values.BytesValue(
       dataType,
-      DecodeUtils.Conversion.toHexString(bytes)
+      CodecUtils.Conversion.toHexString(bytes)
     );
   }
 

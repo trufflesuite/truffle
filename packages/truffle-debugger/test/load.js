@@ -6,7 +6,7 @@ import { assert } from "chai";
 import Ganache from "ganache-core";
 
 import { prepareContracts } from "./helpers";
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as TruffleCodecUtils from "truffle-codec-utils";
 import Debugger from "lib/debugger";
 
 import trace from "lib/trace/selectors";
@@ -71,7 +71,7 @@ describe("Loading and unloading transactions", function() {
     await session.load(txHash);
     assert.isTrue(session.view(trace.loaded));
     await session.continueUntilBreakpoint(); //continue to end
-    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
     const expected = { x: 1 };
@@ -97,7 +97,7 @@ describe("Loading and unloading transactions", function() {
 
     assert.isTrue(session.view(trace.loaded));
     await session.continueUntilBreakpoint(); //continue to end
-    let variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    let variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
     let expected = { x: 1 };
@@ -107,7 +107,7 @@ describe("Loading and unloading transactions", function() {
     await session.load(txHash2);
     assert.isTrue(session.view(trace.loaded));
     await session.continueUntilBreakpoint(); //continue to end
-    variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
     expected = { y: 2 };

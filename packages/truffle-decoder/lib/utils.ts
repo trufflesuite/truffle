@@ -1,4 +1,4 @@
-import { AstDefinition, AstReferences, Contexts as ContextsUtils } from "truffle-decode-utils";
+import { AstDefinition, AstReferences, Contexts as ContextsUtils } from "truffle-codec-utils";
 import { ContractObject } from "truffle-contract-schema/spec";
 
 export function getContractNode(contract: ContractObject): AstDefinition {

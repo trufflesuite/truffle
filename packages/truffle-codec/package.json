@@ -40,7 +40,7 @@
     "lodash.partition": "^4.6.0",
     "lodash.sum": "^4.0.2",
     "truffle-contract-schema": "^3.0.11",
-    "truffle-decode-utils": "^1.0.12",
+    "truffle-codec-utils": "^1.0.12",
     "web3-eth-abi": "1.0.0-beta.52"
   },
   "peerDependencies": {

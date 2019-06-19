@@ -2,8 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("decoder-core:decode:abi");
 
 import read from "../read";
-import * as DecodeUtils from "truffle-decode-utils";
-import { Types, Values } from "truffle-decode-utils";
+import * as CodecUtils from "truffle-codec-utils";
+import { Types, Values } from "truffle-codec-utils";
 import decodeValue from "./value";
 import { AbiPointer, DataPointer } from "../types/pointer";
 import { AbiMemberAllocation } from "../types/allocation";
@@ -49,7 +49,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
     return Values.makeGenericErrorResult(dataType, error.error);
   }
 
-  let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber() + base;
+  let startPosition = CodecUtils.Conversion.toBN(rawValue).toNumber() + base;
   debug("startPosition %d", startPosition);
 
   let dynamic: boolean;
@@ -85,17 +85,17 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
         rawLength = <Uint8Array> (yield* read({
           location,
           start: startPosition,
-          length: DecodeUtils.EVM.WORD_SIZE
+          length: CodecUtils.EVM.WORD_SIZE
         }, state));
       }
       catch(error) { //error: Values.DecodingError
         return Values.makeGenericErrorResult(dataType, error.error);
       }
-      length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
+      length = CodecUtils.Conversion.toBN(rawLength).toNumber();
 
       let childPointer: AbiPointer = {
         location,
-        start: startPosition + DecodeUtils.EVM.WORD_SIZE,
+        start: startPosition + CodecUtils.EVM.WORD_SIZE,
         length
       }
 
@@ -110,14 +110,14 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
             rawLength = <Uint8Array> (yield* read({
               location,
               start: startPosition,
-              length: DecodeUtils.EVM.WORD_SIZE
+              length: CodecUtils.EVM.WORD_SIZE
             }, state));
           }
           catch(error) { //error: Values.DecodingError
             return Values.makeGenericErrorResult(dataType, error.error);
           }
-          length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
-          startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition
+          length = CodecUtils.Conversion.toBN(rawLength).toNumber();
+          startPosition += CodecUtils.EVM.WORD_SIZE; //increment startPosition
           //to next word, as first word was used for length
           break;
         case "static":

@@ -1,6 +1,6 @@
 import { StorageLength } from "./storage";
 import * as Pointer from "./pointer";
-import { AstDefinition, Contexts } from "truffle-decode-utils";
+import { AstDefinition, Contexts } from "truffle-codec-utils";
 import { Abi } from "truffle-contract-schema/spec";
 
 //for passing to calldata/event allocation functions

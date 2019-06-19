@@ -2,8 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("decoder-core:decode:value");
 
 import read from "../read";
-import * as DecodeUtils from "truffle-decode-utils";
-import { Types, Values } from "truffle-decode-utils";
+import * as CodecUtils from "truffle-codec-utils";
+import { Types, Values } from "truffle-codec-utils";
 import BN from "bn.js";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
@@ -32,10 +32,10 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       if(!checkPaddingLeft(bytes, 1)) {
         return new Values.BoolErrorResult(
           dataType,
-          new Values.BoolPaddingError(DecodeUtils.Conversion.toHexString(bytes))
+          new Values.BoolPaddingError(CodecUtils.Conversion.toHexString(bytes))
         );
       }
-      const numeric = DecodeUtils.Conversion.toBN(bytes);
+      const numeric = CodecUtils.Conversion.toBN(bytes);
       if(numeric.eqn(0)) {
         return new Values.BoolValue(dataType, false);
       }
@@ -55,38 +55,38 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       if(!permissivePadding && !checkPaddingLeft(bytes, dataType.bits/8)) {
         return new Values.UintErrorResult(
           dataType,
-          new Values.UintPaddingError(DecodeUtils.Conversion.toHexString(bytes))
+          new Values.UintPaddingError(CodecUtils.Conversion.toHexString(bytes))
         );
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
       bytes = bytes.slice(-dataType.bits/8);
-      return new Values.UintValue(dataType, DecodeUtils.Conversion.toBN(bytes));
+      return new Values.UintValue(dataType, CodecUtils.Conversion.toBN(bytes));
     case "int":
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
         return new Values.IntErrorResult(
           dataType,
-          new Values.IntPaddingError(DecodeUtils.Conversion.toHexString(bytes))
+          new Values.IntPaddingError(CodecUtils.Conversion.toHexString(bytes))
         );
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
       bytes = bytes.slice(-dataType.bits/8);
-      return new Values.IntValue(dataType, DecodeUtils.Conversion.toSignedBN(bytes));
+      return new Values.IntValue(dataType, CodecUtils.Conversion.toSignedBN(bytes));
 
     case "address":
-      if(!permissivePadding && !checkPaddingLeft(bytes, DecodeUtils.EVM.ADDRESS_SIZE)) {
+      if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
         return new Values.AddressErrorResult(
           dataType,
-          new Values.AddressPaddingError(DecodeUtils.Conversion.toHexString(bytes))
+          new Values.AddressPaddingError(CodecUtils.Conversion.toHexString(bytes))
         );
       }
-      return new Values.AddressValue(dataType, DecodeUtils.Conversion.toAddress(bytes));
+      return new Values.AddressValue(dataType, CodecUtils.Conversion.toAddress(bytes));
 
     case "contract":
-      if(!permissivePadding && !checkPaddingLeft(bytes, DecodeUtils.EVM.ADDRESS_SIZE)) {
+      if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
         return new Values.ContractErrorResult(
           dataType,
-          new Values.ContractPaddingError(DecodeUtils.Conversion.toHexString(bytes))
+          new Values.ContractPaddingError(CodecUtils.Conversion.toHexString(bytes))
         );
       }
       const fullType = <Types.ContractType>Types.fullType(dataType, info.userDefinedTypes);
@@ -99,7 +99,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         if(!permissivePadding && !checkPaddingRight(bytes, dataType.length)) {
           return new Values.BytesErrorResult(
             dataType,
-            new Values.BytesPaddingError(DecodeUtils.Conversion.toHexString(bytes))
+            new Values.BytesPaddingError(CodecUtils.Conversion.toHexString(bytes))
           );
         }
         //now, truncate to appropriate length
@@ -107,7 +107,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       }
       //we don't need to pass in length to the conversion, since that's for *adding* padding
       //(there is also no padding check for dynamic bytes)
-      return new Values.BytesValue(dataType, DecodeUtils.Conversion.toHexString(bytes));
+      return new Values.BytesValue(dataType, CodecUtils.Conversion.toHexString(bytes));
 
     case "string":
       //there is no padding check for strings
@@ -119,32 +119,32 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "function":
       switch(dataType.visibility) {
         case "external":
-          if(!checkPaddingRight(bytes, DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE)) {
+          if(!checkPaddingRight(bytes, CodecUtils.EVM.ADDRESS_SIZE + CodecUtils.EVM.SELECTOR_SIZE)) {
             return new Values.FunctionExternalErrorResult(
               dataType,
-              new Values.FunctionExternalNonStackPaddingError(DecodeUtils.Conversion.toHexString(bytes))
+              new Values.FunctionExternalNonStackPaddingError(CodecUtils.Conversion.toHexString(bytes))
             );
           }
-          const address = bytes.slice(0, DecodeUtils.EVM.ADDRESS_SIZE);
-          const selector = bytes.slice(DecodeUtils.EVM.ADDRESS_SIZE, DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE);
+          const address = bytes.slice(0, CodecUtils.EVM.ADDRESS_SIZE);
+          const selector = bytes.slice(CodecUtils.EVM.ADDRESS_SIZE, CodecUtils.EVM.ADDRESS_SIZE + CodecUtils.EVM.SELECTOR_SIZE);
           return new Values.FunctionExternalValue(dataType,
             <Values.FunctionExternalValueInfo> (yield* decodeExternalFunction(address, selector, info))
           );
         case "internal":
-          if(!checkPaddingLeft(bytes, 2 * DecodeUtils.EVM.PC_SIZE)) {
+          if(!checkPaddingLeft(bytes, 2 * CodecUtils.EVM.PC_SIZE)) {
             return new Values.FunctionInternalErrorResult(
               dataType,
-              new Values.FunctionInternalPaddingError(DecodeUtils.Conversion.toHexString(bytes))
+              new Values.FunctionInternalPaddingError(CodecUtils.Conversion.toHexString(bytes))
             );
           }
-          const deployedPc = bytes.slice(-DecodeUtils.EVM.PC_SIZE);
-          const constructorPc = bytes.slice(-DecodeUtils.EVM.PC_SIZE * 2, -DecodeUtils.EVM.PC_SIZE);
+          const deployedPc = bytes.slice(-CodecUtils.EVM.PC_SIZE);
+          const constructorPc = bytes.slice(-CodecUtils.EVM.PC_SIZE * 2, -CodecUtils.EVM.PC_SIZE);
           return decodeInternalFunction(dataType, deployedPc, constructorPc, info);
       }
       break; //to satisfy TypeScript
 
     case "enum": {
-      const numeric = DecodeUtils.Conversion.toBN(bytes);
+      const numeric = CodecUtils.Conversion.toBN(bytes);
       const fullType = <Types.EnumType>Types.fullType(dataType, info.userDefinedTypes);
       if(!fullType.options) {
         return new Values.EnumErrorResult(
@@ -157,7 +157,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       if(!checkPaddingLeft(bytes, numBytes)) {
         return new Values.EnumErrorResult(
           fullType,
-          new Values.EnumPaddingError(fullType, DecodeUtils.Conversion.toHexString(bytes))
+          new Values.EnumPaddingError(fullType, CodecUtils.Conversion.toHexString(bytes))
         );
       }
       if(numeric.ltn(numOptions)) {
@@ -174,7 +174,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "fixed": {
       //skipping padding check as we don't support this anyway
-      const hex = DecodeUtils.Conversion.toHexString(bytes);
+      const hex = CodecUtils.Conversion.toHexString(bytes);
       return new Values.FixedErrorResult(
         dataType,
         new Values.FixedPointNotYetSupportedError(hex)
@@ -182,7 +182,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     }
     case "ufixed": {
       //skipping padding check as we don't support this anyway
-      const hex = DecodeUtils.Conversion.toHexString(bytes);
+      const hex = CodecUtils.Conversion.toHexString(bytes);
       return new Values.UfixedErrorResult(
         dataType,
         new Values.FixedPointNotYetSupportedError(hex)
@@ -193,17 +193,17 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
 //NOTE that this function returns a ContractValueInfo, not a ContractResult
 export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.ContractValueInfo | DecoderRequest | Uint8Array> {
-  let address = DecodeUtils.Conversion.toAddress(addressBytes);
+  let address = CodecUtils.Conversion.toAddress(addressBytes);
   let codeBytes: Uint8Array = yield {
     type: "code",
     address
   };
-  let code = DecodeUtils.Conversion.toHexString(codeBytes);
-  let context = DecodeUtils.Contexts.findDecoderContext(info.contexts, code);
+  let code = CodecUtils.Conversion.toHexString(codeBytes);
+  let context = CodecUtils.Contexts.findDecoderContext(info.contexts, code);
   if(context !== null && context.contractName !== undefined) {
     return new Values.ContractValueInfoKnown(
       address,
-      DecodeUtils.Contexts.contextToType(context)
+      CodecUtils.Contexts.contextToType(context)
     );
   }
   else {
@@ -215,7 +215,7 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Iterab
 //NOTE this again returns a FunctionExternalValueInfo, not a FunctionExternalResult
 export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.FunctionExternalValueInfo | DecoderRequest | GeneratorJunk> {
   let contract = <Values.ContractValueInfo> (yield* decodeContract(addressBytes, info));
-  let selector = DecodeUtils.Conversion.toHexString(selectorBytes);
+  let selector = CodecUtils.Conversion.toHexString(selectorBytes);
   if(contract.kind === "unknown") {
     return new Values.FunctionExternalValueInfoUnknown(contract, selector)
   }
@@ -235,8 +235,8 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
 
 //this one works a bit differently -- in order to handle errors, it *does* return a FunctionInternalResult
 export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
-  let deployedPc: number = DecodeUtils.Conversion.toBN(deployedPcBytes).toNumber();
-  let constructorPc: number = DecodeUtils.Conversion.toBN(constructorPcBytes).toNumber();
+  let deployedPc: number = CodecUtils.Conversion.toBN(deployedPcBytes).toNumber();
+  let constructorPc: number = CodecUtils.Conversion.toBN(constructorPcBytes).toNumber();
   let context: Types.ContractType = {
     typeClass: "contract",
     id: info.currentContext.contractId,

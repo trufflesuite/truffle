@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("decoder-core:decode:stack");
 
-import * as DecodeUtils from "truffle-decode-utils";
-import { Types, Values } from "truffle-decode-utils";
+import * as CodecUtils from "truffle-codec-utils";
+import { Types, Values } from "truffle-codec-utils";
 import read from "../read";
 import decodeValue from "./value";
 import { decodeExternalFunction, checkPaddingLeft } from "./value";
@@ -49,8 +49,8 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
         //straight to decodeValue.  this is to allow us to correctly handle the
         //case of msg.data used as a mapping key.
         if(dataType.typeClass === "bytes" || dataType.typeClass === "string") {
-          let start = DecodeUtils.Conversion.toBN(pointer.literal.slice(0, DecodeUtils.EVM.WORD_SIZE)).toNumber();
-          let length = DecodeUtils.Conversion.toBN(pointer.literal.slice(DecodeUtils.EVM.WORD_SIZE)).toNumber();
+          let start = CodecUtils.Conversion.toBN(pointer.literal.slice(0, CodecUtils.EVM.WORD_SIZE)).toNumber();
+          let length = CodecUtils.Conversion.toBN(pointer.literal.slice(CodecUtils.EVM.WORD_SIZE)).toNumber();
           let newPointer = { location: "calldata" as "calldata", start, length };
           return yield* decodeValue(dataType, newPointer, info);
         }
@@ -60,11 +60,11 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
           //in this case, we're actually going to *throw away* the length info,
           //because it makes the logic simpler -- we'll get the length info back
           //from calldata
-          let locationOnly = pointer.literal.slice(0, DecodeUtils.EVM.WORD_SIZE);
+          let locationOnly = pointer.literal.slice(0, CodecUtils.EVM.WORD_SIZE);
           //HACK -- in order to read the correct location, we need to add an offset
           //of -32 (since, again, we're throwing away the length info), so we pass
           //that in as the "base" value
-          return yield* decodeAbiReferenceByAddress(dataType, {location: "stackliteral", literal: locationOnly}, info, -DecodeUtils.EVM.WORD_SIZE);
+          return yield* decodeAbiReferenceByAddress(dataType, {location: "stackliteral", literal: locationOnly}, info, -CodecUtils.EVM.WORD_SIZE);
         }
         else {
           //multivalue case -- this case is straightforward
@@ -77,19 +77,19 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
   //next: do we have an external function?  these work differently on the stack
   //than elsewhere, so we can't just pass it on to decodeValue.
   if(dataType.typeClass === "function" && dataType.visibility === "external") {
-    let address = pointer.literal.slice(0, DecodeUtils.EVM.WORD_SIZE);
-    let selectorWord = pointer.literal.slice(-DecodeUtils.EVM.WORD_SIZE);
-    if(!checkPaddingLeft(address, DecodeUtils.EVM.ADDRESS_SIZE)
-      ||!checkPaddingLeft(selectorWord, DecodeUtils.EVM.SELECTOR_SIZE)) {
+    let address = pointer.literal.slice(0, CodecUtils.EVM.WORD_SIZE);
+    let selectorWord = pointer.literal.slice(-CodecUtils.EVM.WORD_SIZE);
+    if(!checkPaddingLeft(address, CodecUtils.EVM.ADDRESS_SIZE)
+      ||!checkPaddingLeft(selectorWord, CodecUtils.EVM.SELECTOR_SIZE)) {
       return new Values.FunctionExternalErrorResult(
         dataType,
         new Values.FunctionExternalStackPaddingError(
-          DecodeUtils.Conversion.toHexString(address),
-          DecodeUtils.Conversion.toHexString(selectorWord)
+          CodecUtils.Conversion.toHexString(address),
+          CodecUtils.Conversion.toHexString(selectorWord)
         )
       );
     }
-    let selector = selectorWord.slice(-DecodeUtils.EVM.SELECTOR_SIZE);
+    let selector = selectorWord.slice(-CodecUtils.EVM.SELECTOR_SIZE);
     return new Values.FunctionExternalValue(
       dataType,
       <Values.FunctionExternalValueInfo> (yield* decodeExternalFunction(address, selector, info))

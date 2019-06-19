@@ -2,8 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("decoder-core:decode:memory");
 
 import read from "../read";
-import * as DecodeUtils from "truffle-decode-utils";
-import { Types, Values } from "truffle-decode-utils";
+import * as CodecUtils from "truffle-codec-utils";
+import { Types, Values } from "truffle-codec-utils";
 import decodeValue from "./value";
 import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";
@@ -30,7 +30,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
     return Values.makeGenericErrorResult(dataType, error.error);
   }
 
-  let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber();
+  let startPosition = CodecUtils.Conversion.toBN(rawValue).toNumber();
   let rawLength: Uint8Array;
   let length: number;
 
@@ -43,17 +43,17 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         rawLength = yield* read({
           location: "memory",
           start: startPosition,
-          length: DecodeUtils.EVM.WORD_SIZE
+          length: CodecUtils.EVM.WORD_SIZE
         }, state);
       }
       catch(error) { //error: Values.DecodingError
         return Values.makeGenericErrorResult(dataType, error.error);
       }
-      length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
+      length = CodecUtils.Conversion.toBN(rawLength).toNumber();
 
       let childPointer: MemoryPointer = {
         location: "memory",
-        start: startPosition + DecodeUtils.EVM.WORD_SIZE,
+        start: startPosition + CodecUtils.EVM.WORD_SIZE,
         length
       }
 
@@ -67,14 +67,14 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
           rawLength = yield* read({
             location: "memory",
             start: startPosition,
-            length: DecodeUtils.EVM.WORD_SIZE
+            length: CodecUtils.EVM.WORD_SIZE
           }, state);
         }
         catch(error) { //error: Values.DecodingError
           return Values.makeGenericErrorResult(dataType, error.error);
         }
-        length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
-        startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition
+        length = CodecUtils.Conversion.toBN(rawLength).toNumber();
+        startPosition += CodecUtils.EVM.WORD_SIZE; //increment startPosition
         //to next word, as first word was used for length
       }
       else {
@@ -90,8 +90,8 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
             baseType,
             {
               location: "memory",
-              start: startPosition + index * DecodeUtils.EVM.WORD_SIZE,
-              length: DecodeUtils.EVM.WORD_SIZE
+              start: startPosition + index * CodecUtils.EVM.WORD_SIZE,
+              length: CodecUtils.EVM.WORD_SIZE
             },
             info
           ))

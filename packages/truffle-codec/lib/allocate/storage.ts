@@ -5,9 +5,9 @@ import { StoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageAllocation, StorageMemberAllocation } from "../types/allocation";
 import { StorageLength, isWordsLength, Range } from "../types/storage";
 import { UnknownBaseContractIdError, UnknownUserDefinedTypeError } from "../types/errors";
-import { AstDefinition, AstReferences } from "truffle-decode-utils";
+import { AstDefinition, AstReferences } from "truffle-codec-utils";
 import { readDefinition } from "../read/constant"
-import * as DecodeUtils from "truffle-decode-utils";
+import * as CodecUtils from "truffle-codec-utils";
 import BN from "bn.js";
 
 //contracts contains only the contracts to be allocated; any base classes not
@@ -31,7 +31,7 @@ function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: 
 
 function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[], referenceDeclarations: AstReferences, existingAllocations: StorageAllocations, suppressSize: boolean = false): StorageAllocations {
   let offset: number = 0; //will convert to BN when placing in slot
-  let index: number = DecodeUtils.EVM.WORD_SIZE - 1;
+  let index: number = CodecUtils.EVM.WORD_SIZE - 1;
 
   //don't allocate things that have already been allocated
   if(parentNode.id in existingAllocations) {
@@ -50,7 +50,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     if(node.constant) {
       let pointer = { location: "definition" as "definition", definition: node.value };
       //HACK restrict ourselves to the types of constants we know how to handle
-      if(DecodeUtils.Definition.isSimpleConstant(node.value)) {
+      if(CodecUtils.Definition.isSimpleConstant(node.value)) {
         memberAllocations.push({definition: node, pointer});
       }
       //if we don't know how to handle it, we just ignore it
@@ -63,9 +63,9 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     //if it's sized in words (and we're not at the start of slot) we need to start on a new slot
     //if it's sized in bytes but there's not enough room, we also need a new slot
     if ( isWordsLength(size)
-      ? index < DecodeUtils.EVM.WORD_SIZE - 1
+      ? index < CodecUtils.EVM.WORD_SIZE - 1
       : size.bytes > index + 1) {
-        index = DecodeUtils.EVM.WORD_SIZE - 1;
+        index = CodecUtils.EVM.WORD_SIZE - 1;
         offset += 1;
     }
     //otherwise, we remain in place
@@ -85,7 +85,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
           slot: {
             offset: new BN(offset + size.words - 1) //end at the current slot plus # of words minus 1...
           },
-          index: DecodeUtils.EVM.WORD_SIZE - 1 //...at the end of the word.
+          index: CodecUtils.EVM.WORD_SIZE - 1 //...at the end of the word.
         },
       };
     }
@@ -119,14 +119,14 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     //if it was sized in words, move down that many slots and reset position w/in slot
     if(isWordsLength(size)) {
       offset += size.words;
-      index = DecodeUtils.EVM.WORD_SIZE - 1;
+      index = CodecUtils.EVM.WORD_SIZE - 1;
     }
     //if it was sized in bytes, move down an appropriate number of bytes.
     else {
       index -= size.bytes;
       //but if this puts us into the next word, move to the next word.
       if(index < 0) {
-        index = DecodeUtils.EVM.WORD_SIZE - 1;
+        index = CodecUtils.EVM.WORD_SIZE - 1;
         offset += 1;
       }
     }
@@ -145,7 +145,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
   //SPECIAL CASE: if *nothing* has been used, allocate a single word (that's how
   //empty structs behave in versions where they're legal)
   if(!suppressSize) {
-    if(index === DecodeUtils.EVM.WORD_SIZE - 1 && offset !== 0) {
+    if(index === CodecUtils.EVM.WORD_SIZE - 1 && offset !== 0) {
       allocations[parentNode.id].size = {words: offset};
     }
     else {
@@ -195,35 +195,35 @@ export function storageSize(definition: AstDefinition, referenceDeclarations?: A
 //first return value is the actual size.
 //second return value is resulting allocations, INCLUDING the ones passed in
 function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: StorageAllocations): [StorageLength, StorageAllocations] {
-  switch (DecodeUtils.Definition.typeClass(definition)) {
+  switch (CodecUtils.Definition.typeClass(definition)) {
     case "bool":
       return [{bytes: 1}, existingAllocations];
 
     case "address":
     case "contract":
-      return [{bytes: DecodeUtils.EVM.ADDRESS_SIZE}, existingAllocations];
+      return [{bytes: CodecUtils.EVM.ADDRESS_SIZE}, existingAllocations];
 
     case "int":
     case "uint": {
-      return [{bytes: DecodeUtils.Definition.specifiedSize(definition) || 32 }, existingAllocations]; // default of 256 bits
+      return [{bytes: CodecUtils.Definition.specifiedSize(definition) || 32 }, existingAllocations]; // default of 256 bits
       //(should 32 here be WORD_SIZE?  I thought so, but comparing with case
       //of fixed/ufixed makes the appropriate generalization less clear)
     }
 
     case "fixed":
     case "ufixed": {
-      return [{bytes: DecodeUtils.Definition.specifiedSize(definition) || 16 }, existingAllocations]; // default of 128 bits
+      return [{bytes: CodecUtils.Definition.specifiedSize(definition) || 16 }, existingAllocations]; // default of 128 bits
     }
 
     case "enum": {
       debug("enum definition %O", definition);
-      const referenceId: number = DecodeUtils.Definition.typeId(definition);
+      const referenceId: number = CodecUtils.Definition.typeId(definition);
         //note: we use the preexisting function here for convenience, but we
         //should never need to worry about faked-up enum definitions, so just
         //checking the referencedDeclaration field would also work
       const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
       if(referenceDeclaration === undefined) {
-        let typeString = DecodeUtils.Definition.typeString(definition);
+        let typeString = CodecUtils.Definition.typeString(definition);
         throw new UnknownUserDefinedTypeError(referenceId, typeString);
       }
       const numValues: number = referenceDeclaration.members.length;
@@ -232,7 +232,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
 
     case "bytes": {
       //this case is really two different cases!
-      const staticSize: number = DecodeUtils.Definition.specifiedSize(definition);
+      const staticSize: number = CodecUtils.Definition.specifiedSize(definition);
       if(staticSize) {
         return [{bytes: staticSize}, existingAllocations];
       }
@@ -250,30 +250,30 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
 
     case "function": {
       //this case is also really two different cases
-      switch (DecodeUtils.Definition.visibility(definition)) {
+      switch (CodecUtils.Definition.visibility(definition)) {
         case "internal":
-          return [{bytes: DecodeUtils.EVM.PC_SIZE * 2}, existingAllocations];
+          return [{bytes: CodecUtils.EVM.PC_SIZE * 2}, existingAllocations];
         case "external":
-          return [{bytes: DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE}, existingAllocations];
+          return [{bytes: CodecUtils.EVM.ADDRESS_SIZE + CodecUtils.EVM.SELECTOR_SIZE}, existingAllocations];
       }
     }
 
     case "array": {
-      if(DecodeUtils.Definition.isDynamicArray(definition)) {
+      if(CodecUtils.Definition.isDynamicArray(definition)) {
         return [{words: 1}, existingAllocations];
       }
       else {
         //static array case
-        const length: number = DecodeUtils.Definition.staticLength(definition);
+        const length: number = CodecUtils.Definition.staticLength(definition);
         if(length === 0) {
           //in versions of Solidity where it's legal, arrays of length 0 still take up 1 word
           return [{words: 1}, existingAllocations];
         }
-        const baseDefinition: AstDefinition = DecodeUtils.Definition.baseDefinition(definition);
+        const baseDefinition: AstDefinition = CodecUtils.Definition.baseDefinition(definition);
         const [baseSize, allocations] = storageSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
         if(!isWordsLength(baseSize)) {
           //bytes case
-          const perWord: number = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize.bytes);
+          const perWord: number = Math.floor(CodecUtils.EVM.WORD_SIZE / baseSize.bytes);
           debug("length %o", length);
           const numWords: number = Math.ceil(length / perWord);
           return [{words: numWords}, allocations];
@@ -286,14 +286,14 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
     }
 
     case "struct": {
-      const referenceId: number = DecodeUtils.Definition.typeId(definition);
+      const referenceId: number = CodecUtils.Definition.typeId(definition);
       let allocations: StorageAllocations = existingAllocations;
       let allocation: StorageAllocation | undefined = allocations[referenceId]; //may be undefined!
       if(allocation === undefined) {
         //if we don't find an allocation, we'll have to do the allocation ourselves
         const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
         if(referenceDeclaration === undefined) {
-          let typeString = DecodeUtils.Definition.typeString(definition);
+          let typeString = CodecUtils.Definition.typeString(definition);
           throw new UnknownUserDefinedTypeError(referenceId, typeString);
         }
         debug("definition %O", definition);
@@ -307,23 +307,23 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
 }
 
 //like storageSize, but for a Type object; also assumes you've already done allocation
-export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefinedTypes?: DecodeUtils.Types.TypesById, allocations?: StorageAllocations): StorageLength {
+export function storageSizeForType(dataType: CodecUtils.Types.Type, userDefinedTypes?: CodecUtils.Types.TypesById, allocations?: StorageAllocations): StorageLength {
   switch(dataType.typeClass) {
     case "bool":
       return {bytes: 1};
     case "address":
     case "contract":
-      return {bytes: DecodeUtils.EVM.ADDRESS_SIZE};
+      return {bytes: CodecUtils.EVM.ADDRESS_SIZE};
     case "int":
     case "uint":
     case "fixed":
     case "ufixed":
       return {bytes: dataType.bits / 8 };
     case "enum": {
-      let fullType = <DecodeUtils.Types.EnumType>DecodeUtils.Types.fullType(dataType, userDefinedTypes);
+      let fullType = <CodecUtils.Types.EnumType>CodecUtils.Types.fullType(dataType, userDefinedTypes);
       if(!fullType.options) {
-        throw new DecodeUtils.Values.DecodingError(
-          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType)
+        throw new CodecUtils.Values.DecodingError(
+          new CodecUtils.Values.UserDefinedTypeNotFoundError(dataType)
         );
       }
       return {bytes: Math.ceil(Math.log2(fullType.options.length) / 8)};
@@ -331,9 +331,9 @@ export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefined
     case "function":
       switch (dataType.visibility) {
         case "internal":
-          return {bytes: DecodeUtils.EVM.PC_SIZE * 2};
+          return {bytes: CodecUtils.EVM.PC_SIZE * 2};
         case "external":
-          return {bytes: DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE};
+          return {bytes: CodecUtils.EVM.ADDRESS_SIZE + CodecUtils.EVM.SELECTOR_SIZE};
       }
       break; //to satisfy typescript :P
     case "bytes":
@@ -358,7 +358,7 @@ export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefined
           let baseSize = storageSizeForType(dataType.baseType, userDefinedTypes, allocations);
           if(!isWordsLength(baseSize)) {
             //bytes case
-            const perWord: number = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize.bytes);
+            const perWord: number = Math.floor(CodecUtils.EVM.WORD_SIZE / baseSize.bytes);
             debug("length %o", length);
             const numWords: number = Math.ceil(length / perWord);
             return {words: numWords};
@@ -371,8 +371,8 @@ export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefined
     case "struct":
       let allocation = allocations[dataType.id];
       if(!allocation) {
-        throw new DecodeUtils.Values.DecodingError(
-          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType)
+        throw new CodecUtils.Values.DecodingError(
+          new CodecUtils.Values.UserDefinedTypeNotFoundError(dataType)
         );
       }
       return allocation.size;

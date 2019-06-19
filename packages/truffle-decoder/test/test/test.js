@@ -2,7 +2,7 @@ const assert = require("assert");
 const util = require("util"); // eslint-disable-line no-unused-vars
 
 const TruffleContractDecoder = require("../../../truffle-decoder");
-const TruffleDecodeUtils = require("../../../truffle-decode-utils");
+const TruffleCodecUtils = require("../../../truffle-codec-utils");
 
 const DecodingSample = artifacts.require("DecodingSample");
 
@@ -53,7 +53,7 @@ contract("DecodingSample", _accounts => {
     // );
 
     assert.equal(initialState.name, "DecodingSample");
-    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       initialState.variables
     );
 

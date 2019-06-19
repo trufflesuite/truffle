@@ -1,13 +1,13 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:decoder");
 
-import * as DecodeUtils from "truffle-decode-utils";
-import { Types, Values } from "truffle-decode-utils";
+import * as CodecUtils from "truffle-codec-utils";
+import { Types, Values } from "truffle-codec-utils";
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "truffle-contract-schema/spec";
 import BN from "bn.js";
-import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "truffle-decode-utils";
+import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "truffle-codec-utils";
 import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
@@ -22,9 +22,9 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
   private contracts: DecoderTypes.ContractMapping = {};
   private contractNodes: AstReferences = {};
-  private contexts: DecodeUtils.Contexts.DecoderContexts = {};
-  private contextsById: DecodeUtils.Contexts.DecoderContextsById = {}; //deployed contexts only
-  private constructorContextsById: DecodeUtils.Contexts.DecoderContextsById = {};
+  private contexts: CodecUtils.Contexts.DecoderContexts = {};
+  private contextsById: CodecUtils.Contexts.DecoderContextsById = {}; //deployed contexts only
+  private constructorContextsById: CodecUtils.Contexts.DecoderContextsById = {};
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
@@ -49,8 +49,8 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
         this.contractNodes[node.id] = node;
         if(contract.deployedBytecode) {
           const context = Utils.makeContext(contract, node);
-          const hash = DecodeUtils.Conversion.toHexString(
-            DecodeUtils.EVM.keccak256({type: "string",
+          const hash = CodecUtils.Conversion.toHexString(
+            CodecUtils.EVM.keccak256({type: "string",
               value: context.binary
             })
           );
@@ -58,8 +58,8 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
         }
         if(contract.byteCode) {
           const constructorContext = Utils.makeContext(contract, node, true);
-          const hash = DecodeUtils.Conversion.toHexString(
-            DecodeUtils.EVM.keccak256({type: "string",
+          const hash = CodecUtils.Conversion.toHexString(
+            CodecUtils.EVM.keccak256({type: "string",
               value: constructorContext.binary
             })
           );
@@ -68,7 +68,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       }
     }
 
-    this.contexts = <DecodeUtils.Contexts.DecoderContexts>DecodeUtils.Contexts.normalizeContexts(this.contexts);
+    this.contexts = <CodecUtils.Contexts.DecoderContexts>CodecUtils.Contexts.normalizeContexts(this.contexts);
     this.contextsById = Object.assign({}, ...Object.values(this.contexts).filter(
       ({isConstructor}) => !isConstructor
     ).map(context =>
@@ -132,7 +132,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       return this.codeCache[block][address];
     }
     //otherwise, get it, cache it, and return it
-    let code = DecodeUtils.Conversion.toBytes(
+    let code = CodecUtils.Conversion.toBytes(
       await this.web3.eth.getCode(
         address,
         block
@@ -146,7 +146,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     const block = transaction.blockNumber;
     const context = await this.getContextByAddress(transaction.to, block, transaction.input);
 
-    const data = DecodeUtils.Conversion.toBytes(transaction.input);
+    const data = CodecUtils.Conversion.toBytes(transaction.input);
     const info: Codec.EvmInfo = {
       state: {
         storage: {},
@@ -180,8 +180,8 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
   public async decodeLog(log: Log): Promise<DecoderTypes.DecodedEvent> {
     const block = log.blockNumber;
-    const data = DecodeUtils.Conversion.toBytes(log.data);
-    const topics = log.topics.map(DecodeUtils.Conversion.toBytes);
+    const data = CodecUtils.Conversion.toBytes(log.data);
+    const topics = log.topics.map(CodecUtils.Conversion.toBytes);
     const info: Codec.EvmInfo = {
       state: {
         storage: {},
@@ -246,10 +246,10 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   //and checks this against the known contexts to determine the contract type
   //however, if this fails and constructorBinary is passed in, it will then also
   //attempt to determine it from that
-  private async getContextByAddress(address: string, block: number, constructorBinary?: string): Promise<DecodeUtils.Contexts.DecoderContext | null> {
+  private async getContextByAddress(address: string, block: number, constructorBinary?: string): Promise<CodecUtils.Contexts.DecoderContext | null> {
     let code: string;
     if(address !== null) {
-      code = DecodeUtils.Conversion.toHexString(
+      code = CodecUtils.Conversion.toHexString(
         await this.getCode(address, block)
       );
     }
@@ -257,6 +257,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       code = constructorBinary;
     }
     //otherwise... we have a problem
-    return DecodeUtils.Contexts.findDecoderContext(this.contexts, code);
+    return CodecUtils.Contexts.findDecoderContext(this.contexts, code);
   }
 }

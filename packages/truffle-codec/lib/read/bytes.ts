@@ -1,6 +1,6 @@
 import BN from "bn.js";
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as CodecUtils from "truffle-codec-utils";
 
 /**
  * read word from memory
@@ -12,7 +12,7 @@ import * as DecodeUtils from "truffle-decode-utils";
  * @return {BN}
  */
 export function read(memory: Uint8Array, offset: number) {
-  return readBytes(memory, offset, DecodeUtils.EVM.WORD_SIZE);
+  return readBytes(memory, offset, CodecUtils.EVM.WORD_SIZE);
 }
 
 /**

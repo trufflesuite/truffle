@@ -3,7 +3,7 @@ const debug = debugModule("decoder-core:decode:event");
 
 import decodeValue from "./value";
 import read from "../read";
-import { Types, Values, Conversion as ConversionUtils } from "truffle-decode-utils";
+import { Types, Values, Conversion as ConversionUtils } from "truffle-codec-utils";
 import { EventTopicPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";

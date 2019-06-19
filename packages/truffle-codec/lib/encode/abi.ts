@@ -1,4 +1,4 @@
-import { Types, Values, Conversion as ConversionUtils, EVM as EVMUtils } from "truffle-decode-utils";
+import { Types, Values, Conversion as ConversionUtils, EVM as EVMUtils } from "truffle-codec-utils";
 import { AbiAllocations } from "../types/allocation";
 import { isTypeDynamic, abiSizeForType } from "../allocate/abi";
 import sum from "lodash.sum";

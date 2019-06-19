@@ -1,5 +1,5 @@
 import BN from "bn.js";
-import { Values } from "truffle-decode-utils";
+import { Values } from "truffle-codec-utils";
 
 export type DecoderRequest = StorageRequest | CodeRequest;
 

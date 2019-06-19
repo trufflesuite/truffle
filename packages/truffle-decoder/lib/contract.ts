@@ -1,13 +1,13 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:decoder");
 
-import * as DecodeUtils from "truffle-decode-utils";
-import { Types, Values } from "truffle-decode-utils";
+import * as CodecUtils from "truffle-codec-utils";
+import { Types, Values } from "truffle-codec-utils";
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "truffle-contract-schema/spec";
 import BN from "bn.js";
-import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "truffle-decode-utils";
+import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "truffle-codec-utils";
 import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
@@ -28,10 +28,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private contracts: DecoderTypes.ContractMapping = {};
   private contractNodes: AstReferences = {};
-  private contexts: DecodeUtils.Contexts.DecoderContexts = {};
-  private contextsById: DecodeUtils.Contexts.DecoderContextsById = {}; //deployed contexts only
-  private context: DecodeUtils.Contexts.DecoderContext;
-  private constructorContext: DecodeUtils.Contexts.DecoderContext;
+  private contexts: CodecUtils.Contexts.DecoderContexts = {};
+  private contextsById: CodecUtils.Contexts.DecoderContextsById = {}; //deployed contexts only
+  private context: CodecUtils.Contexts.DecoderContext;
+  private constructorContext: CodecUtils.Contexts.DecoderContext;
   private contextHash: string;
   private constructorContextHash: string;
 
@@ -71,8 +71,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contractNodes[this.contractNode.id] = this.contractNode;
     if(this.contract.deployedBytecode) { //just to be safe
       const context = Utils.makeContext(this.contract, this.contractNode);
-      const hash = DecodeUtils.Conversion.toHexString(
-        DecodeUtils.EVM.keccak256({type: "string",
+      const hash = CodecUtils.Conversion.toHexString(
+        CodecUtils.EVM.keccak256({type: "string",
           value: context.binary
         })
       );
@@ -81,8 +81,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
     if(this.contract.bytecode) { //now the constructor version
       const constructorContext = Utils.makeContext(this.contract, this.contractNode, true);
-      const hash = DecodeUtils.Conversion.toHexString(
-        DecodeUtils.EVM.keccak256({type: "string",
+      const hash = CodecUtils.Conversion.toHexString(
+        CodecUtils.EVM.keccak256({type: "string",
           value: constructorContext.binary
         })
       );
@@ -97,8 +97,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         this.contractNodes[node.id] = node;
         if(relevantContract.deployedBytecode) {
           const context = Utils.makeContext(relevantContract, node);
-          const hash = DecodeUtils.Conversion.toHexString(
-            DecodeUtils.EVM.keccak256({type: "string",
+          const hash = CodecUtils.Conversion.toHexString(
+            CodecUtils.EVM.keccak256({type: "string",
               value: context.binary
             })
           );
@@ -107,7 +107,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       }
     }
 
-    this.contexts = <DecodeUtils.Contexts.DecoderContexts>DecodeUtils.Contexts.normalizeContexts(this.contexts);
+    this.contexts = <CodecUtils.Contexts.DecoderContexts>CodecUtils.Contexts.normalizeContexts(this.contexts);
     this.context = this.contexts[this.contextHash];
     this.constructorContext = this.contexts[this.constructorContextHash];
     this.contextsById = Object.assign({}, ...Object.values(this.contexts).filter(
@@ -268,13 +268,13 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       return this.storageCache[block][address][slot.toString()];
     }
     //otherwise, get it, cache it, and return it
-    let word = DecodeUtils.Conversion.toBytes(
+    let word = CodecUtils.Conversion.toBytes(
       await this.web3.eth.getStorageAt(
         address,
         slot,
         block
       ),
-      DecodeUtils.EVM.WORD_SIZE
+      CodecUtils.EVM.WORD_SIZE
     );
     this.storageCache[block][address][slot.toString()] = word;
     return word;
@@ -290,7 +290,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       return this.codeCache[block][address];
     }
     //otherwise, get it, cache it, and return it
-    let code = DecodeUtils.Conversion.toBytes(
+    let code = CodecUtils.Conversion.toBytes(
       await this.web3.eth.getCode(
         address,
         block
@@ -358,7 +358,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       }
     }
     const block = transaction.blockNumber;
-    const data = DecodeUtils.Conversion.toBytes(transaction.input);
+    const data = CodecUtils.Conversion.toBytes(transaction.input);
     const info: Codec.EvmInfo = {
       state: {
         storage: {},
@@ -396,8 +396,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       throw new DecoderTypes.EventOrTransactionIsNotForThisContractError(log.address, this.contractAddress);
     }
     const block = log.blockNumber;
-    const data = DecodeUtils.Conversion.toBytes(log.data);
-    const topics = log.topics.map(DecodeUtils.Conversion.toBytes);
+    const data = CodecUtils.Conversion.toBytes(log.data);
+    const topics = log.topics.map(CodecUtils.Conversion.toBytes);
     const info: Codec.EvmInfo = {
       state: {
         storage: {},

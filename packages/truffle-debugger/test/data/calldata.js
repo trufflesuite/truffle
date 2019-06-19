@@ -8,7 +8,7 @@ import Ganache from "ganache-core";
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as TruffleCodecUtils from "truffle-codec-utils";
 
 import solidity from "lib/solidity/selectors";
 
@@ -135,7 +135,7 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
@@ -171,7 +171,7 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
@@ -205,7 +205,7 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
@@ -239,7 +239,7 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 

@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("decoder-core:interface");
 
-import { AstDefinition, Types, Values } from "truffle-decode-utils";
-import * as DecodeUtils from "truffle-decode-utils";
+import { AstDefinition, Types, Values } from "truffle-codec-utils";
+import * as CodecUtils from "truffle-codec-utils";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
@@ -28,7 +28,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
   }
   const compiler = info.currentContext.compiler;
   const contractId = context.contractId;
-  const contractType = DecodeUtils.Contexts.contextToType(context);
+  const contractType = CodecUtils.Contexts.contextToType(context);
   const allocations = info.allocations.calldata[contractId];
   let allocation: CalldataAllocation;
   let isConstructor: boolean = info.currentContext.isConstructor;
@@ -41,11 +41,11 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
     let rawSelector = <Uint8Array> read(
       { location: "calldata",
         start: 0,
-        length: DecodeUtils.EVM.SELECTOR_SIZE
+        length: CodecUtils.EVM.SELECTOR_SIZE
       },
       info.state
     ).next().value; //no requests should occur, we can just get the first value
-    let selector = DecodeUtils.Conversion.toHexString(rawSelector);
+    let selector = CodecUtils.Conversion.toHexString(rawSelector);
     allocation = allocations.functionAllocations[selector];
   }
   if(allocation === undefined) {
@@ -94,7 +94,7 @@ export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding | De
     },
     info.state
   ).next().value; //no requests should occur, we can just get the first value
-  const selector = DecodeUtils.Conversion.toHexString(rawSelector);
+  const selector = CodecUtils.Conversion.toHexString(rawSelector);
   const allocation = allocations[selector];
   if(allocation === undefined) {
     //we can't decode
@@ -107,7 +107,7 @@ export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding | De
       && !context.isConstructor
   );
   let newInfo = { ...info, currentContext: context };
-  let contractType = DecodeUtils.Contexts.contextToType(context);
+  let contractType = CodecUtils.Contexts.contextToType(context);
   let decodedArguments = allocation.arguments.map(
     (argumentAllocation: EventArgumentAllocation) => {
       const value = decode(
