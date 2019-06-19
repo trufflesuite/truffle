@@ -5,8 +5,9 @@ const expect = require("truffle-expect");
 const findContracts = require("truffle-contract-sources");
 const Config = require("truffle-config");
 const debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
-const { normalizeOptions } = require("./options");
 const { run } = require("../run");
+const { normalizeOptions } = require("./options");
+const { shimOutput } = require("./shims");
 
 // Most basic of the compile commands. Takes a hash of sources, where
 // the keys are file or module paths and the values are the bodies of
@@ -27,6 +28,7 @@ const compile = function(sources, options, callback) {
   options = normalizeOptions(options);
 
   run(sources, options)
+    .then(shimOutput)
     .then(([...returnVals]) => callback(null, ...returnVals))
     .catch(callback);
 };
