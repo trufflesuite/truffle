@@ -36,7 +36,7 @@
     "lodash.isequal": "^4.5.0",
     "truffle-contract-schema": "^3.0.9",
     "truffle-decode-utils": "^1.0.12",
-    "truffle-decoder-core": "^3.0.3",
+    "truffle-codec": "^3.0.3",
     "truffle-decode-utils": "^1.0.14",
     "web3": "1.0.0-beta.37"
   },

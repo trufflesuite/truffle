@@ -1,7 +1,7 @@
 import BN from "bn.js";
 import { ContractObject } from "truffle-contract-schema/spec";
 import { Values } from "truffle-decode-utils";
-import { CalldataDecoding, EventDecoding } from "truffle-decoder-core";
+import { CalldataDecoding, EventDecoding } from "truffle-codec";
 import { Transaction, Log } from "web3-core";
 
 export interface ContractState {

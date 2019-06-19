@@ -11,7 +11,7 @@ import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from
 import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
-import * as Decoder from "truffle-decoder-core";
+import * as Codec from "truffle-codec";
 import * as DecoderTypes from "./types";
 import * as Utils from "./utils";
 
@@ -29,10 +29,10 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
   private allocations: {
-    storage: Decoder.StorageAllocations;
-    abi: Decoder.AbiAllocations;
-    calldata: Decoder.CalldataAllocations;
-    event: Decoder.EventAllocations;
+    storage: Codec.StorageAllocations;
+    abi: Codec.AbiAllocations;
+    calldata: Codec.CalldataAllocations;
+    event: Codec.EventAllocations;
   };
 
   private codeCache: DecoderTypes.CodeCache = {};
@@ -87,7 +87,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     debug("init called");
     [this.referenceDeclarations, this.userDefinedTypes] = this.getUserDefinedTypes();
 
-    let allocationInfo: Decoder.ContractAllocationInfo[] = Object.entries(this.contracts).map(
+    let allocationInfo: Codec.ContractAllocationInfo[] = Object.entries(this.contracts).map(
       ([id, { abi }]) => ({
         abi,
         id: parseInt(id),
@@ -95,10 +95,10 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       })
     );
 
-    this.allocations.storage = Decoder.getStorageAllocations(this.referenceDeclarations, this.contractNodes);
-    this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
-    this.allocations.calldata = Decoder.getCalldataAllocations(allocationInfo, this.referenceDeclarations, this.allocations.abi);
-    this.allocations.event = Decoder.getEventAllocations(allocationInfo, this.referenceDeclarations, this.allocations.abi);
+    this.allocations.storage = Codec.getStorageAllocations(this.referenceDeclarations, this.contractNodes);
+    this.allocations.abi = Codec.getAbiAllocations(this.referenceDeclarations);
+    this.allocations.calldata = Codec.getCalldataAllocations(allocationInfo, this.referenceDeclarations, this.allocations.abi);
+    this.allocations.event = Codec.getEventAllocations(allocationInfo, this.referenceDeclarations, this.allocations.abi);
     debug("done with allocation");
   }
 
@@ -147,7 +147,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     const context = await this.getContextByAddress(transaction.to, block, transaction.input);
 
     const data = DecodeUtils.Conversion.toBytes(transaction.input);
-    const info: Decoder.EvmInfo = {
+    const info: Codec.EvmInfo = {
       state: {
         storage: {},
         calldata: data,
@@ -157,20 +157,20 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       contexts: this.contextsById,
       currentContext: context
     };
-    const decoder = Decoder.decodeCalldata(info);
+    const decoder = Codec.decodeCalldata(info);
 
     let result = decoder.next();
     while(!result.done) {
-      let request = <Decoder.DecoderRequest>(result.value);
+      let request = <Codec.DecoderRequest>(result.value);
       let response: Uint8Array;
       //only code requests should occur here
-      if(Decoder.isCodeRequest(request)) {
+      if(Codec.isCodeRequest(request)) {
         response = await this.getCode(request.address, block);
       }
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decoding = <Decoder.CalldataDecoding>result.value;
+    const decoding = <Codec.CalldataDecoding>result.value;
     
     return {
       ...transaction,
@@ -182,7 +182,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     const block = log.blockNumber;
     const data = DecodeUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(DecodeUtils.Conversion.toBytes);
-    const info: Decoder.EvmInfo = {
+    const info: Codec.EvmInfo = {
       state: {
         storage: {},
         eventdata: data,
@@ -192,20 +192,20 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contextsById
     };
-    const decoder = Decoder.decodeEvent(info);
+    const decoder = Codec.decodeEvent(info);
 
     let result = decoder.next();
     while(!result.done) {
-      let request = <Decoder.DecoderRequest>(result.value);
+      let request = <Codec.DecoderRequest>(result.value);
       let response: Uint8Array;
       //only code requests should occur here
-      if(Decoder.isCodeRequest(request)) {
+      if(Codec.isCodeRequest(request)) {
         response = await this.getCode(request.address, block);
       }
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decoding = <Decoder.EventDecoding>result.value;
+    const decoding = <Codec.EventDecoding>result.value;
     
     return {
       ...log,

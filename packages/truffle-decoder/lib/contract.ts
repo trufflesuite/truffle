@@ -12,7 +12,7 @@ import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
 import isEqual from "lodash.isequal"; //util.isDeepStrictEqual doesn't exist in Node 8
-import * as Decoder from "truffle-decoder-core";
+import * as Codec from "truffle-codec";
 import * as DecoderTypes from "./types";
 import * as Utils from "./utils";
 
@@ -38,15 +38,15 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
   private allocations: {
-    storage: Decoder.StorageAllocations;
-    abi: Decoder.AbiAllocations;
-    calldata: Decoder.CalldataAllocations;
-    event: Decoder.EventAllocations;
+    storage: Codec.StorageAllocations;
+    abi: Codec.AbiAllocations;
+    calldata: Codec.CalldataAllocations;
+    event: Codec.EventAllocations;
   };
 
-  private stateVariableReferences: Decoder.StorageMemberAllocation[];
+  private stateVariableReferences: Codec.StorageMemberAllocation[];
 
-  private mappingKeys: Decoder.Slot[] = [];
+  private mappingKeys: Codec.Slot[] = [];
 
   private storageCache: DecoderTypes.StorageCache = {};
   private codeCache: DecoderTypes.CodeCache = {};
@@ -126,12 +126,12 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     debug("init called");
     [this.referenceDeclarations, this.userDefinedTypes] = this.getUserDefinedTypes();
 
-    this.allocations.storage = Decoder.getStorageAllocations(
+    this.allocations.storage = Codec.getStorageAllocations(
       this.referenceDeclarations,
       {[this.contractNode.id]: this.contractNode}
     );
-    this.allocations.abi = Decoder.getAbiAllocations(this.referenceDeclarations);
-    this.allocations.calldata = Decoder.getCalldataAllocations(
+    this.allocations.abi = Codec.getAbiAllocations(this.referenceDeclarations);
+    this.allocations.calldata = Codec.getCalldataAllocations(
       [{
         abi: this.contract.abi,
         id: this.contractNode.id,
@@ -140,7 +140,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       this.referenceDeclarations,
       this.allocations.abi
     );
-    this.allocations.event = Decoder.getEventAllocations(
+    this.allocations.event = Codec.getEventAllocations(
       [{
         abi: this.contract.abi,
         id: this.contractNode.id
@@ -176,8 +176,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return [references, types];
   }
 
-  private async decodeVariable(variable: Decoder.StorageMemberAllocation, block: number): Promise<Values.Result> {
-    const info: Decoder.EvmInfo = {
+  private async decodeVariable(variable: Codec.StorageMemberAllocation, block: number): Promise<Values.Result> {
+    const info: Codec.EvmInfo = {
       state: {
         storage: {},
       },
@@ -188,16 +188,16 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       currentContext: this.context
     };
 
-    const decoder = Decoder.decodeVariable(variable.definition, variable.pointer, info);
+    const decoder = Codec.decodeVariable(variable.definition, variable.pointer, info);
 
     let result = decoder.next();
     while(!result.done) {
-      let request = <Decoder.DecoderRequest>(result.value);
+      let request = <Codec.DecoderRequest>(result.value);
       let response: Uint8Array;
-      if(Decoder.isStorageRequest(request)) {
+      if(Codec.isStorageRequest(request)) {
         response = await this.getStorage(this.contractAddress, request.slot, block);
       }
-      else if(Decoder.isCodeRequest(request)) {
+      else if(Codec.isCodeRequest(request)) {
         response = await this.getCode(request.address, block);
       }
       //note: one of the above conditionals *must* be true by the type system.
@@ -242,7 +242,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       ? block
       : (await this.web3.eth.getBlock(block)).number;
 
-    let variable: Decoder.StorageMemberAllocation;
+    let variable: Codec.StorageMemberAllocation;
     variable = this.stateVariableReferences.find(
       ({definition}) => definition.name === nameOrId || definition.id == nameOrId
     ); //there should be exactly one
@@ -305,7 +305,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   //feel free to mix arrays, mappings, and structs here!
   //see the comment on constructSlot for more detail on what forms are accepted
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
-    let slot: Decoder.Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    let slot: Codec.Slot | undefined = this.constructSlot(variable, ...indices)[0];
     //add mapping key and all ancestors
     debug("slot: %O", slot);
     while(slot !== undefined &&
@@ -324,7 +324,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   //input is similar to watchMappingKey; will unwatch all descendants too
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
-    let slot: Decoder.Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    let slot: Codec.Slot | undefined = this.constructSlot(variable, ...indices)[0];
     if(slot === undefined) {
       return; //not strictly necessary, but may as well
     }
@@ -359,7 +359,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
     const block = transaction.blockNumber;
     const data = DecodeUtils.Conversion.toBytes(transaction.input);
-    const info: Decoder.EvmInfo = {
+    const info: Codec.EvmInfo = {
       state: {
         storage: {},
         calldata: data,
@@ -369,20 +369,20 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       contexts: this.contextsById,
       currentContext: transaction.to === null ? this.constructorContext : this.context
     };
-    const decoder = Decoder.decodeCalldata(info);
+    const decoder = Codec.decodeCalldata(info);
 
     let result = decoder.next();
     while(!result.done) {
-      let request = <Decoder.DecoderRequest>(result.value);
+      let request = <Codec.DecoderRequest>(result.value);
       let response: Uint8Array;
       //only code requests should occur here
-      if(Decoder.isCodeRequest(request)) {
+      if(Codec.isCodeRequest(request)) {
         response = await this.getCode(request.address, block);
       }
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decoding = <Decoder.CalldataDecoding>result.value;
+    const decoding = <Codec.CalldataDecoding>result.value;
     
     return {
       ...transaction,
@@ -398,7 +398,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     const block = log.blockNumber;
     const data = DecodeUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(DecodeUtils.Conversion.toBytes);
-    const info: Decoder.EvmInfo = {
+    const info: Codec.EvmInfo = {
       state: {
         storage: {},
         eventdata: data,
@@ -408,20 +408,20 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contextsById
     };
-    const decoder = Decoder.decodeEvent(info);
+    const decoder = Codec.decodeEvent(info);
 
     let result = decoder.next();
     while(!result.done) {
-      let request = <Decoder.DecoderRequest>(result.value);
+      let request = <Codec.DecoderRequest>(result.value);
       let response: Uint8Array;
       //only code requests should occur here
-      if(Decoder.isCodeRequest(request)) {
+      if(Codec.isCodeRequest(request)) {
         response = await this.getCode(request.address, block);
       }
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decoding = <Decoder.EventDecoding>result.value;
+    const decoding = <Codec.EventDecoding>result.value;
     
     return {
       ...log,
@@ -470,10 +470,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   //bytes mapping keys should be given as hex strings beginning with "0x"
   //address mapping keys are like bytes; checksum case is not required
   //boolean mapping keys may be given either as booleans, or as string "true" or "false"
-  private constructSlot(variable: number | string, ...indices: any[]): [Decoder.Slot | undefined , AstDefinition | undefined] {
+  private constructSlot(variable: number | string, ...indices: any[]): [Codec.Slot | undefined , AstDefinition | undefined] {
     //base case: we need to locate the variable and its definition
     if(indices.length === 0) {
-      let allocation: Decoder.StorageMemberAllocation;
+      let allocation: Codec.StorageMemberAllocation;
       allocation = this.stateVariableReferences.find(
         ({definition}) => definition.name === variable || definition.id == variable
       ); //there should be exactly one
@@ -496,7 +496,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     let rawIndex = indices[indices.length - 1];
     let index: any;
     let key: Values.ElementaryResult;
-    let slot: Decoder.Slot;
+    let slot: Codec.Slot;
     let definition: AstDefinition;
     switch(DefinitionUtils.typeClass(parentDefinition)) {
       case "array":
@@ -507,8 +507,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
           index = new BN(rawIndex);
         }
         definition = parentDefinition.baseType || parentDefinition.typeName.baseType;
-        let size = Decoder.storageSize(definition, this.referenceDeclarations, this.allocations.storage);
-        if(!Decoder.isWordsLength(size)) {
+        let size = Codec.storageSize(definition, this.referenceDeclarations, this.allocations.storage);
+        if(!Codec.isWordsLength(size)) {
           return [undefined, undefined];
         }
         slot = {
@@ -529,7 +529,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         break;
       case "struct":
         let parentId = DefinitionUtils.typeId(parentDefinition);
-        let allocation: Decoder.StorageMemberAllocation;
+        let allocation: Codec.StorageMemberAllocation;
         if(typeof rawIndex === "number") {
           index = rawIndex;
           allocation = this.allocations.storage[parentId].members[index];
@@ -544,7 +544,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         slot = {
           path: parentSlot,
           //need type coercion here -- we know structs don't contain constants but the compiler doesn't
-          offset: (<Decoder.StoragePointer>allocation.pointer).range.from.slot.offset.clone()
+          offset: (<Codec.StoragePointer>allocation.pointer).range.from.slot.offset.clone()
         }
         break;
       default:

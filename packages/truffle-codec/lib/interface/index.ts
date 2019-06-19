@@ -11,3 +11,5 @@ export { EvmInfo } from "../types/evm";
 export { CalldataDecoding, EventDecoding } from "../types/wire";
 
 export { decodeVariable, decodeEvent, decodeCalldata } from "./decoding";
+
+export { encodeAbi, encodeTupleAbi } from "../encode/abi"; //we have no need to export these at present, but someone might want them?
