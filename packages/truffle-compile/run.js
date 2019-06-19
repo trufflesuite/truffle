@@ -3,38 +3,13 @@ const CompileError = require("./compileerror");
 const CompilerSupplier = require("./compilerSupplier");
 const semver = require("semver");
 
-async function run(sources, options) {
-  const hasTargets =
-    options.compilationTargets && options.compilationTargets.length;
-
+async function run(rawSources, options) {
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
-  const operatingSystemIndependentSources = {};
-  const operatingSystemIndependentTargets = {};
-  const originalPathMappings = {};
-
-  Object.keys(sources).forEach(function(source) {
-    // Turn all backslashes into forward slashes
-    var replacement = source.replace(/\\/g, "/");
-
-    // Turn G:/.../ into /G/.../ for Windows
-    if (replacement.length >= 2 && replacement[1] === ":") {
-      replacement = "/" + replacement;
-      replacement = replacement.replace(":", "");
-    }
-
-    // Save the result
-    operatingSystemIndependentSources[replacement] = sources[source];
-
-    // Just substitute replacement for original in target case. It's
-    // a disposable subset of `sources`
-    if (hasTargets && options.compilationTargets.includes(source)) {
-      operatingSystemIndependentTargets[replacement] = sources[source];
-    }
-
-    // Map the replacement back to the original source path.
-    originalPathMappings[replacement] = source;
-  });
+  const { sources, targets, originalSourcePaths } = collectSources(
+    rawSources,
+    options.compilationTargets
+  );
 
   const defaultSelectors = {
     "": ["legacyAST", "ast"],
@@ -53,11 +28,9 @@ async function run(sources, options) {
   // Specify compilation targets
   // Each target uses defaultSelectors, defaulting to single target `*` if targets are unspecified
   const outputSelection = {};
-  const targets = operatingSystemIndependentTargets;
-  const targetPaths = Object.keys(targets);
 
-  targetPaths.length
-    ? targetPaths.forEach(key => (outputSelection[key] = defaultSelectors))
+  targets.length
+    ? targets.forEach(key => (outputSelection[key] = defaultSelectors))
     : (outputSelection["*"] = defaultSelectors);
 
   const solcStandardInput = {
@@ -75,9 +48,9 @@ async function run(sources, options) {
     return [[], []];
   }
 
-  Object.keys(operatingSystemIndependentSources).forEach(file_path => {
+  Object.keys(sources).forEach(file_path => {
     solcStandardInput.sources[file_path] = {
-      content: operatingSystemIndependentSources[file_path]
+      content: sources[file_path]
     };
   });
 
@@ -124,7 +97,7 @@ async function run(sources, options) {
   var files = [];
   Object.keys(standardOutput.sources).forEach(filename => {
     var source = standardOutput.sources[filename];
-    files[source.id] = originalPathMappings[filename];
+    files[source.id] = originalSourcePaths[filename];
   });
 
   var returnVal = {};
@@ -142,8 +115,8 @@ async function run(sources, options) {
 
       var contract_definition = {
         contract_name: contractName,
-        sourcePath: originalPathMappings[sourcePath], // Save original source path, not modified ones
-        source: operatingSystemIndependentSources[sourcePath],
+        sourcePath: originalSourcePaths[sourcePath], // Save original source path, not modified ones
+        source: sources[sourcePath],
         sourceMap: contract.evm.bytecode.sourceMap,
         deployedSourceMap: contract.evm.deployedBytecode.sourceMap,
         legacyAST: standardOutput.sources[sourcePath].legacyAST,
@@ -267,6 +240,72 @@ function orderABI({ abi, contract_name: contractName, ast }) {
         ({ name: a }, { name: b }) => functionIndexes[a] - functionIndexes[b]
       )
   ];
+}
+
+/**
+ * Collects sources, targets into collections with OS-independent paths,
+ * along with a reverse mapping to the original path (for post-processing)
+ *
+ * @param originalSources - { [originalSourcePath]: contents }
+ * @param originalTargets - originalSourcePath[]
+ * @return { sources, targets, originalSourcePaths }
+ */
+function collectSources(originalSources, originalTargets = []) {
+  const mappedResults = Object.entries(originalSources)
+    .map(([originalSourcePath, contents]) => ({
+      originalSourcePath,
+      contents,
+      sourcePath: getPortableSourcePath(originalSourcePath)
+    }))
+    .map(({ originalSourcePath, sourcePath, contents }) => ({
+      sources: {
+        [sourcePath]: contents
+      },
+
+      // include transformed form as target if original is a target
+      targets: originalTargets.includes(originalSourcePath) ? [sourcePath] : [],
+
+      originalSourcePaths: {
+        [sourcePath]: originalSourcePath
+      }
+    }));
+
+  const defaultAccumulator = {
+    sources: {},
+    targets: [],
+    originalSourcePaths: {}
+  };
+
+  return mappedResults.reduce(
+    (accumulator, result) => ({
+      sources: Object.assign({}, accumulator.sources, result.sources),
+      targets: [...accumulator.targets, ...result.targets],
+      originalSourcePaths: Object.assign(
+        {},
+        accumulator.originalSourcePaths,
+        result.originalSourcePaths
+      )
+    }),
+    defaultAccumulator
+  );
+}
+
+/**
+ * @param sourcePath - string
+ * @return string - operating system independent path
+ * @private
+ */
+function getPortableSourcePath(sourcePath) {
+  // Turn all backslashes into forward slashes
+  var replacement = sourcePath.replace(/\\/g, "/");
+
+  // Turn G:/.../ into /G/.../ for Windows
+  if (replacement.length >= 2 && replacement[1] === ":") {
+    replacement = "/" + replacement;
+    replacement = replacement.replace(":", "");
+  }
+
+  return replacement;
 }
 
 module.exports = { run };
