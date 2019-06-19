@@ -19,10 +19,10 @@ import * as DecodeUtils from "truffle-decode-utils";
 import {
   getStorageAllocations,
   getMemoryAllocations,
-  getCalldataAllocations,
+  getAbiAllocations,
   readStack,
   storageSize,
-  forEvmState
+  decodeVariable
 } from "truffle-codec";
 import BN from "bn.js";
 
@@ -69,7 +69,7 @@ export function* decode(definition, ref, forceNonPayable = false) {
     currentContext = { ...currentContext, compiler: null };
   }
 
-  let decoder = forEvmState(definition, ref, {
+  let decoder = decodeVariable(definition, ref, {
     userDefinedTypes,
     state,
     mappingKeys,
@@ -619,7 +619,7 @@ export function* recordAllocations() {
   );
   debug("storageAllocations %O", storageAllocations);
   const memoryAllocations = getMemoryAllocations(referenceDeclarations);
-  const calldataAllocations = getCalldataAllocations(referenceDeclarations);
+  const calldataAllocations = getAbiAllocations(referenceDeclarations);
   yield put(
     actions.allocate(storageAllocations, memoryAllocations, calldataAllocations)
   );
