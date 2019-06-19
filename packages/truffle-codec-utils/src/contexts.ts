@@ -1,16 +1,14 @@
 import debugModule from "debug";
 const debug = debugModule("decode-utils:contexts");
 
-import { Abi } from "truffle-contract-schema/spec";
-import { AbiCoder } from "web3-eth-abi";
-import { AbiItem, AbiInput } from "web3-utils";
-const abiCoder = new AbiCoder();
 import escapeRegExp from "lodash.escaperegexp";
 
 import { EVM } from "./evm";
+import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
+import { AbiUtils } from "./abi";
 import { Types } from "./types/types";
 import { AstDefinition, AstReferences } from "./ast";
-import { Definition as DefinitionUtils } from "./definition";
+import { CompilerVersion } from "./compiler";
 
 export namespace Contexts {
 
@@ -39,7 +37,7 @@ export namespace Contexts {
     contractName?: string;
     contractId?: number;
     contractKind?: "contract" | "library"; //should never be "interface"
-    abi?: FunctionAbiWithSignatures;
+    abi?: AbiUtils.AbiBySelectors;
     payable?: boolean;
     compiler?: CompilerVersion;
   }
@@ -53,91 +51,11 @@ export namespace Contexts {
     contractName?: string;
     contractId?: number;
     contractKind?: "contract" | "library"; //should never be "interface"
-    abi?: Abi;
+    abi?: SchemaAbi;
     sourceMap?: string;
     primarySource?: number;
     compiler?: CompilerVersion;
     payable?: boolean;
-  }
-
-  export interface CompilerVersion {
-    name?: string;
-    version?: string;
-    //NOTE: both these should really be present,
-    //but they need to be optional for compilation reasons
-  }
-
-  //really, we should import the ABI spec from truffle-contract-schema;
-  //unfotunately, that doesn't include signatures.  so here's a sloppy
-  //recreation that includes those; sorry for the duplication, but this seems
-  //the easiest way offhand
-  //(note that this is explicitly restricted to type function, since that's all
-  //we care about here)
-  export interface FunctionAbiEntryWithSignature {
-    constant: boolean;
-    inputs: FunctionAbiParameter[];
-    name: string;
-    outputs: FunctionAbiParameter[];
-    payable: boolean;
-    stateMutability: "pure" | "view" | "nonpayable" | "payable";
-    type: "function"; //again, event/fallback/constructor are excluded
-    signature: string;
-  }
-
-  export interface FunctionAbiWithSignatures {
-    [signature: string]: FunctionAbiEntryWithSignature
-  }
-
-  //again, this is only for function parameters, not event parameters
-  export interface FunctionAbiParameter {
-    components?: FunctionAbiParameter[];
-    name: string;
-    type: string; //restricting this is a lot of the work of the real spec :P
-    [k: string]: any //this really should *not* be here, but it's in the spec
-    //for some reason, so we have to be able to handle it :-/
-  }
-
-  export function abiToFunctionAbiWithSignatures(abi: Abi | undefined): FunctionAbiWithSignatures | undefined {
-    if(abi === undefined) {
-      return undefined;
-    }
-    return Object.assign({},
-      ...abi.filter(
-        abiEntry => abiEntry.type === "function"
-      ).map(
-        abiEntry => {
-          let signature: string;
-          //let's try forcing it and see if it already has a signature :P
-          signature = (<FunctionAbiEntryWithSignature>abiEntry).signature;
-          debug("signature read: %s", signature);
-          //if not, compute it ourselves
-          if(signature === undefined) {
-            signature = abiCoder.encodeFunctionSignature(<AbiItem>abiEntry);
-            //Notice the type coercion -- web3 and our schema describe things a little
-            //differently, and TypeScript complains.  I think we just have to force it,
-            //sorry.
-            debug("signature computed: %s", signature);
-          }
-          return {
-            [signature]: {
-              ...abiEntry,
-              signature
-            }
-          };
-        }
-      )
-    )
-  }
-
-  //does this ABI have a payable fallback function?
-  export function isABIPayable(abi: Abi | undefined): boolean | undefined {
-    if(abi === undefined) {
-      return undefined;
-    }
-    return abi.some(
-      abiEntry => abiEntry.type === "fallback" && 
-        (abiEntry.stateMutability === "payable" || abiEntry.payable)
-    );
   }
 
   //I split these next two apart because the type system was giving me rouble
@@ -271,63 +189,6 @@ export namespace Contexts {
 
     //finally, return this mess!
     return newContexts;
-  }
-
-  export function matchesAbi(abiEntry: AbiItem, node: AstDefinition, referenceDeclarations: AstReferences): boolean {
-    //first: does the basic name and type match?
-    switch(node.nodeType) {
-      case "FunctionDefinition":
-        if(node.visibility !== "external" && node.visibility !== "public") {
-          return false;
-        }
-        if(abiEntry.type !== DefinitionUtils.functionKind(node)) {
-          return false;
-        }
-	if(DefinitionUtils.functionKind(node) === "function") {
-	  if(node.name !== abiEntry.name) {
-	    return false;
-	  }
-	}
-        break;
-      case "EventDefinition":
-        if(abiEntry.type !== "event") {
-          return false;
-        }
-	if(node.name !== abiEntry.name) {
-	  return false;
-	}
-        break;
-      default:
-        return false;
-    }
-    //if so, we've got to start checking input types (we don't check output types)
-    return matchesAbiParameters(abiEntry.inputs, node.parameters.parameters, referenceDeclarations);
-  }
-
-  function matchesAbiParameters(abiParameters: AbiInput[], nodeParameters: AstDefinition[], referenceDeclarations: AstReferences): boolean {
-    if(abiParameters.length !== nodeParameters.length) {
-      return false;
-    }
-    for(let i = 0; i < abiParameters.length; i++) {
-      if(!matchesAbiType(abiParameters[i], nodeParameters[i], referenceDeclarations)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  //TODO: add error-handling
-  function matchesAbiType(abiParameter: AbiInput, nodeParameter: AstDefinition, referenceDeclarations: AstReferences): boolean {
-    if(DefinitionUtils.toAbiType(nodeParameter, referenceDeclarations) !== abiParameter.type) {
-      return false;
-    }
-    if(abiParameter.type.startsWith("tuple")) {
-      let referenceDeclaration = referenceDeclarations[DefinitionUtils.typeId(nodeParameter)];
-      return matchesAbiParameters(abiParameter.components, referenceDeclaration.members, referenceDeclarations);
-    }
-    else {
-      return true;
-    }
   }
 
   export function contextToType(context: DecoderContext | DebuggerContext): Types.ContractType {

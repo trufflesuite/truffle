@@ -3,5 +3,7 @@ export * from "./evm";
 export * from "./definition";
 export * from "./ast";
 export * from "./contexts";
+export * from "./abi";
+export * from "./compiler";
 export * from "./types/types";
 export * from "./types/values";

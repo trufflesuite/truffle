@@ -22,6 +22,7 @@ import BN from "bn.js";
 import { AstDefinition, AstReferences } from "../ast";
 import { Definition as DefinitionUtils } from "../definition";
 import { Contexts } from "../contexts";
+import { CompilerVersion } from "../compiler";
 
 export namespace Types {
 
@@ -172,7 +173,7 @@ export namespace Types {
   //NOTE: set forceLocation to *null* to force no location. leave it undefined
   //to not force a location.
   //NOTE: set compiler to null to force addresses to *not* be payable (HACK)?
-  export function definitionToType(definition: AstDefinition, compiler: Contexts.CompilerVersion | null, forceLocation?: string | null): Type {
+  export function definitionToType(definition: AstDefinition, compiler: CompilerVersion | null, forceLocation?: string | null): Type {
     debug("definition %O", definition);
     let typeClass = DefinitionUtils.typeClass(definition);
     switch(typeClass) {
@@ -397,7 +398,7 @@ export namespace Types {
 
   //whereas the above takes variable definitions, this takes the actual type
   //definition
-  export function definitionToStoredType(definition: AstDefinition, compiler: Contexts.CompilerVersion): UserDefinedType {
+  export function definitionToStoredType(definition: AstDefinition, compiler: CompilerVersion): UserDefinedType {
     switch(definition.nodeType) {
       case "StructDefinition": {
         let id = definition.id;

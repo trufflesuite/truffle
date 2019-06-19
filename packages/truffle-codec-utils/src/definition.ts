@@ -4,6 +4,7 @@ const debug = debugModule("decode-utils:definition");
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition, AstReferences, Scopes } from "./ast";
 import { Contexts } from "./contexts";
+import { CompilerVersion } from "./compiler";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
 import semver from "semver";
@@ -136,7 +137,7 @@ export namespace Definition {
   }
 
   //HACK: you can set compiler to null to force nonpayable
-  export function isAddressPayable(definition: AstDefinition, compiler: Contexts.CompilerVersion | null): boolean {
+  export function isAddressPayable(definition: AstDefinition, compiler: CompilerVersion | null): boolean {
     if(compiler === null) {
       return false;
     }

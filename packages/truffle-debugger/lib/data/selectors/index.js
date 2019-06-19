@@ -76,7 +76,7 @@ function debuggerContextToDecoderContext(context) {
     contractId,
     contractKind,
     isConstructor,
-    abi: CodecUtils.Contexts.abiToFunctionAbiWithSignatures(abi),
+    abi: CodecUtils.AbiUtils.computeSelectors(abi),
     payable,
     compiler
   };
@@ -235,7 +235,7 @@ const data = createSelectorTree({
      * 1. we now index by contract ID rather than hash
      * 2. we strip out context, sourceMap, and primarySource
      * 3. we alter abi in several ways:
-     * 3a. we strip abi down to just (ordinary) functions
+     * 3a. we strip out constructors and fallback functions
      * 3b. we augment these functions with signatures (here meaning selectors)
      * 3c. abi is now an object, not an array, and indexed by these signatures
      */

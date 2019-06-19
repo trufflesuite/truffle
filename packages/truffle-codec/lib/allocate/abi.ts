@@ -3,13 +3,9 @@ const debug = debugModule("decoder-core:allocate:abi");
 
 import * as Pointer from "../types/pointer";
 import * as Allocations from "../types/allocation";
-import { AstDefinition, AstReferences } from "truffle-codec-utils";
+import { AstDefinition, AstReferences, AbiUtils } from "truffle-codec-utils";
 import * as CodecUtils from "truffle-codec-utils";
 import partition from "lodash.partition";
-
-import { AbiCoder } from "web3-eth-abi";
-import { AbiItem } from "web3-utils";
-const abiCoder = new AbiCoder();
 
 export function getAbiAllocations(referenceDeclarations: AstReferences): Allocations.AbiAllocations {
   let allocations: Allocations.AbiAllocations = {};
@@ -214,7 +210,7 @@ export function isTypeDynamic(dataType: CodecUtils.Types.Type, allocations?: All
 //TODO add error-handling
 //TODO: check accesses to abi & node members
 function allocateCalldata(
-  abiEntry: AbiItem,
+  abiEntry: AbiUtils.FunctionAbiEntry | AbiUtils.ConstructorAbiEntry,
   contractId: number,
   referenceDeclarations: AstReferences,
   abiAllocations: Allocations.AbiAllocations,
@@ -232,7 +228,7 @@ function allocateCalldata(
       //for a constructor, we only want to search the particular contract, which
       let contractNode = referenceDeclarations[contractId];
       node = contractNode.nodes.find(
-        functionNode => CodecUtils.Contexts.matchesAbi(
+        functionNode => AbiUtils.matchesAbi(
           abiEntry, functionNode, referenceDeclarations
         )
       );
@@ -243,7 +239,7 @@ function allocateCalldata(
       //search through base contracts, from most derived (right) to most base (left)
       node = linearizedBaseContracts.reduceRight(
         (foundNode, baseContractId) => foundNode || referenceDeclarations[baseContractId].nodes.find(
-          functionNode => CodecUtils.Contexts.matchesAbi(
+          functionNode => AbiUtils.matchesAbi(
             abiEntry, functionNode, referenceDeclarations
           )
         ),
@@ -281,7 +277,7 @@ function allocateCalldata(
 //TODO add error-handling
 //TODO: check accesses to abi & node members
 function allocateEvent(
-  abiEntry: AbiItem,
+  abiEntry: AbiUtils.EventAbiEntry,
   contractId: number,
   referenceDeclarations: AstReferences,
   abiAllocations: Allocations.AbiAllocations
@@ -291,7 +287,7 @@ function allocateEvent(
   //search through base contracts, from most derived (right) to most base (left)
   const node: AstDefinition = linearizedBaseContracts.reduceRight(
     (foundNode, baseContractId) => foundNode || referenceDeclarations[baseContractId].nodes.find(
-      eventNode => CodecUtils.Contexts.matchesAbi(
+      eventNode => AbiUtils.matchesAbi(
         abiEntry, eventNode, referenceDeclarations
       )
     ),
@@ -341,7 +337,7 @@ function allocateEvent(
 }
 
 function getCalldataAllocationsForContract(
-  abi: AbiItem[],
+  abi: AbiUtils.Abi,
   contractId: number,
   constructorContext: CodecUtils.Contexts.DecoderContext,
   referenceDeclarations: AstReferences,
@@ -359,7 +355,7 @@ function getCalldataAllocationsForContract(
       );
     }
     else if(abiEntry.type === "function") {
-      allocations.functionAllocations[abiCoder.encodeFunctionSignature(abiEntry)] =
+      allocations.functionAllocations[AbiUtils.abiSelector(abiEntry)] =
         allocateCalldata(
           abiEntry,
           contractId,
@@ -391,22 +387,22 @@ export function getCalldataAllocations(contracts: Allocations.ContractAllocation
   return Object.assign({}, ...contracts.map(
     ({abi, id, constructorContext}) => ({
       [id]: getCalldataAllocationsForContract(
-        <AbiItem[]>abi, id, constructorContext, referenceDeclarations, abiAllocations
+        <AbiUtils.Abi>abi, id, constructorContext, referenceDeclarations, abiAllocations
       )
     })
   ));
 }
 
 function getEventAllocationsForContract(
-  abi: AbiItem[],
+  abi: AbiUtils.Abi,
   contractId: number,
   referenceDeclarations: AstReferences,
   abiAllocations: Allocations.AbiAllocations
 ): Allocations.EventAllocations {
   return Object.assign({}, ...abi
-    .filter(abiEntry => abiEntry.type === "event")
-    .map(abiEntry =>
-      ({ [abiCoder.encodeEventSignature(abiEntry)] :
+    .filter((abiEntry: AbiUtils.AbiEntry) => abiEntry.type === "event")
+    .map((abiEntry: AbiUtils.EventAbiEntry) =>
+      ({ [AbiUtils.abiSelector(abiEntry)] :
         allocateEvent(abiEntry, contractId, referenceDeclarations, abiAllocations)
       })
     )
@@ -416,6 +412,6 @@ function getEventAllocationsForContract(
 //note: constructor context is ignored by this function; no need to pass it in
 export function getEventAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, abiAllocations: Allocations.AbiAllocations): Allocations.EventAllocations {
   return Object.assign({}, ...contracts.map(
-    ({abi, id}) => getEventAllocationsForContract(<AbiItem[]>abi, id, referenceDeclarations, abiAllocations)
+    ({abi, id}) => getEventAllocationsForContract(<AbiUtils.Abi>abi, id, referenceDeclarations, abiAllocations)
   ));
 }
