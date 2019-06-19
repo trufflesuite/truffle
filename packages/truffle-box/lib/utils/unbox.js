@@ -59,17 +59,15 @@ function prepareToCopyFiles(tempDir, { ignore }) {
   needingRemoval.push("truffle-box.json");
   needingRemoval.push("truffle-init.json");
 
-  const promises = needingRemoval
+  needingRemoval
     .map(fileName => path.join(tempDir, fileName))
-    .map(async filePath => {
+    .forEach(filePath => {
       try {
         fse.removeSync(filePath);
       } catch (error) {
         throw error;
       }
     });
-
-  return Promise.all(promises);
 }
 
 async function promptOverwrites(contentCollisions, logger = console) {
