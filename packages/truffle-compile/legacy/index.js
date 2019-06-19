@@ -8,6 +8,7 @@ const findContracts = require("truffle-contract-sources");
 const Config = require("truffle-config");
 const semver = require("semver");
 const debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
+const { normalizeOptions } = require("./options");
 
 // Most basic of the compile commands. Takes a hash of sources, where
 // the keys are file or module paths and the values are the bodies of
@@ -25,34 +26,10 @@ const compile = function(sources, options, callback) {
     options = {};
   }
 
-  if (options.logger === undefined) options.logger = console;
+  options = normalizeOptions(options);
 
   const hasTargets =
     options.compilationTargets && options.compilationTargets.length;
-
-  expect.options(options, ["contracts_directory", "compilers"]);
-  expect.options(options.compilers, ["solc"]);
-
-  options.compilers.solc.settings.evmVersion =
-    options.compilers.solc.settings.evmVersion ||
-    options.compilers.solc.evmVersion;
-  options.compilers.solc.settings.optimizer =
-    options.compilers.solc.settings.optimizer ||
-    options.compilers.solc.optimizer ||
-    {};
-
-  // Grandfather in old solc config
-  if (options.solc) {
-    options.compilers.solc.settings.evmVersion = options.solc.evmVersion;
-    options.compilers.solc.settings.optimizer = options.solc.optimizer;
-  }
-
-  // Certain situations result in `{}` as a value for compilationTargets
-  // Previous implementations treated any value lacking `.length` as equivalent
-  // to `[]`
-  if (!options.compilationTargets || !options.compilationTargets.length) {
-    options.compilationTargets = [];
-  }
 
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
