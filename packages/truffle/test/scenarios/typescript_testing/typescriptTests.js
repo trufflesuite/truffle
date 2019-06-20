@@ -20,20 +20,15 @@ describe("Typescript Tests", () => {
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
-  before("set up sandbox", function(done) {
+  before("set up sandbox", async function() {
     this.timeout(10000);
-
     options = { name: "default#typescript", force: true };
-    Box.sandbox(options, (err, conf) => {
-      if (err) return done(err);
-      config = conf;
-      config.logger = logger;
-      config.network = "development";
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-      done();
-    });
+    config = await Box.sandbox(options);
+    config.logger = logger;
+    config.network = "development";
+    config.mocha = {
+      reporter: new Reporter(logger)
+    };
   });
 
   describe("testing contract behavior", () => {
