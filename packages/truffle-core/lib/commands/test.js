@@ -68,7 +68,6 @@ const command = {
 
     let ipcDisconnect;
     let files = [];
-    let readFiles;
 
     if (options.file) {
       files = [options.file];
@@ -78,13 +77,11 @@ const command = {
 
     try {
       if (files.length === 0) {
-        readFiles = dir.files(config.test_directory, { sync: true });
+        files = dir.files(config.test_directory, { sync: true }) || [];
       }
     } catch (error) {
       return done(error);
     }
-
-    if (readFiles) files = readFiles;
 
     files = files.filter(function(file) {
       return file.match(config.test_file_extension_regexp) != null;
