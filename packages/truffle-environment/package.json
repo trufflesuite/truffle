@@ -5,9 +5,16 @@
   "main": "index.js",
   "author": "Faina Shalts",
   "license": "MIT",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-environment",
+  "homepage": "https://github.com/trufflesuite/truffle-environment#readme",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-environment/issues"
+  },
   "private": false,
+  "devDependencies": {
+    "debug": "^4.1.0"
+  },
   "dependencies": {
-    "debug": "^4.1.0",
     "ganache-core": "2.5.5",
     "node-ipc": "^9.1.1",
     "truffle-artifactor": "^4.0.19",
