@@ -1,4 +1,4 @@
-const fs = require("fs-extra");
+const fse = require("fs-extra");
 
 function setDefaults(config = {}) {
   const hooks = config.hooks || {};
@@ -17,7 +17,7 @@ function setDefaults(config = {}) {
 }
 
 function read(path) {
-  return fs
+  return fse
     .readFile(path)
     .catch(() => "{}")
     .then(JSON.parse)
