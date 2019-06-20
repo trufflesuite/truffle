@@ -71,23 +71,15 @@ export function getAccounts(provider) {
 }
 
 export async function createSandbox() {
-  let config = await new Promise(function(accept, reject) {
-    Box.sandbox(
-      {
-        unsafeCleanup: true,
-        setGracefulCleanup: true,
-        name: "default"
-      },
-      function(err, result) {
-        if (err) return reject(err);
-        result.resolver = new Resolver(result);
-        result.artifactor = new Artifactor(result.contracts_build_directory);
-        result.networks = {};
-
-        accept(result);
-      }
-    );
+  const config = await Box.sandbox({
+    unsafeCleanup: true,
+    setGracefulCleanup: true,
+    name: "default"
   });
+  config.resolver = new Resolver(config);
+  config.resolver = new Resolver(config);
+  config.artifactor = new Artifactor(config.contracts_build_directory);
+  config.networks = {};
 
   await fs.remove(path.join(config.contracts_directory, "MetaCoin.sol"));
   await fs.remove(path.join(config.contracts_directory, "ConvertLib.sol"));
