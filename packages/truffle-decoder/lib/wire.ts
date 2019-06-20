@@ -205,11 +205,11 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decoding = <Codec.EventDecoding>result.value;
+    const decodings = <Codec.EventDecoding[]>result.value;
     
     return {
       ...log,
-      decoding
+      decodings
     };
   }
 
@@ -226,9 +226,15 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     let events = await this.decodeLogs(logs);
 
     if(name !== null) {
-      events = events.filter(event =>
-        event.decoding.kind === "event"
-        && event.decoding.name === name
+      events = events.map(
+        event => ({
+          ...event,
+          decodings: event.decodings.filter(
+            decoding => decoding.name === name
+          )
+        })
+      ).filter(
+        event => event.decodings.length > 0
       );
     }
 

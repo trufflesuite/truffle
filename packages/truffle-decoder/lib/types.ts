@@ -19,7 +19,7 @@ export interface DecodedTransaction extends Transaction {
 }
 
 export interface DecodedEvent extends Log {
-  decoding: EventDecoding;
+  decodings: EventDecoding[];
 }
 
 export interface ContractMapping {

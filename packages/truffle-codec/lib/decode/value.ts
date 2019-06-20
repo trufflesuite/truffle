@@ -8,11 +8,23 @@ import BN from "bn.js";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
+import { StopDecodingError } from "../types/errors";
 
-export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, permissivePadding: boolean = false): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+
+//EXPLANATION OF MODES:
+//1. normal mode -- the default
+//bad padding causes an error to be returned.
+//2. permissive mode -- used for stack decoding
+//no error on bad padding for certain types.  other things may still cause errors to be returned.
+//3. strict mode -- used for event decoding
+//bad padding is an error, yes, but in this mode we don't return errors, we THROW them!
+//(except for internal functions; strict mode doesn't affect those)
+export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, mode: "normal" | "permissive" | "strict" = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   //NOTE: this does not actually return a Uint8Aarray, but due to the use of yield* read,
   //we have to include it in the type :-/
   const { state } = info;
+  const permissivePadding = mode === "permissive";
+  const strict = mode === "strict";
 
   let bytes: Uint8Array;
   try {
@@ -20,6 +32,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
   }
   catch(error) { //error: Values.DecodingError
     debug("segfault, pointer %o, state: %O", pointer, state);
+    if(strict) {
+      throw new StopDecodingError();
+    }
     return Values.makeGenericErrorResult(dataType, error.error);
   }
 
@@ -30,6 +45,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "bool": {
       if(!checkPaddingLeft(bytes, 1)) {
+        if(strict) {
+          throw new StopDecodingError();
+        }
         return new Values.BoolErrorResult(
           dataType,
           new Values.BoolPaddingError(CodecUtils.Conversion.toHexString(bytes))
@@ -43,6 +61,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         return new Values.BoolValue(dataType, true);
       }
       else {
+        if(strict) {
+          throw new StopDecodingError();
+        }
         return new Values.BoolErrorResult(
           dataType,
           new Values.BoolOutOfRangeError(numeric)
@@ -53,6 +74,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "uint":
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingLeft(bytes, dataType.bits/8)) {
+        if(strict) {
+          throw new StopDecodingError();
+        }
         return new Values.UintErrorResult(
           dataType,
           new Values.UintPaddingError(CodecUtils.Conversion.toHexString(bytes))
@@ -64,6 +88,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "int":
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
+        if(strict) {
+          throw new StopDecodingError();
+        }
         return new Values.IntErrorResult(
           dataType,
           new Values.IntPaddingError(CodecUtils.Conversion.toHexString(bytes))
@@ -75,6 +102,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "address":
       if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
+        if(strict) {
+          throw new StopDecodingError();
+        }
         return new Values.AddressErrorResult(
           dataType,
           new Values.AddressPaddingError(CodecUtils.Conversion.toHexString(bytes))
@@ -84,6 +114,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "contract":
       if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
+        if(strict) {
+          throw new StopDecodingError();
+        }
         return new Values.ContractErrorResult(
           dataType,
           new Values.ContractPaddingError(CodecUtils.Conversion.toHexString(bytes))
@@ -97,6 +130,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       if(dataType.kind === "static") {
         //first, check padding (if needed)
         if(!permissivePadding && !checkPaddingRight(bytes, dataType.length)) {
+          if(strict) {
+            throw new StopDecodingError();
+          }
           return new Values.BytesErrorResult(
             dataType,
             new Values.BytesPaddingError(CodecUtils.Conversion.toHexString(bytes))
@@ -120,6 +156,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       switch(dataType.visibility) {
         case "external":
           if(!checkPaddingRight(bytes, CodecUtils.EVM.ADDRESS_SIZE + CodecUtils.EVM.SELECTOR_SIZE)) {
+            if(strict) {
+              throw new StopDecodingError();
+            }
             return new Values.FunctionExternalErrorResult(
               dataType,
               new Values.FunctionExternalNonStackPaddingError(CodecUtils.Conversion.toHexString(bytes))
@@ -132,6 +171,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
           );
         case "internal":
           if(!checkPaddingLeft(bytes, 2 * CodecUtils.EVM.PC_SIZE)) {
+            if(strict) {
+              throw new StopDecodingError();
+            }
             return new Values.FunctionInternalErrorResult(
               dataType,
               new Values.FunctionInternalPaddingError(CodecUtils.Conversion.toHexString(bytes))
@@ -147,6 +189,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       const numeric = CodecUtils.Conversion.toBN(bytes);
       const fullType = <Types.EnumType>Types.fullType(dataType, info.userDefinedTypes);
       if(!fullType.options) {
+        if(strict) {
+          throw new StopDecodingError();
+        }
         return new Values.EnumErrorResult(
           fullType,
           new Values.EnumNotFoundDecodingError(fullType, numeric)
@@ -155,6 +200,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       const numOptions = fullType.options.length;
       const numBytes = Math.ceil(Math.log2(numOptions) / 8);
       if(!checkPaddingLeft(bytes, numBytes)) {
+        if(strict) {
+          throw new StopDecodingError();
+        }
         return new Values.EnumErrorResult(
           fullType,
           new Values.EnumPaddingError(fullType, CodecUtils.Conversion.toHexString(bytes))
@@ -165,6 +213,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         return new Values.EnumValue(fullType, numeric, name);
       }
       else {
+        if(strict) {
+          throw new StopDecodingError();
+        }
         return new Values.EnumErrorResult(
           fullType,
           new Values.EnumOutOfRangeError(fullType, numeric)
@@ -175,6 +226,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "fixed": {
       //skipping padding check as we don't support this anyway
       const hex = CodecUtils.Conversion.toHexString(bytes);
+      if(strict) {
+        throw new StopDecodingError();
+      }
       return new Values.FixedErrorResult(
         dataType,
         new Values.FixedPointNotYetSupportedError(hex)
@@ -183,6 +237,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "ufixed": {
       //skipping padding check as we don't support this anyway
       const hex = CodecUtils.Conversion.toHexString(bytes);
+      if(strict) {
+        throw new StopDecodingError();
+      }
       return new Values.UfixedErrorResult(
         dataType,
         new Values.FixedPointNotYetSupportedError(hex)

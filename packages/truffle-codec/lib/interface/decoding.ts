@@ -7,7 +7,8 @@ import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { CalldataAllocation, EventAllocation, EventArgumentAllocation } from "../types/allocation";
-import { CalldataDecoding, EventDecoding } from "../types/wire";
+import { CalldataDecoding, EventDecoding, AbiArgument } from "../types/wire";
+import { encodeTupleAbi } from "../encode/abi";
 import read from "../read";
 import decode from "../decode";
 
@@ -54,20 +55,22 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       class: contractType
     };
   }
-  let decodedArguments = allocation.arguments.map(
-    argumentAllocation => {
-      const value = decode(
-        Types.definitionToType(argumentAllocation.definition, compiler),
-        argumentAllocation.pointer,
-        info,
-        allocation.offset //note the use of the offset for decoding pointers!
-      );
-      const name = argumentAllocation.definition.name;
-      return name === undefined
+  //you can't map with a generator, so we have to do this map manually
+  let decodedArguments: AbiArgument[] = [];
+  for(const argumentAllocation of allocation.arguments) {
+    const value = <Values.Result> (yield* decode(
+      Types.definitionToType(argumentAllocation.definition, compiler),
+      argumentAllocation.pointer,
+      info,
+      allocation.offset //note the use of the offset for decoding pointers!
+    ));
+    const name = argumentAllocation.definition.name;
+    decodedArguments.push(
+      name === undefined
         ? { value }
-        : { name, value };
-    }
-  );
+        : { name, value }
+    );
+  }
   if(isConstructor) {
     return {
       kind: "constructor",
@@ -85,7 +88,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
   }
 }
 
-export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
+export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding[] | DecoderRequest | Values.Result | GeneratorJunk> {
   const compiler = info.currentContext.compiler;
   const allocations = info.allocations.event;
   const rawSelector = <Uint8Array> read(
@@ -95,37 +98,59 @@ export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding | De
     info.state
   ).next().value; //no requests should occur, we can just get the first value
   const selector = CodecUtils.Conversion.toHexString(rawSelector);
-  const allocation = allocations[selector];
-  if(allocation === undefined) {
-    //we can't decode
-    return {
-      kind: "unknown",
-    };
-  }
-  let context = Object.values(info.contexts).find(
-    context => context.contractId === allocation.contractId
-      && !context.isConstructor
-  );
-  let newInfo = { ...info, currentContext: context };
-  let contractType = CodecUtils.Contexts.contextToType(context);
-  let decodedArguments = allocation.arguments.map(
-    (argumentAllocation: EventArgumentAllocation) => {
-      const value = decode(
-        Types.definitionToType(argumentAllocation.definition, compiler),
-        argumentAllocation.pointer,
-        newInfo,
-        0 //offset is always 0 but let's be explicit
+  const topicsCount = info.state.eventtopics.length;
+  //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
+  const { contract: contractAllocations, library: libraryAllocations } = allocations[selector][topicsCount];
+  //we only want one contract from the contractAllocations -- this one
+  const contractId = info.currentContext.contractId;
+  const contractAllocation = contractAllocations[contractId];
+  const possibleAllocations: [string, EventAllocation][] = [[contractId.toString(), contractAllocation], ...Object.entries(libraryAllocations)];
+  //should be number, but we have to temporarily pass through string to get compilation to work...
+  let decodings: EventDecoding[] = [];
+  for(const [id, allocation] of possibleAllocations) {
+    try {
+      const context = info.contexts[parseInt(id)];
+      const contractType = CodecUtils.Contexts.contextToType(context);
+      const newInfo = { ...info, currentContext: context };
+      //you can't map with a generator, so we have to do this map manually
+      let decodedArguments: AbiArgument[] = [];
+      for(const argumentAllocation of allocation.arguments) {
+        const value = <Values.Result> (yield* decode(
+          Types.definitionToType(argumentAllocation.definition, compiler),
+          argumentAllocation.pointer,
+          newInfo,
+          0, //offset is always 0 for events
+          true //turns on STRICT MODE to cause more errors to be thrown
+        ));
+        const name = argumentAllocation.definition.name;
+        decodedArguments.push(
+          name === undefined
+            ? { value }
+            : { name, value }
+        );
+      }
+      //OK, so, having decoded the result, the question is: does it reencode to the original?
+      //first, we have to filter out the indexed arguments, and also get rid of the name information
+      const nonIndexedValues = decodedArguments.filter(
+        (_, index) => allocation.arguments[index].pointer.location !== "eventtopic"
+      ).map(
+        ({value}) => value
       );
-      const name = argumentAllocation.definition.name;
-      return name === undefined
-        ? { value }
-        : { name, value };
+      //now, we can encode!
+      const reEncodedData = encodeTupleAbi(nonIndexedValues, info.allocations.abi);
+      //are they equal?
+      const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
+      if(CodecUtils.EVM.equalData(encodedData, reEncodedData)) {
+        decodings.push({
+          class: contractType,
+          name: allocation.definition.name,
+          arguments: decodedArguments
+        });
+      }
+      //otherwise, just move on
     }
-  );
-  return {
-    kind: "event",
-    class: contractType,
-    name: allocation.definition.name,
-    arguments: decodedArguments
-  };
+    catch(error) {
+      continue; //if an error occurred, this isn't a valid decoding!
+    }
+  }
 }

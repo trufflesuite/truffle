@@ -100,5 +100,5 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
   //however, note that because we're on the stack, we use the permissive padding
   //option so that errors won't result due to values with bad padding
   //(of numeric or bytesN type, anyway)
-  return yield* decodeValue(dataType, pointer, info, true);
+  return yield* decodeValue(dataType, pointer, info, "permissive");
 }

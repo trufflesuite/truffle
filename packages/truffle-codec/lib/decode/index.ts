@@ -15,7 +15,7 @@ import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo, base: number = 0): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo, base: number = 0, strict: boolean = false): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 
@@ -38,10 +38,10 @@ export default function* decode(dataType: Types.Type, pointer: Pointer.DataPoint
 
     case "calldata":
     case "eventdata":
-      return yield* decodeAbi(dataType, pointer, info, base);
+      return yield* decodeAbi(dataType, pointer, info, base, strict);
 
     case "eventtopic":
-      return yield* decodeTopic(dataType, pointer, info);
+      return yield* decodeTopic(dataType, pointer, info, strict);
 
     case "memory":
       //NOTE: this case should never actually occur, but I'm including it

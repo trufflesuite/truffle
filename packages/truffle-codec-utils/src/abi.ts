@@ -221,4 +221,8 @@ export namespace AbiUtils {
     }
   }
 
+  export function topicsCount(abiEntry: EventAbiEntry): number {
+    let selectorCount = abiEntry.anonymous ? 0 : 1; //if the event is not anonymous, we must account for the selector
+    return abiEntry.inputs.filter(({ indexed }) => indexed).length + selectorCount;
+  }
 }

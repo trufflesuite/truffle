@@ -398,20 +398,34 @@ function getEventAllocationsForContract(
   contractId: number,
   referenceDeclarations: AstReferences,
   abiAllocations: Allocations.AbiAllocations
-): Allocations.EventAllocations {
-  return Object.assign({}, ...abi
-    .filter((abiEntry: AbiUtils.AbiEntry) => abiEntry.type === "event")
-    .map((abiEntry: AbiUtils.EventAbiEntry) =>
-      ({ [AbiUtils.abiSelector(abiEntry)] :
-        allocateEvent(abiEntry, contractId, referenceDeclarations, abiAllocations)
+): Allocations.EventAllocationTemporary[] {
+  return abi.filter(
+    (abiEntry: AbiUtils.AbiEntry) => abiEntry.type === "event" && !abiEntry.anonymous
+  ).map(
+    (abiEntry: AbiUtils.EventAbiEntry) =>
+      ({
+        selector: AbiUtils.abiSelector(abiEntry),
+        topics: AbiUtils.topicsCount(abiEntry),
+        allocation: allocateEvent(abiEntry, contractId, referenceDeclarations, abiAllocations)
       })
-    )
   );
 }
 
 //note: constructor context is ignored by this function; no need to pass it in
 export function getEventAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, abiAllocations: Allocations.AbiAllocations): Allocations.EventAllocations {
-  return Object.assign({}, ...contracts.map(
-    ({abi, id}) => getEventAllocationsForContract(abi, id, referenceDeclarations, abiAllocations)
-  ));
+  let allocations: Allocations.EventAllocations = {};
+  for(let {abi, id} of contracts) {
+    let contractKind = referenceDeclarations[id].contractKind;
+    let contractAllocations = getEventAllocationsForContract(abi, id, referenceDeclarations, abiAllocations);
+    for(let {selector, topics, allocation} of contractAllocations) {
+      if(allocations[selector] === undefined) {
+        allocations[selector] = {};
+      }
+      if(allocations[selector][topics] === undefined) {
+        allocations[selector][topics] = { contract: {}, library: {} };
+      }
+      allocations[selector][topics][contractKind][id] = allocation;
+    }
+  }
+  return allocations;
 }

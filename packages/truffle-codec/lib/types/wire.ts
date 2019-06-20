@@ -8,10 +8,9 @@ export interface CalldataDecoding {
 }
 
 export interface EventDecoding {
-  kind: "event" | "unknown";
-  class?: CodecUtils.Types.ContractType; //included only if event
-  name?: string; //included only if event
-  arguments?: AbiArgument[]; //included only if event
+  name: string;
+  class: CodecUtils.Types.ContractType;
+  arguments: AbiArgument[];
 }
 
 export interface AbiArgument {

@@ -9,6 +9,8 @@ export interface ContractAllocationInfo {
   constructorContext?: Contexts.DecoderContext;
 }
 
+//let's start with storage allocations
+
 //holds a collection of storage allocations for structs and contracts, indexed
 //by the ID of the struct or contract
 export interface StorageAllocations {
@@ -54,7 +56,7 @@ export interface AbiMemberAllocation {
 
 //memory works the same as abi except we don't bother keeping track of size
 //(it's always 1 word) or dynamicity (meaningless in memory)
-//Also, we allow pointers to be null to indicate that they're omitted
+//Also, we allow pointers to be null to indicate that that member is omitted
 
 export interface MemoryAllocations {
   [id: number]: MemoryAllocation
@@ -104,11 +106,26 @@ export interface CalldataArgumentAllocation {
 
 //finally we have events.  these work like calldata, except that there's no
 //need for an offset, the ultimate pointer can be either an event data pointer
-//or an event topic pointer, and, they're given *only* by selector -- not by
-//contract ID!  Instead the contract ID is included in the allocation
+//or an event topic pointer, and, they're given *first* by selector, *then*
+//by number of topics, *then* by contract ID (the latter being split into
+//contracts and libraries)
 
 export interface EventAllocations {
-  [selector: string]: EventAllocation
+  [selector: string]: EventSelectorAllocation;
+}
+
+export interface EventSelectorAllocation {
+  [topics: number]: EventAllocationsNarrow;
+}
+
+export interface EventAllocationsNarrow {
+  [contractKind: string]: EventContractAllocation;
+  //yes, this is a stupid way of doing this, but it's the easiest way to
+  //get things to compile
+}
+
+export interface EventContractAllocation {
+  [contractId: number]: EventAllocation;
 }
 
 export interface EventAllocation {
@@ -120,4 +137,11 @@ export interface EventAllocation {
 export interface EventArgumentAllocation {
   definition: AstDefinition;
   pointer: Pointer.EventDataPointer | Pointer.EventTopicPointer;
+}
+
+//NOTE: not for outside use!  just produced temporarily by the allocator!
+export interface EventAllocationTemporary {
+  selector: string;
+  topics: number;
+  allocation: EventAllocation;
 }
