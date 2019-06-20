@@ -12,21 +12,17 @@ describe("Cyclic Dependencies [ @standalone ]", function() {
   let options;
   const logger = new MemoryLogger();
 
-  before("set up sandbox", function(done) {
+  before("set up sandbox", async () => {
     this.timeout(10000);
     options = { name: "default", force: true };
-    Box.sandbox(options, (err, conf) => {
-      if (err) return done(err);
-      config = conf;
-      config.logger = logger;
-      config.networks.development.provider = Ganache.provider({
-        gasLimit: config.gas
-      });
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-      done();
+    config = await Box.sandbox(options);
+    config.logger = logger;
+    config.networks.development.provider = Ganache.provider({
+      gasLimit: config.gas
     });
+    config.mocha = {
+      reporter: new Reporter(logger)
+    };
   });
 
   before("add files with cyclic dependencies", function() {
