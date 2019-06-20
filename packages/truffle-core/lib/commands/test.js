@@ -77,7 +77,7 @@ const command = {
 
     try {
       if (files.length === 0) {
-        files = dir.files(config.test_directory, { sync: true });
+        files = dir.files(config.test_directory, { sync: true }) || [];
       }
     } catch (error) {
       return done(error);
