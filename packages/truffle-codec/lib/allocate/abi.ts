@@ -387,7 +387,7 @@ export function getCalldataAllocations(contracts: Allocations.ContractAllocation
   return Object.assign({}, ...contracts.map(
     ({abi, id, constructorContext}) => ({
       [id]: getCalldataAllocationsForContract(
-        <AbiUtils.Abi>abi, id, constructorContext, referenceDeclarations, abiAllocations
+        abi, id, constructorContext, referenceDeclarations, abiAllocations
       )
     })
   ));
@@ -412,6 +412,6 @@ function getEventAllocationsForContract(
 //note: constructor context is ignored by this function; no need to pass it in
 export function getEventAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, abiAllocations: Allocations.AbiAllocations): Allocations.EventAllocations {
   return Object.assign({}, ...contracts.map(
-    ({abi, id}) => getEventAllocationsForContract(<AbiUtils.Abi>abi, id, referenceDeclarations, abiAllocations)
+    ({abi, id}) => getEventAllocationsForContract(abi, id, referenceDeclarations, abiAllocations)
   ));
 }

@@ -7,7 +7,7 @@ import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "truffle-contract-schema/spec";
 import BN from "bn.js";
-import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "truffle-codec-utils";
+import { Definition as DefinitionUtils, AbiUtils, EVM, AstDefinition, AstReferences } from "truffle-codec-utils";
 import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
@@ -89,7 +89,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
     let allocationInfo: Codec.ContractAllocationInfo[] = Object.entries(this.contracts).map(
       ([id, { abi }]) => ({
-        abi,
+        abi: <AbiUtils.Abi>abi,
         id: parseInt(id),
         constructorContext: this.constructorContextsById[parseInt(id)]
       })
