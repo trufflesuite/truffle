@@ -97,7 +97,7 @@ const Box = {
   //   Recursively removes the created temporary directory, even when it's not empty. default is false
   // options.setGracefulCleanup
   //   Cleanup temporary files even when an uncaught exception occurs
-  sandbox: (options, callback) => {
+  sandbox: async options => {
     const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
       options
     );
@@ -111,19 +111,16 @@ const Box = {
     }
 
     const tmpDir = tmp.dirSync({ unsafeCleanup });
-    Box.unbox(
-      `https://github.com/trufflesuite/truffle-init-${name}`,
-      tmpDir.name,
-      options
-    )
-      .then(() => {
-        const config = Config.load(
-          path.join(tmpDir.name, "truffle-config.js"),
-          {}
-        );
-        callback(null, config);
-      })
-      .catch(callback);
+    try {
+      await Box.unbox(
+        `https://github.com/trufflesuite/truffle-init-${name}`,
+        tmpDir.name,
+        options
+      );
+      return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
+    } catch (error) {
+      throw error;
+    }
   }
 };
 
