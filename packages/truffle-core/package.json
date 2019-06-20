@@ -1,7 +1,7 @@
 {
   "name": "truffle-core",
   "namespace": "consensys",
-  "version": "5.0.23",
+  "version": "5.0.24",
   "description": "Core code for Truffle command line tool",
   "dependencies": {
     "app-module-path": "^2.2.0",
