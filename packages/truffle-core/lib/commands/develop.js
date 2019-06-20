@@ -16,7 +16,7 @@ const command = {
   },
   runConsole: (config, ganacheOptions, done) => {
     const Console = require("../console");
-    const Environment = require("../environment");
+    const { Environment } = require("truffle-environment");
 
     const commands = require("./index");
     const excluded = ["console", "develop", "unbox", "init"];
@@ -43,7 +43,7 @@ const command = {
   },
   run: (options, done) => {
     const Config = require("truffle-config");
-    const Develop = require("../develop");
+    const { Develop } = require("truffle-environment");
 
     const config = Config.detect(options);
     const customConfig = config.networks.develop || {};

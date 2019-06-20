@@ -1,4 +1,4 @@
-var command = {
+const command = {
   command: "exec",
   description: "Execute a JS module within this Truffle environment",
   builder: {
@@ -36,17 +36,17 @@ var command = {
     ]
   },
   run: function(options, done) {
-    var Config = require("truffle-config");
-    var Contracts = require("truffle-workflow-compile");
-    var ConfigurationError = require("../errors/configurationerror");
-    var Require = require("truffle-require");
-    var Environment = require("../environment");
-    var path = require("path");
-    var OS = require("os");
+    const Config = require("truffle-config");
+    const Contracts = require("truffle-workflow-compile");
+    const ConfigurationError = require("../errors/configurationerror");
+    const Require = require("truffle-require");
+    const { Environment } = require("truffle-environment");
+    const path = require("path");
+    const OS = require("os");
 
-    var config = Config.detect(options);
+    const config = Config.detect(options);
 
-    var file = options.file;
+    let file = options.file;
 
     if (file == null && options._.length > 0) {
       file = options._[0];

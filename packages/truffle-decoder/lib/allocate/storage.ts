@@ -144,9 +144,15 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
   //we do this assuming we're dealing with a struct, so the size is measured in words
   //it's one plus the last word used, i.e. one plus the current word... unless the
   //current word remains entirely unused, then it's just the current word
+  //SPECIAL CASE: if *nothing* has been used, allocate a single word (that's how
+  //empty structs behave in versions where they're legal)
   if(!suppressSize) {
-    allocations[parentNode.id].size = (index === DecodeUtils.EVM.WORD_SIZE - 1) ?
-      {words: offset} : {words: offset + 1};
+    if(index === DecodeUtils.EVM.WORD_SIZE - 1 && offset !== 0) {
+      allocations[parentNode.id].size = {words: offset};
+    }
+    else {
+      allocations[parentNode.id].size = {words: offset + 1};
+    }
   }
 
   //...and we're done!
@@ -261,6 +267,10 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
       else {
         //static array case
         const length: number = DecodeUtils.Definition.staticLength(definition);
+        if(length === 0) {
+          //in versions of Solidity where it's legal, arrays of length 0 still take up 1 word
+          return [{words: 1}, existingAllocations];
+        }
         const baseDefinition: AstDefinition = DecodeUtils.Definition.baseDefinition(definition);
         const [baseSize, allocations] = storageSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
         if(!isWordsLength(baseSize)) {

@@ -1,8 +1,8 @@
-var Deployed = require("./deployed");
-var path = require("path");
-var fs = require("fs");
-var contract = require("truffle-contract");
-var find_contracts = require("truffle-contract-sources");
+const Deployed = require("./deployed");
+const path = require("path");
+const fse = require("fs-extra");
+const contract = require("truffle-contract");
+const find_contracts = require("truffle-contract-sources");
 
 function TestSource(config) {
   this.config = config;
@@ -12,88 +12,78 @@ TestSource.prototype.require = function() {
   return null; // FSSource will get it.
 };
 
-TestSource.prototype.resolve = function(import_path, callback) {
-  var self = this;
+TestSource.prototype.resolve = function(importPath, callback) {
+  const self = this;
 
-  if (import_path === "truffle/DeployedAddresses.sol") {
+  if (importPath === "truffle/DeployedAddresses.sol") {
     return find_contracts(this.config.contracts_directory, function(
       err,
-      source_files
+      sourceFiles
     ) {
       // Ignore this error. Continue on.
 
-      fs.readdir(self.config.contracts_build_directory, function(
-        err,
-        abstraction_files
-      ) {
-        if (err) return callback(err);
+      let abstractionFiles;
+      try {
+        abstractionFiles = fse.readdirSync(
+          self.config.contracts_build_directory
+        );
+      } catch (error) {
+        return callback(error);
+      }
 
-        var mapping = {};
+      const mapping = {};
 
-        var blacklist = ["Assert", "DeployedAddresses"];
+      const blacklist = ["Assert", "DeployedAddresses"];
 
-        // Ensure we have a mapping for source files and abstraction files
-        // to prevent any compile errors in tests.
-        source_files.forEach(function(file) {
-          var name = path.basename(file, ".sol");
-          if (blacklist.indexOf(name) >= 0) return;
-          mapping[name] = false;
-        });
+      // Ensure we have a mapping for source files and abstraction files
+      // to prevent any compile errors in tests.
+      sourceFiles.forEach(file => {
+        const name = path.basename(file, ".sol");
+        if (blacklist.indexOf(name) >= 0) return;
+        mapping[name] = false;
+      });
 
-        abstraction_files.forEach(function(file) {
-          var name = path.basename(file, ".json");
-          if (blacklist.indexOf(name) >= 0) return;
-          mapping[name] = false;
-        });
+      abstractionFiles.forEach(file => {
+        const name = path.basename(file, ".json");
+        if (blacklist.indexOf(name) >= 0) return;
+        mapping[name] = false;
+      });
 
-        var promises = abstraction_files.map(function(file) {
-          return new Promise(function(accept, reject) {
-            fs.readFile(
-              path.join(self.config.contracts_build_directory, file),
-              "utf8",
-              function(err, body) {
-                if (err) return reject(err);
-                accept(body);
-              }
-            );
-          });
-        });
+      const promises = abstractionFiles.map(file => {
+        return fse.readFile(
+          path.join(self.config.contracts_build_directory, file),
+          "utf8"
+        );
+      });
 
-        Promise.all(promises)
-          .then(function(files_data) {
-            var addresses = files_data
-              .map(function(data) {
-                return JSON.parse(data);
-              })
-              .map(function(json) {
-                return contract(json);
-              })
-              .map(function(c) {
-                c.setNetwork(self.config.network_id);
-                if (c.isDeployed()) {
-                  return c.address;
-                }
-                return null;
-              });
-
-            addresses.forEach(function(address, i) {
-              var name = path.basename(abstraction_files[i], ".json");
-
-              if (blacklist.indexOf(name) >= 0) return;
-
-              mapping[name] = address;
+      Promise.all(promises)
+        .then(filesData => {
+          const addresses = filesData
+            .map(data => JSON.parse(data))
+            .map(json => contract(json))
+            .map(c => {
+              c.setNetwork(self.config.network_id);
+              if (c.isDeployed()) return c.address;
+              return null;
             });
 
-            return Deployed.makeSolidityDeployedAddressesLibrary(
-              mapping,
-              self.config.compilers
-            );
-          })
-          .then(function(addressSource) {
-            callback(null, addressSource, import_path);
-          })
-          .catch(callback);
-      });
+          addresses.forEach((address, i) => {
+            const name = path.basename(abstractionFiles[i], ".json");
+
+            if (blacklist.indexOf(name) >= 0) return;
+
+            mapping[name] = address;
+          });
+
+          return Deployed.makeSolidityDeployedAddressesLibrary(
+            mapping,
+            self.config.compilers
+          );
+        })
+        .then(addressSource => {
+          callback(null, addressSource, importPath);
+        })
+        .catch(callback);
     });
   }
   const assertLibraries = [
@@ -114,22 +104,19 @@ TestSource.prototype.resolve = function(import_path, callback) {
   ];
 
   for (const lib of assertLibraries) {
-    if (import_path === `truffle/${lib}.sol`)
-      return fs.readFile(
+    if (importPath === `truffle/${lib}.sol`)
+      return fse.readFile(
         path.resolve(path.join(__dirname, `${lib}.sol`)),
         { encoding: "utf8" },
-        (err, body) => callback(err, body, import_path)
+        (err, body) => callback(err, body, importPath)
       );
   }
 
   return callback();
 };
 
-TestSource.prototype.resolve_dependency_path = function(
-  import_path,
-  dependency_path
-) {
-  return dependency_path;
+TestSource.prototype.resolve_dependency_path = (importPath, dependencyPath) => {
+  return dependencyPath;
 };
 
 module.exports = TestSource;
