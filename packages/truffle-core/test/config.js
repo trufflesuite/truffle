@@ -16,26 +16,21 @@ describe("config", function() {
     from: "0x1234567890123456789012345678901234567890"
   };
 
-  before("Create a sandbox with extra config values", function(done) {
+  before("Create a sandbox with extra config values", async () => {
     this.timeout(10000);
-    Box.sandbox("default", function(err, result) {
-      if (err) return done(err);
-      config = result;
-      config.resolver = new Resolver(config);
-      config.artifactor = new Artifactor(config.contracts_build_directory);
-      config.network = "development";
-      config.networks = {
-        development: {
-          network_id: "1",
-          gas: customRPCConfig.gas,
-          gasPrice: customRPCConfig.gasPrice,
-          from: "0x1234567890123456789012345678901234567890",
-          provider: Ganache.provider()
-        }
-      };
-
-      done();
-    });
+    config = await Box.sandbox("default");
+    config.resolver = new Resolver(config);
+    config.artifactor = new Artifactor(config.contracts_build_directory);
+    config.network = "development";
+    config.networks = {
+      development: {
+        network_id: "1",
+        gas: customRPCConfig.gas,
+        gasPrice: customRPCConfig.gasPrice,
+        from: "0x1234567890123456789012345678901234567890",
+        provider: Ganache.provider()
+      }
+    };
   });
 
   before("Compile contracts", function(done) {
