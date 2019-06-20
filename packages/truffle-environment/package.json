@@ -8,7 +8,7 @@
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-environment",
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-environment#readme",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-environment/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "private": false,
   "devDependencies": {
