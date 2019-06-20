@@ -38,7 +38,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
     allocation = allocations.constructorAllocation;
   }
   else {
-    //TODO: error-handling here
+    //skipping any error-handling on this read, as a calldata read can't throw anyway
     let rawSelector = <Uint8Array> read(
       { location: "calldata",
         start: 0,
@@ -91,12 +91,19 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
 export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding[] | DecoderRequest | Values.Result | GeneratorJunk> {
   const compiler = info.currentContext.compiler;
   const allocations = info.allocations.event;
-  const rawSelector = <Uint8Array> read(
-    { location: "eventtopic",
-      topic: 0
-    },
-    info.state
-  ).next().value; //no requests should occur, we can just get the first value
+  let rawSelector: Uint8Array;
+  try {
+    rawSelector = <Uint8Array> read(
+      { location: "eventtopic",
+        topic: 0
+      },
+      info.state
+    ).next().value; //no requests should occur, we can just get the first value
+  }
+  catch(error) {
+    //if we can't read the selector, return an empty set of decodings
+    return [];
+  }
   const selector = CodecUtils.Conversion.toHexString(rawSelector);
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
@@ -153,4 +160,5 @@ export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding[] | 
       continue; //if an error occurred, this isn't a valid decoding!
     }
   }
+  return decodings;
 }

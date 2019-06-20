@@ -4,7 +4,8 @@ const debug = debugModule("codec:allocate:storage");
 import { StoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageAllocation, StorageMemberAllocation } from "../types/allocation";
 import { StorageLength, isWordsLength, Range } from "../types/storage";
-import { UnknownBaseContractIdError, UnknownUserDefinedTypeError } from "../types/errors";
+import { UnknownBaseContractIdError } from "../types/errors";
+import { UnknownUserDefinedTypeError } from "truffle-codec-utils";
 import { AstDefinition, AstReferences } from "truffle-codec-utils";
 import { readDefinition } from "../read/constant"
 import * as CodecUtils from "truffle-codec-utils";

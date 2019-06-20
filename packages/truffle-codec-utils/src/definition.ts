@@ -349,38 +349,6 @@ export namespace Definition {
     return mutability(fallback) === "payable";
   }
 
-  //note: this is only meant for types that can go in the ABI
-  //it returns how that type is notated in the ABI -- just the string,
-  //to be clear, not components of tuples
-  //TODO add error handling
-  export function toAbiType(definition: AstDefinition, referenceDeclarations: AstReferences): string {
-    let basicType = typeClassLongForm(definition); //get that whole first segment!
-    switch(basicType) {
-      case "contract":
-        return "address";
-      case "struct":
-        return "tuple"; //the more detailed checking will be handled elsewhere
-      case "enum":
-        let id = typeId(definition);
-        let referenceDeclaration = referenceDeclarations[id];
-        let numOptions = referenceDeclaration.members.length;
-        let bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
-        return `uint${bits}`;
-      case "array":
-        let baseType = toAbiType(baseDefinition(definition), referenceDeclarations);
-        return isDynamicArray(definition)
-          ? `${baseType}[]`
-          : `${baseType}[${staticLength(definition)}]`;
-      default:
-        return basicType;
-        //note that: int/uint/fixed/ufixed/bytes will have their size and such left on;
-        //address will have "payable" left off;
-        //external functions will be reduced to "function" (and internal functions shouldn't
-        //be passed in!)
-        //(mappings shouldn't be passed in either obviously)
-    }
-  }
-
   //spoofed definitions we'll need
   //we'll give them id -1 to indicate that they're spoofed
 

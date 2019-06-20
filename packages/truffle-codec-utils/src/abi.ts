@@ -5,6 +5,8 @@ import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition, AstReferences } from "./ast";
 import { Definition as DefinitionUtils } from "./definition";
+import { Values } from "./types/values";
+import { UnknownUserDefinedTypeError } from "./errors";
 import Web3 from "web3";
 
 //NOTE: SchemaAbi is kind of loose and a pain to use.
@@ -167,13 +169,17 @@ export namespace AbiUtils {
     return true;
   }
 
-  //TODO: add error-handling
   function matchesAbiType(abiParameter: AbiParameter, nodeParameter: AstDefinition, referenceDeclarations: AstReferences): boolean {
-    if(DefinitionUtils.toAbiType(nodeParameter, referenceDeclarations) !== abiParameter.type) {
+    if(toAbiType(nodeParameter, referenceDeclarations) !== abiParameter.type) {
       return false;
     }
     if(abiParameter.type.startsWith("tuple")) {
-      let referenceDeclaration = referenceDeclarations[DefinitionUtils.typeId(nodeParameter)];
+      let referenceId = DefinitionUtils.typeId(nodeParameter);
+      let referenceDeclaration = referenceDeclarations[referenceId];
+      if(referenceDeclaration === undefined) {
+        let typeString = DefinitionUtils.typeString(nodeParameter);
+        throw new UnknownUserDefinedTypeError(referenceId, typeString);
+      }
       return matchesAbiParameters(abiParameter.components, referenceDeclaration.members, referenceDeclarations);
     }
     else {
@@ -181,12 +187,48 @@ export namespace AbiUtils {
     }
   }
 
+  //note: this is only meant for types that can go in the ABI
+  //it returns how that type is notated in the ABI -- just the string,
+  //to be clear, not components of tuples
+  function toAbiType(definition: AstDefinition, referenceDeclarations: AstReferences): string {
+    let basicType = DefinitionUtils.typeClassLongForm(definition); //get that whole first segment!
+    switch(basicType) {
+      case "contract":
+        return "address";
+      case "struct":
+        return "tuple"; //the more detailed checking will be handled elsewhere
+      case "enum":
+        let referenceId = DefinitionUtils.typeId(definition);
+        let referenceDeclaration = referenceDeclarations[referenceId];
+        if(referenceDeclaration === undefined) {
+          let typeString = DefinitionUtils.typeString(definition);
+          throw new UnknownUserDefinedTypeError(referenceId, typeString);
+        }
+        let numOptions = referenceDeclaration.members.length;
+        let bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
+        return `uint${bits}`;
+      case "array":
+        let baseType = toAbiType(DefinitionUtils.baseDefinition(definition), referenceDeclarations);
+        return DefinitionUtils.isDynamicArray(definition)
+          ? `${baseType}[]`
+          : `${baseType}[${DefinitionUtils.staticLength(definition)}]`;
+      default:
+        return basicType;
+        //note that: int/uint/fixed/ufixed/bytes will have their size and such left on;
+        //address will have "payable" left off;
+        //external functions will be reduced to "function" (and internal functions shouldn't
+        //be passed in!)
+        //(mappings shouldn't be passed in either obviously)
+    }
+  }
+
+
   //NOTE: this function returns the written out SIGNATURE, not the SELECTOR
-  function abiSignature(abiEntry: FunctionAbiEntry | EventAbiEntry): string {
+  export function abiSignature(abiEntry: FunctionAbiEntry | EventAbiEntry): string {
     return abiEntry.name + abiTupleSignature(abiEntry.inputs);
   }
 
-  function abiTupleSignature(parameters: AbiParameter[]): string {
+  export function abiTupleSignature(parameters: AbiParameter[]): string {
     let components = parameters.map(abiTypeSignature);
     return "(" + components.join(",") + ")";
   }

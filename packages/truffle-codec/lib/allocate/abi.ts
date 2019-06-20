@@ -5,6 +5,8 @@ import * as Pointer from "../types/pointer";
 import * as Allocations from "../types/allocation";
 import { AstDefinition, AstReferences, AbiUtils } from "truffle-codec-utils";
 import * as CodecUtils from "truffle-codec-utils";
+import { UnknownUserDefinedTypeError } from "truffle-codec-utils";
+import { UnknownBaseContractIdError, NoDefinitionFoundForABIEntryError } from "../types/errors";
 import partition from "lodash.partition";
 
 export function getAbiAllocations(referenceDeclarations: AstReferences): Allocations.AbiAllocations {
@@ -86,7 +88,6 @@ export function abiSize(definition: AstDefinition, referenceDeclarations?: AstRe
 //second return value is whether the type is dynamic
 //both will be undefined if type is a mapping or internal function
 //third return value is resulting allocations, INCLUDING the ones passed in
-//TODO: add error handling
 function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: Allocations.AbiAllocations): [number | undefined, boolean | undefined, Allocations.AbiAllocations] {
   switch (CodecUtils.Definition.typeClass(definition)) {
     case "bool":
@@ -141,6 +142,10 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
       if(allocation === undefined) {
         //if we don't find an allocation, we'll have to do the allocation ourselves
         const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
+        if(referenceDeclaration === undefined) {
+          let typeString = CodecUtils.Definition.typeString(definition);
+          throw new UnknownUserDefinedTypeError(referenceId, typeString);
+        }
         allocations = allocateStruct(referenceDeclaration, referenceDeclarations, existingAllocations);
         allocation = allocations[referenceId];
       }
@@ -207,8 +212,6 @@ export function isTypeDynamic(dataType: CodecUtils.Types.Type, allocations?: All
 
 //allocates an external call
 //NOTE: returns just a single allocation; assumes primary allocation is already complete!
-//TODO add error-handling
-//TODO: check accesses to abi & node members
 function allocateCalldata(
   abiEntry: AbiUtils.FunctionAbiEntry | AbiUtils.ConstructorAbiEntry,
   contractId: number,
@@ -216,7 +219,8 @@ function allocateCalldata(
   abiAllocations: Allocations.AbiAllocations,
   constructorContext?: CodecUtils.Contexts.DecoderContext
 ): Allocations.CalldataAllocation {
-  const linearizedBaseContracts = referenceDeclarations[contractId].linearizedBaseContracts;
+  const contractNode = referenceDeclarations[contractId];
+  const linearizedBaseContracts = contractNode.linearizedBaseContracts;
   //first: determine the corresponding function node
   //(simultaneously: determine the offset)
   let node: AstDefinition;
@@ -226,26 +230,41 @@ function allocateCalldata(
       let rawLength = constructorContext.binary.length;
       offset = (rawLength - 2)/2; //number of bytes in 0x-prefixed bytestring
       //for a constructor, we only want to search the particular contract, which
-      let contractNode = referenceDeclarations[contractId];
       node = contractNode.nodes.find(
         functionNode => AbiUtils.matchesAbi(
           abiEntry, functionNode, referenceDeclarations
         )
       );
-      //TODO: handle case if node undefined
+      if(node === undefined) {
+        //if we can't find it, just throw
+        throw new NoDefinitionFoundForABIEntryError(abiEntry, [contractId]);
+      }
       break;
     case "function":
       offset = CodecUtils.EVM.SELECTOR_SIZE;
       //search through base contracts, from most derived (right) to most base (left)
       node = linearizedBaseContracts.reduceRight(
-        (foundNode, baseContractId) => foundNode || referenceDeclarations[baseContractId].nodes.find(
-          functionNode => AbiUtils.matchesAbi(
-            abiEntry, functionNode, referenceDeclarations
-          )
-        ),
-        undefined
+        (foundNode, baseContractId) => {
+          if(foundNode) {
+            return foundNode //once we've found something, we don't need to keep looking
+          };
+          let baseContractNode = referenceDeclarations[baseContractId];
+          if(baseContractNode === undefined) {
+            throw new UnknownBaseContractIdError(contractNode.id, contractNode.name, contractNode.contractKind, baseContractId);
+          }
+          return baseContractNode.nodes.find( //may be undefined! that's OK!
+            functionNode => AbiUtils.matchesAbi(
+              abiEntry, functionNode, referenceDeclarations
+            )
+          );
+        },
+        undefined //start with no node found
       );
-      //TODO: handle case if node undefined
+      if(node === undefined) {
+        //if we can't find it, just throw
+        //reverse the list (cloning first with slice) so that they're actually in the order searched
+        throw new NoDefinitionFoundForABIEntryError(abiEntry, linearizedBaseContracts.slice().reverse());
+      }
       break;
   }
   //now: perform the allocation!
@@ -274,25 +293,39 @@ function allocateCalldata(
 
 //allocates an event
 //NOTE: returns just a single allocation; assumes primary allocation is already complete!
-//TODO add error-handling
-//TODO: check accesses to abi & node members
 function allocateEvent(
   abiEntry: AbiUtils.EventAbiEntry,
   contractId: number,
   referenceDeclarations: AstReferences,
   abiAllocations: Allocations.AbiAllocations
 ): Allocations.EventAllocation {
-  const linearizedBaseContracts = referenceDeclarations[contractId].linearizedBaseContracts;
+  const contractNode = referenceDeclarations[contractId];
+  const linearizedBaseContracts = contractNode.linearizedBaseContracts;
   //first: determine the corresponding event node
   //search through base contracts, from most derived (right) to most base (left)
-  const node: AstDefinition = linearizedBaseContracts.reduceRight(
-    (foundNode, baseContractId) => foundNode || referenceDeclarations[baseContractId].nodes.find(
-      eventNode => AbiUtils.matchesAbi(
-        abiEntry, eventNode, referenceDeclarations
-      )
-    ),
-    undefined
+  let node: AstDefinition;
+  node = linearizedBaseContracts.reduceRight(
+    (foundNode, baseContractId) => {
+      if(foundNode) {
+        return foundNode //once we've found something, we don't need to keep looking
+      };
+      let baseContractNode = referenceDeclarations[baseContractId];
+      if(baseContractNode === undefined) {
+        throw new UnknownBaseContractIdError(contractNode.id, contractNode.name, contractNode.contractKind, baseContractId);
+      }
+      return baseContractNode.nodes.find( //may be undefined! that's OK!
+        functionNode => AbiUtils.matchesAbi(
+          abiEntry, functionNode, referenceDeclarations
+        )
+      );
+    },
+    undefined //start with no node found
   );
+  if(node === undefined) {
+    //if we can't find it, just throw
+    //reverse the list (cloning first with slice) so that they're actually in the order searched
+    throw new NoDefinitionFoundForABIEntryError(abiEntry, linearizedBaseContracts.slice().reverse());
+  }
   //now: split the list of parameters into indexed and non-indexed
   //but first attach positions so we can reconstruct the list later
   const rawParameters = node.parameters.parameters;

@@ -5,5 +5,6 @@ export * from "./ast";
 export * from "./contexts";
 export * from "./abi";
 export * from "./compiler";
+export * from "./errors";
 export * from "./types/types";
 export * from "./types/values";
