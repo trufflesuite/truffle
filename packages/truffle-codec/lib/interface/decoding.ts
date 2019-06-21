@@ -149,6 +149,7 @@ export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding[] | 
       const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
       if(CodecUtils.EVM.equalData(encodedData, reEncodedData)) {
         decodings.push({
+          kind: "event",
           class: contractType,
           name: allocation.definition.name,
           arguments: decodedArguments

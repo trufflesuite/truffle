@@ -1,16 +1,34 @@
 import * as CodecUtils from "truffle-codec-utils";
 
-export interface CalldataDecoding {
-  kind: "function" | "constructor" | "fallback" | "unknown";
-  class?: CodecUtils.Types.ContractType; //included only if not unknown
-  name?: string; //included only if function
-  arguments?: AbiArgument[]; //included only if function or constructor
+export type CalldataDecoding = FunctionDecoding | ConstructorDecoding | FallbackDecoding | UnknownDecoding;
+
+export interface FunctionDecoding {
+  kind: "function";
+  class: CodecUtils.Types.ContractType;
+  arguments: AbiArgument[];
+  name: string;
+}
+
+export interface ConstructorDecoding {
+  kind: "constructor";
+  class: CodecUtils.Types.ContractType;
+  arguments: AbiArgument[];
+}
+
+export interface FallbackDecoding {
+  kind: "fallback";
+  class: CodecUtils.Types.ContractType;
+}
+
+export interface UnknownDecoding {
+  kind: "unknown";
 }
 
 export interface EventDecoding {
-  name: string;
+  kind: "event";
   class: CodecUtils.Types.ContractType;
   arguments: AbiArgument[];
+  name: string;
 }
 
 export interface AbiArgument {
