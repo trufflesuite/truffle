@@ -421,10 +421,10 @@ describe("Further Decoding", function() {
     //get offsets of top-level variables for this contract
     //converting to numbers for convenience
     const startingOffsets = Object.values(
-      Object.values(session.view(data.info.allocations.storage)).filter(
-        ({ definition }) => definition.name === "ComplexMappingTest"
-      )[0].members
-    ).map(({ pointer }) => pointer.storage.from.slot.offset);
+      session.view(data.info.allocations.storage)
+    )
+      .find(({ definition }) => definition.name === "ComplexMappingTest")
+      .members.map(({ pointer }) => pointer.range.from.slot.offset);
 
     const mappingKeys = session.view(data.views.mappingKeys);
     for (let slot of mappingKeys) {

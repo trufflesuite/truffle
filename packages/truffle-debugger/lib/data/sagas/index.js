@@ -79,8 +79,10 @@ export function* decode(definition, ref, forceNonPayable = false) {
     internalFunctionsTable
   });
 
+  debug("beginning decoding");
   let result = decoder.next();
   while (!result.done) {
+    debug("request received");
     let request = result.value;
     let response;
     switch (request.type) {
@@ -112,9 +114,11 @@ export function* decode(definition, ref, forceNonPayable = false) {
       default:
         debug("unrecognized request type!");
     }
+    debug("sending response");
     result = decoder.next(response);
   }
   //at this point, result.value holds the final value
+  debug("done decoding");
   return result.value;
 }
 
@@ -381,10 +385,12 @@ function* variablesAndMappingsSaga() {
           indexValue = yield* decode(
             keyDefinition,
             {
+              location: "definition",
               definition: indexDefinition
             },
             true
           );
+          debug("simple literal decoded: %O", indexValue);
         } else if (indexReference) {
           //if a prior assignment is found
           let splicedDefinition;
@@ -403,6 +409,8 @@ function* variablesAndMappingsSaga() {
             splicedDefinition = keyDefinition;
           }
           debug("about to decode");
+          debug("splicedDefinition: %o", splicedDefinition);
+          debug("indexReference: %o", indexReference);
           indexValue = yield* decode(splicedDefinition, indexReference, true);
         } else if (
           indexDefinition.referencedDeclaration &&
@@ -429,6 +437,7 @@ function* variablesAndMappingsSaga() {
               indexValue = yield* decode(
                 keyDefinition,
                 {
+                  location: "definition",
                   definition: indexConstantDeclaration.value
                 },
                 true
@@ -465,6 +474,7 @@ function* variablesAndMappingsSaga() {
           indexValue = null;
         }
         //now, as mentioned, retry in the typeConversion case
+        debug("retrying decoding");
       }
 
       //end subsection: key decoding
@@ -642,7 +652,7 @@ function literalAssignments(node, stack, currentDepth) {
 
   let assignment = makeAssignment(
     { astId: node.id, stackframe: currentDepth },
-    { literal }
+    { location: "stackliteral", literal }
   );
 
   return { [assignment.id]: assignment };

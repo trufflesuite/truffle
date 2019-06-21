@@ -38,5 +38,6 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
   }
 
   //otherwise, as mentioned, just dispatch to decodeValue
+  debug("not a static bytes");
   return yield* decodeValue(dataType, pointer, info);
 }

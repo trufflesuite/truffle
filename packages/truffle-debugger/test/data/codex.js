@@ -122,7 +122,9 @@ describe("Codex", function() {
 
     let session = bugger.connect();
 
+    debug("starting stepping");
     await session.continueUntilBreakpoint(); //run till end
+    debug("made it to end of transaction");
 
     const surface = (await session.variable("surface")).nativize();
 
