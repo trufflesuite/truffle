@@ -414,7 +414,7 @@ function* variablesAndMappingsSaga() {
           indexValue = yield* decode(splicedDefinition, indexReference, true);
         } else if (
           indexDefinition.referencedDeclaration &&
-          scopes[indexDefinition.referenceDeclaration]
+          scopes[indexDefinition.referencedDeclaration]
         ) {
           //there's one more reason we might have failed to decode it: it might be a
           //constant state variable.  Unfortunately, we don't know how to decode all
@@ -442,7 +442,11 @@ function* variablesAndMappingsSaga() {
                 },
                 true
               );
+            } else {
+              indexValue = null; //can't decode; see below for more explanation
             }
+          } else {
+            indexValue = null; //can't decode; see below for more explanation
           }
         }
         //there's still one more reason we might have failed to decode it:
