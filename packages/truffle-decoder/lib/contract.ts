@@ -129,6 +129,17 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     debug("init called");
     [this.referenceDeclarations, this.userDefinedTypes] = this.getUserDefinedTypes();
 
+    let libraryAllocationInfo: Codec.ContractAllocationInfo[] =
+    Object.entries(this.contracts).filter(
+      ([id, _]) => this.contractNodes[parseInt(id)].contractKind === "library"
+    ).
+    map(
+      ([id, { abi }]) => ({
+        abi: <AbiUtils.Abi>abi,
+        id: parseInt(id)
+      })
+    );
+
     this.allocations = {};
     this.allocations.storage = Codec.getStorageAllocations(
       this.referenceDeclarations,
@@ -145,10 +156,13 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       this.allocations.abi
     );
     this.allocations.event = Codec.getEventAllocations(
-      [{
-        abi: <AbiUtils.Abi>this.contract.abi,
-        id: this.contractNode.id
-      }],
+      [
+        {
+          abi: <AbiUtils.Abi>this.contract.abi,
+          id: this.contractNode.id
+        },
+        ...libraryAllocationInfo
+      ],
       this.referenceDeclarations,
       this.allocations.abi
     );
