@@ -10,7 +10,6 @@ var OS = require("os");
  * Module dependencies.
  */
 
-var ms = require("mocha/lib/ms.js");
 var Base = require("mocha/lib/reporters/base.js");
 var utils = require("mocha/lib/utils");
 var inherits = utils.inherits;
@@ -103,8 +102,6 @@ exports = module.exports = function(logger) {
       color("bright pass", " ") +
       color("green", " %d passing") +
       color("light", " (%s)");
-
-    logger.log(fmt, stats.passes || 0, ms(stats.duration));
 
     // pending
     if (stats.pending) {
