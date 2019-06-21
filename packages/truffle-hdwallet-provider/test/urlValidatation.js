@@ -55,5 +55,20 @@ describe("HD Wallet Provider", () => {
         assert.fail("Should not throw ");
       }
     });
+
+    it("a valid https url endpoint", done => {
+      try {
+        const goodUrl = `https://localhost:${port}`;
+        provider = new WalletProvider(mnemonic, goodUrl, 4, 10);
+        web3.setProvider(provider);
+
+        web3.eth.getBlockNumber((_, number) => {
+          assert(number === 0);
+          done();
+        });
+      } catch (e) {
+        assert.fail("Should not throw ");
+      }
+    });
   });
 });
