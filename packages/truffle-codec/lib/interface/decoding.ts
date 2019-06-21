@@ -127,7 +127,7 @@ export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding[] | 
           argumentAllocation.pointer,
           newInfo,
           0, //offset is always 0 for events
-          true //turns on STRICT MODE to cause more errors to be thrown
+          "strict" //turns on STRICT MODE to cause more errors to be thrown
         ));
         const name = argumentAllocation.definition.name;
         decodedArguments.push(

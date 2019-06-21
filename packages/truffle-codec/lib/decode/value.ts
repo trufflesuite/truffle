@@ -6,20 +6,11 @@ import * as CodecUtils from "truffle-codec-utils";
 import { Types, Values } from "truffle-codec-utils";
 import BN from "bn.js";
 import { DataPointer } from "../types/pointer";
-import { EvmInfo } from "../types/evm";
+import { EvmInfo, DecoderMode } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { StopDecodingError } from "../types/errors";
 
-
-//EXPLANATION OF MODES:
-//1. normal mode -- the default
-//bad padding causes an error to be returned.
-//2. permissive mode -- used for stack decoding
-//no error on bad padding for certain types.  other things may still cause errors to be returned.
-//3. strict mode -- used for event decoding
-//bad padding is an error, yes, but in this mode we don't return errors, we THROW them!
-//(except for internal functions; strict mode doesn't affect those)
-export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, mode: "normal" | "permissive" | "strict" = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   //NOTE: this does not actually return a Uint8Aarray, but due to the use of yield* read,
   //we have to include it in the type :-/
   const { state } = info;

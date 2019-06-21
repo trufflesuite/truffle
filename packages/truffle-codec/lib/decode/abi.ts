@@ -8,40 +8,37 @@ import decodeValue from "./value";
 import { AbiPointer, DataPointer } from "../types/pointer";
 import { AbiMemberAllocation } from "../types/allocation";
 import { abiSizeForType, isTypeDynamic } from "../allocate/abi";
-import { EvmInfo } from "../types/evm";
+import { EvmInfo, DecoderMode } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { StopDecodingError } from "../types/errors";
 
-//what is strict mode?
-//in strict mode, we don't return errors, we *throw* them!
-//it also turns on error checking for overlong arrays or strings
-
-export default function* decodeAbi(dataType: Types.Type, pointer: AbiPointer, info: EvmInfo, base: number = 0, strict: boolean = false): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export default function* decodeAbi(dataType: Types.Type, pointer: AbiPointer, info: EvmInfo, base: number = 0, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   if(Types.isReferenceType(dataType)) {
     let dynamic: boolean;
     try {
       dynamic = isTypeDynamic(dataType, info.allocations.abi);
     }
     catch(error) { //error: Values.DecodingError
-      if(strict) {
+      if(mode === "strict") {
         throw new StopDecodingError();
       }
       return Values.makeGenericErrorResult(dataType, error.error);
     }
     if(dynamic) {
-      return yield* decodeAbiReferenceByAddress(dataType, pointer, info, base, strict);
+      return yield* decodeAbiReferenceByAddress(dataType, pointer, info, base, mode);
     }
     else {
-      return yield* decodeAbiReferenceStatic(dataType, pointer, info, strict);
+      return yield* decodeAbiReferenceStatic(dataType, pointer, info, mode);
     }
   }
   else {
     debug("pointer %o", pointer);
-    return yield* decodeValue(dataType, pointer, info, strict ? "strict" : "normal");
+    return yield* decodeValue(dataType, pointer, info, mode);
   }
 }
 
-export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo, base: number = 0, strict: boolean = false): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo, base: number = 0, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+  const strict = mode === "strict";
   const { allocations: { abi: allocations }, state } = info;
   debug("pointer %o", pointer);
   //this variable holds the location we should look to *next*
@@ -89,7 +86,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
       start: startPosition,
       length: size
     }
-    return yield* decodeAbiReferenceStatic(dataType, staticPointer, info, strict);
+    return yield* decodeAbiReferenceStatic(dataType, staticPointer, info, mode);
   }
   let length: number;
   let rawLength: Uint8Array;
@@ -128,7 +125,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
         length
       }
 
-      return yield* decodeValue(dataType, childPointer, info, strict ? "strict" : "normal");
+      return yield* decodeValue(dataType, childPointer, info, mode);
 
     case "array":
 
@@ -191,18 +188,18 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
               start: startPosition + index * baseSize,
               length: baseSize
             },
-            info, startPosition, strict
+            info, startPosition, mode
           ))
         ); //pointer base is always start of list, never the length
       }
       return new Values.ArrayValue(dataType, decodedChildren);
 
     case "struct":
-      return yield* decodeAbiStructByPosition(dataType, location, startPosition, info, strict);
+      return yield* decodeAbiStructByPosition(dataType, location, startPosition, info, mode);
   }
 }
 
-export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer: AbiPointer, info: EvmInfo, strict: boolean = false): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer: AbiPointer, info: EvmInfo, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   debug("static");
   debug("pointer %o", pointer);
   const location = pointer.location;
@@ -217,7 +214,7 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
         baseSize = abiSizeForType(dataType.baseType, info.allocations.abi);
       }
       catch(error) { //error: Values.DecodingError
-        if(strict) {
+        if(mode === "strict") {
           throw new StopDecodingError();
         }
         return Values.makeGenericErrorResult(dataType, error.error);
@@ -233,21 +230,21 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
               start: pointer.start + index * baseSize,
               length: baseSize
             },
-            info, 0, strict //the 0 is meaningless, just there as default
+            info, 0, mode //the 0 is meaningless, just there as default
           ))
         );
       }
       return new Values.ArrayValue(dataType, decodedChildren);
 
     case "struct":
-      return yield* decodeAbiStructByPosition(dataType, location, pointer.start, info, strict);
+      return yield* decodeAbiStructByPosition(dataType, location, pointer.start, info, mode);
   }
 }
 
 type AbiLocation = "calldata" | "eventdata" | "abi";
 
 //note that this function takes the start position as a *number*; it does not take a pointer
-function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLocation, startPosition: number, info: EvmInfo, strict: boolean = false): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLocation, startPosition: number, info: EvmInfo, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { userDefinedTypes, allocations: { abi: allocations } } = info;
 
   const typeLocation = location === "eventdata"
@@ -257,7 +254,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
   const typeId = dataType.id;
   const structAllocation = allocations[typeId];
   if(!structAllocation) {
-    if(strict) {
+    if(mode === "strict") {
       throw new StopDecodingError();
     }
     return new Values.StructErrorResult(
@@ -279,7 +276,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
     let memberName = memberAllocation.definition.name;
     let storedType = <Types.StructType>userDefinedTypes[typeId];
     if(!storedType) {
-      if(strict) {
+      if(mode === "strict") {
         throw new StopDecodingError();
       }
       return new Values.StructErrorResult(
@@ -292,7 +289,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
 
     decodedMembers.push([
       memberName,
-      <Values.Result> (yield* decodeAbi(memberType, childPointer, info, 0, strict))
+      <Values.Result> (yield* decodeAbi(memberType, childPointer, info, 0, mode))
       //the 0 is meaningless, just there by default
     ]);
   }

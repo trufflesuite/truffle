@@ -5,11 +5,11 @@ import decodeValue from "./value";
 import read from "../read";
 import { Types, Values, Conversion as ConversionUtils } from "truffle-codec-utils";
 import { EventTopicPointer } from "../types/pointer";
-import { EvmInfo } from "../types/evm";
+import { EvmInfo, DecoderMode } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { StopDecodingError } from "../types/errors";
 
-export default function* decodeTopic(dataType: Types.Type, pointer: EventTopicPointer, info: EvmInfo, strict: boolean = false): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export default function* decodeTopic(dataType: Types.Type, pointer: EventTopicPointer, info: EvmInfo, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   if(Types.isReferenceType(dataType)) {
     //we cannot decode reference types "stored" in topics; we have to just return an error
     let bytes: Uint8Array;
@@ -17,7 +17,7 @@ export default function* decodeTopic(dataType: Types.Type, pointer: EventTopicPo
       bytes = yield* read(pointer, info.state);
     }
     catch(error) { //error: Values.DecodingError
-      if(strict) {
+      if(mode === "strict") {
         throw new StopDecodingError();
       }
       return Values.makeGenericErrorResult(dataType, error.error);
@@ -33,5 +33,5 @@ export default function* decodeTopic(dataType: Types.Type, pointer: EventTopicPo
     );
   }
   //otherwise, dispatch to decodeValue
-  return yield* decodeValue(dataType, pointer, info, strict ? "strict" : "normal");
+  return yield* decodeValue(dataType, pointer, info, mode);
 }

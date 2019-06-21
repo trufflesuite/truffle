@@ -12,10 +12,10 @@ import decodeSpecial from "./special";
 import decodeTopic from "./event";
 import { Types, Values } from "truffle-codec-utils";
 import * as Pointer from "../types/pointer";
-import { EvmInfo } from "../types/evm";
+import { EvmInfo, DecoderMode } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo, base: number = 0, strict: boolean = false): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo, base: number = 0, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 
@@ -38,10 +38,10 @@ export default function* decode(dataType: Types.Type, pointer: Pointer.DataPoint
 
     case "calldata":
     case "eventdata":
-      return yield* decodeAbi(dataType, pointer, info, base, strict);
+      return yield* decodeAbi(dataType, pointer, info, base, mode);
 
     case "eventtopic":
-      return yield* decodeTopic(dataType, pointer, info, strict);
+      return yield* decodeTopic(dataType, pointer, info, mode);
 
     case "memory":
       //NOTE: this case should never actually occur, but I'm including it
