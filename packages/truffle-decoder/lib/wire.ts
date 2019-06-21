@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decoder:decoder");
+const debug = debugModule("decoder:wire");
 
 import * as CodecUtils from "truffle-codec-utils";
 import { Types, Values } from "truffle-codec-utils";
@@ -28,12 +28,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
-  private allocations: {
-    storage: Codec.StorageAllocations;
-    abi: Codec.AbiAllocations;
-    calldata: Codec.CalldataAllocations;
-    event: Codec.EventAllocations;
-  };
+  private allocations: Codec.AllocationInfo;
 
   private codeCache: DecoderTypes.CodeCache = {};
 
@@ -95,6 +90,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       })
     );
 
+    this.allocations = {};
     this.allocations.storage = Codec.getStorageAllocations(this.referenceDeclarations, this.contractNodes);
     this.allocations.abi = Codec.getAbiAllocations(this.referenceDeclarations);
     this.allocations.calldata = Codec.getCalldataAllocations(allocationInfo, this.referenceDeclarations, this.allocations.abi);

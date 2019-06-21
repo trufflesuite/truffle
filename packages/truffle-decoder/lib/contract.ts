@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decoder:decoder");
+const debug = debugModule("decoder:contract");
 
 import * as CodecUtils from "truffle-codec-utils";
 import { Types, Values } from "truffle-codec-utils";
@@ -37,12 +37,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
-  private allocations: {
-    storage: Codec.StorageAllocations;
-    abi: Codec.AbiAllocations;
-    calldata: Codec.CalldataAllocations;
-    event: Codec.EventAllocations;
-  };
+  private allocations: Codec.AllocationInfo;
 
   private stateVariableReferences: Codec.StorageMemberAllocation[];
 
@@ -71,23 +66,29 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contractNodes[this.contractNode.id] = this.contractNode;
     if(this.contract.deployedBytecode) { //just to be safe
       const context = Utils.makeContext(this.contract, this.contractNode);
+      debug("adding context: %O", context);
       const hash = CodecUtils.Conversion.toHexString(
         CodecUtils.EVM.keccak256({type: "string",
           value: context.binary
         })
       );
+      debug("with hash: %s", hash);
+      this.context = context;
       this.contextHash = hash;
-      this.contexts[hash] = this.context;
+      this.contexts[hash] = context;
     }
     if(this.contract.bytecode) { //now the constructor version
       const constructorContext = Utils.makeContext(this.contract, this.contractNode, true);
+      debug("adding context: %O", constructorContext);
       const hash = CodecUtils.Conversion.toHexString(
         CodecUtils.EVM.keccak256({type: "string",
           value: constructorContext.binary
         })
       );
+      debug("with hash: %s", hash);
+      this.constructorContext = constructorContext;
       this.constructorContextHash = hash;
-      this.contexts[hash] = this.constructorContext;
+      this.contexts[hash] = constructorContext;
     }
 
     for(let relevantContract of this.relevantContracts) {
@@ -97,6 +98,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         this.contractNodes[node.id] = node;
         if(relevantContract.deployedBytecode) {
           const context = Utils.makeContext(relevantContract, node);
+          debug("adding context: %O", context);
           const hash = CodecUtils.Conversion.toHexString(
             CodecUtils.EVM.keccak256({type: "string",
               value: context.binary
@@ -107,6 +109,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       }
     }
 
+    debug("contexts: %o", this.contexts);
     this.contexts = <CodecUtils.Contexts.DecoderContexts>CodecUtils.Contexts.normalizeContexts(this.contexts);
     this.context = this.contexts[this.contextHash];
     this.constructorContext = this.contexts[this.constructorContextHash];
@@ -126,6 +129,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     debug("init called");
     [this.referenceDeclarations, this.userDefinedTypes] = this.getUserDefinedTypes();
 
+    this.allocations = {};
     this.allocations.storage = Codec.getStorageAllocations(
       this.referenceDeclarations,
       {[this.contractNode.id]: this.contractNode}

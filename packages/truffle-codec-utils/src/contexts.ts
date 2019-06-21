@@ -119,6 +119,7 @@ export namespace Contexts {
     let newContexts: Contexts = {...contexts};
 
     debug("contexts cloned");
+    debug("cloned contexts: %O", newContexts);
 
     //next, we get all the library names and sort them descending by length.
     //We're going to want to go in descending order of length so that we

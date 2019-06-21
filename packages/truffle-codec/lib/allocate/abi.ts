@@ -329,7 +329,7 @@ function allocateEvent(
   //now: split the list of parameters into indexed and non-indexed
   //but first attach positions so we can reconstruct the list later
   const rawParameters = node.parameters.parameters;
-  const [indexed, nonIndexed] = rawParameters.partition((parameter: AstDefinition) => parameter.indexed);
+  const [indexed, nonIndexed] = partition(rawParameters, (parameter: AstDefinition) => parameter.indexed);
   //now: perform the allocation for the non-indexed parameters!
   const abiAllocation = allocateMembers(node, nonIndexed, referenceDeclarations, abiAllocations)[node.id];
   //now: transform it appropriately
@@ -376,7 +376,11 @@ function getCalldataAllocationsForContract(
   referenceDeclarations: AstReferences,
   abiAllocations: Allocations.AbiAllocations
 ): Allocations.CalldataContractAllocation {
-  let allocations: Allocations.CalldataContractAllocation;
+  let allocations: Allocations.CalldataContractAllocation = {
+    constructorAllocation: defaultConstructorAllocation(constructorContext), //will be overridden if abi has a constructor
+    //(if it doesn't then it will remain as default)
+    functionAllocations: {}
+  }
   for(let abiEntry of abi) {
     if(abiEntry.type === "constructor") {
       allocations.constructorAllocation = allocateCalldata(
@@ -398,10 +402,6 @@ function getCalldataAllocationsForContract(
         );
     }
     //skip over fallback and event
-  }
-  //now: did we allocate a constructor? if not, allocate a default one
-  if(allocations.constructorAllocation === undefined) {
-    allocations.constructorAllocation = defaultConstructorAllocation(constructorContext);
   }
   return allocations;
 }

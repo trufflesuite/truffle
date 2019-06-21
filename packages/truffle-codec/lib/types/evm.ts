@@ -22,16 +22,18 @@ export interface EvmInfo {
   state: EvmState;
   mappingKeys?: Slot[];
   userDefinedTypes?: Types.TypesById;
-  allocations: {
-    storage?: Allocations.StorageAllocations;
-    memory?: Allocations.MemoryAllocations;
-    abi?: Allocations.AbiAllocations;
-    calldata?: Allocations.CalldataAllocations;
-    event?: Allocations.EventAllocations;
-  }
+  allocations: AllocationInfo;
   contexts?: Contexts.DecoderContextsById;
   currentContext?: Contexts.DecoderContext;
   internalFunctionsTable?: InternalFunctions;
+}
+
+export interface AllocationInfo {
+  storage?: Allocations.StorageAllocations;
+  memory?: Allocations.MemoryAllocations;
+  abi?: Allocations.AbiAllocations;
+  calldata?: Allocations.CalldataAllocations;
+  event?: Allocations.EventAllocations;
 }
 
 export interface InternalFunctions {
