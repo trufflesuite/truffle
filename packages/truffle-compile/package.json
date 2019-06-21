@@ -1,5 +1,6 @@
 {
   "name": "truffle-compile",
+  "version": "4.1.1",
   "description": "Compiler helper and artifact manager",
   "license": "MIT",
   "author": "Tim Coulter <tim.coulter@consensys.net>",
@@ -8,7 +9,6 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-compile/issues"
   },
-  "version": "4.1.0",
   "main": "index.js",
   "scripts": {
     "test": "./scripts/test.sh"

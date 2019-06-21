@@ -1,5 +1,6 @@
 {
   "name": "truffle-contract",
+  "version": "4.0.21",
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "license": "MIT",
   "author": "Tim Coulter <tim.coulter@consensys.net>",
@@ -8,7 +9,6 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.0.20",
   "main": "index.js",
   "scripts": {
     "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
@@ -38,7 +38,7 @@
     "ganache-core": "2.5.5",
     "mocha": "^6.1.4",
     "temp": "^0.8.3",
-    "truffle-compile": "^4.1.0",
+    "truffle-compile": "^4.1.1",
     "uglify-es": "^3.3.9"
   },
   "keywords": [

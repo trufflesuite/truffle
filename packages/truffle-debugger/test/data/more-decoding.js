@@ -97,6 +97,9 @@ contract ElementaryTest {
   mapping(string => string) stringMap;
   mapping(address => address) addressMap;
 
+  //constant state variables to try as mapping keys
+  uint constant two = 2;
+
   function run() public {
     //local variables to be tested
     byte oneByte;
@@ -114,6 +117,7 @@ contract ElementaryTest {
     bytesMap[hex"01"] = hex"01";
 
     uintMap[1] = 1;
+    uintMap[two] = two;
 
     intMap[-1] = -1;
 
@@ -340,7 +344,7 @@ describe("Further Decoding", function() {
       boolMap: new Map([[true, true]]),
       byteMap: new Map([["0x01", "0x01"]]),
       bytesMap: new Map([["0x01", "0x01"]]),
-      uintMap: new Map([[1, 1]]),
+      uintMap: new Map([[1, 1], [2, 2]]),
       intMap: new Map([[-1, -1]]),
       stringMap: new Map([["0xdeadbeef", "0xdeadbeef"], ["12345", "12345"]]),
       addressMap: new Map([[address, address]]),
