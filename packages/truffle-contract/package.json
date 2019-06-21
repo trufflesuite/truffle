@@ -1,6 +1,6 @@
 {
   "name": "truffle-contract",
-  "version": "4.0.20",
+  "version": "4.0.21",
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "main": "index.js",
   "scripts": {
@@ -45,7 +45,7 @@
     "ganache-core": "2.5.5",
     "mocha": "5.2.0",
     "temp": "^0.8.3",
-    "truffle-compile": "^4.1.0",
+    "truffle-compile": "^4.1.1",
     "uglify-es": "^3.3.9"
   },
   "publishConfig": {

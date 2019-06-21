@@ -17,10 +17,10 @@ var Develop = {
       // build directory where cli.bundled.js and cli.chain.js live.
       chainPath = path.join(__dirname, BUNDLE_CHAIN_FILENAME);
     } else {
-      chainPath = path.join(__dirname, "../", "chain.js");
+      chainPath = path.join(__dirname, "./", "chain.js");
     }
 
-    var cmd = spawn("node", [chainPath, ipcNetwork, JSON.stringify(options)], {
+    spawn("node", [chainPath, ipcNetwork, JSON.stringify(options)], {
       detached: true,
       stdio: "ignore"
     });
