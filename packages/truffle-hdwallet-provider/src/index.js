@@ -10,19 +10,15 @@ const ProviderSubprovider = require("web3-provider-engine/subproviders/provider.
 const Web3 = require("web3");
 const Transaction = require("ethereumjs-tx");
 const ethUtil = require("ethereumjs-util");
+const Url = require("url");
 
 const validateProvider = provider => {
-  // Validate url for protocols
-  if (typeof provider === "string") {
-    const validUrlDescription = [
-      "https?://", // protocol section
-      "\\S", // a non-whitespace char
-      "[\\S/]*" // 0 or more occurences of non-whitespaces and slashes
-    ].join("");
-    const validUrl = RegExp(validUrlDescription, "gmi");
+  const validProtocols = ["http:", "https:", "ws:", "wss:"];
 
-    if (!provider.match(validUrl)) {
-      console.log("provider", provider);
+  if (typeof provider === "string") {
+    const url = Url.parse(provider.toLowerCase());
+
+    if (!validProtocols.includes(url.protocol)) {
       throw new Error(
         "Invalid url format. Did you specify the http or https protocol?"
       );
