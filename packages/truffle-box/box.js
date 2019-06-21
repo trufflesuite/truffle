@@ -7,13 +7,7 @@ const fse = require("fs-extra");
 const inquirer = require("inquirer");
 
 function parseSandboxOptions(options) {
-  if (typeof options === "function") {
-    return {
-      name: "default",
-      unsafeCleanup: false,
-      setGracefulCleanup: false
-    };
-  } else if (typeof options === "string") {
+  if (typeof options === "string") {
     // back compatibility for when `options` used to be `name`
     return {
       name: options,
