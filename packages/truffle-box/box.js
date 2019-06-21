@@ -96,10 +96,6 @@ const Box = {
       options
     );
 
-    if (typeof options === "function") {
-      callback = options;
-    }
-
     if (setGracefulCleanup) {
       tmp.setGracefulCleanup();
     }
