@@ -1,74 +1,64 @@
-const Ganache = require("ganache-core");
 const assert = require("assert");
 const WalletProvider = require("../src/index.js");
+const { isValidProvider } = WalletProvider;
 
-describe("HD Wallet Provider", () => {
-  const Web3 = require("web3");
-  const web3 = new Web3();
-  const port = 8545;
-  let server;
-  let provider;
-
-  before(done => {
-    server = Ganache.server();
-    server.listen(port, done);
+describe("HD Wallet Provider Validator", () => {
+  it("fails missing protocol", () => {
+    const badUrl = "localhost/v1/badbeef";
+    assert.ok(
+      !isValidProvider(badUrl),
+      "Missing protocol should not pass validation"
+    );
   });
 
-  after(done => {
-    setTimeout(() => server.close(done), 100);
-  });
-
-  it("detects an invalid url endpoint", () => {
+  it("throws a meaningful error", () => {
+    const badUrl = "localhost/v1/badbeef";
     try {
-      const mnemonic = "";
-      const badUrl = "ropsten.infura.io/v3/fe93a046954a42839acb5f235f123456";
-      provider = new WalletProvider(mnemonic, badUrl, 4, 10);
-      assert.fail("Should throw invalid provider url");
+      new WalletProvider("", badUrl, 0, 100);
+      assert.fail("did not throw!");
     } catch (e) {
-      assert.equal(
-        e.message,
-        "Invalid url format. Did you specify the http or https protocol?"
-      );
+      const expectedMessage =
+        "Invalid url format. Please specify an appropriate protocol.\n\tValid protocols are: http | https | ws | wss";
+      assert.equal(e.message, expectedMessage);
     }
   });
 
-  describe("detects", () => {
-    const mnemonic =
-      "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
+  it("fails unknown protocol", () => {
+    const badUrl = "localhost/v1/badbeef";
+    assert.ok(
+      !isValidProvider(badUrl),
+      "Missing protocol should not pass validation"
+    );
+  });
 
-    afterEach(() => {
-      web3.setProvider(null);
-      provider.engine.stop();
+  describe("validates", () => {
+    it("http protocol", () => {
+      const goodUrl = "http://localhost:8545";
+      assert.ok(
+        isValidProvider(goodUrl),
+        "Good HTTP Url should pass validation"
+      );
     });
 
-    it("a valid http url endpoint", done => {
-      try {
-        const goodUrl = `http://localhost:${port}`;
-        provider = new WalletProvider(mnemonic, goodUrl, 4, 10);
-        web3.setProvider(provider);
-
-        web3.eth.getBlockNumber((_, number) => {
-          assert(number === 0);
-          done();
-        });
-      } catch (e) {
-        assert.fail("Should not throw ");
-      }
+    it("https protocol", () => {
+      const goodUrl = "https://localhost:8545";
+      assert.ok(
+        isValidProvider(goodUrl),
+        "Good HTTPS Url should pass validation"
+      );
     });
 
-    it("a valid https url endpoint", done => {
-      try {
-        const goodUrl = `https://localhost:${port}`;
-        provider = new WalletProvider(mnemonic, goodUrl, 4, 10);
-        web3.setProvider(provider);
+    it("ws protocol", () => {
+      const goodUrl = "ws://localhost:8545";
+      assert.ok(isValidProvider(goodUrl), "Good WS Url should pass validation");
+    });
 
-        web3.eth.getBlockNumber((_, number) => {
-          assert(number === 0);
-          done();
-        });
-      } catch (e) {
-        assert.fail("Should not throw ");
-      }
+    it("wss protocol", () => {
+      const goodUrl = "wss://localhost:8545";
+      assert.ok(
+        isValidProvider(goodUrl),
+        "Good WSS Url should pass validation"
+      );
     });
   });
 });

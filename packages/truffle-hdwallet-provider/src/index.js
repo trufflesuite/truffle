@@ -12,20 +12,6 @@ const Transaction = require("ethereumjs-tx");
 const ethUtil = require("ethereumjs-util");
 const Url = require("url");
 
-const validateProvider = provider => {
-  const validProtocols = ["http:", "https:", "ws:", "wss:"];
-
-  if (typeof provider === "string") {
-    const url = Url.parse(provider.toLowerCase());
-
-    if (!validProtocols.includes(url.protocol)) {
-      throw new Error(
-        "Invalid url format. Did you specify the http or https protocol?"
-      );
-    }
-  }
-};
-
 // This line shares nonce state across multiple provider instances. Necessary
 // because within truffle the wallet is repeatedly newed if it's declared in the config within a
 // function, resetting nonce from tx to tx. An instance can opt out
@@ -48,7 +34,11 @@ class HDWalletProvider {
     this.addresses = [];
     this.engine = new ProviderEngine();
 
-    validateProvider(provider);
+    if (!HDWalletProvider.isValidProvider(provider)) {
+      throw new Error(
+        "Invalid url format. Please specify an appropriate protocol.\n\tValid protocols are: http | https | ws | wss"
+      );
+    }
 
     // private helper to normalize given mnemonic
     const normalizePrivateKeys = mnemonic => {
@@ -188,5 +178,16 @@ class HDWalletProvider {
     return this.addresses;
   }
 }
+
+HDWalletProvider.isValidProvider = provider => {
+  const validProtocols = ["http:", "https:", "ws:", "wss:"];
+  let isValid = true;
+
+  if (typeof provider === "string") {
+    const url = Url.parse(provider.toLowerCase());
+    isValid = validProtocols.includes(url.protocol);
+  }
+  return isValid;
+};
 
 module.exports = HDWalletProvider;
