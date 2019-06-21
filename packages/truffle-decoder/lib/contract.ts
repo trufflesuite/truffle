@@ -409,7 +409,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   //NOTE: will only work with logs for this address!
-  public async decodeLog(log: Log): Promise<DecoderTypes.DecodedEvent> {
+  public async decodeLog(log: Log, name: string | null = null): Promise<DecoderTypes.DecodedEvent> {
     if(log.address !== this.contractAddress) {
       throw new DecoderTypes.EventOrTransactionIsNotForThisContractError(log.address, this.contractAddress);
     }
@@ -426,7 +426,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contextsById
     };
-    const decoder = Codec.decodeEvent(info);
+    const decoder = Codec.decodeEvent(info, name);
 
     let result = decoder.next();
     while(!result.done) {
@@ -448,8 +448,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   //NOTE: will only work with logs for this address!
-  public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedEvent[]> {
-    return await Promise.all(logs.map(this.decodeLog));
+  public async decodeLogs(logs: Log[], name: string | null = null): Promise<DecoderTypes.DecodedEvent[]> {
+    return await Promise.all(logs.map(log => this.decodeLog(log, name)));
   }
 
   public async events(name: string | null = null, fromBlock: BlockType = "latest", toBlock: BlockType = "latest"): Promise<DecoderTypes.DecodedEvent[]> {
@@ -459,17 +459,13 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       toBlock,
     });
 
-    let events = await this.decodeLogs(logs);
+    let events = await this.decodeLogs(logs, name);
 
+    //if a target name was specified, we'll restrict to events that decoded
+    //to something with that name.  (note that only decodings with that name
+    //will have been returned from decodeLogs in the first place)
     if(name !== null) {
-      events = events.map(
-        event => ({
-          ...event,
-          decodings: event.decodings.filter(
-            decoding => decoding.name === name
-          )
-        })
-      ).filter(
+      events = events.filter(
         event => event.decodings.length > 0
       );
     }

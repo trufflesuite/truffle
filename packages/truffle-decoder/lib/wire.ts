@@ -174,7 +174,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  public async decodeLog(log: Log): Promise<DecoderTypes.DecodedEvent> {
+  public async decodeLog(log: Log, name: string | null = null): Promise<DecoderTypes.DecodedEvent> {
     const block = log.blockNumber;
     const data = CodecUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(CodecUtils.Conversion.toBytes);
@@ -188,7 +188,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contextsById
     };
-    const decoder = Codec.decodeEvent(info);
+    const decoder = Codec.decodeEvent(info, name);
 
     let result = decoder.next();
     while(!result.done) {
@@ -209,8 +209,8 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedEvent[]> {
-    return await Promise.all(logs.map(this.decodeLog));
+  public async decodeLogs(logs: Log[], name: string | null = null): Promise<DecoderTypes.DecodedEvent[]> {
+    return await Promise.all(logs.map(log => this.decodeLog(log, name)));
   }
 
   public async events(name: string | null = null, fromBlock: BlockType = "latest", toBlock: BlockType = "latest"): Promise<DecoderTypes.DecodedEvent[]> {
@@ -219,17 +219,13 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       toBlock,
     });
 
-    let events = await this.decodeLogs(logs);
+    let events = await this.decodeLogs(logs, name);
 
+    //if a target name was specified, we'll restrict to events that decoded
+    //to something with that name.  (note that only decodings with that name
+    //will have been returned from decodeLogs in the first place)
     if(name !== null) {
-      events = events.map(
-        event => ({
-          ...event,
-          decodings: event.decodings.filter(
-            decoding => decoding.name === name
-          )
-        })
-      ).filter(
+      events = events.filter(
         event => event.decodings.length > 0
       );
     }

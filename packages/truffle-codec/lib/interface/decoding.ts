@@ -88,7 +88,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
   }
 }
 
-export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding[] | DecoderRequest | Values.Result | GeneratorJunk> {
+export function* decodeEvent(info: EvmInfo, targetName: string | null = null): IterableIterator<EventDecoding[] | DecoderRequest | Values.Result | GeneratorJunk> {
   const compiler = info.currentContext.compiler;
   const allocations = info.allocations.event;
   let rawSelector: Uint8Array;
@@ -116,6 +116,10 @@ export function* decodeEvent(info: EvmInfo): IterableIterator<EventDecoding[] | 
   let decodings: EventDecoding[] = [];
   for(const [id, allocation] of possibleAllocations) {
     try {
+      //first: do a name check so we can skip decoding if name is wrong
+      if(targetName !== null && allocation.definition.name !== targetName) {
+        continue;
+      }
       const context = info.contexts[parseInt(id)];
       const contractType = CodecUtils.Contexts.contextToType(context);
       const newInfo = { ...info, currentContext: context };
