@@ -36,7 +36,11 @@ class HDWalletProvider {
 
     if (!HDWalletProvider.isValidProvider(provider)) {
       throw new Error(
-        "Invalid url format. Please specify an appropriate protocol.\n\tValid protocols are: http | https | ws | wss"
+        [
+          `Malformed provider URL: '${provider}'`,
+          "Please specify a correct URL, using the http, https, ws, or wss protocol.",
+          ""
+        ].join("\n")
       );
     }
 

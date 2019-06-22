@@ -17,8 +17,11 @@ describe("HD Wallet Provider Validator", () => {
       new WalletProvider("", badUrl, 0, 100);
       assert.fail("did not throw!");
     } catch (e) {
-      const expectedMessage =
-        "Invalid url format. Please specify an appropriate protocol.\n\tValid protocols are: http | https | ws | wss";
+      const expectedMessage = [
+        `Malformed provider URL: '${badUrl}'`,
+        "Please specify a correct URL, using the http, https, ws, or wss protocol.",
+        ""
+      ].join("\n");
       assert.equal(e.message, expectedMessage);
     }
   });
