@@ -185,13 +185,13 @@ class HDWalletProvider {
 
 HDWalletProvider.isValidProvider = provider => {
   const validProtocols = ["http:", "https:", "ws:", "wss:"];
-  let isValid = true;
 
   if (typeof provider === "string") {
     const url = Url.parse(provider.toLowerCase());
-    isValid = validProtocols.includes(url.protocol);
+    return validProtocols.includes(url.protocol);
   }
-  return isValid;
+
+  return true;
 };
 
 module.exports = HDWalletProvider;
