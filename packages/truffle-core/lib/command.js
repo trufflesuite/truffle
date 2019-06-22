@@ -100,9 +100,36 @@ class Command {
       }
     });
 
-    const newOptions = Object.assign({}, clone, argv);
-
     try {
+      const inputOptions = [];
+      inputStrings.map(i => {
+        if (i.startsWith("--")) {
+          inputOptions.push(i);
+        }
+      });
+
+      const validOptions = [];
+      result.command.help.options.map(item => {
+        let opt = item.option.split(" ")[0];
+        if (opt.startsWith("--")) {
+          validOptions.push(opt);
+        }
+      });
+
+      let notValidOptions = inputOptions.filter(
+        opt => !validOptions.includes(opt)
+      );
+
+      if (notValidOptions.length > 0) {
+        return callback(
+          new TaskError(
+            "Unsupported (Undocumented) command line option: " + notValidOptions
+          )
+        );
+      }
+
+      const newOptions = Object.assign({}, clone, argv);
+
       result.command.run(newOptions, callback);
       analytics.send({
         command: result.name ? result.name : "other",
