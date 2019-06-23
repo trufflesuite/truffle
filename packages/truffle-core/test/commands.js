@@ -42,11 +42,13 @@ describe("Commander", function() {
     var actualCommand = commander.getCommand("mig").command;
     assert.equal(actualCommand, commands.migrate);
 
-    console.warn = function(msg) {
+    const originalLog = console.log || console.debug;
+    console.log = function(msg) {
       assert.equal(
         msg,
         "warning: possilble unsupported (undocumented in help) command line option: --unsupportedflag"
       );
+      console.log = originalLog;
     };
 
     commander.run(
@@ -58,9 +60,10 @@ describe("Commander", function() {
         "invalidoption"
       ],
       { noAliases: true, logger: console },
-      function(err) {
-        assert.fail(err);
+      function() {
+        //ignore. not part of test
       }
     );
+    console.warn = originalLog;
   });
 });

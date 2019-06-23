@@ -123,8 +123,8 @@ class Command {
 
       if (invalidOptions.length > 0) {
         if (options.logger) {
-          const warn = options.logger.warn || options.logger.log;
-          warn(
+          const log = options.logger.log || options.logger.debug;
+          log(
             "warning: possilble unsupported (undocumented in help) command line option: " +
               invalidOptions
           );
