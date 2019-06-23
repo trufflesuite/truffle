@@ -117,19 +117,18 @@ class Command {
         }
       });
 
-      let notValidOptions = inputOptions.filter(
+      let invalidOptions = inputOptions.filter(
         opt => !validOptions.includes(opt)
       );
 
-      if (notValidOptions.length > 0) {
-        console.log(
-          "Unsupported (Undocumented) command line option: " + notValidOptions
-        );
-        // return callback(
-        //   new TaskError(
-        //     "Unsupported (Undocumented) command line option: " + notValidOptions
-        //   )
-        // );
+      if (invalidOptions.length > 0) {
+        if (options.logger) {
+          const warn = options.logger.warn || options.logger.log;
+          warn(
+            "warning: possilble unsupported (undocumented in help) command line option: " +
+              invalidOptions
+          );
+        }
       }
 
       const newOptions = Object.assign({}, clone, argv);

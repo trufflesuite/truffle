@@ -37,4 +37,30 @@ describe("Commander", function() {
     var actualCommand = commander.getCommand("console").command;
     assert.equal(actualCommand, commands.console);
   });
+
+  it("will warn and display error for unsupported flags in commands", function() {
+    var actualCommand = commander.getCommand("mig").command;
+    assert.equal(actualCommand, commands.migrate);
+
+    console.warn = function(msg) {
+      assert.equal(
+        msg,
+        "warning: possilble unsupported (undocumented in help) command line option: --unsupportedflag"
+      );
+    };
+
+    commander.run(
+      [
+        "migrate",
+        "--network",
+        "localhost",
+        "--unsupportedflag",
+        "invalidoption"
+      ],
+      { noAliases: true, logger: console },
+      function(err) {
+        assert.fail(err);
+      }
+    );
+  });
 });
