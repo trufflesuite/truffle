@@ -100,14 +100,49 @@ class Command {
       }
     });
 
-    const newOptions = Object.assign({}, clone, argv);
+    //Check unsupported command line flag according to the option list in help
+    try {
+      const inputOptions = [];
+      inputStrings.map(i => {
+        if (i.startsWith("--")) {
+          inputOptions.push(i);
+        }
+      });
 
-    result.command.run(newOptions, callback);
-    analytics.send({
-      command: result.name ? result.name : "other",
-      args: result.argv._,
-      version: bundled || "(unbundled) " + core
-    });
+      const validOptions = [];
+      result.command.help.options.map(item => {
+        let opt = item.option.split(" ")[0];
+        if (opt.startsWith("--")) {
+          validOptions.push(opt);
+        }
+      });
+
+      let notValidOptions = inputOptions.filter(
+        opt => !validOptions.includes(opt)
+      );
+
+      if (notValidOptions.length > 0) {
+        console.log(
+          "Unsupported (Undocumented) command line option: " + notValidOptions
+        );
+        // return callback(
+        //   new TaskError(
+        //     "Unsupported (Undocumented) command line option: " + notValidOptions
+        //   )
+        // );
+      }
+
+      const newOptions = Object.assign({}, clone, argv);
+
+      result.command.run(newOptions, callback);
+      analytics.send({
+        command: result.name ? result.name : "other",
+        args: result.argv._,
+        version: bundled || "(unbundled) " + core
+      });
+    } catch (err) {
+      callback(err);
+    }
   }
 
   displayGeneralHelp() {
