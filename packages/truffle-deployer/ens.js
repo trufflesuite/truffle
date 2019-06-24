@@ -7,13 +7,13 @@ class ENS {
   }
 
   async deployNewENSRegistry(from) {
-    const ENS = this.resolver.require("@ensdomains/ens/ENSRegistry");
-    ENS.setProvider(this.provider);
-    const ens = await ENS.new({ from });
-    const registryOwnerAddress = await ens.owner("0x0");
+    const ENSRegistry = this.resolver.require("@ensdomains/ens/ENSRegistry");
+    ENSRegistry.setProvider(this.provider);
+    const ensRegistry = await ENSRegistry.new({ from });
+    const registryOwnerAddress = await ensRegistry.owner("0x0");
     return {
       registryOwnerAddress,
-      registryAddress: ens.address
+      registryAddress: ensRegistry.address
     };
   }
 
@@ -39,6 +39,7 @@ class ENS {
 
     // Find the owner of the name and compare it to the "from" field let nameOwner = await ensjs.owner(name);
     let nameOwner = await ensjs.owner(name);
+    // Future work:
     // Handle case where there is no owner and we try to register it for the user
     // if (nameOwner === "0x0000000000000000000000000000000000000000") {
     //   this.attemptNameRegistration();
