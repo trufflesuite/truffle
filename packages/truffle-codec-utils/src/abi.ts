@@ -122,6 +122,8 @@ export namespace AbiUtils {
     return "nonpayable";
   }
 
+  //note: in future, this will be replaced by a toABI function,
+  //which will also work for variable declarations
   export function matchesAbi(abiEntry: AbiEntry, node: AstDefinition, referenceDeclarations: AstReferences): boolean {
     //first: does the basic name and type match?
     switch(node.nodeType) {

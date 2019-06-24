@@ -37,7 +37,12 @@ export namespace EVM {
     return ConversionUtils.toBN(sha);
   }
 
-  export function equalData(bytes1: Uint8Array, bytes2: Uint8Array): boolean {
+  //checks if two bytearrays (which may be undefined) are equal.
+  //does not consider undefined to be equal to itself.
+  export function equalData(bytes1: Uint8Array | undefined, bytes2: Uint8Array | undefined): boolean {
+    if(!bytes1 || !bytes2) {
+      return false;
+    }
     if(bytes1.length !== bytes2.length) {
       return false;
     }

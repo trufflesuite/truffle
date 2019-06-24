@@ -5,14 +5,16 @@ import read from "../read";
 import * as CodecUtils from "truffle-codec-utils";
 import { Types, Values } from "truffle-codec-utils";
 import decodeValue from "./value";
-import { AbiPointer, DataPointer } from "../types/pointer";
+import { AbiDataPointer, DataPointer } from "../types/pointer";
 import { AbiMemberAllocation } from "../types/allocation";
 import { abiSizeForType, isTypeDynamic } from "../allocate/abi";
 import { EvmInfo, DecoderMode } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { StopDecodingError } from "../types/errors";
 
-export default function* decodeAbi(dataType: Types.Type, pointer: AbiPointer, info: EvmInfo, base: number = 0, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
+
+export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer, info: EvmInfo, base: number = 0, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   if(Types.isReferenceType(dataType)) {
     let dynamic: boolean;
     try {
@@ -109,17 +111,15 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
         return Values.makeGenericErrorResult(dataType, error.error);
       }
       let lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
-      if(strict && lengthAsBN.gtn(info.state.eventdata.length)) {
-        //HACK: yes, we always compare to eventdata, not the actual location!
-        //this is OK for now as strict mode is only used when decoding events.
-        //also, you may notice that the comparison is a bit crude; that's OK,
-        //this is just to prevent huge numbers from DOSing us, other errors will
-        //still be caught regardless
+      if(strict && lengthAsBN.gtn(info.state[location].length)) {
+        //you may notice that the comparison is a bit crude; that's OK, this is
+        //just to prevent huge numbers from DOSing us, other errors will still
+        //be caught regardless
         throw new StopDecodingError();
       }
       length = lengthAsBN.toNumber();
 
-      let childPointer: AbiPointer = {
+      let childPointer: AbiDataPointer = {
         location,
         start: startPosition + CodecUtils.EVM.WORD_SIZE,
         length
@@ -146,12 +146,10 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
             return Values.makeGenericErrorResult(dataType, error.error);
           }
           let lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
-          if(strict && lengthAsBN.gtn(info.state.eventdata.length)) {
-            //HACK: yes, we always compare to eventdata, not the actual location!
-            //this is OK for now as strict mode is only used when decoding events.
-            //also, you may notice that the comparison is a bit crude; that's OK,
-            //this is just to prevent huge numbers from DOSing us, other errors will
-            //still be caught regardless
+          if(strict && lengthAsBN.gtn(info.state[location].length)) {
+            //you may notice that the comparison is a bit crude; that's OK, this is
+            //just to prevent huge numbers from DOSing us, other errors will still
+            //be caught regardless
             throw new StopDecodingError();
           }
           length = lengthAsBN.toNumber();
@@ -199,7 +197,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   }
 }
 
-export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer: AbiPointer, info: EvmInfo, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer: AbiDataPointer, info: EvmInfo, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   debug("static");
   debug("pointer %o", pointer);
   const location = pointer.location;
@@ -241,8 +239,6 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
   }
 }
 
-type AbiLocation = "calldata" | "eventdata" | "abi";
-
 //note that this function takes the start position as a *number*; it does not take a pointer
 function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLocation, startPosition: number, info: EvmInfo, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { userDefinedTypes, allocations: { abi: allocations } } = info;
@@ -267,7 +263,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
   for(let index = 0; index < structAllocation.members.length; index++) {
     const memberAllocation = structAllocation.members[index];
     const memberPointer = memberAllocation.pointer;
-    const childPointer: AbiPointer = {
+    const childPointer: AbiDataPointer = {
       location,
       start: startPosition + memberPointer.start,
       length: memberPointer.length

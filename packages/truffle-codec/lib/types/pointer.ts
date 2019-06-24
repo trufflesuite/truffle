@@ -3,9 +3,10 @@ import { Range } from "./storage";
 
 export type DataPointer = StackPointer | MemoryPointer | StoragePointer
   | CalldataPointer | StackLiteralPointer | ConstantDefinitionPointer
-  | SpecialPointer | EventDataPointer | EventTopicPointer | GenericAbiPointer;
+  | SpecialPointer | EventDataPointer | EventTopicPointer;
 
 export type AbiPointer = CalldataPointer | EventDataPointer | GenericAbiPointer;
+export type AbiDataPointer = CalldataPointer | EventDataPointer;
 
 export interface StackPointer {
   location: "stack",
