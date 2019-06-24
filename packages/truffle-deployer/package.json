@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle-deployer#readme",
   "dependencies": {
+    "@ensdomains/ens": "^0.3.11",
     "emittery": "^0.4.0",
     "ethereum-ens": "^0.7.7",
     "truffle-contract": "^4.0.21",
