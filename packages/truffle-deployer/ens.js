@@ -21,8 +21,8 @@ class ENS {
     let ensjs = new ENSJS(this.provider);
 
     try {
-      // See if registry exists on network
-      registryOwnerAddress = await ensjs.owner("0x0");
+      // See if registry exists on network by resolving an arbitrary address
+      await ensjs.owner("0x0");
     } catch (error) {
       // If no registry, deploy one
       const noRegistryFound =
@@ -37,7 +37,7 @@ class ENS {
       }
     }
 
-    // Find the owner of the name and compare it to the "from" field let nameOwner = await ensjs.owner(name);
+    // Find the owner of the name and compare it to the "from" field
     let nameOwner = await ensjs.owner(name);
     // Future work:
     // Handle case where there is no owner and we try to register it for the user
