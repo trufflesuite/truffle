@@ -44,6 +44,7 @@
     "debug": "^4.1.0",
     "ganache-core": "2.5.5",
     "mocha": "5.2.0",
+    "sinon": "^7.3.2",
     "temp": "^0.8.3",
     "truffle-compile": "^4.1.1",
     "uglify-es": "^3.3.9"
