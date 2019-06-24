@@ -4,7 +4,7 @@ const bigNumberify = require("ethers/utils/bignumber").bigNumberify;
 const abi = require("web3-eth-abi");
 const BlockchainUtils = require("truffle-blockchain-utils");
 const reformat = require("./reformat");
-const ENSJS = require("ethereum-ens");
+const { convertENSNames } = require("./ens");
 
 const Utils = {
   is_object(val) {
@@ -196,36 +196,6 @@ const Utils = {
     }
   },
 
-  convertENSNames(args, methodABI, web3) {
-    const { isAddress } = web3.utils;
-    const ensjs = new ENSJS(web3.currentProvider);
-    const convertedNames = args.map((argument, index) => {
-      if (methodABI.inputs[index].type === "address") {
-        // Check all address args for ENS names
-        const argIsAddress = isAddress(argument);
-        if (argIsAddress) return argument;
-        return ensjs.resolver(argument).addr();
-      } else if (index === methodABI.inputs.length) {
-        // Check the from field on the last argument if present
-        if (argument.from && !isAddress(argument.from)) {
-          return ensjs
-            .resolver(argument.from)
-            .addr()
-            .then(fromAddress => {
-              return Object.assign({}, { from: fromAddress }, argument);
-            })
-            .catch(error => {
-              throw error;
-            });
-        }
-        return argument;
-      } else {
-        return argument;
-      }
-    });
-    return Promise.all(convertedNames);
-  },
-
   convertToEthersBN(original) {
     const converted = [];
     original.forEach(item => {
@@ -367,5 +337,7 @@ const Utils = {
     return { id: TruffleContractInstance.network_id, blockLimit: gasLimit };
   }
 };
+
+Utils.convertENSNames = convertENSNames;
 
 module.exports = Utils;
