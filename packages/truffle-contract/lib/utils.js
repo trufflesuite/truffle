@@ -4,7 +4,7 @@ const bigNumberify = require("ethers/utils/bignumber").bigNumberify;
 const abi = require("web3-eth-abi");
 const BlockchainUtils = require("truffle-blockchain-utils");
 const reformat = require("./reformat");
-const ENS = require("ethereum-ens");
+const ENSJS = require("ethereum-ens");
 
 const Utils = {
   is_object(val) {
@@ -198,17 +198,17 @@ const Utils = {
 
   convertENSNames(args, methodABI, web3) {
     const { isAddress } = web3.utils;
-    const ens = new ENS(web3.currentProvider);
+    const ensjs = new ENSJS(web3.currentProvider);
     const convertedNames = args.map((argument, index) => {
       if (methodABI.inputs[index].type === "address") {
         // Check all address args for ENS names
         const argIsAddress = isAddress(argument);
         if (argIsAddress) return argument;
-        return ens.resolver(argument).addr();
+        return ensjs.resolver(argument).addr();
       } else if (index === methodABI.inputs.length) {
         // Check the from field on the last argument if present
         if (argument.from && !isAddress(argument.from)) {
-          return ens
+          return ensjs
             .resolver(argument.from)
             .addr()
             .then(fromAddress => {
