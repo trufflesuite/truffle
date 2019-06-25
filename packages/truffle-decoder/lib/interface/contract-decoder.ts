@@ -12,7 +12,7 @@ import * as general from "../allocate/general";
 import * as storage from "../allocate/storage";
 import { StoragePointer, isStoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageMemberAllocation } from "../types/allocation";
-import { Slot, isWordsLength } from "../types/storage";
+import { Slot, isWordsLength, equalSlots } from "../types/storage";
 import { DecoderRequest, isStorageRequest, isCodeRequest } from "../types/request";
 import { ContractBeingDecodedHasNoNodeError } from "../types/errors";
 import decode from "../decode";
@@ -21,7 +21,6 @@ import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
 import abiDecoder from "abi-decoder";
-import isEqual from "lodash.isequal"; //util.isDeepStrictEqual doesn't exist in Node 8
 
 interface EventVariable {
   name: string;
@@ -347,7 +346,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     debug("slot: %O", slot);
     while(slot !== undefined &&
       this.mappingKeys.every(existingSlot =>
-      !isEqual(existingSlot,slot)
+      !equalSlots(existingSlot,slot)
         //we put the newness requirement in the while condition rather than a
         //separate if because if we hit one ancestor that's not new, the futher
         //ones won't be either
@@ -368,7 +367,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     //remove mapping key and all descendants
     this.mappingKeys = this.mappingKeys.filter( existingSlot => {
       while(existingSlot !== undefined) {
-        if(isEqual(existingSlot, slot)) {
+        if(equalSlots(existingSlot, slot)) {
           return false; //if it matches, remove it
         }
         existingSlot = existingSlot.path;
