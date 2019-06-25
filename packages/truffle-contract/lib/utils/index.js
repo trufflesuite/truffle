@@ -111,6 +111,7 @@ const Utils = {
 
     return merged;
   },
+
   parallel(arr, callback = () => {}) {
     if (!arr.length) {
       return callback(null, []);
@@ -213,8 +214,6 @@ const Utils = {
     });
     return converted;
   },
-
-  bigNumberify,
 
   /**
    * Multiplies an ethers.js BigNumber and a number with decimal places using
@@ -339,5 +338,6 @@ const Utils = {
 };
 
 Utils.convertENSNames = convertENSNames;
+Utils.bigNumberify = bigNumberify;
 
 module.exports = Utils;
