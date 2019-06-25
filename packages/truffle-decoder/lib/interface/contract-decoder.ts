@@ -203,7 +203,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       for(const node of contractNode.nodes) {
 	if(node.nodeType === "StructDefinition" || node.nodeType === "EnumDefinition") {
 	  references[node.id] = node;
-	  types[node.id] = Types.definitionToStoredType(node, compiler);
+          //HACK even though we don't have all the references, we only need one:
+          //the reference to the contract itself, which we just added, so we're good
+	  types[node.id] = Types.definitionToStoredType(node, compiler, references);
 	}
       }
     }

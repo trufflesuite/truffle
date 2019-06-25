@@ -159,7 +159,8 @@ const data = createSelectorTree({
             ...Object.entries(referenceDeclarations).map(([id, node]) => ({
               [id]: DecodeUtils.Types.definitionToStoredType(
                 node,
-                contexts[findAncestorOfType(node, types, scopes).id].compiler
+                contexts[findAncestorOfType(node, types, scopes).id].compiler,
+                referenceDeclarations
               )
             }))
           );
