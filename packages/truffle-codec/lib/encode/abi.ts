@@ -2,6 +2,7 @@ import { Types, Values, Conversion as ConversionUtils, EVM as EVMUtils } from "t
 import { AbiAllocations } from "../types/allocation";
 import { isTypeDynamic, abiSizeForType } from "../allocate/abi";
 import sum from "lodash.sum";
+import utf8 from "utf8";
 
 export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): Uint8Array | undefined {
   if(input instanceof Values.ErrorResult) {
@@ -19,43 +20,45 @@ export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): U
   }
   //now, the types that actually work!
   if(input instanceof Values.UintValue) {
-    return ConversionUtils.toBytes(input.value, EVMUtils.WORD_SIZE);
+    return ConversionUtils.toBytes(input.value.asBN, EVMUtils.WORD_SIZE);
   }
   if(input instanceof Values.IntValue) {
-    return ConversionUtils.toBytes(input.value, EVMUtils.WORD_SIZE);
+    return ConversionUtils.toBytes(input.value.asBN, EVMUtils.WORD_SIZE);
   }
   if(input instanceof Values.EnumValue) {
     return ConversionUtils.toBytes(input.value.numeric, EVMUtils.WORD_SIZE);
   }
   if(input instanceof Values.BoolValue) {
     let bytes = new Uint8Array(EVMUtils.WORD_SIZE); //is initialized to zeroes
-    if(input.value) {
+    if(input.value.asBool) {
       bytes[EVMUtils.WORD_SIZE - 1] = 1;
     }
     return bytes;
   }
-  if(input instanceof Values.BytesValue) {
-    switch(input.type.kind) {
-      case "static": {
-        let bytes = ConversionUtils.toBytes(input.value);
-        return rightPad(bytes, EVMUtils.WORD_SIZE);
-      }
-      case "dynamic": {
-        let bytes = ConversionUtils.toBytes(input.value);
-        return padAndPrependLength(bytes);
-      }
-    }
+  if(input instanceof Values.BytesStaticValue) {
+    let bytes = ConversionUtils.toBytes(input.value.asHex);
+    return rightPad(bytes, EVMUtils.WORD_SIZE);
+  }
+  if(input instanceof Values.BytesDynamicValue) {
+    let bytes = ConversionUtils.toBytes(input.value.asHex);
+    return padAndPrependLength(bytes);
   }
   if(input instanceof Values.AddressValue) {
-    let bytes = ConversionUtils.toBytes(input.value);
-    return rightPad(bytes, EVMUtils.WORD_SIZE);
+    return ConversionUtils.toBytes(input.value.asAddress, EVMUtils.WORD_SIZE);
   }
   if(input instanceof Values.ContractValue) {
-    let bytes = ConversionUtils.toBytes(input.value.address);
-    return rightPad(bytes, EVMUtils.WORD_SIZE);
+    return ConversionUtils.toBytes(input.value.address, EVMUtils.WORD_SIZE);
   }
   if(input instanceof Values.StringValue) {
-    let bytes = stringToBytes(input.value);
+    let bytes: Uint8Array;
+    switch(input.value.kind) {
+      case "valid":
+        bytes = stringToBytes(input.value.asString);
+        break;
+      case "malformed":
+        bytes = ConversionUtils.toBytes(input.value.asHex);
+        break;
+    }
     return padAndPrependLength(bytes);
   }
   if(input instanceof Values.FunctionExternalValue) {
@@ -91,15 +94,14 @@ export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): U
 }
 
 function stringToBytes(input: string): Uint8Array {
-  //HACK WARNING: does not properly handle the UTF-16 to UTF-8 conversion
-  //(i.e. we ignore this problem)
-  //HOWEVER, since we also ignore this in the decoder, this should work
-  //fine for the purposes we're using it for now >_>
+  input = utf8.encode(input);
   let bytes = new Uint8Array(input.length);
   for(let i = 0; i < input.length; i++) {
     bytes[i] = input.charCodeAt(i);
   }
   return bytes;
+  //NOTE: this will throw an error if the string contained malformed UTF-16!
+  //but, well, it shouldn't contain that...
 }
 
 function padAndPrependLength(bytes: Uint8Array): Uint8Array {

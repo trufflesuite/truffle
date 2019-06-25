@@ -244,7 +244,7 @@ function allocateCalldata(
       offset = CodecUtils.EVM.SELECTOR_SIZE;
       //search through base contracts, from most derived (right) to most base (left)
       node = linearizedBaseContracts.reduceRight(
-        (foundNode, baseContractId) => {
+        (foundNode: AstDefinition, baseContractId: number) => {
           if(foundNode) {
             return foundNode //once we've found something, we don't need to keep looking
           };
@@ -305,7 +305,7 @@ function allocateEvent(
   //search through base contracts, from most derived (right) to most base (left)
   let node: AstDefinition;
   node = linearizedBaseContracts.reduceRight(
-    (foundNode, baseContractId) => {
+    (foundNode: AstDefinition, baseContractId: number) => {
       if(foundNode) {
         return foundNode //once we've found something, we don't need to keep looking
       };

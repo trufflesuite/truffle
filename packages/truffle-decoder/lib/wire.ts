@@ -109,10 +109,12 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       types[id] = Types.definitionToStoredType(contractNode, compiler);
       //now, add its struct and enum definitions
       for(const node of contractNode.nodes) {
-	if(node.nodeType === "StructDefinition" || node.nodeType === "EnumDefinition") {
-	  references[node.id] = node;
-	  types[node.id] = Types.definitionToStoredType(node, compiler);
-	}
+        if(node.nodeType === "StructDefinition" || node.nodeType === "EnumDefinition") {
+          references[node.id] = node;
+          //HACK even though we don't have all the references, we only need one:
+          //the reference to the contract itself, which we just added, so we're good
+          types[node.id] = Types.definitionToStoredType(node, compiler, references);
+        }
       }
     }
     return [references, types];

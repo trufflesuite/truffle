@@ -21,7 +21,6 @@ const debug = debugModule("codec-utils:types");
 import BN from "bn.js";
 import { AstDefinition, AstReferences } from "../ast";
 import { Definition as DefinitionUtils } from "../definition";
-import { Contexts } from "../contexts";
 import { CompilerVersion } from "../compiler";
 
 export namespace Types {
