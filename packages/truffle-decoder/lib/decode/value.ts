@@ -4,6 +4,7 @@ const debug = debugModule("decoder:decode:value");
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
+import utf8 from "utf8";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { EvmEnum } from "../interface/contract-decoder";
@@ -60,7 +61,15 @@ export default function* decodeValue(definition: DecodeUtils.AstDefinition, poin
       if (typeof bytes == "string") {
         return bytes;
       }
-      return String.fromCharCode.apply(undefined, bytes);
+      try {
+        return utf8.decode(String.fromCharCode.apply(undefined, bytes));
+      }
+      catch(error) {
+        return null; //HACK: we use null as our error value here rather than
+        //undefined to prevent potentially throwing the debugger into an
+        //infinite loop
+        //(this will be saner in 5.1 :P )
+      }
 
     case "enum":
       const numRepresentation = DecodeUtils.Conversion.toBN(bytes).toNumber();
