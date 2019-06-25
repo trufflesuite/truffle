@@ -50,28 +50,27 @@ class Console extends EventEmitter {
     // passed down to commands.
     this.options.repl = this.repl;
 
-    this.provision()
-      .then(abstractions => {
-        this.repl.start({
-          prompt: "truffle(" + this.options.network + ")> ",
-          context: {
-            web3: this.web3
-          },
-          interpreter: this.interpret.bind(this),
-          done: callback
-        });
-
-        this.resetContractsInConsoleContext(abstractions);
-      })
-      .catch(error => {
-        this.options.logger.log(
-          "Unexpected error: Cannot provision contracts while instantiating the console."
-        );
-        this.options.logger.log(error.stack || error.message || error);
+    try {
+      const abstractions = this.provision();
+      this.repl.start({
+        prompt: "truffle(" + this.options.network + ")> ",
+        context: {
+          web3: this.web3
+        },
+        interpreter: this.interpret.bind(this),
+        done: callback
       });
+
+      this.resetContractsInConsoleContext(abstractions);
+    } catch (error) {
+      this.options.logger.log(
+        "Unexpected error: Cannot provision contracts while instantiating the console."
+      );
+      this.options.logger.log(error.stack || error.message || error);
+    }
   }
 
-  async provision() {
+  provision() {
     let files;
     try {
       files = fse.readdirSync(this.options.contracts_build_directory);
@@ -82,26 +81,21 @@ class Console extends EventEmitter {
       // doesn't exist" 99.9% of the time.
     }
 
-    let promises = [];
+    let jsonBlobs = [];
     files = files || [];
 
     files.forEach(file => {
-      promises.push(
-        fse
-          .readFile(
-            path.join(this.options.contracts_build_directory, file),
-            "utf8"
-          )
-          .then(body => JSON.parse(body))
-          .catch(error => {
-            throw new Error(
-              `Error parsing or reading ${file}: ${error.message}`
-            );
-          })
-      );
+      try {
+        const body = fse.readFileSync(
+          path.join(this.options.contracts_build_directory, file),
+          "utf8"
+        );
+        jsonBlobs.push(JSON.parse(body));
+      } catch (error) {
+        throw new Error(`Error parsing or reading ${file}: ${error.message}`);
+      }
     });
 
-    const jsonBlobs = await Promise.all(promises);
     const abstractions = jsonBlobs.map(json => {
       const abstraction = contract(json);
       provision(abstraction, this.options);
@@ -140,13 +134,14 @@ class Console extends EventEmitter {
         }
 
         // Reprovision after each command as it may change contracts.
-        this.provision()
-          .then(() => callback())
-          .catch(error => {
-            // Don't pass abstractions to the callback if they're there or else
-            // they'll get printed in the repl.
-            callback(error);
-          });
+        try {
+          this.provision();
+          callback();
+        } catch (error) {
+          // Don't pass abstractions to the callback if they're there or else
+          // they'll get printed in the repl.
+          callback(error);
+        }
       });
     }
 
