@@ -163,16 +163,16 @@ class Console extends EventEmitter {
     */
     let includesAwait = /^\s*((?:(?:var|const|let)\s+)?[a-zA-Z_$][0-9a-zA-Z_$]*\s*=\s*)?(\(?\s*await[\s\S]*)/;
 
-    var match = cmd.match(includesAwait);
-    var source = cmd;
-    var assignment = null;
+    const match = cmd.match(includesAwait);
+    let source = cmd;
+    let assignment = null;
 
     // If our code includes an await, add special processing to ensure it's evaluated properly.
     if (match) {
-      var assign = match[1];
-      var expression = match[2];
+      let assign = match[1];
+      const expression = match[2];
 
-      var RESULT = "__await_outside_result";
+      const RESULT = "__await_outside_result";
 
       // Wrap the await inside an async function.
       // Strange indentation keeps column offset correct in stack traces
