@@ -10,7 +10,6 @@ import { DataPointer } from "../types/pointer";
 import { EvmInfo, DecoderMode } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { StopDecodingError } from "../types/errors";
-import utf8 from "utf8";
 
 export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   //NOTE: this does not actually return a Uint8Aarray, but due to the use of yield* read,
