@@ -9,7 +9,7 @@ import { ContractObject } from "truffle-contract-schema/spec";
 import BN from "bn.js";
 import { Definition as DefinitionUtils, AbiUtils, EVM, AstDefinition, AstReferences } from "truffle-codec-utils";
 import { BlockType, Transaction } from "web3/eth/types";
-import { EventLog, Log } from "web3/types";
+import { Log } from "web3/types";
 import { Provider } from "web3/providers";
 import * as Codec from "truffle-codec";
 import * as DecoderTypes from "./types";
@@ -44,6 +44,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
         this.contractNodes[node.id] = node;
         if(contract.deployedBytecode) {
           const context = Utils.makeContext(contract, node);
+          debug("context: %O", context);
           const hash = CodecUtils.Conversion.toHexString(
             CodecUtils.EVM.keccak256({type: "string",
               value: context.binary
@@ -51,8 +52,9 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
           );
           this.contexts[hash] = context;
         }
-        if(contract.byteCode) {
+        if(contract.bytecode) {
           const constructorContext = Utils.makeContext(contract, node, true);
+          debug("constructorContext: %O", constructorContext);
           const hash = CodecUtils.Conversion.toHexString(
             CodecUtils.EVM.keccak256({type: "string",
               value: constructorContext.binary
@@ -64,6 +66,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     }
 
     this.contexts = <CodecUtils.Contexts.DecoderContexts>CodecUtils.Contexts.normalizeContexts(this.contexts);
+    debug("contexts: %O", this.contexts);
     this.contextsById = Object.assign({}, ...Object.values(this.contexts).filter(
       ({isConstructor}) => !isConstructor
     ).map(context =>
@@ -82,6 +85,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     debug("init called");
     [this.referenceDeclarations, this.userDefinedTypes] = this.getUserDefinedTypes();
 
+    debug("ccbyId: %O", this.constructorContextsById);
     let allocationInfo: Codec.ContractAllocationInfo[] = Object.entries(this.contracts).map(
       ([id, { abi }]) => ({
         abi: <AbiUtils.Abi>abi,
@@ -89,6 +93,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
         constructorContext: this.constructorContextsById[parseInt(id)]
       })
     );
+    debug("allocationInfo: %O", allocationInfo);
 
     this.allocations = {};
     this.allocations.storage = Codec.getStorageAllocations(this.referenceDeclarations, this.contractNodes);
