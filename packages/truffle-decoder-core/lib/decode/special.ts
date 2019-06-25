@@ -25,7 +25,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
   switch(pointer.special) {
     case "msg":
       return new Values.MagicValue(dataType, {
-        data: <Values.BytesResult> (yield* decodeValue(
+        data: <Values.BytesDynamicResult> (yield* decodeValue(
           {
             typeClass: "bytes",
             kind: "dynamic",
@@ -37,7 +37,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
           }},
           info
         )),
-        sig: <Values.BytesResult> (yield* decodeValue(
+        sig: <Values.BytesStaticResult> (yield* decodeValue(
           {
             typeClass: "bytes",
             kind: "static",

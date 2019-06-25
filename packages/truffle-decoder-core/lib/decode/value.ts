@@ -8,6 +8,7 @@ import BN from "bn.js";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
+import utf8 from "utf8";
 
 export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, permissivePadding: boolean = false): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   //NOTE: this does not actually return a Uint8Aarray, but due to the use of yield* read,
@@ -15,6 +16,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
   const { state } = info;
 
   let bytes: Uint8Array;
+  let rawBytes: Uint8Array;
   try {
     bytes = yield* read(pointer, state);
   }
@@ -22,6 +24,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     debug("segfault, pointer %o, state: %O", pointer, state);
     return Values.makeGenericErrorResult(dataType, error.error);
   }
+  rawBytes = bytes;
 
   debug("type %O", dataType);
   debug("pointer %o", pointer);
@@ -60,7 +63,11 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
       bytes = bytes.slice(-dataType.bits/8);
-      return new Values.UintValue(dataType, DecodeUtils.Conversion.toBN(bytes));
+      return new Values.UintValue(
+        dataType,
+        DecodeUtils.Conversion.toBN(bytes),
+        DecodeUtils.Conversion.toBN(rawBytes)
+      );
     case "int":
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
@@ -71,7 +78,11 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
       bytes = bytes.slice(-dataType.bits/8);
-      return new Values.IntValue(dataType, DecodeUtils.Conversion.toSignedBN(bytes));
+      return new Values.IntValue(
+        dataType,
+        DecodeUtils.Conversion.toSignedBN(bytes),
+        DecodeUtils.Conversion.toSignedBN(rawBytes)
+      );
 
     case "address":
       if(!permissivePadding && !checkPaddingLeft(bytes, DecodeUtils.EVM.ADDRESS_SIZE)) {
@@ -80,7 +91,11 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
           new Values.AddressPaddingError(DecodeUtils.Conversion.toHexString(bytes))
         );
       }
-      return new Values.AddressValue(dataType, DecodeUtils.Conversion.toAddress(bytes));
+      return new Values.AddressValue(
+        dataType,
+        DecodeUtils.Conversion.toAddress(bytes),
+        DecodeUtils.Conversion.toHexString(rawBytes)
+      );
 
     case "contract":
       if(!permissivePadding && !checkPaddingLeft(bytes, DecodeUtils.EVM.ADDRESS_SIZE)) {
@@ -94,24 +109,30 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       return new Values.ContractValue(fullType, contractValueInfo);
 
     case "bytes":
-      if(dataType.kind === "static") {
-        //first, check padding (if needed)
-        if(!permissivePadding && !checkPaddingRight(bytes, dataType.length)) {
-          return new Values.BytesErrorResult(
+      switch(dataType.kind) {
+        case "static":
+          //first, check padding (if needed)
+          if(!permissivePadding && !checkPaddingRight(bytes, dataType.length)) {
+            return new Values.BytesStaticErrorResult(
+              dataType,
+              new Values.BytesPaddingError(DecodeUtils.Conversion.toHexString(bytes))
+            );
+          }
+          //now, truncate to appropriate length
+          bytes = bytes.slice(0, dataType.length);
+          return new Values.BytesStaticValue(
             dataType,
-            new Values.BytesPaddingError(DecodeUtils.Conversion.toHexString(bytes))
+            DecodeUtils.Conversion.toHexString(bytes),
+            DecodeUtils.Conversion.toHexString(rawBytes)
           );
-        }
-        //now, truncate to appropriate length
-        bytes = bytes.slice(0, dataType.length);
+        case "dynamic":
+          //no need to check padding here
+          return new Values.BytesDynamicValue(dataType, DecodeUtils.Conversion.toHexString(bytes));
       }
-      //we don't need to pass in length to the conversion, since that's for *adding* padding
-      //(there is also no padding check for dynamic bytes)
-      return new Values.BytesValue(dataType, DecodeUtils.Conversion.toHexString(bytes));
 
     case "string":
       //there is no padding check for strings
-      return new Values.StringValue(dataType, String.fromCharCode.apply(undefined, bytes));
+      return new Values.StringValue(dataType, decodeString(bytes));
 
     case "function":
       switch(dataType.visibility) {
@@ -188,9 +209,27 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
   }
 }
 
+export function decodeString(bytes: Uint8Array): Values.StringValueInfo {
+  //the following line takes our UTF-8 string... and interprets each byte
+  //as a UTF-16 bytepair.  Yikes!  Fortunately, we have a library to repair that.
+  let badlyEncodedString = String.fromCharCode.apply(undefined, bytes);
+  try {
+    //this will throw an error if we have malformed UTF-8
+    let correctlyEncodedString = utf8.decode(badlyEncodedString);
+    return new Values.StringValueInfoValid(correctlyEncodedString);
+  }
+  catch(error) {
+    //we're going to ignore the precise error and just assume it's because
+    //the string was malformed (what else could it be?)
+    let hexString = DecodeUtils.Conversion.toHexString(bytes);
+    return new Values.StringValueInfoMalformed(hexString);
+  }
+}
+
 //NOTE that this function returns a ContractValueInfo, not a ContractResult
 export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.ContractValueInfo | DecoderRequest | Uint8Array> {
   let address = DecodeUtils.Conversion.toAddress(addressBytes);
+  let rawAddress = DecodeUtils.Conversion.toHexString(addressBytes);
   let codeBytes: Uint8Array = yield {
     type: "code",
     address
@@ -198,16 +237,19 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Iterab
   let code = DecodeUtils.Conversion.toHexString(codeBytes);
   let context = DecodeUtils.Contexts.findDecoderContext(info.contexts, code);
   if(context !== null && context.contractName !== undefined) {
-    return new Values.ContractValueInfoKnown(address, {
-      typeClass: "contract",
-      id: context.contractId,
-      typeName: context.contractName,
-      contractKind: context.contractKind,
-      payable: context.payable
-    });
+    return new Values.ContractValueInfoKnown(
+      address,
+      {
+        typeClass: "contract",
+        id: context.contractId,
+        typeName: context.contractName,
+        contractKind: context.contractKind,
+        payable: context.payable
+      },
+      rawAddress);
   }
   else {
-    return new Values.ContractValueInfoUnknown(address);
+    return new Values.ContractValueInfoUnknown(address, rawAddress);
   }
 }
 

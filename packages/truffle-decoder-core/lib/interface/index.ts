@@ -11,7 +11,7 @@ export { readStack } from "../read/stack";
 export { slotAddress } from "../read/storage";
 export { StoragePointer, isStoragePointer } from "../types/pointer";
 export { StorageAllocations, StorageMemberAllocation } from "../types/allocation";
-export { Slot, isWordsLength } from "../types/storage";
+export { Slot, isWordsLength, equalSlots } from "../types/storage";
 export { DecoderRequest, isStorageRequest, isCodeRequest } from "../types/request";
 export { EvmInfo } from "../types/evm";
 

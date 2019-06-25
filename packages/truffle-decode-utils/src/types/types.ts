@@ -397,7 +397,7 @@ export namespace Types {
 
   //whereas the above takes variable definitions, this takes the actual type
   //definition
-  export function definitionToStoredType(definition: AstDefinition, compiler: Contexts.CompilerVersion): UserDefinedType {
+  export function definitionToStoredType(definition: AstDefinition, compiler: Contexts.CompilerVersion, referenceDeclarations?: AstReferences): UserDefinedType {
     switch(definition.nodeType) {
       case "StructDefinition": {
         let id = definition.id;
@@ -405,11 +405,22 @@ export namespace Types {
         let memberTypes: [string, Type][] = definition.members.map(
           member => [member.name, definitionToType(member, compiler, null)]
         );
+        let definingContract;
+        if(referenceDeclarations) {
+          let contractDefinition = Object.values(referenceDeclarations).find(
+            node => node.nodeType === "ContractDefinition" &&
+            node.nodes.some(
+              (subNode: AstDefinition) => subNode.id === id
+            )
+          );
+          definingContract = <ContractType> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
+        }
         return {
           typeClass: "struct",
           id,
           typeName,
           definingContractName,
+          definingContract,
           memberTypes
         };
       }
@@ -417,11 +428,22 @@ export namespace Types {
         let id = definition.id;
         let [definingContractName, typeName] = definition.canonicalName.split(".");
         let options = definition.members.map(member => member.name);
+        let definingContract;
+        if(referenceDeclarations) {
+          let contractDefinition = Object.values(referenceDeclarations).find(
+            node => node.nodeType === "ContractDefinition" &&
+            node.nodes.some(
+              (subNode: AstDefinition) => subNode.id === id
+            )
+          );
+          definingContract = <ContractType> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
+        }
         return {
           typeClass: "enum",
           id,
           typeName,
           definingContractName,
+          definingContract,
           options
         };
       }
@@ -456,24 +478,17 @@ export namespace Types {
     if(isReferenceType(basicType) && basicType.location !== undefined) {
       returnType = specifyLocation(returnType, basicType.location);
     }
-    if(isContractDefinedType(returnType)) {
-      let contractName = returnType.typeName;
-      returnType.definingContract = Object.values(userDefinedTypes).find(
-        storedType => storedType.typeClass === "contract"
-          && storedType.typeName === contractName
-      );
-    }
     return returnType;
-  }
-
-  export function isUserDefinedType(anyType: Type): anyType is UserDefinedType {
-    const userDefinedTypes = ["contract", "enum", "struct"];
-    return userDefinedTypes.includes(anyType.typeClass);
   }
 
   export function isContractDefinedType(anyType: Type): anyType is ContractDefinedType {
     const contractDefinedTypes = ["enum", "struct"];
     return contractDefinedTypes.includes(anyType.typeClass);
+  }
+
+  export function isUserDefinedType(anyType: Type): anyType is UserDefinedType {
+    const userDefinedTypes = ["contract", "enum", "struct"];
+    return userDefinedTypes.includes(anyType.typeClass);
   }
 
   export function isReferenceType(anyType: Type): anyType is ReferenceType {

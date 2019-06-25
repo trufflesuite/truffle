@@ -159,9 +159,6 @@ export namespace Values {
   export abstract class ElementaryValue extends Value implements ElementaryResult {
     type: Types.ElementaryType;
     abstract toSoliditySha3Input(): {type: string; value: any};
-    toString(): string {
-      return this.value.toString();
-    }
   }
 
   //Uints
@@ -171,23 +168,29 @@ export namespace Values {
 
   export class UintValue extends ElementaryValue implements UintResult {
     type: Types.UintType;
-    value: BN;
+    value: {
+      asBN: BN;
+      rawAsBN?: BN;
+    };
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return options.stylize(this.value.toString(), "number");
+      return options.stylize(this.toString(), "number");
     }
     toSoliditySha3Input() {
       return {
         type: "uint",
-        value: this.value
+        value: this.value.asBN
       }
     }
     nativize() {
-      return this.value.toNumber(); //beware!
+      return this.value.asBN.toNumber(); //beware!
     }
-    constructor(uintType: Types.UintType, value: BN) {
+    toString() {
+      return this.value.asBN.toString();
+    }
+    constructor(uintType: Types.UintType, value: BN, rawValue?: BN) {
       super();
       this.type = uintType;
-      this.value = value;
+      this.value = { asBN: value, rawAsBN: rawValue };
     }
   }
 
@@ -220,23 +223,29 @@ export namespace Values {
 
   export class IntValue extends ElementaryValue implements IntResult {
     type: Types.IntType;
-    value: BN;
+    value: {
+      asBN: BN;
+      rawAsBN?: BN;
+    };
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return options.stylize(this.value.toString(), "number");
+      return options.stylize(this.toString(), "number");
     }
     toSoliditySha3Input() {
       return {
         type: "int",
-        value: this.value
+        value: this.value.asBN
       }
     }
     nativize() {
-      return this.value.toNumber(); //beware!
+      return this.value.asBN.toNumber(); //beware!
     }
-    constructor(intType: Types.IntType, value: BN) {
+    toString() {
+      return this.value.asBN.toString();
+    }
+    constructor(intType: Types.IntType, value: BN, rawValue?: BN) {
       super();
       this.type = intType;
-      this.value = value;
+      this.value = { asBN: value, rawAsBN: rawValue };
     }
   }
 
@@ -269,23 +278,28 @@ export namespace Values {
 
   export class BoolValue extends ElementaryValue implements BoolResult {
     type: Types.BoolType;
-    value: boolean;
+    value: {
+      asBool: boolean;
+    };
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return util.inspect(this.value, options);
+      return util.inspect(this.value.asBool, options);
     }
     toSoliditySha3Input() {
       return {
         type: "uint", //used to achieve left-padding
-        value: this.value ? new BN(1) : new BN(0) //true & false won't work here
+        value: this.value.asBool ? new BN(1) : new BN(0) //true & false won't work here
       }
     }
     nativize() {
-      return this.value;
+      return this.value.asBool;
+    }
+    toString() {
+      return this.value.asBool.toString();
     }
     constructor(boolType: Types.BoolType, value: boolean) {
       super();
       this.type = boolType;
-      this.value = value;
+      this.value = { asBool: value };
     }
   }
 
@@ -324,49 +338,42 @@ export namespace Values {
     }
   }
 
-  //bytes
-  export interface BytesResult extends ElementaryResult {
-    type: Types.BytesType;
+  //bytes (static)
+  export interface BytesStaticResult extends ElementaryResult {
+    type: Types.BytesTypeStatic;
   }
 
-  export class BytesValue extends ElementaryValue implements BytesResult {
-    type: Types.BytesType;
-    value: string; //should be hex-formatted, with leading "0x"
+  export class BytesStaticValue extends ElementaryValue implements BytesStaticResult {
+    type: Types.BytesTypeStatic;
+    value: {
+      asHex: string; //should be hex-formatted, with leading "0x"
+      rawAsHex: string;
+    };
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      switch(this.type.kind) {
-        case "static":
-            return options.stylize(this.value, "number");
-        case "dynamic":
-            return options.stylize(`hex'${this.value.slice(2)}'`, "string")
-      }
+      return options.stylize(this.value.asHex, "number");
     }
     toSoliditySha3Input() {
-      switch(this.type.kind) {
-        case "static":
-          return {
-            type: "bytes32", //used to achieve right-padding
-            value: this.value
-          };
-        case "dynamic":
-          return {
-            type: "bytes",
-            value: this.value
-          };
-      }
+      return {
+        type: "bytes32", //used to achieve right-padding
+        value: this.value.asHex
+      };
     }
     nativize() {
-      return this.value;
+      return this.value.asHex;
     }
-    constructor(bytesType: Types.BytesType, value: string) {
+    toString() {
+      return this.value.asHex;
+    }
+    constructor(bytesType: Types.BytesTypeStatic, value: string, rawValue?: string) {
       super();
       this.type = bytesType;
-      this.value = value;
+      this.value = { asHex: value, rawAsHex: rawValue };
     }
   }
 
-  export class BytesErrorResult extends ErrorResult implements BytesResult {
-    type: Types.BytesType;
-    constructor(bytesType: Types.BytesType, error: DecoderError) {
+  export class BytesStaticErrorResult extends ErrorResult implements BytesStaticResult {
+    type: Types.BytesTypeStatic;
+    constructor(bytesType: Types.BytesTypeStatic, error: DecoderError) {
       super(error);
       this.type = bytesType;
     }
@@ -385,6 +392,46 @@ export namespace Values {
     }
   }
 
+  //bytes (dynamic)
+  export interface BytesDynamicResult extends ElementaryResult {
+    type: Types.BytesTypeDynamic;
+  }
+
+  export class BytesDynamicValue extends ElementaryValue implements BytesDynamicResult {
+    type: Types.BytesTypeDynamic;
+    value: {
+      asHex: string; //should be hex-formatted, with leading "0x"
+    };
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return options.stylize(`hex'${this.value.asHex.slice(2)}'`, "string")
+    }
+    toSoliditySha3Input() {
+      return {
+        type: "bytes",
+        value: this.value.asHex
+      };
+    }
+    nativize() {
+      return this.value.asHex;
+    }
+    toString() {
+      return this.value.asHex;
+    }
+    constructor(bytesType: Types.BytesTypeDynamic, value: string) {
+      super();
+      this.type = bytesType;
+      this.value = { asHex: value };
+    }
+  }
+
+  export class BytesDynamicErrorResult extends ErrorResult implements BytesDynamicResult {
+    type: Types.BytesTypeDynamic;
+    constructor(bytesType: Types.BytesTypeDynamic, error: DecoderError) {
+      super(error);
+      this.type = bytesType;
+    }
+  }
+
   //addresses
   export interface AddressResult extends ElementaryResult {
     type: Types.AddressType;
@@ -392,23 +439,29 @@ export namespace Values {
 
   export class AddressValue extends ElementaryValue implements AddressResult {
     type: Types.AddressType;
-    value: string; //should have 0x and be checksum-cased
+    value: {
+      asAddress: string; //should have 0x and be checksum-cased
+      rawAsHex: string;
+    }
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return options.stylize(this.value, "number");
+      return options.stylize(this.value.asAddress, "number");
     }
     toSoliditySha3Input() {
       return {
         type: "uint", //used to achieve left-padding
-        value: this.value
+        value: this.value.asAddress
       }
     }
     nativize() {
-      return this.value;
+      return this.value.asAddress;
     }
-    constructor(addressType: Types.AddressType, value: string) {
+    toString() {
+      return this.value.asAddress;
+    }
+    constructor(addressType: Types.AddressType, value: string, rawValue?: string) {
       super();
       this.type = addressType;
-      this.value = value;
+      this.value = { asAddress: value, rawAsHex: rawValue };
     }
   }
 
@@ -440,23 +493,73 @@ export namespace Values {
 
   export class StringValue extends ElementaryValue {
     type: Types.StringType;
-    value: string;
+    value: StringValueInfo;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.value, options);
     }
     toSoliditySha3Input() {
-      return {
-        type: "string",
-        value: this.value
-      }
+      return this.value.toSoliditySha3Input();
     }
     nativize() {
-      return this.value;
+      return this.value.nativize();
     }
-    constructor(stringType: Types.StringType, value: string) {
+    toString() {
+      return this.value.toString();
+    }
+    constructor(stringType: Types.StringType, value: StringValueInfo) {
       super();
       this.type = stringType;
       this.value = value;
+    }
+  }
+
+  export type StringValueInfo = StringValueInfoValid | StringValueInfoMalformed;
+
+  export class StringValueInfoValid {
+    kind: "valid";
+    asString: string;
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return util.inspect(this.asString, options);
+    }
+    toSoliditySha3Input() {
+      return {
+        type: "string",
+        value: this.asString
+      };
+    }
+    nativize() {
+      return this.asString;
+    }
+    toString() {
+      return this.asString;
+    }
+    constructor(value: string) {
+      this.kind = "valid";
+      this.asString = value;
+    }
+  }
+
+  export class StringValueInfoMalformed {
+    kind: "malformed";
+    asHex: string;
+    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
+      return options.stylize(`hex'${this.asHex.slice(2)}'`, "string") + " (malformed)";
+    }
+    toSoliditySha3Input() {
+      return {
+        type: "bytes",
+        value: this.asHex
+      };
+    }
+    nativize() {
+      return this.asHex; //warning!
+    }
+    toString() {
+      return this.asHex; //warning!
+    }
+    constructor(value: string) {
+      this.kind = "malformed";
+      this.asHex = value;
     }
   }
 
@@ -522,9 +625,14 @@ export namespace Values {
     let dataType = Types.definitionToType(definition, null, null);
     switch(dataType.typeClass) {
       case "string":
-        return new StringValue(dataType, value);
+        return new StringValue(dataType, new StringValueInfoValid(value));
       case "bytes":
-        return new BytesValue(dataType, value);
+        switch(dataType.kind) {
+          case "static":
+            return new BytesStaticValue(dataType, value);
+          case "dynamic":
+            return new BytesDynamicValue(dataType, value);
+        }
       case "address":
         return new AddressValue(dataType, value);
       case "int":
@@ -825,9 +933,10 @@ export namespace Values {
 
   //when we can identify the class
   export class ContractValueInfoKnown {
+    kind: "known";
     address: string; //should be formatted as address
     //NOT an AddressResult, note
-    kind: "known";
+    rawAddress?: string;
     class: Types.ContractType;
     //may have more optional members defined later, but I'll leave these out for now
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -836,18 +945,20 @@ export namespace Values {
     nativize() {
       return `${this.class.typeName}(${this.address})`;
     }
-    constructor(address: string, contractClass: Types.ContractType) {
+    constructor(address: string, contractClass: Types.ContractType, rawAddress?: string) {
       this.kind = "known";
       this.address = address;
       this.class = contractClass;
+      this.rawAddress = rawAddress;
     }
   }
 
   //when we can't
   export class ContractValueInfoUnknown {
+    kind: "unknown";
     address: string; //should be formatted as address
     //NOT an AddressResult, note
-    kind: "unknown";
+    rawAddress?: string;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       debug("options: %O", options);
       return options.stylize(this.address, "number") + " of unknown class";
@@ -855,9 +966,10 @@ export namespace Values {
     nativize() {
       return this.address;
     }
-    constructor(address: string) {
+    constructor(address: string, rawAddress?: string) {
       this.kind = "unknown";
       this.address = address;
+      this.rawAddress = rawAddress;
     }
   }
 
@@ -1273,7 +1385,12 @@ export namespace Values {
       case "bool":
         return new BoolErrorResult(dataType, error);
       case "bytes":
-        return new BytesErrorResult(dataType, error);
+        switch(dataType.kind) {
+          case "static":
+            return new BytesStaticErrorResult(dataType, error);
+          case "dynamic":
+            return new BytesDynamicErrorResult(dataType, error);
+        }
       case "address":
         return new AddressErrorResult(dataType, error);
       case "fixed":
@@ -1297,9 +1414,9 @@ export namespace Values {
       case "function":
         switch(dataType.visibility) {
           case "external":
-        return new FunctionExternalErrorResult(dataType, error);
+            return new FunctionExternalErrorResult(dataType, error);
           case "internal":
-        return new FunctionInternalErrorResult(dataType, error);
+            return new FunctionInternalErrorResult(dataType, error);
         }
     }
   }

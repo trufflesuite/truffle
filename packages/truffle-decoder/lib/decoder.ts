@@ -12,7 +12,6 @@ import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
 import abiDecoder from "abi-decoder";
-import isEqual from "lodash.isequal"; //util.isDeepStrictEqual doesn't exist in Node 8
 import * as Decoder from "truffle-decoder-core";
 import * as DecoderTypes from "./types";
 import * as Utils from "./utils";
@@ -141,7 +140,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       for(const node of contractNode.nodes) {
 	if(node.nodeType === "StructDefinition" || node.nodeType === "EnumDefinition") {
 	  references[node.id] = node;
-	  types[node.id] = Types.definitionToStoredType(node, compiler);
+          //HACK even though we don't have all the references, we only need one:
+          //the reference to the contract itself, which we just added, so we're good
+	  types[node.id] = Types.definitionToStoredType(node, compiler, references);
 	}
       }
     }
@@ -284,7 +285,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     debug("slot: %O", slot);
     while(slot !== undefined &&
       this.mappingKeys.every(existingSlot =>
-      !isEqual(existingSlot,slot)
+      !Decoder.equalSlots(existingSlot,slot)
         //we put the newness requirement in the while condition rather than a
         //separate if because if we hit one ancestor that's not new, the futher
         //ones won't be either
@@ -305,7 +306,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     //remove mapping key and all descendants
     this.mappingKeys = this.mappingKeys.filter( existingSlot => {
       while(existingSlot !== undefined) {
-        if(isEqual(existingSlot, slot)) {
+        if(Decoder.equalSlots(existingSlot, slot)) {
           return false; //if it matches, remove it
         }
         existingSlot = existingSlot.path;
