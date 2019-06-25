@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.5.10;
 
 contract DecodingSample {
   enum E {
@@ -68,7 +68,7 @@ contract DecodingSample {
     varUint = 1;
     varString = "two";
     varBool = true;
-    varAddress = 0x0012345567890abcdeffedcba09876543211337121;
+    varAddress = 0x12345567890abcDEffEDcBa09876543211337121;
     varBytes7 = hex"78554477331122";
     varBytes = new bytes(4);
     varBytes[0] = 0x01;
@@ -79,7 +79,7 @@ contract DecodingSample {
     varStructS.structInt = -2;
     varStructS.structString = "three";
     varStructS.structBool = false;
-    varStructS.structAddress = 0x0054321567890abcdeffedcba09876543211337121;
+    varStructS.structAddress = 0x54321567890abcdeFfEDcBA09876543211337121;
     varStructS.structS2.structTwoFixedArrayUint[0] = 4;
     varStructS.structS2.structTwoFixedArrayUint[1] = 2;
     varStructS.structS2.structTwoDynamicArrayUint = new uint[](3);
@@ -93,8 +93,8 @@ contract DecodingSample {
     fixedArrayString[1] = "world";
     fixedArrayBool[0] = true;
     fixedArrayBool[1] = false;
-    fixedArrayAddress[0] = 0x0098761567890abcdeffedcba09876543211337121;
-    fixedArrayAddress[1] = 0x00fedc1567890abcdeffedcba09876543211337121;
+    fixedArrayAddress[0] = 0x98761567890ABCdeffEdCba09876543211337121;
+    fixedArrayAddress[1] = 0xfEDc1567890aBcDeFfEdcba09876543211337121;
     fixedArrayBytes7[0] = hex"75754477331122";
     fixedArrayBytes7[1] = hex"e7d14477331122";
     fixedArrayByte[0] = 0x37;
@@ -112,8 +112,8 @@ contract DecodingSample {
     dynamicArrayBool[0] = true;
     dynamicArrayBool[1] = false;
     dynamicArrayAddress = new address[](2);
-    dynamicArrayAddress[0] = 0x0098761567890abcdeffedcba09876543211337121;
-    dynamicArrayAddress[1] = 0x00fedc1567890abcdeffedcba09876543211337121;
+    dynamicArrayAddress[0] = 0x98761567890ABCdeffEdCba09876543211337121;
+    dynamicArrayAddress[1] = 0xfEDc1567890aBcDeFfEdcba09876543211337121;
     dynamicArrayBytes7 = new bytes7[](2);
     dynamicArrayBytes7[0] = hex"75754477331122";
     dynamicArrayBytes7[1] = hex"e7d14477331122";
