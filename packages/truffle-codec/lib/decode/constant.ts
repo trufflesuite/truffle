@@ -31,10 +31,10 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
     }
     //not bothering to check padding; shouldn't be necessary
     let bytes = word.slice(CodecUtils.EVM.WORD_SIZE - size);
-    return new Values.BytesValue(
+    return new Values.BytesStaticValue(
       dataType,
       CodecUtils.Conversion.toHexString(bytes)
-    );
+    ); //we'll skip including a raw value, as that would be meaningless
   }
 
   //otherwise, as mentioned, just dispatch to decodeValue

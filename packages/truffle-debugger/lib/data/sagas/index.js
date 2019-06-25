@@ -508,7 +508,7 @@ function* variablesAndMappingsSaga() {
             slot.hashPath = CodecUtils.Definition.isDynamicArray(
               baseExpression
             );
-            slot.offset = indexValue.value.muln(
+            slot.offset = indexValue.value.asBN.muln(
               //HACK: the allocation format here is wrong (object rather than
               //array), but it doesn't matter because we're not using that here
               storageSize(node, referenceDeclarations, allocations).words

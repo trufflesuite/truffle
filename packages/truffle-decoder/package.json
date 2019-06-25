@@ -33,13 +33,12 @@
     "debug": "^4.1.1",
     "lodash.isequal": "^4.5.0",
     "truffle-codec": "^3.0.3",
-    "truffle-decode-utils": "^1.0.14",
+    "truffle-codec-utils": "^1.0.14",
     "web3": "1.0.0-beta.37"
   },
   "devDependencies": {
     "@types/bn.js": "^4.11.5",
     "@types/debug": "^4.1.4",
-    "@types/lodash.isequal": "^4.5.5",
     "@types/web3": "1.0.18",
     "json-schema-to-typescript": "^6.1.3",
     "truffle-contract-schema": "^3.0.9",

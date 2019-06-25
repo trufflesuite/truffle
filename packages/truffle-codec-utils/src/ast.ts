@@ -9,7 +9,7 @@ export interface AstDefinition {
   name: string;
   linearizedBaseContracts?: number[];
   members?: AstDefinition[];
-  nodes?: any[]; //sorry
+  nodes?: AstDefinition[];
   nodeType: string;
   scope?: number;
   src: string;
