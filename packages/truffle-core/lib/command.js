@@ -125,7 +125,7 @@ class Command {
         if (options.logger) {
           const log = options.logger.log || options.logger.debug;
           log(
-            "warning: possilble unsupported (undocumented in help) command line option: " +
+            "> Warning: possible unsupported (undocumented in help) command line option: " +
               invalidOptions
           );
         }

@@ -10,6 +10,11 @@ module.exports = {
           `Download and cache a version of the specified compiler.\n` +
           `                    compiler_name must be one of the following: ` +
           `'solc'.(required)`
+      },
+      {
+        option: "--solc <version>",
+        description:
+          `Download and cache a version of the solc compiler.`
       }
     ]
   },
