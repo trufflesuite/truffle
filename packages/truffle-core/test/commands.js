@@ -64,6 +64,6 @@ describe("Commander", function() {
         //ignore. not part of test
       }
     );
-    console.warn = originalLog;
+    console.log = originalLog;
   });
 });
