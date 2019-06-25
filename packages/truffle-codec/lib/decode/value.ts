@@ -5,6 +5,7 @@ import read from "../read";
 import * as CodecUtils from "truffle-codec-utils";
 import { Types, Values } from "truffle-codec-utils";
 import BN from "bn.js";
+import utf8 from "utf8";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo, DecoderMode } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
