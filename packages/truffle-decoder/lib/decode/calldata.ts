@@ -227,7 +227,8 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
 
     decodedMembers.push([
       memberName,
-      <Values.Result> (yield* decodeCalldata(memberType, childPointer, info))
+      <Values.Result> (yield* decodeCalldata(memberType, childPointer, info, startPosition))
+      //note that startPosition is only needed in the dynamic case, but we don't know which case we're in
     ]);
   }
   return new Values.StructValue(dataType, decodedMembers);
