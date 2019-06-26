@@ -46,14 +46,16 @@ module.exports = {
     const version = options.solc;
     try {
       const solc = await supplier.downloadAndCacheSolc(version);
-      return events.emit("obtain:succeed", {
+      events.emit("obtain:succeed", {
         compiler: {
           version: solc.version(),
           name: "Solidity"
         }
       });
+      return;
     } catch (error) {
-      return events.emit("obtain:fail");
+      events.emit("obtain:fail");
+      return;
     }
   }
 };
