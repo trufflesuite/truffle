@@ -4,7 +4,7 @@ const bigNumberify = require("ethers/utils/bignumber").bigNumberify;
 const abi = require("web3-eth-abi");
 const BlockchainUtils = require("truffle-blockchain-utils");
 const reformat = require("../reformat");
-const { convertENSNames } = require("./ens");
+const ens = require("./ens");
 
 const Utils = {
   is_object(val) {
@@ -337,7 +337,7 @@ const Utils = {
   }
 };
 
-Utils.convertENSNames = convertENSNames;
+Utils.ens = ens;
 Utils.bigNumberify = bigNumberify;
 
 module.exports = Utils;
