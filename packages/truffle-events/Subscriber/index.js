@@ -21,13 +21,15 @@ class Subscriber {
   }
 
   handleEvent(eventName, data) {
+    let promises = [];
     for (let handlerName in this.globbedHandlerLookupTable) {
       if (this.regexMatchesEntireName(eventName, handlerName)) {
         this.globbedHandlers[handlerName].forEach(handler => {
-          handler.bind(this, data)();
+          promises.push(handler.bind(this)(data, eventName));
         });
       }
     }
+    return Promise.all(promises);
   }
 
   regexMatchesEntireName(eventName, handlerName) {
