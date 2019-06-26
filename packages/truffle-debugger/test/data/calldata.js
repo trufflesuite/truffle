@@ -13,7 +13,7 @@ import * as TruffleDecodeUtils from "truffle-decode-utils";
 import solidity from "lib/solidity/selectors";
 
 const __CALLDATA = `
-pragma solidity ^0.5.4;
+pragma solidity ^0.5.6;
 pragma experimental ABIEncoderV2;
 
 contract CalldataTest {
@@ -23,6 +23,10 @@ contract CalldataTest {
   struct Pair {
     uint x;
     uint y;
+  }
+
+  struct StringBox {
+    string it;
   }
 
   function simpleTest(string calldata hello) external {
@@ -59,6 +63,10 @@ contract CalldataTest {
     pair.x = 321;
     pair.y = 2049;
     this.multiTest("hello", someInts, pair);
+  }
+
+  function stringBoxTest(StringBox calldata stringBox) external returns (string memory) {
+    return stringBox.it; //break stringBox
   }
 
 }
@@ -180,6 +188,40 @@ describe("Calldata Decoding", function() {
     };
 
     assert.include(variables, expectedResult);
+  });
+
+  it("Decodes dynamic structs correctly", async function() {
+    this.timeout(6000);
+    let instance = await abstractions.CalldataTest.deployed();
+    let receipt = await instance.stringBoxTest({ it: "hello world" });
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    let sourceId = session.view(solidity.current.source).id;
+    let source = session.view(solidity.current.source).source;
+    await session.addBreakpoint({
+      sourceId,
+      line: lineOf("break stringBox", source)
+    });
+
+    await session.continueUntilBreakpoint();
+
+    const variables = await session.variables();
+
+    const expectedResult = {
+      stringBox: {
+        it: "hello world"
+      }
+    };
+
+    assert.deepInclude(variables, expectedResult);
   });
 
   it("Decodes correctly in a pure call", async function() {
