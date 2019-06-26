@@ -65,7 +65,7 @@ const Box = {
     } catch (error) {
       if (tempDirCleanup) tempDirCleanup();
       events.emit("unbox:fail");
-      throw new Error(error);
+      throw error;
     }
   },
 

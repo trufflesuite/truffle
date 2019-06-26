@@ -14,7 +14,7 @@ module.exports = {
       events.emit("unbox:downloadingBox:succeed");
     } catch (error) {
       events.emit("unbox:fail");
-      throw new Error(error);
+      throw error;
     }
   },
 
@@ -28,12 +28,8 @@ module.exports = {
       return path || (fs.existsSync(alt) && alt);
     }, undefined);
 
-    try {
-      const boxConfig = await config.read(configPath);
-      return boxConfig;
-    } catch (error) {
-      throw new Error(error);
-    }
+    const boxConfig = await config.read(configPath);
+    return boxConfig;
   },
 
   setUpTempDirectory: events => {
@@ -70,7 +66,7 @@ module.exports = {
       events.emit("unbox:settingUpBox:succeed");
     } catch (error) {
       events.emit("unbox:fail");
-      throw new Error(error);
+      throw error;
     }
   }
 };
