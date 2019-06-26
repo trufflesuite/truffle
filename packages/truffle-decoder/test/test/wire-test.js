@@ -56,7 +56,10 @@ contract("WireTest", _accounts => {
       "0xdeadbeef"
     );
     assert.strictEqual(constructorDecoding.arguments[2].name, "whoknows");
-    assert.strictEqual(constructorDecoding.arguments[2].value.nativize(), 2);
+    assert.strictEqual(
+      constructorDecoding.arguments[2].value.nativize(),
+      "WireTest.Ternary.MaybeSo"
+    );
 
     assert.strictEqual(emitStuffDecoding.kind, "function");
     assert.strictEqual(emitStuffDecoding.name, "emitStuff");
