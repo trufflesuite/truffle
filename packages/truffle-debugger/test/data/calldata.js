@@ -213,7 +213,9 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+      await session.variables()
+    );
 
     const expectedResult = {
       stringBox: {
