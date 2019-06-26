@@ -88,8 +88,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
   }
 }
 
-export function* decodeEvent(info: EvmInfo, targetName: string | null = null): IterableIterator<EventDecoding[] | DecoderRequest | Values.Result | GeneratorJunk> {
-  const compiler = info.currentContext.compiler;
+export function* decodeEvent(info: EvmInfo, address: string, targetName: string | null = null): IterableIterator<EventDecoding[] | DecoderRequest | Values.Result | GeneratorJunk> {
   const allocations = info.allocations.event;
   let rawSelector: Uint8Array;
   try {
@@ -108,11 +107,30 @@ export function* decodeEvent(info: EvmInfo, targetName: string | null = null): I
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
   const { contract: contractAllocations, library: libraryAllocations } = allocations[selector][topicsCount];
-  //we only want one contract from the contractAllocations -- this one
-  const contractId = info.currentContext.contractId;
-  const contractAllocation = contractAllocations[contractId];
-  const possibleAllocations: [string, EventAllocation][] = [[contractId.toString(), contractAllocation], ...Object.entries(libraryAllocations)];
+  //now: what contract are we (probably) dealing with? let's get its code to find out
+  const codeBytes: Uint8Array = yield {
+    type: "code",
+    address
+  };
+  const codeAsHex = CodecUtils.Conversion.toHexString(codeBytes);
+  const contractContext = CodecUtils.Contexts.findDecoderContext(info.contexts, codeAsHex);
+  let possibleContractAllocations: [string, EventAllocation][];
   //should be number, but we have to temporarily pass through string to get compilation to work...
+  //(these are ID/allocation pairs)
+  if(contractContext) {
+    //if we found the contract, maybe it's from that contract
+    const contractId = contractContext.contractId;
+    const contractAllocation = contractAllocations[contractId];
+    possibleContractAllocations = contractAllocation
+      ? [[contractId.toString(), contractAllocation]] //array of a single pair
+      : [];
+  }
+  else {
+    //if we couldn't determine the contract, well, we have to assume it's from a library
+    possibleContractAllocations = [];
+  }
+  //now we add in all the library allocations!
+  const possibleAllocations = [...possibleContractAllocations, ...Object.entries(libraryAllocations)];
   let decodings: EventDecoding[] = [];
   for(const [id, allocation] of possibleAllocations) {
     try {
@@ -120,14 +138,14 @@ export function* decodeEvent(info: EvmInfo, targetName: string | null = null): I
       if(targetName !== null && allocation.definition.name !== targetName) {
         continue;
       }
-      const context = info.contexts[parseInt(id)];
-      const contractType = CodecUtils.Contexts.contextToType(context);
-      const newInfo = { ...info, currentContext: context };
+      const attemptContext = info.contexts[parseInt(id)];
+      const contractType = CodecUtils.Contexts.contextToType(attemptContext);
+      const newInfo = { ...info, currentContext: attemptContext };
       //you can't map with a generator, so we have to do this map manually
       let decodedArguments: AbiArgument[] = [];
       for(const argumentAllocation of allocation.arguments) {
         const value = <Values.Result> (yield* decode(
-          Types.definitionToType(argumentAllocation.definition, compiler),
+          Types.definitionToType(argumentAllocation.definition, attemptContext.compiler),
           argumentAllocation.pointer,
           newInfo,
           0, //offset is always 0 for events

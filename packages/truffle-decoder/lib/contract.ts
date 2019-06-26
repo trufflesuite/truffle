@@ -427,7 +427,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contextsById
     };
-    const decoder = Codec.decodeEvent(info, name);
+    const decoder = Codec.decodeEvent(info, log.address, name);
 
     let result = decoder.next();
     while(!result.done) {
