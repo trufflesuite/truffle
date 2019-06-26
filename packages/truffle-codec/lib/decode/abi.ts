@@ -285,8 +285,8 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
 
     decodedMembers.push([
       memberName,
-      <Values.Result> (yield* decodeAbi(memberType, childPointer, info, 0, mode))
-      //the 0 is meaningless, just there by default
+      <Values.Result> (yield* decodeAbi(memberType, childPointer, info, startPosition, mode))
+      //note that startPosition is only needed in the dynamic case, but we don't know which case we're in
     ]);
   }
   return new Values.StructValue(dataType, decodedMembers);
