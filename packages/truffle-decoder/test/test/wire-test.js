@@ -1,14 +1,19 @@
+const debug = require("debug")("decoder:test:wire-test");
 const assert = require("chai").assert;
 
 const TruffleDecoder = require("../../../truffle-decoder");
 
 const WireTest = artifacts.require("WireTest");
+const WireTestParent = artifacts.require("WireTestParent");
 
 contract("WireTest", _accounts => {
   it("should correctly decode transactions and events", async () => {
     let deployedContract = await WireTest.new(true, "0xdeadbeef", 2);
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
+
+    let deployedContractNoConstructor = await WireTestParent.new();
+    let defaultConstructorHash = deployedContractNoConstructor.transactionHash;
 
     let emitStuffArgs = [
       {
@@ -31,11 +36,23 @@ contract("WireTest", _accounts => {
     let moreStuff = await deployedContract.moreStuff(...moreStuffArgs);
     let moreStuffHash = moreStuff.tx;
 
+    let inheritedArg = [2, 3];
+    let inherited = await deployedContract.inherited(inheritedArg);
+    debug("inherited: %O", inherited);
+    let inheritedHash = inherited.tx;
+
     let constructorTx = await web3.eth.getTransaction(constructorHash);
     let emitStuffTx = await web3.eth.getTransaction(emitStuffHash);
     let moreStuffTx = await web3.eth.getTransaction(moreStuffHash);
+    let inheritedTx = await web3.eth.getTransaction(inheritedHash);
+    let defaultConstructorTx = await web3.eth.getTransaction(
+      defaultConstructorHash
+    );
 
-    const decoder = TruffleDecoder.forProject([WireTest], web3.currentProvider);
+    const decoder = TruffleDecoder.forProject(
+      [WireTest, WireTestParent],
+      web3.currentProvider
+    );
     await decoder.init();
 
     let constructorDecoding = (await decoder.decodeTransaction(constructorTx))
@@ -44,6 +61,11 @@ contract("WireTest", _accounts => {
       .decoding;
     let moreStuffDecoding = (await decoder.decodeTransaction(moreStuffTx))
       .decoding;
+    let inheritedDecoding = (await decoder.decodeTransaction(inheritedTx))
+      .decoding;
+    let defaultConstructorDecoding = (await decoder.decodeTransaction(
+      defaultConstructorTx
+    )).decoding;
 
     assert.strictEqual(constructorDecoding.kind, "constructor");
     assert.strictEqual(constructorDecoding.class.typeName, "WireTest");
@@ -95,5 +117,22 @@ contract("WireTest", _accounts => {
       moreStuffDecoding.arguments[1].value.nativize(),
       moreStuffArgs[1]
     );
+
+    assert.strictEqual(inheritedDecoding.kind, "function");
+    assert.strictEqual(inheritedDecoding.name, "inherited");
+    assert.strictEqual(inheritedDecoding.class.typeName, "WireTest"); //NOT WireTestParent
+    assert.strictEqual(inheritedDecoding.arguments.length, 1);
+    assert.isUndefined(inheritedDecoding.arguments[0].name);
+    assert.deepEqual(
+      inheritedDecoding.arguments[0].value.nativize(),
+      inheritedArg
+    );
+
+    assert.strictEqual(defaultConstructorDecoding.kind, "constructor");
+    assert.strictEqual(
+      defaultConstructorDecoding.class.typeName,
+      "WireTestParent"
+    );
+    assert.strictEqual(defaultConstructorDecoding.arguments.length, 0);
   });
 });

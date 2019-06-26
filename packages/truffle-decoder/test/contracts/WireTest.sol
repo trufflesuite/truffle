@@ -1,7 +1,18 @@
 pragma solidity ^0.5.10;
 pragma experimental ABIEncoderV2;
 
-contract WireTest {
+contract WireTestParent {
+
+  event Done();
+
+  function inherited(uint[2] memory) public {
+    emit Done();
+  }
+
+  //no constructor
+}
+
+contract WireTest is WireTestParent {
   constructor(bool status, bytes memory info, Ternary whoknows) public {
     emit ConstructorEvent(status, info, whoknows);
   }

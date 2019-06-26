@@ -66,9 +66,9 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
     ));
     const name = argumentAllocation.definition.name;
     decodedArguments.push(
-      name === undefined
-        ? { value }
-        : { name, value }
+      name //deliberate general falsiness test
+        ? { name, value }
+        : { value }
     );
   }
   if(isConstructor) {
@@ -135,10 +135,10 @@ export function* decodeEvent(info: EvmInfo, targetName: string | null = null): I
         ));
         const name = argumentAllocation.definition.name;
         decodedArguments.push(
-          name === undefined
-            ? { value }
-            : { name, value }
-        );
+          name //deliberate general falsiness test
+            ? { name, value }
+            : { value }
+	);
       }
       //OK, so, having decoded the result, the question is: does it reencode to the original?
       //first, we have to filter out the indexed arguments, and also get rid of the name information

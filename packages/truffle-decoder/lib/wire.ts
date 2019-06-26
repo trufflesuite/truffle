@@ -146,6 +146,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   }
 
   public async decodeTransaction(transaction: Transaction): Promise<DecoderTypes.DecodedTransaction> {
+    debug("transaction: %O", transaction);
     const block = transaction.blockNumber;
     const context = await this.getContextByAddress(transaction.to, block, transaction.input);
 
