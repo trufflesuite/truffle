@@ -7,6 +7,8 @@ class Subscriber {
     const { initialization, handlers } = options;
 
     this.emitter = emitter;
+    // Object for storing unsubscribe methods for non-globbed listeners
+    this.unsubscribeListener = {};
 
     if (initialization) initialization.bind(this)();
 
@@ -32,6 +34,15 @@ class Subscriber {
     return Promise.all(promises);
   }
 
+  removeListener(name) {
+    if (this.unsubscribeListener[name]) {
+      this.unsubscribeListener(name);
+    }
+    if (this.globbedHandlerLookupTable[name]) {
+      this.globbedHandlerLookupTable[name] = null;
+    }
+  }
+
   regexMatchesEntireName(eventName, handlerName) {
     const matches = eventName.match(
       this.globbedHandlerLookupTable[handlerName]
@@ -50,7 +61,10 @@ class Subscriber {
   setUpListeners(handlers) {
     for (let handlerName in handlers) {
       handlers[handlerName].forEach(handler => {
-        this.emitter.on(handlerName, handler.bind(this));
+        this.unsubscribeListener[handlerName] = this.emitter.on(
+          handlerName,
+          handler.bind(this)
+        );
       });
     }
   }
