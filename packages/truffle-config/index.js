@@ -19,12 +19,8 @@ class Config {
       from: null
     };
 
-    const eventManagerOptions = {
-      muteReporters: this.quiet,
-      logger: this.logger,
-      globalConfig: this
-    };
-    this.events = new EventManager(eventManagerOptions);
+    const eventsOptions = eventManagerOptions(this);
+    this.events = new EventManager(eventsOptions);
 
     // This is a list of multi-level keys with defaults
     // we need to _.merge. Using this list for safety
@@ -317,7 +313,8 @@ class Config {
   with(options) {
     const normalized = this.normalize(options);
     const current = this.normalize(this);
-    attachNewEventManager(this, options);
+    let eventsOptions = eventManagerOptions(this);
+    this.events.updateSubscriberOptions(eventsOptions);
 
     return _.extend({}, current, normalized);
   }
@@ -339,7 +336,8 @@ class Config {
         // Do nothing.
       }
     });
-    attachNewEventManager(this, options);
+    const eventsOptions = eventManagerOptions(this);
+    this.events.updateSubscriberOptions(eventsOptions);
 
     return this;
   }
@@ -387,24 +385,12 @@ Config.detect = (options = {}, filename) => {
 
 // When new options are passed in, a new eventManager needs to be
 // attached as it might override some options (e.g. { quiet: true })
-const attachNewEventManager = (config, newOptions) => {
-  const currentEventManagerOptions = config.events.initializationOptions;
-  const { quiet, logger, globalConfig, reporters } = newOptions;
-  const optionsToMerge = {};
+const eventManagerOptions = config => {
+  let muteLogging;
+  const { quiet, logger } = config;
 
-  if (typeof quiet !== "undefined") optionsToMerge.quiet = quiet;
-  if (typeof logger !== "undefined") optionsToMerge.logger = logger;
-  if (typeof globalConfig !== "undefined")
-    optionsToMerge.globalConfig = globalConfig;
-  if (typeof reporters !== "undefined") optionsToMerge.reporters = reporters;
-
-  const newEventManagerOptions = Object.assign(
-    {},
-    currentEventManagerOptions,
-    optionsToMerge
-  );
-
-  config.events = new EventManager(newEventManagerOptions);
+  if (quiet) muteLogging = true;
+  return { logger, muteLogging };
 };
 
 Config.load = (file, options) => {
@@ -417,9 +403,11 @@ Config.load = (file, options) => {
   delete require.cache[Module._resolveFilename(file, module)];
   const static_config = originalrequire(file);
 
-  attachNewEventManager(config, static_config);
   config.merge(static_config);
   config.merge(options);
+
+  const eventsOptions = eventManagerOptions(config);
+  config.events.updateSubscriberOptions(eventsOptions);
 
   return config;
 };

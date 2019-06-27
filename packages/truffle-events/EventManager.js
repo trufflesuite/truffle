@@ -29,7 +29,7 @@ class EventManager {
     );
   }
 
-  updateOptions(newOptions) {
+  updateSubscriberOptions(newOptions) {
     this.subscriberAggregators.forEach(aggregator => {
       aggregator.updateSubscriberOptions(newOptions);
     });

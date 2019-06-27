@@ -80,6 +80,8 @@ const Contracts = {
         ? [config.compiler]
         : Object.keys(config.compilers);
 
+      config.events.emit("compile:start");
+
       const compilations = await this.compileSources(config, compilers);
 
       const numberOfCompiledContracts = compilations.reduce(
@@ -90,9 +92,9 @@ const Contracts = {
       );
 
       if (numberOfCompiledContracts === 0)
-        options.events.emit("compile:nothingToCompile");
+        config.events.emit("compile:nothingToCompile");
 
-      options.events.emit("compile:finish", {
+      config.events.emit("compile:finish", {
         globalConfig: config,
         compilersInfo: config.compilersInfo
       });
