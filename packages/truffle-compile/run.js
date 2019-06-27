@@ -47,12 +47,6 @@ async function run(rawSources, options) {
     throw new CompileError(errors);
   }
 
-  var files = [];
-  Object.keys(compilerOutput.sources).forEach(filename => {
-    var source = compilerOutput.sources[filename];
-    files[source.id] = originalSourcePaths[filename];
-  });
-
   var returnVal = {};
 
   // This block has comments in it as it's being prepared for solc > 0.4.10
@@ -139,7 +133,14 @@ async function run(rawSources, options) {
 
   const compilerInfo = { name: "solc", version: solcVersion };
 
-  return [returnVal, files, compilerInfo];
+  return [
+    returnVal,
+    processSources({
+      compilerOutput,
+      originalSourcePaths
+    }),
+    compilerInfo
+  ];
 }
 
 function replaceLinkReferences(bytecode, linkReferences, libraryName) {
@@ -386,6 +387,20 @@ function detectErrors({ compilerOutput: { errors: outputErrors }, options }) {
   }
 
   return { warnings, errors };
+}
+
+/**
+ * Aggregate list of sources based on reported source index
+ * Returns list transformed to use original source paths
+ */
+function processSources({ compilerOutput, originalSourcePaths }) {
+  let files = [];
+
+  for (let [sourcePath, { id }] of Object.entries(compilerOutput.sources)) {
+    files[id] = originalSourcePaths[sourcePath];
+  }
+
+  return files;
 }
 
 module.exports = { run };
