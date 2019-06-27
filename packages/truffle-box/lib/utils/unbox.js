@@ -61,13 +61,7 @@ function prepareToCopyFiles(tempDir, { ignore }) {
 
   needingRemoval
     .map(fileName => path.join(tempDir, fileName))
-    .forEach(filePath => {
-      try {
-        fse.removeSync(filePath);
-      } catch (error) {
-        throw error;
-      }
-    });
+    .forEach(filePath => fse.removeSync(filePath));
 }
 
 async function promptOverwrites(contentCollisions, logger = console) {
