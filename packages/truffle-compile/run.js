@@ -29,35 +29,21 @@ async function run(rawSources, options) {
     options
   });
 
-  let errors = compilerOutput.errors || [];
-  let warnings = [];
-
-  if (options.strict !== true) {
-    warnings = errors.filter(error => error.severity === "warning");
-
-    errors = errors.filter(error => error.severity !== "warning");
-
-    if (options.quiet !== true && warnings.length > 0) {
-      options.logger.log(
-        OS.EOL + "    > compilation warnings encountered:" + OS.EOL
-      );
-      options.logger.log(
-        warnings.map(warning => warning.formattedMessage).join()
-      );
-    }
+  // handle warnings as errors if options.strict
+  // log if not options.quiet
+  const { warnings, errors } = detectErrors({ compilerOutput, options });
+  if (warnings.length > 0 && !options.quiet) {
+    options.logger.log(
+      OS.EOL + "    > compilation warnings encountered:" + OS.EOL
+    );
+    options.logger.log(warnings);
   }
 
   if (errors.length > 0) {
-    options.logger.log("");
-    errors = errors.map(error => error.formattedMessage).join();
-    if (errors.includes("requires different compiler version")) {
-      const contractSolcVer = errors.match(/pragma solidity[^;]*/gm)[0];
-      const configSolcVer =
-        options.compilers.solc.version || semver.valid(solcVersion);
-      errors = errors.concat(
-        `\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)`
-      );
+    if (!options.quiet) {
+      options.logger.log("");
     }
+
     throw new CompileError(errors);
   }
 
@@ -356,6 +342,50 @@ async function invokeCompiler({ compilerInput, options }) {
     compilerOutput,
     solcVersion
   };
+}
+
+/**
+ * Extract errors/warnings from compiler output based on strict mode setting
+ * @return { errors: string, warnings: string }
+ */
+function detectErrors({ compilerOutput: { errors: outputErrors }, options }) {
+  outputErrors = outputErrors || [];
+  const rawErrors = options.strict
+    ? outputErrors
+    : outputErrors.filter(({ severity }) => severity !== "warning");
+
+  const rawWarnings = options.strict
+    ? [] // none of those in strict mode
+    : outputErrors.filter(({ severity }) => severity === "warning");
+
+  // extract messages
+  let errors = rawErrors.map(({ formattedMessage }) => formattedMessage).join();
+  const warnings = rawWarnings
+    .map(({ formattedMessage }) => formattedMessage)
+    .join();
+
+  if (errors.includes("requires different compiler version")) {
+    const contractSolcVer = errors.match(/pragma solidity[^;]*/gm)[0];
+    const configSolcVer =
+      options.compilers.solc.version || semver.valid(solc.version());
+
+    errors = errors.concat(
+      [
+        OS.EOL,
+        `Error: Truffle is currently using solc ${configSolcVer}, `,
+        `but one or more of your contracts specify "${contractSolcVer}".`,
+        OS.EOL,
+        `Please update your truffle config or pragma statement(s).`,
+        OS.EOL,
+        `(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration `,
+        `for information on`,
+        OS.EOL,
+        `configuring Truffle to use a specific solc compiler version.)`
+      ].join("")
+    );
+  }
+
+  return { warnings, errors };
 }
 
 module.exports = { run };
