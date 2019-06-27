@@ -145,6 +145,14 @@ contract("WireTest", _accounts => {
     let inheritedBlock = inherited.receipt.blockNumber;
     let indexTestBlock = indexTest.receipt.blockNumber;
 
+    try {
+      //due to web3's having ethers's crappy decoder built in,
+      //we have to put this in a try block to catch the error
+      await deployedContract.danger();
+    } catch (_) {
+      //discard the error!
+    }
+
     let constructorEvents = await decoder.events(
       null,
       constructorBlock,
@@ -170,6 +178,9 @@ contract("WireTest", _accounts => {
       indexTestBlock,
       indexTestBlock
     );
+    //HACK -- since danger was last, we can just ask for the
+    //events from the latest block
+    let dangerEvents = await decoder.events();
 
     assert.lengthOf(constructorEvents, 1);
     let constructorEventDecodings = constructorEvents[0].decodings;
@@ -195,6 +206,11 @@ contract("WireTest", _accounts => {
     let indexTestEventDecodings = indexTestEvents[0].decodings;
     assert.lengthOf(indexTestEventDecodings, 1);
     let indexTestEventDecoding = indexTestEventDecodings[0];
+
+    assert.lengthOf(dangerEvents, 1);
+    let dangerEventDecodings = dangerEvents[0].decodings;
+    assert.lengthOf(dangerEventDecodings, 1);
+    let dangerEventDecoding = dangerEventDecodings[0];
 
     assert.strictEqual(constructorEventDecoding.kind, "event");
     assert.strictEqual(constructorEventDecoding.class.typeName, "WireTest");
@@ -284,6 +300,15 @@ contract("WireTest", _accounts => {
     assert.deepEqual(
       indexTestEventDecoding.arguments[4].value.nativize(),
       indexTestArgs[4]
+    );
+
+    assert.strictEqual(dangerEventDecoding.kind, "event");
+    assert.strictEqual(dangerEventDecoding.name, "Danger");
+    assert.lengthOf(dangerEventDecoding.arguments, 1);
+    assert.isUndefined(dangerEventDecoding.arguments[0].name);
+    assert.strictEqual(
+      dangerEventDecoding.arguments[0].value.nativize(),
+      `WireTest(${address}).danger`
     );
   });
 });
