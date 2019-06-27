@@ -55,7 +55,9 @@ describe("Commander", function() {
         "--network",
         "localhost",
         "--unsupportedflag",
-        "invalidoption"
+        "invalidoption",
+        "--unsupportedflag2",
+        "invalidflag2"
       ],
       { noAliases: true, logger: console },
       function() {
@@ -65,7 +67,7 @@ describe("Commander", function() {
 
     assert.equal(
       warning,
-      "> Warning: possible unsupported (undocumented in help) command line option: --unsupportedflag"
+      "> Warning: possible unsupported (undocumented in help) command line option: --unsupportedflag,--unsupportedflag2"
     );
   });
 });

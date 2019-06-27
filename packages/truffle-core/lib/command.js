@@ -102,20 +102,22 @@ class Command {
 
     //Check unsupported command line flag according to the option list in help
     try {
-      const inputOptions = [];
-      inputStrings.map(i => {
-        if (i.startsWith("--")) {
-          inputOptions.push(i);
-        }
-      });
+      const inputOptions = inputStrings
+        .map(string => {
+          return string.startsWith("--") ? string : null;
+        })
+        .filter(item => {
+          return item != null;
+        });
 
-      const validOptions = [];
-      result.command.help.options.map(item => {
-        let opt = item.option.split(" ")[0];
-        if (opt.startsWith("--")) {
-          validOptions.push(opt);
-        }
-      });
+      const validOptions = result.command.help.options
+        .map(item => {
+          let opt = item.option.split(" ")[0];
+          return opt.startsWith("--") ? opt : null;
+        })
+        .filter(item => {
+          return item != null;
+        });
 
       let invalidOptions = inputOptions.filter(
         opt => !validOptions.includes(opt)
