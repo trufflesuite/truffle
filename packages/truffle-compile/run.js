@@ -38,7 +38,7 @@ async function run(rawSources, options) {
     ? targets.forEach(key => (outputSelection[key] = defaultSelectors))
     : (outputSelection["*"] = defaultSelectors);
 
-  const solcStandardInput = {
+  const compilerInput = {
     language: "Solidity",
     sources: {},
     settings: {
@@ -49,7 +49,7 @@ async function run(rawSources, options) {
   };
 
   Object.keys(sources).forEach(file_path => {
-    solcStandardInput.sources[file_path] = {
+    compilerInput.sources[file_path] = {
       content: sources[file_path]
     };
   });
@@ -58,11 +58,11 @@ async function run(rawSources, options) {
   const supplier = new CompilerSupplier(options.compilers.solc);
   const solc = await supplier.load();
 
-  const result = solc.compile(JSON.stringify(solcStandardInput));
+  const result = solc.compile(JSON.stringify(compilerInput));
 
-  const standardOutput = JSON.parse(result);
+  const compilerOutput = JSON.parse(result);
 
-  let errors = standardOutput.errors || [];
+  let errors = compilerOutput.errors || [];
   let warnings = [];
 
   if (options.strict !== true) {
@@ -95,15 +95,15 @@ async function run(rawSources, options) {
   }
 
   var files = [];
-  Object.keys(standardOutput.sources).forEach(filename => {
-    var source = standardOutput.sources[filename];
+  Object.keys(compilerOutput.sources).forEach(filename => {
+    var source = compilerOutput.sources[filename];
     files[source.id] = originalSourcePaths[filename];
   });
 
   var returnVal = {};
 
   // This block has comments in it as it's being prepared for solc > 0.4.10
-  Object.entries(standardOutput.contracts).forEach(entry => {
+  Object.entries(compilerOutput.contracts).forEach(entry => {
     const [sourcePath, filesContracts] = entry;
 
     Object.entries(filesContracts).forEach(entry => {
@@ -119,8 +119,8 @@ async function run(rawSources, options) {
         source: sources[sourcePath],
         sourceMap: contract.evm.bytecode.sourceMap,
         deployedSourceMap: contract.evm.deployedBytecode.sourceMap,
-        legacyAST: standardOutput.sources[sourcePath].legacyAST,
-        ast: standardOutput.sources[sourcePath].ast,
+        legacyAST: compilerOutput.sources[sourcePath].legacyAST,
+        ast: compilerOutput.sources[sourcePath].ast,
         abi: contract.abi,
         metadata: contract.metadata,
         bytecode: "0x" + contract.evm.bytecode.object,
