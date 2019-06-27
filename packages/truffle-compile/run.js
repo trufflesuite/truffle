@@ -16,24 +16,11 @@ async function run(rawSources, options) {
     options.compilationTargets
   );
 
-  // Specify compilation targets
-  // Each target uses defaultSelectors, defaulting to single target `*` if targets are unspecified
-  const outputSelection = prepareOutputSelection({ targets });
-
-  const compilerInput = {
-    language: "Solidity",
-    sources: {},
-    settings: {
-      evmVersion: options.compilers.solc.settings.evmVersion,
-      optimizer: options.compilers.solc.settings.optimizer,
-      outputSelection
-    }
-  };
-
-  Object.keys(sources).forEach(file_path => {
-    compilerInput.sources[file_path] = {
-      content: sources[file_path]
-    };
+  // construct solc compiler input
+  const compilerInput = prepareCompilerInput({
+    sources,
+    targets,
+    settings: options.compilers.solc.settings
   });
 
   // Load solc module only when compilation is actually required.
@@ -288,6 +275,38 @@ function getPortableSourcePath(sourcePath) {
   }
 
   return replacement;
+}
+
+/**
+ * @param sources - { [sourcePath]: contents }
+ * @param targets - sourcePath[]
+ * @param setings - subset of Solidity settings
+ * @return solc compiler input JSON
+ */
+function prepareCompilerInput({ sources, targets, settings }) {
+  return {
+    language: "Solidity",
+    sources: prepareSources({ sources }),
+    settings: {
+      evmVersion: settings.evmVersion,
+      optimizer: settings.optimizer,
+
+      // Specify compilation targets. Each target uses defaultSelectors,
+      // defaulting to single target `*` if targets are unspecified
+      outputSelection: prepareOutputSelection({ targets })
+    }
+  };
+}
+
+/**
+ * Convert sources into solc compiler input format
+ * @param sources - { [sourcePath]: string }
+ * @return { [sourcePath]: { content: string } }
+ */
+function prepareSources({ sources }) {
+  return Object.entries(sources)
+    .map(([sourcePath, content]) => ({ [sourcePath]: { content } }))
+    .reduce((a, b) => Object.assign({}, a, b), {});
 }
 
 /**
