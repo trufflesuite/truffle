@@ -3,16 +3,16 @@ const Emittery = require("emittery");
 
 class EventManager {
   constructor(eventManagerOptions) {
-    const { logger, muteReporters, globalConfig } = eventManagerOptions;
+    let { logger, muteReporters } = eventManagerOptions;
 
     // Keep a reference to these so it can be cloned
     // if necessary in truffle-config
     this.initializationOptions = eventManagerOptions;
     this.emitter = new Emittery();
+    this.subscriberAggregators = [];
 
     const initializationOptions = {
       emitter: this.emitter,
-      globalConfig,
       logger,
       muteReporters
     };
@@ -24,7 +24,15 @@ class EventManager {
   }
 
   initializeSubscribers(initializationOptions) {
-    new SubscriberAggregator(initializationOptions);
+    this.subscriberAggregators.push(
+      new SubscriberAggregator(initializationOptions)
+    );
+  }
+
+  updateOptions(newOptions) {
+    this.subscriberAggregators.forEach(aggregator => {
+      aggregator.updateSubscriberOptions(newOptions);
+    });
   }
 }
 

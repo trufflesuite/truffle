@@ -3,17 +3,32 @@ const defaultSubscribers = require("./defaultSubscribers");
 
 class SubscriberAggregator {
   constructor(initializationOptions) {
+    this.subscribers = [];
     this.initializeSubscribers(initializationOptions);
   }
 
   initializeSubscribers(initializationOptions) {
-    const { emitter } = initializationOptions;
+    let { emitter, logger, muteLogging } = initializationOptions;
+    if (muteLogging) logger = () => {};
     for (let subscriberName in defaultSubscribers) {
-      new Subscriber({
-        options: defaultSubscribers[subscriberName],
-        emitter
-      });
+      this.subscribers.push(
+        new Subscriber({
+          options: defaultSubscribers[subscriberName],
+          emitter,
+          logger
+        })
+      );
     }
+  }
+
+  updateSubscriberOptions(newOptions) {
+    let { logger, muteLogging } = newOptions;
+    if (muteLogging) logger = () => {};
+    this.subscribers.forEach(subscriber => {
+      subscriber.updateOptions({
+        logger
+      });
+    });
   }
 }
 

@@ -2,7 +2,7 @@ const helpers = require("./helpers");
 const { createLookupTable, sortHandlers, validateOptions } = helpers;
 
 class Subscriber {
-  constructor({ emitter, options }) {
+  constructor({ emitter, options, logger }) {
     validateOptions(options);
     const { initialization, handlers } = options;
 
@@ -11,6 +11,7 @@ class Subscriber {
     this.unsubscribeListener = {};
 
     if (initialization) initialization.bind(this)();
+    if (logger) this.logger = logger;
 
     const { globbedHandlers, nonGlobbedHandlers } = sortHandlers(handlers);
 
@@ -67,6 +68,11 @@ class Subscriber {
         );
       });
     }
+  }
+
+  updateOptions(newOptions) {
+    const { logger } = newOptions;
+    if (logger) this.logger = logger;
   }
 }
 
