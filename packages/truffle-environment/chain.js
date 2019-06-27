@@ -195,17 +195,15 @@ Supervisor.prototype.exit = function() {
  * Lifecycle
  * (quit on last connection)
  */
-function LifecycleMixin() {
-  var self = this;
-}
+function LifecycleMixin() {}
 
 // start counting active connections
-LifecycleMixin.prototype.start = function(supervisor) {
+LifecycleMixin.prototype.start = function(_supervisor) {
   this.connections = 0;
 };
 
 // increment
-LifecycleMixin.prototype.connect = function(supervisor) {
+LifecycleMixin.prototype.connect = function(_supervisor) {
   this.connections++;
 };
 
@@ -228,7 +226,7 @@ function GanacheMixin(options) {
 }
 
 // start Ganache and capture promise that resolves when ready
-GanacheMixin.prototype.start = function(supervisor) {
+GanacheMixin.prototype.start = function(_supervisor) {
   var self = this;
 
   this.ready = new Promise(function(accept, reject) {
@@ -244,14 +242,13 @@ GanacheMixin.prototype.start = function(supervisor) {
 
 // wait for Ganache to be ready then emit signal to client socket
 GanacheMixin.prototype.connect = function(supervisor, socket) {
-  var self = this;
   this.ready.then(function() {
     supervisor.emit(socket, "truffle.ready");
   });
 };
 
 // cleanup Ganache process on exit
-GanacheMixin.prototype.exit = function(supervisor) {
+GanacheMixin.prototype.exit = function(_supervisor) {
   this.ganache.close(function(err) {
     if (err) {
       console.error(err.stack || err);

@@ -1,6 +1,5 @@
 const path = require("path");
-const regularFs = require("fs");
-const fs = require("fs-extra");
+const fse = require("fs-extra");
 const assert = require("assert");
 const inquirer = require("inquirer");
 const sinon = require("sinon");
@@ -15,19 +14,19 @@ describe("truffle-box Box", () => {
   const destination = path.join(__dirname, ".truffle_test_tmp");
 
   beforeEach(() => {
-    fs.ensureDirSync(destination);
+    fse.ensureDirSync(destination);
     config = Config.default();
     sinon.stub(config.events, "emit");
   });
   afterEach(() => {
-    fs.removeSync(destination);
+    fse.removeSync(destination);
     config.events.emit.restore();
   });
 
   describe(".unbox()", () => {
     beforeEach(() => {
       sinon.stub(Box, "checkDir").returns(Promise.resolve());
-      fs.emptyDirSync(destination);
+      fse.emptyDirSync(destination);
     });
     afterEach(() => {
       Box.checkDir.restore();
@@ -39,7 +38,7 @@ describe("truffle-box Box", () => {
           assert.ok(truffleConfig);
 
           assert(
-            fs.existsSync(path.join(destination, "truffle-config.js")),
+            fse.existsSync(path.join(destination, "truffle-config.js")),
             "Unboxed project should have truffle config."
           );
           done();
@@ -50,17 +49,17 @@ describe("truffle-box Box", () => {
     it("does not copy the config files or ignored files in the config", () => {
       // Assert the file is not there first.
       assert(
-        fs.existsSync(path.join(destination, "truffle-init.json")) === false,
+        fse.existsSync(path.join(destination, "truffle-init.json")) === false,
         "truffle-init.json shouldn't be available to the user!"
       );
 
       // Now assert the README.md and the .gitignore file were removed.
       assert(
-        fs.existsSync(path.join(destination, "README.md")) === false,
+        fse.existsSync(path.join(destination, "README.md")) === false,
         "README.md didn't get removed!"
       );
       assert(
-        fs.existsSync(path.join(destination, ".gitignore")) === false,
+        fse.existsSync(path.join(destination, ".gitignore")) === false,
         ".gitignore didn't get removed!"
       );
     });
@@ -106,7 +105,7 @@ describe("truffle-box Box", () => {
           assert.ok(truffleConfig);
 
           assert(
-            fs.existsSync(path.join(destination, "truffle-config.js")),
+            fse.existsSync(path.join(destination, "truffle-config.js")),
             "Unboxed project should have truffle config."
           );
           done();
@@ -127,24 +126,24 @@ describe("truffle-box Box", () => {
       const truffleConfigPath = path.join(destination, "truffle-config.js");
 
       // preconditions
-      fs.writeFileSync(
+      fse.writeFileSync(
         truffleConfigPath,
         "this truffle-config.js file is different than the default box file",
         "utf8"
       );
       assert(
-        fs.existsSync(truffleConfigPath),
+        fse.existsSync(truffleConfigPath),
         "mock truffle-config.js wasn't created!"
       );
-      const mockConfig = fs.readFileSync(truffleConfigPath, "utf8");
+      const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
 
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }, config).then(
         () => {
           assert(
-            fs.existsSync(truffleConfigPath),
+            fse.existsSync(truffleConfigPath),
             "truffle-config.js wasn't recreated!"
           );
-          const newConfig = fs.readFileSync(truffleConfigPath, "utf8");
+          const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
           assert(
             newConfig !== mockConfig,
             "truffle-config.js wasn't overwritten!"
@@ -163,16 +162,16 @@ describe("truffle-box Box", () => {
       // preconditions
       sinon
         .stub(inquirer, "prompt")
-        .returns(Promise.resolve({ proceed: true }));
-      fs.ensureDirSync(contractDirPath);
+        .returns(Promise.resolve({ proceed: true, overwrite: true }));
+      fse.ensureDirSync(contractDirPath);
       assert(
-        fs.existsSync(contractDirPath),
+        fse.existsSync(contractDirPath),
         "contracts folder wasn't created!"
       );
     });
     afterEach(() => {
       inquirer.prompt.restore();
-      fs.removeSync(contractDirPath);
+      fse.removeSync(contractDirPath);
     });
 
     it("prompts when redundant files/folders exist in target directory", done => {
@@ -192,9 +191,48 @@ describe("truffle-box Box", () => {
         done();
       });
     });
+
+    it("overwrites redundant files when prompted and user confirms", done => {
+      const truffleConfigPath = path.join(destination, "truffle-config.js");
+
+      // preconditions
+      fse.writeFileSync(
+        truffleConfigPath,
+        "this truffle-config.js file is different than the default box file",
+        "utf8"
+      );
+      assert(
+        fse.existsSync(truffleConfigPath),
+        "mock truffle-config.js wasn't created!"
+      );
+      const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
+
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options).then(() => {
+        assert(inquirer.prompt.called);
+        assert(
+          fse.existsSync(truffleConfigPath),
+          "truffle-config.js wasn't recreated!"
+        );
+        const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
+        assert(
+          newConfig !== mockConfig,
+          "truffle-config.js wasn't overwritten!"
+        );
+        done();
+      });
+    });
   });
 
   describe("Box.checkDir()", () => {
+    let options = {
+      logger: {
+        log(stringToLog) {
+          this.loggedStuff = this.loggedStuff + stringToLog;
+        },
+        loggedStuff: ""
+      }
+    };
+
     beforeEach(() => {
       sinon
         .stub(inquirer, "prompt")
@@ -204,31 +242,54 @@ describe("truffle-box Box", () => {
       inquirer.prompt.restore();
     });
 
-    describe("when the directory is empty", () => {
-      beforeEach(() => {
-        sinon.stub(regularFs, "readdirSync").returns([]);
+    describe("when directory is empty", () => {
+      before(() => {
+        sinon.stub(fse, "readdirSync").returns([]);
       });
-      afterEach(() => {
-        regularFs.readdirSync.restore();
+      after(() => {
+        fse.readdirSync.restore();
       });
 
-      it("doesn't prompt the user", async () => {
+      it("doesn't prompt user", async () => {
         await Box.checkDir();
         assert.strictEqual(inquirer.prompt.called, false);
       });
     });
 
-    describe("when the directory is non-empty", () => {
-      beforeEach(() => {
-        sinon.stub(regularFs, "readdirSync").returns(["someCrappyFile.js"]);
+    describe("when directory is non-empty", () => {
+      before(() => {
+        sinon.stub(fse, "readdirSync").returns(["someCrappyFile.js"]);
       });
-      afterEach(() => {
-        regularFs.readdirSync.restore();
+      after(() => {
+        fse.readdirSync.restore();
       });
 
-      it("prompts the user", () => {
-        Box.checkDir();
+      it("prompts user", () => {
+        Box.checkDir(options);
         assert(inquirer.prompt.called);
+      });
+    });
+
+    describe("when directory is non-empty and user declines to unbox", () => {
+      before(() => {
+        sinon.stub(fse, "readdirSync").returns(["someCrappyFile.js"]);
+        sinon.stub(process, "exit").returns(1);
+      });
+      after(() => {
+        fse.readdirSync.restore();
+        process.exit.restore();
+      });
+
+      it("Exits unbox process", async () => {
+        inquirer.prompt.restore();
+        sinon
+          .stub(inquirer, "prompt")
+          .returns(Promise.resolve({ proceed: false }));
+        await Box.checkDir(options);
+        assert(inquirer.prompt.called);
+        assert(options.logger.loggedStuff.includes("Unbox cancelled"));
+        assert(process.exit.called);
+        assert.deepStrictEqual(fse.readdirSync(), ["someCrappyFile.js"]);
       });
     });
   });

@@ -25,7 +25,7 @@ function normalizeURL(
         url = `${url}-box`;
       } else {
         const index = url.indexOf("#");
-        url = url.substr(0, index) + "-box" + url.substr(index);
+        url = `${url.substr(0, index)}-box${url.substr(index)}`;
       }
     }
     return `https://github.com/truffle-box/${url}`;
