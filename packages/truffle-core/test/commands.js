@@ -43,12 +43,10 @@ describe("Commander", function() {
     assert.equal(actualCommand, commands.migrate);
 
     const originalLog = console.log || console.debug;
+    let warning = "";
     console.log = function(msg) {
-      assert.equal(
-        msg,
-        "warning: possilble unsupported (undocumented in help) command line option: --unsupportedflag"
-      );
       console.log = originalLog;
+      warning = msg;
     };
 
     commander.run(
@@ -63,6 +61,11 @@ describe("Commander", function() {
       function() {
         //ignore. not part of test
       }
+    );
+
+    assert.equal(
+      warning,
+      "> Warning: possible unsupported (undocumented in help) command line option: --unsupportedflag"
     );
   });
 });
