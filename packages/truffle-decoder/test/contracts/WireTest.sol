@@ -48,4 +48,10 @@ contract WireTest is WireTestParent {
   function moreStuff(WireTest notThis, uint[] memory bunchOfInts) public {
     emit MoreStuff(notThis, bunchOfInts);
   }
+
+  event HasIndices(uint, uint indexed, string, string indexed, uint);
+
+  function indexTest(uint a, uint b, string memory c, string memory d, uint e) public {
+    emit HasIndices(a, b, c, d, e);
+  }
 }

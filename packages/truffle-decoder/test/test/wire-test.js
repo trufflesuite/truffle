@@ -41,6 +41,9 @@ contract("WireTest", _accounts => {
     debug("inherited: %O", inherited);
     let inheritedHash = inherited.tx;
 
+    let indexTestArgs = [7, 89, "hello", "indecipherable", 62];
+    let indexTest = await deployedContract.indexTest(...indexTestArgs);
+
     let constructorTx = await web3.eth.getTransaction(constructorHash);
     let emitStuffTx = await web3.eth.getTransaction(emitStuffHash);
     let moreStuffTx = await web3.eth.getTransaction(moreStuffHash);
@@ -137,9 +140,10 @@ contract("WireTest", _accounts => {
 
     //now for events!
     let constructorBlock = constructorTx.blockNumber;
-    let emitStuffBlock = emitStuffTx.blockNumber;
-    let moreStuffBlock = moreStuffTx.blockNumber;
-    let inheritedBlock = inherited.blocknumber;
+    let emitStuffBlock = emitStuff.receipt.blockNumber;
+    let moreStuffBlock = moreStuff.receipt.blockNumber;
+    let inheritedBlock = inherited.receipt.blockNumber;
+    let indexTestBlock = indexTest.receipt.blockNumber;
 
     let constructorEvents = await decoder.events(
       null,
@@ -161,6 +165,11 @@ contract("WireTest", _accounts => {
       inheritedBlock,
       inheritedBlock
     );
+    let indexTestEvents = await decoder.events(
+      null,
+      indexTestBlock,
+      indexTestBlock
+    );
 
     assert.lengthOf(constructorEvents, 1);
     let constructorEventDecodings = constructorEvents[0].decodings;
@@ -181,6 +190,11 @@ contract("WireTest", _accounts => {
     let inheritedEventDecodings = inheritedEvents[0].decodings;
     assert.lengthOf(inheritedEventDecodings, 1);
     let inheritedEventDecoding = inheritedEventDecodings[0];
+
+    assert.lengthOf(indexTestEvents, 1);
+    let indexTestEventDecodings = indexTestEvents[0].decodings;
+    assert.lengthOf(indexTestEventDecodings, 1);
+    let indexTestEventDecoding = indexTestEventDecodings[0];
 
     assert.strictEqual(constructorEventDecoding.kind, "event");
     assert.strictEqual(constructorEventDecoding.class.typeName, "WireTest");
@@ -241,5 +255,35 @@ contract("WireTest", _accounts => {
     assert.strictEqual(inheritedEventDecoding.name, "Done");
     assert.strictEqual(inheritedEventDecoding.class.typeName, "WireTest"); //NOT WireTestParent
     assert.isEmpty(inheritedEventDecoding.arguments);
+
+    assert.strictEqual(indexTestEventDecoding.kind, "event");
+    assert.strictEqual(indexTestEventDecoding.name, "HasIndices");
+    assert.strictEqual(indexTestEventDecoding.class.typeName, "WireTest");
+    assert.lengthOf(indexTestEventDecoding.arguments, 5);
+    assert.isUndefined(indexTestEventDecoding.arguments[0].name);
+    assert.strictEqual(
+      indexTestEventDecoding.arguments[0].value.nativize(),
+      indexTestArgs[0]
+    );
+    assert.isUndefined(indexTestEventDecoding.arguments[1].name);
+    assert.deepEqual(
+      indexTestEventDecoding.arguments[1].value.nativize(),
+      indexTestArgs[1]
+    );
+    assert.isUndefined(indexTestEventDecoding.arguments[2].name);
+    assert.deepEqual(
+      indexTestEventDecoding.arguments[2].value.nativize(),
+      indexTestArgs[2]
+    );
+    assert.isUndefined(indexTestEventDecoding.arguments[3].name);
+    assert.isUndefined(
+      indexTestEventDecoding.arguments[3].value.nativize(), //can't decode indexed reference type!
+      indexTestArgs[3]
+    );
+    assert.isUndefined(indexTestEventDecoding.arguments[4].name);
+    assert.deepEqual(
+      indexTestEventDecoding.arguments[4].value.nativize(),
+      indexTestArgs[4]
+    );
   });
 });
