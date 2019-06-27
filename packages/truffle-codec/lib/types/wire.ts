@@ -33,5 +33,6 @@ export interface EventDecoding {
 
 export interface AbiArgument {
   name?: string; //included if parameter is named
+  indexed?: boolean; //included for event parameters
   value: CodecUtils.Values.Result;
 }
