@@ -91,7 +91,11 @@ module.exports = {
                   } catch (e) {
                     // JSON.parse throws SyntaxError objects
                     return e instanceof SyntaxError
-                      ? c(new Error("Invalid artifact: " + jsonData[i].file))
+                      ? c(
+                          new Error(
+                            "Problem parsing artifact: " + jsonData[i].file
+                          )
+                        )
                       : c(e);
                   }
                 }
