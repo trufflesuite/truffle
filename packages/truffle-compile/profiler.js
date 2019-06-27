@@ -71,16 +71,16 @@ module.exports = {
                   "utf8",
                   (err, body) => {
                     if (err) return finished(err);
-                    finished(null, body);
+                    finished(null, { file: buildFile, body });
                   }
                 );
               },
               (err, jsonData) => {
                 if (err) return c(err);
 
-                try {
-                  for (let i = 0; i < jsonData.length; i++) {
-                    const data = JSON.parse(jsonData[i]);
+                for (let i = 0; i < jsonData.length; i++) {
+                  try {
+                    const data = JSON.parse(jsonData[i].body);
 
                     // In case there are artifacts from other source locations.
                     if (sourceFilesArtifacts[data.sourcePath] == null) {
@@ -88,9 +88,16 @@ module.exports = {
                     }
 
                     sourceFilesArtifacts[data.sourcePath].push(data);
+                  } catch (e) {
+                    // JSON.parse throws SyntaxError objects
+                    return e instanceof SyntaxError
+                      ? c(
+                          new Error(
+                            "Problem parsing artifact: " + jsonData[i].file
+                          )
+                        )
+                      : c(e);
                   }
-                } catch (e) {
-                  return c(e);
                 }
 
                 c();
