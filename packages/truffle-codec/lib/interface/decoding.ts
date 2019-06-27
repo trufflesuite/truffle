@@ -90,6 +90,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
 
 export function* decodeEvent(info: EvmInfo, address: string, targetName: string | null = null): IterableIterator<EventDecoding[] | DecoderRequest | Values.Result | GeneratorJunk> {
   const allocations = info.allocations.event;
+  debug("event allocations: %O", allocations);
   let rawSelector: Uint8Array;
   try {
     rawSelector = <Uint8Array> read(

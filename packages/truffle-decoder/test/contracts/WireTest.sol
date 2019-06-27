@@ -52,4 +52,16 @@ contract WireTest is WireTestParent {
   function indexTest(uint a, uint b, string memory c, string memory d, uint e) public {
     emit HasIndices(a, b, c, d, e);
   }
+
+  function libraryTest(string memory it) public {
+    WireTestLibrary.emitEvent(it);
+  }
+}
+
+library WireTestLibrary {
+  event LibraryEvent(string);
+
+  function emitEvent(string calldata it) external {
+    emit LibraryEvent(it);
+  }
 }

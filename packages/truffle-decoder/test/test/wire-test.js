@@ -5,6 +5,7 @@ const TruffleDecoder = require("../../../truffle-decoder");
 
 const WireTest = artifacts.require("WireTest");
 const WireTestParent = artifacts.require("WireTestParent");
+const WireTestLibrary = artifacts.require("WireTestLibrary");
 
 contract("WireTest", _accounts => {
   it("should correctly decode transactions and events", async () => {
@@ -44,6 +45,9 @@ contract("WireTest", _accounts => {
     let indexTestArgs = [7, 89, "hello", "indecipherable", 62];
     let indexTest = await deployedContract.indexTest(...indexTestArgs);
 
+    let libraryTestArg = "zooglyzooglyzooglyzoogly";
+    let libraryTest = await deployedContract.libraryTest(libraryTestArg);
+
     let constructorTx = await web3.eth.getTransaction(constructorHash);
     let emitStuffTx = await web3.eth.getTransaction(emitStuffHash);
     let moreStuffTx = await web3.eth.getTransaction(moreStuffHash);
@@ -53,7 +57,7 @@ contract("WireTest", _accounts => {
     );
 
     const decoder = TruffleDecoder.forProject(
-      [WireTest, WireTestParent],
+      [WireTest, WireTestParent, WireTestLibrary],
       web3.currentProvider
     );
     await decoder.init();
@@ -144,6 +148,7 @@ contract("WireTest", _accounts => {
     let moreStuffBlock = moreStuff.receipt.blockNumber;
     let inheritedBlock = inherited.receipt.blockNumber;
     let indexTestBlock = indexTest.receipt.blockNumber;
+    let libraryTestBlock = libraryTest.receipt.blockNumber;
 
     try {
       //due to web3's having ethers's crappy decoder built in,
@@ -178,6 +183,11 @@ contract("WireTest", _accounts => {
       indexTestBlock,
       indexTestBlock
     );
+    let libraryTestEvents = await decoder.events(
+      null,
+      libraryTestBlock,
+      libraryTestBlock
+    );
     //HACK -- since danger was last, we can just ask for the
     //events from the latest block
     let dangerEvents = await decoder.events();
@@ -206,6 +216,11 @@ contract("WireTest", _accounts => {
     let indexTestEventDecodings = indexTestEvents[0].decodings;
     assert.lengthOf(indexTestEventDecodings, 1);
     let indexTestEventDecoding = indexTestEventDecodings[0];
+
+    assert.lengthOf(libraryTestEvents, 1);
+    let libraryTestEventDecodings = libraryTestEvents[0].decodings;
+    assert.lengthOf(libraryTestEventDecodings, 1);
+    let libraryTestEventDecoding = libraryTestEventDecodings[0];
 
     assert.lengthOf(dangerEvents, 1);
     let dangerEventDecodings = dangerEvents[0].decodings;
@@ -300,6 +315,19 @@ contract("WireTest", _accounts => {
     assert.deepEqual(
       indexTestEventDecoding.arguments[4].value.nativize(),
       indexTestArgs[4]
+    );
+
+    assert.strictEqual(libraryTestEventDecoding.kind, "event");
+    assert.strictEqual(libraryTestEventDecoding.name, "LibraryEvent");
+    assert.strictEqual(
+      libraryTestEventDecoding.class.typeName,
+      "WireTestLibrary"
+    );
+    assert.lengthOf(libraryTestEventDecoding.arguments, 1);
+    assert.isUndefined(libraryTestEventDecoding.arguments[0].name);
+    assert.strictEqual(
+      libraryTestEventDecoding.arguments[0].value.nativize(),
+      libraryTestArg
     );
 
     assert.strictEqual(dangerEventDecoding.kind, "event");
