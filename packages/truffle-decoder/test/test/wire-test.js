@@ -13,6 +13,12 @@ contract("WireTest", _accounts => {
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
 
+    const decoder = TruffleDecoder.forProject(
+      [WireTest, WireTestParent, WireTestLibrary],
+      web3.currentProvider
+    );
+    await decoder.init();
+
     let deployedContractNoConstructor = await WireTestParent.new();
     let defaultConstructorHash = deployedContractNoConstructor.transactionHash;
 
@@ -39,7 +45,6 @@ contract("WireTest", _accounts => {
 
     let inheritedArg = [2, 3];
     let inherited = await deployedContract.inherited(inheritedArg);
-    debug("inherited: %O", inherited);
     let inheritedHash = inherited.tx;
 
     let indexTestArgs = [7, 89, "hello", "indecipherable", 62];
@@ -55,12 +60,6 @@ contract("WireTest", _accounts => {
     let defaultConstructorTx = await web3.eth.getTransaction(
       defaultConstructorHash
     );
-
-    const decoder = TruffleDecoder.forProject(
-      [WireTest, WireTestParent, WireTestLibrary],
-      web3.currentProvider
-    );
-    await decoder.init();
 
     let constructorDecoding = (await decoder.decodeTransaction(constructorTx))
       .decoding;
@@ -338,5 +337,122 @@ contract("WireTest", _accounts => {
       dangerEventDecoding.arguments[0].value.nativize(),
       `WireTest(${address}).danger`
     );
+  });
+
+  it("disambiguates events when possible and not when impossible", async () => {
+    let deployedContract = await WireTest.deployed();
+
+    const decoder = TruffleDecoder.forProject(
+      [WireTest, WireTestParent, WireTestLibrary],
+      web3.currentProvider
+    );
+    await decoder.init();
+
+    //HACK HACK -- we're going to repeatedly apply the hack from above
+    //because ethers also can't handle ambiguous events
+    try {
+      await deployedContract.ambiguityTest();
+    } catch (_) {
+      //discard the error!
+    }
+    let ambiguityTestEvents = await decoder.events();
+    try {
+      await deployedContract.unambiguityTest();
+    } catch (_) {
+      //discard the error!
+    }
+    let unambiguityTestEvents = await decoder.events();
+
+    assert.lengthOf(ambiguityTestEvents, 1);
+    let ambiguityTestEventDecodings = ambiguityTestEvents[0].decodings;
+    assert.lengthOf(ambiguityTestEventDecodings, 2); //it's ambiguous!
+    //contract should always come before libraries
+    let ambiguityTestContractDecoding = ambiguityTestEventDecodings[0];
+    let ambiguityTestLibraryDecoding = ambiguityTestEventDecodings[1];
+
+    assert.lengthOf(unambiguityTestEvents, 4);
+    for (let event of unambiguityTestEvents) {
+      assert.lengthOf(event.decodings, 1); //they're unambiguous!
+    }
+    let unambiguousDecodings = unambiguityTestEvents.map(
+      ({ decodings }) => decodings[0]
+    );
+    assert.strictEqual(ambiguityTestContractDecoding.kind, "event");
+    assert.strictEqual(ambiguityTestContractDecoding.name, "AmbiguousEvent");
+    assert.strictEqual(
+      ambiguityTestContractDecoding.class.typeName,
+      "WireTest"
+    );
+    assert.lengthOf(ambiguityTestContractDecoding.arguments, 2);
+    assert.isUndefined(
+      ambiguityTestContractDecoding.arguments[0].value.nativize()
+    );
+    assert.deepEqual(
+      ambiguityTestContractDecoding.arguments[1].value.nativize(),
+      [32, 3, 17, 18, 19]
+    );
+
+    assert.strictEqual(ambiguityTestLibraryDecoding.kind, "event");
+    assert.strictEqual(ambiguityTestLibraryDecoding.name, "AmbiguousEvent");
+    assert.strictEqual(
+      ambiguityTestLibraryDecoding.class.typeName,
+      "WireTestLibrary"
+    );
+    assert.lengthOf(ambiguityTestLibraryDecoding.arguments, 2);
+    assert.deepEqual(
+      ambiguityTestLibraryDecoding.arguments[0].value.nativize(),
+      [17, 18, 19]
+    );
+    assert.isUndefined(
+      ambiguityTestLibraryDecoding.arguments[1].value.nativize()
+    );
+
+    for (let decoding of unambiguousDecodings) {
+      assert.strictEqual(decoding.kind, "event");
+      assert.strictEqual(decoding.name, "AmbiguousEvent");
+    }
+
+    assert.strictEqual(unambiguousDecodings[0].class.typeName, "WireTest");
+    assert.lengthOf(unambiguousDecodings[0].arguments, 2);
+    assert.isUndefined(unambiguousDecodings[0].arguments[0].value.nativize());
+    assert.deepEqual(unambiguousDecodings[0].arguments[1].value.nativize(), [
+      32,
+      1e12,
+      17,
+      18,
+      19
+    ]);
+
+    assert.strictEqual(unambiguousDecodings[1].class.typeName, "WireTest");
+    assert.lengthOf(unambiguousDecodings[1].arguments, 2);
+    assert.isUndefined(unambiguousDecodings[1].arguments[0].value.nativize());
+    assert.deepEqual(unambiguousDecodings[1].arguments[1].value.nativize(), [
+      32,
+      3,
+      257,
+      257,
+      257
+    ]);
+
+    assert.strictEqual(unambiguousDecodings[2].class.typeName, "WireTest");
+    assert.lengthOf(unambiguousDecodings[2].arguments, 2);
+    assert.isUndefined(unambiguousDecodings[2].arguments[0].value.nativize());
+    assert.deepEqual(unambiguousDecodings[2].arguments[1].value.nativize(), [
+      64,
+      0,
+      2,
+      1,
+      1
+    ]);
+
+    assert.strictEqual(
+      unambiguousDecodings[3].class.typeName,
+      "WireTestLibrary"
+    );
+    assert.lengthOf(unambiguousDecodings[3].arguments, 2);
+    assert.deepEqual(unambiguousDecodings[3].arguments[0].value.nativize(), [
+      107
+    ]);
+    assert.isUndefined(unambiguousDecodings[3].arguments[1].value.nativize());
   });
 });

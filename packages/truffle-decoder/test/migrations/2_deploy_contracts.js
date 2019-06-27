@@ -6,4 +6,5 @@ module.exports = function(deployer) {
   deployer.deploy(DecodingSample);
   deployer.deploy(WireTestLibrary);
   deployer.link(WireTestLibrary, WireTest);
+  deployer.deploy(WireTest, false, "0x", 0);
 };
