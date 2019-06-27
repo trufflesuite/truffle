@@ -16,27 +16,9 @@ async function run(rawSources, options) {
     options.compilationTargets
   );
 
-  const defaultSelectors = {
-    "": ["legacyAST", "ast"],
-    "*": [
-      "abi",
-      "metadata",
-      "evm.bytecode.object",
-      "evm.bytecode.sourceMap",
-      "evm.deployedBytecode.object",
-      "evm.deployedBytecode.sourceMap",
-      "userdoc",
-      "devdoc"
-    ]
-  };
-
   // Specify compilation targets
   // Each target uses defaultSelectors, defaulting to single target `*` if targets are unspecified
-  const outputSelection = {};
-
-  targets.length
-    ? targets.forEach(key => (outputSelection[key] = defaultSelectors))
-    : (outputSelection["*"] = defaultSelectors);
+  const outputSelection = prepareOutputSelection({ targets });
 
   const compilerInput = {
     language: "Solidity",
@@ -306,6 +288,37 @@ function getPortableSourcePath(sourcePath) {
   }
 
   return replacement;
+}
+
+/**
+ * If targets are specified, specify output selectors for each individually.
+ * Otherwise, just use "*" selector
+ * @param targets - sourcePath[] | undefined
+ */
+function prepareOutputSelection({ targets = [] }) {
+  const defaultSelectors = {
+    "": ["legacyAST", "ast"],
+    "*": [
+      "abi",
+      "metadata",
+      "evm.bytecode.object",
+      "evm.bytecode.sourceMap",
+      "evm.deployedBytecode.object",
+      "evm.deployedBytecode.sourceMap",
+      "userdoc",
+      "devdoc"
+    ]
+  };
+
+  if (!targets.length) {
+    return {
+      "*": defaultSelectors
+    };
+  }
+
+  return targets
+    .map(target => ({ [target]: defaultSelectors }))
+    .reduce((a, b) => Object.assign({}, a, b), {});
 }
 
 module.exports = { run };
