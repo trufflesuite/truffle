@@ -23,13 +23,11 @@ async function run(rawSources, options) {
     settings: options.compilers.solc.settings
   });
 
-  // Load solc module only when compilation is actually required.
-  const supplier = new CompilerSupplier(options.compilers.solc);
-  const solc = await supplier.load();
-
-  const result = solc.compile(JSON.stringify(compilerInput));
-
-  const compilerOutput = JSON.parse(result);
+  // perform compilation
+  const { compilerOutput, solcVersion } = await invokeCompiler({
+    compilerInput,
+    options
+  });
 
   let errors = compilerOutput.errors || [];
   let warnings = [];
@@ -55,7 +53,7 @@ async function run(rawSources, options) {
     if (errors.includes("requires different compiler version")) {
       const contractSolcVer = errors.match(/pragma solidity[^;]*/gm)[0];
       const configSolcVer =
-        options.compilers.solc.version || semver.valid(solc.version());
+        options.compilers.solc.version || semver.valid(solcVersion);
       errors = errors.concat(
         `\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)`
       );
@@ -97,7 +95,7 @@ async function run(rawSources, options) {
         unlinked_binary: "0x" + contract.evm.bytecode.object, // deprecated
         compiler: {
           name: "solc",
-          version: solc.version()
+          version: solcVersion
         },
         devdoc: contract.devdoc,
         userdoc: contract.userdoc
@@ -153,7 +151,7 @@ async function run(rawSources, options) {
     });
   });
 
-  const compilerInfo = { name: "solc", version: solc.version() };
+  const compilerInfo = { name: "solc", version: solcVersion };
 
   return [returnVal, files, compilerInfo];
 }
@@ -338,6 +336,26 @@ function prepareOutputSelection({ targets = [] }) {
   return targets
     .map(target => ({ [target]: defaultSelectors }))
     .reduce((a, b) => Object.assign({}, a, b), {});
+}
+
+/**
+ * Load solc and perform compilation
+ */
+async function invokeCompiler({ compilerInput, options }) {
+  // load solc
+  const supplier = new CompilerSupplier(options.compilers.solc);
+  const solc = await supplier.load();
+  const solcVersion = solc.version();
+
+  // perform compilation
+  const inputString = JSON.stringify(compilerInput);
+  const outputString = solc.compile(inputString);
+  const compilerOutput = JSON.parse(outputString);
+
+  return {
+    compilerOutput,
+    solcVersion
+  };
 }
 
 module.exports = { run };
