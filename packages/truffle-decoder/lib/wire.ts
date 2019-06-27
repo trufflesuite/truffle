@@ -228,6 +228,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     });
 
     let events = await this.decodeLogs(logs, name);
+    debug("events: %o", events);
 
     //if a target name was specified, we'll restrict to events that decoded
     //to something with that name.  (note that only decodings with that name

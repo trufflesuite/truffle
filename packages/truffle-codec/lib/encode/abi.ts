@@ -80,6 +80,7 @@ export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): U
         return staticEncoding;
       case "dynamic":
         let encoded = new Uint8Array(EVMUtils.WORD_SIZE + staticEncoding.length); //leave room for length
+        encoded.set(staticEncoding, EVMUtils.WORD_SIZE); //again, leave room for length beforehand
         let lengthBytes = ConversionUtils.toBytes(input.value.length, EVMUtils.WORD_SIZE);
         encoded.set(lengthBytes); //and now we set the length
         return encoded;

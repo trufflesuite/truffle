@@ -17,7 +17,7 @@ contract WireTest is WireTestParent {
     emit ConstructorEvent(status, info, whoknows);
   }
 
-  event ConstructorEvent(bool, bytes, Ternary);
+  event ConstructorEvent(bool bit, bytes, Ternary);
 
   struct Triple {
     int x;
@@ -41,11 +41,9 @@ contract WireTest is WireTestParent {
     emit EmitStuff(p, precompiles, strings);
   }
 
-  event MoreStuff(WireTest, uint[]);
+  event MoreStuff(WireTest, uint[] data);
 
   function moreStuff(WireTest notThis, uint[] memory bunchOfInts) public {
     emit MoreStuff(notThis, bunchOfInts);
   }
 }
-
-//TODO: add tests of library events & ambiguity

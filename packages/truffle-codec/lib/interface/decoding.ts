@@ -158,6 +158,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName: string 
             : { value }
 	);
       }
+      debug("decodedArguments: %O", decodedArguments);
       //OK, so, having decoded the result, the question is: does it reencode to the original?
       //first, we have to filter out the indexed arguments, and also get rid of the name information
       const nonIndexedValues = decodedArguments.filter(
@@ -166,6 +167,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName: string 
         ({value}) => value
       );
       //now, we can encode!
+      debug("nonIndexedValues: %O", nonIndexedValues);
       const reEncodedData = encodeTupleAbi(nonIndexedValues, info.allocations.abi);
       //are they equal?
       const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
