@@ -3,8 +3,8 @@ const path = require("path");
 const ghdownload = require("github-download");
 const rp = require("request-promise-native");
 const vcsurl = require("vcsurl");
-const parseURL = require("url").parse;
-const execSync = require("child_process").execSync;
+const { parse: parseURL } = require("url");
+const { execSync } = require("child_process");
 const inquirer = require("inquirer");
 
 async function verifyURL(url) {
