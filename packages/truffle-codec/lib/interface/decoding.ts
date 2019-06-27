@@ -139,16 +139,15 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName: string 
       if(targetName !== null && allocation.definition.name !== targetName) {
         continue;
       }
-      const attemptContext = info.contexts[parseInt(id)];
+      const compiler = info.contexts[parseInt(id)].compiler; //is this the one place we get a context by ID?
       const contractType = CodecUtils.Contexts.contextToType(attemptContext);
-      const newInfo = { ...info, currentContext: attemptContext };
       //you can't map with a generator, so we have to do this map manually
       let decodedArguments: AbiArgument[] = [];
       for(const argumentAllocation of allocation.arguments) {
         const value = <Values.Result> (yield* decode(
-          Types.definitionToType(argumentAllocation.definition, attemptContext.compiler),
+          Types.definitionToType(argumentAllocation.definition, compiler),
           argumentAllocation.pointer,
-          newInfo,
+          info,
           0, //offset is always 0 for events
           "strict" //turns on STRICT MODE to cause more errors to be thrown
         ));
@@ -157,7 +156,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName: string 
           name //deliberate general falsiness test
             ? { name, value }
             : { value }
-	);
+        );
       }
       debug("decodedArguments: %O", decodedArguments);
       //OK, so, having decoded the result, the question is: does it reencode to the original?
