@@ -1,6 +1,6 @@
 {
   "name": "truffle-decoder",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "A library that provides both high and low level decoding of Ethereum contract variables",
   "main": "dist/interface/index.js",
   "types": "lib/interface/index.ts",
