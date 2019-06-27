@@ -31,6 +31,8 @@ contract WireTest is WireTestParent {
 
   event Danger(function() external);
 
+  //currently omitted from tests due to having to deal with
+  //ethers's crappy decoder
   function danger() public {
     emit Danger(this.danger);
   }

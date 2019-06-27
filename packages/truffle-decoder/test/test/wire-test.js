@@ -141,11 +141,6 @@ contract("WireTest", _accounts => {
     let moreStuffBlock = moreStuffTx.blockNumber;
     let inheritedBlock = inherited.blocknumber;
 
-    /*
-    let danger = await deployedContract.danger();
-    let dangerBlock = danger.blockNumber;
-    */
-
     let constructorEvents = await decoder.events(
       null,
       constructorBlock,
@@ -166,7 +161,6 @@ contract("WireTest", _accounts => {
       inheritedBlock,
       inheritedBlock
     );
-    //let dangerEvents = await decoder.events(null, dangerBlock, dangerBlock);
 
     assert.lengthOf(constructorEvents, 1);
     let constructorEventDecodings = constructorEvents[0].decodings;
@@ -187,13 +181,6 @@ contract("WireTest", _accounts => {
     let inheritedEventDecodings = inheritedEvents[0].decodings;
     assert.lengthOf(inheritedEventDecodings, 1);
     let inheritedEventDecoding = inheritedEventDecodings[0];
-
-    /*
-    assert.lengthOf(dangerEvents, 1);
-    let dangerEventDecodings = dangerEvents[0].decodings;
-    assert.lengthOf(dangerEventDecodings, 1);
-    let dangerEventDecoding = dangerEventDecodings[0];
-    */
 
     assert.strictEqual(constructorEventDecoding.kind, "event");
     assert.strictEqual(constructorEventDecoding.class.typeName, "WireTest");
@@ -254,16 +241,5 @@ contract("WireTest", _accounts => {
     assert.strictEqual(inheritedEventDecoding.name, "Done");
     assert.strictEqual(inheritedEventDecoding.class.typeName, "WireTest"); //NOT WireTestParent
     assert.isEmpty(inheritedEventDecoding.arguments);
-
-    /*
-    assert.strictEqual(dangerEventDecoding.kind, "event");
-    assert.strictEqual(dangerEventDecoding.name, "Danger");
-    assert.lengthOf(dangerEventDecoding.arguments, 1);
-    assert.isUndefined(dangerEventDecoding.arguments[0].name);
-    assert.strictEqual(
-      dangerEventDecoding.arguments[0].value.nativize(),
-      `WireTest(${address}).danger`
-    );
-    */
   });
 });
