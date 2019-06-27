@@ -14,8 +14,6 @@ describe.skip("EthPM integration", function() {
   var config;
   var host;
   var registry;
-  var ipfs_api;
-  var ipfs_daemon;
   var provider;
   var blockchain_uri;
 
@@ -74,8 +72,6 @@ describe.skip("EthPM integration", function() {
 
         host = results.host;
         registry = results.registry;
-        ipfs_api = results.ipfs_api;
-        ipfs_daemon = results.ipfs_daemon;
 
         done();
       }

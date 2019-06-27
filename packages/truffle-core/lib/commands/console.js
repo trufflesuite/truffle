@@ -29,19 +29,19 @@ const command = {
     const commands = require("./index");
     const excluded = ["console", "init", "watch", "develop"];
 
-    const available_commands = Object.keys(commands).filter(function(name) {
+    const availableCommands = Object.keys(commands).filter(name => {
       return excluded.indexOf(name) === -1;
     });
 
-    let console_commands = {};
-    available_commands.forEach(function(name) {
-      console_commands[name] = commands[name];
+    const consoleCommands = {};
+    availableCommands.forEach(name => {
+      consoleCommands[name] = commands[name];
     });
 
     Environment.detect(config)
       .then(() => {
         const c = new Console(
-          console_commands,
+          consoleCommands,
           config.with({ noAliases: true })
         );
         c.start(done);
