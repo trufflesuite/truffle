@@ -1,0 +1,109 @@
+const debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
+const path = require("path");
+const { promisify } = require("util");
+const Profiler = require("../profiler");
+const CompilerSupplier = require("../compilerSupplier");
+const expect = require("truffle-expect");
+const findContracts = require("truffle-contract-sources");
+const Config = require("truffle-config");
+const { run } = require("../run");
+const { normalizeOptions } = require("../legacy/options");
+
+// Most basic of the compile commands. Takes a hash of sources, where
+// the keys are file or module paths and the values are the bodies of
+// the contracts. Does not evaulate dependencies that aren't already given.
+//
+// Default options:
+// {
+//   strict: false,
+//   quiet: false,
+//   logger: console
+// }
+const compile = async function(sources, options) {
+  return await run(sources, normalizeOptions(options));
+};
+
+// contracts_directory: String. Directory where .sol files can be found.
+// quiet: Boolean. Suppress output. Defaults to false.
+// strict: Boolean. Return compiler warnings as errors. Defaults to false.
+compile.all = async function(options) {
+  const paths = await promisify(findContracts)(options.contracts_directory);
+
+  return await compile.with_dependencies(Object.assign({}, options, { paths }));
+};
+
+// contracts_directory: String. Directory where .sol files can be found.
+// build_directory: String. Optional. Directory where .sol.js files can be found. Only required if `all` is false.
+// all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
+//      in the build directory to see what needs to be compiled.
+// quiet: Boolean. Suppress output. Defaults to false.
+// strict: Boolean. Return compiler warnings as errors. Defaults to false.
+compile.necessary = async function(options) {
+  options.logger = options.logger || console;
+
+  const paths = await promisify(Profiler.updated)(options);
+
+  return await compile.with_dependencies(Object.assign({}, options, { paths }));
+};
+
+compile.with_dependencies = async function(options) {
+  options.logger = options.logger || console;
+  options.contracts_directory = options.contracts_directory || process.cwd();
+
+  expect.options(options, [
+    "paths",
+    "working_directory",
+    "contracts_directory",
+    "resolver"
+  ]);
+
+  var config = Config.default().merge(options);
+
+  const { allSources, required } = await new Promise((accept, reject) => {
+    Profiler.required_sources(
+      config.with({
+        paths: options.paths,
+        base_path: options.contracts_directory,
+        resolver: options.resolver
+      }),
+      (err, allSources, required) => {
+        if (err) {
+          return reject(err);
+        }
+
+        return accept({ allSources, required });
+      }
+    );
+  });
+
+  var hasTargets = required.length;
+
+  hasTargets
+    ? this.display(required, options)
+    : this.display(allSources, options);
+
+  options.compilationTargets = required;
+  return await compile(allSources, options);
+};
+
+compile.display = function(paths, options) {
+  if (options.quiet !== true) {
+    if (!Array.isArray(paths)) {
+      paths = Object.keys(paths);
+    }
+
+    const blacklistRegex = /^truffle\//;
+
+    paths.sort().forEach(contract => {
+      if (path.isAbsolute(contract)) {
+        contract =
+          "." + path.sep + path.relative(options.working_directory, contract);
+      }
+      if (contract.match(blacklistRegex)) return;
+      options.logger.log("> Compiling " + contract);
+    });
+  }
+};
+
+compile.CompilerSupplier = CompilerSupplier;
+module.exports = compile;

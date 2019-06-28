@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
 const Resolver = require("truffle-resolver");
-const compile = require("../index");
+const compile = require("truffle-compile/new");
 const Config = require("truffle-config");
 
 function waitSecond() {

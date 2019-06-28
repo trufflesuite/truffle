@@ -1,7 +1,7 @@
 const debug = require("debug")("compile:test:test_ordering");
 var fs = require("fs");
 var path = require("path");
-var Compile = require("../index");
+var Compile = require("truffle-compile/legacy");
 var CompilerSupplier = require("../compilerSupplier");
 var assert = require("assert");
 
