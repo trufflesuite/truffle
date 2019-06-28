@@ -63,104 +63,99 @@ module.exports = {
   // Returns the minimal set of sources to pass to solc as compilations targets,
   // as well as the complete set of sources so solc can resolve the comp targets' imports.
   required_sources(options, callback) {
-    const self = this;
-
     expect.options(options, ["paths", "base_path", "resolver"]);
 
     const resolver = options.resolver;
-
+    let allPaths, updates;
+    const allSources = {};
+    const compilationTargets = [];
     // Fetch the whole contract set
-    findContracts(options.contracts_directory, (err, allPaths) => {
-      if (err) return callback(err);
-
-      // Solidity test files might have been injected. Include them in the known set.
-      options.paths.forEach(_path => {
-        if (!allPaths.includes(_path)) {
-          allPaths.push(_path);
-        }
-      });
-
-      const updates = self
-        .convert_to_absolute_paths(options.paths, options.base_path)
-        .sort();
-      allPaths = self
-        .convert_to_absolute_paths(allPaths, options.base_path)
-        .sort();
-
-      const allSources = {};
-      const compilationTargets = [];
-
-      // Load compiler
-      const supplier = new CompilerSupplier(options.compilers.solc);
-      supplier
-        .load()
-        .then(async solc => {
-          // Get all the source code
-          const resolved = await self.resolveAllSources(
-            resolver,
-            allPaths,
-            solc
-          );
-          // Generate hash of all sources including external packages - passed to solc inputs.
-          const resolvedPaths = Object.keys(resolved);
-          resolvedPaths.forEach(file => {
-            // Don't throw vyper files into solc!
-            if (path.extname(file) !== ".vy")
-              allSources[file] = resolved[file].body;
-          });
-
-          // Exit w/out minimizing if we've been asked to compile everything, or nothing.
-          if (self.listsEqual(options.paths, allPaths)) {
-            return callback(null, allSources, {});
-          } else if (!options.paths.length) {
-            return callback(null, {}, {});
+    findContracts(options.contracts_directory)
+      .then(sourcePaths => {
+        allPaths = sourcePaths;
+        // Solidity test files might have been injected. Include them in the known set.
+        options.paths.forEach(_path => {
+          if (!allPaths.includes(_path)) {
+            allPaths.push(_path);
           }
+        });
+        updates = this.convert_to_absolute_paths(
+          options.paths,
+          options.base_path
+        ).sort();
+        allPaths = this.convert_to_absolute_paths(
+          allPaths,
+          options.base_path
+        ).sort();
 
-          // Seed compilationTargets with known updates
-          updates.forEach(update => compilationTargets.push(update));
+        // Load compiler
+        const supplier = new CompilerSupplier(options.compilers.solc);
+        return supplier.load();
+      })
+      .then(async solc => {
+        // Get all the source code
+        const resolved = await this.resolveAllSources(resolver, allPaths, solc);
+        // Generate hash of all sources including external packages - passed to solc inputs.
+        const resolvedPaths = Object.keys(resolved);
+        resolvedPaths.forEach(file => {
+          // Don't throw vyper files into solc!
+          if (path.extname(file) !== ".vy")
+            allSources[file] = resolved[file].body;
+        });
 
-          // While there are updated files in the queue, we take each one
-          // and search the entire file corpus to find any sources that import it.
-          // Those sources are added to list of compilation targets as well as
-          // the update queue because their own ancestors need to be discovered.
-          while (updates.length > 0) {
-            const currentUpdate = updates.shift();
-            const files = allPaths.slice();
+        // Exit w/out minimizing if we've been asked to compile everything, or nothing.
+        if (this.listsEqual(options.paths, allPaths)) {
+          return callback(null, allSources, {});
+        } else if (!options.paths.length) {
+          return callback(null, {}, {});
+        }
 
-            // While files: dequeue and inspect their imports
-            while (files.length > 0) {
-              const currentFile = files.shift();
+        // Seed compilationTargets with known updates
+        updates.forEach(update => compilationTargets.push(update));
 
-              // Ignore targets already selected.
-              if (compilationTargets.includes(currentFile)) {
-                continue;
-              }
+        // While there are updated files in the queue, we take each one
+        // and search the entire file corpus to find any sources that import it.
+        // Those sources are added to list of compilation targets as well as
+        // the update queue because their own ancestors need to be discovered.
+        while (updates.length > 0) {
+          const currentUpdate = updates.shift();
+          const files = allPaths.slice();
 
-              let imports;
-              try {
-                imports = self.getImports(
-                  currentFile,
-                  resolved[currentFile],
-                  solc
-                );
-              } catch (err) {
-                err.message = `Error parsing ${currentFile}: ${err.message}`;
-                throw err;
-              }
+          // While files: dequeue and inspect their imports
+          while (files.length > 0) {
+            const currentFile = files.shift();
 
-              // If file imports a compilation target, add it
-              // to list of updates and compilation targets
-              if (imports.includes(currentUpdate)) {
-                updates.push(currentFile);
-                compilationTargets.push(currentFile);
-              }
+            // Ignore targets already selected.
+            if (compilationTargets.includes(currentFile)) {
+              continue;
+            }
+
+            let imports;
+            try {
+              imports = this.getImports(
+                currentFile,
+                resolved[currentFile],
+                solc
+              );
+            } catch (err) {
+              err.message = `Error parsing ${currentFile}: ${err.message}`;
+              throw err;
+            }
+
+            // If file imports a compilation target, add it
+            // to list of updates and compilation targets
+            if (imports.includes(currentUpdate)) {
+              updates.push(currentFile);
+              compilationTargets.push(currentFile);
             }
           }
+        }
 
-          callback(null, allSources, compilationTargets);
-        })
-        .catch(callback);
-    });
+        callback(null, allSources, compilationTargets);
+      })
+      .catch(error => {
+        callback(error);
+      });
   },
 
   // Resolves sources in several async passes. For each resolved set it detects unknown
