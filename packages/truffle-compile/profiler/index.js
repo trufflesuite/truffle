@@ -14,6 +14,7 @@ const {
   minimumUpdatedTimePerSource
 } = require("./minimumUpdatedTimePerSource");
 const { findUpdatedFiles } = require("./findUpdatedFiles");
+const { isExplicitlyRelative } = require("./isExplicitlyRelative");
 
 module.exports = {
   updated(options, callback) {
@@ -249,8 +250,6 @@ module.exports = {
   },
 
   getImports(file, { body, source }, solc) {
-    const self = this;
-
     // No imports in vyper!
     if (path.extname(file) === ".vy") return [];
 
@@ -258,7 +257,7 @@ module.exports = {
 
     // Convert explicitly relative dependencies of modules back into module paths.
     return imports.map(dependencyPath =>
-      self.isExplicitlyRelative(dependencyPath)
+      isExplicitlyRelative(dependencyPath)
         ? source.resolve_dependency_path(file, dependencyPath)
         : dependencyPath
     );
@@ -272,20 +271,15 @@ module.exports = {
   },
 
   convert_to_absolute_paths(paths, base) {
-    const self = this;
     return paths.map(p => {
       // If it's anabsolute paths, leave it alone.
       if (path.isAbsolute(p)) return p;
 
       // If it's not explicitly relative, then leave it alone (i.e., it's a module).
-      if (!self.isExplicitlyRelative(p)) return p;
+      if (!isExplicitlyRelative(p)) return p;
 
       // Path must be explicitly releative, therefore make it absolute.
       return path.resolve(path.join(base, p));
     });
-  },
-
-  isExplicitlyRelative(import_path) {
-    return import_path.indexOf(".") === 0;
   }
 };
