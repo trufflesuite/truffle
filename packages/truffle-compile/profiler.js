@@ -18,11 +18,11 @@ module.exports = {
     const contracts_directory = options.contracts_directory;
     const build_directory = options.contracts_build_directory;
 
-    function getFiles(done) {
+    async function getFiles() {
       if (options.files) {
-        done(null, options.files);
+        return options.files;
       } else {
-        find_contracts(contracts_directory, done);
+        return find_contracts(contracts_directory);
       }
     }
 
@@ -31,148 +31,128 @@ module.exports = {
 
     const updatedFiles = [];
 
-    async.series(
-      [
+    getFiles()
+      .then(files => {
         // Get all the source files and create an object out of them.
-        c => {
-          getFiles((err, files) => {
-            if (err) return c(err);
-
-            // Use an object for O(1) access.
-            files.forEach(sourceFile => {
-              sourceFilesArtifacts[sourceFile] = [];
-            });
-
-            c();
-          });
-        },
+        // Use an object for O(1) access.
+        files.forEach(sourceFile => {
+          sourceFilesArtifacts[sourceFile] = [];
+        });
+        return;
+      })
+      .then(() => {
         // Get all the artifact files, and read them, parsing them as JSON
-        c => {
-          let build_files;
-          try {
-            build_files = fse.readdirSync(build_directory);
-          } catch (error) {
-            // The build directory may not always exist.
-            if (error.message.includes("ENOENT: no such file or directory")) {
-              // Ignore it.
-              build_files = [];
-            } else {
-              return c(error);
-            }
+        let build_files;
+        try {
+          build_files = fse.readdirSync(build_directory);
+        } catch (error) {
+          // The build directory may not always exist.
+          if (error.message.includes("ENOENT: no such file or directory")) {
+            // Ignore it.
+            build_files = [];
+          } else {
+            throw error;
           }
+        }
 
-          build_files = build_files.filter(
-            build_file => path.extname(build_file) === ".json"
+        build_files = build_files.filter(
+          build_file => path.extname(build_file) === ".json"
+        );
+        const jsonData = build_files.map(file => {
+          const body = fse.readFileSync(
+            path.join(build_directory, file),
+            "utf8"
           );
-          let jsonData;
+          return { file, body };
+        });
+
+        for (let i = 0; i < jsonData.length; i++) {
           try {
-            jsonData = build_files.map(file => {
-              const body = fse.readFileSync(
-                path.join(build_directory, file),
-                "utf8"
-              );
-              return { file, body };
-            });
+            const data = JSON.parse(jsonData[i].body);
+
+            // In case there are artifacts from other source locations.
+            if (sourceFilesArtifacts[data.sourcePath] == null) {
+              sourceFilesArtifacts[data.sourcePath] = [];
+            }
+
+            sourceFilesArtifacts[data.sourcePath].push(data);
           } catch (error) {
-            return c(error);
+            // JSON.parse throws SyntaxError objects
+            if (e instanceof SyntaxError) {
+              throw new Error("Problem parsing artifact: " + jsonData[i].file);
+            } else {
+              throw error;
+            }
           }
+        }
+        return;
+      })
+      .then(() => {
+        // Get the minimum updated time for all of a source file's artifacts
+        // (note: one source file might have multiple artifacts).
+        Object.keys(sourceFilesArtifacts).forEach(sourceFile => {
+          const artifacts = sourceFilesArtifacts[sourceFile];
 
-          for (let i = 0; i < jsonData.length; i++) {
-            try {
-              const data = JSON.parse(jsonData[i].body);
+          sourceFilesArtifactsUpdatedTimes[sourceFile] = artifacts.reduce(
+            (minimum, current) => {
+              const updatedAt = new Date(current.updatedAt).getTime();
 
-              // In case there are artifacts from other source locations.
-              if (sourceFilesArtifacts[data.sourcePath] == null) {
-                sourceFilesArtifacts[data.sourcePath] = [];
+              if (updatedAt < minimum) {
+                return updatedAt;
               }
+              return minimum;
+            },
+            Number.MAX_SAFE_INTEGER
+          );
 
-              sourceFilesArtifacts[data.sourcePath].push(data);
-            } catch (e) {
-              // JSON.parse throws SyntaxError objects
-              return e instanceof SyntaxError
-                ? c(new Error("Problem parsing artifact: " + jsonData[i].file))
-                : c(e);
-            }
+          // Empty array?
+          if (
+            sourceFilesArtifactsUpdatedTimes[sourceFile] ===
+            Number.MAX_SAFE_INTEGER
+          ) {
+            sourceFilesArtifactsUpdatedTimes[sourceFile] = 0;
           }
-
-          c();
-        },
-        c => {
-          // Get the minimum updated time for all of a source file's artifacts
-          // (note: one source file might have multiple artifacts).
-          Object.keys(sourceFilesArtifacts).forEach(sourceFile => {
-            const artifacts = sourceFilesArtifacts[sourceFile];
-
-            sourceFilesArtifactsUpdatedTimes[sourceFile] = artifacts.reduce(
-              (minimum, current) => {
-                const updatedAt = new Date(current.updatedAt).getTime();
-
-                if (updatedAt < minimum) {
-                  return updatedAt;
-                }
-                return minimum;
-              },
-              Number.MAX_SAFE_INTEGER
-            );
-
-            // Empty array?
-            if (
-              sourceFilesArtifactsUpdatedTimes[sourceFile] ===
-              Number.MAX_SAFE_INTEGER
-            ) {
-              sourceFilesArtifactsUpdatedTimes[sourceFile] = 0;
-            }
-          });
-
-          c();
-        },
+        });
+        return;
+      })
+      .then(() => {
         // Stat all the source files, getting there updated times, and comparing them to
         // the artifact updated times.
-        c => {
-          const sourceFiles = Object.keys(sourceFilesArtifacts);
+        const sourceFiles = Object.keys(sourceFilesArtifacts);
 
-          let sourceFileStats;
+        let sourceFileStats;
+        sourceFileStats = sourceFiles.map(file => {
           try {
-            sourceFileStats = sourceFiles.map(file => {
-              try {
-                return fse.statSync(file);
-              } catch (error) {
-                // Ignore it. This means the source file was removed
-                // but the artifact file possibly exists. Return null
-                // to signfy that we should ignore it.
-                return null;
-              }
-            });
+            return fse.statSync(file);
           } catch (error) {
-            return callback(error);
+            // Ignore it. This means the source file was removed
+            // but the artifact file possibly exists. Return null
+            // to signfy that we should ignore it.
+            return null;
           }
+        });
 
-          sourceFiles.forEach((sourceFile, index) => {
-            const sourceFileStat = sourceFileStats[index];
+        sourceFiles.forEach((sourceFile, index) => {
+          const sourceFileStat = sourceFileStats[index];
 
-            // Ignore updating artifacts if source file has been removed.
-            if (sourceFileStat == null) {
-              return;
-            }
+          // Ignore updating artifacts if source file has been removed.
+          if (sourceFileStat == null) return;
 
-            const artifactsUpdatedTime =
-              sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
-            const sourceFileUpdatedTime = (
-              sourceFileStat.mtime || sourceFileStat.ctime
-            ).getTime();
+          const artifactsUpdatedTime =
+            sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
+          const sourceFileUpdatedTime = (
+            sourceFileStat.mtime || sourceFileStat.ctime
+          ).getTime();
 
-            if (sourceFileUpdatedTime > artifactsUpdatedTime) {
-              updatedFiles.push(sourceFile);
-            }
-          });
-
-          c();
-        }
-      ],
-      err => {
-        callback(err, updatedFiles);
-      }
-    );
+          if (sourceFileUpdatedTime > artifactsUpdatedTime) {
+            updatedFiles.push(sourceFile);
+          }
+        });
+        return callback(null, updatedFiles);
+      })
+      .catch(error => {
+        callback(error);
+      });
   },
 
   // Returns the minimal set of sources to pass to solc as compilations targets,

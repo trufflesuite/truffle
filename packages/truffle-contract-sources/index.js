@@ -1,11 +1,13 @@
 const debug = require("debug")("contract-sources");
-
 const path = require("path");
 const glob = require("glob");
+const { promisify } = require("util");
+const promisifiedGlob = promisify(glob);
 
 const DEFAULT_PATTERN = "**/*.{sol,vy}";
 
 module.exports = (pattern, callback) => {
+  const callbackPassed = typeof callback === "function";
   // pattern is either a directory (contracts directory), or an absolute path
   // with a glob expression
   if (!glob.hasMagic(pattern)) {
@@ -16,5 +18,9 @@ module.exports = (pattern, callback) => {
     follow: true // follow symlinks
   };
 
-  glob(pattern, globOptions, callback);
+  if (callbackPassed) {
+    glob(pattern, globOptions, callback);
+  } else {
+    return promisifiedGlob(pattern, globOptions);
+  }
 };
