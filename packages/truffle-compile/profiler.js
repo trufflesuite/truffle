@@ -3,7 +3,7 @@
 
 const path = require("path");
 const async = require("async");
-const fs = require("fs");
+const fse = require("fs-extra");
 const Parser = require("./parser");
 const CompilerSupplier = require("./compilerSupplier");
 const expect = require("truffle-expect");
@@ -48,7 +48,7 @@ module.exports = {
         },
         // Get all the artifact files, and read them, parsing them as JSON
         c => {
-          fs.readdir(build_directory, (err, build_files) => {
+          fse.readdir(build_directory, (err, build_files) => {
             if (err) {
               // The build directory may not always exist.
               if (err.message.includes("ENOENT: no such file or directory")) {
@@ -66,7 +66,7 @@ module.exports = {
             async.map(
               build_files,
               (buildFile, finished) => {
-                fs.readFile(
+                fse.readFile(
                   path.join(build_directory, buildFile),
                   "utf8",
                   (err, body) => {
@@ -142,7 +142,7 @@ module.exports = {
           async.map(
             sourceFiles,
             (sourceFile, finished) => {
-              fs.stat(sourceFile, (err, stat) => {
+              fse.stat(sourceFile, (err, stat) => {
                 if (err) {
                   // Ignore it. This means the source file was removed
                   // but the artifact file possibly exists. Return null
@@ -387,11 +387,10 @@ module.exports = {
     const imports = Parser.parseImports(body, solc);
 
     // Convert explicitly relative dependencies of modules back into module paths.
-    return imports.map(
-      dependencyPath =>
-        self.isExplicitlyRelative(dependencyPath)
-          ? source.resolve_dependency_path(file, dependencyPath)
-          : dependencyPath
+    return imports.map(dependencyPath =>
+      self.isExplicitlyRelative(dependencyPath)
+        ? source.resolve_dependency_path(file, dependencyPath)
+        : dependencyPath
     );
   },
 
