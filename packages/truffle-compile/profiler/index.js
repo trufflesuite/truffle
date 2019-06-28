@@ -6,7 +6,7 @@ const async = require("async");
 const Parser = require("../parser");
 const CompilerSupplier = require("../compilerSupplier");
 const expect = require("truffle-expect");
-const find_contracts = require("truffle-contract-sources");
+const findContracts = require("truffle-contract-sources");
 const semver = require("semver");
 const debug = require("debug")("compile:profiler");
 const { readAndParseArtifactFiles } = require("./readAndParseArtifactFiles");
@@ -25,7 +25,7 @@ module.exports = {
       if (options.files) {
         return options.files;
       } else {
-        return find_contracts(contracts_directory);
+        return findContracts(contracts_directory);
       }
     }
 
@@ -70,7 +70,7 @@ module.exports = {
     const resolver = options.resolver;
 
     // Fetch the whole contract set
-    find_contracts(options.contracts_directory, (err, allPaths) => {
+    findContracts(options.contracts_directory, (err, allPaths) => {
       if (err) return callback(err);
 
       // Solidity test files might have been injected. Include them in the known set.
