@@ -15,8 +15,7 @@ module.exports = {
   updated(options, callback) {
     expect.options(options, ["resolver"]);
 
-    const contracts_directory = options.contracts_directory;
-    const build_directory = options.contracts_build_directory;
+    const { contracts_directory, contracts_build_directory } = options;
 
     async function getFiles() {
       if (options.files) {
@@ -42,25 +41,23 @@ module.exports = {
       })
       .then(() => {
         // Get all the artifact files, and read them, parsing them as JSON
-        let build_files;
+        let buildFiles;
         try {
-          build_files = fse.readdirSync(build_directory);
+          buildFiles = fse.readdirSync(contracts_build_directory);
         } catch (error) {
           // The build directory may not always exist.
           if (error.message.includes("ENOENT: no such file or directory")) {
             // Ignore it.
-            build_files = [];
+            buildFiles = [];
           } else {
             throw error;
           }
         }
 
-        build_files = build_files.filter(
-          build_file => path.extname(build_file) === ".json"
-        );
-        const jsonData = build_files.map(file => {
+        buildFiles = buildFiles.filter(file => path.extname(file) === ".json");
+        const jsonData = buildFiles.map(file => {
           const body = fse.readFileSync(
-            path.join(build_directory, file),
+            path.join(contracts_build_directory, file),
             "utf8"
           );
           return { file, body };
