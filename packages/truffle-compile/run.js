@@ -47,94 +47,17 @@ async function run(rawSources, options) {
     throw new CompileError(errors);
   }
 
-  var returnVal = {};
-
-  // This block has comments in it as it's being prepared for solc > 0.4.10
-  Object.entries(compilerOutput.contracts).forEach(entry => {
-    const [sourcePath, filesContracts] = entry;
-
-    Object.entries(filesContracts).forEach(entry => {
-      var [contractName, contract] = entry;
-
-      // All source will have a key, but only the compiled source will have
-      // the evm output.
-      if (!Object.keys(contract.evm).length) return;
-
-      var contract_definition = {
-        contract_name: contractName,
-        sourcePath: originalSourcePaths[sourcePath], // Save original source path, not modified ones
-        source: sources[sourcePath],
-        sourceMap: contract.evm.bytecode.sourceMap,
-        deployedSourceMap: contract.evm.deployedBytecode.sourceMap,
-        legacyAST: compilerOutput.sources[sourcePath].legacyAST,
-        ast: compilerOutput.sources[sourcePath].ast,
-        abi: contract.abi,
-        metadata: contract.metadata,
-        bytecode: "0x" + contract.evm.bytecode.object,
-        deployedBytecode: "0x" + contract.evm.deployedBytecode.object,
-        unlinked_binary: "0x" + contract.evm.bytecode.object, // deprecated
-        compiler: {
-          name: "solc",
-          version: solcVersion
-        },
-        devdoc: contract.devdoc,
-        userdoc: contract.userdoc
-      };
-
-      // Reorder ABI so functions are listed in the order they appear
-      // in the source file. Solidity tests need to execute in their expected sequence.
-      contract_definition.abi = orderABI(contract_definition);
-
-      // Go through the link references and replace them with older-style
-      // identifiers. We'll do this until we're ready to making a breaking
-      // change to this code.
-      Object.keys(contract.evm.bytecode.linkReferences).forEach(function(
-        file_name
-      ) {
-        var fileLinks = contract.evm.bytecode.linkReferences[file_name];
-
-        Object.keys(fileLinks).forEach(function(library_name) {
-          var linkReferences = fileLinks[library_name] || [];
-
-          contract_definition.bytecode = replaceLinkReferences(
-            contract_definition.bytecode,
-            linkReferences,
-            library_name
-          );
-          contract_definition.unlinked_binary = replaceLinkReferences(
-            contract_definition.unlinked_binary,
-            linkReferences,
-            library_name
-          );
-        });
-      });
-
-      // Now for the deployed bytecode
-      Object.keys(contract.evm.deployedBytecode.linkReferences).forEach(
-        function(file_name) {
-          var fileLinks =
-            contract.evm.deployedBytecode.linkReferences[file_name];
-
-          Object.keys(fileLinks).forEach(function(library_name) {
-            var linkReferences = fileLinks[library_name] || [];
-
-            contract_definition.deployedBytecode = replaceLinkReferences(
-              contract_definition.deployedBytecode,
-              linkReferences,
-              library_name
-            );
-          });
-        }
-      );
-
-      returnVal[contractName] = contract_definition;
-    });
+  const contracts = processContracts({
+    compilerOutput,
+    sources,
+    originalSourcePaths,
+    solcVersion
   });
 
   const compilerInfo = { name: "solc", version: solcVersion };
 
   return [
-    returnVal,
+    contracts,
     processSources({
       compilerOutput,
       originalSourcePaths
@@ -143,25 +66,7 @@ async function run(rawSources, options) {
   ];
 }
 
-function replaceLinkReferences(bytecode, linkReferences, libraryName) {
-  var linkId = "__" + libraryName;
-
-  while (linkId.length < 40) {
-    linkId += "_";
-  }
-
-  linkReferences.forEach(function(ref) {
-    // ref.start is a byte offset. Convert it to character offset.
-    var start = ref.start * 2 + 2;
-
-    bytecode =
-      bytecode.substring(0, start) + linkId + bytecode.substring(start + 40);
-  });
-
-  return bytecode;
-}
-
-function orderABI({ abi, contract_name: contractName, ast }) {
+function orderABI({ abi, contractName, ast }) {
   // AST can have multiple contract definitions, make sure we have the
   // one that matches our contract
   const contractDefinition = ast.nodes.find(
@@ -401,6 +306,133 @@ function processSources({ compilerOutput, originalSourcePaths }) {
   }
 
   return files;
+}
+
+/**
+ * Converts compiler-output contracts into truffle-compile's return format
+ * Uses compiler contract output plus other information.
+ */
+function processContracts({
+  compilerOutput,
+  sources,
+  originalSourcePaths,
+  solcVersion
+}) {
+  return (
+    Object.entries(compilerOutput.contracts)
+      // map to [[{ source, contractName, contract }]]
+      .map(([sourcePath, sourceContracts]) =>
+        Object.entries(sourceContracts).map(([contractName, contract]) => ({
+          contractName,
+          contract,
+          source: {
+            ast: compilerOutput.sources[sourcePath].ast,
+            legacyAST: compilerOutput.sources[sourcePath].legacyAST,
+            contents: sources[sourcePath],
+            sourcePath
+          }
+        }))
+      )
+      // and flatten
+      .reduce((a, b) => [...a, ...b], [])
+
+      // All source will have a key, but only the compiled source will have
+      // the evm output.
+      .filter(({ contract: { evm } }) => Object.keys(evm).length > 0)
+
+      // convert to output format
+      .map(
+        ({
+          contractName,
+          contract: {
+            evm: {
+              bytecode: { sourceMap, linkReferences, object: bytecode },
+              deployedBytecode: {
+                sourceMap: deployedSourceMap,
+                linkReferences: deployedLinkReferences,
+                object: deployedBytecode
+              }
+            },
+            abi,
+            metadata,
+            devdoc,
+            userdoc
+          },
+          source: {
+            ast,
+            legacyAST,
+            sourcePath: transformedSourcePath,
+            contents: source
+          }
+        }) => ({
+          contract_name: contractName,
+          abi: orderABI({ abi, contractName, ast }),
+          metadata,
+          devdoc,
+          userdoc,
+          sourcePath: originalSourcePaths[transformedSourcePath],
+          source,
+          sourceMap,
+          deployedSourceMap,
+          ast,
+          legacyAST,
+          bytecode: replaceAllLinkReferences({
+            bytecode,
+            linkReferences
+          }),
+          deployedBytecode: replaceAllLinkReferences({
+            bytecode: deployedBytecode,
+            linkReferences: deployedLinkReferences
+          }),
+          compiler: {
+            name: "solc",
+            version: solcVersion
+          }
+        })
+      )
+
+      // and convert into object, from list
+      .map(contract => ({ [contract.contract_name]: contract }))
+      .reduce((a, b) => Object.assign({}, a, b), {})
+  );
+}
+
+function replaceAllLinkReferences({ bytecode, linkReferences }) {
+  // convert to flat list
+  const libraryLinkReferences = Object.values(linkReferences)
+    .map(fileLinks =>
+      Object.entries(fileLinks).map(([libraryName, links]) => ({
+        libraryName,
+        links
+      }))
+    )
+    .reduce((a, b) => [...a, ...b], []);
+
+  const unprefixed = libraryLinkReferences.reduce(
+    (bytecode, { libraryName, links }) =>
+      replaceLinkReferences(bytecode, links, libraryName),
+    bytecode
+  );
+
+  return `0x${unprefixed}`;
+}
+
+function replaceLinkReferences(bytecode, linkReferences, libraryName) {
+  var linkId = "__" + libraryName;
+
+  while (linkId.length < 40) {
+    linkId += "_";
+  }
+
+  linkReferences.forEach(function(ref) {
+    // ref.start is a byte offset. Convert it to character offset.
+    var start = ref.start * 2 + 2;
+
+    bytecode =
+      bytecode.substring(0, start) + linkId + bytecode.substring(start + 40);
+  });
+
+  return bytecode;
 }
 
 module.exports = { run };
