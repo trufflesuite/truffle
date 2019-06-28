@@ -4,9 +4,12 @@ const CompilerSupplier = require("./compilerSupplier");
 const semver = require("semver");
 
 async function run(rawSources, options) {
-  // Nothing to compile? Bail.
   if (Object.keys(rawSources).length === 0) {
-    return [[], []];
+    return {
+      contracts: [],
+      sourceIndexes: [],
+      compilerInfo: undefined
+    };
   }
 
   // Ensure sources have operating system independent paths
@@ -47,23 +50,23 @@ async function run(rawSources, options) {
     throw new CompileError(errors);
   }
 
-  const contracts = processContracts({
-    compilerOutput,
-    sources,
-    originalSourcePaths,
-    solcVersion
-  });
-
-  const compilerInfo = { name: "solc", version: solcVersion };
-
-  return [
-    contracts,
-    processSources({
+  // success case
+  return {
+    sourceIndexes: processSources({
       compilerOutput,
       originalSourcePaths
     }),
-    compilerInfo
-  ];
+    contracts: processContracts({
+      sources,
+      compilerOutput,
+      solcVersion,
+      originalSourcePaths
+    }),
+    compilerInfo: {
+      name: "solc",
+      version: solcVersion
+    }
+  };
 }
 
 function orderABI({ abi, contractName, ast }) {
@@ -390,10 +393,6 @@ function processContracts({
           }
         })
       )
-
-      // and convert into object, from list
-      .map(contract => ({ [contract.contract_name]: contract }))
-      .reduce((a, b) => Object.assign({}, a, b), {})
   );
 }
 
