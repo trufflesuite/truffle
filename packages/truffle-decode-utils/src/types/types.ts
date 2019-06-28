@@ -19,7 +19,7 @@ const debug = debugModule("decode-utils:types");
 //just intended for the future.
 
 import BN from "bn.js";
-import { AstDefinition, AstReferences } from "../ast";
+import * as Ast from "../ast";
 import { Definition as DefinitionUtils } from "../definition";
 import { Contexts } from "../contexts";
 
@@ -54,7 +54,7 @@ export namespace Types {
   export interface BytesTypeDynamic {
     typeClass: "bytes";
     kind: "dynamic";
-    location?: string;
+    location?: Ast.Location;
   }
 
   export interface AddressType {
@@ -64,7 +64,7 @@ export namespace Types {
 
   export interface StringType {
     typeClass: "string";
-    location?: string;
+    location?: Ast.Location;
   }
 
   export interface FixedType {
@@ -86,14 +86,14 @@ export namespace Types {
     kind: "static";
     baseType: Type;
     length: BN;
-    location?: string;
+    location?: Ast.Location;
   }
 
   export interface ArrayTypeDynamic {
     typeClass: "array";
     kind: "dynamic";
     baseType: Type;
-    location?: string;
+    location?: Ast.Location;
   }
 
   export type ElementaryType = UintType | IntType | BoolType | BytesType | FixedType
@@ -103,16 +103,24 @@ export namespace Types {
     typeClass: "mapping";
     keyType: ElementaryType;
     valueType: Type;
-    location?: string; //should only ever be storage
+    location?: "storage";
   }
 
-  export interface FunctionType {
+  export type FunctionType = FunctionTypeInternal | FunctionTypeExternal;
+
+  export interface FunctionTypeInternal {
     typeClass: "function";
-    visibility: string; //should be "internal" or "external", not weird
-    //solidity-internal visibilities (but for technical reasons I'm not
-    //putting that in the type requirements)
-    mutability: string; //similarly, should be "nonpayable", "pure", "view",
-    //or "payable"
+    visibility: "internal";
+    mutability: Ast.Mutability;
+    inputParameterTypes: Type[];
+    outputParameterTypes: Type[];
+    //we do not presently support bound functions
+  }
+
+  export interface FunctionTypeExternal {
+    typeClass: "function";
+    visibility: "external";
+    mutability: Ast.Mutability;
     inputParameterTypes: Type[];
     outputParameterTypes: Type[];
     //we do not presently support bound functions
@@ -128,7 +136,7 @@ export namespace Types {
     definingContractName: string;
     definingContract?: ContractType;
     memberTypes?: [string, Type][];
-    location?: string;
+    location?: Ast.Location;
   }
 
   export interface EnumType {
@@ -144,7 +152,7 @@ export namespace Types {
     typeClass: "contract";
     id: number;
     typeName: string;
-    contractKind?: string;
+    contractKind?: Ast.ContractKind;
     payable?: boolean; //will be useful in the future
     //may have more optional members defined later, but I'll leave these out for
     //now
@@ -172,7 +180,7 @@ export namespace Types {
   //NOTE: set forceLocation to *null* to force no location. leave it undefined
   //to not force a location.
   //NOTE: set compiler to null to force addresses to *not* be payable (HACK)?
-  export function definitionToType(definition: AstDefinition, compiler: Contexts.CompilerVersion | null, forceLocation?: string | null): Type {
+  export function definitionToType(definition: Ast.AstDefinition, compiler: Contexts.CompilerVersion | null, forceLocation?: Ast.Location | null): Type {
     debug("definition %O", definition);
     let typeClass = DefinitionUtils.typeClass(definition);
     switch(typeClass) {
@@ -397,7 +405,7 @@ export namespace Types {
 
   //whereas the above takes variable definitions, this takes the actual type
   //definition
-  export function definitionToStoredType(definition: AstDefinition, compiler: Contexts.CompilerVersion, referenceDeclarations?: AstReferences): UserDefinedType {
+  export function definitionToStoredType(definition: Ast.AstDefinition, compiler: Contexts.CompilerVersion, referenceDeclarations?: Ast.AstReferences): UserDefinedType {
     switch(definition.nodeType) {
       case "StructDefinition": {
         let id = definition.id;
@@ -410,7 +418,7 @@ export namespace Types {
           let contractDefinition = Object.values(referenceDeclarations).find(
             node => node.nodeType === "ContractDefinition" &&
             node.nodes.some(
-              (subNode: AstDefinition) => subNode.id === id
+              (subNode: Ast.AstDefinition) => subNode.id === id
             )
           );
           definingContract = <ContractType> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
@@ -433,7 +441,7 @@ export namespace Types {
           let contractDefinition = Object.values(referenceDeclarations).find(
             node => node.nodeType === "ContractDefinition" &&
             node.nodes.some(
-              (subNode: AstDefinition) => subNode.id === id
+              (subNode: Ast.AstDefinition) => subNode.id === id
             )
           );
           definingContract = <ContractType> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
@@ -505,7 +513,7 @@ export namespace Types {
   }
 
   //the location argument here always forces, so passing undefined *will* force undefined
-  export function specifyLocation(dataType: Type, location?: string): Type {
+  export function specifyLocation(dataType: Type, location: Ast.Location | undefined): Type {
     if(isReferenceType(dataType)) {
       switch(dataType.typeClass) {
         case "string":
@@ -518,10 +526,11 @@ export namespace Types {
             baseType: specifyLocation(dataType.baseType, location)
           };
         case "mapping":
+          let newLocation = location === "storage" ? "storage" as "storage" : undefined;
           return {
             ...dataType,
-            location,
-            valueType: specifyLocation(dataType.valueType, location)
+            location: newLocation,
+            valueType: specifyLocation(dataType.valueType, newLocation)
           };
         case "struct":
           let returnType = { ...dataType, location };

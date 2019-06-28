@@ -1001,11 +1001,11 @@ export namespace Values {
 
   //external functions
   export interface FunctionExternalResult extends Result {
-    type: Types.FunctionType; //should be external, obviously!
+    type: Types.FunctionTypeExternal;
   }
 
   export class FunctionExternalValue extends Value implements FunctionExternalResult {
-    type: Types.FunctionType;
+    type: Types.FunctionTypeExternal;
     value: FunctionExternalValueInfo;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.value, options);
@@ -1013,7 +1013,7 @@ export namespace Values {
     nativize() {
       return this.value.nativize();
     }
-    constructor(functionType: Types.FunctionType, value: FunctionExternalValueInfo) {
+    constructor(functionType: Types.FunctionTypeExternal, value: FunctionExternalValueInfo) {
       super();
       this.type = functionType;
       this.value = value;
@@ -1104,8 +1104,8 @@ export namespace Values {
 
   //errors for external functions
   export class FunctionExternalErrorResult extends ErrorResult implements FunctionExternalResult {
-    type: Types.FunctionType;
-    constructor(functionType: Types.FunctionType, error: DecoderError) {
+    type: Types.FunctionTypeExternal;
+    constructor(functionType: Types.FunctionTypeExternal, error: DecoderError) {
       super(error);
       this.type = functionType;
     }
@@ -1145,11 +1145,11 @@ export namespace Values {
 
   //Internal functions
   export interface FunctionInternalResult extends Result {
-    type: Types.FunctionType; //should be internal, obviously!
+    type: Types.FunctionTypeInternal;
   }
 
   export class FunctionInternalValue extends Value implements FunctionInternalResult {
-    type: Types.FunctionType;
+    type: Types.FunctionTypeInternal;
     value: FunctionInternalValueInfo;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.value, options);
@@ -1157,7 +1157,7 @@ export namespace Values {
     nativize() {
       return this.value.nativize();
     }
-    constructor(functionType: Types.FunctionType, value: FunctionInternalValueInfo) {
+    constructor(functionType: Types.FunctionTypeInternal, value: FunctionInternalValueInfo) {
       super();
       this.type = functionType;
       this.value = value;
@@ -1254,8 +1254,8 @@ export namespace Values {
 
   //Internal function errors
   export class FunctionInternalErrorResult extends ErrorResult implements FunctionInternalResult {
-    type: Types.FunctionType;
-    constructor(functionType: Types.FunctionType, error: DecoderError) {
+    type: Types.FunctionTypeInternal;
+    constructor(functionType: Types.FunctionTypeInternal, error: DecoderError) {
       super(error);
       this.type = functionType;
     }

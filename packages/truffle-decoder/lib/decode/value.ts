@@ -276,7 +276,7 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
 }
 
 //this one works a bit differently -- in order to handle errors, it *does* return a FunctionInternalResult
-export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
+export function decodeInternalFunction(dataType: Types.FunctionTypeInternal, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
   let deployedPc: number = DecodeUtils.Conversion.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = DecodeUtils.Conversion.toBN(constructorPcBytes).toNumber();
   let context: Types.ContractType = {

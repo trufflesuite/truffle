@@ -1,3 +1,8 @@
+export type Location = "storage" | "memory" | "calldata";
+export type Visibility = "internal" | "external";
+export type Mutability = "pure" | "view" | "nonpayable" | "payable";
+export type ContractKind = "contract" | "library" | "interface";
+
 export interface AstTypeDescriptions {
   typeIdentifier: string;
   typeString?: string;
@@ -21,8 +26,10 @@ export interface AstDefinition {
     referencedDeclaration?: any;
   };
   value?: null | any;
-  visibility?: string;
-  stateMutability?: string;
+  visibility?: string; //not using Visibility type above,
+  //that's intended for functions but this could be other
+  //things
+  stateMutability?: Mutability;
   referencedDeclaration?: any;
   parameterTypes?: {
     parameters: AstDefinition[];
@@ -32,6 +39,8 @@ export interface AstDefinition {
   };
   keyType?: AstDefinition;
   valueType?: AstDefinition;
+  contractKind?: ContractKind;
+  isConstructor?: boolean;
   [k: string]: any;
 }
 

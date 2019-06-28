@@ -8,6 +8,7 @@ const abiCoder = new AbiCoder();
 import escapeRegExp from "lodash.escaperegexp";
 
 import { EVM } from "./evm";
+import { ContractKind } from "./ast";
 
 export namespace Contexts {
 
@@ -31,7 +32,7 @@ export namespace Contexts {
     //complains if I try to specify that in the type for some reason...
     contractName?: string;
     contractId?: number;
-    contractKind?: "contract" | "library"; //should never be "interface"
+    contractKind?: ContractKind; //note: should never be "interface"
     abi?: FunctionAbiWithSignatures;
     payable?: boolean;
     compiler?: CompilerVersion;
@@ -45,7 +46,7 @@ export namespace Contexts {
     isConstructor: boolean;
     contractName?: string;
     contractId?: number;
-    contractKind?: "contract" | "library"; //should never be "interface"
+    contractKind?: ContractKind; //note: should never be "interface"
     abi?: Abi;
     sourceMap?: string;
     primarySource?: number;
@@ -123,7 +124,7 @@ export namespace Contexts {
   }
 
   //does this ABI have a payable fallback function?
-  export function isABIPayable(abi: Abi | undefined): boolean | undefined {
+  export function abiHasPayableFallback(abi: Abi | undefined): boolean | undefined {
     if(abi === undefined) {
       return undefined;
     }

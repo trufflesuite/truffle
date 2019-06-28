@@ -66,7 +66,7 @@ export function* decode(definition, ref, forceNonPayable = false) {
   if (forceNonPayable) {
     //HACK
     //this option is passed when decoding mapping keys.
-    //it forces addresses to always be decoed as nonpayable
+    //it forces addresses to always be decoded as nonpayable
     currentContext = { ...currentContext, compiler: null };
   }
 
