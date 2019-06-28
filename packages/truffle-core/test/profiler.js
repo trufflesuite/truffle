@@ -12,7 +12,6 @@ describe("profiler", function() {
   var config;
 
   before("Create a sandbox", async () => {
-    this.timeout(10000);
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
     config.artifactor = new Artifactor(config.contracts_build_directory);
@@ -42,4 +41,4 @@ describe("profiler", function() {
       }
     );
   });
-});
+}).timeout(10000);

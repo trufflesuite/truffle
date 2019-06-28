@@ -12,7 +12,6 @@ describe("create", function() {
   var config;
 
   before("Create a sandbox", async () => {
-    this.timeout(10000);
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
     config.artifactor = new Artifactor(config.contracts_build_directory);
@@ -153,4 +152,4 @@ describe("create", function() {
       });
     });
   }); // it
-});
+}).timeout(10000);

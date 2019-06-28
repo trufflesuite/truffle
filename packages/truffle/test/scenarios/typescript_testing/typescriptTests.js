@@ -21,7 +21,6 @@ describe("Typescript Tests", () => {
   after(done => Server.stop(done));
 
   before("set up sandbox", async function() {
-    this.timeout(10000);
     options = { name: "default#typescript", force: true };
     config = await Box.sandbox(options);
     config.logger = logger;
@@ -50,4 +49,4 @@ describe("Typescript Tests", () => {
       });
     }).timeout(70000);
   });
-});
+}).timeout(10000);

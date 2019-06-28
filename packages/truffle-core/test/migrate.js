@@ -15,7 +15,6 @@ describe("migrate", function() {
   var config;
 
   before("Create a sandbox", async () => {
-    this.timeout(10000);
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
     config.artifactor = new Artifactor(config.contracts_build_directory);
@@ -244,4 +243,4 @@ describe("migrate", function() {
       "2_deploy_contracts.js~ should have been ignored!"
     );
   });
-});
+}).timeout(10000);

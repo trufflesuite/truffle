@@ -44,7 +44,6 @@ describe("Solidity Tests", function() {
 
   describe("test with balance", function() {
     before(async () => {
-      this.timeout(5000);
       await initSandbox("TestWithBalance.sol");
     });
 
@@ -58,11 +57,10 @@ describe("Solidity Tests", function() {
         done();
       });
     });
-  });
+  }).timeout(5000);
 
   describe("tests failing", function() {
     before(async () => {
-      this.timeout(5000);
       await initSandbox("TestFailures.sol");
     });
 
@@ -76,5 +74,5 @@ describe("Solidity Tests", function() {
         done();
       });
     });
-  });
+  }).timeout(5000);
 });

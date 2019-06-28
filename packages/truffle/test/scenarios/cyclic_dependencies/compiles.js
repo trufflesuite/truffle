@@ -13,7 +13,6 @@ describe("Cyclic Dependencies [ @standalone ]", function() {
   const logger = new MemoryLogger();
 
   before("set up sandbox", async () => {
-    this.timeout(10000);
     options = { name: "default", force: true };
     config = await Box.sandbox(options);
     config.logger = logger;
@@ -55,4 +54,4 @@ describe("Cyclic Dependencies [ @standalone ]", function() {
       done();
     });
   });
-});
+}).timeout(10000);

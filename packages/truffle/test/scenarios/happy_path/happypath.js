@@ -22,7 +22,6 @@ describe("Happy path (truffle unbox)", function() {
   });
 
   before("set up sandbox", async () => {
-    this.timeout(10000);
     options = { name: "default", force: true };
     config = await Box.sandbox(options);
     config.network = "development";
@@ -119,4 +118,4 @@ describe("Happy path (truffle unbox)", function() {
       done();
     });
   });
-});
+}).timeout(10000);

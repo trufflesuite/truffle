@@ -19,7 +19,6 @@ describe("NPM integration", function() {
     "pragma solidity ^0.5.0; import 'fake_source/contracts/Module.sol'; contract Parent {}";
 
   before("Create a sandbox", async () => {
-    this.timeout(10000);
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
     config.artifactor = new Artifactor(config.contracts_build_directory);
@@ -125,4 +124,4 @@ describe("NPM integration", function() {
       }
     );
   });
-});
+}).timeout(10000);

@@ -15,7 +15,6 @@ describe("compile", function() {
   var memStream;
 
   before("Create a sandbox", async () => {
-    this.timeout(10000);
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
     config.artifactor = new Artifactor(config.contracts_build_directory);
@@ -225,4 +224,4 @@ describe("compile", function() {
   //   var contract = config.resolver.require("MetaCoin.sol");
   //   assert.equal(contract.networks().length, 2, "Expected the contract to be managing two networks");
   // });
-});
+}).timeout(10000);

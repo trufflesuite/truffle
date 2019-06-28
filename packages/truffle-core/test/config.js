@@ -17,7 +17,6 @@ describe("config", function() {
   };
 
   before("Create a sandbox with extra config values", async () => {
-    this.timeout(10000);
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);
     config.artifactor = new Artifactor(config.contracts_build_directory);
@@ -58,4 +57,4 @@ describe("config", function() {
 
     assert.deepEqual(contract.defaults(), customRPCConfig);
   });
-});
+}).timeout(10000);
