@@ -5,6 +5,7 @@ const assert = require("assert");
 const Resolver = require("truffle-resolver");
 const compile = require("truffle-compile/new");
 const Config = require("truffle-config");
+const { findOne } = require("./helpers");
 
 function waitSecond() {
   return new Promise(resolve => setTimeout(() => resolve(), 1250));
@@ -48,19 +49,16 @@ describe("CompilerSupplier", function() {
       version5PragmaSource = { "Version5Pragma.sol": version5Pragma };
     });
 
-    it("compiles w/ default solc if no compiler specified (float)", function(done) {
+    it("compiles w/ default solc if no compiler specified (float)", async function() {
       const defaultOptions = Config.default().merge(options);
 
-      compile(version5PragmaSource, defaultOptions, (err, result) => {
-        if (err) return done(err);
-        debug("result %o", result);
+      const { contracts } = await compile(version5PragmaSource, defaultOptions);
+      const Version5Pragma = findOne("Version5Pragma", contracts);
 
-        assert(result["Version5Pragma"].contract_name === "Version5Pragma");
-        done();
-      });
+      assert(Version5Pragma.contractName === "Version5Pragma");
     });
 
-    it("compiles w/ remote solc when options specify release (pinned)", function(done) {
+    it("compiles w/ remote solc when options specify release (pinned)", async function() {
       options.compilers = {
         solc: {
           version: "0.4.15",
@@ -68,15 +66,13 @@ describe("CompilerSupplier", function() {
         }
       };
 
-      compile(oldPragmaPinSource, options, (err, result) => {
-        if (err) return done(err);
+      const { contracts } = await compile(oldPragmaPinSource, options);
+      const OldPragmaPin = findOne("OldPragmaPin", contracts);
 
-        assert(result["OldPragmaPin"].contract_name === "OldPragmaPin");
-        done();
-      });
+      assert(OldPragmaPin.contractName === "OldPragmaPin");
     });
 
-    it("compiles w/ remote solc when options specify prerelease (float)", function(done) {
+    it("compiles w/ remote solc when options specify prerelease (float)", async function() {
       this.timeout(20000);
       // An 0.4.16 prerelease for 0.4.15
       options.compilers = {
@@ -86,18 +82,13 @@ describe("CompilerSupplier", function() {
         }
       };
 
-      compile(oldPragmaFloatSource, options, (err, result) => {
-        if (err) {
-          assert(false);
-          done();
-        }
+      const { contracts } = await compile(oldPragmaFloatSource, options);
+      const OldPragmaFloat = findOne("OldPragmaFloat", contracts);
 
-        assert(result["OldPragmaFloat"].contract_name === "OldPragmaFloat");
-        done();
-      });
+      assert(OldPragmaFloat.contractName === "OldPragmaFloat");
     });
 
-    it("compiles w/ local path solc when options specify path", function(done) {
+    it("compiles w/ local path solc when options specify path", async function() {
       const pathToSolc = path.join(
         __dirname,
         "../../../node_modules/solc/index.js"
@@ -111,15 +102,15 @@ describe("CompilerSupplier", function() {
 
       const localPathOptions = Config.default().merge(options);
 
-      compile(version5PragmaSource, localPathOptions, (err, result) => {
-        if (err) return done(err);
-
-        assert(result["Version5Pragma"].contract_name === "Version5Pragma");
-        done();
-      });
+      const { contracts } = await compile(
+        version5PragmaSource,
+        localPathOptions
+      );
+      const Version5Pragma = findOne("Version5Pragma", contracts);
+      assert(Version5Pragma.contractName === "Version5Pragma");
     });
 
-    it("caches releases and uses them if available", function(done) {
+    it("caches releases and uses them if available", async function() {
       let initialAccessTime;
       let finalAccessTime;
 
@@ -144,45 +135,35 @@ describe("CompilerSupplier", function() {
       const cachedOptions = Config.default().merge(options);
 
       // Run compiler, expecting solc to be downloaded and cached.
-      compile(version4PragmaSource, cachedOptions, err => {
-        if (err) return done(err);
+      await compile(version4PragmaSource, cachedOptions);
 
-        assert(fs.existsSync(expectedCache), "Should have cached compiler");
+      assert(fs.existsSync(expectedCache), "Should have cached compiler");
 
-        // Get cached solc access time
-        initialAccessTime = fs.statSync(expectedCache).atime.getTime();
+      // Get cached solc access time
+      initialAccessTime = fs.statSync(expectedCache).atime.getTime();
 
-        // Wait a second and recompile, verifying that the cached solc
-        // got accessed / ran ok.
-        waitSecond()
-          .then(() => {
-            compile(version4PragmaSource, cachedOptions, (err, result) => {
-              if (err) return done(err);
+      // Wait a second and recompile, verifying that the cached solc
+      // got accessed / ran ok.
+      await waitSecond();
 
-              finalAccessTime = fs.statSync(expectedCache).atime.getTime();
+      const { contracts } = await compile(version4PragmaSource, cachedOptions);
 
-              assert(
-                result["NewPragma"].contract_name === "NewPragma",
-                "Should have compiled"
-              );
+      finalAccessTime = fs.statSync(expectedCache).atime.getTime();
+      const NewPragma = findOne("NewPragma", contracts);
 
-              // atime is not getting updatd on read in CI.
-              if (!process.env.TEST) {
-                assert(
-                  initialAccessTime < finalAccessTime,
-                  "Should have used cached compiler"
-                );
-              }
+      assert(NewPragma.contractName === "NewPragma", "Should have compiled");
 
-              done();
-            });
-          })
-          .catch(done);
-      });
+      // atime is not getting updatd on read in CI.
+      if (!process.env.TEST) {
+        assert(
+          initialAccessTime < finalAccessTime,
+          "Should have used cached compiler"
+        );
+      }
     });
 
     describe("native / docker [ @native ]", function() {
-      it("compiles with native solc", function(done) {
+      it("compiles with native solc", async function() {
         options.compilers = {
           solc: {
             version: "native"
@@ -191,19 +172,19 @@ describe("CompilerSupplier", function() {
 
         const nativeSolcOptions = Config.default().merge(options);
 
-        compile(version5PragmaSource, nativeSolcOptions, (err, result) => {
-          if (err) return done(err);
-
-          assert(result["Version5Pragma"].compiler.version.includes("0.5."));
-          assert(
-            result["Version5Pragma"].contract_name === "Version5Pragma",
-            "Should have compiled"
-          );
-          done();
-        });
+        const { contracts } = await compile(
+          version5PragmaSource,
+          nativeSolcOptions
+        );
+        const Version5Pragma = findOne("Version5Pragma", contracts);
+        assert(Version5Pragma.compiler.version.includes("0.5."));
+        assert(
+          Version5Pragma.contractName === "Version5Pragma",
+          "Should have compiled"
+        );
       });
 
-      it("compiles with dockerized solc", function(done) {
+      it("compiles with dockerized solc", async function() {
         options.compilers = {
           solc: {
             version: "0.4.22",
@@ -215,19 +196,17 @@ describe("CompilerSupplier", function() {
 
         const expectedVersion = "0.4.22+commit.4cb486ee.Linux.g++";
 
-        compile(version4PragmaSource, dockerizedSolcOptions, (err, result) => {
-          if (err) return done(err);
+        const { contracts } = await compile(
+          version4PragmaSource,
+          dockerizedSolcOptions
+        );
+        const NewPragma = findOne("NewPragma", contracts);
 
-          assert(result["NewPragma"].compiler.version === expectedVersion);
-          assert(
-            result["NewPragma"].contract_name === "NewPragma",
-            "Should have compiled"
-          );
-          done();
-        });
+        assert(NewPragma.compiler.version === expectedVersion);
+        assert(NewPragma.contractName === "NewPragma", "Should have compiled");
       });
 
-      it("resolves imports correctly when using built solc", function(done) {
+      it("resolves imports correctly when using built solc", async function() {
         const paths = [];
         paths.push(path.join(__dirname, "./sources/v0.4.x/ComplexOrdered.sol"));
         paths.push(path.join(__dirname, "./sources/v0.4.x/InheritB.sol"));
@@ -255,19 +234,17 @@ describe("CompilerSupplier", function() {
 
         options.resolver = new Resolver(options);
 
-        compile.with_dependencies(options, (err, result) => {
-          if (err) return done(err);
+        const { contracts } = await compile.with_dependencies(options);
+        const ComplexOrdered = findOne("ComplexOrdered", contracts);
 
-          // This contract imports / inherits
-          assert(
-            result["ComplexOrdered"].contract_name === "ComplexOrdered",
-            "Should have compiled"
-          );
-          done();
-        });
+        // This contract imports / inherits
+        assert(
+          ComplexOrdered.contractName === "ComplexOrdered",
+          "Should have compiled"
+        );
       });
 
-      it("errors if running dockerized solc without specifying an image", function(done) {
+      it("errors if running dockerized solc without specifying an image", async function() {
         options.compilers = {
           solc: {
             version: undefined,
@@ -276,13 +253,18 @@ describe("CompilerSupplier", function() {
           }
         };
 
-        compile(version4PragmaSource, options, err => {
-          assert(err.message.includes("option must be"));
-          done();
-        });
+        let error;
+        try {
+          await compile(version4PragmaSource, options);
+        } catch (err) {
+          error = err;
+        }
+
+        assert(error);
+        assert(error.message.includes("option must be"));
       });
 
-      it("errors if running dockerized solc when image does not exist locally", function(done) {
+      it("errors if running dockerized solc when image does not exist locally", async function() {
         const imageName = "fantasySolc.7777555";
 
         options.compilers = {
@@ -293,10 +275,15 @@ describe("CompilerSupplier", function() {
           }
         };
 
-        compile(version4PragmaSource, options, err => {
-          assert(err.message.includes(imageName));
-          done();
-        });
+        let error;
+        try {
+          await compile(version4PragmaSource, options);
+        } catch (err) {
+          error = err;
+        }
+
+        assert(error);
+        assert(error.message.includes(imageName));
       });
     });
   });
