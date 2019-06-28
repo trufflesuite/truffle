@@ -1,7 +1,7 @@
 const fse = require("fs-extra");
 const path = require("path");
 
-module.exports = (sourceFiles, contracts_build_directory) => {
+const readAndParseArtifactFiles = (sourceFiles, contracts_build_directory) => {
   let sourceFilesArtifacts = {};
   // Get all the source files and create an object out of them.
   sourceFiles.forEach(sourceFile => {
@@ -50,4 +50,8 @@ module.exports = (sourceFiles, contracts_build_directory) => {
     }
   }
   return sourceFilesArtifacts;
+};
+
+module.exports = {
+  readAndParseArtifactFiles
 };

@@ -9,9 +9,11 @@ const expect = require("truffle-expect");
 const find_contracts = require("truffle-contract-sources");
 const semver = require("semver");
 const debug = require("debug")("compile:profiler");
-const readAndParseArtifactFiles = require("./readAndParseArtifactFiles");
-const minimumUpdatedTimePerSource = require("./minimumUpdatedTimePerSource");
-const findUpdatedFiles = require("./findUpdatedFiles");
+const { readAndParseArtifactFiles } = require("./readAndParseArtifactFiles");
+const {
+  minimumUpdatedTimePerSource
+} = require("./minimumUpdatedTimePerSource");
+const { findUpdatedFiles } = require("./findUpdatedFiles");
 
 module.exports = {
   updated(options, callback) {

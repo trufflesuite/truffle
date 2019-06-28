@@ -1,6 +1,9 @@
 const fse = require("fs-extra");
 
-module.exports = (sourceFilesArtifacts, sourceFilesArtifactsUpdatedTimes) => {
+const findUpdatedFiles = (
+  sourceFilesArtifacts,
+  sourceFilesArtifactsUpdatedTimes
+) => {
   let updatedFiles = [];
   // Stat all the source files, getting there updated times, and comparing them to
   // the artifact updated times.
@@ -35,4 +38,8 @@ module.exports = (sourceFilesArtifacts, sourceFilesArtifactsUpdatedTimes) => {
     }
   });
   return updatedFiles;
+};
+
+module.exports = {
+  findUpdatedFiles
 };

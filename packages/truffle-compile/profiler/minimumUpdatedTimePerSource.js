@@ -1,4 +1,4 @@
-module.exports = sourceFilesArtifacts => {
+const minimumUpdatedTimePerSource = sourceFilesArtifacts => {
   let sourceFilesArtifactsUpdatedTimes = {};
   // Get the minimum updated time for all of a source file's artifacts
   // (note: one source file might have multiple artifacts).
@@ -25,4 +25,8 @@ module.exports = sourceFilesArtifacts => {
     }
   });
   return sourceFilesArtifactsUpdatedTimes;
+};
+
+module.exports = {
+  minimumUpdatedTimePerSource
 };
