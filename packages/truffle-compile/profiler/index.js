@@ -4,12 +4,12 @@
 const path = require("path");
 const async = require("async");
 const fse = require("fs-extra");
-const Parser = require("./parser");
-const CompilerSupplier = require("./compilerSupplier");
+const Parser = require("../parser");
+const CompilerSupplier = require("../compilerSupplier");
 const expect = require("truffle-expect");
 const find_contracts = require("truffle-contract-sources");
 const semver = require("semver");
-const debug = require("debug")("compile:profiler"); // eslint-disable-line no-unused-vars
+const debug = require("debug")("compile:profiler");
 
 module.exports = {
   updated(options, callback) {
