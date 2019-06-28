@@ -48,62 +48,54 @@ module.exports = {
         },
         // Get all the artifact files, and read them, parsing them as JSON
         c => {
-          fse.readdir(build_directory, (err, build_files) => {
-            if (err) {
-              // The build directory may not always exist.
-              if (err.message.includes("ENOENT: no such file or directory")) {
-                // Ignore it.
-                build_files = [];
-              } else {
-                return c(err);
-              }
+          let build_files;
+          try {
+            build_files = fse.readdirSync(build_directory);
+          } catch (error) {
+            // The build directory may not always exist.
+            if (error.message.includes("ENOENT: no such file or directory")) {
+              // Ignore it.
+              build_files = [];
+            } else {
+              return c(error);
             }
+          }
 
-            build_files = build_files.filter(
-              build_file => path.extname(build_file) === ".json"
-            );
+          build_files = build_files.filter(
+            build_file => path.extname(build_file) === ".json"
+          );
+          let jsonData;
+          try {
+            jsonData = build_files.map(file => {
+              const body = fse.readFileSync(
+                path.join(build_directory, file),
+                "utf8"
+              );
+              return { file, body };
+            });
+          } catch (error) {
+            return c(error);
+          }
 
-            async.map(
-              build_files,
-              (buildFile, finished) => {
-                fse.readFile(
-                  path.join(build_directory, buildFile),
-                  "utf8",
-                  (err, body) => {
-                    if (err) return finished(err);
-                    finished(null, { file: buildFile, body });
-                  }
-                );
-              },
-              (err, jsonData) => {
-                if (err) return c(err);
+          for (let i = 0; i < jsonData.length; i++) {
+            try {
+              const data = JSON.parse(jsonData[i].body);
 
-                for (let i = 0; i < jsonData.length; i++) {
-                  try {
-                    const data = JSON.parse(jsonData[i].body);
-
-                    // In case there are artifacts from other source locations.
-                    if (sourceFilesArtifacts[data.sourcePath] == null) {
-                      sourceFilesArtifacts[data.sourcePath] = [];
-                    }
-
-                    sourceFilesArtifacts[data.sourcePath].push(data);
-                  } catch (e) {
-                    // JSON.parse throws SyntaxError objects
-                    return e instanceof SyntaxError
-                      ? c(
-                          new Error(
-                            "Problem parsing artifact: " + jsonData[i].file
-                          )
-                        )
-                      : c(e);
-                  }
-                }
-
-                c();
+              // In case there are artifacts from other source locations.
+              if (sourceFilesArtifacts[data.sourcePath] == null) {
+                sourceFilesArtifacts[data.sourcePath] = [];
               }
-            );
-          });
+
+              sourceFilesArtifacts[data.sourcePath].push(data);
+            } catch (e) {
+              // JSON.parse throws SyntaxError objects
+              return e instanceof SyntaxError
+                ? c(new Error("Problem parsing artifact: " + jsonData[i].file))
+                : c(e);
+            }
+          }
+
+          c();
         },
         c => {
           // Get the minimum updated time for all of a source file's artifacts
