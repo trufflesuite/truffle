@@ -23,19 +23,15 @@ async function verifyURL(url) {
     simple: false
   };
 
-  try {
-    const { statusCode } = await rp(options);
-    if (statusCode === 404) {
-      throw new Error(
-        `Truffle Box at URL ${url} doesn't exist. If you believe this is an error, please contact Truffle support.`
-      );
-    } else if (statusCode !== 200) {
-      throw new Error(
-        "Error connecting to github.com. Please check your internet connection and try again."
-      );
-    }
-  } catch (error) {
-    throw error;
+  const { statusCode } = await rp(options);
+  if (statusCode === 404) {
+    throw new Error(
+      `Truffle Box at URL ${url} doesn't exist. If you believe this is an error, please contact Truffle support.`
+    );
+  } else if (statusCode !== 200) {
+    throw new Error(
+      "Error connecting to github.com. Please check your internet connection and try again."
+    );
   }
 }
 
