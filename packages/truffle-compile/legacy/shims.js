@@ -12,7 +12,7 @@ function shimOutput({ contracts: list, sourceIndexes, compilerInfo }) {
 
 function shimContract(contract) {
   const {
-    contract_name,
+    contractName,
     sourcePath,
     source,
     sourceMap,
@@ -29,7 +29,7 @@ function shimContract(contract) {
   } = contract;
 
   return {
-    contract_name,
+    contract_name: contractName,
     sourcePath,
     source,
     sourceMap,

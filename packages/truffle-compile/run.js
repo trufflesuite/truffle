@@ -368,7 +368,7 @@ function processContracts({
             contents: source
           }
         }) => ({
-          contract_name: contractName,
+          contractName,
           abi: orderABI({ abi, contractName, ast }),
           metadata,
           devdoc,
