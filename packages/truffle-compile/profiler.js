@@ -134,15 +134,16 @@ module.exports = {
           async.map(
             sourceFiles,
             (sourceFile, finished) => {
-              fse.stat(sourceFile, (err, stat) => {
-                if (err) {
-                  // Ignore it. This means the source file was removed
-                  // but the artifact file possibly exists. Return null
-                  // to signfy that we should ignore it.
-                  stat = null;
-                }
+              try {
+                let stat = fse.statSync(sourceFile);
                 finished(null, stat);
-              });
+              } catch (error) {
+                // Ignore it. This means the source file was removed
+                // but the artifact file possibly exists. Return null
+                // to signfy that we should ignore it.
+                stat = null;
+                finished(null, stat);
+              }
             },
             (err, sourceFileStats) => {
               if (err) return callback(err);
