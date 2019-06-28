@@ -1,7 +1,9 @@
+const debug = require("debug")("compile:run"); // eslint-disable-line no-unused-vars
 const OS = require("os");
+const semver = require("semver");
+
 const CompileError = require("./compileerror");
 const CompilerSupplier = require("./compilerSupplier");
-const semver = require("semver");
 
 async function run(rawSources, options) {
   if (Object.keys(rawSources).length === 0) {
