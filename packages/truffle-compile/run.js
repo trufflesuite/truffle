@@ -34,7 +34,11 @@ async function run(rawSources, options) {
 
   // handle warnings as errors if options.strict
   // log if not options.quiet
-  const { warnings, errors } = detectErrors({ compilerOutput, options });
+  const { warnings, errors } = detectErrors({
+    compilerOutput,
+    options,
+    solcVersion
+  });
   if (warnings.length > 0 && !options.quiet) {
     options.logger.log(
       OS.EOL + "    > compilation warnings encountered:" + OS.EOL
@@ -257,7 +261,11 @@ async function invokeCompiler({ compilerInput, options }) {
  * Extract errors/warnings from compiler output based on strict mode setting
  * @return { errors: string, warnings: string }
  */
-function detectErrors({ compilerOutput: { errors: outputErrors }, options }) {
+function detectErrors({
+  compilerOutput: { errors: outputErrors },
+  options,
+  solcVersion
+}) {
   outputErrors = outputErrors || [];
   const rawErrors = options.strict
     ? outputErrors
@@ -276,7 +284,7 @@ function detectErrors({ compilerOutput: { errors: outputErrors }, options }) {
   if (errors.includes("requires different compiler version")) {
     const contractSolcVer = errors.match(/pragma solidity[^;]*/gm)[0];
     const configSolcVer =
-      options.compilers.solc.version || semver.valid(solc.version());
+      options.compilers.solc.version || semver.valid(solcVersion);
 
     errors = errors.concat(
       [
