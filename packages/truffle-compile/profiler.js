@@ -131,45 +131,42 @@ module.exports = {
         c => {
           const sourceFiles = Object.keys(sourceFilesArtifacts);
 
-          async.map(
-            sourceFiles,
-            (sourceFile, finished) => {
+          let sourceFileStats;
+          try {
+            sourceFileStats = sourceFiles.map(file => {
               try {
-                let stat = fse.statSync(sourceFile);
-                finished(null, stat);
+                return fse.statSync(file);
               } catch (error) {
                 // Ignore it. This means the source file was removed
                 // but the artifact file possibly exists. Return null
                 // to signfy that we should ignore it.
-                stat = null;
-                finished(null, stat);
+                return null;
               }
-            },
-            (err, sourceFileStats) => {
-              if (err) return callback(err);
+            });
+          } catch (error) {
+            return callback(error);
+          }
 
-              sourceFiles.forEach((sourceFile, index) => {
-                const sourceFileStat = sourceFileStats[index];
+          sourceFiles.forEach((sourceFile, index) => {
+            const sourceFileStat = sourceFileStats[index];
 
-                // Ignore updating artifacts if source file has been removed.
-                if (sourceFileStat == null) {
-                  return;
-                }
-
-                const artifactsUpdatedTime =
-                  sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
-                const sourceFileUpdatedTime = (
-                  sourceFileStat.mtime || sourceFileStat.ctime
-                ).getTime();
-
-                if (sourceFileUpdatedTime > artifactsUpdatedTime) {
-                  updatedFiles.push(sourceFile);
-                }
-              });
-
-              c();
+            // Ignore updating artifacts if source file has been removed.
+            if (sourceFileStat == null) {
+              return;
             }
-          );
+
+            const artifactsUpdatedTime =
+              sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
+            const sourceFileUpdatedTime = (
+              sourceFileStat.mtime || sourceFileStat.ctime
+            ).getTime();
+
+            if (sourceFileUpdatedTime > artifactsUpdatedTime) {
+              updatedFiles.push(sourceFile);
+            }
+          });
+
+          c();
         }
       ],
       err => {
