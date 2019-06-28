@@ -3,7 +3,6 @@
 
 const path = require("path");
 const async = require("async");
-const Parser = require("../parser");
 const CompilerSupplier = require("../compilerSupplier");
 const expect = require("truffle-expect");
 const findContracts = require("truffle-contract-sources");
@@ -15,6 +14,7 @@ const {
 } = require("./minimumUpdatedTimePerSource");
 const { findUpdatedFiles } = require("./findUpdatedFiles");
 const { isExplicitlyRelative } = require("./isExplicitlyRelative");
+const { getImports } = require("./getImports");
 
 module.exports = {
   updated(options, callback) {
@@ -133,11 +133,7 @@ module.exports = {
 
             let imports;
             try {
-              imports = this.getImports(
-                currentFile,
-                resolved[currentFile],
-                solc
-              );
+              imports = getImports(currentFile, resolved[currentFile], solc);
             } catch (err) {
               err.message = `Error parsing ${currentFile}: ${err.message}`;
               throw err;
@@ -162,7 +158,6 @@ module.exports = {
   // Resolves sources in several async passes. For each resolved set it detects unknown
   // imports from external packages and adds them to the set of files to resolve.
   async resolveAllSources(resolver, initialPaths, solc) {
-    const self = this;
     const mapping = {};
     const allPaths = initialPaths.slice();
 
@@ -210,7 +205,7 @@ module.exports = {
             // Inspect the imports
             let imports;
             try {
-              imports = self.getImports(result.file, result, solc);
+              imports = getImports(result.file, result, solc);
             } catch (err) {
               if (err.message.includes("requires different compiler version")) {
                 const contractSolcPragma = err.message.match(
@@ -247,20 +242,6 @@ module.exports = {
         resolve(mapping);
       });
     });
-  },
-
-  getImports(file, { body, source }, solc) {
-    // No imports in vyper!
-    if (path.extname(file) === ".vy") return [];
-
-    const imports = Parser.parseImports(body, solc);
-
-    // Convert explicitly relative dependencies of modules back into module paths.
-    return imports.map(dependencyPath =>
-      isExplicitlyRelative(dependencyPath)
-        ? source.resolve_dependency_path(file, dependencyPath)
-        : dependencyPath
-    );
   },
 
   listsEqual(listA, listB) {
