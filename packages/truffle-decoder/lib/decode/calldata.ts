@@ -203,7 +203,7 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
     );
   }
 
-  let decodedMembers: [string, Values.Result][] = [];
+  let decodedMembers: {name: string, value: Values.Result}[] = [];
   for(let index = 0; index < structAllocation.members.length; index++) {
     const memberAllocation = structAllocation.members[index];
     const memberPointer = memberAllocation.pointer;
@@ -222,14 +222,14 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
         new Values.UserDefinedTypeNotFoundError(dataType)
       );
     }
-    let storedMemberType = storedType.memberTypes[index][1];
+    let storedMemberType = storedType.memberTypes[index].type;
     let memberType = Types.specifyLocation(storedMemberType, "calldata");
 
-    decodedMembers.push([
-      memberName,
-      <Values.Result> (yield* decodeCalldata(memberType, childPointer, info, startPosition))
+    decodedMembers.push({
+      name: memberName,
+      value: <Values.Result> (yield* decodeCalldata(memberType, childPointer, info, startPosition))
       //note that startPosition is only needed in the dynamic case, but we don't know which case we're in
-    ]);
+    });
   }
   return new Values.StructValue(dataType, decodedMembers);
 }

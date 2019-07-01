@@ -489,11 +489,12 @@ function* variablesAndMappingsSaga() {
       debug("keyDefinition %o", keyDefinition);
 
       //whew! But we're not done yet -- we need to turn this decoded key into
-      //an actual path (assuming we *did* decode it)
+      //an actual path (assuming we *did* decode it; we check both for null
+      //and for the result being a Value and not an Error)
       //OK, not an actual path -- we're just going to use a simple offset for
       //the path.  But that's OK, because the mappedPaths reducer will turn
       //it into an actual path.
-      if (indexValue !== null) {
+      if (indexValue !== null && indexValue.value) {
         path = fetchBasePath(
           baseExpression,
           mappedPaths,

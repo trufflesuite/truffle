@@ -244,7 +244,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         );
       }
 
-      let decodedMembers: [string, Values.Result][] = [];
+      let decodedMembers: {name: string, value: Values.Result}[] = [];
       const members = structAllocation.members;
 
       for(let index = 0; index < members.length; index++) {
@@ -281,13 +281,13 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
             new Values.UserDefinedTypeNotFoundError(dataType)
           );
         }
-        let storedMemberType = storedType.memberTypes[index][1];
+        let storedMemberType = storedType.memberTypes[index].type;
         let memberType = Types.specifyLocation(storedMemberType, "storage");
 
-        decodedMembers.push([
-          memberName,
-          <Values.Result> (yield* decodeStorage(memberType, {storage: childRange}, info))
-        ]);
+        decodedMembers.push({
+          name: memberName,
+          value: <Values.Result> (yield* decodeStorage(memberType, {storage: childRange}, info))
+        });
       }
 
       return new Values.StructValue(dataType, decodedMembers);
@@ -306,7 +306,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         return Values.makeGenericErrorResult(dataType, error.error);
       }
 
-      let decodedEntries: [Values.ElementaryResult, Values.Result][] = [];
+      let decodedEntries: {key: Values.ElementaryValue, value: Values.Result}[] = [];
 
       const baseSlot: StorageTypes.Slot = pointer.storage.from.slot;
       debug("baseSlot %o", baseSlot);
@@ -364,9 +364,10 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
           };
         }
 
-        decodedEntries.push(
-          [key, <Values.Result> (yield* decodeStorage(valueType, valuePointer, info))]
-        );
+        decodedEntries.push({
+          key,
+          value: <Values.Result> (yield* decodeStorage(valueType, valuePointer, info))
+        });
       }
 
       return new Values.MappingValue(dataType, decodedEntries);

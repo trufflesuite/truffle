@@ -712,17 +712,19 @@ export namespace Values {
     type: Types.MappingType;
     //note that since mappings live in storage, a circular
     //mapping is impossible
-    value: [ElementaryResult, Result][]; //order of key-value pairs is irrelevant
+    value: {key: ElementaryValue, value: Result}[]; //order of key-value pairs is irrelevant
+    //note that key is not allowed to be an error!
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return util.inspect(new Map(this.value), options);
+      return util.inspect(new Map(this.value.map(
+        ({key, value}) => [key, value]
+      )), options);
     }
     nativize() {
-      //if only I could use Object.fromEntries() here!
-      return Object.assign({}, ...this.value.map(([key, value]) =>
+      return Object.assign({}, ...this.value.map(({key, value}) =>
         ({[key.toString()]: value.nativize()})
       ));
     }
-    constructor(mappingType: Types.MappingType, value: [ElementaryResult, Result][]) {
+    constructor(mappingType: Types.MappingType, value: {key: ElementaryValue, value: Result}[]) {
       super();
       this.type = mappingType;
       this.value = value;
@@ -745,24 +747,24 @@ export namespace Values {
   export class StructValue extends Value implements StructResult {
     type: Types.StructType;
     reference?: number; //will be used in the future for circular values
-    value: [string, Result][]; //these should be stored in order!
+    value: {name: string, value: Result}[]; //these should be stored in order!
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       if(this.reference !== undefined) {
         return formatCircular(this.reference, options);
       }
       return util.inspect(
         Object.assign({}, ...this.value.map(
-          ([key, value]) => ({[key]: value})
+          ({name, value}) => ({[name]: value})
         )),
         options
       );
     }
     nativize() {
       return Object.assign({}, ...this.value.map(
-        ([key, value]) => ({[key]: value.nativize()})
+        ({name, value}) => ({[name]: value.nativize()})
       ));
     }
-    constructor(structType: Types.StructType, value: [string, Result][], reference?: number) {
+    constructor(structType: Types.StructType, value: {name: string, value: Result}[], reference?: number) {
       super();
       this.type = structType;
       this.value = value;
@@ -826,7 +828,7 @@ export namespace Values {
     type: Types.EnumType;
     value: {
       name: string;
-      numeric: BN;
+      numericAsBN: BN;
     };
     fullName(): string {
       return `${this.type.definingContractName}.${this.type.typeName}.${this.value.name}`;
@@ -840,7 +842,7 @@ export namespace Values {
     constructor(enumType: Types.EnumType, numeric: BN, name: string) {
       super();
       this.type = enumType;
-      this.value = { name, numeric };
+      this.value = { name, numericAsBN: numeric };
     }
   };
 

@@ -135,7 +135,7 @@ export namespace Types {
     typeName: string;
     definingContractName: string;
     definingContract?: ContractType;
-    memberTypes?: [string, Type][];
+    memberTypes?: {name: string, type: Type}[];
     location?: Ast.Location;
   }
 
@@ -410,8 +410,8 @@ export namespace Types {
       case "StructDefinition": {
         let id = definition.id;
         let [definingContractName, typeName] = definition.canonicalName.split(".");
-        let memberTypes: [string, Type][] = definition.members.map(
-          member => [member.name, definitionToType(member, compiler, null)]
+        let memberTypes: {name: string, type: Type}[] = definition.members.map(
+          member => ({name: member.name, type: definitionToType(member, compiler, null)})
         );
         let definingContract;
         if(referenceDeclarations) {
@@ -536,7 +536,7 @@ export namespace Types {
           let returnType = { ...dataType, location };
           if(returnType.memberTypes) {
             returnType.memberTypes = returnType.memberTypes.map(
-              ([memberName, memberType]) => [memberName, specifyLocation(memberType, location)]
+              ({name: memberName, type: memberType}) => ({name: memberName, type: specifyLocation(memberType, location)})
             );
           }
           return returnType;
