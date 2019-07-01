@@ -17,7 +17,7 @@ module.exports = (pattern, callback) => {
     follow: true // follow symlinks
   };
 
-  return promisify(glob(pattern, globOptions))
+  return promisify(glob)(pattern, globOptions)
     .then(files => {
       if (callbackPassed) {
         callback(null, files);

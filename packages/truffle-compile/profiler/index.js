@@ -16,7 +16,8 @@ const { isExplicitlyRelative } = require("./isExplicitlyRelative");
 const { getImports } = require("./getImports");
 
 module.exports = {
-  updated(options, callback) {
+  async updated(options, callback) {
+    const callbackPassed = typeof callback === "function";
     expect.options(options, ["resolver"]);
 
     const { contracts_directory, contracts_build_directory } = options;
@@ -32,30 +33,31 @@ module.exports = {
     let sourceFilesArtifacts = {};
     let sourceFilesArtifactsUpdatedTimes = {};
 
-    getFiles()
-      .then(sourceFiles => {
-        sourceFilesArtifacts = readAndParseArtifactFiles(
-          sourceFiles,
-          contracts_build_directory
-        );
-        return;
-      })
-      .then(() => {
-        sourceFilesArtifactsUpdatedTimes = minimumUpdatedTimePerSource(
-          sourceFilesArtifacts
-        );
-        return;
-      })
-      .then(() => {
-        const updatedFiles = findUpdatedFiles(
-          sourceFilesArtifacts,
-          sourceFilesArtifactsUpdatedTimes
-        );
-        return callback(null, updatedFiles);
-      })
-      .catch(error => {
+    try {
+      const sourceFiles = await getFiles();
+      sourceFilesArtifacts = readAndParseArtifactFiles(
+        sourceFiles,
+        contracts_build_directory
+      );
+      sourceFilesArtifactsUpdatedTimes = minimumUpdatedTimePerSource(
+        sourceFilesArtifacts
+      );
+      const updatedFiles = findUpdatedFiles(
+        sourceFilesArtifacts,
+        sourceFilesArtifactsUpdatedTimes
+      );
+      if (callbackPassed) {
+        callback(null, updatedFiles);
+      } else {
+        return updatedFiles;
+      }
+    } catch (error) {
+      if (callbackPassed) {
         callback(error);
-      });
+      } else {
+        throw error;
+      }
+    }
   },
 
   // Returns the minimal set of sources to pass to solc as compilations targets,
