@@ -33,8 +33,6 @@ module.exports = {
     let sourceFilesArtifacts = {};
     let sourceFilesArtifactsUpdatedTimes = {};
 
-    let updatedFiles = [];
-
     getFiles()
       .then(sourceFiles => {
         sourceFilesArtifacts = readAndParseArtifactFiles(
@@ -50,7 +48,7 @@ module.exports = {
         return;
       })
       .then(() => {
-        updatedFiles = findUpdatedFiles(
+        const updatedFiles = findUpdatedFiles(
           sourceFilesArtifacts,
           sourceFilesArtifactsUpdatedTimes
         );
