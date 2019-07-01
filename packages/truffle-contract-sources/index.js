@@ -2,7 +2,6 @@ const debug = require("debug")("contract-sources");
 const path = require("path");
 const glob = require("glob");
 const { promisify } = require("util");
-const promisifiedGlob = promisify(glob);
 
 const DEFAULT_PATTERN = "**/*.{sol,vy}";
 
@@ -18,9 +17,19 @@ module.exports = (pattern, callback) => {
     follow: true // follow symlinks
   };
 
-  if (callbackPassed) {
-    glob(pattern, globOptions, callback);
-  } else {
-    return promisifiedGlob(pattern, globOptions);
-  }
+  return promisify(glob(pattern, globOptions))
+    .then(files => {
+      if (callbackPassed) {
+        callback(null, files);
+      } else {
+        return files;
+      }
+    })
+    .catch(error => {
+      if (callbackPassed) {
+        callback(error);
+      } else {
+        throw error;
+      }
+    });
 };
