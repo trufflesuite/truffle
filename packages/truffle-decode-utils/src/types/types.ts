@@ -7,13 +7,17 @@ const debug = debugModule("decode-utils:types");
 
 //Note: This is NOT intended to represent every possible type representable by
 //a Solidity type identifier!  Only possible types of variables, not of all
-//possible values.  (Though there may be some expansion in the future.)
+//possible values.  (Though there may be some expansion in the future; in
+//particular, tuples will be added later.)
 //We do however count the builtin variables msg, block, and tx as variables
 //(not other builtins though for now) so there is some support for the magic
 //type.
 
 //We do include fixed and ufixed, even though these aren't implemented yet;
 //note though that values.ts does not include these.
+//Similarly with global structs and enums.
+//Foreign contract types aren't really implemented yet either, although
+//those aren't produced from definitions.
 
 //NOTE: not all of these optional fields are actually implemented. Some are
 //just intended for the future.
@@ -126,31 +130,67 @@ export namespace Types {
     //we do not presently support bound functions
   }
 
-  export type ContractDefinedType = StructType | EnumType;
-  export type UserDefinedType = ContractDefinedType | ContractType;
+  export type ContractDefinedType = StructTypeLocal | EnumTypeLocal;
+  export type UserDefinedType = ContractDefinedType | ContractTypeNative | StructTypeGlobal | EnumTypeGlobal;
 
-  export interface StructType {
+  export type StructType = StructTypeLocal | StructTypeGlobal;
+
+  export interface StructTypeLocal {
     typeClass: "struct";
+    kind: "local";
     id: number;
     typeName: string;
     definingContractName: string;
-    definingContract?: ContractType;
-    memberTypes?: {name: string, type: Type}[];
+    definingContract?: ContractTypeNative;
+    memberTypes?: {name: string, type: Type}[]; //these should be in order
     location?: Ast.Location;
   }
 
-  export interface EnumType {
+  export interface StructTypeGlobal {
+    typeClass: "struct";
+    kind: "global";
+    id: number;
+    typeName: string;
+    memberTypes?: {name: string, type: Type}[]; //these should be in order
+    location?: Ast.Location;
+  }
+
+  export type EnumType = EnumTypeLocal | EnumTypeGlobal;
+
+  export interface EnumTypeLocal {
     typeClass: "enum";
+    kind: "local";
     id: number;
     typeName: string;
     definingContractName: string;
-    definingContract?: ContractType;
+    definingContract?: ContractTypeNative;
     options?: string[]; //these should be in order
   }
 
-  export interface ContractType {
-    typeClass: "contract";
+  export interface EnumTypeGlobal {
+    typeClass: "enum";
+    kind: "global";
     id: number;
+    typeName: string;
+    options?: string[]; //these should be in order
+  }
+
+  export type ContractType = ContractTypeNative | ContractTypeForeign;
+
+  export interface ContractTypeNative {
+    typeClass: "contract";
+    kind: "native";
+    id: number;
+    typeName: string;
+    contractKind?: Ast.ContractKind;
+    payable?: boolean; //will be useful in the future
+    //may have more optional members defined later, but I'll leave these out for
+    //now
+  }
+
+  export interface ContractTypeForeign {
+    typeClass: "contract";
+    kind: "foreign";
     typeName: string;
     contractKind?: Ast.ContractKind;
     payable?: boolean; //will be useful in the future
@@ -352,6 +392,7 @@ export namespace Types {
         if(forceLocation === null) {
           return {
             typeClass,
+            kind: "local",
             id,
             typeName,
             definingContractName
@@ -360,6 +401,7 @@ export namespace Types {
         let location = forceLocation || DefinitionUtils.referenceType(definition);
         return {
           typeClass,
+          kind: "local",
           id,
           typeName,
           definingContractName,
@@ -374,6 +416,7 @@ export namespace Types {
         let [definingContractName, typeName] = qualifiedName.split(".");
         return {
           typeClass,
+          kind: "local",
           id,
           typeName,
           definingContractName
@@ -387,6 +430,7 @@ export namespace Types {
         let contractKind = DefinitionUtils.contractKind(definition);
         return {
           typeClass,
+          kind: "native",
           id,
           typeName,
           contractKind
@@ -421,10 +465,11 @@ export namespace Types {
               (subNode: Ast.AstDefinition) => subNode.id === id
             )
           );
-          definingContract = <ContractType> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
+          definingContract = <ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
         }
         return {
           typeClass: "struct",
+          kind: "local",
           id,
           typeName,
           definingContractName,
@@ -444,10 +489,11 @@ export namespace Types {
               (subNode: Ast.AstDefinition) => subNode.id === id
             )
           );
-          definingContract = <ContractType> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
+          definingContract = <ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
         }
         return {
           typeClass: "enum",
+          kind: "local",
           id,
           typeName,
           definingContractName,
@@ -462,6 +508,7 @@ export namespace Types {
         let payable = DefinitionUtils.isContractPayable(definition);
         return {
           typeClass: "contract",
+          kind: "native",
           id,
           typeName,
           contractKind,

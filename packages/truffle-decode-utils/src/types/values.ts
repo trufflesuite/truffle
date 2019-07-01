@@ -831,7 +831,12 @@ export namespace Values {
       numericAsBN: BN;
     };
     fullName(): string {
-      return `${this.type.definingContractName}.${this.type.typeName}.${this.value.name}`;
+      switch(this.type.kind) {
+        case "local":
+          return `${this.type.definingContractName}.${this.type.typeName}.${this.value.name}`;
+        case "global":
+          return `${this.type.typeName}.${this.value.name}`;
+      }
     }
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return this.fullName();
@@ -860,7 +865,7 @@ export namespace Values {
     type: Types.EnumType;
     raw: string; //should be hex string
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      let typeName = this.type.definingContractName + "." + this.type.typeName;
+      let typeName = (this.type.kind === "local" ? (this.type.definingContractName + ".") : "") + this.type.typeName;
       return `${typeName} has extra leading bytes (padding error) (raw value ${this.raw})`;
     }
     constructor(enumType: Types.EnumType, raw: string) {
@@ -876,7 +881,7 @@ export namespace Values {
     type: Types.EnumType;
     raw: BN;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      let typeName = this.type.definingContractName + "." + this.type.typeName;
+      let typeName = (this.type.kind === "local" ? (this.type.definingContractName + ".") : "") + this.type.typeName;
       return `Invalid ${typeName} (numeric value ${this.raw.toString()})`;
     }
     constructor(enumType: Types.EnumType, raw: BN) {
@@ -892,7 +897,7 @@ export namespace Values {
     type: Types.EnumType;
     raw: BN;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      let typeName = this.type.definingContractName + "." + this.type.typeName;
+      let typeName = (this.type.kind === "local" ? (this.type.definingContractName + ".") : "") + this.type.typeName;
       return `Unknown enum type ${typeName} of id ${this.type.id} (numeric value ${this.raw.toString()})`;
     }
     constructor(enumType: Types.EnumType, raw: BN) {

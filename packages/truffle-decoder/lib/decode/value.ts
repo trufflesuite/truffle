@@ -242,6 +242,7 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Iterab
       address,
       {
         typeClass: "contract",
+	kind: "native",
         id: context.contractId,
         typeName: context.contractName,
         contractKind: context.contractKind,
@@ -262,7 +263,7 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
   if(contract.kind === "unknown") {
     return new Values.FunctionExternalValueInfoUnknown(contract, selector)
   }
-  let contractId = contract.class.id;
+  let contractId = (<Types.ContractTypeNative> contract.class).id; //sorry! will be fixed soon!
   let context = Object.values(info.contexts).find(
     context => context.contractId === contractId
   );
@@ -282,6 +283,7 @@ export function decodeInternalFunction(dataType: Types.FunctionTypeInternal, dep
   let constructorPc: number = DecodeUtils.Conversion.toBN(constructorPcBytes).toNumber();
   let context: Types.ContractType = {
     typeClass: "contract",
+    kind: "native",
     id: info.currentContext.contractId,
     typeName: info.currentContext.contractName,
     contractKind: info.currentContext.contractKind,
@@ -337,6 +339,7 @@ export function decodeInternalFunction(dataType: Types.FunctionTypeInternal, dep
   let name = functionEntry.name;
   let definedIn: Types.ContractType = {
     typeClass: "contract",
+    kind: "native",
     id: functionEntry.contractId,
     typeName: functionEntry.contractName,
     contractKind: functionEntry.contractKind,
