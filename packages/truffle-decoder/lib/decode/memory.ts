@@ -117,13 +117,10 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       for(let index = 0; index < structAllocation.members.length; index++) {
         const memberAllocation = structAllocation.members[index];
         const memberPointer = memberAllocation.pointer;
-        if(!memberPointer) {
-          continue; //memberPointer may be null due to mappings; skip these
-        }
         const childPointer: MemoryPointer = {
           memory: {
             start: startPosition + memberPointer.memory.start,
-            length: memberPointer.memory.length //always equals WORD_SIZE
+            length: memberPointer.memory.length //always equals WORD_SIZE or 0
           }
         };
 
@@ -144,5 +141,9 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         });
       }
       return new Values.StructValue(dataType, decodedMembers);
+
+    case "mapping":
+      //a mapping in memory is always empty
+      return new Values.MappingValue(dataType, []);
   }
 }

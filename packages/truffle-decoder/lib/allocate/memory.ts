@@ -20,26 +20,21 @@ export function getMemoryAllocations(referenceDeclarations: AstReferences): Memo
 //that's because allocating one struct can never necessitate allocating another
 function allocateStruct(definition: AstDefinition): MemoryAllocation {
   let memberAllocations: MemoryMemberAllocation[] = [];
-  let nonMappingIndex = 0;
+  let position = 0;
   for(const member of definition.members) {
-    if(DecodeUtils.Definition.isMapping(member)) {
-      memberAllocations.push({
-        definition: member,
-        pointer: null
-      });
-    }
-    else {
-      memberAllocations.push({
-        definition: member,
-        pointer: {
-          memory: {
-            start: nonMappingIndex * DecodeUtils.EVM.WORD_SIZE,
-            length: DecodeUtils.EVM.WORD_SIZE
-          }
+    const length = DecodeUtils.Definition.isMapping(member)
+      ? 0
+      : DecodeUtils.EVM.WORD_SIZE;
+    memberAllocations.push({
+      definition: member,
+      pointer: {
+        memory: {
+          start: position,
+          length
         }
-      });
-      nonMappingIndex++;
-    }
+      }
+    });
+    position += length;
   }
 
   return {
