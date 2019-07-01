@@ -4,7 +4,6 @@ const findUpdatedFiles = (
   sourceFilesArtifacts,
   sourceFilesArtifactsUpdatedTimes
 ) => {
-  let updatedFiles = [];
   // Stat all the source files, getting there updated times, and comparing them to
   // the artifact updated times.
   const sourceFiles = Object.keys(sourceFilesArtifacts);
@@ -21,23 +20,22 @@ const findUpdatedFiles = (
     }
   });
 
-  sourceFiles.forEach((sourceFile, index) => {
-    const sourceFileStat = sourceFileStats[index];
+  return sourceFiles
+    .map((sourceFile, index) => {
+      const sourceFileStat = sourceFileStats[index];
 
-    // Ignore updating artifacts if source file has been removed.
-    if (sourceFileStat == null) return;
+      // Ignore updating artifacts if source file has been removed.
+      if (sourceFileStat == null) return;
 
-    const artifactsUpdatedTime =
-      sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
-    const sourceFileUpdatedTime = (
-      sourceFileStat.mtime || sourceFileStat.ctime
-    ).getTime();
+      const artifactsUpdatedTime =
+        sourceFilesArtifactsUpdatedTimes[sourceFile] || 0;
+      const sourceFileUpdatedTime = (
+        sourceFileStat.mtime || sourceFileStat.ctime
+      ).getTime();
 
-    if (sourceFileUpdatedTime > artifactsUpdatedTime) {
-      updatedFiles.push(sourceFile);
-    }
-  });
-  return updatedFiles;
+      if (sourceFileUpdatedTime > artifactsUpdatedTime) return sourceFile;
+    })
+    .filter(file => file);
 };
 
 module.exports = {
