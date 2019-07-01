@@ -46,7 +46,11 @@ function* tickSaga() {
   yield* trace.signalTickSagaCompletion();
 }
 
-export function* decode(definition, ref, forceNonPayable = false) {
+const DEFAULT_DECODE_OPTIONS = {
+  forceNonPayable: false
+};
+
+export function* decode(definition, ref, options = DEFAULT_DECODE_OPTIONS) {
   let userDefinedTypes = yield select(data.views.userDefinedTypes);
   let state = yield select(data.current.state);
   let mappingKeys = yield select(data.views.mappingKeys);
@@ -63,10 +67,12 @@ export function* decode(definition, ref, forceNonPayable = false) {
   ZERO_WORD.fill(0);
   let NO_CODE = new Uint8Array(); //empty array
 
-  if (forceNonPayable) {
+  if (options.forceNonPayable) {
     //HACK
     //this option is passed when decoding mapping keys.
     //it forces addresses to always be decoded as nonpayable
+    //(this works due to a hack in isAddressPayable, where you
+    //can pass compiler = null for that effect)
     currentContext = { ...currentContext, compiler: null };
   }
 
@@ -387,7 +393,7 @@ function* variablesAndMappingsSaga() {
             {
               definition: indexDefinition
             },
-            true
+            { forceNonPayable: true }
           );
         } else if (indexReference) {
           //if a prior assignment is found
@@ -407,7 +413,9 @@ function* variablesAndMappingsSaga() {
             splicedDefinition = keyDefinition;
           }
           debug("about to decode");
-          indexValue = yield* decode(splicedDefinition, indexReference, true);
+          indexValue = yield* decode(splicedDefinition, indexReference, {
+            forceNonPayable: true
+          });
         } else if (
           indexDefinition.referencedDeclaration &&
           scopes[indexDefinition.referencedDeclaration]
@@ -435,7 +443,7 @@ function* variablesAndMappingsSaga() {
                 {
                   definition: indexConstantDeclaration.value
                 },
-                true
+                { forceNonPayable: true }
               );
             } else {
               indexValue = null; //can't decode; see below for more explanation

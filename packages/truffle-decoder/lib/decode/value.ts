@@ -7,13 +7,14 @@ import { Types, Values } from "truffle-decode-utils";
 import BN from "bn.js";
 import utf8 from "utf8";
 import { DataPointer } from "../types/pointer";
-import { EvmInfo } from "../types/evm";
+import { EvmInfo, DecoderOptions, DefaultDecoderOptions } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, permissivePadding: boolean = false): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = DefaultDecoderOptions): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   //NOTE: this does not actually return a Uint8Aarray, but due to the use of yield* read,
   //we have to include it in the type :-/
   const { state } = info;
+  const { permissivePadding } = options;
 
   let bytes: Uint8Array;
   let rawBytes: Uint8Array;

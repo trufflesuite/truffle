@@ -46,3 +46,11 @@ export interface InternalFunction {
   contractPayable?: boolean;
   isDesignatedInvalid: boolean;
 }
+
+export interface DecoderOptions {
+  permissivePadding: boolean;
+}
+
+export const DefaultDecoderOptions = {
+  permissivePadding: false
+}
