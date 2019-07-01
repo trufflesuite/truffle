@@ -2,7 +2,6 @@
 // determines which .sol files have been updated.
 
 const path = require("path");
-const async = require("async");
 const CompilerSupplier = require("../compilerSupplier");
 const expect = require("truffle-expect");
 const findContracts = require("truffle-contract-sources");
@@ -160,7 +159,7 @@ module.exports = {
     const allPaths = initialPaths.slice();
 
     // Begin generateMapping
-    function generateMapping(finished) {
+    function generateMapping() {
       const promises = [];
 
       // Dequeue all the known paths, generating resolver promises,
@@ -189,57 +188,50 @@ module.exports = {
 
       // Resolve everything known and add it to the map, then inspect each file's
       // imports and add those to the list of paths to resolve if we don't have it.
-      Promise.all(promises)
-        .then(results => {
-          // Generate the sources mapping
-          results.forEach(
-            item => (mapping[item.file] = Object.assign({}, item))
-          );
+      return Promise.all(promises).then(results => {
+        // Generate the sources mapping
+        results.forEach(item => (mapping[item.file] = Object.assign({}, item)));
 
-          // Queue unknown imports for the next resolver cycle
-          while (results.length) {
-            const result = results.shift();
+        // Queue unknown imports for the next resolver cycle
+        while (results.length) {
+          const result = results.shift();
 
-            // Inspect the imports
-            let imports;
-            try {
-              imports = getImports(result.file, result, solc);
-            } catch (err) {
-              if (err.message.includes("requires different compiler version")) {
-                const contractSolcPragma = err.message.match(
-                  /pragma solidity[^;]*/gm
+          // Inspect the imports
+          let imports;
+          try {
+            imports = getImports(result.file, result, solc);
+          } catch (err) {
+            if (err.message.includes("requires different compiler version")) {
+              const contractSolcPragma = err.message.match(
+                /pragma solidity[^;]*/gm
+              );
+              // if there's a match provide the helpful error, otherwise return solc's error output
+              if (contractSolcPragma) {
+                const contractSolcVer = contractSolcPragma[0];
+                const configSolcVer = semver.valid(solc.version());
+                err.message = err.message.concat(
+                  `\n\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)\n`
                 );
-                // if there's a match provide the helpful error, otherwise return solc's error output
-                if (contractSolcPragma) {
-                  const contractSolcVer = contractSolcPragma[0];
-                  const configSolcVer = semver.valid(solc.version());
-                  err.message = err.message.concat(
-                    `\n\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)\n`
-                  );
-                }
               }
-              return finished(err);
             }
-
-            // Detect unknown external packages / add them to the list of files to resolve
-            // Keep track of location of this import because we need to report that.
-            imports.forEach(item => {
-              if (!mapping[item])
-                allPaths.push({ file: item, parent: result.file });
-            });
+            throw err;
           }
-        })
-        .catch(finished)
-        .then(finished);
+
+          // Detect unknown external packages / add them to the list of files to resolve
+          // Keep track of location of this import because we need to report that.
+          imports.forEach(item => {
+            if (!mapping[item])
+              allPaths.push({ file: item, parent: result.file });
+          });
+        }
+      });
     }
     // End generateMapping
 
-    return new Promise((resolve, reject) => {
-      async.whilst(() => allPaths.length, generateMapping, error => {
-        if (error) reject(new Error(error));
-        resolve(mapping);
-      });
-    });
+    while (allPaths.length) {
+      await generateMapping();
+    }
+    return mapping;
   },
 
   listsEqual(listA, listB) {
