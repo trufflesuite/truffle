@@ -85,4 +85,10 @@ export class Web3Shim extends Web3 {
     quorumOverloads.getTransaction(this);
     quorumOverloads.getTransactionReceipt(this);
   }
+
+  initFabricEvm() {
+    // web3 expects getId to return a hexString convertible to a number
+    // for fabric-evm we ignore the hexToNumber output formatter
+    fabricEvmOverloads.getId(this);
+  }
 }
