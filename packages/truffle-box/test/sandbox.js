@@ -6,13 +6,9 @@ describe("Box.sandbox", () => {
 
   it("successfully unboxes and returns TruffleConfig when passed a valid options object", async () => {
     options = { name: "default", force: true };
-    try {
-      const config = await sandbox(options);
-      assert(config);
-      assert(config.truffle_directory);
-    } catch (error) {
-      throw error;
-    }
+    const config = await sandbox(options);
+    assert(config);
+    assert(config.truffle_directory);
   });
 
   it("errors when passed an invalid options configuration", () => {
