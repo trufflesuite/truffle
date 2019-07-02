@@ -3,112 +3,147 @@ const debug = debugModule("decoder:decode:memory");
 
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
+import { Types, Values, Errors } from "truffle-decode-utils";
 import decodeValue from "./value";
 import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";
 import { EvmInfo } from "../types/evm";
-import { DecoderRequest } from "../types/request";
+import { DecoderRequest, GeneratorJunk } from "../types/request";
 
-export default function* decodeMemory(definition: DecodeUtils.AstDefinition, pointer: MemoryPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
-  if(DecodeUtils.Definition.isReference(definition)) {
-    return yield* decodeMemoryReferenceByAddress(definition, pointer, info);
+export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+  if(Types.isReferenceType(dataType)) {
+    return yield* decodeMemoryReferenceByAddress(dataType, pointer, info);
   }
   else {
-    return yield* decodeValue(definition, pointer, info);
+    return yield* decodeValue(dataType, pointer, info);
   }
 }
 
-export function* decodeMemoryReferenceByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
+export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { state } = info;
   // debug("pointer %o", pointer);
-  let rawValue: Uint8Array = yield* read(pointer, state);
+  let rawValue: Uint8Array;
+  try {
+    rawValue = yield* read(pointer, state);
+  }
+  catch(error) { //error: Errors.DecodingError
+    return Errors.makeGenericErrorResult(dataType, error.error);
+  }
 
   let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber();
-  let length;
+  let rawLength: Uint8Array;
+  let length: number;
 
-  switch (DecodeUtils.Definition.typeClass(definition)) {
+  switch (dataType.typeClass) {
 
     case "bytes":
     case "string":
-      length = DecodeUtils.Conversion.toBN(yield* read({
-        memory: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE}
-      }, state)).toNumber(); //initial word contains length
+      //initial word contains length
+      try {
+        rawLength = yield* read({
+          memory: {
+            start: startPosition,
+            length: DecodeUtils.EVM.WORD_SIZE
+          }
+        }, state);
+      }
+      catch(error) { //error: Errors.DecodingError
+        return Errors.makeGenericErrorResult(dataType, error.error);
+      }
+      length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
 
       let childPointer: MemoryPointer = {
         memory: { start: startPosition + DecodeUtils.EVM.WORD_SIZE, length }
       }
 
-      return yield* decodeValue(definition, childPointer, info);
+      return yield* decodeValue(dataType, childPointer, info);
 
     case "array":
 
-      if (DecodeUtils.Definition.isDynamicArray(definition)) {
-        length = DecodeUtils.Conversion.toBN(yield* read({
-          memory: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE },
-          }, state)).toNumber();  // initial word contains array length
-        startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition to
-        //next word, as first word was used for length
+      if (dataType.kind === "dynamic") {
+        //initial word contains array length
+        try {
+          rawLength = yield* read({
+            memory: {
+              start: startPosition,
+              length: DecodeUtils.EVM.WORD_SIZE
+            }
+          }, state);
+        }
+        catch(error) { //error: Errors.DecodingError
+          return Errors.makeGenericErrorResult(dataType, error.error);
+        }
+        length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
+        startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition
+        //to next word, as first word was used for length
       }
       else {
-        length = DecodeUtils.Definition.staticLength(definition);
+        length = dataType.length.toNumber();
       }
 
-      let baseDefinition = definition.baseType || definition.typeName.baseType;
-        //I'm deliberately not using the DecodeUtils function for this, because
-        //we should *not* need a faked-up type here!
+      let baseType = dataType.baseType;
 
-      // replace erroneous `_storage_` type identifiers with `_memory_`
-      baseDefinition = DecodeUtils.Definition.spliceLocation(baseDefinition, "memory");
-
-      let decodedChildren = [];
+      let decodedChildren: Values.Result[] = [];
       for(let index = 0; index < length; index++) {
-        decodedChildren.push(yield* decodeMemory(
-          baseDefinition,
-          { memory: {
-            start: startPosition + index * DecodeUtils.EVM.WORD_SIZE,
-            length: DecodeUtils.EVM.WORD_SIZE
-          }},
-          info));
+        decodedChildren.push(
+          <Values.Result> (yield* decodeMemory(
+            baseType,
+            { memory: {
+              start: startPosition + index * DecodeUtils.EVM.WORD_SIZE,
+              length: DecodeUtils.EVM.WORD_SIZE
+            }},
+            info
+          ))
+        );
       }
-      return decodedChildren;
+
+      return new Values.ArrayValue(dataType, decodedChildren);
 
     case "struct":
-      const { referenceDeclarations, memoryAllocations } = info;
+      const { memoryAllocations, userDefinedTypes } = info;
 
-      const referencedDeclaration = definition.typeName
-        ? definition.typeName.referencedDeclaration
-        : definition.referencedDeclaration;
-      const structAllocation = memoryAllocations[referencedDeclaration];
+      const typeId = dataType.id;
+      const structAllocation = memoryAllocations[typeId];
+      if(!structAllocation) {
+        return new Errors.StructErrorResult(
+          dataType,
+          new Errors.UserDefinedTypeNotFoundError(dataType)
+        );
+      }
 
       debug("structAllocation %O", structAllocation);
 
-      let decodedMembers: any = {};
-      for(let memberAllocation of Object.values(structAllocation.members)) {
+      let decodedMembers: {name: string, value: Values.Result}[] = [];
+      for(let index = 0; index < structAllocation.members.length; index++) {
+        const memberAllocation = structAllocation.members[index];
         const memberPointer = memberAllocation.pointer;
         const childPointer: MemoryPointer = {
           memory: {
             start: startPosition + memberPointer.memory.start,
-            length: memberPointer.memory.length //always equals WORD_SIZE
+            length: memberPointer.memory.length //always equals WORD_SIZE or 0
           }
         };
 
-        let memberDefinition = memberAllocation.definition;
+        let memberName = memberAllocation.definition.name;
+        let storedType = <Types.StructType>userDefinedTypes[typeId];
+        if(!storedType) {
+          return new Errors.StructErrorResult(
+            dataType,
+            new Errors.UserDefinedTypeNotFoundError(dataType)
+          );
+        }
+        let storedMemberType = storedType.memberTypes[index].type;
+        let memberType = Types.specifyLocation(storedMemberType, "memory");
 
-        // replace erroneous `_storage` type identifiers with `_memory`
-        memberDefinition = DecodeUtils.Definition.spliceLocation(memberDefinition, "memory");
-        //there also used to be code here to add on the "_ptr" ending when absent, but we
-        //presently ignore that ending, so we'll skip that
-
-        let decoded = yield* decodeMemory(memberDefinition, childPointer, info);
-
-        decodedMembers[memberDefinition.name] = decoded;
+        decodedMembers.push({
+          name: memberName,
+          value: <Values.Result> (yield* decodeMemory(memberType, childPointer, info))
+        });
       }
-      return decodedMembers;
+      return new Values.StructValue(dataType, decodedMembers);
 
-    default:
-      // debug("Unknown memory reference type: %s", DecodeUtils.typeIdentifier(definition));
-      return undefined;
-
+    case "mapping":
+      //a mapping in memory is always empty
+      return new Values.MappingValue(dataType, []);
   }
-
 }

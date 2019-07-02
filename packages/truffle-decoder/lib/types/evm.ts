@@ -1,5 +1,5 @@
-import { AstReferences, Contexts } from "truffle-decode-utils";
-import { StorageAllocations, CalldataAllocations, MemoryAllocations, StorageMemberAllocations } from "./allocation";
+import { AstDefinition, AstReferences, ContractKind, Contexts, Types } from "truffle-decode-utils";
+import { StorageAllocations, CalldataAllocations, MemoryAllocations } from "./allocation";
 import { Slot } from "./storage";
 
 export interface EvmState {
@@ -19,7 +19,7 @@ export interface WordMapping {
 export interface EvmInfo {
   state: EvmState;
   mappingKeys?: Slot[];
-  referenceDeclarations?: AstReferences;
+  userDefinedTypes?: Types.TypesById;
   storageAllocations?: StorageAllocations;
   calldataAllocations?: CalldataAllocations;
   memoryAllocations?: MemoryAllocations;
@@ -35,13 +35,22 @@ export interface InternalFunctions {
 export interface InternalFunction {
   source?: number;
   pointer?: string;
-  node?: any; //sorry
+  node?: AstDefinition;
   name?: string;
   id?: number;
   contractPointer?: string;
-  contractNode?: any; //sorry
+  contractNode?: AstDefinition;
   contractName?: string;
   contractId?: number;
-  contractKind?: string;
+  contractKind?: ContractKind; //note: should never be interface
+  contractPayable?: boolean;
   isDesignatedInvalid: boolean;
+}
+
+export interface DecoderOptions {
+  permissivePadding: boolean;
+}
+
+export const DefaultDecoderOptions = {
+  permissivePadding: false
 }

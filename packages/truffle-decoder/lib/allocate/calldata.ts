@@ -2,9 +2,15 @@ import debugModule from "debug";
 const debug = debugModule("decoder:allocate:calldata");
 
 import { CalldataPointer } from "../types/pointer";
-import { CalldataAllocations, CalldataAllocation, CalldataMemberAllocations } from "../types/allocation";
+import { CalldataAllocations, CalldataAllocation, CalldataMemberAllocation } from "../types/allocation";
 import { AstDefinition, AstReferences } from "truffle-decode-utils";
 import * as DecodeUtils from "truffle-decode-utils";
+
+interface CalldataAllocationInfo {
+  size?: number; //left out for types that don't go in calldata
+  dynamic?: boolean; //similarly
+  allocations: CalldataAllocations;
+}
 
 export function getCalldataAllocations(referenceDeclarations: AstReferences): CalldataAllocations {
   let allocations: CalldataAllocations = {};
@@ -29,13 +35,13 @@ function allocateStruct(definition: AstDefinition, referenceDeclarations: AstRef
 
   let allocations = {...existingAllocations}; //otherwise, we'll be adding to this, so we better clone
 
-  let memberAllocations: CalldataMemberAllocations = {}
+  let memberAllocations: CalldataMemberAllocation[] = [];
 
   for(const member of definition.members)
   {
     let length: number;
     let dynamicMember: boolean;
-    [length, dynamicMember, allocations] = calldataSizeAndAllocate(member, referenceDeclarations, allocations);
+    ({size: length, dynamic: dynamicMember, allocations} = calldataSizeAndAllocate(member, referenceDeclarations, allocations));
 
     //vomit on illegal types in calldata -- note the short-circuit!
     if(length === undefined) {
@@ -50,10 +56,10 @@ function allocateStruct(definition: AstDefinition, referenceDeclarations: AstRef
       }
     };
 
-    memberAllocations[member.id] = {
+    memberAllocations.push({
       definition: member,
       pointer
-    }
+    });
 
     start += length;
     dynamic = dynamic || dynamicMember;
@@ -69,20 +75,7 @@ function allocateStruct(definition: AstDefinition, referenceDeclarations: AstRef
   return allocations;
 }
 
-//NOTE: This wrapper function is for use by the decoder ONLY, after allocation is done.
-//The allocator should (and does) instead use a direct call to storageSizeAndAllocate,
-//not to the wrapper, because it may need the allocations returned.
-//the first return value is the length (in bytes); the second is whether the type is dynamic
-export function calldataSize(definition: AstDefinition, referenceDeclarations?: AstReferences, allocations?: CalldataAllocations): [number | undefined, boolean | undefined] {
-  let [size, dynamic] = calldataSizeAndAllocate(definition, referenceDeclarations, allocations); //throw away allocations
-  return [size, dynamic];
-}
-
-//first return value is the actual size.
-//second return value is whether the type is dynamic
-//both will be undefined if type is a mapping or internal function
-//third return value is resulting allocations, INCLUDING the ones passed in
-function calldataSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: CalldataAllocations): [number | undefined, boolean | undefined, CalldataAllocations] {
+function calldataSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: CalldataAllocations): CalldataAllocationInfo {
   switch (DecodeUtils.Definition.typeClass(definition)) {
     case "bool":
     case "address":
@@ -92,40 +85,71 @@ function calldataSizeAndAllocate(definition: AstDefinition, referenceDeclaration
     case "fixed":
     case "ufixed":
     case "enum":
-      return [DecodeUtils.EVM.WORD_SIZE, false, existingAllocations];
+      return {
+	size: DecodeUtils.EVM.WORD_SIZE,
+	dynamic: false,
+	allocations: existingAllocations
+      };
 
     case "string":
-      return [DecodeUtils.EVM.WORD_SIZE, true, existingAllocations];
+      return {
+	size: DecodeUtils.EVM.WORD_SIZE,
+	dynamic: true,
+	allocations: existingAllocations
+      };
 
     case "bytes":
-      return [DecodeUtils.EVM.WORD_SIZE, DecodeUtils.Definition.specifiedSize(definition) == null,
-        existingAllocations];
+      return {
+	size: DecodeUtils.EVM.WORD_SIZE,
+	dynamic: DecodeUtils.Definition.specifiedSize(definition) == null,
+	allocations: existingAllocations
+      };
 
     case "mapping":
-      return [undefined, undefined, existingAllocations];
+      return {
+	allocations: existingAllocations
+      };
 
     case "function":
       switch (DecodeUtils.Definition.visibility(definition)) {
         case "external":
-          return [DecodeUtils.EVM.WORD_SIZE, false, existingAllocations];
+	  return {
+	    size: DecodeUtils.EVM.WORD_SIZE,
+	    dynamic: false,
+	    allocations: existingAllocations
+	  };
         case "internal":
-          return [undefined, undefined, existingAllocations];
+	  return {
+	    allocations: existingAllocations
+	  };
       }
 
     case "array": {
       if(DecodeUtils.Definition.isDynamicArray(definition)) {
-        return [DecodeUtils.EVM.WORD_SIZE, true, existingAllocations];
+	return {
+	  size: DecodeUtils.EVM.WORD_SIZE,
+	  dynamic: true,
+	  allocations: existingAllocations
+	};
       }
       else {
         //static array case
         const length: number = DecodeUtils.Definition.staticLength(definition);
         if(length === 0) {
           //arrays of length 0 are static regardless of base type
-          return [0, false, existingAllocations];
+	  return {
+	    size: 0,
+	    dynamic: false,
+	    allocations: existingAllocations
+	  };
         }
         const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
-        const [baseSize, dynamic, allocations] = calldataSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
-        return [length * baseSize, dynamic, allocations];
+	const {size: baseSize, dynamic, allocations} = calldataSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
+	return {
+	  size: length * baseSize,
+	  dynamic,
+	  allocations
+	};
       }
     }
 
@@ -141,12 +165,67 @@ function calldataSizeAndAllocate(definition: AstDefinition, referenceDeclaration
       }
       //having found our allocation, if it's not null, we can just look up its size and dynamicity
       if(allocation !== null) {
-        return [allocation.length, allocation.dynamic, allocations];
+	return {
+	  size: allocation.length,
+	  dynamic: allocation.dynamic,
+	  allocations
+	};
       }
       //if it is null, this type doesn't go in calldata
       else {
-        return [undefined, undefined, allocations];
+	return {
+	  allocations
+	};
       }
     }
+  }
+}
+
+//like calldataSize, but for a Type object; also assumes you've already done allocation
+//(note: function for dynamic is separate, see below)
+//also, does not attempt to handle types that don't occur in calldata
+export function calldataSizeForType(dataType: DecodeUtils.Types.Type, allocations: CalldataAllocations): number {
+  switch(dataType.typeClass) {
+    case "array":
+      switch(dataType.kind) {
+        case "dynamic":
+          return DecodeUtils.EVM.WORD_SIZE;
+        case "static":
+          const length = dataType.length.toNumber(); //if this is too big, we have a problem!
+          const baseSize = calldataSizeForType(dataType.baseType, allocations);
+          return length * baseSize;
+      }
+    case "struct":
+      const allocation = allocations[dataType.id];
+      if(!allocation) {
+        throw new DecodeUtils.Errors.DecodingError(
+          new DecodeUtils.Errors.UserDefinedTypeNotFoundError(dataType)
+        );
+      }
+      return allocation.length;
+    default:
+      return DecodeUtils.EVM.WORD_SIZE;
+  }
+}
+
+//again, this function does not attempt to handle types that don't occur in calldata
+export function isTypeDynamic(dataType: DecodeUtils.Types.Type, allocations: CalldataAllocations): boolean {
+  switch(dataType.typeClass) {
+    case "string":
+      return true;
+    case "bytes":
+      return dataType.kind === "dynamic";
+    case "array":
+      return dataType.kind === "dynamic" || (dataType.length.gtn(0) && isTypeDynamic(dataType.baseType, allocations));
+    case "struct":
+      const allocation = allocations[dataType.id];
+      if(!allocation) {
+        throw new DecodeUtils.Errors.DecodingError(
+          new DecodeUtils.Errors.UserDefinedTypeNotFoundError(dataType)
+        );
+      }
+      return allocation.dynamic;
+    default:
+      return false;
   }
 }

@@ -46,8 +46,12 @@ function* tickSaga() {
   yield* trace.signalTickSagaCompletion();
 }
 
-export function* decode(definition, ref) {
-  let referenceDeclarations = yield select(data.views.referenceDeclarations);
+const DEFAULT_DECODE_OPTIONS = {
+  forceNonPayable: false
+};
+
+export function* decode(definition, ref, options = DEFAULT_DECODE_OPTIONS) {
+  let userDefinedTypes = yield select(data.views.userDefinedTypes);
   let state = yield select(data.current.state);
   let mappingKeys = yield select(data.views.mappingKeys);
   let allocations = yield select(data.info.allocations);
@@ -63,8 +67,17 @@ export function* decode(definition, ref) {
   ZERO_WORD.fill(0);
   let NO_CODE = new Uint8Array(); //empty array
 
+  if (options.forceNonPayable) {
+    //HACK
+    //this option is passed when decoding mapping keys.
+    //it forces addresses to always be decoded as nonpayable
+    //(this works due to a hack in isAddressPayable, where you
+    //can pass compiler = null for that effect)
+    currentContext = { ...currentContext, compiler: null };
+  }
+
   let decoder = forEvmState(definition, ref, {
-    referenceDeclarations,
+    userDefinedTypes,
     state,
     mappingKeys,
     storageAllocations: allocations.storage,
@@ -111,16 +124,14 @@ export function* decode(definition, ref) {
     result = decoder.next(response);
   }
   //at this point, result.value holds the final value
-  //note: we're still using the old decoder output format, so we need to clean
-  //containers before returning something the debugger can use
-  return DecodeUtils.Conversion.cleanContainers(result.value);
+  return result.value;
 }
 
 function* variablesAndMappingsSaga() {
   let node = yield select(data.current.node);
   let scopes = yield select(data.views.scopes.inlined);
   let referenceDeclarations = yield select(data.views.referenceDeclarations);
-  let allocations = yield select(data.info.allocations.storage);
+  let allocations = yield select(data.info.allocations.storage.byId);
   let currentAssignments = yield select(data.proc.assignments);
   let mappedPaths = yield select(data.proc.mappedPaths);
   let currentDepth = yield select(data.current.functionDepth);
@@ -349,12 +360,10 @@ function* variablesAndMappingsSaga() {
         baseExpression,
         scopes
       );
-      //if we're dealing with an array, this will just hack up a uint definition
-      //:)
+      //if we're dealing with an array, this will just spoof up a uint
+      //definition :)
 
       //begin subsection: key decoding
-      //(I tried factoring this out into its own saga but it didn't work when I
-      //did :P )
 
       let indexValue;
       let indexDefinition = node.indexExpression;
@@ -379,9 +388,13 @@ function* variablesAndMappingsSaga() {
           //so looking for a prior assignment will read the wrong value.
           //so instead it's preferable to use the constant directly.
           debug("about to decode simple literal");
-          indexValue = yield* decode(keyDefinition, {
-            definition: indexDefinition
-          });
+          indexValue = yield* decode(
+            keyDefinition,
+            {
+              definition: indexDefinition
+            },
+            { forceNonPayable: true }
+          );
         } else if (indexReference) {
           //if a prior assignment is found
           let splicedDefinition;
@@ -400,7 +413,9 @@ function* variablesAndMappingsSaga() {
             splicedDefinition = keyDefinition;
           }
           debug("about to decode");
-          indexValue = yield* decode(splicedDefinition, indexReference);
+          indexValue = yield* decode(splicedDefinition, indexReference, {
+            forceNonPayable: true
+          });
         } else if (
           indexDefinition.referencedDeclaration &&
           scopes[indexDefinition.referencedDeclaration]
@@ -423,9 +438,13 @@ function* variablesAndMappingsSaga() {
               DecodeUtils.Definition.isSimpleConstant(indexConstantDefinition)
             ) {
               debug("about to decode simple constant");
-              indexValue = yield* decode(keyDefinition, {
-                definition: indexConstantDeclaration.value
-              });
+              indexValue = yield* decode(
+                keyDefinition,
+                {
+                  definition: indexConstantDeclaration.value
+                },
+                { forceNonPayable: true }
+              );
             } else {
               indexValue = null; //can't decode; see below for more explanation
             }
@@ -470,11 +489,12 @@ function* variablesAndMappingsSaga() {
       debug("keyDefinition %o", keyDefinition);
 
       //whew! But we're not done yet -- we need to turn this decoded key into
-      //an actual path (assuming we *did* decode it)
+      //an actual path (assuming we *did* decode it; we check both for null
+      //and for the result being a Value and not an Error)
       //OK, not an actual path -- we're just going to use a simple offset for
       //the path.  But that's OK, because the mappedPaths reducer will turn
       //it into an actual path.
-      if (indexValue !== null) {
+      if (indexValue !== null && indexValue.value) {
         path = fetchBasePath(
           baseExpression,
           mappedPaths,
@@ -491,15 +511,14 @@ function* variablesAndMappingsSaga() {
             slot.hashPath = DecodeUtils.Definition.isDynamicArray(
               baseExpression
             );
-            slot.offset = indexValue.muln(
+            slot.offset = indexValue.value.asBN.muln(
+              //HACK: the allocation format here is wrong (object rather than
+              //array), but it doesn't matter because we're not using that here
               storageSize(node, referenceDeclarations, allocations).words
             );
             break;
           case "mapping":
             slot.key = indexValue;
-            slot.keyEncoding = DecodeUtils.Definition.keyEncoding(
-              keyDefinition
-            );
             slot.offset = new BN(0);
             break;
           default:
@@ -626,11 +645,17 @@ export function* recordAllocations() {
 function literalAssignments(node, stack, currentDepth) {
   let top = stack.length - 1;
 
-  let literal = readStack(
-    stack,
-    top - DecodeUtils.Definition.stackSize(node) + 1,
-    top
-  );
+  let literal;
+  try {
+    literal = readStack(
+      stack,
+      top - DecodeUtils.Definition.stackSize(node) + 1,
+      top
+    );
+  } catch (error) {
+    literal = undefined; //not sure if this is right, but this is what would
+    //happen before, so I figure it's safe?
+  }
 
   let assignment = makeAssignment(
     { astId: node.id, stackframe: currentDepth },

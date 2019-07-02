@@ -7,6 +7,7 @@ import Ganache from "ganache-core";
 
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
+import * as TruffleDecodeUtils from "truffle-decode-utils";
 
 import solidity from "lib/solidity/selectors";
 
@@ -164,11 +165,22 @@ describe("Function Pointer Decoding", function() {
 
     const variables = await session.variables();
 
-    assert.match(variables.base, /^ExternalsDerived\(0x[0-9A-Fa-f]{40}\)/);
-    let expected = variables.base + ".doThing";
-    assert.equal(variables.storageFn, expected);
-    assert.equal(variables.memoryFns[0], expected);
-    assert.equal(variables.stackFn, expected);
+    assert.equal(variables.base.value.class.typeName, "ExternalsDerived");
+    assert.equal(
+      variables.storageFn.value.contract.class.typeName,
+      "ExternalsDerived"
+    );
+    assert.equal(variables.storageFn.value.name, "doThing");
+    assert.equal(
+      variables.memoryFns.value[0].value.contract.class.typeName,
+      "ExternalsDerived"
+    );
+    assert.equal(variables.memoryFns.value[0].value.name, "doThing");
+    assert.equal(
+      variables.stackFn.value.contract.class.typeName,
+      "ExternalsDerived"
+    );
+    assert.equal(variables.stackFn.value.name, "doThing");
   });
 
   it("Decodes internal function pointers correctly (deployed)", async function() {
@@ -195,7 +207,9 @@ describe("Function Pointer Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+      await session.variables()
+    );
 
     const expectedResult = {
       plainFn: "InternalsTest.run",
@@ -232,7 +246,9 @@ describe("Function Pointer Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+      await session.variables()
+    );
 
     const expectedResult = {
       plainFn: "InternalsTest.run",

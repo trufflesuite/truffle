@@ -1,3 +1,8 @@
+export type Location = "storage" | "memory" | "calldata";
+export type Visibility = "internal" | "external";
+export type Mutability = "pure" | "view" | "nonpayable" | "payable";
+export type ContractKind = "contract" | "library" | "interface";
+
 export interface AstTypeDescriptions {
   typeIdentifier: string;
   typeString?: string;
@@ -9,32 +14,33 @@ export interface AstDefinition {
   name: string;
   linearizedBaseContracts?: number[];
   members?: AstDefinition[];
-  nodes?: any[]; //sorry
+  nodes?: AstDefinition[];
   nodeType: string;
   scope?: number;
-  src?: string;
+  src: string;
   stateVariable?: boolean;
   storageLocation?: string;
   typeDescriptions: AstTypeDescriptions;
-  typeName?: {
-    id: number,
-    name: string;
-    nodeType: string;
-    src: string;
-    typeDescriptions: AstTypeDescriptions;
-    keyType?: any;
-    valueType?: any;
-    length?: any;
-    referencedDeclaration?: any;
-    baseType?: any;
-    visibility?: string;
-  };
+  typeName?: AstDefinition;
   expression?: {
     referencedDeclaration?: any;
   };
   value?: null | any;
-  visibility?: string;
+  visibility?: string; //not using Visibility type above,
+  //that's intended for functions but this could be other
+  //things
+  stateMutability?: Mutability;
   referencedDeclaration?: any;
+  parameterTypes?: {
+    parameters: AstDefinition[];
+  };
+  returnParameterTypes?: {
+    parameters: AstDefinition[];
+  };
+  keyType?: AstDefinition;
+  valueType?: AstDefinition;
+  contractKind?: ContractKind;
+  isConstructor?: boolean;
   [k: string]: any;
 }
 

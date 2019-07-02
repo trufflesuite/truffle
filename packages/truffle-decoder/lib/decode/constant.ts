@@ -2,16 +2,16 @@ import debugModule from "debug";
 const debug = debugModule("decoder:decode:constant");
 
 import * as DecodeUtils from "truffle-decode-utils";
+import { Types, Values, Errors } from "truffle-decode-utils";
 import read from "../read";
 import decodeValue from "./value";
 import { ConstantDefinitionPointer} from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { DecoderRequest } from "../types/request";
+import { DecoderRequest, GeneratorJunk } from "../types/request";
 import BN from "bn.js";
 
-export default function* decodeConstant(definition: DecodeUtils.AstDefinition, pointer: ConstantDefinitionPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
+export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
 
-  debug("definition %O", definition);
   debug("pointer %o", pointer);
 
   //normally, we just dispatch to decodeValue.
@@ -20,15 +20,23 @@ export default function* decodeConstant(definition: DecodeUtils.AstDefinition, p
   //of the word, but readDefinition will put them at the *end* of the
   //word.  So we'll have to adjust things ourselves.
 
-  if(DecodeUtils.Definition.typeClass(definition) === "bytes") {
-    let size = DecodeUtils.Definition.specifiedSize(definition);
-    if(size !== null) {
-      let word = yield* read(pointer, info.state);
-      let bytes = word.slice(DecodeUtils.EVM.WORD_SIZE - size);
-      return DecodeUtils.Conversion.toHexString(bytes);
+  if(dataType.typeClass === "bytes" && dataType.kind === "static") {
+    let size = dataType.length;
+    let word: Uint8Array;
+    try {
+      word = yield* read(pointer, info.state);
     }
+    catch(error) { //error: Errors.DecodingError
+      return Errors.makeGenericErrorResult(dataType, error.error);
+    }
+    //not bothering to check padding; shouldn't be necessary
+    let bytes = word.slice(DecodeUtils.EVM.WORD_SIZE - size);
+    return new Values.BytesStaticValue(
+      dataType,
+      DecodeUtils.Conversion.toHexString(bytes)
+    ); //we'll skip including a raw value, as that would be meaningless
   }
 
   //otherwise, as mentioned, just dispatch to decodeValue
-  return yield* decodeValue(definition, pointer, info);
+  return yield* decodeValue(dataType, pointer, info);
 }

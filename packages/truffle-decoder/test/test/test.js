@@ -2,36 +2,28 @@ const assert = require("assert");
 const util = require("util"); // eslint-disable-line no-unused-vars
 
 const TruffleDecoder = require("../../../truffle-decoder");
+const TruffleDecodeUtils = require("../../../truffle-decode-utils");
 
 const DecodingSample = artifacts.require("DecodingSample");
 
 function validateStructS(struct, values) {
   assert.equal(typeof struct, "object");
-  assert.equal(struct.members.structInt.value.toString(), values[0]);
-  assert.equal(struct.members.structString.value, values[1]);
-  assert.equal(struct.members.structBool.value, values[2]);
-  assert.equal(struct.members.structAddress.value, values[3]);
+  assert.equal(struct.structInt.toString(), values[0]);
+  assert.equal(struct.structString, values[1]);
+  assert.equal(struct.structBool, values[2]);
+  assert.equal(struct.structAddress, values[3]);
 
-  const s2 = struct.members.structS2.value;
+  const s2 = struct.structS2;
   validateStructS2(s2, values[4]);
 }
 
 function validateStructS2(s2, values) {
   assert.equal(typeof s2, "object");
-  assert.equal(
-    s2.members.structTwoFixedArrayUint.value[0].toString(),
-    values[0]
-  );
-  assert.equal(
-    s2.members.structTwoFixedArrayUint.value[1].toString(),
-    values[1]
-  );
-  assert.equal(s2.members.structTwoDynamicArrayUint.value.length, values[2]);
+  assert.equal(s2.structTwoFixedArrayUint[0].toString(), values[0]);
+  assert.equal(s2.structTwoFixedArrayUint[1].toString(), values[1]);
+  assert.equal(s2.structTwoDynamicArrayUint.length, values[2]);
   for (let i = 0; i < values[2]; i++) {
-    assert.equal(
-      s2.members.structTwoDynamicArrayUint.value[i].toString(),
-      values[3 + i]
-    );
+    assert.equal(s2.structTwoDynamicArrayUint[i].toString(), values[3 + i]);
   }
 }
 
@@ -61,23 +53,25 @@ contract("DecodingSample", _accounts => {
     // );
 
     assert.equal(initialState.name, "DecodingSample");
-    const variables = initialState.variables;
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+      initialState.variables
+    );
 
     assert.notStrictEqual(typeof variables.varUint, "undefined");
 
-    assert.equal(variables.varUint.value.toString(), "1");
-    assert.equal(variables.varString.value, "two");
-    assert.equal(variables.varBool.value, true);
+    assert.equal(variables.varUint.toString(), "1");
+    assert.equal(variables.varString, "two");
+    assert.equal(variables.varBool, true);
     assert.equal(
-      variables.varAddress.value,
+      variables.varAddress,
       "0x12345567890abcDEffEDcBa09876543211337121"
     );
-    assert.equal(variables.varBytes7.value, "0x78554477331122");
-    assert.equal(variables.varBytes.value, "0x01030307");
-    assert.equal(typeof variables.varEnum.value, "object");
-    assert.equal(variables.varEnum.value.value, "E.EnumValTwo");
+    assert.equal(variables.varBytes7, "0x78554477331122");
+    assert.equal(variables.varBytes, "0x01030307");
+    assert.equal(typeof variables.varEnum, "string");
+    assert.equal(variables.varEnum, "DecodingSample.E.EnumValTwo");
 
-    const struct = variables.varStructS.value;
+    const struct = variables.varStructS;
     validateStructS(struct, [
       "-2",
       "three",
@@ -86,67 +80,61 @@ contract("DecodingSample", _accounts => {
       ["4", "2", 3, "4", "8", "12"]
     ]);
 
-    assert.equal(variables.fixedArrayUint.value[0].toString(), "16");
-    assert.equal(variables.fixedArrayUint.value[1].toString(), "17");
-    assert.equal(variables.fixedArrayString.value[0].toString(), "hello");
-    assert.equal(variables.fixedArrayString.value[1].toString(), "world");
-    assert.equal(variables.fixedArrayBool.value[0], true);
-    assert.equal(variables.fixedArrayBool.value[1], false);
+    assert.equal(variables.fixedArrayUint[0].toString(), "16");
+    assert.equal(variables.fixedArrayUint[1].toString(), "17");
+    assert.equal(variables.fixedArrayString[0].toString(), "hello");
+    assert.equal(variables.fixedArrayString[1].toString(), "world");
+    assert.equal(variables.fixedArrayBool[0], true);
+    assert.equal(variables.fixedArrayBool[1], false);
     assert.equal(
-      variables.fixedArrayAddress.value[0].toString(),
+      variables.fixedArrayAddress[0].toString(),
       "0x98761567890ABCdeffEdCba09876543211337121"
     );
     assert.equal(
-      variables.fixedArrayAddress.value[1].toString(),
+      variables.fixedArrayAddress[1].toString(),
       "0xfEDc1567890aBcDeFfEdcba09876543211337121"
     );
-    assert.equal(
-      variables.fixedArrayBytes7.value[0].toString(),
-      "0x75754477331122"
-    );
-    assert.equal(
-      variables.fixedArrayBytes7.value[1].toString(),
-      "0xe7d14477331122"
-    );
-    assert.equal(variables.fixedArrayByte.value[0].toString(), "0x37");
-    assert.equal(variables.fixedArrayByte.value[1].toString(), "0xbe");
-    assert.equal(variables.fixedArrayEnum.value[0].value, "E.EnumValFour");
-    assert.equal(variables.fixedArrayEnum.value[1].value, "E.EnumValTwo");
+    assert.equal(variables.fixedArrayBytes7[0].toString(), "0x75754477331122");
+    assert.equal(variables.fixedArrayBytes7[1].toString(), "0xe7d14477331122");
+    assert.equal(variables.fixedArrayByte[0].toString(), "0x37");
+    assert.equal(variables.fixedArrayByte[1].toString(), "0xbe");
+    assert.equal(variables.fixedArrayEnum[0], "DecodingSample.E.EnumValFour");
+    assert.equal(variables.fixedArrayEnum[1], "DecodingSample.E.EnumValTwo");
 
-    assert.equal(variables.dynamicArrayUint.value[0].toString(), "16");
-    assert.equal(variables.dynamicArrayUint.value[1].toString(), "17");
-    assert.equal(variables.dynamicArrayString.value[0].toString(), "hello");
-    assert.equal(variables.dynamicArrayString.value[1].toString(), "world");
-    assert.equal(variables.dynamicArrayBool.value[0], true);
-    assert.equal(variables.dynamicArrayBool.value[1], false);
+    assert.equal(variables.dynamicArrayUint[0].toString(), "16");
+    assert.equal(variables.dynamicArrayUint[1].toString(), "17");
+    assert.equal(variables.dynamicArrayString[0].toString(), "hello");
+    assert.equal(variables.dynamicArrayString[1].toString(), "world");
+    assert.equal(variables.dynamicArrayBool[0], true);
+    assert.equal(variables.dynamicArrayBool[1], false);
     assert.equal(
-      variables.dynamicArrayAddress.value[0].toString(),
+      variables.dynamicArrayAddress[0].toString(),
       "0x98761567890ABCdeffEdCba09876543211337121"
     );
     assert.equal(
-      variables.dynamicArrayAddress.value[1].toString(),
+      variables.dynamicArrayAddress[1].toString(),
       "0xfEDc1567890aBcDeFfEdcba09876543211337121"
     );
     assert.equal(
-      variables.dynamicArrayBytes7.value[0].toString(),
+      variables.dynamicArrayBytes7[0].toString(),
       "0x75754477331122"
     );
     assert.equal(
-      variables.dynamicArrayBytes7.value[1].toString(),
+      variables.dynamicArrayBytes7[1].toString(),
       "0xe7d14477331122"
     );
-    assert.equal(variables.dynamicArrayByte.value[0].toString(), "0x37");
-    assert.equal(variables.dynamicArrayByte.value[1].toString(), "0xbe");
-    assert.equal(variables.dynamicArrayEnum.value[0].value, "E.EnumValFour");
-    assert.equal(variables.dynamicArrayEnum.value[1].value, "E.EnumValTwo");
+    assert.equal(variables.dynamicArrayByte[0].toString(), "0x37");
+    assert.equal(variables.dynamicArrayByte[1].toString(), "0xbe");
+    assert.equal(variables.dynamicArrayEnum[0], "DecodingSample.E.EnumValFour");
+    assert.equal(variables.dynamicArrayEnum[1], "DecodingSample.E.EnumValTwo");
 
-    // const fixedStructArray = variables.fixedArrayStructS.value;
+    // const fixedStructArray = variables.fixedArrayStructS;
 
-    assert.equal(variables.varMapping.value.members[2], 41);
-    assert.equal(variables.varMapping.value.members[3], 107);
+    assert.equal(variables.varMapping[2], 41);
+    assert.equal(variables.varMapping[3], 107);
 
     assert.equal(
-      variables.functionExternal.value,
+      variables.functionExternal,
       "DecodingSample(" + address + ").example"
     );
   });

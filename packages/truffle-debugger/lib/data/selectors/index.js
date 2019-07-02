@@ -66,7 +66,9 @@ function debuggerContextToDecoderContext(context) {
     contractId,
     contractKind,
     isConstructor,
-    abi
+    abi,
+    payable,
+    compiler
   } = context;
   return {
     contractName,
@@ -74,7 +76,9 @@ function debuggerContextToDecoderContext(context) {
     contractId,
     contractKind,
     isConstructor,
-    abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(abi)
+    abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(abi),
+    payable,
+    compiler
   };
 }
 
@@ -144,6 +148,25 @@ const data = createSelectorTree({
      * data.views.userDefinedTypes
      */
     userDefinedTypes: {
+      //user-defined types for passing to the decoder
+      _: createLeaf(
+        ["../referenceDeclarations", "../scopes/inlined", "../contexts"],
+        (referenceDeclarations, scopes, contexts) => {
+          const types = ["ContractDefinition", "SourceUnit"];
+          //SourceUnit included as fallback
+          return Object.assign(
+            {},
+            ...Object.entries(referenceDeclarations).map(([id, node]) => ({
+              [id]: DecodeUtils.Types.definitionToStoredType(
+                node,
+                contexts[findAncestorOfType(node, types, scopes).id].compiler,
+                referenceDeclarations
+              )
+            }))
+          );
+        }
+      ),
+
       /*
        * data.views.userDefinedTypes.contractDefinitions
        * restrict to contracts only, and get their definitions
@@ -211,7 +234,7 @@ const data = createSelectorTree({
      * same as evm.info.contexts, but:
      * 0. we only include non-constructor contexts
      * 1. we now index by contract ID rather than hash
-     * 2. we strip out context, sourceMap, primarySource, and compiler
+     * 2. we strip out context, sourceMap, and primarySource
      * 3. we alter abi in several ways:
      * 3a. we strip abi down to just (ordinary) functions
      * 3b. we augment these functions with signatures (here meaning selectors)
@@ -299,9 +322,38 @@ const data = createSelectorTree({
      */
     allocations: {
       /*
-       * data.info.allocations.storage
+       * data.info.allocations.storage (namespace)
        */
-      storage: createLeaf(["/state"], state => state.info.allocations.storage),
+      storage: {
+        /*
+         * data.info.allocations.storage (selector)
+         */
+        _: createLeaf(["/state"], state => state.info.allocations.storage),
+
+        /*
+         * data.info.allocations.storage.byId
+         * Same as data.info.allocations.storage, but uses the old allocation
+         * format (more convenient for debugger) where members are stored by ID
+         * in an object instead of by index in an array
+         */
+        byId: createLeaf(["./_"], allocations =>
+          Object.assign(
+            {},
+            ...Object.entries(allocations).map(([id, allocation]) => ({
+              [id]: {
+                definition: allocation.definition,
+                size: allocation.size,
+                members: Object.assign(
+                  {},
+                  ...allocation.members.map(memberAllocation => ({
+                    [memberAllocation.definition.id]: memberAllocation
+                  }))
+                )
+              }
+            }))
+          )
+        )
+      },
 
       /*
        * data.info.allocations.memory
@@ -695,7 +747,7 @@ const data = createSelectorTree({
               msg: DecodeUtils.Definition.MSG_DEFINITION,
               tx: DecodeUtils.Definition.TX_DEFINITION,
               block: DecodeUtils.Definition.BLOCK_DEFINITION,
-              now: DecodeUtils.Definition.spoofUintDefinition("now")
+              now: DecodeUtils.Definition.NOW_DEFINITION
             };
             //only include this when it has a proper definition
             if (thisDefinition) {
@@ -716,7 +768,8 @@ const data = createSelectorTree({
             contractNode && contractNode.nodeType === "ContractDefinition"
               ? DecodeUtils.Definition.spoofThisDefinition(
                   contractNode.name,
-                  contractNode.id
+                  contractNode.id,
+                  contractNode.contractKind
                 )
               : null
         )

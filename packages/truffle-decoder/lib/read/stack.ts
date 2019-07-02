@@ -5,7 +5,9 @@ import * as DecodeUtils from "truffle-decode-utils";
 
 export function readStack(stack: Uint8Array[], from: number, to: number): Uint8Array {
   if(from < 0 || to >= stack.length) {
-    return undefined;
+    throw new DecodeUtils.Errors.DecodingError(
+      new DecodeUtils.Errors.ReadErrorStack(from, to)
+    );
   }
   //unforunately, Uint8Arrays don't support concat; if they did the rest of
   //this would be one line.  Or similarly if they worked with lodash's flatten,
