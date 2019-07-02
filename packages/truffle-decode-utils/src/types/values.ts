@@ -1,13 +1,14 @@
 import debugModule from "debug";
-const debug = debugModule("decode-utils:values");
+const debug = debugModule("decode-utils:types:values");
 
 //objects for Solidity values
 
 //Note: This is NOT intended to represent every possible value that exists
 //in Solidity!  Only possible values of variables.  (Though there may be
-//some expansion in the future.)  We do however count the builtin variables
-//msg, block, and tx as variables (not other builtins though for now) so
-//there is some support for the magic type.
+//some expansion in the future; I'm definitely intending to add tuples.)
+//We do however count the builtin variables msg, block, and tx as variables
+//(not other builtins though for now) so there is some support for the magic
+//type.
 
 //We don't include fixed and ufixed for now.  Those will be added when
 //implemented.
@@ -22,6 +23,8 @@ const debug = debugModule("decode-utils:values");
 
 import BN from "bn.js";
 import { Types } from "./types";
+import { Errors } from "./errors";
+import { InspectOptions, cleanStylize } from "./inspect";
 import util from "util";
 import { AstDefinition } from "../ast";
 import { Definition as DefinitionUtils } from "../definition";
@@ -29,145 +32,44 @@ import { Definition as DefinitionUtils } from "../definition";
 export namespace Values {
 
   /*
-   * SECTION 0: Some irrelevant stuff for dealing with util.inspect.custom.
-   * You can probably ignore these.
-   */
-
-  //we'll need to write a typing for the options type ourself, it seems; just
-  //going to include the relevant properties here
-  interface InspectOptions {
-    stylize?: (toMaybeColor: string, style?: string) => string;
-    colors: boolean;
-    breakLength: number;
-  }
-
-  //HACK -- inspect options are ridiculous, I swear >_>
-  function cleanStylize(options: InspectOptions) {
-    return Object.assign({}, ...Object.entries(options).map(
-      ([key,value]) =>
-        key === "stylize"
-          ? {}
-          : {[key]: value}
-    ));
-  }
-
-  /*
    * SECTION 1: Generic types for values in general (including errors).
    */
 
-  //This is the overall Result type.  It may encode an actual value (Value) or
-  //an error value (ErrorResult).  Every value has a type.
-  //The reference field is for future use for encoding circular structures; you can
-  //ignore it for now.
-  //The nativize method is a HACK that you should not use except
-  //A. for testing, or
-  //B. if you really have to, which we unfortunately do in some cases.
-  //See below for more.
-  export interface Result {
-    type: Types.Type;
-    kind: "value" | "error";
-    nativize(): any; //HACK
-    //turns Result objects into Plain-Old JavaScript Objects
-    //May cause errors if numeric values are too big!
-    //only use this in testing or if you have no better option!
-  };
-
-  //A Value encodes an actual value, not an error.  HOWEVER, if it is a
-  //container type (Array, Struct, or Mapping), it is still possible for some
-  //of the individual values within it to be errors!
-  //The exact type of the value field depends on the type of the Result; don't
-  //worry, the more specific types will have more specific type annotations.
-  export abstract class Value implements Result {
-    type: Types.Type;
-    kind: "value";
-    value: any; //sorry -- at least it's an abstract class though!
-    abstract nativize(): any;
-    constructor() {
-      this.kind = "value";
-    }
-  };
-
-  //A ErrorResult, on the other hand, encodes an error.  Rather than a value field,
-  //it has an error field, of type ErrorValueInfo.
-  //See section 2 regarding the toSoliditySha3Input method.
-  export abstract class ErrorResult implements Result {
-    type: Types.Type;
-    kind: "error";
-    error: DecoderError;
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return util.inspect(this.error, options);
-    }
-    nativize(): any {
-      return undefined;
-    }
-    toSoliditySha3Input(): {type: string; value: any} {
-      return undefined; //will cause an error! should not occur!
-    }
-    constructor(error: DecoderError) {
-      this.kind = "error";
-      this.error = error;
-    }
-  };
-
-  //NOTE: the container types Array and Struct also potentially have another field,
-  //reference.  This will be used in the future for circular values.
-
-  //meanwhile, the underlying errors themselves come in two types:
-  //1. errors that are specific to decoding a particular type, and
-  //2. generic errors such as read errors.
-
-  //here's the class for the error objects themselves; the only thing they require
-  //is a "kind" saying what sort of error they are
-  export abstract class DecoderError {
-    kind: string;
-  }
-
-  //and here's the class for the generic ones specifically.
-  //See section 8 for the actual generic errors.
-  export abstract class GenericError extends DecoderError {
-    abstract message(): string;
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return this.message();
-    }
-  }
-
-  //Finally, for when we need to throw an error, here's a wrapper class that extends Error.
-  //Apologies about the confusing name, but I wanted something that would make
-  //sense should it not be caught and thus accidentally exposed to the outside.
-  export class DecodingError extends Error {
-    error: GenericError;
-    constructor(error: GenericError) {
-      super(error.message());
-      this.error = error;
-      this.name = "DecodingError";
-    }
-  }
+  //This is the overall Result type.  It may encode an actual value or an error.
+  export type Result = ElementaryResult
+    | ArrayResult | MappingResult | StructResult | MagicResult
+    | EnumResult
+    | ContractResult | FunctionExternalResult | FunctionInternalResult;
+  //for when you want an actual value
+  export type Value = ElementaryValue
+    | ArrayValue | MappingValue | StructValue | MagicValue
+    | EnumValue
+    | ContractValue | FunctionExternalValue | FunctionInternalValue;
 
   /*
    * SECTION 2: Elementary values
    */
 
-  //A key thing about elementary values is that they can be used as mapping keys,
-  //and so they have a method that gives what input to soliditySha3() they correspond
-  //to.  Note that errors, above, also have this method, but for them it just
-  //returns undefined.
-  export interface ElementaryResult extends Result {
-    type: Types.ElementaryType;
-    toSoliditySha3Input(): {type: string; value: any};
-  }
+  export type ElementaryResult = UintResult | IntResult | BoolResult
+    | BytesResult | AddressResult | StringResult
+    | FixedResult | UfixedResult;
+  export type BytesResult = BytesStaticResult | BytesDynamicResult;
 
-  export abstract class ElementaryValue extends Value implements ElementaryResult {
-    type: Types.ElementaryType;
-    abstract toSoliditySha3Input(): {type: string; value: any};
-  }
+  //note that we often want an elementary *value*, and not an error!
+  //so let's define those types too
+  export type ElementaryValue = UintValue | IntValue | BoolValue
+    | BytesValue | AddressValue | StringValue;
+  //we don't include FixedValue or UfixedValue because those
+  //aren't implemented yet
+  export type BytesValue = BytesStaticValue | BytesDynamicValue;
+
 
   //Uints
-  export interface UintResult extends ElementaryResult {
-    type: Types.UintType;
-  }
+  export type UintResult = UintValue | Errors.UintErrorResult;
 
-  export class UintValue extends ElementaryValue implements UintResult {
+  export class UintValue {
     type: Types.UintType;
+    kind: "value";
     value: {
       asBN: BN;
       rawAsBN?: BN;
@@ -181,48 +83,25 @@ export namespace Values {
         value: this.value.asBN
       }
     }
-    nativize() {
+    nativize(): any {
       return this.value.asBN.toNumber(); //beware!
     }
-    toString() {
+    toString(): string {
       return this.value.asBN.toString();
     }
     constructor(uintType: Types.UintType, value: BN, rawValue?: BN) {
-      super();
       this.type = uintType;
+      this.kind = "value";
       this.value = { asBN: value, rawAsBN: rawValue };
     }
   }
 
-  //errors for uints
-  export class UintErrorResult extends ErrorResult implements UintResult {
-    type: Types.UintType;
-    constructor(uintType: Types.UintType, error: DecoderError) {
-      super(error);
-      this.type = uintType;
-    }
-  }
-
-  export class UintPaddingError extends DecoderError {
-    raw: string; //hex string
-    kind: "UintPaddingError";
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Uint has extra leading bytes (padding error) (raw value ${this.raw})`;
-    }
-    constructor(raw: string) {
-      super();
-      this.raw = raw;
-      this.kind = "UintPaddingError";
-    }
-  }
-
   //Ints
-  export interface IntResult extends ElementaryResult {
-    type: Types.IntType;
-  }
+  export type IntResult = IntValue | Errors.IntErrorResult;
 
-  export class IntValue extends ElementaryValue implements IntResult {
+  export class IntValue {
     type: Types.IntType;
+    kind: "value";
     value: {
       asBN: BN;
       rawAsBN?: BN;
@@ -236,48 +115,25 @@ export namespace Values {
         value: this.value.asBN
       }
     }
-    nativize() {
+    nativize(): any {
       return this.value.asBN.toNumber(); //beware!
     }
-    toString() {
+    toString(): string {
       return this.value.asBN.toString();
     }
     constructor(intType: Types.IntType, value: BN, rawValue?: BN) {
-      super();
       this.type = intType;
+      this.kind = "value";
       this.value = { asBN: value, rawAsBN: rawValue };
     }
   }
 
-  //errors for ints
-  export class IntErrorResult extends ErrorResult implements IntResult {
-    type: Types.IntType;
-    constructor(intType: Types.IntType, error: DecoderError) {
-      super(error);
-      this.type = intType;
-    }
-  }
-
-  export class IntPaddingError extends DecoderError {
-    raw: string; //hex string
-    kind: "IntPaddingError";
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Int out of range (padding error) (numeric value ${this.raw})`;
-    }
-    constructor(raw: string) {
-      super();
-      this.raw = raw;
-      this.kind = "IntPaddingError";
-    }
-  }
-
   //Bools
-  export interface BoolResult extends ElementaryResult {
-    type: Types.BoolType;
-  }
+  export type BoolResult = BoolValue | Errors.BoolErrorResult;
 
-  export class BoolValue extends ElementaryValue implements BoolResult {
+  export class BoolValue {
     type: Types.BoolType;
+    kind: "value";
     value: {
       asBool: boolean;
     };
@@ -290,61 +146,25 @@ export namespace Values {
         value: this.value.asBool ? new BN(1) : new BN(0) //true & false won't work here
       }
     }
-    nativize() {
+    nativize(): any {
       return this.value.asBool;
     }
-    toString() {
+    toString(): string {
       return this.value.asBool.toString();
     }
     constructor(boolType: Types.BoolType, value: boolean) {
-      super();
       this.type = boolType;
+      this.kind = "value";
       this.value = { asBool: value };
     }
   }
 
-  //errors for bools
-  export class BoolErrorResult extends ErrorResult implements BoolResult {
-    type: Types.BoolType;
-    constructor(boolType: Types.BoolType, error: DecoderError) {
-      super(error);
-      this.type = boolType;
-    }
-  }
-
-  export class BoolPaddingError extends DecoderError {
-    raw: string; //should be hex string
-    kind: "BoolPaddingError";
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Bool has extra leading bytes (padding error) (raw value ${this.raw})`;
-    }
-    constructor(raw: string) {
-      super();
-      this.raw = raw;
-      this.kind = "BoolPaddingError";
-    }
-  }
-
-  export class BoolOutOfRangeError extends DecoderError {
-    raw: BN;
-    kind: "BoolOutOfRangeError";
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Invalid boolean (numeric value ${this.raw.toString()})`;
-    }
-    constructor(raw: BN) {
-      super();
-      this.raw = raw;
-      this.kind = "BoolOutOfRangeError";
-    }
-  }
-
   //bytes (static)
-  export interface BytesStaticResult extends ElementaryResult {
-    type: Types.BytesTypeStatic;
-  }
+  export type BytesStaticResult = BytesStaticValue | Errors.BytesStaticErrorResult;
 
-  export class BytesStaticValue extends ElementaryValue implements BytesStaticResult {
+  export class BytesStaticValue {
     type: Types.BytesTypeStatic;
+    kind: "value";
     value: {
       asHex: string; //should be hex-formatted, with leading "0x"
       rawAsHex: string;
@@ -358,47 +178,25 @@ export namespace Values {
         value: this.value.asHex
       };
     }
-    nativize() {
+    nativize(): any {
       return this.value.asHex;
     }
-    toString() {
+    toString(): string {
       return this.value.asHex;
     }
     constructor(bytesType: Types.BytesTypeStatic, value: string, rawValue?: string) {
-      super();
       this.type = bytesType;
+      this.kind = "value";
       this.value = { asHex: value, rawAsHex: rawValue };
     }
   }
 
-  export class BytesStaticErrorResult extends ErrorResult implements BytesStaticResult {
-    type: Types.BytesTypeStatic;
-    constructor(bytesType: Types.BytesTypeStatic, error: DecoderError) {
-      super(error);
-      this.type = bytesType;
-    }
-  }
-
-  export class BytesPaddingError extends DecoderError {
-    raw: string; //should be hex string
-    kind: "BytesPaddingError";
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Bytestring has extra trailing bytes (padding error) (raw value ${this.raw})`;
-    }
-    constructor(raw: string) {
-      super();
-      this.raw = raw;
-      this.kind = "BytesPaddingError";
-    }
-  }
-
   //bytes (dynamic)
-  export interface BytesDynamicResult extends ElementaryResult {
-    type: Types.BytesTypeDynamic;
-  }
+  export type BytesDynamicResult = BytesDynamicValue | Errors.BytesDynamicErrorResult;
 
-  export class BytesDynamicValue extends ElementaryValue implements BytesDynamicResult {
+  export class BytesDynamicValue {
     type: Types.BytesTypeDynamic;
+    kind: "value";
     value: {
       asHex: string; //should be hex-formatted, with leading "0x"
     };
@@ -411,34 +209,25 @@ export namespace Values {
         value: this.value.asHex
       };
     }
-    nativize() {
+    nativize(): any {
       return this.value.asHex;
     }
-    toString() {
+    toString(): string {
       return this.value.asHex;
     }
     constructor(bytesType: Types.BytesTypeDynamic, value: string) {
-      super();
       this.type = bytesType;
+      this.kind = "value";
       this.value = { asHex: value };
     }
   }
 
-  export class BytesDynamicErrorResult extends ErrorResult implements BytesDynamicResult {
-    type: Types.BytesTypeDynamic;
-    constructor(bytesType: Types.BytesTypeDynamic, error: DecoderError) {
-      super(error);
-      this.type = bytesType;
-    }
-  }
-
   //addresses
-  export interface AddressResult extends ElementaryResult {
-    type: Types.AddressType;
-  }
+  export type AddressResult = AddressValue | Errors.AddressErrorResult;
 
-  export class AddressValue extends ElementaryValue implements AddressResult {
+  export class AddressValue {
     type: Types.AddressType;
+    kind: "value";
     value: {
       asAddress: string; //should have 0x and be checksum-cased
       rawAsHex: string;
@@ -452,47 +241,26 @@ export namespace Values {
         value: this.value.asAddress
       }
     }
-    nativize() {
+    nativize(): any {
       return this.value.asAddress;
     }
-    toString() {
+    toString(): string {
       return this.value.asAddress;
     }
     constructor(addressType: Types.AddressType, value: string, rawValue?: string) {
-      super();
       this.type = addressType;
+      this.kind = "value";
       this.value = { asAddress: value, rawAsHex: rawValue };
     }
   }
 
-  export class AddressErrorResult extends ErrorResult implements AddressResult {
-    type: Types.AddressType;
-    constructor(addressType: Types.AddressType, error: DecoderError) {
-      super(error);
-      this.type = addressType;
-    }
-  }
-
-  export class AddressPaddingError extends DecoderError {
-    raw: string; //should be hex string
-    kind: "AddressPaddingError";
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Address has extra leading bytes (padding error) (raw value ${this.raw})`;
-    }
-    constructor(raw: string) {
-      super();
-      this.raw = raw;
-      this.kind = "AddressPaddingError";
-    }
-  }
-
   //strings
-  export interface StringResult extends ElementaryResult {
-    type: Types.StringType;
-  }
+  export type StringResult = StringValue | Errors.StringErrorResult;
 
-  export class StringValue extends ElementaryValue {
+  //strings have a special new type as their value: StringValueInfo
+  export class StringValue {
     type: Types.StringType;
+    kind: "value";
     value: StringValueInfo;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.value, options);
@@ -500,21 +268,23 @@ export namespace Values {
     toSoliditySha3Input() {
       return this.value.toSoliditySha3Input();
     }
-    nativize() {
+    nativize(): any {
       return this.value.nativize();
     }
-    toString() {
+    toString(): string {
       return this.value.toString();
     }
     constructor(stringType: Types.StringType, value: StringValueInfo) {
-      super();
       this.type = stringType;
+      this.kind = "value";
       this.value = value;
     }
   }
 
+  //these come in two types: valid strings and malformed strings
   export type StringValueInfo = StringValueInfoValid | StringValueInfoMalformed;
 
+  //valid strings
   export class StringValueInfoValid {
     kind: "valid";
     asString: string;
@@ -527,10 +297,10 @@ export namespace Values {
         value: this.asString
       };
     }
-    nativize() {
+    nativize(): any {
       return this.asString;
     }
-    toString() {
+    toString(): string {
       return this.asString;
     }
     constructor(value: string) {
@@ -539,6 +309,7 @@ export namespace Values {
     }
   }
 
+  //malformed strings
   export class StringValueInfoMalformed {
     kind: "malformed";
     asHex: string;
@@ -551,10 +322,10 @@ export namespace Values {
         value: this.asHex
       };
     }
-    nativize() {
+    nativize(): any {
       return this.asHex; //warning!
     }
-    toString() {
+    toString(): string {
       return this.asHex; //warning!
     }
     constructor(value: string) {
@@ -563,52 +334,11 @@ export namespace Values {
     }
   }
 
-  export class StringErrorResult extends ErrorResult implements StringResult {
-    type: Types.StringType;
-    constructor(stringType: Types.StringType, error: DecoderError) {
-      super(error);
-      this.type = stringType;
-    }
-  }
-  //no padding error for strings
-
   //Fixed & Ufixed
   //These don't have a value format yet, so they just decode to errors for now!
-  export interface FixedResult extends ElementaryResult {
-    type: Types.FixedType;
-  }
-  export interface UfixedResult extends ElementaryResult {
-    type: Types.UfixedType;
-  }
-
-  export class FixedErrorResult extends ErrorResult implements FixedResult {
-    type: Types.FixedType;
-    constructor(fixedType: Types.FixedType, error: DecoderError) {
-      super(error);
-      this.type = fixedType;
-    }
-  }
-  export class UfixedErrorResult extends ErrorResult implements UfixedResult {
-    type: Types.UfixedType;
-    constructor(ufixedType: Types.UfixedType, error: DecoderError) {
-      super(error);
-      this.type = ufixedType;
-    }
-  }
-
-  export class FixedPointNotYetSupportedError extends DecoderError {
-    raw: string; //hex string
-    kind: "FixedPointNotYetSupportedError";
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Fixed-point decoding not yet supported (raw value: ${this.raw})`;
-    }
-    constructor(raw: string) {
-      super();
-      this.raw = raw;
-      this.kind = "FixedPointNotYetSupportedError";
-    }
-  }
-  //no separate padding error here, that would be pointless right now; will make later
+  
+  export type FixedResult = Errors.FixedErrorResult;
+  export type UfixedResult = Errors.UfixedErrorResult;
 
   //Function for wrapping a value as an ElementaryValue
   //WARNING: this function does not check its inputs! Please check before using!
@@ -618,6 +348,10 @@ export namespace Values {
   //bytes should be given as hex strings beginning with "0x"
   //addresses are like bytes; checksum case is not required
   //booleans may be given either as booleans, or as string "true" or "false"
+  //[NOTE: in the future this function will:
+  //1. be moved to truffle-codec/lib/encode,
+  //2. check its inputs,
+  //3. take a slightly different input format]
   export function wrapElementaryValue(value: any, definition: AstDefinition): ElementaryValue {
     //force location to undefined, force address to nonpayable
     //(we force address to nonpayable since address payable can't be declared
@@ -670,12 +404,11 @@ export namespace Values {
   }
 
   //Arrays
-  export interface ArrayResult extends Result {
-    type: Types.ArrayType;
-  }
+  export type ArrayResult = ArrayValue | Errors.ArrayErrorResult;
 
-  export class ArrayValue extends Value implements ArrayResult {
+  export class ArrayValue {
     type: Types.ArrayType;
+    kind: "value";
     reference?: number; //will be used in the future for circular values
     value: Result[];
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -684,107 +417,82 @@ export namespace Values {
       }
       return util.inspect(this.value, options)
     }
-    nativize() {
+    nativize(): any {
       return this.value.map(element => element.nativize());
     }
     constructor(arrayType: Types.ArrayType, value: Result[], reference?: number) {
-      super();
       this.type = arrayType;
+      this.kind = "value";
       this.value = value;
       this.reference = reference;
     }
   }
 
-  export class ArrayErrorResult extends ErrorResult implements ArrayResult {
-    type: Types.ArrayType;
-    constructor(arrayType: Types.ArrayType, error: DecoderError) {
-      super(error);
-      this.type = arrayType;
-    }
-  }
-
   //Mappings
-  export interface MappingResult extends Result {
-    type: Types.MappingType;
-  }
+  export type MappingResult = MappingValue | Errors.MappingErrorResult;
 
-  export class MappingValue extends Value implements MappingResult {
+  export class MappingValue {
     type: Types.MappingType;
+    kind: "value";
     //note that since mappings live in storage, a circular
     //mapping is impossible
-    value: [ElementaryResult, Result][]; //order of key-value pairs is irrelevant
+    value: {key: ElementaryValue, value: Result}[]; //order of key-value pairs is irrelevant
+    //note that key is not allowed to be an error!
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return util.inspect(new Map(this.value), options);
+      return util.inspect(new Map(this.value.map(
+        ({key, value}) => [key, value]
+      )), options);
     }
-    nativize() {
-      //if only I could use Object.fromEntries() here!
-      return Object.assign({}, ...this.value.map(([key, value]) =>
+    nativize(): any {
+      return Object.assign({}, ...this.value.map(({key, value}) =>
         ({[key.toString()]: value.nativize()})
       ));
     }
-    constructor(mappingType: Types.MappingType, value: [ElementaryResult, Result][]) {
-      super();
+    constructor(mappingType: Types.MappingType, value: {key: ElementaryValue, value: Result}[]) {
       this.type = mappingType;
+      this.kind = "value";
       this.value = value;
     }
   }
 
-  export class MappingErrorResult extends ErrorResult implements MappingResult {
-    type: Types.MappingType;
-    constructor(mappingType: Types.MappingType, error: DecoderError) {
-      super(error);
-      this.type = mappingType;
-    }
-  }
-
   //Structs
-  export interface StructResult extends Result {
-    type: Types.StructType;
-  }
+  export type StructResult = StructValue | Errors.StructErrorResult;
 
-  export class StructValue extends Value implements StructResult {
+  export class StructValue {
     type: Types.StructType;
+    kind: "value";
     reference?: number; //will be used in the future for circular values
-    value: [string, Result][]; //these should be stored in order!
+    value: {name: string, value: Result}[]; //these should be stored in order!
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       if(this.reference !== undefined) {
         return formatCircular(this.reference, options);
       }
       return util.inspect(
         Object.assign({}, ...this.value.map(
-          ([key, value]) => ({[key]: value})
+          ({name, value}) => ({[name]: value})
         )),
         options
       );
     }
-    nativize() {
+    nativize(): any {
       return Object.assign({}, ...this.value.map(
-        ([key, value]) => ({[key]: value.nativize()})
+        ({name, value}) => ({[name]: value.nativize()})
       ));
     }
-    constructor(structType: Types.StructType, value: [string, Result][], reference?: number) {
-      super();
+    constructor(structType: Types.StructType, value: {name: string, value: Result}[], reference?: number) {
       this.type = structType;
+      this.kind = "value";
       this.value = value;
       this.reference = reference;
     }
   }
 
-  export class StructErrorResult extends ErrorResult implements StructResult {
-    type: Types.StructType;
-    constructor(structType: Types.StructType, error: DecoderError) {
-      super(error);
-      this.type = structType;
-    }
-  }
-
   //Magic variables
-  export interface MagicResult extends Result {
-    type: Types.MagicType;
-  }
+  export type MagicResult = MagicValue | Errors.MagicErrorResult;
 
-  export class MagicValue extends Value implements MagicResult {
+  export class MagicValue {
     type: Types.MagicType;
+    kind: "value";
     //a magic variable can't be circular, duh!
     value: {
       [field: string]: Result
@@ -792,23 +500,15 @@ export namespace Values {
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.value, options);
     }
-    nativize() {
+    nativize(): any {
       return Object.assign({}, ...Object.entries(this.value).map(
         ([key, value]) => ({[key]: value.nativize()})
       ));
     }
     constructor(magicType: Types.MagicType, value: {[field: string]: Result}) {
-      super();
       this.type = magicType;
+      this.kind = "value";
       this.value = value;
-    }
-  }
-
-  export class MagicErrorResult extends ErrorResult implements MagicResult {
-    type: Types.MagicType;
-    constructor(magicType: Types.MagicType, error: DecoderError) {
-      super(error);
-      this.type = magicType;
     }
   }
 
@@ -818,111 +518,57 @@ export namespace Values {
    */
 
   //Enums
-  export interface EnumResult extends Result {
-    type: Types.EnumType;
-  }
+  export type EnumResult = EnumValue | Errors.EnumErrorResult;
 
-  export class EnumValue extends Value implements EnumResult {
+  export class EnumValue {
     type: Types.EnumType;
+    kind: "value";
     value: {
       name: string;
-      numeric: BN;
+      numericAsBN: BN;
     };
     fullName(): string {
-      return `${this.type.definingContractName}.${this.type.typeName}.${this.value.name}`;
+      switch(this.type.kind) {
+        case "local":
+          return `${this.type.definingContractName}.${this.type.typeName}.${this.value.name}`;
+        case "global":
+          return `${this.type.typeName}.${this.value.name}`;
+      }
     }
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return this.fullName();
     }
-    nativize() {
+    nativize(): any {
       return this.fullName();
     }
     constructor(enumType: Types.EnumType, numeric: BN, name: string) {
-      super();
       this.type = enumType;
-      this.value = { name, numeric };
+      this.kind = "value";
+      this.value = { name, numericAsBN: numeric };
     }
   };
-
-  //Enum errors
-  export class EnumErrorResult extends ErrorResult implements EnumResult {
-    type: Types.EnumType;
-    constructor(enumType: Types.EnumType, error: DecoderError) {
-      super(error);
-      this.type = enumType;
-    }
-  }
-
-  export class EnumPaddingError extends DecoderError {
-    kind: "EnumPaddingError";
-    type: Types.EnumType;
-    raw: string; //should be hex string
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      let typeName = this.type.definingContractName + "." + this.type.typeName;
-      return `${typeName} has extra leading bytes (padding error) (raw value ${this.raw})`;
-    }
-    constructor(enumType: Types.EnumType, raw: string) {
-      super();
-      this.type = enumType;
-      this.raw = raw;
-      this.kind = "EnumPaddingError";
-    }
-  }
-
-  export class EnumOutOfRangeError extends DecoderError {
-    kind: "EnumOutOfRangeError";
-    type: Types.EnumType;
-    raw: BN;
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      let typeName = this.type.definingContractName + "." + this.type.typeName;
-      return `Invalid ${typeName} (numeric value ${this.raw.toString()})`;
-    }
-    constructor(enumType: Types.EnumType, raw: BN) {
-      super();
-      this.type = enumType;
-      this.raw = raw;
-      this.kind = "EnumOutOfRangeError";
-    }
-  }
-
-  export class EnumNotFoundDecodingError extends DecoderError {
-    kind: "EnumNotFoundDecodingError";
-    type: Types.EnumType;
-    raw: BN;
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      let typeName = this.type.definingContractName + "." + this.type.typeName;
-      return `Unknown enum type ${typeName} of id ${this.type.id} (numeric value ${this.raw.toString()})`;
-    }
-    constructor(enumType: Types.EnumType, raw: BN) {
-      super();
-      this.type = enumType;
-      this.raw = raw;
-      this.kind = "EnumNotFoundDecodingError";
-    }
-  }
 
   /*
    * SECTION 5: CONTRACTS
    */
 
   //Contracts
-  export interface ContractResult extends Result {
-    type: Types.ContractType;
-  }
+  export type ContractResult = ContractValue | Errors.ContractErrorResult;
 
   //Contract values have a special new type as their value: ContractValueInfo.
-  export class ContractValue extends Value implements ContractResult {
+  export class ContractValue {
     type: Types.ContractType;
+    kind: "value";
     value: ContractValueInfo;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.value, options);
     }
-    nativize() {
+    nativize(): any {
       return this.value.nativize();
     }
     constructor(contractType: Types.ContractType, value: ContractValueInfo) {
-      super();
       this.type = contractType;
+      this.kind = "value";
       this.value = value;
     }
   }
@@ -942,7 +588,7 @@ export namespace Values {
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return options.stylize(this.address, "number") + ` (${this.class.typeName})`;
     }
-    nativize() {
+    nativize(): any {
       return `${this.class.typeName}(${this.address})`;
     }
     constructor(address: string, contractClass: Types.ContractType, rawAddress?: string) {
@@ -963,7 +609,7 @@ export namespace Values {
       debug("options: %O", options);
       return options.stylize(this.address, "number") + " of unknown class";
     }
-    nativize() {
+    nativize(): any {
       return this.address;
     }
     constructor(address: string, rawAddress?: string) {
@@ -973,49 +619,26 @@ export namespace Values {
     }
   }
 
-  //errors for contracts
-  export class ContractErrorResult extends ErrorResult implements ContractResult {
-    type: Types.ContractType;
-    constructor(contractType: Types.ContractType, error: DecoderError) {
-      super(error);
-      this.type = contractType;
-    }
-  }
-
-  export class ContractPaddingError extends DecoderError {
-    raw: string; //should be hex string
-    kind: "ContractPaddingError";
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Contract address has extra leading bytes (padding error) (raw value ${this.raw})`;
-    }
-    constructor(raw: string) {
-      super();
-      this.raw = raw;
-      this.kind = "ContractPaddingError";
-    }
-  }
-
   /*
    * SECTION 6: External functions
    */
 
   //external functions
-  export interface FunctionExternalResult extends Result {
-    type: Types.FunctionType; //should be external, obviously!
-  }
+  export type FunctionExternalResult = FunctionExternalValue | Errors.FunctionExternalErrorResult;
 
-  export class FunctionExternalValue extends Value implements FunctionExternalResult {
-    type: Types.FunctionType;
+  export class FunctionExternalValue {
+    type: Types.FunctionTypeExternal;
+    kind: "value";
     value: FunctionExternalValueInfo;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.value, options);
     }
-    nativize() {
+    nativize(): any {
       return this.value.nativize();
     }
-    constructor(functionType: Types.FunctionType, value: FunctionExternalValueInfo) {
-      super();
+    constructor(functionType: Types.FunctionTypeExternal, value: FunctionExternalValueInfo) {
       this.type = functionType;
+      this.kind = "value";
       this.value = value;
     }
   }
@@ -1041,7 +664,7 @@ export namespace Values {
       //now, put it together
       return options.stylize(firstLine + breakingSpace + secondLine, "special");
     }
-    nativize() {
+    nativize(): any {
       return `${this.contract.nativize()}.${this.name}`
     }
     constructor(contract: ContractValueInfoKnown, selector: string, name: string) {
@@ -1067,7 +690,7 @@ export namespace Values {
       //now, put it together
       return options.stylize(firstLine + breakingSpace + secondLine, "special");
     }
-    nativize() {
+    nativize(): any {
       return `${this.contract.nativize()}.call(${this.selector}...)`
     }
     constructor(contract: ContractValueInfoKnown, selector: string) {
@@ -1092,7 +715,7 @@ export namespace Values {
       //now, put it together
       return options.stylize(firstLine + breakingSpace + secondLine, "special");
     }
-    nativize() {
+    nativize(): any {
       return `${this.contract.nativize()}.call(${this.selector}...)`
     }
     constructor(contract: ContractValueInfoUnknown, selector: string) {
@@ -1102,64 +725,26 @@ export namespace Values {
     }
   }
 
-  //errors for external functions
-  export class FunctionExternalErrorResult extends ErrorResult implements FunctionExternalResult {
-    type: Types.FunctionType;
-    constructor(functionType: Types.FunctionType, error: DecoderError) {
-      super(error);
-      this.type = functionType;
-    }
-  }
-
-  export class FunctionExternalNonStackPaddingError extends DecoderError {
-    raw: string; //should be hex string
-    kind: "FunctionExternalNonStackPaddingError";
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `External function has extra trailing bytes (padding error) (raw value ${this.raw})`;
-    }
-    constructor(raw: string) {
-      super();
-      this.raw = raw;
-      this.kind = "FunctionExternalNonStackPaddingError";
-    }
-  }
-
-  export class FunctionExternalStackPaddingError extends DecoderError {
-    rawAddress: string;
-    rawSelector: string;
-    kind: "FunctionExternalStackPaddingError";
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `External function address or selector has extra leading bytes (padding error) (raw address ${this.rawAddress}, raw selector ${this.rawSelector})`;
-    }
-    constructor(rawAddress: string, rawSelector: string) {
-      super();
-      this.rawAddress = rawAddress;
-      this.rawSelector = rawSelector;
-      this.kind = "FunctionExternalStackPaddingError";
-    }
-  }
-
   /*
    * SECTION 7: INTERNAL FUNCTIONS
    */
 
   //Internal functions
-  export interface FunctionInternalResult extends Result {
-    type: Types.FunctionType; //should be internal, obviously!
-  }
+  export type FunctionInternalResult = FunctionInternalValue | Errors.FunctionInternalErrorResult;
 
-  export class FunctionInternalValue extends Value implements FunctionInternalResult {
-    type: Types.FunctionType;
+  export class FunctionInternalValue {
+    type: Types.FunctionTypeInternal;
+    kind: "value";
     value: FunctionInternalValueInfo;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(this.value, options);
     }
-    nativize() {
+    nativize(): any {
       return this.value.nativize();
     }
-    constructor(functionType: Types.FunctionType, value: FunctionInternalValueInfo) {
-      super();
+    constructor(functionType: Types.FunctionTypeInternal, value: FunctionInternalValueInfo) {
       this.type = functionType;
+      this.kind = "value";
       this.value = value;
     }
   }
@@ -1181,7 +766,7 @@ export namespace Values {
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return options.stylize(`[Function: ${this.definedIn.typeName}.${this.name}]`, "special");
     }
-    nativize() {
+    nativize(): any {
       return `${this.definedIn.typeName}.${this.name}`;
     }
     constructor(
@@ -1211,7 +796,7 @@ export namespace Values {
         ? options.stylize(`[Function: <zero>]`, "special")
         : options.stylize(`[Function: assert(false)]`, "special");
     }
-    nativize() {
+    nativize(): any {
       return this.deployedProgramCounter === 0
         ? `<zero>`
         : `assert(false)`;
@@ -1237,7 +822,7 @@ export namespace Values {
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return options.stylize(`[Function: decoding not supported (raw info: deployed PC=${this.deployedProgramCounter}, constructor PC=${this.constructorProgramCounter})]`, "special");
     }
-    nativize() {
+    nativize(): any {
       return `<decoding not supported>`;
     }
     constructor(
@@ -1252,172 +837,4 @@ export namespace Values {
     }
   }
 
-  //Internal function errors
-  export class FunctionInternalErrorResult extends ErrorResult implements FunctionInternalResult {
-    type: Types.FunctionType;
-    constructor(functionType: Types.FunctionType, error: DecoderError) {
-      super(error);
-      this.type = functionType;
-    }
-  }
-
-  export class FunctionInternalPaddingError extends DecoderError {
-    raw: string; //should be hex string
-    kind: "FunctionInternalPaddingError";
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Internal function has extra leading bytes (padding error) (raw value ${this.raw})`;
-    }
-    constructor(raw: string) {
-      super();
-      this.raw = raw;
-      this.kind = "FunctionInternalPaddingError";
-    }
-  }
-
-  export class NoSuchInternalFunctionError extends DecoderError {
-    kind: "NoSuchInternalFunctionError";
-    context: Types.ContractType;
-    deployedProgramCounter: number;
-    constructorProgramCounter: number;
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Invalid function (Deployed PC=${this.deployedProgramCounter}, constructor PC=${this.constructorProgramCounter}) of contract ${this.context.typeName}`;
-    }
-    constructor(context: Types.ContractType, deployedProgramCounter: number, constructorProgramCounter: number) {
-      super();
-      this.context = context;
-      this.deployedProgramCounter = deployedProgramCounter;
-      this.constructorProgramCounter = constructorProgramCounter;
-      this.kind = "NoSuchInternalFunctionError";
-    }
-  }
-
-  export class DeployedFunctionInConstructorError extends DecoderError {
-    kind: "DeployedFunctionInConstructorError";
-    context: Types.ContractType;
-    deployedProgramCounter: number;
-    constructorProgramCounter: number;
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Deployed-style function (PC=${this.deployedProgramCounter}) in constructor`;
-    }
-    constructor(context: Types.ContractType, deployedProgramCounter: number) {
-      super();
-      this.context = context;
-      this.deployedProgramCounter = deployedProgramCounter;
-      this.constructorProgramCounter = 0;
-      this.kind = "DeployedFunctionInConstructorError";
-    }
-  }
-
-  export class MalformedInternalFunctionError extends DecoderError {
-    kind: "MalformedInternalFunctionError";
-    context: Types.ContractType;
-    deployedProgramCounter: number;
-    constructorProgramCounter: number;
-    [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Malformed internal function w/constructor PC only (value: ${this.constructorProgramCounter})`;
-    }
-    constructor(context: Types.ContractType, constructorProgramCounter: number) {
-      super();
-      this.context = context;
-      this.deployedProgramCounter = 0;
-      this.constructorProgramCounter = constructorProgramCounter;
-      this.kind = "MalformedInternalFunctionError";
-    }
-  }
-
-  /*
-   * SECTION 8: GENERIC ERRORS
-   */
-
-  //type-location error
-  export class UserDefinedTypeNotFoundError extends GenericError {
-    kind: "UserDefinedTypeNotFoundError";
-    type: Types.UserDefinedType;
-    message() {
-      let typeName = Types.isContractDefinedType(this.type)
-        ? this.type.definingContractName + "." + this.type.typeName
-        : this.type.typeName;
-      return `Unknown ${this.type.typeClass} type ${typeName} of id ${this.type.id}`;
-    }
-    constructor(unknownType: Types.UserDefinedType) {
-      super();
-      this.type = unknownType;
-      this.kind = "UserDefinedTypeNotFoundError";
-    }
-  }
-
-  //Read errors
-  export class UnsupportedConstantError extends GenericError {
-    kind: "UnsupportedConstantError";
-    definition: AstDefinition;
-    message() {
-      return `Unsupported constant type ${DefinitionUtils.typeClass(this.definition)}$`;
-    }
-    constructor(definition: AstDefinition) {
-      super();
-      this.definition = definition;
-      this.kind = "UnsupportedConstantError";
-    }
-  }
-
-  export class ReadErrorStack extends GenericError {
-    kind: "ReadErrorStack";
-    from: number;
-    to: number;
-    message() {
-      return `Can't read stack from position ${this.from} to ${this.to}`;
-    }
-    constructor(from: number, to: number) {
-      super();
-      this.from = from;
-      this.to = to;
-      this.kind = "ReadErrorStack";
-    }
-  }
-
-  //finally, a convenience function for constructing generic errors
-  export function makeGenericErrorResult(dataType: Types.Type, error: GenericError): ErrorResult {
-    switch(dataType.typeClass) {
-      case "uint":
-        return new UintErrorResult(dataType, error);
-      case "int":
-        return new IntErrorResult(dataType, error);
-      case "bool":
-        return new BoolErrorResult(dataType, error);
-      case "bytes":
-        switch(dataType.kind) {
-          case "static":
-            return new BytesStaticErrorResult(dataType, error);
-          case "dynamic":
-            return new BytesDynamicErrorResult(dataType, error);
-        }
-      case "address":
-        return new AddressErrorResult(dataType, error);
-      case "fixed":
-        return new FixedErrorResult(dataType, error);
-      case "ufixed":
-        return new UfixedErrorResult(dataType, error);
-      case "string":
-        return new StringErrorResult(dataType, error);
-      case "array":
-        return new ArrayErrorResult(dataType, error);
-      case "mapping":
-        return new MappingErrorResult(dataType, error);
-      case "struct":
-        return new StructErrorResult(dataType, error);
-      case "enum":
-        return new EnumErrorResult(dataType, error);
-      case "contract":
-        return new ContractErrorResult(dataType, error);
-      case "magic":
-        return new MagicErrorResult(dataType, error);
-      case "function":
-        switch(dataType.visibility) {
-          case "external":
-            return new FunctionExternalErrorResult(dataType, error);
-          case "internal":
-            return new FunctionInternalErrorResult(dataType, error);
-        }
-    }
-  }
 }

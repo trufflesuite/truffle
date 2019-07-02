@@ -1,4 +1,4 @@
-import { AstReferences, Contexts, Types } from "truffle-decode-utils";
+import { AstDefinition, AstReferences, ContractKind, Contexts, Types } from "truffle-decode-utils";
 import { StorageAllocations, CalldataAllocations, MemoryAllocations } from "./allocation";
 import { Slot } from "./storage";
 
@@ -35,14 +35,22 @@ export interface InternalFunctions {
 export interface InternalFunction {
   source?: number;
   pointer?: string;
-  node?: any; //sorry
+  node?: AstDefinition;
   name?: string;
   id?: number;
   contractPointer?: string;
-  contractNode?: any; //sorry
+  contractNode?: AstDefinition;
   contractName?: string;
   contractId?: number;
-  contractKind?: string;
+  contractKind?: ContractKind; //note: should never be interface
   contractPayable?: boolean;
   isDesignatedInvalid: boolean;
+}
+
+export interface DecoderOptions {
+  permissivePadding: boolean;
+}
+
+export const DefaultDecoderOptions = {
+  permissivePadding: false
 }

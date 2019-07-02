@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decode-utils:types");
+const debug = debugModule("decode-utils:types:types");
 
 //type objects for Solidity types
 //these will just be defined as interfaces; there's not any particular need for
@@ -7,19 +7,23 @@ const debug = debugModule("decode-utils:types");
 
 //Note: This is NOT intended to represent every possible type representable by
 //a Solidity type identifier!  Only possible types of variables, not of all
-//possible values.  (Though there may be some expansion in the future.)
+//possible values.  (Though there may be some expansion in the future; in
+//particular, tuples will be added later.)
 //We do however count the builtin variables msg, block, and tx as variables
 //(not other builtins though for now) so there is some support for the magic
 //type.
 
 //We do include fixed and ufixed, even though these aren't implemented yet;
 //note though that values.ts does not include these.
+//Similarly with global structs and enums.
+//Foreign contract types aren't really implemented yet either, although
+//those aren't produced from definitions.
 
 //NOTE: not all of these optional fields are actually implemented. Some are
 //just intended for the future.
 
 import BN from "bn.js";
-import { AstDefinition, AstReferences } from "../ast";
+import * as Ast from "../ast";
 import { Definition as DefinitionUtils } from "../definition";
 import { Contexts } from "../contexts";
 
@@ -54,7 +58,7 @@ export namespace Types {
   export interface BytesTypeDynamic {
     typeClass: "bytes";
     kind: "dynamic";
-    location?: string;
+    location?: Ast.Location;
   }
 
   export interface AddressType {
@@ -64,7 +68,7 @@ export namespace Types {
 
   export interface StringType {
     typeClass: "string";
-    location?: string;
+    location?: Ast.Location;
   }
 
   export interface FixedType {
@@ -86,14 +90,14 @@ export namespace Types {
     kind: "static";
     baseType: Type;
     length: BN;
-    location?: string;
+    location?: Ast.Location;
   }
 
   export interface ArrayTypeDynamic {
     typeClass: "array";
     kind: "dynamic";
     baseType: Type;
-    location?: string;
+    location?: Ast.Location;
   }
 
   export type ElementaryType = UintType | IntType | BoolType | BytesType | FixedType
@@ -103,48 +107,92 @@ export namespace Types {
     typeClass: "mapping";
     keyType: ElementaryType;
     valueType: Type;
-    location?: string; //should only ever be storage
+    location?: "storage";
   }
 
-  export interface FunctionType {
+  export type FunctionType = FunctionTypeInternal | FunctionTypeExternal;
+
+  export interface FunctionTypeInternal {
     typeClass: "function";
-    visibility: string; //should be "internal" or "external", not weird
-    //solidity-internal visibilities (but for technical reasons I'm not
-    //putting that in the type requirements)
-    mutability: string; //similarly, should be "nonpayable", "pure", "view",
-    //or "payable"
+    visibility: "internal";
+    mutability: Ast.Mutability;
     inputParameterTypes: Type[];
     outputParameterTypes: Type[];
     //we do not presently support bound functions
   }
 
-  export type ContractDefinedType = StructType | EnumType;
-  export type UserDefinedType = ContractDefinedType | ContractType;
-
-  export interface StructType {
-    typeClass: "struct";
-    id: number;
-    typeName: string;
-    definingContractName: string;
-    definingContract?: ContractType;
-    memberTypes?: [string, Type][];
-    location?: string;
+  export interface FunctionTypeExternal {
+    typeClass: "function";
+    visibility: "external";
+    mutability: Ast.Mutability;
+    inputParameterTypes: Type[];
+    outputParameterTypes: Type[];
+    //we do not presently support bound functions
   }
 
-  export interface EnumType {
-    typeClass: "enum";
+  export type ContractDefinedType = StructTypeLocal | EnumTypeLocal;
+  export type UserDefinedType = ContractDefinedType | ContractTypeNative | StructTypeGlobal | EnumTypeGlobal;
+
+  export type StructType = StructTypeLocal | StructTypeGlobal;
+
+  export interface StructTypeLocal {
+    typeClass: "struct";
+    kind: "local";
     id: number;
     typeName: string;
     definingContractName: string;
-    definingContract?: ContractType;
+    definingContract?: ContractTypeNative;
+    memberTypes?: {name: string, type: Type}[]; //these should be in order
+    location?: Ast.Location;
+  }
+
+  export interface StructTypeGlobal {
+    typeClass: "struct";
+    kind: "global";
+    id: number;
+    typeName: string;
+    memberTypes?: {name: string, type: Type}[]; //these should be in order
+    location?: Ast.Location;
+  }
+
+  export type EnumType = EnumTypeLocal | EnumTypeGlobal;
+
+  export interface EnumTypeLocal {
+    typeClass: "enum";
+    kind: "local";
+    id: number;
+    typeName: string;
+    definingContractName: string;
+    definingContract?: ContractTypeNative;
     options?: string[]; //these should be in order
   }
 
-  export interface ContractType {
-    typeClass: "contract";
+  export interface EnumTypeGlobal {
+    typeClass: "enum";
+    kind: "global";
     id: number;
     typeName: string;
-    contractKind?: string;
+    options?: string[]; //these should be in order
+  }
+
+  export type ContractType = ContractTypeNative | ContractTypeForeign;
+
+  export interface ContractTypeNative {
+    typeClass: "contract";
+    kind: "native";
+    id: number;
+    typeName: string;
+    contractKind?: Ast.ContractKind;
+    payable?: boolean; //will be useful in the future
+    //may have more optional members defined later, but I'll leave these out for
+    //now
+  }
+
+  export interface ContractTypeForeign {
+    typeClass: "contract";
+    kind: "foreign";
+    typeName: string;
+    contractKind?: Ast.ContractKind;
     payable?: boolean; //will be useful in the future
     //may have more optional members defined later, but I'll leave these out for
     //now
@@ -172,7 +220,7 @@ export namespace Types {
   //NOTE: set forceLocation to *null* to force no location. leave it undefined
   //to not force a location.
   //NOTE: set compiler to null to force addresses to *not* be payable (HACK)?
-  export function definitionToType(definition: AstDefinition, compiler: Contexts.CompilerVersion | null, forceLocation?: string | null): Type {
+  export function definitionToType(definition: Ast.AstDefinition, compiler: Contexts.CompilerVersion | null, forceLocation?: Ast.Location | null): Type {
     debug("definition %O", definition);
     let typeClass = DefinitionUtils.typeClass(definition);
     switch(typeClass) {
@@ -344,6 +392,7 @@ export namespace Types {
         if(forceLocation === null) {
           return {
             typeClass,
+            kind: "local",
             id,
             typeName,
             definingContractName
@@ -352,6 +401,7 @@ export namespace Types {
         let location = forceLocation || DefinitionUtils.referenceType(definition);
         return {
           typeClass,
+          kind: "local",
           id,
           typeName,
           definingContractName,
@@ -366,6 +416,7 @@ export namespace Types {
         let [definingContractName, typeName] = qualifiedName.split(".");
         return {
           typeClass,
+          kind: "local",
           id,
           typeName,
           definingContractName
@@ -379,6 +430,7 @@ export namespace Types {
         let contractKind = DefinitionUtils.contractKind(definition);
         return {
           typeClass,
+          kind: "native",
           id,
           typeName,
           contractKind
@@ -397,26 +449,27 @@ export namespace Types {
 
   //whereas the above takes variable definitions, this takes the actual type
   //definition
-  export function definitionToStoredType(definition: AstDefinition, compiler: Contexts.CompilerVersion, referenceDeclarations?: AstReferences): UserDefinedType {
+  export function definitionToStoredType(definition: Ast.AstDefinition, compiler: Contexts.CompilerVersion, referenceDeclarations?: Ast.AstReferences): UserDefinedType {
     switch(definition.nodeType) {
       case "StructDefinition": {
         let id = definition.id;
         let [definingContractName, typeName] = definition.canonicalName.split(".");
-        let memberTypes: [string, Type][] = definition.members.map(
-          member => [member.name, definitionToType(member, compiler, null)]
+        let memberTypes: {name: string, type: Type}[] = definition.members.map(
+          member => ({name: member.name, type: definitionToType(member, compiler, null)})
         );
         let definingContract;
         if(referenceDeclarations) {
           let contractDefinition = Object.values(referenceDeclarations).find(
             node => node.nodeType === "ContractDefinition" &&
             node.nodes.some(
-              (subNode: AstDefinition) => subNode.id === id
+              (subNode: Ast.AstDefinition) => subNode.id === id
             )
           );
-          definingContract = <ContractType> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
+          definingContract = <ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
         }
         return {
           typeClass: "struct",
+          kind: "local",
           id,
           typeName,
           definingContractName,
@@ -433,13 +486,14 @@ export namespace Types {
           let contractDefinition = Object.values(referenceDeclarations).find(
             node => node.nodeType === "ContractDefinition" &&
             node.nodes.some(
-              (subNode: AstDefinition) => subNode.id === id
+              (subNode: Ast.AstDefinition) => subNode.id === id
             )
           );
-          definingContract = <ContractType> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
+          definingContract = <ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
         }
         return {
           typeClass: "enum",
+          kind: "local",
           id,
           typeName,
           definingContractName,
@@ -454,6 +508,7 @@ export namespace Types {
         let payable = DefinitionUtils.isContractPayable(definition);
         return {
           typeClass: "contract",
+          kind: "native",
           id,
           typeName,
           contractKind,
@@ -505,7 +560,7 @@ export namespace Types {
   }
 
   //the location argument here always forces, so passing undefined *will* force undefined
-  export function specifyLocation(dataType: Type, location?: string): Type {
+  export function specifyLocation(dataType: Type, location: Ast.Location | undefined): Type {
     if(isReferenceType(dataType)) {
       switch(dataType.typeClass) {
         case "string":
@@ -518,16 +573,17 @@ export namespace Types {
             baseType: specifyLocation(dataType.baseType, location)
           };
         case "mapping":
+          let newLocation = location === "storage" ? "storage" as "storage" : undefined;
           return {
             ...dataType,
-            location,
-            valueType: specifyLocation(dataType.valueType, location)
+            location: newLocation,
+            valueType: specifyLocation(dataType.valueType, newLocation)
           };
         case "struct":
           let returnType = { ...dataType, location };
           if(returnType.memberTypes) {
             returnType.memberTypes = returnType.memberTypes.map(
-              ([memberName, memberType]) => [memberName, specifyLocation(memberType, location)]
+              ({name: memberName, type: memberType}) => ({name: memberName, type: specifyLocation(memberType, location)})
             );
           }
           return returnType;

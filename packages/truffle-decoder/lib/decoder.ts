@@ -95,7 +95,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       contractKind: node.contractKind,
       isConstructor: false,
       abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(contract.abi),
-      payable: DecodeUtils.Contexts.isABIPayable(contract.abi),
+      payable: DecodeUtils.Contexts.abiHasPayableFallback(contract.abi),
       compiler: contract.compiler
     };
   }
@@ -426,7 +426,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
     let rawIndex = indices[indices.length - 1];
     let index: any;
-    let key: Values.ElementaryResult;
+    let key: Values.ElementaryValue;
     let slot: Decoder.Slot;
     let definition: AstDefinition;
     switch(DefinitionUtils.typeClass(parentDefinition)) {

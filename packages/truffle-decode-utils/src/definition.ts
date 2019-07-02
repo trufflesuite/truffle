@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decode-utils:definition");
 
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition, Scopes } from "./ast";
+import { AstDefinition, Scopes, Visibility, Mutability, Location, ContractKind } from "./ast";
 import { Contexts } from "./contexts";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
@@ -43,9 +43,9 @@ export namespace Definition {
    * (not for use on other types! will cause an error!)
    * should only return "internal" or "external"
    */
-  export function visibility(definition: AstDefinition): string {
-    return definition.typeName ?
-      definition.typeName.visibility : definition.visibility;
+  export function visibility(definition: AstDefinition): Visibility {
+    return <Visibility> (definition.typeName ?
+      definition.typeName.visibility : definition.visibility);
   }
 
 
@@ -145,13 +145,13 @@ export namespace Definition {
   }
 
   //note: only use this on things already verified to be references
-  export function referenceType(definition: AstDefinition): string {
-    return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1];
+  export function referenceType(definition: AstDefinition): Location {
+    return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1] as Location;
   }
 
   //only for contract types, obviously! will yield nonsense otherwise!
-  export function contractKind(definition: AstDefinition): string {
-    return typeString(definition).split(" ")[0];
+  export function contractKind(definition: AstDefinition): ContractKind {
+    return typeString(definition).split(" ")[0] as ContractKind;
   }
 
   //stack size, in words, of a given type
@@ -179,7 +179,7 @@ export namespace Definition {
 
   //definition: a storage reference definition
   //location: the location you want it to refer to instead
-  export function spliceLocation(definition: AstDefinition, location: string): AstDefinition {
+  export function spliceLocation(definition: AstDefinition, location: Location): AstDefinition {
     debug("definition %O", definition);
     return {
       ...definition,
@@ -308,7 +308,7 @@ export namespace Definition {
   //similar compatibility function for mutability for pre-0.4.16 versions
   //returns undefined if you don't give it a FunctionDefinition or
   //VariableDeclaration
-  export function mutability(node: AstDefinition): string | undefined {
+  export function mutability(node: AstDefinition): Mutability | undefined {
     if(node.typeName) {
       //for variable declarations, e.g.
       node = node.typeName;
@@ -391,7 +391,7 @@ export namespace Definition {
     }
   };
 
-  export function spoofThisDefinition(contractName: string, contractId: number, contractKind: string): AstDefinition {
+  export function spoofThisDefinition(contractName: string, contractId: number, contractKind: ContractKind): AstDefinition {
     let formattedName = contractName.replace(/\$/g, "$$".repeat(3));
     //note that string.replace treats $'s specially in the replacement string;
     //we want 3 $'s for each $ in the input, so we need to put *6* $'s in the
