@@ -4,6 +4,13 @@ import * as Contracts from "truffle-workflow-compile";
 import { ContractObject } from "truffle-contract-schema/spec";
 import * as fse from "fs-extra";
 import path from "path";
+import * as Config from "truffle-config";
+import { Environment } from "truffle-environment";
+import Web3 from "web3";
+// const Config = require("truffle-config");
+// const { Environment } = require("truffle-environment");
+// const Web3 = require('web3');
+
 
 const AddBytecodes = gql`
 input BytecodeInput {
@@ -348,31 +355,58 @@ export class ArtifactsLoader {
     return compilationObject;
   }
 
-  async loadNetworks(contracts: Array<ContractObject>, artifacts:string) {
+  async loadNetworks(contracts: Array<ContractObject>, artifacts:string, workingDirectory:string) {
     const networksByContract = await Promise.all(contracts.map(async ({ contract_name })=> {
       const contractName = contract_name.toString().concat('.json');
       const artifactsNetworks = JSON.parse(await fse.readFile(path.join(artifacts,contractName))).networks;
-
-      const networks = Promise.all(Object.entries(artifactsNetworks).map(async (network) => {
-        let networksAdd = await this.db.query(AddNetworks, { networks: { networkID: network[0] } });
-        let networkId = networksAdd.data.workspace.networksAdd.networks[0].id;
-        let networkObject = {
-          address: network[1]["address"],
-          transactionHash: network[1]["transactionHash"],
-          networkID: network[0],
-          id: networkId
+      const config = Config.detect({ workingDirectory: workingDirectory });
+      let configNetworks = [];
+      for(let network of Object.keys(config.networks)) {
+         config.network = network;
+         await Environment.detect(config);
+         let networkID;
+         let web3;
+         try {
+          web3 = new Web3(config.provider);
+          networkID = await web3.eth.net.getId();
         }
-        return networkObject;
-      }));
+        catch(err) {}
 
-      return networks;
-    }))
+        if(networkID) {
+          let filteredNetwork = Object.entries(artifactsNetworks).filter((network) => network[0] == networkID);
+          //assume length of filteredNetwork is 1 -- shouldn't have multiple networks with the same id
+          const transaction = await web3.eth.getTransaction(filteredNetwork[0][1]["transactionHash"]);
+          const historicBlock = {
+            height: transaction.blockNumber,
+            hash: transaction.blockHash
+          }
+          const networksAdd = await this.db.query(AddNetworks,
+          {
+            networks:
+            [{
+              name: network,
+              networkID: networkID,
+              historicBlock: historicBlock
+            }]
+          });
+          const networkId = networksAdd.data.workspace.networksAdd.networks[0].id;
+          configNetworks.push({
+            contract: contractName,
+            id: networkId,
+            address: filteredNetwork[0][1]["address"]
+          });
+        }
+      }
+      return configNetworks;
+    }));
     return networksByContract;
   }
 
   async loadContractInstances(contracts: Array<ContractObject>, contractIds: Array<object>, networksArray: Array<any>) {
-
+    // networksArray is an array of arrays of networks for each contract;
+    // this first mapping maps to each contract
     const instances = networksArray.map((networks, index) => {
+      // this second mapping maps each network in a contract
       const contractInstancesByNetwork = networks.map((network) => {
         let instance = {
           address: network.address,
@@ -386,6 +420,7 @@ export class ArtifactsLoader {
 
       return contractInstancesByNetwork;
     });
+
     await this.db.query(AddContractInstances, { contractInstances: instances.flat() });
   }
 
@@ -402,7 +437,7 @@ export class ArtifactsLoader {
     //map contracts and contract instances to compiler
     await Promise.all(compilations.data.workspace.compilationsAdd.compilations.map(async ({compiler, id}) => {
       const contractIds = await this.loadCompilationContracts(contracts[compiler.name], id, compiler.name);
-      const networks = await this.loadNetworks(contracts[compiler.name], compilationConfig["artifacts_directory"]);
+      const networks = await this.loadNetworks(contracts[compiler.name], compilationConfig["artifacts_directory"], compilationConfig["contracts_directory"]);
       if(networks[0].length) {
         this.loadContractInstances(contracts[compiler.name], contractIds.contractIds, networks);
       }
