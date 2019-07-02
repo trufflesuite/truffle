@@ -3,7 +3,7 @@ const tmp = require("tmp");
 const path = require("path");
 const Config = require("truffle-config");
 const ora = require("ora");
-const fs = require("fs");
+const fse = require("fs-extra");
 const inquirer = require("inquirer");
 
 function parseSandboxOptions(options) {
@@ -66,14 +66,14 @@ const Box = {
       return boxConfig;
     } catch (error) {
       if (tempDirCleanup) tempDirCleanup();
-      throw new Error(error);
+      throw error;
     }
   },
 
   checkDir: async (options = {}, destination) => {
     let logger = options.logger || console;
     if (!options.force) {
-      const unboxDir = fs.readdirSync(destination);
+      const unboxDir = fse.readdirSync(destination);
       if (unboxDir.length) {
         logger.log(`This directory is non-empty...`);
         const prompt = [
@@ -97,8 +97,7 @@ const Box = {
   //   Recursively removes the created temporary directory, even when it's not empty. default is false
   // options.setGracefulCleanup
   //   Cleanup temporary files even when an uncaught exception occurs
-  sandbox: function(options, callback) {
-    var self = this;
+  sandbox: (options, callback) => {
     const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
       options
     );
@@ -111,21 +110,20 @@ const Box = {
       tmp.setGracefulCleanup();
     }
 
-    tmp.dir({ unsafeCleanup }, function(err, dir) {
-      if (err) return callback(err);
-
-      self
-        .unbox(
-          "https://github.com/trufflesuite/truffle-init-" + name,
-          dir,
-          options
-        )
-        .then(function() {
-          var config = Config.load(path.join(dir, "truffle-config.js"), {});
-          callback(null, config);
-        })
-        .catch(callback);
-    });
+    const tmpDir = tmp.dirSync({ unsafeCleanup });
+    Box.unbox(
+      `https://github.com/trufflesuite/truffle-init-${name}`,
+      tmpDir.name,
+      options
+    )
+      .then(() => {
+        const config = Config.load(
+          path.join(tmpDir.name, "truffle-config.js"),
+          {}
+        );
+        callback(null, config);
+      })
+      .catch(callback);
   }
 };
 

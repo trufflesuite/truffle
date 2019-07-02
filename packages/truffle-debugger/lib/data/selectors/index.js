@@ -49,7 +49,8 @@ function modifierForInvocation(invocation, scopes) {
     case "ContractDefinition":
       return rawNode.nodes.find(
         node =>
-          node.nodeType === "FunctionDefinition" && node.kind === "constructor"
+          node.nodeType === "FunctionDefinition" &&
+          DecodeUtils.Definition.functionKind(node) === "constructor"
       );
     default:
       //we should never hit this case

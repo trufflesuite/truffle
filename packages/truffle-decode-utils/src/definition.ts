@@ -276,6 +276,25 @@ export namespace Definition {
     }
   }
 
+  //compatibility function, since pre-0.5.0 functions don't have node.kind
+  //returns undefined if you don't put in a function node
+  export function functionKind(node: AstDefinition): string | undefined {
+    if(node.nodeType !== "FunctionDefinition") {
+      return undefined;
+    }
+    if(node.kind !== undefined) {
+      //if we're dealing with 0.5.x, we can just read node.kind
+      return node.kind;
+    }
+    //otherwise, we need this little shim
+    if(node.isConstructor) {
+      return "constructor";
+    }
+    return node.name === ""
+      ? "fallback"
+      : "function";
+  }
+
   //spoofed definitions we'll need
   //we'll give them id -1 to indicate that they're spoofed
 

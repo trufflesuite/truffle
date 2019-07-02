@@ -4,6 +4,7 @@ const debug = debugModule("decoder:decode:value");
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
 import BN from "bn.js";
+import utf8 from "utf8";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { EvmEnum } from "../interface/contract-decoder";
@@ -20,6 +21,8 @@ export default function* decodeValue(definition: DecodeUtils.AstDefinition, poin
     return undefined;
   }
 
+  let length;
+
   debug("definition %O", definition);
   debug("pointer %o", pointer);
 
@@ -28,9 +31,13 @@ export default function* decodeValue(definition: DecodeUtils.AstDefinition, poin
       return !DecodeUtils.Conversion.toBN(bytes).isZero();
 
     case "uint":
+      length = DecodeUtils.Definition.specifiedSize(definition);
+      bytes = bytes.slice(-length); //chop off padding
       return DecodeUtils.Conversion.toBN(bytes);
 
     case "int":
+      length = DecodeUtils.Definition.specifiedSize(definition);
+      bytes = bytes.slice(-length); //chop off padding
       return DecodeUtils.Conversion.toSignedBN(bytes);
 
     case "address":
@@ -42,7 +49,7 @@ export default function* decodeValue(definition: DecodeUtils.AstDefinition, poin
     case "bytes":
       debug("typeIdentifier %s %o", DecodeUtils.Definition.typeIdentifier(definition), bytes);
       //if there's a static size, we want to truncate to that length
-      let length = DecodeUtils.Definition.specifiedSize(definition);
+      length = DecodeUtils.Definition.specifiedSize(definition);
       if(length !== null) {
         bytes = bytes.slice(0, length);
       }
@@ -54,7 +61,15 @@ export default function* decodeValue(definition: DecodeUtils.AstDefinition, poin
       if (typeof bytes == "string") {
         return bytes;
       }
-      return String.fromCharCode.apply(undefined, bytes);
+      try {
+        return utf8.decode(String.fromCharCode.apply(undefined, bytes));
+      }
+      catch(error) {
+        return null; //HACK: we use null as our error value here rather than
+        //undefined to prevent potentially throwing the debugger into an
+        //infinite loop
+        //(this will be saner in 5.1 :P )
+      }
 
     case "enum":
       const numRepresentation = DecodeUtils.Conversion.toBN(bytes).toNumber();
