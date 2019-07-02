@@ -11,7 +11,7 @@ import * as fabricEvmOverloads from "./fabric-evm-overloads";
 // will undergo better architecture before TruffleCon to support
 // other non-Ethereum-based ledgers.
 
-export type NetworkType = "ethereum" | "quorum";
+export type NetworkType = "ethereum" | "quorum" | "fabric-evm";
 
 export interface Web3ShimOptions {
   provider?: Provider;
