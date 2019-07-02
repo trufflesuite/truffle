@@ -448,7 +448,7 @@ export namespace Values {
         ({[key.toString()]: value.nativize()})
       ));
     }
-    constructor(mappingType: Types.MappingType, value: {key: ElementaryValue, value: Result}[]) {
+    constructor(mappingType: Types.MappingType, value: KeyValuePair[]) {
       this.type = mappingType;
       this.kind = "value";
       this.value = value;
@@ -484,7 +484,7 @@ export namespace Values {
         ({name, value}) => ({[name]: value.nativize()})
       ));
     }
-    constructor(structType: Types.StructType, value: {name: string, value: Result}[], reference?: number) {
+    constructor(structType: Types.StructType, value: NameValuePair[], reference?: number) {
       this.type = structType;
       this.kind = "value";
       this.value = value;
