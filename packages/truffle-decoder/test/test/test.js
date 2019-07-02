@@ -1,7 +1,7 @@
 const assert = require("assert");
 const util = require("util"); // eslint-disable-line no-unused-vars
 
-const TruffleDecoder = require("../../../truffle-decoder");
+const TruffleContractDecoder = require("../../../truffle-decoder");
 const TruffleDecodeUtils = require("../../../truffle-decode-utils");
 
 const DecodingSample = artifacts.require("DecodingSample");
@@ -31,7 +31,7 @@ contract("DecodingSample", _accounts => {
   it("should get the initial state properly", async () => {
     let deployedContract = await DecodingSample.deployed();
     let address = deployedContract.address;
-    const decoder = TruffleDecoder.forContract(
+    const decoder = TruffleContractDecoder.forContract(
       DecodingSample,
       [],
       web3.currentProvider

@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decoder:decode:calldata");
+const debug = debugModule("decoder-core:decode:calldata");
 
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";

@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decoder:allocate:memory");
+const debug = debugModule("decoder-core:allocate:memory");
 
 import { MemoryPointer } from "../types/pointer";
 import { MemoryAllocations, MemoryAllocation, MemoryMemberAllocation } from "../types/allocation";

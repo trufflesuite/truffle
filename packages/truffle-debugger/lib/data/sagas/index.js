@@ -23,7 +23,7 @@ import {
   readStack,
   storageSize,
   forEvmState
-} from "truffle-decoder";
+} from "truffle-decoder-core";
 import BN from "bn.js";
 
 export function* scope(nodeId, pointer, parentId, sourceId) {
