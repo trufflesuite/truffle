@@ -10,7 +10,13 @@ const ENS = require("./ens");
 class Deployer extends Deployment {
   constructor(options) {
     options = options || {};
-    expect.options(options, ["provider", "networks", "network", "network_id"]);
+    expect.options(options, [
+      "provider",
+      "networks",
+      "network",
+      "network_id",
+      "resolver"
+    ]);
 
     const emitter = new Emittery();
     super(emitter, options);
