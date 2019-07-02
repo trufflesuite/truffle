@@ -375,26 +375,28 @@ export class ArtifactsLoader {
         if(networkID) {
           let filteredNetwork = Object.entries(artifactsNetworks).filter((network) => network[0] == networkID);
           //assume length of filteredNetwork is 1 -- shouldn't have multiple networks with the same id
-          const transaction = await web3.eth.getTransaction(filteredNetwork[0][1]["transactionHash"]);
-          const historicBlock = {
-            height: transaction.blockNumber,
-            hash: transaction.blockHash
+          if(filteredNetwork.length > 1) {
+            const transaction = await web3.eth.getTransaction(filteredNetwork[0][1]["transactionHash"]);
+            const historicBlock = {
+              height: transaction.blockNumber,
+              hash: transaction.blockHash
+            }
+            const networksAdd = await this.db.query(AddNetworks,
+            {
+              networks:
+              [{
+                name: network,
+                networkID: networkID,
+                historicBlock: historicBlock
+              }]
+            });
+            const networkId = networksAdd.data.workspace.networksAdd.networks[0].id;
+            configNetworks.push({
+              contract: contractName,
+              id: networkId,
+              address: filteredNetwork[0][1]["address"]
+            });
           }
-          const networksAdd = await this.db.query(AddNetworks,
-          {
-            networks:
-            [{
-              name: network,
-              networkID: networkID,
-              historicBlock: historicBlock
-            }]
-          });
-          const networkId = networksAdd.data.workspace.networksAdd.networks[0].id;
-          configNetworks.push({
-            contract: contractName,
-            id: networkId,
-            address: filteredNetwork[0][1]["address"]
-          });
         }
       }
       return configNetworks;
