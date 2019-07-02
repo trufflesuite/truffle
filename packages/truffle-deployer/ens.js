@@ -10,16 +10,13 @@ class ENS {
     const ENSRegistry = this.resolver.require("@ensdomains/ens/ENSRegistry");
     ENSRegistry.setProvider(this.provider);
     const ensRegistry = await ENSRegistry.new({ from });
-    const registryOwnerAddress = await ensRegistry.owner("0x0");
-    return {
-      registryOwnerAddress,
-      registryAddress: ensRegistry.address
-    };
+    return ensRegistry;
   }
 
-  async register(address, name, from) {
-    let ensjs = new ENSJS(this.provider);
-
+  async register({ address, name, from, registryAddress }) {
+    this.currentRegistryAddress = registryAddress;
+    let ensjs = new ENSJS(this.provider, registryAddress);
+    let registry;
     try {
       // See if registry exists on network by resolving an arbitrary address
       await ensjs.owner("0x0");
@@ -29,21 +26,22 @@ class ENS {
         error.message ===
         "This contract object doesn't have address set yet, please set an address first.";
       if (noRegistryFound) {
-        const registryInfo = await this.deployNewENSRegistry(from);
-        const registryAddress = registryInfo.registryAddress;
-        ensjs = new ENSJS(this.provider, registryAddress);
+        registry = await this.deployNewENSRegistry(from);
+        this.currentRegistryAddress = registry.address;
+        ensjs = new ENSJS(this.provider, this.currentRegistryAddress);
       } else {
         throw error;
       }
     }
 
     // Find the owner of the name and compare it to the "from" field
-    let nameOwner = await ensjs.owner(name);
+    const nameOwner = await ensjs.owner(name);
     // Future work:
     // Handle case where there is no owner and we try to register it for the user
     // if (nameOwner === "0x0000000000000000000000000000000000000000") {
     //   this.attemptNameRegistration();
     // }
+
     if (nameOwner !== from) {
       const message =
         `The default address or address provided in the "from" ` +
@@ -56,15 +54,22 @@ class ENS {
     }
 
     // See if the resolver is set, if not then set it
-    let resolverAddress;
+    let resolvedAddress, publicResolver;
     try {
-      resolverAddress = await ensjs.resolver(name);
+      resolvedAddress = await ensjs.resolver(name).addr();
     } catch (error) {
       if (error.message !== "ENS name not found") throw error;
-      resolverAddress = null;
+      const PublicResolver = this.resolver.require(
+        "@ensdomains/resolver/PublicResolver"
+      );
+      PublicResolver.setProvider(this.provider);
+      publicResolver = await PublicResolver.new(this.currentRegistryAddress, {
+        from
+      });
+      await ensjs.setResolver(name, publicResolver.address, { from });
     }
-    if (resolverAddress !== address) {
-      return await ensjs.setResolver(name, address, { from });
+    if (resolvedAddress !== address) {
+      await ensjs.resolver(name).setAddr(address);
     }
   }
 }

@@ -4,7 +4,7 @@
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --no-warnings --timeout 10000 --exit"
+    "test": "mocha ./test/ens.js --no-warnings --timeout 10000 --exit"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-deployer",
   "keywords": [
@@ -22,6 +22,7 @@
   "homepage": "https://github.com/trufflesuite/truffle-deployer#readme",
   "dependencies": {
     "@ensdomains/ens": "^0.3.11",
+    "@ensdomains/resolver": "^0.1.6",
     "emittery": "^0.4.0",
     "ethereum-ens": "^0.7.7",
     "truffle-contract": "^4.0.21",

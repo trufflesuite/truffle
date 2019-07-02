@@ -1,0 +1,2444 @@
+{
+  "contractName": "PubkeyResolver",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "node",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "x",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "name": "y",
+          "type": "bytes32"
+        }
+      ],
+      "name": "PubkeyChanged",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "node",
+          "type": "bytes32"
+        },
+        {
+          "name": "x",
+          "type": "bytes32"
+        },
+        {
+          "name": "y",
+          "type": "bytes32"
+        }
+      ],
+      "name": "setPubkey",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "node",
+          "type": "bytes32"
+        }
+      ],
+      "name": "pubkey",
+      "outputs": [
+        {
+          "name": "x",
+          "type": "bytes32"
+        },
+        {
+          "name": "y",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "interfaceID",
+          "type": "bytes4"
+        }
+      ],
+      "name": "supportsInterface",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.8+commit.23d335f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"name\":\"interfaceID\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"node\",\"type\":\"bytes32\"},{\"name\":\"x\",\"type\":\"bytes32\"},{\"name\":\"y\",\"type\":\"bytes32\"}],\"name\":\"setPubkey\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"node\",\"type\":\"bytes32\"}],\"name\":\"pubkey\",\"outputs\":[{\"name\":\"x\",\"type\":\"bytes32\"},{\"name\":\"y\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"x\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"y\",\"type\":\"bytes32\"}],\"name\":\"PubkeyChanged\",\"type\":\"event\"}],\"devdoc\":{\"methods\":{\"pubkey(bytes32)\":{\"params\":{\"node\":\"The ENS node to query\"},\"return\":\"x, y the X and Y coordinates of the curve point for the public key.\"},\"setPubkey(bytes32,bytes32,bytes32)\":{\"params\":{\"node\":\"The ENS node to query\",\"x\":\"the X coordinate of the curve point for the public key.\",\"y\":\"the Y coordinate of the curve point for the public key.\"}}}},\"userdoc\":{\"methods\":{\"pubkey(bytes32)\":{\"notice\":\"Returns the SECP256k1 public key associated with an ENS node. Defined in EIP 619.\"},\"setPubkey(bytes32,bytes32,bytes32)\":{\"notice\":\"Sets the SECP256k1 public key associated with an ENS node.\"}}}},\"settings\":{\"compilationTarget\":{\"/Users/tyler/projects/truffle/packages/truffle-deployer/test/sources/init/contracts/profiles/PubkeyResolver.sol\":\"PubkeyResolver\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/tyler/projects/truffle/packages/truffle-deployer/test/sources/init/contracts/ResolverBase.sol\":{\"keccak256\":\"0x1edb0133a2a5a68aebe3a6d766b19238aeb2a067bfe4efb94c9885531928fb18\",\"urls\":[\"bzzr://0f9c7f5b33e44d95c81a2bc4d7f109dbd8533b9146d7af799f73915fc478e062\"]},\"/Users/tyler/projects/truffle/packages/truffle-deployer/test/sources/init/contracts/profiles/PubkeyResolver.sol\":{\"keccak256\":\"0xd4fd2fba924cd1661e455fac86747837245bf533e1e9c9af05c0f530b2f8f991\",\"urls\":[\"bzzr://e41c89dfa3bd18da01f13ddc18d88463bc39b7902bcee885319757d9a3ec3734\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity >=0.4.21 <0.6.0;\n\nimport \"../ResolverBase.sol\";\n\ncontract PubkeyResolver is ResolverBase {\n    bytes4 constant private PUBKEY_INTERFACE_ID = 0xc8690233;\n\n    event PubkeyChanged(bytes32 indexed node, bytes32 x, bytes32 y);\n\n    struct PublicKey {\n        bytes32 x;\n        bytes32 y;\n    }\n\n    mapping(bytes32=>PublicKey) pubkeys;\n\n    /**\n     * Sets the SECP256k1 public key associated with an ENS node.\n     * @param node The ENS node to query\n     * @param x the X coordinate of the curve point for the public key.\n     * @param y the Y coordinate of the curve point for the public key.\n     */\n    function setPubkey(bytes32 node, bytes32 x, bytes32 y) external authorised(node) {\n        pubkeys[node] = PublicKey(x, y);\n        emit PubkeyChanged(node, x, y);\n    }\n\n    /**\n     * Returns the SECP256k1 public key associated with an ENS node.\n     * Defined in EIP 619.\n     * @param node The ENS node to query\n     * @return x, y the X and Y coordinates of the curve point for the public key.\n     */\n    function pubkey(bytes32 node) external view returns (bytes32 x, bytes32 y) {\n        return (pubkeys[node].x, pubkeys[node].y);\n    }\n\n    function supportsInterface(bytes4 interfaceID) public pure returns(bool) {\n        return interfaceID == PUBKEY_INTERFACE_ID || super.supportsInterface(interfaceID);\n    }\n}\n",
+  "sourcePath": "/Users/tyler/projects/truffle/packages/truffle-deployer/test/sources/init/contracts/profiles/PubkeyResolver.sol",
+  "ast": {
+    "absolutePath": "/Users/tyler/projects/truffle/packages/truffle-deployer/test/sources/init/contracts/profiles/PubkeyResolver.sol",
+    "exportedSymbols": {
+      "PubkeyResolver": [
+        3346
+      ]
+    },
+    "id": 3347,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3257,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.4",
+          ".21",
+          "<",
+          "0.6",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:32:14"
+      },
+      {
+        "absolutePath": "/Users/tyler/projects/truffle/packages/truffle-deployer/test/sources/init/contracts/ResolverBase.sol",
+        "file": "../ResolverBase.sol",
+        "id": 3258,
+        "nodeType": "ImportDirective",
+        "scope": 3347,
+        "sourceUnit": 2292,
+        "src": "34:29:14",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 3259,
+              "name": "ResolverBase",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 2291,
+              "src": "92:12:14",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_ResolverBase_$2291",
+                "typeString": "contract ResolverBase"
+              }
+            },
+            "id": 3260,
+            "nodeType": "InheritanceSpecifier",
+            "src": "92:12:14"
+          }
+        ],
+        "contractDependencies": [
+          2291
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 3346,
+        "linearizedBaseContracts": [
+          3346,
+          2291
+        ],
+        "name": "PubkeyResolver",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": true,
+            "id": 3263,
+            "name": "PUBKEY_INTERFACE_ID",
+            "nodeType": "VariableDeclaration",
+            "scope": 3346,
+            "src": "111:56:14",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes4",
+              "typeString": "bytes4"
+            },
+            "typeName": {
+              "id": 3261,
+              "name": "bytes4",
+              "nodeType": "ElementaryTypeName",
+              "src": "111:6:14",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes4",
+                "typeString": "bytes4"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "30786338363930323333",
+              "id": 3262,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "157:10:14",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_3362325043_by_1",
+                "typeString": "int_const 3362325043"
+              },
+              "value": "0xc8690233"
+            },
+            "visibility": "private"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 3271,
+            "name": "PubkeyChanged",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 3270,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3265,
+                  "indexed": true,
+                  "name": "node",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3271,
+                  "src": "194:20:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3264,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "194:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3267,
+                  "indexed": false,
+                  "name": "x",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3271,
+                  "src": "216:9:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3266,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "216:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3269,
+                  "indexed": false,
+                  "name": "y",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3271,
+                  "src": "227:9:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3268,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "227:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "193:44:14"
+            },
+            "src": "174:64:14"
+          },
+          {
+            "canonicalName": "PubkeyResolver.PublicKey",
+            "id": 3276,
+            "members": [
+              {
+                "constant": false,
+                "id": 3273,
+                "name": "x",
+                "nodeType": "VariableDeclaration",
+                "scope": 3276,
+                "src": "271:9:14",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                },
+                "typeName": {
+                  "id": 3272,
+                  "name": "bytes32",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "271:7:14",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3275,
+                "name": "y",
+                "nodeType": "VariableDeclaration",
+                "scope": 3276,
+                "src": "290:9:14",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                },
+                "typeName": {
+                  "id": 3274,
+                  "name": "bytes32",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "290:7:14",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              }
+            ],
+            "name": "PublicKey",
+            "nodeType": "StructDefinition",
+            "scope": 3346,
+            "src": "244:62:14",
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 3280,
+            "name": "pubkeys",
+            "nodeType": "VariableDeclaration",
+            "scope": 3346,
+            "src": "312:35:14",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_PublicKey_$3276_storage_$",
+              "typeString": "mapping(bytes32 => struct PubkeyResolver.PublicKey)"
+            },
+            "typeName": {
+              "id": 3279,
+              "keyType": {
+                "id": 3277,
+                "name": "bytes32",
+                "nodeType": "ElementaryTypeName",
+                "src": "320:7:14",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "312:27:14",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_PublicKey_$3276_storage_$",
+                "typeString": "mapping(bytes32 => struct PubkeyResolver.PublicKey)"
+              },
+              "valueType": {
+                "contractScope": null,
+                "id": 3278,
+                "name": "PublicKey",
+                "nodeType": "UserDefinedTypeName",
+                "referencedDeclaration": 3276,
+                "src": "329:9:14",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_PublicKey_$3276_storage_ptr",
+                  "typeString": "struct PubkeyResolver.PublicKey"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 3307,
+              "nodeType": "Block",
+              "src": "702:88:14",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 3299,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 3292,
+                        "name": "pubkeys",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3280,
+                        "src": "712:7:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_PublicKey_$3276_storage_$",
+                          "typeString": "mapping(bytes32 => struct PubkeyResolver.PublicKey storage ref)"
+                        }
+                      },
+                      "id": 3294,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "id": 3293,
+                        "name": "node",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3282,
+                        "src": "720:4:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "712:13:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_PublicKey_$3276_storage",
+                        "typeString": "struct PubkeyResolver.PublicKey storage ref"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "arguments": [
+                        {
+                          "argumentTypes": null,
+                          "id": 3296,
+                          "name": "x",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3284,
+                          "src": "738:1:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        {
+                          "argumentTypes": null,
+                          "id": 3297,
+                          "name": "y",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3286,
+                          "src": "741:1:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          },
+                          {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        ],
+                        "id": 3295,
+                        "name": "PublicKey",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3276,
+                        "src": "728:9:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_struct$_PublicKey_$3276_storage_ptr_$",
+                          "typeString": "type(struct PubkeyResolver.PublicKey storage pointer)"
+                        }
+                      },
+                      "id": 3298,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "structConstructorCall",
+                      "lValueRequested": false,
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "728:15:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_PublicKey_$3276_memory",
+                        "typeString": "struct PubkeyResolver.PublicKey memory"
+                      }
+                    },
+                    "src": "712:31:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_PublicKey_$3276_storage",
+                      "typeString": "struct PubkeyResolver.PublicKey storage ref"
+                    }
+                  },
+                  "id": 3300,
+                  "nodeType": "ExpressionStatement",
+                  "src": "712:31:14"
+                },
+                {
+                  "eventCall": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 3302,
+                        "name": "node",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3282,
+                        "src": "772:4:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 3303,
+                        "name": "x",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3284,
+                        "src": "778:1:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 3304,
+                        "name": "y",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3286,
+                        "src": "781:1:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      ],
+                      "id": 3301,
+                      "name": "PubkeyChanged",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3271,
+                      "src": "758:13:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_bytes32_$_t_bytes32_$_t_bytes32_$returns$__$",
+                        "typeString": "function (bytes32,bytes32,bytes32)"
+                      }
+                    },
+                    "id": 3305,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "758:25:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 3306,
+                  "nodeType": "EmitStatement",
+                  "src": "753:30:14"
+                }
+              ]
+            },
+            "documentation": "Sets the SECP256k1 public key associated with an ENS node.\n@param node The ENS node to query\n@param x the X coordinate of the curve point for the public key.\n@param y the Y coordinate of the curve point for the public key.",
+            "id": 3308,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "arguments": [
+                  {
+                    "argumentTypes": null,
+                    "id": 3289,
+                    "name": "node",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 3282,
+                    "src": "696:4:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  }
+                ],
+                "id": 3290,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 3288,
+                  "name": "authorised",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 2290,
+                  "src": "685:10:14",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$_t_bytes32_$",
+                    "typeString": "modifier (bytes32)"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "685:16:14"
+              }
+            ],
+            "name": "setPubkey",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3287,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3282,
+                  "name": "node",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3308,
+                  "src": "640:12:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3281,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "640:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3284,
+                  "name": "x",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3308,
+                  "src": "654:9:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3283,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "654:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3286,
+                  "name": "y",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3308,
+                  "src": "665:9:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3285,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "665:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "639:36:14"
+            },
+            "returnParameters": {
+              "id": 3291,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "702:0:14"
+            },
+            "scope": 3346,
+            "src": "621:169:14",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 3327,
+              "nodeType": "Block",
+              "src": "1107:58:14",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "components": [
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "baseExpression": {
+                            "argumentTypes": null,
+                            "id": 3317,
+                            "name": "pubkeys",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 3280,
+                            "src": "1125:7:14",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_PublicKey_$3276_storage_$",
+                              "typeString": "mapping(bytes32 => struct PubkeyResolver.PublicKey storage ref)"
+                            }
+                          },
+                          "id": 3319,
+                          "indexExpression": {
+                            "argumentTypes": null,
+                            "id": 3318,
+                            "name": "node",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 3310,
+                            "src": "1133:4:14",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "1125:13:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_PublicKey_$3276_storage",
+                            "typeString": "struct PubkeyResolver.PublicKey storage ref"
+                          }
+                        },
+                        "id": 3320,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "x",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 3273,
+                        "src": "1125:15:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "baseExpression": {
+                            "argumentTypes": null,
+                            "id": 3321,
+                            "name": "pubkeys",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 3280,
+                            "src": "1142:7:14",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_PublicKey_$3276_storage_$",
+                              "typeString": "mapping(bytes32 => struct PubkeyResolver.PublicKey storage ref)"
+                            }
+                          },
+                          "id": 3323,
+                          "indexExpression": {
+                            "argumentTypes": null,
+                            "id": 3322,
+                            "name": "node",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 3310,
+                            "src": "1150:4:14",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "1142:13:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_PublicKey_$3276_storage",
+                            "typeString": "struct PubkeyResolver.PublicKey storage ref"
+                          }
+                        },
+                        "id": 3324,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "y",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 3275,
+                        "src": "1142:15:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "id": 3325,
+                    "isConstant": false,
+                    "isInlineArray": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "TupleExpression",
+                    "src": "1124:34:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$_t_bytes32_$_t_bytes32_$",
+                      "typeString": "tuple(bytes32,bytes32)"
+                    }
+                  },
+                  "functionReturnParameters": 3316,
+                  "id": 3326,
+                  "nodeType": "Return",
+                  "src": "1117:41:14"
+                }
+              ]
+            },
+            "documentation": "Returns the SECP256k1 public key associated with an ENS node.\nDefined in EIP 619.\n@param node The ENS node to query\n@return x, y the X and Y coordinates of the curve point for the public key.",
+            "id": 3328,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "pubkey",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3311,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3310,
+                  "name": "node",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3328,
+                  "src": "1048:12:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3309,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1048:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1047:14:14"
+            },
+            "returnParameters": {
+              "id": 3316,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3313,
+                  "name": "x",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3328,
+                  "src": "1085:9:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3312,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1085:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3315,
+                  "name": "y",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3328,
+                  "src": "1096:9:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3314,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1096:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1084:22:14"
+            },
+            "scope": 3346,
+            "src": "1032:133:14",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 3344,
+              "nodeType": "Block",
+              "src": "1244:98:14",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "commonType": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    },
+                    "id": 3342,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "argumentTypes": null,
+                      "commonType": {
+                        "typeIdentifier": "t_bytes4",
+                        "typeString": "bytes4"
+                      },
+                      "id": 3337,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "argumentTypes": null,
+                        "id": 3335,
+                        "name": "interfaceID",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3330,
+                        "src": "1261:11:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes4",
+                          "typeString": "bytes4"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": "==",
+                      "rightExpression": {
+                        "argumentTypes": null,
+                        "id": 3336,
+                        "name": "PUBKEY_INTERFACE_ID",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3263,
+                        "src": "1276:19:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes4",
+                          "typeString": "bytes4"
+                        }
+                      },
+                      "src": "1261:34:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "||",
+                    "rightExpression": {
+                      "argumentTypes": null,
+                      "arguments": [
+                        {
+                          "argumentTypes": null,
+                          "id": 3340,
+                          "name": "interfaceID",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3330,
+                          "src": "1323:11:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes4",
+                            "typeString": "bytes4"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_bytes4",
+                            "typeString": "bytes4"
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 3338,
+                          "name": "super",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3485,
+                          "src": "1299:5:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_super$_PubkeyResolver_$3346",
+                            "typeString": "contract super PubkeyResolver"
+                          }
+                        },
+                        "id": 3339,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "supportsInterface",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 2271,
+                        "src": "1299:23:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_function_internal_pure$_t_bytes4_$returns$_t_bool_$",
+                          "typeString": "function (bytes4) pure returns (bool)"
+                        }
+                      },
+                      "id": 3341,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "functionCall",
+                      "lValueRequested": false,
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "1299:36:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "src": "1261:74:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 3334,
+                  "id": 3343,
+                  "nodeType": "Return",
+                  "src": "1254:81:14"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 3345,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "supportsInterface",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3331,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3330,
+                  "name": "interfaceID",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3345,
+                  "src": "1198:18:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes4",
+                    "typeString": "bytes4"
+                  },
+                  "typeName": {
+                    "id": 3329,
+                    "name": "bytes4",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1198:6:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes4",
+                      "typeString": "bytes4"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1197:20:14"
+            },
+            "returnParameters": {
+              "id": 3334,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3333,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3345,
+                  "src": "1238:4:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 3332,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1238:4:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1237:6:14"
+            },
+            "scope": 3346,
+            "src": "1171:171:14",
+            "stateMutability": "pure",
+            "superFunction": 2271,
+            "visibility": "public"
+          }
+        ],
+        "scope": 3347,
+        "src": "65:1279:14"
+      }
+    ],
+    "src": "0:1345:14"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/tyler/projects/truffle/packages/truffle-deployer/test/sources/init/contracts/profiles/PubkeyResolver.sol",
+    "exportedSymbols": {
+      "PubkeyResolver": [
+        3346
+      ]
+    },
+    "id": 3347,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3257,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.4",
+          ".21",
+          "<",
+          "0.6",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:32:14"
+      },
+      {
+        "absolutePath": "/Users/tyler/projects/truffle/packages/truffle-deployer/test/sources/init/contracts/ResolverBase.sol",
+        "file": "../ResolverBase.sol",
+        "id": 3258,
+        "nodeType": "ImportDirective",
+        "scope": 3347,
+        "sourceUnit": 2292,
+        "src": "34:29:14",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 3259,
+              "name": "ResolverBase",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 2291,
+              "src": "92:12:14",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_ResolverBase_$2291",
+                "typeString": "contract ResolverBase"
+              }
+            },
+            "id": 3260,
+            "nodeType": "InheritanceSpecifier",
+            "src": "92:12:14"
+          }
+        ],
+        "contractDependencies": [
+          2291
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 3346,
+        "linearizedBaseContracts": [
+          3346,
+          2291
+        ],
+        "name": "PubkeyResolver",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": true,
+            "id": 3263,
+            "name": "PUBKEY_INTERFACE_ID",
+            "nodeType": "VariableDeclaration",
+            "scope": 3346,
+            "src": "111:56:14",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes4",
+              "typeString": "bytes4"
+            },
+            "typeName": {
+              "id": 3261,
+              "name": "bytes4",
+              "nodeType": "ElementaryTypeName",
+              "src": "111:6:14",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes4",
+                "typeString": "bytes4"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "30786338363930323333",
+              "id": 3262,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "157:10:14",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_3362325043_by_1",
+                "typeString": "int_const 3362325043"
+              },
+              "value": "0xc8690233"
+            },
+            "visibility": "private"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 3271,
+            "name": "PubkeyChanged",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 3270,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3265,
+                  "indexed": true,
+                  "name": "node",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3271,
+                  "src": "194:20:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3264,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "194:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3267,
+                  "indexed": false,
+                  "name": "x",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3271,
+                  "src": "216:9:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3266,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "216:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3269,
+                  "indexed": false,
+                  "name": "y",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3271,
+                  "src": "227:9:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3268,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "227:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "193:44:14"
+            },
+            "src": "174:64:14"
+          },
+          {
+            "canonicalName": "PubkeyResolver.PublicKey",
+            "id": 3276,
+            "members": [
+              {
+                "constant": false,
+                "id": 3273,
+                "name": "x",
+                "nodeType": "VariableDeclaration",
+                "scope": 3276,
+                "src": "271:9:14",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                },
+                "typeName": {
+                  "id": 3272,
+                  "name": "bytes32",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "271:7:14",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3275,
+                "name": "y",
+                "nodeType": "VariableDeclaration",
+                "scope": 3276,
+                "src": "290:9:14",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                },
+                "typeName": {
+                  "id": 3274,
+                  "name": "bytes32",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "290:7:14",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              }
+            ],
+            "name": "PublicKey",
+            "nodeType": "StructDefinition",
+            "scope": 3346,
+            "src": "244:62:14",
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 3280,
+            "name": "pubkeys",
+            "nodeType": "VariableDeclaration",
+            "scope": 3346,
+            "src": "312:35:14",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_PublicKey_$3276_storage_$",
+              "typeString": "mapping(bytes32 => struct PubkeyResolver.PublicKey)"
+            },
+            "typeName": {
+              "id": 3279,
+              "keyType": {
+                "id": 3277,
+                "name": "bytes32",
+                "nodeType": "ElementaryTypeName",
+                "src": "320:7:14",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "312:27:14",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_PublicKey_$3276_storage_$",
+                "typeString": "mapping(bytes32 => struct PubkeyResolver.PublicKey)"
+              },
+              "valueType": {
+                "contractScope": null,
+                "id": 3278,
+                "name": "PublicKey",
+                "nodeType": "UserDefinedTypeName",
+                "referencedDeclaration": 3276,
+                "src": "329:9:14",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_PublicKey_$3276_storage_ptr",
+                  "typeString": "struct PubkeyResolver.PublicKey"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 3307,
+              "nodeType": "Block",
+              "src": "702:88:14",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 3299,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 3292,
+                        "name": "pubkeys",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3280,
+                        "src": "712:7:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_PublicKey_$3276_storage_$",
+                          "typeString": "mapping(bytes32 => struct PubkeyResolver.PublicKey storage ref)"
+                        }
+                      },
+                      "id": 3294,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "id": 3293,
+                        "name": "node",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3282,
+                        "src": "720:4:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "712:13:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_PublicKey_$3276_storage",
+                        "typeString": "struct PubkeyResolver.PublicKey storage ref"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "arguments": [
+                        {
+                          "argumentTypes": null,
+                          "id": 3296,
+                          "name": "x",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3284,
+                          "src": "738:1:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        {
+                          "argumentTypes": null,
+                          "id": 3297,
+                          "name": "y",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3286,
+                          "src": "741:1:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          },
+                          {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        ],
+                        "id": 3295,
+                        "name": "PublicKey",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3276,
+                        "src": "728:9:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_struct$_PublicKey_$3276_storage_ptr_$",
+                          "typeString": "type(struct PubkeyResolver.PublicKey storage pointer)"
+                        }
+                      },
+                      "id": 3298,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "structConstructorCall",
+                      "lValueRequested": false,
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "728:15:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_PublicKey_$3276_memory",
+                        "typeString": "struct PubkeyResolver.PublicKey memory"
+                      }
+                    },
+                    "src": "712:31:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_PublicKey_$3276_storage",
+                      "typeString": "struct PubkeyResolver.PublicKey storage ref"
+                    }
+                  },
+                  "id": 3300,
+                  "nodeType": "ExpressionStatement",
+                  "src": "712:31:14"
+                },
+                {
+                  "eventCall": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 3302,
+                        "name": "node",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3282,
+                        "src": "772:4:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 3303,
+                        "name": "x",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3284,
+                        "src": "778:1:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 3304,
+                        "name": "y",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3286,
+                        "src": "781:1:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      ],
+                      "id": 3301,
+                      "name": "PubkeyChanged",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 3271,
+                      "src": "758:13:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_bytes32_$_t_bytes32_$_t_bytes32_$returns$__$",
+                        "typeString": "function (bytes32,bytes32,bytes32)"
+                      }
+                    },
+                    "id": 3305,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "758:25:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 3306,
+                  "nodeType": "EmitStatement",
+                  "src": "753:30:14"
+                }
+              ]
+            },
+            "documentation": "Sets the SECP256k1 public key associated with an ENS node.\n@param node The ENS node to query\n@param x the X coordinate of the curve point for the public key.\n@param y the Y coordinate of the curve point for the public key.",
+            "id": 3308,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "arguments": [
+                  {
+                    "argumentTypes": null,
+                    "id": 3289,
+                    "name": "node",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 3282,
+                    "src": "696:4:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  }
+                ],
+                "id": 3290,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 3288,
+                  "name": "authorised",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 2290,
+                  "src": "685:10:14",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$_t_bytes32_$",
+                    "typeString": "modifier (bytes32)"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "685:16:14"
+              }
+            ],
+            "name": "setPubkey",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3287,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3282,
+                  "name": "node",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3308,
+                  "src": "640:12:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3281,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "640:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3284,
+                  "name": "x",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3308,
+                  "src": "654:9:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3283,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "654:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3286,
+                  "name": "y",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3308,
+                  "src": "665:9:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3285,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "665:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "639:36:14"
+            },
+            "returnParameters": {
+              "id": 3291,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "702:0:14"
+            },
+            "scope": 3346,
+            "src": "621:169:14",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 3327,
+              "nodeType": "Block",
+              "src": "1107:58:14",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "components": [
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "baseExpression": {
+                            "argumentTypes": null,
+                            "id": 3317,
+                            "name": "pubkeys",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 3280,
+                            "src": "1125:7:14",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_PublicKey_$3276_storage_$",
+                              "typeString": "mapping(bytes32 => struct PubkeyResolver.PublicKey storage ref)"
+                            }
+                          },
+                          "id": 3319,
+                          "indexExpression": {
+                            "argumentTypes": null,
+                            "id": 3318,
+                            "name": "node",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 3310,
+                            "src": "1133:4:14",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "1125:13:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_PublicKey_$3276_storage",
+                            "typeString": "struct PubkeyResolver.PublicKey storage ref"
+                          }
+                        },
+                        "id": 3320,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "x",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 3273,
+                        "src": "1125:15:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "baseExpression": {
+                            "argumentTypes": null,
+                            "id": 3321,
+                            "name": "pubkeys",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 3280,
+                            "src": "1142:7:14",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_bytes32_$_t_struct$_PublicKey_$3276_storage_$",
+                              "typeString": "mapping(bytes32 => struct PubkeyResolver.PublicKey storage ref)"
+                            }
+                          },
+                          "id": 3323,
+                          "indexExpression": {
+                            "argumentTypes": null,
+                            "id": 3322,
+                            "name": "node",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 3310,
+                            "src": "1150:4:14",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "1142:13:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_PublicKey_$3276_storage",
+                            "typeString": "struct PubkeyResolver.PublicKey storage ref"
+                          }
+                        },
+                        "id": 3324,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "y",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 3275,
+                        "src": "1142:15:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "id": 3325,
+                    "isConstant": false,
+                    "isInlineArray": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "TupleExpression",
+                    "src": "1124:34:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$_t_bytes32_$_t_bytes32_$",
+                      "typeString": "tuple(bytes32,bytes32)"
+                    }
+                  },
+                  "functionReturnParameters": 3316,
+                  "id": 3326,
+                  "nodeType": "Return",
+                  "src": "1117:41:14"
+                }
+              ]
+            },
+            "documentation": "Returns the SECP256k1 public key associated with an ENS node.\nDefined in EIP 619.\n@param node The ENS node to query\n@return x, y the X and Y coordinates of the curve point for the public key.",
+            "id": 3328,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "pubkey",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3311,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3310,
+                  "name": "node",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3328,
+                  "src": "1048:12:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3309,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1048:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1047:14:14"
+            },
+            "returnParameters": {
+              "id": 3316,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3313,
+                  "name": "x",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3328,
+                  "src": "1085:9:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3312,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1085:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3315,
+                  "name": "y",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3328,
+                  "src": "1096:9:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3314,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1096:7:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1084:22:14"
+            },
+            "scope": 3346,
+            "src": "1032:133:14",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 3344,
+              "nodeType": "Block",
+              "src": "1244:98:14",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "commonType": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    },
+                    "id": 3342,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                      "argumentTypes": null,
+                      "commonType": {
+                        "typeIdentifier": "t_bytes4",
+                        "typeString": "bytes4"
+                      },
+                      "id": 3337,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "leftExpression": {
+                        "argumentTypes": null,
+                        "id": 3335,
+                        "name": "interfaceID",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3330,
+                        "src": "1261:11:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes4",
+                          "typeString": "bytes4"
+                        }
+                      },
+                      "nodeType": "BinaryOperation",
+                      "operator": "==",
+                      "rightExpression": {
+                        "argumentTypes": null,
+                        "id": 3336,
+                        "name": "PUBKEY_INTERFACE_ID",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 3263,
+                        "src": "1276:19:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes4",
+                          "typeString": "bytes4"
+                        }
+                      },
+                      "src": "1261:34:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "||",
+                    "rightExpression": {
+                      "argumentTypes": null,
+                      "arguments": [
+                        {
+                          "argumentTypes": null,
+                          "id": 3340,
+                          "name": "interfaceID",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3330,
+                          "src": "1323:11:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes4",
+                            "typeString": "bytes4"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_bytes4",
+                            "typeString": "bytes4"
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 3338,
+                          "name": "super",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3485,
+                          "src": "1299:5:14",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_super$_PubkeyResolver_$3346",
+                            "typeString": "contract super PubkeyResolver"
+                          }
+                        },
+                        "id": 3339,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "supportsInterface",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 2271,
+                        "src": "1299:23:14",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_function_internal_pure$_t_bytes4_$returns$_t_bool_$",
+                          "typeString": "function (bytes4) pure returns (bool)"
+                        }
+                      },
+                      "id": 3341,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "functionCall",
+                      "lValueRequested": false,
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "1299:36:14",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "src": "1261:74:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 3334,
+                  "id": 3343,
+                  "nodeType": "Return",
+                  "src": "1254:81:14"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 3345,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "supportsInterface",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3331,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3330,
+                  "name": "interfaceID",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3345,
+                  "src": "1198:18:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes4",
+                    "typeString": "bytes4"
+                  },
+                  "typeName": {
+                    "id": 3329,
+                    "name": "bytes4",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1198:6:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes4",
+                      "typeString": "bytes4"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1197:20:14"
+            },
+            "returnParameters": {
+              "id": 3334,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3333,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3345,
+                  "src": "1238:4:14",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 3332,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1238:4:14",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1237:6:14"
+            },
+            "scope": 3346,
+            "src": "1171:171:14",
+            "stateMutability": "pure",
+            "superFunction": 2271,
+            "visibility": "public"
+          }
+        ],
+        "scope": 3347,
+        "src": "65:1279:14"
+      }
+    ],
+    "src": "0:1345:14"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2019-07-02T00:26:01.833Z",
+  "devdoc": {
+    "methods": {
+      "pubkey(bytes32)": {
+        "params": {
+          "node": "The ENS node to query"
+        },
+        "return": "x, y the X and Y coordinates of the curve point for the public key."
+      },
+      "setPubkey(bytes32,bytes32,bytes32)": {
+        "params": {
+          "node": "The ENS node to query",
+          "x": "the X coordinate of the curve point for the public key.",
+          "y": "the Y coordinate of the curve point for the public key."
+        }
+      }
+    }
+  },
+  "userdoc": {
+    "methods": {
+      "pubkey(bytes32)": {
+        "notice": "Returns the SECP256k1 public key associated with an ENS node. Defined in EIP 619."
+      },
+      "setPubkey(bytes32,bytes32,bytes32)": {
+        "notice": "Sets the SECP256k1 public key associated with an ENS node."
+      }
+    }
+  }
+}
