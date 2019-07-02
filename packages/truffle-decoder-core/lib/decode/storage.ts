@@ -244,7 +244,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         );
       }
 
-      let decodedMembers: {name: string, value: Values.Result}[] = [];
+      let decodedMembers: Values.NameValuePair[] = [];
       const members = structAllocation.members;
 
       for(let index = 0; index < members.length; index++) {
@@ -306,7 +306,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         return Errors.makeGenericErrorResult(dataType, error.error);
       }
 
-      let decodedEntries: {key: Values.ElementaryValue, value: Values.Result}[] = [];
+      let decodedEntries: Values.KeyValuePair[] = [];
 
       const baseSlot: StorageTypes.Slot = pointer.storage.from.slot;
       debug("baseSlot %o", baseSlot);

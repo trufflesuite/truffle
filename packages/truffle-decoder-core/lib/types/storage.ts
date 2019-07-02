@@ -64,5 +64,6 @@ export function equalSlots(slot1: Slot | undefined, slot2: Slot | undefined): bo
   //if they do have keys, though...
   let { type: type1, value: value1 } = slot1.key.toSoliditySha3Input();
   let { type: type2, value: value2 } = slot2.key.toSoliditySha3Input();
-  return type1 === type2 && value1 === value2;
+  return type1 === type2 && value1.toString() === value2.toString(); //HACK: since values may be
+  //BNs, we compare by toString instead of by the value itself
 }
