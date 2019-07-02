@@ -10,6 +10,7 @@ const ProviderSubprovider = require("web3-provider-engine/subproviders/provider.
 const Web3 = require("web3");
 const Transaction = require("ethereumjs-tx");
 const ethUtil = require("ethereumjs-util");
+const Url = require("url");
 
 // This line shares nonce state across multiple provider instances. Necessary
 // because within truffle the wallet is repeatedly newed if it's declared in the config within a
@@ -32,6 +33,16 @@ class HDWalletProvider {
     this.wallets = {};
     this.addresses = [];
     this.engine = new ProviderEngine();
+
+    if (!HDWalletProvider.isValidProvider(provider)) {
+      throw new Error(
+        [
+          `Malformed provider URL: '${provider}'`,
+          "Please specify a correct URL, using the http, https, ws, or wss protocol.",
+          ""
+        ].join("\n")
+      );
+    }
 
     // private helper to normalize given mnemonic
     const normalizePrivateKeys = mnemonic => {
@@ -171,5 +182,16 @@ class HDWalletProvider {
     return this.addresses;
   }
 }
+
+HDWalletProvider.isValidProvider = provider => {
+  const validProtocols = ["http:", "https:", "ws:", "wss:"];
+
+  if (typeof provider === "string") {
+    const url = Url.parse(provider.toLowerCase());
+    return validProtocols.includes(url.protocol);
+  }
+
+  return true;
+};
 
 module.exports = HDWalletProvider;

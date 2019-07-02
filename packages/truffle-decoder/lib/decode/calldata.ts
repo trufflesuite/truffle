@@ -177,7 +177,8 @@ function* decodeCalldataStructByPosition(definition: DecodeUtils.AstDefinition, 
     //there also used to be code here to add on the "_ptr" ending when absent, but we
     //presently ignore that ending, so we'll skip that
 
-    let decoded = yield* decodeCalldata(memberDefinition, childPointer, info);
+    let decoded = yield* decodeCalldata(memberDefinition, childPointer, info, startPosition);
+    //note that startPosition is only needed in the dynamic case, but we don't know which case we're in
 
     decodedMembers[memberDefinition.name] = decoded;
   }

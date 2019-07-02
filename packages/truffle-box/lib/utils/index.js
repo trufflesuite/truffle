@@ -15,7 +15,7 @@ module.exports = {
       downloadSpinner.succeed();
     } catch (error) {
       downloadSpinner.fail();
-      throw new Error(error);
+      throw error;
     }
   },
 
@@ -29,49 +29,41 @@ module.exports = {
       return path || (fs.existsSync(alt) && alt);
     }, undefined);
 
-    try {
-      const boxConfig = await config.read(configPath);
-      return boxConfig;
-    } catch (error) {
-      throw new Error(error);
-    }
+    return await config.read(configPath);
   },
 
   setUpTempDirectory: () => {
     const prepareSpinner = ora("Preparing to download").start();
-    return new Promise((resolve, reject) => {
-      const options = {
-        dir: cwd,
-        unsafeCleanup: true
+    const options = {
+      dir: cwd,
+      unsafeCleanup: true
+    };
+    try {
+      const tmpDir = tmp.dirSync(options);
+      prepareSpinner.succeed();
+      return {
+        path: path.join(tmpDir.name, "box"),
+        cleanupCallback: tmpDir.removeCallback
       };
-      tmp.dir(options, (error, dir, cleanupCallback) => {
-        if (error) {
-          prepareSpinner.fail();
-          return reject(error);
-        }
-
-        prepareSpinner.succeed();
-        resolve({
-          path: path.join(dir, "box"),
-          cleanupCallback
-        });
-      });
-    });
+    } catch (error) {
+      prepareSpinner.fail();
+      throw error;
+    }
   },
 
   unpackBox: async (tempDir, destination, boxConfig, unpackBoxOptions) => {
-    await unbox.prepareToCopyFiles(tempDir, boxConfig);
+    unbox.prepareToCopyFiles(tempDir, boxConfig);
     await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
   },
 
-  setUpBox: async (boxConfig, destination) => {
+  setUpBox: (boxConfig, destination) => {
     const setUpSpinner = ora("Setting up box").start();
     try {
-      await unbox.installBoxDependencies(boxConfig, destination);
+      unbox.installBoxDependencies(boxConfig, destination);
       setUpSpinner.succeed();
     } catch (error) {
       setUpSpinner.fail();
-      throw new Error(error);
+      throw error;
     }
   }
 };
