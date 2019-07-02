@@ -63,6 +63,10 @@ export class Web3Shim extends Web3 {
         this.initQuorum();
         break;
       }
+      case "fabric-evm": {
+        this.initFabricEvm();
+        break;
+      }
       case "ethereum":
       default: {
         this.initEthereum();
