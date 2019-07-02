@@ -3,6 +3,7 @@ import { Provider } from "web3/providers";
 
 import * as ethereumOverloads from "./ethereum-overloads";
 import * as quorumOverloads from "./quorum-overloads";
+import * as fabricEvmOverloads from "./fabric-evm-overloads";
 
 // March 13, 2019 - Mike Seese:
 // This is a temporary shim to support the basic, Ethereum-based
