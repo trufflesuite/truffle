@@ -4,9 +4,9 @@
   "description": "Compiler helper and artifact manager",
   "main": "index.js",
   "dependencies": {
-    "async": "2.6.1",
     "colors": "^1.1.2",
     "debug": "^4.1.0",
+    "fs-extra": "^8.0.1",
     "ora": "^3.0.0",
     "original-require": "^1.0.1",
     "request": "^2.85.0",
