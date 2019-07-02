@@ -3,7 +3,7 @@ const debug = debugModule("decoder:decode:memory");
 
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
-import { Types, Values } from "truffle-decode-utils";
+import { Types, Values, Errors } from "truffle-decode-utils";
 import decodeValue from "./value";
 import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";
@@ -26,8 +26,8 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
   try {
     rawValue = yield* read(pointer, state);
   }
-  catch(error) { //error: Values.DecodingError
-    return Values.makeGenericErrorResult(dataType, error.error);
+  catch(error) { //error: Errors.DecodingError
+    return Errors.makeGenericErrorResult(dataType, error.error);
   }
 
   let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber();
@@ -47,8 +47,8 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
           }
         }, state);
       }
-      catch(error) { //error: Values.DecodingError
-        return Values.makeGenericErrorResult(dataType, error.error);
+      catch(error) { //error: Errors.DecodingError
+        return Errors.makeGenericErrorResult(dataType, error.error);
       }
       length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
 
@@ -70,8 +70,8 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
             }
           }, state);
         }
-        catch(error) { //error: Values.DecodingError
-          return Values.makeGenericErrorResult(dataType, error.error);
+        catch(error) { //error: Errors.DecodingError
+          return Errors.makeGenericErrorResult(dataType, error.error);
         }
         length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
         startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition
@@ -105,9 +105,9 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       const typeId = dataType.id;
       const structAllocation = memoryAllocations[typeId];
       if(!structAllocation) {
-        return new Values.StructErrorResult(
+        return new Errors.StructErrorResult(
           dataType,
-          new Values.UserDefinedTypeNotFoundError(dataType)
+          new Errors.UserDefinedTypeNotFoundError(dataType)
         );
       }
 
@@ -127,9 +127,9 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         let memberName = memberAllocation.definition.name;
         let storedType = <Types.StructType>userDefinedTypes[typeId];
         if(!storedType) {
-          return new Values.StructErrorResult(
+          return new Errors.StructErrorResult(
             dataType,
-            new Values.UserDefinedTypeNotFoundError(dataType)
+            new Errors.UserDefinedTypeNotFoundError(dataType)
           );
         }
         let storedMemberType = storedType.memberTypes[index].type;

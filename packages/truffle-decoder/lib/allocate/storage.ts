@@ -365,8 +365,8 @@ export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefined
     case "enum": {
       let fullType = <DecodeUtils.Types.EnumType>DecodeUtils.Types.fullType(dataType, userDefinedTypes);
       if(!fullType.options) {
-        throw new DecodeUtils.Values.DecodingError(
-          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType)
+        throw new DecodeUtils.Errors.DecodingError(
+          new DecodeUtils.Errors.UserDefinedTypeNotFoundError(dataType)
         );
       }
       return {bytes: Math.ceil(Math.log2(fullType.options.length) / 8)};
@@ -414,8 +414,8 @@ export function storageSizeForType(dataType: DecodeUtils.Types.Type, userDefined
     case "struct":
       let allocation = allocations[dataType.id];
       if(!allocation) {
-        throw new DecodeUtils.Values.DecodingError(
-          new DecodeUtils.Values.UserDefinedTypeNotFoundError(dataType)
+        throw new DecodeUtils.Errors.DecodingError(
+          new DecodeUtils.Errors.UserDefinedTypeNotFoundError(dataType)
         );
       }
       return allocation.size;

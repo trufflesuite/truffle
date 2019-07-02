@@ -3,7 +3,7 @@ const debug = debugModule("decoder:decode:calldata");
 
 import read from "../read";
 import * as DecodeUtils from "truffle-decode-utils";
-import { Types, Values } from "truffle-decode-utils";
+import { Types, Values, Errors } from "truffle-decode-utils";
 import decodeValue from "./value";
 import { CalldataPointer, DataPointer } from "../types/pointer";
 import { CalldataMemberAllocation } from "../types/allocation";
@@ -17,8 +17,8 @@ export default function* decodeCalldata(dataType: Types.Type, pointer: CalldataP
     try {
       dynamic = isTypeDynamic(dataType, info.calldataAllocations);
     }
-    catch(error) { //error: Values.DecodingError
-      return Values.makeGenericErrorResult(dataType, error.error);
+    catch(error) { //error: Errors.DecodingError
+      return Errors.makeGenericErrorResult(dataType, error.error);
     }
     if(dynamic) {
       return yield* decodeCalldataReferenceByAddress(dataType, pointer, info, base);
@@ -40,8 +40,8 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
   try {
     rawValue = yield* read(pointer, state);
   }
-  catch(error) { //error: Values.DecodingError
-    return Values.makeGenericErrorResult(dataType, error.error);
+  catch(error) { //error: Errors.DecodingError
+    return Errors.makeGenericErrorResult(dataType, error.error);
   }
 
   let startPosition = DecodeUtils.Conversion.toBN(rawValue).toNumber() + base;
@@ -51,16 +51,16 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
   try {
     dynamic = isTypeDynamic(dataType, info.calldataAllocations);
   }
-  catch(error) { //error: Values.DecodingError
-    return Values.makeGenericErrorResult(dataType, error.error);
+  catch(error) { //error: Errors.DecodingError
+    return Errors.makeGenericErrorResult(dataType, error.error);
   }
   if(!dynamic) { //this will only come up when called from stack.ts
     let size: number;
     try {
       size = calldataSizeForType(dataType, info.calldataAllocations);
     }
-    catch(error) { //error: Values.DecodingError
-      return Values.makeGenericErrorResult(dataType, error.error);
+    catch(error) { //error: Errors.DecodingError
+      return Errors.makeGenericErrorResult(dataType, error.error);
     }
     let staticPointer = {
       calldata: {
@@ -85,8 +85,8 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
           }
         }, state));
       }
-      catch(error) { //error: Values.DecodingError
-        return Values.makeGenericErrorResult(dataType, error.error);
+      catch(error) { //error: Errors.DecodingError
+        return Errors.makeGenericErrorResult(dataType, error.error);
       }
       length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
 
@@ -109,8 +109,8 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
               }
             }, state));
           }
-          catch(error) { //error: Values.DecodingError
-            return Values.makeGenericErrorResult(dataType, error.error);
+          catch(error) { //error: Errors.DecodingError
+            return Errors.makeGenericErrorResult(dataType, error.error);
           }
           length = DecodeUtils.Conversion.toBN(rawLength).toNumber();
           startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition
@@ -129,8 +129,8 @@ export function* decodeCalldataReferenceByAddress(dataType: Types.ReferenceType,
       try {
         baseSize = calldataSizeForType(dataType.baseType, info.calldataAllocations);
       }
-      catch(error) { //error: Values.DecodingError
-        return Values.makeGenericErrorResult(dataType, error.error);
+      catch(error) { //error: Errors.DecodingError
+        return Errors.makeGenericErrorResult(dataType, error.error);
       }
 
       let decodedChildren: Values.Result[] = [];
@@ -166,8 +166,8 @@ export function* decodeCalldataReferenceStatic(dataType: Types.ReferenceType, po
       try {
         baseSize = calldataSizeForType(dataType.baseType, info.calldataAllocations);
       }
-      catch(error) { //error: Values.DecodingError
-        return Values.makeGenericErrorResult(dataType, error.error);
+      catch(error) { //error: Errors.DecodingError
+        return Errors.makeGenericErrorResult(dataType, error.error);
       }
 
       let decodedChildren: Values.Result[] = [];
@@ -197,9 +197,9 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
   const typeId = dataType.id;
   const structAllocation = calldataAllocations[typeId];
   if(!structAllocation) {
-    return new Values.StructErrorResult(
+    return new Errors.StructErrorResult(
       dataType,
-      new Values.UserDefinedTypeNotFoundError(dataType)
+      new Errors.UserDefinedTypeNotFoundError(dataType)
     );
   }
 
@@ -217,9 +217,9 @@ function* decodeCalldataStructByPosition(dataType: Types.StructType, startPositi
     let memberName = memberAllocation.definition.name;
     let storedType = <Types.StructType>userDefinedTypes[typeId];
     if(!storedType) {
-      return new Values.StructErrorResult(
+      return new Errors.StructErrorResult(
         dataType,
-        new Values.UserDefinedTypeNotFoundError(dataType)
+        new Errors.UserDefinedTypeNotFoundError(dataType)
       );
     }
     let storedMemberType = storedType.memberTypes[index].type;

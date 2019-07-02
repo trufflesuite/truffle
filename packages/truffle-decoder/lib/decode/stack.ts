@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decoder:decode:stack");
 
 import * as DecodeUtils from "truffle-decode-utils";
-import { Types, Values } from "truffle-decode-utils";
+import { Types, Values, Errors } from "truffle-decode-utils";
 import read from "../read";
 import decodeValue from "./value";
 import { decodeExternalFunction, checkPaddingLeft } from "./value";
@@ -18,8 +18,8 @@ export default function* decodeStack(dataType: Types.Type, pointer: StackPointer
   try {
    rawValue = yield* read(pointer, info.state);
   }
-  catch(error) { //error: Values.DecodingError
-    return Values.makeGenericErrorResult(dataType, error.error);
+  catch(error) { //error: Errors.DecodingError
+    return Errors.makeGenericErrorResult(dataType, error.error);
   }
   const literalPointer: StackLiteralPointer = { literal: rawValue };
   return yield* decodeLiteral(dataType, literalPointer, info);
@@ -81,9 +81,9 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
     let selectorWord = pointer.literal.slice(-DecodeUtils.EVM.WORD_SIZE);
     if(!checkPaddingLeft(address, DecodeUtils.EVM.ADDRESS_SIZE)
       ||!checkPaddingLeft(selectorWord, DecodeUtils.EVM.SELECTOR_SIZE)) {
-      return new Values.FunctionExternalErrorResult(
+      return new Errors.FunctionExternalErrorResult(
         dataType,
-        new Values.FunctionExternalStackPaddingError(
+        new Errors.FunctionExternalStackPaddingError(
           DecodeUtils.Conversion.toHexString(address),
           DecodeUtils.Conversion.toHexString(selectorWord)
         )
