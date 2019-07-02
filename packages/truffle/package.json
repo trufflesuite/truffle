@@ -1,7 +1,7 @@
 {
   "name": "truffle",
   "namespace": "consensys",
-  "version": "5.0.24",
+  "version": "5.0.26",
   "description": "Truffle - Simple development framework for Ethereum",
   "dependencies": {
     "app-module-path": "^2.2.0",
@@ -26,10 +26,10 @@
     "shebang-loader": "0.0.1",
     "stream-buffers": "^3.0.1",
     "tmp": "0.0.33",
-    "truffle-box": "^1.0.28",
-    "truffle-contract": "^4.0.21",
-    "truffle-core": "^5.0.24",
-    "truffle-debugger": "^5.0.16",
+    "truffle-box": "^1.0.29",
+    "truffle-contract": "^4.0.23",
+    "truffle-core": "^5.0.26",
+    "truffle-debugger": "^5.0.18",
     "web3": "1.0.0-beta.37",
     "webpack": "^2.5.1",
     "webpack-bundle-analyzer": "^3.0.3",
