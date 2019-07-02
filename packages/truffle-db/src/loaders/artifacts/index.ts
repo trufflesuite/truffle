@@ -7,9 +7,6 @@ import path from "path";
 import * as Config from "truffle-config";
 import { Environment } from "truffle-environment";
 import Web3 from "web3";
-// const Config = require("truffle-config");
-// const { Environment } = require("truffle-environment");
-// const Web3 = require('web3');
 
 
 const AddBytecodes = gql`
