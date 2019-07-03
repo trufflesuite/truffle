@@ -1,24 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("codec-utils:types:errors");
 
-//objects for Solidity values
-
-//Note: This is NOT intended to represent every possible value that exists
-//in Solidity!  Only possible values of variables.  (Though there may be
-//some expansion in the future.)  We do however count the builtin variables
-//msg, block, and tx as variables (not other builtins though for now) so
-//there is some support for the magic type.
-
-//We don't include fixed and ufixed for now.  Those will be added when
-//implemented.
-
-//NOTE: not all of these optional fields are actually implemented. Some are
-//just intended for the future.  More optional fields may be added in the
-//future.
+//error counterpart to values.ts
 
 //Note: Many of the errors defined here deliberately *don't* extend Error.
-//This is because their intended use is a little different.  Only the ones
-//that are for throwing extend Error.
+//This is because they're not for throwing.  If you want to throw one,
+//wrap it in a DecodingError.
 
 import BN from "bn.js";
 import { Types } from "./types";
@@ -525,7 +512,8 @@ export namespace Errors {
    * SECTION 8: GENERIC ERRORS
    */
 
-  export type GenericError = UserDefinedTypeNotFoundError | UnsupportedConstantError | ReadErrorStack;
+  export type GenericError = UserDefinedTypeNotFoundError | IndexedReferenceTypeError
+    | UnsupportedConstantError | ReadErrorStack | ReadErrorTopic;
 
   //type-location error
   export class UserDefinedTypeNotFoundError extends DecoderErrorBase {
@@ -545,7 +533,7 @@ export namespace Errors {
   }
 
   //attempted to decode an indexed parameter of reference type error
-  export class IndexedReferenceTypeError extends GenericError {
+  export class IndexedReferenceTypeError extends DecoderErrorBase {
     type: Types.ReferenceType;
     raw: string; //should be hex string
     message() {
@@ -587,7 +575,7 @@ export namespace Errors {
     }
   }
 
-  export class ReadErrorTopic extends GenericError {
+  export class ReadErrorTopic extends DecoderErrorBase {
     topic: number;
     message() {
       return `Can't read event topic ${this.topic}`;

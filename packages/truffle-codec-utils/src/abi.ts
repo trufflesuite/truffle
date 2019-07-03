@@ -3,7 +3,7 @@ const debug = debugModule("codec-utils:abi");
 
 import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition, AstReferences } from "./ast";
+import { AstDefinition, AstReferences, Mutability } from "./ast";
 import { Definition as DefinitionUtils } from "./definition";
 import { Values } from "./types/values";
 import { UnknownUserDefinedTypeError } from "./errors";
@@ -23,7 +23,7 @@ export namespace AbiUtils {
     name: string;
     inputs: AbiParameter[];
     outputs: AbiParameter[];
-    stateMutability?: "payable" | "nonpayable" | "view" | "pure"; //only in newer ones
+    stateMutability?: Mutability; //only in newer ones
     constant?: boolean; //only in older ones
     payable?: boolean; //only in older ones
   }
@@ -97,7 +97,7 @@ export namespace AbiUtils {
   }
 
   //does this ABI have a payable fallback function?
-  export function isABIPayable(abiLoose: Abi | SchemaAbi | undefined): boolean | undefined {
+  export function abiHasPayableFallback(abiLoose: Abi | SchemaAbi | undefined): boolean | undefined {
     if(abiLoose === undefined) {
       return undefined;
     }
@@ -109,7 +109,7 @@ export namespace AbiUtils {
   }
 
   //shim for old abi versions
-  function abiMutability(abiEntry: FunctionAbiEntry | ConstructorAbiEntry | FallbackAbiEntry): "pure" | "view" | "nonpayable" | "payable" {
+  function abiMutability(abiEntry: FunctionAbiEntry | ConstructorAbiEntry | FallbackAbiEntry): Mutability {
     if(abiEntry.stateMutability !== undefined) {
       return abiEntry.stateMutability;
     }

@@ -62,7 +62,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       Types.definitionToType(argumentAllocation.definition, compiler),
       argumentAllocation.pointer,
       info,
-      allocation.offset //note the use of the offset for decoding pointers!
+      { abiPointerBase: allocation.offset } //note the use of the offset for decoding pointers!
     ));
     const name = argumentAllocation.definition.name;
     decodedArguments.push(
@@ -148,8 +148,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName: string 
           Types.definitionToType(argumentAllocation.definition, attemptContext.compiler),
           argumentAllocation.pointer,
           info,
-          0, //offset is always 0 for events
-          "strict" //turns on STRICT MODE to cause more errors to be thrown
+          { strictAbiMode: true } //turns on STRICT MODE to cause more errors to be thrown
         ));
         const name = argumentAllocation.definition.name;
         const indexed = argumentAllocation.pointer.location === "eventtopic";

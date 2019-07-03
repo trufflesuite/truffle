@@ -28,10 +28,9 @@ function allocateStruct(definition: AstDefinition): MemoryAllocation {
     memberAllocations.push({
       definition: member,
       pointer: {
-        memory: {
-          start: position,
-          length
-        }
+        location: "memory",
+        start: position,
+        length
       }
     });
     position += length;

@@ -31,12 +31,11 @@ contract("DecodingSample", _accounts => {
   it("should get the initial state properly", async () => {
     let deployedContract = await DecodingSample.deployed();
     let address = deployedContract.address;
-    const decoder = TruffleDecoder.forContract(
+    const decoder = await TruffleDecoder.forContract(
       DecodingSample,
       [],
       web3.currentProvider
     );
-    await decoder.init();
 
     decoder.watchMappingKey("varMapping", 2);
     decoder.watchMappingKey("varMapping", 3);

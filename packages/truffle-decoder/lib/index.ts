@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("decoder");
+
 import TruffleContractDecoder from "./contract";
 import TruffleWireDecoder from "./wire";
 import { Provider } from "web3/providers";

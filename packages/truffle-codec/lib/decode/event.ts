@@ -3,13 +3,13 @@ const debug = debugModule("codec:decode:event");
 
 import decodeValue from "./value";
 import read from "../read";
-import { Types, Values, Conversion as ConversionUtils } from "truffle-codec-utils";
+import { Types, Values, Errors, Conversion as ConversionUtils } from "truffle-codec-utils";
 import { EventTopicPointer } from "../types/pointer";
-import { EvmInfo, DecoderMode } from "../types/evm";
+import { EvmInfo, DecoderOptions } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { StopDecodingError } from "../types/errors";
 
-export default function* decodeTopic(dataType: Types.Type, pointer: EventTopicPointer, info: EvmInfo, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export default function* decodeTopic(dataType: Types.Type, pointer: EventTopicPointer, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   if(Types.isReferenceType(dataType)) {
     //we cannot decode reference types "stored" in topics; we have to just return an error
     let bytes: Uint8Array;
@@ -17,21 +17,21 @@ export default function* decodeTopic(dataType: Types.Type, pointer: EventTopicPo
       bytes = yield* read(pointer, info.state);
     }
     catch(error) { //error: Values.DecodingError
-      if(mode === "strict") {
+      if(options.strictAbiMode) {
         throw new StopDecodingError();
       }
-      return Values.makeGenericErrorResult(dataType, error.error);
+      return Errors.makeGenericErrorResult(dataType, error.error);
     }
     let raw: string = ConversionUtils.toHexString(bytes);
     //NOTE: even in strict mode we want to just return this, not throw an error here
-    return Values.makeGenericErrorResult(
+    return Errors.makeGenericErrorResult(
       dataType,
-      new Values.IndexedReferenceTypeError(
+      new Errors.IndexedReferenceTypeError(
         dataType,
         raw
       )
     );
   }
   //otherwise, dispatch to decodeValue
-  return yield* decodeValue(dataType, pointer, info, mode);
+  return yield* decodeValue(dataType, pointer, info, options);
 }

@@ -40,6 +40,7 @@ export interface AstDefinition {
   keyType?: AstDefinition;
   valueType?: AstDefinition;
   indexed?: boolean;
+  anonymous?: boolean;
   contractKind?: ContractKind;
   isConstructor?: boolean;
   [k: string]: any;

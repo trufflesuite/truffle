@@ -13,11 +13,10 @@ contract("WireTest", _accounts => {
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
 
-    const decoder = TruffleDecoder.forProject(
+    const decoder = await TruffleDecoder.forProject(
       [WireTest, WireTestParent, WireTestLibrary],
       web3.currentProvider
     );
-    await decoder.init();
 
     let deployedContractNoConstructor = await WireTestParent.new();
     let defaultConstructorHash = deployedContractNoConstructor.transactionHash;
@@ -342,11 +341,10 @@ contract("WireTest", _accounts => {
   it("disambiguates events when possible and not when impossible", async () => {
     let deployedContract = await WireTest.deployed();
 
-    const decoder = TruffleDecoder.forProject(
+    const decoder = await TruffleDecoder.forProject(
       [WireTest, WireTestParent, WireTestLibrary],
       web3.currentProvider
     );
-    await decoder.init();
 
     //HACK HACK -- we're going to repeatedly apply the hack from above
     //because ethers also can't handle ambiguous events

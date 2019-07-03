@@ -117,7 +117,6 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     ).map(context =>
       ({[context.contractId]: context})
     ));
-    this.contexts = <DecodeUtils.Contexts.DecoderContexts>DecodeUtils.Contexts.normalizeContexts(this.contexts);
   }
 
   public async init(): Promise<void> {

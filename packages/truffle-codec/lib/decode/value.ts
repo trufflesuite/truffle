@@ -7,13 +7,13 @@ import { Types, Values, Errors } from "truffle-codec-utils";
 import BN from "bn.js";
 import utf8 from "utf8";
 import { DataPointer } from "../types/pointer";
-import { EvmInfo, DecoderOptions, DefaultDecoderOptions } from "../types/evm";
+import { EvmInfo, DecoderOptions } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { StopDecodingError } from "../types/errors";
 
-export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = DefaultDecoderOptions): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { state } = info;
-  const { permissivePadding, strict } = options;
+  const { permissivePadding, strictAbiMode: strict } = options; //if these are undefined they'll still be falsy so OK
 
   let bytes: Uint8Array;
   let rawBytes: Uint8Array;
@@ -263,7 +263,7 @@ export function decodeString(bytes: Uint8Array): Values.StringValueInfo {
     let correctlyEncodedString = utf8.decode(badlyEncodedString);
     return new Values.StringValueInfoValid(correctlyEncodedString);
   }
-  catch(error) {
+  catch(_) {
     //we're going to ignore the precise error and just assume it's because
     //the string was malformed (what else could it be?)
     let hexString = CodecUtils.Conversion.toHexString(bytes);

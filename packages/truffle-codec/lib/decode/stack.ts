@@ -64,12 +64,18 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
           //HACK -- in order to read the correct location, we need to add an offset
           //of -32 (since, again, we're throwing away the length info), so we pass
           //that in as the "base" value
-          return yield* decodeAbiReferenceByAddress(dataType, {location: "stackliteral", literal: locationOnly}, info, -CodecUtils.EVM.WORD_SIZE);
+          return yield* decodeAbiReferenceByAddress(
+            dataType,
+            {location: "stackliteral", literal: locationOnly},
+            info,
+            { abiPointerBase: -CodecUtils.EVM.WORD_SIZE}
+          );
         }
         else {
           //multivalue case -- this case is straightforward
           //pass in 0 as the base since this is an absolute pointer
-          return yield* decodeAbiReferenceByAddress(dataType, pointer, info, 0);
+          //(yeah we don't need to but let's be explicit)
+          return yield* decodeAbiReferenceByAddress(dataType, pointer, info, { abiPointerBase: 0 });
         }
     }
   }

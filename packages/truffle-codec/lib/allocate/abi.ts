@@ -12,7 +12,7 @@ import partition from "lodash.partition";
 interface AbiAllocationInfo {
   size?: number; //left out for types that don't go in the abi
   dynamic?: boolean; //similarly
-  allocations: AbiAllocations;
+  allocations: Allocations.AbiAllocations;
 }
 
 export function getAbiAllocations(referenceDeclarations: AstReferences): Allocations.AbiAllocations {
@@ -212,8 +212,8 @@ export function abiSizeForType(dataType: CodecUtils.Types.Type, allocations?: Al
     case "struct":
       const allocation = allocations[dataType.id];
       if(!allocation) {
-        throw new CodecUtils.Values.DecodingError(
-          new CodecUtils.Values.UserDefinedTypeNotFoundError(dataType)
+        throw new CodecUtils.Errors.DecodingError(
+          new CodecUtils.Errors.UserDefinedTypeNotFoundError(dataType)
         );
       }
       return allocation.length;
@@ -234,8 +234,8 @@ export function isTypeDynamic(dataType: CodecUtils.Types.Type, allocations?: All
     case "struct":
       const allocation = allocations[dataType.id];
       if(!allocation) {
-        throw new CodecUtils.Values.DecodingError(
-          new CodecUtils.Values.UserDefinedTypeNotFoundError(dataType)
+        throw new CodecUtils.Errors.DecodingError(
+          new CodecUtils.Errors.UserDefinedTypeNotFoundError(dataType)
         );
       }
       return allocation.dynamic;

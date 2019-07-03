@@ -50,12 +50,14 @@ export interface InternalFunction {
   contractNode?: AstDefinition;
   contractName?: string;
   contractId?: number;
-  contractKind?: string;
+  contractKind?: ContractKind;
   contractPayable?: boolean;
   isDesignatedInvalid: boolean;
 }
 
 export interface DecoderOptions {
   permissivePadding?: boolean;
-  strict?: boolean;
+  strictAbiMode?: boolean;
+  abiPointerBase?: number;
+  memoryVisited?: string[]; //for the future
 }

@@ -9,7 +9,6 @@ import { AbiUtils } from "./abi";
 import { Types } from "./types/types";
 import { AstDefinition, AstReferences, ContractKind } from "./ast";
 import { CompilerVersion } from "./compiler";
-import { ContractKind } from "./ast";
 
 export namespace Contexts {
 
@@ -59,18 +58,7 @@ export namespace Contexts {
     payable?: boolean;
   }
 
-  //does this ABI have a payable fallback function?
-  export function abiHasPayableFallback(abi: Abi | undefined): boolean | undefined {
-    if(abi === undefined) {
-      return undefined;
-    }
-    return abi.some(
-      abiEntry => abiEntry.type === "fallback" && 
-        (abiEntry.stateMutability === "payable" || abiEntry.payable)
-    );
-  }
-
-  //I split these next two apart because the type system was giving me rouble
+  //I split these next two apart because the type system was giving me trouble
   export function findDecoderContext(contexts: DecoderContexts | DecoderContextsById, binary: string): DecoderContext | null {
     debug("binary %s", binary);
     let context = Object.values(contexts).find(context =>

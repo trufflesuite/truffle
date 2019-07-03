@@ -4,93 +4,100 @@ import { isTypeDynamic, abiSizeForType } from "../allocate/abi";
 import sum from "lodash.sum";
 import utf8 from "utf8";
 
+//UGH -- it turns out TypeScript can't handle nested tagged unions
+//see: https://github.com/microsoft/TypeScript/issues/18758
+//so, I'm just going to have to throw in a bunch of type coercions >_>
+
 export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): Uint8Array | undefined {
-  if(input instanceof Values.ErrorResult) {
+  //errors can't be encoded
+  if(input.kind === "error") {
     return undefined;
   }
-  //types that can't go in ABI
-  if(input instanceof Values.MappingValue) {
-    return undefined;
-  }
-  if(input instanceof Values.FunctionInternalValue) {
-    return undefined;
-  }
-  if(input instanceof Values.MagicValue) {
-    return undefined;
-  }
-  //now, the types that actually work!
-  if(input instanceof Values.UintValue) {
-    return ConversionUtils.toBytes(input.value.asBN, EVMUtils.WORD_SIZE);
-  }
-  if(input instanceof Values.IntValue) {
-    return ConversionUtils.toBytes(input.value.asBN, EVMUtils.WORD_SIZE);
-  }
-  if(input instanceof Values.EnumValue) {
-    return ConversionUtils.toBytes(input.value.numeric, EVMUtils.WORD_SIZE);
-  }
-  if(input instanceof Values.BoolValue) {
-    let bytes = new Uint8Array(EVMUtils.WORD_SIZE); //is initialized to zeroes
-    if(input.value.asBool) {
-      bytes[EVMUtils.WORD_SIZE - 1] = 1;
+  let bytes: Uint8Array;
+  //TypeScript can at least infer in the rest of this that we're looking
+  //at a value, not an error!  But that's hardly enough...
+  switch(input.type.typeClass) {
+    case "mapping":
+    case "magic":
+      //neither of these can go in the ABI
+      return undefined;
+    case "uint":
+    case "int":
+      return ConversionUtils.toBytes((<Values.UintValue|Values.IntValue>input).value.asBN, EVMUtils.WORD_SIZE);
+    case "enum":
+      return ConversionUtils.toBytes((<Values.EnumValue>input).value.numericAsBN, EVMUtils.WORD_SIZE);
+    case "bool": {
+      bytes = new Uint8Array(EVMUtils.WORD_SIZE); //is initialized to zeroes
+      if((<Values.BoolValue>input).value.asBool) {
+        bytes[EVMUtils.WORD_SIZE - 1] = 1;
+      }
+      return bytes;
     }
-    return bytes;
-  }
-  if(input instanceof Values.BytesStaticValue) {
-    let bytes = ConversionUtils.toBytes(input.value.asHex);
-    return rightPad(bytes, EVMUtils.WORD_SIZE);
-  }
-  if(input instanceof Values.BytesDynamicValue) {
-    let bytes = ConversionUtils.toBytes(input.value.asHex);
-    return padAndPrependLength(bytes);
-  }
-  if(input instanceof Values.AddressValue) {
-    return ConversionUtils.toBytes(input.value.asAddress, EVMUtils.WORD_SIZE);
-  }
-  if(input instanceof Values.ContractValue) {
-    return ConversionUtils.toBytes(input.value.address, EVMUtils.WORD_SIZE);
-  }
-  if(input instanceof Values.StringValue) {
-    let bytes: Uint8Array;
-    switch(input.value.kind) {
-      case "valid":
-        bytes = stringToBytes(input.value.asString);
-        break;
-      case "malformed":
-        bytes = ConversionUtils.toBytes(input.value.asHex);
-        break;
+    case "bytes":
+      bytes = ConversionUtils.toBytes((<Values.BytesValue>input).value.asHex);
+      switch(input.type.kind) {
+        case "static":
+          let padded = new Uint8Array(EVMUtils.WORD_SIZE); //initialized to zeroes
+          padded.set(bytes);
+          return padded;
+        case "dynamic":
+          return padAndPrependLength(bytes);
+      }
+    case "address":
+      return ConversionUtils.toBytes((<Values.AddressValue>input).value.asAddress, EVMUtils.WORD_SIZE);
+    case "contract":
+      return ConversionUtils.toBytes((<Values.ContractValue>input).value.address, EVMUtils.WORD_SIZE);
+    case "string": {
+      let coercedInput: Values.StringValue = <Values.StringValue> input;
+      switch(coercedInput.value.kind) {
+        case "valid":
+          bytes = stringToBytes(coercedInput.value.asString);
+          break;
+        case "malformed":
+          bytes = ConversionUtils.toBytes(coercedInput.value.asHex);
+          break;
+      }
+      return padAndPrependLength(bytes);
     }
-    return padAndPrependLength(bytes);
-  }
-  if(input instanceof Values.FunctionExternalValue) {
-    let encoded = new Uint8Array(EVMUtils.WORD_SIZE); //starts filled w/0s
-    let addressBytes = ConversionUtils.toBytes(input.value.contract.address); //should already be correct length
-    let selectorBytes = ConversionUtils.toBytes(input.value.selector); //should already be correct length
-    encoded.set(addressBytes);
-    encoded.set(selectorBytes, EVMUtils.ADDRESS_SIZE); //set it after the address
-    return encoded;
-  }
-  //skip fixed/ufixed for now
-  if(input instanceof Values.ArrayValue) {
-    if(input.reference !== undefined) {
-      return undefined; //circular values can't be encoded
+    case "function": {
+      switch(input.type.visibility) {
+        case "internal":
+          return undefined; //internal functions can't go in the ABI!
+        case "external":
+          let coercedInput: Values.FunctionExternalValue = <Values.FunctionExternalValue> input;
+          let encoded = new Uint8Array(EVMUtils.WORD_SIZE); //starts filled w/0s
+          let addressBytes = ConversionUtils.toBytes(coercedInput.value.contract.address); //should already be correct length
+          let selectorBytes = ConversionUtils.toBytes(coercedInput.value.selector); //should already be correct length
+          encoded.set(addressBytes);
+          encoded.set(selectorBytes, EVMUtils.ADDRESS_SIZE); //set it after the address
+          return encoded;
+      }
     }
-    let staticEncoding = encodeTupleAbi(input.value, allocations);
-    switch(input.type.kind) {
-      case "static":
-        return staticEncoding;
-      case "dynamic":
-        let encoded = new Uint8Array(EVMUtils.WORD_SIZE + staticEncoding.length); //leave room for length
-        encoded.set(staticEncoding, EVMUtils.WORD_SIZE); //again, leave room for length beforehand
-        let lengthBytes = ConversionUtils.toBytes(input.value.length, EVMUtils.WORD_SIZE);
-        encoded.set(lengthBytes); //and now we set the length
-        return encoded;
+    //the fixed & ufixed cases will get skipped for now
+    case "array": {
+      let coercedInput: Values.ArrayValue = <Values.ArrayValue> input;
+      if(coercedInput.reference !== undefined) {
+        return undefined; //circular values can't be encoded
+      }
+      let staticEncoding = encodeTupleAbi(coercedInput.value, allocations);
+      switch(input.type.kind) {
+        case "static":
+          return staticEncoding;
+        case "dynamic":
+          let encoded = new Uint8Array(EVMUtils.WORD_SIZE + staticEncoding.length); //leave room for length
+          encoded.set(staticEncoding, EVMUtils.WORD_SIZE); //again, leave room for length beforehand
+          let lengthBytes = ConversionUtils.toBytes(coercedInput.value.length, EVMUtils.WORD_SIZE);
+          encoded.set(lengthBytes); //and now we set the length
+          return encoded;
+      }
     }
-  }
-  if(input instanceof Values.StructValue) {
-    if(input.reference !== undefined) {
-      return undefined; //circular values can't be encoded
+    case "struct": {
+      let coercedInput: Values.StructValue = <Values.StructValue> input;
+      if(coercedInput.reference !== undefined) {
+        return undefined; //circular values can't be encoded
+      }
+      return encodeTupleAbi(coercedInput.value.map(({value}) => value), allocations);
     }
-    return encodeTupleAbi(input.value.map(([_, value]) => value), allocations);
   }
 }
 
@@ -113,12 +120,6 @@ function padAndPrependLength(bytes: Uint8Array): Uint8Array {
   let lengthBytes = ConversionUtils.toBytes(length, EVMUtils.WORD_SIZE);
   encoded.set(lengthBytes); //and now we set the length
   return encoded;
-}
-
-function rightPad(bytes: Uint8Array, length: number): Uint8Array {
-  let padded = new Uint8Array(length);
-  padded.set(bytes);
-  return padded;
 }
 
 export function encodeTupleAbi(tuple: Values.Result[], allocations?: AbiAllocations): Uint8Array | undefined {

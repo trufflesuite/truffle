@@ -17,10 +17,6 @@ const debug = debugModule("codec-utils:types:values");
 //just intended for the future.  More optional fields may be added in the
 //future.
 
-//Note: Many of the errors defined here deliberately *don't* extend Error.
-//This is because their intended use is a little different.  Only the ones
-//that are for throwing extend Error.
-
 import BN from "bn.js";
 import { Types } from "./types";
 import { Errors } from "./errors";
