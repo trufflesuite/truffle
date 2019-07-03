@@ -119,8 +119,10 @@ const execute = {
       params = utils.merge(constructor.class_defaults, params);
 
       const { web3 } = constructor;
-      args = await utils.ens.convertENSNames(args, methodABI, web3);
-
+      if (args.length && methodABI) {
+        args = await utils.ens.convertENSNames(args, methodABI, web3);
+      }
+      params = await utils.ens.convertENSParamsNames(params, web3);
       let result;
       await constructor.detectNetwork();
       args = utils.convertToEthersBN(args);
@@ -156,7 +158,10 @@ const execute = {
       constructor
         .detectNetwork()
         .then(async network => {
-          args = await utils.ens.convertENSNames(args, methodABI, web3);
+          if (args.length && methodABI) {
+            args = await utils.ens.convertENSNames(args, methodABI, web3);
+          }
+          params = await utils.ens.convertENSParamsNames(params, web3);
           args = utils.convertToEthersBN(args);
           params.to = address;
           params.data = fn ? fn(...args).encodeABI() : undefined;

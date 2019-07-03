@@ -15,19 +15,7 @@ module.exports = {
     const ensjs = this.getNewENSJS(web3.currentProvider);
 
     const convertedNames = inputArgs.map((argument, index) => {
-      if (index === methodABI.inputs.length) {
-        // Check the from field on the last argument if present
-        if (argument.from && !isAddress(argument.from)) {
-          return this.resolveNameToAddress(argument.from, ensjs)
-            .then(fromAddress => {
-              return Object.assign({}, argument, { from: fromAddress });
-            })
-            .catch(error => {
-              throw error;
-            });
-        }
-        return argument;
-      } else if (methodABI.inputs[index].type === "address") {
+      if (methodABI.inputs[index].type === "address") {
         // Check all address arguments for ENS names
         const argIsAddress = isAddress(argument);
         if (argIsAddress) return argument;
@@ -37,5 +25,16 @@ module.exports = {
       }
     });
     return Promise.all(convertedNames);
+  },
+
+  convertENSParamsNames: async function(params, web3) {
+    const { isAddress } = web3.utils;
+    if (params.from && !isAddress(params.from)) {
+      const ensjs = this.getNewENSJS(web3.currentProvider);
+      const newFrom = await this.resolveNameToAddress(params.from, ensjs);
+      return Object.assign({}, params, { from: newFrom });
+    } else {
+      return params;
+    }
   }
 };
