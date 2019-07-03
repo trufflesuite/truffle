@@ -94,6 +94,9 @@ export function getTransactionReceipt(web3: Web3) {
   };
 };
 
+// The primary difference between this decodeParameters function and web3's
+// is that the 'Out of Gas?' zero/null bytes guard has been removed and any
+// falsy bytes are interpreted as a zero value.
 export function decodeParameters(web3: Web3) {
   const _oldDecodeParameters = web3.eth.abi.decodeParameters;
 
