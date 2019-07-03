@@ -135,6 +135,11 @@ export namespace Types {
 
   export type StructType = StructTypeLocal | StructTypeGlobal;
 
+  export interface NameTypePair {
+    name: string;
+    type: Type;
+  }
+
   export interface StructTypeLocal {
     typeClass: "struct";
     kind: "local";
@@ -151,7 +156,7 @@ export namespace Types {
     kind: "global";
     id: number;
     typeName: string;
-    memberTypes?: {name: string, type: Type}[]; //these should be in order
+    memberTypes?: NameTypePair[]; //these should be in order
     location?: Ast.Location;
   }
 

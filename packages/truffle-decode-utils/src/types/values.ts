@@ -436,7 +436,7 @@ export namespace Values {
     kind: "value";
     //note that since mappings live in storage, a circular
     //mapping is impossible
-    value: {key: ElementaryValue, value: Result}[]; //order of key-value pairs is irrelevant
+    value: KeyValuePair[]; //order is irrelevant
     //note that key is not allowed to be an error!
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return util.inspect(new Map(this.value.map(
@@ -448,11 +448,16 @@ export namespace Values {
         ({[key.toString()]: value.nativize()})
       ));
     }
-    constructor(mappingType: Types.MappingType, value: {key: ElementaryValue, value: Result}[]) {
+    constructor(mappingType: Types.MappingType, value: KeyValuePair[]) {
       this.type = mappingType;
       this.kind = "value";
       this.value = value;
     }
+  }
+
+  export interface KeyValuePair {
+    key: ElementaryValue; //note must be a value, not an error!
+    value: Result;
   }
 
   //Structs
@@ -462,7 +467,7 @@ export namespace Values {
     type: Types.StructType;
     kind: "value";
     reference?: number; //will be used in the future for circular values
-    value: {name: string, value: Result}[]; //these should be stored in order!
+    value: NameValuePair[]; //these should be stored in order!
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       if(this.reference !== undefined) {
         return formatCircular(this.reference, options);
@@ -479,12 +484,17 @@ export namespace Values {
         ({name, value}) => ({[name]: value.nativize()})
       ));
     }
-    constructor(structType: Types.StructType, value: {name: string, value: Result}[], reference?: number) {
+    constructor(structType: Types.StructType, value: NameValuePair[], reference?: number) {
       this.type = structType;
       this.kind = "value";
       this.value = value;
       this.reference = reference;
     }
+  }
+
+  export interface NameValuePair {
+    name: string;
+    value: Result;
   }
 
   //Magic variables

@@ -113,7 +113,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
 
       debug("structAllocation %O", structAllocation);
 
-      let decodedMembers: {name: string, value: Values.Result}[] = [];
+      let decodedMembers: Values.NameValuePair[] = [];
       for(let index = 0; index < structAllocation.members.length; index++) {
         const memberAllocation = structAllocation.members[index];
         const memberPointer = memberAllocation.pointer;
