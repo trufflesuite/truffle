@@ -91,3 +91,48 @@ export function getTransactionReceipt(web3: Web3) {
     return result;
   };
 };
+
+export function decodeParameters(web3: Web3) {
+  const _oldDecodeParameters = web3.eth.abi.decodeParameters;
+
+  const ethersAbiCoder = new EthersAbi((type, value) => {
+    if (
+      type.match(/^u?int/) &&
+      !_.isArray(value) &&
+      (!_.isObject(value) || value.constructor.name !== "BN")
+    ) {
+      return value.toString();
+    }
+    return value;
+  });
+
+  // result method
+  function Result() {}
+
+  web3.eth.abi.decodeParameters = (outputs: Array<any>, bytes: String) => {
+    if (!bytes) bytes = "0".repeat(64);
+    const res = ethersAbiCoder.decode(
+    //@ts-ignore 'mapTypes' not existing on type 'ABI'
+      web3.eth.abi.mapTypes(outputs),
+      `0x${bytes.replace(/0x/i, "")}`
+    );
+    //@ts-ignore complaint regarding Result method
+    const returnValue = new Result();
+    returnValue.__length__ = 0;
+
+    outputs.forEach((output, i) => {
+      let decodedValue = res[returnValue.__length__];
+      decodedValue = decodedValue === "0x" ? null : decodedValue;
+
+      returnValue[i] = decodedValue;
+
+      if (_.isObject(output) && output.name) {
+        returnValue[output.name] = decodedValue;
+      }
+
+      returnValue.__length__++;
+    });
+
+    return returnValue;
+  };
+}
