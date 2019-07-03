@@ -68,6 +68,7 @@ const command = {
       total_accounts: customConfig.accounts || 10,
       default_balance_ether: customConfig.defaultEtherBalance || 100,
       blockTime: customConfig.blockTime || 0,
+      fork: customConfig.fork,
       mnemonic,
       gasLimit: customConfig.gas || 0x6691b7,
       gasPrice: customConfig.gasPrice || 0x77359400,
