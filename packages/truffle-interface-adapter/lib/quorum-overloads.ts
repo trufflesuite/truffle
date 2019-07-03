@@ -1,5 +1,7 @@
 import BN from "bn.js";
 import Web3 from "web3";
+import {AbiCoder as EthersAbi} from 'ethers/utils/abi-coder';
+import _ from "underscore";
 
 // The ts-ignores are ignoring the checks that are
 // saying that web3.eth.getBlock is a function and doesn't
