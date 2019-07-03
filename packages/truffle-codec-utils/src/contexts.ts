@@ -7,8 +7,9 @@ import { EVM } from "./evm";
 import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import { AbiUtils } from "./abi";
 import { Types } from "./types/types";
-import { AstDefinition, AstReferences } from "./ast";
+import { AstDefinition, AstReferences, ContractKind } from "./ast";
 import { CompilerVersion } from "./compiler";
+import { ContractKind } from "./ast";
 
 export namespace Contexts {
 
@@ -36,7 +37,7 @@ export namespace Contexts {
     //complains if I try to specify that in the type for some reason...
     contractName?: string;
     contractId?: number;
-    contractKind?: "contract" | "library"; //should never be "interface"
+    contractKind?: ContractKind; //note: should never be "interface"
     abi?: AbiUtils.AbiBySelectors;
     payable?: boolean;
     compiler?: CompilerVersion;
@@ -50,12 +51,23 @@ export namespace Contexts {
     isConstructor: boolean;
     contractName?: string;
     contractId?: number;
-    contractKind?: "contract" | "library"; //should never be "interface"
+    contractKind?: ContractKind; //note: should never be "interface"
     abi?: SchemaAbi;
     sourceMap?: string;
     primarySource?: number;
     compiler?: CompilerVersion;
     payable?: boolean;
+  }
+
+  //does this ABI have a payable fallback function?
+  export function abiHasPayableFallback(abi: Abi | undefined): boolean | undefined {
+    if(abi === undefined) {
+      return undefined;
+    }
+    return abi.some(
+      abiEntry => abiEntry.type === "fallback" && 
+        (abiEntry.stateMutability === "payable" || abiEntry.payable)
+    );
   }
 
   //I split these next two apart because the type system was giving me rouble
@@ -195,6 +207,7 @@ export namespace Contexts {
   export function contextToType(context: DecoderContext | DebuggerContext): Types.ContractType {
     return {
       typeClass: "contract",
+      kind: "native",
       id: context.contractId,
       typeName: context.contractName,
       contractKind: context.contractKind,

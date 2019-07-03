@@ -56,7 +56,7 @@ export interface AbiMemberAllocation {
 
 //memory works the same as abi except we don't bother keeping track of size
 //(it's always 1 word) or dynamicity (meaningless in memory)
-//Also, we allow pointers to be null to indicate that that member is omitted
+//Note: for mappings we use a pointer of length 0
 
 export interface MemoryAllocations {
   [id: number]: MemoryAllocation
@@ -69,7 +69,7 @@ export interface MemoryAllocation {
 
 export interface MemoryMemberAllocation {
   definition: AstDefinition;
-  pointer: Pointer.MemoryPointer | null;
+  pointer: Pointer.MemoryPointer;
 }
 
 //next we have calldata, used for the input to an external function;

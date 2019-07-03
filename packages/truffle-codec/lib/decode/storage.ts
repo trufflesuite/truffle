@@ -3,7 +3,7 @@ const debug = debugModule("codec:decode:storage");
 
 import read from "../read";
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values } from "truffle-codec-utils";
+import { Types, Values, Errors } from "truffle-codec-utils";
 import decodeValue from "./value";
 import { StoragePointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
@@ -33,16 +33,16 @@ export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, 
   try {
     rawValue = yield* read(pointer, info.state);
   }
-  catch(error) { //error: Values.DecodingError
-    return Values.makeGenericErrorResult(dataType, error.error);
+  catch(error) { //error: Errors.DecodingError
+    return Errors.makeGenericErrorResult(dataType, error.error);
   }
   const startOffset = CodecUtils.Conversion.toBN(rawValue);
   let rawSize: StorageTypes.StorageLength;
   try {
     rawSize = storageSizeForType(dataType, info.userDefinedTypes, allocations);
   }
-  catch(error) { //error: Values.DecodingError
-    return Values.makeGenericErrorResult(dataType, error.error);
+  catch(error) { //error: Errors.DecodingError
+    return Errors.makeGenericErrorResult(dataType, error.error);
   }
   //we *know* the type being decoded must be sized in words, because it's a
   //reference type, but TypeScript doesn't, so we'll have to use a type
@@ -84,8 +84,8 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
           try {
             data = yield* read(pointer, state);
           }
-          catch(error) { //error: Values.DecodingError
-            return Values.makeGenericErrorResult(dataType, error.error);
+          catch(error) { //error: Errors.DecodingError
+            return Errors.makeGenericErrorResult(dataType, error.error);
           }
           length = CodecUtils.Conversion.toBN(data).toNumber();
           break;
@@ -101,8 +101,8 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       try {
         baseSize = storageSizeForType(dataType.baseType, info.userDefinedTypes, allocations);
       }
-      catch(error) { //error: Values.DecodingError
-        return Values.makeGenericErrorResult(dataType, error.error);
+      catch(error) { //error: Errors.DecodingError
+        return Errors.makeGenericErrorResult(dataType, error.error);
       }
       debug("baseSize %o", baseSize);
       
@@ -199,8 +199,8 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       try {
         data = yield* read(pointer, state);
       }
-      catch(error) { //error: Values.DecodingError
-        return Values.makeGenericErrorResult(dataType, error.error);
+      catch(error) { //error: Errors.DecodingError
+        return Errors.makeGenericErrorResult(dataType, error.error);
       }
 
       debug("data %O", data);
@@ -241,13 +241,13 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       const typeId = dataType.id;
       const structAllocation = allocations[typeId];
       if(!structAllocation) {
-        return new Values.StructErrorResult(
+        return new Errors.StructErrorResult(
           dataType,
-          new Values.UserDefinedTypeNotFoundError(dataType)
+          new Errors.UserDefinedTypeNotFoundError(dataType)
         );
       }
 
-      let decodedMembers: [string, Values.Result][] = [];
+      let decodedMembers: Values.NameValuePair[] = [];
       const members = structAllocation.members;
 
       for(let index = 0; index < members.length; index++) {
@@ -279,22 +279,22 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         let memberName = memberAllocation.definition.name;
         let storedType = <Types.StructType>info.userDefinedTypes[typeId];
         if(!storedType) {
-          return new Values.StructErrorResult(
+          return new Errors.StructErrorResult(
             dataType,
-            new Values.UserDefinedTypeNotFoundError(dataType)
+            new Errors.UserDefinedTypeNotFoundError(dataType)
           );
         }
-        let storedMemberType = storedType.memberTypes[index][1];
+        let storedMemberType = storedType.memberTypes[index].type;
         let memberType = Types.specifyLocation(storedMemberType, "storage");
 
-        decodedMembers.push([
-          memberName,
-          <Values.Result> (yield* decodeStorage(
+        decodedMembers.push({
+          name: memberName,
+          value: <Values.Result> (yield* decodeStorage(
             memberType,
             {location: "storage", range: childRange},
             info
           ))
-        ]);
+        });
       }
 
       return new Values.StructValue(dataType, decodedMembers);
@@ -309,11 +309,11 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       try {
         valueSize = storageSizeForType(valueType, info.userDefinedTypes, allocations);
       }
-      catch(error) { //error: Values.DecodingError
-        return Values.makeGenericErrorResult(dataType, error.error);
+      catch(error) { //error: Errors.DecodingError
+        return Errors.makeGenericErrorResult(dataType, error.error);
       }
 
-      let decodedEntries: [Values.ElementaryResult, Values.Result][] = [];
+      let decodedEntries: Values.KeyValuePair[] = [];
 
       const baseSlot: StorageTypes.Slot = pointer.range.from.slot;
       debug("baseSlot %o", baseSlot);
@@ -373,9 +373,10 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
           };
         }
 
-        decodedEntries.push(
-          [key, <Values.Result> (yield* decodeStorage(valueType, valuePointer, info))]
-        );
+        decodedEntries.push({
+          key,
+          value: <Values.Result> (yield* decodeStorage(valueType, valuePointer, info))
+        });
       }
 
       return new Values.MappingValue(dataType, decodedEntries);

@@ -285,7 +285,7 @@ describe("Further Decoding", function() {
 
     const expectedResult = {
       memoryStaticArray: [107],
-      memoryStructWithMap: { x: 107, y: 214 },
+      memoryStructWithMap: { x: 107, map: {}, y: 214 },
       localStorage: [107, 214],
       storageStructArray: [{ x: 107 }],
       storageArrayArray: [[2, 3]],

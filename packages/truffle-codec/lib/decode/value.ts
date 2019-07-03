@@ -3,32 +3,29 @@ const debug = debugModule("codec:decode:value");
 
 import read from "../read";
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values } from "truffle-codec-utils";
+import { Types, Values, Errors } from "truffle-codec-utils";
 import BN from "bn.js";
 import utf8 from "utf8";
 import { DataPointer } from "../types/pointer";
-import { EvmInfo, DecoderMode } from "../types/evm";
+import { EvmInfo, DecoderOptions, DefaultDecoderOptions } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { StopDecodingError } from "../types/errors";
 
-export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, mode: DecoderMode = "normal"): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
-  //NOTE: this does not actually return a Uint8Aarray, but due to the use of yield* read,
-  //we have to include it in the type :-/
+export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = DefaultDecoderOptions): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { state } = info;
-  const permissivePadding = mode === "permissive";
-  const strict = mode === "strict";
+  const { permissivePadding, strict } = options;
 
   let bytes: Uint8Array;
   let rawBytes: Uint8Array;
   try {
     bytes = yield* read(pointer, state);
   }
-  catch(error) { //error: Values.DecodingError
+  catch(error) { //error: Errors.DecodingError
     debug("segfault, pointer %o, state: %O", pointer, state);
     if(strict) {
       throw new StopDecodingError();
     }
-    return Values.makeGenericErrorResult(dataType, error.error);
+    return Errors.makeGenericErrorResult(dataType, error.error);
   }
   rawBytes = bytes;
 
@@ -42,9 +39,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         if(strict) {
           throw new StopDecodingError();
         }
-        return new Values.BoolErrorResult(
+        return new Errors.BoolErrorResult(
           dataType,
-          new Values.BoolPaddingError(CodecUtils.Conversion.toHexString(bytes))
+          new Errors.BoolPaddingError(CodecUtils.Conversion.toHexString(bytes))
         );
       }
       const numeric = CodecUtils.Conversion.toBN(bytes);
@@ -58,9 +55,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         if(strict) {
           throw new StopDecodingError();
         }
-        return new Values.BoolErrorResult(
+        return new Errors.BoolErrorResult(
           dataType,
-          new Values.BoolOutOfRangeError(numeric)
+          new Errors.BoolOutOfRangeError(numeric)
         );
       }
     }
@@ -71,9 +68,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         if(strict) {
           throw new StopDecodingError();
         }
-        return new Values.UintErrorResult(
+        return new Errors.UintErrorResult(
           dataType,
-          new Values.UintPaddingError(CodecUtils.Conversion.toHexString(bytes))
+          new Errors.UintPaddingError(CodecUtils.Conversion.toHexString(bytes))
         );
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
@@ -89,9 +86,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         if(strict) {
           throw new StopDecodingError();
         }
-        return new Values.IntErrorResult(
+        return new Errors.IntErrorResult(
           dataType,
-          new Values.IntPaddingError(CodecUtils.Conversion.toHexString(bytes))
+          new Errors.IntPaddingError(CodecUtils.Conversion.toHexString(bytes))
         );
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
@@ -107,9 +104,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         if(strict) {
           throw new StopDecodingError();
         }
-        return new Values.AddressErrorResult(
+        return new Errors.AddressErrorResult(
           dataType,
-          new Values.AddressPaddingError(CodecUtils.Conversion.toHexString(bytes))
+          new Errors.AddressPaddingError(CodecUtils.Conversion.toHexString(bytes))
         );
       }
       return new Values.AddressValue(
@@ -123,9 +120,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         if(strict) {
           throw new StopDecodingError();
         }
-        return new Values.ContractErrorResult(
+        return new Errors.ContractErrorResult(
           dataType,
-          new Values.ContractPaddingError(CodecUtils.Conversion.toHexString(bytes))
+          new Errors.ContractPaddingError(CodecUtils.Conversion.toHexString(bytes))
         );
       }
       const fullType = <Types.ContractType>Types.fullType(dataType, info.userDefinedTypes);
@@ -140,9 +137,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
             if(strict) {
               throw new StopDecodingError();
             }
-            return new Values.BytesStaticErrorResult(
+            return new Errors.BytesStaticErrorResult(
               dataType,
-              new Values.BytesPaddingError(CodecUtils.Conversion.toHexString(bytes))
+              new Errors.BytesPaddingError(CodecUtils.Conversion.toHexString(bytes))
             );
           }
           //now, truncate to appropriate length
@@ -168,9 +165,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
             if(strict) {
               throw new StopDecodingError();
             }
-            return new Values.FunctionExternalErrorResult(
+            return new Errors.FunctionExternalErrorResult(
               dataType,
-              new Values.FunctionExternalNonStackPaddingError(CodecUtils.Conversion.toHexString(bytes))
+              new Errors.FunctionExternalNonStackPaddingError(CodecUtils.Conversion.toHexString(bytes))
             );
           }
           const address = bytes.slice(0, CodecUtils.EVM.ADDRESS_SIZE);
@@ -183,9 +180,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
             if(strict) {
               throw new StopDecodingError();
             }
-            return new Values.FunctionInternalErrorResult(
+            return new Errors.FunctionInternalErrorResult(
               dataType,
-              new Values.FunctionInternalPaddingError(CodecUtils.Conversion.toHexString(bytes))
+              new Errors.FunctionInternalPaddingError(CodecUtils.Conversion.toHexString(bytes))
             );
           }
           const deployedPc = bytes.slice(-CodecUtils.EVM.PC_SIZE);
@@ -201,9 +198,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         if(strict) {
           throw new StopDecodingError();
         }
-        return new Values.EnumErrorResult(
+        return new Errors.EnumErrorResult(
           fullType,
-          new Values.EnumNotFoundDecodingError(fullType, numeric)
+          new Errors.EnumNotFoundDecodingError(fullType, numeric)
         );
       }
       const numOptions = fullType.options.length;
@@ -212,9 +209,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         if(strict) {
           throw new StopDecodingError();
         }
-        return new Values.EnumErrorResult(
+        return new Errors.EnumErrorResult(
           fullType,
-          new Values.EnumPaddingError(fullType, CodecUtils.Conversion.toHexString(bytes))
+          new Errors.EnumPaddingError(fullType, CodecUtils.Conversion.toHexString(bytes))
         );
       }
       if(numeric.ltn(numOptions)) {
@@ -225,9 +222,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         if(strict) {
           throw new StopDecodingError();
         }
-        return new Values.EnumErrorResult(
+        return new Errors.EnumErrorResult(
           fullType,
-          new Values.EnumOutOfRangeError(fullType, numeric)
+          new Errors.EnumOutOfRangeError(fullType, numeric)
         );
       }
     }
@@ -238,9 +235,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       if(strict) {
         throw new StopDecodingError();
       }
-      return new Values.FixedErrorResult(
+      return new Errors.FixedErrorResult(
         dataType,
-        new Values.FixedPointNotYetSupportedError(hex)
+        new Errors.FixedPointNotYetSupportedError(hex)
       );
     }
     case "ufixed": {
@@ -249,9 +246,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       if(strict) {
         throw new StopDecodingError();
       }
-      return new Values.UfixedErrorResult(
+      return new Errors.UfixedErrorResult(
         dataType,
-        new Values.FixedPointNotYetSupportedError(hex)
+        new Errors.FixedPointNotYetSupportedError(hex)
       );
     }
   }
@@ -304,7 +301,7 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
   if(contract.kind === "unknown") {
     return new Values.FunctionExternalValueInfoUnknown(contract, selector)
   }
-  let contractId = contract.class.id;
+  let contractId = (<Types.ContractTypeNative> contract.class).id; //sorry! will be fixed soon!
   let context = Object.values(info.contexts).find(
     context => context.contractId === contractId
   );
@@ -319,11 +316,12 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
 }
 
 //this one works a bit differently -- in order to handle errors, it *does* return a FunctionInternalResult
-export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
+export function decodeInternalFunction(dataType: Types.FunctionTypeInternal, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
   let deployedPc: number = CodecUtils.Conversion.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = CodecUtils.Conversion.toBN(constructorPcBytes).toNumber();
   let context: Types.ContractType = {
     typeClass: "contract",
+    kind: "native",
     id: info.currentContext.contractId,
     typeName: info.currentContext.contractName,
     contractKind: info.currentContext.contractKind,
@@ -346,16 +344,16 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
   }
   //another check: is only the deployed PC zero?
   if(deployedPc === 0 && constructorPc !== 0) {
-    return new Values.FunctionInternalErrorResult(
+    return new Errors.FunctionInternalErrorResult(
       dataType,
-      new Values.MalformedInternalFunctionError(context, constructorPc)
+      new Errors.MalformedInternalFunctionError(context, constructorPc)
     );
   }
   //one last pre-check: is this a deployed-format pointer in a constructor?
   if(info.currentContext.isConstructor && constructorPc === 0) {
-    return new Values.FunctionInternalErrorResult(
+    return new Errors.FunctionInternalErrorResult(
       dataType,
-      new Values.DeployedFunctionInConstructorError(context, deployedPc)
+      new Errors.DeployedFunctionInConstructorError(context, deployedPc)
     );
   }
   //otherwise, we get our function
@@ -365,9 +363,9 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
   let functionEntry = info.internalFunctionsTable[pc];
   if(!functionEntry) {
     //if it's not zero and there's no entry... error!
-    return new Values.FunctionInternalErrorResult(
+    return new Errors.FunctionInternalErrorResult(
       dataType,
-      new Values.NoSuchInternalFunctionError(context, deployedPc, constructorPc)
+      new Errors.NoSuchInternalFunctionError(context, deployedPc, constructorPc)
     );
   }
   if(functionEntry.isDesignatedInvalid) {
@@ -379,6 +377,7 @@ export function decodeInternalFunction(dataType: Types.FunctionType, deployedPcB
   let name = functionEntry.name;
   let definedIn: Types.ContractType = {
     typeClass: "contract",
+    kind: "native",
     id: functionEntry.contractId,
     typeName: functionEntry.contractName,
     contractKind: functionEntry.contractKind,

@@ -54,7 +54,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
             contractId,
             contractKind,
             isConstructor,
-            payable: CodecUtils.AbiUtils.isABIPayable(abi)
+            payable: CodecUtils.Contexts.abiHasPayableFallback(abi)
           }
         }
       };

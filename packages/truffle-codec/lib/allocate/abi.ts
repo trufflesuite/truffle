@@ -9,6 +9,12 @@ import { UnknownUserDefinedTypeError } from "truffle-codec-utils";
 import { UnknownBaseContractIdError, NoDefinitionFoundForABIEntryError } from "../types/errors";
 import partition from "lodash.partition";
 
+interface AbiAllocationInfo {
+  size?: number; //left out for types that don't go in the abi
+  dynamic?: boolean; //similarly
+  allocations: AbiAllocations;
+}
+
 export function getAbiAllocations(referenceDeclarations: AstReferences): Allocations.AbiAllocations {
   let allocations: Allocations.AbiAllocations = {};
   for(const node of Object.values(referenceDeclarations)) {
@@ -42,7 +48,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
   {
     let length: number;
     let dynamicMember: boolean;
-    [length, dynamicMember, allocations] = abiSizeAndAllocate(member, referenceDeclarations, allocations);
+    ({size: length, dynamic: dynamicMember, allocations} = abiSizeAndAllocate(member, referenceDeclarations, allocations));
 
     //vomit on illegal types in calldata -- note the short-circuit!
     if(length === undefined) {
@@ -75,20 +81,11 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
   return allocations;
 }
 
-//NOTE: This wrapper function is for use by the decoder ONLY, after allocation is done.
-//The allocator should (and does) instead use a direct call to storageSizeAndAllocate,
-//not to the wrapper, because it may need the allocations returned.
-//the first return value is the length (in bytes); the second is whether the type is dynamic
-export function abiSize(definition: AstDefinition, referenceDeclarations?: AstReferences, allocations?: Allocations.AbiAllocations): [number | undefined, boolean | undefined] {
-  let [size, dynamic] = abiSizeAndAllocate(definition, referenceDeclarations, allocations); //throw away allocations
-  return [size, dynamic];
-}
-
 //first return value is the actual size.
 //second return value is whether the type is dynamic
 //both will be undefined if type is a mapping or internal function
 //third return value is resulting allocations, INCLUDING the ones passed in
-function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: Allocations.AbiAllocations): [number | undefined, boolean | undefined, Allocations.AbiAllocations] {
+function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: Allocations.AbiAllocations): AbiAllocationInfo {
   switch (CodecUtils.Definition.typeClass(definition)) {
     case "bool":
     case "address":
@@ -98,40 +95,71 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
     case "fixed":
     case "ufixed":
     case "enum":
-      return [CodecUtils.EVM.WORD_SIZE, false, existingAllocations];
+      return {
+	size: CodecUtils.EVM.WORD_SIZE,
+	dynamic: false,
+	allocations: existingAllocations
+      };
 
     case "string":
-      return [CodecUtils.EVM.WORD_SIZE, true, existingAllocations];
+      return {
+	size: CodecUtils.EVM.WORD_SIZE,
+	dynamic: true,
+	allocations: existingAllocations
+      };
 
     case "bytes":
-      return [CodecUtils.EVM.WORD_SIZE, CodecUtils.Definition.specifiedSize(definition) == null,
-        existingAllocations];
+      return {
+	size: CodecUtils.EVM.WORD_SIZE,
+	dynamic: CodecUtils.Definition.specifiedSize(definition) == null,
+	allocations: existingAllocations
+      };
 
     case "mapping":
-      return [undefined, undefined, existingAllocations];
+      return {
+	allocations: existingAllocations
+      };
 
     case "function":
       switch (CodecUtils.Definition.visibility(definition)) {
         case "external":
-          return [CodecUtils.EVM.WORD_SIZE, false, existingAllocations];
+	  return {
+	    size: CodecUtils.EVM.WORD_SIZE,
+	    dynamic: false,
+	    allocations: existingAllocations
+	  };
         case "internal":
-          return [undefined, undefined, existingAllocations];
+	  return {
+	    allocations: existingAllocations
+	  };
       }
 
     case "array": {
       if(CodecUtils.Definition.isDynamicArray(definition)) {
-        return [CodecUtils.EVM.WORD_SIZE, true, existingAllocations];
+	return {
+	  size: CodecUtils.EVM.WORD_SIZE,
+	  dynamic: true,
+	  allocations: existingAllocations
+	};
       }
       else {
         //static array case
         const length: number = CodecUtils.Definition.staticLength(definition);
         if(length === 0) {
           //arrays of length 0 are static regardless of base type
-          return [0, false, existingAllocations];
+	  return {
+	    size: 0,
+	    dynamic: false,
+	    allocations: existingAllocations
+	  };
         }
         const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
-        const [baseSize, dynamic, allocations] = abiSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
-        return [length * baseSize, dynamic, allocations];
+        const {size: baseSize, dynamic, allocations} = abiSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
+	return {
+	  size: length * baseSize,
+	  dynamic,
+	  allocations
+	};
       }
     }
 
@@ -151,11 +179,17 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
       }
       //having found our allocation, if it's not null, we can just look up its size and dynamicity
       if(allocation !== null) {
-        return [allocation.length, allocation.dynamic, allocations];
+	return {
+	  size: allocation.length,
+	  dynamic: allocation.dynamic,
+	  allocations
+	};
       }
       //if it is null, this type doesn't go in the abi
       else {
-        return [undefined, undefined, allocations];
+	return {
+	  allocations
+	};
       }
     }
   }

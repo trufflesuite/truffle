@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:constant");
 
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values } from "truffle-codec-utils";
+import { Types, Values, Errors } from "truffle-codec-utils";
 import read from "../read";
 import decodeValue from "./value";
 import { ConstantDefinitionPointer} from "../types/pointer";
@@ -26,8 +26,8 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
     try {
       word = yield* read(pointer, info.state);
     }
-    catch(error) { //error: Values.DecodingError
-      return Values.makeGenericErrorResult(dataType, error.error);
+    catch(error) { //error: Errors.DecodingError
+      return Errors.makeGenericErrorResult(dataType, error.error);
     }
     //not bothering to check padding; shouldn't be necessary
     let bytes = word.slice(CodecUtils.EVM.WORD_SIZE - size);

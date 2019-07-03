@@ -18,7 +18,7 @@ export function makeContext(contract: ContractObject, node: AstDefinition, isCon
     contractKind: node.contractKind,
     isConstructor,
     abi: AbiUtils.computeSelectors(contract.abi),
-    payable: AbiUtils.isABIPayable(contract.abi),
+    payable: AbiUtils.abiHasPayableFallback(contract.abi),
     compiler: contract.compiler
   };
 }

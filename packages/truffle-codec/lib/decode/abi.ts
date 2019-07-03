@@ -3,7 +3,7 @@ const debug = debugModule("codec:decode:abi");
 
 import read from "../read";
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values } from "truffle-codec-utils";
+import { Types, Values, Errors } from "truffle-codec-utils";
 import decodeValue from "./value";
 import { AbiDataPointer, DataPointer } from "../types/pointer";
 import { AbiMemberAllocation } from "../types/allocation";
@@ -20,11 +20,11 @@ export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer
     try {
       dynamic = isTypeDynamic(dataType, info.allocations.abi);
     }
-    catch(error) { //error: Values.DecodingError
+    catch(error) { //error: Errors.DecodingError
       if(mode === "strict") {
         throw new StopDecodingError();
       }
-      return Values.makeGenericErrorResult(dataType, error.error);
+      return Errors.makeGenericErrorResult(dataType, error.error);
     }
     if(dynamic) {
       return yield* decodeAbiReferenceByAddress(dataType, pointer, info, base, mode);
@@ -52,11 +52,11 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   try {
     rawValue = yield* read(pointer, state);
   }
-  catch(error) { //error: Values.DecodingError
+  catch(error) { //error: Errors.DecodingError
     if(strict) {
       throw new StopDecodingError();
     }
-    return Values.makeGenericErrorResult(dataType, error.error);
+    return Errors.makeGenericErrorResult(dataType, error.error);
   }
 
   let startPosition = CodecUtils.Conversion.toBN(rawValue).toNumber() + base;
@@ -66,22 +66,22 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   try {
     dynamic = isTypeDynamic(dataType, allocations);
   }
-  catch(error) { //error: Values.DecodingError
+  catch(error) { //error: Errors.DecodingError
     if(strict) {
       throw new StopDecodingError();
     }
-    return Values.makeGenericErrorResult(dataType, error.error);
+    return Errors.makeGenericErrorResult(dataType, error.error);
   }
   if(!dynamic) { //this will only come up when called from stack.ts
     let size: number;
     try {
       size = abiSizeForType(dataType, allocations);
     }
-    catch(error) { //error: Values.DecodingError
+    catch(error) { //error: Errors.DecodingError
       if(strict) {
         throw new StopDecodingError();
       }
-      return Values.makeGenericErrorResult(dataType, error.error);
+      return Errors.makeGenericErrorResult(dataType, error.error);
     }
     let staticPointer = {
       location,
@@ -104,11 +104,11 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
           length: CodecUtils.EVM.WORD_SIZE
         }, state));
       }
-      catch(error) { //error: Values.DecodingError
+      catch(error) { //error: Errors.DecodingError
         if(strict) {
           throw new StopDecodingError();
         }
-        return Values.makeGenericErrorResult(dataType, error.error);
+        return Errors.makeGenericErrorResult(dataType, error.error);
       }
       let lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
       if(strict && lengthAsBN.gtn(info.state[location].length)) {
@@ -139,11 +139,11 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
               length: CodecUtils.EVM.WORD_SIZE
             }, state));
           }
-          catch(error) { //error: Values.DecodingError
+          catch(error) { //error: Errors.DecodingError
             if(strict) {
               throw new StopDecodingError();
             }
-            return Values.makeGenericErrorResult(dataType, error.error);
+            return Errors.makeGenericErrorResult(dataType, error.error);
           }
           let lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
           if(strict && lengthAsBN.gtn(info.state[location].length)) {
@@ -169,11 +169,11 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
       try {
         baseSize = abiSizeForType(dataType.baseType, allocations);
       }
-      catch(error) { //error: Values.DecodingError
+      catch(error) { //error: Errors.DecodingError
         if(strict) {
           throw new StopDecodingError();
         }
-        return Values.makeGenericErrorResult(dataType, error.error);
+        return Errors.makeGenericErrorResult(dataType, error.error);
       }
 
       let decodedChildren: Values.Result[] = [];
@@ -211,11 +211,11 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
       try {
         baseSize = abiSizeForType(dataType.baseType, info.allocations.abi);
       }
-      catch(error) { //error: Values.DecodingError
+      catch(error) { //error: Errors.DecodingError
         if(mode === "strict") {
           throw new StopDecodingError();
         }
-        return Values.makeGenericErrorResult(dataType, error.error);
+        return Errors.makeGenericErrorResult(dataType, error.error);
       }
 
       let decodedChildren: Values.Result[] = [];
@@ -253,13 +253,13 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
     if(mode === "strict") {
       throw new StopDecodingError();
     }
-    return new Values.StructErrorResult(
+    return new Errors.StructErrorResult(
       dataType,
-      new Values.UserDefinedTypeNotFoundError(dataType)
+      new Errors.UserDefinedTypeNotFoundError(dataType)
     );
   }
 
-  let decodedMembers: [string, Values.Result][] = [];
+  let decodedMembers: Values.NameValuePair[] = [];
   for(let index = 0; index < structAllocation.members.length; index++) {
     const memberAllocation = structAllocation.members[index];
     const memberPointer = memberAllocation.pointer;
@@ -275,19 +275,19 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
       if(mode === "strict") {
         throw new StopDecodingError();
       }
-      return new Values.StructErrorResult(
+      return new Errors.StructErrorResult(
         dataType,
-        new Values.UserDefinedTypeNotFoundError(dataType)
+        new Errors.UserDefinedTypeNotFoundError(dataType)
       );
     }
     let storedMemberType = storedType.memberTypes[index][1];
     let memberType = Types.specifyLocation(storedMemberType, typeLocation);
 
-    decodedMembers.push([
-      memberName,
-      <Values.Result> (yield* decodeAbi(memberType, childPointer, info, startPosition, mode))
+    decodedMembers.push({
+      name: memberName,
+      value: <Values.Result> (yield* decodeAbi(memberType, childPointer, info, startPosition, mode))
       //note that startPosition is only needed in the dynamic case, but we don't know which case we're in
-    ]);
+    });
   }
   return new Values.StructValue(dataType, decodedMembers);
 }

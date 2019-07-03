@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:stack");
 
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values } from "truffle-codec-utils";
+import { Types, Values, Errors } from "truffle-codec-utils";
 import read from "../read";
 import decodeValue from "./value";
 import { decodeExternalFunction, checkPaddingLeft } from "./value";
@@ -18,8 +18,8 @@ export default function* decodeStack(dataType: Types.Type, pointer: StackPointer
   try {
    rawValue = yield* read(pointer, info.state);
   }
-  catch(error) { //error: Values.DecodingError
-    return Values.makeGenericErrorResult(dataType, error.error);
+  catch(error) { //error: Errors.DecodingError
+    return Errors.makeGenericErrorResult(dataType, error.error);
   }
   const literalPointer: StackLiteralPointer = { location: "stackliteral", literal: rawValue };
   return yield* decodeLiteral(dataType, literalPointer, info);
@@ -81,9 +81,9 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
     let selectorWord = pointer.literal.slice(-CodecUtils.EVM.WORD_SIZE);
     if(!checkPaddingLeft(address, CodecUtils.EVM.ADDRESS_SIZE)
       ||!checkPaddingLeft(selectorWord, CodecUtils.EVM.SELECTOR_SIZE)) {
-      return new Values.FunctionExternalErrorResult(
+      return new Errors.FunctionExternalErrorResult(
         dataType,
-        new Values.FunctionExternalStackPaddingError(
+        new Errors.FunctionExternalStackPaddingError(
           CodecUtils.Conversion.toHexString(address),
           CodecUtils.Conversion.toHexString(selectorWord)
         )
@@ -100,5 +100,5 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
   //however, note that because we're on the stack, we use the permissive padding
   //option so that errors won't result due to values with bad padding
   //(of numeric or bytesN type, anyway)
-  return yield* decodeValue(dataType, pointer, info, "permissive");
+  return yield* decodeValue(dataType, pointer, info, { permissivePadding: true });
 }

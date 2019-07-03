@@ -5,7 +5,7 @@ import * as constant from "./constant";
 import * as Pointer from "../types/pointer";
 import { EvmState } from "../types/evm";
 import { DecoderRequest } from "../types/request";
-import { Values } from "truffle-codec-utils";
+import { Errors } from "truffle-codec-utils";
 
 export default function* read(pointer: Pointer.DataPointer, state: EvmState): IterableIterator<Uint8Array | DecoderRequest> {
   switch(pointer.location) {
@@ -48,8 +48,8 @@ export default function* read(pointer: Pointer.DataPointer, state: EvmState): It
 function readTopic(topics: Uint8Array[], index: number) {
   let topic = topics[index];
   if(topic === undefined) {
-    throw new Values.DecodingError(
-      new Values.ReadErrorTopic(index)
+    throw new Errors.DecodingError(
+      new Errors.ReadErrorTopic(index)
     );
   }
   return topic;

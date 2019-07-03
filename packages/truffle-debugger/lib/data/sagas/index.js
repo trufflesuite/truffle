@@ -46,7 +46,11 @@ function* tickSaga() {
   yield* trace.signalTickSagaCompletion();
 }
 
-export function* decode(definition, ref, forceNonPayable = false) {
+const DEFAULT_DECODE_OPTIONS = {
+  forceNonPayable: false
+};
+
+export function* decode(definition, ref, options = DEFAULT_DECODE_OPTIONS) {
   let userDefinedTypes = yield select(data.views.userDefinedTypes);
   let state = yield select(data.current.state);
   let mappingKeys = yield select(data.views.mappingKeys);
@@ -62,10 +66,12 @@ export function* decode(definition, ref, forceNonPayable = false) {
   let ZERO_WORD = new Uint8Array(CodecUtils.EVM.WORD_SIZE); //automatically filled with zeroes
   let NO_CODE = new Uint8Array(); //empty array
 
-  if (forceNonPayable) {
+  if (options.forceNonPayable) {
     //HACK
     //this option is passed when decoding mapping keys.
-    //it forces addresses to always be decoed as nonpayable
+    //it forces addresses to always be decoded as nonpayable
+    //(this works due to a hack in isAddressPayable, where you
+    //can pass compiler = null for that effect)
     currentContext = { ...currentContext, compiler: null };
   }
 
@@ -388,7 +394,7 @@ function* variablesAndMappingsSaga() {
               location: "definition",
               definition: indexDefinition
             },
-            true
+            { forceNonPayable: true }
           );
           debug("simple literal decoded: %O", indexValue);
         } else if (indexReference) {
@@ -411,7 +417,9 @@ function* variablesAndMappingsSaga() {
           debug("about to decode");
           debug("splicedDefinition: %o", splicedDefinition);
           debug("indexReference: %o", indexReference);
-          indexValue = yield* decode(splicedDefinition, indexReference, true);
+          indexValue = yield* decode(splicedDefinition, indexReference, {
+            forceNonPayable: true
+          });
         } else if (
           indexDefinition.referencedDeclaration &&
           scopes[indexDefinition.referencedDeclaration]
@@ -440,7 +448,7 @@ function* variablesAndMappingsSaga() {
                   location: "definition",
                   definition: indexConstantDeclaration.value
                 },
-                true
+                { forceNonPayable: true }
               );
             } else {
               indexValue = null; //can't decode; see below for more explanation
@@ -487,11 +495,12 @@ function* variablesAndMappingsSaga() {
       debug("keyDefinition %o", keyDefinition);
 
       //whew! But we're not done yet -- we need to turn this decoded key into
-      //an actual path (assuming we *did* decode it)
+      //an actual path (assuming we *did* decode it; we check both for null
+      //and for the result being a Value and not an Error)
       //OK, not an actual path -- we're just going to use a simple offset for
       //the path.  But that's OK, because the mappedPaths reducer will turn
       //it into an actual path.
-      if (indexValue !== null) {
+      if (indexValue !== null && indexValue.value) {
         path = fetchBasePath(
           baseExpression,
           mappedPaths,

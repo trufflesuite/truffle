@@ -8,3 +8,4 @@ export * from "./compiler";
 export * from "./errors";
 export * from "./types/types";
 export * from "./types/values";
+export * from "./types/errors";
