@@ -115,6 +115,8 @@ export function decodeParameters(web3: Web3) {
   function Result() {}
 
   web3.eth.abi.decodeParameters = (outputs: Array<any>, bytes: String) => {
+    // if bytes is falsy, we'll pass 64 '0' bits to the ethers.js decoder.
+    // the decoder will decode the 64 '0' bits as a 0 value.
     if (!bytes) bytes = "0".repeat(64);
     const res = ethersAbiCoder.decode(
     //@ts-ignore 'mapTypes' not existing on type 'ABI'
