@@ -23,7 +23,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
   catch(error) { //error: Errors.DecodingError
     debug("segfault, pointer %o, state: %O", pointer, state);
     if(strict) {
-      throw new StopDecodingError();
+      throw new StopDecodingError(error.error);
     }
     return Errors.makeGenericErrorResult(dataType, error.error);
   }
@@ -36,13 +36,11 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "bool": {
       if(!checkPaddingLeft(bytes, 1)) {
+        let error = new Errors.BoolPaddingError(CodecUtils.Conversion.toHexString(bytes));
         if(strict) {
-          throw new StopDecodingError();
+          throw new StopDecodingError(error);
         }
-        return new Errors.BoolErrorResult(
-          dataType,
-          new Errors.BoolPaddingError(CodecUtils.Conversion.toHexString(bytes))
-        );
+        return new Errors.BoolErrorResult(dataType, error);
       }
       const numeric = CodecUtils.Conversion.toBN(bytes);
       if(numeric.eqn(0)) {
@@ -52,26 +50,22 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         return new Values.BoolValue(dataType, true);
       }
       else {
+        let error = new Errors.BoolOutOfRangeError(numeric);
         if(strict) {
-          throw new StopDecodingError();
+          throw new StopDecodingError(error);
         }
-        return new Errors.BoolErrorResult(
-          dataType,
-          new Errors.BoolOutOfRangeError(numeric)
-        );
+        return new Errors.BoolErrorResult(dataType, error);
       }
     }
 
     case "uint":
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingLeft(bytes, dataType.bits/8)) {
+        let error = new Errors.UintPaddingError(CodecUtils.Conversion.toHexString(bytes));
         if(strict) {
-          throw new StopDecodingError();
+          throw new StopDecodingError(error);
         }
-        return new Errors.UintErrorResult(
-          dataType,
-          new Errors.UintPaddingError(CodecUtils.Conversion.toHexString(bytes))
-        );
+        return new Errors.UintErrorResult(dataType, error);
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
       bytes = bytes.slice(-dataType.bits/8);
@@ -83,13 +77,11 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "int":
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
+        let error = new Errors.IntPaddingError(CodecUtils.Conversion.toHexString(bytes));
         if(strict) {
-          throw new StopDecodingError();
+          throw new StopDecodingError(error);
         }
-        return new Errors.IntErrorResult(
-          dataType,
-          new Errors.IntPaddingError(CodecUtils.Conversion.toHexString(bytes))
-        );
+        return new Errors.IntErrorResult(dataType, error);
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
       bytes = bytes.slice(-dataType.bits/8);
@@ -101,13 +93,11 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "address":
       if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
+        let error = new Errors.AddressPaddingError(CodecUtils.Conversion.toHexString(bytes));
         if(strict) {
-          throw new StopDecodingError();
+          throw new StopDecodingError(error);
         }
-        return new Errors.AddressErrorResult(
-          dataType,
-          new Errors.AddressPaddingError(CodecUtils.Conversion.toHexString(bytes))
-        );
+        return new Errors.AddressErrorResult(dataType, error);
       }
       return new Values.AddressValue(
         dataType,
@@ -117,13 +107,11 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "contract":
       if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
+        let error = new Errors.ContractPaddingError(CodecUtils.Conversion.toHexString(bytes));
         if(strict) {
-          throw new StopDecodingError();
+          throw new StopDecodingError(error);
         }
-        return new Errors.ContractErrorResult(
-          dataType,
-          new Errors.ContractPaddingError(CodecUtils.Conversion.toHexString(bytes))
-        );
+        return new Errors.ContractErrorResult(dataType, error);
       }
       const fullType = <Types.ContractType>Types.fullType(dataType, info.userDefinedTypes);
       const contractValueInfo = <Values.ContractValueInfo> (yield* decodeContract(bytes, info));
@@ -134,13 +122,11 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         case "static":
           //first, check padding (if needed)
           if(!permissivePadding && !checkPaddingRight(bytes, dataType.length)) {
+            let error = new Errors.BytesPaddingError(CodecUtils.Conversion.toHexString(bytes));
             if(strict) {
-              throw new StopDecodingError();
+              throw new StopDecodingError(error);
             }
-            return new Errors.BytesStaticErrorResult(
-              dataType,
-              new Errors.BytesPaddingError(CodecUtils.Conversion.toHexString(bytes))
-            );
+            return new Errors.BytesStaticErrorResult(dataType, error);
           }
           //now, truncate to appropriate length
           bytes = bytes.slice(0, dataType.length);
@@ -162,13 +148,11 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       switch(dataType.visibility) {
         case "external":
           if(!checkPaddingRight(bytes, CodecUtils.EVM.ADDRESS_SIZE + CodecUtils.EVM.SELECTOR_SIZE)) {
+            let error = new Errors.FunctionExternalNonStackPaddingError(CodecUtils.Conversion.toHexString(bytes));
             if(strict) {
-              throw new StopDecodingError();
+              throw new StopDecodingError(error);
             }
-            return new Errors.FunctionExternalErrorResult(
-              dataType,
-              new Errors.FunctionExternalNonStackPaddingError(CodecUtils.Conversion.toHexString(bytes))
-            );
+            return new Errors.FunctionExternalErrorResult(dataType, error);
           }
           const address = bytes.slice(0, CodecUtils.EVM.ADDRESS_SIZE);
           const selector = bytes.slice(CodecUtils.EVM.ADDRESS_SIZE, CodecUtils.EVM.ADDRESS_SIZE + CodecUtils.EVM.SELECTOR_SIZE);
@@ -176,10 +160,14 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
             <Values.FunctionExternalValueInfo> (yield* decodeExternalFunction(address, selector, info))
           );
         case "internal":
+          if(strict) {
+            //internal functions don't go in the ABI!
+            //this should never happen, but just to be sure...
+            throw new StopDecodingError(
+              new Errors.InternalFunctionInABIError()
+            );
+          }
           if(!checkPaddingLeft(bytes, 2 * CodecUtils.EVM.PC_SIZE)) {
-            if(strict) {
-              throw new StopDecodingError();
-            }
             return new Errors.FunctionInternalErrorResult(
               dataType,
               new Errors.FunctionInternalPaddingError(CodecUtils.Conversion.toHexString(bytes))
@@ -195,61 +183,51 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       const numeric = CodecUtils.Conversion.toBN(bytes);
       const fullType = <Types.EnumType>Types.fullType(dataType, info.userDefinedTypes);
       if(!fullType.options) {
+        let error = new Errors.EnumNotFoundDecodingError(fullType, numeric);
         if(strict) {
-          throw new StopDecodingError();
+          throw new StopDecodingError(error);
         }
-        return new Errors.EnumErrorResult(
-          fullType,
-          new Errors.EnumNotFoundDecodingError(fullType, numeric)
-        );
+        return new Errors.EnumErrorResult(fullType, error);
       }
       const numOptions = fullType.options.length;
       const numBytes = Math.ceil(Math.log2(numOptions) / 8);
       if(!checkPaddingLeft(bytes, numBytes)) {
+        let error = new Errors.EnumPaddingError(fullType, CodecUtils.Conversion.toHexString(bytes));
         if(strict) {
-          throw new StopDecodingError();
+          throw new StopDecodingError(error);
         }
-        return new Errors.EnumErrorResult(
-          fullType,
-          new Errors.EnumPaddingError(fullType, CodecUtils.Conversion.toHexString(bytes))
-        );
+        return new Errors.EnumErrorResult(fullType, error);
       }
       if(numeric.ltn(numOptions)) {
         const name = fullType.options[numeric.toNumber()];
         return new Values.EnumValue(fullType, numeric, name);
       }
       else {
+        let error = new Errors.EnumOutOfRangeError(fullType, numeric);
         if(strict) {
-          throw new StopDecodingError();
+          throw new StopDecodingError(error);
         }
-        return new Errors.EnumErrorResult(
-          fullType,
-          new Errors.EnumOutOfRangeError(fullType, numeric)
-        );
+        return new Errors.EnumErrorResult(fullType, error);
       }
     }
 
     case "fixed": {
       //skipping padding check as we don't support this anyway
       const hex = CodecUtils.Conversion.toHexString(bytes);
+      let error = new Errors.FixedPointNotYetSupportedError(hex);
       if(strict) {
-        throw new StopDecodingError();
+        throw new StopDecodingError(error);
       }
-      return new Errors.FixedErrorResult(
-        dataType,
-        new Errors.FixedPointNotYetSupportedError(hex)
-      );
+      return new Errors.FixedErrorResult(dataType, error);
     }
     case "ufixed": {
       //skipping padding check as we don't support this anyway
       const hex = CodecUtils.Conversion.toHexString(bytes);
+      let error = new Errors.FixedPointNotYetSupportedError(hex);
       if(strict) {
-        throw new StopDecodingError();
+        throw new StopDecodingError(error);
       }
-      return new Errors.UfixedErrorResult(
-        dataType,
-        new Errors.FixedPointNotYetSupportedError(hex)
-      );
+      return new Errors.UfixedErrorResult(dataType, error);
     }
   }
 }

@@ -18,7 +18,7 @@ export default function* decodeTopic(dataType: Types.Type, pointer: EventTopicPo
     }
     catch(error) { //error: Values.DecodingError
       if(options.strictAbiMode) {
-        throw new StopDecodingError();
+        throw new StopDecodingError(error.error);
       }
       return Errors.makeGenericErrorResult(dataType, error.error);
     }

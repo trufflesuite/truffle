@@ -37,6 +37,14 @@ export namespace Errors {
     | EnumErrorResult
     | ContractErrorResult | FunctionExternalErrorResult | FunctionInternalErrorResult;
 
+  export type DecoderError = GenericError
+    | UintError | IntError | BoolError | BytesStaticError | AddressError
+    | FixedError | UfixedError
+    | EnumError | ContractError | FunctionExternalError | FunctionInternalError
+    | InternalUseError;
+  //note that at the moment, no reference type has its own error category, so
+  //no reference types are listed here; this also includes Magic
+
   //for internal use only! just here to facilitate code reuse!
   //please use the union types for actual use!
   //this class doesn't even have the error field!
@@ -76,11 +84,13 @@ export namespace Errors {
   export class UintErrorResult extends ErrorResultBase {
     constructor(
       public uintType: Types.UintType,
-      public error: GenericError | UintPaddingError
+      public error: GenericError | UintError
     ) {
       super();
     }
   }
+
+  export type UintError = UintPaddingError;
 
   export class UintPaddingError extends DecoderErrorBase {
     raw: string; //hex string
@@ -99,11 +109,13 @@ export namespace Errors {
   export class IntErrorResult extends ErrorResultBase {
     constructor(
       public intType: Types.IntType,
-      public error: GenericError | IntPaddingError
+      public error: GenericError | IntError
     ) {
       super();
     }
   }
+
+  export type IntError = IntPaddingError;
 
   export class IntPaddingError extends DecoderErrorBase {
     raw: string; //hex string
@@ -122,11 +134,13 @@ export namespace Errors {
   export class BoolErrorResult extends ErrorResultBase {
     constructor(
       public boolType: Types.BoolType,
-      public error: GenericError | BoolPaddingError | BoolOutOfRangeError
+      public error: GenericError | BoolError
     ) {
       super();
     }
   }
+
+  export type BoolError = BoolPaddingError | BoolOutOfRangeError;
 
   export class BoolPaddingError extends DecoderErrorBase {
     raw: string; //should be hex string
@@ -142,14 +156,14 @@ export namespace Errors {
   }
 
   export class BoolOutOfRangeError extends DecoderErrorBase {
-    raw: BN;
+    rawAsBN: BN;
     kind: "BoolOutOfRangeError";
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
-      return `Invalid boolean (numeric value ${this.raw.toString()})`;
+      return `Invalid boolean (numeric value ${this.rawAsBN.toString()})`;
     }
     constructor(raw: BN) {
       super();
-      this.raw = raw;
+      this.rawAsBN = raw;
       this.kind = "BoolOutOfRangeError";
     }
   }
@@ -158,11 +172,13 @@ export namespace Errors {
   export class BytesStaticErrorResult extends ErrorResultBase {
     constructor(
       public bytesType: Types.BytesTypeStatic,
-      public error: GenericError | BytesPaddingError
+      public error: GenericError | BytesStaticError
     ) {
       super();
     }
   }
+
+  export type BytesStaticError = BytesPaddingError;
 
   export class BytesPaddingError extends DecoderErrorBase {
     raw: string; //should be hex string
@@ -191,11 +207,13 @@ export namespace Errors {
   export class AddressErrorResult extends ErrorResultBase {
     constructor(
       public addressType: Types.AddressType,
-      public error: GenericError | AddressPaddingError
+      public error: GenericError | AddressError
     ) {
       super();
     }
   }
+
+  export type AddressError = AddressPaddingError;
 
   export class AddressPaddingError extends DecoderErrorBase {
     raw: string; //should be hex string
@@ -225,7 +243,7 @@ export namespace Errors {
   export class FixedErrorResult extends ErrorResultBase {
     constructor(
       public fixedType: Types.FixedType,
-      public error: GenericError | FixedPointNotYetSupportedError
+      public error: GenericError | FixedError
     ) {
       super();
     }
@@ -233,11 +251,14 @@ export namespace Errors {
   export class UfixedErrorResult extends ErrorResultBase {
     constructor(
       public ufixedType: Types.UfixedType,
-      public error: GenericError | FixedPointNotYetSupportedError
+      public error: GenericError | UfixedError
     ) {
       super();
     }
   }
+
+  export type FixedError = FixedPointNotYetSupportedError;
+  export type UfixedError = FixedPointNotYetSupportedError;
 
   export class FixedPointNotYetSupportedError extends DecoderErrorBase {
     raw: string; //hex string
@@ -306,11 +327,13 @@ export namespace Errors {
   export class EnumErrorResult extends ErrorResultBase {
     constructor(
       public enumType: Types.EnumType,
-      public error: GenericError | EnumPaddingError | EnumOutOfRangeError | EnumNotFoundDecodingError
+      public error: GenericError | EnumError
     ) {
       super();
     }
   }
+
+  export type EnumError = EnumPaddingError | EnumOutOfRangeError | EnumNotFoundDecodingError;
 
   export class EnumPaddingError extends DecoderErrorBase {
     kind: "EnumPaddingError";
@@ -331,15 +354,15 @@ export namespace Errors {
   export class EnumOutOfRangeError extends DecoderErrorBase {
     kind: "EnumOutOfRangeError";
     type: Types.EnumType;
-    raw: BN;
+    rawAsBN: BN;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       let typeName = (this.type.kind === "local" ? (this.type.definingContractName + ".") : "") + this.type.typeName;
-      return `Invalid ${typeName} (numeric value ${this.raw.toString()})`;
+      return `Invalid ${typeName} (numeric value ${this.rawAsBN.toString()})`;
     }
     constructor(enumType: Types.EnumType, raw: BN) {
       super();
       this.type = enumType;
-      this.raw = raw;
+      this.rawAsBN = raw;
       this.kind = "EnumOutOfRangeError";
     }
   }
@@ -347,15 +370,15 @@ export namespace Errors {
   export class EnumNotFoundDecodingError extends DecoderErrorBase {
     kind: "EnumNotFoundDecodingError";
     type: Types.EnumType;
-    raw: BN;
+    rawAsBN: BN;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       let typeName = (this.type.kind === "local" ? (this.type.definingContractName + ".") : "") + this.type.typeName;
-      return `Unknown enum type ${typeName} of id ${this.type.id} (numeric value ${this.raw.toString()})`;
+      return `Unknown enum type ${typeName} of id ${this.type.id} (numeric value ${this.rawAsBN.toString()})`;
     }
     constructor(enumType: Types.EnumType, raw: BN) {
       super();
       this.type = enumType;
-      this.raw = raw;
+      this.rawAsBN = raw;
       this.kind = "EnumNotFoundDecodingError";
     }
   }
@@ -368,11 +391,13 @@ export namespace Errors {
   export class ContractErrorResult extends ErrorResultBase {
     constructor(
       public contractType: Types.ContractType,
-      public error: GenericError | ContractPaddingError
+      public error: GenericError | ContractError
     ) {
       super();
     }
   }
+
+  export type ContractError = ContractPaddingError;
 
   export class ContractPaddingError extends DecoderErrorBase {
     raw: string; //should be hex string
@@ -395,11 +420,13 @@ export namespace Errors {
   export class FunctionExternalErrorResult extends ErrorResultBase {
     constructor(
       public functionType: Types.FunctionTypeExternal,
-      public error: GenericError | FunctionExternalNonStackPaddingError | FunctionExternalStackPaddingError
+      public error: GenericError | FunctionExternalError
     ) {
       super();
     }
   }
+
+  export type FunctionExternalError = FunctionExternalNonStackPaddingError | FunctionExternalStackPaddingError;
 
   export class FunctionExternalNonStackPaddingError extends DecoderErrorBase {
     raw: string; //should be hex string
@@ -437,12 +464,14 @@ export namespace Errors {
   export class FunctionInternalErrorResult extends ErrorResultBase {
     constructor(
       public functionType: Types.FunctionTypeInternal,
-      public error: GenericError | FunctionInternalPaddingError
-        | NoSuchInternalFunctionError | DeployedFunctionInConstructorError | MalformedInternalFunctionError
+      public error: GenericError | FunctionInternalError
     ) {
       super();
     }
   }
+
+  export type FunctionInternalError = FunctionInternalPaddingError | NoSuchInternalFunctionError
+    | DeployedFunctionInConstructorError | MalformedInternalFunctionError;
 
   export class FunctionInternalPaddingError extends DecoderErrorBase {
     raw: string; //should be hex string
@@ -534,6 +563,7 @@ export namespace Errors {
 
   //attempted to decode an indexed parameter of reference type error
   export class IndexedReferenceTypeError extends DecoderErrorBase {
+    kind: "IndexedReferenceTypeError";
     type: Types.ReferenceType;
     raw: string; //should be hex string
     message() {
@@ -543,6 +573,7 @@ export namespace Errors {
       super();
       this.type = referenceType;
       this.raw = raw;
+      this.kind = "IndexedReferenceTypeError";
     }
   }
 
@@ -576,6 +607,7 @@ export namespace Errors {
   }
 
   export class ReadErrorTopic extends DecoderErrorBase {
+    kind: "ReadErrorTopic";
     topic: number;
     message() {
       return `Can't read event topic ${this.topic}`;
@@ -583,6 +615,7 @@ export namespace Errors {
     constructor(topic: number) {
       super();
       this.topic = topic;
+      this.kind = "ReadErrorTopic";
     }
   }
 
@@ -631,4 +664,31 @@ export namespace Errors {
         }
     }
   }
+
+  /* SECTION 9: Internal use errors */
+
+  export type InternalUseError = OverlongArrayOrStringError | InternalFunctionInABIError;
+
+  //you should never see this returned.  this is only for internal use.
+  export class OverlongArrayOrStringError extends DecoderErrorBase {
+    kind: "OverlongArrayOrStringError";
+    lengthAsBN: BN;
+    dataLength: number;
+    constructor(length: BN, dataLength: number) {
+      super();
+      this.lengthAsBN = length;
+      this.dataLength = dataLength;
+      this.kind = "OverlongArrayOrStringError";
+    }
+  }
+
+  //this one should never come up at all, but just to be sure...
+  export class InternalFunctionInABIError extends DecoderErrorBase {
+    kind: "InternalFunctionInABIError";
+    constructor() {
+      super();
+      this.kind = "InternalFunctionInABIError";
+    }
+  }
+
 }

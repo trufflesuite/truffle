@@ -22,7 +22,7 @@ export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer
     }
     catch(error) { //error: Errors.DecodingError
       if(options.strictAbiMode) {
-        throw new StopDecodingError();
+        throw new StopDecodingError(error.error);
       }
       return Errors.makeGenericErrorResult(dataType, error.error);
     }
@@ -55,7 +55,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   }
   catch(error) { //error: Errors.DecodingError
     if(strict) {
-      throw new StopDecodingError();
+      throw new StopDecodingError(error.error);
     }
     return Errors.makeGenericErrorResult(dataType, error.error);
   }
@@ -69,7 +69,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   }
   catch(error) { //error: Errors.DecodingError
     if(strict) {
-      throw new StopDecodingError();
+      throw new StopDecodingError(error.error);
     }
     return Errors.makeGenericErrorResult(dataType, error.error);
   }
@@ -80,7 +80,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
     }
     catch(error) { //error: Errors.DecodingError
       if(strict) {
-        throw new StopDecodingError();
+        throw new StopDecodingError(error.error);
       }
       return Errors.makeGenericErrorResult(dataType, error.error);
     }
@@ -107,7 +107,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
       }
       catch(error) { //error: Errors.DecodingError
         if(strict) {
-          throw new StopDecodingError();
+          throw new StopDecodingError(error.error);
         }
         return Errors.makeGenericErrorResult(dataType, error.error);
       }
@@ -116,7 +116,11 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
         //you may notice that the comparison is a bit crude; that's OK, this is
         //just to prevent huge numbers from DOSing us, other errors will still
         //be caught regardless
-        throw new StopDecodingError();
+        throw new StopDecodingError(
+          new Errors.OverlongArrayOrStringError(
+            lengthAsBN, info.state[location].length
+          )
+        );
       }
       length = lengthAsBN.toNumber();
 
@@ -142,7 +146,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
           }
           catch(error) { //error: Errors.DecodingError
             if(strict) {
-              throw new StopDecodingError();
+              throw new StopDecodingError(error.error);
             }
             return Errors.makeGenericErrorResult(dataType, error.error);
           }
@@ -151,7 +155,11 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
             //you may notice that the comparison is a bit crude; that's OK, this is
             //just to prevent huge numbers from DOSing us, other errors will still
             //be caught regardless
-            throw new StopDecodingError();
+            throw new StopDecodingError(
+              new Errors.OverlongArrayOrStringError(
+                lengthAsBN, info.state[location].length
+              )
+            );
           }
           length = lengthAsBN.toNumber();
           startPosition += CodecUtils.EVM.WORD_SIZE; //increment startPosition
@@ -172,7 +180,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
       }
       catch(error) { //error: Errors.DecodingError
         if(strict) {
-          throw new StopDecodingError();
+          throw new StopDecodingError(error.error);
         }
         return Errors.makeGenericErrorResult(dataType, error.error);
       }
@@ -214,7 +222,7 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
       }
       catch(error) { //error: Errors.DecodingError
         if(options.strictAbiMode) {
-          throw new StopDecodingError();
+          throw new StopDecodingError(error.error);
         }
         return Errors.makeGenericErrorResult(dataType, error.error);
       }
@@ -251,13 +259,11 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
   const typeId = dataType.id;
   const structAllocation = allocations[typeId];
   if(!structAllocation) {
+    let error = new Errors.UserDefinedTypeNotFoundError(dataType);
     if(options.strictAbiMode) {
-      throw new StopDecodingError();
+      throw new StopDecodingError(error);
     }
-    return new Errors.StructErrorResult(
-      dataType,
-      new Errors.UserDefinedTypeNotFoundError(dataType)
-    );
+    return new Errors.StructErrorResult(dataType, error);
   }
 
   let decodedMembers: Values.NameValuePair[] = [];
@@ -273,13 +279,11 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
     let memberName = memberAllocation.definition.name;
     let storedType = <Types.StructType>userDefinedTypes[typeId];
     if(!storedType) {
+      let error = new Errors.UserDefinedTypeNotFoundError(dataType);
       if(options.strictAbiMode) {
-        throw new StopDecodingError();
+        throw new StopDecodingError(error);
       }
-      return new Errors.StructErrorResult(
-        dataType,
-        new Errors.UserDefinedTypeNotFoundError(dataType)
-      );
+      return new Errors.StructErrorResult(dataType, error);
     }
     let storedMemberType = storedType.memberTypes[index].type;
     let memberType = Types.specifyLocation(storedMemberType, typeLocation);

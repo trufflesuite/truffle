@@ -1,4 +1,4 @@
-import { AbiUtils } from "truffle-codec-utils";
+import { AbiUtils, Errors } from "truffle-codec-utils";
 
 export class UnknownBaseContractIdError extends Error {
   public derivedId: number;
@@ -42,12 +42,17 @@ export class NoDefinitionFoundForABIEntryError extends Error {
   }
 }
 
-//used to stop decoding; apologies for the lack of details in this one,
-//but this one is actually meant to be used for control flow rather than
-//display, so I'm hoping that's OK
+//used to stop decoding; like DecodingError, but used in contexts
+//where I don't expect it to be caught
+//NOTE: currently we don't actually check the type of a thrown error,
+//we just rely on context.  still, I think it makes sense to be a separate
+//type.
 export class StopDecodingError extends Error {
-  constructor() {
-    const message = `Stopping decoding!`;
+  public error: Errors.DecoderError;
+  constructor(error: Errors.DecoderError) {
+    const message = `Stopping decoding: ${error.kind}`; //sorry about the bare-bones message,
+    //but again, users shouldn't actually see this, so I think this should suffice for now
     super(message);
+    this.error = error;
   }
 }

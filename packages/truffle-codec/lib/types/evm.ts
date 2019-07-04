@@ -56,8 +56,8 @@ export interface InternalFunction {
 }
 
 export interface DecoderOptions {
-  permissivePadding?: boolean;
-  strictAbiMode?: boolean;
+  permissivePadding?: boolean; //allows incorrect padding on certain data types
+  strictAbiMode?: boolean; //throw errors instead of returning; check array & string lengths (crudely)
   abiPointerBase?: number;
   memoryVisited?: string[]; //for the future
 }
