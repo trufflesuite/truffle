@@ -9,7 +9,7 @@ import { ContractObject } from "truffle-contract-schema/spec";
 import BN from "bn.js";
 import { Definition as DefinitionUtils, AbiUtils, EVM, AstDefinition, AstReferences } from "truffle-codec-utils";
 import { BlockType, Transaction } from "web3/eth/types";
-import { EventLog, Log } from "web3/types";
+import { Log } from "web3/types";
 import { Provider } from "web3/providers";
 import * as Codec from "truffle-codec";
 import * as DecoderTypes from "./types";
@@ -453,7 +453,18 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return await Promise.all(logs.map(log => this.decodeLog(log, name)));
   }
 
-  public async events(name: string | null = null, fromBlock: BlockType = "latest", toBlock: BlockType = "latest"): Promise<DecoderTypes.DecodedLog[]> {
+  public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
+    let { name, fromBlock, toBlock } = options;
+    if(name === undefined) {
+      name = null; // null means any name is OK
+    }
+    if(fromBlock === undefined) {
+      fromBlock = "latest";
+    }
+    if(toBlock === undefined) {
+      toBlock = "latest";
+    }
+
     const logs = await this.web3.eth.getPastLogs({
       address: this.contractAddress,
       fromBlock,

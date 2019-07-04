@@ -44,7 +44,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
         this.contractNodes[node.id] = node;
         if(contract.deployedBytecode) {
           const context = Utils.makeContext(contract, node);
-          debug("context: %O", context);
           const hash = CodecUtils.Conversion.toHexString(
             CodecUtils.EVM.keccak256({type: "string",
               value: context.binary
@@ -54,7 +53,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
         }
         if(contract.bytecode) {
           const constructorContext = Utils.makeContext(contract, node, true);
-          debug("constructorContext: %O", constructorContext);
           const hash = CodecUtils.Conversion.toHexString(
             CodecUtils.EVM.keccak256({type: "string",
               value: constructorContext.binary
@@ -66,7 +64,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     }
 
     this.contexts = <CodecUtils.Contexts.DecoderContexts>CodecUtils.Contexts.normalizeContexts(this.contexts);
-    debug("contexts: %O", this.contexts);
     this.contextsById = Object.assign({}, ...Object.values(this.contexts).filter(
       ({isConstructor}) => !isConstructor
     ).map(context =>
@@ -85,7 +82,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     debug("init called");
     [this.referenceDeclarations, this.userDefinedTypes] = this.getUserDefinedTypes();
 
-    debug("ccbyId: %O", this.constructorContextsById);
     let allocationInfo: Codec.ContractAllocationInfo[] = Object.entries(this.contracts).map(
       ([id, { abi }]) => ({
         abi: <AbiUtils.Abi>abi,
@@ -221,7 +217,18 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     return await Promise.all(logs.map(log => this.decodeLog(log, name)));
   }
 
-  public async events(name: string | null = null, fromBlock: BlockType = "latest", toBlock: BlockType = "latest"): Promise<DecoderTypes.DecodedLog[]> {
+  public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
+    let { name, fromBlock, toBlock } = options;
+    if(name === undefined) {
+      name = null; // null means any name is OK
+    }
+    if(fromBlock === undefined) {
+      fromBlock = "latest";
+    }
+    if(toBlock === undefined) {
+      toBlock = "latest";
+    }
+
     const logs = await this.web3.eth.getPastLogs({
       fromBlock,
       toBlock,

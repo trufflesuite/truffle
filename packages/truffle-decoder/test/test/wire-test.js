@@ -157,36 +157,30 @@ contract("WireTest", _accounts => {
       //discard the error!
     }
 
-    let constructorEvents = await decoder.events(
-      null,
-      constructorBlock,
-      constructorBlock
-    );
-    let emitStuffEvents = await decoder.events(
-      null,
-      emitStuffBlock,
-      emitStuffBlock
-    );
-    let moreStuffEvents = await decoder.events(
-      null,
-      moreStuffBlock,
-      moreStuffBlock
-    );
-    let inheritedEvents = await decoder.events(
-      null,
-      inheritedBlock,
-      inheritedBlock
-    );
-    let indexTestEvents = await decoder.events(
-      null,
-      indexTestBlock,
-      indexTestBlock
-    );
-    let libraryTestEvents = await decoder.events(
-      null,
-      libraryTestBlock,
-      libraryTestBlock
-    );
+    let constructorEvents = await decoder.events({
+      fromBlock: constructorBlock,
+      toBlock: constructorBlock
+    });
+    let emitStuffEvents = await decoder.events({
+      fromBlock: emitStuffBlock,
+      toBlock: emitStuffBlock
+    });
+    let moreStuffEvents = await decoder.events({
+      fromBlock: moreStuffBlock,
+      toBlock: moreStuffBlock
+    });
+    let inheritedEvents = await decoder.events({
+      fromBlock: inheritedBlock,
+      toBlock: inheritedBlock
+    });
+    let indexTestEvents = await decoder.events({
+      fromBlock: indexTestBlock,
+      toBlock: indexTestBlock
+    });
+    let libraryTestEvents = await decoder.events({
+      fromBlock: libraryTestBlock,
+      toBlock: libraryTestBlock
+    });
     //HACK -- since danger was last, we can just ask for the
     //events from the latest block
     let dangerEvents = await decoder.events();
@@ -467,7 +461,10 @@ contract("WireTest", _accounts => {
     //so we don't need to use that hack here
     let anonymousTest = await deployedContract.anonymousTest();
     let block = anonymousTest.blockNumber;
-    let anonymousTestEvents = await decoder.events(null, block, block);
+    let anonymousTestEvents = await decoder.events({
+      fromBlock: block,
+      toBlock: block
+    });
 
     assert.lengthOf(anonymousTestEvents, 3);
 

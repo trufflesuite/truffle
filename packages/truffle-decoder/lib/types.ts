@@ -2,7 +2,8 @@ import BN from "bn.js";
 import { ContractObject } from "truffle-contract-schema/spec";
 import { Values } from "truffle-codec-utils";
 import { CalldataDecoding, LogDecoding } from "truffle-codec";
-import { Transaction, Log } from "web3-core";
+import { Transaction, BlockType } from "web3/eth/types";
+import { Log } from "web3/types";
 
 export interface ContractState {
   name: string;
@@ -38,6 +39,12 @@ export interface CodeCache {
   [block: number]: {
     [address: string]: Uint8Array;
   };
+}
+
+export interface EventOptions {
+  name?: string;
+  fromBlock?: BlockType;
+  toBlock?: BlockType;
 }
 
 export class ContractBeingDecodedHasNoNodeError extends Error {
