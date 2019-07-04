@@ -382,18 +382,19 @@ function allocateEvent(
     };
   }
   //finally: add in the indexed parameters...
-  for(let positionInIndexed = 0; positionInIndexed < indexed.length; positionInIndexed++) {
-    const node = indexed[positionInIndexed];
+  let currentTopic = node.anonymous ? 0 : 1; //if not anonymous, selector takes up topic 0
+  for(const parameterNode of indexed) {
     const position = rawParameters.findIndex(
-      (parameter: AstDefinition) => parameter.id === node.id
+      (parameter: AstDefinition) => parameter.id === parameterNode.id
     );
     argumentsAllocation[position] = {
-      definition: node,
+      definition: parameterNode,
       pointer: {
         location: "eventtopic" as "eventtopic",
-        topic: positionInIndexed + 1 //signature takes up topic 0, so we skip that, hence +1
+        topic: currentTopic
       }
     };
+    currentTopic++;
   }
   //...and return
   return {
@@ -467,31 +468,44 @@ function getEventAllocationsForContract(
   abiAllocations: Allocations.AbiAllocations
 ): Allocations.EventAllocationTemporary[] {
   return abi.filter(
-    (abiEntry: AbiUtils.AbiEntry) => abiEntry.type === "event" && !abiEntry.anonymous
+    (abiEntry: AbiUtils.AbiEntry) => abiEntry.type === "event"
   ).map(
     (abiEntry: AbiUtils.EventAbiEntry) =>
-      ({
+      abiEntry.anonymous
+      ? {
+        topics: AbiUtils.topicsCount(abiEntry),
+        allocation: allocateEvent(abiEntry, contractId, referenceDeclarations, abiAllocations)
+      }
+      : {
         selector: AbiUtils.abiSelector(abiEntry),
         topics: AbiUtils.topicsCount(abiEntry),
         allocation: allocateEvent(abiEntry, contractId, referenceDeclarations, abiAllocations)
-      })
+      }
   );
 }
 
 //note: constructor context is ignored by this function; no need to pass it in
 export function getEventAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, abiAllocations: Allocations.AbiAllocations): Allocations.EventAllocations {
   let allocations: Allocations.EventAllocations = {};
-  for(let {abi, id} of contracts) {
-    let contractKind = referenceDeclarations[id].contractKind;
-    let contractAllocations = getEventAllocationsForContract(abi, id, referenceDeclarations, abiAllocations);
+  for(let {abi, id: contractId} of contracts) {
+    let contractKind = referenceDeclarations[contractId].contractKind;
+    let contractAllocations = getEventAllocationsForContract(abi, contractId, referenceDeclarations, abiAllocations);
     for(let {selector, topics, allocation} of contractAllocations) {
-      if(allocations[selector] === undefined) {
-        allocations[selector] = {};
+      if(allocations[topics] === undefined) {
+        allocations[topics] = { bySelector: {}, anonymous: { contract: {}, library: {} } };
       }
-      if(allocations[selector][topics] === undefined) {
-        allocations[selector][topics] = { contract: {}, library: {} };
+      if(selector !== undefined) {
+        if(allocations[topics].bySelector[selector] === undefined) {
+          allocations[topics].bySelector[selector] = { contract: {}, library: {} };
+        }
+        allocations[topics].bySelector[selector][contractKind][contractId] = allocation;
       }
-      allocations[selector][topics][contractKind][id] = allocation;
+      else {
+        if(allocations[topics].anonymous[contractKind][contractId] === undefined) {
+          allocations[topics].anonymous[contractKind][contractId] = [];
+        }
+        allocations[topics].anonymous[contractKind][contractId].push(allocation);
+      }
     }
   }
   return allocations;

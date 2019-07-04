@@ -8,7 +8,7 @@ export { ContractAllocationInfo, StorageAllocations, StorageMemberAllocation, Ab
 export { Slot, isWordsLength, equalSlots } from "../types/storage";
 export { DecoderRequest, isStorageRequest, isCodeRequest } from "../types/request";
 export { EvmInfo, AllocationInfo } from "../types/evm";
-export { CalldataDecoding, EventDecoding } from "../types/wire";
+export { CalldataDecoding, LogDecoding } from "../types/wire";
 
 export { decodeVariable, decodeEvent, decodeCalldata } from "./decoding";
 

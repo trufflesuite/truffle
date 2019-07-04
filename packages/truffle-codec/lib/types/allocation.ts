@@ -106,26 +106,29 @@ export interface CalldataArgumentAllocation {
 
 //finally we have events.  these work like calldata, except that there's no
 //need for an offset, the ultimate pointer can be either an event data pointer
-//or an event topic pointer, and, they're given *first* by selector, *then*
-//by number of topics, *then* by contract ID (the latter being split into
-//contracts and libraries)
+//or an event topic pointer, and, they're given:
+//1. first by # of topics
+//2. then by anonymous or not
+//3. then by selector (this one is skipped for anonymou)
+//4. then by contract kind
+//5. then by contract ID
+//(and then the anonymous ones are in an array)
 
 export interface EventAllocations {
-  [selector: string]: EventSelectorAllocation;
-}
-
-export interface EventSelectorAllocation {
-  [topics: number]: EventAllocationsNarrow;
-}
-
-export interface EventAllocationsNarrow {
-  [contractKind: string]: EventContractAllocation;
-  //yes, this is a stupid way of doing this, but it's the easiest way to
-  //get things to compile
-}
-
-export interface EventContractAllocation {
-  [contractId: number]: EventAllocation;
+  [topics: number]: {
+    bySelector: {
+      [selector: string]: {
+        [contractKind: string]: {
+          [contractId: number]: EventAllocation;
+        }
+      }
+    };
+    anonymous: {
+      [contractKind: string]: {
+        [contractId: number]: EventAllocation[];
+      }
+    }
+  }
 }
 
 export interface EventAllocation {
@@ -141,7 +144,7 @@ export interface EventArgumentAllocation {
 
 //NOTE: not for outside use!  just produced temporarily by the allocator!
 export interface EventAllocationTemporary {
-  selector: string;
+  selector?: string; //leave out for anonymous
   topics: number;
   allocation: EventAllocation;
 }

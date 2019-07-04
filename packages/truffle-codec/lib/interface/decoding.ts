@@ -7,7 +7,7 @@ import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { CalldataAllocation, EventAllocation, EventArgumentAllocation } from "../types/allocation";
-import { CalldataDecoding, EventDecoding, AbiArgument } from "../types/wire";
+import { CalldataDecoding, LogDecoding, AbiArgument } from "../types/wire";
 import { encodeTupleAbi } from "../encode/abi";
 import read from "../read";
 import decode from "../decode";
@@ -33,6 +33,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
   const allocations = info.allocations.calldata[contractId];
   let allocation: CalldataAllocation;
   let isConstructor: boolean = info.currentContext.isConstructor;
+  let selector: string;
   //first: is this a creation call?
   if(isConstructor) {
     allocation = allocations.constructorAllocation;
@@ -46,13 +47,14 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       },
       info.state
     ).next().value; //no requests should occur, we can just get the first value
-    let selector = CodecUtils.Conversion.toHexString(rawSelector);
+    selector = CodecUtils.Conversion.toHexString(rawSelector);
     allocation = allocations.functionAllocations[selector];
   }
   if(allocation === undefined) {
     return {
       kind: "fallback",
-      class: contractType
+      class: contractType,
+      data: CodecUtils.Conversion.toHexString(info.state.calldata)
     };
   }
   //you can't map with a generator, so we have to do this map manually
@@ -75,7 +77,8 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
     return {
       kind: "constructor",
       class: contractType,
-      arguments: decodedArguments
+      arguments: decodedArguments,
+      bytecode: CodecUtils.Conversion.toHexString(info.state.calldata.slice(0, allocation.offset))
     };
   }
   else {
@@ -83,12 +86,13 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       kind: "function",
       class: contractType,
       name: allocation.definition.name,
-      arguments: decodedArguments
+      arguments: decodedArguments,
+      selector
     };
   }
 }
 
-export function* decodeEvent(info: EvmInfo, address: string, targetName: string | null = null): IterableIterator<EventDecoding[] | DecoderRequest | Values.Result | GeneratorJunk> {
+export function* decodeEvent(info: EvmInfo, address: string, targetName: string | null = null): IterableIterator<LogDecoding[] | DecoderRequest | Values.Result | GeneratorJunk> {
   const allocations = info.allocations.event;
   debug("event allocations: %O", allocations);
   let rawSelector: Uint8Array;
@@ -107,7 +111,8 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName: string 
   const selector = CodecUtils.Conversion.toHexString(rawSelector);
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
-  const { contract: contractAllocations, library: libraryAllocations } = allocations[selector][topicsCount];
+  const { contract: contractAllocations, library: libraryAllocations } = allocations[topicsCount].bySelector[selector];
+  const { contract: contractAnonymousAllocations, library: libraryAnonymousAllocations } = allocations[topicsCount].anonymous;
   //now: what contract are we (probably) dealing with? let's get its code to find out
   const codeBytes: Uint8Array = yield {
     type: "code",
@@ -115,25 +120,44 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName: string 
   };
   const codeAsHex = CodecUtils.Conversion.toHexString(codeBytes);
   const contractContext = CodecUtils.Contexts.findDecoderContext(info.contexts, codeAsHex);
-  let possibleContractAllocations: [string, EventAllocation][];
+  //the following two arrays contain id-allocation pairs
+  let possibleContractAllocations: [string, EventAllocation][]; //excludes anonymous events
+  let possibleContractAnonymousAllocations: [string, EventAllocation][];
   //should be number, but we have to temporarily pass through string to get compilation to work...
   //(these are ID/allocation pairs)
   if(contractContext) {
     //if we found the contract, maybe it's from that contract
     const contractId = contractContext.contractId;
     const contractAllocation = contractAllocations[contractId];
+    const contractAnonymousAllocation = contractAnonymousAllocations[contractId];
     possibleContractAllocations = contractAllocation
       ? [[contractId.toString(), contractAllocation]] //array of a single pair
       : [];
+    if(contractAnonymousAllocation) {
+      possibleContractAnonymousAllocations = contractAnonymousAllocation.map(
+        allocation => [contractId.toString(), allocation]
+      );
+    }
+    else {
+      possibleContractAnonymousAllocations = [];
+    }
   }
   else {
     //if we couldn't determine the contract, well, we have to assume it's from a library
     possibleContractAllocations = [];
+    possibleContractAnonymousAllocations = [];
   }
-  //now we add in all the library allocations!
-  const possibleAllocations = [...possibleContractAllocations, ...Object.entries(libraryAllocations)];
-  let decodings: EventDecoding[] = [];
-  for(const [id, allocation] of possibleAllocations) {
+  //now we get all the library allocations!
+  const possibleLibraryAllocations = Object.entries(libraryAllocations);
+  const possibleLibraryAnonymousAllocations = [].concat(...Object.entries(libraryAnonymousAllocations).map(
+    ([id, allocations]) => allocations.map(allocation => [id, allocation])
+  ));
+  //now we put it all together!
+  const possibleAllocations = possibleContractAllocations.concat(possibleLibraryAllocations);
+  const possibleAnonymousAllocations = possibleContractAnonymousAllocations.concat(possibleLibraryAnonymousAllocations);
+  const possibleAllocationsTotal = possibleAllocations.concat(possibleAnonymousAllocations);
+  let decodings: LogDecoding[] = [];
+  for(const [id, allocation] of possibleAllocationsTotal) {
     try {
       //first: do a name check so we can skip decoding if name is wrong
       if(targetName !== null && allocation.definition.name !== targetName) {
@@ -170,12 +194,23 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName: string 
       //are they equal?
       const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
       if(CodecUtils.EVM.equalData(encodedData, reEncodedData)) {
-        decodings.push({
-          kind: "event",
-          class: contractType,
-          name: allocation.definition.name,
-          arguments: decodedArguments
-        });
+        if(allocation.definition.anonymous) {
+          decodings.push({
+            kind: "anonymous",
+            class: contractType,
+            name: allocation.definition.name,
+            arguments: decodedArguments
+          });
+        }
+        else {
+          decodings.push({
+            kind: "event",
+            class: contractType,
+            name: allocation.definition.name,
+            arguments: decodedArguments,
+            selector
+          });
+        }
       }
       //otherwise, just move on
     }

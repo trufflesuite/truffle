@@ -182,7 +182,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  public async decodeLog(log: Log, name: string | null = null): Promise<DecoderTypes.DecodedEvent> {
+  public async decodeLog(log: Log, name: string | null = null): Promise<DecoderTypes.DecodedLog> {
     const block = log.blockNumber;
     const data = CodecUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(CodecUtils.Conversion.toBytes);
@@ -209,7 +209,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decodings = <Codec.EventDecoding[]>result.value;
+    const decodings = <Codec.LogDecoding[]>result.value;
     
     return {
       ...log,
@@ -217,11 +217,11 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  public async decodeLogs(logs: Log[], name: string | null = null): Promise<DecoderTypes.DecodedEvent[]> {
+  public async decodeLogs(logs: Log[], name: string | null = null): Promise<DecoderTypes.DecodedLog[]> {
     return await Promise.all(logs.map(log => this.decodeLog(log, name)));
   }
 
-  public async events(name: string | null = null, fromBlock: BlockType = "latest", toBlock: BlockType = "latest"): Promise<DecoderTypes.DecodedEvent[]> {
+  public async events(name: string | null = null, fromBlock: BlockType = "latest", toBlock: BlockType = "latest"): Promise<DecoderTypes.DecodedLog[]> {
     const logs = await this.web3.eth.getPastLogs({
       fromBlock,
       toBlock,
