@@ -1,5 +1,6 @@
 const debug = require("debug")("decoder:test:wire-test");
 const assert = require("chai").assert;
+const BN = require("bn.js");
 
 const TruffleDecoder = require("../../../truffle-decoder");
 
@@ -452,5 +453,99 @@ contract("WireTest", _accounts => {
       107
     ]);
     assert.isUndefined(unambiguousDecodings[3].arguments[1].value.nativize());
+  });
+
+  it("Handles anonymous events", async () => {
+    let deployedContract = await WireTest.deployed();
+
+    const decoder = await TruffleDecoder.forProject(
+      [WireTest, WireTestParent, WireTestLibrary],
+      web3.currentProvider
+    );
+
+    //thankfully, ethers ignores anonymous events,
+    //so we don't need to use that hack here
+    let anonymousTest = await deployedContract.anonymousTest();
+    let block = anonymousTest.blockNumber;
+    let anonymousTestEvents = await decoder.events(null, block, block);
+
+    assert.lengthOf(anonymousTestEvents, 3);
+
+    assert.lengthOf(anonymousTestEvents[0].decodings, 1);
+    assert.strictEqual(anonymousTestEvents[0].decodings[0].kind, "anonymous");
+    assert.strictEqual(anonymousTestEvents[0].decodings[0].name, "AnonUints");
+    assert.strictEqual(
+      anonymousTestEvents[0].decodings[0].class.typeName,
+      "WireTest"
+    );
+    assert.lengthOf(anonymousTestEvents[0].decodings[0].arguments, 4);
+    assert.deepEqual(
+      anonymousTestEvents[0].decodings[0].arguments.map(({ value }) =>
+        value.nativize()
+      ),
+      [257, 1, 1, 1]
+    );
+
+    assert.lengthOf(anonymousTestEvents[1].decodings, 2);
+    assert.strictEqual(anonymousTestEvents[1].decodings[0].kind, "anonymous");
+    assert.strictEqual(anonymousTestEvents[1].decodings[0].name, "AnonUints");
+    assert.strictEqual(
+      anonymousTestEvents[1].decodings[0].class.typeName,
+      "WireTest"
+    );
+    assert.lengthOf(anonymousTestEvents[1].decodings[0].arguments, 4);
+    assert.deepEqual(
+      anonymousTestEvents[1].decodings[0].arguments.map(({ value }) =>
+        value.nativize()
+      ),
+      [1, 2, 3, 4]
+    );
+    assert.strictEqual(anonymousTestEvents[1].decodings[1].kind, "anonymous");
+    assert.strictEqual(anonymousTestEvents[1].decodings[1].name, "AnonUint8s");
+    assert.strictEqual(
+      anonymousTestEvents[1].decodings[1].class.typeName,
+      "WireTestLibrary"
+    );
+    assert.lengthOf(anonymousTestEvents[1].decodings[1].arguments, 4);
+    assert.deepEqual(
+      anonymousTestEvents[1].decodings[1].arguments.map(({ value }) =>
+        value.nativize()
+      ),
+      [1, 2, 3, 4]
+    );
+
+    assert.lengthOf(anonymousTestEvents[2].decodings, 2);
+    assert.strictEqual(anonymousTestEvents[2].decodings[0].kind, "event");
+    assert.strictEqual(anonymousTestEvents[2].decodings[0].name, "NonAnon");
+    assert.strictEqual(
+      anonymousTestEvents[2].decodings[0].class.typeName,
+      "WireTest"
+    );
+    assert.lengthOf(anonymousTestEvents[2].decodings[0].arguments, 3);
+    assert.deepEqual(
+      anonymousTestEvents[2].decodings[0].arguments.map(({ value }) =>
+        value.nativize()
+      ),
+      [1, 2, 3]
+    );
+    let selector = anonymousTestEvents[2].decodings[0].selector;
+    assert.strictEqual(anonymousTestEvents[2].decodings[1].kind, "anonymous");
+    assert.strictEqual(anonymousTestEvents[2].decodings[1].name, "AnonUints");
+    assert.strictEqual(
+      anonymousTestEvents[2].decodings[1].class.typeName,
+      "WireTest"
+    );
+    assert.lengthOf(anonymousTestEvents[2].decodings[1].arguments, 4);
+    assert.deepEqual(
+      anonymousTestEvents[2].decodings[1].arguments
+        .slice(1)
+        .map(({ value }) => value.nativize()),
+      [1, 2, 3]
+    );
+    assert(
+      anonymousTestEvents[2].decodings[1].arguments[0].value.value.asBN.eq(
+        new BN(selector.slice(2), 16)
+      )
+    );
   });
 });

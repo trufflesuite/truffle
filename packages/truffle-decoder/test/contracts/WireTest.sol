@@ -101,6 +101,18 @@ contract WireTest is WireTestParent {
 
     WireTestLibrary.emitUnambiguousEvent();
   }
+
+  event AnonUints(uint indexed, uint indexed, uint indexed, uint indexed) anonymous;
+  event NonAnon(uint indexed, uint indexed, uint indexed);
+
+  function anonymousTest() public {
+    //first test: unambiguous
+    emit AnonUints(257, 1, 1, 1);
+    //second test: uint8 (from library) or uint?
+    emit AnonUints(1, 2, 3, 4);
+    //third test: uint, or not anonymous?
+    emit NonAnon(1, 2, 3);
+  }
 }
 
 library WireTestLibrary {
@@ -118,4 +130,6 @@ library WireTestLibrary {
     uint[5] memory allZeroes;
     emit AmbiguousEvent(wrongLength, allZeroes);
   }
+
+  event AnonUint8s(uint8 indexed, uint8 indexed, uint8 indexed, uint8 indexed) anonymous;
 }

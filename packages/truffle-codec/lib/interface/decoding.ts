@@ -111,7 +111,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName: string 
   const selector = CodecUtils.Conversion.toHexString(rawSelector);
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
-  const { contract: contractAllocations, library: libraryAllocations } = allocations[topicsCount].bySelector[selector];
+  const { contract: contractAllocations, library: libraryAllocations } = allocations[topicsCount].bySelector[selector] || {contract: {}, library: {}};
   const { contract: contractAnonymousAllocations, library: libraryAnonymousAllocations } = allocations[topicsCount].anonymous;
   //now: what contract are we (probably) dealing with? let's get its code to find out
   const codeBytes: Uint8Array = yield {
