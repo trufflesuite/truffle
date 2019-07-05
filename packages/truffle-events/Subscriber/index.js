@@ -26,7 +26,7 @@ class Subscriber {
   handleEvent(eventName, data) {
     let promises = [];
     for (let handlerName in this.globbedHandlerLookupTable) {
-      if (this.regexMatchesEntireName(eventName, handlerName)) {
+      if (this.globbedHandlerLookupTable[handlerName].test(eventName)) {
         this.globbedHandlers[handlerName].forEach(handler => {
           promises.push(handler.bind(this)(data, eventName));
         });
@@ -42,15 +42,6 @@ class Subscriber {
     if (this.globbedHandlerLookupTable[name]) {
       this.globbedHandlerLookupTable[name] = null;
     }
-  }
-
-  regexMatchesEntireName(eventName, handlerName) {
-    const matches = eventName.match(
-      this.globbedHandlerLookupTable[handlerName]
-    );
-    if (!matches) return null;
-    const filteredMatches = matches.filter(match => typeof match === "string");
-    return filteredMatches.find(filteredMatch => filteredMatch === eventName);
   }
 
   setUpGlobbedListeners(handlers) {

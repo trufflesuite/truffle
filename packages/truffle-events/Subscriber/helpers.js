@@ -27,15 +27,35 @@ const validateOptions = options => {
   }
 };
 
+// match single or double `*` as long as it isn't preceded by an odd number of
+// backslashes. Note: this doesn't handle cases like `***`, as the first two
+// stars get matched and the third gets escaped.
+const globMatchRegEx = /(?:[^\\]|[^\\](?:\\\\)+)(\*\*|\*)/g;
+// list of all characters that should be escaped for use in a regular
+// expression
+const reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
 const convertHandlerNameToRegex = name => {
-  return new RegExp(
-    name.replace(
-      /\*\*|\*/g, // match single or double `*`
-      match => {
-        return match === "**" ? "([^:]+(:[^:]+)*)?" : "[^:]+";
-      }
-    )
-  );
+  let match;
+  let start = 0;
+  let str = "";
+  // making a regular expression match the cases where there is a backlash at
+  // the start of the string makes it much harder to read, instead, just pad
+  // the start:
+  name = " " + name;
+  // build our final string one match at a time
+  while ((match = globMatchRegEx.exec(name)) !== null) {
+    const star = match[1];
+    const starRegex = star === "*" ? "[^:]+" : "(?:[^:]+(?::[^:]+)*)?";
+    const matchLength = match[0].length;
+    const end = match.index + matchLength - star.length;
+    const unmatched = name.substring(start, end);
+    // escape unsafe characters
+    const cleanString = unmatched.replace(reRegExpChar, "\\$&");
+    start += match.index + matchLength;
+    str += cleanString + starRegex;
+  }
+  str += name.substr(last).replace(reRegExpChar, "\\$&");
+  return new RegExp(`^${str.substr(1)}$`, "i");
 };
 
 const createLookupTable = handlerNames => {
@@ -50,7 +70,7 @@ const sortHandlers = handlers => {
   const globbedHandlers = {};
   const nonGlobbedHandlers = {};
   for (let handlerName in handlers) {
-    if (handlerName.includes("*") || handlerName.includes("**")) {
+    if (globMatchRegEx.test(handlerName)) {
       globbedHandlers[handlerName] = handlers[handlerName];
     } else {
       nonGlobbedHandlers[handlerName] = handlers[handlerName];
