@@ -43,7 +43,7 @@ describe("JSparser", () => {
       );
       done();
     });
-  }).timeout(3000);
+  }).timeout(5000);
 
   it("resolves imports quickly when using solcjs parser instead of native solc", done => {
     options.compilers.solc.version = "native";
@@ -67,7 +67,7 @@ describe("JSparser", () => {
       );
       done();
     });
-  }).timeout(3000);
+  }).timeout(5000);
 
   it("properly throws when passed an invalid parser value", done => {
     options.compilers.solc.parser = "badParser";
