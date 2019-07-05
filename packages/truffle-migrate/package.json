@@ -1,6 +1,6 @@
 {
   "name": "truffle-migrate",
-  "version": "3.0.18",
+  "version": "3.0.24",
   "description": "On-chain migrations management",
   "main": "index.js",
   "scripts": {
@@ -23,12 +23,12 @@
     "async": "2.6.1",
     "emittery": "^0.4.0",
     "node-dir": "0.1.17",
-    "truffle-config": "^1.1.12",
-    "truffle-deployer": "^3.0.18",
-    "truffle-expect": "^0.0.8",
-    "truffle-interface-adapter": "^0.1.5",
-    "truffle-reporters": "^1.0.9",
-    "truffle-require": "^2.0.12",
+    "truffle-config": "^1.1.13",
+    "truffle-deployer": "^3.0.24",
+    "truffle-expect": "^0.0.9",
+    "truffle-interface-adapter": "^0.1.6",
+    "truffle-reporters": "^1.0.10",
+    "truffle-require": "^2.0.13",
     "web3": "1.0.0-beta.37"
   },
   "devDependencies": {
