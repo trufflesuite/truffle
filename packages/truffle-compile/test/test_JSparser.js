@@ -21,7 +21,7 @@ describe("JSparser", () => {
     working_directory: __dirname
   };
 
-  it("resolves imports quickly when using solcjs parser instead of docker", done => {
+  it("resolves imports quickly when using solcjs parser instead of docker [ @native ]", done => {
     options.compilers.solc.version = "0.4.22";
     options.compilers.solc.docker = true;
     options.contracts_directory = path.join(__dirname, "./sources/v0.4.x");
@@ -45,7 +45,7 @@ describe("JSparser", () => {
     });
   }).timeout(3000);
 
-  it("resolves imports quickly when using solcjs parser instead of nativ solc", done => {
+  it("resolves imports quickly when using solcjs parser instead of native solc", done => {
     options.compilers.solc.version = "native";
     delete options.compilers.solc.docker;
     options.contracts_directory = path.join(__dirname, "./sources/v0.5.x");
