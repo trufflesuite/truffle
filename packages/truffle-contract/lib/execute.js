@@ -146,7 +146,7 @@ const execute = {
     return function() {
       let deferred;
       let args = Array.prototype.slice.call(arguments);
-      const params = utils.getTxParams.call(constructor, methodABI, args);
+      let params = utils.getTxParams.call(constructor, methodABI, args);
       const promiEvent = new Web3PromiEvent();
 
       const context = {
