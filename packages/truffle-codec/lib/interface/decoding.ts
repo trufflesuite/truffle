@@ -96,22 +96,28 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName: string 
   const allocations = info.allocations.event;
   debug("event allocations: %O", allocations);
   let rawSelector: Uint8Array;
-  try {
+  let selector: string;
+  let contractAllocations: {[contractId: number]: EventAllocation}; //for non-anonymous events
+  let libraryAllocations: {[contractId: number]: EventAllocation}; //similar
+  const topicsCount = info.state.eventtopics.length;
+  //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
+  if(topicsCount > 0) {
     rawSelector = <Uint8Array> read(
       { location: "eventtopic",
         topic: 0
       },
       info.state
     ).next().value; //no requests should occur, we can just get the first value
+    selector = CodecUtils.Conversion.toHexString(rawSelector);
+    ({ contract: contractAllocations, library: libraryAllocations } = allocations[topicsCount].bySelector[selector] || {contract: {}, library: {}});
   }
-  catch(error) {
-    //if we can't read the selector, return an empty set of decodings
-    return [];
+  else {
+    //if we don't have a selector, it means we don't have any non-anonymous events
+    contractAllocations = {};
+    libraryAllocations = {};
   }
-  const selector = CodecUtils.Conversion.toHexString(rawSelector);
-  const topicsCount = info.state.eventtopics.length;
-  //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
-  const { contract: contractAllocations, library: libraryAllocations } = allocations[topicsCount].bySelector[selector] || {contract: {}, library: {}};
+  //now: let's get our allocations for anonymous events
+  //note: these ones map contract IDs to *arrays* of event allocations, not individual allocations!
   const { contract: contractAnonymousAllocations, library: libraryAnonymousAllocations } = allocations[topicsCount].anonymous;
   //now: what contract are we (probably) dealing with? let's get its code to find out
   const codeBytes: Uint8Array = yield {
