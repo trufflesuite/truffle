@@ -465,8 +465,14 @@ contract("WireTest", _accounts => {
       fromBlock: block,
       toBlock: block
     });
+    //also, let's do a test with a specified name
+    let specifiedNameEvents = await decoder.events({
+      name: "AnonUint8s",
+      fromBlock: block,
+      toBlock: block
+    });
 
-    assert.lengthOf(anonymousTestEvents, 3);
+    assert.lengthOf(anonymousTestEvents, 4);
 
     assert.lengthOf(anonymousTestEvents[0].decodings, 1);
     assert.strictEqual(anonymousTestEvents[0].decodings[0].kind, "anonymous");
@@ -543,6 +549,36 @@ contract("WireTest", _accounts => {
       anonymousTestEvents[2].decodings[1].arguments[0].value.value.asBN.eq(
         new BN(selector.slice(2), 16)
       )
+    );
+
+    assert.lengthOf(anonymousTestEvents[3].decodings, 1);
+    assert.strictEqual(anonymousTestEvents[3].decodings[0].kind, "anonymous");
+    assert.strictEqual(
+      anonymousTestEvents[3].decodings[0].name,
+      "ObviouslyAnon"
+    );
+    assert.strictEqual(
+      anonymousTestEvents[3].decodings[0].class.typeName,
+      "WireTest"
+    );
+    assert.lengthOf(anonymousTestEvents[3].decodings[0].arguments, 1);
+    assert.strictEqual(
+      anonymousTestEvents[3].decodings[0].arguments[0].value.nativize(),
+      "0xfe"
+    );
+
+    //now, let's test the specified name events
+    assert.lengthOf(specifiedNameEvents, 1);
+    let specifiedNameEvent = specifiedNameEvents[0];
+    assert.lengthOf(specifiedNameEvent.decodings, 1);
+    let specifiedNameDecoding = specifiedNameEvent.decodings[0];
+    assert.strictEqual(specifiedNameDecoding.kind, "anonymous");
+    assert.strictEqual(specifiedNameDecoding.name, "AnonUint8s");
+    assert.strictEqual(specifiedNameDecoding.class.typeName, "WireTestLibrary");
+    assert.lengthOf(specifiedNameDecoding.arguments, 4);
+    assert.deepEqual(
+      specifiedNameDecoding.arguments.map(({ value }) => value.nativize()),
+      [1, 2, 3, 4]
     );
   });
 });

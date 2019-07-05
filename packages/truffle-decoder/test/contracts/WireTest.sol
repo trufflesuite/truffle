@@ -104,6 +104,7 @@ contract WireTest is WireTestParent {
 
   event AnonUints(uint indexed, uint indexed, uint indexed, uint indexed) anonymous;
   event NonAnon(uint indexed, uint indexed, uint indexed);
+  event ObviouslyAnon(byte) anonymous;
 
   function anonymousTest() public {
     //first test: unambiguous
@@ -112,6 +113,8 @@ contract WireTest is WireTestParent {
     emit AnonUints(1, 2, 3, 4);
     //third test: uint, or not anonymous?
     emit NonAnon(1, 2, 3);
+    //fourth test: no selector
+    emit ObviouslyAnon(0xfe);
   }
 }
 
