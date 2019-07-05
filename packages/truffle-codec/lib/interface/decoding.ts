@@ -126,27 +126,17 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName: string 
   };
   const codeAsHex = CodecUtils.Conversion.toHexString(codeBytes);
   const contractContext = CodecUtils.Contexts.findDecoderContext(info.contexts, codeAsHex);
-  //the following two arrays contain id-allocation pairs
-  let possibleContractAllocations: [string, EventAllocation][]; //excludes anonymous events
-  let possibleContractAnonymousAllocations: [string, EventAllocation][];
-  //should be number, but we have to temporarily pass through string to get compilation to work...
-  //(these are ID/allocation pairs)
+  let possibleContractAllocations: EventAllocation[]; //excludes anonymous events
+  let possibleContractAnonymousAllocations: EventAllocation[];
   if(contractContext) {
     //if we found the contract, maybe it's from that contract
     const contractId = contractContext.contractId;
     const contractAllocation = contractAllocations[contractId];
     const contractAnonymousAllocation = contractAnonymousAllocations[contractId];
     possibleContractAllocations = contractAllocation
-      ? [[contractId.toString(), contractAllocation]] //array of a single pair
+      ? [contractAllocation]
       : [];
-    if(contractAnonymousAllocation) {
-      possibleContractAnonymousAllocations = contractAnonymousAllocation.map(
-        allocation => [contractId.toString(), allocation]
-      );
-    }
-    else {
-      possibleContractAnonymousAllocations = [];
-    }
+    possibleContractAnonymousAllocations = contractAnonymousAllocation || [];
   }
   else {
     //if we couldn't determine the contract, well, we have to assume it's from a library
@@ -154,22 +144,21 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName: string 
     possibleContractAnonymousAllocations = [];
   }
   //now we get all the library allocations!
-  const possibleLibraryAllocations = Object.entries(libraryAllocations);
-  const possibleLibraryAnonymousAllocations = [].concat(...Object.entries(libraryAnonymousAllocations).map(
-    ([id, allocations]) => allocations.map(allocation => [id, allocation])
-  ));
+  const possibleLibraryAllocations = Object.values(libraryAllocations);
+  const possibleLibraryAnonymousAllocations = [].concat(...Object.values(libraryAnonymousAllocations));
   //now we put it all together!
   const possibleAllocations = possibleContractAllocations.concat(possibleLibraryAllocations);
   const possibleAnonymousAllocations = possibleContractAnonymousAllocations.concat(possibleLibraryAnonymousAllocations);
   const possibleAllocationsTotal = possibleAllocations.concat(possibleAnonymousAllocations);
   let decodings: LogDecoding[] = [];
-  for(const [id, allocation] of possibleAllocationsTotal) {
+  for(const allocation of possibleAllocationsTotal) {
     try {
       //first: do a name check so we can skip decoding if name is wrong
       if(targetName !== null && allocation.definition.name !== targetName) {
         continue;
       }
-      const attemptContext = info.contexts[parseInt(id)];
+      const id = allocation.contractId;
+      const attemptContext = info.contexts[id];
       const contractType = CodecUtils.Contexts.contextToType(attemptContext);
       //you can't map with a generator, so we have to do this map manually
       let decodedArguments: AbiArgument[] = [];
