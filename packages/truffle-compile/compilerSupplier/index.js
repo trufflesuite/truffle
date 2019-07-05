@@ -68,7 +68,7 @@ class CompilerSupplier {
             this.config.parser,
             solc
           );
-          resolve([solc, parserSolc]);
+          resolve({ solc, parserSolc });
         } catch (error) {
           reject(error);
         }
