@@ -113,14 +113,13 @@ const Contracts = {
         const compile = SUPPORTED_COMPILERS[compiler];
         if (!compile) throw new Error("Unsupported compiler: " + compiler);
 
-        const compileFunc =
+        const compileFunc = multiPromisify(
           config.all === true || config.compileAll === true
             ? compile.all
-            : compile.necessary;
+            : compile.necessary
+        );
 
-        let [contracts, output, compilerUsed] = await multiPromisify(
-          compileFunc
-        )(config);
+        let [contracts, output, compilerUsed] = await compileFunc(config);
 
         if (compilerUsed) {
           config.compilersInfo[compilerUsed.name] = {

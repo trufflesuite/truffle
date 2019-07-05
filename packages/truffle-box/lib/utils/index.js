@@ -28,41 +28,37 @@ module.exports = {
       return path || (fs.existsSync(alt) && alt);
     }, undefined);
 
-    const boxConfig = await config.read(configPath);
-    return boxConfig;
+    return await config.read(configPath);
   },
 
   setUpTempDirectory: events => {
     events.emit("unbox:preparingToDownload:start");
-    return new Promise((resolve, reject) => {
-      const options = {
-        dir: cwd,
-        unsafeCleanup: true
+    const options = {
+      dir: cwd,
+      unsafeCleanup: true
+    };
+    try {
+      const tmpDir = tmp.dirSync(options);
+      events.emit("unbox:preparingToDownload:succeed");
+      return {
+        path: path.join(tmpDir.name, "box"),
+        cleanupCallback: tmpDir.removeCallback
       };
-      tmp.dir(options, (error, dir, cleanupCallback) => {
-        if (error) {
-          events.emit("unbox:fail");
-          return reject(error);
-        }
-
-        events.emit("unbox:preparingToDownload:succeed");
-        resolve({
-          path: path.join(dir, "box"),
-          cleanupCallback
-        });
-      });
-    });
+    } catch (error) {
+      events.emit("unbox:fail");
+      throw error;
+    }
   },
 
   unpackBox: async (tempDir, destination, boxConfig, unpackBoxOptions) => {
-    await unbox.prepareToCopyFiles(tempDir, boxConfig);
+    unbox.prepareToCopyFiles(tempDir, boxConfig);
     await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
   },
 
-  setUpBox: async (boxConfig, destination, events) => {
+  setUpBox: (boxConfig, destination, events) => {
     events.emit("unbox:settingUpBox:start");
     try {
-      await unbox.installBoxDependencies(boxConfig, destination);
+      unbox.installBoxDependencies(boxConfig, destination);
       events.emit("unbox:settingUpBox:succeed");
     } catch (error) {
       events.emit("unbox:fail");

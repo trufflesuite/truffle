@@ -27,7 +27,7 @@ let provider = new HDWalletProvider(mnemonic, "http://localhost:8545");
 provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5);
 
 // Or, use your own hierarchical derivation path
-provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5, 1, "m/44'/137'/0'/0/");
+provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5, 1, true, "m/44'/137'/0'/0/");
 
 
 // HDWalletProvider is compatible with Web3. Use it at Web3 constructor, just like any other Web3 Provider
