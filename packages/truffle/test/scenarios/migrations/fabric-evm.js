@@ -1,5 +1,6 @@
 const MemoryLogger = require("../memorylogger");
-const CommandRunner = require("../commandrunner");
+const { promisify } = require("util");
+const RunCommand = promisify(require("../commandrunner").run);
 const path = require("path");
 const assert = require("assert");
 const Server = require("../server");
@@ -42,11 +43,9 @@ describe("migrate with fabric-evm interface", function() {
     networkId = await web3.eth.net.getId();
   });
 
-  it("runs migrations (sync & async/await)", function(done) {
-    this.timeout(70000);
-
-    CommandRunner.run("migrate", config, err => {
-      const output = logger.contents();
+  it("runs migrations (sync & async/await)", async () => {
+    const result = await RunCommand("migrate", config);
+    const output = logger.contents();
       processErr(err, output);
 
       assert(output.includes("Saving successful migration to network"));
