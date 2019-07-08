@@ -34,7 +34,13 @@ describe("migrate with fabric-evm interface", function() {
   });
 
   it("runs migrations (sync & async/await)", async () => {
-    await RunCommand("migrate", config);
+    try {
+      await RunCommand("migrate", config);
+    } catch (error) {
+      console.log(logger.contents());
+      throw new Error(error);
+    }
+
     const output = logger.contents();
 
     assert(output.includes("Saving successful migration to network"));
