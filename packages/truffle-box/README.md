@@ -3,13 +3,31 @@ truffle-box
 
 Truffle Box management functionality.
 
-Provides behavior for unboxing a new project from a predefined Truffle Box.
+Handles behavior for unboxing a new project from a predefined Truffle Box.
+
+### Usage
+
+```javascript
+const TruffleBox = require("truffle-box");
+
+// `truffle-box` prompts when unboxing into non-empty directories & before potential overwrites
+// a `force` option can be passed to force unboxing. default is false
+const unboxOptions = { force: false };
+
+// .unbox() validates & unboxes truffle box repos
+// pass the current working directory as directory to unbox into
+TruffleBox.unbox("https://github.com/trufflesuite/truffle-init-default", process.cwd(), unboxOptions);
+
+// or specify relative path to unbox into (path must already exist)
+TruffleBox.unbox("https://github.com/trufflesuite/truffle-init-default", "some/relativePath", unboxOptions);
+
+```
 
 
 Box Configuration
 -----------------
 
-Truffle Boxes are configured via an optional `truffle-box.json` file in the
+Truffle Boxes are configured via a required `truffle-box.json` file in the
 box repo's root directory.
 
 This box configuration file specifies an object containing the following
@@ -59,7 +77,6 @@ properties:
     "post-unpack": "npm install"
   }
   ```
-
 
 Available Unbox Hooks
 ---------------------

@@ -16,16 +16,16 @@ const command = {
   },
   runConsole: (config, ganacheOptions, done) => {
     const Console = require("../console");
-    const Environment = require("../environment");
+    const { Environment } = require("truffle-environment");
 
     const commands = require("./index");
     const excluded = ["console", "develop", "unbox", "init"];
 
-    const available_commands = Object.keys(commands).filter(
+    const availableCommands = Object.keys(commands).filter(
       name => !excluded.includes(name)
     );
 
-    const console_commands = available_commands.reduce(
+    const consoleCommands = availableCommands.reduce(
       (acc, name) => Object.assign({}, acc, { [name]: commands[name] }),
       {}
     );
@@ -33,7 +33,7 @@ const command = {
     Environment.develop(config, ganacheOptions)
       .then(() => {
         const c = new Console(
-          console_commands,
+          consoleCommands,
           config.with({ noAliases: true })
         );
         c.start(done);
@@ -43,7 +43,7 @@ const command = {
   },
   run: (options, done) => {
     const Config = require("truffle-config");
-    const Develop = require("../develop");
+    const { Develop } = require("truffle-environment");
 
     const config = Config.detect(options);
     const customConfig = config.networks.develop || {};
@@ -68,6 +68,7 @@ const command = {
       total_accounts: customConfig.accounts || 10,
       default_balance_ether: customConfig.defaultEtherBalance || 100,
       blockTime: customConfig.blockTime || 0,
+      fork: customConfig.fork,
       mnemonic,
       gasLimit: customConfig.gas || 0x6691b7,
       gasPrice: customConfig.gasPrice || 0x77359400,
