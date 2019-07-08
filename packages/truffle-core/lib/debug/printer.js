@@ -78,7 +78,7 @@ class DebugPrinter {
   }
 
   printState() {
-    const sourceId = this.session.view(solidity.current.source).id;
+    const { id: sourceId, source } = this.session.view(solidity.current.source);
 
     if (sourceId === undefined) {
       this.config.logger.log();
@@ -96,11 +96,16 @@ class DebugPrinter {
     // in some environments (perhaps?) line breaks are still denoted by just \n
     const splitLines = str => str.split(/\r?\n/g);
 
-    const lines = splitLines(colorizedSource);
+    const lines = splitLines(source);
+    const colorizedLines = splitLines(colorizedSource);
 
     this.config.logger.log("");
 
-    this.config.logger.log(DebugUtils.formatRangeLines(lines, range.lines));
+    //HACK -- the line-pointer formatter doesn't work right with colorized
+    //lines, so we pass in the uncolored version too
+    this.config.logger.log(
+      DebugUtils.formatRangeLines(colorizedLines, range.lines, lines)
+    );
 
     this.config.logger.log("");
   }

@@ -212,7 +212,7 @@ var DebugUtils = {
     return prefix + output;
   },
 
-  formatRangeLines: function(source, range, contextBefore) {
+  formatRangeLines: function(source, range, uncolorizedSource, contextBefore) {
     // range is {
     //   start: { line, column },
     //   end: { line, column}
@@ -237,6 +237,7 @@ var DebugUtils = {
       });
 
     var line = source[range.start.line];
+    var uncolorizedLine = uncolorizedSource[range.start.line];
     var number = range.start.line + 1; // zero-index
 
     var pointerStart = range.start.column;
@@ -253,7 +254,14 @@ var DebugUtils = {
 
     var allLines = beforeLines.concat([
       DebugUtils.formatLineNumberPrefix(line, number, prefixLength),
-      DebugUtils.formatLinePointer(line, pointerStart, pointerEnd, prefixLength)
+      DebugUtils.formatLinePointer(
+        uncolorizedLine,
+        pointerStart,
+        pointerEnd,
+        prefixLength
+      )
+      //HACK -- the line-pointer formatter doesn't work right with colorized
+      //lines, so we pass in the uncolored version
     ]);
 
     return allLines.join(OS.EOL);
