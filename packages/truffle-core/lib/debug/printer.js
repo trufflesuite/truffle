@@ -32,10 +32,12 @@ class DebugPrinter {
     };
 
     this.colorizedSources = {};
-    for(const source of this.session.view(solidity.info.sources)) {
+    for (const source of Object.values(
+      this.session.view(solidity.info.sources)
+    )) {
       const id = source.id;
       const uncolorized = source.source;
-      const colorized = DebugUtils.colorize(source);
+      const colorized = DebugUtils.colorize(uncolorized);
       this.colorizedSources[id] = colorized;
     }
   }
@@ -78,7 +80,7 @@ class DebugPrinter {
   printState() {
     const sourceId = this.session.view(solidity.current.source).id;
 
-    if (!source) {
+    if (sourceId === undefined) {
       this.config.logger.log();
       this.config.logger.log("1: // No source code found.");
       this.config.logger.log("");
@@ -88,7 +90,6 @@ class DebugPrinter {
     const colorizedSource = this.colorizedSources[sourceId];
 
     const range = this.session.view(solidity.current.sourceRange);
-    debug("source: %o", source);
     debug("range: %o", range);
 
     // We were splitting on OS.EOL, but it turns out on Windows,

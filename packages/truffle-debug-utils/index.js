@@ -2,14 +2,13 @@ var OS = require("os");
 var dir = require("node-dir");
 var path = require("path");
 var async = require("async");
-var debug = require("debug")("lib:debug");
+var debug = require("debug")("debug-utils");
 var BN = require("bn.js");
 var util = require("util");
 
 var chromafi = require("chromafi");
-var hljs = require("highlight.js");
 var hljsDefineSolidity = require("highlightjs-solidity");
-hljsDefineSolidity(hljs);
+hljsDefineSolidity(chromafi.hljs);
 
 var commandReference = {
   "o": "step over",
@@ -344,13 +343,15 @@ var DebugUtils = {
   colorize: function(code) {
     let options = {
       lang: "solidity",
-      lineNumbers: false, //we're handling this manually for now
-      highlight: true,
-      stripIndent: false
-      //TODO: may have to play with the options some more
+      //we want to turn off basically everything else, as we're
+      //handling padding & numbering manually
+      lineNumbers: false,
+      stripIndent: false,
+      codePad: 0
+      //NOTE: you might think you should pass highlight: true,
+      //but you'd be wrong!  I don't understand this either
     };
     return chromafi(code, options);
-    //TODO: this will only work once solidity is in hljs
   },
 
   //HACK
