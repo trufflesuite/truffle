@@ -96,4 +96,4 @@ export class Web3Shim extends Web3 {
     // for fabric-evm we ignore the hexToNumber output formatter
     fabricEvmOverloads.getId(this);
   }
-}
+};
