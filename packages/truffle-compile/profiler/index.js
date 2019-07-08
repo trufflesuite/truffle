@@ -89,7 +89,11 @@ module.exports = {
         ).sort();
 
         // Load compiler
-        const supplier = new CompilerSupplier(options.compilers.solc);
+        const supplierOptions = {
+          events: options.events,
+          solcConfig: options.compilers.solc
+        };
+        const supplier = new CompilerSupplier(supplierOptions);
         return supplier.load();
       })
       .then(async solc => {

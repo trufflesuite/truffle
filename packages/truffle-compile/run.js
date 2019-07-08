@@ -11,21 +11,18 @@ async function run(rawSources, options) {
       compilerInfo: undefined
     };
   }
-
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
   const { sources, targets, originalSourcePaths } = collectSources(
     rawSources,
     options.compilationTargets
   );
-
   // construct solc compiler input
   const compilerInput = prepareCompilerInput({
     sources,
     targets,
     settings: options.compilers.solc.settings
   });
-
   // perform compilation
   const { compilerOutput, solcVersion } = await invokeCompiler({
     compilerInput,
@@ -239,7 +236,11 @@ function prepareOutputSelection({ targets = [] }) {
  */
 async function invokeCompiler({ compilerInput, options }) {
   // load solc
-  const supplier = new CompilerSupplier(options.compilers.solc);
+  const supplierOptions = {
+    events: options.events,
+    solcConfig: options.compilers.solc
+  };
+  const supplier = new CompilerSupplier(supplierOptions);
   const solc = await supplier.load();
   const solcVersion = solc.version();
 
