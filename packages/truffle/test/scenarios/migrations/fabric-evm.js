@@ -8,8 +8,6 @@ const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
-const log = console.log;
-
 describe("migrate with fabric-evm interface", function() {
   let config;
   let web3;
@@ -21,7 +19,6 @@ describe("migrate with fabric-evm interface", function() {
   after(done => Server.stop(done));
 
   before(async function() {
-    this.timeout(10000);
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
@@ -37,24 +34,22 @@ describe("migrate with fabric-evm interface", function() {
   });
 
   it("runs migrations (sync & async/await)", async () => {
-    const result = await RunCommand("migrate", config);
+    await RunCommand("migrate", config);
     const output = logger.contents();
 
-      assert(output.includes("Saving successful migration to network"));
-      assert(!output.includes("Error encountered, bailing"));
-      assert(!output.includes("invalid or does not take any parameters"));
+    assert(output.includes("Saving successful migration to network"));
+    assert(!output.includes("Error encountered, bailing"));
+    assert(!output.includes("invalid or does not take any parameters"));
 
-      const location = path.join(
-        config.contracts_build_directory,
-        "UsesExample.json"
-      );
-      const artifact = require(location);
-      const network = artifact.networks[networkId];
+    const location = path.join(
+      config.contracts_build_directory,
+      "UsesExample.json"
+    );
+    const artifact = require(location);
+    const network = artifact.networks[networkId];
 
-      assert(output.includes(network.address));
+    assert(output.includes(network.address));
 
-      console.log(output);
-      done();
-    });
-  });
-});
+    console.log(output);
+  }).timeout(70000);
+}).timeout(10000);
