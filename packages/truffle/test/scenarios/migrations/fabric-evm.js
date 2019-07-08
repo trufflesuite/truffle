@@ -10,13 +10,6 @@ const Web3 = require("web3");
 
 const log = console.log;
 
-function processErr(err, output) {
-  if (err) {
-    log(output);
-    throw new Error(err);
-  }
-}
-
 describe("migrate with fabric-evm interface", function() {
   let config;
   let web3;
@@ -46,7 +39,6 @@ describe("migrate with fabric-evm interface", function() {
   it("runs migrations (sync & async/await)", async () => {
     const result = await RunCommand("migrate", config);
     const output = logger.contents();
-      processErr(err, output);
 
       assert(output.includes("Saving successful migration to network"));
       assert(!output.includes("Error encountered, bailing"));
