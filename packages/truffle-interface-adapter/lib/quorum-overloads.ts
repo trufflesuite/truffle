@@ -1,5 +1,7 @@
 import BN from "bn.js";
 import Web3 from "web3";
+import {AbiCoder as EthersAbi} from 'ethers/utils/abi-coder';
+import _ from "underscore";
 
 // The ts-ignores are ignoring the checks that are
 // saying that web3.eth.getBlock is a function and doesn't
@@ -91,3 +93,53 @@ export function getTransactionReceipt(web3: Web3) {
     return result;
   };
 };
+
+// The primary difference between this decodeParameters function and web3's
+// is that the 'Out of Gas?' zero/null bytes guard has been removed and any
+// falsy bytes are interpreted as a zero value.
+export function decodeParameters(web3: Web3) {
+  const _oldDecodeParameters = web3.eth.abi.decodeParameters;
+
+  const ethersAbiCoder = new EthersAbi((type, value) => {
+    if (
+      type.match(/^u?int/) &&
+      !_.isArray(value) &&
+      (!_.isObject(value) || value.constructor.name !== "BN")
+    ) {
+      return value.toString();
+    }
+    return value;
+  });
+
+  // result method
+  function Result() {}
+
+  web3.eth.abi.decodeParameters = (outputs: Array<any>, bytes: String) => {
+    // if bytes is falsy, we'll pass 64 '0' bits to the ethers.js decoder.
+    // the decoder will decode the 64 '0' bits as a 0 value.
+    if (!bytes) bytes = "0".repeat(64);
+    const res = ethersAbiCoder.decode(
+    //@ts-ignore 'mapTypes' not existing on type 'ABI'
+      web3.eth.abi.mapTypes(outputs),
+      `0x${bytes.replace(/0x/i, "")}`
+    );
+    //@ts-ignore complaint regarding Result method
+    const returnValue = new Result();
+    returnValue.__length__ = 0;
+
+    outputs.forEach((output, i) => {
+      let decodedValue = res[returnValue.__length__];
+      decodedValue = decodedValue === "0x" ? null : decodedValue;
+
+      returnValue[i] = decodedValue;
+
+      if (_.isObject(output) && output.name) {
+        returnValue[output.name] = decodedValue;
+      }
+
+      returnValue.__length__++;
+    });
+
+    return returnValue;
+  };
+}
