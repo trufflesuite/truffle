@@ -1,11 +1,21 @@
 import BN from "bn.js";
-import Web3 from "web3";
+import { Web3Shim } from "./web3-shim";
+
+export const EthereumDefinition = {
+  async initNetworkType (web3: Web3Shim) {
+    // truffle has started expecting gas used/limit to be
+    // hex strings to support bignumbers for other ledgers
+    getBlock(web3);
+    getTransaction(web3);
+    getTransactionReceipt(web3);
+  }
+}
 
 // The ts-ignores are ignoring the checks that are
 // saying that web3.eth.getBlock is a function and doesn't
 // have a `method` property, which it does
 
-export function getBlock(web3: Web3) {
+export function getBlock(web3: Web3Shim) {
   // @ts-ignore
   const _oldFormatter = web3.eth.getBlock.method.outputFormatter;
 
@@ -23,7 +33,7 @@ export function getBlock(web3: Web3) {
   };
 };
 
-export function getTransaction(web3: Web3) {
+export function getTransaction(web3: Web3Shim) {
   const _oldTransactionFormatter =
     // @ts-ignore
     web3.eth.getTransaction.method.outputFormatter;
@@ -44,7 +54,7 @@ export function getTransaction(web3: Web3) {
   };
 };
 
-export function getTransactionReceipt(web3: Web3) {
+export function getTransactionReceipt(web3: Web3Shim) {
   const _oldTransactionReceiptFormatter =
     // @ts-ignore
     web3.eth.getTransactionReceipt.method.outputFormatter;
