@@ -1,9 +1,8 @@
 const ENSJS = require("ethereum-ens");
 
 class ENS {
-  constructor({ provider, resolver }) {
+  constructor({ provider }) {
     this.provider = provider;
-    this.resolver = resolver;
   }
 
   async deployNewENSRegistry(from) {
