@@ -1,5 +1,5 @@
 const emoji = require("node-emoji");
-const mnemonicInfo = require("truffle-core/lib/mnemonics/mnemonic");
+const mnemonicInfo = require("../mnemonics/mnemonic");
 
 const command = {
   command: "develop",
