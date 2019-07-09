@@ -84,7 +84,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
     let allocationInfo: Codec.ContractAllocationInfo[] = Object.entries(this.contracts).map(
       ([id, { abi }]) => ({
-        abi: <AbiUtils.Abi>abi,
+        abi: AbiUtils.schemaAbiToAbi(abi),
         id: parseInt(id),
         constructorContext: this.constructorContextsById[parseInt(id)]
       })

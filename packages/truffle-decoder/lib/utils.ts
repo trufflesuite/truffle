@@ -11,14 +11,15 @@ export function getContractNode(contract: ContractObject): AstDefinition {
 }
 
 export function makeContext(contract: ContractObject, node: AstDefinition, isConstructor = false): ContextsUtils.DecoderContext {
+  let abi = AbiUtils.schemaAbiToAbi(contract.abi);
   return {
     contractName: contract.contractName,
     binary: isConstructor ? contract.bytecode : contract.deployedBytecode,
     contractId: node.id,
     contractKind: node.contractKind,
     isConstructor,
-    abi: AbiUtils.computeSelectors(contract.abi),
-    payable: AbiUtils.abiHasPayableFallback(contract.abi),
+    abi: AbiUtils.computeSelectors(abi),
+    payable: AbiUtils.abiHasPayableFallback(abi),
     compiler: contract.compiler
   };
 }

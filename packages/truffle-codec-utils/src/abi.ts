@@ -10,6 +10,8 @@ import Web3 from "web3";
 
 //NOTE: SchemaAbi is kind of loose and a pain to use.
 //So we'll generally coerce things to Abi before use.
+//(we combine this with adding a "function" tag for
+//entries that lack it)
 
 export namespace AbiUtils {
 
@@ -58,12 +60,19 @@ export namespace AbiUtils {
     [selector: string]: FunctionAbiEntry
   }
 
+  export function schemaAbiToAbi(abiLoose: SchemaAbi): Abi {
+    return abiLoose.map(
+      entry => entry.type
+        ? <AbiEntry> entry
+        : <AbiEntry> {type: "function", ...entry}
+    );
+  }
+
   //note the return value only includes functions!
-  export function computeSelectors(abiLoose: Abi | SchemaAbi | undefined): FunctionAbiBySelectors | undefined {
-    if(abiLoose === undefined) {
+  export function computeSelectors(abi: Abi | undefined): FunctionAbiBySelectors | undefined {
+    if(abi === undefined) {
       return undefined;
     }
-    const abi = <Abi>abiLoose;
     return Object.assign({},
       ...abi.filter(
         (abiEntry: AbiEntry) => abiEntry.type === "function"
@@ -74,11 +83,10 @@ export namespace AbiUtils {
   }
 
   //does this ABI have a payable fallback function?
-  export function abiHasPayableFallback(abiLoose: Abi | SchemaAbi | undefined): boolean | undefined {
-    if(abiLoose === undefined) {
+  export function abiHasPayableFallback(abi: Abi | undefined): boolean | undefined {
+    if(abi === undefined) {
       return undefined;
     }
-    const abi = <Abi> abiLoose;
     return abi.some(
       (abiEntry: AbiEntry) =>
         abiEntry.type === "fallback" && abiMutability(abiEntry) === "payable"

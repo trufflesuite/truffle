@@ -134,7 +134,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     ).
     map(
       ([id, { abi }]) => ({
-        abi: <AbiUtils.Abi>abi,
+        abi: AbiUtils.schemaAbiToAbi(abi),
         id: parseInt(id)
       })
     );
@@ -147,7 +147,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.allocations.abi = Codec.getAbiAllocations(this.referenceDeclarations);
     this.allocations.calldata = Codec.getCalldataAllocations(
       [{
-        abi: <AbiUtils.Abi>this.contract.abi,
+        abi: AbiUtils.schemaAbiToAbi(this.contract.abi),
         id: this.contractNode.id,
         constructorContext: this.constructorContext
       }],
@@ -157,7 +157,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.allocations.event = Codec.getEventAllocations(
       [
         {
-          abi: <AbiUtils.Abi>this.contract.abi,
+          abi: AbiUtils.schemaAbiToAbi(this.contract.abi),
           id: this.contractNode.id
         },
         ...libraryAllocationInfo
