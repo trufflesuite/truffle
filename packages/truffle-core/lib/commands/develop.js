@@ -1,6 +1,5 @@
 const emoji = require("node-emoji");
 const mnemonicInfo = require("truffle-core/lib/mnemonics/mnemonic");
-const util = require("util");
 
 const command = {
   command: "develop",
@@ -17,37 +16,34 @@ const command = {
   },
   runConsole: (config, ganacheOptions, done) => {
     const Console = require("../console");
-    const Environment = require("../environment");
+    const { Environment } = require("truffle-environment");
 
     const commands = require("./index");
     const excluded = ["console", "develop", "unbox", "init"];
 
-    const available_commands = Object.keys(commands).filter(
+    const availableCommands = Object.keys(commands).filter(
       name => !excluded.includes(name)
     );
 
-    const console_commands = available_commands.reduce(
+    const consoleCommands = availableCommands.reduce(
       (acc, name) => Object.assign({}, acc, { [name]: commands[name] }),
       {}
     );
 
-    const environmentDevelop = util.promisify(Environment.develop);
-    environmentDevelop(config, ganacheOptions)
-      .catch(err => done(err))
+    Environment.develop(config, ganacheOptions)
       .then(() => {
         const c = new Console(
-          console_commands,
+          consoleCommands,
           config.with({ noAliases: true })
         );
         c.start(done);
-        c.on("exit", () => {
-          process.exit();
-        });
-      });
+        c.on("exit", () => process.exit());
+      })
+      .catch(err => done(err));
   },
   run: (options, done) => {
     const Config = require("truffle-config");
-    const Develop = require("../develop");
+    const { Develop } = require("truffle-environment");
 
     const config = Config.detect(options);
     const customConfig = config.networks.develop || {};
@@ -63,9 +59,7 @@ const command = {
       "This mnemonic was created for you by Truffle. It is not secure.\n" +
       "Ensure you do not use it on production blockchains, or else you risk losing funds.";
 
-    const ipcOptions = {
-      log: options.log
-    };
+    const ipcOptions = { log: options.log };
 
     const ganacheOptions = {
       host: customConfig.host || "127.0.0.1",
@@ -74,6 +68,7 @@ const command = {
       total_accounts: customConfig.accounts || 10,
       default_balance_ether: customConfig.defaultEtherBalance || 100,
       blockTime: customConfig.blockTime || 0,
+      fork: customConfig.fork,
       mnemonic,
       gasLimit: customConfig.gas || 0x6691b7,
       gasPrice: customConfig.gasPrice || 0x77359400,

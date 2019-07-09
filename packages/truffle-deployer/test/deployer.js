@@ -265,7 +265,7 @@ describe("Deployer (sync)", function() {
       deployer.then(async function() {
         await deployer._startBlockPolling(web3);
         await utils.waitMS(9000);
-        deployer._startBlockPolling();
+        await deployer._startBlockPolling(web3);
       });
     };
 

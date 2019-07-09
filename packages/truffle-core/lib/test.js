@@ -1,25 +1,23 @@
-var Mocha = require("mocha");
-var chai = require("chai");
-var path = require("path");
-var Web3 = require("web3");
-var Config = require("truffle-config");
-var Contracts = require("truffle-workflow-compile");
-var Resolver = require("truffle-resolver");
-var TestRunner = require("./testing/testrunner");
-var TestResolver = require("./testing/testresolver");
-var TestSource = require("./testing/testsource");
-var SolidityTest = require("./testing/soliditytest");
-var expect = require("truffle-expect");
-var Migrate = require("truffle-migrate");
-var Profiler = require("truffle-compile/profiler.js");
-var originalrequire = require("original-require");
+const Mocha = require("mocha");
+const chai = require("chai");
+const path = require("path");
+const Web3 = require("web3");
+const Config = require("truffle-config");
+const Contracts = require("truffle-workflow-compile");
+const Resolver = require("truffle-resolver");
+const TestRunner = require("./testing/testrunner");
+const TestResolver = require("./testing/testresolver");
+const TestSource = require("./testing/testsource");
+const SolidityTest = require("./testing/soliditytest");
+const expect = require("truffle-expect");
+const Migrate = require("truffle-migrate");
+const Profiler = require("truffle-compile/profiler");
+const originalrequire = require("original-require");
 
 chai.use(require("./assertions"));
 
-var Test = {
-  run: function(options, callback) {
-    var self = this;
-
+const Test = {
+  run: async function(options) {
     expect.options(options, [
       "contracts_directory",
       "contracts_build_directory",
@@ -30,44 +28,42 @@ var Test = {
       "provider"
     ]);
 
-    var config = Config.default().merge(options);
+    const config = Config.default().merge(options);
 
-    config.test_files = config.test_files.map(function(test_file) {
-      return path.resolve(test_file);
+    config.test_files = config.test_files.map(testFile => {
+      return path.resolve(testFile);
     });
 
     // `accounts` will be populated before each contract() invocation
     // and passed to it so tests don't have to call it themselves.
-    var web3 = new Web3();
+    const web3 = new Web3();
     web3.setProvider(config.provider);
 
     // Override console.warn() because web3 outputs gross errors to it.
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
     // Output looks like this during tests: https://gist.github.com/tcoulter/1988349d1ec65ce6b958
-    var warn = config.logger.warn;
-    config.logger.warn = function(message) {
+    const warn = config.logger.warn;
+    config.logger.warn = message => {
       if (message === "cannot find event for log") {
         return;
       } else {
-        if (warn) {
-          warn.apply(console, arguments);
-        }
+        if (warn) warn.apply(console, arguments);
       }
     };
 
-    var mocha = this.createMocha(config);
+    const mocha = this.createMocha(config);
 
-    var js_tests = config.test_files.filter(function(file) {
+    const jsTests = config.test_files.filter(file => {
       return path.extname(file) !== ".sol";
     });
 
-    var sol_tests = config.test_files.filter(function(file) {
+    const solTests = config.test_files.filter(file => {
       return path.extname(file) === ".sol";
     });
 
     // Add Javascript tests because there's nothing we need to do with them.
     // Solidity tests will be handled later.
-    js_tests.forEach(function(file) {
+    jsTests.forEach(file => {
       // There's an idiosyncracy in Mocha where the same file can't be run twice
       // unless we delete the `require` cache.
       // https://github.com/mochajs/mocha/issues/995
@@ -76,68 +72,53 @@ var Test = {
       mocha.addFile(file);
     });
 
-    var dependency_paths = [];
-    var testContracts = [];
-    var accounts = [];
-    var runner;
-    var test_resolver;
-    this.getAccounts(web3)
-      .then(function(accs) {
-        accounts = accs;
+    const accounts = await this.getAccounts(web3);
 
-        if (!config.resolver) {
-          config.resolver = new Resolver(config);
-        }
+    if (!config.resolver) config.resolver = new Resolver(config);
 
-        var test_source = new TestSource(config);
-        test_resolver = new TestResolver(
-          config.resolver,
-          test_source,
-          config.contracts_build_directory
-        );
-        test_resolver.cache_on = false;
+    const testSource = new TestSource(config);
+    const testResolver = new TestResolver(
+      config.resolver,
+      testSource,
+      config.contracts_build_directory
+    );
+    testResolver.cache_on = false;
 
-        return self.compileContractsWithTestFilesIfNeeded(
-          sol_tests,
-          config,
-          test_resolver
-        );
-      })
-      .then(function(paths) {
-        dependency_paths = paths;
+    const dependencyPaths = await this.compileContractsWithTestFilesIfNeeded(
+      solTests,
+      config,
+      testResolver
+    );
 
-        testContracts = sol_tests.map(function(test_file_path) {
-          return test_resolver.require(test_file_path);
-        });
+    const testContracts = solTests.map(testFilePath => {
+      return testResolver.require(testFilePath);
+    });
 
-        runner = new TestRunner(config);
+    const runner = new TestRunner(config);
 
-        return self.performInitialDeploy(config, test_resolver);
-      })
-      .then(function() {
-        return self.defineSolidityTests(
-          mocha,
-          testContracts,
-          dependency_paths,
-          runner
-        );
-      })
-      .then(function() {
-        return self.setJSTestGlobals(web3, accounts, test_resolver, runner);
-      })
-      .then(function() {
-        // Finally, run mocha.
-        process.on("unhandledRejection", function(reason) {
-          throw reason;
-        });
+    await this.performInitialDeploy(config, testResolver);
 
-        mocha.run(function(failures) {
-          config.logger.warn = warn;
+    await this.defineSolidityTests(
+      mocha,
+      testContracts,
+      dependencyPaths,
+      runner
+    );
 
-          callback(failures);
-        });
-      })
-      .catch(callback);
+    await this.setJSTestGlobals(web3, accounts, testResolver, runner);
+
+    // Finally, run mocha.
+    process.on("unhandledRejection", reason => {
+      throw reason;
+    });
+
+    return new Promise(resolve => {
+      mocha.run(failures => {
+        config.logger.warn = warn;
+
+        resolve(failures);
+      });
+    });
   },
 
   createMocha: function(config) {
@@ -160,89 +141,70 @@ var Test = {
   },
 
   getAccounts: function(web3) {
-    return new Promise(function(accept, reject) {
-      web3.eth.getAccounts(function(err, accs) {
-        if (err) return reject(err);
-        accept(accs);
-      });
-    });
+    return web3.eth.getAccounts();
   },
 
   compileContractsWithTestFilesIfNeeded: function(
-    solidity_test_files,
+    solidityTestFiles,
     config,
-    test_resolver
+    testResolver
   ) {
     return new Promise(function(accept, reject) {
-      Profiler.updated(
-        config.with({
-          resolver: test_resolver
-        }),
-        function(err, updated) {
-          if (err) return reject(err);
+      Profiler.updated(config.with({ resolver: testResolver }), function(
+        err,
+        updated
+      ) {
+        if (err) return reject(err);
 
-          updated = updated || [];
+        updated = updated || [];
 
-          // Compile project contracts and test contracts
-          Contracts.compile(
-            config.with({
-              all: config.compileAll === true,
-              files: updated.concat(solidity_test_files),
-              resolver: test_resolver,
-              quiet: false,
-              quietWrite: true
-            }),
-            function(err, result) {
-              if (err) return reject(err);
-              const paths = result.outputs.solc;
-              accept(paths);
-            }
-          );
-        }
-      );
+        const compileConfig = config.with({
+          all: config.compileAll === true,
+          files: updated.concat(solidityTestFiles),
+          resolver: testResolver,
+          quiet: false,
+          quietWrite: true
+        });
+        // Compile project contracts and test contracts
+        Contracts.compile(compileConfig)
+          .then(result => {
+            const paths = result.outputs.solc;
+            accept(paths);
+          })
+          .catch(reject);
+      });
     });
   },
 
   performInitialDeploy: function(config, resolver) {
-    return new Promise(function(accept, reject) {
-      Migrate.run(
-        config.with({
-          reset: true,
-          resolver: resolver,
-          quiet: true
-        })
-      )
-        .then(() => {
-          accept();
-        })
-        .catch(error => {
-          reject(error);
-        });
+    const migrateConfig = config.with({
+      reset: true,
+      resolver: resolver,
+      quiet: true
     });
+    return Migrate.run(migrateConfig);
   },
 
-  defineSolidityTests: function(mocha, contracts, dependency_paths, runner) {
-    return new Promise(function(accept) {
-      contracts.forEach(function(contract) {
-        SolidityTest.define(contract, dependency_paths, runner, mocha);
+  defineSolidityTests: function(mocha, contracts, dependencyPaths, runner) {
+    return new Promise(resolve => {
+      contracts.forEach(contract => {
+        SolidityTest.define(contract, dependencyPaths, runner, mocha);
       });
 
-      accept();
+      resolve();
     });
   },
 
-  setJSTestGlobals: function(web3, accounts, test_resolver, runner) {
+  setJSTestGlobals: function(web3, accounts, testResolver, runner) {
     return new Promise(function(accept) {
       global.web3 = web3;
       global.assert = chai.assert;
       global.expect = chai.expect;
       global.artifacts = {
-        require: function(import_path) {
-          return test_resolver.require(import_path);
-        }
+        require: import_path => testResolver.require(import_path)
       };
 
-      var template = function(tests) {
+      const template = function(tests) {
         this.timeout(runner.TEST_TIMEOUT);
 
         before("prepare suite", function(done) {

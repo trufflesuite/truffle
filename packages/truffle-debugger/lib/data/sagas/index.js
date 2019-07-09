@@ -403,7 +403,7 @@ function* variablesAndMappingsSaga() {
           indexValue = yield* decode(splicedDefinition, indexReference);
         } else if (
           indexDefinition.referencedDeclaration &&
-          scopes[indexDefinition.referenceDeclaration]
+          scopes[indexDefinition.referencedDeclaration]
         ) {
           //there's one more reason we might have failed to decode it: it might be a
           //constant state variable.  Unfortunately, we don't know how to decode all
@@ -426,7 +426,11 @@ function* variablesAndMappingsSaga() {
               indexValue = yield* decode(keyDefinition, {
                 definition: indexConstantDeclaration.value
               });
+            } else {
+              indexValue = null; //can't decode; see below for more explanation
             }
+          } else {
+            indexValue = null; //can't decode; see below for more explanation
           }
         }
         //there's still one more reason we might have failed to decode it:
@@ -440,6 +444,14 @@ function* variablesAndMappingsSaga() {
         //off the stack)
         else if (indexDefinition.kind === "typeConversion") {
           indexDefinition = indexDefinition.arguments[0];
+        }
+        //...also prior to 0.5.0, unary + was legal, which needs to be accounted
+        //for for the same reason
+        else if (
+          indexDefinition.nodeType === "UnaryOperation" &&
+          indexDefinition.operator === "+"
+        ) {
+          indexDefinition = indexDefinition.subExpression;
         }
         //otherwise, we've just totally failed to decode it, so we mark
         //indexValue as null (as distinct from undefined) to indicate this.  In
@@ -665,6 +677,10 @@ function fetchBasePath(
     astId: baseNode.id,
     stackframe: currentDepth
   });
+  debug("astId: %d", baseNode.id);
+  debug("stackframe: %d", currentDepth);
+  debug("fullId: %s", fullId);
+  debug("currentAssignments: %O", currentAssignments);
   //base expression is an expression, and so has a literal assigned to
   //it
   let offset = DecodeUtils.Conversion.toBN(

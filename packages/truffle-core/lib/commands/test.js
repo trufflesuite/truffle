@@ -1,4 +1,4 @@
-var command = {
+const command = {
   command: "test",
   description: "Run JavaScript and Solidity tests",
   builder: {
@@ -47,14 +47,13 @@ var command = {
     const temp = require("temp").track();
     const Config = require("truffle-config");
     const Artifactor = require("truffle-artifactor");
-    const Develop = require("../develop");
     const Test = require("../test");
     const fs = require("fs");
     const { promisify } = require("util");
     const promisifiedCopy = promisify(require("../copy"));
-    const Environment = require("../environment");
+    const { Environment, Develop } = require("truffle-environment");
 
-    var config = Config.detect(options);
+    const config = Config.detect(options);
 
     // if "development" exists, default to using that for testing
     if (!config.network && config.networks.development) {
@@ -67,9 +66,8 @@ var command = {
       Environment.detect(config).catch(done);
     }
 
-    var ipcDisconnect;
-
-    var files = [];
+    let ipcDisconnect;
+    let files = [];
 
     if (options.file) {
       files = [options.file];
@@ -77,103 +75,92 @@ var command = {
       Array.prototype.push.apply(files, options._);
     }
 
-    function getFiles(callback) {
-      if (files.length !== 0) {
-        return callback(null, files);
+    try {
+      if (files.length === 0) {
+        files = dir.files(config.test_directory, { sync: true }) || [];
       }
-
-      dir.files(config.test_directory, callback);
+    } catch (error) {
+      return done(error);
     }
 
-    getFiles(function(err, files) {
-      if (err) return done(err);
-
-      files = files.filter(function(file) {
-        return file.match(config.test_file_extension_regexp) != null;
-      });
-
-      temp.mkdir("test-", function(err, temporaryDirectory) {
-        if (err) return done(err);
-
-        function runCallback() {
-          var args = arguments;
-          // Ensure directory cleanup.
-          done.apply(null, args);
-          if (ipcDisconnect) {
-            ipcDisconnect();
-          }
-        }
-
-        function run() {
-          // Set a new artifactor; don't rely on the one created by Environments.
-          // TODO: Make the test artifactor configurable.
-          config.artifactor = new Artifactor(temporaryDirectory);
-
-          Test.run(
-            config.with({
-              test_files: files,
-              contracts_build_directory: temporaryDirectory
-            }),
-            runCallback
-          );
-        }
-
-        var environmentCallback = function(err) {
-          if (err) return done(err);
-          // Copy all the built files over to a temporary directory, because we
-          // don't want to save any tests artifacts. Only do this if the build directory
-          // exists.
-          try {
-            fs.statSync(config.contracts_build_directory);
-          } catch (_error) {
-            return run();
-          }
-
-          promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
-            .then(() => {
-              config.logger.log(
-                "Using network '" + config.network + "'." + OS.EOL
-              );
-
-              run();
-            })
-            .catch(error => {
-              done(error);
-            });
-        };
-
-        if (config.networks[config.network]) {
-          Environment.detect(config)
-            .then(() => {
-              environmentCallback();
-            })
-            .catch(error => {
-              environmentCallback(error);
-            });
-        } else {
-          var ipcOptions = {
-            network: "test"
-          };
-
-          var ganacheOptions = {
-            host: "127.0.0.1",
-            port: 7545,
-            network_id: 4447,
-            mnemonic:
-              "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-            gasLimit: config.gas,
-            noVMErrorsOnRPCResponse: true
-          };
-          Develop.connectOrStart(ipcOptions, ganacheOptions, function(
-            started,
-            disconnect
-          ) {
-            ipcDisconnect = disconnect;
-            Environment.develop(config, ganacheOptions, environmentCallback);
-          });
-        }
-      });
+    files = files.filter(function(file) {
+      return file.match(config.test_file_extension_regexp) != null;
     });
+
+    let temporaryDirectory;
+    try {
+      temporaryDirectory = temp.mkdirSync("test-");
+    } catch (error) {
+      return done(error);
+    }
+
+    function runCallback() {
+      var args = arguments;
+      // Ensure directory cleanup.
+      done.apply(null, args);
+      if (ipcDisconnect) ipcDisconnect();
+    }
+
+    function run() {
+      // Set a new artifactor; don't rely on the one created by Environments.
+      // TODO: Make the test artifactor configurable.
+      config.artifactor = new Artifactor(temporaryDirectory);
+
+      const testConfig = config.with({
+        test_files: files,
+        contracts_build_directory: temporaryDirectory
+      });
+      Test.run(testConfig)
+        .then(runCallback)
+        .catch(runCallback);
+    }
+
+    const environmentCallback = function() {
+      // Copy all the built files over to a temporary directory, because we
+      // don't want to save any tests artifacts. Only do this if the build directory
+      // exists.
+      try {
+        fs.statSync(config.contracts_build_directory);
+      } catch (_error) {
+        return run();
+      }
+
+      promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
+        .then(() => {
+          config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+
+          run();
+        })
+        .catch(done);
+    };
+
+    if (config.networks[config.network]) {
+      Environment.detect(config)
+        .then(() => environmentCallback())
+        .catch(done);
+    } else {
+      const ipcOptions = { network: "test" };
+
+      const ganacheOptions = {
+        host: "127.0.0.1",
+        port: 7545,
+        network_id: 4447,
+        mnemonic:
+          "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
+        gasLimit: config.gas,
+        noVMErrorsOnRPCResponse: true
+      };
+      Develop.connectOrStart(
+        ipcOptions,
+        ganacheOptions,
+        (started, disconnect) => {
+          ipcDisconnect = disconnect;
+          Environment.develop(config, ganacheOptions)
+            .then(() => environmentCallback())
+            .catch(done);
+        }
+      );
+    }
   }
 };
 

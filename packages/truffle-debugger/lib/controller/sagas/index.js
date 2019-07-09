@@ -124,16 +124,20 @@ function* stepInto() {
   const startingRange = yield select(controller.current.location.sourceRange);
   var currentDepth;
   var currentRange;
+  var finished;
 
   do {
     yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
     currentRange = yield select(controller.current.location.sourceRange);
+    finished = yield select(controller.current.trace.finished);
   } while (
+    //we aren't finished,
+    !finished &&
     // the function stack has not increased,
     currentDepth <= startingDepth &&
-    // the current source range begins on or after the starting range
+    // the current source range begins on or after the starting range,
     currentRange.start >= startingRange.start &&
     // and the current range ends on or before the starting range ends
     currentRange.start + currentRange.length <=
@@ -144,7 +148,8 @@ function* stepInto() {
 /**
  * Step out of the current function
  *
- * This will run until the debugger encounters a decrease in function depth.
+ * This will run until the debugger encounters a decrease in function depth
+ * (or finishes)
  */
 function* stepOut() {
   if (yield select(controller.current.location.isMultiline)) {
@@ -154,12 +159,14 @@ function* stepOut() {
 
   const startingDepth = yield select(controller.current.functionDepth);
   var currentDepth;
+  var finished;
 
   do {
     yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
-  } while (currentDepth >= startingDepth);
+    finished = yield select(controller.current.trace.finished);
+  } while (!finished && currentDepth >= startingDepth);
 }
 
 /**
@@ -173,15 +180,19 @@ function* stepOver() {
   const startingRange = yield select(controller.current.location.sourceRange);
   var currentDepth;
   var currentRange;
+  var finished;
 
   do {
     yield* stepNext();
 
     currentDepth = yield select(controller.current.functionDepth);
     currentRange = yield select(controller.current.location.sourceRange);
+    finished = yield select(controller.current.trace.finished);
   } while (
     // keep stepping provided:
     //
+    // we haven't finished
+    !finished &&
     // we haven't jumped out
     !(currentDepth < startingDepth) &&
     // either: function depth is greater than starting (ignore function calls)
@@ -196,10 +207,6 @@ function* stepOver() {
  * continueUntilBreakpoint - step through execution until a breakpoint
  */
 function* continueUntilBreakpoint(action) {
-  var currentLocation, currentNode, currentLine, currentSourceId;
-  var finished;
-  var previousLine, previousSourceId;
-
   //if breakpoints was not specified, use the stored list from the state.
   //if it was, override that with the specified list.
   //note that explicitly specifying an empty list will advance to the end.
@@ -210,29 +217,36 @@ function* continueUntilBreakpoint(action) {
 
   let breakpointHit = false;
 
-  currentLocation = yield select(controller.current.location);
-  currentNode = currentLocation.node.id;
-  currentLine = currentLocation.sourceRange.lines.start.line;
-  currentSourceId = currentLocation.source.id;
+  let currentLocation = yield select(controller.current.location);
+  let currentLine = currentLocation.sourceRange.lines.start.line;
+  let currentSourceId = currentLocation.source.id;
 
   do {
     yield* stepNext();
 
-    previousLine = currentLine;
-    previousSourceId = currentSourceId;
+    //note these two have not been updated yet; they'll be updated a
+    //few lines down.  but at this point these are still the previous
+    //values.
+    let previousLine = currentLine;
+    let previousSourceId = currentSourceId;
 
     currentLocation = yield select(controller.current.location);
-    finished = yield select(controller.current.trace.finished);
-    debug("finished %o", finished);
+    debug("currentLocation: %O", currentLocation);
+    let finished = yield select(controller.current.trace.finished);
+    if (finished) {
+      break; //can break immediately if finished
+    }
 
-    currentNode = currentLocation.node.id;
-    currentLine = currentLocation.sourceRange.lines.start.line;
     currentSourceId = currentLocation.source.id;
+    if (currentSourceId === undefined) {
+      continue; //never stop on an unmapped instruction
+    }
+    let currentNode = currentLocation.node.id;
+    currentLine = currentLocation.sourceRange.lines.start.line;
 
     breakpointHit =
       breakpoints.filter(({ sourceId, line, node }) => {
         if (node !== undefined) {
-          debug("node %d currentNode %d", node, currentNode);
           return sourceId === currentSourceId && node === currentNode;
         }
         //otherwise, we have a line-style breakpoint; we want to stop at the
@@ -243,7 +257,7 @@ function* continueUntilBreakpoint(action) {
           (currentSourceId !== previousSourceId || currentLine !== previousLine)
         );
       }).length > 0;
-  } while (!breakpointHit && !finished);
+  } while (!breakpointHit);
 }
 
 /**

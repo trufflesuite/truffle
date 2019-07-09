@@ -97,7 +97,9 @@ function createStepSelectors(step, state = null) {
      * .isHalting
      *
      * whether the instruction halts or returns from a calling context
-     * (covers only ordinary halds, not exceptional halts)
+     * NOTE: this covers only ordinary halts, not exceptional halts;
+     * but it doesn't check the return status, so any normal halting
+     * instruction will qualify here
      */
     isHalting: createLeaf(["./trace"], step =>
       isNormalHaltingMnemonic(step.op)
@@ -142,8 +144,8 @@ function createStepSelectors(step, state = null) {
       callAddress: createLeaf(
         ["./isCall", state],
 
-        (matches, { stack }) => {
-          if (!matches) {
+        (isCall, { stack }) => {
+          if (!isCall) {
             return null;
           }
 
@@ -160,8 +162,8 @@ function createStepSelectors(step, state = null) {
       createBinary: createLeaf(
         ["./isCreate", state],
 
-        (matches, { stack, memory }) => {
-          if (!matches) {
+        (isCreate, { stack, memory }) => {
+          if (!isCreate) {
             return null;
           }
 
@@ -181,8 +183,8 @@ function createStepSelectors(step, state = null) {
        */
       callData: createLeaf(
         ["./isCall", "./isShortCall", state],
-        (matches, short, { stack, memory }) => {
-          if (!matches) {
+        (isCall, short, { stack, memory }) => {
+          if (!isCall) {
             return null;
           }
 
@@ -227,8 +229,8 @@ function createStepSelectors(step, state = null) {
        *
        * value for the create
        */
-      createValue: createLeaf(["./isCreate", state], (matches, { stack }) => {
-        if (!matches) {
+      createValue: createLeaf(["./isCreate", state], (isCreate, { stack }) => {
+        if (!isCreate) {
           return null;
         }
 
@@ -246,12 +248,40 @@ function createStepSelectors(step, state = null) {
       storageAffected: createLeaf(
         ["./touchesStorage", state],
 
-        (matches, { stack }) => {
-          if (!matches) {
+        (touchesStorage, { stack }) => {
+          if (!touchesStorage) {
             return null;
           }
 
           return stack[stack.length - 1];
+        }
+      ),
+
+      /*
+       * .returnValue
+       *
+       * for a RETURN instruction, the value returned
+       * we DO prepend "0x"
+       * (will also return "0x" for STOP or SELFDESTRUCT but
+       * null otherwise)
+       */
+      returnValue: createLeaf(
+        ["./trace", "./isHalting", state],
+
+        (step, isHalting, { stack, memory }) => {
+          if (!isHalting) {
+            return null;
+          }
+          if (step.op !== "RETURN") {
+            //STOP and SELFDESTRUCT return empty value
+            return "0x";
+          }
+          // Get the data from memory.
+          // Note we multiply by 2 because these offsets are in bytes.
+          const offset = parseInt(stack[stack.length - 1], 16) * 2;
+          const length = parseInt(stack[stack.length - 2], 16) * 2;
+
+          return "0x" + memory.join("").substring(offset, offset + length);
         }
       )
     });
@@ -295,14 +325,6 @@ const evm = createSelectorTree({
    * evm.transaction
    */
   transaction: {
-    /**
-     * evm.transaction.instances
-     */
-    instances: createLeaf(
-      ["/state"],
-      state => state.transaction.instances.byAddress
-    ),
-
     /*
      * evm.transaction.globals
      */
@@ -315,7 +337,17 @@ const evm = createSelectorTree({
        * evm.transaction.globals.block
        */
       block: createLeaf(["/state"], state => state.transaction.globals.block)
-    }
+    },
+
+    /*
+     * evm.transaction.status
+     */
+    status: createLeaf(["/state"], state => state.transaction.status),
+
+    /*
+     * evm.transaction.initialCall
+     */
+    initialCall: createLeaf(["/state"], state => state.transaction.initialCall)
   },
 
   /**
@@ -342,18 +374,17 @@ const evm = createSelectorTree({
     context: createLeaf(
       [
         "./call",
-        "/transaction/instances",
+        "./codex/instances",
         "/info/binaries/search",
         "/info/contexts"
       ],
       ({ address, binary }, instances, search, contexts) => {
         let contextId;
         if (address) {
-          //if we're in a call to a deployed contract, we *must* have recorded
-          //it in the instance table, so we just need to look up the context ID
-          //from there; we don't need to do any further searching
-          contextId = instances[address].context;
-          binary = instances[address].binary;
+          //if we're in a call to a deployed contract, we must have recorded
+          //the context in the codex, so we don't need to do any further
+          //searching
+          ({ context: contextId, binary } = instances[address]);
         } else if (binary) {
           //otherwise, if we're in a constructor, we'll need to actually do a
           //search
@@ -363,12 +394,22 @@ const evm = createSelectorTree({
           return null;
         }
 
-        let context = contexts[contextId];
-
-        return {
-          ...context,
-          binary
-        };
+        if (contextId != undefined) {
+          //if we found the context, use it
+          let context = contexts[contextId];
+          return {
+            ...context,
+            binary
+          };
+        } else {
+          //otherwise we'll construct something default
+          return {
+            binary,
+            isConstructor: address === undefined
+            //WARNING: we've mutated binary here, so
+            //instead we go by whether address is undefined
+          };
+        }
       }
     ),
 
@@ -400,8 +441,8 @@ const evm = createSelectorTree({
        */
       createdAddress: createLeaf(
         ["./isCreate", "/nextOfSameDepth/state/stack"],
-        (matches, stack) => {
-          if (!matches) {
+        (isCreate, stack) => {
+          if (!isCreate) {
             return null;
           }
           let address = stack[stack.length - 1];
@@ -431,12 +472,46 @@ const evm = createSelectorTree({
 
       /**
        * evm.current.step.isExceptionalHalting
-       *
        */
       isExceptionalHalting: createLeaf(
-        ["./isHalting", "/current/state/depth", "/next/state/depth"],
-        (halting, currentDepth, nextDepth) =>
-          nextDepth < currentDepth && !halting
+        [
+          "./isHalting",
+          "/current/state/depth",
+          "/next/state/depth",
+          "./returnStatus"
+        ],
+        (halting, currentDepth, nextDepth, status) =>
+          halting
+            ? !status //if deliberately halting, check the return status
+            : nextDepth < currentDepth //if not on a deliberate halt, any halt
+        //is an exceptional halt
+      ),
+
+      /**
+       * evm.current.step.returnStatus
+       * checks the return status of the *current* halting instruction (for
+       * normal halts only)
+       * (returns a boolean -- true for success, false for failure)
+       */
+      returnStatus: createLeaf(
+        [
+          "./isHalting",
+          "/next/state",
+          trace.stepsRemaining,
+          "/transaction/status"
+        ],
+        (isHalting, { stack }, remaining, finalStatus) => {
+          if (!isHalting) {
+            return null; //not clear this'll do much good since this may get
+            //read as false, but, oh well, may as well
+          }
+          if (remaining <= 1) {
+            return finalStatus;
+          } else {
+            const ZERO_WORD = "00".repeat(DecodeUtils.EVM.WORD_SIZE);
+            return stack[stack.length - 1] !== ZERO_WORD;
+          }
+        }
       )
     },
 
@@ -463,6 +538,20 @@ const evm = createSelectorTree({
           storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
             ? rawStorage //HACK -- if zero address ignore the codex
             : codex[codex.length - 1].accounts[storageAddress].storage
+      ),
+
+      /*
+       * evm.current.codex.instances
+       */
+      instances: createLeaf(["./_"], codex =>
+        Object.assign(
+          {},
+          ...Object.entries(codex[codex.length - 1].accounts).map(
+            ([address, { code, context }]) => ({
+              [address]: { address, binary: code, context }
+            })
+          )
+        )
       )
     }
   },

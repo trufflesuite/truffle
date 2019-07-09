@@ -19,7 +19,7 @@ module.exports = {
       __dirname,
       "../..",
       "node_modules",
-      "truffle-core",
+      "truffle-environment",
       "chain.js"
     ),
     analytics: path.join(
@@ -60,11 +60,6 @@ module.exports = {
       // module that's a dependency of Truffle instead.
       if (/^original-require$/.test(request)) {
         return callback(null, "commonjs original-require");
-      }
-
-      // We want to leave solc as an eternal dependency as well (for now)
-      if (/^solc$/.test(request)) {
-        return callback(null, "commonjs solc");
       }
 
       // Mocha doesn't seem to bundle well either. This is a stop-gap until

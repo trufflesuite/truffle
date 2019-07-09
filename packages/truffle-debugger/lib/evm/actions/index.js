@@ -47,6 +47,14 @@ export function saveGlobals(origin, gasprice, block) {
   };
 }
 
+export const SAVE_STATUS = "SAVE_STATUS";
+export function saveStatus(status) {
+  return {
+    type: SAVE_STATUS,
+    status
+  };
+}
+
 export const CALL = "CALL";
 export function call(address, data, storageAddress, sender, value) {
   return {
@@ -70,10 +78,20 @@ export function create(binary, storageAddress, sender, value) {
   };
 }
 
-export const RETURN = "RETURN";
+export const RETURN_CALL = "RETURN_CALL";
 export function returnCall() {
   return {
-    type: RETURN
+    type: RETURN_CALL
+  };
+}
+
+export const RETURN_CREATE = "RETURN_CREATE";
+export function returnCreate(address, code, context) {
+  return {
+    type: RETURN_CREATE,
+    address,
+    code,
+    context
   };
 }
 

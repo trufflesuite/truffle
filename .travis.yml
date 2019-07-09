@@ -2,10 +2,13 @@ dist: trusty
 sudo: required
 language: node_js
 
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:ethereum/ethereum'
+    packages: dpkg
+
 before_install:
-  - sudo add-apt-repository --yes ppa:ethereum/ethereum
-  - sudo apt-get update
-  - sudo apt-get install -y dpkg
   - npm list -g lerna --depth=0 || npm install -g lerna
   - npm install -g yarn
 
@@ -26,11 +29,13 @@ matrix:
 
 install:
   - yarn bootstrap
+  - truffle obtain --solc=0.5.8
 
 cache:
   directories:
     - node_modules
     - $(npm config get prefix)/lib/node_modules # globally installed stuff (i.e. lerna)
+    - ~/.config/truffle/compilers
 
 script:
   - yarn ci

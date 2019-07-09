@@ -1,8 +1,8 @@
-var Schema = require("truffle-contract-schema");
-var fs = require("fs-extra");
-var path = require("path");
-var _ = require("lodash");
-var debug = require("debug")("artifactor");
+const Schema = require("truffle-contract-schema");
+const fse = require("fs-extra");
+const path = require("path");
+const { writeArtifact, finalizeArtifact } = require("./utils");
+const debug = require("debug")("artifactor");
 
 class Artifactor {
   constructor(destination) {
@@ -10,37 +10,31 @@ class Artifactor {
   }
 
   async save(artifactObject) {
-    const normalizedArtifact = Schema.normalize(artifactObject);
-    const contractName = normalizedArtifact.contractName;
+    const normalizedNewArtifact = Schema.normalize(artifactObject);
+    const contractName = normalizedNewArtifact.contractName;
 
     if (!contractName) throw new Error("You must specify a contract name.");
 
-    const output_path = path.join(this.destination, `${contractName}.json`);
-    let completeArtifact = {};
-
-    // private helper for writing artifacts
-    const writeArtifact = _completeArtifact => {
-      _completeArtifact.updatedAt = new Date().toISOString();
-      fs.writeFileSync(
-        output_path,
-        JSON.stringify(_completeArtifact, null, 2),
-        "utf8"
-      );
-    };
+    const outputPath = path.join(this.destination, `${contractName}.json`);
 
     try {
-      const existingArtifact = fs.readFileSync(output_path, "utf8"); // check if artifact already exists
+      const existingArtifact = fse.readFileSync(outputPath, "utf8"); // check if artifact already exists
       const existingArtifactObject = JSON.parse(existingArtifact); // parse existing artifact
       const normalizedExistingArtifact = Schema.normalize(
         existingArtifactObject
       );
-      _.merge(completeArtifact, normalizedExistingArtifact, normalizedArtifact);
-      writeArtifact(completeArtifact);
+
+      const completeArtifact = finalizeArtifact(
+        normalizedExistingArtifact,
+        normalizedNewArtifact
+      );
+      writeArtifact(completeArtifact, outputPath);
     } catch (e) {
       // if artifact doesn't already exist, write new file
-      if (e.code === "ENOENT") return writeArtifact(normalizedArtifact);
-      else if (e instanceof SyntaxError) throw new Error(e); // catches improperly formatted artifact json
-      throw new Error(e); // catch all other errors
+      if (e.code === "ENOENT")
+        return writeArtifact(normalizedNewArtifact, outputPath);
+      else if (e instanceof SyntaxError) throw e; // catches improperly formatted artifact json
+      throw e; // catch all other errors
     }
   }
 
@@ -58,12 +52,12 @@ class Artifactor {
     }
 
     try {
-      fs.statSync(this.destination); // check if destination exists
+      fse.statSync(this.destination); // check if destination exists
     } catch (e) {
       if (e.code === "ENOENT")
         // if destination doesn't exist, throw error
         throw new Error(`Destination "${this.destination}" doesn't exist!`);
-      throw new Error(e); // throw on all other errors
+      throw e; // throw on all other errors
     }
 
     Object.keys(newArtifactObjects).forEach(contractName => {

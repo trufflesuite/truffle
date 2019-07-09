@@ -1,6 +1,6 @@
 {
   "name": "truffle-interface-adapter",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A library that provides an adapter layer for Truffle to interace with different types of networks/ledgers.",
   "main": "dist/index.js",
   "directories": {
@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "bn.js": "^4.11.8",
+    "ethers": "^4.0.32",
     "web3": "1.0.0-beta.37"
   }
 }

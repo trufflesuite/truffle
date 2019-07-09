@@ -5,7 +5,7 @@ const fs = require("fs-extra");
 const tmp = require("tmp");
 const path = require("path");
 
-describe("truffle unbox", () => {
+describe("truffle unbox [ @standalone ]", () => {
   let config;
   const logger = new MemoryLogger();
 
@@ -130,6 +130,16 @@ describe("truffle unbox", () => {
       describe("official truffle box", () => {
         it("unboxes successfully", done => {
           CommandRunner.run("unbox bare", config, () => {
+            const output = logger.contents();
+            assert(output.includes("Unbox successful."));
+            done();
+          });
+        }).timeout(20000);
+      });
+
+      describe("official truffle-box", () => {
+        it("unboxes successfully", done => {
+          CommandRunner.run("unbox bare-box", config, () => {
             const output = logger.contents();
             assert(output.includes("Unbox successful."));
             done();
@@ -287,5 +297,15 @@ describe("truffle unbox", () => {
         }).timeout(20000);
       });
     });
+  });
+  describe("when truffle-box.json contains commands", () => {
+    it("unboxes successfully and outputs commands", done => {
+      CommandRunner.run("unbox bare", config, () => {
+        const output = logger.contents();
+        assert(output.includes("Unbox successful."));
+        assert(output.includes("Test contracts:"));
+        done();
+      });
+    }).timeout(20000);
   });
 });
