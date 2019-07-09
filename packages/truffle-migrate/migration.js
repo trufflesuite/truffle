@@ -194,7 +194,7 @@ class Migration {
   async run(options) {
     const networkType = options.networks[options.network].type;
 
-    if ((await getSupportedNetworks()).includes(networkType))
+    if (getSupportedNetworks().includes(networkType))
       return await this.runLegacyMigrations(options);
 
     const { web3, resolver, context, deployer } = this.prepareForMigrations(

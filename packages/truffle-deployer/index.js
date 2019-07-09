@@ -45,17 +45,10 @@ class Deployer extends Deployment {
     const contract = args.shift();
     const networkType = this.networks[this.network].type;
 
-    if (
-      networkType &&
-      getSupportedNetworks().then(supportedNetworks =>
-        supportedNetworks.includes(networkType)
-      )
-    ) {
-      if (Array.isArray(contract)) {
+    if (networkType && getSupportedNetworks().includes(networkType)) {
+      if (Array.isArray(contract))
         return this.queueOrExec(Legacy.deployMany(contract, this));
-      } else {
-        return this.queueOrExec(Legacy.deploy(contract, args, this));
-      }
+      else return this.queueOrExec(Legacy.deploy(contract, args, this));
     }
 
     return this.queueOrExec(this.executeDeployment(contract, args, this));
