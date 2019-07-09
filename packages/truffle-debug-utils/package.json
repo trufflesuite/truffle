@@ -4,7 +4,7 @@
   "description": "Integration utils for truffle/truffle-debugger",
   "dependencies": {
     "async": "2.6.1",
-    "chromafi": "git+ssh://git@github.com:haltman-at/chromafi.git#90231d798ca0278cbd20ac29039a8aeac18ad7e7",
+    "chromafi": "git+ssh://git@github.com:haltman-at/chromafi.git#f526809e8aaa33e7ec48a1e7208881035ab803e1",
     "debug": "^4.1.0",
     "highlight.js": "^9.15.8",
     "highlightjs-solidity": "^1.0.6",
