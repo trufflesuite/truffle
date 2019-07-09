@@ -96,70 +96,70 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
     case "ufixed":
     case "enum":
       return {
-	size: CodecUtils.EVM.WORD_SIZE,
-	dynamic: false,
-	allocations: existingAllocations
+        size: CodecUtils.EVM.WORD_SIZE,
+        dynamic: false,
+        allocations: existingAllocations
       };
 
     case "string":
       return {
-	size: CodecUtils.EVM.WORD_SIZE,
-	dynamic: true,
-	allocations: existingAllocations
+        size: CodecUtils.EVM.WORD_SIZE,
+        dynamic: true,
+        allocations: existingAllocations
       };
 
     case "bytes":
       return {
-	size: CodecUtils.EVM.WORD_SIZE,
-	dynamic: CodecUtils.Definition.specifiedSize(definition) == null,
-	allocations: existingAllocations
+        size: CodecUtils.EVM.WORD_SIZE,
+        dynamic: CodecUtils.Definition.specifiedSize(definition) == null,
+        allocations: existingAllocations
       };
 
     case "mapping":
       return {
-	allocations: existingAllocations
+        allocations: existingAllocations
       };
 
     case "function":
       switch (CodecUtils.Definition.visibility(definition)) {
         case "external":
-	  return {
-	    size: CodecUtils.EVM.WORD_SIZE,
-	    dynamic: false,
-	    allocations: existingAllocations
-	  };
+          return {
+            size: CodecUtils.EVM.WORD_SIZE,
+            dynamic: false,
+            allocations: existingAllocations
+          };
         case "internal":
-	  return {
-	    allocations: existingAllocations
-	  };
+          return {
+            allocations: existingAllocations
+          };
       }
 
     case "array": {
       if(CodecUtils.Definition.isDynamicArray(definition)) {
-	return {
-	  size: CodecUtils.EVM.WORD_SIZE,
-	  dynamic: true,
-	  allocations: existingAllocations
-	};
+        return {
+          size: CodecUtils.EVM.WORD_SIZE,
+          dynamic: true,
+          allocations: existingAllocations
+        };
       }
       else {
         //static array case
         const length: number = CodecUtils.Definition.staticLength(definition);
         if(length === 0) {
           //arrays of length 0 are static regardless of base type
-	  return {
-	    size: 0,
-	    dynamic: false,
-	    allocations: existingAllocations
-	  };
+          return {
+            size: 0,
+            dynamic: false,
+            allocations: existingAllocations
+          };
         }
         const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
         const {size: baseSize, dynamic, allocations} = abiSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
-	return {
-	  size: length * baseSize,
-	  dynamic,
-	  allocations
-	};
+        return {
+          size: length * baseSize,
+          dynamic,
+          allocations
+        };
       }
     }
 
@@ -179,17 +179,17 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
       }
       //having found our allocation, if it's not null, we can just look up its size and dynamicity
       if(allocation !== null) {
-	return {
-	  size: allocation.length,
-	  dynamic: allocation.dynamic,
-	  allocations
-	};
+        return {
+          size: allocation.length,
+          dynamic: allocation.dynamic,
+          allocations
+        };
       }
       //if it is null, this type doesn't go in the abi
       else {
-	return {
-	  allocations
-	};
+        return {
+          allocations
+        };
       }
     }
   }
@@ -263,9 +263,11 @@ function allocateCalldata(
     case "constructor":
       let rawLength = constructorContext.binary.length;
       offset = (rawLength - 2)/2; //number of bytes in 0x-prefixed bytestring
-      //for a constructor, we only want to search the particular contract, which
+      //for a constructor, we only want to search the particular contract
       node = contractNode.nodes.find(
-        functionNode => AbiUtils.matchesAbi(
+        functionNode => AbiUtils.definitionMatchesAbi(
+          //note this needn't actually be a function node, but then it will
+          //return false (well, unless it's a getter node!)
           abiEntry, functionNode, referenceDeclarations
         )
       );
@@ -287,7 +289,7 @@ function allocateCalldata(
             throw new UnknownBaseContractIdError(contractNode.id, contractNode.name, contractNode.contractKind, baseContractId);
           }
           return baseContractNode.nodes.find( //may be undefined! that's OK!
-            functionNode => AbiUtils.matchesAbi(
+            functionNode => AbiUtils.definitionMatchesAbi(
               abiEntry, functionNode, referenceDeclarations
             )
           );
@@ -301,8 +303,20 @@ function allocateCalldata(
       }
       break;
   }
-  //now: perform the allocation!
-  const abiAllocation = allocateMembers(node, node.parameters.parameters, referenceDeclarations, abiAllocations, offset)[node.id];
+  //now: perform the allocation! however this will depend on whether
+  //we're looking at a normal function or a getter
+  let abiAllocation: Allocations.AbiAllocation;
+  switch(node.nodeType) {
+    case "FunctionDefinition":
+      //normal case
+      abiAllocation = allocateMembers(node, node.parameters.parameters, referenceDeclarations, abiAllocations, offset)[node.id];
+      break;
+    case "VariableDeclaration":
+      //getter case
+      let getterInputs = CodecUtils.Definition.getterInputsAsDefinitions(node);
+      abiAllocation = allocateMembers(node, getterInputs, referenceDeclarations, abiAllocations, offset)[node.id];
+      break;
+  }
   //finally: transform it appropriately
   let argumentsAllocation = [];
   for(const member of abiAllocation.members) {
@@ -348,8 +362,9 @@ function allocateEvent(
         throw new UnknownBaseContractIdError(contractNode.id, contractNode.name, contractNode.contractKind, baseContractId);
       }
       return baseContractNode.nodes.find( //may be undefined! that's OK!
-        functionNode => AbiUtils.matchesAbi(
-          abiEntry, functionNode, referenceDeclarations
+        eventNode => AbiUtils.definitionMatchesAbi(
+          //note this needn't actually be a event node, but then it will return false
+          abiEntry, eventNode, referenceDeclarations
         )
       );
     },

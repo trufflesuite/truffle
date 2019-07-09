@@ -5,7 +5,6 @@ import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition, AstReferences, Mutability } from "./ast";
 import { Definition as DefinitionUtils } from "./definition";
-import { UnknownUserDefinedTypeError } from "./errors";
 import Web3 from "web3";
 
 //NOTE: SchemaAbi is kind of loose and a pain to use.
@@ -107,109 +106,6 @@ export namespace AbiUtils {
     return "nonpayable";
   }
 
-  //note: in future, this will be replaced by a toABI function,
-  //which will also work for variable declarations
-  export function matchesAbi(abiEntry: AbiEntry, node: AstDefinition, referenceDeclarations: AstReferences): boolean {
-    //first: does the basic name and type match?
-    switch(node.nodeType) {
-      case "FunctionDefinition":
-        if(node.visibility !== "external" && node.visibility !== "public") {
-          return false;
-        }
-        if(abiEntry.type !== DefinitionUtils.functionKind(node)) {
-          return false;
-        }
-	if(abiEntry.type === "function") {
-	  if(node.name !== abiEntry.name) {
-	    return false;
-	  }
-	}
-        break;
-      case "EventDefinition":
-        if(abiEntry.type !== "event") {
-          return false;
-        }
-	if(node.name !== abiEntry.name) {
-	  return false;
-	}
-        break;
-      default:
-        return false;
-    }
-    //if it's a fallback function, we're done
-    if(abiEntry.type === "fallback") {
-      return true;
-    }
-    //otherwise, we've got to start checking input types (we don't check output types)
-    return matchesAbiParameters(abiEntry.inputs, node.parameters.parameters, referenceDeclarations);
-  }
-
-  function matchesAbiParameters(abiParameters: AbiParameter[], nodeParameters: AstDefinition[], referenceDeclarations: AstReferences): boolean {
-    if(abiParameters.length !== nodeParameters.length) {
-      return false;
-    }
-    for(let i = 0; i < abiParameters.length; i++) {
-      if(!matchesAbiType(abiParameters[i], nodeParameters[i], referenceDeclarations)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  function matchesAbiType(abiParameter: AbiParameter, nodeParameter: AstDefinition, referenceDeclarations: AstReferences): boolean {
-    if(toAbiType(nodeParameter, referenceDeclarations) !== abiParameter.type) {
-      return false;
-    }
-    if(abiParameter.type.startsWith("tuple")) {
-      let referenceId = DefinitionUtils.typeId(nodeParameter);
-      let referenceDeclaration = referenceDeclarations[referenceId];
-      if(referenceDeclaration === undefined) {
-        let typeString = DefinitionUtils.typeString(nodeParameter);
-        throw new UnknownUserDefinedTypeError(referenceId, typeString);
-      }
-      return matchesAbiParameters(abiParameter.components, referenceDeclaration.members, referenceDeclarations);
-    }
-    else {
-      return true;
-    }
-  }
-
-  //note: this is only meant for types that can go in the ABI
-  //it returns how that type is notated in the ABI -- just the string,
-  //to be clear, not components of tuples
-  function toAbiType(definition: AstDefinition, referenceDeclarations: AstReferences): string {
-    let basicType = DefinitionUtils.typeClassLongForm(definition); //get that whole first segment!
-    switch(basicType) {
-      case "contract":
-        return "address";
-      case "struct":
-        return "tuple"; //the more detailed checking will be handled elsewhere
-      case "enum":
-        let referenceId = DefinitionUtils.typeId(definition);
-        let referenceDeclaration = referenceDeclarations[referenceId];
-        if(referenceDeclaration === undefined) {
-          let typeString = DefinitionUtils.typeString(definition);
-          throw new UnknownUserDefinedTypeError(referenceId, typeString);
-        }
-        let numOptions = referenceDeclaration.members.length;
-        let bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
-        return `uint${bits}`;
-      case "array":
-        let baseType = toAbiType(DefinitionUtils.baseDefinition(definition), referenceDeclarations);
-        return DefinitionUtils.isDynamicArray(definition)
-          ? `${baseType}[]`
-          : `${baseType}[${DefinitionUtils.staticLength(definition)}]`;
-      default:
-        return basicType;
-        //note that: int/uint/fixed/ufixed/bytes will have their size and such left on;
-        //address will have "payable" left off;
-        //external functions will be reduced to "function" (and internal functions shouldn't
-        //be passed in!)
-        //(mappings shouldn't be passed in either obviously)
-    }
-  }
-
-
   //NOTE: this function returns the written out SIGNATURE, not the SELECTOR
   export function abiSignature(abiEntry: FunctionAbiEntry | EventAbiEntry): string {
     return abiEntry.name + abiTupleSignature(abiEntry.inputs);
@@ -243,6 +139,32 @@ export namespace AbiUtils {
       case "function":
         return hash.slice(0, 2 + 2 * EVMUtils.SELECTOR_SIZE); //arithmetic to account for hex string
     }
+  }
+
+  //note: undefined does not match itself :P
+  export function abisMatch(entry1: AbiEntry | undefined, entry2: AbiEntry | undefined): boolean {
+    //we'll consider two abi entries to match if they have the same
+    //type, name (if applicable), and inputs (if applicable).
+    //since there's already a signature function, we can just use that.
+    if(!entry1 || !entry2) {
+      return false;
+    }
+    if(entry1.type !== entry2.type) {
+      return false;
+    }
+    switch(entry1.type) {
+      case "function":
+      case "event":
+        return abiSignature(entry1) === abiSignature(<FunctionAbiEntry|EventAbiEntry>entry2);
+      case "constructor":
+        return abiTupleSignature(entry1.inputs) === abiTupleSignature((<ConstructorAbiEntry>entry2).inputs);
+      case "fallback":
+        return true;
+    }
+  }
+
+  export function definitionMatchesAbi(abiEntry: AbiEntry, definition: AstDefinition, referenceDeclarations: AstReferences): boolean {
+    return abisMatch(abiEntry, DefinitionUtils.definitionToAbi(definition, referenceDeclarations));
   }
 
   export function topicsCount(abiEntry: EventAbiEntry): number {

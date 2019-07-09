@@ -2,9 +2,11 @@ import debugModule from "debug";
 const debug = debugModule("codec-utils:definition");
 
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition, Scopes, Visibility, Mutability, Location, ContractKind } from "./ast";
+import { AstDefinition, AstReferences, Scopes, Visibility, Mutability, Location, ContractKind } from "./ast";
 import { Contexts } from "./contexts";
 import { CompilerVersion } from "./compiler";
+import { AbiUtils } from "./abi";
+import { UnknownUserDefinedTypeError } from "./errors";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
 import semver from "semver";
@@ -78,7 +80,7 @@ export namespace Definition {
         return num;
 
       default:
-        // debug("Unknown type for size specification: %s", typeIdentifier(definition));
+        debug("Unknown type for size specification: %s", typeIdentifier(definition));
     }
   }
 
@@ -288,7 +290,7 @@ export namespace Definition {
   //returns input parameters, then output parameters
   export function parameters(definition: AstDefinition): [AstDefinition[], AstDefinition[]] {
     let typeObject = definition.typeName || definition;
-    return [typeObject.parameterTypes.parameters, typeObject.returnParameterTypes.parameters];
+    return [typeObject.parameters.parameters, typeObject.returnParameters.parameters];
   }
 
   //compatibility function, since pre-0.5.0 functions don't have node.kind
@@ -410,6 +412,257 @@ export namespace Definition {
         typeIdentifier: "t_contract$_" + formattedName + "_$" + contractId,
 	typeString: contractKind + " " + contractName
       }
+    }
+  }
+
+  //section: converting a definition to an ABI entry!
+
+  //the main function. just does some dispatch.
+  //returns undefined on bad input
+  export function definitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiUtils.AbiEntry | undefined {
+    switch(node.nodeType) {
+      case "FunctionDefinition":
+        if(node.visibility === "public" || node.visibility === "external") {
+          return functionDefinitionToAbi(node, referenceDeclarations);
+        }
+        else {
+          return undefined;
+        }
+      case "EventDefinition":
+        return eventDefinitionToAbi(node, referenceDeclarations);
+      case "VariableDeclaration":
+        if(node.visibility === "public") {
+          return getterDefinitionToAbi(node, referenceDeclarations);
+        }
+        else {
+          return undefined;
+        }
+      default:
+        return undefined;
+    }
+  }
+
+  //note: not for FunctionTypeNames or VariableDeclarations
+  function functionDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiUtils.FunctionAbiEntry | AbiUtils.ConstructorAbiEntry | AbiUtils.FallbackAbiEntry {
+    let kind = functionKind(node);
+    let stateMutability = mutability(node);
+    let payable = stateMutability === "payable";
+    let constant = stateMutability === "view" || stateMutability == "pure";
+    let inputs;
+    switch(kind) {
+      case "function":
+        let name = node.name;
+        let outputs = parametersToAbi(node.returnParameters.parameters, referenceDeclarations);
+        inputs = parametersToAbi(node.parameters.parameters, referenceDeclarations);
+        return {
+          type: "function",
+          name,
+          inputs,
+          outputs,
+          stateMutability,
+          constant,
+          payable
+        };
+      case "constructor":
+        inputs = parametersToAbi(node.parameters.parameters, referenceDeclarations);
+        //note: need to coerce because of mutability restructions
+        return <AbiUtils.ConstructorAbiEntry> {
+          type: "constructor",
+          inputs,
+          stateMutability,
+          payable
+        };
+      case "fallback":
+        //note: need to coerce because of mutability restructions
+        return <AbiUtils.FallbackAbiEntry> {
+          type: "fallback",
+          stateMutability,
+          payable
+        };
+    }
+  }
+
+  function eventDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiUtils.EventAbiEntry {
+    let inputs = parametersToAbi(node.parameters.parameters, referenceDeclarations, true);
+    let name = node.name;
+    let anonymous = node.anonymous;
+    return {
+      type: "event",
+      inputs,
+      name,
+      anonymous
+    };
+  }
+
+  function parametersToAbi(nodes: AstDefinition[], referenceDeclarations: AstReferences, checkIndexed: boolean = false): AbiUtils.AbiParameter[] {
+    return nodes.map(node => parameterToAbi(node, referenceDeclarations, checkIndexed));
+  }
+
+  function parameterToAbi(node: AstDefinition, referenceDeclarations: AstReferences, checkIndexed: boolean = false): AbiUtils.AbiParameter {
+    let name = node.name; //may be the empty string
+    let abiTypeString = toAbiType(node, referenceDeclarations);
+    let components: AbiUtils.AbiParameter[];
+    if(abiTypeString.startsWith("tuple")) {
+      let baseType = node.typeName;
+      while(typeClass(baseType) === "array") {
+        baseType = baseDefinition(baseType);
+      }
+      let id = typeId(baseType);
+      let referenceDeclaration = referenceDeclarations[id];
+      if(referenceDeclaration === undefined) {
+        let typeToDisplay = typeString(baseType);
+        throw new UnknownUserDefinedTypeError(id, typeToDisplay);
+      }
+      components = parametersToAbi(referenceDeclaration.members, referenceDeclarations, checkIndexed);
+    }
+    if(checkIndexed) {
+      return {
+        name,
+        type: abiTypeString,
+        indexed: node.indexed,
+        components
+      };
+    }
+    else {
+      return {
+        name,
+        type: abiTypeString,
+        components
+      };
+    }
+  }
+
+  //note: this is only meant for types that can go in the ABI
+  //it returns how that type is notated in the ABI -- just the string,
+  //to be clear, not components of tuples
+  function toAbiType(node: AstDefinition, referenceDeclarations: AstReferences): string {
+    let basicType = typeClassLongForm(node); //get that whole first segment!
+    switch(basicType) {
+      case "contract":
+        return "address";
+      case "struct":
+        return "tuple"; //the more detailed checking will be handled elsewhere
+      case "enum":
+        let referenceId = typeId(node);
+        let referenceDeclaration = referenceDeclarations[referenceId];
+        if(referenceDeclaration === undefined) {
+          let typeToDisplay = typeString(node);
+          throw new UnknownUserDefinedTypeError(referenceId, typeToDisplay);
+        }
+        let numOptions = referenceDeclaration.members.length;
+        let bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
+        return `uint${bits}`;
+      case "array":
+        let baseType = toAbiType(baseDefinition(node), referenceDeclarations);
+        return isDynamicArray(node)
+          ? `${baseType}[]`
+          : `${baseType}[${staticLength(node)}]`;
+      default:
+        return basicType;
+        //note that: int/uint/fixed/ufixed/bytes will have their size and such left on;
+        //address will have "payable" left off;
+        //external functions will be reduced to "function" (and internal functions shouldn't
+        //be passed in!)
+        //(mappings shouldn't be passed in either obviously)
+    }
+  }
+
+  function getterDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiUtils.FunctionAbiEntry {
+    let name = node.name;
+    let inputs = getterInputs(node); //does not depend on reference declarations!
+    let outputs = getterOutputs(node, referenceDeclarations);
+    return {
+      type: "function",
+      name,
+      inputs,
+      outputs,
+      stateMutability: "view",
+      constant: true,
+      payable: false
+    };
+  }
+
+  //array getters & mapping getters take inputs; if stacked they take multiple inputs
+  //struct getters do not take inputs
+  function getterInputs(node: AstDefinition): AbiUtils.AbiParameter[] {
+    node = node.typeName;
+    let inputs: AbiUtils.AbiParameter[] = [];
+    while(typeClass(node) === "array" || typeClass(node) === "mapping") {
+      let keyNode = keyDefinition(node); //note: if node is an array, this spoofs up a uint256 definition
+      let parameterAbi = parameterToAbi(keyNode, null); //it's an elementary type; no need for ref declarations
+      parameterAbi.name = ""; //this might be garbage, let's overwrite it with the correct value (empty string)
+      inputs.push(parameterAbi);
+      switch(typeClass(node)) {
+        case "array":
+          node = node.baseType;
+          break;
+        case "mapping":
+          node = node.valueType;
+          break;
+      }
+    }
+    return inputs;
+  }
+
+  //this is similar to the above, but it returns an array of definitions instead
+  //(for use by the allocator)
+  export function getterInputsAsDefinitions(node: AstDefinition): AstDefinition[] {
+    node = node.typeName;
+    let inputs: AstDefinition[] = [];
+    while(typeClass(node) === "array" || typeClass(node) === "mapping") {
+      let keyNode = keyDefinition(node); //note: if node is an array, this spoofs up a uint256 definition
+      inputs.push(keyNode);
+      switch(typeClass(node)) {
+        case "array":
+          node = node.baseType;
+          break;
+        case "mapping":
+          node = node.valueType;
+          break;
+      }
+    }
+    return inputs;
+  }
+
+  //most getters return a single output.
+  //however, struct getters (or array of struct, or mapping to struct)
+  //returns multiple outputs, those outputs being the members of the
+  //struct *other* than arrays or mappings.
+  //Note that any deeper nested structs are *not* split up or filtered
+  //in this way!
+  function getterOutputs(node: AstDefinition, referenceDeclarations: AstReferences): AbiUtils.AbiParameter[] {
+    let baseNode: AstDefinition = node.typeName;
+    while(typeClass(baseNode) === "array" || typeClass(baseNode) === "mapping") {
+      switch(typeClass(baseNode)) {
+        case "array":
+          baseNode = baseNode.baseType;
+          break;
+        case "mapping":
+          baseNode = baseNode.valueType;
+          break;
+      }
+    }
+    //at this point, baseNode should hold the base type
+    //now we face the question: is it a struct?
+    if(typeClass(baseNode) === "struct") {
+      let id = typeId(baseNode);
+      let referenceDeclaration = referenceDeclarations[id];
+      if(referenceDeclaration === undefined) {
+        let typeToDisplay = typeString(baseNode);
+        throw new UnknownUserDefinedTypeError(id, typeToDisplay);
+      }
+      return referenceDeclaration.members.filter(
+        member => typeClass(member) !== "array" && typeClass(member) !== "mapping"
+      ).map(
+        member => parameterToAbi(member, referenceDeclarations)
+      );
+    }
+    else {
+      return [{
+        name: "",
+        type: toAbiType(baseNode, referenceDeclarations),
+        //it's not a struct or an array; there are no components
+      }];
     }
   }
 
