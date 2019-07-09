@@ -1,4 +1,4 @@
-export async function getSupportedNetworks() {
+export function getSupportedNetworks() {
   return ["quorum", "fabric-evm"];
 };
 
