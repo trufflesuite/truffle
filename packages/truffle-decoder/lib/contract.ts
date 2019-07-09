@@ -410,7 +410,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   //NOTE: will only work with logs for this address!
-  public async decodeLog(log: Log, name: string | null = null): Promise<DecoderTypes.DecodedLog> {
+  public async decodeLog(log: Log, name?: string): Promise<DecoderTypes.DecodedLog> {
     if(log.address !== this.contractAddress) {
       throw new DecoderTypes.EventOrTransactionIsNotForThisContractError(log.address, this.contractAddress);
     }
@@ -449,21 +449,13 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   //NOTE: will only work with logs for this address!
-  public async decodeLogs(logs: Log[], name: string | null = null): Promise<DecoderTypes.DecodedLog[]> {
+  public async decodeLogs(logs: Log[], name?: string): Promise<DecoderTypes.DecodedLog[]> {
     return await Promise.all(logs.map(log => this.decodeLog(log, name)));
   }
 
   public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
     let { name, fromBlock, toBlock } = options;
-    if(name === undefined) {
-      name = null; // null means any name is OK
-    }
-    if(fromBlock === undefined) {
-      fromBlock = "latest";
-    }
-    if(toBlock === undefined) {
-      toBlock = "latest";
-    }
+    //note: address option is ignored!
 
     const logs = await this.web3.eth.getPastLogs({
       address: this.contractAddress,

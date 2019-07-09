@@ -178,7 +178,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  public async decodeLog(log: Log, name: string | null = null): Promise<DecoderTypes.DecodedLog> {
+  public async decodeLog(log: Log, name?: string): Promise<DecoderTypes.DecodedLog> {
     const block = log.blockNumber;
     const data = CodecUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(CodecUtils.Conversion.toBytes);
@@ -213,23 +213,15 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  public async decodeLogs(logs: Log[], name: string | null = null): Promise<DecoderTypes.DecodedLog[]> {
+  public async decodeLogs(logs: Log[], name?: string): Promise<DecoderTypes.DecodedLog[]> {
     return await Promise.all(logs.map(log => this.decodeLog(log, name)));
   }
 
   public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
-    let { name, fromBlock, toBlock } = options;
-    if(name === undefined) {
-      name = null; // null means any name is OK
-    }
-    if(fromBlock === undefined) {
-      fromBlock = "latest";
-    }
-    if(toBlock === undefined) {
-      toBlock = "latest";
-    }
+    let { address, name, fromBlock, toBlock } = options;
 
     const logs = await this.web3.eth.getPastLogs({
+      address,
       fromBlock,
       toBlock,
     });
@@ -240,7 +232,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     //if a target name was specified, we'll restrict to events that decoded
     //to something with that name.  (note that only decodings with that name
     //will have been returned from decodeLogs in the first place)
-    if(name !== null) {
+    if(name !== undefined) {
       events = events.filter(
         event => event.decodings.length > 0
       );
