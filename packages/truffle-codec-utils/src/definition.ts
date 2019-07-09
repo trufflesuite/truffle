@@ -587,23 +587,14 @@ export namespace Definition {
   //array getters & mapping getters take inputs; if stacked they take multiple inputs
   //struct getters do not take inputs
   function getterInputs(node: AstDefinition): AbiUtils.AbiParameter[] {
-    node = node.typeName;
-    let inputs: AbiUtils.AbiParameter[] = [];
-    while(typeClass(node) === "array" || typeClass(node) === "mapping") {
-      let keyNode = keyDefinition(node); //note: if node is an array, this spoofs up a uint256 definition
-      let parameterAbi = parameterToAbi(keyNode, null); //it's an elementary type; no need for ref declarations
-      parameterAbi.name = ""; //this might be garbage, let's overwrite it with the correct value (empty string)
-      inputs.push(parameterAbi);
-      switch(typeClass(node)) {
-        case "array":
-          node = node.baseType;
-          break;
-        case "mapping":
-          node = node.valueType;
-          break;
+    let inputsAsDefinitions = getterInputsAsDefinitions(node);
+    return inputsAsDefinitions.map(
+      inputDefinition => {
+        let input = parameterToAbi(inputDefinition, null); //it's an elementary type; no need for ref declarations
+        input.name = ""; //this might be garbage, let's overwrite it with the correct value (empty string)
+        return input;
       }
-    }
-    return inputs;
+    );
   }
 
   //this is similar to the above, but it returns an array of definitions instead
