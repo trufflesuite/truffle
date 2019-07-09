@@ -143,7 +143,7 @@ module.exports = Contract => ({
     this.network_id = `${network_id}`;
   },
 
-  setNetworkType(networkType) {
+  setNetworkType(networkType = "ethereum") {
     if (this.web3) {
       this.web3.setNetworkType(networkType);
     }
