@@ -305,22 +305,21 @@ function allocateCalldata(
   }
   //now: perform the allocation! however this will depend on whether
   //we're looking at a normal function or a getter
-  let abiAllocation: Allocations.AbiAllocation;
+  let parameters: AstDefinition[];
   switch(node.nodeType) {
     case "FunctionDefinition":
-      //normal case
-      abiAllocation = allocateMembers(node, node.parameters.parameters, referenceDeclarations, abiAllocations, offset)[node.id];
+      parameters = node.parameters.parameters;
       break;
     case "VariableDeclaration":
       //getter case
-      let getterInputs = CodecUtils.Definition.getterInputsAsDefinitions(node);
-      abiAllocation = allocateMembers(node, getterInputs, referenceDeclarations, abiAllocations, offset)[node.id];
+      parameters = CodecUtils.Definition.getterInputsAsDefinitions(node);
       break;
   }
+  const abiAllocation = allocateMembers(node, parameters, referenceDeclarations, abiAllocations, offset)[node.id];
   //finally: transform it appropriately
   let argumentsAllocation = [];
   for(const member of abiAllocation.members) {
-    const position = node.parameters.parameters.findIndex(
+    const position = parameters.findIndex(
       (parameter: AstDefinition) => parameter.id === member.definition.id
     );
     argumentsAllocation[position] = {

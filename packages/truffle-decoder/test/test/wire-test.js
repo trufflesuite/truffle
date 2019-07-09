@@ -53,10 +53,26 @@ contract("WireTest", _accounts => {
     let libraryTestArg = "zooglyzooglyzooglyzoogly";
     let libraryTest = await deployedContract.libraryTest(libraryTestArg);
 
+    let getter1Args = ["blornst", 7];
+    //this function is view so we have to use sendTransaction
+    let getterTest1 = await deployedContract.deepStruct.sendTransaction(
+      ...getter1Args
+    );
+    let getterHash1 = getterTest1.tx;
+
+    let getter2Args = [7, "blornst"];
+    //this function is view so we have to use sendTransaction
+    let getterTest2 = await deployedContract.deepString.sendTransaction(
+      ...getter2Args
+    );
+    let getterHash2 = getterTest2.tx;
+
     let constructorTx = await web3.eth.getTransaction(constructorHash);
     let emitStuffTx = await web3.eth.getTransaction(emitStuffHash);
     let moreStuffTx = await web3.eth.getTransaction(moreStuffHash);
     let inheritedTx = await web3.eth.getTransaction(inheritedHash);
+    let getterTx1 = await web3.eth.getTransaction(getterHash1);
+    let getterTx2 = await web3.eth.getTransaction(getterHash2);
     let defaultConstructorTx = await web3.eth.getTransaction(
       defaultConstructorHash
     );
@@ -69,6 +85,8 @@ contract("WireTest", _accounts => {
       .decoding;
     let inheritedDecoding = (await decoder.decodeTransaction(inheritedTx))
       .decoding;
+    let getterDecoding1 = (await decoder.decodeTransaction(getterTx1)).decoding;
+    let getterDecoding2 = (await decoder.decodeTransaction(getterTx2)).decoding;
     let defaultConstructorDecoding = (await decoder.decodeTransaction(
       defaultConstructorTx
     )).decoding;
@@ -140,6 +158,32 @@ contract("WireTest", _accounts => {
       "WireTestParent"
     );
     assert.isEmpty(defaultConstructorDecoding.arguments);
+
+    assert.strictEqual(getterDecoding1.kind, "function");
+    assert.strictEqual(getterDecoding1.name, "deepStruct");
+    assert.strictEqual(getterDecoding1.class.typeName, "WireTest");
+    assert.lengthOf(getterDecoding1.arguments, 2);
+    assert.strictEqual(
+      getterDecoding1.arguments[0].value.nativize(),
+      getter1Args[0]
+    );
+    assert.strictEqual(
+      getterDecoding1.arguments[1].value.nativize(),
+      getter1Args[1]
+    );
+
+    assert.strictEqual(getterDecoding2.kind, "function");
+    assert.strictEqual(getterDecoding2.name, "deepString");
+    assert.strictEqual(getterDecoding2.class.typeName, "WireTest");
+    assert.lengthOf(getterDecoding2.arguments, 2);
+    assert.strictEqual(
+      getterDecoding2.arguments[0].value.nativize(),
+      getter2Args[0]
+    );
+    assert.strictEqual(
+      getterDecoding2.arguments[1].value.nativize(),
+      getter2Args[1]
+    );
 
     //now for events!
     let constructorBlock = constructorTx.blockNumber;

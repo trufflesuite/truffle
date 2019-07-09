@@ -170,17 +170,17 @@ describe("Function Pointer Decoding", function() {
       variables.storageFn.value.contract.class.typeName,
       "ExternalsDerived"
     );
-    assert.equal(variables.storageFn.value.name, "doThing");
+    assert.equal(variables.storageFn.value.abi.name, "doThing");
     assert.equal(
       variables.memoryFns.value[0].value.contract.class.typeName,
       "ExternalsDerived"
     );
-    assert.equal(variables.memoryFns.value[0].value.name, "doThing");
+    assert.equal(variables.memoryFns.value[0].value.abi.name, "doThing");
     assert.equal(
       variables.stackFn.value.contract.class.typeName,
       "ExternalsDerived"
     );
-    assert.equal(variables.stackFn.value.name, "doThing");
+    assert.equal(variables.stackFn.value.abi.name, "doThing");
   });
 
   it("Decodes internal function pointers correctly (deployed)", async function() {

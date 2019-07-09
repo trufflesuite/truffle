@@ -31,6 +31,12 @@ export interface AstDefinition {
   //things
   stateMutability?: Mutability;
   referencedDeclaration?: any;
+  parameters?: {
+    parameters: AstDefinition[];
+  };
+  returnParameters?: {
+    parameters: AstDefinition[];
+  };
   parameterTypes?: {
     parameters: AstDefinition[];
   };

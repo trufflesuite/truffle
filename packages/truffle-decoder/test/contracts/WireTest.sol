@@ -14,6 +14,8 @@ contract WireTestParent {
 
 contract WireTest is WireTestParent {
   constructor(bool status, bytes memory info, Ternary whoknows) public {
+    deepStruct["blornst"].length = 9;
+    deepString.length = 9;
     emit ConstructorEvent(status, info, whoknows);
   }
 
@@ -116,6 +118,9 @@ contract WireTest is WireTestParent {
     //fourth test: no selector
     emit ObviouslyAnon(0xfe);
   }
+
+  mapping(string => Triple[]) public deepStruct;
+  mapping(string => string)[] public deepString;
 }
 
 library WireTestLibrary {

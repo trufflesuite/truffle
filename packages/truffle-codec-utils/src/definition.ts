@@ -288,9 +288,11 @@ export namespace Definition {
   }
 
   //returns input parameters, then output parameters
+  //NOTE: ONLY FOR VARIABLE DECLARATIONS OF FUNCTION TYPE
+  //NOT FOR FUNCTION DEFINITIONS
   export function parameters(definition: AstDefinition): [AstDefinition[], AstDefinition[]] {
     let typeObject = definition.typeName || definition;
-    return [typeObject.parameters.parameters, typeObject.returnParameters.parameters];
+    return [typeObject.parameterTypes.parameters, typeObject.returnParameterTypes.parameters];
   }
 
   //compatibility function, since pre-0.5.0 functions don't have node.kind
