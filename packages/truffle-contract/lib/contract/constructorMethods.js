@@ -18,6 +18,7 @@ module.exports = Contract => ({
 
   new() {
     const promiEvent = new Web3PromiEvent();
+    const originalStackTrace = new Error().stack;
 
     utils.checkProvider(this);
 
@@ -37,7 +38,8 @@ module.exports = Contract => ({
     const context = {
       contract: this,
       promiEvent,
-      onlyEmitReceipt: true
+      onlyEmitReceipt: true,
+      originalStackTrace: originalStackTrace
     };
 
     this.detectNetwork()
