@@ -1,8 +1,20 @@
 {
   "name": "truffle-core",
-  "namespace": "consensys",
-  "version": "5.0.26",
   "description": "Core code for Truffle command line tool",
+  "author": "consensys.net",
+  "homepage": "https://github.com/ConsenSys/truffle",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-core",
+  "bugs": {
+    "url": "https://github.com/ConsenSys/truffle/issues"
+  },
+  "version": "5.0.26",
+  "bin": {
+    "truffle": "./cli.js",
+    "truffle-exec": "./exec.js"
+  },
+  "scripts": {
+    "test": "mocha ./test/** ./test/**/*"
+  },
   "dependencies": {
     "app-module-path": "^2.2.0",
     "async": "2.6.1",
@@ -18,7 +30,7 @@
     "ethpm": "0.0.16",
     "ethpm-registry": "0.1.0-next.2",
     "fs-extra": "6.0.1",
-    "ganache-core": "2.5.5",
+    "ganache-core": "2.5.7",
     "hdkey": "^1.1.0",
     "mkdirp": "^0.5.1",
     "mocha": "5.2.0",
@@ -56,26 +68,6 @@
     "xregexp": "^4.2.4",
     "yargs": "^8.0.2"
   },
-  "bin": {
-    "truffle": "./cli.js",
-    "truffle-exec": "./exec.js"
-  },
-  "scripts": {
-    "test": "mocha ./test/** ./test/**/*"
-  },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-core",
-  "homepage": "https://github.com/ConsenSys/truffle",
-  "bugs": {
-    "url": "https://github.com/ConsenSys/truffle/issues"
-  },
-  "author": "consensys.net",
-  "authors": [
-    {
-      "name": "Tim Coulter",
-      "email": "tim@timothyjcoulter.com",
-      "url": "https://github.com/tcoulter"
-    }
-  ],
   "devDependencies": {
     "glob": "^7.1.2",
     "memorystream": "^0.3.1",
@@ -84,5 +76,13 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "authors": [
+    {
+      "name": "Tim Coulter",
+      "email": "tim@timothyjcoulter.com",
+      "url": "https://github.com/tcoulter"
+    }
+  ],
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
+  "namespace": "consensys"
 }
