@@ -37,7 +37,7 @@ export namespace Contexts {
     contractName?: string;
     contractId?: number;
     contractKind?: ContractKind; //note: should never be "interface"
-    abi?: AbiUtils.AbiBySelectors;
+    abi?: AbiUtils.FunctionAbiBySelectors;
     payable?: boolean;
     compiler?: CompilerVersion;
   }

@@ -5,7 +5,6 @@ import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition, AstReferences, Mutability } from "./ast";
 import { Definition as DefinitionUtils } from "./definition";
-import { Values } from "./types/values";
 import { UnknownUserDefinedTypeError } from "./errors";
 import Web3 from "web3";
 
@@ -55,43 +54,21 @@ export namespace AbiUtils {
     components?: AbiParameter[]; //only preset for tuples (structs)
   }
 
-  export interface FunctionAbiEntryWithSelector extends FunctionAbiEntry {
-    signature: string; //note: this should be the SELECTOR,
-    //not the written-out signature.  it's called "signature"
-    //for compatibility.
+  export interface FunctionAbiBySelectors {
+    [selector: string]: FunctionAbiEntry
   }
 
-  export interface EventAbiEntryWithSelector extends EventAbiEntry {
-    signature: string; //note: this should be the SELECTOR,
-    //not the written-out signature.  it's called "signature"
-    //for compatibility.
-  }
-
-  export type AbiEntryWithSelector = FunctionAbiEntryWithSelector | EventAbiEntryWithSelector;
-
-  export interface AbiBySelectors {
-    [selector: string]: AbiEntryWithSelector
-    //note this necessary excludes constructor/fallback
-  }
-
-  export function computeSelectors(abiLoose: Abi | SchemaAbi | undefined): AbiBySelectors | undefined {
+  //note the return value only includes functions!
+  export function computeSelectors(abiLoose: Abi | SchemaAbi | undefined): FunctionAbiBySelectors | undefined {
     if(abiLoose === undefined) {
       return undefined;
     }
     const abi = <Abi>abiLoose;
     return Object.assign({},
       ...abi.filter(
-        (abiEntry: AbiEntry) => abiEntry.type === "function" || abiEntry.type === "event"
+        (abiEntry: AbiEntry) => abiEntry.type === "function"
       ).map(
-        (abiEntry: FunctionAbiEntry | EventAbiEntry) => {
-          let signature = abiSelector(abiEntry);
-          return {
-            [signature]: {
-              ...abiEntry,
-              signature
-            }
-          };
-        }
+        (abiEntry: FunctionAbiEntry) => ({ [abiSelector(abiEntry)]: abiEntry })
       )
     )
   }
@@ -248,11 +225,6 @@ export namespace AbiUtils {
   }
 
   export function abiSelector(abiEntry: FunctionAbiEntry | EventAbiEntry): string {
-    //first, try reading it from the entry; only recompute if needed
-    let storedSelector = (<AbiEntryWithSelector>abiEntry).signature;
-    if(storedSelector !== undefined) {
-      return storedSelector;
-    }
     let signature = abiSignature(abiEntry);
     //NOTE: web3's soliditySha3 has a problem if the empty
     //string is passed in.  Fortunately, that should never happen here.

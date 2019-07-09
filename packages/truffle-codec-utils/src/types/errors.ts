@@ -419,7 +419,7 @@ export namespace Errors {
   //external functions
   export class FunctionExternalErrorResult extends ErrorResultBase {
     constructor(
-      public functionType: Types.FunctionTypeExternal,
+      public functionType: Types.FunctionExternalType,
       public error: GenericError | FunctionExternalError
     ) {
       super();
@@ -463,7 +463,7 @@ export namespace Errors {
   //Internal functions
   export class FunctionInternalErrorResult extends ErrorResultBase {
     constructor(
-      public functionType: Types.FunctionTypeInternal,
+      public functionType: Types.FunctionInternalType,
       public error: GenericError | FunctionInternalError
     ) {
       super();

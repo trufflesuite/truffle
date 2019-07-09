@@ -289,12 +289,11 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
   if(abiEntry === undefined) {
     return new Values.FunctionExternalValueInfoInvalid(contract, selector)
   }
-  let functionName = abiEntry.name;
-  return new Values.FunctionExternalValueInfoKnown(contract, selector, functionName)
+  return new Values.FunctionExternalValueInfoKnown(contract, selector, abiEntry)
 }
 
 //this one works a bit differently -- in order to handle errors, it *does* return a FunctionInternalResult
-export function decodeInternalFunction(dataType: Types.FunctionTypeInternal, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
+export function decodeInternalFunction(dataType: Types.FunctionInternalType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
   let deployedPc: number = CodecUtils.Conversion.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = CodecUtils.Conversion.toBN(constructorPcBytes).toNumber();
   let context: Types.ContractType = {
@@ -353,6 +352,7 @@ export function decodeInternalFunction(dataType: Types.FunctionTypeInternal, dep
     );
   }
   let name = functionEntry.name;
+  let mutability = functionEntry.mutability;
   let definedIn: Types.ContractType = {
     typeClass: "contract",
     kind: "native",
@@ -363,7 +363,7 @@ export function decodeInternalFunction(dataType: Types.FunctionTypeInternal, dep
   };
   return new Values.FunctionInternalValue(
     dataType,
-    new Values.FunctionInternalValueInfoKnown(context, deployedPc, constructorPc, name, definedIn)
+    new Values.FunctionInternalValueInfoKnown(context, deployedPc, constructorPc, name, definedIn, mutability)
   );
 }
 

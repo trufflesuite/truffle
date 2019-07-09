@@ -235,10 +235,9 @@ const data = createSelectorTree({
      * 0. we only include non-constructor contexts
      * 1. we now index by contract ID rather than hash
      * 2. we strip out context, sourceMap, and primarySource
-     * 3. we alter abi in several ways:
-     * 3a. we strip out constructors and fallback functions
-     * 3b. we augment these functions with signatures (here meaning selectors)
-     * 3c. abi is now an object, not an array, and indexed by these signatures
+     * 3. we alter abi in two ways:
+     * 3a. we strip out everything but functions
+     * 3b. abi is now an object, not an array, and indexed by these signatures
      */
     contexts: createLeaf([evm.info.contexts], contexts =>
       Object.assign(

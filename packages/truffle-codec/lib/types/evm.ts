@@ -1,4 +1,4 @@
-import { AstDefinition, AstReferences, ContractKind, Contexts, Types } from "truffle-codec-utils";
+import { AstDefinition, AstReferences, ContractKind, Mutability, Contexts, Types } from "truffle-codec-utils";
 import * as Allocations from "./allocation";
 import { Slot } from "./storage";
 
@@ -46,6 +46,7 @@ export interface InternalFunction {
   node?: AstDefinition;
   name?: string;
   id?: number;
+  mutability?: Mutability;
   contractPointer?: string;
   contractNode?: AstDefinition;
   contractName?: string;
@@ -59,5 +60,5 @@ export interface DecoderOptions {
   permissivePadding?: boolean; //allows incorrect padding on certain data types
   strictAbiMode?: boolean; //throw errors instead of returning; check array & string lengths (crudely)
   abiPointerBase?: number;
-  memoryVisited?: string[]; //for the future
+  memoryVisited?: number[]; //for the future
 }

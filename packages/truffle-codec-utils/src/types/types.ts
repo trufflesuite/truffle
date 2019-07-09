@@ -18,6 +18,8 @@ const debug = debugModule("codec-utils:types:types");
 //Similarly with global structs and enums.
 //Foreign contract types aren't really implemented yet either, although
 //those aren't produced from definitions.
+//(General external functions aren't really implemented yet either for the
+//same reason.)
 
 //NOTE: not all of these optional fields are actually implemented. Some are
 //just intended for the future.
@@ -110,9 +112,9 @@ export namespace Types {
     location?: "storage";
   }
 
-  export type FunctionType = FunctionTypeInternal | FunctionTypeExternal;
+  export type FunctionType = FunctionInternalType | FunctionExternalType;
 
-  export interface FunctionTypeInternal {
+  export interface FunctionInternalType {
     typeClass: "function";
     visibility: "internal";
     mutability: Ast.Mutability;
@@ -121,12 +123,22 @@ export namespace Types {
     //we do not presently support bound functions
   }
 
-  export interface FunctionTypeExternal {
+  export type FunctionExternalType = FunctionExternalTypeSpecific | FunctionExternalTypeGeneral;
+
+  export interface FunctionExternalTypeSpecific {
     typeClass: "function";
     visibility: "external";
+    kind: "specific";
     mutability: Ast.Mutability;
     inputParameterTypes: Type[];
     outputParameterTypes: Type[];
+    //we do not presently support bound functions
+  }
+
+  export interface FunctionExternalTypeGeneral {
+    typeClass: "function";
+    visibility: "external";
+    kind: "general";
     //we do not presently support bound functions
   }
 
@@ -380,13 +392,26 @@ export namespace Types {
         //note: don't force a location on these! use the listed location!
         let inputParameterTypes = inputParameters.map(parameter => definitionToType(parameter, compiler));
         let outputParameterTypes = outputParameters.map(parameter => definitionToType(parameter, compiler));
-        return {
-          typeClass,
-          visibility,
-          mutability,
-          inputParameterTypes,
-          outputParameterTypes
+        switch(visibility) {
+          case "internal":
+            return {
+              typeClass,
+              visibility,
+              mutability,
+              inputParameterTypes,
+              outputParameterTypes
+            };
+          case "external":
+            return {
+              typeClass,
+              visibility,
+              kind: "specific",
+              mutability,
+              inputParameterTypes,
+              outputParameterTypes
+            };
         }
+        break; //to satisfy typescript
       }
       case "struct": {
         let id = DefinitionUtils.typeId(definition);

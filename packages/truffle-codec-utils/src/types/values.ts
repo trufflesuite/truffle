@@ -22,8 +22,9 @@ import { Types } from "./types";
 import { Errors } from "./errors";
 import { InspectOptions, cleanStylize } from "./inspect";
 import util from "util";
-import { AstDefinition } from "../ast";
+import { AstDefinition, Mutability } from "../ast";
 import { Definition as DefinitionUtils } from "../definition";
+import { AbiUtils } from "../abi";
 
 export namespace Values {
 
@@ -633,7 +634,7 @@ export namespace Values {
   export type FunctionExternalResult = FunctionExternalValue | Errors.FunctionExternalErrorResult;
 
   export class FunctionExternalValue {
-    type: Types.FunctionTypeExternal;
+    type: Types.FunctionExternalType;
     kind: "value";
     value: FunctionExternalValueInfo;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -642,7 +643,7 @@ export namespace Values {
     nativize(): any {
       return this.value.nativize();
     }
-    constructor(functionType: Types.FunctionTypeExternal, value: FunctionExternalValueInfo) {
+    constructor(functionType: Types.FunctionExternalType, value: FunctionExternalValueInfo) {
       this.type = functionType;
       this.kind = "value";
       this.value = value;
@@ -660,24 +661,24 @@ export namespace Values {
     kind: "known";
     contract: ContractValueInfoKnown;
     selector: string; //formatted as a bytes4
-    name: string;
+    abi: AbiUtils.FunctionAbiEntry;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       //first, let's inspect that contract, but w/o color
       let contractString = util.inspect(this.contract, { ...cleanStylize(options), colors: false });
-      let firstLine = `[Function: ${this.name} of`;
+      let firstLine = `[Function: ${this.abi.name} of`;
       let secondLine = `${contractString}]`;
       let breakingSpace = firstLine.length >= options.breakLength ? "\n" : " ";
       //now, put it together
       return options.stylize(firstLine + breakingSpace + secondLine, "special");
     }
     nativize(): any {
-      return `${this.contract.nativize()}.${this.name}`
+      return `${this.contract.nativize()}.${this.abi.name}`
     }
-    constructor(contract: ContractValueInfoKnown, selector: string, name: string) {
+    constructor(contract: ContractValueInfoKnown, selector: string, abi: AbiUtils.FunctionAbiEntry) {
       this.kind = "known";
       this.contract = contract;
       this.selector = selector;
-      this.name = name;
+      this.abi = abi;
     }
   }
 
@@ -739,7 +740,7 @@ export namespace Values {
   export type FunctionInternalResult = FunctionInternalValue | Errors.FunctionInternalErrorResult;
 
   export class FunctionInternalValue {
-    type: Types.FunctionTypeInternal;
+    type: Types.FunctionInternalType;
     kind: "value";
     value: FunctionInternalValueInfo;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
@@ -748,7 +749,7 @@ export namespace Values {
     nativize(): any {
       return this.value.nativize();
     }
-    constructor(functionType: Types.FunctionTypeInternal, value: FunctionInternalValueInfo) {
+    constructor(functionType: Types.FunctionInternalType, value: FunctionInternalValueInfo) {
       this.type = functionType;
       this.kind = "value";
       this.value = value;
@@ -769,6 +770,7 @@ export namespace Values {
     constructorProgramCounter: number;
     name: string;
     definedIn: Types.ContractType;
+    mutability?: Mutability;
     [util.inspect.custom](depth: number | null, options: InspectOptions): string {
       return options.stylize(`[Function: ${this.definedIn.typeName}.${this.name}]`, "special");
     }
@@ -780,7 +782,8 @@ export namespace Values {
       deployedProgramCounter: number,
       constructorProgramCounter: number,
       name: string,
-      definedIn: Types.ContractType
+      definedIn: Types.ContractType,
+      mutability?: Mutability
     ) {
       this.kind = "function";
       this.context = context;
@@ -788,6 +791,7 @@ export namespace Values {
       this.constructorProgramCounter = constructorProgramCounter;
       this.name = name;
       this.definedIn = definedIn;
+      this.mutability = mutability;
     }
   }
 
