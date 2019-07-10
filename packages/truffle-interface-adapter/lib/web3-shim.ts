@@ -68,21 +68,11 @@ export class Web3Shim extends Web3 {
       this.networkType = "ethereum";
     }
 
-    this.initInterface();
+    initInterface(this);
   }
 
   setNetworkType(networkType: NetworkType) {
     this.networkType = networkType;
-    this.initInterface();
-  }
-
-  async initInterface() {
-    const networkTypes: NetworkTypesConfig = new Map(Object.entries({
-      "ethereum": EthereumDefinition,
-      "quorum": QuorumDefinition,
-      "fabric-evm": FabricEvmDefinition
-    }));
-
-    networkTypes.get(this.networkType).initNetworkType(this);
+    initInterface(this);
   }
 };
