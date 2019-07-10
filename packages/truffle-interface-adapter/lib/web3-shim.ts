@@ -5,6 +5,17 @@ import { EthereumDefinition } from "./ethereum-overloads";
 import { QuorumDefinition } from "./quorum-overloads";
 import { FabricEvmDefinition } from "./fabric-evm-overloads";
 
+const initInterface = async(web3Shim: Web3Shim) => {
+
+    const networkTypes: NetworkTypesConfig = new Map(Object.entries({
+      "ethereum": EthereumDefinition,
+      "quorum": QuorumDefinition,
+      "fabric-evm": FabricEvmDefinition
+    }));
+
+    networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim);
+  }
+
 // March 13, 2019 - Mike Seese:
 // This is a temporary shim to support the basic, Ethereum-based
 // multiledger integration. This whole adapter, including this shim,
