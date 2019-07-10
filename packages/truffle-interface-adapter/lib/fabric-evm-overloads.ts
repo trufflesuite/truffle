@@ -4,15 +4,15 @@ export const FabricEvmDefinition = {
   async initNetworkType (web3: Web3Shim) {
     // web3 expects getId to return a hexString convertible to a number
     // for fabric-evm we ignore the hexToNumber output formatter
-    getId(web3);
+    overrides.getId(web3);
   }
 }
 
+const overrides = {
 // The ts-ignores are ignoring the checks that are
 // saying that web3.eth.net.getId is a function and doesn't
 // have a `method` property, which it does
-
-export function getId(web3: Web3Shim) {
+  "getId": (web3: Web3Shim) => {
   // @ts-ignore
   const _oldGetIdFormatter = web3.eth.net.getId.method.outputFormatter;
   // @ts-ignore
@@ -22,4 +22,5 @@ export function getId(web3: Web3Shim) {
     // let's just accept `fabric-evm` as a valid networkID for now.
     return hexId;
   };
-};
+  }
+}
