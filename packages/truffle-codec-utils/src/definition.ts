@@ -318,10 +318,7 @@ export namespace Definition {
   //returns undefined if you don't give it a FunctionDefinition or
   //VariableDeclaration
   export function mutability(node: AstDefinition): Mutability | undefined {
-    if(node.typeName) {
-      //for variable declarations, e.g.
-      node = node.typeName;
-    }
+    node = node.typeName || node;
     if(node.nodeType !== "FunctionDefinition" && node.nodeType !== "FunctionTypeName") {
       return undefined;
     }
@@ -501,42 +498,49 @@ export namespace Definition {
   }
 
   function parameterToAbi(node: AstDefinition, referenceDeclarations: AstReferences, checkIndexed: boolean = false): AbiUtils.AbiParameter {
-    let name = node.name; //may be the empty string
-    let abiTypeString = toAbiType(node, referenceDeclarations);
+    let name = node.name; //may be the empty string... or even undefined for a base type
     let components: AbiUtils.AbiParameter[];
-    if(abiTypeString.startsWith("tuple")) {
-      let baseType = node.typeName;
-      while(typeClass(baseType) === "array") {
-        baseType = baseDefinition(baseType);
-      }
-      let id = typeId(baseType);
+    let indexed: boolean;
+    if(checkIndexed) {
+      indexed = node.indexed; //note: may be undefined for a base type
+    }
+    //is this an array? if so use separate logic
+    if(typeClass(node) === "array") {
+      let baseType = node.typeName ? node.typeName.baseType : node.baseType;
+      let baseAbi = parameterToAbi(baseType, referenceDeclarations, checkIndexed);
+      let arraySuffix = isDynamicArray(node)
+        ? `[]`
+        : `[${staticLength(node)}]`;
+      return {
+        name,
+        type: baseAbi.type + arraySuffix,
+        indexed,
+        components: baseAbi.components
+      };
+    }
+    let abiTypeString = toAbiType(node, referenceDeclarations);
+    //otherwise... is it a struct? if so we need to populate components
+    if(typeClass(node) === "struct") {
+      let id = typeId(node);
       let referenceDeclaration = referenceDeclarations[id];
       if(referenceDeclaration === undefined) {
-        let typeToDisplay = typeString(baseType);
+        let typeToDisplay = typeString(node);
         throw new UnknownUserDefinedTypeError(id, typeToDisplay);
       }
       components = parametersToAbi(referenceDeclaration.members, referenceDeclarations, checkIndexed);
     }
-    if(checkIndexed) {
-      return {
-        name,
-        type: abiTypeString,
-        indexed: node.indexed,
-        components
-      };
-    }
-    else {
-      return {
-        name,
-        type: abiTypeString,
-        components
-      };
-    }
+    return {
+      name, //may be empty string but should only be undefined in recursive calls
+      type: abiTypeString,
+      indexed, //undefined if !checkedIndex
+      components //undefined if not a struct or (multidim) array of structs
+    };
   }
 
-  //note: this is only meant for types that can go in the ABI
+  //note: this is only meant for non-array types that can go in the ABI
   //it returns how that type is notated in the ABI -- just the string,
   //to be clear, not components of tuples
+  //again, NOT FOR ARRAYS
   function toAbiType(node: AstDefinition, referenceDeclarations: AstReferences): string {
     let basicType = typeClassLongForm(node); //get that whole first segment!
     switch(basicType) {
@@ -554,11 +558,6 @@ export namespace Definition {
         let numOptions = referenceDeclaration.members.length;
         let bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
         return `uint${bits}`;
-      case "array":
-        let baseType = toAbiType(baseDefinition(node), referenceDeclarations);
-        return isDynamicArray(node)
-          ? `${baseType}[]`
-          : `${baseType}[${staticLength(node)}]`;
       default:
         return basicType;
         //note that: int/uint/fixed/ufixed/bytes will have their size and such left on;
@@ -566,41 +565,55 @@ export namespace Definition {
         //external functions will be reduced to "function" (and internal functions shouldn't
         //be passed in!)
         //(mappings shouldn't be passed in either obviously)
+        //(nor arrays :P )
     }
   }
 
   function getterDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiUtils.FunctionAbiEntry {
+    debug("getter node: %O", node);
     let name = node.name;
-    let inputs = getterInputs(node); //does not depend on reference declarations!
-    let outputs = getterOutputs(node, referenceDeclarations);
+    let { inputs, outputs, isBaseStruct } = getterParameters(node, referenceDeclarations);
+    let inputsAbi = washNames(parametersToAbi(inputs, referenceDeclarations));
+    debug("inputsAbi: %O", inputsAbi);
+    let outputsAbi = isBaseStruct
+      ? parametersToAbi(outputs, referenceDeclarations) //output parameters for a struct getter are named!
+      : washNames(parametersToAbi(outputs, referenceDeclarations));
+    debug("outputsAbi: %O", inputsAbi);
     return {
       type: "function",
       name,
-      inputs,
-      outputs,
+      inputs: inputsAbi,
+      outputs: outputsAbi,
       stateMutability: "view",
       constant: true,
       payable: false
     };
   }
 
-  //array getters & mapping getters take inputs; if stacked they take multiple inputs
-  //struct getters do not take inputs
-  function getterInputs(node: AstDefinition): AbiUtils.AbiParameter[] {
-    let inputsAsDefinitions = getterInputsAsDefinitions(node);
-    return inputsAsDefinitions.map(
-      inputDefinition => {
-        let input = parameterToAbi(inputDefinition, null); //it's an elementary type; no need for ref declarations
-        input.name = ""; //this might be garbage, let's overwrite it with the correct value (empty string)
-        return input;
-      }
-    );
+  function washNames(parameters: AbiUtils.AbiParameter[]): AbiUtils.AbiParameter[] {
+    return parameters.map(parameter => ({...parameter, name: ""}));
   }
 
-  //this is similar to the above, but it returns an array of definitions instead
-  //(for use by the allocator)
-  export function getterInputsAsDefinitions(node: AstDefinition): AstDefinition[] {
-    node = node.typeName;
+  //how getter parameters work:
+  //INPUT:
+  //types other than arrays and mappings take no input.
+  //array getters take uint256 input. mapping getters take input of their key type.
+  //if arrays, mappings, stacked, then takes multiple inputs, in order from outside
+  //to in.
+  //These parameters are unnamed.
+  //OUTPUT:
+  //if base type (beneath mappings & arrays) is not a struct, returns that.
+  //(This return parameter has no name -- it is *not* named for the variable!)
+  //if it is a struct, returns multiple outputs, one for each member of the struct,
+  //*except* arrays and mappings.  (And they have names, the names of the members.)
+  //important note: inner structs within a struct are just returned, not
+  //partially destructured like the outermost struct!  Yes, this is confusing.
+  
+  //here's a simplified function that just does the inputs. it's for use by the
+  //allocator. I'm keeping it separate because it doesn't require a
+  //referenceDeclarations argument.
+  export function getterInputs(node: AstDefinition): AstDefinition[] {
+    node = node.typeName || node;
     let inputs: AstDefinition[] = [];
     while(typeClass(node) === "array" || typeClass(node) === "mapping") {
       let keyNode = keyDefinition(node); //note: if node is an array, this spoofs up a uint256 definition
@@ -617,15 +630,16 @@ export namespace Definition {
     return inputs;
   }
 
-  //most getters return a single output.
-  //however, struct getters (or array of struct, or mapping to struct)
-  //returns multiple outputs, those outputs being the members of the
-  //struct *other* than arrays or mappings.
-  //Note that any deeper nested structs are *not* split up or filtered
-  //in this way!
-  function getterOutputs(node: AstDefinition, referenceDeclarations: AstReferences): AbiUtils.AbiParameter[] {
-    let baseNode: AstDefinition = node.typeName;
+  //again, despite the duplication, this function is kept separate from the
+  //more straightforward getterInputs function because, since it has to handle
+  //outputs too, it requires referenceDeclarations
+  function getterParameters(node: AstDefinition, referenceDeclarations: AstReferences): {inputs: AstDefinition[], outputs: AstDefinition[], isBaseStruct: boolean} {
+    let baseNode: AstDefinition = node.typeName || node;
+    let inputs: AstDefinition[] = [];
     while(typeClass(baseNode) === "array" || typeClass(baseNode) === "mapping") {
+      let keyNode = keyDefinition(baseNode); //note: if baseNode is an array, this spoofs up a uint256 definition
+      inputs.push(keyNode);
+      debug("pushed: %O", keyNode);
       switch(typeClass(baseNode)) {
         case "array":
           baseNode = baseNode.baseType;
@@ -644,18 +658,14 @@ export namespace Definition {
         let typeToDisplay = typeString(baseNode);
         throw new UnknownUserDefinedTypeError(id, typeToDisplay);
       }
-      return referenceDeclaration.members.filter(
+      let outputs = referenceDeclaration.members.filter(
         member => typeClass(member) !== "array" && typeClass(member) !== "mapping"
-      ).map(
-        member => parameterToAbi(member, referenceDeclarations)
       );
+      return { inputs, outputs, isBaseStruct: true };
     }
     else {
-      return [{
-        name: "",
-        type: toAbiType(baseNode, referenceDeclarations),
-        //it's not a struct or an array; there are no components
-      }];
+      //only one output
+      return { inputs, outputs: [baseNode], isBaseStruct: false };
     }
   }
 
