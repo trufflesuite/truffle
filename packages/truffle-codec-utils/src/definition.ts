@@ -409,7 +409,7 @@ export namespace Definition {
       nodeType: "VariableDeclaration",
       typeDescriptions: {
         typeIdentifier: "t_contract$_" + formattedName + "_$" + contractId,
-	typeString: contractKind + " " + contractName
+        typeString: contractKind + " " + contractName
       }
     }
   }
@@ -572,13 +572,9 @@ export namespace Definition {
   function getterDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiUtils.FunctionAbiEntry {
     debug("getter node: %O", node);
     let name = node.name;
-    let { inputs, outputs, isBaseStruct } = getterParameters(node, referenceDeclarations);
-    let inputsAbi = washNames(parametersToAbi(inputs, referenceDeclarations));
-    debug("inputsAbi: %O", inputsAbi);
-    let outputsAbi = isBaseStruct
-      ? parametersToAbi(outputs, referenceDeclarations) //output parameters for a struct getter are named!
-      : washNames(parametersToAbi(outputs, referenceDeclarations));
-    debug("outputsAbi: %O", inputsAbi);
+    let { inputs, outputs } = getterParameters(node, referenceDeclarations);
+    let inputsAbi = parametersToAbi(inputs, referenceDeclarations);
+    let outputsAbi = parametersToAbi(outputs, referenceDeclarations);
     return {
       type: "function",
       name,
@@ -588,10 +584,6 @@ export namespace Definition {
       constant: true,
       payable: false
     };
-  }
-
-  function washNames(parameters: AbiUtils.AbiParameter[]): AbiUtils.AbiParameter[] {
-    return parameters.map(parameter => ({...parameter, name: ""}));
   }
 
   //how getter parameters work:
@@ -617,7 +609,7 @@ export namespace Definition {
     let inputs: AstDefinition[] = [];
     while(typeClass(node) === "array" || typeClass(node) === "mapping") {
       let keyNode = keyDefinition(node); //note: if node is an array, this spoofs up a uint256 definition
-      inputs.push(keyNode);
+      inputs.push({...keyNode, name: ""}); //getter input params have no name
       switch(typeClass(node)) {
         case "array":
           node = node.baseType;
@@ -633,13 +625,12 @@ export namespace Definition {
   //again, despite the duplication, this function is kept separate from the
   //more straightforward getterInputs function because, since it has to handle
   //outputs too, it requires referenceDeclarations
-  function getterParameters(node: AstDefinition, referenceDeclarations: AstReferences): {inputs: AstDefinition[], outputs: AstDefinition[], isBaseStruct: boolean} {
+  function getterParameters(node: AstDefinition, referenceDeclarations: AstReferences): {inputs: AstDefinition[], outputs: AstDefinition[]} {
     let baseNode: AstDefinition = node.typeName || node;
     let inputs: AstDefinition[] = [];
     while(typeClass(baseNode) === "array" || typeClass(baseNode) === "mapping") {
       let keyNode = keyDefinition(baseNode); //note: if baseNode is an array, this spoofs up a uint256 definition
-      inputs.push(keyNode);
-      debug("pushed: %O", keyNode);
+      inputs.push({...keyNode, name: ""}); //again, getter input params have no name
       switch(typeClass(baseNode)) {
         case "array":
           baseNode = baseNode.baseType;
@@ -661,11 +652,11 @@ export namespace Definition {
       let outputs = referenceDeclaration.members.filter(
         member => typeClass(member) !== "array" && typeClass(member) !== "mapping"
       );
-      return { inputs, outputs, isBaseStruct: true };
+      return { inputs, outputs }; //no need to wash name!
     }
     else {
-      //only one output
-      return { inputs, outputs: [baseNode], isBaseStruct: false };
+      //only one output; it's just the base node, with its name washed
+      return { inputs, outputs: [{...baseNode, name: ""}] };
     }
   }
 
