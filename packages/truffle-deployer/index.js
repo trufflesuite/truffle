@@ -5,7 +5,7 @@ const Deployment = require("./src/deployment");
 const link = require("./src/actions/link");
 const create = require("./src/actions/new");
 const Legacy = require("truffle-legacy-system");
-const { getSupportedNetworks } = require("truffle-interface-adapter");
+const { getLegacyNetworkTypes } = require("truffle-interface-adapter");
 
 class Deployer extends Deployment {
   constructor(options) {
@@ -45,7 +45,7 @@ class Deployer extends Deployment {
     const contract = args.shift();
     const networkType = this.networks[this.network].type;
 
-    if (networkType && getSupportedNetworks().includes(networkType)) {
+    if (networkType && getLegacyNetworkTypes().includes(networkType)) {
       if (Array.isArray(contract))
         return this.queueOrExec(Legacy.deployMany(contract, this));
       else return this.queueOrExec(Legacy.deploy(contract, args, this));
