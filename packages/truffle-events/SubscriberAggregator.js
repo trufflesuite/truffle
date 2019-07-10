@@ -23,7 +23,9 @@ class SubscriberAggregator {
 
   updateSubscriberOptions(newOptions) {
     let { logger, muteLogging } = newOptions;
-    if (muteLogging) logger = () => {};
+    if (muteLogging) {
+      logger = { log: () => {} };
+    }
     this.subscribers.forEach(subscriber => {
       subscriber.updateOptions({
         logger

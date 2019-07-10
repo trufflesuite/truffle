@@ -10,8 +10,8 @@ class Subscriber {
     // Object for storing unsubscribe methods for non-globbed listeners
     this.unsubscribeListener = {};
 
-    if (initialization) initialization.bind(this)();
     if (logger) this.logger = logger;
+    if (initialization) initialization.bind(this)();
 
     const { globbedHandlers, nonGlobbedHandlers } = sortHandlers(handlers);
 

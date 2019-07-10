@@ -101,25 +101,20 @@ const Box = {
       options
     );
 
-    if (typeof options === "function") {
-      callback = options;
-    }
+    if (typeof options === "function") callback = options;
 
-    if (setGracefulCleanup) {
-      tmp.setGracefulCleanup();
-    }
+    if (setGracefulCleanup) tmp.setGracefulCleanup();
 
+    let config = new Config();
     const tmpDir = tmp.dirSync({ unsafeCleanup });
     Box.unbox(
       `https://github.com/trufflesuite/truffle-init-${name}`,
       tmpDir.name,
-      options
+      options,
+      config
     )
       .then(() => {
-        const config = Config.load(
-          path.join(tmpDir.name, "truffle-config.js"),
-          {}
-        );
+        config = Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
         callback(null, config);
       })
       .catch(callback);
