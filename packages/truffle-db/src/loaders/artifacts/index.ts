@@ -220,10 +220,14 @@ const AddContractInstances = gql`
 `;
 
 const AddNetworks = gql`
+  input HistoricBlockInput {
+    height: Int!
+    hash: String!
+  }
   input NetworkInput {
     name: String
     networkID: NetworkID!
-    historicBlock: BlockInput
+    historicBlock: HistoricBlockInput!
     fork: NetworkInput
   }
 
@@ -235,7 +239,10 @@ const AddNetworks = gql`
         networks {
           id
           networkID
-          historicBlock
+          historicBlock {
+            height
+            hash
+          }
           fork
         }
       }
@@ -372,12 +379,13 @@ export class ArtifactsLoader {
         if(networkID) {
           let filteredNetwork = Object.entries(artifactsNetworks).filter((network) => network[0] == networkID);
           //assume length of filteredNetwork is 1 -- shouldn't have multiple networks with the same id
-          if(filteredNetwork.length > 1) {
+          if(filteredNetwork.length > 0) {
             const transaction = await web3.eth.getTransaction(filteredNetwork[0][1]["transactionHash"]);
             const historicBlock = {
               height: transaction.blockNumber,
               hash: transaction.blockHash
             }
+
             const networksAdd = await this.db.query(AddNetworks,
             {
               networks:
@@ -387,6 +395,7 @@ export class ArtifactsLoader {
                 historicBlock: historicBlock
               }]
             });
+
             const networkId = networksAdd.data.workspace.networksAdd.networks[0].id;
             configNetworks.push({
               contract: contractName,
