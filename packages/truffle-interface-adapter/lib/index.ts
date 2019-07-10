@@ -1,4 +1,4 @@
-export function getSupportedNetworks() {
+export function getLegacyNetworkTypes() {
   return ["quorum", "fabric-evm"];
 };
 
