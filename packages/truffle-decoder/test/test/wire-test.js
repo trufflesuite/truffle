@@ -163,10 +163,12 @@ contract("WireTest", _accounts => {
     assert.strictEqual(getterDecoding1.name, "deepStruct");
     assert.strictEqual(getterDecoding1.class.typeName, "WireTest");
     assert.lengthOf(getterDecoding1.arguments, 2);
+    assert.isUndefined(getterDecoding1.arguments[0].name);
     assert.strictEqual(
       getterDecoding1.arguments[0].value.nativize(),
       getter1Args[0]
     );
+    assert.isUndefined(getterDecoding1.arguments[1].name);
     assert.strictEqual(
       getterDecoding1.arguments[1].value.nativize(),
       getter1Args[1]
@@ -176,10 +178,12 @@ contract("WireTest", _accounts => {
     assert.strictEqual(getterDecoding2.name, "deepString");
     assert.strictEqual(getterDecoding2.class.typeName, "WireTest");
     assert.lengthOf(getterDecoding2.arguments, 2);
+    assert.isUndefined(getterDecoding2.arguments[0].name);
     assert.strictEqual(
       getterDecoding2.arguments[0].value.nativize(),
       getter2Args[0]
     );
+    assert.isUndefined(getterDecoding2.arguments[1].name);
     assert.strictEqual(
       getterDecoding2.arguments[1].value.nativize(),
       getter2Args[1]
