@@ -207,7 +207,7 @@ describe("truffle-box Box", () => {
       );
       const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
 
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options).then(() => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config).then(() => {
         assert(inquirer.prompt.called);
         assert(
           fse.existsSync(truffleConfigPath),
