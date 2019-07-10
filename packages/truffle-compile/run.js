@@ -275,9 +275,7 @@ function detectErrors({
 
   // extract messages
   let errors = rawErrors.map(({ formattedMessage }) => formattedMessage).join();
-  const warnings = rawWarnings
-    .map(({ formattedMessage }) => formattedMessage)
-    .join();
+  const warnings = rawWarnings.map(({ formattedMessage }) => formattedMessage);
 
   if (errors.includes("requires different compiler version")) {
     const contractSolcVer = errors.match(/pragma solidity[^;]*/gm)[0];

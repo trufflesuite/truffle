@@ -145,7 +145,12 @@ class VersionRange extends LoadingStrategy {
       events.emit("fetchSolcList:fail");
       throw this.errors("noUrl");
     }
-    return request(this.config.compilerRoots[index] + "list.json")
+    const { compilerRoots } = this.config;
+    const url =
+      compilerRoots[compilerRoots.length] === "/"
+        ? `${compilerRoots[index]}list.json`
+        : `${compilerRoots[index]}/list.json`;
+    return request(url)
       .then(list => {
         events.emit("fetchSolcList:succeed");
         return JSON.parse(list);

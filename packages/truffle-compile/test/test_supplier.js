@@ -20,9 +20,6 @@ describe("CompilerSupplier", function() {
     let compileConfig;
 
     const options = {
-      events: {
-        emit: () => {}
-      },
       contracts_directory: "",
       solc: "",
       quiet: true
@@ -72,7 +69,8 @@ describe("CompilerSupplier", function() {
         }
       };
 
-      compile(oldPragmaPinSource, options, (err, result) => {
+      const config = new Config().merge(options);
+      compile(oldPragmaPinSource, config, (err, result) => {
         if (err) return done(err);
 
         assert(result["OldPragmaPin"].contract_name === "OldPragmaPin");
@@ -90,7 +88,8 @@ describe("CompilerSupplier", function() {
         }
       };
 
-      compile(oldPragmaFloatSource, options, (err, result) => {
+      const config = new Config().merge(options);
+      compile(oldPragmaFloatSource, config, (err, result) => {
         if (err) {
           assert(false);
           done();

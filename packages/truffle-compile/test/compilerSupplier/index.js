@@ -8,12 +8,10 @@ const {
   Local,
   VersionRange
 } = require("../../compilerSupplier/loadingStrategies");
+const Config = require("truffle-config");
+const config = new Config();
 let supplier;
-const supplierOptions = {
-  events: {
-    emit: () => {}
-  }
-};
+const supplierOptions = { events: config.events };
 
 describe("CompilerSupplier", () => {
   describe("load()", () => {
@@ -167,7 +165,7 @@ describe("CompilerSupplier", () => {
 
       it("throws an error on incorrect user url", done => {
         supplierOptions.solcConfig = {
-          version: "0.4.12",
+          version: "0.5.6",
           compilerRoots: ["https://f00dbabe"]
         };
         supplier = new CompilerSupplier(supplierOptions);
