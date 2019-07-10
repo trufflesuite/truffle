@@ -242,7 +242,6 @@ describe("truffle unbox [ @standalone ]", () => {
             "unbox git@github.com:truffle-box/bare-box#truffle-test-branch",
             config,
             () => {
-              console.log("the dir --> %o", fse.readdirSync(tempDir.name));
               assert(
                 fse.existsSync(path.join(tempDir.name, "truffle-config.js"))
               );
