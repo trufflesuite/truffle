@@ -238,11 +238,12 @@ export class Workspace {
     return {
       networks: Promise.all(networks.map(
         async (networkInput) => {
-          const { networkID } = networkInput;
+          const { networkID, historicBlock } = networkInput;
           //for now only have a hash of the networkID for an ID here, but this is insufficient
           // will be using a hash of historicBlock + height for the network id
           const id = soliditySha3(jsonStableStringify({
-            networkID: networkID
+            networkID: networkID,
+            historicBlock: historicBlock
           }));
 
           const network = await this.network({ id });
@@ -255,7 +256,7 @@ export class Workspace {
               _id: id
             });
 
-            return { networkID, id };
+            return { networkID, historicBlock, id };
           }
         }
       ))

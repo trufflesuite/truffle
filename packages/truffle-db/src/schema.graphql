@@ -56,7 +56,14 @@ type AST {
 
 type Network {
   name: String
-  networkID: NetworkID
+  networkID: NetworkID!
+  historicBlock: HistoricBlock!
+  fork: Network
+}
+
+type HistoricBlock {
+  height: Int!
+  hash: String!
 }
 
 type LinkValue {

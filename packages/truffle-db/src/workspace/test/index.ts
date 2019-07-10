@@ -529,10 +529,14 @@ query GetNetwork($id: ID!) {
 }`;
 
 const AddNetworks = gql`
-mutation AddNetworks($networkID: NetworkID!) {
+mutation AddNetworks($networkID: NetworkID!, $height: Int!, $hash: String!) {
   networksAdd(input: {
     networks: [{
       networkID: $networkID
+      historicBlock: {
+        height: $height
+        hash: $hash
+      }
     }]
   }) {
     networks {
@@ -545,14 +549,29 @@ mutation AddNetworks($networkID: NetworkID!) {
 describe("Network", () => {
   it("adds network", async () => {
     const client = new WorkspaceClient();
-    const expectedId = generateId({ networkID: Object.keys(Migrations.networks)[0] })
+    const expectedId = generateId({
+      networkID: Object.keys(Migrations.networks)[0],
+      historicBlock: {
+        height: 1,
+        hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
+      }
+    })
     const variables = {
-      networkID: Object.keys(Migrations.networks)[0]
+      networkID: Object.keys(Migrations.networks)[0],
+      height: 1,
+      hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
     }
 
     //add network
     {
-      const data = await client.execute(AddNetworks, { networkID: variables.networkID });
+      const data = await client.execute(AddNetworks,
+        {
+          networkID: variables.networkID,
+          height: variables.height,
+          hash: variables.hash
+        }
+      );
+
       expect(data).toHaveProperty("networksAdd");
 
       const { networksAdd } = data;
@@ -623,10 +642,18 @@ describe("Contract Instance", () => {
   let networkAdded;
 
   beforeEach(async () => {
-    const network = { networkID: Object.keys(Migrations.networks)[0]};
+    const network = {
+      networkID: Object.keys(Migrations.networks)[0],
+      historicBlock: {
+        height: 1,
+        hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
+      }
+    };
     const address = Object.values(Migrations.networks)[0]["address"];
     networkAdded = await client.execute(AddNetworks, {
-      networkID: Object.keys(Migrations.networks)[0]
+      networkID: Object.keys(Migrations.networks)[0],
+      height: 1,
+      hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
     });
     expectedId = generateId({ address: address, network: { id: networkAdded.networksAdd.networks[0].id }})
 
