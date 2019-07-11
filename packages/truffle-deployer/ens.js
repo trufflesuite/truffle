@@ -1,4 +1,8 @@
 const ENSJS = require("ethereum-ens");
+const contract = require("truffle-contract");
+// Test code ------->
+const sha3 = require("web3").utils.sha3;
+// End test code ------->
 
 class ENS {
   constructor({ provider }) {
@@ -6,9 +10,15 @@ class ENS {
   }
 
   async deployNewENSRegistry(from) {
-    const ENSRegistry = this.resolver.require("@ensdomains/ens/ENSRegistry");
+    const ENSRegistryArtifact = require("@ensdomains/ens").ENSRegistry;
+    const ENSRegistry = contract(ENSRegistryArtifact);
     ENSRegistry.setProvider(this.provider);
     const ensRegistry = await ENSRegistry.new({ from });
+    this.currentRegistryAddress = ensRegistry.address;
+    //// Test code -------->
+    await ensRegistry.setSubnodeOwner("0x0", sha3("tyler"), from, { from });
+
+    /// End test code ------->
     return ensRegistry;
   }
 
@@ -30,7 +40,7 @@ class ENS {
     }
   }
 
-  async ensureResolverExists(from) {
+  async ensureResolverExists({ from, name }) {
     // See if the resolver is set, if not then set it
     let resolvedAddress, publicResolver;
     try {
@@ -38,9 +48,9 @@ class ENS {
       return { resolvedAddress };
     } catch (error) {
       if (error.message !== "ENS name not found") throw error;
-      const PublicResolver = this.resolver.require(
-        "@ensdomains/resolver/PublicResolver"
-      );
+      const PublicResolverArtifact = require("@ensdomains/resolver")
+        .PublicResolver;
+      const PublicResolver = contract(PublicResolverArtifact);
       PublicResolver.setProvider(this.provider);
       publicResolver = await PublicResolver.new(this.currentRegistryAddress, {
         from
@@ -50,7 +60,7 @@ class ENS {
     }
   }
 
-  async register({ address, name, from, registryAddress }) {
+  async setAddress({ address, name, from, registryAddress }) {
     this.currentRegistryAddress = registryAddress;
     this.setENSJS(registryAddress);
 
@@ -75,7 +85,7 @@ class ENS {
       throw new Error(message);
     }
 
-    const { resolvedAddress } = await this.ensureResolverExists(from);
+    const { resolvedAddress } = await this.ensureResolverExists({ from, name });
 
     // If the resolver points to a different address or is not set,
     // then set it to the specified address
