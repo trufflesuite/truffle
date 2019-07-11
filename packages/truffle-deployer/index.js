@@ -24,7 +24,10 @@ class Deployer extends Deployment {
     this.provider = options.provider;
     this.basePath = options.basePath || process.cwd();
     this.known_contracts = {};
-    this.ens = new ENS({ provider: options.provider });
+    this.ens = new ENS({
+      provider: options.provider,
+      ensSettings: options.ens
+    });
 
     (options.contracts || []).forEach(
       contract => (this.known_contracts[contract.contract_name] = contract)

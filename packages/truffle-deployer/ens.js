@@ -5,7 +5,8 @@ const sha3 = require("web3").utils.sha3;
 // End test code ------->
 
 class ENS {
-  constructor({ provider }) {
+  constructor({ provider, ensSettings }) {
+    this.ensSettings = ensSettings;
     this.provider = provider;
   }
 
@@ -14,7 +15,7 @@ class ENS {
     const ENSRegistry = contract(ENSRegistryArtifact);
     ENSRegistry.setProvider(this.provider);
     const ensRegistry = await ENSRegistry.new({ from });
-    this.currentRegistryAddress = ensRegistry.address;
+    this.ensSettings.registryAddress = ensRegistry.address;
     //// Test code -------->
     await ensRegistry.setSubnodeOwner("0x0", sha3("tyler"), from, { from });
 
@@ -32,8 +33,8 @@ class ENS {
         error.message ===
         "This contract object doesn't have address set yet, please set an address first.";
       if (noRegistryFound) {
-        const registry = await this.deployNewENSRegistry(from);
-        this.setENSJS(registry.address);
+        await this.deployNewENSRegistry(from);
+        this.setENSJS();
       } else {
         throw error;
       }
@@ -52,17 +53,17 @@ class ENS {
         .PublicResolver;
       const PublicResolver = contract(PublicResolverArtifact);
       PublicResolver.setProvider(this.provider);
-      publicResolver = await PublicResolver.new(this.currentRegistryAddress, {
-        from
-      });
+      publicResolver = await PublicResolver.new(
+        this.ensSettings.registryAddress,
+        { from }
+      );
       await this.ensjs.setResolver(name, publicResolver.address, { from });
       return { resolvedAddress: null };
     }
   }
 
-  async setAddress({ address, name, from, registryAddress }) {
-    this.currentRegistryAddress = registryAddress;
-    this.setENSJS(registryAddress);
+  async setAddress({ address, name, from }) {
+    this.setENSJS();
 
     await this.ensureRegistryExists(from);
 
@@ -94,8 +95,8 @@ class ENS {
     }
   }
 
-  setENSJS(registryAddress) {
-    this.ensjs = new ENSJS(this.provider, registryAddress);
+  setENSJS() {
+    this.ensjs = new ENSJS(this.provider, this.ensSettings.registryAddress);
   }
 }
 
