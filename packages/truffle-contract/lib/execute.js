@@ -118,11 +118,17 @@ const execute = {
       params.to = address;
       params = utils.merge(constructor.class_defaults, params);
 
-      const { web3 } = constructor;
-      if (args.length && methodABI) {
-        args = await utils.ens.convertENSNames(args, methodABI, web3);
+      if (this.ens && this.ens.enabled) {
+        const { web3 } = constructor;
+        const processedValues = await utils.ens.convertENSNames({
+          inputArgs: args,
+          inputParams: params,
+          methodABI,
+          web3
+        });
+        args = processedValues.args;
+        params = processedValues.params;
       }
-      params = await utils.ens.convertENSParamsNames(params, web3);
       let result;
       await constructor.detectNetwork();
       args = utils.convertToEthersBN(args);
@@ -158,10 +164,16 @@ const execute = {
       constructor
         .detectNetwork()
         .then(async network => {
-          if (args.length && methodABI) {
-            args = await utils.ens.convertENSNames(args, methodABI, web3);
+          if (this.ens && this.ens.enabled) {
+            const processedValues = await utils.ens.convertENSNames({
+              inputArgs: args,
+              inputParams: params,
+              methodABI,
+              web3
+            });
+            args = processedValues.args;
+            params = processedValues.params;
           }
-          params = await utils.ens.convertENSParamsNames(params, web3);
           args = utils.convertToEthersBN(args);
           params.to = address;
           params.data = fn ? fn(...args).encodeABI() : undefined;

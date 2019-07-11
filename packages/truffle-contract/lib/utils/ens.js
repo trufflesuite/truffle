@@ -1,6 +1,17 @@
 const ENSJS = require("ethereum-ens");
 
 module.exports = {
+  convertENSNames: async function({ inputArgs, methodABI, inputParams, web3 }) {
+    let args;
+    if (inputArgs.length && methodABI) {
+      args = await this.convertENSArgsNames(inputArgs, methodABI, web3);
+    } else {
+      args = inputArgs;
+    }
+    const params = await this.connvertENSParamsNames(inputParams, web3);
+    return { args, params };
+  },
+
   getNewENSJS: function(provider) {
     return new ENSJS(provider);
   },
@@ -9,7 +20,7 @@ module.exports = {
     return ensjs.resolver(name).addr();
   },
 
-  convertENSNames: function(inputArgs, methodABI, web3) {
+  convertENSArgsNames: function(inputArgs, methodABI, web3) {
     if (methodABI.inputs.length === 0) return inputArgs;
     const { isAddress } = web3.utils;
     const ensjs = this.getNewENSJS(web3.currentProvider);
