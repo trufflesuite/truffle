@@ -15,7 +15,7 @@ module.exports = {
     const ensjs = this.getNewENSJS(web3.currentProvider);
 
     const convertedNames = inputArgs.map((argument, index) => {
-      if (index + 1 >= methodABI.inputs.length) {
+      if (index + 1 > methodABI.inputs.length) {
         return argument;
       } else if (methodABI.inputs[index].type === "address") {
         // Check all address arguments for ENS names
