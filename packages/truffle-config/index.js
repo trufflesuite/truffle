@@ -252,7 +252,23 @@ class Config {
           );
         }
       },
-      genesis_time: {}
+      genesis_time: {
+        get() {
+          try {
+            return this.network_config.genesis_time;
+          } catch (e) {
+            return "we were unable to return this.network_config.genesis_time";
+          }
+        },
+        set() {
+          const genesisDate = new Date(this.genesis_time);
+          if (genesisDate == "Invalid Date") {
+            throw new Error(
+              `${this.genesis_time} is an Invalid Date! Please set a valid Date.`
+            );
+          }
+        }
+      }
     };
 
     Object.keys(props).forEach(prop => {
