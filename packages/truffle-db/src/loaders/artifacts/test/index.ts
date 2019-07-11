@@ -312,6 +312,15 @@ describe("Compilation", () => {
     await loader.load();
   });
 
+  afterAll(async() => {
+    await Promise.all(artifacts.map(async(contract, index) => {
+    let migratedArtifact = JSON.parse(await fse.readFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])));
+    migratedArtifact.networks = {};
+    await fse.remove(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]));
+    await fse.writeFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]), JSON.stringify(migratedArtifact, null, 2));
+    }));
+  });
+
   it("loads compilations", async () => {
     const compilationsQuery = await Promise.all(compilationIds.map(
       (compilationId) => {
