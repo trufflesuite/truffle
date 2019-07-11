@@ -1,29 +1,48 @@
 const ENSJS = require("ethereum-ens");
 
 module.exports = {
-  convertENSNames: async function({ inputArgs, methodABI, inputParams, web3 }) {
+  convertENSNames: async function({
+    ensSettings,
+    inputArgs,
+    methodABI,
+    inputParams,
+    web3
+  }) {
+    const { registryAddress } = ensSettings;
     let args;
     if (inputArgs.length && methodABI) {
-      args = await this.convertENSArgsNames(inputArgs, methodABI, web3);
+      args = await this.convertENSArgsNames(
+        inputArgs,
+        methodABI,
+        web3,
+        registryAddress
+      );
     } else {
       args = inputArgs;
     }
-    const params = await this.connvertENSParamsNames(inputParams, web3);
+    const params = await this.connvertENSParamsNames(
+      inputParams,
+      web3,
+      registryAddress
+    );
     return { args, params };
   },
 
-  getNewENSJS: function(provider) {
-    return new ENSJS(provider);
+  getNewENSJS: function({ provider, registryAddress }) {
+    return new ENSJS(provider, registryAddress);
   },
 
   resolveNameToAddress: function(name, ensjs) {
     return ensjs.resolver(name).addr();
   },
 
-  convertENSArgsNames: function(inputArgs, methodABI, web3) {
+  convertENSArgsNames: function(inputArgs, methodABI, web3, registryAddress) {
     if (methodABI.inputs.length === 0) return inputArgs;
     const { isAddress } = web3.utils;
-    const ensjs = this.getNewENSJS(web3.currentProvider);
+    const ensjs = this.getNewENSJS({
+      provider: web3.currentProvider,
+      registryAddress
+    });
 
     const convertedNames = inputArgs.map((argument, index) => {
       if (index + 1 > methodABI.inputs.length) {
@@ -40,10 +59,13 @@ module.exports = {
     return Promise.all(convertedNames);
   },
 
-  convertENSParamsNames: async function(params, web3) {
+  convertENSParamsNames: async function(params, web3, registryAddress) {
     const { isAddress } = web3.utils;
     if (params.from && !isAddress(params.from)) {
-      const ensjs = this.getNewENSJS(web3.currentProvider);
+      const ensjs = this.getNewENSJS({
+        provider: web3.currentProvider,
+        registryAddress
+      });
       const newFrom = await this.resolveNameToAddress(params.from, ensjs);
       return Object.assign({}, params, { from: newFrom });
     } else {

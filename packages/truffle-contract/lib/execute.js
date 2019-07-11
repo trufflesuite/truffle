@@ -121,6 +121,7 @@ const execute = {
       if (this.ens && this.ens.enabled) {
         const { web3 } = constructor;
         const processedValues = await utils.ens.convertENSNames({
+          ensSettings: this.ens,
           inputArgs: args,
           inputParams: params,
           methodABI,
@@ -166,6 +167,7 @@ const execute = {
         .then(async network => {
           if (this.ens && this.ens.enabled) {
             const processedValues = await utils.ens.convertENSNames({
+              ensSettings: this.ens,
               inputArgs: args,
               inputParams: params,
               methodABI,
