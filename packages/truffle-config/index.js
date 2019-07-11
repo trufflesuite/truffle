@@ -15,7 +15,8 @@ class Config {
     const default_tx_values = {
       gas: 6721975,
       gasPrice: 20000000000, // 20 gwei,
-      from: null
+      from: null,
+      genesis_time: "1/1/19"
     };
 
     // This is a list of multi-level keys with defaults
@@ -59,7 +60,8 @@ class Config {
       },
       logger: {
         log() {}
-      }
+      },
+      genesis_time: null
     };
 
     const resolveDirectory = value =>
@@ -249,7 +251,8 @@ class Config {
             "Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks"
           );
         }
-      }
+      },
+      genesis_time: {}
     };
 
     Object.keys(props).forEach(prop => {

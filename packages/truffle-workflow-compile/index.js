@@ -162,6 +162,8 @@ const Contracts = {
         }
       }
       logger.log();
+      logger.log(`Genesis Block time: ${config.genesis_time}`);
+      logger.log();
     }
   },
 
