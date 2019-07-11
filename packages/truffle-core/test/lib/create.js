@@ -11,15 +11,10 @@ var Artifactor = require("truffle-artifactor");
 describe("create", function() {
   var config;
 
-  before("Create a sandbox", function(done) {
-    this.timeout(10000);
-    Box.sandbox(function(err, result) {
-      if (err) return done(err);
-      config = result;
-      config.resolver = new Resolver(config);
-      config.artifactor = new Artifactor(config.contracts_build_directory);
-      done();
-    });
+  before("Create a sandbox", async () => {
+    config = await Box.sandbox("default");
+    config.resolver = new Resolver(config);
+    config.artifactor = new Artifactor(config.contracts_build_directory);
   });
 
   after("Cleanup tmp files", function(done) {
@@ -157,4 +152,4 @@ describe("create", function() {
       });
     });
   }); // it
-});
+}).timeout(10000);
