@@ -118,10 +118,10 @@ const execute = {
       params.to = address;
       params = utils.merge(constructor.class_defaults, params);
 
-      if (this.ens && this.ens.enabled) {
+      if (constructor.ens && constructor.ens.enabled) {
         const { web3 } = constructor;
         const processedValues = await utils.ens.convertENSNames({
-          ensSettings: this.ens,
+          ensSettings: constructor.ens,
           inputArgs: args,
           inputParams: params,
           methodABI,
@@ -165,9 +165,9 @@ const execute = {
       constructor
         .detectNetwork()
         .then(async network => {
-          if (this.ens && this.ens.enabled) {
+          if (constructor.ens && constructor.ens.enabled) {
             const processedValues = await utils.ens.convertENSNames({
-              ensSettings: this.ens,
+              ensSettings: constructor.ens,
               inputArgs: args,
               inputParams: params,
               methodABI,

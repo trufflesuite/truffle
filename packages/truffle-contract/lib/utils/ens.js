@@ -20,7 +20,7 @@ module.exports = {
     } else {
       args = inputArgs;
     }
-    const params = await this.connvertENSParamsNames(
+    const params = await this.convertENSParamsNames(
       inputParams,
       web3,
       registryAddress
