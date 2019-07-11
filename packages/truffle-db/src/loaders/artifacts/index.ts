@@ -211,7 +211,12 @@ const AddContractInstances = gql`
         contractInstances {
           address
           network {
+            name
             networkID
+            historicBlock
+          }
+          contract {
+            name
           }
         }
       }
