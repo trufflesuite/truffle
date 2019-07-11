@@ -23,6 +23,7 @@
     "require-nocache": "^1.0.0",
     "temp": "^0.8.3",
     "truffle-contract": "^4.0.24",
+    "typescript": "^3.5.3",
     "web3": "1.0.0-beta.37"
   },
   "publishConfig": {
