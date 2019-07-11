@@ -316,6 +316,7 @@ describe("Compilation", () => {
     await Promise.all(artifacts.map(async(contract, index) => {
     let migratedArtifact = JSON.parse(await fse.readFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])));
     migratedArtifact.networks = {};
+    migratedArtifact.updatedAt = '';
     await fse.remove(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]));
     await fse.writeFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]), JSON.stringify(migratedArtifact, null, 2));
     }));
