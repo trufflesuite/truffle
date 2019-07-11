@@ -8,21 +8,21 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-deployer/issues"
   },
-  "version": "3.0.24",
+  "version": "3.0.25",
   "main": "index.js",
   "scripts": {
     "test": "mocha --no-warnings --timeout 10000 --exit"
   },
   "dependencies": {
     "emittery": "^0.4.0",
-    "truffle-contract": "^4.0.23",
+    "truffle-contract": "^4.0.24",
     "truffle-expect": "^0.0.9"
   },
   "devDependencies": {
     "ganache-core": "2.5.7",
     "mocha": "5.2.0",
     "truffle-reporters": "^1.0.10",
-    "truffle-workflow-compile": "^2.0.22",
+    "truffle-workflow-compile": "^2.0.23",
     "web3": "1.0.0-beta.37"
   },
   "keywords": [
