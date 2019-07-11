@@ -103,7 +103,7 @@ class Command {
     // Check unsupported command line flag according to the option list in help
     try {
       // while in `console` & `develop`, input is passed as a string, not as an array
-      if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ")
+      if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ");
       const inputOptions = inputStrings
         .map(string => {
           return string.startsWith("--") ? string : null;
