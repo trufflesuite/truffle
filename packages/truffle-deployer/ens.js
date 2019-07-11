@@ -1,25 +1,21 @@
 const ENSJS = require("ethereum-ens");
 const contract = require("truffle-contract");
-// Test code ------->
 const sha3 = require("web3").utils.sha3;
-// End test code ------->
 
 class ENS {
   constructor({ provider, ensSettings }) {
     this.ensSettings = ensSettings;
     this.provider = provider;
+    this.devRegistry = null;
   }
 
-  async deployNewENSRegistry(from) {
+  async deployNewDevENSRegistry(from) {
     const ENSRegistryArtifact = require("@ensdomains/ens").ENSRegistry;
     const ENSRegistry = contract(ENSRegistryArtifact);
     ENSRegistry.setProvider(this.provider);
     const ensRegistry = await ENSRegistry.new({ from });
     this.ensSettings.registryAddress = ensRegistry.address;
-    //// Test code -------->
-    await ensRegistry.setSubnodeOwner("0x0", sha3("tyler"), from, { from });
-
-    /// End test code ------->
+    this.devRegistry = ensRegistry;
     return ensRegistry;
   }
 
@@ -33,7 +29,7 @@ class ENS {
         error.message ===
         "This contract object doesn't have address set yet, please set an address first.";
       if (noRegistryFound) {
-        await this.deployNewENSRegistry(from);
+        await this.deployNewDevENSRegistry(from);
         this.setENSJS();
       } else {
         throw error;
@@ -67,6 +63,10 @@ class ENS {
 
     await this.ensureRegistryExists(from);
 
+    if (this.devRegistry) {
+      await this.setNameOwner({ from, name });
+    }
+
     // Find the owner of the name and compare it to the "from" field
     const nameOwner = await this.ensjs.owner(name);
     // Future work:
@@ -93,6 +93,10 @@ class ENS {
     if (resolvedAddress !== address) {
       await this.ensjs.resolver(name).setAddr(address);
     }
+  }
+
+  async setNameOwner({ name, from }) {
+    await this.devRegistry.setSubnodeOwner("0x0", sha3(name), from, { from });
   }
 
   setENSJS() {
