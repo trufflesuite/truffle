@@ -114,7 +114,7 @@ class Command {
 
       const validOptions = result.command.help.options
         .map(item => {
-          let opt = item.option.split(" ")[0];
+          let opt = item.option.replace("=", " ").split(" ")[0];
           return opt.startsWith("--") ? opt : null;
         })
         .filter(item => {
