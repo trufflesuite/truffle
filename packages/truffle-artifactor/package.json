@@ -23,7 +23,7 @@
     "require-nocache": "^1.0.0",
     "temp": "^0.8.3",
     "truffle-contract": "^4.0.24",
-    "web3": "1.0.0-beta.37"
+    "web3": "https://github.com/ethereum/web3.js#release/1.0"
   },
   "publishConfig": {
     "access": "public"

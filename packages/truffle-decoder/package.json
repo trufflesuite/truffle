@@ -49,7 +49,7 @@
     "lodash.merge": "^4.6.1",
     "truffle-decode-utils": "^1.0.14",
     "utf8": "^3.0.0",
-    "web3": "1.0.0-beta.37"
+    "web3": "https://github.com/ethereum/web3.js#release/1.0"
   },
   "peerDependencies": {
     "truffle": "^5.0.14"
