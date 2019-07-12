@@ -150,16 +150,14 @@ const data = createSelectorTree({
     userDefinedTypes: {
       //user-defined types for passing to the decoder
       _: createLeaf(
-        ["../referenceDeclarations", "../scopes/inlined", "../contexts"],
-        (referenceDeclarations, scopes, contexts) => {
-          const types = ["ContractDefinition", "SourceUnit"];
-          //SourceUnit included as fallback
+        ["../referenceDeclarations", "/info/scopes", solidity.info.sources],
+        (referenceDeclarations, scopes, sources) => {
           return Object.assign(
             {},
             ...Object.entries(referenceDeclarations).map(([id, node]) => ({
               [id]: CodecUtils.Types.definitionToStoredType(
                 node,
-                contexts[findAncestorOfType(node, types, scopes).id].compiler,
+                sources[scopes[node.id].sourceId].compiler,
                 referenceDeclarations
               )
             }))
