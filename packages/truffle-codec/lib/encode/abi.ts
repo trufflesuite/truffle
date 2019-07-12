@@ -8,6 +8,8 @@ import utf8 from "utf8";
 //see: https://github.com/microsoft/TypeScript/issues/18758
 //so, I'm just going to have to throw in a bunch of type coercions >_>
 
+//NOTE: Tuple (as opposed to struct) is not supported yet!
+//Coming soon though!
 export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): Uint8Array | undefined {
   //errors can't be encoded
   if(input.kind === "error") {

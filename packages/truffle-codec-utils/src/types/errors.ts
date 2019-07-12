@@ -202,6 +202,15 @@ export namespace Errors {
 
   export type StructError = never;
 
+  //Tuples
+  export interface TupleErrorResult {
+    type: Types.TupleType;
+    kind: "error";
+    error: GenericError | TupleError;
+  }
+
+  export type TupleError = never;
+
   //Magic variables
   export interface MagicErrorResult {
     type: Types.MagicType;

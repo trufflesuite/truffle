@@ -24,7 +24,8 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
   if(context === null) {
     //if we don't know the contract ID, we can't decode
     return {
-      kind: "unknown"
+      kind: "unknown",
+      decodingMode: "full"
     }
   }
   const compiler = info.currentContext.compiler;
@@ -54,7 +55,8 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
     return {
       kind: "fallback",
       class: contractType,
-      data: CodecUtils.Conversion.toHexString(info.state.calldata)
+      data: CodecUtils.Conversion.toHexString(info.state.calldata),
+      decodingMode: "full",
     };
   }
   //you can't map with a generator, so we have to do this map manually
@@ -78,7 +80,8 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       kind: "constructor",
       class: contractType,
       arguments: decodedArguments,
-      bytecode: CodecUtils.Conversion.toHexString(info.state.calldata.slice(0, allocation.offset))
+      bytecode: CodecUtils.Conversion.toHexString(info.state.calldata.slice(0, allocation.offset)),
+      decodingMode: "full",
     };
   }
   else {
@@ -87,7 +90,8 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       class: contractType,
       name: allocation.definition.name,
       arguments: decodedArguments,
-      selector
+      selector,
+      decodingMode: "full"
     };
   }
 }
@@ -151,67 +155,70 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
   const possibleAnonymousAllocations = possibleContractAnonymousAllocations.concat(possibleLibraryAnonymousAllocations);
   const possibleAllocationsTotal = possibleAllocations.concat(possibleAnonymousAllocations);
   let decodings: LogDecoding[] = [];
-  for(const allocation of possibleAllocationsTotal) {
-    try {
-      //first: do a name check so we can skip decoding if name is wrong
-      if(targetName !== undefined && allocation.definition.name !== targetName) {
-        continue;
-      }
-      const id = allocation.contractId;
-      const attemptContext = info.contexts[id];
-      const contractType = CodecUtils.Contexts.contextToType(attemptContext);
-      //you can't map with a generator, so we have to do this map manually
-      let decodedArguments: AbiArgument[] = [];
-      for(const argumentAllocation of allocation.arguments) {
-        const value = <Values.Result> (yield* decode(
+  allocationAttempts: for(const allocation of possibleAllocationsTotal) {
+    //first: do a name check so we can skip decoding if name is wrong
+    if(targetName !== undefined && allocation.definition.name !== targetName) {
+      continue;
+    }
+    const id = allocation.contractId;
+    const attemptContext = info.contexts[id];
+    const contractType = CodecUtils.Contexts.contextToType(attemptContext);
+    //you can't map with a generator, so we have to do this map manually
+    let decodedArguments: AbiArgument[] = [];
+    for(const argumentAllocation of allocation.arguments) {
+      let value;
+      try {
+        value = <Values.Result> (yield* decode(
           Types.definitionToType(argumentAllocation.definition, attemptContext.compiler),
           argumentAllocation.pointer,
           info,
           { strictAbiMode: true } //turns on STRICT MODE to cause more errors to be thrown
         ));
-        const name = argumentAllocation.definition.name;
-        const indexed = argumentAllocation.pointer.location === "eventtopic";
-        decodedArguments.push(
-          name //deliberate general falsiness test
-            ? { name, indexed, value }
-            : { indexed, value }
-        );
       }
-      debug("decodedArguments: %O", decodedArguments);
-      //OK, so, having decoded the result, the question is: does it reencode to the original?
-      //first, we have to filter out the indexed arguments, and also get rid of the name information
-      const nonIndexedValues = decodedArguments
-        .filter(argument => !argument.indexed)
-        .map(argument => argument.value);
-      //now, we can encode!
-      debug("nonIndexedValues: %O", nonIndexedValues);
-      const reEncodedData = encodeTupleAbi(nonIndexedValues, info.allocations.abi);
-      //are they equal?
-      const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
-      if(CodecUtils.EVM.equalData(encodedData, reEncodedData)) {
-        if(allocation.definition.anonymous) {
-          decodings.push({
-            kind: "anonymous",
-            class: contractType,
-            name: allocation.definition.name,
-            arguments: decodedArguments
-          });
-        }
-        else {
-          decodings.push({
-            kind: "event",
-            class: contractType,
-            name: allocation.definition.name,
-            arguments: decodedArguments,
-            selector
-          });
-        }
+      catch(_) {
+        continue allocationAttempts; //if an error occurred, this isn't a valid decoding!
       }
-      //otherwise, just move on
+      const name = argumentAllocation.definition.name;
+      const indexed = argumentAllocation.pointer.location === "eventtopic";
+      decodedArguments.push(
+        name //deliberate general falsiness test
+          ? { name, indexed, value }
+          : { indexed, value }
+      );
     }
-    catch(error) {
-      continue; //if an error occurred, this isn't a valid decoding!
+    debug("decodedArguments: %O", decodedArguments);
+    //OK, so, having decoded the result, the question is: does it reencode to the original?
+    //first, we have to filter out the indexed arguments, and also get rid of the name information
+    const nonIndexedValues = decodedArguments
+      .filter(argument => !argument.indexed)
+      .map(argument => argument.value);
+    //now, we can encode!
+    debug("nonIndexedValues: %O", nonIndexedValues);
+    const reEncodedData = encodeTupleAbi(nonIndexedValues, info.allocations.abi);
+    //are they equal?
+    const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
+    if(CodecUtils.EVM.equalData(encodedData, reEncodedData)) {
+      if(allocation.definition.anonymous) {
+        decodings.push({
+          kind: "anonymous",
+          class: contractType,
+          name: allocation.definition.name,
+          arguments: decodedArguments,
+          decodingMode: "full"
+        });
+      }
+      else {
+        decodings.push({
+          kind: "event",
+          class: contractType,
+          name: allocation.definition.name,
+          arguments: decodedArguments,
+          selector,
+          decodingMode: "full"
+        });
+      }
     }
+    //otherwise, just move on
   }
   return decodings;
 }

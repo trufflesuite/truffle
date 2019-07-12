@@ -207,6 +207,20 @@ export namespace Values {
     value: Result;
   }
 
+  //Tuples
+  export type TupleResult = TupleValue | Errors.TupleErrorResult;
+
+  export interface TupleValue {
+    type: Types.TupleType;
+    kind: "value";
+    value: OptionallyNamedValue[];
+  }
+
+  export interface OptionallyNamedValue {
+    name?: string;
+    value: Result;
+  }
+
   //Magic variables
   export type MagicResult = MagicValue | Errors.MagicErrorResult;
 
