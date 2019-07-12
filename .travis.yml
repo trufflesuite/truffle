@@ -30,6 +30,7 @@ matrix:
 install:
   - yarn bootstrap
   - truffle obtain --solc=0.5.8
+  - ./scripts/test-web3.sh
 
 cache:
   directories:
