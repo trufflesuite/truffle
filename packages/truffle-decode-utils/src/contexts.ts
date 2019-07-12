@@ -3,7 +3,6 @@ const debug = debugModule("decode-utils:contexts");
 
 import { Abi } from "truffle-contract-schema/spec";
 import { AbiCoder } from "web3-eth-abi";
-import { AbiItem } from "web3-utils";
 const abiCoder = new AbiCoder();
 import escapeRegExp from "lodash.escaperegexp";
 
@@ -97,7 +96,7 @@ export namespace Contexts {
             debug("signature read: %s", signature);
             //if not, compute it ourselves
             if(signature === undefined) {
-              signature = abiCoder.encodeFunctionSignature(<AbiItem>abiEntry);
+              signature = abiCoder.encodeFunctionSignature(<any>abiEntry);
               //Notice the type coercion -- web3 and our schema describe things a little
               //differently, and TypeScript complains.  I think we just have to force it,
               //sorry.
