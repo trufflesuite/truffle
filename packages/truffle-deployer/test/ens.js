@@ -1,27 +1,19 @@
-const Config = require("truffle-config");
 const Web3 = require("web3");
 const { sha3 } = Web3.utils;
-const TruffleResolver = require("truffle-resolver");
 const assert = require("assert");
 const Ganache = require("ganache-core");
 const ENS = require("../ens");
-const path = require("path");
 const sinon = require("sinon");
 const HDWalletProvider = require("truffle-hdwallet-provider");
 const ENSJS = require("ethereum-ens");
 
 let ganacheOptions,
-  config,
   options,
   server,
   ens,
   fromAddress,
   provider,
-  workingDirectory,
-  contractsBuildDirectory,
   addressToSet,
-  publicResolverArtifact,
-  registryArtifact,
   registryAddress;
 
 describe("ENS class", () => {
@@ -44,48 +36,25 @@ describe("ENS class", () => {
     }
   });
   beforeEach(() => {
-    workingDirectory = path.join(__dirname, "sources", "init");
-    contractsBuildDirectory = path.join(workingDirectory, "build", "contracts");
-    config = Config.detect({
-      working_directory: workingDirectory,
-      contracts_build_directory: contractsBuildDirectory
-    });
     provider = new HDWalletProvider(
       ganacheOptions.mnemonic,
       "http://localhost:8545"
     );
     options = {
       provider,
-      resolver: new TruffleResolver(config)
+      ensSettings: { enabled: true }
     };
-    registryArtifact = require(path.join(
-      contractsBuildDirectory,
-      "ENSRegistry.json"
-    ));
-    publicResolverArtifact = require(path.join(
-      contractsBuildDirectory,
-      "PublicResolver.json"
-    ));
-    sinon
-      .stub(options.resolver.sources[3], "require")
-      .withArgs("@ensdomains/resolver/PublicResolver")
-      .returns(publicResolverArtifact)
-      .withArgs("@ensdomains/ens/ENSRegistry")
-      .returns(registryArtifact);
     ens = new ENS(options);
     fromAddress = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57";
   });
-  afterEach(() => {
-    options.resolver.sources[3].require.restore();
-  });
 
-  describe("deployNewENSRegistry", () => {
+  describe("deployNewDevENSRegistry", () => {
     it("deploys a new registry and returns the registry object", async () => {
-      let result = await ens.deployNewENSRegistry(fromAddress);
+      let result = await ens.deployNewDevENSRegistry(fromAddress);
       assert(Web3.utils.isAddress(result.address));
     });
     it("deploys a new registry which has a non-0x0 address", async () => {
-      let result = await ens.deployNewENSRegistry(fromAddress);
+      let result = await ens.deployNewDevENSRegistry(fromAddress);
       assert(result.address !== "0x0000000000000000000000000000000000000000");
     });
   });
@@ -93,42 +62,33 @@ describe("ENS class", () => {
   describe("register(address, name, from)", () => {
     describe("when there is no registry deployed", () => {
       beforeEach(() => {
-        sinon.spy(ens, "deployNewENSRegistry");
-        sinon.stub();
+        sinon.spy(ens, "deployNewDevENSRegistry");
         addressToSet = "0x1234567890123456789012345678901234567890";
       });
       afterEach(() => {
-        ens.deployNewENSRegistry.restore();
+        ens.deployNewDevENSRegistry.restore();
       });
 
-      it("calls deployNewENSRegistry", async () => {
-        try {
-          await ens.register({
-            address: addressToSet,
-            name: "namezzz",
-            from: fromAddress
-          });
-        } catch (error) {
-          const expectedMessageSnippet = `The default address or address provided in the "from"`;
-          if (error.message.includes(expectedMessageSnippet)) {
-            assert(ens.deployNewENSRegistry.called);
-          } else {
-            throw error;
-          }
-        }
+      it("calls deployNewDevENSRegistry", async () => {
+        await ens.setAddress({
+          address: addressToSet,
+          name: "namezzz",
+          from: fromAddress
+        });
+        assert(ens.deployNewDevENSRegistry.called);
       });
     });
     describe("when there is a registry deployed", () => {
       beforeEach(async () => {
-        let result = await ens.deployNewENSRegistry(fromAddress);
-        registryAddress = result.registryAddress;
+        let result = await ens.deployNewDevENSRegistry(fromAddress);
+        registryAddress = result.address;
         addressToSet = "0x1234567890123456789012345678901234567890";
       });
 
       describe("when the name is not owned by the from address", async () => {
         it("errors when the name is not owned by the from address", async () => {
           try {
-            await ens.register({
+            await ens.setAddress({
               address: addressToSet,
               name: "namezzz",
               from: fromAddress,
@@ -143,7 +103,7 @@ describe("ENS class", () => {
 
       describe("when the name is owned by the from address", async () => {
         beforeEach(async () => {
-          let registry = await ens.deployNewENSRegistry(fromAddress);
+          let registry = await ens.deployNewDevENSRegistry(fromAddress);
           registryOwnerAddress = await registry.owner("0x0");
           registryAddress = registry.address;
           addressToSet = "0x1234567890123456789012345678901234567890";
@@ -157,7 +117,7 @@ describe("ENS class", () => {
         });
 
         it("sets the resolver to resolve to the proper address", async () => {
-          await ens.register({
+          await ens.setAddress({
             address: addressToSet,
             name: "namezzz",
             from: fromAddress,
