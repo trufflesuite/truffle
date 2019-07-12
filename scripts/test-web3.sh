@@ -10,7 +10,7 @@ link_web3() {
   npm install
   npm run build
   pushd packages/web3
-  yarn link
+  yalc publish
 
   popd
   popd
@@ -18,10 +18,14 @@ link_web3() {
   for pkg in packages/*
   do
     cd $pkg
-    yarn link web3
+    yalc add web3
     cd ../..
   done
 }
+
+
+# use yalc instead of yarn link
+npm install -g yalc
 
 link_web3
 
