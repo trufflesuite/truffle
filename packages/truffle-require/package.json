@@ -27,7 +27,7 @@
     "truffle-config": "^1.1.14",
     "truffle-expect": "^0.0.9",
     "truffle-interface-adapter": "^0.2.0",
-    "web3": "https://github.com/ethereum/web3.js#release/1.0"
+    "web3": "1.0.0-beta.37"
   },
   "publishConfig": {
     "access": "public"

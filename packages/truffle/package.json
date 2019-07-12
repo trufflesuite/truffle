@@ -51,7 +51,7 @@
     "truffle-contract": "^4.0.24",
     "truffle-core": "^5.0.27",
     "truffle-debugger": "^5.0.19",
-    "web3": "https://github.com/ethereum/web3.js#release/1.0",
+    "web3": "1.0.0-beta.37",
     "webpack": "^2.5.1",
     "webpack-bundle-analyzer": "^3.0.3",
     "yargs": "^8.0.2"

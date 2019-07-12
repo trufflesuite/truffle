@@ -3,11 +3,10 @@
   "version": "1.0.14",
   "description": "Utilities for decoding data from the EVM",
   "dependencies": {
-    "@types/web3": "^1.0.19",
     "bn.js": "^4.11.8",
     "lodash.clonedeep": "^4.5.0",
     "lodash.escaperegexp": "^4.1.2",
-    "web3": "https://github.com/ethereum/web3.js#release/1.0",
+    "web3": "1.0.0-beta.37",
     "web3-eth-abi": "1.0.0-beta.52"
   },
   "main": "dist/index.js",

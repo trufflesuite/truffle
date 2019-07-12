@@ -17,7 +17,7 @@
   "dependencies": {
     "any-promise": "^1.3.0",
     "bindings": "^1.3.1",
-    "web3": "https://github.com/ethereum/web3.js#release/1.0",
+    "web3": "1.0.0-beta.37",
     "websocket": "^1.0.28"
   },
   "devDependencies": {
@@ -29,6 +29,7 @@
     "ganache-core": "2.5.7",
     "js-scrypt": "^0.2.0",
     "mocha": "5.2.0",
+    "web3": "1.0.0-beta.37",
     "web3-provider-engine": "https://github.com/trufflesuite/provider-engine#web3-one",
     "webpack": "^4.24.0",
     "webpack-cli": "^3.1.2"

@@ -23,7 +23,7 @@
     "mocha": "5.2.0",
     "truffle-reporters": "^1.0.10",
     "truffle-workflow-compile": "^2.0.23",
-    "web3": "https://github.com/ethereum/web3.js#release/1.0"
+    "web3": "1.0.0-beta.37"
   },
   "keywords": [
     "contracts",
