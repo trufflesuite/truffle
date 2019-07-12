@@ -19,7 +19,7 @@ link_web3() {
   do
     cd $pkg
     yarn link web3
-    cd ..
+    cd ../..
   done
 }
 
