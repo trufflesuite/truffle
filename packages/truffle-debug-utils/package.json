@@ -5,7 +5,7 @@
   "dependencies": {
     "async": "2.6.1",
     "chalk": "^2.4.2",
-    "chromafi": "git+ssh://git@github.com:haltman-at/chromafi.git#f526809e8aaa33e7ec48a1e7208881035ab803e1",
+    "chromafi": "git+ssh://git@github.com:haltman-at/chromafi.git#16d906400e9f75bb1153ee85c71ac49a28332e27",
     "debug": "^4.1.0",
     "highlight.js": "^9.15.8",
     "highlightjs-solidity": "^1.0.6",
