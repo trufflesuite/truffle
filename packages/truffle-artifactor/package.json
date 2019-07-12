@@ -6,7 +6,7 @@
   "author": "Tim Coulter",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-artifactor",
   "version": "4.0.23",
-  "main": "./index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "test": "mocha",
