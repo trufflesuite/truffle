@@ -15,7 +15,7 @@ link_web3() {
   popd
   popd
 
-  for $pkg in packages/*
+  for pkg in packages/*
   do
     cd $pkg
     yarn link web3
