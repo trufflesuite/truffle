@@ -3,6 +3,7 @@ import path from "path";
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
 import * as Contracts from "truffle-workflow-compile";
+import * as Ganache from "ganache-core"
 
 jest.mock("truffle-workflow-compile", () => ({
  compile: function(config, callback) {

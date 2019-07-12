@@ -368,45 +368,47 @@ export class ArtifactsLoader {
     const networksByContract = await Promise.all(contracts.map(async ({ contract_name })=> {
       const contractName = contract_name.toString().concat('.json');
       const artifactsNetworks = JSON.parse(await fse.readFile(path.join(artifacts,contractName))).networks;
-      const config = Config.detect({ workingDirectory: workingDirectory });
       let configNetworks = [];
-      for(let network of Object.keys(config.networks)) {
-         config.network = network;
-         await Environment.detect(config);
-         let networkID;
-         let web3;
-         try {
-          web3 = new Web3(config.provider);
-          networkID = await web3.eth.net.getId();
-        }
-        catch(err) {}
+      if(Object.keys(artifactsNetworks).length) {
+        const config = Config.detect({ workingDirectory: workingDirectory });
+        for(let network of Object.keys(config.networks)) {
+           config.network = network;
+           await Environment.detect(config);
+           let networkID;
+           let web3;
+           try {
+            web3 = new Web3(config.provider);
+            networkID = await web3.eth.net.getId();
+          }
+          catch(err) {}
 
-        if(networkID) {
-          let filteredNetwork = Object.entries(artifactsNetworks).filter((network) => network[0] == networkID);
-          //assume length of filteredNetwork is 1 -- shouldn't have multiple networks with the same id
-          if(filteredNetwork.length > 0) {
-            const transaction = await web3.eth.getTransaction(filteredNetwork[0][1]["transactionHash"]);
-            const historicBlock = {
-              height: transaction.blockNumber,
-              hash: transaction.blockHash
+          if(networkID) {
+            let filteredNetwork = Object.entries(artifactsNetworks).filter((network) => network[0] == networkID);
+            //assume length of filteredNetwork is 1 -- shouldn't have multiple networks with the same id
+            if(filteredNetwork.length > 0) {
+              const transaction = await web3.eth.getTransaction(filteredNetwork[0][1]["transactionHash"]);
+              const historicBlock = {
+                height: transaction.blockNumber,
+                hash: transaction.blockHash
+              }
+
+              const networksAdd = await this.db.query(AddNetworks,
+              {
+                networks:
+                [{
+                  name: network,
+                  networkID: networkID,
+                  historicBlock: historicBlock
+                }]
+              });
+
+              const networkId = networksAdd.data.workspace.networksAdd.networks[0].id;
+              configNetworks.push({
+                contract: contractName,
+                id: networkId,
+                address: filteredNetwork[0][1]["address"]
+              });
             }
-
-            const networksAdd = await this.db.query(AddNetworks,
-            {
-              networks:
-              [{
-                name: network,
-                networkID: networkID,
-                historicBlock: historicBlock
-              }]
-            });
-
-            const networkId = networksAdd.data.workspace.networksAdd.networks[0].id;
-            configNetworks.push({
-              contract: contractName,
-              id: networkId,
-              address: filteredNetwork[0][1]["address"]
-            });
           }
         }
       }

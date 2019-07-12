@@ -28,7 +28,7 @@
     "prepare": "yarn build",
     "build": "./bin/build",
     "start": "ts-node-dev -r tsconfig-paths/register ./bin/server",
-    "test": "jest --verbose"
+    "test": "jest --verbose --detectOpenHandles"
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
