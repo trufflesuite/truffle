@@ -4,7 +4,7 @@
 set -o errexit
 
 link_web3() {
-  git clone git@github.com:ethereum/web3.js.git ../web3.js
+  git clone https://github.com/ethereum/web3.js.git ../web3.js
   pushd ../web3.js
   git checkout release/1.0
   npm install
