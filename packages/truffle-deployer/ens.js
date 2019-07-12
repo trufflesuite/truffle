@@ -64,7 +64,7 @@ class ENS {
     await this.ensureRegistryExists(from);
 
     if (this.devRegistry) {
-      await this.setNameOwner({ from, name });
+      await this.setTopLevelNameOwner({ from, name });
     }
 
     // Find the owner of the name and compare it to the "from" field
@@ -95,7 +95,7 @@ class ENS {
     }
   }
 
-  async setNameOwner({ name, from }) {
+  async setTopLevelNameOwner({ name, from }) {
     await this.devRegistry.setSubnodeOwner("0x0", sha3(name), from, { from });
   }
 
