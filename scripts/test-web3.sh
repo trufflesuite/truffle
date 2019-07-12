@@ -24,3 +24,6 @@ link_web3() {
 }
 
 link_web3
+
+# bootstrap again to rebuild with linked
+yarn bootstrap
