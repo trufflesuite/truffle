@@ -5,6 +5,7 @@ import * as CodecUtils from "truffle-codec-utils";
 import { Slot, Range } from "../types/storage";
 import { WordMapping } from "../types/evm";
 import { DecoderRequest } from "../types/request";
+import { mappingKeyAsHex, keyInfoForPrinting } from "../encode/key";
 import BN from "bn.js";
 
 /**
@@ -18,7 +19,7 @@ import BN from "bn.js";
 export function slotAddress(slot: Slot): BN {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
-    return CodecUtils.EVM.keccak256(slot.key.toSoliditySha3Input(), slotAddress(slot.path)).add(slot.offset);
+    return CodecUtils.EVM.keccak256(mappingKeyAsHex(slot.key), slotAddress(slot.path)).add(slot.offset);
   }
   else if (slot.path !== undefined) {
     const pathAddress = slotAddress(slot.path);
@@ -33,8 +34,8 @@ export function slotAddress(slot: Slot): BN {
 export function slotAddressPrintout(slot: Slot): string {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
-    let {type: keyEncoding} = slot.key.toSoliditySha3Input();
-    return "keccak(" + slot.key.toString() + " as " + keyEncoding + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
+    let {type: keyEncoding, value: keyValue} = keyInfoForPrinting(slot.key);
+    return "keccak(" + keyValue + " as " + keyEncoding + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
   }
   else if (slot.path !== undefined) {
     const pathAddressPrintout = slotAddressPrintout(slot.path);
@@ -95,16 +96,13 @@ export function* readRange(storage: WordMapping, range: Range): IterableIterator
   debug("readRange %o", range);
 
   let { from, to, length } = range;
-  if (typeof length === "undefined" && !to || length && to) {
-    throw new Error("must specify exactly one `to`|`length`");
-  }
 
   from = {
     slot: from.slot,
     index: from.index || 0
   };
 
-  if (typeof length !== "undefined") {
+  if (length !== undefined) {
     to = {
       slot: {
         path: from.slot.path || undefined,

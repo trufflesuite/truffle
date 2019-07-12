@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:constant");
 
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values, Errors } from "truffle-codec-utils";
+import { Types, Values } from "truffle-codec-utils";
 import read from "../read";
 import decodeValue from "./value";
 import { ConstantDefinitionPointer} from "../types/pointer";
@@ -27,14 +27,21 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
       word = yield* read(pointer, info.state);
     }
     catch(error) { //error: Errors.DecodingError
-      return Errors.makeGenericErrorResult(dataType, error.error);
+      return {
+        type: dataType,
+        kind: "error",
+        error: error.error
+      };
     }
     //not bothering to check padding; shouldn't be necessary
     let bytes = word.slice(CodecUtils.EVM.WORD_SIZE - size);
-    return new Values.BytesStaticValue(
-      dataType,
-      CodecUtils.Conversion.toHexString(bytes)
-    ); //we'll skip including a raw value, as that would be meaningless
+    return {
+      type: dataType,
+      kind: "value",
+      value: {
+        asHex: CodecUtils.Conversion.toHexString(bytes)
+      }
+    }; //we'll skip including a raw value, as that would be meaningless
   }
 
   //otherwise, as mentioned, just dispatch to decodeValue

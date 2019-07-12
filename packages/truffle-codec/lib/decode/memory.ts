@@ -3,7 +3,7 @@ const debug = debugModule("codec:decode:memory");
 
 import read from "../read";
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values, Errors } from "truffle-codec-utils";
+import { Types, Values } from "truffle-codec-utils";
 import decodeValue from "./value";
 import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";
@@ -27,7 +27,11 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
     rawValue = yield* read(pointer, state);
   }
   catch(error) { //error: Errors.DecodingError
-    return Errors.makeGenericErrorResult(dataType, error.error);
+    return {
+      type: dataType,
+      kind: "error",
+      error: error.error
+    };
   }
 
   let startPosition = CodecUtils.Conversion.toBN(rawValue).toNumber();
@@ -47,7 +51,11 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         }, state);
       }
       catch(error) { //error: Errors.DecodingError
-        return Errors.makeGenericErrorResult(dataType, error.error);
+        return {
+          type: dataType,
+          kind: "error",
+          error: error.error
+        };
       }
       length = CodecUtils.Conversion.toBN(rawLength).toNumber();
 
@@ -55,7 +63,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         location: "memory",
         start: startPosition + CodecUtils.EVM.WORD_SIZE,
         length
-      }
+      };
 
       return yield* decodeValue(dataType, childPointer, info);
 
@@ -71,7 +79,11 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
           }, state);
         }
         catch(error) { //error: Errors.DecodingError
-          return Errors.makeGenericErrorResult(dataType, error.error);
+          return {
+            type: dataType,
+            kind: "error",
+            error: error.error
+          };
         }
         length = CodecUtils.Conversion.toBN(rawLength).toNumber();
         startPosition += CodecUtils.EVM.WORD_SIZE; //increment startPosition
@@ -98,7 +110,11 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         );
       }
 
-      return new Values.ArrayValue(dataType, decodedChildren);
+      return {
+        type: dataType,
+        kind: "value",
+        value: decodedChildren
+      };
 
     case "struct":
       const { allocations: { memory: allocations }, userDefinedTypes } = info;
@@ -106,10 +122,14 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       const typeId = dataType.id;
       const structAllocation = allocations[typeId];
       if(!structAllocation) {
-        return new Errors.StructErrorResult(
-          dataType,
-          new Errors.UserDefinedTypeNotFoundError(dataType)
-        );
+        return {
+          type: dataType,
+          kind: "error",
+          error: {
+            kind: "UserDefinedTypeNotFoundError",
+            type: dataType
+          }
+        };
       }
 
       debug("structAllocation %O", structAllocation);
@@ -127,10 +147,14 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         let memberName = memberAllocation.definition.name;
         let storedType = <Types.StructType>userDefinedTypes[typeId];
         if(!storedType) {
-          return new Errors.StructErrorResult(
-            dataType,
-            new Errors.UserDefinedTypeNotFoundError(dataType)
-          );
+          return {
+            type: dataType,
+            kind: "error",
+            error: {
+              kind: "UserDefinedTypeNotFoundError",
+              type: dataType
+            }
+          };
         }
         let storedMemberType = storedType.memberTypes[index].type;
         let memberType = Types.specifyLocation(storedMemberType, "memory");
@@ -140,10 +164,18 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
           value: <Values.Result> (yield* decodeMemory(memberType, childPointer, info))
         });
       }
-      return new Values.StructValue(dataType, decodedMembers);
+      return {
+        type: dataType,
+        kind: "value",
+        value: decodedMembers
+      };
 
     case "mapping":
       //a mapping in memory is always empty
-      return new Values.MappingValue(dataType, []);
+      return {
+        type: dataType,
+        kind: "value",
+        value: []
+      };
   }
 }

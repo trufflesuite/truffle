@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decoder:contract");
 
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values } from "truffle-codec-utils";
+import { Types, Values, wrapElementaryViaDefinition } from "truffle-codec-utils";
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "truffle-contract-schema/spec";
@@ -543,7 +543,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
         break;
       case "mapping":
         let keyDefinition = parentDefinition.keyType || parentDefinition.typeName.keyType;
-        key = Values.wrapElementaryValue(rawIndex, keyDefinition);
+        key = wrapElementaryViaDefinition(rawIndex, keyDefinition);
         definition = parentDefinition.valueType || parentDefinition.typeName.valueType;
         slot = {
           path: parentSlot,

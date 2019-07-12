@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:stack");
 
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values, Errors } from "truffle-codec-utils";
+import { Types, Values } from "truffle-codec-utils";
 import read from "../read";
 import decodeValue from "./value";
 import { decodeExternalFunction, checkPaddingLeft } from "./value";
@@ -19,7 +19,11 @@ export default function* decodeStack(dataType: Types.Type, pointer: StackPointer
    rawValue = yield* read(pointer, info.state);
   }
   catch(error) { //error: Errors.DecodingError
-    return Errors.makeGenericErrorResult(dataType, error.error);
+    return {
+      type: dataType,
+      kind: "error",
+      error: error.error
+    };
   }
   const literalPointer: StackLiteralPointer = { location: "stackliteral", literal: rawValue };
   return yield* decodeLiteral(dataType, literalPointer, info);
@@ -87,19 +91,22 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
     let selectorWord = pointer.literal.slice(-CodecUtils.EVM.WORD_SIZE);
     if(!checkPaddingLeft(address, CodecUtils.EVM.ADDRESS_SIZE)
       ||!checkPaddingLeft(selectorWord, CodecUtils.EVM.SELECTOR_SIZE)) {
-      return new Errors.FunctionExternalErrorResult(
-        dataType,
-        new Errors.FunctionExternalStackPaddingError(
-          CodecUtils.Conversion.toHexString(address),
-          CodecUtils.Conversion.toHexString(selectorWord)
-        )
-      );
+      return {
+        type: dataType,
+        kind: "error",
+        error: {
+          kind: "FunctionExternalStackPaddingError",
+          rawAddress: CodecUtils.Conversion.toHexString(address),
+          rawSelector: CodecUtils.Conversion.toHexString(selectorWord)
+        }
+      };
     }
     let selector = selectorWord.slice(-CodecUtils.EVM.SELECTOR_SIZE);
-    return new Values.FunctionExternalValue(
-      dataType,
-      <Values.FunctionExternalValueInfo> (yield* decodeExternalFunction(address, selector, info))
-    );
+    return {
+      type: dataType,
+      kind: "value",
+      value: <Values.FunctionExternalValueInfo> (yield* decodeExternalFunction(address, selector, info))
+    };
   }
 
   //finally, if none of the above hold, we can just dispatch to decodeValue.

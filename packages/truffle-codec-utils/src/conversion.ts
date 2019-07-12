@@ -5,6 +5,7 @@ import BN from "bn.js";
 import Web3 from "web3";
 import { Constants } from "./constants";
 import { Values } from "./types/values";
+import { enumFullName } from "./types/inspect";
 
 export namespace Conversion {
 
@@ -160,7 +161,90 @@ export namespace Conversion {
   //for convenience: invokes the nativize method on all the given variables
   export function nativizeVariables(variables: {[name: string]: Values.Result}): {[name: string]: any} {
     return Object.assign({}, ...Object.entries(variables).map(
-      ([name, value]) => ({[name]: value.nativize()})
+      ([name, value]) => ({[name]: nativize(value)})
     ));
+  }
+
+  //HACK! Avoid using! Only use this if:
+  //1. you absolutely have to, or
+  //2. it's just testing, not real code
+  export function nativize(result: Values.Result): any {
+    if(result.kind === "error") {
+      return undefined;
+    }
+    switch(result.type.typeClass) {
+      case "uint":
+      case "int":
+        return (<Values.UintValue|Values.IntValue>result).value.asBN.toNumber(); //WARNING
+      case "bool":
+        return (<Values.BoolValue>result).value.asBool;
+      case "bytes":
+        return (<Values.BytesValue>result).value.asHex;
+      case "address":
+        return (<Values.AddressValue>result).value.asAddress;
+      case "string": {
+        let coercedResult = <Values.StringValue> result;
+        switch(coercedResult.value.kind) {
+          case "valid":
+            return coercedResult.value.asString;
+          case "malformed":
+            return coercedResult.value.asHex; //WARNING
+        }
+      }
+      //fixed and ufixed are skipped for now
+      case "array": //WARNING: circular case not handled
+        return (<Values.ArrayValue>result).value.map(nativize);
+      case "mapping":
+        return Object.assign({}, ...(<Values.MappingValue>result).value.map(
+          ({key, value}) => ({[nativize(key).toString()]: nativize(value)})
+        ));
+      case "struct": //WARNING: circular case not handled
+        return Object.assign({}, ...(<Values.StructValue>result).value.map(
+          ({name, value}) => ({[name]: nativize(value)})
+        ));
+      case "magic":
+        Object.assign({}, ...Object.entries((<Values.MagicValue>result).value).map(
+            ([key, value]) => ({[key]: nativize(value)})
+        ));
+      case "enum":
+        return enumFullName(<Values.EnumValue>result);
+      case "contract": {
+        let coercedResult = <Values.ContractValue> result;
+        switch(coercedResult.value.kind) {
+          case "known":
+            return `${coercedResult.value.class.typeName}(${coercedResult.value.address})`;
+          case "unknown":
+            return coercedResult.value.address;
+        }
+        break; //to satisfy typescript
+      }
+      case "function":
+        switch(result.type.visibility) {
+          case "external": {
+            let coercedResult = <Values.FunctionExternalValue> result;
+            switch(coercedResult.value.kind) {
+              case "known":
+                return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).${coercedResult.value.abi.name}`
+              case "invalid":
+                return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).call(${coercedResult.value.selector}...)`
+              case "unknown":
+                return `${coercedResult.value.contract.address}.call(${coercedResult.value.selector}...)`
+            }
+          }
+          case "internal": {
+            let coercedResult = <Values.FunctionInternalValue> result;
+            switch(coercedResult.value.kind) {
+              case "function":
+                return `${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}`;
+              case "exception":
+                return coercedResult.value.deployedProgramCounter === 0
+                  ? `<zero>`
+                  : `assert(false)`;
+              case "unknown":
+                return `<decoding not supported>`;
+            }
+          }
+        }
+    }
   }
 }

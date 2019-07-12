@@ -1,4 +1,4 @@
-import { Types, Values, Conversion as ConversionUtils, EVM as EVMUtils } from "truffle-codec-utils";
+import { Values, Conversion as ConversionUtils, EVM as EVMUtils } from "truffle-codec-utils";
 import { AbiAllocations } from "../types/allocation";
 import { isTypeDynamic, abiSizeForType } from "../allocate/abi";
 import sum from "lodash.sum";
@@ -101,7 +101,7 @@ export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): U
   }
 }
 
-function stringToBytes(input: string): Uint8Array {
+export function stringToBytes(input: string): Uint8Array {
   input = utf8.encode(input);
   let bytes = new Uint8Array(input.length);
   for(let i = 0; i < input.length; i++) {

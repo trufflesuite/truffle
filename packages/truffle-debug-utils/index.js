@@ -5,6 +5,7 @@ var async = require("async");
 var debug = require("debug")("lib:debug");
 var BN = require("bn.js");
 var util = require("util");
+var CodecUtils = require("truffle-codec-utils");
 
 var commandReference = {
   "o": "step over",
@@ -318,7 +319,7 @@ var DebugUtils = {
 
   formatValue: function(value, indent = 0) {
     return util
-      .inspect(value, {
+      .inspect(new CodecUtils.ResultInspector(value), {
         colors: true,
         depth: null,
         maxArrayLength: null,

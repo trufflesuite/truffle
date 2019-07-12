@@ -24,69 +24,77 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
 
   switch(pointer.special) {
     case "msg":
-      return new Values.MagicValue(dataType, {
-        data: <Values.BytesDynamicResult> (yield* decodeValue(
-          {
-            typeClass: "bytes",
-            kind: "dynamic",
-            location: "calldata"
-          },
-          {
-            location: "calldata",
-            start: 0,
-            length: state.calldata.length
-          },
-          info
-        )),
-        sig: <Values.BytesStaticResult> (yield* decodeValue(
-          {
-            typeClass: "bytes",
-            kind: "static",
-            length: CodecUtils.EVM.SELECTOR_SIZE
-          },
-          {
-            location: "calldata",
-            start: 0,
-            length: CodecUtils.EVM.SELECTOR_SIZE,
-          },
-          info
-        )),
-        sender: <Values.AddressResult> (yield* decodeValue(
-          {
-            typeClass: "address",
-            payable: true
-          },
-          {location: "special", special: "sender"},
-          info
-        )),
-        value: <Values.UintResult> (yield* decodeValue(
-          {
-            typeClass: "uint",
-            bits: 256
-          },
-          {location: "special", special: "value"},
-          info
-        ))
-      });
+      return {
+        type: dataType,
+        kind: "value",
+        value: {
+          data: <Values.BytesDynamicResult> (yield* decodeValue(
+            {
+              typeClass: "bytes",
+              kind: "dynamic",
+              location: "calldata"
+            },
+            {
+              location: "calldata",
+              start: 0,
+              length: state.calldata.length
+            },
+            info
+          )),
+          sig: <Values.BytesStaticResult> (yield* decodeValue(
+            {
+              typeClass: "bytes",
+              kind: "static",
+              length: CodecUtils.EVM.SELECTOR_SIZE
+            },
+            {
+              location: "calldata",
+              start: 0,
+              length: CodecUtils.EVM.SELECTOR_SIZE,
+            },
+            info
+          )),
+          sender: <Values.AddressResult> (yield* decodeValue(
+            {
+              typeClass: "address",
+              payable: true
+            },
+            {location: "special", special: "sender"},
+            info
+          )),
+          value: <Values.UintResult> (yield* decodeValue(
+            {
+              typeClass: "uint",
+              bits: 256
+            },
+            {location: "special", special: "value"},
+            info
+          ))
+        }
+      };
     case "tx":
-      return new Values.MagicValue(dataType, {
-        origin: <Values.AddressResult> (yield* decodeValue(
-          {
-            typeClass: "address",
-            payable: true
-          },
-          {location: "special", special: "origin"},
-          info
-        )),
-        gasprice: <Values.UintResult> (yield* decodeValue(
-          {
-            typeClass: "uint",
-            bits: 256
-          },
-          {location: "special", special: "gasprice"},
-          info
-        ))
-      });
+      return {
+        type: dataType,
+        kind: "value",
+        value: {
+          origin: <Values.AddressResult> (yield* decodeValue(
+            {
+              typeClass: "address",
+              payable: true
+            },
+            {location: "special", special: "origin"},
+            info
+          )),
+          gasprice: <Values.UintResult> (yield* decodeValue(
+            {
+              typeClass: "uint",
+              bits: 256
+            },
+            {location: "special", special: "gasprice"},
+            info
+          ))
+        }
+      };
     case "block":
       let block: {[field: string]: Values.Result} = {
         coinbase: <Values.AddressResult> (yield* decodeValue(
@@ -111,6 +119,10 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
           info
         ));
       }
-      return new Values.MagicValue(dataType, block);
+      return {
+        type: dataType,
+        kind: "value",
+        value: block
+      };
   }
 }
