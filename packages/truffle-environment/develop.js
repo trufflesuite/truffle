@@ -18,7 +18,11 @@ const Develop = {
       chainPath = path.join(__dirname, "./", "chain.js");
     }
 
-    return spawn("node", [chainPath, ipcNetwork, JSON.stringify(options)], {
+    const stringifiedOptions = JSON.stringify(options);
+    const optionsBuffer = Buffer.from(stringifiedOptions);
+    const base64OptionsString = optionsBuffer.toString("base64");
+
+    return spawn("node", [chainPath, ipcNetwork, base64OptionsString], {
       detached: true,
       stdio: "ignore"
     });
