@@ -31,17 +31,6 @@ try {
   );
 }
 
-options.host = options.host || "127.0.0.1";
-options.port = options.port || 9545;
-options.network_id = options.network_id || 4447;
-options.total_accounts = options.total_accounts || 10;
-options.default_ether_balance = options.default_ether_balance || 100;
-options.blockTime = options.blockTime || 0;
-options.mnemonic =
-  options.mnemonic ||
-  "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
-options.gasLimit = options.gasLimit || 0x47e7c4;
-
 /*
  * Logging
  */
