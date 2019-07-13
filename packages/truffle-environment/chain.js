@@ -31,6 +31,8 @@ try {
   );
 }
 
+options.time = new Date(options.time);
+
 /*
  * Logging
  */
