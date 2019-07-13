@@ -123,6 +123,7 @@ class Supervisor {
 
   // start the IPC server and hook up all the mixins
   start() {
+    const self = this;
     const ipc = this.ipc;
 
     // socket filename
@@ -131,14 +132,14 @@ class Supervisor {
     const servePath = path.join(dirname, basename);
 
     ipc.serve(servePath, function() {
-      this.handle("start", arguments);
+      self.handle("start", arguments);
 
       ipc.server.on("connect", function() {
-        this.handle("connect", arguments);
+        self.handle("connect", arguments);
       });
 
       ipc.server.on("socket.disconnected", function() {
-        this.handle("disconnect", arguments);
+        self.handle("disconnect", arguments);
       });
     });
 
