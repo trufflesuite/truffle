@@ -48,8 +48,6 @@ class Logger {
   // sends prior unsent messages, as well as new messages
   // returns `unsubscribe` cleanup function
   subscribe(callback) {
-    const self = this;
-
     // flush messages
     const messages = this.messages;
     this.messages = [];
@@ -63,7 +61,7 @@ class Logger {
 
     // return cleanup func
     const unsubscribe = () => {
-      delete self.subscribers[subscriberID];
+      delete this.subscribers[subscriberID];
     };
 
     return unsubscribe;
@@ -72,8 +70,6 @@ class Logger {
   // log a message to be sent to all active subscribers
   // buffers if there are no active subscribers (to send on first subscribe)
   log(message) {
-    const self = this;
-
     const subscriberIDs = Object.keys(this.subscribers);
     if (subscriberIDs.length === 0) {
       this.messages.push(message);
@@ -82,7 +78,7 @@ class Logger {
     }
 
     subscriberIDs.forEach(subscriberID => {
-      const callback = self.subscribers[subscriberID];
+      const callback = this.subscribers[subscriberID];
 
       callback(message);
     });
@@ -96,13 +92,11 @@ class Logger {
 // constructor - accepts an object to assign to `ipc.config`
 class Supervisor {
   constructor(ipcConfig) {
-    const self = this;
-
     // init IPC
     this.ipc = new IPC();
     // set config
     Object.keys(ipcConfig).forEach(key => {
-      self.ipc.config[key] = ipcConfig[key];
+      this.ipc.config[key] = ipcConfig[key];
     });
 
     this.mixins = [];
@@ -115,21 +109,17 @@ class Supervisor {
 
   // dispatch event to all relevant mixins (ones that define `event` method)
   handle(event, args) {
-    const self = this;
-
     args = Array.prototype.slice.call(args);
 
     this.mixins.forEach(mixin => {
       if (mixin[event]) {
-        mixin[event].apply(mixin, [self].concat(args));
+        mixin[event].apply(mixin, [this].concat(args));
       }
     });
   }
 
   // start the IPC server and hook up all the mixins
   start() {
-    const self = this;
-
     const ipc = this.ipc;
 
     // socket filename
@@ -138,14 +128,14 @@ class Supervisor {
     const servePath = path.join(dirname, basename);
 
     ipc.serve(servePath, function() {
-      self.handle("start", arguments);
+      this.handle("start", arguments);
 
       ipc.server.on("connect", function() {
-        self.handle("connect", arguments);
+        this.handle("connect", arguments);
       });
 
       ipc.server.on("socket.disconnected", function() {
-        self.handle("disconnect", arguments);
+        this.handle("disconnect", arguments);
       });
     });
 
@@ -212,10 +202,8 @@ class GanacheMixin {
 
   // start Ganache and capture promise that resolves when ready
   start(_supervisor) {
-    const self = this;
-
     this.ready = new Promise((accept, reject) => {
-      self.ganache.listen(options.port, options.hostname, (err, state) => {
+      this.ganache.listen(options.port, options.hostname, (err, state) => {
         if (err) {
           reject(err);
         }
@@ -258,10 +246,8 @@ class LoggerMixin {
 
   // on connect, subscribe client socket to logger
   connect(supervisor, socket) {
-    const self = this;
-
     const unsubscribe = this.logger.subscribe(data => {
-      supervisor.emit(socket, self.message, data, { silent: true });
+      supervisor.emit(socket, this.message, data, { silent: true });
     });
 
     socket.on("close", unsubscribe);
