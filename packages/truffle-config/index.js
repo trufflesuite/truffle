@@ -15,8 +15,7 @@ class Config {
     const default_tx_values = {
       gas: 6721975,
       gasPrice: 20000000000, // 20 gwei,
-      from: null,
-      genesis_time: "1/1/19"
+      from: null
     };
 
     // This is a list of multi-level keys with defaults
@@ -60,8 +59,7 @@ class Config {
       },
       logger: {
         log() {}
-      },
-      genesis_time: null
+      }
     };
 
     const resolveDirectory = value =>
@@ -250,23 +248,6 @@ class Config {
           throw new Error(
             "Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks"
           );
-        }
-      },
-      genesis_time: {
-        get() {
-          try {
-            return this.network_config.genesis_time;
-          } catch (e) {
-            return "we were unable to return this.network_config.genesis_time";
-          }
-        },
-        set() {
-          const genesisDate = new Date(this.genesis_time);
-          if (genesisDate == "Invalid Date") {
-            throw new Error(
-              `${this.genesis_time} is an Invalid Date! Please set a valid Date.`
-            );
-          }
         }
       }
     };
