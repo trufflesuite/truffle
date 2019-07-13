@@ -16,23 +16,15 @@ var ipcDebug = debug("chain:ipc");
 
 // This script takes one argument: A strinified JSON object meant
 // to be parsed and then passed to Ganache.server().
-var ipcNetwork;
-var options;
-
 var args = process.argv.slice(2);
-if (args.length === 2) {
-  ipcNetwork = args[0];
-  options = args[1];
-} else if (args.length === 1) {
-  ipcNetwork = "develop";
-  options = args[0];
-} else {
-  ipcNetwork = "develop";
-  options = "{}";
-}
+const ipcNetwork = args[0];
+const base64OptionsString = args[1];
+const optionsBuffer = Buffer.from(base64OptionsString, "base64");
+let optionsString = optionsBuffer.toString();
+let options;
 
 try {
-  options = JSON.parse(options);
+  options = JSON.parse(optionsString);
 } catch (e) {
   throw new Error(
     "Fatal: Error parsing arguments; please contact the Truffle developers for help."
