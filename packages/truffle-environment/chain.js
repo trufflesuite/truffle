@@ -14,8 +14,9 @@ const ipcDebug = debug("chain:ipc");
  * Options
  */
 
-// This script takes one argument: A strinified JSON object meant
-// to be parsed and then passed to Ganache.server().
+// This script is expected to take two arguments: The first a networkName string,
+// the second an options string encoded as base64.
+// The options string is decoded, parsed, & then passed to Ganache.server().
 const args = process.argv.slice(2);
 const ipcNetwork = args[0];
 const base64OptionsString = args[1];
