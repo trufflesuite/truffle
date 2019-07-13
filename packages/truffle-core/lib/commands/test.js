@@ -149,7 +149,7 @@ const command = {
           "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
         gasLimit: config.gas,
         noVMErrorsOnRPCResponse: true,
-        genesis_time: config.genesis_time
+        time: config.genesis_time
       };
       Develop.connectOrStart(
         ipcOptions,
