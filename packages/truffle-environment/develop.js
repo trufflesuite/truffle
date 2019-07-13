@@ -4,9 +4,7 @@ const { spawn } = require("child_process");
 const debug = require("debug");
 
 const Develop = {
-  start: async function(ipcNetwork, options) {
-    options = options || {};
-
+  start: async function(ipcNetwork, options = {}) {
     let chainPath;
 
     // The path to the dev env process depends on whether or not
