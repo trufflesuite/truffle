@@ -8,7 +8,7 @@ var Package = require("../lib/package.js");
 var Blockchain = require("truffle-blockchain-utils");
 var Ganache = require("ganache-core");
 var Resolver = require("truffle-resolver");
-var Artifactor = require("truffle-artifactor");
+const { Artifactor } = require("truffle-artifactor");
 
 describe.skip("EthPM integration", function() {
   var config;
