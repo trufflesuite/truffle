@@ -1,13 +1,7 @@
 declare module "truffle-contract-schema" {
+  import Contract from "truffle-contract";
   namespace Schema {
-    export interface TruffleContract {
-      contractName: string;
-      contract_name: string;
-      updatedAt: string;
-      networks: object;
-    }
-
-    export function normalize(dirtyObj: object, opts?: object): TruffleContract;
+    export function normalize(dirtyObj: object, opts?: object): Contract.TruffleContract;
   }
   export default Schema;
 }
