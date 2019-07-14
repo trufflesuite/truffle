@@ -10,6 +10,7 @@
   },
   "version": "4.0.24",
   "main": "index.js",
+  "typings": "./typings/index.d.ts",
   "scripts": {
     "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
     "prepare": "yarn compile",
