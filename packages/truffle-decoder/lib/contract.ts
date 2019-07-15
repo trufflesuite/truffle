@@ -410,7 +410,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   //NOTE: will only work with logs for this address!
-  public async decodeLog(log: Log, name?: string): Promise<DecoderTypes.DecodedLog> {
+  //NOTE: options is mostly meant for internal use (when called from events()),
+  //but hey, you can pass it if you really want
+  public async decodeLog(log: Log, options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog> {
     if(log.address !== this.contractAddress) {
       throw new DecoderTypes.EventOrTransactionIsNotForThisContractError(log.address, this.contractAddress);
     }
@@ -427,7 +429,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contextsById
     };
-    const decoder = Codec.decodeEvent(info, log.address, name);
+    const decoder = Codec.decodeEvent(info, log.address, options.name);
 
     let result = decoder.next();
     while(!result.done) {
@@ -449,8 +451,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   //NOTE: will only work with logs for this address!
-  public async decodeLogs(logs: Log[], name?: string): Promise<DecoderTypes.DecodedLog[]> {
-    return await Promise.all(logs.map(log => this.decodeLog(log, name)));
+  //NOTE: options is mostly meant for internal use (when called from events()),
+  //but hey, you can pass it if you really want
+  public async decodeLogs(logs: Log[], options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
+    return await Promise.all(logs.map(log => this.decodeLog(log, options)));
   }
 
   public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
@@ -463,7 +467,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       toBlock,
     });
 
-    let events = await this.decodeLogs(logs, name);
+    let events = await this.decodeLogs(logs, options);
 
     //if a target name was specified, we'll restrict to events that decoded
     //to something with that name.  (note that only decodings with that name

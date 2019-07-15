@@ -32,6 +32,7 @@ export interface FallbackDecoding {
 export interface UnknownDecoding {
   kind: "unknown";
   decodingMode: DecodingMode;
+  data: string;
 }
 
 export interface EventDecoding {
