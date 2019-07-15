@@ -4,9 +4,26 @@ const sha3 = require("web3").utils.sha3;
 
 class ENS {
   constructor({ provider, ensSettings }) {
-    this.ensSettings = ensSettings;
+    this.ensSettings = ensSettings || {};
     this.provider = provider;
     this.devRegistry = null;
+  }
+
+  determineENSRegistryAddress() {
+    if (this.ensSettings.registryAddress) {
+      return this.ensSettings.registryAddress;
+    } else if (
+      this.ensjs &&
+      this.ensjs.registryPromise._rejectionHandler0._address
+    ) {
+      return this.ensjs.registryPromise._rejectionHandler0._address;
+    } else {
+      const message =
+        `Truffle could not locate the address of the ENS ` +
+        `registry for the network you are using. You must either be on a` +
+        `known network or a development blockchain.`;
+      throw new Error(message);
+    }
   }
 
   async deployNewDevENSRegistry(from) {
@@ -49,18 +66,18 @@ class ENS {
         .PublicResolver;
       const PublicResolver = contract(PublicResolverArtifact);
       PublicResolver.setProvider(this.provider);
-      publicResolver = await PublicResolver.new(
-        this.ensSettings.registryAddress,
-        { from }
-      );
+
+      let registryAddress = this.determineENSRegistryAddress();
+
+      publicResolver = await PublicResolver.new(registryAddress, { from });
       await this.ensjs.setResolver(name, publicResolver.address, { from });
       return { resolvedAddress: null };
     }
   }
 
   async setAddress({ address, name, from }) {
+    this.validateSetAddressInputs({ address, name, from });
     this.setENSJS();
-
     await this.ensureRegistryExists(from);
 
     if (this.devRegistry) {
@@ -87,7 +104,6 @@ class ENS {
     }
 
     const { resolvedAddress } = await this.ensureResolverExists({ from, name });
-
     // If the resolver points to a different address or is not set,
     // then set it to the specified address
     if (resolvedAddress !== address) {
@@ -97,6 +113,17 @@ class ENS {
 
   async setTopLevelNameOwner({ name, from }) {
     await this.devRegistry.setSubnodeOwner("0x0", sha3(name), from, { from });
+  }
+
+  validateSetAddressInputs({ address, name, from }) {
+    if (!address || !name || !from) {
+      const message =
+        `The 'address', 'name', or 'from' parameter is missing from ` +
+        `the call to the setAddress function. The input values were as ` +
+        `follows:\n   - address: ${address}\n   - name: ${name}\n   - from: ` +
+        `${from}\n`;
+      throw new Error(message);
+    }
   }
 
   setENSJS() {
