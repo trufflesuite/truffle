@@ -68,7 +68,20 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
     };
   }
 
-  let startPosition = CodecUtils.Conversion.toBN(rawValue).toNumber() + base;
+  let rawValueAsBN = CodecUtils.Conversion.toBN(rawValue);
+  if(strict && rawValueAsBN.gtn(state[location].length)) {
+    //why is this check here??
+    //it's really just to protect us against the toNumber()
+    //conversion :)
+    throw new StopDecodingError(
+      { 
+        kind: "PointerTooLargeError",
+        pointerAsBN: rawValueAsBN,
+        dataLength: state[location].length
+      }
+    );
+  }
+  let startPosition = rawValueAsBN.toNumber() + base;
   debug("startPosition %d", startPosition);
 
   let dynamic: boolean;
@@ -132,7 +145,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
         };
       }
       let lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
-      if(strict && lengthAsBN.gtn(info.state[location].length)) {
+      if(strict && lengthAsBN.gtn(state[location].length)) {
         //you may notice that the comparison is a bit crude; that's OK, this is
         //just to prevent huge numbers from DOSing us, other errors will still
         //be caught regardless
@@ -140,7 +153,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
           { 
             kind: "OverlongArrayOrStringError",
             lengthAsBN,
-            dataLength: info.state[location].length
+            dataLength: state[location].length
           }
         );
       }
@@ -177,7 +190,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
             };
           }
           let lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
-          if(strict && lengthAsBN.gtn(info.state[location].length)) {
+          if(strict && lengthAsBN.gtn(state[location].length)) {
             //you may notice that the comparison is a bit crude; that's OK, this is
             //just to prevent huge numbers from DOSing us, other errors will still
             //be caught regardless
@@ -185,7 +198,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
               { 
                 kind: "OverlongArrayOrStringError",
                 lengthAsBN,
-                dataLength: info.state[location].length
+                dataLength: state[location].length
               }
             );
           }

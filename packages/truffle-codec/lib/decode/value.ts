@@ -369,6 +369,10 @@ export function decodeString(bytes: Uint8Array): Values.StringValueInfo {
   try {
     //this will throw an error if we have malformed UTF-8
     let correctlyEncodedString = utf8.decode(badlyEncodedString);
+    //NOTE: we don't use node's builtin Buffer class to do the UTF-8 decoding
+    //here, because that handles malformed UTF-8 by means of replacement characters
+    //(U+FFFD).  That loses information.  So we use the utf8 package instead,
+    //and... well, see the catch block below.
     return {
       kind: "valid",
       asString: correctlyEncodedString

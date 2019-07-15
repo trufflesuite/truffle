@@ -387,13 +387,20 @@ export namespace Errors {
   }
 
   /* SECTION 9: Internal use errors */
+  /* you should never see these returned.
+   * they are only for internal use. */
 
-  export type InternalUseError = OverlongArrayOrStringError | InternalFunctionInABIError;
+  export type InternalUseError = OverlongArrayOrStringError | PointerTooLargeError | InternalFunctionInABIError;
 
-  //you should never see this returned.  this is only for internal use.
   export interface OverlongArrayOrStringError {
     kind: "OverlongArrayOrStringError";
     lengthAsBN: BN;
+    dataLength: number;
+  }
+
+  export interface PointerTooLargeError {
+    kind: "PointerTooLargeError";
+    pointerAsBN: BN;
     dataLength: number;
   }
 

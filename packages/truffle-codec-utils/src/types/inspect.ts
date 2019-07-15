@@ -44,7 +44,7 @@ export class ResultInspector {
               case "static":
                 return options.stylize(hex, "number");
               case "dynamic":
-                return styleHexString(hex, options);
+                return options.stylize(`hex'${hex.slice(2)}'`, "string");
             }
           case "address":
             return options.stylize((<Values.AddressValue>this.result).value.asAddress, "number");
@@ -54,7 +54,8 @@ export class ResultInspector {
               case "valid":
                 return util.inspect(coercedResult.value.asString, options);
               case "malformed":
-                return styleHexString(coercedResult.value.asHex, options) + " (malformed)";
+                //note: this will turn malformed utf-8 into replacement characters (U+FFFD)
+                return util.inspect(Buffer.from(coercedResult.value.asHex, 'hex').toString());
             }
           }
           case "array": {

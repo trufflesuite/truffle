@@ -188,7 +188,8 @@ export namespace Conversion {
           case "valid":
             return coercedResult.value.asString;
           case "malformed":
-            return coercedResult.value.asHex; //WARNING
+            // this will turn malformed utf-8 into replacement characters (U+FFFD) (WARNING)
+            return Buffer.from(coercedResult.value.asHex, 'hex').toString();
         }
       }
       //fixed and ufixed are skipped for now
