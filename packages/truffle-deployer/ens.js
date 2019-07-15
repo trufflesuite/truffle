@@ -75,8 +75,9 @@ class ENS {
     }
   }
 
-  async setAddress({ address, name, from }) {
-    this.validateSetAddressInputs({ address, name, from });
+  async setAddress(addressOrContract, name, from) {
+    this.validateSetAddressInputs({ addressOrContract, name, from });
+    const address = this.parseAddress(addressOrContract);
     this.setENSJS();
     await this.ensureRegistryExists(from);
 
@@ -115,12 +116,34 @@ class ENS {
     await this.devRegistry.setSubnodeOwner("0x0", sha3(name), from, { from });
   }
 
-  validateSetAddressInputs({ address, name, from }) {
-    if (!address || !name || !from) {
+  parseAddress(addressOrContract) {
+    if (typeof addressOrContract === "string") return addressOrContract;
+    try {
+      return addressOrContract.address;
+    } catch (error) {
       const message =
-        `The 'address', 'name', or 'from' parameter is missing from ` +
-        `the call to the setAddress function. The input values were as ` +
-        `follows:\n   - address: ${address}\n   - name: ${name}\n   - from: ` +
+        `You have not entered a valid address or contract ` +
+        `object with an address property. Please ensure that you enter a ` +
+        `valid address or pass in a valid artifact.`;
+      throw new Error(message);
+    }
+  }
+
+  validateSetAddressInputs({ addressOrContract, name, from }) {
+    if (
+      !addressOrContract ||
+      !name ||
+      !from ||
+      (typeof addressOrContract !== "string" &&
+        typeof addressOrContract !== "object") ||
+      typeof name !== "string" ||
+      typeof from !== "string"
+    ) {
+      const message =
+        `The 'address', 'name', or 'from' parameter is invalid for ` +
+        `the call to the setAddress function. Please ensure that you are ` +
+        `passing valid values. The received input values were the ` +
+        `following:\n   - address: ${addressOrContract}\n   - name: ${name}\n   - from: ` +
         `${from}\n`;
       throw new Error(message);
     }
