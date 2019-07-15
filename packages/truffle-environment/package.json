@@ -1,6 +1,6 @@
 {
   "name": "truffle-environment",
-  "version": "0.1.3-ens.0",
+  "version": "0.1.4-ens.0",
   "description": "This package contains the code needed to determine environment-specific data",
   "main": "index.js",
   "author": "Faina Shalts",
@@ -17,11 +17,11 @@
   "dependencies": {
     "ganache-core": "2.5.5",
     "node-ipc": "^9.1.1",
-    "truffle-artifactor": "^4.0.23-ens.0",
-    "truffle-error": "^0.0.6-ens.0",
-    "truffle-expect": "^0.0.10-ens.0",
-    "truffle-interface-adapter": "^0.1.7-ens.0",
-    "truffle-resolver": "^5.0.15-ens.0",
+    "truffle-artifactor": "^4.0.24-ens.0",
+    "truffle-error": "^0.0.7-ens.0",
+    "truffle-expect": "^0.0.11-ens.0",
+    "truffle-interface-adapter": "^0.1.8-ens.0",
+    "truffle-resolver": "^5.0.16-ens.0",
     "web3": "1.0.0-beta.37"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "truffle-legacy-system",
-  "version": "1.0.8-ens.0",
+  "version": "1.0.9-ens.0",
   "description": "Legacy on-chain migrations & testing management library",
   "main": "index.js",
   "directories": {
