@@ -55,7 +55,8 @@ export class ResultInspector {
                 return util.inspect(coercedResult.value.asString, options);
               case "malformed":
                 //note: this will turn malformed utf-8 into replacement characters (U+FFFD)
-                return util.inspect(Buffer.from(coercedResult.value.asHex, 'hex').toString());
+                //note we need to cut off the 0x prefix
+                return util.inspect(Buffer.from(coercedResult.value.asHex.slice(2), 'hex').toString());
             }
           }
           case "array": {
