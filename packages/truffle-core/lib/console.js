@@ -42,7 +42,7 @@ class Console extends EventEmitter {
     this.repl.on("exit", () => this.emit("exit"));
   }
 
-  start(callback) {
+  async start(callback) {
     if (!this.repl) this.repl = new Repl(this.options);
 
     // TODO: This should probalby be elsewhere.
@@ -55,7 +55,8 @@ class Console extends EventEmitter {
       this.repl.start({
         prompt: "truffle(" + this.options.network + ")> ",
         context: {
-          web3: this.web3
+          web3: this.web3,
+          accounts: await this.web3.eth.getAccounts()
         },
         interpreter: this.interpret.bind(this),
         done: callback
