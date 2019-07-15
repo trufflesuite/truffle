@@ -18,6 +18,17 @@ const Develop = {
       chainPath = path.join(__dirname, "./", "chain.js");
     }
 
+    const logger = options.logger || console;
+    logger.log(`In Env - Genesis Block time: ${options.time}`);
+    //check that genesis-time config option passed through the truffle-config.js file is a valid time.
+    const checkDate = Date.parse(options.time);
+    logger.log(`In Env - Date Object: ${checkDate}`);
+    if (isNaN(checkDate)) {
+      throw new Error(
+        "Fatal: genesis-time passed through truffle-config is invalid."
+      );
+    }
+
     const stringifiedOptions = JSON.stringify(options);
     const optionsBuffer = Buffer.from(stringifiedOptions);
     const base64OptionsString = optionsBuffer.toString("base64");
@@ -114,28 +125,22 @@ const Develop = {
 
     let connectedAlready = false;
 
-    this.connect(
-      options,
-      async function(error, disconnect) {
-        if (error) {
-          await self.start(ipcNetwork, ganacheOptions);
+    this.connect(options, async function(error, disconnect) {
+      if (error) {
+        await self.start(ipcNetwork, ganacheOptions);
 
-          options.retry = true;
-          self.connect(
-            options,
-            function(error, disconnect) {
-              if (connectedAlready) return;
+        options.retry = true;
+        self.connect(options, function(error, disconnect) {
+          if (connectedAlready) return;
 
-              connectedAlready = true;
-              callback(true, disconnect);
-            }
-          );
-        } else {
           connectedAlready = true;
-          callback(false, disconnect);
-        }
+          callback(true, disconnect);
+        });
+      } else {
+        connectedAlready = true;
+        callback(false, disconnect);
       }
-    );
+    });
   }
 };
 
