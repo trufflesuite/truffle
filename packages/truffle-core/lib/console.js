@@ -52,13 +52,16 @@ class Console extends EventEmitter {
 
     try {
       const abstractions = this.provision();
-      this.repl.start({
-        prompt: "truffle(" + this.options.network + ")> ",
-        context: {
-          web3: this.web3
-        },
-        interpreter: this.interpret.bind(this),
-        done: callback
+      this.web3.eth.getAccounts().then(accounts => {
+        this.repl.start({
+          prompt: "truffle(" + this.options.network + ")> ",
+          context: {
+            web3: this.web3,
+            accounts: accounts
+          },
+          interpreter: this.interpret.bind(this),
+          done: callback
+        });
       });
 
       this.resetContractsInConsoleContext(abstractions);
