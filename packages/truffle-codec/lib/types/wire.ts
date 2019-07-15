@@ -26,6 +26,7 @@ export interface FallbackDecoding {
 
 export interface UnknownDecoding {
   kind: "unknown";
+  data: string;
 }
 
 export interface EventDecoding {

@@ -178,7 +178,9 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  public async decodeLog(log: Log, name?: string): Promise<DecoderTypes.DecodedLog> {
+  //NOTE: options is mostly meant for internal use (when called from events()),
+  //but hey, you can pass it if you really want
+  public async decodeLog(log: Log, options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog> {
     const block = log.blockNumber;
     const data = CodecUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(CodecUtils.Conversion.toBytes);
@@ -192,7 +194,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: this.contextsById
     };
-    const decoder = Codec.decodeEvent(info, log.address, name);
+    const decoder = Codec.decodeEvent(info, log.address, options.name);
 
     let result = decoder.next();
     while(!result.done) {
@@ -213,8 +215,10 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  public async decodeLogs(logs: Log[], name?: string): Promise<DecoderTypes.DecodedLog[]> {
-    return await Promise.all(logs.map(log => this.decodeLog(log, name)));
+  //NOTE: options is mostly meant for internal use (when called from events()),
+  //but hey, you can pass it if you really want
+  public async decodeLogs(logs: Log[], options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
+    return await Promise.all(logs.map(log => this.decodeLog(log, options)));
   }
 
   public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
@@ -226,7 +230,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       toBlock,
     });
 
-    let events = await this.decodeLogs(logs, name);
+    let events = await this.decodeLogs(logs, options);
     debug("events: %o", events);
 
     //if a target name was specified, we'll restrict to events that decoded
