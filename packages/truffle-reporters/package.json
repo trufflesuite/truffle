@@ -1,6 +1,6 @@
 {
   "name": "truffle-reporters",
-  "version": "1.0.10",
+  "version": "1.0.11-ens.0",
   "description": "Reporters for Truffle modules",
   "main": "index.js",
   "scripts": {},

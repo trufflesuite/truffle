@@ -1,6 +1,6 @@
 {
   "name": "truffle-sawtooth-seth-provider",
-  "version": "0.0.4",
+  "version": "0.0.5-ens.0",
   "description": "A web3 provider which makes it possible to connect Truffle with Sawtooth Seth blockchains.",
   "main": "index.js",
   "author": "Ben Burns",

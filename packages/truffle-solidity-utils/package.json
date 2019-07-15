@@ -1,6 +1,6 @@
 {
   "name": "truffle-solidity-utils",
-  "version": "1.2.3",
+  "version": "1.2.4-ens.0",
   "description": "Utilities for Solidity contracts",
   "main": "index.js",
   "scripts": {},
