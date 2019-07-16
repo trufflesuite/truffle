@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { Artifactor } = require("../");
+const Artifactor = require("../");
 
 describe("Artifactor.save", () => {
   it("throws if passed an artifact without a contractName", () => {
