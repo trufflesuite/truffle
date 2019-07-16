@@ -194,18 +194,18 @@ export namespace Conversion {
         }
       }
       //fixed and ufixed are skipped for now
-      case "array": //WARNING: circular case not handled
+      case "array": //WARNING: circular case not handled; will loop infinitely
         return (<Values.ArrayValue>result).value.map(nativize);
       case "mapping":
         return Object.assign({}, ...(<Values.MappingValue>result).value.map(
           ({key, value}) => ({[nativize(key).toString()]: nativize(value)})
         ));
-      case "struct": //WARNING: circular case not handled
+      case "struct": //WARNING: circular case not handled; will loop infinitely
         return Object.assign({}, ...(<Values.StructValue>result).value.map(
           ({name, value}) => ({[name]: nativize(value)})
         ));
       case "magic":
-        Object.assign({}, ...Object.entries((<Values.MagicValue>result).value).map(
+        return Object.assign({}, ...Object.entries((<Values.MagicValue>result).value).map(
             ([key, value]) => ({[key]: nativize(value)})
         ));
       case "enum":
