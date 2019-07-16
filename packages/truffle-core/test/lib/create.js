@@ -6,7 +6,7 @@ var Box = require("truffle-box");
 var Create = require("../../lib/create");
 var dir = require("node-dir");
 var Resolver = require("truffle-resolver");
-const { Artifactor } = require("truffle-artifactor");
+var Artifactor = require("truffle-artifactor");
 
 describe("create", function() {
   var config;

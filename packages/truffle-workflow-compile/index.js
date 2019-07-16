@@ -7,7 +7,7 @@ const vyperCompile = require("truffle-compile-vyper");
 const externalCompile = require("truffle-external-compile");
 const expect = require("truffle-expect");
 const Resolver = require("truffle-resolver");
-const { Artifactor } = require("truffle-artifactor");
+const Artifactor = require("truffle-artifactor");
 const OS = require("os");
 
 const SUPPORTED_COMPILERS = {
