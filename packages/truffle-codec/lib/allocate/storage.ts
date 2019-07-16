@@ -368,7 +368,10 @@ export function storageSizeForType(dataType: CodecUtils.Types.Type, userDefinedT
       let fullType = <CodecUtils.Types.EnumType>CodecUtils.Types.fullType(dataType, userDefinedTypes);
       if(!fullType.options) {
         throw new CodecUtils.Errors.DecodingError(
-          new CodecUtils.Errors.UserDefinedTypeNotFoundError(dataType)
+          {
+            kind: "UserDefinedTypeNotFoundError",
+            type: dataType
+          }
         );
       }
       return {bytes: Math.ceil(Math.log2(fullType.options.length) / 8)};
@@ -417,7 +420,10 @@ export function storageSizeForType(dataType: CodecUtils.Types.Type, userDefinedT
       let allocation = allocations[dataType.id];
       if(!allocation) {
         throw new CodecUtils.Errors.DecodingError(
-          new CodecUtils.Errors.UserDefinedTypeNotFoundError(dataType)
+          {
+            kind: "UserDefinedTypeNotFoundError",
+            type: dataType
+          }
         );
       }
       return allocation.size;

@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:types:storage");
 
 import * as CodecUtils from "truffle-codec-utils";
+import { encodeMappingKey } from "../encode/key";
 import BN from "bn.js";
 
 export type StorageLength = {bytes: number} | {words: number};
@@ -53,7 +54,7 @@ export function equalSlots(slot1: Slot | undefined, slot2: Slot | undefined): bo
   if(!equalSlots(slot1.path, slot2.path)) {
     return false;
   }
-  //to compare keys, we'll just compare their toSoliditySha3Input (HACK?)
+  //to compare keys, we'll just compare their hex encodings
   //(yes, that leaves some wiggle room, as it could consider different
   //*types* of keys to be equal, but if keys are the only difference then
   //that should determine those types, so it shouldn't be a problem)
@@ -62,8 +63,8 @@ export function equalSlots(slot1: Slot | undefined, slot2: Slot | undefined): bo
     return !slot1.key && !slot2.key;
   }
   //if they do have keys, though...
-  let { type: type1, value: value1 } = slot1.key.toSoliditySha3Input();
-  let { type: type2, value: value2 } = slot2.key.toSoliditySha3Input();
-  return type1 === type2 && value1.toString() === value2.toString(); //HACK: since values may be
-  //BNs, we compare by toString instead of by the value itself
+  return CodecUtils.EVM.equalData(
+    encodeMappingKey(slot1.key),
+    encodeMappingKey(slot2.key)
+  );
 }

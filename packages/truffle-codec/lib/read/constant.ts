@@ -24,7 +24,10 @@ export function readDefinition(definition: CodecUtils.AstDefinition): Uint8Array
       //handle right now.  sorry.
       debug("unsupported constant definition type");
       throw new Errors.DecodingError(
-        new Errors.UnsupportedConstantError(definition)
+        {
+          kind: "UnsupportedConstantError",
+          definition
+        }
       );
   }
 }

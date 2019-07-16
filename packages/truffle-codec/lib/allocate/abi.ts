@@ -213,7 +213,10 @@ export function abiSizeForType(dataType: CodecUtils.Types.Type, allocations?: Al
       const allocation = allocations[dataType.id];
       if(!allocation) {
         throw new CodecUtils.Errors.DecodingError(
-          new CodecUtils.Errors.UserDefinedTypeNotFoundError(dataType)
+          {
+            kind: "UserDefinedTypeNotFoundError",
+            type: dataType
+          }
         );
       }
       return allocation.length;
@@ -235,7 +238,10 @@ export function isTypeDynamic(dataType: CodecUtils.Types.Type, allocations?: All
       const allocation = allocations[dataType.id];
       if(!allocation) {
         throw new CodecUtils.Errors.DecodingError(
-          new CodecUtils.Errors.UserDefinedTypeNotFoundError(dataType)
+          {
+            kind: "UserDefinedTypeNotFoundError",
+            type: dataType
+          }
         );
       }
       return allocation.dynamic;

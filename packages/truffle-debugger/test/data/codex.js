@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("test:data:codex");
 
 import { assert } from "chai";
+import { Conversion as ConversionUtils } from "truffle-codec-utils";
 
 import Ganache from "ganache-core";
 
@@ -126,7 +127,7 @@ describe("Codex", function() {
     await session.continueUntilBreakpoint(); //run till end
     debug("made it to end of transaction");
 
-    const surface = (await session.variable("surface")).nativize();
+    const surface = ConversionUtils.nativize(await session.variable("surface"));
 
     assert.equal(surface["ping"], 1);
   });
@@ -147,7 +148,7 @@ describe("Codex", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const x = (await session.variable("x")).nativize();
+    const x = ConversionUtils.nativize(await session.variable("x"));
 
     assert.equal(x, 1);
   });
@@ -168,7 +169,7 @@ describe("Codex", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const x = (await session.variable("x")).nativize();
+    const x = ConversionUtils.nativize(await session.variable("x"));
 
     assert.equal(x, 1);
   });

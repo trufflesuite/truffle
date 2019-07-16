@@ -25,6 +25,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
     //if we don't know the contract ID, we can't decode
     return {
       kind: "unknown",
+      decodingMode: "full",
       data: CodecUtils.Conversion.toHexString(info.state.calldata)
     }
   }
@@ -55,7 +56,8 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
     return {
       kind: "fallback",
       class: contractType,
-      data: CodecUtils.Conversion.toHexString(info.state.calldata)
+      data: CodecUtils.Conversion.toHexString(info.state.calldata),
+      decodingMode: "full",
     };
   }
   //you can't map with a generator, so we have to do this map manually
@@ -79,7 +81,8 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       kind: "constructor",
       class: contractType,
       arguments: decodedArguments,
-      bytecode: CodecUtils.Conversion.toHexString(info.state.calldata.slice(0, allocation.offset))
+      bytecode: CodecUtils.Conversion.toHexString(info.state.calldata.slice(0, allocation.offset)),
+      decodingMode: "full",
     };
   }
   else {
@@ -88,7 +91,8 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       class: contractType,
       name: allocation.definition.name,
       arguments: decodedArguments,
-      selector
+      selector,
+      decodingMode: "full"
     };
   }
 }
@@ -177,7 +181,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
         ));
       }
       catch(_) {
-        continue allocationAttempts; //if an error occurs, it's not a valid decoding
+        continue allocationAttempts; //if an error occurred, this isn't a valid decoding!
       }
       const name = argumentAllocation.definition.name;
       const indexed = argumentAllocation.pointer.location === "eventtopic";
@@ -204,7 +208,8 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
           kind: "anonymous",
           class: contractType,
           name: allocation.definition.name,
-          arguments: decodedArguments
+          arguments: decodedArguments,
+          decodingMode: "full"
         });
       }
       else {
@@ -213,7 +218,8 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
           class: contractType,
           name: allocation.definition.name,
           arguments: decodedArguments,
-          selector
+          selector,
+          decodingMode: "full"
         });
       }
     }

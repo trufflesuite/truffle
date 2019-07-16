@@ -33,11 +33,14 @@ export namespace Types {
 
   export type Type = UintType | IntType | BoolType | BytesType | AddressType
     | FixedType | UfixedType | StringType | ArrayType | MappingType | FunctionType
-    | StructType | EnumType | ContractType | MagicType;
+    | StructType | EnumType | ContractType | MagicType | TupleType;
 
   export interface UintType {
     typeClass: "uint";
     bits: number;
+    enumTypeNameHint?: string;
+    enumKindHint?: "local" | "global";
+    enumDefiningContractHint?: string;
   }
 
   export interface IntType {
@@ -66,6 +69,7 @@ export namespace Types {
   export interface AddressType {
     typeClass: "address";
     payable: boolean;
+    contractTypeNameHint?: string;
   }
 
   export interface StringType {
@@ -159,7 +163,7 @@ export namespace Types {
     typeName: string;
     definingContractName: string;
     definingContract?: ContractTypeNative;
-    memberTypes?: {name: string, type: Type}[]; //these should be in order
+    memberTypes?: NameTypePair[]; //these should be in order
     location?: Ast.Location;
   }
 
@@ -170,6 +174,19 @@ export namespace Types {
     typeName: string;
     memberTypes?: NameTypePair[]; //these should be in order
     location?: Ast.Location;
+  }
+
+  export interface OptionallyNamedType {
+    name?: string;
+    type: Type;
+  }
+
+  export interface TupleType {
+    typeClass: "tuple";
+    memberTypes: OptionallyNamedType[];
+    structTypeNameHint?: string;
+    structKindHint?: "local" | "global";
+    structDefiningContractHint?: string;
   }
 
   export type EnumType = EnumTypeLocal | EnumTypeGlobal;

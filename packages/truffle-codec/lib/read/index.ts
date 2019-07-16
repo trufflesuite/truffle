@@ -27,30 +27,20 @@ export default function* read(pointer: Pointer.DataPointer, state: EvmState): It
       return bytes.readBytes(state.eventdata, pointer.start, pointer.length);
 
     case "stackliteral":
+      //nothing to do, just return it
       return pointer.literal;
 
     case "definition":
       return constant.readDefinition(pointer.definition);
 
     case "special":
-      //not bothering with error handling on this oen as I don't expect errors
+      //this one is simple enough to inline
+      //not bothering with error handling on this one as I don't expect errors
       return state.specials[pointer.special];
 
     case "eventtopic":
-      return readTopic(state.eventtopics, pointer.topic);
-
-    //...and in the case of "abi", which shouldn't happen, we'll just fall off
-    //the end and cause a problem :P
+      //this one is simple enough to inline as well; similarly not bothering
+      //with error handling
+      return state.eventtopics[pointer.topic];
   }
-}
-
-//this one is simple enough I'm keeping it in the same file
-function readTopic(topics: Uint8Array[], index: number) {
-  let topic = topics[index];
-  if(topic === undefined) {
-    throw new Errors.DecodingError(
-      new Errors.ReadErrorTopic(index)
-    );
-  }
-  return topic;
 }
