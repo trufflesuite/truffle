@@ -21,7 +21,7 @@ const Develop = {
     const logger = options.logger || console;
     //check that genesis-time config option passed through the truffle-config.js file is a valid time.
     if (isNaN(Date.parse(options.time))) {
-      options.time = new Date();
+      options.time = Date.now();
       logger.log(
         "\x1b[31m%s\x1b[0m",
         "Invalid Date passed to genesis-time, using current Date instead",
