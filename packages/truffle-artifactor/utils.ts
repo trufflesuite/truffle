@@ -1,9 +1,9 @@
 import fse from "fs-extra";
 import _ from "lodash";
-import Contract from "truffle-contract";
+import { ContractObject } from "truffle-contract-schema";
 
 export function writeArtifact(
-  completeArtifact: Contract.TruffleContract,
+  completeArtifact: ContractObject,
   outputPath: string
 ) {
   completeArtifact.updatedAt = new Date().toISOString();
@@ -15,8 +15,8 @@ export function writeArtifact(
 }
 
 export function finalizeArtifact(
-  normalizedExistingArtifact: Contract.TruffleContract,
-  normalizedNewArtifact: Contract.TruffleContract
+  normalizedExistingArtifact: ContractObject,
+  normalizedNewArtifact: ContractObject
 ) {
   const knownNetworks = _.merge(
     {},
