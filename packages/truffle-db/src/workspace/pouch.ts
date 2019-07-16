@@ -198,7 +198,7 @@ export class Workspace {
           // hash includes address and network of this contractInstance
           const id = soliditySha3(jsonStableStringify({
             address: address,
-            network: network
+            network: { id: network.id }
           }));
 
           const contractInstance = await this.contractInstance({ id }) || { ...contractInstanceInput, id };
