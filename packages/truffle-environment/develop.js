@@ -19,13 +19,13 @@ const Develop = {
     }
 
     const logger = options.logger || console;
-    logger.log(`In Env - Genesis Block time: ${options.time}`);
     //check that genesis-time config option passed through the truffle-config.js file is a valid time.
-    const checkDate = Date.parse(options.time);
-    logger.log(`In Env - Date Object: ${checkDate}`);
-    if (isNaN(checkDate)) {
-      throw new Error(
-        "Fatal: genesis-time passed through truffle-config is invalid."
+    if (isNaN(Date.parse(options.time))) {
+      options.time = new Date();
+      logger.log(
+        "\x1b[31m%s\x1b[0m",
+        "Invalid Date passed to genesis-time, using current Date instead",
+        "\x1b[0m"
       );
     }
 
