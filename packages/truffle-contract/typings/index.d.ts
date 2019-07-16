@@ -1,11 +1,7 @@
 declare module "truffle-contract" {
+  import { ContractObject } from "truffle-contract-schema"
   namespace TruffleContract {
-    export interface TruffleContract {
-      contractName: string;
-      contract_name: string;
-      updatedAt: string;
-      networks: object;
-    }
+    export type Contract = ContractObject;
   }
   export default TruffleContract;
 }
