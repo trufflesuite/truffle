@@ -8,6 +8,7 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "5.0.29",
+  "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
   },
