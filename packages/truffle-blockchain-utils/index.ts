@@ -1,5 +1,7 @@
+import { Provider, Callback, JsonRPCResponse } from "web3/providers"
+
 const Blockchain = {
-  getBlockByNumber(blockNumber, provider, callback) {
+  getBlockByNumber(blockNumber: string, provider: Provider, callback: Callback<JsonRPCResponse>) {
     const params = [blockNumber, true];
     provider.send(
       {
@@ -12,7 +14,7 @@ const Blockchain = {
     );
   },
 
-  getBlockByHash(blockHash, provider, callback) {
+  getBlockByHash(blockHash: string, provider: Provider, callback: Callback<JsonRPCResponse>) {
     const params = [blockHash, true];
     provider.send(
       {
@@ -25,8 +27,8 @@ const Blockchain = {
     );
   },
 
-  parse(uri) {
-    const parsed = {};
+  parse(uri: string) {
+    const parsed: any = {};
     if (uri.indexOf("blockchain://") !== 0) return parsed;
 
     const cleanUri = uri.replace("blockchain://", "");
@@ -39,14 +41,14 @@ const Blockchain = {
     return parsed;
   },
 
-  asURI(provider, callback) {
-    let genesis, latest;
+  asURI(provider: Provider, callback: Callback<any>) {
+    let genesis: any, latest;
 
-    this.getBlockByNumber("0x0", provider, (err, { result }) => {
+    this.getBlockByNumber("0x0", provider, (err: Error, { result } : JsonRPCResponse) => {
       if (err) return callback(err);
       genesis = result;
 
-      this.getBlockByNumber("latest", provider, (err, { result }) => {
+      this.getBlockByNumber("latest", provider, (err: Error, { result } : JsonRPCResponse) => {
         if (err) return callback(err);
         latest = result;
         const url = `blockchain://${genesis.hash.replace(
@@ -58,18 +60,18 @@ const Blockchain = {
     });
   },
 
-  matches(uri, provider, callback) {
-    const parsedUri = this.parse(uri);
+  matches(uri: string, provider: Provider, callback: Callback<any>) {
+    const parsedUri: any = this.parse(uri);
 
     const expected_genesis = parsedUri.genesis_hash;
     const expected_block = parsedUri.block_hash;
 
-    this.getBlockByNumber("0x0", provider, (err, { result }) => {
+    this.getBlockByNumber("0x0", provider, (err: Error, { result } : JsonRPCResponse) => {
       if (err) return callback(err);
       const block = result;
       if (block.hash !== expected_genesis) return callback(null, false);
 
-      this.getBlockByHash(expected_block, provider, (err, { result }) => {
+      this.getBlockByHash(expected_block, provider, (err: Error, { result } : JsonRPCResponse) => {
         // Treat an error as if the block didn't exist. This is because
         // some clients respond differently.
         const block = result;
@@ -83,4 +85,4 @@ const Blockchain = {
   }
 };
 
-module.exports = Blockchain;
+export = Blockchain;
