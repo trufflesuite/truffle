@@ -1,4 +1,4 @@
-const BlockchainUtils = require("../index");
+const BlockchainUtils = require("../");
 const assert = require("assert");
 
 describe("BlockchainUtils.parse", () => {
