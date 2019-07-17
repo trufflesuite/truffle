@@ -20,6 +20,7 @@
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-blockchain-utils#readme",
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
   "devDependencies": {
-    "mocha": "5.2.0"
+    "mocha": "5.2.0",
+    "typescript": "^3.5.3"
   }
 }
