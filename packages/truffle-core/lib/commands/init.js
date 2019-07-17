@@ -13,7 +13,7 @@ var command = {
           "that exist in the directory."
       },
       {
-        option: "--create-dir <anem>",
+        option: "--create-dir <name>",
         description:
           "Specify the directory name to create a directory and initialize within."
       }
