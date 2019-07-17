@@ -430,7 +430,7 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
   }
   let contractId = (<Types.ContractTypeNative> contract.class).id; //sorry! will be fixed soon!
   let context = Object.values(info.contexts).find(
-    context => context.contractId === contractId
+    context => context.contractId.toString() === contractId //similarly! I hope!
   );
   let abiEntry = context.abi !== undefined
     ? context.abi[selector]
