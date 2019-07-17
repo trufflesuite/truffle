@@ -12,6 +12,7 @@
   "main": "dist/index.js",
   "types": "src/index.ts",
   "scripts": {
+    "docs": "typedoc",
     "prepare": "yarn build",
     "build": "node_modules/.bin/tsc",
     "start": "node_modules/.bin/tsc --watch",
@@ -33,8 +34,9 @@
     "@types/lodash.escaperegexp": "^4.1.6",
     "@types/semver": "^6.0.0",
     "@types/web3": "^1.0.19",
-    "truffle-contract-schema": "^3.0.11",
     "json-schema-to-typescript": "^6.1.3",
+    "truffle-contract-schema": "^3.0.11",
+    "typedoc": "^0.14.2",
     "typescript": "^3.5.1"
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"

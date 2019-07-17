@@ -1,0 +1,15 @@
+{
+  "name": "truffle-codec-utils",
+  "mode": "file",
+  "tsconfig": "tsconfig.json",
+  "out": "docs",
+  "theme": "default",
+  "ignoreCompilerErrors": false,
+  "preserveConstEnums": true,
+  "stripInternals": "true",
+  "exclude": [
+    "**/test/*"
+  ],
+  "target": "ES6"
+}
+

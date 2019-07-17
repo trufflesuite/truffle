@@ -18,3 +18,5 @@ packages/truffle-debugger/.tmp
 
 # truffle-contract
 packages/truffle-contract/dist
+
+packages/truffle-codec-utils/docs
