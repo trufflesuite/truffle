@@ -314,7 +314,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
     : location;
 
   const typeId = dataType.id;
-  const structAllocation = allocations[typeId];
+  const structAllocation = allocations[parseInt(typeId)];
   if(!structAllocation) {
     let error = {
       kind: "UserDefinedTypeNotFoundError" as "UserDefinedTypeNotFoundError",

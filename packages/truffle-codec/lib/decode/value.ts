@@ -454,14 +454,7 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
 export function decodeInternalFunction(dataType: Types.FunctionInternalType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
   let deployedPc: number = CodecUtils.Conversion.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = CodecUtils.Conversion.toBN(constructorPcBytes).toNumber();
-  let context: Types.ContractType = {
-    typeClass: "contract",
-    kind: "native",
-    id: info.currentContext.contractId,
-    typeName: info.currentContext.contractName,
-    contractKind: info.currentContext.contractKind,
-    payable: info.currentContext.payable
-  };
+  let context: Types.ContractType = CodecUtils.Contexts.contextToType(info.currentContext);
   //before anything else: do we even have an internal functions table?
   //if not, we'll just return the info we have without really attemting to decode
   if(!info.internalFunctionsTable) {
@@ -550,7 +543,7 @@ export function decodeInternalFunction(dataType: Types.FunctionInternalType, dep
   let definedIn: Types.ContractType = {
     typeClass: "contract",
     kind: "native",
-    id: functionEntry.contractId,
+    id: functionEntry.contractId.toString(),
     typeName: functionEntry.contractName,
     contractKind: functionEntry.contractKind,
     payable: functionEntry.contractPayable

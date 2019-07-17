@@ -210,7 +210,7 @@ export function abiSizeForType(dataType: CodecUtils.Types.Type, allocations?: Al
           return length * baseSize;
       }
     case "struct":
-      const allocation = allocations[dataType.id];
+      const allocation = allocations[parseInt(dataType.id)];
       if(!allocation) {
         throw new CodecUtils.Errors.DecodingError(
           {
@@ -235,7 +235,7 @@ export function isTypeDynamic(dataType: CodecUtils.Types.Type, allocations?: All
     case "array":
       return dataType.kind === "dynamic" || (dataType.length.gtn(0) && isTypeDynamic(dataType.baseType, allocations));
     case "struct":
-      const allocation = allocations[dataType.id];
+      const allocation = allocations[parseInt(dataType.id)];
       if(!allocation) {
         throw new CodecUtils.Errors.DecodingError(
           {

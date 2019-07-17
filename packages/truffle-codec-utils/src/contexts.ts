@@ -196,7 +196,7 @@ export namespace Contexts {
     return {
       typeClass: "contract",
       kind: "native",
-      id: context.contractId,
+      id: context.contractId.toString(),
       typeName: context.contractName,
       contractKind: context.contractKind,
       payable: context.payable

@@ -120,7 +120,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       const { allocations: { memory: allocations }, userDefinedTypes } = info;
 
       const typeId = dataType.id;
-      const structAllocation = allocations[typeId];
+      const structAllocation = allocations[parseInt(typeId)];
       if(!structAllocation) {
         return {
           type: dataType,

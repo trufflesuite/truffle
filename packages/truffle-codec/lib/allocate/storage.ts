@@ -417,7 +417,7 @@ export function storageSizeForType(dataType: CodecUtils.Types.Type, userDefinedT
         }
       }
     case "struct":
-      let allocation = allocations[dataType.id];
+      let allocation = allocations[parseInt(dataType.id)];
       if(!allocation) {
         throw new CodecUtils.Errors.DecodingError(
           {

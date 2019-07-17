@@ -245,7 +245,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
     case "struct": {
 
       const typeId = dataType.id;
-      const structAllocation = allocations[typeId];
+      const structAllocation = allocations[parseInt(typeId)];
       if(!structAllocation) {
         return {
           type: dataType,

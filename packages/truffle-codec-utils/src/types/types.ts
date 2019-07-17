@@ -23,6 +23,8 @@ const debug = debugModule("codec-utils:types:types");
 
 //NOTE: not all of these optional fields are actually implemented. Some are
 //just intended for the future.
+//ALSO NOTE: IDs are strings even though they're currently numeric because
+//that might change in the future.
 
 import BN from "bn.js";
 import * as Ast from "../ast";
@@ -38,18 +40,18 @@ export namespace Types {
   export interface UintType {
     typeClass: "uint";
     bits: number;
-    enumTypeNameHint?: string;
-    enumKindHint?: "local" | "global";
-    enumDefiningContractHint?: string;
+    typeHint?: string;
   }
 
   export interface IntType {
     typeClass: "int";
     bits: number;
+    typeHint?: string;
   }
 
   export interface BoolType {
     typeClass: "bool";
+    typeHint?: string;
   }
 
   export type BytesType = BytesTypeStatic | BytesTypeDynamic;
@@ -58,35 +60,40 @@ export namespace Types {
     typeClass: "bytes";
     kind: "static";
     length: number;
+    typeHint?: string;
   }
 
   export interface BytesTypeDynamic {
     typeClass: "bytes";
     kind: "dynamic";
     location?: Ast.Location;
+    typeHint?: string;
   }
 
   export interface AddressType {
     typeClass: "address";
     payable: boolean;
-    contractTypeNameHint?: string;
+    typeHint?: string;
   }
 
   export interface StringType {
     typeClass: "string";
     location?: Ast.Location;
+    typeHint?: string;
   }
 
   export interface FixedType {
     typeClass: "fixed";
     bits: number;
     places: number;
+    typeHint?: string;
   }
 
   export interface UfixedType {
     typeClass: "ufixed";
     bits: number;
     places: number;
+    typeHint?: string;
   }
 
   export type ArrayType = ArrayTypeStatic | ArrayTypeDynamic;
@@ -97,6 +104,7 @@ export namespace Types {
     baseType: Type;
     length: BN;
     location?: Ast.Location;
+    typeHint?: string;
   }
 
   export interface ArrayTypeDynamic {
@@ -104,6 +112,7 @@ export namespace Types {
     kind: "dynamic";
     baseType: Type;
     location?: Ast.Location;
+    typeHint?: string;
   }
 
   export type ElementaryType = UintType | IntType | BoolType | BytesType | FixedType
@@ -144,6 +153,7 @@ export namespace Types {
     visibility: "external";
     kind: "general";
     //we do not presently support bound functions
+    typeHint?: string;
   }
 
   export type ContractDefinedType = StructTypeLocal | EnumTypeLocal;
@@ -159,7 +169,7 @@ export namespace Types {
   export interface StructTypeLocal {
     typeClass: "struct";
     kind: "local";
-    id: number;
+    id: string;
     typeName: string;
     definingContractName: string;
     definingContract?: ContractTypeNative;
@@ -170,7 +180,7 @@ export namespace Types {
   export interface StructTypeGlobal {
     typeClass: "struct";
     kind: "global";
-    id: number;
+    id: string;
     typeName: string;
     memberTypes?: NameTypePair[]; //these should be in order
     location?: Ast.Location;
@@ -184,9 +194,7 @@ export namespace Types {
   export interface TupleType {
     typeClass: "tuple";
     memberTypes: OptionallyNamedType[];
-    structTypeNameHint?: string;
-    structKindHint?: "local" | "global";
-    structDefiningContractHint?: string;
+    typeHint?: string;
   }
 
   export type EnumType = EnumTypeLocal | EnumTypeGlobal;
@@ -194,7 +202,7 @@ export namespace Types {
   export interface EnumTypeLocal {
     typeClass: "enum";
     kind: "local";
-    id: number;
+    id: string;
     typeName: string;
     definingContractName: string;
     definingContract?: ContractTypeNative;
@@ -204,7 +212,7 @@ export namespace Types {
   export interface EnumTypeGlobal {
     typeClass: "enum";
     kind: "global";
-    id: number;
+    id: string;
     typeName: string;
     options?: string[]; //these should be in order
   }
@@ -214,7 +222,7 @@ export namespace Types {
   export interface ContractTypeNative {
     typeClass: "contract";
     kind: "native";
-    id: number;
+    id: string;
     typeName: string;
     contractKind?: Ast.ContractKind;
     payable?: boolean; //will be useful in the future
@@ -245,7 +253,7 @@ export namespace Types {
   export type ReferenceType = ArrayType | MappingType | StructType | StringType | BytesTypeDynamic;
 
   export interface TypesById {
-    [id: number]: UserDefinedType;
+    [id: string]: UserDefinedType;
   };
 
   //NOTE: the following function will *not* work for arbitrary nodes! It will,
@@ -431,7 +439,7 @@ export namespace Types {
         break; //to satisfy typescript
       }
       case "struct": {
-        let id = DefinitionUtils.typeId(definition);
+        let id = DefinitionUtils.typeId(definition).toString();
         let qualifiedName = definition.typeName
           ? definition.typeName.name
           : definition.name;
@@ -456,7 +464,7 @@ export namespace Types {
         };
       }
       case "enum": {
-        let id = DefinitionUtils.typeId(definition);
+        let id = DefinitionUtils.typeId(definition).toString();
         let qualifiedName = definition.typeName
           ? definition.typeName.name
           : definition.name;
@@ -470,7 +478,7 @@ export namespace Types {
         };
       }
       case "contract": {
-        let id = DefinitionUtils.typeId(definition);
+        let id = DefinitionUtils.typeId(definition).toString();
         let typeName = definition.typeName
           ? definition.typeName.name
           : definition.name;
@@ -499,7 +507,7 @@ export namespace Types {
   export function definitionToStoredType(definition: Ast.AstDefinition, compiler: CompilerVersion, referenceDeclarations?: Ast.AstReferences): UserDefinedType {
     switch(definition.nodeType) {
       case "StructDefinition": {
-        let id = definition.id;
+        let id = definition.id.toString();
         let [definingContractName, typeName] = definition.canonicalName.split(".");
         let memberTypes: {name: string, type: Type}[] = definition.members.map(
           member => ({name: member.name, type: definitionToType(member, compiler, null)})
@@ -509,7 +517,7 @@ export namespace Types {
           let contractDefinition = Object.values(referenceDeclarations).find(
             node => node.nodeType === "ContractDefinition" &&
             node.nodes.some(
-              (subNode: Ast.AstDefinition) => subNode.id === id
+              (subNode: Ast.AstDefinition) => subNode.id.toString() === id
             )
           );
           definingContract = <ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
@@ -525,7 +533,7 @@ export namespace Types {
         };
       }
       case "EnumDefinition": {
-        let id = definition.id;
+        let id = definition.id.toString();
         let [definingContractName, typeName] = definition.canonicalName.split(".");
         let options = definition.members.map(member => member.name);
         let definingContract;
@@ -533,7 +541,7 @@ export namespace Types {
           let contractDefinition = Object.values(referenceDeclarations).find(
             node => node.nodeType === "ContractDefinition" &&
             node.nodes.some(
-              (subNode: Ast.AstDefinition) => subNode.id === id
+              (subNode: Ast.AstDefinition) => subNode.id.toString() === id
             )
           );
           definingContract = <ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
@@ -549,7 +557,7 @@ export namespace Types {
         };
       }
       case "ContractDefinition": {
-        let id = definition.id;
+        let id = definition.id.toString();
         let typeName = definition.name;
         let contractKind = definition.contractKind;
         let payable = DefinitionUtils.isContractPayable(definition);
