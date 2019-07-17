@@ -4,6 +4,8 @@
   "description": "Utilities for identifying and managing blockchains",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
     "test": "mocha"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-blockchain-utils",
