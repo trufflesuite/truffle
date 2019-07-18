@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.0.24",
+  "version": "4.0.25",
   "main": "index.js",
   "scripts": {
     "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
@@ -38,7 +38,7 @@
     "ganache-core": "2.5.7",
     "mocha": "5.2.0",
     "temp": "^0.8.3",
-    "truffle-compile": "^4.1.4",
+    "truffle-compile": "^4.1.5",
     "uglify-es": "^3.3.9"
   },
   "keywords": [
