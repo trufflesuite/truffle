@@ -235,13 +235,13 @@ function prepareOutputSelection({ targets = [] }) {
  * Load solc and perform compilation
  */
 async function invokeCompiler({ compilerInput, options }) {
-  // load solc
   const supplierOptions = {
+    parser: options.parser,
     events: options.events,
     solcConfig: options.compilers.solc
   };
   const supplier = new CompilerSupplier(supplierOptions);
-  const solc = await supplier.load();
+  const { solc } = await supplier.load();
   const solcVersion = solc.version();
 
   // perform compilation

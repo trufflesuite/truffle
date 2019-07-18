@@ -90,15 +90,21 @@ module.exports = {
 
         // Load compiler
         const supplierOptions = {
+          parser: options.parser,
           events: options.events,
           solcConfig: options.compilers.solc
         };
         const supplier = new CompilerSupplier(supplierOptions);
         return supplier.load();
       })
-      .then(async solc => {
+      .then(async ({ solc, parserSolc }) => {
         // Get all the source code
-        const resolved = await this.resolveAllSources(resolver, allPaths, solc);
+        const resolved = await this.resolveAllSources(
+          resolver,
+          allPaths,
+          solc,
+          parserSolc
+        );
         // Generate hash of all sources including external packages - passed to solc inputs.
         const resolvedPaths = Object.keys(resolved);
         resolvedPaths.forEach(file => {
@@ -136,7 +142,12 @@ module.exports = {
 
             let imports;
             try {
-              imports = getImports(currentFile, resolved[currentFile], solc);
+              imports = await getImports(
+                currentFile,
+                resolved[currentFile],
+                solc,
+                parserSolc
+              );
             } catch (err) {
               err.message = `Error parsing ${currentFile}: ${err.message}`;
               throw err;
@@ -160,7 +171,7 @@ module.exports = {
 
   // Resolves sources in several async passes. For each resolved set it detects unknown
   // imports from external packages and adds them to the set of files to resolve.
-  async resolveAllSources(resolver, initialPaths, solc) {
+  async resolveAllSources(resolver, initialPaths, solc, parserSolc) {
     const mapping = {};
     const allPaths = initialPaths.slice();
 
@@ -194,7 +205,7 @@ module.exports = {
 
       // Resolve everything known and add it to the map, then inspect each file's
       // imports and add those to the list of paths to resolve if we don't have it.
-      return Promise.all(promises).then(results => {
+      return Promise.all(promises).then(async results => {
         // Generate the sources mapping
         results.forEach(item => (mapping[item.file] = Object.assign({}, item)));
 
@@ -205,7 +216,7 @@ module.exports = {
           // Inspect the imports
           let imports;
           try {
-            imports = getImports(result.file, result, solc);
+            imports = await getImports(result.file, result, solc, parserSolc);
           } catch (err) {
             if (err.message.includes("requires different compiler version")) {
               const contractSolcPragma = err.message.match(

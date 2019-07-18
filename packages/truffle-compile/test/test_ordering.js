@@ -53,7 +53,7 @@ describe("Compile - solidity ^0.4.0", function() {
     this.timeout(40000);
 
     const supplier = new CompilerSupplier(supplierOptions);
-    solc = await supplier.load();
+    ({ solc } = await supplier.load());
   });
 
   describe("ABI Ordering", function() {

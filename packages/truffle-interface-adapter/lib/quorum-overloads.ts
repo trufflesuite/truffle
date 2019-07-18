@@ -1,13 +1,23 @@
 import BN from "bn.js";
-import Web3 from "web3";
+import { Web3Shim } from "./web3-shim";
 import {AbiCoder as EthersAbi} from 'ethers/utils/abi-coder';
 import _ from "underscore";
 
+export const QuorumDefinition = {
+  async initNetworkType (web3: Web3Shim) {
+    // duck punch some of web3's output formatters
+    overrides.getBlock(web3);
+    overrides.getTransaction(web3);
+    overrides.getTransactionReceipt(web3);
+    overrides.decodeParameters(web3);
+  }
+}
+
+const overrides = {
 // The ts-ignores are ignoring the checks that are
 // saying that web3.eth.getBlock is a function and doesn't
 // have a `method` property, which it does
-
-export function getBlock(web3: Web3) {
+  "getBlock": (web3: Web3Shim) => {
   // @ts-ignore
   const _oldBlockFormatter = web3.eth.getBlock.method.outputFormatter;
   // @ts-ignore
@@ -42,9 +52,9 @@ export function getBlock(web3: Web3) {
 
     return result;
   };
-};
+  },
 
-export function getTransaction(web3: Web3) {
+  "getTransaction": (web3: Web3Shim) => {
   const _oldTransactionFormatter =
     // @ts-ignore
     web3.eth.getTransaction.method.outputFormatter;
@@ -67,9 +77,9 @@ export function getTransaction(web3: Web3) {
 
     return result;
   };
-};
+  },
 
-export function getTransactionReceipt(web3: Web3) {
+  "getTransactionReceipt": (web3: Web3Shim) => {
   const _oldTransactionReceiptFormatter =
     // @ts-ignore
     web3.eth.getTransactionReceipt.method.outputFormatter;
@@ -92,12 +102,12 @@ export function getTransactionReceipt(web3: Web3) {
 
     return result;
   };
-};
+  },
 
 // The primary difference between this decodeParameters function and web3's
 // is that the 'Out of Gas?' zero/null bytes guard has been removed and any
 // falsy bytes are interpreted as a zero value.
-export function decodeParameters(web3: Web3) {
+  "decodeParameters": (web3: Web3Shim) => {
   const _oldDecodeParameters = web3.eth.abi.decodeParameters;
 
   const ethersAbiCoder = new EthersAbi((type, value) => {
@@ -142,4 +152,5 @@ export function decodeParameters(web3: Web3) {
 
     return returnValue;
   };
-}
+  }
+};

@@ -18,27 +18,22 @@ describe("NPM integration", function() {
   var parentContractSource =
     "pragma solidity ^0.5.0; import 'fake_source/contracts/Module.sol'; contract Parent {}";
 
-  before("Create a sandbox", function(done) {
-    this.timeout(15000);
-    Box.sandbox("default", function(err, result) {
-      if (err) return done(err);
-      config = result;
-      config.resolver = new Resolver(config);
-      config.artifactor = new Artifactor(config.contracts_build_directory);
-      config.networks = {
-        development: {
-          network_id: 1
-        }
-      };
-      config.network = "development";
+  before("Create a sandbox", async () => {
+    config = await Box.sandbox("default");
+    config.resolver = new Resolver(config);
+    config.artifactor = new Artifactor(config.contracts_build_directory);
+    config.networks = {
+      development: {
+        network_id: 1
+      }
+    };
+    config.network = "development";
 
-      fs.writeFileSync(
-        path.join(config.contracts_directory, "Parent.sol"),
-        parentContractSource,
-        { encoding: "utf8" }
-      );
-      done();
-    });
+    fs.writeFileSync(
+      path.join(config.contracts_directory, "Parent.sol"),
+      parentContractSource,
+      { encoding: "utf8" }
+    );
   });
 
   before("Create a fake npm source", function(done) {
@@ -129,4 +124,4 @@ describe("NPM integration", function() {
       }
     );
   });
-});
+}).timeout(10000);
