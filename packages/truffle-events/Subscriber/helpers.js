@@ -54,7 +54,7 @@ const convertHandlerNameToRegex = name => {
     start += match.index + matchLength;
     str += cleanString + starRegex;
   }
-  str += name.substr(last).replace(reRegExpChar, "\\$&");
+  str += name.substr(start).replace(reRegExpChar, "\\$&");
   return new RegExp(`^${str.substr(1)}$`, "i");
 };
 
