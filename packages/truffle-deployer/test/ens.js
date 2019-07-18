@@ -59,7 +59,7 @@ describe("ENS class", () => {
     });
   });
 
-  describe("register(address, name, from)", () => {
+  describe("setAddress(name, addressOrContract, from)", () => {
     describe("when there is no registry deployed", () => {
       beforeEach(() => {
         sinon.spy(ens, "deployNewDevENSRegistry");
@@ -70,11 +70,7 @@ describe("ENS class", () => {
       });
 
       it("calls deployNewDevENSRegistry", async () => {
-        await ens.setAddress({
-          address: addressToSet,
-          name: "namezzz",
-          from: fromAddress
-        });
+        await ens.setAddress("namezzz", addressToSet, fromAddress);
         assert(ens.deployNewDevENSRegistry.called);
       });
     });
@@ -88,12 +84,12 @@ describe("ENS class", () => {
       describe("when the name is not owned by the from address", async () => {
         it("errors when the name is not owned by the from address", async () => {
           try {
-            await ens.setAddress({
-              address: addressToSet,
-              name: "namezzz",
-              from: fromAddress,
+            await ens.setAddress(
+              "namezzz",
+              addressToSet,
+              fromAddress,
               registryAddress
-            });
+            );
           } catch (error) {
             const expectedMessageSnippet = `The default address or address provided in the "from"`;
             assert(error.message.includes(expectedMessageSnippet));
@@ -117,12 +113,12 @@ describe("ENS class", () => {
         });
 
         it("sets the resolver to resolve to the proper address", async () => {
-          await ens.setAddress({
-            address: addressToSet,
-            name: "namezzz",
-            from: fromAddress,
+          await ens.setAddress(
+            "namezzz",
+            addressToSet,
+            fromAddress,
             registryAddress
-          });
+          );
           let resolvedAddress = await ensjs.resolver("namezzz").addr();
           assert(resolvedAddress === addressToSet);
         });
