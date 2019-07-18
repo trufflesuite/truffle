@@ -8,7 +8,7 @@ class Subscriber {
 
     this.emitter = emitter;
     // Object for storing unsubscribe methods for non-globbed listeners
-    this.unsubscribeListener = {};
+    this.unsubscribeListeners = {};
 
     if (logger) this.logger = logger;
     if (initialization) initialization.bind(this)();
@@ -36,11 +36,11 @@ class Subscriber {
   }
 
   removeListener(name) {
-    if (this.unsubscribeListener[name]) {
-      this.unsubscribeListener(name);
+    if (this.unsubscribeListeners.hasOwnProperty(name)) {
+      this.unsubscribeListeners[name]();
     }
     if (this.globbedHandlerLookupTable[name]) {
-      this.globbedHandlerLookupTable[name] = null;
+      delete this.globbedHandlerLookupTable[name];
     }
   }
 
@@ -53,7 +53,7 @@ class Subscriber {
   setUpListeners(handlers) {
     for (let handlerName in handlers) {
       handlers[handlerName].forEach(handler => {
-        this.unsubscribeListener[handlerName] = this.emitter.on(
+        this.unsubscribeListeners[handlerName] = this.emitter.on(
           handlerName,
           handler.bind(this)
         );
