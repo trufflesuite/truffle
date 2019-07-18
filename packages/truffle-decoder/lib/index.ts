@@ -7,13 +7,18 @@ import { Provider } from "web3/providers";
 import { ContractObject } from "truffle-contract-schema/spec";
 
 export async function forContract(contract: ContractObject, relevantContracts: ContractObject[], provider: Provider, address?: string): Promise<TruffleContractDecoder> {
-  let decoder = new TruffleContractDecoder(contract, relevantContracts, provider, address);
-  await decoder.init();
-  return decoder;
+  let wireDecoder = new TruffleWireDecoder([contract, ...relevantContracts], provider);
+  let contractDecoder = new TruffleContractDecoder(contract, wireDecoder, address);
+  await contractDecoder.init();
+  return contractDecoder;
 }
 
 export async function forProject(contracts: ContractObject[], provider: Provider): Promise<TruffleWireDecoder> {
-  let decoder = new TruffleWireDecoder(contracts, provider);
-  await decoder.init();
-  return decoder;
+  return new TruffleWireDecoder(contracts, provider);
+}
+
+export async function forContractWithDecoder(contract: ContractObject, decoder: TruffleWireDecoder, address?: string): Promise<TruffleContractDecoder> {
+  let contractDecoder = new TruffleContractDecoder(contract, decoder, address);
+  await contractDecoder.init();
+  return contractDecoder;
 }

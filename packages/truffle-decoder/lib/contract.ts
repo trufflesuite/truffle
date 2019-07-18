@@ -8,6 +8,7 @@ import Web3 from "web3";
 import { ContractObject } from "truffle-contract-schema/spec";
 import BN from "bn.js";
 import { Definition as DefinitionUtils, AbiUtils, EVM, AstDefinition, AstReferences } from "truffle-codec-utils";
+import TruffleWireDecoder from "./wire";
 import { BlockType, Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
 import { Provider } from "web3/providers";
@@ -23,16 +24,14 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contractNetwork: string;
   private contractAddress: string;
   private contractCode: string;
-  private relevantContracts: ContractObject[];
-
-  private contracts: DecoderTypes.ContractMapping = {};
-  private contractNodes: AstReferences = {};
-  private contexts: CodecUtils.Contexts.DecoderContexts = {};
-  private contextsById: CodecUtils.Contexts.DecoderContextsById = {}; //deployed contexts only
   private context: CodecUtils.Contexts.DecoderContext;
   private constructorContext: CodecUtils.Contexts.DecoderContext;
   private contextHash: string;
   private constructorContextHash: string;
+
+  private contexts: CodecUtils.Contexts.DecoderContexts = {};
+  private contextsById: CodecUtils.Contexts.DecoderContextsById = {}; //deployed contexts only
+  private constructorContextsById: CodecUtils.Contexts.DecoderContextsById = {};
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
@@ -43,80 +42,58 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private mappingKeys: Codec.Slot[] = [];
 
   private storageCache: DecoderTypes.StorageCache = {};
-  private codeCache: DecoderTypes.CodeCache = {};
 
-  constructor(contract: ContractObject, relevantContracts: ContractObject[], provider: Provider, address: string) {
+  private wireDecoder: TruffleWireDecoder;
+
+  constructor(contract: ContractObject, wireDecoder: TruffleWireDecoder, address?: string) {
     super();
 
-    this.web3 = new Web3(provider);
-
     this.contract = contract;
-    this.relevantContracts = relevantContracts;
-
     if(address !== undefined) {
       this.contractAddress = address;
     }
+    this.wireDecoder = wireDecoder;
+    this.web3 = wireDecoder.getWeb3();
+
     this.contractNode = Utils.getContractNode(this.contract);
     if(this.contractNode === undefined) {
       throw new DecoderTypes.ContractBeingDecodedHasNoNodeError();
     }
 
-    this.contracts[this.contractNode.id] = this.contract;
-    this.contractNodes[this.contractNode.id] = this.contractNode;
-    if(this.contract.deployedBytecode) { //just to be safe
-      const context = Utils.makeContext(this.contract, this.contractNode);
-      debug("adding context: %O", context);
+    ({ byHash: this.contexts, byId: this.contextsById, constructorsById: this.constructorContextsById } = this.wireDecoder.getContexts());
+
+    if(this.contract.deployedBytecode && this.contract.deployedBytecode !== "0x") {
       const hash = CodecUtils.Conversion.toHexString(
         CodecUtils.EVM.keccak256({type: "string",
-          value: context.binary
+          value: this.contract.deployedBytecode
         })
       );
-      debug("with hash: %s", hash);
-      this.context = context;
       this.contextHash = hash;
-      this.contexts[hash] = context;
+      this.context = this.contexts[hash];
     }
-    if(this.contract.bytecode) { //now the constructor version
-      const constructorContext = Utils.makeContext(this.contract, this.contractNode, true);
-      debug("adding context: %O", constructorContext);
+    if(this.contract.bytecode && this.contract.bytecode !== "0x") { //now the constructor version
       const hash = CodecUtils.Conversion.toHexString(
         CodecUtils.EVM.keccak256({type: "string",
-          value: constructorContext.binary
+          value: this.contract.bytecode
         })
       );
-      debug("with hash: %s", hash);
-      this.constructorContext = constructorContext;
       this.constructorContextHash = hash;
-      this.contexts[hash] = constructorContext;
+      this.constructorContext = this.contexts[hash];
     }
 
-    for(let relevantContract of this.relevantContracts) {
-      let node: AstDefinition = Utils.getContractNode(relevantContract);
-      if(node !== undefined) {
-        this.contracts[node.id] = relevantContract;
-        this.contractNodes[node.id] = node;
-        if(relevantContract.deployedBytecode) {
-          const context = Utils.makeContext(relevantContract, node);
-          debug("adding context: %O", context);
-          const hash = CodecUtils.Conversion.toHexString(
-            CodecUtils.EVM.keccak256({type: "string",
-              value: context.binary
-            })
-          );
-          this.contexts[hash] = context;
-        }
-      }
-    }
+    this.referenceDeclarations = this.wireDecoder.getReferenceDeclarations();
+    this.userDefinedTypes = this.wireDecoder.getUserDefinedTypes();
 
-    debug("contexts: %o", this.contexts);
-    this.contexts = <CodecUtils.Contexts.DecoderContexts>CodecUtils.Contexts.normalizeContexts(this.contexts);
-    this.context = this.contexts[this.contextHash];
-    this.constructorContext = this.contexts[this.constructorContextHash];
-    this.contextsById = Object.assign({}, ...Object.values(this.contexts).filter(
-      ({isConstructor}) => !isConstructor
-    ).map(context =>
-      ({[context.contractId]: context})
-    ));
+    this.allocations = {};
+    this.allocations.abi = this.wireDecoder.getAbiAllocations();
+    this.allocations.storage = Codec.getStorageAllocations(
+      this.referenceDeclarations,
+      {[this.contractNode.id]: this.contractNode}
+    );
+
+    debug("done with allocation");
+    this.stateVariableReferences = this.allocations.storage[this.contractNode.id].members;
+    debug("stateVariableReferences %O", this.stateVariableReferences);
   }
 
   public async init(): Promise<void> {
@@ -125,74 +102,9 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       this.contractAddress = this.contract.networks[this.contractNetwork].address;
     }
 
-    debug("init called");
-    [this.referenceDeclarations, this.userDefinedTypes] = this.getUserDefinedTypes();
-
-    let libraryAllocationInfo: Codec.ContractAllocationInfo[] =
-    Object.entries(this.contracts).filter(
-      ([id, _]) => this.contractNodes[parseInt(id)].contractKind === "library"
-    ).
-    map(
-      ([id, { abi }]) => ({
-        abi: AbiUtils.schemaAbiToAbi(abi),
-        id: parseInt(id)
-      })
+    this.contractCode = CodecUtils.Conversion.toHexString(
+      await this.getCode(this.contractAddress, await this.web3.eth.getBlockNumber())
     );
-
-    this.allocations = {};
-    this.allocations.storage = Codec.getStorageAllocations(
-      this.referenceDeclarations,
-      {[this.contractNode.id]: this.contractNode}
-    );
-    this.allocations.abi = Codec.getAbiAllocations(this.referenceDeclarations);
-    this.allocations.calldata = Codec.getCalldataAllocations(
-      [{
-        abi: AbiUtils.schemaAbiToAbi(this.contract.abi),
-        id: this.contractNode.id,
-        constructorContext: this.constructorContext
-      }],
-      this.referenceDeclarations,
-      this.allocations.abi
-    );
-    this.allocations.event = Codec.getEventAllocations(
-      [
-        {
-          abi: AbiUtils.schemaAbiToAbi(this.contract.abi),
-          id: this.contractNode.id
-        },
-        ...libraryAllocationInfo
-      ],
-      this.referenceDeclarations,
-      this.allocations.abi
-    );
-
-    debug("done with allocation");
-    this.stateVariableReferences = this.allocations.storage[this.contractNode.id].members;
-    debug("stateVariableReferences %O", this.stateVariableReferences);
-
-    this.contractCode = await this.web3.eth.getCode(this.contractAddress);
-  }
-
-  private getUserDefinedTypes(): [AstReferences, Types.TypesById] {
-    let references: AstReferences = {};
-    let types: Types.TypesById = {};
-    for(const id in this.contracts) {
-      const compiler = this.contracts[id].compiler;
-      //first, add the contract itself
-      const contractNode = this.contractNodes[id];
-      references[id] = contractNode;
-      types[id] = Types.definitionToStoredType(contractNode, compiler);
-      //now, add its struct and enum definitions
-      for(const node of contractNode.nodes) {
-        if(node.nodeType === "StructDefinition" || node.nodeType === "EnumDefinition") {
-          references[node.id] = node;
-          //HACK even though we don't have all the references, we only need one:
-          //the reference to the contract itself, which we just added, so we're good
-          types[node.id] = Types.definitionToStoredType(node, compiler, references);
-        }
-      }
-    }
-    return [references, types];
   }
 
   private async decodeVariable(variable: Codec.StorageMemberAllocation, block: number): Promise<Values.Result> {
@@ -300,23 +212,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   }
 
   private async getCode(address: string, block: number): Promise<Uint8Array> {
-    //first, set up any preliminary layers as needed
-    if(this.codeCache[block] === undefined) {
-      this.codeCache[block] = {};
-    }
-    //now, if we have it cached, just return it
-    if(this.codeCache[block][address] !== undefined) {
-      return this.codeCache[block][address];
-    }
-    //otherwise, get it, cache it, and return it
-    let code = CodecUtils.Conversion.toBytes(
-      await this.web3.eth.getCode(
-        address,
-        block
-      )
-    );
-    this.codeCache[block][address] = code;
-    return code;
+    return await this.wireDecoder.getCode(address, block);
   }
 
   //EXAMPLE: to watch a.b.c[d][e], use watchMappingKey("a", "b", "c", d, e)
@@ -362,123 +258,23 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   //all descendants, you'll need to alter watchMappingKey to use an if rather
   //than a while
 
-  //NOTE: will only work with transactions to-or-creating this address!
   public async decodeTransaction(transaction: Transaction): Promise<DecoderTypes.DecodedTransaction> {
-    if(transaction.to !== this.contractAddress) {
-      if(transaction.to !== null) {
-        throw new DecoderTypes.EventOrTransactionIsNotForThisContractError(transaction.to, this.contractAddress);
-      }
-      else {
-        //OK, it's not *to* this address, but maybe it *created* it?
-        const receipt = await this.web3.eth.getTransactionReceipt(transaction.hash);
-        if(receipt.contractAddress !== this.contractAddress) {
-          throw new DecoderTypes.EventOrTransactionIsNotForThisContractError(receipt.contractAddress, this.contractAddress);
-        }
-      }
-    }
-    const block = transaction.blockNumber;
-    const data = CodecUtils.Conversion.toBytes(transaction.input);
-    const info: Codec.EvmInfo = {
-      state: {
-        storage: {},
-        calldata: data,
-      },
-      userDefinedTypes: this.userDefinedTypes,
-      allocations: this.allocations,
-      contexts: this.contextsById,
-      currentContext: transaction.to === null ? this.constructorContext : this.context
-    };
-    const decoder = Codec.decodeCalldata(info);
-
-    let result = decoder.next();
-    while(!result.done) {
-      let request = <Codec.DecoderRequest>(result.value);
-      let response: Uint8Array;
-      //only code requests should occur here
-      if(Codec.isCodeRequest(request)) {
-        response = await this.getCode(request.address, block);
-      }
-      result = decoder.next(response);
-    }
-    //at this point, result.value holds the final value
-    const decoding = <Codec.CalldataDecoding>result.value;
-    
-    return {
-      ...transaction,
-      decoding
-    };
+    return await this.wireDecoder.decodeTransaction(transaction);
   }
 
-  //NOTE: will only work with logs for this address!
-  //NOTE: options is mostly meant for internal use (when called from events()),
-  //but hey, you can pass it if you really want
-  public async decodeLog(log: Log, options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog> {
-    if(log.address !== this.contractAddress) {
-      throw new DecoderTypes.EventOrTransactionIsNotForThisContractError(log.address, this.contractAddress);
-    }
-    const block = log.blockNumber;
-    const data = CodecUtils.Conversion.toBytes(log.data);
-    const topics = log.topics.map(CodecUtils.Conversion.toBytes);
-    const info: Codec.EvmInfo = {
-      state: {
-        storage: {},
-        eventdata: data,
-        eventtopics: topics
-      },
-      userDefinedTypes: this.userDefinedTypes,
-      allocations: this.allocations,
-      contexts: this.contextsById
-    };
-    const decoder = Codec.decodeEvent(info, log.address, options.name);
-
-    let result = decoder.next();
-    while(!result.done) {
-      let request = <Codec.DecoderRequest>(result.value);
-      let response: Uint8Array;
-      //only code requests should occur here
-      if(Codec.isCodeRequest(request)) {
-        response = await this.getCode(request.address, block);
-      }
-      result = decoder.next(response);
-    }
-    //at this point, result.value holds the final value
-    const decodings = <Codec.LogDecoding[]>result.value;
-    
-    return {
-      ...log,
-      decodings
-    };
+  public async decodeLog(log: Log): Promise<DecoderTypes.DecodedLog> {
+    return await this.wireDecoder.decodeLog(log);
   }
 
-  //NOTE: will only work with logs for this address!
-  //NOTE: options is mostly meant for internal use (when called from events()),
-  //but hey, you can pass it if you really want
-  public async decodeLogs(logs: Log[], options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
-    return await Promise.all(logs.map(log => this.decodeLog(log, options)));
+  public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
+    return await this.wireDecoder.decodeLogs(logs);
   }
 
+  //by default, will restrict to events from this address.
+  //but, you can explicitly pass another and it will work
+  //(or pass undefined to turn off address filtering)
   public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
-    let { name, fromBlock, toBlock } = options;
-    //note: address option is ignored!
-
-    const logs = await this.web3.eth.getPastLogs({
-      address: this.contractAddress,
-      fromBlock,
-      toBlock,
-    });
-
-    let events = await this.decodeLogs(logs, options);
-
-    //if a target name was specified, we'll restrict to events that decoded
-    //to something with that name.  (note that only decodings with that name
-    //will have been returned from decodeLogs in the first place)
-    if(name !== null) {
-      events = events.filter(
-        event => event.decodings.length > 0
-      );
-    }
-
-    return events;
+    return await this.wireDecoder.events({address: this.contractAddress, ...options});
   }
 
   public onEvent(name: string, callback: Function): void {
