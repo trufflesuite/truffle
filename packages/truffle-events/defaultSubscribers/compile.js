@@ -12,11 +12,9 @@ module.exports = {
       }
     ],
     "compile:finish": [
-      function({ globalConfig, compilersInfo }) {
+      function({ contractsBuildDirectory, compilersInfo }) {
         if (Object.keys(compilersInfo).length > 0) {
-          this.logger.log(
-            `> Artifacts written to ${globalConfig.contracts_build_directory}`
-          );
+          this.logger.log(`> Artifacts written to ${contractsBuildDirectory}`);
           this.logger.log(`> Compiled successfully using:`);
 
           const maxLength = Object.keys(compilersInfo)
