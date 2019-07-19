@@ -2,16 +2,6 @@ dist: trusty
 sudo: required
 language: node_js
 
-addons:
-  apt:
-    sources:
-      - sourceline: 'ppa:ethereum/ethereum'
-    packages: dpkg
-
-before_install:
-  - npm list -g lerna --depth=0 || npm install -g lerna
-  - npm install -g yarn
-
 matrix:
   fast_finish: true
   include:
@@ -28,20 +18,13 @@ matrix:
       env: COVERAGE=true
 
 install:
-  - yarn bootstrap
+  - npm i -g truffle
   - truffle obtain --solc=0.5.8
+  - truffle unbox metacoin --force
+  - truffle compile
 
 cache:
   directories:
     - node_modules
     - $(npm config get prefix)/lib/node_modules # globally installed stuff (i.e. lerna)
     - ~/.config/truffle/compilers
-
-script:
-  - yarn ci
-
-notifications:
-  slack:
-    secure: cm12Kcc8YmtZ0TZ7T6t+kZqKNrpKG7D4MyaJLWf0llHeGTUqldIaSkLTasqCnBEUhg2/uqQ1dbG8nuqhnov9rHhRFUQmZPVUqiCE90wLDo2qIC9l98sXQRT/yrRgr1W7d3Jfauq53B2WBUpS5LBzcfYgzj13PBcmKtX2+wBZTLddmfcqZUwqzXRL9TPWUQrecAVSQZBVutZ6tQaxTAdBUbyobf6kXYHYRVOJQp7xtHUAIFULitpvCG6cH2F6L+G4gSqDykx74V8bScCvBe0TW8ue5zxbSoM5UmgSMIXzYMBCWa+/WzNjwvCAYScKkqoWt0mk5nzUOQZgndyyO/nA7Ylo7Za1b/LzChgYHB/TybxmF2Jul/MkHy614l/W4Z3dRRXMuPNmY3JIkuYej/9m/uqoLHqEyka8h6YJfZ7IPQ11Kg0r6XZiy+G2sZTg6BW5TIy1GvwDWhZ8hyLk/ka+4JMUK7/gOtAzUUiMIUFwXpgyLnTHzbCF547mx5yJbkeGzJ1Faiq50LcnI8SswP+VQrwgJr2pMfcCXyPyJmZZmRXxOP3qvaYBbfEtSHuIp00DSNITa9dDxZUKiBuzbCJuZ2ChYY12rV4/6EZsu1FhXKPfN735uVqz+HJD/YsvpfAoZ4jTGikMNrIRKfAYLCewkWpsDN51mgO4TBPcbrQ8FbI=
-    on_success: change
-    on_failure: always
