@@ -32,7 +32,7 @@ try {
   );
 }
 
-options.time = new Date(options.time);
+options.time = options.time ? new Date(options.time) : new Date();
 
 /*
  * Logging
