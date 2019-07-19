@@ -5,6 +5,7 @@ const compile = require("../index");
 
 describe("JSparser", () => {
   const options = {
+    events: { emit: () => {} },
     compilers: {
       solc: {
         parser: "solcjs",
