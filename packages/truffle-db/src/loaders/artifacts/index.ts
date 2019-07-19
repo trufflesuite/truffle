@@ -292,7 +292,17 @@ export class ArtifactsLoader {
   }
 
   async load (): Promise<void> {
-    await this.loadCompilation(this.config);
+    const compilationsOutput = await this.loadCompilation(this.config);
+    const { compilations, contracts } = compilationsOutput;
+
+    //map contracts and contract instances to compiler
+    await Promise.all(compilations.data.workspace.compilationsAdd.compilations.map(async ({compiler, id}) => {
+      const contractIds = await this.loadCompilationContracts(contracts[compiler.name], id, compiler.name);
+      const networks = await this.loadNetworks(contracts[compiler.name], this.config["artifacts_directory"], this.config["contracts_directory"]);
+      if(networks[0].length) {
+        this.loadContractInstances(contracts[compiler.name], contractIds.contractIds, networks);
+      }
+    }))
   }
 
   async loadCompilationContracts (contracts: Array<ContractObject>, compilationId: string, compilerName: string) {
@@ -471,13 +481,6 @@ export class ArtifactsLoader {
 
     const compilations = await this.db.query(AddCompilation, { compilations: compilationObjects });
 
-    //map contracts and contract instances to compiler
-    await Promise.all(compilations.data.workspace.compilationsAdd.compilations.map(async ({compiler, id}) => {
-      const contractIds = await this.loadCompilationContracts(contracts[compiler.name], id, compiler.name);
-      const networks = await this.loadNetworks(contracts[compiler.name], compilationConfig["artifacts_directory"], compilationConfig["contracts_directory"]);
-      if(networks[0].length) {
-        this.loadContractInstances(contracts[compiler.name], contractIds.contractIds, networks);
-      }
-    }))
+    return { compilations, contracts };
   }
 }
