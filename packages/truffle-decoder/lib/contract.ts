@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decoder:contract");
 
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values, wrapElementaryViaDefinition } from "truffle-codec-utils";
+import { Types, Values, wrapElementaryViaDefinition, Contexts } from "truffle-codec-utils";
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "truffle-contract-schema/spec";
@@ -24,14 +24,15 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contractNetwork: string;
   private contractAddress: string;
   private contractCode: string;
-  private context: CodecUtils.Contexts.DecoderContext;
-  private constructorContext: CodecUtils.Contexts.DecoderContext;
+  private context: Contexts.DecoderContext;
+  private constructorContext: Contexts.DecoderContext;
   private contextHash: string;
   private constructorContextHash: string;
 
-  private contexts: CodecUtils.Contexts.DecoderContexts = {};
-  private contextsById: CodecUtils.Contexts.DecoderContextsById = {}; //deployed contexts only
-  private constructorContextsById: CodecUtils.Contexts.DecoderContextsById = {};
+  private contexts: Contexts.DecoderContexts = {};
+  private contextsById: Contexts.DecoderContextsById = {}; //deployed contexts only
+  private constructorContextsById: Contexts.DecoderContextsById = {};
+  private additionalContexts: Contexts.DecoderContextsById = {}; //for passing to wire decoder when contract has no deployedBytecode
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
@@ -105,6 +106,29 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contractCode = CodecUtils.Conversion.toHexString(
       await this.getCode(this.contractAddress, await this.web3.eth.getBlockNumber())
     );
+
+    if(!this.contract.deployedBytecode || this.contract.deployedBytecode === "0x") {
+      //if this contract does *not* have the deployedBytecode field, then the decoder core
+      //has no way of knowing that contracts or function pointers with its address
+      //are of its class; this is an especial problem for function pointers, as it
+      //won't be able to determine what the selector points to.
+      //so, to get around this, we make an "additional context" for the contract,
+      //based on its *actual* deployed bytecode as pulled from the blockchain.
+      //This way the decoder core can recognize the address as the class, without us having
+      //to make serious modifications to contract decoding.  And while sure this requires
+      //a little more work, I mean, it's all cached, so, no big deal.
+      let extraContext = Utils.makeContext(this.contract, this.contractNode);
+      //now override the binary
+      extraContext.binary = this.contractCode;
+      this.additionalContexts = {[extraContext.contractId]: extraContext};
+      //the following line only has any effect if we're dealing with a library,
+      //since the code we pulled from the blockchain obviously does not have unresolved link references!
+      //(it's not strictly necessary even then, but, hey, why not?)
+      this.additionalContexts = <Contexts.DecoderContextsById>Contexts.normalizeContexts(this.additionalContexts);
+      //again, since the code did not have unresolved link references, it is safe to just
+      //mash these together like I'm about to
+      this.contextsById = {...this.contextsById, ...this.additionalContexts};
+    }
   }
 
   private async decodeVariable(variable: Codec.StorageMemberAllocation, block: number): Promise<Values.Result> {
@@ -259,22 +283,22 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   //than a while
 
   public async decodeTransaction(transaction: Transaction): Promise<DecoderTypes.DecodedTransaction> {
-    return await this.wireDecoder.decodeTransaction(transaction);
+    return await this.wireDecoder.decodeTransaction(transaction, this.additionalContexts);
   }
 
   public async decodeLog(log: Log): Promise<DecoderTypes.DecodedLog> {
-    return await this.wireDecoder.decodeLog(log);
+    return await this.wireDecoder.decodeLog(log, {}, this.additionalContexts);
   }
 
   public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.decodeLogs(logs);
+    return await this.wireDecoder.decodeLogs(logs, {}, this.additionalContexts);
   }
 
   //by default, will restrict to events from this address.
   //but, you can explicitly pass another and it will work
   //(or pass undefined to turn off address filtering)
   public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.events({address: this.contractAddress, ...options});
+    return await this.wireDecoder.events({address: this.contractAddress, ...options}, this.additionalContexts);
   }
 
   public onEvent(name: string, callback: Function): void {

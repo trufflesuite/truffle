@@ -12,7 +12,7 @@ import { CompilerVersion } from "./compiler";
 
 export namespace Contexts {
 
-  export type Contexts = DecoderContexts | DebuggerContexts;
+  export type Contexts = DecoderContexts | DebuggerContexts | DecoderContextsById;
 
   export type Context = DecoderContext | DebuggerContext;
 

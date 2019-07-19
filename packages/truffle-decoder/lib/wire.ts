@@ -136,10 +136,11 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     return code;
   }
 
-  public async decodeTransaction(transaction: Transaction): Promise<DecoderTypes.DecodedTransaction> {
+  //NOTE: additionalContexts parameter is for internal use only.
+  public async decodeTransaction(transaction: Transaction, additionalContexts: Contexts.DecoderContextsById = {}): Promise<DecoderTypes.DecodedTransaction> {
     debug("transaction: %O", transaction);
     const block = transaction.blockNumber;
-    const context = await this.getContextByAddress(transaction.to, block, transaction.input);
+    const context = await this.getContextByAddress(transaction.to, block, transaction.input, additionalContexts);
 
     const data = CodecUtils.Conversion.toBytes(transaction.input);
     const info: Codec.EvmInfo = {
@@ -149,7 +150,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       },
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: this.contextsById,
+      contexts: {...this.contextsById, ...additionalContexts},
       currentContext: context
     };
     const decoder = Codec.decodeCalldata(info);
@@ -173,9 +174,9 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  //NOTE: options is mostly meant for internal use (when called from events()),
-  //but hey, you can pass it if you really want
-  public async decodeLog(log: Log, options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog> {
+  //NOTE: options is meant for internal use; do not rely on it
+  //NOTE: additionalContexts parameter is for internal use only.
+  public async decodeLog(log: Log, options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContextsById = {}): Promise<DecoderTypes.DecodedLog> {
     const block = log.blockNumber;
     const data = CodecUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(CodecUtils.Conversion.toBytes);
@@ -187,7 +188,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       },
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: this.contextsById
+      contexts: {...this.contextsById, ...additionalContexts}
     };
     const decoder = Codec.decodeEvent(info, log.address, options.name);
 
@@ -210,13 +211,14 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     };
   }
 
-  //NOTE: options is mostly meant for internal use (when called from events()),
-  //but hey, you can pass it if you really want
-  public async decodeLogs(logs: Log[], options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
-    return await Promise.all(logs.map(log => this.decodeLog(log, options)));
+  //NOTE: options is meant for internal use; do not rely on it
+  //NOTE: additionalContexts parameter is for internal use only.
+  public async decodeLogs(logs: Log[], options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContextsById = {}): Promise<DecoderTypes.DecodedLog[]> {
+    return await Promise.all(logs.map(log => this.decodeLog(log, options, additionalContexts)));
   }
 
-  public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
+  //NOTE: additionalContexts parameter is for internal use only.
+  public async events(options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContextsById = {}): Promise<DecoderTypes.DecodedLog[]> {
     let { address, name, fromBlock, toBlock } = options;
 
     const logs = await this.web3.eth.getPastLogs({
@@ -225,7 +227,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       toBlock,
     });
 
-    let events = await this.decodeLogs(logs, options);
+    let events = await this.decodeLogs(logs, options, additionalContexts);
     debug("events: %o", events);
 
     //if a target name was specified, we'll restrict to events that decoded
@@ -251,7 +253,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   //and checks this against the known contexts to determine the contract type
   //however, if this fails and constructorBinary is passed in, it will then also
   //attempt to determine it from that
-  private async getContextByAddress(address: string, block: number, constructorBinary?: string): Promise<Contexts.DecoderContext | null> {
+  private async getContextByAddress(address: string, block: number, constructorBinary?: string, additionalContexts: Contexts.DecoderContextsById = {}): Promise<Contexts.DecoderContext | null> {
     let code: string;
     if(address !== null) {
       code = CodecUtils.Conversion.toHexString(
@@ -261,8 +263,9 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     else if(constructorBinary) {
       code = constructorBinary;
     }
-    //otherwise... we have a problem
-    return Contexts.findDecoderContext(this.contexts, code);
+    //if neither of these hold... we have a problem
+    let contexts = {...this.contexts, ...additionalContexts};
+    return Contexts.findDecoderContext(contexts, code);
   }
 
   //the following functions are intended for internal use only
