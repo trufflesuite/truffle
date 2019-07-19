@@ -67,12 +67,6 @@ module.exports = {
       if (/^mocha$/.test(request)) {
         return callback(null, "commonjs mocha");
       }
-      
-      // we actually only care about scrypt here since it is the only native module
-      // but webpack won't detect it if we don't traverse the dependency tree to get to it
-      if (/^(ethereumjs-wallet|scrypt|web3|web3-eth|web3-eth-accounts)(\/.*)?$/.test(request)) {
-        return callback();
-      }
 
       callback();
     }
