@@ -197,7 +197,7 @@ export const schema = mergeSchemas({
 
     input NetworkInput {
       name: String
-      networkID: NetworkID!
+      networkId: NetworkId!
       historicBlock: HistoricBlockInput!
       fork: NetworkInput
     }

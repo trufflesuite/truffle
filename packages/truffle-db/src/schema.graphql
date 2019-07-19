@@ -1,5 +1,5 @@
 scalar Address
-scalar NetworkID
+scalar NetworkId
 scalar TransactionHash
 scalar Value
 scalar Bytes
@@ -56,7 +56,7 @@ type AST {
 
 type Network {
   name: String
-  networkID: NetworkID!
+  networkId: NetworkId!
   historicBlock: HistoricBlock!
   fork: Network
 }

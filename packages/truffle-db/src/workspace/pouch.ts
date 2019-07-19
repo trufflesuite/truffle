@@ -238,9 +238,9 @@ export class Workspace {
     return {
       networks: Promise.all(networks.map(
         async (networkInput) => {
-          const { networkID, historicBlock } = networkInput;
+          const { networkId, historicBlock } = networkInput;
           const id = soliditySha3(jsonStableStringify({
-            networkID: networkID,
+            networkId: networkId,
             historicBlock: historicBlock
           }));
 
@@ -254,7 +254,7 @@ export class Workspace {
               _id: id
             });
 
-            return { networkID, historicBlock, id };
+            return { networkId, historicBlock, id };
           }
         }
       ))

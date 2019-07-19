@@ -231,7 +231,7 @@ const AddNetworks = gql`
   }
   input NetworkInput {
     name: String
-    networkID: NetworkID!
+    networkId: NetworkId!
     historicBlock: HistoricBlockInput!
     fork: NetworkInput
   }
@@ -243,7 +243,7 @@ const AddNetworks = gql`
       }) {
         networks {
           id
-          networkID
+          networkId
           historicBlock {
             height
             hash
@@ -391,16 +391,16 @@ export class ArtifactsLoader {
         for(let network of Object.keys(config.networks)) {
            config.network = network;
            await Environment.detect(config);
-           let networkID;
+           let networkId;
            let web3;
            try {
             web3 = new Web3(config.provider);
-            networkID = await web3.eth.net.getId();
+            networkId = await web3.eth.net.getId();
           }
           catch(err) {}
 
-          if(networkID) {
-            let filteredNetwork = Object.entries(artifactsNetworks).filter((network) => network[0] == networkID);
+          if(networkId) {
+            let filteredNetwork = Object.entries(artifactsNetworks).filter((network) => network[0] == networkId);
             //assume length of filteredNetwork is 1 -- shouldn't have multiple networks with same id in one contract
             if(filteredNetwork.length > 0) {
               const transaction = await web3.eth.getTransaction(filteredNetwork[0][1]["transactionHash"]);
@@ -414,15 +414,15 @@ export class ArtifactsLoader {
                 networks:
                 [{
                   name: network,
-                  networkID: networkID,
+                  networkId: networkId,
                   historicBlock: historicBlock
                 }]
               });
 
-              const networkId = networksAdd.data.workspace.networksAdd.networks[0].id;
+              const id = networksAdd.data.workspace.networksAdd.networks[0].id;
               configNetworks.push({
                 contract: contractName,
-                id: networkId,
+                id: id,
                 address: filteredNetwork[0][1]["address"]
               });
             }

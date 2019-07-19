@@ -523,16 +523,16 @@ describe("Contract", () => {
 const GetNetwork = gql`
 query GetNetwork($id: ID!) {
   network(id: $id) {
-    networkID
+    networkId
     id
   }
 }`;
 
 const AddNetworks = gql`
-mutation AddNetworks($networkID: NetworkID!, $height: Int!, $hash: String!) {
+mutation AddNetworks($networkId: NetworkId!, $height: Int!, $hash: String!) {
   networksAdd(input: {
     networks: [{
-      networkID: $networkID
+      networkId: $networkId
       historicBlock: {
         height: $height
         hash: $hash
@@ -540,7 +540,7 @@ mutation AddNetworks($networkID: NetworkID!, $height: Int!, $hash: String!) {
     }]
   }) {
     networks {
-      networkID
+      networkId
       id
     }
   }
@@ -550,14 +550,14 @@ describe("Network", () => {
   it("adds network", async () => {
     const client = new WorkspaceClient();
     const expectedId = generateId({
-      networkID: Object.keys(Migrations.networks)[0],
+      networkId: Object.keys(Migrations.networks)[0],
       historicBlock: {
         height: 1,
         hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
       }
     })
     const variables = {
-      networkID: Object.keys(Migrations.networks)[0],
+      networkId: Object.keys(Migrations.networks)[0],
       height: 1,
       hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
     }
@@ -566,7 +566,7 @@ describe("Network", () => {
     {
       const data = await client.execute(AddNetworks,
         {
-          networkID: variables.networkID,
+          networkId: variables.networkId,
           height: variables.height,
           hash: variables.hash
         }
@@ -594,11 +594,11 @@ describe("Network", () => {
 
       const { network } = data;
       expect(network).toHaveProperty("id");
-      expect(network).toHaveProperty("networkID");
+      expect(network).toHaveProperty("networkId");
 
-      const { id, networkID } = network;
+      const { id, networkId } = network;
       expect(id).toEqual(expectedId);
-      expect(networkID).toEqual(variables.networkID);
+      expect(networkId).toEqual(variables.networkId);
     }
   });
 });
@@ -611,25 +611,25 @@ query GetContractInstance($id: ID!) {
   contractInstance(id: $id) {
     address
     network {
-      networkID
+      networkId
     }
   }
 }`;
 
 const AddContractInstances = gql`
-mutation AddContractInstances($address: String!, $networkId: ID!) {
+mutation AddContractInstances($address: String!, $netId: ID!) {
   contractInstancesAdd(input: {
     contractInstances: [{
       address: $address
       network: {
-        id: $networkId
+        id: $netId
       }
     }]
   }) {
     contractInstances {
       address
       network {
-        networkID
+        networkId
       }
     }
   }
@@ -643,7 +643,7 @@ describe("Contract Instance", () => {
 
   beforeEach(async () => {
     const network = {
-      networkID: Object.keys(Migrations.networks)[0],
+      netId: Object.keys(Migrations.networks)[0],
       historicBlock: {
         height: 1,
         hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
@@ -651,14 +651,14 @@ describe("Contract Instance", () => {
     };
     const address = Object.values(Migrations.networks)[0]["address"];
     networkAdded = await client.execute(AddNetworks, {
-      networkID: Object.keys(Migrations.networks)[0],
+      networkId: Object.keys(Migrations.networks)[0],
       height: 1,
       hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
     });
     expectedId = generateId({ address: address, network: { id: networkAdded.networksAdd.networks[0].id }})
 
     variables = {
-      networkId: networkAdded.networksAdd.networks[0].id,
+      netId: networkAdded.networksAdd.networks[0].id,
       address: address,
       contractId: generateId({
         name: Migrations.contractName,
@@ -685,10 +685,10 @@ describe("Contract Instance", () => {
 
       const { address, network } = contractInstances[0];
       expect(address).toEqual(Object.values(Migrations.networks)[0]["address"]);
-      expect(network).toHaveProperty("networkID");
+      expect(network).toHaveProperty("networkId");
 
-      const { networkID } = network;
-      expect(networkID).toEqual(Object.keys(Migrations.networks)[0]);
+      const { networkId } = network;
+      expect(networkId).toEqual(Object.keys(Migrations.networks)[0]);
     }
 
     // // ensure retrieved as matching
@@ -703,8 +703,8 @@ describe("Contract Instance", () => {
       const { address, network } = contractInstance;
       expect(address).toEqual(variables.address);
 
-      const { networkID } = network;
-      expect(networkID).toEqual(networkAdded.networksAdd.networks[0].networkID);
+      const { networkId } = network;
+      expect(networkId).toEqual(networkAdded.networksAdd.networks[0].networkId);
     }
   });
 });
