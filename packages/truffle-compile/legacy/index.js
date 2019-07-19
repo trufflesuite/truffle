@@ -118,7 +118,7 @@ compile.calculateCompiledSources = function(paths, options) {
       return contract;
     })
     .filter(contract => contract);
-  options.events.emit("compile:compiledSources", { sourceFileNames: sources });
+  options.events.emit("compile:sourcesToCompile", { sourceFileNames: sources });
 };
 
 compile.CompilerSupplier = CompilerSupplier;

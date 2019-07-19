@@ -32,7 +32,7 @@ module.exports = {
         this.logger.log();
       }
     ],
-    "compile:compiledSources": [
+    "compile:sourcesToCompile": [
       function({ sourceFileNames }) {
         if (!sourceFileNames) return;
         sourceFileNames.forEach(sourceFileName =>
