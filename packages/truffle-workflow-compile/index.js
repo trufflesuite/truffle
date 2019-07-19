@@ -94,7 +94,7 @@ const Contracts = {
       if (numberOfCompiledContracts === 0)
         config.events.emit("compile:nothingToCompile");
 
-      config.events.emit("compile:finish", {
+      config.events.emit("compile:succeed", {
         contractsBuildDirectory: config.contracts_build_directory,
         compilersInfo: config.compilersInfo
       });

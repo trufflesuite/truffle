@@ -11,7 +11,7 @@ module.exports = {
         this.logger.log(`===========================`);
       }
     ],
-    "compile:finish": [
+    "compile:succeed": [
       function({ contractsBuildDirectory, compilersInfo }) {
         if (Object.keys(compilersInfo).length > 0) {
           this.logger.log(`> Artifacts written to ${contractsBuildDirectory}`);
