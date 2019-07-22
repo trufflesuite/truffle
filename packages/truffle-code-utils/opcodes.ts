@@ -1,4 +1,4 @@
-const codes = {
+const codes: any = {
   0x00: "STOP",
   0x01: "ADD",
   0x02: "MUL",
@@ -161,4 +161,4 @@ const codes = {
   0xff: "SELFDESTRUCT"
 };
 
-module.exports = op => (codes[op] ? codes[op] : "INVALID");
+export = (op: number) => (codes[op] ? codes[op] : "INVALID");
