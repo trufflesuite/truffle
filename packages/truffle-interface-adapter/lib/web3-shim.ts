@@ -1,8 +1,20 @@
 import Web3 from "web3";
 import { Provider } from "web3/providers";
 
-import * as ethereumOverloads from "./ethereum-overloads";
-import * as quorumOverloads from "./quorum-overloads";
+import { EthereumDefinition } from "./ethereum-overloads";
+import { QuorumDefinition } from "./quorum-overloads";
+import { FabricEvmDefinition } from "./fabric-evm-overloads";
+
+const initInterface = async(web3Shim: Web3Shim) => {
+
+    const networkTypes: NetworkTypesConfig = new Map(Object.entries({
+      "ethereum": EthereumDefinition,
+      "quorum": QuorumDefinition,
+      "fabric-evm": FabricEvmDefinition
+    }));
+
+    networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim);
+  }
 
 // March 13, 2019 - Mike Seese:
 // This is a temporary shim to support the basic, Ethereum-based
@@ -10,12 +22,20 @@ import * as quorumOverloads from "./quorum-overloads";
 // will undergo better architecture before TruffleCon to support
 // other non-Ethereum-based ledgers.
 
-export type NetworkType = "ethereum" | "quorum";
+export type NetworkType = string;
 
 export interface Web3ShimOptions {
   provider?: Provider;
   networkType?: NetworkType;
 };
+
+export type InitNetworkType = (web3Shim: Web3Shim) => Promise<void>;
+
+export interface NetworkTypeDefinition {
+  initNetworkType: InitNetworkType
+}
+
+export type NetworkTypesConfig = Map<NetworkType, NetworkTypeDefinition>;
 
 // March 14, 2019 - Mike Seese:
 // This shim was intended to be temporary (see the above comment)
@@ -48,41 +68,11 @@ export class Web3Shim extends Web3 {
       this.networkType = "ethereum";
     }
 
-    this.initInterface();
+    initInterface(this);
   }
 
   setNetworkType(networkType: NetworkType) {
     this.networkType = networkType;
-    this.initInterface();
+    initInterface(this);
   }
-
-  initInterface() {
-    switch (this.networkType) {
-      case "quorum": {
-        this.initQuorum();
-        break;
-      }
-      case "ethereum":
-      default: {
-        this.initEthereum();
-        break;
-      }
-    }
-  }
-
-  initEthereum() {
-    // truffle has started expecting gas used/limit to be
-    // hex strings to support bignumbers for other ledgers
-    ethereumOverloads.getBlock(this);
-    ethereumOverloads.getTransaction(this);
-    ethereumOverloads.getTransactionReceipt(this);
-  }
-
-  initQuorum() {
-    // duck punch some of web3's output formatters
-    quorumOverloads.getBlock(this);
-    quorumOverloads.getTransaction(this);
-    quorumOverloads.getTransactionReceipt(this);
-    quorumOverloads.decodeParameters(this);
-  }
-}
+};

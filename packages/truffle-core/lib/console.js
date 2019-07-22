@@ -52,10 +52,15 @@ class Console extends EventEmitter {
 
     try {
       const abstractions = this.provision();
+
+      const getAccounts = async () => {
+        return await this.web3.eth.getAccounts();
+      };
       this.repl.start({
         prompt: "truffle(" + this.options.network + ")> ",
         context: {
-          web3: this.web3
+          web3: this.web3,
+          accounts: getAccounts()
         },
         interpreter: this.interpret.bind(this),
         done: callback
