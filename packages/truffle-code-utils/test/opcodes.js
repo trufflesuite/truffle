@@ -1,4 +1,4 @@
-const opcodes = require("../opcodes");
+const opcodes = require("../dist/opcodes");
 const assert = require("assert");
 
 describe("opcode parsing method", () => {

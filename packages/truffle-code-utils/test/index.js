@@ -1,4 +1,4 @@
-const CodeUtils = require("../index");
+const CodeUtils = require("../");
 const assert = require("assert");
 
 describe("CodeUtils.parseCode", () => {
