@@ -87,6 +87,10 @@ const command = {
       {
         option: "--skip-dry-run",
         description: "Do not run a test or 'dry run' migration."
+      },
+      {
+        option: "--quiet",
+        description: "Suppress all compilation output."
       }
     ]
   },
