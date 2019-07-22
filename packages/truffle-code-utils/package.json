@@ -4,6 +4,8 @@
   "description": "Utilities for parsing and managing EVM-compatible bytecode",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
     "test": "mocha"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-code-utils",
