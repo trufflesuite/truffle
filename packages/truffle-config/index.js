@@ -48,7 +48,8 @@ class Config {
       },
       ens: {
         enabled: false,
-        registryAddress: null
+        registryAddress: null,
+        devMode: false
       },
       compilers: {
         solc: {

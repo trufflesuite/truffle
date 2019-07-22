@@ -45,9 +45,16 @@ class ENS {
       const noRegistryFound =
         error.message ===
         "This contract object doesn't have address set yet, please set an address first.";
-      if (noRegistryFound) {
+      if (noRegistryFound && this.ensSettings.devMode) {
         await this.deployNewDevENSRegistry(from);
         this.setENSJS();
+      } else if (noRegistryFound) {
+        const message =
+          `There was no ENS registry found on the network you ` +
+          `are using. Set ens.devMode to 'true' in your Truffle config to ` +
+          `try and deploy one or specify a value for ens.registryAddress ` +
+          `in your Truffle config to connect to that one.`;
+        throw new Error(message);
       } else {
         throw error;
       }
