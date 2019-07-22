@@ -2,7 +2,7 @@
   "name": "truffle-code-utils",
   "version": "1.2.4",
   "description": "Utilities for parsing and managing EVM-compatible bytecode",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
