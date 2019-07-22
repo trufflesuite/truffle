@@ -16,6 +16,7 @@
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
   "devDependencies": {
+    "@types/node": "^12.6.8",
     "mocha": "5.2.0",
     "ts-node": "^8.3.0",
     "typescript": "^3.5.3"
