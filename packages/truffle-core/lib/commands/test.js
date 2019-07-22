@@ -38,6 +38,10 @@ const command = {
       {
         option: "--show-events",
         description: "Log all contract events."
+      },
+      {
+        option: "--quiet",
+        description: "Suppress all compilation output."
       }
     ]
   },
