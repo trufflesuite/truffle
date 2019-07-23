@@ -19,7 +19,7 @@
     "truffle-expect": "^0.0.9",
     "truffle-interface-adapter": "^0.2.0",
     "truffle-resolver": "^5.0.14",
-    "web3": "1.2.0"
+    "web3": "^1.2.0"
   },
   "devDependencies": {
     "debug": "^4.1.0"
