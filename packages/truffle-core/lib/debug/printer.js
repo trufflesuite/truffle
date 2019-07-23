@@ -77,7 +77,7 @@ class DebugPrinter {
     this.config.logger.log(message + ":");
   }
 
-  printState() {
+  printState(contextBefore = 2, contextAfter = 0) {
     const { id: sourceId, source } = this.session.view(solidity.current.source);
 
     if (sourceId === undefined) {
@@ -104,7 +104,13 @@ class DebugPrinter {
     //HACK -- the line-pointer formatter doesn't work right with colorized
     //lines, so we pass in the uncolored version too
     this.config.logger.log(
-      DebugUtils.formatRangeLines(colorizedLines, range.lines, lines)
+      DebugUtils.formatRangeLines(
+        colorizedLines,
+        range.lines,
+        lines,
+        contextBefore,
+        contextAfter
+      )
     );
 
     this.config.logger.log("");

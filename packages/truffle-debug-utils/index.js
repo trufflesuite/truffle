@@ -18,6 +18,7 @@ var commandReference = {
   "n": "step next",
   ";": "step instruction (include number to step multiple)",
   "p": "print instruction",
+  "l": "print additional source context",
   "h": "print this help",
   "v": "print variables and values",
   ":": "evaluate expression - see `v`",
@@ -148,7 +149,8 @@ var DebugUtils = {
 
     var commandSections = [
       ["o", "i", "u", "n"],
-      [";", "p"],
+      [";"],
+      ["p", "l"],
       ["h", "q", "r"],
       ["t", "T"],
       ["b", "B", "c"],
@@ -210,39 +212,47 @@ var DebugUtils = {
       output += additional;
     }
 
-    return prefix + output;
+    return chalk.white(prefix + output);
   },
 
-  formatRangeLines: function(source, range, uncolorizedSource, contextBefore) {
+  //NOTE: source and uncolorizedSource here have already
+  //been split into lines here, they're not the raw text
+  formatRangeLines: function(
+    source,
+    range,
+    uncolorizedSource,
+    contextBefore = 2,
+    contextAfter = 0
+  ) {
     // range is {
     //   start: { line, column },
     //   end: { line, column}
     // }
     //
 
-    if (contextBefore == undefined) {
-      contextBefore = 2;
-    }
+    var startIndex = Math.max(range.start.line - contextBefore, 0);
+    var endIndex = Math.min(range.start.line + contextAfter, source.length - 1);
 
-    var startBeforeIndex = Math.max(range.start.line - contextBefore, 0);
+    var prefixLength = (endIndex + 1 + "").length; //+1 to account for 0-index
 
-    var prefixLength = (range.start.line + 1 + "").length;
-
+    //note: beforeLines now includes the line itself
     var beforeLines = source
-      .filter(function(line, index) {
-        return index >= startBeforeIndex && index < range.start.line;
-      })
-      .map(function(line, index) {
-        var number = startBeforeIndex + index + 1; // 1 to account for 0-index
+      .slice(startIndex, range.start.line + 1)
+      .map((line, index) => {
+        let number = startIndex + index + 1; // 1 to account for 0-index
+        return DebugUtils.formatLineNumberPrefix(line, number, prefixLength);
+      });
+    var afterLines = source
+      .slice(range.start.line + 1, endIndex + 1)
+      .map((line, index) => {
+        let number = range.start.line + 1 + index + 1; // 1 to account for 0-index
         return DebugUtils.formatLineNumberPrefix(line, number, prefixLength);
       });
 
-    var line = source[range.start.line];
-    var uncolorizedLine = uncolorizedSource[range.start.line];
-    var number = range.start.line + 1; // zero-index
-
     var pointerStart = range.start.column;
     var pointerEnd;
+
+    let uncolorizedLine = uncolorizedSource[range.start.line];
 
     // range.end is undefined in some cases
     // null/undefined check to avoid exceptions
@@ -250,20 +260,22 @@ var DebugUtils = {
       // start and end are same line: pointer ends at column
       pointerEnd = range.end.column;
     } else {
-      pointerEnd = line.length;
+      pointerEnd = uncolorizedLine.length;
     }
 
-    var allLines = beforeLines.concat([
-      DebugUtils.formatLineNumberPrefix(line, number, prefixLength),
-      DebugUtils.formatLinePointer(
-        uncolorizedLine,
-        pointerStart,
-        pointerEnd,
-        prefixLength
-      )
-      //HACK -- the line-pointer formatter doesn't work right with colorized
-      //lines, so we pass in the uncolored version
-    ]);
+    var allLines = beforeLines.concat(
+      [
+        DebugUtils.formatLinePointer(
+          //the line-pointer formatter doesn't work right with colorized
+          //lines, so we pass in the uncolored version
+          uncolorizedLine,
+          pointerStart,
+          pointerEnd,
+          prefixLength
+        )
+      ],
+      afterLines
+    );
 
     return allLines.join(OS.EOL);
   },
