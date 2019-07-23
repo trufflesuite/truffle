@@ -1,31 +1,40 @@
 {
   "name": "truffle-decoder",
-  "version": "3.0.6",
   "description": "A library that provides both high and low level decoding of Ethereum contract variables",
+  "license": "MIT",
+  "author": "Mike Seese",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-decoder",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "3.0.6",
   "main": "dist/interface/index.js",
-  "types": "lib/interface/index.ts",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
-    "prepare": "yarn build",
     "build": "node_modules/.bin/tsc",
+    "prepare": "yarn build",
     "start": "node_modules/.bin/tsc --watch",
     "test": "cd test && truffle test"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-decoder",
-  "keywords": [
-    "ethereum",
-    "contract",
-    "state",
-    "decoder"
-  ],
-  "author": "Mike Seese",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
+  "types": "lib/interface/index.ts",
+  "dependencies": {
+    "abi-decoder": "^1.2.0",
+    "async-eventemitter": "^0.2.4",
+    "bn.js": "^4.11.8",
+    "debug": "^4.1.0",
+    "lodash.clonedeep": "^4.5.0",
+    "lodash.isequal": "^4.5.0",
+    "lodash.merge": "^4.6.1",
+    "truffle-decode-utils": "^1.0.14",
+    "utf8": "^3.0.0",
+    "web3": "1.2.0"
   },
-  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "peerDependencies": {
+    "truffle": "^5.0.14"
+  },
   "devDependencies": {
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",
@@ -39,20 +48,11 @@
     "truffle-contract-schema": "^3.0.11",
     "typescript": "^3.1.3"
   },
-  "dependencies": {
-    "abi-decoder": "^1.2.0",
-    "async-eventemitter": "^0.2.4",
-    "bn.js": "^4.11.8",
-    "debug": "^4.1.0",
-    "lodash.clonedeep": "^4.5.0",
-    "lodash.isequal": "^4.5.0",
-    "lodash.merge": "^4.6.1",
-    "truffle-decode-utils": "^1.0.14",
-    "utf8": "^3.0.0",
-    "web3": "1.0.0-beta.37"
-  },
-  "peerDependencies": {
-    "truffle": "^5.0.14"
-  },
+  "keywords": [
+    "contract",
+    "decoder",
+    "ethereum",
+    "state"
+  ],
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }

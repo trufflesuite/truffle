@@ -20,7 +20,7 @@
   "dependencies": {
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
-    "web3": "1.0.0-beta.37"
+    "web3": "1.2.0"
   },
   "devDependencies": {
     "@types/bn.js": "^4.11.4",
