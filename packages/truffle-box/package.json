@@ -2,7 +2,7 @@
   "name": "truffle-box",
   "version": "1.0.31",
   "description": "Truffle project boilerplate utility",
-  "main": "box.js",
+  "main": "dist/box.js",
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
