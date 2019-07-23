@@ -10,7 +10,7 @@ $ npm install truffle-hdwallet-provider
 ## Requirements
 ```
 Node >= 7.6
-Web3 1.0.0-beta.37
+Web3 ^1.2.0
 ```
 
 ## General Usage

@@ -25,10 +25,10 @@
     "truffle-contract-schema": "^3.0.11",
     "truffle-error": "^0.0.5",
     "truffle-interface-adapter": "^0.2.0",
-    "web3": "1.0.0-beta.37",
-    "web3-core-promievent": "1.0.0-beta.37",
-    "web3-eth-abi": "1.0.0-beta.37",
-    "web3-utils": "1.0.0-beta.37"
+    "web3": "^1.2.0",
+    "web3-core-promievent": "^1.2.0",
+    "web3-eth-abi": "^1.2.0",
+    "web3-utils": "^1.2.0"
   },
   "devDependencies": {
     "async": "2.6.1",
