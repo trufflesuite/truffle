@@ -18,6 +18,7 @@
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "license": "MIT",
   "devDependencies": {
+    "@types/tmp": "^0.1.0",
     "mocha": "5.2.0",
     "sinon": "^6.3.4",
     "ts-node": "^8.3.0",
