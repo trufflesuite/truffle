@@ -4,6 +4,8 @@
   "description": "Truffle project boilerplate utility",
   "main": "box.js",
   "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
     "test": "mocha --timeout 10000"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-box",
