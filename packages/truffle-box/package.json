@@ -17,7 +17,8 @@
   "license": "MIT",
   "devDependencies": {
     "mocha": "5.2.0",
-    "sinon": "^6.3.4"
+    "sinon": "^6.3.4",
+    "typescript": "^3.5.3"
   },
   "dependencies": {
     "fs-extra": "6.0.1",
