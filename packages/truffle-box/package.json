@@ -19,6 +19,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/fs-extra": "^8.0.0",
+    "@types/inquirer": "^6.0.3",
     "@types/tmp": "^0.1.0",
     "mocha": "5.2.0",
     "sinon": "^6.3.4",
