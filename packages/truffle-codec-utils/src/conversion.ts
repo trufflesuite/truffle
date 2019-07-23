@@ -209,6 +209,7 @@ export namespace Conversion {
             ([key, value]) => ({[key]: nativize(value)})
         ));
       case "enum":
+        //note: if it's out of range, this will just be undefined
         return enumFullName(<Values.EnumValue>result);
       case "contract": {
         let coercedResult = <Values.ContractValue> result;

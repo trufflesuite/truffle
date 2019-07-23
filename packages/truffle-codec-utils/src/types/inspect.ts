@@ -100,7 +100,13 @@ export class ResultInspector {
               options
             )
           case "enum": {
-            return enumFullName(<Values.EnumValue>this.result); //not stylized
+            let coercedResult = <Values.EnumValue>this.result;
+            switch(coercedResult.value.kind) {
+              case "valid":
+                return enumFullName(<Values.EnumValue>this.result); //not stylized
+              case "invalid":
+                return options.stylize(coercedResult.value.numericAsBN.toString(), "number") + ` (out of range)`;
+            }
           }
           case "contract": {
             return util.inspect(
@@ -177,8 +183,6 @@ export class ResultInspector {
             return `Fixed-point decoding not yet supported (raw value: ${errorResult.error.raw})`;
           case "EnumPaddingError":
             return `${enumTypeName(errorResult.error.type)} has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
-          case "EnumOutOfRangeError":
-            return `Invalid ${enumTypeName(errorResult.error.type)} (numeric value ${errorResult.error.rawAsBN.toString()})`;
           case "EnumNotFoundDecodingError":
             return `Unknown enum type ${enumTypeName(errorResult.error.type)} of id ${errorResult.error.type.id} (numeric value ${errorResult.error.rawAsBN.toString()})`;
           case "ContractPaddingError":
@@ -237,7 +241,11 @@ function formatCircular(loopLength: number, options: InspectOptions): string {
   return options.stylize(`[Circular (=up ${this.loopLength})]`, "special");
 }
 
-export function enumFullName(value: Values.EnumValue): string {
+//note: only meant for valid ones, not invalid
+export function enumFullName(value: Values.EnumValue): string | undefined {
+  if(value.value.kind === "invalid") {
+    return undefined;
+  }
   switch(value.type.kind) {
     case "local":
       return `${value.type.definingContractName}.${value.type.typeName}.${value.value.name}`;

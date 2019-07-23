@@ -7,8 +7,8 @@ import { Log } from "web3/types";
 
 export interface ContractState {
   name: string;
-  balance: BN;
-  nonce: BN;
+  balanceAsBN: BN;
+  nonceAsBN: BN;
   code: string;
   variables: {
     [name: string]: Values.Result

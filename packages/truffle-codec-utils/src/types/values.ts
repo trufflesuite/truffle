@@ -244,11 +244,21 @@ export namespace Values {
   export interface EnumValue {
     type: Types.EnumType;
     kind: "value";
-    value: {
-      name: string;
-      numericAsBN: BN;
-    };
+    value: EnumValueInfo;
   };
+
+  export type EnumValueInfo = EnumValueInfoValid | EnumValueInfoInvalid;
+
+  export interface EnumValueInfoValid {
+    kind: "valid";
+    name: string;
+    numericAsBN: BN;
+  }
+
+  export interface EnumValueInfoInvalid {
+    kind: "invalid";
+    numericAsBN: BN;
+  }
 
   /*
    * SECTION 5: CONTRACTS

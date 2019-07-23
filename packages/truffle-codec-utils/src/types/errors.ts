@@ -232,18 +232,12 @@ export namespace Errors {
     error: GenericError | EnumError;
   }
 
-  export type EnumError = EnumPaddingError | EnumOutOfRangeError | EnumNotFoundDecodingError;
+  export type EnumError = EnumPaddingError | EnumNotFoundDecodingError;
 
   export interface EnumPaddingError {
     kind: "EnumPaddingError";
     type: Types.EnumType;
     raw: string; //should be hex string
-  }
-
-  export interface EnumOutOfRangeError {
-    kind: "EnumOutOfRangeError";
-    type: Types.EnumType;
-    rawAsBN: BN;
   }
 
   export interface EnumNotFoundDecodingError {

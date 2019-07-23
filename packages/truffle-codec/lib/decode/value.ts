@@ -320,24 +320,20 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
           type: fullType,
           kind: "value",
           value: {
+            kind: "valid",
             name,
             numericAsBN: numeric
           }
         };
       }
       else {
-        let error = {
-          kind: "EnumOutOfRangeError" as "EnumOutOfRangeError",
-          type: fullType,
-          rawAsBN: numeric
-        };
-        if(strict) {
-          throw new StopDecodingError(error);
-        }
         return {
           type: fullType,
-          kind: "error",
-          error
+          kind: "value",
+          value: {
+            kind: "invalid",
+            numericAsBN: numeric
+          }
         };
       }
     }
