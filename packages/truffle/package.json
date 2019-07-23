@@ -51,7 +51,7 @@
     "truffle-contract": "^4.0.25",
     "truffle-core": "^5.0.28",
     "truffle-debugger": "^5.0.20",
-    "web3": "1.0.0-beta.37",
+    "web3": "^1.2.0",
     "webpack": "^2.5.1",
     "webpack-bundle-analyzer": "^3.0.3",
     "yargs": "^8.0.2"
