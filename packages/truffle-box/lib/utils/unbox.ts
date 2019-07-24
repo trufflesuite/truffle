@@ -114,7 +114,7 @@ function installBoxDependencies({ hooks } : any, destination: string) {
   execSync(postUnpack, { cwd: destination });
 }
 
-export default {
+export = {
   copyTempIntoDestination,
   fetchRepository,
   installBoxDependencies,

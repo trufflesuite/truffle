@@ -6,7 +6,7 @@ const cwd = require("process").cwd();
 import path from "path";
 import ora from "ora";
 
-export default {
+export = {
   downloadBox: async (url: string, destination: string) => {
     const downloadSpinner = ora("Downloading").start();
     try {

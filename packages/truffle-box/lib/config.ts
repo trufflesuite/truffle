@@ -24,7 +24,7 @@ function read(path: string) {
     .then(setDefaults);
 }
 
-export default {
+export = {
   read,
   setDefaults
 };
