@@ -1,4 +1,4 @@
-declare interface opcodes {
+export interface opcodes {
   [hex: number]: string
 }
 

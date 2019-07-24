@@ -1,6 +1,6 @@
 import opcodes from "./opcodes";
 
-declare interface opcodeObject {
+export interface opcodeObject {
   pc?: number,
   name?: string,
   pushData?: Array<number> | string
