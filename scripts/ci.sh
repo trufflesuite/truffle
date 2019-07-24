@@ -45,8 +45,7 @@ elif [ "$PACKAGES" = true ]; then
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo apt-get update
-  sudo apt-get install -y snapd solc
-  export PATH=$PATH:/snap/bin
+  sudo apt-get install -y python3.6 python3.6-dev python3.6-venv solc
   sudo snap install vyper --beta --devmode
   lerna run --scope truffle-* test --stream --concurrency=1
 
@@ -55,8 +54,7 @@ elif [ "$COVERAGE" = true ]; then
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo apt-get update
-  sudo apt-get install -y jq snapd solc
-  export PATH=$PATH:/snap/bin
+  sudo apt-get install -y jq python3.6 python3.6-dev python3.6-venv solc
   sudo snap install vyper --beta --devmode
   cd packages/truffle-debugger && yarn test:coverage && \
   cd ../../ && nyc lerna run --ignore truffle-debugger test && \
