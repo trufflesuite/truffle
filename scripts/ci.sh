@@ -46,6 +46,8 @@ elif [ "$PACKAGES" = true ]; then
   sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo apt-get update
   sudo apt-get install -y python3.6 python3.6-dev python3.6-venv solc
+  wget https://bootstrap.pypa.io/get-pip.py
+  sudo python3.6 get-pip.py
   sudo snap install vyper --beta --devmode
   lerna run --scope truffle-* test --stream --concurrency=1
 
@@ -55,6 +57,8 @@ elif [ "$COVERAGE" = true ]; then
   sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo apt-get update
   sudo apt-get install -y jq python3.6 python3.6-dev python3.6-venv solc
+  wget https://bootstrap.pypa.io/get-pip.py
+  sudo python3.6 get-pip.py
   sudo snap install vyper --beta --devmode
   cd packages/truffle-debugger && yarn test:coverage && \
   cd ../../ && nyc lerna run --ignore truffle-debugger test && \
