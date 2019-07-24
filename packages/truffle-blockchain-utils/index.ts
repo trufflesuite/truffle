@@ -1,5 +1,10 @@
 import { Provider, Callback, JsonRPCResponse } from "web3/providers"
 
+declare interface parsedUriObject {
+  genesis_hash?: string,
+  block_hash?: string
+}
+
 const Blockchain = {
   getBlockByNumber(blockNumber: string, provider: Provider, callback: Callback<JsonRPCResponse>) {
     const params = [blockNumber, true];
@@ -28,7 +33,7 @@ const Blockchain = {
   },
 
   parse(uri: string) {
-    const parsed: any = {};
+    const parsed: parsedUriObject = {};
     if (uri.indexOf("blockchain://") !== 0) return parsed;
 
     const cleanUri = uri.replace("blockchain://", "");
@@ -61,7 +66,7 @@ const Blockchain = {
   },
 
   matches(uri: string, provider: Provider, callback: Callback<any>) {
-    const parsedUri: any = this.parse(uri);
+    const parsedUri = this.parse(uri);
 
     const expected_genesis = parsedUri.genesis_hash;
     const expected_block = parsedUri.block_hash;
