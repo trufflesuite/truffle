@@ -1,13 +1,13 @@
-const unbox = require("./unbox");
-const fs = require("fs");
-const config = require("../config");
-const tmp = require("tmp");
+import unbox from "./unbox";
+import fs from "fs";
+import config from "../config";
+import tmp from "tmp";
 const cwd = require("process").cwd();
-const path = require("path");
-const ora = require("ora");
+import path from "path";
+import ora from "ora";
 
-module.exports = {
-  downloadBox: async (url, destination) => {
+export default {
+  downloadBox: async (url: string, destination: string) => {
     const downloadSpinner = ora("Downloading").start();
     try {
       await unbox.verifyURL(url);
@@ -19,15 +19,13 @@ module.exports = {
     }
   },
 
-  readBoxConfig: async destination => {
+  readBoxConfig: async (destination: string) => {
     const possibleConfigs = [
       path.join(destination, "truffle-box.json"),
       path.join(destination, "truffle-init.json")
     ];
 
-    const configPath = possibleConfigs.reduce((path, alt) => {
-      return path || (fs.existsSync(alt) && alt);
-    }, undefined);
+    const configPath = possibleConfigs.reduce((path, alt) => path || (fs.existsSync(alt) && alt), undefined);
 
     return await config.read(configPath);
   },
@@ -51,12 +49,12 @@ module.exports = {
     }
   },
 
-  unpackBox: async (tempDir, destination, boxConfig, unpackBoxOptions) => {
+  unpackBox: async (tempDir: string, destination: string, boxConfig: any, unpackBoxOptions: object) => {
     unbox.prepareToCopyFiles(tempDir, boxConfig);
     await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
   },
 
-  setUpBox: (boxConfig, destination) => {
+  setUpBox: (boxConfig: any, destination: string) => {
     const setUpSpinner = ora("Setting up box").start();
     try {
       unbox.installBoxDependencies(boxConfig, destination);
