@@ -1,13 +1,13 @@
-const fse = require("fs-extra");
-const path = require("path");
-const ghdownload = require("github-download");
-const rp = require("request-promise-native");
-const vcsurl = require("vcsurl");
-const { parse: parseURL } = require("url");
-const { execSync } = require("child_process");
-const inquirer = require("inquirer");
+import fse from "fs-extra";
+import path from "path";
+import ghdownload from "github-download";
+import rp from "request-promise-native";
+import vcsurl from "vcsurl";
+import {parse as parseURL} from "url";
+import {execSync} from "child_process";
+import inquirer from "inquirer";
 
-async function verifyURL(url) {
+async function verifyURL(url: string) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
   // will fail spectacularly in a way we can't catch, so we have to do it ourselves.
   const configURL = parseURL(
@@ -35,20 +35,16 @@ async function verifyURL(url) {
   }
 }
 
-function fetchRepository(url, dir) {
-  return new Promise((accept, reject) => {
+function fetchRepository(url: string, dir: string) {
+  return new Promise((accept, reject) =>
     // Download the package from github.
     ghdownload(url, dir)
-      .on("err", err => {
-        reject(err);
-      })
-      .on("end", () => {
-        accept();
-      });
-  });
+      .on("err", reject)
+      .on("end", accept)
+  );
 }
 
-function prepareToCopyFiles(tempDir, { ignore }) {
+function prepareToCopyFiles(tempDir: string, { ignore } : any) {
   const needingRemoval = ignore;
 
   // remove box config file
@@ -56,16 +52,16 @@ function prepareToCopyFiles(tempDir, { ignore }) {
   needingRemoval.push("truffle-init.json");
 
   needingRemoval
-    .map(fileName => path.join(tempDir, fileName))
-    .forEach(filePath => fse.removeSync(filePath));
+    .map((fileName: string) => path.join(tempDir, fileName))
+    .forEach((filePath: string) => fse.removeSync(filePath));
 }
 
-async function promptOverwrites(contentCollisions, logger = console) {
+async function promptOverwrites(contentCollisions: Array<string>, logger = console) {
   const overwriteContents = [];
 
   for (const file of contentCollisions) {
     logger.log(`${file} already exists in this directory...`);
-    const overwriting = [
+    const overwriting: inquirer.Questions = [
       {
         type: "confirm",
         name: "overwrite",
@@ -84,7 +80,7 @@ async function promptOverwrites(contentCollisions, logger = console) {
   return overwriteContents;
 }
 
-async function copyTempIntoDestination(tmpDir, destination, options) {
+async function copyTempIntoDestination(tmpDir: string, destination: string, options: any) {
   fse.ensureDirSync(destination);
   const { force, logger } = options;
   const boxContents = fse.readdirSync(tmpDir);
@@ -111,14 +107,14 @@ async function copyTempIntoDestination(tmpDir, destination, options) {
   }
 }
 
-function installBoxDependencies({ hooks }, destination) {
+function installBoxDependencies({ hooks } : any, destination: string) {
   const postUnpack = hooks["post-unpack"];
 
   if (postUnpack.length === 0) return;
   execSync(postUnpack, { cwd: destination });
 }
 
-module.exports = {
+export default {
   copyTempIntoDestination,
   fetchRepository,
   installBoxDependencies,
