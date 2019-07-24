@@ -64,7 +64,7 @@ export class Workspace {
       const { createIndexes } = definition;
 
       for (let index of (createIndexes || [])) {
-        await db.createIndex({ index });
+        await db.createIndex({ index: index });
       }
     }
   }
