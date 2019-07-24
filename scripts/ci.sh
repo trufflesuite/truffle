@@ -44,6 +44,7 @@ elif [ "$PACKAGES" = true ]; then
 
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
+  sudo apt-get update
   sudo apt-get install -y snapd solc
   export PATH=$PATH:/snap/bin
   sudo snap install vyper --beta --devmode
@@ -53,6 +54,7 @@ elif [ "$COVERAGE" = true ]; then
 
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
+  sudo apt-get update
   sudo apt-get install -y jq snapd solc
   export PATH=$PATH:/snap/bin
   sudo snap install vyper --beta --devmode
