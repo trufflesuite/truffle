@@ -260,6 +260,25 @@ const AddNetworks = gql`
   }
 `;
 
+const GetNetworkById = gql`
+  query GetWorkspaceNetworkById($networkId: NetworkId!) {
+    workspace {
+      networkById(networkId: $networkId) {
+        id
+        name
+        networkId
+        historicBlock {
+          height
+          hash
+        }
+        fork
+      }
+    }
+  }
+`;
+
+
+
 type WorkflowCompileResult = {
   outputs: { [compilerName: string]: string[] },
   contracts: { [contractName: string]: ContractObject }

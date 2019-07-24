@@ -42,6 +42,7 @@ export const schema = mergeSchemas({
       bytecode(id: ID!): Bytecode
       contractInstance(id: ID!): ContractInstance
       network(id: ID!): Network
+      networkById(networkId: NetworkId!): [Network]!
     }
 
     input SourceInput {
@@ -244,6 +245,10 @@ export const schema = mergeSchemas({
       network: {
         resolve: (_, { id }, { workspace }) =>
           workspace.network({ id })
+      },
+      networkById: {
+        resolve: (_, { networkId }, { workspace }) =>
+          workspace.networkById({ networkId })
       }
     },
     Mutation: {

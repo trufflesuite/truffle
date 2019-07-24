@@ -218,6 +218,22 @@ export class Workspace {
     };
   }
 
+  async networkById ({ networkId }: { networkId: string }) {
+    await this.ready;
+
+    const { docs }:any = await this.networks.find({
+      selector: { networkId: networkId }
+    })
+
+    return docs.map((doc) => ({
+      name: doc.name,
+      networkId: doc.networkId,
+      historicBlock: doc.historicBlock,
+      fork: doc.fork,
+      id: doc._id
+    }))
+  }
+
   async network ({ id }: { id: string }) {
     await this.ready;
 
