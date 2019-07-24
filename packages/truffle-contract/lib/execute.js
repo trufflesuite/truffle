@@ -134,7 +134,8 @@ var execute = {
           );
           resolve(result);
         } catch (err) {
-          err.stack += `\nOriginal stack: ${originalStackTrace}`;
+          err.hijackedStack = err.stack;
+          err.stack = originalStackTrace.replace(/^Error\n/, err.stack.split('\n')[0]);
           reject(err);
         }
       });
@@ -167,7 +168,8 @@ var execute = {
       };
 
       function appendOriginalStackTrace(e) {
-        e.stack += `\nOriginal stack: ${originalStackTrace}`;
+        e.hijackedStack = e.stack;
+        e.stack = originalStackTrace.replace(/^Error\n/, e.stack.split('\n')[0]);
         promiEvent.reject(e);
       }
 
