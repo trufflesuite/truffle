@@ -72,7 +72,8 @@ const command = {
       mnemonic,
       gasLimit: customConfig.gas || 0x6691b7,
       gasPrice: customConfig.gasPrice || 0x77359400,
-      noVMErrorsOnRPCResponse: true
+      noVMErrorsOnRPCResponse: true,
+      time: config.genesis_time
     };
 
     if (customConfig.hardfork !== null && customConfig.hardfork !== undefined) {
