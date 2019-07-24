@@ -27,7 +27,8 @@ const resources = {
   },
   networks: {
     createIndexes: [
-      { fields: ["id"] }
+      { fields: ["id"] },
+      { fields: ["networkId"] }
     ]
   },
   contractInstances: {
