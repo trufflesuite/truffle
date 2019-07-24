@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "mocha"
+    "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-blockchain-utils",
   "keywords": [
