@@ -1,4 +1,8 @@
-const codes: any = {
+declare interface opcodes {
+  [hex: number]: string
+}
+
+const codes: opcodes = {
   0x00: "STOP",
   0x01: "ADD",
   0x02: "MUL",
