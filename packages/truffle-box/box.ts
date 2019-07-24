@@ -1,12 +1,12 @@
-const utils = require("./lib/utils");
-const tmp = require("tmp");
-const path = require("path");
-const Config = require("truffle-config");
-const ora = require("ora");
-const fse = require("fs-extra");
-const inquirer = require("inquirer");
+import utils from "./lib/utils";
+import tmp from "tmp";
+import path from "path";
+import Config from "truffle-config";
+import ora from "ora";
+import fse from "fs-extra";
+import inquirer from "inquirer";
 
-function parseSandboxOptions(options) {
+function parseSandboxOptions(options: any) {
   if (typeof options === "string") {
     // back compatibility for when `options` used to be `name`
     return {
@@ -24,9 +24,9 @@ function parseSandboxOptions(options) {
 }
 
 const Box = {
-  unbox: async (url, destination, options = {}) => {
+  unbox: async (url: string, destination: string, options: any = {}) => {
     let tempDirCleanup;
-    logger = options.logger || { log: () => {} };
+    const logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
       logger: options.logger,
       force: options.force
@@ -37,7 +37,7 @@ const Box = {
       await Box.checkDir(options, destination);
       const tempDir = await utils.setUpTempDirectory();
 
-      tempDirPath = tempDir.path;
+      const tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
       await utils.downloadBox(url, tempDirPath);
@@ -64,13 +64,13 @@ const Box = {
     }
   },
 
-  checkDir: async (options = {}, destination) => {
+  checkDir: async (options: any = {}, destination: string) => {
     let logger = options.logger || console;
     if (!options.force) {
       const unboxDir = fse.readdirSync(destination);
       if (unboxDir.length) {
         logger.log(`This directory is non-empty...`);
-        const prompt = [
+        const prompt: inquirer.Questions = [
           {
             type: "confirm",
             name: "proceed",
@@ -91,7 +91,7 @@ const Box = {
   //   Recursively removes the created temporary directory, even when it's not empty. default is false
   // options.setGracefulCleanup
   //   Cleanup temporary files even when an uncaught exception occurs
-  sandbox: async options => {
+  sandbox: async (options: any) => {
     const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
       options
     );
@@ -110,4 +110,4 @@ const Box = {
   }
 };
 
-module.exports = Box;
+export = Box;
