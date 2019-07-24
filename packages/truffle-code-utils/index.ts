@@ -25,7 +25,7 @@ export = {
    */
   parseCode(hexString: string, numInstructions: number = null) {
     // Convert to an array of bytes
-    let code: Array<any> = (hexString.slice(2).match(/(..?)/g) || []).map(hex =>
+    let code: Array<number> = (hexString.slice(2).match(/(..?)/g) || []).map(hex =>
       parseInt(hex, 16)
     );
 
