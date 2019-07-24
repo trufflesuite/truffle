@@ -1,6 +1,6 @@
-const fse = require("fs-extra");
+import fse from "fs-extra";
 
-function setDefaults(config = {}) {
+function setDefaults(config: any = {}) {
   const hooks = config.hooks || {};
 
   return {
@@ -16,7 +16,7 @@ function setDefaults(config = {}) {
   };
 }
 
-function read(path) {
+function read(path: string) {
   return fse
     .readFile(path)
     .catch(() => "{}")
@@ -24,7 +24,7 @@ function read(path) {
     .then(setDefaults);
 }
 
-module.exports = {
+export default {
   read,
   setDefaults
 };
