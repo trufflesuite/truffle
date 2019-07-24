@@ -1,5 +1,11 @@
 import opcodes from "./opcodes";
 
+declare interface opcodeObject {
+  pc?: number,
+  name?: string,
+  pushData?: Array<number> | string
+}
+
 export = {
   /**
    * parseCode - return a list of instructions given a 0x-prefixed code string.
@@ -39,7 +45,7 @@ export = {
       (stripMetadata || instructions.length < numInstructions);
       pc++
     ) {
-      let opcode: any = {};
+      let opcode: opcodeObject = {};
       opcode.pc = pc;
       opcode.name = opcodes(code[pc]);
       if (opcode.name.slice(0, 4) === "PUSH") {
