@@ -5,6 +5,7 @@ import tmp from "tmp";
 const cwd = require("process").cwd();
 import path from "path";
 import ora from "ora";
+import { boxConfig, unboxOptions } from "typings";
 
 export = {
   downloadBox: async (url: string, destination: string) => {
@@ -25,7 +26,10 @@ export = {
       path.join(destination, "truffle-init.json")
     ];
 
-    const configPath = possibleConfigs.reduce((path, alt) => path || (fs.existsSync(alt) && alt), undefined);
+    const configPath = possibleConfigs.reduce(
+      (path, alt) => path || (fs.existsSync(alt) && alt),
+      undefined
+    );
 
     return await config.read(configPath);
   },
@@ -49,12 +53,17 @@ export = {
     }
   },
 
-  unpackBox: async (tempDir: string, destination: string, boxConfig: any, unpackBoxOptions: object) => {
+  unpackBox: async (
+    tempDir: string,
+    destination: string,
+    boxConfig: boxConfig,
+    unpackBoxOptions: unboxOptions
+  ) => {
     unbox.prepareToCopyFiles(tempDir, boxConfig);
     await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
   },
 
-  setUpBox: (boxConfig: any, destination: string) => {
+  setUpBox: (boxConfig: boxConfig, destination: string) => {
     const setUpSpinner = ora("Setting up box").start();
     try {
       unbox.installBoxDependencies(boxConfig, destination);
