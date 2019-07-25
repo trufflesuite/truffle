@@ -3,9 +3,10 @@ import path from "path";
 import ghdownload from "github-download";
 import rp from "request-promise-native";
 import vcsurl from "vcsurl";
-import {parse as parseURL} from "url";
-import {execSync} from "child_process";
+import { parse as parseURL } from "url";
+import { execSync } from "child_process";
 import inquirer from "inquirer";
+import { boxConfig, unboxOptions } from "typings";
 
 async function verifyURL(url: string) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
@@ -44,7 +45,7 @@ function fetchRepository(url: string, dir: string) {
   );
 }
 
-function prepareToCopyFiles(tempDir: string, { ignore } : any) {
+function prepareToCopyFiles(tempDir: string, { ignore }: boxConfig) {
   const needingRemoval = ignore;
 
   // remove box config file
@@ -56,7 +57,10 @@ function prepareToCopyFiles(tempDir: string, { ignore } : any) {
     .forEach((filePath: string) => fse.removeSync(filePath));
 }
 
-async function promptOverwrites(contentCollisions: Array<string>, logger = console) {
+async function promptOverwrites(
+  contentCollisions: Array<string>,
+  logger = console
+) {
   const overwriteContents = [];
 
   for (const file of contentCollisions) {
@@ -80,7 +84,11 @@ async function promptOverwrites(contentCollisions: Array<string>, logger = conso
   return overwriteContents;
 }
 
-async function copyTempIntoDestination(tmpDir: string, destination: string, options: any) {
+async function copyTempIntoDestination(
+  tmpDir: string,
+  destination: string,
+  options: unboxOptions
+) {
   fse.ensureDirSync(destination);
   const { force, logger } = options;
   const boxContents = fse.readdirSync(tmpDir);
@@ -107,7 +115,7 @@ async function copyTempIntoDestination(tmpDir: string, destination: string, opti
   }
 }
 
-function installBoxDependencies({ hooks } : any, destination: string) {
+function installBoxDependencies({ hooks }: boxConfig, destination: string) {
   const postUnpack = hooks["post-unpack"];
 
   if (postUnpack.length === 0) return;
