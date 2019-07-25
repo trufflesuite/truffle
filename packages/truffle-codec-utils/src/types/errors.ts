@@ -90,15 +90,10 @@ export namespace Errors {
     error: GenericError | BoolError;
   }
 
-  export type BoolError = BoolPaddingError | BoolOutOfRangeError;
-
-  export interface BoolPaddingError {
-    raw: string; //should be hex string
-    kind: "BoolPaddingError";
-  }
+  export type BoolError = BoolOutOfRangeError;
 
   export interface BoolOutOfRangeError {
-    rawAsNumber: number;
+    rawAsBN: BN;
     kind: "BoolOutOfRangeError";
   }
 
@@ -232,13 +227,7 @@ export namespace Errors {
     error: GenericError | EnumError;
   }
 
-  export type EnumError = EnumPaddingError | EnumOutOfRangeError | EnumNotFoundDecodingError;
-
-  export interface EnumPaddingError {
-    kind: "EnumPaddingError";
-    type: Types.EnumType;
-    raw: string; //should be hex string
-  }
+  export type EnumError = EnumOutOfRangeError | EnumNotFoundDecodingError;
 
   export interface EnumOutOfRangeError {
     kind: "EnumOutOfRangeError";

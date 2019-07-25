@@ -165,18 +165,14 @@ export class ResultInspector {
             return `Uint has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
           case "IntPaddingError":
             return `Int out of range (padding error) (numeric value ${errorResult.error.raw})`;
-          case "BoolPaddingError":
-            return `Bool has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
           case "BoolOutOfRangeError":
-            return `Invalid boolean (numeric value ${errorResult.error.rawAsNumber})`;
+            return `Invalid boolean (numeric value ${errorResult.error.rawAsBN.toString()})`;
           case "BytesPaddingError":
             return `Bytestring has extra trailing bytes (padding error) (raw value ${errorResult.error.raw})`;
           case "AddressPaddingError":
             return `Address has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
           case "FixedPointNotYetSupportedError":
             return `Fixed-point decoding not yet supported (raw value: ${errorResult.error.raw})`;
-          case "EnumPaddingError":
-            return `${enumTypeName(errorResult.error.type)} has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
           case "EnumOutOfRangeError":
             return `Invalid ${enumTypeName(errorResult.error.type)} (numeric value ${errorResult.error.rawAsBN.toString()})`;
           case "EnumNotFoundDecodingError":

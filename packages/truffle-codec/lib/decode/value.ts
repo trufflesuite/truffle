@@ -39,20 +39,6 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
   switch(dataType.typeClass) {
 
     case "bool": {
-      if(!checkPaddingLeft(bytes, 1)) {
-        let error = {
-          kind: "BoolPaddingError" as "BoolPaddingError",
-          raw: CodecUtils.Conversion.toHexString(bytes)
-        };
-        if(strict) {
-          throw new StopDecodingError(error);
-        }
-        return {
-          type: dataType,
-          kind: "error",
-          error
-        };
-      }
       const numeric = CodecUtils.Conversion.toBN(bytes);
       if(numeric.eqn(0)) {
         return {
@@ -71,7 +57,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       else {
         let error = { 
           kind: "BoolOutOfRangeError" as "BoolOutOfRangeError",
-          rawAsNumber: numeric.toNumber() //cannot fail, it's only 1 byte
+          rawAsBN: numeric
         };
         if(strict) {
           throw new StopDecodingError(error);
@@ -299,21 +285,6 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       }
       const numOptions = fullType.options.length;
       const numBytes = Math.ceil(Math.log2(numOptions) / 8);
-      if(!checkPaddingLeft(bytes, numBytes)) {
-        let error = {
-          kind: "EnumPaddingError" as "EnumPaddingError",
-          type: fullType,
-          raw: CodecUtils.Conversion.toHexString(bytes)
-        };
-        if(strict) {
-          throw new StopDecodingError(error);
-        }
-        return {
-          type: fullType,
-          kind: "error",
-          error
-        };
-      }
       if(numeric.ltn(numOptions)) {
         const name = fullType.options[numeric.toNumber()];
         return {
