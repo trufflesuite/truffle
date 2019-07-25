@@ -15,6 +15,10 @@ class Deployer extends Deployment {
     const emitter = new Emittery();
     super(emitter, options);
 
+    const { ens } = options.networks[network] || {};
+    const { registry } = ens || {};
+    const { address } = registry;
+
     this.emitter = emitter;
     this.chain = new DeferredChain();
     this.logger = options.logger || { log: function() {} };
@@ -26,7 +30,10 @@ class Deployer extends Deployment {
     this.known_contracts = {};
     this.ens = new ENS({
       provider: options.provider,
-      ensSettings: options.ens
+      ensSettings: {
+        enabled: options.ens.enabled,
+        registryAddress: address
+      }
     });
 
     (options.contracts || []).forEach(
