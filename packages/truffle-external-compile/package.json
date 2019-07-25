@@ -1,6 +1,6 @@
 {
   "name": "truffle-external-compile",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Wrapper to compile Truffle contracts with arbitrary shell command",
   "keywords": [
     "truffle",

@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-decode-utils/issues"
   },
-  "version": "1.0.14",
+  "version": "1.0.15",
   "main": "dist/index.js",
   "scripts": {
     "build": "node_modules/.bin/tsc",
