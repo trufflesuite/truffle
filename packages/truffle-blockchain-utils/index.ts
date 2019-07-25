@@ -1,9 +1,5 @@
 import { Provider, Callback, JsonRPCResponse } from "web3/providers"
-
-declare interface parsedUriObject {
-  genesis_hash?: string,
-  block_hash?: string
-}
+import { parsedUriObject } from "typings"
 
 const Blockchain = {
   getBlockByNumber(blockNumber: string, provider: Provider, callback: Callback<JsonRPCResponse>) {
