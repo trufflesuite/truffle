@@ -3,6 +3,7 @@
   "version": "1.0.31",
   "description": "Truffle project boilerplate utility",
   "main": "dist/box.js",
+  "types": "./typings/index.d.ts",
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
