@@ -1,7 +1,9 @@
+export type parsedUriObject = {
+  genesis_hash?: string;
+  block_hash?: string;
+};
+
 declare namespace BlockchainUtils {
-  export interface parsedUriObject {
-    genesis_hash?: string;
-    block_hash?: string;
-  }
+  function parse(uri: string): parsedUriObject;
 }
-export = BlockchainUtils;
+export default BlockchainUtils;
