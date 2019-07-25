@@ -1,10 +1,5 @@
 import opcodes from "./opcodes";
-
-export interface opcodeObject {
-  pc?: number,
-  name?: string,
-  pushData?: Array<number> | string
-}
+import { opcodeObject } from "typings";
 
 export = {
   /**
@@ -25,8 +20,8 @@ export = {
    */
   parseCode(hexString: string, numInstructions: number = null) {
     // Convert to an array of bytes
-    let code: Array<number> = (hexString.slice(2).match(/(..?)/g) || []).map(hex =>
-      parseInt(hex, 16)
+    let code: Array<number> = (hexString.slice(2).match(/(..?)/g) || []).map(
+      hex => parseInt(hex, 16)
     );
 
     let stripMetadata = numInstructions === null;

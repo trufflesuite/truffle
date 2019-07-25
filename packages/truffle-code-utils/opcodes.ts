@@ -1,6 +1,4 @@
-export interface opcodes {
-  [hex: number]: string
-}
+import { opcodes } from "typings";
 
 const codes: opcodes = {
   0x00: "STOP",
