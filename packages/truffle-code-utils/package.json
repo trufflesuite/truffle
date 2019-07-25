@@ -3,6 +3,7 @@
   "version": "1.2.4",
   "description": "Utilities for parsing and managing EVM-compatible bytecode",
   "main": "dist/index.js",
+  "types": "./typings/index.d.ts",
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
