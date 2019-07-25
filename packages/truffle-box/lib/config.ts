@@ -1,6 +1,7 @@
 import fse from "fs-extra";
+import { boxConfig } from "typings";
 
-function setDefaults(config: any = {}) {
+function setDefaults(config: any = {}): boxConfig {
   const hooks = config.hooks || {};
 
   return {
@@ -16,7 +17,7 @@ function setDefaults(config: any = {}) {
   };
 }
 
-function read(path: string) {
+function read(path: string): Promise<boxConfig> {
   return fse
     .readFile(path)
     .catch(() => "{}")
