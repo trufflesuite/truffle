@@ -7,7 +7,7 @@ import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { CalldataAllocation, EventAllocation, EventArgumentAllocation } from "../types/allocation";
-import { CalldataDecoding, LogDecoding, AbiArgument } from "../types/wire";
+import { CalldataDecoding, LogDecoding, AbiArgument } from "../types/decoding";
 import { encodeTupleAbi } from "../encode/abi";
 import read from "../read";
 import decode from "../decode";
@@ -56,6 +56,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
     return {
       kind: "fallback",
       class: contractType,
+      abi: CodecUtils.AbiUtils.fallbackAbiForPayability(context.payable),
       data: CodecUtils.Conversion.toHexString(info.state.calldata),
       decodingMode: "full",
     };
@@ -81,6 +82,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       kind: "constructor",
       class: contractType,
       arguments: decodedArguments,
+      abi: allocation.abi,
       bytecode: CodecUtils.Conversion.toHexString(info.state.calldata.slice(0, allocation.offset)),
       decodingMode: "full",
     };
@@ -89,7 +91,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
     return {
       kind: "function",
       class: contractType,
-      name: allocation.definition.name,
+      abi: allocation.abi,
       arguments: decodedArguments,
       selector,
       decodingMode: "full"
@@ -207,7 +209,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
         decodings.push({
           kind: "anonymous",
           class: contractType,
-          name: allocation.definition.name,
+          abi: allocation.abi,
           arguments: decodedArguments,
           decodingMode: "full"
         });
@@ -216,7 +218,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
         decodings.push({
           kind: "event",
           class: contractType,
-          name: allocation.definition.name,
+          abi: allocation.abi,
           arguments: decodedArguments,
           selector,
           decodingMode: "full"

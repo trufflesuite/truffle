@@ -112,7 +112,7 @@ contract("WireTest", _accounts => {
     );
 
     assert.strictEqual(emitStuffDecoding.kind, "function");
-    assert.strictEqual(emitStuffDecoding.name, "emitStuff");
+    assert.strictEqual(emitStuffDecoding.abi.name, "emitStuff");
     assert.strictEqual(emitStuffDecoding.class.typeName, "WireTest");
     assert.lengthOf(emitStuffDecoding.arguments, 3);
     assert.strictEqual(emitStuffDecoding.arguments[0].name, "p");
@@ -132,7 +132,7 @@ contract("WireTest", _accounts => {
     );
 
     assert.strictEqual(moreStuffDecoding.kind, "function");
-    assert.strictEqual(moreStuffDecoding.name, "moreStuff");
+    assert.strictEqual(moreStuffDecoding.abi.name, "moreStuff");
     assert.strictEqual(moreStuffDecoding.class.typeName, "WireTest");
     assert.lengthOf(moreStuffDecoding.arguments, 2);
     assert.strictEqual(moreStuffDecoding.arguments[0].name, "notThis");
@@ -147,7 +147,7 @@ contract("WireTest", _accounts => {
     );
 
     assert.strictEqual(inheritedDecoding.kind, "function");
-    assert.strictEqual(inheritedDecoding.name, "inherited");
+    assert.strictEqual(inheritedDecoding.abi.name, "inherited");
     assert.strictEqual(inheritedDecoding.class.typeName, "WireTest"); //NOT WireTestParent
     assert.lengthOf(inheritedDecoding.arguments, 1);
     assert.isUndefined(inheritedDecoding.arguments[0].name);
@@ -164,7 +164,7 @@ contract("WireTest", _accounts => {
     assert.isEmpty(defaultConstructorDecoding.arguments);
 
     assert.strictEqual(getterDecoding1.kind, "function");
-    assert.strictEqual(getterDecoding1.name, "deepStruct");
+    assert.strictEqual(getterDecoding1.abi.name, "deepStruct");
     assert.strictEqual(getterDecoding1.class.typeName, "WireTest");
     assert.lengthOf(getterDecoding1.arguments, 2);
     assert.isUndefined(getterDecoding1.arguments[0].name);
@@ -179,7 +179,7 @@ contract("WireTest", _accounts => {
     );
 
     assert.strictEqual(getterDecoding2.kind, "function");
-    assert.strictEqual(getterDecoding2.name, "deepString");
+    assert.strictEqual(getterDecoding2.abi.name, "deepString");
     assert.strictEqual(getterDecoding2.class.typeName, "WireTest");
     assert.lengthOf(getterDecoding2.arguments, 2);
     assert.isUndefined(getterDecoding2.arguments[0].name);
@@ -274,7 +274,7 @@ contract("WireTest", _accounts => {
 
     assert.strictEqual(constructorEventDecoding.kind, "event");
     assert.strictEqual(constructorEventDecoding.class.typeName, "WireTest");
-    assert.strictEqual(constructorEventDecoding.name, "ConstructorEvent");
+    assert.strictEqual(constructorEventDecoding.abi.name, "ConstructorEvent");
     assert.lengthOf(constructorEventDecoding.arguments, 3);
     assert.strictEqual(constructorEventDecoding.arguments[0].name, "bit");
     assert.strictEqual(
@@ -293,7 +293,7 @@ contract("WireTest", _accounts => {
     );
 
     assert.strictEqual(emitStuffEventDecoding.kind, "event");
-    assert.strictEqual(emitStuffEventDecoding.name, "EmitStuff");
+    assert.strictEqual(emitStuffEventDecoding.abi.name, "EmitStuff");
     assert.strictEqual(emitStuffEventDecoding.class.typeName, "WireTest");
     assert.lengthOf(emitStuffEventDecoding.arguments, 3);
     assert.isUndefined(emitStuffEventDecoding.arguments[0].name);
@@ -313,7 +313,7 @@ contract("WireTest", _accounts => {
     );
 
     assert.strictEqual(moreStuffEventDecoding.kind, "event");
-    assert.strictEqual(moreStuffEventDecoding.name, "MoreStuff");
+    assert.strictEqual(moreStuffEventDecoding.abi.name, "MoreStuff");
     assert.strictEqual(moreStuffEventDecoding.class.typeName, "WireTest");
     assert.lengthOf(moreStuffEventDecoding.arguments, 2);
     assert.isUndefined(moreStuffEventDecoding.arguments[0].name);
@@ -328,12 +328,12 @@ contract("WireTest", _accounts => {
     );
 
     assert.strictEqual(inheritedEventDecoding.kind, "event");
-    assert.strictEqual(inheritedEventDecoding.name, "Done");
+    assert.strictEqual(inheritedEventDecoding.abi.name, "Done");
     assert.strictEqual(inheritedEventDecoding.class.typeName, "WireTest"); //NOT WireTestParent
     assert.isEmpty(inheritedEventDecoding.arguments);
 
     assert.strictEqual(indexTestEventDecoding.kind, "event");
-    assert.strictEqual(indexTestEventDecoding.name, "HasIndices");
+    assert.strictEqual(indexTestEventDecoding.abi.name, "HasIndices");
     assert.strictEqual(indexTestEventDecoding.class.typeName, "WireTest");
     assert.lengthOf(indexTestEventDecoding.arguments, 5);
     assert.isUndefined(indexTestEventDecoding.arguments[0].name);
@@ -362,7 +362,7 @@ contract("WireTest", _accounts => {
     );
 
     assert.strictEqual(libraryTestEventDecoding.kind, "event");
-    assert.strictEqual(libraryTestEventDecoding.name, "LibraryEvent");
+    assert.strictEqual(libraryTestEventDecoding.abi.name, "LibraryEvent");
     assert.strictEqual(
       libraryTestEventDecoding.class.typeName,
       "WireTestLibrary"
@@ -375,7 +375,7 @@ contract("WireTest", _accounts => {
     );
 
     assert.strictEqual(dangerEventDecoding.kind, "event");
-    assert.strictEqual(dangerEventDecoding.name, "Danger");
+    assert.strictEqual(dangerEventDecoding.abi.name, "Danger");
     assert.lengthOf(dangerEventDecoding.arguments, 1);
     assert.isUndefined(dangerEventDecoding.arguments[0].name);
     assert.strictEqual(
@@ -422,7 +422,10 @@ contract("WireTest", _accounts => {
       ({ decodings }) => decodings[0]
     );
     assert.strictEqual(ambiguityTestContractDecoding.kind, "event");
-    assert.strictEqual(ambiguityTestContractDecoding.name, "AmbiguousEvent");
+    assert.strictEqual(
+      ambiguityTestContractDecoding.abi.name,
+      "AmbiguousEvent"
+    );
     assert.strictEqual(
       ambiguityTestContractDecoding.class.typeName,
       "WireTest"
@@ -439,7 +442,7 @@ contract("WireTest", _accounts => {
     );
 
     assert.strictEqual(ambiguityTestLibraryDecoding.kind, "event");
-    assert.strictEqual(ambiguityTestLibraryDecoding.name, "AmbiguousEvent");
+    assert.strictEqual(ambiguityTestLibraryDecoding.abi.name, "AmbiguousEvent");
     assert.strictEqual(
       ambiguityTestLibraryDecoding.class.typeName,
       "WireTestLibrary"
@@ -455,7 +458,7 @@ contract("WireTest", _accounts => {
 
     for (let decoding of unambiguousDecodings) {
       assert.strictEqual(decoding.kind, "event");
-      assert.strictEqual(decoding.name, "AmbiguousEvent");
+      assert.strictEqual(decoding.abi.name, "AmbiguousEvent");
     }
 
     assert.strictEqual(unambiguousDecodings[0].class.typeName, "WireTest");
@@ -529,7 +532,10 @@ contract("WireTest", _accounts => {
 
     assert.lengthOf(anonymousTestEvents[0].decodings, 1);
     assert.strictEqual(anonymousTestEvents[0].decodings[0].kind, "anonymous");
-    assert.strictEqual(anonymousTestEvents[0].decodings[0].name, "AnonUints");
+    assert.strictEqual(
+      anonymousTestEvents[0].decodings[0].abi.name,
+      "AnonUints"
+    );
     assert.strictEqual(
       anonymousTestEvents[0].decodings[0].class.typeName,
       "WireTest"
@@ -544,7 +550,10 @@ contract("WireTest", _accounts => {
 
     assert.lengthOf(anonymousTestEvents[1].decodings, 2);
     assert.strictEqual(anonymousTestEvents[1].decodings[0].kind, "anonymous");
-    assert.strictEqual(anonymousTestEvents[1].decodings[0].name, "AnonUints");
+    assert.strictEqual(
+      anonymousTestEvents[1].decodings[0].abi.name,
+      "AnonUints"
+    );
     assert.strictEqual(
       anonymousTestEvents[1].decodings[0].class.typeName,
       "WireTest"
@@ -557,7 +566,10 @@ contract("WireTest", _accounts => {
       [1, 2, 3, 4]
     );
     assert.strictEqual(anonymousTestEvents[1].decodings[1].kind, "anonymous");
-    assert.strictEqual(anonymousTestEvents[1].decodings[1].name, "AnonUint8s");
+    assert.strictEqual(
+      anonymousTestEvents[1].decodings[1].abi.name,
+      "AnonUint8s"
+    );
     assert.strictEqual(
       anonymousTestEvents[1].decodings[1].class.typeName,
       "WireTestLibrary"
@@ -572,7 +584,7 @@ contract("WireTest", _accounts => {
 
     assert.lengthOf(anonymousTestEvents[2].decodings, 2);
     assert.strictEqual(anonymousTestEvents[2].decodings[0].kind, "event");
-    assert.strictEqual(anonymousTestEvents[2].decodings[0].name, "NonAnon");
+    assert.strictEqual(anonymousTestEvents[2].decodings[0].abi.name, "NonAnon");
     assert.strictEqual(
       anonymousTestEvents[2].decodings[0].class.typeName,
       "WireTest"
@@ -586,7 +598,10 @@ contract("WireTest", _accounts => {
     );
     let selector = anonymousTestEvents[2].decodings[0].selector;
     assert.strictEqual(anonymousTestEvents[2].decodings[1].kind, "anonymous");
-    assert.strictEqual(anonymousTestEvents[2].decodings[1].name, "AnonUints");
+    assert.strictEqual(
+      anonymousTestEvents[2].decodings[1].abi.name,
+      "AnonUints"
+    );
     assert.strictEqual(
       anonymousTestEvents[2].decodings[1].class.typeName,
       "WireTest"
@@ -607,7 +622,7 @@ contract("WireTest", _accounts => {
     assert.lengthOf(anonymousTestEvents[3].decodings, 1);
     assert.strictEqual(anonymousTestEvents[3].decodings[0].kind, "anonymous");
     assert.strictEqual(
-      anonymousTestEvents[3].decodings[0].name,
+      anonymousTestEvents[3].decodings[0].abi.name,
       "ObviouslyAnon"
     );
     assert.strictEqual(
@@ -628,7 +643,7 @@ contract("WireTest", _accounts => {
     assert.lengthOf(specifiedNameEvent.decodings, 1);
     let specifiedNameDecoding = specifiedNameEvent.decodings[0];
     assert.strictEqual(specifiedNameDecoding.kind, "anonymous");
-    assert.strictEqual(specifiedNameDecoding.name, "AnonUint8s");
+    assert.strictEqual(specifiedNameDecoding.abi.name, "AnonUint8s");
     assert.strictEqual(specifiedNameDecoding.class.typeName, "WireTestLibrary");
     assert.lengthOf(specifiedNameDecoding.arguments, 4);
     assert.deepEqual(

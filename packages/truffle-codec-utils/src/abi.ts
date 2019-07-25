@@ -59,6 +59,19 @@ export namespace AbiUtils {
     [selector: string]: FunctionAbiEntry
   }
 
+  export const DEFAULT_CONSTRUCTOR_ABI: ConstructorAbiEntry = {
+    type: "constructor",
+    inputs: [],
+    stateMutability: "nonpayable",
+    payable: false
+  };
+
+  export const DEFAULT_FALLBACK_ABI: FallbackAbiEntry = {
+    type: "fallback",
+    stateMutability: "nonpayable",
+    payable: false
+  };
+
   export function schemaAbiToAbi(abiLoose: SchemaAbi): Abi {
     return abiLoose.map(
       entry => entry.type
@@ -86,10 +99,21 @@ export namespace AbiUtils {
     if(abi === undefined) {
       return undefined;
     }
-    return abi.some(
-      (abiEntry: AbiEntry) =>
-        abiEntry.type === "fallback" && abiMutability(abiEntry) === "payable"
-    );
+    return abiMutability(getFallbackEntry(abi)) === "payable";
+  }
+
+  //gets the fallback entry; if there isn't one, returns a default one
+  export function getFallbackEntry(abi: Abi): FallbackAbiEntry {
+    //no idea why TS's type inference is failing on this one...
+    return <FallbackAbiEntry> abi.find(abiEntry => abiEntry.type === "fallback") || DEFAULT_FALLBACK_ABI;
+  }
+
+  export function fallbackAbiForPayability(payable: boolean): FallbackAbiEntry {
+    return {
+      type: "fallback",
+      stateMutability: payable ? "payable" : "nonpayable",
+      payable
+    };
   }
 
   //shim for old abi versions

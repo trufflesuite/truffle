@@ -95,6 +95,7 @@ export interface CalldataContractAllocation {
 
 export interface CalldataAllocation {
   definition?: AstDefinition; //may be omitted for implicit constructor
+  abi: AbiUtils.FunctionAbiEntry | AbiUtils.ConstructorAbiEntry;
   offset: number; //measured in bytes
   arguments: CalldataArgumentAllocation[];
 }
@@ -133,6 +134,7 @@ export interface EventAllocations {
 
 export interface EventAllocation {
   definition: AstDefinition;
+  abi: AbiUtils.EventAbiEntry;
   contractId: number;
   arguments: EventArgumentAllocation[];
 }

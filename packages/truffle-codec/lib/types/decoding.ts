@@ -9,7 +9,7 @@ export interface FunctionDecoding {
   kind: "function";
   class: CodecUtils.Types.ContractType;
   arguments: AbiArgument[];
-  name: string;
+  abi: CodecUtils.AbiUtils.FunctionAbiEntry;
   selector: string;
   decodingMode: DecodingMode;
 }
@@ -18,6 +18,7 @@ export interface ConstructorDecoding {
   kind: "constructor";
   class: CodecUtils.Types.ContractType;
   arguments: AbiArgument[];
+  abi: CodecUtils.AbiUtils.ConstructorAbiEntry;
   bytecode: string;
   decodingMode: DecodingMode;
 }
@@ -25,6 +26,7 @@ export interface ConstructorDecoding {
 export interface FallbackDecoding {
   kind: "fallback";
   class: CodecUtils.Types.ContractType;
+  abi: CodecUtils.AbiUtils.FallbackAbiEntry;
   data: string;
   decodingMode: DecodingMode;
 }
@@ -39,7 +41,7 @@ export interface EventDecoding {
   kind: "event";
   class: CodecUtils.Types.ContractType;
   arguments: AbiArgument[];
-  name: string;
+  abi: CodecUtils.AbiUtils.EventAbiEntry; //should be non-anonymous
   selector: string;
   decodingMode: DecodingMode;
 }
@@ -48,7 +50,7 @@ export interface AnonymousDecoding {
   kind: "anonymous";
   class: CodecUtils.Types.ContractType;
   arguments: AbiArgument[];
-  name: string;
+  abi: CodecUtils.AbiUtils.EventAbiEntry; //should be anonymous
   decodingMode: DecodingMode;
 }
 

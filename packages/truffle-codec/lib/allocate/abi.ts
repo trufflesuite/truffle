@@ -339,6 +339,7 @@ function allocateCalldata(
   }
   return {
     definition: abiAllocation.definition,
+    abi: abiEntry,
     offset,
     arguments: argumentsAllocation
   };
@@ -419,6 +420,7 @@ function allocateEvent(
   //...and return
   return {
     definition: abiAllocation.definition,
+    abi: abiEntry,
     contractId,
     arguments: argumentsAllocation
   };
@@ -466,6 +468,7 @@ function defaultConstructorAllocation(constructorContext: CodecUtils.Contexts.De
   let offset = (rawLength - 2)/2; //number of bytes in 0x-prefixed bytestring
   return {
     offset,
+    abi: AbiUtils.DEFAULT_CONSTRUCTOR_ABI,
     arguments: [] as Allocations.CalldataArgumentAllocation[]
   };
 }
