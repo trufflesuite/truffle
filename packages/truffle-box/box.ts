@@ -108,8 +108,7 @@ const Box = {
     const tmpDir = tmp.dirSync({ unsafeCleanup });
     await Box.unbox(
       `https://github.com/trufflesuite/truffle-init-${name}`,
-      tmpDir.name,
-      options
+      tmpDir.name
     );
     return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
   }
