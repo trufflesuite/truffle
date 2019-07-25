@@ -11,6 +11,7 @@ const DebugUtils = require("truffle-debug-utils");
 
 const { DebugInterpreter } = require("./interpreter");
 const { DebugCompiler } = require("./compiler");
+const { shimBytecode } = require("truffle-compile/legacy/shims");
 
 class CLIDebugger {
   constructor(config, { compilation }) {
@@ -69,22 +70,35 @@ class CLIDebugger {
     return session;
   }
 
-  getDebuggerOptions({ files, contracts }) {
+  getDebuggerOptions({ contracts, sourceIndexes }) {
     return {
       provider: this.config.provider,
-      files,
-      contracts: Object.values(contracts).map(contract => ({
-        contractName: contract.contractName || contract.contract_name,
-        source: contract.source,
-        sourcePath: contract.sourcePath,
-        ast: contract.ast,
-        binary: contract.binary || contract.bytecode,
-        sourceMap: contract.sourceMap,
-        deployedBinary: contract.deployedBinary || contract.deployedBytecode,
-        deployedSourceMap: contract.deployedSourceMap,
-        compiler: contract.compiler,
-        abi: contract.abi
-      }))
+      files: sourceIndexes,
+      contracts: contracts.map(
+        ({
+          contractName,
+          source,
+          sourcePath,
+          ast,
+          bytecode,
+          sourceMap,
+          deployedBytecode,
+          deployedSourceMap,
+          compiler,
+          abi
+        }) => ({
+          contractName,
+          source,
+          sourcePath,
+          ast,
+          binary: shimBytecode(bytecode),
+          sourceMap,
+          deployedBinary: shimBytecode(deployedBytecode),
+          deployedSourceMap,
+          compiler,
+          abi
+        })
+      )
     };
   }
 
