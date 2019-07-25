@@ -3,6 +3,7 @@
   "version": "0.0.10",
   "description": "Utilities for identifying and managing blockchains",
   "main": "dist/index.js",
+  "types": "./typings/index.d.ts",
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
