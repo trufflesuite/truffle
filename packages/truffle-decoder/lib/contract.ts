@@ -17,6 +17,116 @@ import * as DecoderTypes from "./types";
 import * as Utils from "./utils";
 
 export default class TruffleContractDecoder extends AsyncEventEmitter {
+
+  private web3: Web3;
+
+  private contexts: Contexts.DecoderContexts;
+
+  private contract: ContractObject;
+  private contractNode: AstDefinition;
+  private contractNetwork: string;
+  private context: Contexts.DecoderContext;
+  private constructorContext: Contexts.DecoderContext;
+  private contextHash: string;
+  private constructorContextHash: string;
+
+  private allocations: Codec.AllocationInfo;
+  private stateVariableReferences: Codec.StorageMemberAllocation[];
+
+  private wireDecoder: TruffleWireDecoder;
+
+  constructor(contract: ContractObject, wireDecoder: TruffleWireDecoder, address?: string) {
+    super();
+
+    this.contract = contract;
+    this.wireDecoder = wireDecoder;
+    this.web3 = wireDecoder.getWeb3();
+
+    this.contexts = wireDecoder.getContexts().byHash;
+
+    this.contractNode = Utils.getContractNode(this.contract);
+    if(this.contractNode === undefined) {
+      throw new DecoderTypes.ContractBeingDecodedHasNoNodeError();
+    }
+
+    if(this.contract.deployedBytecode && this.contract.deployedBytecode !== "0x") {
+      const hash = CodecUtils.Conversion.toHexString(
+        CodecUtils.EVM.keccak256({type: "string",
+          value: this.contract.deployedBytecode
+        })
+      );
+      this.contextHash = hash;
+      this.context = this.contexts[hash];
+    }
+    if(this.contract.bytecode && this.contract.bytecode !== "0x") { //now the constructor version
+      const hash = CodecUtils.Conversion.toHexString(
+        CodecUtils.EVM.keccak256({type: "string",
+          value: this.contract.bytecode
+        })
+      );
+      this.constructorContextHash = hash;
+      this.constructorContext = this.contexts[hash];
+    }
+
+    this.allocations = {};
+    this.allocations.abi = this.wireDecoder.getAbiAllocations();
+    this.allocations.storage = Codec.getStorageAllocations(
+      this.wireDecoder.getReferenceDeclarations(),
+      {[this.contractNode.id]: this.contractNode}
+    );
+
+    debug("done with allocation");
+    this.stateVariableReferences = this.allocations.storage[this.contractNode.id].members;
+    debug("stateVariableReferences %O", this.stateVariableReferences);
+  }
+
+  public async init(): Promise<void> {
+    this.contractNetwork = (await this.web3.eth.net.getId()).toString();
+  }
+
+  public async forInstance(address?: string): Promise<TruffleContractInstanceDecoder> {
+    let instanceDecoder = new TruffleContractInstanceDecoder(this, address);
+    await instanceDecoder.init();
+    return instanceDecoder;
+  }
+
+  //the following functions are for internal use
+  public getAllocations() {
+    return this.allocations;
+  }
+
+  public getStateVariableReferences() {
+    return this.stateVariableReferences;
+  }
+
+  public getWireDecoder() {
+    return this.wireDecoder;
+  }
+
+  public getContractInfo(): ContractInfo {
+    return {
+      contract: this.contract,
+      contractNode: this.contractNode,
+      contractNetwork: this.contractNetwork,
+      context: this.context,
+      constructorContext: this.constructorContext,
+      contextHash: this.contextHash,
+      constructorContextHash: this.constructorContextHash
+    }
+  }
+}
+
+interface ContractInfo {
+  contract: ContractObject;
+  contractNode: AstDefinition;
+  contractNetwork: string;
+  context: Contexts.DecoderContext;
+  constructorContext: Contexts.DecoderContext;
+  contextHash: string;
+  constructorContextHash: string;
+}
+
+export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   private web3: Web3;
 
   private contract: ContractObject;
@@ -44,65 +154,41 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private storageCache: DecoderTypes.StorageCache = {};
 
+  private contractDecoder: TruffleContractDecoder;
   private wireDecoder: TruffleWireDecoder;
 
-  constructor(contract: ContractObject, wireDecoder: TruffleWireDecoder, address?: string) {
+  constructor(contractDecoder: TruffleContractDecoder, address?: string) {
     super();
 
-    this.contract = contract;
+    this.contractDecoder = contractDecoder;
     if(address !== undefined) {
       this.contractAddress = address;
     }
-    this.wireDecoder = wireDecoder;
-    this.web3 = wireDecoder.getWeb3();
-
-    this.contractNode = Utils.getContractNode(this.contract);
-    if(this.contractNode === undefined) {
-      throw new DecoderTypes.ContractBeingDecodedHasNoNodeError();
-    }
-
-    ({ byHash: this.contexts, byId: this.contextsById, constructorsById: this.constructorContextsById } = this.wireDecoder.getContexts());
-
-    if(this.contract.deployedBytecode && this.contract.deployedBytecode !== "0x") {
-      const hash = CodecUtils.Conversion.toHexString(
-        CodecUtils.EVM.keccak256({type: "string",
-          value: this.contract.deployedBytecode
-        })
-      );
-      this.contextHash = hash;
-      this.context = this.contexts[hash];
-    }
-    if(this.contract.bytecode && this.contract.bytecode !== "0x") { //now the constructor version
-      const hash = CodecUtils.Conversion.toHexString(
-        CodecUtils.EVM.keccak256({type: "string",
-          value: this.contract.bytecode
-        })
-      );
-      this.constructorContextHash = hash;
-      this.constructorContext = this.contexts[hash];
-    }
+    this.wireDecoder = this.contractDecoder.getWireDecoder();
+    this.web3 = this.wireDecoder.getWeb3();
 
     this.referenceDeclarations = this.wireDecoder.getReferenceDeclarations();
     this.userDefinedTypes = this.wireDecoder.getUserDefinedTypes();
+    ({ byHash: this.contexts, byId: this.contextsById, constructorsById: this.constructorContextsById } = this.wireDecoder.getContexts());
+    ({
+      contract: this.contract,
+      contractNode: this.contractNode,
+      contractNetwork: this.contractNetwork,
+      context: this.context,
+      constructorContext: this.constructorContext,
+      contextHash: this.contextHash,
+      constructorContextHash: this.constructorContextHash
+    } = this.contractDecoder.getContractInfo());
 
-    this.allocations = {};
-    this.allocations.abi = this.wireDecoder.getAbiAllocations();
-    this.allocations.storage = Codec.getStorageAllocations(
-      this.referenceDeclarations,
-      {[this.contractNode.id]: this.contractNode}
-    );
+    this.allocations = this.contractDecoder.getAllocations();
+    this.stateVariableReferences = this.contractDecoder.getStateVariableReferences();
 
-    debug("done with allocation");
-    this.stateVariableReferences = this.allocations.storage[this.contractNode.id].members;
-    debug("stateVariableReferences %O", this.stateVariableReferences);
-  }
-
-  public async init(): Promise<void> {
-    this.contractNetwork = (await this.web3.eth.net.getId()).toString();
     if(this.contractAddress === undefined) {
       this.contractAddress = this.contract.networks[this.contractNetwork].address;
     }
+  }
 
+  public async init(): Promise<void> {
     this.contractCode = CodecUtils.Conversion.toHexString(
       await this.getCode(this.contractAddress, await this.web3.eth.getBlockNumber())
     );
@@ -294,11 +380,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return await this.wireDecoder.decodeLogs(logs, {}, this.additionalContexts);
   }
 
-  //by default, will restrict to events from this address.
-  //but, you can explicitly pass another and it will work
-  //(or pass undefined to turn off address filtering)
   public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.events({address: this.contractAddress, ...options}, this.additionalContexts);
+    return await this.wireDecoder.events(options, this.additionalContexts);
   }
 
   public onEvent(name: string, callback: Function): void {
