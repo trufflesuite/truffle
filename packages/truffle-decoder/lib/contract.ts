@@ -171,8 +171,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     let result: DecoderTypes.ContractState = {
       name: this.contract.contractName,
       code: this.contractCode,
-      balance: new BN(await this.web3.eth.getBalance(this.contractAddress, blockNumber)),
-      nonce: new BN(await this.web3.eth.getTransactionCount(this.contractAddress, blockNumber)),
+      balanceAsBN: new BN(await this.web3.eth.getBalance(this.contractAddress, blockNumber)),
+      nonceAsBN: new BN(await this.web3.eth.getTransactionCount(this.contractAddress, blockNumber)),
       variables: {}
     };
 
