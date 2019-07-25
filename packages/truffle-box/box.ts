@@ -5,8 +5,9 @@ import Config from "truffle-config";
 import ora from "ora";
 import fse from "fs-extra";
 import inquirer from "inquirer";
+import { sandboxOptions, unboxOptions } from "typings";
 
-function parseSandboxOptions(options: any) {
+function parseSandboxOptions(options: sandboxOptions) {
   if (typeof options === "string") {
     // back compatibility for when `options` used to be `name`
     return {
@@ -24,7 +25,11 @@ function parseSandboxOptions(options: any) {
 }
 
 const Box = {
-  unbox: async (url: string, destination: string, options: any = {}) => {
+  unbox: async (
+    url: string,
+    destination: string,
+    options: unboxOptions = {}
+  ) => {
     let tempDirCleanup;
     const logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
@@ -64,7 +69,7 @@ const Box = {
     }
   },
 
-  checkDir: async (options: any = {}, destination: string) => {
+  checkDir: async (options: unboxOptions = {}, destination: string) => {
     let logger = options.logger || console;
     if (!options.force) {
       const unboxDir = fse.readdirSync(destination);
@@ -91,7 +96,7 @@ const Box = {
   //   Recursively removes the created temporary directory, even when it's not empty. default is false
   // options.setGracefulCleanup
   //   Cleanup temporary files even when an uncaught exception occurs
-  sandbox: async (options: any) => {
+  sandbox: async (options: sandboxOptions) => {
     const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
       options
     );
