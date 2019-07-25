@@ -29,7 +29,11 @@ const compile = async function(sources, options) {
 compile.all = async function(options) {
   const paths = await promisify(findContracts)(options.contracts_directory);
 
-  return await compile.with_dependencies(Object.assign({}, options, { paths }));
+  return await compile.with_dependencies(
+    Config.default()
+      .merge(options)
+      .merge({ paths })
+  );
 };
 
 // contracts_directory: String. Directory where .sol files can be found.
@@ -43,7 +47,11 @@ compile.necessary = async function(options) {
 
   const paths = await promisify(Profiler.updated)(options);
 
-  return await compile.with_dependencies(Object.assign({}, options, { paths }));
+  return await compile.with_dependencies(
+    Config.default()
+      .merge(options)
+      .merge({ paths })
+  );
 };
 
 compile.with_dependencies = async function(options) {
