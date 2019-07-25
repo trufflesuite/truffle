@@ -26,8 +26,14 @@ const compile = async function(sources, options) {
 // contracts_directory: String. Directory where .sol files can be found.
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
+// files: Array<String>. Explicit files to compile besides detected sources
 compile.all = async function(options) {
-  const paths = await promisify(findContracts)(options.contracts_directory);
+  const paths = [
+    ...new Set([
+      ...(await promisify(findContracts)(options.contracts_directory)),
+      ...(options.files || [])
+    ])
+  ];
 
   return await compile.with_dependencies(
     Config.default()
@@ -42,10 +48,16 @@ compile.all = async function(options) {
 //      in the build directory to see what needs to be compiled.
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
+// files: Array<String>. Explicit files to compile besides detected sources
 compile.necessary = async function(options) {
   options.logger = options.logger || console;
 
-  const paths = await promisify(Profiler.updated)(options);
+  const paths = [
+    ...new Set([
+      ...(await promisify(Profiler.updated)(options)),
+      ...(options.files || [])
+    ])
+  ];
 
   return await compile.with_dependencies(
     Config.default()
