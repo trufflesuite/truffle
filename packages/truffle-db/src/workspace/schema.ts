@@ -196,11 +196,15 @@ export const schema = mergeSchemas({
       hash: String!
     }
 
+    input ForkIdInput {
+      id: ID!
+    }
+
     input NetworkInput {
       name: String
       networkId: NetworkId!
       historicBlock: HistoricBlockInput!
-      fork: NetworkInput
+      fork: ForkIdInput
     }
 
     input NetworksAddInput {
@@ -324,6 +328,12 @@ export const schema = mergeSchemas({
       createBytecode: {
         resolve: ({ createBytecode }, _, { workspace }) =>
             workspace.bytecode(createBytecode)
+      }
+    },
+    Network: {
+      fork: {
+        resolve: async ({ fork }, _, { workspace }) =>
+          await workspace.network(fork)
       }
     }
   }
