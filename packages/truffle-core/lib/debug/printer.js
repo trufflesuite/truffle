@@ -296,7 +296,7 @@ class DebugPrinter {
     try {
       let result = safeEval(expr, context);
       result = DebugUtils.cleanConstructors(result); //HACK
-      const formatted = DebugUtils.formatValue(result, indent);
+      const formatted = DebugUtils.formatValue(result, indent, true);
       this.config.logger.log(formatted);
       this.config.logger.log();
     } catch (e) {
@@ -316,7 +316,7 @@ class DebugPrinter {
       if (!suppress) {
         this.config.logger.log(e);
       } else {
-        this.config.logger.log(DebugUtils.formatValue(undefined));
+        this.config.logger.log(DebugUtils.formatValue(undefined, indent, true));
       }
     }
   }
