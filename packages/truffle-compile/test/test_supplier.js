@@ -1,5 +1,5 @@
 const debug = require("debug")("compile:test:test_supplier");
-const fs = require("fs-extra");
+const fse = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
 const Resolver = require("truffle-resolver");
@@ -25,20 +25,20 @@ describe("CompilerSupplier", function() {
       quiet: true
     };
 
-    before("get code", function() {
-      const oldPragmaPin = fs.readFileSync(
+    before("get code", async function() {
+      const oldPragmaPin = await fse.readFile(
         path.join(__dirname, "./sources/v0.4.15/OldPragmaPin.sol"),
         "utf-8"
       );
-      const oldPragmaFloat = fs.readFileSync(
+      const oldPragmaFloat = await fse.readFile(
         path.join(__dirname, "./sources/v0.4.x/OldPragmaFloat.sol"),
         "utf-8"
       );
-      const version4Pragma = fs.readFileSync(
+      const version4Pragma = await fse.readFile(
         path.join(__dirname, "./sources/v0.4.x/NewPragma.sol"),
         "utf-8"
       );
-      const version5Pragma = fs.readFileSync(
+      const version5Pragma = await fse.readFile(
         path.join(__dirname, "./sources/v0.5.x/Version5Pragma.sol"),
         "utf-8"
       );
@@ -124,7 +124,7 @@ describe("CompilerSupplier", function() {
       );
 
       // Delete if it's already there.
-      if (fs.existsSync(expectedCache)) fs.unlinkSync(expectedCache);
+      if (await fse.exists(expectedCache)) await fse.unlink(expectedCache);
 
       options.compilers = {
         solc: {
@@ -137,10 +137,10 @@ describe("CompilerSupplier", function() {
       // Run compiler, expecting solc to be downloaded and cached.
       await compile(version4PragmaSource, cachedOptions);
 
-      assert(await fs.exists(expectedCache), "Should have cached compiler");
+      assert(await fse.exists(expectedCache), "Should have cached compiler");
 
       // Get cached solc access time
-      initialAccessTime = (await fs.stat(expectedCache)).atime.getTime();
+      initialAccessTime = (await fse.stat(expectedCache)).atime.getTime();
 
       // Wait a second and recompile, verifying that the cached solc
       // got accessed / ran ok.
@@ -148,7 +148,7 @@ describe("CompilerSupplier", function() {
 
       const { contracts } = await compile(version4PragmaSource, cachedOptions);
 
-      finalAccessTime = (await fs.stat(expectedCache)).atime.getTime();
+      finalAccessTime = (await fse.stat(expectedCache)).atime.getTime();
       const NewPragma = findOne("NewPragma", contracts);
 
       assert(NewPragma.contractName === "NewPragma", "Should have compiled");
