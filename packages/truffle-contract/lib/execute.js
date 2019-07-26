@@ -240,6 +240,12 @@ var execute = {
 
           context.params = params;
 
+          promiEvent.eventEmitter.emit("execute:deploy:method", {
+            args,
+            abi: constructorABI,
+            contract: constructor
+          });
+
           deferred = web3.eth.sendTransaction(params);
           handlers.setup(deferred, context);
 
