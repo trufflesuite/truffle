@@ -20,10 +20,12 @@
   "dependencies": {
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
+    "lodash": "^4.17.13",
     "web3": "^1.2.0"
   },
   "devDependencies": {
     "@types/bn.js": "^4.11.4",
+    "@types/lodash": "^4.14.136",
     "@types/mocha": "^5.2.6",
     "@types/web3": "^1.0.18",
     "ganache-core": "2.5.7",
