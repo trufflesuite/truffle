@@ -21,6 +21,7 @@ function shimContracts(contracts) {
 
 function shimContract(contract) {
   const {
+    contractName,
     contract_name,
     sourcePath,
     source,
@@ -38,7 +39,7 @@ function shimContract(contract) {
   } = contract;
 
   return {
-    contractName: contract_name,
+    contractName: contract_name || contractName,
     sourcePath,
     source,
     sourceMap,
