@@ -1,6 +1,7 @@
 const ENSJS = require("ethereum-ens");
 const contract = require("truffle-contract");
 const sha3 = require("web3").utils.sha3;
+const { hash } = require("eth-ens-namehash");
 
 class ENS {
   constructor({ provider, ensSettings }) {
@@ -33,6 +34,7 @@ class ENS {
     const ensRegistry = await ENSRegistry.new({ from });
     this.ensSettings.registryAddress = ensRegistry.address;
     this.devRegistry = ensRegistry;
+    this.setENSJS();
     return ensRegistry;
   }
 
@@ -81,17 +83,12 @@ class ENS {
     this.setENSJS();
     await this.ensureRegistryExists(from);
 
-    if (this.devRegistry) {
-      await this.setTopLevelNameOwner({ from, name });
-    }
+    // In the case where there is a registry deployed by the user,
+    // set permissions so that the resolver can be set by the user
+    if (this.devRegistry) await this.setNameOwner({ from, name });
 
     // Find the owner of the name and compare it to the "from" field
     const nameOwner = await this.ensjs.owner(name);
-    // Future work:
-    // Handle case where there is no owner and we try to register it for the user
-    // if (nameOwner === "0x0000000000000000000000000000000000000000") {
-    //   this.attemptNameRegistration();
-    // }
 
     if (nameOwner !== from) {
       const message =
@@ -112,8 +109,27 @@ class ENS {
     }
   }
 
-  async setTopLevelNameOwner({ name, from }) {
-    await this.devRegistry.setSubnodeOwner("0x0", sha3(name), from, { from });
+  async setNameOwner({ name, from }) {
+    const nameLabels = name.split(".").reverse();
+
+    // Set top-level name
+    let builtName = nameLabels[0];
+    await this.devRegistry.setSubnodeOwner("0x0", sha3(builtName), from, {
+      from
+    });
+
+    // If name is only one label, stop here
+    if (nameLabels.length === 1) return;
+
+    for (const label of nameLabels.slice(1)) {
+      await this.devRegistry.setSubnodeOwner(
+        hash(builtName),
+        sha3(label),
+        from,
+        { from }
+      );
+      builtName = label.concat(`.${builtName}`);
+    }
   }
 
   parseAddress(addressOrContract) {

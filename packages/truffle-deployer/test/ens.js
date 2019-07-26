@@ -14,7 +14,8 @@ let ganacheOptions,
   fromAddress,
   provider,
   addressToSet,
-  registryAddress;
+  registryAddress,
+  ensjs;
 
 describe("ENS class", () => {
   before(() => {
@@ -45,6 +46,7 @@ describe("ENS class", () => {
       ensSettings: { enabled: true }
     };
     ens = new ENS(options);
+    // First address generated from the above mnemonic
     fromAddress = "0x627306090abaB3A6e1400e9345bC60c78a8BEf57";
   });
 
@@ -123,6 +125,25 @@ describe("ENS class", () => {
           assert(resolvedAddress === addressToSet);
         });
       });
+    });
+  });
+
+  describe("setNameOwner({ name, from })", () => {
+    beforeEach(async () => {
+      const registry = await ens.deployNewDevENSRegistry(fromAddress);
+      ensjs = new ENSJS(provider, registry.address);
+    });
+
+    it("sets the owner of the given domain name", async () => {
+      await ens.setNameOwner({ from: fromAddress, name: "my.test.name" });
+      const owner = await ensjs.owner("my.test.name");
+      assert(owner === fromAddress);
+    });
+    it("sets the owner for the intermediary names as well", async () => {
+      await ens.setNameOwner({ from: fromAddress, name: "my.test.name" });
+      const owner1 = await ensjs.owner("name");
+      const owner2 = await ensjs.owner("test.name");
+      assert(owner1 === fromAddress && owner1 === owner2);
     });
   });
 });
