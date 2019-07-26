@@ -14,7 +14,7 @@ const { DebugCompiler } = require("./compiler");
 const { shimBytecode } = require("truffle-compile/legacy/shims");
 
 class CLIDebugger {
-  constructor(config, { compilation }) {
+  constructor(config, { compilation } = {}) {
     this.config = config;
     this.compilation = compilation;
   }
