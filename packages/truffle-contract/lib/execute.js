@@ -60,8 +60,8 @@ var execute = {
 
     args = utils.convertToEthersBN(args);
 
-    return constructor.detectNetwork().then(() => {
-      return { args: args, params: params };
+    return constructor.detectNetwork().then(network => {
+      return { args: args, params: params, network: network };
     });
   },
 
@@ -102,7 +102,6 @@ var execute = {
     var constructor = this;
 
     return function() {
-      var params = {};
       var defaultBlock = "latest";
       var args = Array.prototype.slice.call(arguments);
       var lastArg = args[args.length - 1];
@@ -113,19 +112,12 @@ var execute = {
         defaultBlock = args.pop();
       }
 
-      // Extract tx params
-      if (execute.hasTxParams(lastArg)) {
-        params = args.pop();
-      }
-
-      params.to = address;
-      params = utils.merge(constructor.class_defaults, params);
-
-      constructor
-        .detectNetwork()
-        .then(async () => {
+      execute
+        .prepareCall(constructor, methodABI, args)
+        .then(async ({ args, params }) => {
           let result;
-          args = utils.convertToEthersBN(args);
+
+          params.to = address;
 
           promiEvent.eventEmitter.emit("execute:call:method", {
             fn: fn,
@@ -162,20 +154,16 @@ var execute = {
 
     return function() {
       var deferred;
-      var args = Array.prototype.slice.call(arguments);
-      var params = utils.getTxParams.call(constructor, methodABI, args);
       var promiEvent = new Web3PromiEvent();
 
-      var context = {
-        contract: constructor, // Can't name this field `constructor` or `_constructor`
-        promiEvent: promiEvent,
-        params: params
-      };
-
-      constructor
-        .detectNetwork()
-        .then(async network => {
-          args = utils.convertToEthersBN(args);
+      execute
+        .prepareCall(constructor, methodABI, arguments)
+        .then(async ({ args, params, network }) => {
+          var context = {
+            contract: constructor, // Can't name this field `constructor` or `_constructor`
+            promiEvent: promiEvent,
+            params: params
+          };
 
           params.to = address;
           params.data = fn ? fn(...args).encodeABI() : undefined;
