@@ -1,5 +1,5 @@
 const debug = require("debug")("compile:test:test_supplier");
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
 const Resolver = require("truffle-resolver");
@@ -137,10 +137,10 @@ describe("CompilerSupplier", function() {
       // Run compiler, expecting solc to be downloaded and cached.
       await compile(version4PragmaSource, cachedOptions);
 
-      assert(fs.existsSync(expectedCache), "Should have cached compiler");
+      assert(await fs.exists(expectedCache), "Should have cached compiler");
 
       // Get cached solc access time
-      initialAccessTime = fs.statSync(expectedCache).atime.getTime();
+      initialAccessTime = (await fs.stat(expectedCache)).atime.getTime();
 
       // Wait a second and recompile, verifying that the cached solc
       // got accessed / ran ok.
@@ -148,7 +148,7 @@ describe("CompilerSupplier", function() {
 
       const { contracts } = await compile(version4PragmaSource, cachedOptions);
 
-      finalAccessTime = fs.statSync(expectedCache).atime.getTime();
+      finalAccessTime = (await fs.stat(expectedCache)).atime.getTime();
       const NewPragma = findOne("NewPragma", contracts);
 
       assert(NewPragma.contractName === "NewPragma", "Should have compiled");
