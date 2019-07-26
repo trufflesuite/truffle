@@ -8,7 +8,7 @@ import {
 } from "@gnd/graphql-tools";
 import { gql } from "apollo-server";
 
-//dummy query here because of known issue with Apollo mutation-only schemas 
+//dummy query here because of known issue with Apollo mutation-only schemas
 const typeDefs = gql`
   type ArtifactsLoadPayload {
     success: Boolean
@@ -29,13 +29,14 @@ const resolvers = {
         const compilationConfig = {
           contracts_directory: contractsDirectory,
           contracts_build_directory: tempDir.name,
+          artifacts_directory: artifactsDirectory,
           all: true
         }
         const loader = new ArtifactsLoader(db, compilationConfig);
         await loader.load()
         tempDir.removeCallback();
         return true;
-      } 
+      }
     }
   },
   ArtifactsLoadPayload: {

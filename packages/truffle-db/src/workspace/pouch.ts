@@ -24,6 +24,15 @@ const resources = {
   bytecodes: {
     createIndexes: [
     ]
+  },
+  networks: {
+    createIndexes: [
+      { fields: ["id"] }
+    ]
+  },
+  contractInstances: {
+    createIndexes: [
+    ]
   }
 }
 
@@ -32,6 +41,8 @@ export class Workspace {
   bytecodes: PouchDB.Database;
   compilations: PouchDB.Database;
   contracts: PouchDB.Database;
+  contractInstances: PouchDB.Database;
+  networks: PouchDB.Database;
 
   private ready: Promise<void>;
 
@@ -162,7 +173,94 @@ export class Workspace {
     };
   }
 
+  async contractInstance ({ id }: { id: string }) {
+    await this.ready;
 
+    try {
+      return {
+        ...await this.contractInstances.get(id),
+
+        id
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async contractInstancesAdd ({ input }) {
+    await this.ready;
+
+    const { contractInstances } = input;
+
+    return {
+      contractInstances: Promise.all(contractInstances.map(
+        async (contractInstanceInput) => {
+          const { address, network, contract, callBytecode } = contractInstanceInput;
+          // hash includes address and network of this contractInstance
+          const id = soliditySha3(jsonStableStringify({
+            address: address,
+            network: { id: network.id }
+          }));
+
+          const contractInstance = await this.contractInstance({ id }) || { ...contractInstanceInput, id };
+
+          await this.contractInstances.put({
+            ...contractInstance,
+            ...contractInstanceInput,
+
+            _id: id
+          });
+
+          return contractInstance;
+        }
+      ))
+    };
+  }
+
+  async network ({ id }: { id: string }) {
+    await this.ready;
+
+    try {
+      return {
+        ...await this.networks.get(id),
+
+        id
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async networksAdd ({ input }) {
+    await this.ready;
+
+    const { networks } = input;
+
+    return {
+      networks: Promise.all(networks.map(
+        async (networkInput) => {
+          const { networkId, historicBlock } = networkInput;
+          const id = soliditySha3(jsonStableStringify({
+            networkId: networkId,
+            historicBlock: historicBlock
+          }));
+
+          const network = await this.network({ id });
+
+          if(network) {
+            return network;
+          } else {
+            const networkAdded = await this.networks.put({
+              ...networkInput,
+              _id: id
+            });
+
+            return { networkId, historicBlock, id };
+          }
+        }
+      ))
+    };
+  }
 
   async source ({ id }: { id: string }) {
     await this.ready;

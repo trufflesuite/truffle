@@ -23,6 +23,12 @@ export const schema = mergeSchemas({
         extend type Compilation {
           id: ID!
         }
+        extend type ContractInstance {
+          id: ID!
+        }
+        extend type Network {
+          id: ID!
+        }
         `,
       ]
     }),
@@ -34,6 +40,8 @@ export const schema = mergeSchemas({
       compilation(id: ID!): Compilation
       source(id: ID!): Source
       bytecode(id: ID!): Bytecode
+      contractInstance(id: ID!): ContractInstance
+      network(id: ID!): Network
     }
 
     input SourceInput {
@@ -50,6 +58,7 @@ export const schema = mergeSchemas({
     }
 
     input BytecodeInput {
+
       bytes: Bytes!
     }
 
@@ -147,12 +156,63 @@ export const schema = mergeSchemas({
       linkReference: LinkReferenceInput!
       value: Bytes!
     }
+    type ContractInstancesAddPayload {
+      contractInstances: [ContractInstance!]!
+    }
+
+    input ContractInstanceAddressInput {
+      address: Address!
+    }
+
+    input ContractInstanceNetworkInput {
+      id: ID!
+    }
+
+    input ContractInstanceBytecodeInput {
+      id: ID!
+    }
+    input ContractInstanceContractInput {
+      id: ID!
+    }
+
+    input ContractInstanceInput {
+      address: Address!
+      network: ContractInstanceNetworkInput
+      contract: ContractInstanceContractInput
+      callBytecode: ContractInstanceBytecodeInput
+    }
+
+    input ContractInstancesAddInput {
+      contractInstances: [ContractInstanceInput!]!
+    }
+
+    type NetworksAddPayload {
+      networks: [Network!]!
+    }
+
+    input HistoricBlockInput {
+      height: Int!
+      hash: String!
+    }
+
+    input NetworkInput {
+      name: String
+      networkId: NetworkId!
+      historicBlock: HistoricBlockInput!
+      fork: NetworkInput
+    }
+
+    input NetworksAddInput {
+      networks: [NetworkInput!]!
+    }
 
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
       contractsAdd(input: ContractsAddInput!): ContractsAddPayload
       compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
+      contractInstancesAdd(input: ContractInstancesAddInput!): ContractInstancesAddPayload
+      networksAdd(input: NetworksAddInput!): NetworksAddPayload
     } `
   ],
   resolvers: {
@@ -176,6 +236,14 @@ export const schema = mergeSchemas({
       compilation: {
         resolve: (_, { id }, { workspace }) =>
           workspace.compilation({ id })
+      },
+      contractInstance: {
+        resolve: (_, { id }, { workspace }) =>
+          workspace.contractInstance({ id })
+      },
+      network: {
+        resolve: (_, { id }, { workspace }) =>
+          workspace.network({ id })
       }
     },
     Mutation: {
@@ -194,7 +262,15 @@ export const schema = mergeSchemas({
       compilationsAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.compilationsAdd({ input })
-      }
+      },
+      contractInstancesAdd: {
+        resolve: (_, { input }, { workspace }) =>
+          workspace.contractInstancesAdd({ input })
+      },
+      networksAdd: {
+        resolve: (_, { input }, { workspace }) =>
+          workspace.networksAdd({ input })
+      },
     },
     Compilation: {
       sources: {
@@ -217,6 +293,20 @@ export const schema = mergeSchemas({
 
           return sourceContracts[sourceContract.index];
         }
+      }
+    },
+    ContractInstance: {
+      network: {
+        resolve: async ({ network }, _, { workspace }) =>
+          await workspace.network(network)
+      },
+      contract: {
+        resolve: ({ contract }, _, { workspace }) =>
+          workspace.contract(contract)
+      },
+      callBytecode: {
+        resolve: ({ callBytecode }, _, { workspace }) =>
+          workspace.bytecode(callBytecode)
       }
     },
     SourceContract: {
