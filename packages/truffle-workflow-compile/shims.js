@@ -57,6 +57,10 @@ function shimContract(contract) {
 }
 
 function shimBytecode(bytecode) {
+  if (!bytecode) {
+    return undefined;
+  }
+
   const linkReferences = [];
 
   const bytes = bytecode
