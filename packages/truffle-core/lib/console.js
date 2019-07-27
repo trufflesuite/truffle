@@ -51,22 +51,21 @@ class Console extends EventEmitter {
     this.options.repl = this.repl;
 
     try {
-      const abstractions = this.provision();
+      this.web3.eth.getAccounts().then(fetchedAccounts => {
+        const abstractions = this.provision();
 
-      const getAccounts = async () => {
-        return await this.web3.eth.getAccounts();
-      };
-      this.repl.start({
-        prompt: "truffle(" + this.options.network + ")> ",
-        context: {
-          web3: this.web3,
-          accounts: getAccounts()
-        },
-        interpreter: this.interpret.bind(this),
-        done: callback
+        this.repl.start({
+          prompt: "truffle(" + this.options.network + ")> ",
+          context: {
+            web3: this.web3,
+            accounts: fetchedAccounts
+          },
+          interpreter: this.interpret.bind(this),
+          done: callback
+        });
+
+        this.resetContractsInConsoleContext(abstractions);
       });
-
-      this.resetContractsInConsoleContext(abstractions);
     } catch (error) {
       this.options.logger.log(
         "Unexpected error: Cannot provision contracts while instantiating the console."
