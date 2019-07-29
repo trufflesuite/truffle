@@ -61,9 +61,7 @@ class Config {
         },
         vyper: {}
       },
-      subscribers: {
-        defaults: {}
-      },
+      subscribers: {},
       logger: {
         log() {}
       }
@@ -85,6 +83,7 @@ class Config {
       ethpm() {},
       logger() {},
       compilers() {},
+      subscribers() {},
 
       build_directory: {
         default: () => path.join(this.working_directory, "build"),
@@ -411,6 +410,7 @@ Config.load = (file, options) => {
 
   const eventsOptions = eventManagerOptions(config);
   config.events.updateSubscriberOptions(eventsOptions);
+  config.events.initializeUserSubscribers(eventsOptions);
 
   return config;
 };
