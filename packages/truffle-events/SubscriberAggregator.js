@@ -1,5 +1,4 @@
 const Subscriber = require("./Subscriber");
-const defaultSubscribers = require("./defaultSubscribers");
 
 class SubscriberAggregator {
   constructor(initializationOptions) {
@@ -8,12 +7,12 @@ class SubscriberAggregator {
   }
 
   initializeSubscribers(initializationOptions) {
-    let { emitter, logger, muteLogging } = initializationOptions;
+    let { emitter, logger, muteLogging, subscribers } = initializationOptions;
     if (muteLogging) logger = () => {};
-    for (let subscriberName in defaultSubscribers) {
+    for (let name in subscribers) {
       this.subscribers.push(
         new Subscriber({
-          options: defaultSubscribers[subscriberName],
+          options: subscribers[name],
           emitter,
           logger
         })
