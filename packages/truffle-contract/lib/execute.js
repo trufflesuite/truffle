@@ -107,6 +107,13 @@ var execute = {
       var args = Array.prototype.slice.call(arguments);
       var lastArg = args[args.length - 1];
       var originalStackTrace = new Error().stack;
+      var promiEvent = new Web3PromiEvent();
+
+      function appendOriginalStackTrace(e) {
+        e.hijackedStack = e.stack;
+        e.stack = originalStackTrace.replace(/^Error\n/, e.stack.split('\n')[0]);
+        promiEvent.reject(e);
+      }
 
       // Extract defaultBlock parameter
       if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
@@ -121,24 +128,31 @@ var execute = {
       params.to = address;
       params = utils.merge(constructor.class_defaults, params);
 
-      return new Promise(async (resolve, reject) => {
-        let result;
-        try {
-          await constructor.detectNetwork();
+      constructor
+        .detectNetwork()
+        .then(async () => {
+          let result;
           args = utils.convertToEthersBN(args);
+
+          promiEvent.eventEmitter.emit("execute:call:method", {
+            fn: fn,
+            args: args,
+            address: address,
+            abi: methodABI,
+            contract: constructor
+          });
+
           result = await fn(...args).call(params, defaultBlock);
           result = reformat.numbers.call(
             constructor,
             result,
             methodABI.outputs
           );
-          resolve(result);
-        } catch (err) {
-          err.hijackedStack = err.stack;
-          err.stack = originalStackTrace.replace(/^Error\n/, err.stack.split('\n')[0]);
-          reject(err);
-        }
-      });
+          return promiEvent.resolve(result);
+        })
+        .catch(appendOriginalStackTrace);
+
+      return promiEvent.eventEmitter;
     };
   },
 
@@ -175,20 +189,34 @@ var execute = {
 
       constructor
         .detectNetwork()
-        .then(network => {
+        .then(async network => {
           args = utils.convertToEthersBN(args);
+
           params.to = address;
           params.data = fn ? fn(...args).encodeABI() : undefined;
 
-          execute.getGasEstimate
-            .call(constructor, params, network.blockLimit)
-            .then(gas => {
-              params.gas = gas;
-              deferred = web3.eth.sendTransaction(params);
-              deferred.catch(override.start.bind(constructor, context));
-              handlers.setup(deferred, context);
-            })
-            .catch(promiEvent.reject);
+          promiEvent.eventEmitter.emit("execute:send:method", {
+            fn,
+            args,
+            address,
+            abi: methodABI,
+            contract: constructor
+          });
+
+          try {
+            params.gas = await execute.getGasEstimate.call(
+              constructor,
+              params,
+              network.blockLimit
+            );
+          } catch (error) {
+            promiEvent.reject(error);
+            return;
+          }
+
+          deferred = web3.eth.sendTransaction(params);
+          deferred.catch(override.start.bind(constructor, context));
+          handlers.setup(deferred, context);
         })
         .catch(appendOriginalStackTrace);
 

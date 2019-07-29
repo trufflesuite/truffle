@@ -1,13 +1,13 @@
-const debug = require("debug")("compile:legacy"); // eslint-disable-line no-unused-vars
+const debug = require("debug")("compile:new"); // eslint-disable-line no-unused-vars
 const path = require("path");
+const { promisify } = require("util");
 const expect = require("truffle-expect");
 const findContracts = require("truffle-contract-sources");
 const Config = require("truffle-config");
 const Profiler = require("../profiler");
 const CompilerSupplier = require("../compilerSupplier");
 const { run } = require("../run");
-const { normalizeOptions } = require("./options");
-const { shimOutput } = require("./shims");
+const { normalizeOptions } = require("../legacy/options");
 
 // Most basic of the compile commands. Takes a hash of sources, where
 // the keys are file or module paths and the values are the bodies of
@@ -19,31 +19,27 @@ const { shimOutput } = require("./shims");
 //   quiet: false,
 //   logger: console
 // }
-const compile = function(sources, options, callback) {
-  if (typeof options === "function") {
-    callback = options;
-    options = {};
-  }
-
-  // account for legacy settings
-  options = normalizeOptions(options);
-
-  run(sources, options)
-    .then(shimOutput)
-    .then(([...returnVals]) => callback(null, ...returnVals))
-    .catch(callback);
+const compile = async function(sources, options) {
+  return await run(sources, normalizeOptions(options));
 };
 
 // contracts_directory: String. Directory where .sol files can be found.
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.all = function(options, callback) {
-  findContracts(options.contracts_directory, function(err, files) {
-    if (err) return callback(err);
+// files: Array<String>. Explicit files to compile besides detected sources
+compile.all = async function(options) {
+  const paths = [
+    ...new Set([
+      ...(await promisify(findContracts)(options.contracts_directory)),
+      ...(options.files || [])
+    ])
+  ];
 
-    options.paths = files;
-    compile.with_dependencies(options, callback);
-  });
+  return await compile.with_dependencies(
+    Config.default()
+      .merge(options)
+      .merge({ paths })
+  );
 };
 
 // contracts_directory: String. Directory where .sol files can be found.
@@ -52,24 +48,25 @@ compile.all = function(options, callback) {
 //      in the build directory to see what needs to be compiled.
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.necessary = function(options, callback) {
+// files: Array<String>. Explicit files to compile besides detected sources
+compile.necessary = async function(options) {
   options.logger = options.logger || console;
 
-  Profiler.updated(options, function(err, updated) {
-    if (err) return callback(err);
+  const paths = [
+    ...new Set([
+      ...(await promisify(Profiler.updated)(options)),
+      ...(options.files || [])
+    ])
+  ];
 
-    if (updated.length === 0 && options.quiet !== true) {
-      return callback(null, [], {});
-    }
-
-    options.paths = updated;
-    compile.with_dependencies(options, callback);
-  });
+  return await compile.with_dependencies(
+    Config.default()
+      .merge(options)
+      .merge({ paths })
+  );
 };
 
-compile.with_dependencies = function(options, callback) {
-  var self = this;
-
+compile.with_dependencies = async function(options) {
   options.logger = options.logger || console;
   options.contracts_directory = options.contracts_directory || process.cwd();
 
@@ -82,25 +79,31 @@ compile.with_dependencies = function(options, callback) {
 
   var config = Config.default().merge(options);
 
-  Profiler.required_sources(
-    config.with({
-      paths: options.paths,
-      base_path: options.contracts_directory,
-      resolver: options.resolver
-    }),
-    (err, allSources, required) => {
-      if (err) return callback(err);
+  const { allSources, required } = await new Promise((accept, reject) => {
+    Profiler.required_sources(
+      config.with({
+        paths: options.paths,
+        base_path: options.contracts_directory,
+        resolver: options.resolver
+      }),
+      (err, allSources, required) => {
+        if (err) {
+          return reject(err);
+        }
 
-      var hasTargets = required.length;
+        return accept({ allSources, required });
+      }
+    );
+  });
 
-      hasTargets
-        ? self.display(required, options)
-        : self.display(allSources, options);
+  var hasTargets = required.length;
 
-      options.compilationTargets = required;
-      compile(allSources, options, callback);
-    }
-  );
+  hasTargets
+    ? this.display(required, options)
+    : this.display(allSources, options);
+
+  options.compilationTargets = required;
+  return await compile(allSources, options);
 };
 
 compile.display = function(paths, options) {
