@@ -61,6 +61,9 @@ class Config {
         },
         vyper: {}
       },
+      subscribers: {
+        defaults: {}
+      },
       logger: {
         log() {}
       }
@@ -387,10 +390,10 @@ Config.detect = (options = {}, filename) => {
 // attached as it might override some options (e.g. { quiet: true })
 const eventManagerOptions = config => {
   let muteLogging;
-  const { quiet, logger } = config;
+  const { quiet, logger, subscribers } = config;
 
   if (quiet) muteLogging = true;
-  return { logger, muteLogging };
+  return { logger, muteLogging, subscribers };
 };
 
 Config.load = (file, options) => {
