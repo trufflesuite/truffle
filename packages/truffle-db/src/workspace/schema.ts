@@ -211,6 +211,22 @@ export const schema = mergeSchemas({
       networks: [NetworkInput!]!
     }
 
+    type NetworkUpdatePayload {
+      network: Network!
+    }
+
+    input NetworkUpdateForkIdInput {
+      id: ID!
+    }
+
+    input NetworkUpdateIdsInput {
+      id: ID!
+      fork: NetworkUpdateForkIdInput
+    }
+    input NetworkUpdateInput {
+      network: NetworkUpdateIdsInput
+    }
+
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
@@ -218,7 +234,8 @@ export const schema = mergeSchemas({
       compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
       contractInstancesAdd(input: ContractInstancesAddInput!): ContractInstancesAddPayload
       networksAdd(input: NetworksAddInput!): NetworksAddPayload
-    } `
+      networkUpdate(input: NetworkUpdateInput!): NetworkUpdatePayload
+    }`
   ],
   resolvers: {
     Query: {
@@ -280,6 +297,10 @@ export const schema = mergeSchemas({
         resolve: (_, { input }, { workspace }) =>
           workspace.networksAdd({ input })
       },
+      networkUpdate: {
+        resolve: (_, { input }, { workspace }) =>
+          workspace.networkUpdate({ input })
+      }
     },
     Compilation: {
       sources: {

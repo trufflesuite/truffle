@@ -234,6 +234,34 @@ export class Workspace {
     }))
   }
 
+  // not sure if we'll actually need a separate function like this
+  // but putting it here for now in case we do
+  async networkUpdate ({ input }) {
+    await this.ready;
+
+    const { network } = input;
+    const { id, fork } = network;
+    const networkExists = await this.networks.get(id);
+
+    const newId = soliditySha3(jsonStableStringify({
+      networkId: networkExists["networkId"],
+      historicBlock: networkExists["historicBlock"],
+      fork: fork
+    }));
+    networkExists["fork"] = fork;
+
+    const addNetworkWithFork = await this.networks.put({
+      ...networkExists,
+
+      _id: id
+    });
+
+    return { network: {
+      ...networkExists,
+      id: newId
+    }}
+  }
+
   async network ({ id }: { id: string }) {
     await this.ready;
 

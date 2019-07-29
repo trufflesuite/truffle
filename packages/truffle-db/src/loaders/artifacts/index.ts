@@ -253,7 +253,14 @@ const AddNetworks = gql`
             height
             hash
           }
-          fork
+          fork {
+            name
+            networkId
+            historicBlock {
+              height
+              hash
+            }
+          }
         }
       }
     }
@@ -271,12 +278,39 @@ const GetNetworkById = gql`
           height
           hash
         }
-        fork
+        fork {
+          name
+          networkId
+          historicBlock {
+            height
+            hash
+          }
+        }
       }
     }
   }
 `;
 
+const UpdateNetworkWithFork = gql`
+  input ForkIdInput {
+    id: ID!
+  }
+  input NetworkUpdateIdsInput {
+    id: ID!
+    fork: ForkIdInput!
+  }
+  mutation UpdateWorkspaceNetwork($network: NetworkUpdateIdsInput!) {
+    workspace {
+      networkUpdate(input: {
+        network: $network
+      }) {
+        network {
+          name
+        }
+      }
+    }
+  }
+`;
 
 
 type WorkflowCompileResult = {
@@ -435,25 +469,48 @@ export class ArtifactsLoader {
 
           if(networkId) {
             let filteredNetwork = Object.entries(artifactsNetworks).filter((network) => network[0] == networkId);
-            //assume length of filteredNetwork is 1 -- shouldn't have multiple networks with same id in one contract
+
             if(filteredNetwork.length > 0) {
               const transaction = await web3.eth.getTransaction(filteredNetwork[0][1]["transactionHash"]);
-              const historicBlock = {
+              const networkHistoricBlock = {
                 height: transaction.blockNumber,
                 hash: transaction.blockHash
               }
+              let fork;
 
+              //add the network we're currently on, without a fork at first b/c we need it to compare with
               const networksAdd = await this.db.query(AddNetworks,
               {
                 networks:
                 [{
                   name: network,
                   networkId: networkId,
-                  historicBlock: historicBlock
+                  historicBlock: networkHistoricBlock
                 }]
               });
-
               const id = networksAdd.data.workspace.networksAdd.networks[0].id;
+
+              let possibleForks = await this.db.query(GetNetworkById, { networkId: networkId });
+              let possibleForkNetworks = possibleForks.data.workspace.networkById;
+
+              if(possibleForkNetworks && possibleForkNetworks.length > 0) {
+                possibleForkNetworks.sort((a,b) => a.historicBlock.height - b.historicBlock.height);
+
+                possibleForkNetworks.map(async( { id }, index) => {
+                  if(index === 0) {
+                    return;
+                  } else {
+                    //the fork is the network in the array at [index-1] position
+                    let addFork = await this.db.query(UpdateNetworkWithFork, { network: {
+                      id: id,
+                      fork: { id: possibleForkNetworks[index-1].id }
+                    }
+                    });
+                  }
+                })
+
+              }
+
               configNetworks.push({
                 contract: contractName,
                 id: id,
