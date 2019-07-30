@@ -1,4 +1,3 @@
-const Web3PromiEvent = require("web3-core-promievent");
 const Web3Shim = require("truffle-interface-adapter").Web3Shim;
 const utils = require("../utils");
 const execute = require("../execute");
@@ -17,8 +16,6 @@ module.exports = Contract => ({
   },
 
   new() {
-    const promiEvent = new Web3PromiEvent();
-
     utils.checkProvider(this);
 
     if (!this.bytecode || this.bytecode === "0x") {
@@ -31,23 +28,9 @@ module.exports = Contract => ({
       );
     }
 
-    const args = Array.prototype.slice.call(arguments);
+    var constructorABI = this.abi.filter(i => i.type === "constructor")[0];
 
-    // Promievent and flag that allows instance to resolve (rather than just receipt)
-    const context = {
-      contract: this,
-      promiEvent,
-      onlyEmitReceipt: true
-    };
-
-    this.detectNetwork()
-      .then(({ blockLimit }) => {
-        utils.checkLibraries.apply(this);
-        return execute.deploy.call(this, args, context, blockLimit);
-      })
-      .catch(promiEvent.reject);
-
-    return promiEvent.eventEmitter;
+    return execute.deploy.call(this, constructorABI)(...arguments);
   },
 
   async at(address) {
