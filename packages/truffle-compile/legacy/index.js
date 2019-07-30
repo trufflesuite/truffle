@@ -1,10 +1,10 @@
+const debug = require("debug")("compile:legacy"); // eslint-disable-line no-unused-vars
 const path = require("path");
-const Profiler = require("../profiler");
-const CompilerSupplier = require("../compilerSupplier");
 const expect = require("truffle-expect");
 const findContracts = require("truffle-contract-sources");
 const Config = require("truffle-config");
-const debug = require("debug")("compile"); // eslint-disable-line no-unused-vars
+const Profiler = require("../profiler");
+const CompilerSupplier = require("../compilerSupplier");
 const { run } = require("../run");
 const { normalizeOptions } = require("./options");
 const { shimOutput } = require("./shims");
@@ -25,6 +25,7 @@ const compile = function(sources, options, callback) {
     options = {};
   }
 
+  // account for legacy settings
   options = normalizeOptions(options);
 
   run(sources, options)

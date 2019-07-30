@@ -31,6 +31,13 @@ module.exports = {
       "services",
       "analytics",
       "main.js"
+    ),
+    library: path.join(
+      __dirname,
+      "../..",
+      "node_modules",
+      "truffle-core",
+      "index.js"
     )
   },
   target: "node",
@@ -42,7 +49,9 @@ module.exports = {
   context: rootDir,
   output: {
     path: outputDir,
-    filename: "[name].bundled.js"
+    filename: "[name].bundled.js",
+    library: "",
+    libraryTarget: "commonjs"
   },
   devtool: "source-map",
   module: {
@@ -75,7 +84,8 @@ module.exports = {
     new webpack.DefinePlugin({
       BUNDLE_VERSION: JSON.stringify(pkg.version),
       BUNDLE_CHAIN_FILENAME: JSON.stringify("chain.bundled.js"),
-      BUNDLE_ANALYTICS_FILENAME: JSON.stringify("analytics.bundled.js")
+      BUNDLE_ANALYTICS_FILENAME: JSON.stringify("analytics.bundled.js"),
+      BUNDLE_LIBRARY_FILENAME: JSON.stringify("library.bundled.js")
     }),
 
     // Put the shebang back on.
