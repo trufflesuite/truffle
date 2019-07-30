@@ -1,13 +1,11 @@
-var IPC = require("node-ipc").IPC;
-var path = require("path");
-var spawn = require("child_process").spawn;
-var debug = require("debug");
+const { IPC } = require("node-ipc");
+const path = require("path");
+const { spawn } = require("child_process");
+const debug = require("debug");
 
-var Develop = {
-  start: function(ipcNetwork, options, callback) {
-    options = options || {};
-
-    var chainPath;
+const Develop = {
+  start: async function(ipcNetwork, options = {}) {
+    let chainPath;
 
     // The path to the dev env process depends on whether or not
     // we're running in the bundled version. If not, use chain.js
@@ -20,18 +18,31 @@ var Develop = {
       chainPath = path.join(__dirname, "./", "chain.js");
     }
 
-    var cmd = spawn("node", [chainPath, ipcNetwork, JSON.stringify(options)], {
+    const logger = options.logger || console;
+    //check that genesis-time config option passed through the truffle-config.js file is a valid time.
+    if (options.time && isNaN(Date.parse(options.time))) {
+      options.time = Date.now();
+      logger.log(
+        "\x1b[31m%s\x1b[0m",
+        "Invalid Date passed to genesis-time, using current Date instead",
+        "\x1b[0m"
+      );
+    }
+
+    const stringifiedOptions = JSON.stringify(options);
+    const optionsBuffer = Buffer.from(stringifiedOptions);
+    const base64OptionsString = optionsBuffer.toString("base64");
+
+    return spawn("node", [chainPath, ipcNetwork, base64OptionsString], {
       detached: true,
       stdio: "ignore"
     });
-
-    callback();
   },
 
   connect: function(options, callback) {
-    var debugServer = debug("develop:ipc:server");
-    var debugClient = debug("develop:ipc:client");
-    var debugRPC = debug("develop:ganache");
+    const debugServer = debug("develop:ipc:server");
+    const debugClient = debug("develop:ipc:client");
+    const debugRPC = debug("develop:ganache");
 
     if (typeof options === "function") {
       callback = options;
@@ -106,30 +117,30 @@ var Develop = {
   },
 
   connectOrStart: function(options, ganacheOptions, callback) {
-    var self = this;
+    const self = this;
 
     options.retry = false;
 
-    var ipcNetwork = options.network || "develop";
+    const ipcNetwork = options.network || "develop";
 
-    var connectedAlready = false;
+    let connectedAlready = false;
 
     this.connect(
       options,
-      function(error, disconnect) {
+      async function(error, disconnect) {
         if (error) {
-          self.start(ipcNetwork, ganacheOptions, function() {
-            options.retry = true;
-            self.connect(
-              options,
-              function(error, disconnect) {
-                if (connectedAlready) return;
+          await self.start(ipcNetwork, ganacheOptions);
 
-                connectedAlready = true;
-                callback(true, disconnect);
-              }
-            );
-          });
+          options.retry = true;
+          self.connect(
+            options,
+            function(error, disconnect) {
+              if (connectedAlready) return;
+
+              connectedAlready = true;
+              callback(true, disconnect);
+            }
+          );
         } else {
           connectedAlready = true;
           callback(false, disconnect);

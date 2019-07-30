@@ -1,19 +1,19 @@
 {
   "name": "truffle-codec-utils",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Utilities for decoding data from the EVM or encoding it for the EVM",
   "dependencies": {
     "bn.js": "^4.11.8",
     "lodash.clonedeep": "^4.5.0",
     "lodash.escaperegexp": "^4.1.2",
     "semver": "^6.1.1",
-    "web3": "1.0.0-beta.37"
+    "web3": "^1.2.0"
   },
+  "version": "1.0.15",
   "main": "dist/index.js",
-  "types": "src/index.ts",
   "scripts": {
-    "prepare": "yarn build",
     "build": "node_modules/.bin/tsc",
+    "prepare": "yarn build",
     "start": "node_modules/.bin/tsc --watch",
     "test": "echo \"No test specified\" && exit 0;"
   },
@@ -27,6 +27,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "types": "src/index.ts",
   "devDependencies": {
     "@types/bn.js": "^4.11.2",
     "@types/lodash.clonedeep": "^4.5.4",

@@ -148,7 +148,8 @@ const command = {
         mnemonic:
           "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
         gasLimit: config.gas,
-        noVMErrorsOnRPCResponse: true
+        noVMErrorsOnRPCResponse: true,
+        time: config.genesis_time
       };
       Develop.connectOrStart(
         ipcOptions,
