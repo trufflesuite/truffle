@@ -47,7 +47,13 @@ function shimContract(contract) {
   };
 }
 
-function shimBytecode({ bytes, linkReferences }) {
+function shimBytecode(bytecode) {
+  if (!bytecode) {
+    return;
+  }
+
+  let { bytes, linkReferences } = bytecode;
+
   linkReferences = linkReferences || [];
 
   // inline link references - start by flattening the offsets
