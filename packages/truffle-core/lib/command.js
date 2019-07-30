@@ -100,9 +100,43 @@ class Command {
       }
     });
 
-    const newOptions = Object.assign({}, clone, argv);
-
+    // Check unsupported command line flag according to the option list in help
     try {
+      // while in `console` & `develop`, input is passed as a string, not as an array
+      if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ");
+      const inputOptions = inputStrings
+        .map(string => {
+          return string.startsWith("--") ? string : null;
+        })
+        .filter(item => {
+          return item != null;
+        });
+
+      const validOptions = result.command.help.options
+        .map(item => {
+          let opt = item.option.split(" ")[0];
+          return opt.startsWith("--") ? opt : null;
+        })
+        .filter(item => {
+          return item != null;
+        });
+
+      let invalidOptions = inputOptions.filter(
+        opt => !validOptions.includes(opt)
+      );
+
+      if (invalidOptions.length > 0) {
+        if (options.logger) {
+          const log = options.logger.log || options.logger.debug;
+          log(
+            "> Warning: possible unsupported (undocumented in help) command line option: " +
+              invalidOptions
+          );
+        }
+      }
+
+      const newOptions = Object.assign({}, clone, argv);
+
       result.command.run(newOptions, callback);
       analytics.send({
         command: result.name ? result.name : "other",

@@ -10,7 +10,7 @@ $ npm install truffle-hdwallet-provider
 ## Requirements
 ```
 Node >= 7.6
-Web3 1.0.0-beta.37
+Web3 ^1.2.0
 ```
 
 ## General Usage
@@ -27,7 +27,7 @@ let provider = new HDWalletProvider(mnemonic, "http://localhost:8545");
 provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5);
 
 // Or, use your own hierarchical derivation path
-provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5, 1, "m/44'/137'/0'/0/");
+provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5, 1, true, "m/44'/137'/0'/0/");
 
 
 // HDWalletProvider is compatible with Web3. Use it at Web3 constructor, just like any other Web3 Provider
@@ -96,7 +96,9 @@ module.exports = {
     ropsten: {
       // must be a thunk, otherwise truffle commands may hang in CI
       provider: () =>
-        new HDWalletProvider(mnemonic, "https://ropsten.infura.io/v3/YOUR-PROJECT-ID"),
+        new HDWalletProvider(mnemonic, "https://ropsten.infura.io/v3/YOUR-PROJECT-ID",
+            0, 1, true, "m/44'/1'/0'/0/"
+        ),
       network_id: '3',
     }
   }

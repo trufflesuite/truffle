@@ -8,8 +8,8 @@
     "lib": "lib"
   },
   "scripts": {
-    "prepare": "yarn build",
     "build": "node_modules/.bin/tsc",
+    "prepare": "yarn build",
     "start": "node_modules/.bin/tsc --watch",
     "test": "cd test && truffle test"
   },
@@ -36,7 +36,7 @@
     "truffle-contract-schema": "^3.0.9",
     "truffle-decoder-core": "^3.0.3",
     "truffle-decode-utils": "^1.0.14",
-    "web3": "1.0.0-beta.37"
+    "web3": "^1.2.0"
   },
   "devDependencies": {
     "@types/bn.js": "^4.11.5",

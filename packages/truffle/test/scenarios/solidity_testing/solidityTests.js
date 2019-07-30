@@ -18,23 +18,18 @@ describe("Solidity Tests", function() {
    * @param  {Function} done callback
    * @param  {String}   file Solidity test target
    */
-  function initSandbox(done, file) {
+  async function initSandbox(file) {
     options = { name: "bare", force: true };
-    Box.sandbox(options, (err, conf) => {
-      if (err) return done(err);
-      config = conf;
-      config.logger = logger;
-      config.network = "development";
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-      const from = path.join(__dirname, file);
+    config = await Box.sandbox(options);
+    config.logger = logger;
+    config.network = "development";
+    config.mocha = {
+      reporter: new Reporter(logger)
+    };
+    const from = path.join(__dirname, file);
 
-      fs.ensureDir(config.test_directory).then(() => {
-        fs.copy(from, config.test_directory + `/${file}`);
-        done();
-      });
-    });
+    await fs.ensureDir(config.test_directory);
+    await fs.copy(from, config.test_directory + `/${file}`);
   }
 
   function processErr(err, output) {
@@ -48,9 +43,8 @@ describe("Solidity Tests", function() {
   after(done => Server.stop(done));
 
   describe("test with balance", function() {
-    before(function(done) {
-      this.timeout(5000);
-      initSandbox(done, "TestWithBalance.sol");
+    before(async () => {
+      await initSandbox("TestWithBalance.sol");
     });
 
     it("will run the test and have the correct balance", function(done) {
@@ -63,12 +57,11 @@ describe("Solidity Tests", function() {
         done();
       });
     });
-  });
+  }).timeout(5000);
 
   describe("tests failing", function() {
-    before(function(done) {
-      this.timeout(5000);
-      initSandbox(done, "TestFailures.sol");
+    before(async () => {
+      await initSandbox("TestFailures.sol");
     });
 
     it("will throw errors correctly", function(done) {
@@ -81,5 +74,5 @@ describe("Solidity Tests", function() {
         done();
       });
     });
-  });
+  }).timeout(5000);
 });

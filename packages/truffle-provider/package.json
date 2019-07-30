@@ -1,33 +1,33 @@
 {
   "name": "truffle-provider",
-  "version": "0.1.10",
   "description": "Beefed up provider module for Truffle",
+  "license": "MIT",
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "homepage": "https://github.com/trufflesuite/truffle-provider#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-provider",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-provider/issues"
+  },
+  "version": "0.1.12",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-provider",
-  "keywords": [
-    "ethereum",
-    "truffle",
-    "provider",
-    "http"
-  ],
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-provider/issues"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle-provider#readme",
   "dependencies": {
     "truffle-error": "^0.0.5",
-    "truffle-interface-adapter": "^0.1.6",
-    "web3": "1.0.0-beta.37"
+    "truffle-interface-adapter": "^0.2.1",
+    "web3": "^1.2.0"
   },
   "devDependencies": {
-    "ganache-core": "2.5.5",
+    "ganache-core": "2.5.7",
     "mocha": "5.2.0"
   },
+  "keywords": [
+    "ethereum",
+    "http",
+    "provider",
+    "truffle"
+  ],
   "publishConfig": {
     "access": "public"
   },

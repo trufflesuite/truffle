@@ -1,6 +1,6 @@
 {
   "name": "truffle-decoder-core",
-  "version": "3.0.3",
+  "version": "3.0.7",
   "description": "A decoder for Solidity variables of all sorts",
   "main": "dist/interface/index.js",
   "types": "lib/interface/index.ts",
