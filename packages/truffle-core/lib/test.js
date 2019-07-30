@@ -2,7 +2,6 @@ const Mocha = require("mocha");
 const chai = require("chai");
 const path = require("path");
 const Web3 = require("web3");
-const { promisify } = require("util");
 const Config = require("truffle-config");
 const Contracts = require("truffle-workflow-compile/new");
 const Resolver = require("truffle-resolver");
@@ -151,9 +150,7 @@ const Test = {
     testResolver
   ) {
     const updated =
-      (await promisify(Profiler.updated)(
-        config.with({ resolver: testResolver })
-      )) || [];
+      (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
 
     const compileConfig = config.with({
       all: config.compileAll === true,
