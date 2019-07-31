@@ -9,7 +9,7 @@ class FS {
   }
 
   require(importPath, searchPath = this.contractsBuildDirectory) {
-    const normalizedImportPath = path.normalize(normalizedImportPath);
+    const normalizedImportPath = path.normalize(importPath);
     const contractName = this.getContractName(normalizedImportPath, searchPath);
 
     // If we have an absoulte path, only check the file if it's a child of the workingDirectory.
@@ -36,17 +36,15 @@ class FS {
       file => file.match(".json") != null
     );
 
-    for (let i = 0; i < filenames.length; i++) {
-      const filename = filenames[i];
-
+    filteredBuildArtifacts.forEach(buildArtifact => {
       const artifact = JSON.parse(
-        fs.readFileSync(path.resolve(searchPath, filename))
+        fs.readFileSync(path.resolve(searchPath, buildArtifact))
       );
 
       if (artifact.sourcePath === sourcePath) {
         return artifact.contractName;
       }
-    }
+    });
 
     // fallback
     return path.basename(sourcePath, ".sol");
