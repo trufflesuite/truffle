@@ -17,7 +17,6 @@ class FS {
       if (normalizedImportPath.indexOf(this.workingDirectory) !== 0) {
         return null;
       }
-      importPath = `./${importPath.replace(this.workingDirectory)}`;
     }
 
     try {
