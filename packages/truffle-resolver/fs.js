@@ -1,6 +1,5 @@
 const path = require("path");
 const fs = require("fs");
-const eachSeries = require("async/eachSeries");
 
 class FS {
   constructor(workingDirectory, contractsBuildDirectory) {
@@ -50,44 +49,28 @@ class FS {
     return path.basename(sourcePath, ".sol");
   }
 
-  resolve(importPath, importedFrom = "", callback) {
+  resolve(importPath, importedFrom, callback) {
+    importedFrom = importedFrom || "";
     const possiblePaths = [
       importPath,
       path.join(path.dirname(importedFrom), importPath)
     ];
 
-    let resolvedBody = null;
-    let resolvedPath = null;
-
-    eachSeries(
-      possiblePaths,
-      (possiblePath, finished) => {
-        if (resolvedBody != null) {
-          return finished();
-        }
-
-        // Check the expected path.
-        fs.readFile(possiblePath, { encoding: "utf8" }, (err, body) => {
-          // If there's an error, that means we can't read the source even if
-          // it exists. Treat it as if it doesn't by ignoring any errors.
-          // body will be undefined if error.
-          if (body) {
-            resolvedBody = body;
-            resolvedPath = possiblePath;
-          }
-
-          return finished();
+    possiblePaths.forEach(possiblePath => {
+      try {
+        const resolvedSource = fs.readFileSync(possiblePath, {
+          encoding: "utf8"
         });
-      },
-      err => {
-        if (err) return callback(err);
-        callback(null, resolvedBody, resolvedPath);
+        callback(null, resolvedSource, possiblePath);
+      } catch (error) {
+        // do nothing
       }
-    );
+    });
+    callback(null);
   }
 
   // Here we're resolving from local files to local files, all absolute.
-  resolveDependencyPath(importPath, dependencyPath) {
+  resolve_dependency_path(importPath, dependencyPath) {
     const dirname = path.dirname(importPath);
     return path.resolve(path.join(dirname, dependencyPath));
   }
