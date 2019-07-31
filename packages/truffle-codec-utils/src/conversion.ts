@@ -4,6 +4,7 @@ const debug = debugModule("codec-utils:conversion");
 import BN from "bn.js";
 import Web3 from "web3";
 import { Constants } from "./constants";
+import { Types } from "./types/types";
 import { Values } from "./types/values";
 import { enumFullName } from "./types/inspect";
 
@@ -163,6 +164,31 @@ export namespace Conversion {
     return Object.assign({}, ...Object.entries(variables).map(
       ([name, value]) => ({[name]: nativize(value)})
     ));
+  }
+
+  //converts out of range booleans to true; something of a HACK
+  //NOTE: does NOT do this recursively inside structs, arrays, etc!
+  //I mean, those aren't elementary and therefore aren't in the domain
+  //anyway, but still
+  export function cleanBool(result: Values.ElementaryResult): Values.ElementaryResult {
+    switch(result.kind) {
+      case "value":
+        return result;
+      case "error":
+        switch(result.error.kind) {
+          case "BoolOutOfRangeError":
+            //return true
+            return {
+              type: <Types.BoolType> result.type,
+              kind: "value",
+              value: {
+                asBool: true
+              }
+            };
+          default:
+            return result;
+        }
+    }
   }
 
   //HACK! Avoid using! Only use this if:

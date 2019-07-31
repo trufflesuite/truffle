@@ -502,6 +502,13 @@ function* variablesAndMappingsSaga() {
 }
 
 function* decodeMappingKeySaga(indexDefinition, keyDefinition) {
+  //something of a HACK -- cleans any out-of-range booleans
+  //resulting from the main mapping key decoding loop
+  let indexValue = yield* decodeMappingKeyCore(indexDefinition, keyDefinition);
+  return indexValue ? CodecUtils.Conversion.cleanBool(indexValue) : indexValue;
+}
+
+function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
   let scopes = yield select(data.views.scopes.inlined);
   let currentAssignments = yield select(data.proc.assignments);
   let currentDepth = yield select(data.current.functionDepth);
