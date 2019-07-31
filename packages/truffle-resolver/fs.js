@@ -12,7 +12,7 @@ class FS {
     const normalizedImportPath = path.normalize(importPath);
     const contractName = this.getContractName(normalizedImportPath, searchPath);
 
-    // If we have an absoulte path, only check the file if it's a child of the workingDirectory.
+    // If we have an absolute path, only check the file if it's a child of the workingDirectory.
     if (path.isAbsolute(normalizedImportPath)) {
       if (normalizedImportPath.indexOf(this.workingDirectory) !== 0) {
         return null;
