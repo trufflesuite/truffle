@@ -1,11 +1,23 @@
 import BN from "bn.js";
-import Web3 from "web3";
+import { Web3Shim } from "./web3-shim";
+import {AbiCoder as EthersAbi} from 'ethers/utils/abi-coder';
+import _ from "lodash";
 
+export const QuorumDefinition = {
+  async initNetworkType (web3: Web3Shim) {
+    // duck punch some of web3's output formatters
+    overrides.getBlock(web3);
+    overrides.getTransaction(web3);
+    overrides.getTransactionReceipt(web3);
+    overrides.decodeParameters(web3);
+  }
+}
+
+const overrides = {
 // The ts-ignores are ignoring the checks that are
 // saying that web3.eth.getBlock is a function and doesn't
 // have a `method` property, which it does
-
-export function getBlock(web3: Web3) {
+  "getBlock": (web3: Web3Shim) => {
   // @ts-ignore
   const _oldBlockFormatter = web3.eth.getBlock.method.outputFormatter;
   // @ts-ignore
@@ -40,9 +52,9 @@ export function getBlock(web3: Web3) {
 
     return result;
   };
-};
+  },
 
-export function getTransaction(web3: Web3) {
+  "getTransaction": (web3: Web3Shim) => {
   const _oldTransactionFormatter =
     // @ts-ignore
     web3.eth.getTransaction.method.outputFormatter;
@@ -65,9 +77,9 @@ export function getTransaction(web3: Web3) {
 
     return result;
   };
-};
+  },
 
-export function getTransactionReceipt(web3: Web3) {
+  "getTransactionReceipt": (web3: Web3Shim) => {
   const _oldTransactionReceiptFormatter =
     // @ts-ignore
     web3.eth.getTransactionReceipt.method.outputFormatter;
@@ -90,4 +102,57 @@ export function getTransactionReceipt(web3: Web3) {
 
     return result;
   };
+  },
+
+// The primary difference between this decodeParameters function and web3's
+// is that the 'Out of Gas?' zero/null bytes guard has been removed and any
+// falsy bytes are interpreted as a zero value.
+  "decodeParameters": (web3: Web3Shim) => {
+  const _oldDecodeParameters = web3.eth.abi.decodeParameters;
+
+  const ethersAbiCoder = new EthersAbi((type, value) => {
+    if (
+      type.match(/^u?int/) &&
+      !_.isArray(value) &&
+      (!_.isObject(value) || value.constructor.name !== "BN")
+    ) {
+      return value.toString();
+    }
+    return value;
+  });
+
+  // result method
+  function Result() {}
+
+  web3.eth.abi.decodeParameters = (outputs: Array<any>, bytes: String) => {
+    // if bytes is falsy, we'll pass 64 '0' bits to the ethers.js decoder.
+    // the decoder will decode the 64 '0' bits as a 0 value.
+    if (!bytes) bytes = "0".repeat(64);
+    const res = ethersAbiCoder.decode(
+    //@ts-ignore 'mapTypes' not existing on type 'ABI'
+      web3.eth.abi.mapTypes(outputs),
+      `0x${bytes.replace(/0x/i, "")}`
+    );
+    //@ts-ignore complaint regarding Result method
+    const returnValue = new Result();
+    returnValue.__length__ = 0;
+
+    outputs.forEach((output, i) => {
+      let decodedValue = res[returnValue.__length__];
+      decodedValue = decodedValue === "0x" ? null : decodedValue;
+
+      returnValue[i] = decodedValue;
+
+      // @ts-ignore object not having name key
+      if (_.isObject(output) && output.name) {
+        // @ts-ignore object not having name key
+        returnValue[output.name] = decodedValue;
+      }
+
+      returnValue.__length__++;
+    });
+
+    return returnValue;
+  };
+  }
 };

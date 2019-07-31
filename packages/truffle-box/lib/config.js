@@ -1,9 +1,7 @@
-var fs = require("fs-extra");
+const fse = require("fs-extra");
 
-function setDefaults(config) {
-  config = config || {};
-
-  var hooks = config.hooks || {};
+function setDefaults(config = {}) {
+  const hooks = config.hooks || {};
 
   return {
     ignore: config.ignore || [],
@@ -19,7 +17,7 @@ function setDefaults(config) {
 }
 
 function read(path) {
-  return fs
+  return fse
     .readFile(path)
     .catch(() => "{}")
     .then(JSON.parse)
@@ -27,6 +25,6 @@ function read(path) {
 }
 
 module.exports = {
-  read: read,
-  setDefaults: setDefaults
+  read,
+  setDefaults
 };

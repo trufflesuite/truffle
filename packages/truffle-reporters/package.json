@@ -1,6 +1,6 @@
 {
   "name": "truffle-reporters",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Reporters for Truffle modules",
   "main": "index.js",
   "scripts": {},
@@ -13,7 +13,7 @@
   "dependencies": {
     "node-emoji": "^1.8.1",
     "ora": "^3.0.0",
-    "web3-utils": "1.0.0-beta.37"
+    "web3-utils": "^1.2.0"
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }

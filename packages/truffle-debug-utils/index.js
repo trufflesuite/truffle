@@ -317,16 +317,20 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatValue: function(value, indent = 0) {
+  formatValue: function(value, indent = 0, nativized = false) {
+    let inspectOptions = {
+      colors: true,
+      depth: null,
+      maxArrayLength: null,
+      breakLength: 30
+    };
+    let valueToInspect = nativized
+      ? value
+      : new CodecUtils.ResultInspector(value);
     return util
-      .inspect(new CodecUtils.ResultInspector(value), {
-        colors: true,
-        depth: null,
-        maxArrayLength: null,
-        breakLength: 30
-      })
+      .inspect(valueToInspect, inspectOptions)
       .split(/\r?\n/g)
-      .map(function(line, i) {
+      .map((line, i) => {
         // don't indent first line
         const padding = i > 0 ? Array(indent).join(" ") : "";
         return padding + line;

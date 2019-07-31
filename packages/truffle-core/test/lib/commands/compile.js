@@ -14,26 +14,20 @@ describe("compile", function() {
   var output = "";
   var memStream;
 
-  before("Create a sandbox", function(done) {
-    this.timeout(20000);
-
-    Box.sandbox("default", function(err, result) {
-      if (err) return done(err);
-      config = result;
-      config.resolver = new Resolver(config);
-      config.artifactor = new Artifactor(config.contracts_build_directory);
-      config.networks = {
-        default: {
-          network_id: "1"
-        },
-        secondary: {
-          network_id: "12345"
-        }
-      };
-      config.network = "default";
-      config.logger = { log: val => val && memStream.write(val) };
-      done();
-    });
+  before("Create a sandbox", async () => {
+    config = await Box.sandbox("default");
+    config.resolver = new Resolver(config);
+    config.artifactor = new Artifactor(config.contracts_build_directory);
+    config.networks = {
+      default: {
+        network_id: "1"
+      },
+      secondary: {
+        network_id: "12345"
+      }
+    };
+    config.network = "default";
+    config.logger = { log: val => val && memStream.write(val) };
   });
 
   after("Cleanup tmp files", function(done) {
@@ -230,4 +224,4 @@ describe("compile", function() {
   //   var contract = config.resolver.require("MetaCoin.sol");
   //   assert.equal(contract.networks().length, 2, "Expected the contract to be managing two networks");
   // });
-});
+}).timeout(10000);

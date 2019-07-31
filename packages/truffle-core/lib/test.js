@@ -11,7 +11,7 @@ const TestSource = require("./testing/testsource");
 const SolidityTest = require("./testing/soliditytest");
 const expect = require("truffle-expect");
 const Migrate = require("truffle-migrate");
-const Profiler = require("truffle-compile/profiler.js");
+const Profiler = require("truffle-compile/profiler");
 const originalrequire = require("original-require");
 
 chai.use(require("./assertions"));
@@ -162,7 +162,7 @@ const Test = {
           all: config.compileAll === true,
           files: updated.concat(solidityTestFiles),
           resolver: testResolver,
-          quiet: false,
+          quiet: config.quiet,
           quietWrite: true
         });
         // Compile project contracts and test contracts

@@ -7,5 +7,6 @@ module.exports = {
   contracts: require("truffle-workflow-compile"),
   package: require("./lib/package"),
   test: require("./lib/test"),
-  version: pkg.version
+  version: pkg.version,
+  ganache: require("ganache-core")
 };

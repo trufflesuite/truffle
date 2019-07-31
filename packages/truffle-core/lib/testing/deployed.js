@@ -39,7 +39,7 @@ var Deployed = {
       if (version === "native") version = new Native().load().version();
       const v = semver.coerce(version);
       if (semver.lt(v, "0.5.0")) source = source.replace(/ payable/gm, "");
-      source = source.replace(/0.5.0/gm, v);
+      source = source.replace(/0\.5\.0/gm, v);
     }
 
     return source;
