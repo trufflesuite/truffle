@@ -9,15 +9,12 @@ class FS {
   }
 
   require(importPath, searchPath = this.contractsBuildDirectory) {
-    // For Windows: Allow import paths to be either path separator ('\' or '/')
-    // by converting all '/' to the default (path.sep);
-    importPath = importPath.replace(/\//g, path.sep);
-
-    const contractName = this.getContractName(importPath, searchPath);
+    const normalizedImportPath = path.normalize(normalizedImportPath);
+    const contractName = this.getContractName(normalizedImportPath, searchPath);
 
     // If we have an absoulte path, only check the file if it's a child of the workingDirectory.
-    if (path.isAbsolute(importPath)) {
-      if (importPath.indexOf(this.workingDirectory) !== 0) {
+    if (path.isAbsolute(normalizedImportPath)) {
+      if (normalizedImportPath.indexOf(this.workingDirectory) !== 0) {
         return null;
       }
       importPath = `./${importPath.replace(this.workingDirectory)}`;
