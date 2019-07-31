@@ -16458,7 +16458,7 @@ module.exports={
   "devDependencies": {
     "json-schema-to-typescript": "^5.5.0",
     "mocha": "5.2.0",
-    "solc": "0.4.25"
+    "solc": "0.4.26"
   },
   "directories": {
     "spec": "./spec"
