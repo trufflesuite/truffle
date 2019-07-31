@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.0.26",
+  "version": "4.0.27",
   "main": "index.js",
   "scripts": {
     "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
@@ -24,7 +24,7 @@
     "truffle-blockchain-utils": "^0.0.10",
     "truffle-contract-schema": "^3.0.11",
     "truffle-error": "^0.0.5",
-    "truffle-interface-adapter": "^0.2.1",
+    "truffle-interface-adapter": "^0.2.2",
     "web3": "^1.2.0",
     "web3-core-promievent": "^1.2.0",
     "web3-eth-abi": "^1.2.0",
@@ -38,7 +38,7 @@
     "ganache-core": "2.5.7",
     "mocha": "5.2.0",
     "temp": "^0.8.3",
-    "truffle-compile": "^4.1.6",
+    "truffle-compile": "^4.2.0",
     "uglify-es": "^3.3.9"
   },
   "keywords": [
