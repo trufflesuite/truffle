@@ -31,8 +31,11 @@ class FS {
   }
 
   getContractName(sourcePath, searchPath = this.contractsBuildDirectory) {
-    let filenames = fs.readdirSync(searchPath);
-    filenames = filenames.filter(file => file.match(".json") != null);
+    const contractsBuildDirFiles = fs.readdirSync(searchPath);
+    const filteredBuildArtifacts = contractsBuildDirFiles.filter(
+      file => file.match(".json") != null
+    );
+
     for (let i = 0; i < filenames.length; i++) {
       const filename = filenames[i];
 
