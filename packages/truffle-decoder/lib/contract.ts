@@ -90,6 +90,22 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return instanceDecoder;
   }
 
+  public async decodeTransaction(transaction: Transaction): Promise<DecoderTypes.DecodedTransaction> {
+    return await this.wireDecoder.decodeTransaction(transaction);
+  }
+
+  public async decodeLog(log: Log): Promise<DecoderTypes.DecodedLog> {
+    return await this.wireDecoder.decodeLog(log);
+  }
+
+  public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
+    return await this.wireDecoder.decodeLogs(logs);
+  }
+
+  public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
+    return await this.wireDecoder.events(options);
+  }
+
   //the following functions are for internal use
   public getAllocations() {
     return this.allocations;
@@ -380,8 +396,11 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
     return await this.wireDecoder.decodeLogs(logs, {}, this.additionalContexts);
   }
 
+  //note: by default restricts address to address of this
+  //contract, but you can override this (including by specifying
+  //address undefined to not filter by adddress)
   public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.events(options, this.additionalContexts);
+    return await this.wireDecoder.events({address: this.contractAddress, ...options}, this.additionalContexts);
   }
 
   public onEvent(name: string, callback: Function): void {
