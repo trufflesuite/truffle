@@ -10,7 +10,7 @@ class Docker extends LoadingStrategy {
   async load() {
     const versionString = await this.validateAndGetSolcVersion();
     const command =
-      "docker run -i ethereum/solc:" + this.config.version + " --standard-json";
+      "docker run --rm -i ethereum/solc:" + this.config.version + " --standard-json";
 
     try {
       return {
@@ -83,7 +83,7 @@ class Docker extends LoadingStrategy {
 
     // Get version & cache.
     const version = execSync(
-      "docker run ethereum/solc:" + image + " --version"
+      "docker run --rm ethereum/solc:" + image + " --version"
     );
     const normalized = new VersionRange().normalizeSolcVersion(version);
     this.addFileToCache(normalized, fileName);
