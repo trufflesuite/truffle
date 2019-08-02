@@ -112,9 +112,13 @@ var properties = {
   },
   compiler: {},
   networks: {
-    transform: function(value) {
+    transform: function(value, obj) {
       if (value === undefined) {
         value = {};
+      }
+      if (obj.network_id && value[obj.network_id]) {
+        value[obj.network_id].events = obj.events;
+        value[obj.network_id].links = obj.links;
       }
       return value;
     }
