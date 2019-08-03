@@ -36,6 +36,21 @@ class DebugPrinter {
     this.config.logger.log(...args);
   }
 
+  printSessionLoaded() {
+    this.printAddressesAffected();
+    this.printHelp();
+    debug("Help printed");
+    this.printFile();
+    debug("File printed");
+    this.printState();
+    debug("State printed");
+  }
+
+  printSessionError() {
+    this.print(this.session.view(session.status.error));
+    this.printHelp();
+  }
+
   printAddressesAffected() {
     const affectedInstances = this.session.view(session.info.affectedInstances);
 
