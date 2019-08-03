@@ -188,7 +188,7 @@ HDWalletProvider.isValidProvider = provider => {
 
   if (typeof provider === "string") {
     const url = Url.parse(provider.toLowerCase());
-    return validProtocols.includes(url.protocol);
+    return validProtocols.includes(url.protocol) && url.slashes ;
   }
 
   return true;
