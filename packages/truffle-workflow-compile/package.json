@@ -1,14 +1,14 @@
 {
   "name": "truffle-workflow-compile",
-  "version": "2.0.25",
+  "version": "2.1.0",
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
-    "mkdirp": "^0.5.1",
     "fs-extra": "^7.0.1",
-    "truffle-artifactor": "^4.0.25",
-    "truffle-compile": "^4.1.6",
-    "truffle-compile-vyper": "^1.0.23",
-    "truffle-config": "^1.1.16",
+    "mkdirp": "^0.5.1",
+    "truffle-artifactor": "^4.0.26",
+    "truffle-compile": "^4.2.0",
+    "truffle-compile-vyper": "^1.0.24",
+    "truffle-config": "^1.1.17",
     "truffle-expect": "^0.0.9",
     "truffle-external-compile": "^1.0.12",
     "truffle-resolver": "^5.0.14"
