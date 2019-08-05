@@ -6,6 +6,11 @@ const command = {
       describe: "Show all test logs",
       type: "boolean",
       default: false
+    },
+    "ignore-networks": {
+      describe: "Ignore networks defined in truffle-config.js",
+      type: "boolean",
+      default: false
     }
   },
   help: {
