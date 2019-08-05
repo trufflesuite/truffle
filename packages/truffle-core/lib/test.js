@@ -228,6 +228,8 @@ const Test = {
         // wrapped inside function so as not to load debugger on every test
         const { CLIDebugHook } = require("./debug/mocha");
 
+        // note: this.mochaRunner will be available by the time debug()
+        // is invoked
         const hook = new CLIDebugHook(config, compilation, this.mochaRunner);
 
         return await hook.debug(operation);
