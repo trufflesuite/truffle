@@ -10,7 +10,8 @@ const command = {
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events]",
+      "truffle test [<test_file>] [--compile-all] [--network <name>]" +
+      "\n\t\t\t     [--verbose-rpc] [--show-events] [--ignore-networks]",
     options: [
       {
         option: "<test_file>",
