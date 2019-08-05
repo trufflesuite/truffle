@@ -55,6 +55,10 @@ const command = {
 
     const config = Config.detect(options);
 
+    if (options.ignoreNetworks) {
+      config.networks = {};
+    }
+
     // if "development" exists, default to using that for testing
     if (!config.network && config.networks.development) {
       config.network = "development";
