@@ -91,9 +91,9 @@ const command = {
       config.compileAll = true;
     }
 
-    var ipcDisconnect;
+    let ipcDisconnect;
 
-    var files = [];
+    let files = [];
 
     if (options.file) {
       files = [options.file];
