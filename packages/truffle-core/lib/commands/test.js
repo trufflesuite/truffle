@@ -38,6 +38,10 @@ const command = {
       {
         option: "--show-events",
         description: "Log all contract events."
+      },
+      {
+        option: "--ignore-networks",
+        description: "Ignore networks defined in truffle-config.js."
       }
     ]
   },
