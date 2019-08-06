@@ -30,7 +30,7 @@
     "lodash.merge": "^4.6.1",
     "truffle-decode-utils": "^1.0.15",
     "utf8": "^3.0.0",
-    "web3": "^1.2.0"
+    "web3": "1.2.1"
   },
   "peerDependencies": {
     "truffle": "^5.0.14"
