@@ -51,7 +51,7 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run(options, done) {
     const OS = require("os");
     const dir = require("node-dir");
     const temp = require("temp").track();
@@ -97,9 +97,9 @@ const command = {
       return done(error);
     }
 
-    files = files.filter(function(file) {
-      return file.match(config.test_file_extension_regexp) != null;
-    });
+    files = files.filter(
+      file => file.match(config.test_file_extension_regexp) != null
+    );
 
     let temporaryDirectory;
     try {
@@ -109,7 +109,7 @@ const command = {
     }
 
     function runCallback() {
-      var args = arguments;
+      const args = arguments;
       // Ensure directory cleanup.
       done.apply(null, args);
       if (ipcDisconnect) ipcDisconnect();
@@ -129,7 +129,7 @@ const command = {
         .catch(runCallback);
     }
 
-    const environmentCallback = function() {
+    const environmentCallback = () => {
       // Copy all the built files over to a temporary directory, because we
       // don't want to save any tests artifacts. Only do this if the build directory
       // exists.
@@ -141,7 +141,7 @@ const command = {
 
       promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
         .then(() => {
-          config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+          config.logger.log(`Using network '${config.network}'.${OS.EOL}`);
 
           run();
         })
