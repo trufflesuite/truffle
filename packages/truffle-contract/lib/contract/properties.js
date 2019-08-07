@@ -49,6 +49,14 @@ module.exports = {
       this._json.autoGas = val;
     }
   },
+  maxGas: {
+    get: function() {
+      return this._json.maxGas;
+    },
+    set: function(val) {
+      this._json.maxGas = val;
+    }
+  },
   numberFormat: {
     get: function() {
       if (this._json.numberFormat === undefined) {

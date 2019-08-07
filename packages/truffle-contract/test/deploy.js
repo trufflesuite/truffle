@@ -193,6 +193,35 @@ describe("Deployments", function() {
       await Example.new(1);
     });
 
+    it("should be able to set maxGas", async function() {
+      assert.isUndefined(Example.maxGas, "maxGas should be undefined here");
+
+      Example.maxGas = 2000000;
+
+      assert.equal(Example.maxGas, 2000000, "Should be 2000000");
+
+      await Example.new(1);
+
+      //reset this so it doesn't mess with other tests.
+      Example.maxGas = undefined;
+    });
+
+    it("test that if you set the maxGas too low your contract will fail to deploy", async function() {
+      assert.isUndefined(Example.maxGas, "maxGas should be undefined here");
+
+      Example.maxGas = 1337;
+
+      try {
+        await Example.new(1);
+        assert.fail();
+      } catch (err) {
+        assert(err.message.includes("exceeds gas limit"), "Should OOG");
+      }
+
+      //reset this so it doesn't mess with other tests.
+      Example.maxGas = undefined;
+    });
+
     it("should be possible to turn gas estimation on and off", async function() {
       Example.autoGas = false;
 

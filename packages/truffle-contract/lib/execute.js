@@ -35,7 +35,11 @@ var execute = {
 
           // Don't go over blockLimit
           const limit = utils.bigNumberify(blockLimit);
-          bestEstimate.gte(limit)
+          constructor.maxGas != undefined &&
+          bestEstimate.gte(constructor.maxGas) &&
+          constructor.maxGas.lte(limit)
+            ? accept(constructor.maxGas.toHexString())
+            : bestEstimate.gte(limit)
             ? accept(limit.sub(1).toHexString())
             : accept(bestEstimate.toHexString());
 
