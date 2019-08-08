@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-migrate/issues"
   },
-  "version": "3.0.28",
+  "version": "3.0.29",
   "main": "index.js",
   "scripts": {
     "test": "mocha ./test/* ./test/**/*"
@@ -17,12 +17,12 @@
     "async": "2.6.1",
     "emittery": "^0.4.0",
     "node-dir": "0.1.17",
-    "truffle-config": "^1.1.17",
-    "truffle-deployer": "^3.0.28",
+    "truffle-config": "^1.1.18",
+    "truffle-deployer": "^3.0.29",
     "truffle-expect": "^0.0.9",
-    "truffle-interface-adapter": "^0.2.2",
-    "truffle-reporters": "^1.0.11",
-    "truffle-require": "^2.0.17",
+    "truffle-interface-adapter": "^0.2.3",
+    "truffle-reporters": "^1.0.12",
+    "truffle-require": "^2.0.18",
     "web3": "1.2.1"
   },
   "devDependencies": {
