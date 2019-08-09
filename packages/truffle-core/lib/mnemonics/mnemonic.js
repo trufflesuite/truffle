@@ -8,7 +8,6 @@
  */
 
 const Config = require("truffle-config");
-const defaultUserConfig = Config.getUserConfig();
 const bip39 = require("bip39");
 const hdkey = require("ethereumjs-wallet/hdkey");
 const crypto = require("crypto");
@@ -20,6 +19,9 @@ const mnemonic = {
    */
   getOrGenerateMnemonic: function() {
     let mnemonic;
+
+    const defaultUserConfig = Config.getUserConfig();
+
     const userMnemonicExists = defaultUserConfig.get("mnemonic");
     if (!userMnemonicExists) {
       mnemonic = bip39.entropyToMnemonic(
