@@ -48,13 +48,12 @@ const command = {
     ]
   },
   run: function(options, done) {
-    const CompilerSupplier = require("truffle-compile").CompilerSupplier;
-    const supplier = new CompilerSupplier();
-
     const Contracts = require("truffle-workflow-compile");
     const Config = require("truffle-config");
     const config = Config.detect(options);
 
+    const CompilerSupplier = require("truffle-compile").CompilerSupplier;
+    const supplier = new CompilerSupplier();
     config.list !== undefined
       ? command.listVersions(supplier, config, done)
       : Contracts.compile(config, done);
