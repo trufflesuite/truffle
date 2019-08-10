@@ -1,4 +1,4 @@
-const request = require("request-promise");
+const axios = require("axios");
 const fs = require("fs");
 const { execSync } = require("child_process");
 const ora = require("ora");
@@ -10,7 +10,9 @@ class Docker extends LoadingStrategy {
   async load() {
     const versionString = await this.validateAndGetSolcVersion();
     const command =
-      "docker run --rm -i ethereum/solc:" + this.config.version + " --standard-json";
+      "docker run --rm -i ethereum/solc:" +
+      this.config.version +
+      " --standard-json";
 
     try {
       return {
@@ -26,7 +28,8 @@ class Docker extends LoadingStrategy {
   }
 
   getDockerTags() {
-    return request(this.config.dockerTagsUrl)
+    return axios
+      .get(this.config.dockerTagsUrl)
       .then(list => JSON.parse(list).results.map(item => item.name))
       .catch(error => {
         throw this.errors("noRequest", this.config.dockerTagsUrl, error);

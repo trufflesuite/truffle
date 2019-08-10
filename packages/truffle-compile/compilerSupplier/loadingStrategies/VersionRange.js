@@ -3,7 +3,7 @@ const requireFromString = require("require-from-string");
 const fs = require("fs");
 const ora = require("ora");
 const originalRequire = require("original-require");
-const request = require("request-promise");
+const axios = require("axios");
 const semver = require("semver");
 const solcWrap = require("solc/wrapper");
 const LoadingStrategy = require("./LoadingStrategy");
@@ -105,9 +105,9 @@ class VersionRange extends LoadingStrategy {
       color: "red"
     }).start();
     try {
-      const response = await request.get(url);
+      const response = await axios.get(url);
       spinner.stop();
-      this.addFileToCache(response, fileName);
+      this.addFileToCache(response.data, fileName);
       return this.compilerFromString(response);
     } catch (error) {
       spinner.stop();
@@ -148,10 +148,11 @@ class VersionRange extends LoadingStrategy {
     }).start();
     if (!this.config.compilerRoots || this.config.compilerRoots.length < 1)
       throw this.errors("noUrl");
-    return request(this.config.compilerRoots[index] + "list.json")
-      .then(list => {
+    return axios
+      .get(this.config.compilerRoots[index] + "list.json")
+      .then(response => {
         spinner.stop();
-        return JSON.parse(list);
+        return response.data;
       })
       .catch(error => {
         spinner.stop();

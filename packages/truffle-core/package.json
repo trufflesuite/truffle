@@ -29,6 +29,7 @@
     "ethereumjs-wallet": "^0.6.2",
     "ethpm": "0.0.16",
     "ethpm-registry": "0.1.0-next.2",
+    "findup-sync": "^4.0.0",
     "fs-extra": "6.0.1",
     "ganache-core": "2.5.7",
     "hdkey": "^1.1.0",
@@ -69,6 +70,7 @@
     "yargs": "^8.0.2"
   },
   "devDependencies": {
+    "axios": "^0.19.0",
     "glob": "^7.1.2",
     "memorystream": "^0.3.1",
     "truffle-blockchain-utils": "^0.0.10"

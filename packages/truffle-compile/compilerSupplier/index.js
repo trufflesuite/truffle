@@ -2,7 +2,13 @@ const path = require("path");
 const fs = require("fs");
 const semver = require("semver");
 
-const { Docker, Local, Native, VersionRange } = require("./loadingStrategies");
+const {
+  Docker,
+  Local,
+  Native,
+  Browser,
+  VersionRange
+} = require("./loadingStrategies");
 
 class CompilerSupplier {
   constructor(_config) {
@@ -46,6 +52,7 @@ class CompilerSupplier {
       const useNative = userSpecification === "native";
       const useSpecifiedLocal =
         userSpecification && this.fileExists(userSpecification);
+      const useBrowser = this.config.browser;
       const isValidVersionRange = semver.validRange(userSpecification);
 
       if (useDocker) {
@@ -54,6 +61,8 @@ class CompilerSupplier {
         strategy = new Native(this.strategyOptions);
       } else if (useSpecifiedLocal) {
         strategy = new Local(this.strategyOptions);
+      } else if (useBrowser) {
+        strategy = new Browser(this.strategyOptions);
       } else if (isValidVersionRange) {
         if (this.config.compilerRoots) {
           this.strategyOptions.compilerRoots = this.config.compilerRoots;

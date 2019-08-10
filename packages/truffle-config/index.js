@@ -3,7 +3,7 @@ const path = require("path");
 const Provider = require("truffle-provider");
 const TruffleError = require("truffle-error");
 const Module = require("module");
-const findUp = require("find-up");
+const findUp = require("findup-sync");
 const originalrequire = require("original-require");
 const Configstore = require("configstore");
 
@@ -344,8 +344,10 @@ Config.search = (options = {}, filename) => {
 
   if (!filename) {
     const isWin = /^win/.test(process.platform);
-    const defaultConfig = findUp.sync(DEFAULT_CONFIG_FILENAME, searchOptions);
-    const backupConfig = findUp.sync(BACKUP_CONFIG_FILENAME, searchOptions);
+
+    const defaultConfig = findUp(DEFAULT_CONFIG_FILENAME, searchOptions);
+    const backupConfig = findUp(BACKUP_CONFIG_FILENAME, searchOptions);
+
     if (defaultConfig && backupConfig) {
       console.warn(
         `Warning: Both ${DEFAULT_CONFIG_FILENAME} and ${BACKUP_CONFIG_FILENAME} were found. Using ${DEFAULT_CONFIG_FILENAME}.`
@@ -362,7 +364,7 @@ Config.search = (options = {}, filename) => {
     }
   }
 
-  return findUp.sync(filename, searchOptions);
+  return findUp(filename, searchOptions);
 };
 
 Config.detect = (options = {}, filename) => {
