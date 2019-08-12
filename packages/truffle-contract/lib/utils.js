@@ -149,7 +149,7 @@ const Utils = {
 
     const expected_arg_count = methodABI ? methodABI.inputs.length : 0;
 
-    tx_params = {};
+    var tx_params = {};
     const last_arg = args[args.length - 1];
 
     if (
