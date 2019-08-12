@@ -143,7 +143,7 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
@@ -179,7 +179,9 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+      await session.variables()
+    );
 
     const expectedResult = {
       hello: "hello world"
@@ -211,7 +213,9 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+      await session.variables()
+    );
 
     const expectedResult = {
       stringBox: {
@@ -245,7 +249,9 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+      await session.variables()
+    );
 
     const expectedResult = {
       hello: "hello world"
@@ -277,7 +283,9 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+      await session.variables()
+    );
 
     const expectedResult = {
       hello: "hello world"

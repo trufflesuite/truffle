@@ -23,7 +23,7 @@ import {
   readStack,
   storageSize,
   forEvmState
-} from "truffle-decoder";
+} from "truffle-decoder-core";
 import BN from "bn.js";
 
 export function* scope(nodeId, pointer, parentId, sourceId) {
@@ -46,8 +46,12 @@ function* tickSaga() {
   yield* trace.signalTickSagaCompletion();
 }
 
-export function* decode(definition, ref) {
-  let referenceDeclarations = yield select(data.views.referenceDeclarations);
+const DEFAULT_DECODE_OPTIONS = {
+  forceNonPayable: false
+};
+
+export function* decode(definition, ref, options = DEFAULT_DECODE_OPTIONS) {
+  let userDefinedTypes = yield select(data.views.userDefinedTypes);
   let state = yield select(data.current.state);
   let mappingKeys = yield select(data.views.mappingKeys);
   let allocations = yield select(data.info.allocations);
@@ -63,8 +67,17 @@ export function* decode(definition, ref) {
   ZERO_WORD.fill(0);
   let NO_CODE = new Uint8Array(); //empty array
 
+  if (options.forceNonPayable) {
+    //HACK
+    //this option is passed when decoding mapping keys.
+    //it forces addresses to always be decoded as nonpayable
+    //(this works due to a hack in isAddressPayable, where you
+    //can pass compiler = null for that effect)
+    currentContext = { ...currentContext, compiler: null };
+  }
+
   let decoder = forEvmState(definition, ref, {
-    referenceDeclarations,
+    userDefinedTypes,
     state,
     mappingKeys,
     storageAllocations: allocations.storage,
@@ -111,16 +124,14 @@ export function* decode(definition, ref) {
     result = decoder.next(response);
   }
   //at this point, result.value holds the final value
-  //note: we're still using the old decoder output format, so we need to clean
-  //containers before returning something the debugger can use
-  return DecodeUtils.Conversion.cleanContainers(result.value);
+  return result.value;
 }
 
 function* variablesAndMappingsSaga() {
   let node = yield select(data.current.node);
   let scopes = yield select(data.views.scopes.inlined);
   let referenceDeclarations = yield select(data.views.referenceDeclarations);
-  let allocations = yield select(data.info.allocations.storage);
+  let allocations = yield select(data.info.allocations.storage.byId);
   let currentAssignments = yield select(data.proc.assignments);
   let mappedPaths = yield select(data.proc.mappedPaths);
   let currentDepth = yield select(data.current.functionDepth);
@@ -349,132 +360,25 @@ function* variablesAndMappingsSaga() {
         baseExpression,
         scopes
       );
-      //if we're dealing with an array, this will just hack up a uint definition
-      //:)
+      //if we're dealing with an array, this will just spoof up a uint
+      //definition :)
 
-      //begin subsection: key decoding
-      //(I tried factoring this out into its own saga but it didn't work when I
-      //did :P )
-
-      let indexValue;
-      let indexDefinition = node.indexExpression;
-
-      //why the loop? see the end of the block it heads for an explanatory
-      //comment
-      while (indexValue === undefined) {
-        let indexId = indexDefinition.id;
-        //indices need to be identified by stackframe
-        let indexIdObj = { astId: indexId, stackframe: currentDepth };
-        let fullIndexId = stableKeccak256(indexIdObj);
-
-        const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
-
-        if (DecodeUtils.Definition.isSimpleConstant(indexDefinition)) {
-          //while the main case is the next one, where we look for a prior
-          //assignment, we need this case (and need it first) for two reasons:
-          //1. some constant expressions (specifically, string and hex literals)
-          //aren't sourcemapped to and so won't have a prior assignment
-          //2. if the key type is bytesN but the expression is constant, the
-          //value will go on the stack *left*-padded instead of right-padded,
-          //so looking for a prior assignment will read the wrong value.
-          //so instead it's preferable to use the constant directly.
-          debug("about to decode simple literal");
-          indexValue = yield* decode(keyDefinition, {
-            definition: indexDefinition
-          });
-        } else if (indexReference) {
-          //if a prior assignment is found
-          let splicedDefinition;
-          //in general, we want to decode using the key definition, not the index
-          //definition. however, the key definition may have the wrong location
-          //on it.  so, when applicable, we splice the index definition location
-          //onto the key definition location.
-          if (DecodeUtils.Definition.isReference(indexDefinition)) {
-            splicedDefinition = DecodeUtils.Definition.spliceLocation(
-              keyDefinition,
-              DecodeUtils.Definition.referenceType(indexDefinition)
-            );
-            //we could put code here to add on the "_ptr" ending when absent,
-            //but we presently ignore that ending, so we'll skip that
-          } else {
-            splicedDefinition = keyDefinition;
-          }
-          debug("about to decode");
-          indexValue = yield* decode(splicedDefinition, indexReference);
-        } else if (
-          indexDefinition.referencedDeclaration &&
-          scopes[indexDefinition.referencedDeclaration]
-        ) {
-          //there's one more reason we might have failed to decode it: it might be a
-          //constant state variable.  Unfortunately, we don't know how to decode all
-          //those at the moment, but we can handle the ones we do know how to decode.
-          //In the future hopefully we will decode all of them
-          debug(
-            "referencedDeclaration %d",
-            indexDefinition.referencedDeclaration
-          );
-          let indexConstantDeclaration =
-            scopes[indexDefinition.referencedDeclaration].definition;
-          debug("indexConstantDeclaration %O", indexConstantDeclaration);
-          if (indexConstantDeclaration.constant) {
-            let indexConstantDefinition = indexConstantDeclaration.value;
-            //next line filters out constants we don't know how to handle
-            if (
-              DecodeUtils.Definition.isSimpleConstant(indexConstantDefinition)
-            ) {
-              debug("about to decode simple constant");
-              indexValue = yield* decode(keyDefinition, {
-                definition: indexConstantDeclaration.value
-              });
-            } else {
-              indexValue = null; //can't decode; see below for more explanation
-            }
-          } else {
-            indexValue = null; //can't decode; see below for more explanation
-          }
-        }
-        //there's still one more reason we might have failed to decode it:
-        //certain (silent) type conversions aren't sourcemapped either.
-        //(thankfully, any type conversion that actually *does* something seems
-        //to be sourcemapped.)  So if we've failed to decode it, we try again
-        //with the argument of the type conversion, if it is one; we leave
-        //indexValue undefined so the loop will continue
-        //(note that this case is last for a reason; if this were earlier, it
-        //would catch *non*-silent type conversions, which we want to just read
-        //off the stack)
-        else if (indexDefinition.kind === "typeConversion") {
-          indexDefinition = indexDefinition.arguments[0];
-        }
-        //...also prior to 0.5.0, unary + was legal, which needs to be accounted
-        //for for the same reason
-        else if (
-          indexDefinition.nodeType === "UnaryOperation" &&
-          indexDefinition.operator === "+"
-        ) {
-          indexDefinition = indexDefinition.subExpression;
-        }
-        //otherwise, we've just totally failed to decode it, so we mark
-        //indexValue as null (as distinct from undefined) to indicate this.  In
-        //the future, we should be able to decode all mapping keys, but we're
-        //not quite there yet, sorry (because we can't yet handle all constant
-        //state variables)
-        else {
-          indexValue = null;
-        }
-        //now, as mentioned, retry in the typeConversion case
-      }
-
-      //end subsection: key decoding
+      //now... the decoding! (this is messy)
+      let indexValue = yield* decodeMappingKeySaga(
+        node.indexExpression,
+        keyDefinition
+      );
 
       debug("index value %O", indexValue);
       debug("keyDefinition %o", keyDefinition);
 
       //whew! But we're not done yet -- we need to turn this decoded key into
-      //an actual path (assuming we *did* decode it)
+      //an actual path (assuming we *did* decode it; we check both for null
+      //and for the result being a Value and not an Error)
       //OK, not an actual path -- we're just going to use a simple offset for
       //the path.  But that's OK, because the mappedPaths reducer will turn
       //it into an actual path.
-      if (indexValue !== null) {
+      if (indexValue !== null && indexValue.value) {
         path = fetchBasePath(
           baseExpression,
           mappedPaths,
@@ -491,15 +395,14 @@ function* variablesAndMappingsSaga() {
             slot.hashPath = DecodeUtils.Definition.isDynamicArray(
               baseExpression
             );
-            slot.offset = indexValue.muln(
+            slot.offset = indexValue.value.asBN.muln(
+              //HACK: the allocation format here is wrong (object rather than
+              //array), but it doesn't matter because we're not using that here
               storageSize(node, referenceDeclarations, allocations).words
             );
             break;
           case "mapping":
             slot.key = indexValue;
-            slot.keyEncoding = DecodeUtils.Definition.keyEncoding(
-              keyDefinition
-            );
             slot.offset = new BN(0);
             break;
           default:
@@ -600,6 +503,113 @@ function* variablesAndMappingsSaga() {
   }
 }
 
+function* decodeMappingKeySaga(indexDefinition, keyDefinition) {
+  let scopes = yield select(data.views.scopes.inlined);
+  let currentAssignments = yield select(data.proc.assignments);
+  let currentDepth = yield select(data.current.functionDepth);
+
+  //why the loop? see the end of the block it heads for an explanatory
+  //comment
+  while (true) {
+    let indexId = indexDefinition.id;
+    //indices need to be identified by stackframe
+    let indexIdObj = { astId: indexId, stackframe: currentDepth };
+    let fullIndexId = stableKeccak256(indexIdObj);
+
+    const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
+
+    if (DecodeUtils.Definition.isSimpleConstant(indexDefinition)) {
+      //while the main case is the next one, where we look for a prior
+      //assignment, we need this case (and need it first) for two reasons:
+      //1. some constant expressions (specifically, string and hex literals)
+      //aren't sourcemapped to and so won't have a prior assignment
+      //2. if the key type is bytesN but the expression is constant, the
+      //value will go on the stack *left*-padded instead of right-padded,
+      //so looking for a prior assignment will read the wrong value.
+      //so instead it's preferable to use the constant directly.
+      debug("about to decode simple literal");
+      return yield* decode(keyDefinition, {
+        definition: indexDefinition
+      });
+    } else if (indexReference) {
+      //if a prior assignment is found
+      let splicedDefinition;
+      //in general, we want to decode using the key definition, not the index
+      //definition. however, the key definition may have the wrong location
+      //on it.  so, when applicable, we splice the index definition location
+      //onto the key definition location.
+      if (DecodeUtils.Definition.isReference(indexDefinition)) {
+        splicedDefinition = DecodeUtils.Definition.spliceLocation(
+          keyDefinition,
+          DecodeUtils.Definition.referenceType(indexDefinition)
+        );
+        //we could put code here to add on the "_ptr" ending when absent,
+        //but we presently ignore that ending, so we'll skip that
+      } else {
+        splicedDefinition = keyDefinition;
+      }
+      debug("about to decode");
+      return yield* decode(splicedDefinition, indexReference);
+    } else if (
+      indexDefinition.referencedDeclaration &&
+      scopes[indexDefinition.referencedDeclaration]
+    ) {
+      //there's one more reason we might have failed to decode it: it might be a
+      //constant state variable.  Unfortunately, we don't know how to decode all
+      //those at the moment, but we can handle the ones we do know how to decode.
+      //In the future hopefully we will decode all of them
+      debug("referencedDeclaration %d", indexDefinition.referencedDeclaration);
+      let indexConstantDeclaration =
+        scopes[indexDefinition.referencedDeclaration].definition;
+      debug("indexConstantDeclaration %O", indexConstantDeclaration);
+      if (indexConstantDeclaration.constant) {
+        let indexConstantDefinition = indexConstantDeclaration.value;
+        //next line filters out constants we don't know how to handle
+        if (DecodeUtils.Definition.isSimpleConstant(indexConstantDefinition)) {
+          debug("about to decode simple constant");
+          return yield* decode(keyDefinition, {
+            definition: indexConstantDeclaration.value
+          });
+        } else {
+          return null; //can't decode; see below for more explanation
+        }
+      } else {
+        return null; //can't decode; see below for more explanation
+      }
+    }
+    //there's still one more reason we might have failed to decode it:
+    //certain (silent) type conversions aren't sourcemapped either.
+    //(thankfully, any type conversion that actually *does* something seems
+    //to be sourcemapped.)  So if we've failed to decode it, we try again
+    //with the argument of the type conversion, if it is one; we leave
+    //indexValue undefined so the loop will continue
+    //(note that this case is last for a reason; if this were earlier, it
+    //would catch *non*-silent type conversions, which we want to just read
+    //off the stack)
+    else if (indexDefinition.kind === "typeConversion") {
+      indexDefinition = indexDefinition.arguments[0];
+    }
+    //...also prior to 0.5.0, unary + was legal, which needs to be accounted
+    //for for the same reason
+    else if (
+      indexDefinition.nodeType === "UnaryOperation" &&
+      indexDefinition.operator === "+"
+    ) {
+      indexDefinition = indexDefinition.subExpression;
+    }
+    //otherwise, we've just totally failed to decode it, so we mark
+    //indexValue as null (as distinct from undefined) to indicate this.  In
+    //the future, we should be able to decode all mapping keys, but we're
+    //not quite there yet, sorry (because we can't yet handle all constant
+    //state variables)
+    else {
+      return null;
+    }
+    //now, as mentioned, retry in the typeConversion case
+    //(or unary + case)
+  }
+}
+
 export function* reset() {
   yield put(actions.reset());
 }
@@ -626,11 +636,17 @@ export function* recordAllocations() {
 function literalAssignments(node, stack, currentDepth) {
   let top = stack.length - 1;
 
-  let literal = readStack(
-    stack,
-    top - DecodeUtils.Definition.stackSize(node) + 1,
-    top
-  );
+  let literal;
+  try {
+    literal = readStack(
+      stack,
+      top - DecodeUtils.Definition.stackSize(node) + 1,
+      top
+    );
+  } catch (error) {
+    literal = undefined; //not sure if this is right, but this is what would
+    //happen before, so I figure it's safe?
+  }
 
   let assignment = makeAssignment(
     { astId: node.id, stackframe: currentDepth },

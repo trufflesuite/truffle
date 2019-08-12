@@ -3,6 +3,10 @@ const { assert } = require("chai");
 const { shimBytecode } = require("truffle-compile/legacy/shims");
 
 describe("shimBytecode", () => {
+  it("handles undefined", function() {
+    assert.equal(shimBytecode(undefined), undefined);
+  });
+
   it("prepends 0x", function() {
     const bytes = "ffffffff";
 

@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": ["es2017"],
+    "paths": {
+      "web3": ["../../node_modules/@types/web3/index", "node_modules/web3/index"],
+      "web3/types": ["../../node_modules/@types/web3/types", "node_modules/web3/types"],
+      "web3/eth/types": ["../../node_modules/@types/web3/eth/types", "node_modules/web3/eth/types"]
+    },
+    "rootDir": "lib",
+    "typeRoots": [
+      "./typings",
+      "../../**/node_modules/@types/bn.js",
+      "../../**/node_modules/@types/debug",
+      "../../**/node_modules/@types/lodash",
+      "../../**/node_modules/@types/lodash.clonedeep",
+      "../../**/node_modules/@types/lodash.isequal",
+      "../../**/node_modules/@types/lodash.merge"
+    ]
+
+  },
+  "include": [
+    "./lib/**/*.ts",
+    "./typings/**/*.d.ts"
+  ]
+}

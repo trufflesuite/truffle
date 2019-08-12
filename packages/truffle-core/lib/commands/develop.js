@@ -1,5 +1,5 @@
 const emoji = require("node-emoji");
-const mnemonicInfo = require("truffle-core/lib/mnemonics/mnemonic");
+const mnemonicInfo = require("../mnemonics/mnemonic");
 
 const command = {
   command: "develop",
@@ -68,10 +68,12 @@ const command = {
       total_accounts: customConfig.accounts || 10,
       default_balance_ether: customConfig.defaultEtherBalance || 100,
       blockTime: customConfig.blockTime || 0,
+      fork: customConfig.fork,
       mnemonic,
       gasLimit: customConfig.gas || 0x6691b7,
       gasPrice: customConfig.gasPrice || 0x77359400,
-      noVMErrorsOnRPCResponse: true
+      noVMErrorsOnRPCResponse: true,
+      time: config.genesis_time
     };
 
     if (customConfig.hardfork !== null && customConfig.hardfork !== undefined) {

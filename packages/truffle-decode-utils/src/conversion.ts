@@ -1,6 +1,7 @@
 import BN from "bn.js";
 import Web3 from "web3";
 import { Constants } from "./constants";
+import { Values } from "./types/values";
 
 export namespace Conversion {
 
@@ -151,124 +152,10 @@ export namespace Conversion {
     }
   }
 
-  /**
-   * recursively converts big numbers into something nicer to look at
-   * NOTE: should be used for testing only!
-   */
-  export function cleanBNs(value: any): any {
-    if (BN.isBN(value)) {
-      return value.toNumber();
-
-    } else if (value && typeof value.map === "function") {
-      return value.map(cleanBNs);
-
-    } else if (value && value instanceof Map) {
-      return new Map(Array.from(value.entries())
-        .map( ([key, inner]: [any, any]) =>
-          <[any, any]>[cleanBNs(key), cleanBNs(inner)]));
-
-    } else if (value && typeof value === "object") {
-      return Object.assign(
-        {}, ...Object.entries(value)
-          .map( ([key, inner]) => ({ [key]: cleanBNs(inner) }) )
-      );
-
-    } else {
-      return value;
-    }
-  }
-
-  /**
-   * recursively converts decoder-native mapping values to JS Map objects
-   * and struct values to JS ordinary objects, respecitvely
-   *
-   * (eventually it will probably also have to clean arrays, but currently
-   * those don't require cleaning)
-   *
-   * detects int and uint Solidity types and uses BNs as keys in such
-   * situations
-   *
-   * all other keys are just kept as strings right now
-   */
-  export function cleanContainers(value: any): any {
-    // HACK detect mappings as any object with certain *truthy* properties,
-    // where `type` has explicit value `"mapping"`
-    // FURTHER HACK detect other things wth members as a struct
-    // in the latter case we'll also require that each of the members of
-    // members has members name, type, and value
-    const isMapping = ({ type, members, keyType }: any) =>
-      type === "mapping" && keyType && members;
-    const isStruct = ({ type, members, keyType }: any) =>
-      type !== "mapping" && keyType === undefined &&
-        typeof members === "object" &&
-        Object.values(members).every(
-          (member: any) => member.name && member.type &&
-          member.value !== undefined);
-
-    // converts integer mapping keys to BN
-    // converts bool mapping keys to boolean
-    // leaves all else alone
-    const convertKey = (keyType: string, key: string) => {
-      if(keyType.match(/int/)) {
-        return new BN(key, 10);
-      }
-      if(keyType === "bool") {
-        return key === "true"; 
-      }
-      return key;
-    };
-
-    // converts a mapping representation into a JS Map
-    // Only converts integer types to BN right now and handles booleans,
-    // leaving other keys alone
-    const toMap = ({ keyType, members }: any): Map<any, any> => {
-      return new Map([
-        ...Object.entries(members)
-          .map(
-            ([key, value]: any) =>
-              ([convertKey(keyType, key), cleanContainers(value)])
-          )
-      ] as any);
-    };
-
-    // converts a struct representation into a JS object
-    const toStruct = ({ members }: any): any =>
-      Object.assign({}, ...Object.entries(members).map(
-        ([key, value]: any) =>
-          ({[key]: cleanContainers(value.value)})));
-
-    // BNs are treated like primitives; must take precedence over generic obj
-    if (BN.isBN(value)) {
-      return value;
-    }
-
-    // detect mapping
-    else if (value && typeof value === "object" && isMapping(value)) {
-      return toMap(value);
-    }
-
-    // detect struct
-    else if (value && typeof value === "object" && isStruct(value)) {
-      return toStruct(value);
-    }
-
-    // detect arrays or anything with `.map()`, and recurse
-    else if (value && typeof value.map === "function") {
-      return value.map( (inner: any) => cleanContainers(inner) );
-    }
-
-    // detect objects and recurse
-    else if (value && typeof value == "object") {
-      return Object.assign(
-        {}, ...Object.entries(value).map(
-          ([key, inner]) => ({ [key]: cleanContainers(inner) })
-        )
-      );
-    }
-
-    // catch-all: no-change
-    else {
-      return value;
-    }
+  //for convenience: invokes the nativize method on all the given variables
+  export function nativizeVariables(variables: {[name: string]: Values.Result}): {[name: string]: any} {
+    return Object.assign({}, ...Object.entries(variables).map(
+      ([name, value]) => ({[name]: value.nativize()})
+    ));
   }
 }

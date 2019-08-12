@@ -124,9 +124,9 @@ describe("Codex", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = await session.variables();
+    const surface = (await session.variable("surface")).nativize();
 
-    assert.equal(variables.surface.get("ping").toNumber(), 1);
+    assert.equal(surface["ping"], 1);
   });
 
   it("Reverts storage when a call reverts", async function() {
@@ -145,9 +145,9 @@ describe("Codex", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = await session.variables();
+    const x = (await session.variable("x")).nativize();
 
-    assert.equal(variables.x.toNumber(), 1);
+    assert.equal(x, 1);
   });
 
   it("Reverts storage when a call otherwise fails", async function() {
@@ -166,8 +166,8 @@ describe("Codex", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = await session.variables();
+    const x = (await session.variable("x")).nativize();
 
-    assert.equal(variables.x.toNumber(), 1);
+    assert.equal(x, 1);
   });
 });
