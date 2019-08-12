@@ -108,7 +108,7 @@ class VersionRange extends LoadingStrategy {
       const response = await axios.get(url);
       spinner.stop();
       this.addFileToCache(response.data, fileName);
-      return this.compilerFromString(response);
+      return this.compilerFromString(response.data);
     } catch (error) {
       spinner.stop();
       if (index >= this.config.compilerRoots.length - 1) {
