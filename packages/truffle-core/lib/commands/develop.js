@@ -11,8 +11,13 @@ const command = {
     }
   },
   help: {
-    usage: "truffle develop",
-    options: []
+    usage: "truffle develop [--log]",
+    options: [
+      {
+        option: `--log`,
+        description: `Start/Connect to a new develop session and log rpc activity.`
+      }
+    ]
   },
   runConsole: (config, ganacheOptions, done) => {
     const Console = require("../console");
