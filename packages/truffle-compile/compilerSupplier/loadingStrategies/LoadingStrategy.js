@@ -6,8 +6,8 @@ class LoadingStrategy {
   constructor(options) {
     const defaultConfig = {
       compilerRoots: [
-        "https://relay.trufflesuite.com/solc/bin/",
         "https://solc-bin.ethereum.org/bin/",
+        "https://relay.trufflesuite.com/solc/bin/", // Note to self: breaks cors
         "https://ethereum.github.io/solc-bin/bin/"
       ],
       dockerTagsUrl:
