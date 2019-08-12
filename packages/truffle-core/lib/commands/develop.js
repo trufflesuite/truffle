@@ -15,7 +15,7 @@ const command = {
     options: [
       {
         option: `--log`,
-        description: `Start/Connect to a new develop session and log rpc activity.`
+        description: `Start/Connect to a Truffle develop session and log all rpc activity.`
       }
     ]
   },
