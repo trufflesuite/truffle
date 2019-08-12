@@ -1,6 +1,6 @@
 const debug = require("debug")("reporters:migrations:reporter"); // eslint-disable-line no-unused-vars
 const web3Utils = require("web3-utils");
-const readline = require("readline");
+const readline = require("linebyline");
 const ora = require("ora");
 
 const indentedSpinner = require("./indentedSpinner");
