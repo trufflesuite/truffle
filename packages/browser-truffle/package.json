@@ -1,0 +1,48 @@
+{
+  "name": "browser-truffle",
+  "description": "Bundled, in-browser Truffle for React",
+  "license": "MIT",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle-live-component#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-live-component",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-live-component/issues"
+  },
+  "version": "0.0.1",
+  "main": "./build/truffle.bundled.js",
+  "scripts": {
+    "build": "webpack --config ./webpack.config.js",
+    "dev": "webpack-dev-server",
+    "get-solc": "node ./scripts/getlatestsolc.js",
+    "test": "mocha ./test/* ./test/**/*"
+  },
+  "dependencies": {
+    "clean-webpack-plugin": "^0.1.16",
+    "copy-webpack-plugin": "^4.0.1",
+    "ganache-core": "^2.6.1",
+    "truffle": "^5.0.31",
+    "truffle-core": "./packages/truffle-core"
+  },
+  "devDependencies": {
+    "babel-core": "^6.23.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-add-module-exports": "^1.0.2",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-es2015": "^6.23.0",
+    "babel-preset-stage-0": "^6.23.0",
+    "browserfs": "^2.0.0",
+    "copy-webpack-plugin": "^4.0.1",
+    "linebyline": "^1.3.0",
+    "request": "^2.88.0",
+    "solc": "0.5.8",
+    "uuid": "^3.3.2",
+    "webpack": "^2.5.1",
+    "webpack-dev-server": "^2.5.1"
+  },
+  "keywords": [
+    "deployment",
+    "ethereum",
+    "truffle"
+  ]
+}
