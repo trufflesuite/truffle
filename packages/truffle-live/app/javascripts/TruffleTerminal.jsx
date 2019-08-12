@@ -200,15 +200,24 @@ export default class TruffleTerminal extends Component {
       // Not exactly sure why, but the first line won't get written
       // unless I set a timeout and let it figure itself out.
       setTimeout(() => {
-        this.writeToTerminal("Downloading Truffle... 0%");
+        this.writeToTerminal("Downloading Truffle...");
         resolve();
       }, 1);
     }).then(() => {
-      return axios.get("/browser-truffle.js", {
+      return axios.get("./browser-truffle.js", {
         onDownloadProgress: (progressEvent) => {
           let percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+
+          // Different transfer encodings chosen by the server might prevent us from knowing the progress.
+          // If that's the case, don't show the progress.
+          if (!isFinite(percentCompleted)) {
+            percentCompleted = " ";
+          } else {
+            percentCompleted += "%";
+          }
+
           this.removeLastLine();
-          this.writeToTerminal(`Downloading Truffle... ${percentCompleted}%`);
+          this.writeToTerminal(`Downloading Truffle... ${percentCompleted}`);
         }
       })
     }).then((response) => {
