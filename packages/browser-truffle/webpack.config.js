@@ -4,8 +4,7 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 
 // TODO: I have no idea if I'm a terrible person for this. The idea here is to not
-// copy a whole config.
-// FIXME!!! FYI: packages/truffle/build will be cleaned each time. That's no good.
+// copy a whole config, and instead base ours off of it.
 var config = require(path.join(
   __dirname,
   "..",
@@ -67,6 +66,7 @@ config.output.path = path.join(__dirname, "build");
 config.output.library = "[name]";
 config.output.libraryTarget = "umd";
 
+// Overwrite the externals defined in Truffle webpack config.
 config.externals = [];
 
 // Add our own shims. See individual shim files for shimming strategy.
