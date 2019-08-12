@@ -13,7 +13,7 @@ const readAndParseArtifactFiles = (sourceFiles, contracts_build_directory) => {
     buildFiles = fse.readdirSync(contracts_build_directory);
   } catch (error) {
     // The build directory may not always exist.
-    if (error.message.includes("ENOENT: no such file or directory")) {
+    if (error.code == "ENOENT") {
       // Ignore it.
       buildFiles = [];
     } else {
