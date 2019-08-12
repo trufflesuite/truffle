@@ -1,0 +1,35 @@
+@import "./normalize.css";
+
+.app {
+  display: flex;
+  flex-direction: column;
+
+  h1 {
+    text-align: center;
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    font-size: 3rem;
+    margin-bottom: 0;
+  }
+
+  h2 { 
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: normal;
+    padding-bottom: 1rem;
+  }
+
+  ul {
+    font-family: 'Open Sans', sans-serif;
+    display: inline-block;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  .terminalContainer {
+    font-size: 1.5rem;
+    width: 98%;
+  }
+}

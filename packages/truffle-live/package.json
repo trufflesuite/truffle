@@ -1,0 +1,52 @@
+{
+  "name": "truffle-dashboard",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "build": "webpack",
+    "dev": "webpack-dev-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/dashboard.git"
+  },
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/dashboard/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/dashboard#readme",
+  "dependencies": {
+    "async": "^2.1.4",
+    "axios": "^0.15.3",
+    "babel-core": "^6.21.0",
+    "babel-loader": "^6.2.10",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-react": "^6.16.0",
+    "browser-truffle": "./packages/browser-truffle",
+    "chart.js": "^2.4.0",
+    "copy-webpack-plugin": "^4.0.1",
+    "css-loader": "^0.26.1",
+    "extract-text-webpack-plugin": "^2.0.0",
+    "file-loader": "^0.9.0",
+    "javascript-terminal": "^1.0.3",
+    "json-loader": "^0.5.4",
+    "moment": "^2.17.1",
+    "node-sass": "^4.1.1",
+    "parse-link-header": "^0.4.1",
+    "react": "^16.0.0",
+    "react-chartjs-2": "^2.0.5",
+    "react-dom": "^16.0.0",
+    "react-terminal-component": "^1.4.1",
+    "sass-loader": "^4.1.1",
+    "webpack": "^2.5.1",
+    "webpack-dev-server": "^2.5.1",
+    "xterm": "^3.14.5"
+  },
+  "devDependencies": {
+    "clean-webpack-plugin": "^0.1.16",
+    "webpack-dev-server": "^1.16.2",
+    "xterm": "^3.14.5"
+  }
+}
