@@ -230,15 +230,10 @@ const AddNetworks = gql`
     hash: String!
   }
 
-  input NetworkIdInput {
-    id: ID!
-  }
-
   input NetworkInput {
     name: String
     networkId: NetworkId!
     historicBlock: HistoricBlockInput!
-    fork: NetworkIdInput
   }
 
   mutation AddNetworks($networks: [NetworkInput!]!) {
@@ -253,7 +248,6 @@ const AddNetworks = gql`
             height
             hash
           }
-          fork
         }
       }
     }

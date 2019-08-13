@@ -58,7 +58,6 @@ type Network {
   name: String
   networkId: NetworkId!
   historicBlock: HistoricBlock!
-  fork: Network
 }
 
 type HistoricBlock {
