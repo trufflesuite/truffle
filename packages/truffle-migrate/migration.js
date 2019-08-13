@@ -2,7 +2,10 @@ const path = require("path");
 const Deployer = require("truffle-deployer");
 const Require = require("truffle-require");
 const Emittery = require("emittery");
-const Web3Shim = require("truffle-interface-adapter").Web3Shim;
+const {
+  Web3Shim,
+  getLegacyNetworkTypes
+} = require("truffle-interface-adapter");
 
 const ResolverIntercept = require("./resolverintercept");
 
@@ -192,9 +195,10 @@ class Migration {
    * @param  {Object}   options  config and command-line
    */
   async run(options) {
-    if (options.networks[options.network].type === "quorum") {
+    const networkType = options.networks[options.network].type;
+
+    if (getLegacyNetworkTypes().includes(networkType))
       return await this.runLegacyMigrations(options);
-    }
 
     const { web3, resolver, context, deployer } = this.prepareForMigrations(
       options

@@ -1,7 +1,9 @@
+const debug = require("debug")("compile:run"); // eslint-disable-line no-unused-vars
 const OS = require("os");
+const semver = require("semver");
+
 const CompileError = require("./compileerror");
 const CompilerSupplier = require("./compilerSupplier");
-const semver = require("semver");
 
 async function run(rawSources, options) {
   if (Object.keys(rawSources).length === 0) {
@@ -243,7 +245,7 @@ function prepareOutputSelection({ targets = [] }) {
 async function invokeCompiler({ compilerInput, options }) {
   // load solc
   const supplier = new CompilerSupplier(options.compilers.solc);
-  const solc = await supplier.load();
+  const { solc } = await supplier.load();
   const solcVersion = solc.version();
 
   // perform compilation

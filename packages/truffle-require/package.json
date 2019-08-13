@@ -1,34 +1,34 @@
 {
   "name": "truffle-require",
-  "version": "2.0.13",
   "description": "Require and execute a Javascript module within a Truffle context",
+  "license": "MIT",
+  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "homepage": "https://github.com/trufflesuite/truffle-exec#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-require",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-exec/issues"
+  },
+  "version": "2.0.18",
   "main": "require.js",
   "scripts": {
     "test": "mocha"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-require",
-  "keywords": [
-    "ethereum",
-    "truffle",
-    "exec",
-    "require"
-  ],
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-exec/issues"
+  "dependencies": {
+    "original-require": "1.0.1",
+    "truffle-config": "^1.1.18",
+    "truffle-expect": "^0.0.9",
+    "truffle-interface-adapter": "^0.2.3",
+    "web3": "1.2.1"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-exec#readme",
   "devDependencies": {
     "mocha": "5.2.0"
   },
-  "dependencies": {
-    "original-require": "1.0.1",
-    "truffle-config": "^1.1.13",
-    "truffle-expect": "^0.0.9",
-    "truffle-interface-adapter": "^0.1.6",
-    "web3": "1.0.0-beta.37"
-  },
+  "keywords": [
+    "ethereum",
+    "exec",
+    "require",
+    "truffle"
+  ],
   "publishConfig": {
     "access": "public"
   },

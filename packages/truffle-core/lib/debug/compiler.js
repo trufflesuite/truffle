@@ -1,4 +1,4 @@
-const compile = require("truffle-compile");
+const compile = require("truffle-compile/new");
 
 class DebugCompiler {
   constructor(config) {
@@ -15,19 +15,9 @@ class DebugCompiler {
     ); //clone
     compileConfig.quiet = true;
 
-    // since `compile.all()` returns two results, we can't use promisify
-    // and are instead stuck with using an explicit Promise constructor
-    const { contracts, files } = await new Promise((accept, reject) => {
-      compile.all(compileConfig, (err, contracts, files) => {
-        if (err) {
-          return reject(err);
-        }
+    const { contracts, sourceIndexes } = await compile.all(compileConfig);
 
-        return accept({ contracts, files });
-      });
-    });
-
-    return { contracts, files };
+    return { contracts, sourceIndexes };
   }
 }
 

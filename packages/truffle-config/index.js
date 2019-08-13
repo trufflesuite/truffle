@@ -315,7 +315,7 @@ class Config {
     const normalized = this.normalize(obj);
     const current = this.normalize(this);
 
-    return _.extend({}, current, normalized);
+    return _.extend(Object.create(Config.prototype), current, normalized);
   }
 
   merge(obj) {
