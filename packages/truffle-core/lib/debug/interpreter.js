@@ -7,7 +7,7 @@ const ora = require("ora");
 
 const DebugUtils = require("truffle-debug-utils");
 const selectors = require("truffle-debugger").selectors;
-const { solidity, trace, evm, controller } = selectors;
+const { session, solidity, trace, evm, controller } = selectors;
 
 const analytics = require("../services/analytics");
 const ReplManager = require("../repl");
@@ -236,24 +236,21 @@ class DebugInterpreter {
   }
 
   start(terminate) {
-    let prompt;
-
-    if (this.session.view(selectors.session.status.loaded)) {
-      this.printer.printAddressesAffected();
-      this.printer.printHelp();
-      debug("Help printed");
-      this.printer.printFile();
-      debug("File printed");
-      this.printer.printState();
-      debug("State printed");
-      prompt = DebugUtils.formatPrompt(this.network, this.txHash);
-    } else {
-      if (this.session.view(selectors.session.status.isError)) {
-        this.printer.print(this.session.view(selectors.session.status.error));
-      }
-      this.printer.printHelp();
-      prompt = DebugUtils.formatPrompt(this.network);
+    if (terminate === undefined) {
+      return util.promisify(this.start.bind(this))();
     }
+
+    if (this.session.view(session.status.loaded)) {
+      this.printer.printSessionLoaded();
+    } else if (this.session.view(session.status.isError)) {
+      this.printer.printSessionError();
+    } else {
+      this.printer.printHelp();
+    }
+
+    const prompt = this.session.view(session.status.loaded)
+      ? DebugUtils.formatPrompt(this.network, this.txHash)
+      : DebugUtils.formatPrompt(this.network);
 
     this.repl.start({
       prompt,

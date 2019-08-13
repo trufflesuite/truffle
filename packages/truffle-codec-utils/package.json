@@ -7,9 +7,9 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.escaperegexp": "^4.1.2",
     "semver": "^6.1.1",
-    "web3": "^1.2.0"
+    "web3": "^1.2.1"
   },
-  "version": "1.0.15",
+  "version": "1.0.16",
   "main": "dist/index.js",
   "scripts": {
     "build": "node_modules/.bin/tsc",
