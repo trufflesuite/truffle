@@ -35,8 +35,8 @@
     "json-schema-to-typescript": "^6.1.3",
     "truffle-contract-schema": "^3.0.9",
     "truffle-decoder-core": "^3.0.3",
-    "truffle-decode-utils": "^1.0.14",
-    "web3": "^1.2.0"
+    "truffle-decode-utils": "^1.0.16",
+    "web3": "^1.2.1"
   },
   "devDependencies": {
     "@types/bn.js": "^4.11.5",

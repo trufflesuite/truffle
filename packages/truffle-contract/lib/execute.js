@@ -166,7 +166,7 @@ var execute = {
           };
 
           params.to = address;
-          params.data = fn ? fn(...args).encodeABI() : undefined;
+          params.data = fn ? fn(...args).encodeABI() : params.data;
 
           promiEvent.eventEmitter.emit("execute:send:method", {
             fn,

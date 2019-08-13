@@ -467,7 +467,7 @@ describe("Methods", function() {
       try {
         // At the moment, this test can't rely on truffle-contract's
         // gas estimation when running with geth.
-        await example.triggerRequireWithReasonError({gas: 1000000});
+        await example.triggerRequireWithReasonError({ gas: 1000000 });
         assert.fail();
       } catch (e) {
         assert(
@@ -481,7 +481,7 @@ describe("Methods", function() {
         assert(
           e.receipt.status === false,
           "Triggered require should have receipt status:`false`"
-        )
+        );
       }
     });
 
@@ -601,6 +601,21 @@ describe("Methods", function() {
       assert(
         finalBN.lte(expectedBN),
         "send should send from the specified address"
+      );
+    });
+
+    it("should accept a data param (sendTransaction)", async function() {
+      const example = await Example.new(1);
+
+      // use sendTransaction to deliver encoded calldata to set value
+      const calldata = example.contract.methods.setValue(5).encodeABI();
+      await example.sendTransaction({ data: calldata });
+
+      const value = await example.getValue();
+      assert.equal(
+        parseInt(value),
+        5,
+        "sendTransaction should persist data param"
       );
     });
   });
