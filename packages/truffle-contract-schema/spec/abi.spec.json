@@ -133,7 +133,8 @@
         "components": {
           "type": "array",
           "items": { "type": "object" }
-        }
+        },
+	"internalType": "string"
       },
       "if": {
         "properties": {
