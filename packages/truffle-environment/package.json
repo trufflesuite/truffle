@@ -12,7 +12,7 @@
   "version": "0.1.7",
   "main": "index.js",
   "dependencies": {
-    "ganache-core": "^2.6.1",
+    "ganache-core": "2.7.0",
     "node-ipc": "^9.1.1",
     "truffle-artifactor": "^4.0.27",
     "truffle-error": "^0.0.5",
