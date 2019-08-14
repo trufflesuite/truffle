@@ -8,15 +8,15 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-provider/issues"
   },
-  "version": "0.1.12",
+  "version": "0.1.14",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
   "dependencies": {
     "truffle-error": "^0.0.5",
-    "truffle-interface-adapter": "^0.2.1",
-    "web3": "^1.2.0"
+    "truffle-interface-adapter": "^0.2.3",
+    "web3": "1.2.1"
   },
   "devDependencies": {
     "ganache-core": "2.5.7",

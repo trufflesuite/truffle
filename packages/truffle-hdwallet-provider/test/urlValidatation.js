@@ -26,6 +26,21 @@ describe("HD Wallet Provider Validator", () => {
     }
   });
 
+  it("throws a meaningful error when url is without slashes or slash", () => {
+    const badUrl = "http:localhost/v1/badbeef";
+    try {
+      new WalletProvider("", badUrl, 0, 100);
+      assert.fail("did not throw!");
+    } catch (e) {
+      const expectedMessage = [
+        `Malformed provider URL: '${badUrl}'`,
+        "Please specify a correct URL, using the http, https, ws, or wss protocol.",
+        ""
+      ].join("\n");
+      assert.equal(e.message, expectedMessage);
+    }
+  });
+
   it("fails unknown protocol", () => {
     const badUrl = "localhost/v1/badbeef";
     assert.ok(

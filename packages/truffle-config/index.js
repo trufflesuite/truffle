@@ -318,7 +318,7 @@ class Config {
     let eventsOptions = eventManagerOptions(this);
     this.events.updateSubscriberOptions(eventsOptions);
 
-    return _.extend({}, current, normalized);
+    return _.extend(Object.create(Config.prototype), current, normalized);
   }
 
   merge(options) {

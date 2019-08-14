@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.0.7",
+  "version": "3.0.8",
   "main": "dist/interface/index.js",
   "directories": {
     "lib": "lib"
@@ -28,9 +28,9 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.isequal": "^4.5.0",
     "lodash.merge": "^4.6.1",
-    "truffle-decode-utils": "^1.0.15",
+    "truffle-decode-utils": "^1.0.16",
     "utf8": "^3.0.0",
-    "web3": "^1.2.0"
+    "web3": "1.2.1"
   },
   "peerDependencies": {
     "truffle": "^5.0.14"
