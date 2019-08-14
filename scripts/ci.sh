@@ -40,6 +40,13 @@ elif [ "$GETH" = true ]; then
   lerna run --scope truffle test --stream -- --exit
   lerna run --scope truffle-contract test --stream -- --exit
 
+elif [ "$QUORUM" = true ]; then
+
+  git clone https://github.com/jpmorganchase/quorum-examples
+  cd quorum-examples
+  docker-compose up -d
+  lerna run --scope truffle test --stream -- --exit
+
 elif [ "$PACKAGES" = true ]; then
 
   docker pull ethereum/solc:0.4.22
