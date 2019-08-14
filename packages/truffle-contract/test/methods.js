@@ -603,5 +603,20 @@ describe("Methods", function() {
         "send should send from the specified address"
       );
     });
+
+    it("should accept a data param (sendTransaction)", async function() {
+      const example = await Example.new(1);
+
+      // use sendTransaction to deliver encoded calldata to set value
+      const calldata = example.contract.methods.setValue(5).encodeABI();
+      await example.sendTransaction({ data: calldata });
+
+      const value = await example.getValue();
+      assert.equal(
+        parseInt(value),
+        5,
+        "sendTransaction should persist data param"
+      );
+    });
   });
 });

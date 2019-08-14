@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-debugger/issues"
   },
-  "version": "5.0.22",
+  "version": "5.0.23",
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
@@ -30,12 +30,12 @@
     "remote-redux-devtools": "^0.5.12",
     "reselect-tree": "^1.3.1",
     "truffle-code-utils": "^1.2.4",
-    "truffle-decode-utils": "^1.0.15",
-    "truffle-decoder-core": "^3.0.7",
+    "truffle-decode-utils": "^1.0.16",
+    "truffle-decoder-core": "^3.0.8",
     "truffle-expect": "^0.0.9",
     "truffle-solidity-utils": "^1.2.3",
-    "web3": "^1.2.0",
-    "web3-eth-abi": "^1.2.0"
+    "web3": "1.2.1",
+    "web3-eth-abi": "1.2.1"
   },
   "devDependencies": {
     "async": "2.6.1",
@@ -60,12 +60,12 @@
     "node-interval-tree": "^1.3.3",
     "nyc": "^13.0.1",
     "remotedev-server": "^0.3.1",
-    "truffle-artifactor": "^4.0.26",
-    "truffle-box": "^1.0.33",
+    "truffle-artifactor": "^4.0.27",
+    "truffle-box": "^1.0.34",
     "truffle-debug-utils": "^1.0.18",
-    "truffle-migrate": "^3.0.28",
-    "truffle-resolver": "^5.0.14",
-    "truffle-workflow-compile": "^2.1.0",
+    "truffle-migrate": "^3.0.29",
+    "truffle-resolver": "^5.0.15",
+    "truffle-workflow-compile": "^2.1.1",
     "webpack": "^3.8.1",
     "webpack-dev-middleware": "^2.0.4",
     "webpack-merge": "^4.1.1",
