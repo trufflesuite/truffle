@@ -43,7 +43,7 @@ elif [ "$GETH" = true ]; then
 elif [ "$QUORUM" = true ]; then
 
   sudo rm /usr/local/bin/docker-compose
-  curl -L https://github.com/docker/compose/releases/download/1.4.2/docker-compose-`uname -s`-`uname -m` > docker-compose
+  curl -L https://github.com/docker/compose/releases/download/1.21.0/docker-compose-`uname -s`-`uname -m` > docker-compose
   chmod +x docker-compose
   sudo mv docker-compose /usr/local/bin
   git clone https://github.com/jpmorganchase/quorum-examples
