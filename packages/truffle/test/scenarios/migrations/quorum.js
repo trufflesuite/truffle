@@ -24,7 +24,11 @@ describe("migrate with [ @quorum ] interface", function() {
   const logger = new MemoryLogger();
 
   before(async function() {
-    this.timeout(10000);
+    this.timeout(20000);
+
+    // wait for docker quorumm nodes to boot
+    await new Promise(resolve => setTimeout(resolve, 10000));
+
     config = await sandbox.create(project);
     config.network = "development";
     config.logger = logger;
