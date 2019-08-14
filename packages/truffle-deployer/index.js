@@ -16,7 +16,7 @@ class Deployer extends Deployment {
     const emitter = new Emittery();
     super(emitter, options);
 
-    const { ens } = options.networks[network] || {};
+    const { ens } = options.networks[options.network] || {};
 
     this.emitter = emitter;
     this.chain = new DeferredChain();
