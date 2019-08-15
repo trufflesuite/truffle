@@ -56,6 +56,14 @@ const googleAnalytics = {
     }
   },
   /**
+   * get user-level options for analytics
+   * @param {Object} userConfig
+   * @returns {bool}
+   */
+  getAnalytics: function() {
+    return userConfig.get("enableAnalytics");
+  },
+  /**
    * set user-level options for analytics
    * @param {bool} analyticsBool
    * @param {Object} userConfig
