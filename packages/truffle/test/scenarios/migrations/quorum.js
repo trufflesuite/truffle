@@ -2,7 +2,6 @@ const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
 const path = require("path");
 const assert = require("assert");
-const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
@@ -16,15 +15,13 @@ function processErr(err, output) {
   }
 }
 
-describe("migrate with quroum interface", function() {
+describe("migrate with [ @quorum ] interface", function() {
+  if (!process.env.QUORUM) return;
   let config;
   let web3;
   let networkId;
   const project = path.join(__dirname, "../../sources/migrations/quorum");
   const logger = new MemoryLogger();
-
-  before(done => Server.start(done));
-  after(done => Server.stop(done));
 
   before(async function() {
     this.timeout(10000);
@@ -35,7 +32,7 @@ describe("migrate with quroum interface", function() {
       reporter: new Reporter(logger)
     };
 
-    const provider = new Web3.providers.HttpProvider("http://localhost:8545", {
+    const provider = new Web3.providers.HttpProvider("http://localhost:22000", {
       keepAlive: false
     });
     web3 = new Web3(provider);

@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.0.28",
+  "version": "4.0.29",
   "main": "index.js",
   "scripts": {
     "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
@@ -22,7 +22,7 @@
     "bignumber.js": "^7.2.1",
     "ethers": "^4.0.0-beta.1",
     "truffle-blockchain-utils": "^0.0.10",
-    "truffle-contract-schema": "^3.0.11",
+    "truffle-contract-schema": "^3.0.12",
     "truffle-error": "^0.0.5",
     "truffle-interface-adapter": "^0.2.3",
     "web3": "1.2.1",

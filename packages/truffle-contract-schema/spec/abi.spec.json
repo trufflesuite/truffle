@@ -133,7 +133,8 @@
         "components": {
           "type": "array",
           "items": { "type": "object" }
-        }
+        },
+	"internalType": { "type": "string" }
       },
       "if": {
         "properties": {
@@ -153,7 +154,8 @@
       "properties": {
         "name": { "$ref": "#/definitions/Name" },
         "type": { "$ref": "#/definitions/Type" },
-        "indexed": { "type": "boolean" }
+        "indexed": { "type": "boolean" },
+	"internalType": { "type": "string" }
       },
       "required": ["name", "type", "indexed"]
     }
