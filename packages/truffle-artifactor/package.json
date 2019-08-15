@@ -18,7 +18,7 @@
     "ganache-cli": "6.1.8",
     "mocha": "5.2.0",
     "require-nocache": "^1.0.0",
-    "solc": "0.4.25",
+    "solc": "0.4.26",
     "temp": "^0.8.3",
     "truffle-blockchain-utils": "^0.0.5",
     "web3": "0.20.6"
