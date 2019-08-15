@@ -83,7 +83,8 @@ describe("CompilerSupplier", function() {
         }
       };
 
-      const { contracts } = await compile(oldPragmaFloatSource, options);
+      const config = Config.default().merge(options);
+      const { contracts } = await compile(oldPragmaFloatSource, config);
       const OldPragmaFloat = findOne("OldPragmaFloat", contracts);
 
       assert(OldPragmaFloat.contractName === "OldPragmaFloat");
