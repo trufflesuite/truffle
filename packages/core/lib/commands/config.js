@@ -1,107 +1,3 @@
-const parse = function(args) {
-  if (args.length === 0) {
-    return null;
-  }
-
-  let command = args[0];
-
-  if (typeof command !== "string") {
-    // invalid command
-    throw new Error(`Invalid config option "${command}"`);
-  }
-  command = command.toLowerCase();
-
-  let set = false;
-  let key = args[1];
-  let value = args[2];
-
-  switch (command) {
-    case "enable": {
-      set = true;
-      value = true;
-      break;
-    }
-    case "disable": {
-      set = true;
-      value = false;
-      break;
-    }
-    case "get":
-    case "read": {
-      set = false;
-      if (typeof key === "undefined" || key === null || key === "") {
-        // invalid key
-        throw new Error("Must provide a <key>");
-      }
-
-      break;
-    }
-    case "set":
-    case "write": {
-      set = true;
-      if (typeof key === "undefined" || key === null || key === "") {
-        // invalid key
-        throw new Error("Must provide a <key>");
-      }
-
-      if (typeof value !== "string" || value === "") {
-        // invalid value
-        throw new Error("Must provide a <value-for-set>");
-      }
-
-      switch (value.toLowerCase()) {
-        case "null": {
-          value = null;
-          break;
-        }
-        case "undefined": {
-          value = undefined;
-          break;
-        }
-        case "true": {
-          value = true;
-          break;
-        }
-        case "false": {
-          value = false;
-          break;
-        }
-        default: {
-          // check if number, otherwise leave as string
-          const float = parseFloat(value);
-          if (!isNaN(float) && value === float.toString()) {
-            value = float;
-          }
-          break;
-        }
-      }
-
-      break;
-    }
-    default: {
-      if (
-        command !== "--enable-analytics" &&
-        command !== "--disable-analytics" &&
-        command !== ""
-      ) {
-        // TODO: Deprecate the --(en|dis)able-analytics flag in favor for `enable analytics`
-        // invalid command!
-        throw new Error(`Invalid config option "${command}"`);
-      } else {
-        // we should not have gotten here
-        return null;
-      }
-    }
-  }
-
-  return {
-    set,
-    userLevel: module.exports.userLevelSettings.includes(key),
-    key,
-    value
-  };
-};
-
 const command = {
   command: "config",
   description: "Set user-level configuration options",
@@ -190,7 +86,7 @@ const command = {
       done();
     } else {
       Promise.resolve()
-        .then(async () => {
+        .then(() => {
           const config = Config.detect(options);
 
           if (command.set) {
@@ -204,9 +100,113 @@ const command = {
           }
         })
         .then(done)
-        .catch(options.logger.logs);
+        .catch(options.logger.log);
     }
   }
+};
+
+const parse = function(args) {
+  if (args.length === 0) {
+    return null;
+  }
+
+  let option = args[0];
+
+  if (typeof option !== "string") {
+    // invalid option
+    throw new Error(`Invalid config option "${option}"`);
+  }
+  option = option.toLowerCase();
+
+  let set = false;
+  let key = args[1];
+  let value = args[2];
+
+  switch (option) {
+    case "enable": {
+      set = true;
+      value = true;
+      break;
+    }
+    case "disable": {
+      set = true;
+      value = false;
+      break;
+    }
+    case "get":
+    case "read": {
+      set = false;
+      if (typeof key === "undefined" || key === null || key === "") {
+        // invalid key
+        throw new Error("Must provide a <key>");
+      }
+
+      break;
+    }
+    case "set":
+    case "write": {
+      set = true;
+      if (typeof key === "undefined" || key === null || key === "") {
+        // invalid key
+        throw new Error("Must provide a <key>");
+      }
+
+      if (typeof value !== "string" || value === "") {
+        // invalid value
+        throw new Error("Must provide a <value-for-set>");
+      }
+
+      switch (value.toLowerCase()) {
+        case "null": {
+          value = null;
+          break;
+        }
+        case "undefined": {
+          value = undefined;
+          break;
+        }
+        case "true": {
+          value = true;
+          break;
+        }
+        case "false": {
+          value = false;
+          break;
+        }
+        default: {
+          // check if number, otherwise leave as string
+          const float = parseFloat(value);
+          if (!isNaN(float) && value === float.toString()) {
+            value = float;
+          }
+          break;
+        }
+      }
+
+      break;
+    }
+    default: {
+      if (
+        option !== "--enable-analytics" &&
+        option !== "--disable-analytics" &&
+        option !== ""
+      ) {
+        // TODO: Deprecate the --(en|dis)able-analytics flag in favor for `enable analytics`
+        // invalid command!
+        throw new Error(`Invalid config option "${option}"`);
+      } else {
+        // we should not have gotten here
+        return null;
+      }
+    }
+  }
+
+  return {
+    set,
+    userLevel: command.userLevelSettings.includes(key),
+    key,
+    value
+  };
 };
 
 module.exports = command;
