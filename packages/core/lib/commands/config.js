@@ -203,8 +203,8 @@ const command = {
             options.logger.log(config[command.key]);
           }
         })
-        .catch(options.logger.logs)
-        .finally(done);
+        .then(done)
+        .catch(options.logger.logs);
     }
   }
 };
