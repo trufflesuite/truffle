@@ -26,7 +26,7 @@ class CLIDebugHook {
     }).run(txHash);
     await interpreter.start();
 
-    this.printStopTestHook(operation.method);
+    this.printStopTestHook();
 
     return result;
   }
