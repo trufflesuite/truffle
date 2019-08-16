@@ -157,6 +157,7 @@ class VersionRange extends LoadingStrategy {
       })
       .catch(error => {
         events.emit("fetchSolcList:fail");
+        console.log("the error here --> %o", error);
         if (index >= this.config.compilerRoots.length - 1) {
           throw this.errors("noRequest", "version URLs", error);
         }
