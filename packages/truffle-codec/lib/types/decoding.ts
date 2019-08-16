@@ -1,6 +1,6 @@
 import * as CodecUtils from "truffle-codec-utils";
 
-export type CalldataDecoding = FunctionDecoding | ConstructorDecoding | FallbackDecoding | UnknownDecoding;
+export type CalldataDecoding = FunctionDecoding | ConstructorDecoding | MessageDecoding | UnknownDecoding;
 export type LogDecoding = EventDecoding | AnonymousDecoding;
 
 export type DecodingMode = "full" | "abi";
@@ -23,10 +23,10 @@ export interface ConstructorDecoding {
   decodingMode: DecodingMode;
 }
 
-export interface FallbackDecoding {
-  kind: "fallback";
+export interface MessageDecoding {
+  kind: "message";
   class: CodecUtils.Types.ContractType;
-  abi: CodecUtils.AbiUtils.FallbackAbiEntry;
+  abi: CodecUtils.AbiUtils.FallbackAbiEntry | undefined;
   data: string;
   decodingMode: DecodingMode;
 }
