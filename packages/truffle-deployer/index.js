@@ -27,7 +27,7 @@ class Deployer extends Deployment {
     this.provider = options.provider;
     this.basePath = options.basePath || process.cwd();
     this.known_contracts = {};
-    if (options.ens.enabled) {
+    if (options.ens && options.ens.enabled) {
       const { registry } = ens || {};
       const { address } = registry;
       this.ens = new ENS({
