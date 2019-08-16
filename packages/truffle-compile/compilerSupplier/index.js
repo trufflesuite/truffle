@@ -85,9 +85,10 @@ class CompilerSupplier {
       this.checkParser(parser);
       const solcVersion = solc.version();
       const normalizedSolcVersion = semver.coerce(solcVersion).version;
-      return await new VersionRange({ version: normalizedSolcVersion }).load(
-        normalizedSolcVersion
-      );
+      const options = Object.assign({}, this.strategyOptions, {
+        version: normalizedSolcVersion
+      });
+      return await new VersionRange(options).load(normalizedSolcVersion);
     }
     return false;
   }
