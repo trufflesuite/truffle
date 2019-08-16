@@ -240,14 +240,18 @@ export namespace Types {
     //now
   }
 
+  export type MagicVariableName = "message" | "block" | "transaction";
+
   export interface MagicType {
     typeClass: "magic";
-    variable: string; //not putting this in the type annotation for technical
-    //reasons, but this should be one of "message", "block", or "transaction";
-    //we do *not* presently support abi or meta_type
+    variable: MagicVariableName;
+    //really, I could do this as a tagged union, but I don't see a reason to
+    //introduce such complexity here, especially as this type is basically just
+    //for the debugger
     memberTypes?: {
       [field: string]: Type
     };
+    //may have more optional fields defined in the future
   }
 
   export type ReferenceType = ArrayType | MappingType | StructType | StringType | BytesTypeDynamic;
@@ -493,7 +497,7 @@ export namespace Types {
       }
       case "magic": {
         let typeIdentifier = DefinitionUtils.typeIdentifier(definition);
-        let variable = typeIdentifier.match(/^t_magic_(.*)$/)[1];
+        let variable = <MagicVariableName> typeIdentifier.match(/^t_magic_(.*)$/)[1];
         return {
           typeClass,
           variable

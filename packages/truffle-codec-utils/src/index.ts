@@ -3,6 +3,7 @@ export * from "./evm";
 export * from "./definition";
 export * from "./ast";
 export * from "./contexts";
+export * from "./definition2abi";
 export * from "./abi";
 export * from "./compiler";
 export * from "./errors";

@@ -318,7 +318,7 @@ function allocateCalldata(
       break;
     case "VariableDeclaration":
       //getter case
-      parameters = CodecUtils.Definition.getterInputs(node);
+      parameters = CodecUtils.getterInputs(node);
       break;
   }
   const abiAllocation = allocateMembers(node, parameters, referenceDeclarations, abiAllocations, offset)[node.id];

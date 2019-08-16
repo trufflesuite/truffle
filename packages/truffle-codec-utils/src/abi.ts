@@ -4,7 +4,7 @@ const debug = debugModule("codec-utils:abi");
 import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition, AstReferences, Mutability } from "./ast";
-import { Definition as DefinitionUtils } from "./definition";
+import { definitionToAbi } from "./definition2abi";
 import Web3 from "web3";
 
 //NOTE: SchemaAbi is kind of loose and a pain to use.
@@ -188,7 +188,7 @@ export namespace AbiUtils {
   }
 
   export function definitionMatchesAbi(abiEntry: AbiEntry, definition: AstDefinition, referenceDeclarations: AstReferences): boolean {
-    return abisMatch(abiEntry, DefinitionUtils.definitionToAbi(definition, referenceDeclarations));
+    return abisMatch(abiEntry, definitionToAbi(definition, referenceDeclarations));
   }
 
   export function topicsCount(abiEntry: EventAbiEntry): number {

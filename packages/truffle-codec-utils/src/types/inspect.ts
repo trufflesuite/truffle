@@ -203,7 +203,7 @@ export class ResultInspector {
   }
 }
 
-//these get there own class to deal with a minor complication
+//these get their own class to deal with a minor complication
 class ContractInfoInspector {
   value: Values.ContractValueInfo;
   constructor(value: Values.ContractValueInfo) {

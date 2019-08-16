@@ -7,7 +7,8 @@ import { Types, Values } from "truffle-codec-utils";
 import BN from "bn.js";
 import utf8 from "utf8";
 import { DataPointer } from "../types/pointer";
-import { EvmInfo, DecoderOptions } from "../types/evm";
+import { EvmInfo } from "../types/evm";
+import { DecoderOptions } from "../types/options";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { StopDecodingError } from "../types/errors";
 

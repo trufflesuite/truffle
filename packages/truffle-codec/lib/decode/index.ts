@@ -12,7 +12,8 @@ import decodeSpecial from "./special";
 import decodeTopic from "./event";
 import { Types, Values } from "truffle-codec-utils";
 import * as Pointer from "../types/pointer";
-import { EvmInfo, DecoderOptions } from "../types/evm";
+import { EvmInfo } from "../types/evm";
+import { DecoderOptions } from "../types/options";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 
 export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
