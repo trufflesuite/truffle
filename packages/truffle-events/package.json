@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"No test specified\" && exit 0"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
