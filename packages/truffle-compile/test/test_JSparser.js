@@ -46,7 +46,7 @@ describe("JSparser", () => {
       );
       done();
     });
-  }).timeout(5000);
+  }).timeout(10000);
 
   it("resolves imports quickly when using solcjs parser instead of native solc", done => {
     options.compilers.solc.version = "native";

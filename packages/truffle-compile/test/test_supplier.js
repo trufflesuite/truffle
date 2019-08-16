@@ -253,7 +253,7 @@ describe("CompilerSupplier", function() {
             settings: {}
           }
         };
-        compileconfig = Config.default().merge(options);
+        compileConfig = Config.default().merge(options);
 
         let error;
         try {
@@ -276,7 +276,7 @@ describe("CompilerSupplier", function() {
             settings: {}
           }
         };
-        compileconfig = Config.default().merge(options);
+        compileConfig = Config.default().merge(options);
 
         let error;
         try {
