@@ -157,7 +157,6 @@ class VersionRange extends LoadingStrategy {
       })
       .catch(error => {
         events.emit("fetchSolcList:fail");
-        console.log("the error here --> %o", error);
         if (index >= this.config.compilerRoots.length - 1) {
           throw this.errors("noRequest", "version URLs", error);
         }
@@ -198,10 +197,6 @@ class VersionRange extends LoadingStrategy {
     try {
       return await this.getSolcFromCacheOrUrl(versionRange);
     } catch (error) {
-      console.log(
-        "An error occured while trying to get the compiler --> %o",
-        error
-      );
       if (error.message.includes("Failed to complete request")) {
         return this.getSatisfyingVersionFromCache(versionRange);
       }
