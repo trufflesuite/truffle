@@ -29,12 +29,12 @@ run_geth() {
 
 if [ "$INTEGRATION" = true ]; then
 
-  sudo apt-get install -y jq
+  sudo apt install -y jq
   lerna run --scope truffle test --stream
 
 elif [ "$GETH" = true ]; then
 
-  sudo apt-get install -y jq
+  sudo apt install -y jq
   docker pull ethereum/client-go:latest
   run_geth
   lerna run --scope truffle test --stream -- --exit
@@ -56,8 +56,8 @@ elif [ "$PACKAGES" = true ]; then
 
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
-  sudo apt-get update
-  sudo apt-get install -y python3.6 python3.6-dev python3.6-venv solc
+  sudo apt update
+  sudo apt install -y python3.6 python3.6-dev python3.6-venv solc
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python3.6 get-pip.py
   sudo pip3 install vyper
@@ -67,8 +67,8 @@ elif [ "$COVERAGE" = true ]; then
 
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
-  sudo apt-get update
-  sudo apt-get install -y jq python3.6 python3.6-dev python3.6-venv solc
+  sudo apt update
+  sudo apt install -y jq python3.6 python3.6-dev python3.6-venv solc
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python3.6 get-pip.py
   sudo pip3 install vyper
