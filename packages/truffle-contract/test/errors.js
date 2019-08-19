@@ -204,11 +204,14 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
     // NB: this error is different than the `invalid` opcode error
     // produced when the vmErrors flag is on.
     it("errors with OOG on internal OOG", async function() {
-      this.timeout(25000);
+      this.timeout(5000);
 
       const example = await Example.new(1);
       try {
-        await example.runsOutOfGas();
+        const accounts = await Example.web3.eth.getAccounts();
+        // specifying a gasLimit as ganache-core @2.7.0 no longer limits gas
+        // estimations to the default block gas limit.
+        await example.runsOutOfGas({ from: accounts[0], gasLimit: "0x6691b7" });
         assert.fail();
       } catch (e) {
         assert(e.message.includes("out of gas"));
