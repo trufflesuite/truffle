@@ -1,7 +1,7 @@
 const validateOptions = options => {
   const { handlers, initialization } = options;
 
-  if (typeof initialization !== "function") {
+  if (initialization !== undefined && typeof initialization !== "function") {
     const message =
       `The initialization property specified in your ` +
       `reporter config must be a function. The current value is ` +
