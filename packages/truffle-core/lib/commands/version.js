@@ -17,7 +17,7 @@ const command = {
     } catch (error) {
       // Suppress error when truffle can't find a config
       if (error.message === "Could not find suitable configuration file.") {
-        config = null;
+        config = Config.default();
       } else {
         return done(error);
       }
