@@ -1,3 +1,7 @@
+const WHITELISTED_PLUGINS = {
+  solhint: "truffle-plugin-solhint"
+};
+
 const command = {
   command: "run",
   description: "Run a third-party command",
@@ -13,19 +17,23 @@ const command = {
   },
   run(options, done) {
     const Config = require("truffle-config");
-    const Plugin = require("../plugin");
-    const Run = require("../run");
+    const Plugin = require("./plugin");
+    const Run = require("./run");
     const config = Config.detect(options);
 
     if (options._.length === 0) {
-      const help = require("./help");
+      const help = require("../help");
       help.displayCommandHelp("run");
       return done();
     }
 
     const customCommand = options._[0];
 
-    if (config.plugins) {
+    if (WHITELISTED_PLUGINS[customCommand]) {
+      config.plugins.push(WHITELISTED_PLUGINS[customCommand]);
+      let pluginConfig = Plugin.load(config);
+      Run.run(pluginConfig, customCommand, config, done);
+    } else if (config.plugins.length > 0) {
       let pluginConfigs = Plugin.load(config);
       Run.run(pluginConfigs, customCommand, config, done);
     } else {
