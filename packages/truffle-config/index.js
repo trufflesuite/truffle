@@ -57,6 +57,7 @@ class Config {
         },
         vyper: {}
       },
+      plugins: [],
       logger: {
         log() {}
       }
@@ -78,6 +79,7 @@ class Config {
       ethpm() {},
       logger() {},
       compilers() {},
+      plugins() {},
 
       build_directory: {
         default: () => path.join(this.working_directory, "build"),
