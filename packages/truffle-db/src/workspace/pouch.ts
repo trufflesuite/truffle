@@ -45,19 +45,9 @@ export class Workspace {
   contractInstances: PouchDB.Database;
   networks: PouchDB.Database;
 
-  async persist(resource, id) {
-    const saveResource = "this." + resource + "({ " + id + "})";
-    await saveResource;
-    let savePath;
-    if(process.argv[2] !== undefined) {
-      savePath = process.argv[2]
-    } else {
-      savePath = path.join(__dirname, "test");
-    }
-
-    const fileName = id + ".json";
-    await fse.ensureDir(path.join(savePath, ".db", (resource + "s")));
-    await fse.writeFile(path.join(savePath, ".db", (resource + "s"), fileName), JSON.stringify(saveResource));
+  getSavePath(workingDirectory:string, resource:string):string {
+    const savePath = path.join(workingDirectory, ".db", resource);
+    return savePath;
   }
 
   private ready: Promise<void>;
@@ -136,7 +126,6 @@ export class Workspace {
             _id: id,
             });
 
-            await this.persist("contract", id);
             return { name, abi, compilation, sourceContract, constructor: contractConstructor, id };
           }
         }
@@ -183,7 +172,7 @@ export class Workspace {
 
             _id: id
           });
-          await this.persist("compilation", id);
+
           return compilation;
         }
       ))
@@ -228,7 +217,6 @@ export class Workspace {
             _id: id
           });
 
-          await this.persist("contractInstance", id);
           return contractInstance;
         }
       ))
@@ -273,7 +261,6 @@ export class Workspace {
               _id: id
             });
 
-            await this.persist("network", id);
             return { networkID, historicBlock, id };
           }
         }
@@ -318,7 +305,7 @@ export class Workspace {
 
             _id: id
           });
-          await this.persist("source", id);
+
           return source;
         }
       ))
@@ -360,7 +347,6 @@ export class Workspace {
             _id: id
           });
 
-          await this.persist("bytecode", id);
           return bytecode;
         }
       ))
