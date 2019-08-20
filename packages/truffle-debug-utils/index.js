@@ -11,7 +11,7 @@ var hljsDefineSolidity = require("highlightjs-solidity");
 hljsDefineSolidity(chromafi.hljs);
 var chalk = require("chalk");
 
-var commandReference = {
+const commandReference = {
   "o": "step over",
   "i": "step into",
   "u": "step out",
@@ -32,6 +32,20 @@ var commandReference = {
   "r": "reset",
   "t": "load new transaction",
   "T": "unload transaction"
+};
+
+const truffleColors = {
+  mint: chalk.hex("#3FE0C5"),
+  orange: chalk.hex("#E4A663"),
+  pink: chalk.hex("#E911BD"),
+  purple: chalk.hex("#8731E8"),
+  green: chalk.hex("#00D717"),
+  red: chalk.hex("#D60000"),
+  yellow: chalk.hex("#F2E941"),
+  blue: chalk.hex("#25A9E0"),
+  comment: chalk.hsl(30, 20, 50),
+  watermelon: chalk.hex("#E86591"),
+  periwinkle: chalk.hex("#7F9DD1")
 };
 
 var DebugUtils = {
@@ -212,7 +226,7 @@ var DebugUtils = {
       output += additional;
     }
 
-    return chalk.white(prefix + output);
+    return truffleColors.watermelon(prefix + output);
   },
 
   //NOTE: source and uncolorizedSource here have already
@@ -365,20 +379,6 @@ var DebugUtils = {
     //I'd put these outside the function
     //but then it gives me errors, because
     //you can't just define self-referential objects like that...
-
-    const truffleColors = {
-      mint: chalk.hex("#3FE0C5"),
-      orange: chalk.hex("#E4A663"),
-      pink: chalk.hex("#E911BD"),
-      purple: chalk.hex("#8731E8"),
-      green: chalk.hex("#00D717"),
-      red: chalk.hex("#D60000"),
-      yellow: chalk.hex("#F2E941"),
-      blue: chalk.hex("#25A9E0"),
-      comment: chalk.hsl(30, 20, 50),
-      watermelon: chalk.hex("#E86591"),
-      periwinkle: chalk.hex("#7F9DD1")
-    };
 
     const trufflePalette = {
       /* base (chromafi special, not hljs) */
