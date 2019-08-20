@@ -46,7 +46,7 @@ describe("truffle run [ @standalone ]", () => {
       it("whines about having no plugins configured", done => {
         CommandRunner.run("run mock", config, () => {
           const output = logger.contents();
-          assert(output.includes("Error: No plugins detected"));
+          assert(output.includes("Plugins configured incorrectly."));
           done();
         });
       }).timeout(10000);
@@ -60,7 +60,7 @@ describe("truffle run [ @standalone ]", () => {
           ).then(() =>
             CommandRunner.run("run mock", config, () => {
               const output = logger.contents();
-              assert(output.includes("Error: Plugins configured incorrectly."));
+              assert(output.includes("Plugins configured incorrectly."));
               done();
             })
           );

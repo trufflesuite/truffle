@@ -1,3 +1,5 @@
 module.exports = {
-  plugins: []
+  plugins: {
+    myPlugin: "some-plugin-name"
+  }
 };

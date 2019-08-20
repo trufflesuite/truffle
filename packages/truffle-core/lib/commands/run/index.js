@@ -31,17 +31,9 @@ const command = {
 
     if (WHITELISTED_PLUGINS[customCommand]) {
       config.plugins.push(WHITELISTED_PLUGINS[customCommand]);
-      let pluginConfig = Plugin.load(config);
-      Run.run(pluginConfig, customCommand, config, done);
-    } else if (config.plugins.length > 0) {
-      let pluginConfigs = Plugin.load(config);
-      Run.run(pluginConfigs, customCommand, config, done);
-    } else {
-      console.error(
-        "\nError: No plugins detected in the configuration file.\n"
-      );
-      done();
     }
+    const pluginConfigs = Plugin.load(config);
+    Run.run(pluginConfigs, customCommand, config, done);
   }
 };
 

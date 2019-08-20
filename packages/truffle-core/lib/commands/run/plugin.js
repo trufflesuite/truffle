@@ -7,8 +7,14 @@ const Plugin = {
   // checks for incorrect config.plugins formatting
   checkPluginConfig(options) {
     let plugins = options.plugins;
-    if (!Array.isArray(plugins) || plugins.length === 0)
-      throw new TruffleError("\nError: Plugins configured incorrectly.\n");
+    if (!Array.isArray(plugins) || plugins.length === 0) {
+      const message =
+        "Plugins configured incorrectly.\nPlease ensure " +
+        "that you have a 'plugins' property (array) in your truffle config " +
+        "with all of your plugins listed.\nExample: plugins: [ 'my-plugin', " +
+        "'my-other-plugin' ]";
+      throw new TruffleError(message);
+    }
 
     return options;
   },
