@@ -6,6 +6,7 @@ import * as graphql from "graphql";
 import { Workspace, schema } from "truffle-db/workspace";
 import { generateId } from "truffle-db/helpers";
 
+const tmp = require("tmp");
 
 const fixturesDirectory = path.join(
   __dirname, // truffle-db/src/db/test
@@ -20,7 +21,8 @@ class WorkspaceClient {
   private workspace: Workspace;
 
   constructor () {
-    this.workspace = new Workspace();
+    const tempDir = tmp.dirSync({ unsafeCleanup: true });
+    this.workspace = new Workspace(tempDir.name);
   }
 
   async execute (request, variables = {}) {
