@@ -57,6 +57,7 @@
     "truffle-init": "^1.0.7",
     "truffle-interface-adapter": "^0.2.3",
     "truffle-migrate": "^3.0.30",
+    "truffle-plugin-solhint": "^0.0.6",
     "truffle-provider": "^0.1.14",
     "truffle-provisioner": "^0.1.5",
     "truffle-require": "^2.0.18",
