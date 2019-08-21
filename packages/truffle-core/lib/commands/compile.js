@@ -48,43 +48,42 @@ const command = {
     ]
   },
   run: function(options, done) {
-    const CompilerSupplier = require("truffle-compile").CompilerSupplier;
-    const supplier = new CompilerSupplier();
-
     const Contracts = require("truffle-workflow-compile");
     const Config = require("truffle-config");
     const config = Config.detect(options);
 
-    config.list !== undefined
-      ? command.listVersions(supplier, config, done)
-      : Contracts.compile(config, done);
+    if (config.list !== undefined) {
+      command
+        .listVersions(config)
+        .then(() => done())
+        .catch(done);
+    } else {
+      Contracts.compile(config)
+        .then(() => done())
+        .catch(done);
+    }
   },
-  listVersions: function(supplier, options, done) {
+  listVersions: async function(options) {
+    const CompilerSupplier = require("truffle-compile").CompilerSupplier;
+    const supplier = new CompilerSupplier();
+
     const log = options.logger.log;
     options.list = options.list.length ? options.list : "releases";
 
     // Docker tags
     if (options.list === "docker") {
-      return supplier
-        .getDockerTags()
-        .then(tags => {
-          tags.push("See more at: hub.docker.com/r/ethereum/solc/tags/");
-          log(format(tags, null, " "));
-          done();
-        })
-        .catch(done);
+      const tags = await supplier.getDockerTags();
+      tags.push("See more at: hub.docker.com/r/ethereum/solc/tags/");
+      log(format(tags, null, " "));
+      return;
     }
 
     // Solcjs releases
-    supplier
-      .getReleases()
-      .then(releases => {
-        const shortener = options.all ? null : command.shortener;
-        const list = format(releases[options.list], shortener, " ");
-        log(list);
-        done();
-      })
-      .catch(done);
+    const releases = await supplier.getReleases();
+    const shortener = options.all ? null : command.shortener;
+    const list = format(releases[options.list], shortener, " ");
+    log(list);
+    return;
   },
 
   shortener: function(key, val) {
