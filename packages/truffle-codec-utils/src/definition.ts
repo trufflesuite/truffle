@@ -292,7 +292,7 @@ export namespace Definition {
         }
 
         let keyString = typeString(definition)
-          .match(/mapping\((.*?) => .*\)( storage)?/)[1];
+          .match(/mapping\((.*?) => .*\)( storage)?$/)[1];
           //use *non*-greedy match; note that if the key type could include
           //"=>", this could cause a problem, but mappings are not allowed as key
           //types, so this can't come up
