@@ -248,7 +248,7 @@ export namespace Definition {
 
     // another HACK - we get away with it because we're only using that one property
     let result: AstDefinition = cloneDeep(definition);
-    result.typeDescriptions = definition.typeDescriptions;
+    result.typeDescriptions.typeIdentifier = baseIdentifier;
     return result;
 
     //WARNING -- these hacks do *not* correctly handle all cases!
@@ -291,9 +291,18 @@ export namespace Definition {
           keyIdentifier = `${keyIdentifier}_ptr`;
         }
 
+        let keyString = typeString(definition)
+          .match(/mapping\((.*?) => .*\)( storage)?/)[1];
+          //use *non*-greedy match; note that if the key type could include
+          //"=>", this could cause a problem, but mappings are not allowed as key
+          //types, so this can't come up
+
         // another HACK - we get away with it because we're only using that one property
         result = cloneDeep(definition);
-        result.typeDescriptions = definition.typeDescriptions;
+        result.typeDescriptions = {
+          typeIdentifier: keyIdentifier,
+          typeString: keyString
+        };
         return result;
 
       case "array":
