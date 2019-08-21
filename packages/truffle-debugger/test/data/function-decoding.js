@@ -7,7 +7,7 @@ import Ganache from "ganache-core";
 
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as TruffleCodecUtils from "truffle-codec-utils";
 
 import solidity from "lib/solidity/selectors";
 
@@ -170,17 +170,17 @@ describe("Function Pointer Decoding", function() {
       variables.storageFn.value.contract.class.typeName,
       "ExternalsDerived"
     );
-    assert.equal(variables.storageFn.value.name, "doThing");
+    assert.equal(variables.storageFn.value.abi.name, "doThing");
     assert.equal(
       variables.memoryFns.value[0].value.contract.class.typeName,
       "ExternalsDerived"
     );
-    assert.equal(variables.memoryFns.value[0].value.name, "doThing");
+    assert.equal(variables.memoryFns.value[0].value.abi.name, "doThing");
     assert.equal(
       variables.stackFn.value.contract.class.typeName,
       "ExternalsDerived"
     );
-    assert.equal(variables.stackFn.value.name, "doThing");
+    assert.equal(variables.stackFn.value.abi.name, "doThing");
   });
 
   it("Decodes internal function pointers correctly (deployed)", async function() {
@@ -207,7 +207,7 @@ describe("Function Pointer Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
@@ -246,7 +246,7 @@ describe("Function Pointer Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 

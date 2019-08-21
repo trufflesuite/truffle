@@ -2,7 +2,7 @@ import { assert } from "chai";
 
 import BN from "bn.js";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as TruffleCodecUtils from "truffle-codec-utils";
 
 describe("Utils", function() {
   describe("typeClass()", function() {
@@ -14,7 +14,7 @@ describe("Utils", function() {
       };
 
       assert.equal(
-        TruffleDecodeUtils.Definition.typeClass(definition),
+        TruffleCodecUtils.Definition.typeClass(definition),
         "mapping"
       );
     });
@@ -25,7 +25,7 @@ describe("Utils", function() {
       let bytes = [0xf5, 0xe2, 0xc5, 0x17];
       let expectedValue = new BN("f5e2c517", 16);
 
-      let result = TruffleDecodeUtils.Conversion.toBN(bytes);
+      let result = TruffleCodecUtils.Conversion.toBN(bytes);
 
       assert.equal(result.toString(), expectedValue.toString());
     });
@@ -46,7 +46,7 @@ describe("Utils", function() {
 
       let expectedValue = bitflipped.addn(1).neg();
 
-      let result = TruffleDecodeUtils.Conversion.toSignedBN(bytes);
+      let result = TruffleCodecUtils.Conversion.toSignedBN(bytes);
 
       assert.equal(result.toString(), expectedValue.toString());
     });
@@ -56,7 +56,7 @@ describe("Utils", function() {
       let raw = new BN("05e2c517", 16);
       let expectedValue = raw;
 
-      let result = TruffleDecodeUtils.Conversion.toSignedBN(bytes);
+      let result = TruffleCodecUtils.Conversion.toSignedBN(bytes);
 
       assert.equal(result.toString(), expectedValue.toString());
     });
@@ -66,11 +66,11 @@ describe("Utils", function() {
     it("returns correct representation with full bytes", function() {
       // ie, 0x00 instead of 0x0
       assert.equal(
-        TruffleDecodeUtils.Conversion.toHexString([0x05, 0x11]),
+        TruffleCodecUtils.Conversion.toHexString([0x05, 0x11]),
         "0x0511"
       );
       assert.equal(
-        TruffleDecodeUtils.Conversion.toHexString([0xff, 0x00, 0xff]),
+        TruffleCodecUtils.Conversion.toHexString([0xff, 0x00, 0xff]),
         "0xff00ff"
       );
     });

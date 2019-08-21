@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("test:data:more-decoding");
 
 import { assert } from "chai";
+import Web3 from "web3"; //just using for utils
 
 import Ganache from "ganache-core";
 
@@ -11,7 +12,7 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 import data from "lib/data/selectors";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as TruffleCodecUtils from "truffle-codec-utils";
 
 const __CONTAINERS = `
 pragma solidity ^0.5.0;
@@ -227,12 +228,26 @@ contract OverflowTest {
 }
 `;
 
+const __BADBOOL = `
+pragma solidity ^0.5.0;
+
+contract BadBoolTest {
+
+  mapping(bool => uint) boolMap;
+
+  function run(bool key) public {
+    boolMap[key] = 1;
+  }
+}
+`;
+
 let sources = {
   "ContainersTest.sol": __CONTAINERS,
   "ElementaryTest.sol": __KEYSANDBYTES,
   "SpliceTest.sol": __SPLICING,
   "ComplexMappingsTest.sol": __INNERMAPS,
-  "OverflowTest.sol": __OVERFLOW
+  "OverflowTest.sol": __OVERFLOW,
+  "BadBoolTest.sol": __BADBOOL
 };
 
 describe("Further Decoding", function() {
@@ -279,7 +294,7 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
@@ -323,7 +338,7 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
     debug("variables %O", variables);
@@ -367,7 +382,7 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
@@ -402,7 +417,7 @@ describe("Further Decoding", function() {
     //we're only testing storage so run till end
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
@@ -425,10 +440,10 @@ describe("Further Decoding", function() {
     //get offsets of top-level variables for this contract
     //converting to numbers for convenience
     const startingOffsets = Object.values(
-      Object.values(session.view(data.info.allocations.storage)).filter(
-        ({ definition }) => definition.name === "ComplexMappingTest"
-      )[0].members
-    ).map(({ pointer }) => pointer.storage.from.slot.offset);
+      session.view(data.info.allocations.storage)
+    )
+      .find(({ definition }) => definition.name === "ComplexMappingTest")
+      .members.map(({ pointer }) => pointer.range.from.slot.offset);
 
     const mappingKeys = session.view(data.views.mappingKeys);
     for (let slot of mappingKeys) {
@@ -439,6 +454,42 @@ describe("Further Decoding", function() {
       //the top-level variables
       assert.deepInclude(startingOffsets, slot.offset);
     }
+  });
+
+  it("Cleans badly-encoded booleans used as mapping keys", async function() {
+    this.timeout(12000);
+
+    let instance = await abstractions.BadBoolTest.deployed();
+    let signature = "run(bool)";
+    //manually set up the selector; 10 is for initial 0x + 8 more hex digits
+    let selector = Web3.utils
+      .soliditySha3({ type: "string", value: signature })
+      .slice(0, 10);
+    let argument =
+      "0000000000000000000000000000000000000000000000000000000000000002";
+    let receipt = await instance.sendTransaction({ data: selector + argument });
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    await session.continueUntilBreakpoint(); //run till end
+
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+      await session.variables()
+    );
+    debug("variables %O", variables);
+
+    const expectedResult = {
+      boolMap: { true: 1 }
+    };
+
+    assert.deepInclude(variables, expectedResult);
   });
 
   describe("Overflow", function() {
@@ -464,7 +515,7 @@ describe("Further Decoding", function() {
 
       await session.continueUntilBreakpoint();
 
-      const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+      const variables = TruffleCodecUtils.Conversion.nativizeVariables(
         await session.variables()
       );
       debug("variables %O", variables);
@@ -500,7 +551,7 @@ describe("Further Decoding", function() {
 
       await session.continueUntilBreakpoint();
 
-      const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+      const variables = TruffleCodecUtils.Conversion.nativizeVariables(
         await session.variables()
       );
       debug("variables %O", variables);
@@ -536,7 +587,7 @@ describe("Further Decoding", function() {
 
       await session.continueUntilBreakpoint();
 
-      const variables = TruffleDecodeUtils.Conversion.nativizeVariables(
+      const variables = TruffleCodecUtils.Conversion.nativizeVariables(
         await session.variables()
       );
       debug("variables %O", variables);

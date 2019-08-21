@@ -1,35 +1,27 @@
 import BN from "bn.js";
 import { ContractObject } from "truffle-contract-schema/spec";
-import { Values } from "truffle-decode-utils";
-
-interface EventVariable {
-  name: string;
-  type: string;
-  value: string; //NOTE: this should change to be a decoded variable object
-  //(although really that would replace EventVariable entirely)
-};
+import { Values } from "truffle-codec-utils";
+import { CalldataDecoding, LogDecoding } from "truffle-codec";
+import { Transaction, BlockType } from "web3/eth/types";
+import { Log } from "web3/types";
 
 export interface ContractState {
   name: string;
-  balance: BN;
-  nonce: BN;
+  balanceAsBN: BN;
+  nonceAsBN: BN;
   code: string;
   variables: {
     [name: string]: Values.Result
   };
 };
 
-export interface ContractEvent {
-  logIndex: number;
-  name: string;
-  blockHash: string;
-  blockNumber: number;
-  transactionHash: string;
-  transactionIndex: number;
-  variables: {
-    [name: string]: EventVariable
-  }
-};
+export interface DecodedTransaction extends Transaction {
+  decoding: CalldataDecoding;
+}
+
+export interface DecodedLog extends Log {
+  decodings: LogDecoding[];
+}
 
 export interface ContractMapping {
   [nodeId: number]: ContractObject;
@@ -49,10 +41,29 @@ export interface CodeCache {
   };
 }
 
+export interface EventOptions {
+  name?: string;
+  fromBlock?: BlockType;
+  toBlock?: BlockType;
+  address?: string; //ignored by contract decoder!
+}
+
 export class ContractBeingDecodedHasNoNodeError extends Error {
   constructor() {
     const message = "Contract does not appear to have been compiled with Solidity (cannot locate contract node)";
     super(message);
     this.name = "ContractBeingDecodedHasNoNodeError";
+  }
+}
+
+export class EventOrTransactionIsNotForThisContractError extends Error {
+  thisAddress: string;
+  decoderAddress: string;
+  constructor(thisAddress: string, decoderAddress: string) {
+    const message = "This event or transaction's address does not match that of the contract decoder";
+    super(message);
+    this.name = "EventOrTransactionIsNotForThisContractError";
+    this.thisAddress = thisAddress;
+    this.decoderAddress = decoderAddress;
   }
 }
