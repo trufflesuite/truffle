@@ -19,6 +19,11 @@ export namespace Definition {
     return definition.typeDescriptions.typeString;
   }
 
+  //returns the type string, but with location (if any) stripped off the end
+  export function typeStringNoLocation(definition: AstDefinition): string {
+    return typeString(definition).replace(/ (storage|memory|calldata)$/, "");
+  }
+
   /**
    * returns basic type class for a variable definition node
    * e.g.:
@@ -231,7 +236,7 @@ export namespace Definition {
       return definition.baseType;
     }
 
-    //otherwise, we'll have to fake it up ourselves
+    //otherwise, we'll have to spoof it up ourselves
     let baseIdentifier = typeIdentifier(definition)
       .match(/^t_array\$_(.*)_\$/)[1];
       //greedy match to extract everything from first to last dollar sign
@@ -243,7 +248,7 @@ export namespace Definition {
 
     // another HACK - we get away with it because we're only using that one property
     let result: AstDefinition = cloneDeep(definition);
-    result.typeDescriptions.typeIdentifier = baseIdentifier;
+    result.typeDescriptions = definition.typeDescriptions;
     return result;
 
     //WARNING -- these hacks do *not* correctly handle all cases!
@@ -256,6 +261,15 @@ export namespace Definition {
     let result: AstDefinition;
     switch(typeClass(definition)) {
       case "mapping":
+        //first: is there a key type already there? if so just use that
+        if(definition.keyType) {
+          return definition.keyType;
+        }
+        if(definition.typeName && definition.typeName.keyType) {
+          return definition.typeName.keyType;
+        }
+
+        //otherwise: is there a referencedDeclaration? if so try using that
         let baseDeclarationId = definition.referencedDeclaration;
         debug("baseDeclarationId %d", baseDeclarationId);
         //if there's a referencedDeclaration, we'll use that
@@ -263,9 +277,9 @@ export namespace Definition {
           let baseDeclaration = scopes[baseDeclarationId].definition;
           return baseDeclaration.keyType || baseDeclaration.typeName.keyType;
         }
-        //otherwise, we'll need to perform some hackery, similarly to in baseDefinition
-        
-        //otherwise, we'll have to fake it up ourselves
+
+        //otherwise, we'll need to perform some hackery, similarly to in baseDefinition;
+        //we'll have to spoof it up ourselves
         let keyIdentifier = typeIdentifier(definition)
           .match(/^t_mapping\$_(.*?)_\$/)[1];
           //use *non*-greedy match; note that if the key type could include
@@ -279,14 +293,17 @@ export namespace Definition {
 
         // another HACK - we get away with it because we're only using that one property
         result = cloneDeep(definition);
-        result.typeDescriptions.typeIdentifier = keyIdentifier;
+        result.typeDescriptions = definition.typeDescriptions;
         return result;
 
       case "array":
         //HACK -- again we should get away with it because for a uint256 we don't
         //really need to inspect the other properties
         result = cloneDeep(definition);
-        result.typeDescriptions.typeIdentifier = "t_uint256";
+        result.typeDescriptions = {
+          typeIdentifier: "t_uint256",
+          typeString: "uint256"
+        };
         return result;
       default:
         debug("unrecognized index access!");

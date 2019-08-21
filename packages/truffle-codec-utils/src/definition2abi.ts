@@ -94,6 +94,7 @@ function parameterToAbi(node: AstDefinition, referenceDeclarations: AstReference
   if(checkIndexed) {
     indexed = node.indexed; //note: may be undefined for a base type
   }
+  let internalType: string = Definition.typeStringNoLocation(node);
   //is this an array? if so use separate logic
   if(Definition.typeClass(node) === "array") {
     let baseType = node.typeName ? node.typeName.baseType : node.baseType;
@@ -105,7 +106,8 @@ function parameterToAbi(node: AstDefinition, referenceDeclarations: AstReference
       name,
       type: baseAbi.type + arraySuffix,
       indexed,
-      components: baseAbi.components
+      components: baseAbi.components,
+      internalType
     };
   }
   let abiTypeString = toAbiType(node, referenceDeclarations);
@@ -123,7 +125,8 @@ function parameterToAbi(node: AstDefinition, referenceDeclarations: AstReference
     name, //may be empty string but should only be undefined in recursive calls
     type: abiTypeString,
     indexed, //undefined if !checkedIndex
-    components //undefined if not a struct or (multidim) array of structs
+    components, //undefined if not a struct or (multidim) array of structs
+    internalType
   };
 }
 
