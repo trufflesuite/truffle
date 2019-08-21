@@ -31,7 +31,7 @@ contract("DecodingSample", _accounts => {
   it("should get the initial state properly", async () => {
     let deployedContract = await DecodingSample.deployed();
     let address = deployedContract.address;
-    const decoder = await TruffleDecoder.forContract(
+    const decoder = await TruffleDecoder.forContractInstance(
       DecodingSample,
       [],
       web3.currentProvider
