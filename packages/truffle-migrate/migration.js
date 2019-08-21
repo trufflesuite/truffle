@@ -125,66 +125,6 @@ class Migration {
     }
   }
 
-  // ------------------------------------- Private -------------------------------------------------
-  /**
-   * Runs the legacy migration sequence by used in Truffle v4,
-   * but continues to use the concurrent Deployer and Web3 provider
-   * @param  {Object}   options  config and command-line
-   */
-  async runLegacyMigrations(options) {
-    const {
-      logger,
-      web3,
-      resolver,
-      context,
-      deployer
-    } = this.prepareForMigrations(options);
-
-    logger.log(
-      "Running migration: " +
-        path.relative(options.migrations_directory, this.file)
-    );
-
-    const accounts = await web3.eth.getAccounts();
-
-    const fn = Require.file({
-      file: this.file,
-      context: context,
-      resolver: resolver,
-      args: [deployer]
-    });
-
-    if (!fn || !fn.length || fn.length == 0) {
-      const message = `Migration ${
-        this.file
-      } invalid or does not take any parameters`;
-      throw new Error(message);
-    }
-    fn(deployer, options.network, accounts);
-
-    try {
-      await deployer.start();
-      if (options.save === false) return;
-
-      const Migrations = resolver.require("./Migrations.sol");
-
-      if (Migrations && Migrations.isDeployed()) {
-        logger.log("Saving successful migration to network...");
-        const migrations = await Migrations.deployed();
-        await migrations.setCompleted(this.number);
-      }
-      if (options.save !== false) {
-        logger.log("Saving artifacts...");
-        await options.artifactor.saveAll(resolver.contracts());
-      }
-    } catch (error) {
-      logger.log(
-        "Error encountered, bailing. Network state unknown. Review successful transactions manually."
-      );
-      throw new Error(error);
-    }
-  }
-
   // ------------------------------------- Public -------------------------------------------------
   /**
    * Instantiates a deployer, connects this migration and its deployer to the reporter
