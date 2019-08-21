@@ -94,7 +94,7 @@ function parameterToAbi(node: AstDefinition, referenceDeclarations: AstReference
   if(checkIndexed) {
     indexed = node.indexed; //note: may be undefined for a base type
   }
-  let internalType: string = Definition.typeStringNoLocation(node);
+  let internalType: string = Definition.typeStringWithoutLocation(node);
   //is this an array? if so use separate logic
   if(Definition.typeClass(node) === "array") {
     let baseType = node.typeName ? node.typeName.baseType : node.baseType;

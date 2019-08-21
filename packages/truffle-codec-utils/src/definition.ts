@@ -20,7 +20,7 @@ export namespace Definition {
   }
 
   //returns the type string, but with location (if any) stripped off the end
-  export function typeStringNoLocation(definition: AstDefinition): string {
+  export function typeStringWithoutLocation(definition: AstDefinition): string {
     return typeString(definition).replace(/ (storage|memory|calldata)$/, "");
   }
 
