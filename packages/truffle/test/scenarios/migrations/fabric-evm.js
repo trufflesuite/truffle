@@ -23,11 +23,12 @@ describe("migrate with [ @fabric-evm ] interface", function() {
       reporter: new Reporter(logger)
     };
 
-    const provider = new Web3.providers.HttpProvider("http://localhost:8545", {
+    const provider = new Web3.providers.HttpProvider("http://localhost:5000", {
       keepAlive: false
     });
     web3 = new Web3(provider);
     networkId = await web3.eth.net.getId();
+    networkId = web3.utils.numberToHex(networkId).replace("0x", "");
   });
 
   it("runs migrations (sync & async/await)", async () => {
