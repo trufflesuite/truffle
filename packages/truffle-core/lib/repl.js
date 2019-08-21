@@ -113,9 +113,25 @@ ReplManager.prototype.stop = function(callback) {
   }
 };
 
-ReplManager.prototype.interpret = function(cmd, context, filename, callback) {
-  var currentContext = this.contexts[this.contexts.length - 1];
-  currentContext.interpreter(cmd, context, filename, callback);
+ReplManager.prototype.interpret = function(
+  replInput,
+  context,
+  filename,
+  callback
+) {
+  const processedReplInput = processReplInput(replInput);
+  const currentContext = this.contexts[this.contexts.length - 1];
+  currentContext.interpreter(processedReplInput, context, filename, callback);
+};
+
+const processReplInput = input => {
+  const inputComponents = input.split(" ");
+  if (inputComponents.length === 0) return input;
+
+  if (inputComponents[0] === "truffle") {
+    return inputComponents.slice(1).join(" ");
+  }
+  return input;
 };
 
 module.exports = ReplManager;
