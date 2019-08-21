@@ -1,6 +1,17 @@
-dist: trusty
+dist: xenial
 sudo: required
 language: node_js
+
+# configure Travis to run on-push builds only on PR-recipient branches
+branches:
+  only:
+    # long-lived branches
+    - master
+    - develop
+    - next
+
+    # other targets
+    - truffle-db
 
 addons:
   apt:

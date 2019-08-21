@@ -28,7 +28,7 @@
     "@types/lodash": "^4.14.136",
     "@types/mocha": "^5.2.6",
     "@types/web3": "^1.0.18",
-    "ganache-core": "2.5.7",
+    "ganache-core": "2.7.0",
     "mocha": "^6.0.2",
     "ts-node": "^8.0.3",
     "typescript": "^3.3.3333"
