@@ -3,20 +3,17 @@ const { promisify } = require("util");
 const RunCommand = promisify(require("../commandrunner").run);
 const path = require("path");
 const assert = require("assert");
-const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
-describe("migrate with fabric-evm interface", function() {
+describe("migrate with [ @fabric-evm ] interface", function() {
+  if (!process.env.FABRICEVM) return;
   let config;
   let web3;
   let networkId;
   const project = path.join(__dirname, "../../sources/migrations/fabric-evm");
   const logger = new MemoryLogger();
-
-  before(done => Server.start(done));
-  after(done => Server.stop(done));
 
   before(async function() {
     config = await sandbox.create(project);
