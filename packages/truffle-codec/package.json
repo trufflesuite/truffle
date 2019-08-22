@@ -1,6 +1,6 @@
 {
   "name": "truffle-codec",
-  "version": "3.0.9",
+  "version": "3.0.10",
   "description": "A decoder and encoder for Solidity variables of all sorts",
   "main": "dist/interface/index.js",
   "types": "lib/interface/index.ts",

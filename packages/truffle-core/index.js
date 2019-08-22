@@ -8,5 +8,5 @@ module.exports = {
   package: require("./lib/package"),
   test: require("./lib/test"),
   version: pkg.version,
-  ganache: require("ganache-core")
+  ganache: require("ganache-core/public-exports")
 };

@@ -4,7 +4,7 @@ const TruffleError = require("truffle-error");
 const expect = require("truffle-expect");
 const Resolver = require("truffle-resolver");
 const Artifactor = require("truffle-artifactor");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache-core/public-exports");
 
 const Environment = {
   // It's important config is a Config object and not a vanilla object

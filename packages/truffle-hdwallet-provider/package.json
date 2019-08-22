@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "1.0.16",
+  "version": "1.0.17",
   "main": "dist/index.js",
   "scripts": {
     "prepare": "npx webpack --config webpack/webpack.config.js",
@@ -26,7 +26,7 @@
     "ethereumjs-tx": "^1.3.7",
     "ethereumjs-util": "^5.2.0",
     "ethereumjs-wallet": "^0.6.2",
-    "ganache-core": "2.5.7",
+    "ganache-core": "2.7.0",
     "js-scrypt": "^0.2.0",
     "mocha": "5.2.0",
     "web3-provider-engine": "https://github.com/trufflesuite/provider-engine#web3-one",

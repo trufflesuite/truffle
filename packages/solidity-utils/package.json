@@ -1,10 +1,10 @@
 {
-  "name": "truffle-solidity-utils",
-  "version": "1.2.3",
+  "name": "@truffle/solidity-utils",
+  "version": "1.2.4",
   "description": "Utilities for Solidity contracts",
   "main": "index.js",
   "scripts": {},
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-solidity-utils",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/solidity-utils",
   "keywords": [
     "ethereum",
     "truffle",
@@ -14,9 +14,9 @@
   "author": "Tim Coulter <tim.coulter@consensys.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-solidity-utils/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-solidity-utils#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/solidity-utils#readme",
   "publishConfig": {
     "access": "public"
   },
