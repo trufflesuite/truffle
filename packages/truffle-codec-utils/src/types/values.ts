@@ -10,14 +10,12 @@ const debug = debugModule("codec-utils:types:values");
 //(not other builtins though for now) so there is some support for the magic
 //type.
 
-//We don't include fixed and ufixed for now.  Those will be added when
-//implemented.
-
 //NOTE: not all of these optional fields are actually implemented. Some are
 //just intended for the future.  More optional fields may be added in the
 //future.
 
 import BN from "bn.js";
+import BigNumber from "bignumber.js";
 import { Types } from "./types";
 import { Errors } from "./errors";
 import util from "util";
@@ -54,7 +52,7 @@ export namespace Values {
   //note that we often want an elementary *value*, and not an error!
   //so let's define those types too
   export type ElementaryValue = UintValue | IntValue | BoolValue
-    | BytesValue | AddressValue | StringValue;
+    | BytesValue | AddressValue | StringValue | FixedValue | UfixedValue;
   //we don't include FixedValue or UfixedValue because those
   //aren't implemented yet
   export type BytesValue = BytesStaticValue | BytesDynamicValue;
@@ -156,10 +154,28 @@ export namespace Values {
   }
 
   //Fixed & Ufixed
-  //These don't have a value format yet, so they just decode to errors for now!
   
-  export type FixedResult = Errors.FixedErrorResult;
-  export type UfixedResult = Errors.UfixedErrorResult;
+  export type FixedResult = FixedValue | Errors.FixedErrorResult;
+
+  export interface FixedValue {
+    type: Types.FixedType;
+    kind: "value";
+    value: {
+      asBigNumber: BigNumber;
+      rawAsBigNumber?: BigNumber;
+    };
+  }
+
+  export type UfixedResult = UfixedValue | Errors.UfixedErrorResult;
+
+  export interface UfixedValue {
+    type: Types.UfixedType;
+    kind: "value";
+    value: {
+      asBigNumber: BigNumber;
+      rawAsBigNumber?: BigNumber;
+    };
+  }
 
   /*
    * SECTION 3: CONTAINER TYPES (including magic)

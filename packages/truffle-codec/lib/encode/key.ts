@@ -1,5 +1,9 @@
+import debugModule from "debug";
+const debug = debugModule("codec:encode:key");
+
 import { Values, Conversion as ConversionUtils, EVM as EVMUtils } from "truffle-codec-utils";
 import { stringToBytes } from "./abi";
+import BN from "bn.js";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
 //see: https://github.com/microsoft/TypeScript/issues/18758
@@ -40,8 +44,14 @@ export function encodeMappingKey(input: Values.ElementaryValue): Uint8Array {
         case "malformed":
           return ConversionUtils.toBytes(coercedInput.value.asHex);
       }
+      break; //to satisfy TypeScript
     }
-    //fixed and ufixed are skipped for now
+    case "fixed":
+    case "ufixed":
+      let bigNumberValue = (<Values.FixedValue|Values.UfixedValue>input).value.asBigNumber;
+      let shiftedValue = bigNumberValue.shiftedBy(input.type.places);
+      //now, turn it into a BN (by way of string) before converting to bytes (HACK)
+      return ConversionUtils.toBytes(new BN(shiftedValue.toString()), EVMUtils.WORD_SIZE);
   }
 }
 
@@ -63,6 +73,16 @@ export function keyInfoForPrinting(input: Values.ElementaryValue): {type: string
       return {
         type: "int",
         value: (<Values.IntValue>input).value.asBN.toString()
+      };
+    case "fixed":
+      return {
+        type: `fixed256x${input.type.places}`,
+        value: (<Values.FixedValue>input).value.asBigNumber.toString()
+      };
+    case "ufixed":
+      return {
+        type: `ufixed256x${input.type.places}`,
+        value: (<Values.UfixedValue>input).value.asBigNumber.toString()
       };
     case "bool":
       //this is the case that won't work as valid input to soliditySha3 :)

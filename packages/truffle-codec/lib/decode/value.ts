@@ -5,6 +5,7 @@ import read from "../read";
 import * as CodecUtils from "truffle-codec-utils";
 import { Types, Values } from "truffle-codec-utils";
 import BN from "bn.js";
+import BigNumber from "bignumber.js";
 import utf8 from "utf8";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
@@ -57,7 +58,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       }
       else {
         let error = { 
-          kind: "BoolOutOfRangeError" as "BoolOutOfRangeError",
+          kind: "BoolOutOfRangeError" as const,
           rawAsBN: numeric
         };
         if(strict) {
@@ -75,7 +76,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingLeft(bytes, dataType.bits/8)) {
         let error = { 
-          kind: "UintPaddingError" as "UintPaddingError",
+          kind: "UintPaddingError" as const,
           raw: CodecUtils.Conversion.toHexString(bytes)
         };
         if(strict) {
@@ -101,7 +102,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
         let error = { 
-          kind: "IntPaddingError" as "IntPaddingError",
+          kind: "IntPaddingError" as const,
           raw: CodecUtils.Conversion.toHexString(bytes)
         };
         if(strict) {
@@ -127,7 +128,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "address":
       if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
         let error = { 
-          kind: "AddressPaddingError" as "AddressPaddingError",
+          kind: "AddressPaddingError" as const,
           raw: CodecUtils.Conversion.toHexString(bytes)
         };
         if(strict) {
@@ -151,7 +152,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "contract":
       if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
         let error = { 
-          kind: "ContractPaddingError" as "ContractPaddingError",
+          kind: "ContractPaddingError" as const,
           raw: CodecUtils.Conversion.toHexString(bytes)
         };
         if(strict) {
@@ -177,7 +178,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
           //first, check padding (if needed)
           if(!permissivePadding && !checkPaddingRight(bytes, dataType.length)) {
             let error = { 
-              kind: "BytesPaddingError" as "BytesPaddingError",
+              kind: "BytesPaddingError" as const,
               raw: CodecUtils.Conversion.toHexString(bytes)
             };
             if(strict) {
@@ -223,7 +224,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         case "external":
           if(!checkPaddingRight(bytes, CodecUtils.EVM.ADDRESS_SIZE + CodecUtils.EVM.SELECTOR_SIZE)) {
             let error = { 
-              kind: "FunctionExternalNonStackPaddingError" as "FunctionExternalNonStackPaddingError",
+              kind: "FunctionExternalNonStackPaddingError" as const,
               raw: CodecUtils.Conversion.toHexString(bytes)
             };
             if(strict) {
@@ -271,7 +272,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       const fullType = <Types.EnumType>Types.fullType(dataType, info.userDefinedTypes);
       if(!fullType.options) {
         let error = {
-          kind: "EnumNotFoundDecodingError" as "EnumNotFoundDecodingError",
+          kind: "EnumNotFoundDecodingError" as const,
           type: fullType,
           rawAsBN: numeric
         };
@@ -299,7 +300,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       }
       else {
         let error = {
-          kind: "EnumOutOfRangeError" as "EnumOutOfRangeError",
+          kind: "EnumOutOfRangeError" as const,
           type: fullType,
           rawAsBN: numeric
         };
@@ -314,21 +315,70 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       }
     }
     //will have to split these once we actually support fixed-point
-    case "fixed":
-    case "ufixed": {
-      //skipping padding check as we don't support this anyway
-      const hex = CodecUtils.Conversion.toHexString(bytes);
-      let error = {
-        kind: "FixedPointNotYetSupportedError" as "FixedPointNotYetSupportedError",
-        raw: hex
-      };
-      if(strict) {
-        throw new StopDecodingError(error);
+    case "fixed": {
+      //first, check padding (if needed)
+      if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
+        let error = { 
+          kind: "FixedPaddingError" as const,
+          raw: CodecUtils.Conversion.toHexString(bytes)
+        };
+        if(strict) {
+          throw new StopDecodingError(error);
+        }
+        return {
+          type: dataType,
+          kind: "error",
+          error
+        };
       }
+      //now, truncate to appropriate length (keeping the bytes on the right)
+      bytes = bytes.slice(-dataType.bits/8);
+      let asBN = CodecUtils.Conversion.toSignedBN(bytes);
+      let rawAsBN = CodecUtils.Conversion.toSignedBN(rawBytes);
+      //HACK: convert to BigNumber by way of string
+      //(the shift appropriately, that's not a hack)
+      let asBigNumber = (new BigNumber(asBN.toString())).shiftedBy(-dataType.places);
+      let rawAsBigNumber = (new BigNumber(rawAsBN.toString())).shiftedBy(-dataType.places);
       return {
         type: dataType,
-        kind: "error",
-        error
+        kind: "value",
+        value: {
+          asBigNumber,
+          rawAsBigNumber
+        }
+      };
+    }
+    case "ufixed": {
+      //first, check padding (if needed)
+      if(!permissivePadding && !checkPaddingLeft(bytes, dataType.bits/8)) {
+        let error = { 
+          kind: "UfixedPaddingError" as const,
+          raw: CodecUtils.Conversion.toHexString(bytes)
+        };
+        if(strict) {
+          throw new StopDecodingError(error);
+        }
+        return {
+          type: dataType,
+          kind: "error",
+          error
+        };
+      }
+      //now, truncate to appropriate length (keeping the bytes on the right)
+      bytes = bytes.slice(-dataType.bits/8);
+      let asBN = CodecUtils.Conversion.toBN(bytes);
+      let rawAsBN = CodecUtils.Conversion.toBN(rawBytes);
+      //HACK: convert to BigNumber by way of string
+      //(the shift appropriately, that's not a hack)
+      let asBigNumber = (new BigNumber(asBN.toString())).shiftedBy(-dataType.places);
+      let rawAsBigNumber = (new BigNumber(rawAsBN.toString())).shiftedBy(-dataType.places);
+      return {
+        type: dataType,
+        kind: "value",
+        value: {
+          asBigNumber,
+          rawAsBigNumber
+        }
       };
     }
   }

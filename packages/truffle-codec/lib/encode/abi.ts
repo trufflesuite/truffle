@@ -1,8 +1,12 @@
+import debugModule from "debug";
+const debug = debugModule("codec:encode:abi");
+
 import { Values, Conversion as ConversionUtils, EVM as EVMUtils } from "truffle-codec-utils";
 import { AbiAllocations } from "../types/allocation";
 import { isTypeDynamic, abiSizeForType } from "../allocate/abi";
 import sum from "lodash.sum";
 import utf8 from "utf8";
+import BN from "bn.js";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
 //see: https://github.com/microsoft/TypeScript/issues/18758
@@ -75,7 +79,12 @@ export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): U
           return encoded;
       }
     }
-    //the fixed & ufixed cases will get skipped for now
+    case "fixed":
+    case "ufixed":
+      let bigNumberValue = (<Values.FixedValue|Values.UfixedValue>input).value.asBigNumber;
+      let shiftedValue = bigNumberValue.shiftedBy(input.type.places);
+      //now, turn it into a BN (by way of string) before converting to bytes (HACK)
+      return ConversionUtils.toBytes(new BN(shiftedValue.toString()), EVMUtils.WORD_SIZE);
     case "array": {
       let coercedInput: Values.ArrayValue = <Values.ArrayValue> input;
       if(coercedInput.reference !== undefined) {

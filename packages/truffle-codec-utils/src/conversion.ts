@@ -219,7 +219,9 @@ export namespace Conversion {
             return Buffer.from(coercedResult.value.asHex.slice(2), 'hex').toString();
         }
       }
-      //fixed and ufixed are skipped for now
+      case "fixed":
+      case "ufixed":
+        return (<Values.FixedValue|Values.UfixedValue>result).value.asBigNumber.toNumber(); //WARNING
       case "array": //WARNING: circular case not handled; will loop infinitely
         return (<Values.ArrayValue>result).value.map(nativize);
       case "mapping":
