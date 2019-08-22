@@ -47,7 +47,7 @@ describe("migrate with [ @fabric-evm ] interface", () => {
     assert(output.includes("Re-using deployed 'Example'"));
     assert(output.includes("Replacing 'UsesExample'"));
     assert(output.includes("PayableExample"));
-    assert(output.includes("1 ETH"));
+    assert(output.includes("0 ETH"));
     assert(output.includes("Saving migration"));
     assert(output.includes("Saving artifacts"));
 
