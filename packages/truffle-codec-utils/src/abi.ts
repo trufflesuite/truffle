@@ -53,6 +53,7 @@ export namespace AbiUtils {
     type: string;
     indexed?: boolean; //only present for inputs
     components?: AbiParameter[]; //only preset for tuples (structs)
+    internalType?: string;
   }
 
   export interface FunctionAbiBySelectors {
