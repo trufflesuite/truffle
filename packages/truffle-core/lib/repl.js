@@ -119,19 +119,8 @@ ReplManager.prototype.interpret = function(
   filename,
   callback
 ) {
-  const processedReplInput = processReplInput(replInput);
   const currentContext = this.contexts[this.contexts.length - 1];
-  currentContext.interpreter(processedReplInput, context, filename, callback);
-};
-
-const processReplInput = input => {
-  const inputComponents = input.split(" ");
-  if (inputComponents.length === 0) return input;
-
-  if (inputComponents[0] === "truffle") {
-    return inputComponents.slice(1).join(" ");
-  }
-  return input;
+  currentContext.interpreter(replInput, context, filename, callback);
 };
 
 module.exports = ReplManager;
