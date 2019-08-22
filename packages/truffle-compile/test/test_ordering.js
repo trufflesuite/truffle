@@ -136,7 +136,7 @@ describe("Compile - solidity ^0.4.0", function() {
       assert.deepEqual(abi, expectedOrder);
     });
 
-    // Ported from `truffle-solidity-utils`
+    // Ported from `@truffle/solidity-utils`
     it("orders the ABI of a contract without functions", async function() {
       var sources = {};
       // ComplexOrdered.sol includes contract `Empty`
