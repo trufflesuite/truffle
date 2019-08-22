@@ -977,6 +977,27 @@
   resolved "https://registry.yarnpkg.com/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz#8da5c6530915653f3a1f38fd5f101d8c3f8079c5"
   integrity sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
 
+"@trufflesuite/chromafi@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.1.1.tgz#31d377f26238e6434a18d5f080061949c04eb2f0"
+  integrity sha512-G9L+xWPwvza+i5BOksQZnPev0yn4S5Esfeh++gm50nolYlfiIp71u8m/CBhy5agdXGoVINBenEy/M+pl5fqHFA==
+  dependencies:
+    ansi-mark "^1.0.0"
+    ansi-regex "^3.0.0"
+    array-uniq "^1.0.3"
+    camelcase "^4.1.0"
+    chalk "^2.3.2"
+    cheerio "^1.0.0-rc.2"
+    deepmerge "^2.1.0"
+    detect-indent "^5.0.0"
+    he "^1.1.1"
+    highlight.js "^9.12.0"
+    husky "^0.14.3"
+    min-indent "^1.0.0"
+    strip-ansi "^4.0.0"
+    strip-indent "^2.0.0"
+    super-split "^1.1.0"
+
 "@types/bn.js@*", "@types/bn.js@^4.11.2", "@types/bn.js@^4.11.4":
   version "4.11.5"
   resolved "https://registry.yarnpkg.com/@types/bn.js/-/bn.js-4.11.5.tgz#40e36197433f78f807524ec623afcf0169ac81dc"
@@ -3390,26 +3411,6 @@ chownr@^1.0.1, chownr@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/chownr/-/chownr-1.1.1.tgz#54726b8b8fff4df053c42187e801fb4412df1494"
   integrity sha512-j38EvO5+LHX84jlo6h4UzmOwi0UgW61WRyPtJz4qaadK5eY3BTS5TY/S1Stc3Uk2lIM6TPevAlULiEJwie860g==
-
-"chromafi@git+ssh://git@github.com:haltman-at/chromafi.git#16d906400e9f75bb1153ee85c71ac49a28332e27":
-  version "2.1.0"
-  resolved "git+ssh://git@github.com:haltman-at/chromafi.git#16d906400e9f75bb1153ee85c71ac49a28332e27"
-  dependencies:
-    ansi-mark "^1.0.0"
-    ansi-regex "^3.0.0"
-    array-uniq "^1.0.3"
-    camelcase "^4.1.0"
-    chalk "^2.3.2"
-    cheerio "^1.0.0-rc.2"
-    deepmerge "^2.1.0"
-    detect-indent "^5.0.0"
-    he "^1.1.1"
-    highlight.js "^9.12.0"
-    husky "^0.14.3"
-    min-indent "^1.0.0"
-    strip-ansi "^4.0.0"
-    strip-indent "^2.0.0"
-    super-split "^1.1.0"
 
 chrome-trace-event@^1.0.0:
   version "1.0.2"
