@@ -1,19 +1,19 @@
 {
   "name": "truffle-reporters",
-  "version": "1.0.10",
   "description": "Reporters for Truffle modules",
+  "license": "MIT",
+  "author": "",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-reporters",
+  "version": "1.0.12",
   "main": "index.js",
   "scripts": {},
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-reporters",
-  "author": "",
-  "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
   "dependencies": {
     "node-emoji": "^1.8.1",
     "ora": "^3.0.0",
-    "web3-utils": "1.0.0-beta.37"
+    "web3-utils": "1.2.1"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }

@@ -60,8 +60,8 @@ var execute = {
 
     args = utils.convertToEthersBN(args);
 
-    return constructor.detectNetwork().then(() => {
-      return { args: args, params: params };
+    return constructor.detectNetwork().then(network => {
+      return { args: args, params: params, network: network };
     });
   },
 
@@ -102,40 +102,42 @@ var execute = {
     var constructor = this;
 
     return function() {
-      var params = {};
       var defaultBlock = "latest";
       var args = Array.prototype.slice.call(arguments);
       var lastArg = args[args.length - 1];
+      var promiEvent = new Web3PromiEvent();
 
       // Extract defaultBlock parameter
       if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
         defaultBlock = args.pop();
       }
 
-      // Extract tx params
-      if (execute.hasTxParams(lastArg)) {
-        params = args.pop();
-      }
+      execute
+        .prepareCall(constructor, methodABI, args)
+        .then(async ({ args, params }) => {
+          let result;
 
-      params.to = address;
-      params = utils.merge(constructor.class_defaults, params);
+          params.to = address;
 
-      return new Promise(async (resolve, reject) => {
-        let result;
-        try {
-          await constructor.detectNetwork();
-          args = utils.convertToEthersBN(args);
+          promiEvent.eventEmitter.emit("execute:call:method", {
+            fn: fn,
+            args: args,
+            address: address,
+            abi: methodABI,
+            contract: constructor
+          });
+
           result = await fn(...args).call(params, defaultBlock);
           result = reformat.numbers.call(
             constructor,
             result,
             methodABI.outputs
           );
-          resolve(result);
-        } catch (err) {
-          reject(err);
-        }
-      });
+          return promiEvent.resolve(result);
+        })
+        .catch(promiEvent.reject);
+
+      return promiEvent.eventEmitter;
     };
   },
 
@@ -152,32 +154,42 @@ var execute = {
 
     return function() {
       var deferred;
-      var args = Array.prototype.slice.call(arguments);
-      var params = utils.getTxParams.call(constructor, methodABI, args);
       var promiEvent = new Web3PromiEvent();
 
-      var context = {
-        contract: constructor, // Can't name this field `constructor` or `_constructor`
-        promiEvent: promiEvent,
-        params: params
-      };
+      execute
+        .prepareCall(constructor, methodABI, arguments)
+        .then(async ({ args, params, network }) => {
+          var context = {
+            contract: constructor, // Can't name this field `constructor` or `_constructor`
+            promiEvent: promiEvent,
+            params: params
+          };
 
-      constructor
-        .detectNetwork()
-        .then(network => {
-          args = utils.convertToEthersBN(args);
           params.to = address;
-          params.data = fn ? fn(...args).encodeABI() : undefined;
+          params.data = fn ? fn(...args).encodeABI() : params.data;
 
-          execute.getGasEstimate
-            .call(constructor, params, network.blockLimit)
-            .then(gas => {
-              params.gas = gas;
-              deferred = web3.eth.sendTransaction(params);
-              deferred.catch(override.start.bind(constructor, context));
-              handlers.setup(deferred, context);
-            })
-            .catch(promiEvent.reject);
+          promiEvent.eventEmitter.emit("execute:send:method", {
+            fn,
+            args,
+            address,
+            abi: methodABI,
+            contract: constructor
+          });
+
+          try {
+            params.gas = await execute.getGasEstimate.call(
+              constructor,
+              params,
+              network.blockLimit
+            );
+          } catch (error) {
+            promiEvent.reject(error);
+            return;
+          }
+
+          deferred = web3.eth.sendTransaction(params);
+          deferred.catch(override.start.bind(constructor, context));
+          handlers.setup(deferred, context);
         })
         .catch(promiEvent.reject);
 
@@ -186,43 +198,59 @@ var execute = {
   },
 
   /**
-   * Deploys an instance. Network detection for `.new` happens before invocation at `contract.js`
-   * where we check the libraries.
-   * @param  {Object} args            Deployment options;
-   * @param  {Object} context         Context object that exposes execution state to event handlers.
-   * @param  {Number} blockLimit      `block.gasLimit`
+   * Deploys an instance
+   * @param  {Object} constructorABI  Constructor ABI segment w/ inputs & outputs keys
    * @return {PromiEvent}             Resolves a TruffleContract instance
    */
-  deploy: function(args, context, blockLimit) {
+  deploy: function(constructorABI) {
     var constructor = this;
-
-    var abi = constructor.abi;
-    var constructorABI = constructor.abi.filter(
-      i => i.type === "constructor"
-    )[0];
-
     var web3 = constructor.web3;
-    var params = utils.getTxParams.call(constructor, constructorABI, args);
-    var deferred;
 
-    var options = {
-      data: constructor.binary,
-      arguments: utils.convertToEthersBN(args)
-    };
+    return function() {
+      var deferred;
+      const promiEvent = new Web3PromiEvent();
 
-    var contract = new web3.eth.Contract(abi);
-    params.data = contract.deploy(options).encodeABI();
+      execute
+        .prepareCall(constructor, constructorABI, arguments)
+        .then(async ({ args, params, network }) => {
+          const { blockLimit } = network;
 
-    execute.getGasEstimate
-      .call(constructor, params, blockLimit)
-      .then(gas => {
-        params.gas = gas;
-        context.params = params;
-        deferred = web3.eth.sendTransaction(params);
-        handlers.setup(deferred, context);
+          utils.checkLibraries.apply(constructor);
 
-        deferred
-          .then(async receipt => {
+          // Promievent and flag that allows instance to resolve (rather than just receipt)
+          const context = {
+            contract: constructor,
+            promiEvent,
+            onlyEmitReceipt: true
+          };
+
+          var options = {
+            data: constructor.binary,
+            arguments: args
+          };
+
+          var contract = new web3.eth.Contract(constructor.abi);
+          params.data = contract.deploy(options).encodeABI();
+
+          params.gas = await execute.getGasEstimate.call(
+            constructor,
+            params,
+            blockLimit
+          );
+
+          context.params = params;
+
+          promiEvent.eventEmitter.emit("execute:deploy:method", {
+            args,
+            abi: constructorABI,
+            contract: constructor
+          });
+
+          deferred = web3.eth.sendTransaction(params);
+          handlers.setup(deferred, context);
+
+          try {
+            const receipt = await deferred;
             if (receipt.status !== undefined && !receipt.status) {
               var reason = await Reason.get(params, web3);
 
@@ -237,19 +265,22 @@ var execute = {
             }
 
             var web3Instance = new web3.eth.Contract(
-              abi,
+              constructor.abi,
               receipt.contractAddress
             );
             web3Instance.transactionHash = context.transactionHash;
 
             context.promiEvent.resolve(new constructor(web3Instance));
-
+          } catch (web3Error) {
             // Manage web3's 50 blocks' timeout error.
             // Web3's own subscriptions go dead here.
-          })
-          .catch(override.start.bind(constructor, context));
-      })
-      .catch(context.promiEvent.reject);
+            await override.start.call(constructor, context, web3Error);
+          }
+        })
+        .catch(promiEvent.reject);
+
+      return promiEvent.eventEmitter;
+    };
   },
 
   /**

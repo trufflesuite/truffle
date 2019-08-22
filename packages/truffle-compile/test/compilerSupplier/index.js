@@ -27,8 +27,8 @@ describe("CompilerSupplier", () => {
       it("calls load on the Docker strategy", done => {
         supplier
           .load()
-          .then(result => {
-            assert(result === "called Docker");
+          .then(({ solc }) => {
+            assert(solc === "called Docker");
             done();
           })
           .catch(() => {
@@ -53,8 +53,8 @@ describe("CompilerSupplier", () => {
       it("calls load on the Native strategy", done => {
         supplier
           .load()
-          .then(result => {
-            assert(result === "called Native");
+          .then(({ solc }) => {
+            assert(solc === "called Native");
             done();
           })
           .catch(() => {
@@ -78,8 +78,8 @@ describe("CompilerSupplier", () => {
       it("calls load on the VersionRange strategy", done => {
         supplier
           .load()
-          .then(result => {
-            assert(result === "called VersionRange");
+          .then(({ solc }) => {
+            assert(solc === "called VersionRange");
             done();
           })
           .catch(() => {
@@ -104,8 +104,8 @@ describe("CompilerSupplier", () => {
       it("calls load on the VersionRange strategy", done => {
         supplier
           .load()
-          .then(result => {
-            assert(result === "called VersionRange");
+          .then(({ solc }) => {
+            assert(solc === "called VersionRange");
             done();
           })
           .catch(() => {
@@ -178,8 +178,8 @@ describe("CompilerSupplier", () => {
       it("calls load on the VersionRange strategy", done => {
         supplier
           .load()
-          .then(result => {
-            assert(result === "called VersionRange");
+          .then(({ solc }) => {
+            assert(solc === "called VersionRange");
             done();
           })
           .catch(() => {
@@ -204,8 +204,8 @@ describe("CompilerSupplier", () => {
       it("calls load on the Local strategy", done => {
         supplier
           .load()
-          .then(result => {
-            assert(result === "called Local");
+          .then(({ solc }) => {
+            assert(solc === "called Local");
             done();
           })
           .catch(() => {

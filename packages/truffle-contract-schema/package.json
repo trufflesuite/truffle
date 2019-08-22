@@ -1,6 +1,6 @@
 {
   "name": "truffle-contract-schema",
-  "version": "3.0.11",
+  "version": "3.0.13",
   "description": "JSON schema for contract artifacts",
   "main": "index.js",
   "scripts": {

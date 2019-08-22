@@ -11,16 +11,11 @@ var Artifactor = require("truffle-artifactor");
 describe("profiler", function() {
   var config;
 
-  before("Create a sandbox", function(done) {
-    this.timeout(10000);
-    Box.sandbox(function(err, result) {
-      if (err) return done(err);
-      config = result;
-      config.resolver = new Resolver(config);
-      config.artifactor = new Artifactor(config.contracts_build_directory);
-      config.network = "development";
-      done();
-    });
+  before("Create a sandbox", async () => {
+    config = await Box.sandbox("default");
+    config.resolver = new Resolver(config);
+    config.artifactor = new Artifactor(config.contracts_build_directory);
+    config.network = "development";
   });
 
   after("Cleanup tmp files", function(done) {
@@ -46,4 +41,4 @@ describe("profiler", function() {
       }
     );
   });
-});
+}).timeout(10000);
