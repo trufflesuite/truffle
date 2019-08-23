@@ -5,7 +5,7 @@ set -ex
 
 npm login
 node ./scripts/npm-access.js
-lerna publish
+lerna publish -- --access=public
 git checkout master
 git merge develop
 git push origin master

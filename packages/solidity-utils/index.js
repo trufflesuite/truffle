@@ -1,5 +1,4 @@
 var SolidityUtils = {
-
   getCharacterOffsetToLineAndColumnMapping: function(source) {
     var mapping = [];
 
@@ -31,7 +30,7 @@ var SolidityUtils = {
   },
 
   getHumanReadableSourceMap: function(sourceMap) {
-    var map = sourceMap.split(';');
+    var map = sourceMap.split(";");
 
     var last = {};
 
@@ -43,12 +42,12 @@ var SolidityUtils = {
         jump: last.jump
       };
 
-      current = current.split(':');
+      current = current.split(":");
 
-      if (current[0] && current[0] !== '-1' && current[0].length) {
+      if (current[0] && current[0] !== "-1" && current[0].length) {
         ret.start = parseInt(current[0]);
       }
-      if (current[1] && current[1] !== '-1' && current[1].length) {
+      if (current[1] && current[1] !== "-1" && current[1].length) {
         ret.length = parseInt(current[1]);
       }
       if (current[2] /*&& current[2] !== '-1'*/ && current[2].length) {
