@@ -1,4 +1,4 @@
-var TruffleError = require("truffle-error");
+var TruffleError = require("@truffle/error");
 var inherits = require("util").inherits;
 var utils = require("./utils");
 

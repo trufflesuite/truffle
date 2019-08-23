@@ -1,4 +1,4 @@
-const TruffleError = require("truffle-error");
+const TruffleError = require("@truffle/error");
 const originalRequire = require("original-require");
 const flow = require("lodash/fp/flow");
 const path = require("path");

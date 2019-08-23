@@ -7,9 +7,9 @@ inherits(ExtendableError, ExtendableBuiltin(Error));
 function ExtendableError(message) {
   ExtendableError.super_.call(this);
   this.message = message;
-  this.stack = (new Error(message)).stack;
+  this.stack = new Error(message).stack;
   this.name = this.constructor.name;
-};
+}
 
 // Hack. Likely won't be formatted correctly when there are
 // 10 or more errors. But if there's 10 or more errors, I'm guessing
