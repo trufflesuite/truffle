@@ -5,7 +5,7 @@ import read from "../read";
 import * as CodecUtils from "truffle-codec-utils";
 import { Types, Values } from "truffle-codec-utils";
 import BN from "bn.js";
-import BigNumber from "bignumber.js";
+import Big from "big.js";
 import utf8 from "utf8";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
@@ -335,16 +335,14 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       bytes = bytes.slice(-dataType.bits/8);
       let asBN = CodecUtils.Conversion.toSignedBN(bytes);
       let rawAsBN = CodecUtils.Conversion.toSignedBN(rawBytes);
-      //HACK: convert to BigNumber by way of string
-      //(the shift appropriately, that's not a hack)
-      let asBigNumber = (new BigNumber(asBN.toString())).shiftedBy(-dataType.places);
-      let rawAsBigNumber = (new BigNumber(rawAsBN.toString())).shiftedBy(-dataType.places);
+      let asBig = CodecUtils.Conversion.shiftBigDown(CodecUtils.Conversion.toBig(asBN), dataType.places);
+      let rawAsBig = CodecUtils.Conversion.shiftBigDown(CodecUtils.Conversion.toBig(rawAsBN), dataType.places);
       return {
         type: dataType,
         kind: "value",
         value: {
-          asBigNumber,
-          rawAsBigNumber
+          asBig,
+          rawAsBig
         }
       };
     }
@@ -368,16 +366,14 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       bytes = bytes.slice(-dataType.bits/8);
       let asBN = CodecUtils.Conversion.toBN(bytes);
       let rawAsBN = CodecUtils.Conversion.toBN(rawBytes);
-      //HACK: convert to BigNumber by way of string
-      //(the shift appropriately, that's not a hack)
-      let asBigNumber = (new BigNumber(asBN.toString())).shiftedBy(-dataType.places);
-      let rawAsBigNumber = (new BigNumber(rawAsBN.toString())).shiftedBy(-dataType.places);
+      let asBig = CodecUtils.Conversion.shiftBigDown(CodecUtils.Conversion.toBig(asBN), dataType.places);
+      let rawAsBig = CodecUtils.Conversion.shiftBigDown(CodecUtils.Conversion.toBig(rawAsBN), dataType.places);
       return {
         type: dataType,
         kind: "value",
         value: {
-          asBigNumber,
-          rawAsBigNumber
+          asBig,
+          rawAsBig
         }
       };
     }

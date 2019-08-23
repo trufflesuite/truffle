@@ -38,7 +38,9 @@ export class ResultInspector {
             return options.stylize((<Values.UintValue|Values.IntValue>this.result).value.asBN.toString(), "number");
           case "fixed":
           case "ufixed":
-            return options.stylize((<Values.FixedValue|Values.UfixedValue>this.result).value.asBigNumber.toString(), "number");
+            //note: because this is just for display, we don't bother adjusting the magic values Big.NE or Big.PE;
+            //we'll trust those to their defaults
+            return options.stylize((<Values.FixedValue|Values.UfixedValue>this.result).value.asBig.toString(), "number");
           case "bool":
             return util.inspect((<Values.BoolValue>this.result).value.asBool, options);
           case "bytes":

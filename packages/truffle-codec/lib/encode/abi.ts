@@ -81,10 +81,9 @@ export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): U
     }
     case "fixed":
     case "ufixed":
-      let bigNumberValue = (<Values.FixedValue|Values.UfixedValue>input).value.asBigNumber;
-      let shiftedValue = bigNumberValue.shiftedBy(input.type.places);
-      //now, turn it into a BN (by way of string) before converting to bytes (HACK)
-      return ConversionUtils.toBytes(new BN(shiftedValue.toString()), EVMUtils.WORD_SIZE);
+      let bigValue = (<Values.FixedValue|Values.UfixedValue>input).value.asBig;
+      let shiftedValue = ConversionUtils.shiftBigUp(bigValue, input.type.places);
+      return ConversionUtils.toBytes(shiftedValue, EVMUtils.WORD_SIZE);
     case "array": {
       let coercedInput: Values.ArrayValue = <Values.ArrayValue> input;
       if(coercedInput.reference !== undefined) {

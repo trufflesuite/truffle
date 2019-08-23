@@ -48,10 +48,9 @@ export function encodeMappingKey(input: Values.ElementaryValue): Uint8Array {
     }
     case "fixed":
     case "ufixed":
-      let bigNumberValue = (<Values.FixedValue|Values.UfixedValue>input).value.asBigNumber;
-      let shiftedValue = bigNumberValue.shiftedBy(input.type.places);
-      //now, turn it into a BN (by way of string) before converting to bytes (HACK)
-      return ConversionUtils.toBytes(new BN(shiftedValue.toString()), EVMUtils.WORD_SIZE);
+      let bigValue = (<Values.FixedValue|Values.UfixedValue>input).value.asBig;
+      let shiftedValue = ConversionUtils.shiftBigUp(bigValue, input.type.places);
+      return ConversionUtils.toBytes(shiftedValue, EVMUtils.WORD_SIZE);
   }
 }
 
@@ -77,12 +76,12 @@ export function keyInfoForPrinting(input: Values.ElementaryValue): {type: string
     case "fixed":
       return {
         type: `fixed256x${input.type.places}`,
-        value: (<Values.FixedValue>input).value.asBigNumber.toString()
+        value: (<Values.FixedValue>input).value.asBig.toString()
       };
     case "ufixed":
       return {
         type: `ufixed256x${input.type.places}`,
-        value: (<Values.UfixedValue>input).value.asBigNumber.toString()
+        value: (<Values.UfixedValue>input).value.asBig.toString()
       };
     case "bool":
       //this is the case that won't work as valid input to soliditySha3 :)

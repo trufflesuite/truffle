@@ -15,7 +15,7 @@ const debug = debugModule("codec-utils:types:values");
 //future.
 
 import BN from "bn.js";
-import BigNumber from "bignumber.js";
+import Big from "big.js";
 import { Types } from "./types";
 import { Errors } from "./errors";
 import util from "util";
@@ -161,8 +161,8 @@ export namespace Values {
     type: Types.FixedType;
     kind: "value";
     value: {
-      asBigNumber: BigNumber;
-      rawAsBigNumber?: BigNumber;
+      asBig: Big;
+      rawAsBig?: Big;
     };
   }
 
@@ -172,8 +172,8 @@ export namespace Values {
     type: Types.UfixedType;
     kind: "value";
     value: {
-      asBigNumber: BigNumber;
-      rawAsBigNumber?: BigNumber;
+      asBig: Big;
+      rawAsBig?: Big;
     };
   }
 
