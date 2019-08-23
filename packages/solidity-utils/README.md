@@ -1,4 +1,4 @@
-# truffle-solidity-utils
+# @truffle/solidity-utils
 Utilities for solidity contracts
 
 # API

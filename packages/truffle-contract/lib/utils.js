@@ -59,7 +59,12 @@ const Utils = {
           copy.data = "";
         }
 
-        const logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
+        let logArgs;
+        try {
+          logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
+        } catch (_) {
+          return null;
+        }
         copy.args = reformat.numbers.call(constructor, logArgs, logABI.inputs);
 
         delete copy.data;

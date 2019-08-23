@@ -31,6 +31,8 @@ matrix:
     - node_js: 8
       env: QUORUM=true
     - node_js: 8
+      env: FABRICEVM=true
+    - node_js: 8
       env: PACKAGES=true
     - node_js: 8
       env: INTEGRATION=true

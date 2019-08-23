@@ -6,20 +6,24 @@ const getPkgPermissions = userOrOrg => {
   return JSON.parse(stringResponse);
 };
 
-const truffleSuiteOrgPermissionsObject = getPkgPermissions("trufflesuite");
+const orgs = ["trufflesuite", "truffle"];
 
-const getNpmUsername = () => {
-  const bufferResponse = execSync("npm whoami");
-  return bufferResponse.toString();
-};
+for (let org of orgs) {
+  const permissions = getPkgPermissions(org);
 
-const username = getNpmUsername();
+  const getNpmUsername = () => {
+    const bufferResponse = execSync("npm whoami");
+    return bufferResponse.toString();
+  };
 
-const userPermissionsObject = getPkgPermissions(username);
+  const username = getNpmUsername();
 
-for (const pkg in truffleSuiteOrgPermissionsObject) {
-  if (!userPermissionsObject[pkg])
-    throw new Error(`You don't have permissions to publish ${pkg}`);
-  if (truffleSuiteOrgPermissionsObject[pkg] !== userPermissionsObject[pkg])
-    throw new Error(`Missing correct 'read-write' access to ${pkg}`);
+  const userPermissionsObject = getPkgPermissions(username);
+
+  for (const pkg in permissions) {
+    if (!userPermissionsObject[pkg])
+      throw new Error(`You don't have permissions to publish ${pkg}`);
+    if (permissions[pkg] !== userPermissionsObject[pkg])
+      throw new Error(`Missing correct 'read-write' access to ${pkg}`);
+  }
 }
