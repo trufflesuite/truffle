@@ -51,8 +51,11 @@
   "dependencies": {
     "@gnd/graphql-tools": "^4.0.5-fix.0",
     "@gnd/jsonschema2graphql": "^1.0.15",
+    "@types/pouchdb-adapter-leveldb": "^6.1.3",
+    "fse": "^4.0.1",
     "graphql": "^14.0.2",
     "graphql-tag": "^2.10.1",
+    "jsondown": "^1.0.0",
     "module-alias": "^2.1.0",
     "pascal-case": "^2.0.1",
     "pouchdb": "^7.0.0",

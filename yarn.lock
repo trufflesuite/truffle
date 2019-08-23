@@ -1295,6 +1295,13 @@
   dependencies:
     "@types/pouchdb-core" "*"
 
+"@types/pouchdb-adapter-leveldb@^6.1.3":
+  version "6.1.3"
+  resolved "https://registry.yarnpkg.com/@types/pouchdb-adapter-leveldb/-/pouchdb-adapter-leveldb-6.1.3.tgz#17c7e75d75b992050bca15991e97fba575c61bb3"
+  integrity sha512-ex8NFqQGFwEpFi7AaZ5YofmuemfZNsL3nTFZBUCAKYMBkazQij1pe2ILLStSvJr0XS0qxgXjCEW19T5Wqiiskg==
+  dependencies:
+    "@types/pouchdb-core" "*"
+
 "@types/pouchdb-adapter-localstorage@*":
   version "6.1.2"
   resolved "https://registry.yarnpkg.com/@types/pouchdb-adapter-localstorage/-/pouchdb-adapter-localstorage-6.1.2.tgz#3156b6e53131816b565a648ffb44cbbc4ae236af"
@@ -7332,6 +7339,11 @@ fs.realpath@^1.0.0:
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
   integrity sha1-FQStJSMVjKpA20onh8sBQRmU6k8=
 
+fse@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/fse/-/fse-4.0.1.tgz#9e1db80203933cbe59ed75507f35adf2689ce1e9"
+  integrity sha512-5XLUrweQvJxSJKhBe3XjimHSJ2EUhYOG+K2tLQy8I9kp78Fa3CgUXqxAZWxE9+fsvnI5GVkHl4NDqbf1tSb93Q==
+
 fsevents@^1.0.0, fsevents@^1.2.7:
   version "1.2.9"
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-1.2.9.tgz#3f5ed66583ccd6f400b5a00db6f7e861363e388f"
@@ -9740,6 +9752,14 @@ json5@^1.0.1:
   dependencies:
     minimist "^1.2.0"
 
+jsondown@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/jsondown/-/jsondown-1.0.0.tgz#c5cc5cda65f515d2376136a104b5f535534f26e3"
+  integrity sha512-p6XxPaq59aXwcdDQV3ISMA5xk+1z6fJuctcwwSdR9iQgbYOcIrnknNrhcMGG+0FaUfKHGkdDpQNaZrovfBoyOw==
+  dependencies:
+    memdown "1.4.1"
+    mkdirp "0.5.1"
+
 jsonfile@^2.1.0:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/jsonfile/-/jsonfile-2.4.0.tgz#3736a2b428b87bbda0cc83b53fa3d633a35c2ae8"
@@ -10929,7 +10949,7 @@ memdown@1.2.4:
     inherits "~2.0.1"
     ltgt "~2.1.3"
 
-memdown@^1.0.0:
+memdown@1.4.1, memdown@^1.0.0:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/memdown/-/memdown-1.4.1.tgz#b4e4e192174664ffbae41361aa500f3119efe215"
   integrity sha1-tOThkhdGZP+65BNhqlAPMRnv4hU=
