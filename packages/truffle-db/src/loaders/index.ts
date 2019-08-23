@@ -26,6 +26,7 @@ const resolvers = {
     artifactsLoad: {
       resolve: async (_, args, { artifactsDirectory, contractsDirectory, db }, info) => {
         const tempDir = tmp.dirSync({ unsafeCleanup: true })
+        tmp.setGracefulCleanup();
         const compilationConfig = {
           contracts_directory: contractsDirectory,
           contracts_build_directory: tempDir.name,

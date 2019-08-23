@@ -11,7 +11,8 @@ const config = Config.detect({
 
 const db = new TruffleDB({
   contracts_build_directory: config.contracts_build_directory,
-  contracts_directory: config.contracts_directory
+  contracts_directory: config.contracts_directory,
+  working_directory: config.working_directory
 });
 
 const { schema, context } = db;

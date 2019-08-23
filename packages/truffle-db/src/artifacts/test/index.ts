@@ -3,6 +3,7 @@ import path from "path";
 
 import { TruffleDB } from "truffle-db";
 import tmp from "tmp";
+
 const fixturesDirectory = path.join(
   __dirname, // truffle-db/src/test
   "..", // truffle-db/src/artifacts
@@ -17,7 +18,8 @@ tmp.setGracefulCleanup();
 
 // minimal config
 const config = {
-  contracts_build_directory: fixturesDirectory
+  contracts_build_directory: fixturesDirectory,
+  working_directory: tempDir.name
 };
 
 const db = new TruffleDB(config);

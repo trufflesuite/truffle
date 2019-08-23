@@ -56,7 +56,7 @@ export class TruffleDB {
 
   createContext(config: IConfig): IContext {
     return {
-      workspace: new Workspace(config.working_directory),
+      workspace: new Workspace(config.working_directory || ''),
       artifactsDirectory: config.contracts_build_directory,
       workingDirectory: config.working_directory || process.cwd(),
       contractsDirectory: config.contracts_directory,

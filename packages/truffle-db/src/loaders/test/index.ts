@@ -55,6 +55,7 @@ const config = {
   contracts_build_directory: path.join(fixturesDirectory, "sources"),
   contracts_directory: path.join(fixturesDirectory, "compilationSources"),
   artifacts_directory: path.join(fixturesDirectory, "compilationSources", "build", "contracts"),
+  working_directory: tempDir.name,
   all: true
 };
 
