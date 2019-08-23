@@ -28,7 +28,7 @@
     "del": "^2.2.0",
     "ethereumjs-wallet": "^0.6.2",
     "ethpm": "0.0.16",
-    "ethpm-registry": "0.0.10",
+    "ethpm-registry": "0.1.0-next.3",
     "fs-extra": "6.0.1",
     "ganache-core": "2.7.0",
     "hdkey": "^1.1.0",
