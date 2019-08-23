@@ -1,4 +1,4 @@
-const Schema = require("truffle-contract-schema");
+const Schema = require("@truffle/contract-schema");
 const fse = require("fs-extra");
 const path = require("path");
 const { writeArtifact, finalizeArtifact } = require("./utils");

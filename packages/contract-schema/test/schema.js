@@ -10,7 +10,7 @@ describe("Schema", function() {
 
   it("throws exception on invalid input", function() {
     var invalid = {
-      "abi": -1
+      abi: -1
     };
 
     try {
@@ -22,5 +22,4 @@ describe("Schema", function() {
       assert(abiErrors);
     }
   });
-
 });
