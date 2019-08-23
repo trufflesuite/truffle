@@ -31,7 +31,7 @@ const Utils = {
       privateFor: true
     };
 
-    for (field_name of Object.keys(val)) {
+    for (let field_name of Object.keys(val)) {
       if (allowed_fields[field_name]) return true;
     }
 
@@ -59,7 +59,12 @@ const Utils = {
           copy.data = "";
         }
 
-        const logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
+        let logArgs;
+        try {
+          logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
+        } catch (_) {
+          return null;
+        }
         copy.args = reformat.numbers.call(constructor, logArgs, logABI.inputs);
 
         delete copy.data;
@@ -149,7 +154,7 @@ const Utils = {
 
     const expected_arg_count = methodABI ? methodABI.inputs.length : 0;
 
-    tx_params = {};
+    let tx_params = {};
     const last_arg = args[args.length - 1];
 
     if (

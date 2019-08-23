@@ -1,6 +1,6 @@
 {
   "name": "truffle-config",
-  "version": "1.1.13",
+  "version": "1.1.19",
   "description": "Utility for interacting with truffle-config.js files",
   "main": "index.js",
   "scripts": {
@@ -21,10 +21,10 @@
   "dependencies": {
     "configstore": "^4.0.0",
     "find-up": "^2.1.0",
-    "lodash": "4.17.11",
+    "lodash": "^4.17.13",
     "original-require": "1.0.1",
     "truffle-error": "^0.0.5",
-    "truffle-provider": "^0.1.10"
+    "truffle-provider": "^0.1.15"
   },
   "publishConfig": {
     "access": "public"

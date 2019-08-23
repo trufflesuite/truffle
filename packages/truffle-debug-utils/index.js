@@ -6,7 +6,7 @@ var debug = require("debug")("debug-utils");
 var BN = require("bn.js");
 var util = require("util");
 
-var chromafi = require("chromafi");
+var chromafi = require("@trufflesuite/chromafi");
 var hljsDefineSolidity = require("highlightjs-solidity");
 hljsDefineSolidity(chromafi.hljs);
 var chalk = require("chalk");

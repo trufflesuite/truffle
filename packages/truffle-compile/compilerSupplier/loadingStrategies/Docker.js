@@ -10,7 +10,9 @@ class Docker extends LoadingStrategy {
   async load() {
     const versionString = await this.validateAndGetSolcVersion();
     const command =
-      "docker run -i ethereum/solc:" + this.config.version + " --standard-json";
+      "docker run --rm -i ethereum/solc:" +
+      this.config.version +
+      " --standard-json";
 
     try {
       return {

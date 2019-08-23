@@ -7,13 +7,7 @@ const fse = require("fs-extra");
 const inquirer = require("inquirer");
 
 function parseSandboxOptions(options) {
-  if (typeof options === "function") {
-    return {
-      name: "default",
-      unsafeCleanup: false,
-      setGracefulCleanup: false
-    };
-  } else if (typeof options === "string") {
+  if (typeof options === "string") {
     // back compatibility for when `options` used to be `name`
     return {
       name: options,
@@ -97,33 +91,22 @@ const Box = {
   //   Recursively removes the created temporary directory, even when it's not empty. default is false
   // options.setGracefulCleanup
   //   Cleanup temporary files even when an uncaught exception occurs
-  sandbox: (options, callback) => {
+  sandbox: async options => {
     const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
       options
     );
-
-    if (typeof options === "function") {
-      callback = options;
-    }
 
     if (setGracefulCleanup) {
       tmp.setGracefulCleanup();
     }
 
     const tmpDir = tmp.dirSync({ unsafeCleanup });
-    Box.unbox(
+    await Box.unbox(
       `https://github.com/trufflesuite/truffle-init-${name}`,
       tmpDir.name,
       options
-    )
-      .then(() => {
-        const config = Config.load(
-          path.join(tmpDir.name, "truffle-config.js"),
-          {}
-        );
-        callback(null, config);
-      })
-      .catch(callback);
+    );
+    return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
   }
 };
 

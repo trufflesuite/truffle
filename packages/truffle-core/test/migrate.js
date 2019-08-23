@@ -14,16 +14,11 @@ var Web3 = require("web3");
 describe("migrate", function() {
   var config;
 
-  before("Create a sandbox", function(done) {
-    this.timeout(30000);
-    Box.sandbox("default", function(err, result) {
-      if (err) return done(err);
-      config = result;
-      config.resolver = new Resolver(config);
-      config.artifactor = new Artifactor(config.contracts_build_directory);
-      config.networks = {};
-      done();
-    });
+  before("Create a sandbox", async () => {
+    config = await Box.sandbox("default");
+    config.resolver = new Resolver(config);
+    config.artifactor = new Artifactor(config.contracts_build_directory);
+    config.networks = {};
   });
 
   function createProviderAndSetNetworkConfig(network) {
@@ -248,4 +243,4 @@ describe("migrate", function() {
       "2_deploy_contracts.js~ should have been ignored!"
     );
   });
-});
+}).timeout(10000);

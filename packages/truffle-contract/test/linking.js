@@ -7,7 +7,7 @@ var debug = require("debug")("ganache-core");
 var Ganache = require("ganache-core");
 var path = require("path");
 var fs = require("fs");
-var Compile = require("truffle-compile");
+var Compile = require("truffle-compile/legacy");
 const { promisify } = require("util");
 
 // Clean up after solidity. Only remove solidity's listener,

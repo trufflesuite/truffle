@@ -1,34 +1,34 @@
 {
   "name": "truffle-external-compile",
-  "version": "1.0.11",
   "description": "Wrapper to compile Truffle contracts with arbitrary shell command",
-  "keywords": [
-    "truffle",
-    "ethereum",
-    "smart-contract"
-  ],
+  "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "license": "MIT",
-  "main": "index.js",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-external-compile",
-  "scripts": {
-    "test": "mocha"
-  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "1.0.15",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
   },
   "dependencies": {
     "debug": "^4.1.0",
     "glob": "^7.1.2",
-    "truffle-contract-schema": "^3.0.11",
+    "truffle-contract-schema": "^3.0.13",
     "truffle-expect": "^0.0.9",
-    "web3-utils": "1.0.0-beta.37"
+    "web3-utils": "1.2.1"
   },
   "devDependencies": {
     "chai": "4.2.0",
     "mocha": "5.2.0",
     "temp": "^0.8.3"
   },
+  "keywords": [
+    "ethereum",
+    "smart-contract",
+    "truffle"
+  ],
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }
