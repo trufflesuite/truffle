@@ -1,7 +1,7 @@
 const ganache = require("ganache-core");
 const Web3 = require("web3");
 const assert = require("assert");
-const Reporter = require("truffle-reporters").migrationsV5;
+const Reporter = require("@truffle/reporters").migrationsV5;
 const EventEmitter = require("events");
 
 const Deployer = require("../index");
