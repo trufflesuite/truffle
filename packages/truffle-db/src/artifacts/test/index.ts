@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 import { TruffleDB } from "truffle-db";
-
+import tmp from "tmp";
 const fixturesDirectory = path.join(
   __dirname, // truffle-db/src/test
   "..", // truffle-db/src/artifacts
@@ -11,6 +11,9 @@ const fixturesDirectory = path.join(
   "test",
   "fixtures"
 );
+
+const tempDir = tmp.dirSync({ unsafeCleanup: true });
+tmp.setGracefulCleanup();
 
 // minimal config
 const config = {
@@ -72,6 +75,10 @@ const GetContractConstructor = `
       }
     }
   }`;
+
+afterAll(() => {
+  tempDir.removeCallback();
+});
 
 describe("Artifacts queries", () => {
   it("lists artifact contract names", async () => {

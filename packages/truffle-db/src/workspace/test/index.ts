@@ -1,12 +1,10 @@
 import path from "path";
-
 import gql from "graphql-tag";
 import * as graphql from "graphql";
-
 import { Workspace, schema } from "truffle-db/workspace";
 import { generateId } from "truffle-db/helpers";
-
-const tmp = require("tmp");
+import fse from "fse";
+import tmp from "tmp";
 
 const fixturesDirectory = path.join(
   __dirname, // truffle-db/src/db/test
@@ -17,11 +15,13 @@ const fixturesDirectory = path.join(
   "fixtures"
 );
 
+const tempDir = tmp.dirSync({ unsafeCleanup: true });
+tmp.setGracefulCleanup();
+
 class WorkspaceClient {
   private workspace: Workspace;
 
   constructor () {
-    const tempDir = tmp.dirSync({ unsafeCleanup: true });
     this.workspace = new Workspace(tempDir.name);
   }
 
@@ -50,6 +50,10 @@ query GetContractNames {
   contractNames
 }`;
 
+afterAll(() => {
+  tempDir.removeCallback();
+});
+
 describe("ContractNames", () => {
   it("queries contract names", async () => {
     const client = new WorkspaceClient();
@@ -58,7 +62,14 @@ describe("ContractNames", () => {
     expect(data).toHaveProperty("contractNames");
 
     const { contractNames } = data;
-    expect(contractNames).toEqual([]);
+    const dirExists = await fse.exists(path.join(tempDir.name, ".db", "contract"));
+
+    if(dirExists) {
+     expect(contractNames).toEqual(["MagicSquare", "SquareLib", "Migrations", "VyperStorage", "Migrations"]);
+    } else {
+       expect(contractNames).toEqual([]);
+    }
+
   });
 })
 
