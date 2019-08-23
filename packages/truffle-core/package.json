@@ -53,7 +53,7 @@
     "truffle-debugger": "^5.0.25",
     "truffle-deployer": "^3.0.31",
     "truffle-error": "^0.0.5",
-    "truffle-expect": "^0.0.9",
+    "@truffle/expect": "^0.0.9",
     "truffle-init": "^1.0.7",
     "truffle-interface-adapter": "^0.2.4",
     "truffle-migrate": "^3.0.31",

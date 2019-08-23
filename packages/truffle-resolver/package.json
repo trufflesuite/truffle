@@ -23,7 +23,7 @@
     "async": "2.6.1",
     "detect-installed": "^2.0.4",
     "get-installed-path": "^4.0.8",
-    "truffle-expect": "^0.0.9",
+    "@truffle/expect": "^0.0.9",
     "truffle-provisioner": "^0.1.5"
   },
   "devDependencies": {

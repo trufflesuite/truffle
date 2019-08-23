@@ -1,16 +1,16 @@
-# truffle-expect
+# @truffle/expect
 Simple module for ensuring expected parameters exist
 
 ### install
 
 ```
-$ npm install truffle-expect
+$ npm install @truffle/expect
 ```
 
 ### Usage
 
 ```javascript
-const expect = require("truffle-expect");
+const expect = require("@truffle/expect");
 
 // the object you're testing
 const options = {

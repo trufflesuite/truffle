@@ -9,7 +9,7 @@
     "truffle-compile": "^4.2.2",
     "truffle-compile-vyper": "^1.0.26",
     "truffle-config": "^1.1.19",
-    "truffle-expect": "^0.0.9",
+    "@truffle/expect": "^0.0.9",
     "truffle-external-compile": "^1.0.15",
     "truffle-resolver": "^5.0.15"
   },

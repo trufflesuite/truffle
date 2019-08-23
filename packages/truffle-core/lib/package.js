@@ -1,4 +1,4 @@
-const expect = require("truffle-expect");
+const expect = require("@truffle/expect");
 const TruffleError = require("truffle-error");
 const Networks = require("./networks");
 const EthPM = require("ethpm");
