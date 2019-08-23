@@ -222,6 +222,30 @@ describe("Deployments", function() {
       Example.maxGas = undefined;
     });
 
+    it("if maxGas is too big, should just use default behavior", async function() {
+      assert.isUndefined(Example.maxGas, "maxGas should be undefined here");
+      this.timeout(50000);
+      let iterations = 1000; // # of times to set a uint in a loop, consuming gas.
+
+      Example.maxGas = 200000000; //set this to be over the gas limit.
+
+      const estimate = await Example.new.estimateGas(iterations);
+      const block = await web3.eth.getBlock("latest");
+
+      assert(
+        estimate != Example.maxGas,
+        "Estimate should not be equal to maxGas"
+      );
+      assert(estimate < Example.maxGas, "Estimate should be less than maxGas");
+      assert(
+        estimate < block.gasLimit,
+        "Estimate should be less than the block limit"
+      );
+
+      //reset this so it doesn't mess with other tests.
+      Example.maxGas = undefined;
+    });
+
     it("should be possible to turn gas estimation on and off", async function() {
       Example.autoGas = false;
 
