@@ -270,30 +270,35 @@ export namespace Types {
   export function definitionToType(definition: Ast.AstDefinition, compiler: CompilerVersion | null, forceLocation?: Ast.Location | null): Type {
     debug("definition %O", definition);
     let typeClass = DefinitionUtils.typeClass(definition);
+    let typeHint = DefinitionUtils.typeStringWithoutLocation(definition);
     switch(typeClass) {
       case "bool":
         return {
-          typeClass
+          typeClass,
+          typeHint
         };
       case "address": {
         let payable = DefinitionUtils.isAddressPayable(definition, compiler);
         return {
           typeClass,
-          payable
+          payable,
+          typeHint
         }
       }
       case "uint": {
         let bytes = DefinitionUtils.specifiedSize(definition);
         return {
           typeClass,
-          bits: bytes * 8
+          bits: bytes * 8,
+          typeHint
         };
       }
       case "int": { //typeScript won't let me group these for some reason
         let bytes = DefinitionUtils.specifiedSize(definition);
         return {
           typeClass,
-          bits: bytes * 8
+          bits: bytes * 8,
+          typeHint
         };
       }
       case "fixed": { //typeScript won't let me group these for some reason
@@ -302,7 +307,8 @@ export namespace Types {
         return {
           typeClass,
           bits: bytes * 8,
-          places
+          places,
+          typeHint
         };
       }
       case "ufixed": {
@@ -311,19 +317,22 @@ export namespace Types {
         return {
           typeClass,
           bits: bytes * 8,
-          places
+          places,
+          typeHint
         };
       }
       case "string": {
         if(forceLocation === null) {
           return {
-            typeClass
+            typeClass,
+            typeHint
           };
         }
         let location = forceLocation || DefinitionUtils.referenceType(definition);
         return {
           typeClass,
-          location
+          location,
+          typeHint
         };
       }
       case "bytes": {
@@ -332,20 +341,23 @@ export namespace Types {
           return {
             typeClass,
             kind: "static",
-            length
+            length,
+            typeHint
           }
         } else {
           if(forceLocation === null) {
             return {
               typeClass,
-              kind: "dynamic"
+              kind: "dynamic",
+              typeHint
             };
           }
           let location = forceLocation || DefinitionUtils.referenceType(definition);
           return {
             typeClass,
             kind: "dynamic",
-            location
+            location,
+            typeHint
           }
         }
       }
@@ -359,14 +371,16 @@ export namespace Types {
               typeClass,
               baseType,
               kind: "dynamic",
-              location
+              location,
+              typeHint
             }
           }
           else {
             return {
               typeClass,
               baseType,
-              kind: "dynamic"
+              kind: "dynamic",
+              typeHint
             }
           }
         } else {
@@ -377,7 +391,8 @@ export namespace Types {
               baseType,
               kind: "static",
               length,
-              location
+              location,
+              typeHint
             }
           }
           else {
@@ -385,7 +400,8 @@ export namespace Types {
               typeClass,
               baseType,
               kind: "static",
-              length
+              length,
+              typeHint
             }
           }
         }
@@ -438,7 +454,8 @@ export namespace Types {
               kind: "specific",
               mutability,
               inputParameterTypes,
-              outputParameterTypes
+              outputParameterTypes,
+              typeHint
             };
         }
         break; //to satisfy typescript
