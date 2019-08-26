@@ -11,7 +11,6 @@ jobs:
       matrix:
         platform: [ubuntu-latest, windows-latest]
         node-version: [8x, 10.x, 12.x]
-
     runs-on: ${{ matrix.platform }}
 
     steps:
