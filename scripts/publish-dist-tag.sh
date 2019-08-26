@@ -3,22 +3,23 @@
 # The below tells bash to stop the script if any of the commands fail
 set -ex
 
+distTag=$1 # first arg after yarn publish-dist-tag
 currentGitBranch=$(git rev-parse --abbrev-ref HEAD)
 
-if [ "$1" == "" ];
+if [ "${distTag}" == "" ];
   then
     echo "No tag name given!"
     exit 1
 fi
 
-echo "Publishing \"truffle@$1\" from \"${currentGitBranch}\" branch."
+echo "Publishing \"truffle@${distTag}\" from \"${currentGitBranch}\" branch."
 npm login
 node ./scripts/npm-access.js
 lerna version --no-git-tag-version
 git add .
-git commit -m "Publish truffle@$1"
-lerna publish from-package --dist-tag $1
+git commit -m "Publish truffle@${distTag}"
+lerna publish from-package --dist-tag ${distTag}
 git push origin $currentGitBranch
 npm un -g truffle
-npm i -g truffle@$1
+npm i -g truffle@${distTag}
 echo -e "\\n\\nWoo!"
