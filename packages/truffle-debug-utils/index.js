@@ -2,10 +2,15 @@ var OS = require("os");
 var dir = require("node-dir");
 var path = require("path");
 var async = require("async");
-var debug = require("debug")("lib:debug");
+var debug = require("debug")("debug-utils");
 var BN = require("bn.js");
 var util = require("util");
 var CodecUtils = require("truffle-codec-utils");
+
+var chromafi = require("@trufflesuite/chromafi");
+var hljsDefineSolidity = require("highlightjs-solidity");
+hljsDefineSolidity(chromafi.hljs);
+var chalk = require("chalk");
 
 var commandReference = {
   "o": "step over",
@@ -209,7 +214,7 @@ var DebugUtils = {
     return prefix + output;
   },
 
-  formatRangeLines: function(source, range, contextBefore) {
+  formatRangeLines: function(source, range, uncolorizedSource, contextBefore) {
     // range is {
     //   start: { line, column },
     //   end: { line, column}
@@ -234,6 +239,7 @@ var DebugUtils = {
       });
 
     var line = source[range.start.line];
+    var uncolorizedLine = uncolorizedSource[range.start.line];
     var number = range.start.line + 1; // zero-index
 
     var pointerStart = range.start.column;
@@ -250,7 +256,14 @@ var DebugUtils = {
 
     var allLines = beforeLines.concat([
       DebugUtils.formatLineNumberPrefix(line, number, prefixLength),
-      DebugUtils.formatLinePointer(line, pointerStart, pointerEnd, prefixLength)
+      DebugUtils.formatLinePointer(
+        uncolorizedLine,
+        pointerStart,
+        pointerEnd,
+        prefixLength
+      )
+      //HACK -- the line-pointer formatter doesn't work right with colorized
+      //lines, so we pass in the uncolored version
     ]);
 
     return allLines.join(OS.EOL);
@@ -336,6 +349,103 @@ var DebugUtils = {
         return padding + line;
       })
       .join(OS.EOL);
+  },
+
+  colorize: function(code) {
+    //I'd put these outside the function
+    //but then it gives me errors, because
+    //you can't just define self-referential objects like that...
+
+    const truffleColors = {
+      mint: chalk.hex("#3FE0C5"),
+      orange: chalk.hex("#E4A663"),
+      pink: chalk.hex("#E911BD"),
+      purple: chalk.hex("#8731E8"),
+      green: chalk.hex("#00D717"),
+      red: chalk.hex("#D60000"),
+      yellow: chalk.hex("#F2E941"),
+      blue: chalk.hex("#25A9E0"),
+      comment: chalk.hsl(30, 20, 50),
+      watermelon: chalk.hex("#E86591"),
+      periwinkle: chalk.hex("#7F9DD1")
+    };
+
+    const trufflePalette = {
+      /* base (chromafi special, not hljs) */
+      "base": chalk,
+      "lineNumbers": chalk,
+      "trailingSpace": chalk,
+      /* classes hljs-solidity actually uses */
+      "keyword": truffleColors.mint,
+      "number": truffleColors.red,
+      "string": truffleColors.green,
+      "params": truffleColors.pink,
+      "builtIn": truffleColors.purple,
+      "built_in": truffleColors.purple, //just to be sure
+      "literal": truffleColors.purple,
+      "function": truffleColors.orange,
+      "title": truffleColors.orange,
+      "class": truffleColors.orange,
+      "comment": truffleColors.comment,
+      "doctag": truffleColors.comment,
+      /* classes it might soon use! */
+      "meta": truffleColors.pink,
+      "metaString": truffleColors.green,
+      "meta-string": truffleColors.green, //similar
+      /* classes it doesn't currently use but notionally could */
+      "type": truffleColors.orange,
+      "symbol": truffleColors.orange,
+      "metaKeyword": truffleColors.mint,
+      "meta-keyword": truffleColors.mint, //again, to be sure
+      /* classes that don't make sense for Solidity */
+      "regexp": chalk, //solidity does not have regexps
+      "subst": chalk, //or string interpolation
+      "name": chalk, //or s-expressions
+      "builtInName": chalk, //or s-expressions, again
+      "builtin-name": chalk, //just to be sure
+      /* classes for config, markup, CSS, templates, diffs (not programming) */
+      "section": chalk,
+      "tag": chalk,
+      "attr": chalk,
+      "attribute": chalk,
+      "variable": chalk,
+      "bullet": chalk,
+      "code": chalk,
+      "emphasis": chalk,
+      "strong": chalk,
+      "formula": chalk,
+      "link": chalk,
+      "quote": chalk,
+      "selectorAttr": chalk, //lotta redundancy follows
+      "selector-attr": chalk,
+      "selectorClass": chalk,
+      "selector-class": chalk,
+      "selectorId": chalk,
+      "selector-id": chalk,
+      "selectorPseudo": chalk,
+      "selector-pseudo": chalk,
+      "selectorTag": chalk,
+      "selector-tag": chalk,
+      "templateTag": chalk,
+      "template-tag": chalk,
+      "templateVariable": chalk,
+      "template-variable": chalk,
+      "addition": chalk,
+      "deletion": chalk
+    };
+
+    const options = {
+      lang: "solidity",
+      colors: trufflePalette,
+      //we want to turn off basically everything else, as we're
+      //handling padding & numbering manually
+      lineNumbers: false,
+      stripIndent: false,
+      codePad: 0
+      //NOTE: you might think you should pass highlight: true,
+      //but you'd be wrong!  I don't understand this either
+    };
+    return chromafi(code, options);
   },
 
   //HACK

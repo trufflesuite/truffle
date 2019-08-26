@@ -3,8 +3,12 @@
   "version": "1.0.18",
   "description": "Integration utils for truffle/truffle-debugger",
   "dependencies": {
+    "@trufflesuite/chromafi": "^2.1.1",
     "async": "2.6.1",
+    "chalk": "^2.4.2",
     "debug": "^4.1.0",
+    "highlight.js": "^9.15.8",
+    "highlightjs-solidity": "^1.0.7",
     "node-dir": "0.1.17"
   },
   "main": "index.js",
