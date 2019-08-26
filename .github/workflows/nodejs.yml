@@ -22,3 +22,4 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm install -g yarn lerna
     - run: yarn bootstrap
+    - run: npm i -g truffle
