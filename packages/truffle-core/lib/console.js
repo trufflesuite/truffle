@@ -11,7 +11,7 @@ const path = require("path");
 const EventEmitter = require("events");
 
 const processInput = input => {
-  const inputComponents = input.split(" ");
+  const inputComponents = input.trim().split(" ");
   if (inputComponents.length === 0) return input;
 
   if (inputComponents[0] === "truffle") {
