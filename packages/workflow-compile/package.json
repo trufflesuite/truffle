@@ -1,5 +1,5 @@
 {
-  "name": "truffle-workflow-compile",
+  "name": "@truffle/workflow-compile",
   "version": "2.1.3",
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
@@ -17,13 +17,13 @@
   "scripts": {
     "test": "mocha"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-workflow-compile",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/workflow-compile",
   "author": "Truffle Suite <inquiry@trufflesuite.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-workflow-compile#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/workflow-compile#readme",
   "publishConfig": {
     "access": "public"
   },
