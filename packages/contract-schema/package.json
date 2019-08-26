@@ -8,7 +8,7 @@
     "build": "cd spec && json2ts -i contract-object.spec.json -o ./index.d.ts",
     "test": "mocha"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/develop/packages/contract-schema",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/contract-schema",
   "keywords": [
     "ethereum",
     "json",
@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/develop/packages/contract-schema#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/contract-schema#readme",
   "dependencies": {
     "ajv": "^6.10.0",
     "crypto-js": "^3.1.9-1",
