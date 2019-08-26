@@ -21,7 +21,7 @@ jobs:
       matrix:
         platform: [ubuntu-latest]
         node-version: [10.x, 12.x]
-        env: [GETH=true, QUORUM=true]
+        env: [GETH=true, QUORUM=true, FABRICEVM=true, PACKAGES=true, INTEGRATION=true, COVERAGE=true]
     runs-on: ${{ matrix.platform }}
 
     steps:
@@ -32,4 +32,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm install -g yarn lerna
     - run: yarn bootstrap
+    - run: truffle obtain --solc=0.5.8
+    - run: yarn ci
     - run: npm i -g truffle
