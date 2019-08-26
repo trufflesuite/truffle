@@ -7,12 +7,12 @@ on:
     
 jobs:
   build:
-
-    runs-on: ubuntu-latest, windows-latest
-
     strategy:
       matrix:
+        platform: [ubuntu-latest, windows-latest]
         node-version: [10.x, 12.x]
+
+    runs-on: ${{ matrix.platform }}
 
     steps:
     - uses: actions/checkout@v1
