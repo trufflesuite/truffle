@@ -193,59 +193,6 @@ describe("Deployments", function() {
       await Example.new(1);
     });
 
-    it("should be able to set maxGas", async function() {
-      assert.isUndefined(Example.maxGas, "maxGas should be undefined here");
-
-      Example.maxGas = 2000000;
-
-      assert.equal(Example.maxGas, 2000000, "Should be 2000000");
-
-      await Example.new(1);
-
-      //reset this so it doesn't mess with other tests.
-      Example.maxGas = undefined;
-    });
-
-    it("test that if you set the maxGas too low your contract will fail to deploy", async function() {
-      assert.isUndefined(Example.maxGas, "maxGas should be undefined here");
-
-      Example.maxGas = 1337;
-
-      try {
-        await Example.new(1);
-        assert.fail();
-      } catch (err) {
-        assert(err.message.includes("exceeds gas limit"), "Should OOG");
-      }
-
-      //reset this so it doesn't mess with other tests.
-      Example.maxGas = undefined;
-    });
-
-    it("if maxGas is too big, should just use default behavior", async function() {
-      assert.isUndefined(Example.maxGas, "maxGas should be undefined here");
-      this.timeout(50000);
-      let iterations = 1000; // # of times to set a uint in a loop, consuming gas.
-
-      Example.maxGas = 200000000; //set this to be over the gas limit.
-
-      const estimate = await Example.new.estimateGas(iterations);
-      const block = await web3.eth.getBlock("latest");
-
-      assert(
-        estimate != Example.maxGas,
-        "Estimate should not be equal to maxGas"
-      );
-      assert(estimate < Example.maxGas, "Estimate should be less than maxGas");
-      assert(
-        estimate < block.gasLimit,
-        "Estimate should be less than the block limit"
-      );
-
-      //reset this so it doesn't mess with other tests.
-      Example.maxGas = undefined;
-    });
-
     it("should be possible to turn gas estimation on and off", async function() {
       Example.autoGas = false;
 
@@ -323,6 +270,52 @@ describe("Deployments", function() {
         newValue,
         77,
         "Should have returned a usable contract instance"
+      );
+    });
+  });
+
+  describe("TruffleContract.maxGas", async function() {
+    beforeEach(async () => {
+      this.timeout(20000);
+      Example = await util.createExample();
+      const result = await util.setUpProvider(Example, providerOptions);
+      web3 = result.web3;
+    });
+
+    it("should be able to set maxGas", async function() {
+      Example.maxGas = 2000000;
+      assert.equal(Example.maxGas, 2000000, "Should be 2000000");
+      await Example.new(1);
+    });
+
+    it("should fail to deploy the example contract if maxGas is too low ", async function() {
+      Example.maxGas = 1337;
+
+      try {
+        await Example.new(1);
+        assert.fail();
+      } catch (err) {
+        assert(err.message.includes("exceeds gas limit"), "Should OOG");
+      }
+    });
+
+    it("should just use default behavior if maxGas is greater than the blocklimit", async function() {
+      this.timeout(50000);
+      let iterations = 1000; // # of times to set a uint in a loop, consuming gas.
+
+      Example.maxGas = 200000000; //set this to be over the gas limit.
+
+      const estimate = await Example.new.estimateGas(iterations);
+      const block = await web3.eth.getBlock("latest");
+
+      assert(
+        estimate != Example.maxGas,
+        "Estimate should not be equal to maxGas"
+      );
+      assert(estimate < Example.maxGas, "Estimate should be less than maxGas");
+      assert(
+        estimate < block.gasLimit,
+        "Estimate should be less than the block limit"
       );
     });
   });
