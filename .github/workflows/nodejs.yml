@@ -21,6 +21,7 @@ jobs:
       matrix:
         platform: [ubuntu-latest]
         node-version: [10.x, 12.x]
+        env: [GETH=true, QUORUM=true]
     runs-on: ${{ matrix.platform }}
 
     steps:
