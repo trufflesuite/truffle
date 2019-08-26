@@ -15,7 +15,7 @@ fi
 echo "Publishing \"truffle@${distTag}\" from \"${currentGitBranch}\" branch."
 npm login
 node ./scripts/npm-access.js
-lerna version --no-git-tag-version
+lerna version --no-git-tag-version --preid $distTag
 git add .
 git commit -m "Publish truffle@${distTag}"
 lerna publish from-package --dist-tag ${distTag}
