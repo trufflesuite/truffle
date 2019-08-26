@@ -3,7 +3,7 @@
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "license": "MIT",
   "author": "Tim Coulter <tim@trufflesuite.com>",
-  "homepage": "https://github.com/trufflesuite/truffle-deployer#readme",
+   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-deployer#readme",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-deployer",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-deployer/issues"
