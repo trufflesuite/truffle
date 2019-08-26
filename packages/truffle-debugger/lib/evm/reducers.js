@@ -5,7 +5,7 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 import { keccak256, extractPrimarySource } from "lib/helpers";
-import * as DecodeUtils from "truffle-decode-utils";
+import * as CodecUtils from "truffle-codec-utils";
 
 import BN from "bn.js";
 
@@ -53,14 +53,15 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
             abi,
             contractId,
             contractKind,
-            isConstructor
+            isConstructor,
+            payable: CodecUtils.AbiUtils.abiHasPayableFallback(abi)
           }
         }
       };
 
     case actions.NORMALIZE_CONTEXTS:
       return {
-        byContext: DecodeUtils.Contexts.normalizeContexts(state.byContext)
+        byContext: CodecUtils.Contexts.normalizeContexts(state.byContext)
       };
 
     /*
@@ -77,7 +78,7 @@ const info = combineReducers({
 
 const DEFAULT_TX = {
   gasprice: new BN(0),
-  origin: DecodeUtils.EVM.ZERO_ADDRESS
+  origin: CodecUtils.EVM.ZERO_ADDRESS
 };
 
 function tx(state = DEFAULT_TX, action) {
@@ -93,7 +94,7 @@ function tx(state = DEFAULT_TX, action) {
 }
 
 const DEFAULT_BLOCK = {
-  coinbase: DecodeUtils.EVM.ZERO_ADDRESS,
+  coinbase: CodecUtils.EVM.ZERO_ADDRESS,
   difficulty: new BN(0),
   gaslimit: new BN(0),
   number: new BN(0),
@@ -251,7 +252,7 @@ function codex(state = DEFAULT_CODEX, action) {
       //now, do we need to add a new address to this stackframe?
       if (
         topCodex.accounts[action.storageAddress] !== undefined ||
-        action.storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
+        action.storageAddress === CodecUtils.EVM.ZERO_ADDRESS
       ) {
         //if we don't
         return newState;
@@ -275,7 +276,7 @@ function codex(state = DEFAULT_CODEX, action) {
       //on a store, the relevant page should already exist, so we can just
       //add or update the needed slot
       const { address, slot, value } = action;
-      if (address === DecodeUtils.EVM.ZERO_ADDRESS) {
+      if (address === CodecUtils.EVM.ZERO_ADDRESS) {
         //as always, we do not maintain a zero page
         return state;
       }
@@ -295,7 +296,7 @@ function codex(state = DEFAULT_CODEX, action) {
       //it's an external load (there was nothing already there), then we want
       //to update *every* stackframe
       const { address, slot, value } = action;
-      if (address === DecodeUtils.EVM.ZERO_ADDRESS) {
+      if (address === CodecUtils.EVM.ZERO_ADDRESS) {
         //as always, we do not maintain a zero page
         return state;
       }

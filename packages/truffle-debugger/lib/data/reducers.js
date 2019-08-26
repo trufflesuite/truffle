@@ -5,9 +5,9 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 
-import { slotAddress } from "truffle-decoder";
+import { slotAddress } from "truffle-codec";
 import { makeAssignment } from "lib/helpers";
-import { Conversion, Definition, EVM } from "truffle-decode-utils";
+import { Conversion, Definition, EVM } from "truffle-codec-utils";
 
 const DEFAULT_SCOPES = {
   byId: {}
@@ -80,7 +80,7 @@ function userDefinedTypes(state = [], action) {
 const DEFAULT_ALLOCATIONS = {
   storage: {},
   memory: {},
-  calldata: {}
+  abi: {}
 };
 
 function allocations(state = DEFAULT_ALLOCATIONS, action) {
@@ -88,7 +88,7 @@ function allocations(state = DEFAULT_ALLOCATIONS, action) {
     return {
       storage: action.storage,
       memory: action.memory,
-      calldata: action.calldata
+      abi: action.abi
     };
   } else {
     return state;
@@ -102,11 +102,11 @@ const info = combineReducers({
 });
 
 const GLOBAL_ASSIGNMENTS = [
-  [{ builtin: "msg" }, { special: "msg" }],
-  [{ builtin: "tx" }, { special: "tx" }],
-  [{ builtin: "block" }, { special: "block" }],
-  [{ builtin: "this" }, { special: "this" }],
-  [{ builtin: "now" }, { special: "timestamp" }] //we don't have an alias "now"
+  [{ builtin: "msg" }, { location: "special", special: "msg" }],
+  [{ builtin: "tx" }, { location: "special", special: "tx" }],
+  [{ builtin: "block" }, { location: "special", special: "block" }],
+  [{ builtin: "this" }, { location: "special", special: "this" }],
+  [{ builtin: "now" }, { location: "special", special: "timestamp" }] //we don't have an alias "now"
 ].map(([idObj, ref]) => makeAssignment(idObj, ref));
 
 const DEFAULT_ASSIGNMENTS = {

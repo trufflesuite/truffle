@@ -10,6 +10,7 @@ import Debugger from "lib/debugger";
 
 import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
+import { Conversion as ConversionUtils } from "truffle-codec-utils";
 
 const __FACTORIAL = `
 pragma solidity ^0.5.0;
@@ -214,7 +215,7 @@ describe("Variable IDs", function() {
 
     await session.continueUntilBreakpoint();
     while (!session.view(trace.finished)) {
-      values.push((await session.variable("nbang")).toNumber());
+      values.push(ConversionUtils.nativize(await session.variable("nbang")));
       await session.continueUntilBreakpoint();
     }
 

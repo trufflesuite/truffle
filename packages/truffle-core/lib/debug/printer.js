@@ -5,6 +5,7 @@ const path = require("path");
 const safeEval = require("safe-eval");
 
 const DebugUtils = require("truffle-debug-utils");
+const CodecUtils = require("truffle-codec-utils");
 
 const selectors = require("truffle-debugger").selectors;
 const { session, solidity, trace, controller } = selectors;
@@ -286,7 +287,7 @@ class DebugPrinter {
     //if we're not in the single-variable case, we'll need to do some
     //things to Javascriptify our variables so that the JS syntax for
     //using them is closer to the Solidity syntax
-    variables = DebugUtils.nativize(variables);
+    variables = CodecUtils.Conversion.nativizeVariables(variables);
 
     let context = Object.assign(
       { $: this.select },
@@ -327,7 +328,7 @@ class DebugPrinter {
     try {
       let result = safeEval(expr, context);
       result = DebugUtils.cleanConstructors(result); //HACK
-      const formatted = DebugUtils.formatValue(result, indent);
+      const formatted = DebugUtils.formatValue(result, indent, true);
       this.config.logger.log(formatted);
       this.config.logger.log();
     } catch (e) {
@@ -347,7 +348,7 @@ class DebugPrinter {
       if (!suppress) {
         this.config.logger.log(e);
       } else {
-        this.config.logger.log(DebugUtils.formatValue(undefined));
+        this.config.logger.log(DebugUtils.formatValue(undefined, indent, true));
       }
     }
   }

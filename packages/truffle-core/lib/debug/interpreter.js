@@ -236,6 +236,7 @@ class DebugInterpreter {
   }
 
   start(terminate) {
+    // if terminate is not passed, return a Promise instead
     if (terminate === undefined) {
       return util.promisify(this.start.bind(this))();
     }

@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("test:data:more-decoding");
 
 import { assert } from "chai";
+import Web3 from "web3"; //just using for utils
 
 import Ganache from "ganache-core";
 
@@ -11,7 +12,7 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 import data from "lib/data/selectors";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as TruffleCodecUtils from "truffle-codec-utils";
 
 const __CONTAINERS = `
 pragma solidity ^0.5.0;
@@ -227,12 +228,26 @@ contract OverflowTest {
 }
 `;
 
+const __BADBOOL = `
+pragma solidity ^0.5.0;
+
+contract BadBoolTest {
+
+  mapping(bool => uint) boolMap;
+
+  function run(bool key) public {
+    boolMap[key] = 1;
+  }
+}
+`;
+
 let sources = {
   "ContainersTest.sol": __CONTAINERS,
   "ElementaryTest.sol": __KEYSANDBYTES,
   "SpliceTest.sol": __SPLICING,
   "ComplexMappingsTest.sol": __INNERMAPS,
-  "OverflowTest.sol": __OVERFLOW
+  "OverflowTest.sol": __OVERFLOW,
+  "BadBoolTest.sol": __BADBOOL
 };
 
 describe("Further Decoding", function() {
@@ -279,35 +294,23 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
     const expectedResult = {
       memoryStaticArray: [107],
-      memoryStructWithMap: { x: 107, y: 214 },
+      memoryStructWithMap: { x: 107, map: {}, y: 214 },
       localStorage: [107, 214],
       storageStructArray: [{ x: 107 }],
       storageArrayArray: [[2, 3]],
-      structMapping: new Map([["hello", { x: 107 }]]),
-      arrayMapping: new Map([["hello", [2, 3]]]),
-      signedMapping: new Map([["hello", -1]]),
+      structMapping: { hello: { x: 107 } },
+      arrayMapping: { hello: [2, 3] },
+      signedMapping: { hello: -1 },
       pointedAt: [107, 214]
     };
 
-    assert.containsAllKeys(variables, expectedResult);
-
-    for (let name in expectedResult) {
-      if (expectedResult[name] instanceof Map) {
-        //each map has "hello" as its only key
-        assert.deepEqual(
-          variables[name]["hello"],
-          expectedResult[name]["hello"]
-        );
-      } else {
-        assert.deepEqual(variables[name], expectedResult[name]);
-      }
-    }
+    assert.deepInclude(variables, expectedResult);
   });
 
   it("Decodes elementary types and mappings correctly", async function() {
@@ -335,39 +338,24 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
-    ); //get rid of BNs to avoid Map problems
+    );
     debug("variables %O", variables);
 
     const expectedResult = {
-      boolMap: new Map([[true, true]]),
-      byteMap: new Map([["0x01", "0x01"]]),
-      bytesMap: new Map([["0x01", "0x01"]]),
-      uintMap: new Map([[1, 1], [2, 2]]),
-      intMap: new Map([[-1, -1]]),
-      stringMap: new Map([["0xdeadbeef", "0xdeadbeef"], ["12345", "12345"]]),
-      addressMap: new Map([[address, address]]),
+      boolMap: { true: true },
+      byteMap: { "0x01": "0x01" },
+      bytesMap: { "0x01": "0x01" },
+      uintMap: { "1": 1, "2": 2 },
+      intMap: { "-1": -1 },
+      stringMap: { "0xdeadbeef": "0xdeadbeef", "12345": "12345" },
+      addressMap: { [address]: address },
       oneByte: "0xff",
       severalBytes: ["0xff"]
     };
 
-    assert.containsAllKeys(variables, expectedResult);
-
-    for (let name in expectedResult) {
-      if (expectedResult[name] instanceof Map) {
-        assert.sameDeepMembers(
-          Array.from(variables[name].keys()),
-          Array.from(expectedResult[name].keys())
-        );
-        for (let key of expectedResult[name].keys()) {
-          //no mappings are nested so this will do fine
-          assert.deepEqual(variables[name][key], expectedResult[name][key]);
-        }
-      } else {
-        assert.deepEqual(variables[name], expectedResult[name]);
-      }
-    }
+    assert.deepInclude(variables, expectedResult);
   });
 
   it("Splices locations correctly", async function() {
@@ -394,12 +382,12 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
       await session.variables()
     );
 
     const expectedResult = {
-      map: new Map([["key1", "value1"], ["key2", "value2"]]),
+      map: { key1: "value1", key2: "value2" },
       pointedAt: "key2",
       arrayArray: [[82]],
       arrayStruct: { x: [82] },
@@ -408,22 +396,7 @@ describe("Further Decoding", function() {
       pointedAt: "key2"
     };
 
-    assert.containsAllKeys(variables, expectedResult);
-
-    for (let name in expectedResult) {
-      if (expectedResult[name] instanceof Map) {
-        assert.sameDeepMembers(
-          Array.from(variables[name].keys()),
-          Array.from(expectedResult[name].keys())
-        );
-        for (let key of expectedResult[name].keys()) {
-          //no mappings are nested so this will do fine
-          assert.deepEqual(variables[name][key], expectedResult[name][key]);
-        }
-      } else {
-        assert.deepEqual(variables[name], expectedResult[name]);
-      }
-    }
+    assert.deepInclude(variables, expectedResult);
   });
 
   it("Decodes inner mappings correctly and keeps path info", async function() {
@@ -444,72 +417,33 @@ describe("Further Decoding", function() {
     //we're only testing storage so run till end
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+      await session.variables()
+    );
 
     const expectedResult = {
-      mapArrayStatic: [new Map([["a", "0a"]])],
-      mapMap: new Map([["a", new Map([["c", "ac"]])]]),
+      mapArrayStatic: [{ a: "0a" }],
+      mapMap: { a: { c: "ac" } },
       mapStruct0: {
-        map: new Map([["a", "00a"]])
+        map: { a: "00a" }
       },
       mapStruct1: {
-        map: new Map([["e", "00e"]])
+        map: { e: "10e" }
       }
     };
 
     debug("variables %O", variables);
     debug("expectedResult %O", expectedResult);
 
-    assert.containsAllKeys(variables, expectedResult);
-
-    const simpleCases = ["mapArrayStatic", "mapStruct0", "mapStruct1"];
-
-    //first group: mappings in structs and arrays
-    for (let name of simpleCases) {
-      //need to use Object.keys in case it's an array
-      assert.hasAllKeys(variables[name], Object.keys(expectedResult[name]));
-      for (let objectKey in expectedResult[name]) {
-        assert.hasAllKeys(
-          variables[name][objectKey],
-          Array.from(expectedResult[name][objectKey].keys())
-        );
-        for (let mapKey of expectedResult[name][objectKey].keys()) {
-          //they're all strings, don't need deepEqual
-          assert.equal(
-            variables[name][objectKey][mapKey],
-            expectedResult[name][objectKey][mapKey]
-          );
-        }
-      }
-    }
-
-    //second group: mappings in mappings (just mapMap)
-    assert.containsAllKeys(
-      variables.mapMap,
-      Array.from(expectedResult.mapMap.keys())
-    );
-    debug("expectedResult.mapMap %O", expectedResult.mapMap);
-    for (let outerKey of expectedResult.mapMap.keys()) {
-      assert.hasAllKeys(
-        variables.mapMap.get(outerKey),
-        Array.from(expectedResult.mapMap.get(outerKey).keys())
-      );
-      for (let innerKey of expectedResult.mapMap.get(outerKey).keys()) {
-        //they're all strings, don't need deepEqual
-        assert.equal(
-          variables.mapMap.get(outerKey)[innerKey],
-          expectedResult.mapMap.get(outerKey)[innerKey]
-        );
-      }
-    }
+    assert.deepInclude(variables, expectedResult);
 
     //get offsets of top-level variables for this contract
     //converting to numbers for convenience
     const startingOffsets = Object.values(
-      Object.values(session.view(data.info.allocations.storage)).filter(
-        ({ definition }) => definition.name === "ComplexMappingTest"
-      )[0].members
-    ).map(({ pointer }) => pointer.storage.from.slot.offset);
+      session.view(data.info.allocations.storage)
+    )
+      .find(({ definition }) => definition.name === "ComplexMappingTest")
+      .members.map(({ pointer }) => pointer.range.from.slot.offset);
 
     const mappingKeys = session.view(data.views.mappingKeys);
     for (let slot of mappingKeys) {
@@ -520,6 +454,42 @@ describe("Further Decoding", function() {
       //the top-level variables
       assert.deepInclude(startingOffsets, slot.offset);
     }
+  });
+
+  it("Cleans badly-encoded booleans used as mapping keys", async function() {
+    this.timeout(12000);
+
+    let instance = await abstractions.BadBoolTest.deployed();
+    let signature = "run(bool)";
+    //manually set up the selector; 10 is for initial 0x + 8 more hex digits
+    let selector = Web3.utils
+      .soliditySha3({ type: "string", value: signature })
+      .slice(0, 10);
+    let argument =
+      "0000000000000000000000000000000000000000000000000000000000000002";
+    let receipt = await instance.sendTransaction({ data: selector + argument });
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    await session.continueUntilBreakpoint(); //run till end
+
+    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+      await session.variables()
+    );
+    debug("variables %O", variables);
+
+    const expectedResult = {
+      boolMap: { true: 1 }
+    };
+
+    assert.deepInclude(variables, expectedResult);
   });
 
   describe("Overflow", function() {
@@ -545,9 +515,9 @@ describe("Further Decoding", function() {
 
       await session.continueUntilBreakpoint();
 
-      const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+      const variables = TruffleCodecUtils.Conversion.nativizeVariables(
         await session.variables()
-      ); //get rid of BNs for simplicity
+      );
       debug("variables %O", variables);
 
       const expectedResult = {
@@ -581,9 +551,9 @@ describe("Further Decoding", function() {
 
       await session.continueUntilBreakpoint();
 
-      const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+      const variables = TruffleCodecUtils.Conversion.nativizeVariables(
         await session.variables()
-      ); //get rid of BNs for simplicity
+      );
       debug("variables %O", variables);
 
       const expectedResult = {
@@ -617,7 +587,9 @@ describe("Further Decoding", function() {
 
       await session.continueUntilBreakpoint();
 
-      const variables = await session.variables();
+      const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+        await session.variables()
+      );
       debug("variables %O", variables);
 
       const expectedResult = {

@@ -6,7 +6,7 @@ import BN from "bn.js";
 
 import trace from "lib/trace/selectors";
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as CodecUtils from "truffle-codec-utils";
 import {
   isCallMnemonic,
   isCreateMnemonic,
@@ -150,7 +150,7 @@ function createStepSelectors(step, state = null) {
           }
 
           let address = stack[stack.length - 2];
-          return DecodeUtils.Conversion.toAddress(address);
+          return CodecUtils.Conversion.toAddress(address);
         }
       ),
 
@@ -220,7 +220,7 @@ function createStepSelectors(step, state = null) {
 
           //otherwise, for CALL and CALLCODE, it's the 3rd argument
           let value = stack[stack.length - 3];
-          return DecodeUtils.Conversion.toBN(value);
+          return CodecUtils.Conversion.toBN(value);
         }
       ),
 
@@ -236,7 +236,7 @@ function createStepSelectors(step, state = null) {
 
         //creates have the value as the first argument
         let value = stack[stack.length - 1];
-        return DecodeUtils.Conversion.toBN(value);
+        return CodecUtils.Conversion.toBN(value);
       }),
 
       /**
@@ -316,7 +316,7 @@ const evm = createSelectorTree({
        * (returns null on no match)
        */
       search: createLeaf(["/info/contexts"], contexts => binary =>
-        DecodeUtils.Contexts.findDebuggerContext(contexts, binary)
+        CodecUtils.Contexts.findDebuggerContext(contexts, binary)
       )
     }
   },
@@ -446,7 +446,7 @@ const evm = createSelectorTree({
             return null;
           }
           let address = stack[stack.length - 1];
-          return DecodeUtils.Conversion.toAddress(address);
+          return CodecUtils.Conversion.toAddress(address);
         }
       ),
 
@@ -508,7 +508,7 @@ const evm = createSelectorTree({
           if (remaining <= 1) {
             return finalStatus;
           } else {
-            const ZERO_WORD = "00".repeat(DecodeUtils.EVM.WORD_SIZE);
+            const ZERO_WORD = "00".repeat(CodecUtils.EVM.WORD_SIZE);
             return stack[stack.length - 1] !== ZERO_WORD;
           }
         }
@@ -535,7 +535,7 @@ const evm = createSelectorTree({
       storage: createLeaf(
         ["./_", "../state/storage", "../call"],
         (codex, rawStorage, { storageAddress }) =>
-          storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
+          storageAddress === CodecUtils.EVM.ZERO_ADDRESS
             ? rawStorage //HACK -- if zero address ignore the codex
             : codex[codex.length - 1].accounts[storageAddress].storage
       ),

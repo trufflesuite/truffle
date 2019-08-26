@@ -4,6 +4,7 @@ const debug = debugModule("debugger:solidity:selectors");
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "@truffle/solidity-utils";
 import CodeUtils from "truffle-code-utils";
+import { Definition as DefinitionUtils } from "truffle-codec-utils";
 
 import { findRange } from "lib/ast/map";
 import jsonpointer from "json-pointer";
@@ -323,6 +324,7 @@ let solidity = createSelectorTree({
                   node,
                   name: node.name,
                   id: node.id,
+                  mutability: DefinitionUtils.mutability(node),
                   contractPointer,
                   contractNode,
                   contractName: contractNode.name,

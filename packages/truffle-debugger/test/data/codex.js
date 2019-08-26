@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("test:data:codex");
 
 import { assert } from "chai";
+import { Conversion as ConversionUtils } from "truffle-codec-utils";
 
 import Ganache from "ganache-core";
 
@@ -122,11 +123,13 @@ describe("Codex", function() {
 
     let session = bugger.connect();
 
+    debug("starting stepping");
     await session.continueUntilBreakpoint(); //run till end
+    debug("made it to end of transaction");
 
-    const variables = await session.variables();
+    const surface = ConversionUtils.nativize(await session.variable("surface"));
 
-    assert.equal(variables.surface.get("ping").toNumber(), 1);
+    assert.equal(surface["ping"], 1);
   });
 
   it("Reverts storage when a call reverts", async function() {
@@ -145,9 +148,9 @@ describe("Codex", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = await session.variables();
+    const x = ConversionUtils.nativize(await session.variable("x"));
 
-    assert.equal(variables.x.toNumber(), 1);
+    assert.equal(x, 1);
   });
 
   it("Reverts storage when a call otherwise fails", async function() {
@@ -166,8 +169,8 @@ describe("Codex", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = await session.variables();
+    const x = ConversionUtils.nativize(await session.variable("x"));
 
-    assert.equal(variables.x.toNumber(), 1);
+    assert.equal(x, 1);
   });
 });
