@@ -20,9 +20,5 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-        
-    - name: setup truffle project dependencies
-    - run: npm install -g yarn lerna
-
-    - name: bootstrap project
+      run: npm install -g yarn lerna
       run: yarn bootstrap
