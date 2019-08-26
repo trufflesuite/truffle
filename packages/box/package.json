@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha --timeout 10000"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/develop/packages/box",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/box",
   "keywords": [
     "ethereum",
     "truffle",

@@ -3,7 +3,7 @@
   "description": "Reporters for Truffle modules",
   "license": "MIT",
   "author": "",
-  "repository": "https://github.com/trufflesuite/truffle/tree/develop/packages/reporters",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/reporters",
   "version": "1.0.12",
   "main": "index.js",
   "scripts": {},

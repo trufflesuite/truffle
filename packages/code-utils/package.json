@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/develop/packages/code-utils",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/code-utils",
   "author": "",
   "license": "MIT",
   "publishConfig": {
