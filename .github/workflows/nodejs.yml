@@ -1,10 +1,20 @@
 name: Node CI
 
 on:
+  push:
+    branches:
+    # long-lived branches
+    - master
+    - develop
+    - next
+
+    # other targets
+    - truffle-db
+
   pull_request:
     branches:
-    - develop
-    
+      - "*"
+
 jobs:
   build:
     strategy:
