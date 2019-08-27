@@ -14,7 +14,7 @@ const compiler = {
   version: null
 };
 
-const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py}";
+const LIGO_PATTERN = "**/*.{ligo}";
 
 // -------- TODO: Common with truffle-compile --------
 
