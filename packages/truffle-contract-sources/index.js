@@ -3,7 +3,7 @@ const path = require("path");
 const glob = require("glob");
 const { promisify } = require("util");
 
-const DEFAULT_PATTERN = "**/*.{sol,vy}";
+const DEFAULT_PATTERN = "**/*.{sol,vy,ligo}";
 
 module.exports = (pattern, callback) => {
   const callbackPassed = typeof callback === "function";
