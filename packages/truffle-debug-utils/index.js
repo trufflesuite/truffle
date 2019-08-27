@@ -226,7 +226,7 @@ var DebugUtils = {
       output += additional;
     }
 
-    return truffleColors.watermelon(prefix + output);
+    return truffleColors.purple(prefix + output);
   },
 
   //NOTE: source and uncolorizedSource here have already
@@ -390,9 +390,9 @@ var DebugUtils = {
       "number": truffleColors.red,
       "string": truffleColors.green,
       "params": truffleColors.pink,
-      "builtIn": truffleColors.purple,
-      "built_in": truffleColors.purple, //just to be sure
-      "literal": truffleColors.purple,
+      "builtIn": truffleColors.watermelon,
+      "built_in": truffleColors.watermelon, //just to be sure
+      "literal": truffleColors.watermelon,
       "function": truffleColors.orange,
       "title": truffleColors.orange,
       "class": truffleColors.orange,
