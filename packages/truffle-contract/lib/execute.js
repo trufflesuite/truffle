@@ -99,22 +99,26 @@ var execute = {
    * @return {Promise}             Return value of the call.
    */
   call: function(fn, methodABI, address) {
-    var constructor = this;
+    const constructor = this;
+    const web3 = constructor.web3;
 
     return function() {
-      var defaultBlock = "latest";
-      var args = Array.prototype.slice.call(arguments);
-      var lastArg = args[args.length - 1];
-      var promiEvent = new Web3PromiEvent();
+      let defaultBlock = "latest";
+      let args = Array.prototype.slice.call(arguments);
+      const lastArg = args[args.length - 1];
+      const promiEvent = new Web3PromiEvent();
 
       // Extract defaultBlock parameter
       if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
         defaultBlock = args.pop();
       }
 
+      let params;
       execute
         .prepareCall(constructor, methodABI, args)
-        .then(async ({ args, params }) => {
+        .then(async data => {
+          args = data.args;
+          params = data.params;
           let result;
 
           params.to = address;
@@ -135,7 +139,14 @@ var execute = {
           );
           return promiEvent.resolve(result);
         })
-        .catch(promiEvent.reject);
+        .catch(async error => {
+          const reason = await override.getErrorReason(params, web3);
+          if (reason) {
+            error.reason = reason;
+            error.message += ` -- Reason given: ${reason}.`;
+          }
+          promiEvent.reject(error);
+        });
 
       return promiEvent.eventEmitter;
     };
@@ -149,17 +160,17 @@ var execute = {
    * @return {PromiEvent}          Resolves a transaction receipt (via the receipt handler)
    */
   send: function(fn, methodABI, address) {
-    var constructor = this;
-    var web3 = constructor.web3;
+    const constructor = this;
+    const web3 = constructor.web3;
 
     return function() {
-      var deferred;
-      var promiEvent = new Web3PromiEvent();
+      let deferred;
+      const promiEvent = new Web3PromiEvent();
 
       execute
         .prepareCall(constructor, methodABI, arguments)
         .then(async ({ args, params, network }) => {
-          var context = {
+          const context = {
             contract: constructor, // Can't name this field `constructor` or `_constructor`
             promiEvent: promiEvent,
             params: params
