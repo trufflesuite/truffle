@@ -1,6 +1,6 @@
 const mkdirp = require("mkdirp");
 const del = require("del");
-const Contracts = require("truffle-workflow-compile");
+const Contracts = require("@truffle/workflow-compile");
 const BuildError = require("./errors/builderror");
 const { spawn } = require("child_process");
 const spawnargs = require("spawn-args");
@@ -9,7 +9,7 @@ const expect = require("truffle-expect");
 
 function CommandBuilder(command) {
   this.command = command;
-};
+}
 
 CommandBuilder.prototype.build = function(options, callback) {
   console.log("Running `" + this.command + "`...");
@@ -27,15 +27,15 @@ CommandBuilder.prototype.build = function(options, callback) {
     })
   });
 
-  cmd.stdout.on('data', function(data) {
+  cmd.stdout.on("data", function(data) {
     console.log(data.toString());
   });
 
-  cmd.stderr.on('data', function(data) {
+  cmd.stderr.on("data", function(data) {
     console.error(data);
   });
 
-  cmd.on('close', function(code) {
+  cmd.on("close", function(code) {
     let error = null;
     if (code !== 0) {
       error = "Command exited with code " + code;
@@ -46,15 +46,13 @@ CommandBuilder.prototype.build = function(options, callback) {
 
 const Build = {
   clean: function(options, callback) {
-
     const destination = options.build_directory;
     const contracts_build_directory = options.contracts_build_directory;
 
     // Clean first.
-    del([destination + '/*', "!" + contracts_build_directory])
-      .then(() => {
-        mkdirp(destination, callback);
-      });
+    del([destination + "/*", "!" + contracts_build_directory]).then(() => {
+      mkdirp(destination, callback);
+    });
   },
 
   build: function(options, callback) {
@@ -72,12 +70,18 @@ const Build = {
     options.destination_directory = options.build_directory;
 
     if (builder === null || typeof builder === "undefined") {
-      logger.log("No build configuration found. Preparing to compile contracts.");
+      logger.log(
+        "No build configuration found. Preparing to compile contracts."
+      );
     } else if (typeof builder === "string") {
       builder = new CommandBuilder(builder);
     } else if (typeof builder !== "function") {
       if (builder.build == null) {
-        return callback(new BuildError("Build configuration can no longer be specified as an object. Please see our documentation for an updated list of supported build configurations."));
+        return callback(
+          new BuildError(
+            "Build configuration can no longer be specified as an object. Please see our documentation for an updated list of supported build configurations."
+          )
+        );
       }
     } else {
       // If they've only provided a build function, use that.
@@ -109,7 +113,7 @@ const Build = {
         }
       });
     });
-  },
+  }
 };
 
 module.exports = Build;
