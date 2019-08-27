@@ -5,7 +5,7 @@ import TruffleContractDecoder from "./contract";
 import { TruffleContractInstanceDecoder } from "./contract";
 import TruffleWireDecoder from "./wire";
 import { Provider } from "web3/providers";
-import { ContractObject } from "truffle-contract-schema/spec";
+import { ContractObject } from "@truffle/contract-schema/spec";
 
 export async function forContractInstance(contract: ContractObject, relevantContracts: ContractObject[], provider: Provider, address?: string): Promise<TruffleContractInstanceDecoder> {
   let contractDecoder = await forContract(contract, relevantContracts, provider);

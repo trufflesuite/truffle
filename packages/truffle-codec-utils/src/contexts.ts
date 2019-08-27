@@ -1,14 +1,13 @@
 import debugModule from "debug";
 const debug = debugModule("codec-utils:contexts");
 
-import escapeRegExp from "lodash.escaperegexp";
-
 import { EVM } from "./evm";
-import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
+import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
 import { AbiUtils } from "./abi";
 import { Types } from "./types/types";
 import { AstDefinition, AstReferences, ContractKind } from "./ast";
 import { CompilerVersion } from "./compiler";
+import escapeRegExp from "lodash.escaperegexp";
 
 export namespace Contexts {
 

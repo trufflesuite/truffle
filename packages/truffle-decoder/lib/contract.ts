@@ -5,7 +5,7 @@ import * as CodecUtils from "truffle-codec-utils";
 import { Types, Values, wrapElementaryViaDefinition, Contexts } from "truffle-codec-utils";
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
-import { ContractObject } from "truffle-contract-schema/spec";
+import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
 import { Definition as DefinitionUtils, AbiUtils, EVM, AstDefinition, AstReferences } from "truffle-codec-utils";
 import TruffleWireDecoder from "./wire";
