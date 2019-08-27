@@ -7,7 +7,7 @@ var path = require("path");
 var fs = require("fs-extra");
 var glob = require("glob");
 var Ganache = require("ganache-core");
-var Resolver = require("truffle-resolver");
+var Resolver = require("@truffle/resolver");
 var Artifactor = require("truffle-artifactor");
 var Web3 = require("web3");
 

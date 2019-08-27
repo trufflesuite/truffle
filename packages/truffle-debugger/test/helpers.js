@@ -9,7 +9,7 @@ import Artifactor from "truffle-artifactor";
 import Web3 from "web3";
 import Migrate from "truffle-migrate";
 import Box from "truffle-box";
-import Resolver from "truffle-resolver";
+import Resolver from "@truffle/resolver";
 
 export async function prepareContracts(provider, sources = {}, migrations) {
   let config = await createSandbox();

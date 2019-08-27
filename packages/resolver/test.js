@@ -1,14 +1,14 @@
-'use strict';
+"use strict";
 
 let asyncTask = function() {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function(resolve) {
     setTimeout(function() {
       resolve(45);
     }, 1000);
   });
 };
 
-var fn = function* () {
+var fn = function*() {
   var h = yield asyncTask();
 
   console.log("--->", h);
@@ -32,6 +32,5 @@ let loop = function(result) {
 };
 
 loop(iterator.next());
-
 
 console.log("asdfasd", iterator.next());

@@ -3,7 +3,7 @@ var fs = require("fs-extra");
 var glob = require("glob");
 var Box = require("truffle-box");
 var Profiler = require("truffle-compile/profiler");
-var Resolver = require("truffle-resolver");
+var Resolver = require("@truffle/resolver");
 var Artifactor = require("truffle-artifactor");
 
 // TOOD: Move this to truffle-compile!

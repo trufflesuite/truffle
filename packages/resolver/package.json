@@ -1,24 +1,24 @@
 {
-  "name": "truffle-resolver",
+  "name": "@truffle/resolver",
   "version": "5.0.15",
   "description": "Resolve contract dependencies given multiple configurable dependency sources",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-resolver",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver",
   "keywords": [
     "ethereum",
     "truffle",
     "dependencies",
     "resolver"
   ],
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-resolver/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-resolver#readme",
+  "homepage": "https://github.com/trufflesuite/resolver#readme",
   "dependencies": {
     "async": "2.6.1",
     "detect-installed": "^2.0.4",
