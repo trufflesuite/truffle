@@ -3,7 +3,7 @@ const debug = debugModule("debugger:solidity:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "@truffle/solidity-utils";
-import CodeUtils from "truffle-code-utils";
+import CodeUtils from "@truffle/code-utils";
 
 import { findRange } from "lib/ast/map";
 import jsonpointer from "json-pointer";

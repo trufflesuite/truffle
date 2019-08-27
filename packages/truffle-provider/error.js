@@ -1,5 +1,5 @@
 const { inherits } = require("util");
-const TruffleError = require("truffle-error");
+const TruffleError = require("@truffle/error");
 
 // HACK: string comparison seems to be only way to identify being unable to
 // connect to RPC node.

@@ -1,12 +1,12 @@
 {
-  "name": "truffle-box",
+  "name": "@truffle/box",
   "version": "1.0.35",
   "description": "Truffle project boilerplate utility",
   "main": "box.js",
   "scripts": {
     "test": "mocha --timeout 10000"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-box",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/box",
   "keywords": [
     "ethereum",
     "truffle",

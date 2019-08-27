@@ -15,7 +15,7 @@
     "ganache-core": "2.7.0",
     "node-ipc": "^9.1.1",
     "truffle-artifactor": "^4.0.29",
-    "truffle-error": "^0.0.5",
+    "@truffle/error": "^0.0.5",
     "truffle-expect": "^0.0.9",
     "truffle-interface-adapter": "^0.2.4",
     "truffle-resolver": "^5.0.15",
