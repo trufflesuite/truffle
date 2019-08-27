@@ -1,5 +1,5 @@
 const path = require("path");
-const exec = require("child_process").exec;
+const { exec } = require("child_process");
 const fs = require("fs");
 
 const async = require("async");
@@ -23,8 +23,8 @@ const compile = {};
 // contracts_directory: String. Directory where .sol files can be found.
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.all = function(options, callback) {
-  find_contracts(options.contracts_directory, function(err, files) {
+compile.all = (options, callback) => {
+  find_contracts(options.contracts_directory, (err, files) => {
     if (err) return callback(err);
 
     options.paths = files;
@@ -38,10 +38,10 @@ compile.all = function(options, callback) {
 //      in the build directory to see what needs to be compiled.
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.necessary = function(options, callback) {
+compile.necessary = (options, callback) => {
   options.logger = options.logger || console;
 
-  Profiler.updated(options, function(err, updated) {
+  Profiler.updated(options, (err, updated) => {
     if (err) return callback(err);
 
     if (updated.length === 0 && options.quiet !== true) {
@@ -53,18 +53,17 @@ compile.necessary = function(options, callback) {
   });
 };
 
-compile.display = function(paths, options) {
-  if (options.quiet !== true) {
+compile.display = (paths, { quiet, working_directory, logger }) => {
+  if (quiet !== true) {
     if (!Array.isArray(paths)) {
       paths = Object.keys(paths);
     }
 
     paths.sort().forEach(contract => {
       if (path.isAbsolute(contract)) {
-        contract =
-          "." + path.sep + path.relative(options.working_directory, contract);
+        contract = `.${path.sep}${path.relative(working_directory, contract)}`;
       }
-      options.logger.log("> Compiling " + contract);
+      logger.log(`> Compiling ${contract}`);
     });
   }
 };
@@ -73,7 +72,7 @@ compile.display = function(paths, options) {
 
 // Check that vyper is available, save its version
 function checkVyper(callback) {
-  exec("vyper --version", function(err, stdout, stderr) {
+  exec("vyper --version", (err, stdout, stderr) => {
     if (err)
       return callback(`${colors.red("Error executing vyper:")}\n${stderr}`);
 
@@ -84,17 +83,14 @@ function checkVyper(callback) {
 }
 
 // Execute vyper for single source file
-function execVyper(options, source_path, callback) {
+function execVyper({ compilers }, source_path, callback) {
   const formats = ["abi", "bytecode", "bytecode_runtime"];
-  if (
-    options.compilers.vyper.settings &&
-    options.compilers.vyper.settings.sourceMap
-  ) {
+  if (compilers.vyper.settings && compilers.vyper.settings.sourceMap) {
     formats.push("source_map");
   }
   const command = `vyper -f${formats.join(",")} ${source_path}`;
 
-  exec(command, { maxBuffer: 600 * 1024 }, function(err, stdout, stderr) {
+  exec(command, { maxBuffer: 600 * 1024 }, (err, stdout, stderr) => {
     if (err)
       return callback(
         `${stderr}\n${colors.red(
@@ -102,11 +98,13 @@ function execVyper(options, source_path, callback) {
         )}`
       );
 
-    var outputs = stdout.split(/\r?\n/);
+    const outputs = stdout.split(/\r?\n/);
 
-    const compiled_contract = outputs.reduce(function(contract, output, index) {
-      return Object.assign(contract, { [formats[index]]: output });
-    }, {});
+    const compiled_contract = outputs.reduce(
+      (contract, output, index) =>
+        Object.assign(contract, { [formats[index]]: output }),
+      {}
+    );
 
     callback(null, compiled_contract);
   });
@@ -120,42 +118,46 @@ function compileAll(options, callback) {
 
   async.map(
     options.paths,
-    function(source_path, c) {
-      execVyper(options, source_path, function(err, compiled_contract) {
-        if (err) return c(err);
+    (source_path, c) => {
+      execVyper(
+        options,
+        source_path,
+        (err, { abi, bytecode, bytecode_runtime, source_map }) => {
+          if (err) return c(err);
 
-        // remove first extension from filename
-        const extension = path.extname(source_path);
-        const basename = path.basename(source_path, extension);
+          // remove first extension from filename
+          const extension = path.extname(source_path);
+          const basename = path.basename(source_path, extension);
 
-        // if extension is .py, remove second extension from filename
-        const contract_name =
-          extension !== ".py"
-            ? basename
-            : path.basename(basename, path.extname(basename));
+          // if extension is .py, remove second extension from filename
+          const contract_name =
+            extension !== ".py"
+              ? basename
+              : path.basename(basename, path.extname(basename));
 
-        const source_buffer = fs.readFileSync(source_path);
-        const source_contents = source_buffer.toString();
+          const source_buffer = fs.readFileSync(source_path);
+          const source_contents = source_buffer.toString();
 
-        const contract_definition = {
-          contract_name: contract_name,
-          sourcePath: source_path,
-          source: source_contents,
-          abi: compiled_contract.abi,
-          bytecode: compiled_contract.bytecode,
-          deployedBytecode: compiled_contract.bytecode_runtime,
-          sourceMap: compiled_contract.source_map,
+          const contract_definition = {
+            contract_name,
+            sourcePath: source_path,
+            source: source_contents,
+            abi: abi,
+            bytecode: bytecode,
+            deployedBytecode: bytecode_runtime,
+            sourceMap: source_map,
 
-          compiler: compiler
-        };
+            compiler
+          };
 
-        c(null, contract_definition);
-      });
+          c(null, contract_definition);
+        }
+      );
     },
-    function(err, contracts) {
+    (err, contracts) => {
       if (err) return callback(err);
 
-      const result = contracts.reduce(function(result, contract) {
+      const result = contracts.reduce((result, contract) => {
         result[contract.contract_name] = contract;
 
         return result;
@@ -171,14 +173,12 @@ function compileAll(options, callback) {
 // Check that vyper is available then forward to internal compile function
 function compileVyper(options, callback) {
   // filter out non-vyper paths
-  options.paths = options.paths.filter(function(path) {
-    return minimatch(path, VYPER_PATTERN);
-  });
+  options.paths = options.paths.filter(path => minimatch(path, VYPER_PATTERN));
 
   // no vyper files found, no need to check vyper
   if (options.paths.length === 0) return callback(null, {}, []);
 
-  checkVyper(function(err) {
+  checkVyper(err => {
     if (err) return callback(err);
 
     return compileAll(options, callback);
@@ -193,14 +193,12 @@ function updateContractsDirectory(options) {
 }
 
 // wrapper for compile.all. only updates contracts_directory to find .vy
-compileVyper.all = function(options, callback) {
-  return compile.all(updateContractsDirectory(options), callback);
-};
+compileVyper.all = (options, callback) =>
+  compile.all(updateContractsDirectory(options), callback);
 
 // wrapper for compile.necessary. only updates contracts_directory to find .vy
-compileVyper.necessary = function(options, callback) {
-  return compile.necessary(updateContractsDirectory(options), callback);
-};
+compileVyper.necessary = (options, callback) =>
+  compile.necessary(updateContractsDirectory(options), callback);
 
 compile.with_dependencies = compileVyper;
 module.exports = compileVyper;
