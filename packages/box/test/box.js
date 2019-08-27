@@ -9,7 +9,7 @@ const TRUFFLE_BOX_DEFAULT =
 const utils = require("../lib/utils");
 let options, cleanupCallback;
 
-describe("truffle-box Box", () => {
+describe("@truffle/box Box", () => {
   const destination = path.join(__dirname, ".truffle_test_tmp");
 
   beforeEach(() => {

@@ -66,7 +66,7 @@ const build = config => {
 
 const printSummary = (config, error) => {
   if (error) {
-    const TruffleError = require("truffle-error");
+    const TruffleError = require("@truffle/error");
     if (error instanceof TruffleError) {
       console.log(error.message);
     } else {
