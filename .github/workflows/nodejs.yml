@@ -21,7 +21,7 @@ jobs:
       matrix:
         platform: [ubuntu-latest]
         node-version: [10.x, 12.x]
-        env: [GETH=true, QUORUM=true, FABRICEVM=true, PACKAGES=true, INTEGRATION=true, COVERAGE=true]
+        env: [GETH=true, QUORUM=true, PACKAGES=true, INTEGRATION=true, COVERAGE=true]
     runs-on: ${{ matrix.platform }}
 
     steps:
@@ -32,6 +32,4 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm install -g yarn lerna
     - run: yarn bootstrap
-    - run: sudo add-apt-repository ppa:ethereum/ethereum
     - run: ${{ matrix.env }} yarn ci
-    - run: npm i -g truffle

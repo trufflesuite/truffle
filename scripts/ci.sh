@@ -84,7 +84,7 @@ elif [ "$FABRICEVM" = true ]; then
 elif [ "$PACKAGES" = true ]; then
 
   docker pull ethereum/solc:0.4.22
-  sudo add-apt-repository -y ppa:deadsnakes/ppa
+  sudo add-apt-repository -y ppa:deadsnakes/ppa ppa:ethereum/ethereum
   sudo apt update
   sudo apt install -y python3.6 python3.6-dev python3.6-venv solc
   wget https://bootstrap.pypa.io/get-pip.py
@@ -95,7 +95,7 @@ elif [ "$PACKAGES" = true ]; then
 elif [ "$COVERAGE" = true ]; then
 
   docker pull ethereum/solc:0.4.22
-  sudo add-apt-repository -y ppa:deadsnakes/ppa
+  sudo add-apt-repository -y ppa:deadsnakes/ppa ppa:ethereum/ethereum
   sudo apt update
   sudo apt install -y jq python3.6 python3.6-dev python3.6-venv solc
   wget https://bootstrap.pypa.io/get-pip.py

@@ -13,12 +13,6 @@ branches:
     # other targets
     - truffle-db
 
-addons:
-  apt:
-    sources:
-      - sourceline: 'ppa:ethereum/ethereum'
-    packages: dpkg
-
 before_install:
   - npm list -g lerna --depth=0 || npm install -g lerna
   - npm install -g yarn
@@ -28,8 +22,6 @@ matrix:
   include:
     - node_js: 8
       env: GETH=true
-    - node_js: 8
-      env: QUORUM=true
     - node_js: 8
       env: FABRICEVM=true
     - node_js: 8
