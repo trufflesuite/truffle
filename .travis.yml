@@ -21,13 +21,7 @@ matrix:
   fast_finish: true
   include:
     - node_js: 8
-      env: GETH=true
-    - node_js: 8
       env: FABRICEVM=true
-    - node_js: 8
-      env: PACKAGES=true
-    - node_js: 8
-      env: INTEGRATION=true
     - node_js: 8
       env: COVERAGE=true
   allow_failures:
