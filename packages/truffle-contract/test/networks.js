@@ -11,7 +11,7 @@ process.removeListener(
 
 var debug = require("debug")("ganache-core");
 var Ganache = require("ganache-core");
-var BlockchainUtils = require("truffle-blockchain-utils");
+var BlockchainUtils = require("@truffle/blockchain-utils");
 var contract = require("../");
 var times = require("async/times");
 

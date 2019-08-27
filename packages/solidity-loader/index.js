@@ -52,9 +52,9 @@ const schema = {
 };
 
 let isCompilingContracts = false; // Global mutex variable
-module.exports = (source, map, meta) => {
+module.exports = (_source, _map, _meta) => {
   let WebpackOptions = getOptions(this) || {};
-  validateOptions(schema, WebpackOptions, "truffle-solidity-loader");
+  validateOptions(schema, WebpackOptions, "@truffle/solidity-loader");
 
   let buildOpts = genBuildOptions(WebpackOptions);
   let migrationsDirectory =

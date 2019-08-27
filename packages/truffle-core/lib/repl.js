@@ -1,5 +1,5 @@
 var repl = require("repl");
-var expect = require("truffle-expect");
+var expect = require("@truffle/expect");
 var async = require("async");
 var EventEmitter = require("events");
 var inherits = require("util").inherits;

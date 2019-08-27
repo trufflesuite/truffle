@@ -13,7 +13,7 @@
   "dependencies": {
     "fs-extra": "6.0.1",
     "lodash": "^4.17.13",
-    "truffle-contract-schema": "^3.0.13"
+    "@truffle/contract-schema": "^3.0.13"
   },
   "devDependencies": {
     "chai": "4.2.0",

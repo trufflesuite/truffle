@@ -6,8 +6,8 @@ const resolve = require("path").resolve;
 const { callbackify, promisify } = require("util");
 const glob = promisify(require("glob"));
 const fs = require("fs");
-const expect = require("truffle-expect");
-const Schema = require("truffle-contract-schema");
+const expect = require("@truffle/expect");
+const Schema = require("@truffle/contract-schema");
 const web3 = {};
 web3.utils = require("web3-utils");
 

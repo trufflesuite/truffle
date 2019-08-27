@@ -4,7 +4,7 @@ var GlobalNPMSource = require("./globalnpm");
 var FSSource = require("./fs");
 var whilst = require("async/whilst");
 var contract = require("truffle-contract");
-var expect = require("truffle-expect");
+var expect = require("@truffle/expect");
 var provision = require("truffle-provisioner");
 
 function Resolver(options) {

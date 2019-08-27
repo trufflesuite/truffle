@@ -33,7 +33,7 @@
     "@truffle/code-utils": "^1.2.4",
     "truffle-decode-utils": "^1.0.16",
     "truffle-decoder": "^3.0.10",
-    "truffle-expect": "^0.0.9",
+    "@truffle/expect": "^0.0.9",
     "web3": "1.2.1",
     "web3-eth-abi": "1.2.1"
   },

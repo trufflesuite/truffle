@@ -17,7 +17,7 @@
     "truffle-config": "^1.1.19",
     "truffle-contract-sources": "^0.1.5",
     "@truffle/error": "^0.0.5",
-    "truffle-expect": "^0.0.9"
+    "@truffle/expect": "^0.0.9"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",

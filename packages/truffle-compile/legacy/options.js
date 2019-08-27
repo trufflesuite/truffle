@@ -1,4 +1,4 @@
-const expect = require("truffle-expect");
+const expect = require("@truffle/expect");
 
 /**
  * Handle options compatibility

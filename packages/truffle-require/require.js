@@ -3,7 +3,7 @@ const path = require("path");
 const Module = require("module");
 const vm = require("vm");
 const originalrequire = require("original-require");
-const expect = require("truffle-expect");
+const expect = require("@truffle/expect");
 const Config = require("truffle-config");
 const Web3Shim = require("truffle-interface-adapter").Web3Shim;
 

@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decode-utils:contexts");
 
-import { Abi } from "truffle-contract-schema/spec";
+import { Abi } from "@truffle/contract-schema/spec";
 import { AbiCoder } from "web3-eth-abi";
 import { AbiItem } from "web3-utils";
 const abiCoder = new AbiCoder();
@@ -53,7 +53,7 @@ export namespace Contexts {
     }
   }
 
-  //really, we should import the ABI spec from truffle-contract-schema;
+  //really, we should import the ABI spec from @truffle/contract-schema;
   //unfotunately, that doesn't include signatures.  so here's a sloppy
   //recreation that includes those; sorry for the duplication, but this seems
   //the easiest way offhand

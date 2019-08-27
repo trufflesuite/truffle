@@ -4,7 +4,7 @@ const debug = debugModule("decoder:interface:contract-decoder");
 import * as DecodeUtils from "truffle-decode-utils";
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
-import { ContractObject } from "truffle-contract-schema/spec";
+import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
 import { EvmInfo } from "../types/evm";
 import * as general from "../allocate/general";

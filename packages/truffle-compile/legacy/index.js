@@ -1,6 +1,6 @@
 const debug = require("debug")("compile:legacy"); // eslint-disable-line no-unused-vars
 const path = require("path");
-const expect = require("truffle-expect");
+const expect = require("@truffle/expect");
 const findContracts = require("truffle-contract-sources");
 const Config = require("truffle-config");
 const Profiler = require("../profiler");
