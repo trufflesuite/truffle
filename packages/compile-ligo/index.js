@@ -10,7 +10,7 @@ const find_contracts = require("truffle-contract-sources");
 const Profiler = require("truffle-compile/profiler");
 
 const compiler = {
-  name: "vyper",
+  name: "ligo",
   version: null
 };
 
