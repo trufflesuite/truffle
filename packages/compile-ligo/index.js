@@ -171,9 +171,9 @@ function compileAll(options, callback) {
 }
 
 // Check that ligo is available then forward to internal compile function
-function compileVyper(options, callback) {
+function compileLigo(options, callback) {
   // filter out non-ligo paths
-  options.paths = options.paths.filter(path => minimatch(path, VYPER_PATTERN));
+  options.paths = options.paths.filter(path => minimatch(path, LIGO_PATTERN));
 
   // no ligo files found, no need to check ligo
   if (options.paths.length === 0) return callback(null, {}, []);
@@ -193,12 +193,12 @@ function updateContractsDirectory(options) {
 }
 
 // wrapper for compile.all. only updates contracts_directory to find .ligo
-compileVyper.all = (options, callback) =>
+compileLigo.all = (options, callback) =>
   compile.all(updateContractsDirectory(options), callback);
 
 // wrapper for compile.necessary. only updates contracts_directory to find .ligo
-compileVyper.necessary = (options, callback) =>
+compileLigo.necessary = (options, callback) =>
   compile.necessary(updateContractsDirectory(options), callback);
 
-compile.with_dependencies = compileVyper;
-module.exports = compileVyper;
+compile.with_dependencies = compileLigo;
+module.exports = compileLigo;
