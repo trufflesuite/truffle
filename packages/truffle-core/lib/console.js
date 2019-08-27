@@ -10,6 +10,16 @@ const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");
 
+const processInput = input => {
+  const inputComponents = input.trim().split(" ");
+  if (inputComponents.length === 0) return input;
+
+  if (inputComponents[0] === "truffle") {
+    return inputComponents.slice(1).join(" ");
+  }
+  return input.trim();
+};
+
 class Console extends EventEmitter {
   constructor(tasks, options) {
     super();
@@ -123,9 +133,12 @@ class Console extends EventEmitter {
     this.repl.setContextVars(contextVars);
   }
 
-  interpret(cmd, context, filename, callback) {
-    if (this.command.getCommand(cmd.trim(), this.options.noAliases) != null) {
-      return this.command.run(cmd.trim(), this.options, error => {
+  interpret(input, context, filename, callback) {
+    const processedInput = processInput(input);
+    if (
+      this.command.getCommand(processedInput, this.options.noAliases) != null
+    ) {
+      return this.command.run(processedInput, this.options, error => {
         if (error) {
           // Perform error handling ourselves.
           if (error instanceof TruffleError) {
@@ -162,8 +175,8 @@ class Console extends EventEmitter {
     */
     let includesAwait = /^\s*((?:(?:var|const|let)\s+)?[a-zA-Z_$][0-9a-zA-Z_$]*\s*=\s*)?(\(?\s*await[\s\S]*)/;
 
-    const match = cmd.match(includesAwait);
-    let source = cmd;
+    const match = processedInput.match(includesAwait);
+    let source = processedInput;
     let assignment = null;
 
     // If our code includes an await, add special processing to ensure it's evaluated properly.
