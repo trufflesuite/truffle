@@ -31,13 +31,13 @@ $ npm install truffle-artifactor
 
 ### Example
 
-Here, we'll generate a `.json` files given a JSON object like [truffle-contract-schema](https://github.com/trufflesuite/truffle/tree/develop/packages/truffle-contract-schema). This will give us a file which we can later `require` into other projects and contexts.
+Here, we'll generate a `.json` files given a JSON object like [@truffle/contract-schema](https://github.com/trufflesuite/truffle/tree/develop/packages/contract-schema). This will give us a file which we can later `require` into other projects and contexts.
 
 ```javascript
 const Artifactor = require("truffle-artifactor");
 const artifactor = new Artifactor(__dirname);
 
-// See truffle-schema for more info: https://github.com/trufflesuite/truffle/tree/develop/packages/truffle-contract-schema
+// See truffle-schema for more info: https://github.com/trufflesuite/truffle/tree/develop/packages/contract-schema
 const contractData = {
   contractName: "...",        // String; optional.
   abi: ...,                   // Array; required.

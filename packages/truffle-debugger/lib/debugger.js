@@ -1,6 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("debugger");
-import expect from "truffle-expect";
+import expect from "@truffle/expect";
 
 import Session from "./session";
 

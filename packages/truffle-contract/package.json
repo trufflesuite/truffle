@@ -21,8 +21,8 @@
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "ethers": "^4.0.0-beta.1",
-    "truffle-blockchain-utils": "^0.0.10",
-    "truffle-contract-schema": "^3.0.13",
+    "@truffle/blockchain-utils": "^0.0.10",
+    "@truffle/contract-schema": "^3.0.13",
     "@truffle/error": "^0.0.5",
     "truffle-interface-adapter": "^0.2.4",
     "web3": "1.2.1",

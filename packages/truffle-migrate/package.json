@@ -19,7 +19,7 @@
     "node-dir": "0.1.17",
     "truffle-config": "^1.1.19",
     "truffle-deployer": "^3.0.31",
-    "truffle-expect": "^0.0.9",
+    "@truffle/expect": "^0.0.9",
     "truffle-interface-adapter": "^0.2.4",
     "@truffle/require": "^2.0.19",
     "@truffle/reporters": "^1.0.12",

@@ -1,6 +1,6 @@
 const Config = require("truffle-config");
-const expect = require("truffle-expect");
 const Resolver = require("@truffle/resolver");
+const expect = require("@truffle/expect");
 const Artifactor = require("truffle-artifactor");
 
 function prepareConfig(options) {

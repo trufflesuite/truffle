@@ -1,4 +1,4 @@
-## truffle-solidity-loader
+## @truffle/solidity-loader
 
 A Webpack loader that allows importing a solidity contract directly. Importing returns a truffle artifact json object. This allows smart contract development with Hot Reloading support and enables migrations to automatically re-run on change. When running a production build, contracts will be bundled into main bundle for easy deployment.
 
@@ -21,7 +21,7 @@ This package will re-run migration scripts whenever solidity files are modified.
 
 ## Installation
 
-`$ npm install --save-dev truffle-solidity-loader`
+`$ npm install --save-dev @truffle/solidity-loader`
 
 Add the appropriate config to your `loaders` section of your Webpack 4 config:
 
@@ -33,7 +33,7 @@ Add the appropriate config to your `loaders` section of your Webpack 4 config:
       loader: 'json-loader'
     },
     {
-      loader: 'truffle-solidity-loader',
+      loader: '@truffle/solidity-loader',
       options: {
         network: 'ganache',
       }
@@ -42,7 +42,7 @@ Add the appropriate config to your `loaders` section of your Webpack 4 config:
 }
 ```
 
-Webpack applies loaders [right to left](https://webpack.js.org/api/loaders/#pitching-loader), therefore the output of `truffle-solidity-loader` goes into `json-loader`.
+Webpack applies loaders [right to left](https://webpack.js.org/api/loaders/#pitching-loader), therefore the output of `@truffle/solidity-loader` goes into `json-loader`.
 
 
 ### `truffle-config.js` integration
@@ -63,7 +63,7 @@ The loader will auto detect a `truffle-config.js` (or `truffle.js`) config file 
       loader: 'json-loader'
     },
     {
-      loader: 'truffle-solidity-loader',
+      loader: '@truffle/solidity-loader',
       options: {
         network: 'ganache',
         migrations_directory: path.resolve(__dirname, './migrations'),
