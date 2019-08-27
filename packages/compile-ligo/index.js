@@ -20,7 +20,7 @@ const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py}";
 
 const compile = {};
 
-// contracts_directory: String. Directory where .sol files can be found.
+// contracts_directory: String. Directory where .ligo files can be found.
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
 compile.all = (options, callback) => {
@@ -32,8 +32,8 @@ compile.all = (options, callback) => {
   });
 };
 
-// contracts_directory: String. Directory where .sol files can be found.
-// build_directory: String. Optional. Directory where .sol.js files can be found. Only required if `all` is false.
+// contracts_directory: String. Directory where .ligo files can be found.
+// build_directory: String. Optional. Directory where .tz files can be found. Only required if `all` is false.
 // all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
 //      in the build directory to see what needs to be compiled.
 // quiet: Boolean. Suppress output. Defaults to false.
@@ -70,7 +70,7 @@ compile.display = (paths, { quiet, working_directory, logger }) => {
 
 // -------- End of common with truffle-compile --------
 
-// Check that vyper is available, save its version
+// Check that ligo is available
 function checkVyper(callback) {
   exec("vyper --version", (err, stdout, stderr) => {
     if (err)
@@ -82,7 +82,7 @@ function checkVyper(callback) {
   });
 }
 
-// Execute vyper for single source file
+// Execute ligo for single source file
 function execVyper({ compilers }, source_path, callback) {
   const formats = ["abi", "bytecode", "bytecode_runtime"];
   if (compilers.vyper.settings && compilers.vyper.settings.sourceMap) {
@@ -170,12 +170,12 @@ function compileAll(options, callback) {
   );
 }
 
-// Check that vyper is available then forward to internal compile function
+// Check that ligo is available then forward to internal compile function
 function compileVyper(options, callback) {
-  // filter out non-vyper paths
+  // filter out non-ligo paths
   options.paths = options.paths.filter(path => minimatch(path, VYPER_PATTERN));
 
-  // no vyper files found, no need to check vyper
+  // no ligo files found, no need to check ligo
   if (options.paths.length === 0) return callback(null, {}, []);
 
   checkVyper(err => {
@@ -185,18 +185,18 @@ function compileVyper(options, callback) {
   });
 }
 
-// append .vy pattern to contracts_directory in options and return updated options
+// append .ligo pattern to contracts_directory in options and return updated options
 function updateContractsDirectory(options) {
   return options.with({
     contracts_directory: path.join(options.contracts_directory, VYPER_PATTERN)
   });
 }
 
-// wrapper for compile.all. only updates contracts_directory to find .vy
+// wrapper for compile.all. only updates contracts_directory to find .ligo
 compileVyper.all = (options, callback) =>
   compile.all(updateContractsDirectory(options), callback);
 
-// wrapper for compile.necessary. only updates contracts_directory to find .vy
+// wrapper for compile.necessary. only updates contracts_directory to find .ligo
 compileVyper.necessary = (options, callback) =>
   compile.necessary(updateContractsDirectory(options), callback);
 
