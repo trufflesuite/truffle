@@ -37,6 +37,7 @@ elif [ "$GETH" = true ]; then
   sudo apt install -y jq
   docker pull ethereum/client-go:latest
   run_geth
+  sleep 30
   lerna run --scope truffle test --stream -- --exit
   lerna run --scope truffle-contract test --stream -- --exit
 
