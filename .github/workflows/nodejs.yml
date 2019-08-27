@@ -20,8 +20,8 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest]
-        node-version: [10.x, 12.x]
-        env: [GETH=true, QUORUM=true, PACKAGES=true, INTEGRATION=true, COVERAGE=true]
+        node-version: [8.x, 10.x, 12.x]
+        env: [GETH=true, QUORUM=true, PACKAGES=true, INTEGRATION=true]
     runs-on: ${{ matrix.platform }}
 
     steps:
