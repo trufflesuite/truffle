@@ -43,20 +43,20 @@ const override = {
    * @param  {Object} err     error
    */
   start: async function(context, web3Error) {
-    var constructor = this;
-    var currentBlock = override.defaultMaxBlocks;
-    var maxBlocks = constructor.timeoutBlocks;
+    const constructor = this;
+    let currentBlock = override.defaultMaxBlocks;
+    const maxBlocks = constructor.timeoutBlocks;
 
-    var timedOut =
+    const timedOut =
       web3Error.message && web3Error.message.includes(override.timeoutMessage);
-    var shouldWait = maxBlocks > currentBlock;
+    const shouldWait = maxBlocks > currentBlock;
 
     // Reject after attempting to get reason string if we shouldn't be waiting.
     if (!timedOut || !shouldWait) {
       // We might have been routed here in web3 >= beta.34 by their own status check
       // error. We want to extract the receipt, emit a receipt event
       // and reject it ourselves.
-      var receipt = override.extractReceipt(web3Error.message);
+      const receipt = override.extractReceipt(web3Error.message);
       if (receipt) {
         await handlers.receipt(context, receipt);
         return;
@@ -75,7 +75,7 @@ const override = {
     }
 
     // This will run every block from now until contract.timeoutBlocks
-    var listener = function(pollID) {
+    const listener = function(pollID) {
       currentBlock++;
 
       if (currentBlock > constructor.timeoutBlocks) {
