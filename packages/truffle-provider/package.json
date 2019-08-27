@@ -14,7 +14,7 @@
     "test": "mocha"
   },
   "dependencies": {
-    "truffle-error": "^0.0.5",
+    "@truffle/error": "^0.0.5",
     "truffle-interface-adapter": "^0.2.4",
     "web3": "1.2.1"
   },

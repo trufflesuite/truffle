@@ -1,5 +1,5 @@
 var colors = require("colors");
-var TruffleError = require("truffle-error");
+var TruffleError = require("@truffle/error");
 var inherits = require("util").inherits;
 
 inherits(CompileError, TruffleError);

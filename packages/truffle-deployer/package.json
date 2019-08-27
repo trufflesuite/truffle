@@ -3,7 +3,7 @@
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "license": "MIT",
   "author": "Tim Coulter <tim@trufflesuite.com>",
-   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-deployer#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-deployer#readme",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-deployer",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-deployer/issues"
@@ -21,7 +21,7 @@
   "devDependencies": {
     "ganache-core": "2.7.0",
     "mocha": "5.2.0",
-    "truffle-reporters": "^1.0.12",
+    "@truffle/reporters": "^1.0.12",
     "truffle-workflow-compile": "^2.1.3",
     "web3": "1.2.1"
   },

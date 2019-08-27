@@ -1,6 +1,6 @@
 module.exports = {
-  "interval": 80,
-  "frames": [
+  interval: 80,
+  frames: [
     "   ⠋",
     "   ⠙",
     "   ⠹",
@@ -13,4 +13,3 @@ module.exports = {
     "   ⠏"
   ]
 };
-

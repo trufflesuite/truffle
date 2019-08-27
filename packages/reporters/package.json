@@ -1,9 +1,9 @@
 {
-  "name": "truffle-reporters",
+  "name": "@truffle/reporters",
   "description": "Reporters for Truffle modules",
   "license": "MIT",
   "author": "",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-reporters",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/reporters",
   "version": "1.0.12",
   "main": "index.js",
   "scripts": {},

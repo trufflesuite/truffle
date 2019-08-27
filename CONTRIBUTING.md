@@ -82,4 +82,4 @@ Commands:
 
 ### Write your module/command
 
-The setup is done, you can now write your command and organize your module as you want in: `packages/truffle-mycmd/`. You can have a look at `packages/truffle-box/` which is a good starting example to follow.
+The setup is done, you can now write your command and organize your module as you want in: `packages/truffle-mycmd/`. You can have a look at `packages/box/` which is a good starting example to follow.
