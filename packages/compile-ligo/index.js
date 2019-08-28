@@ -70,15 +70,16 @@ compile.display = (paths, { quiet, working_directory, logger }) => {
 // -------- End of common with truffle-compile --------
 
 // Check that ligo is available
-function checkVyper(callback) {
-  exec("vyper --version", (err, stdout, stderr) => {
-    if (err)
-      return callback(`${colors.red("Error executing vyper:")}\n${stderr}`);
+function checkLigo(callback) {
+  exec(
+    "docker run --rm -i ligolang/ligo:next --help",
+    (err, stdout, stderr) => {
+      if (err)
+        return callback(`${colors.red("Error executing ligo:")}\n${stderr}`);
 
-    compiler.version = stdout.trim();
-
-    callback(null);
-  });
+      callback(null);
+    }
+  );
 }
 
 // Execute ligo for single source file
@@ -177,7 +178,7 @@ function compileLigo(options, callback) {
   // no ligo files found, no need to check ligo
   if (options.paths.length === 0) return callback(null, {}, []);
 
-  checkVyper(err => {
+  checkLigo(err => {
     if (err) return callback(err);
 
     return compileAll(options, callback);
