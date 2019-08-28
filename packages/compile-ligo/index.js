@@ -84,7 +84,7 @@ function checkLigo(callback) {
 }
 
 // Execute ligo for single source file
-function execLigo({ compilers }, sourcePath, callback) {
+function execLigo(sourcePath, callback) {
   const command = `docker run -v $PWD:$PWD --rm -i ligolang/ligo:next compile-contract ${sourcePath} main`;
 
   exec(command, { maxBuffer: 600 * 1024 }, (err, stdout, stderr) => {
@@ -109,41 +109,29 @@ function compileAll(options, callback) {
 
   async.map(
     options.paths,
-    (source_path, c) => {
-      execVyper(
-        options,
-        source_path,
-        (err, { abi, bytecode, bytecode_runtime, source_map }) => {
-          if (err) return c(err);
+    (sourcePath, c) => {
+      execLigo(sourcePath, (err, compiledContract) => {
+        if (err) return c(err);
 
-          // remove first extension from filename
-          const extension = path.extname(source_path);
-          const basename = path.basename(source_path, extension);
+        // remove first extension from filename
+        const extension = path.extname(sourcePath);
+        const basename = path.basename(sourcePath, extension);
 
-          // if extension is .py, remove second extension from filename
-          const contract_name =
-            extension !== ".py"
-              ? basename
-              : path.basename(basename, path.extname(basename));
+        const contractName = basename;
 
-          const source_buffer = fs.readFileSync(source_path);
-          const source_contents = source_buffer.toString();
+        const sourceBuffer = fs.readFileSync(sourcePath);
+        const sourceContents = sourceBuffer.toString();
 
-          const contract_definition = {
-            contract_name,
-            sourcePath: source_path,
-            source: source_contents,
-            abi: abi,
-            bytecode: bytecode,
-            deployedBytecode: bytecode_runtime,
-            sourceMap: source_map,
+        const contractDefinition = {
+          contractName,
+          sourcePath,
+          source: sourceContents,
+          contract: compiledContract,
+          compiler
+        };
 
-            compiler
-          };
-
-          c(null, contract_definition);
-        }
-      );
+        c(null, contractDefinition);
+      });
     },
     (err, contracts) => {
       if (err) return callback(err);
