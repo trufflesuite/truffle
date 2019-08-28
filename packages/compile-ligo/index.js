@@ -188,7 +188,7 @@ function compileLigo(options, callback) {
 // append .ligo pattern to contracts_directory in options and return updated options
 function updateContractsDirectory(options) {
   return options.with({
-    contracts_directory: path.join(options.contracts_directory, VYPER_PATTERN)
+    contracts_directory: path.join(options.contracts_directory, LIGO_PATTERN)
   });
 }
 
