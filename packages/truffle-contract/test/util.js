@@ -35,6 +35,13 @@ var util = {
     );
   },
 
+  createRevertingContract: async function() {
+    return await util._createContractInstance(
+      path.join(__dirname, "sources", "RevertingContract.sol"),
+      "RevertingContract"
+    );
+  },
+
   _createContractInstance: async function(sourcePath, contractName) {
     var contractObj;
     const sources = {
