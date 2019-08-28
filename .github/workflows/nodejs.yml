@@ -33,7 +33,7 @@ jobs:
     - run: npm install -g yarn lerna
     - run: yarn bootstrap
     - run: ${{ matrix.env }} yarn ci
-    - uses: 8398a7/action-slack@v1
+    - uses: 8398a7/action-slack@v1.1.1
       with:
         type: failure
         failedMention: ""
@@ -46,7 +46,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: 8398a7/action-slack@v1
+      - uses: 8398a7/action-slack@v1.1.1
         with:
           type: success
         env:
