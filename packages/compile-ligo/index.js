@@ -10,7 +10,8 @@ const find_contracts = require("truffle-contract-sources");
 const Profiler = require("truffle-compile/profiler");
 
 const compiler = {
-  name: "ligo"
+  name: "ligo",
+  version: "next"
 };
 
 const LIGO_PATTERN = "**/*.ligo";
@@ -163,9 +164,7 @@ function compileAll(options, callback) {
         return result;
       }, {});
 
-      const compilerInfo = { name: "vyper", version: compiler.version };
-
-      callback(null, result, options.paths, compilerInfo);
+      callback(null, result, options.paths, compiler);
     }
   );
 }
