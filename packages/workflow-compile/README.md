@@ -1,16 +1,16 @@
-# truffle-workflow-compile
+# @truffle/workflow-compile
 Core workflow logic for the `truffle compile` command behavior
 
 ### install
 
 ```
-$ npm install truffle-workflow-compile
+$ npm install @truffle/workflow-compile
 ```
 
 ### Usage
 
 ```javascript
-const Contracts = require("truffle-workflow-compile");
+const Contracts = require("@truffle/workflow-compile");
 
 // expected config object
 const config = {
