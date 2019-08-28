@@ -3,6 +3,7 @@ const mkdirp = require("mkdirp");
 const { promisify } = require("util");
 const solcCompile = require("truffle-compile/legacy");
 const vyperCompile = require("truffle-compile-vyper");
+const ligoCompile = require("@truffle/compile-ligo");
 const externalCompile = require("truffle-external-compile");
 const { prepareConfig, multiPromisify } = require("../utils");
 const {
@@ -14,6 +15,7 @@ const {
 const SUPPORTED_COMPILERS = {
   solc: solcCompile,
   vyper: vyperCompile,
+  ligo: ligoCompile,
   external: externalCompile
 };
 
