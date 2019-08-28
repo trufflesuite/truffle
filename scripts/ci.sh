@@ -86,7 +86,7 @@ elif [ "$PACKAGES" = true ]; then
 
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
-  sudo add-apt-repository -y ppa:ethereum/ethereum
+#  sudo add-apt-repository -y ppa:ethereum/ethereum
   sudo apt update
   sudo apt install -y python3.6 python3.6-dev python3.6-venv solc
   wget https://bootstrap.pypa.io/get-pip.py
