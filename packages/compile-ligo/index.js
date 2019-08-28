@@ -10,11 +10,10 @@ const find_contracts = require("truffle-contract-sources");
 const Profiler = require("truffle-compile/profiler");
 
 const compiler = {
-  name: "ligo",
-  version: null
+  name: "ligo"
 };
 
-const LIGO_PATTERN = "**/*.{ligo}";
+const LIGO_PATTERN = "**/*.ligo";
 
 // -------- TODO: Common with truffle-compile --------
 
