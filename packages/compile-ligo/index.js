@@ -126,7 +126,7 @@ function compileAll(options, callback) {
           contractName,
           sourcePath,
           source: sourceContents,
-          contract: compiledContract,
+          metadata: compiledContract,
           compiler
         };
 
