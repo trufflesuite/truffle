@@ -84,30 +84,20 @@ function checkLigo(callback) {
 }
 
 // Execute ligo for single source file
-function execVyper({ compilers }, source_path, callback) {
-  const formats = ["abi", "bytecode", "bytecode_runtime"];
-  if (compilers.vyper.settings && compilers.vyper.settings.sourceMap) {
-    formats.push("source_map");
-  }
-  const command = `vyper -f${formats.join(",")} ${source_path}`;
+function execLigo({ compilers }, sourcePath, callback) {
+  const command = `docker run -v $PWD:$PWD --rm -i ligolang/ligo:next compile-contract ${sourcePath} main`;
 
   exec(command, { maxBuffer: 600 * 1024 }, (err, stdout, stderr) => {
     if (err)
       return callback(
         `${stderr}\n${colors.red(
-          `Compilation of ${source_path} failed. See above.`
+          `Compilation of ${sourcePath} failed. See above.`
         )}`
       );
 
-    const outputs = stdout.split(/\r?\n/);
+    const compiledContract = stdout.split(/\r?\n/);
 
-    const compiled_contract = outputs.reduce(
-      (contract, output, index) =>
-        Object.assign(contract, { [formats[index]]: output }),
-      {}
-    );
-
-    callback(null, compiled_contract);
+    callback(null, compiledContract);
   });
 }
 
