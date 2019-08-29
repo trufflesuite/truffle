@@ -138,7 +138,7 @@ function compileAll(options, callback) {
       if (err) return callback(err);
 
       const result = contracts.reduce((result, contract) => {
-        result[contract.contract_name] = contract;
+        result[contract.contractName] = contract;
 
         return result;
       }, {});
