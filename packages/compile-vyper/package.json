@@ -1,9 +1,9 @@
 {
-  "name": "truffle-compile-vyper",
+  "name": "@truffle/compile-vyper",
   "description": "Vyper compiler support",
   "license": "MIT",
   "author": "Evgeniy Filatov <evgeniyfilatov@gmail.com>",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-compile-vyper",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-vyper",
   "version": "1.0.26",
   "main": "index.js",
   "scripts": {
