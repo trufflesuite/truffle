@@ -18,7 +18,7 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/blockchain-utils#readme",
-  "gitHead": "22c897806448eb18d532bd31d68cf07563630bcb",
+  "gitHead": "cb7e1a498efb92df3b705478f05864f3009ee74d",
   "devDependencies": {
     "mocha": "5.2.0"
   }
