@@ -95,7 +95,8 @@ function execLigo(sourcePath, callback) {
         )}`
       );
 
-    const compiledContract = stdout.split(/\r?\n/);
+    const output = stdout.trim();
+    const compiledContract = output.match(/{(.*)}/s)[1].trim();
 
     callback(null, compiledContract);
   });
