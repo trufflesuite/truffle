@@ -12,7 +12,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c",
+  "gitHead": "1ee7e21208fbff93267490729c2fac2e76bb6090",
   "devDependencies": {
     "mocha": "5.2.0"
   }
