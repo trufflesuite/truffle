@@ -1,6 +1,6 @@
 const mkdirp = require("mkdirp");
 const del = require("del");
-const Contracts = require("truffle-workflow-compile");
+const Contracts = require("@truffle/workflow-compile");
 const BuildError = require("./errors/builderror");
 const { spawn } = require("child_process");
 const spawnargs = require("spawn-args");

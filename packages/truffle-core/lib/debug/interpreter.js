@@ -14,6 +14,9 @@ const ReplManager = require("../repl");
 
 const { DebugPrinter } = require("./printer");
 
+const LINES_BEFORE_LONG = 5;
+const LINES_AFTER_LONG = 3;
+
 function watchExpressionAnalytics(raw) {
   if (raw.includes("!<")) {
     //don't send analytics for watch expressions involving selectors
@@ -463,6 +466,12 @@ class DebugInterpreter {
           this.enabledExpressions
         );
         break;
+      case "l":
+        if (this.session.view(selectors.session.status.loaded)) {
+          this.printer.printFile();
+          this.printer.printState(LINES_BEFORE_LONG, LINES_AFTER_LONG);
+        }
+        break;
       case "o":
       case "i":
       case "u":
@@ -511,6 +520,7 @@ class DebugInterpreter {
       cmd !== "v" &&
       cmd !== "h" &&
       cmd !== "p" &&
+      cmd !== "l" &&
       cmd !== "?" &&
       cmd !== "!" &&
       cmd !== ":" &&
