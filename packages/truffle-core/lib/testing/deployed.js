@@ -1,7 +1,7 @@
 // Using web3 for its sha function...
 var Web3 = require("web3");
 const semver = require("semver");
-const Native = require("truffle-compile/compilerSupplier/loadingStrategies/Native");
+const Native = require("@truffle/compile/compilerSupplier/loadingStrategies/Native");
 
 var Deployed = {
   makeSolidityDeployedAddressesLibrary: function(

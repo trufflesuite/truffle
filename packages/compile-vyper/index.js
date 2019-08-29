@@ -7,7 +7,7 @@ const colors = require("colors");
 const minimatch = require("minimatch");
 
 const find_contracts = require("truffle-contract-sources");
-const Profiler = require("truffle-compile/profiler");
+const Profiler = require("@truffle/compile/profiler");
 
 const compiler = {
   name: "vyper",
@@ -16,7 +16,7 @@ const compiler = {
 
 const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py}";
 
-// -------- TODO: Common with truffle-compile --------
+// -------- TODO: Common with @truffle/compile --------
 
 const compile = {};
 
@@ -69,7 +69,7 @@ compile.display = function(paths, options) {
   }
 };
 
-// -------- End of common with truffle-compile --------
+// -------- End of common with @truffle/compile --------
 
 // Check that vyper is available, save its version
 function checkVyper(callback) {

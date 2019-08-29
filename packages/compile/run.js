@@ -322,7 +322,7 @@ function processSources({ compilerOutput, originalSourcePaths }) {
 }
 
 /**
- * Converts compiler-output contracts into truffle-compile's return format
+ * Converts compiler-output contracts into @truffle/compile's return format
  * Uses compiler contract output plus other information.
  */
 function processContracts({

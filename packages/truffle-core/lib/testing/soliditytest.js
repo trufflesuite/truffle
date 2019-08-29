@@ -2,12 +2,12 @@ const TestCase = require("mocha/lib/test.js");
 const Suite = require("mocha/lib/suite.js");
 const Deployer = require("truffle-deployer");
 const find_contracts = require("truffle-contract-sources");
-const compile = require("truffle-compile/legacy");
+const compile = require("@truffle/compile/legacy");
 const abi = require("web3-eth-abi");
 const series = require("async").series;
 const path = require("path");
 const semver = require("semver");
-const Native = require("truffle-compile/compilerSupplier/loadingStrategies/Native");
+const Native = require("@truffle/compile/compilerSupplier/loadingStrategies/Native");
 
 let SafeSend;
 
