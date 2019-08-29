@@ -1,10 +1,10 @@
 {
-  "name": "truffle-decoder",
+  "name": "@truffle/decoder",
   "description": "A library that provides both high and low level decoding of Ethereum contract variables",
   "license": "MIT",
   "author": "Mike Seese",
-  "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-decoder",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/decoder#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/decoder",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },

@@ -5,7 +5,7 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 
-import { slotAddress } from "truffle-decoder";
+import { slotAddress } from "@truffle/decoder";
 import { makeAssignment } from "lib/helpers";
 import { Conversion, Definition, EVM } from "@truffle/decode-utils";
 
