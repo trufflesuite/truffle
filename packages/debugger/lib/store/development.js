@@ -5,14 +5,20 @@ import { composeWithDevTools } from "remote-redux-devtools";
 
 import commonConfigure from "./common";
 
-export default function configureStore (reducer, saga, initialState) {
+export default function configureStore(reducer, saga, initialState) {
   const composeEnhancers = composeWithDevTools({
     realtime: false,
     actionsBlacklist: [
-      "RECEIVE_TRACE", "SCOPE", "DECLARE_VARIABLE",
-      "ASSIGN", "ADVANCE", "SAVE_STEPS", "BEGIN_STEP", "NEXT"
+      "RECEIVE_TRACE",
+      "SCOPE",
+      "DECLARE_VARIABLE",
+      "ASSIGN",
+      "ADVANCE",
+      "SAVE_STEPS",
+      "BEGIN_STEP",
+      "NEXT"
     ],
-    stateSanitizer: (state) => ({
+    stateSanitizer: _state => ({
       // session: state.session,
       // context: state.context,
       // evm: state.evm,
@@ -21,7 +27,7 @@ export default function configureStore (reducer, saga, initialState) {
     }),
 
     startOn: "SESSION_READY",
-    name: "truffle-debugger",
+    name: "@truffle/debugger",
     hostname: "localhost",
     port: 11117
   });

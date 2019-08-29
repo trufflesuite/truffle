@@ -1,12 +1,12 @@
 {
-  "name": "truffle-debugger",
+  "name": "@truffle/debugger",
   "description": "Core functionality for debugging Solidity files built with Truffle",
   "license": "MIT",
-  "author": "Tim Coulter <tim.coulter@consenseys.net>",
-  "homepage": "https://github.com/trufflesuite/truffle-debugger#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-debugger",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/debugger#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/debugger",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-debugger/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "5.0.25",
   "main": "dist/debugger.js",

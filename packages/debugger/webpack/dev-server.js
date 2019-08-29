@@ -10,10 +10,7 @@ const port = 3000;
 const compiler = webpack(config);
 const app = express();
 
-
-app.use(middleware(compiler, {
-}));
-
+app.use(middleware(compiler, {}));
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}...`);

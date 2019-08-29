@@ -101,9 +101,9 @@ elif [ "$COVERAGE" = true ]; then
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python3.6 get-pip.py
   sudo pip3 install vyper
-  cd packages/truffle-debugger && yarn test:coverage && \
-  cd ../../ && nyc lerna run --ignore truffle-debugger test && \
-  cat ./packages/truffle-debugger/coverage/lcov.info >> ./coverage/lcov.info && \
+  cd packages/debugger && yarn test:coverage && \
+  cd ../../ && nyc lerna run --ignore debugger test && \
+  cat ./packages/debugger/coverage/lcov.info >> ./coverage/lcov.info && \
   cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 
 fi

@@ -1,4 +1,4 @@
-# truffle-debugger
+# @truffle/debugger
 
 Portable Solidity debugger library, for use with or without Truffle.
 
@@ -17,11 +17,11 @@ API Documentation for this library can be found at [trufflesuite.github.io/truff
 ## Library Usage
 
 _:warning: This documentation is currently a work in progress.
-Please see the [reference integration](https://github.com/trufflesuite/truffle/blob/develop/packages/truffle-core/lib/commands/debug.js) provided by the `truffle debug` command._
+Please see the [reference integration](https://github.com/trufflesuite/truffle/tree/master/packages/truffle-core/lib/commands/debug.js) provided by the `truffle debug` command._
 
 ### Required Parameters
 
-To start a truffle-debugger session, you'll need the following:
+To start a @truffle/debugger session, you'll need the following:
 
 - `txHash` - A transaction hash (prefixed with `0x`), for the transaction to debug
 - `provider` - A web3 provider instance (see [web3.js](https://github.com/ethereum/web3.js/))
@@ -44,7 +44,7 @@ Optionally (and recommended), you can also provide a `files` argument:
 1. Start the debugger session by constructing a Debugger instance with `.forTx()` and then `.connect()` to it:
 
 ```javascript
-import Debugger from "truffle-debugger";
+import Debugger from "@truffle/debugger";
 
 let bugger = await Debugger
   .forTx(txHash, { contracts, files, provider });

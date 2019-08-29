@@ -1,7 +1,7 @@
 {
   "name": "@truffle/debug-utils",
   "version": "1.0.18",
-  "description": "Integration utils for truffle/truffle-debugger",
+  "description": "Integration utils for truffle/debugger",
   "dependencies": {
     "async": "2.6.1",
     "debug": "^4.1.0",

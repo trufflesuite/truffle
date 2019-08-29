@@ -6,7 +6,7 @@ const util = require("util");
 const BN = require("bn.js");
 const ora = require("ora");
 
-const Debugger = require("truffle-debugger");
+const Debugger = require("@truffle/debugger");
 const DebugUtils = require("@truffle/debug-utils");
 
 const { DebugInterpreter } = require("./interpreter");
@@ -28,7 +28,7 @@ class CLIDebugger {
     // compile contracts
     const compilation = this.compilation || (await this.compileSources());
 
-    // invoke truffle-debugger
+    // invoke @truffle/debugger
     const session = await this.startDebugger(compilation, txHash);
 
     // initialize prompt/breakpoints/ui logic

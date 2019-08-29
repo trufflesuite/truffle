@@ -7,7 +7,7 @@ env:
   global:
     - GIT_NAME: "'Travis Deployer'"
     - GIT_EMAIL: gnidan@trufflesuite.com
-    - GH_REF: git@github.com:trufflesuite/truffle-debugger.git
+    - GH_REF: git@github.com:trufflesuite/debugger.git
     - WATCH_BRANCH: "develop"
   matrix:
     - TEST=repo
@@ -16,7 +16,7 @@ env:
 
 services:
   - docker
-  
+
 before_install:
   - docker pull truffle/ci
 
