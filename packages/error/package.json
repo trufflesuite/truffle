@@ -16,5 +16,6 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle"
   },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/error#readme"
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/error#readme",
+  "gitHead": "22c897806448eb18d532bd31d68cf07563630bcb"
 }

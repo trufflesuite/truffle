@@ -23,5 +23,6 @@
   },
   "devDependencies": {
     "debug": "^4.1.0"
-  }
+  },
+  "gitHead": "22c897806448eb18d532bd31d68cf07563630bcb"
 }
