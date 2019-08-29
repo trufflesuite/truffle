@@ -55,7 +55,8 @@ class Config {
             }
           }
         },
-        vyper: {}
+        vyper: {},
+        ligo: {}
       },
       logger: {
         log() {}

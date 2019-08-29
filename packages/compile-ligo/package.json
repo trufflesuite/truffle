@@ -1,0 +1,22 @@
+{
+  "name": "@truffle/compile-ligo",
+  "version": "0.0.1",
+  "description": "> TODO: description",
+  "author": "CruzMolina <7537712+CruzMolina@users.noreply.github.com>",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "license": "MIT",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  }
+}

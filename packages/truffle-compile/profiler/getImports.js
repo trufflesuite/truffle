@@ -5,8 +5,8 @@ const path = require("path");
 const getImports = (file, { body, source }, solc, parserSolc) => {
   let imports;
 
-  // No imports in vyper!
-  if (path.extname(file) === ".vy") return [];
+  // No imports in non-sol files (yet)!
+  if (path.extname(file) !== ".sol") return [];
 
   if (parserSolc) imports = Parser.parseImports(body, parserSolc);
   else imports = Parser.parseImports(body, solc);
