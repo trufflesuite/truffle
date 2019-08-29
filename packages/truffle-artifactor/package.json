@@ -18,7 +18,7 @@
     "ganache-cli": "6.1.8",
     "mocha": "5.2.0",
     "require-nocache": "^1.0.0",
-    "solc": "0.4.25",
+    "solc": "0.4.26",
     "temp": "^0.8.3",
     "truffle-blockchain-utils": "^0.0.5",
     "web3": "0.20.6"
@@ -27,7 +27,7 @@
     "async": "2.6.1",
     "debug": "^3.1.0",
     "fs-extra": "6.0.1",
-    "lodash": "4.17.10",
+    "lodash": "^4.17.12",
     "truffle-contract": "^3.0.7",
     "truffle-contract-schema": "^2.0.2",
     "truffle-expect": "^0.0.4"

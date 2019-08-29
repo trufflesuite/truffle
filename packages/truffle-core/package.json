@@ -17,7 +17,7 @@
     "finalhandler": "^0.4.0",
     "fs-extra": "6.0.1",
     "ganache-cli": "6.1.8",
-    "lodash": "4.17.10",
+    "lodash": "^4.17.12",
     "mkdirp": "^0.5.1",
     "mocha": "5.2.0",
     "node-dir": "0.1.17",
