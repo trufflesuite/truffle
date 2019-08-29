@@ -286,8 +286,7 @@ class MigrationsMessages {
         if (this.describe) {
           output += self.migrationStatus({
             status: "deployed",
-            data: {
-              ...data,
+            data: Object.assign({}, data, {
               contract: {
                 contractName: data.contract.contractName,
                 address: data.contract.address
@@ -297,7 +296,7 @@ class MigrationsMessages {
                 transactionHash: data.receipt.transactionHash,
                 gasUsed: data.receipt.gasUsed
               }
-            }
+            })
           });
         }
 
@@ -345,10 +344,9 @@ class MigrationsMessages {
           );
           output += self.migrationStatus({
             status: "preAllMigrations",
-            data: {
-              ...data,
+            data: Object.assign({}, data, {
               migrations
-            }
+            })
           });
         }
 
