@@ -24,5 +24,8 @@
   "devDependencies": {
     "standard": "^11.0.1"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c"
 }
