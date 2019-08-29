@@ -1,4 +1,4 @@
-# `truffle-external-compile`
+# `@truffle/external-compile`
 
 Package to enable Truffle to run arbitrary commands as part of compilation.
 

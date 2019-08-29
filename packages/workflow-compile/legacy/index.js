@@ -3,7 +3,7 @@ const mkdirp = require("mkdirp");
 const { promisify } = require("util");
 const solcCompile = require("truffle-compile/legacy");
 const vyperCompile = require("truffle-compile-vyper");
-const externalCompile = require("truffle-external-compile");
+const externalCompile = require("@truffle/external-compile");
 const { prepareConfig, multiPromisify } = require("../utils");
 const {
   reportCompilationStarted,

@@ -1,10 +1,10 @@
 {
-  "name": "truffle-external-compile",
+  "name": "@truffle/external-compile",
   "description": "Wrapper to compile Truffle contracts with arbitrary shell command",
   "license": "MIT",
   "author": "g. nicholas d'andrea <gnidan@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-external-compile",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/external-compile",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },

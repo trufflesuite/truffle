@@ -18,7 +18,7 @@ const SUPPORTED_COMPILERS = {
     legacy: true
   },
   external: {
-    compiler: require("truffle-external-compile"),
+    compiler: require("@truffle/external-compile"),
     legacy: true
   }
 };

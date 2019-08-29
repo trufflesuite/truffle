@@ -30,7 +30,7 @@ describe("Compilation Targets", () => {
       };
 
       const expected = {
-        [contractName]: { contractName, abi },
+        [contractName]: { contractName, abi }
       };
 
       const actual = await processTarget(target, cwd);
