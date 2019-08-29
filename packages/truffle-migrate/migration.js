@@ -150,6 +150,7 @@ class Migration {
 
     const preMigrationsData = {
       file: file,
+      number: this.number,
       isFirst: this.isFirst,
       network: options.network,
       networkId: options.network_id,
@@ -184,6 +185,21 @@ class Migration {
     });
 
     return { logger, web3, resolver, context, deployer };
+  }
+
+  /**
+   * Returns a serializable version of `this`
+   * @returns  {Object}
+   */
+  serializeable() {
+    return {
+      file: this.file,
+      number: this.number,
+      isFirst: this.isFirst,
+      isLast: this.isLast,
+      dryRun: this.dryRun,
+      interactive: this.interactive
+    };
   }
 }
 

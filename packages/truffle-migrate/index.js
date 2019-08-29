@@ -6,6 +6,7 @@ const expect = require("@truffle/expect");
 const Config = require("truffle-config");
 const Reporter = require("@truffle/reporters").migrationsV5;
 const Migration = require("./migration.js");
+const Emittery = require("emittery");
 
 /**
  *  This API is consumed by `truffle-core` at the `migrate` and `test` commands via
@@ -14,9 +15,12 @@ const Migration = require("./migration.js");
 const Migrate = {
   Migration: Migration,
   reporter: null,
+  emitter: new Emittery(),
+  logger: null,
 
-  launchReporter: function() {
-    Migrate.reporter = new Reporter();
+  launchReporter: function(config) {
+    Migrate.reporter = new Reporter(config.describe || false);
+    this.logger = config.logger;
   },
 
   acceptDryRun: async function() {
@@ -114,7 +118,7 @@ const Migrate = {
     return await this.runFrom(0, options);
   },
 
-  runMigrations: function(migrations, options) {
+  runMigrations: async function(migrations, options) {
     // Perform a shallow clone of the options object
     // so that we can override the provider option without
     // changing the original options object passed in.
@@ -136,6 +140,16 @@ const Migrate = {
       migrations[total - 1].isLast = true;
     }
 
+    if (this.reporter) {
+      this.reporter.setMigrator(this);
+      this.reporter.listenMigrator();
+    }
+
+    await this.emitter.emit("preAllMigrations", {
+      dryRun: options.dryRun,
+      migrations
+    });
+
     return new Promise((resolve, reject) => {
       return async.eachSeries(
         migrations,
@@ -149,7 +163,12 @@ const Migrate = {
               finished(error);
             });
         },
-        error => {
+        async error => {
+          await this.emitter.emit("postAllMigrations", {
+            dryRun: options.dryRun,
+            error: error ? error.toString() : null
+          });
+
           if (error) return reject(error);
           return resolve();
         }

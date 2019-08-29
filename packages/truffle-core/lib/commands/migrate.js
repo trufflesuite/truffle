@@ -33,13 +33,20 @@ const command = {
       describe: "Manually authorize deployments after seeing a preview",
       type: "boolean",
       default: false
+    },
+    "describe": {
+      describe: "Adds extra verbosity to the status of an ongoing migration",
+      type: "boolean",
+      default: false
     }
   },
   help: {
     usage:
-      "truffle migrate [--reset] [--f <number>] [--to <number>] " +
-      "[--network <name>]\n                                [--compile-all] " +
-      "[--verbose-rpc] [--interactive] [--dry-run] [--skip-dry-run]",
+      "truffle migrate [--reset] [--f <number>] [--to <number>] [--network <name>]\n" +
+      "                                " + // spacing to align with previous line
+      "[--compile-all] [--verbose-rpc] [--interactive] [--dry-run]\n" +
+      "                                " + // spacing to align with previous line
+      "[--skip-dry-run] [--describe]",
     options: [
       {
         option: "--reset",
@@ -87,6 +94,11 @@ const command = {
       {
         option: "--skip-dry-run",
         description: "Do not run a test or 'dry run' migration."
+      },
+      {
+        option: "--describe",
+        description:
+          "Adds extra verbosity to the status of an ongoing migration"
       }
     ]
   },
@@ -230,7 +242,7 @@ const command = {
     }
 
     async function runMigrations(config) {
-      Migrate.launchReporter();
+      Migrate.launchReporter(config);
 
       if (options.f) {
         await Migrate.runFrom(options.f, config);
