@@ -4,7 +4,7 @@
 class MigrationsMessages {
   constructor(reporter) {
     this.reporter = reporter;
-    this.describe = reporter.describe;
+    this.describeJson = reporter.describeJson;
   }
 
   // ----------------------------------- Utilities -------------------------------------------------
@@ -194,7 +194,7 @@ class MigrationsMessages {
       deploying: () => {
         let output = "";
 
-        if (self.describe) {
+        if (self.describeJson) {
           output +=
             self.migrationStatus({
               status: "deploying",
@@ -212,7 +212,7 @@ class MigrationsMessages {
       replacing: () => {
         let output = "";
 
-        if (self.describe) {
+        if (self.describeJson) {
           output +=
             self.migrationStatus({
               status: "replacing",
@@ -231,7 +231,7 @@ class MigrationsMessages {
       reusing: () => {
         let output = "";
 
-        if (self.describe) {
+        if (self.describeJson) {
           output +=
             self.migrationStatus({
               status: "reusing",
@@ -283,7 +283,7 @@ class MigrationsMessages {
             `Pausing for ${reporter.confirmations} confirmations...`
           );
 
-        if (this.describe) {
+        if (this.describeJson) {
           output += self.migrationStatus({
             status: "deployed",
             data: Object.assign({}, data, {
@@ -338,7 +338,7 @@ class MigrationsMessages {
       preAllMigrations: () => {
         let output = "";
 
-        if (self.describe) {
+        if (self.describeJson) {
           const migrations = data.migrations.map(migration =>
             migration.serializeable()
           );
@@ -356,7 +356,7 @@ class MigrationsMessages {
       postAllMigrations: () => {
         let output = "";
 
-        if (self.describe) {
+        if (self.describeJson) {
           output += self.migrationStatus({
             status: "postAllMigrations",
             data
@@ -369,7 +369,7 @@ class MigrationsMessages {
       // Migrations
       preMigrate: () => {
         let output = "";
-        if (self.describe) {
+        if (self.describeJson) {
           output +=
             self.migrationStatus({
               status: "preMigrate",
@@ -413,7 +413,7 @@ class MigrationsMessages {
           "\n" +
           `   > ${"Total cost:".padEnd(15)} ${data.cost.padStart(15)} ETH\n`;
 
-        if (self.describe) {
+        if (self.describeJson) {
           output +=
             "\n" +
             self.migrationStatus({
@@ -435,7 +435,7 @@ class MigrationsMessages {
           `> ${"Total deployments:".padEnd(20)} ${data.totalDeployments}\n` +
           `> ${"Final cost:".padEnd(20)} ${data.finalCost} ETH\n`;
 
-        if (self.describe) {
+        if (self.describeJson) {
           output +=
             "\n" +
             self.migrationStatus({

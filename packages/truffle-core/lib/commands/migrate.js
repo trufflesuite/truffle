@@ -34,7 +34,7 @@ const command = {
       type: "boolean",
       default: false
     },
-    "describe": {
+    "describe-json": {
       describe: "Adds extra verbosity to the status of an ongoing migration",
       type: "boolean",
       default: false
@@ -46,7 +46,7 @@ const command = {
       "                                " + // spacing to align with previous line
       "[--compile-all] [--verbose-rpc] [--interactive] [--dry-run]\n" +
       "                                " + // spacing to align with previous line
-      "[--skip-dry-run] [--describe]",
+      "[--skip-dry-run] [--describe-json]",
     options: [
       {
         option: "--reset",
@@ -96,7 +96,7 @@ const command = {
         description: "Do not run a test or 'dry run' migration."
       },
       {
-        option: "--describe",
+        option: "--describe-json",
         description:
           "Adds extra verbosity to the status of an ongoing migration"
       }

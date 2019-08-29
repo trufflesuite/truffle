@@ -19,7 +19,7 @@ const Migrate = {
   logger: null,
 
   launchReporter: function(config) {
-    Migrate.reporter = new Reporter(config.describe || false);
+    Migrate.reporter = new Reporter(config.describeJson || false);
     this.logger = config.logger;
   },
 

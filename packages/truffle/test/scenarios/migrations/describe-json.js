@@ -5,7 +5,7 @@ const sandbox = require("../sandbox");
 const path = require("path");
 const MemoryLogger = require("../memorylogger");
 
-describe("truffle migrate --describe", () => {
+describe("truffle migrate --describe-json", () => {
   let config, projectPath;
   let logger = new MemoryLogger();
 
@@ -23,7 +23,7 @@ describe("truffle migrate --describe", () => {
 
   after(done => Server.stop(done));
 
-  describe("when run on the most basic truffle project without --describe", () => {
+  describe("when run on the most basic truffle project without --describe-json", () => {
     let contents;
 
     it("runs the migration without throwing", done => {
@@ -40,12 +40,12 @@ describe("truffle migrate --describe", () => {
     });
   });
 
-  describe("when run on the most basic truffle project with --describe", () => {
+  describe("when run on the most basic truffle project with --describe-json", () => {
     let statuses = [];
     let cost = 0;
 
     it("runs the migration without throwing", done => {
-      CommandRunner.run("migrate --reset --describe", config, error => {
+      CommandRunner.run("migrate --reset --describe-json", config, error => {
         assert(error === undefined, "error should be undefined here");
 
         const contents = logger.contents();
