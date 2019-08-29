@@ -8,7 +8,7 @@ describe("Provider", function() {
 
   before("Initialize Ganache server", function(done) {
     server = Ganache.server({});
-    server.listen(port, function (err) {
+    server.listen(port, function(err) {
       assert.ifError(err);
       done();
     });
@@ -19,30 +19,30 @@ describe("Provider", function() {
   });
 
   it("accepts host and port", function(done) {
-    var provider = Provider.create({host: "0.0.0.0", port: port});
+    var provider = Provider.create({ host: "0.0.0.0", port: port });
     assert(provider);
 
-    Provider.test_connection(provider, function(error, coinbase) {
+    Provider.test_connection(provider, function(error, _coinbase) {
       assert.ifError(error);
       done();
     });
   });
 
   it("fails to connect to the wrong port", function(done) {
-    var provider = Provider.create({host: "0.0.0.0", port: "54321"});
+    var provider = Provider.create({ host: "0.0.0.0", port: "54321" });
     assert(provider);
 
-    Provider.test_connection(provider, function(error, coinbase) {
+    Provider.test_connection(provider, function(error, _coinbase) {
       assert(error);
       done();
     });
   });
 
   it("accepts a provider instance", function(done) {
-    var provider = Provider.create({provider: new Ganache.provider()});
+    var provider = Provider.create({ provider: new Ganache.provider() });
     assert(provider);
 
-    Provider.test_connection(provider, function(error, coinbase) {
+    Provider.test_connection(provider, function(error, _coinbase) {
       assert.ifError(error);
       done();
     });
@@ -50,12 +50,14 @@ describe("Provider", function() {
 
   it("accepts a function that returns a provider instance", function(done) {
     var provider = Provider.create({
-      provider: function() { return new Ganache.provider(); }
+      provider: function() {
+        return new Ganache.provider();
+      }
     });
 
     assert(provider);
 
-    Provider.test_connection(provider, function(error, coinbase) {
+    Provider.test_connection(provider, function(error, _coinbase) {
       assert.ifError(error);
       done();
     });

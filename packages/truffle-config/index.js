@@ -1,6 +1,6 @@
 const _ = require("lodash");
 const path = require("path");
-const Provider = require("truffle-provider");
+const Provider = require("@truffle/provider");
 const TruffleError = require("@truffle/error");
 const Module = require("module");
 const findUp = require("find-up");

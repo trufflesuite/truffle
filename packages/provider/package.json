@@ -1,12 +1,12 @@
 {
-  "name": "truffle-provider",
+  "name": "@truffle/provider",
   "description": "Beefed up provider module for Truffle",
   "license": "MIT",
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
-  "homepage": "https://github.com/trufflesuite/truffle-provider#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-provider",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/provider#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/provider",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-provider/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "0.1.15",
   "main": "index.js",
