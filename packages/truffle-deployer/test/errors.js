@@ -181,7 +181,7 @@ describe("Error cases", function() {
   });
 
   it("OOG (w/ estimate, hits block limit)", async function() {
-    this.timeout(20000);
+    this.timeout(30000);
 
     const migrate = function() {
       deployer.deploy(Loops);
