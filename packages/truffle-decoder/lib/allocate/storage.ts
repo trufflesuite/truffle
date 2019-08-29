@@ -5,9 +5,9 @@ import { StoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageAllocation, StorageMemberAllocations } from "../types/allocation";
 import { StorageLength, isWordsLength, Range } from "../types/storage";
 import { UnknownBaseContractIdError, UnknownUserDefinedTypeError } from "../types/errors";
-import { AstDefinition, AstReferences } from "truffle-decode-utils";
+import { AstDefinition, AstReferences } from "@truffle/decode-utils";
 import { readDefinition } from "../read/constant"
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import BN from "bn.js";
 
 //contracts contains only the contracts to be allocated; any base classes not
@@ -72,7 +72,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
         offset += 1;
     }
     //otherwise, we remain in place
-  
+
     let range: Range;
 
     if(isWordsLength(size)) {
@@ -109,14 +109,14 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
         },
       };
     }
-  
+
     memberAllocations[node.id] = {
       definition: node,
       pointer: {
         storage: range
       }
     };
-  
+
     //finally, adjust the current position.
     //if it was sized in words, move down that many slots and reset position w/in slot
     if(isWordsLength(size)) {
@@ -183,7 +183,7 @@ function allocateContract(contract: AstDefinition, referenceDeclarations: AstRef
     return getStateVariables(baseNode);
   }));
 
-  return allocateMembers(contract, vars, referenceDeclarations, existingAllocations, true); 
+  return allocateMembers(contract, vars, referenceDeclarations, existingAllocations, true);
     //size is not meaningful for contracts, so we pass suppressSize=true
 }
 

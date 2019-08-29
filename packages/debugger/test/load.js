@@ -6,7 +6,7 @@ import { assert } from "chai";
 import Ganache from "ganache-core";
 
 import { prepareContracts } from "./helpers";
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as TruffleDecodeUtils from "@truffle/decode-utils";
 import Debugger from "lib/debugger";
 
 import trace from "lib/trace/selectors";

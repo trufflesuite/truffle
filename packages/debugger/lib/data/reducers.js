@@ -7,7 +7,7 @@ import * as actions from "./actions";
 
 import { slotAddress } from "truffle-decoder";
 import { makeAssignment } from "lib/helpers";
-import { Conversion, Definition, EVM } from "truffle-decode-utils";
+import { Conversion, Definition, EVM } from "@truffle/decode-utils";
 
 const DEFAULT_SCOPES = {
   byId: {}

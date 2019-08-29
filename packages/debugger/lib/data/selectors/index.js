@@ -9,7 +9,7 @@ import { stableKeccak256 } from "lib/helpers";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 
 /**
  * @private

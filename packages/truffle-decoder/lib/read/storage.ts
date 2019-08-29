@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:read:storage");
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import { Slot, Range } from "../types/storage";
 import { WordMapping } from "../types/evm";
 import { DecoderRequest } from "../types/request";
@@ -153,4 +153,3 @@ export function* readRange(storage: WordMapping, range: Range): IterableIterator
 
   return data;
 }
-

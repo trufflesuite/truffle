@@ -1,4 +1,4 @@
-import { AstDefinition } from "truffle-decode-utils";
+import { AstDefinition } from "@truffle/decode-utils";
 import { Range } from "./storage";
 
 export type DataPointer = StackPointer | MemoryPointer | StoragePointer

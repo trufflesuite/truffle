@@ -3,8 +3,8 @@ const debug = debugModule("decoder:allocate:calldata");
 
 import { CalldataPointer } from "../types/pointer";
 import { CalldataAllocations, CalldataAllocation, CalldataMemberAllocations } from "../types/allocation";
-import { AstDefinition, AstReferences } from "truffle-decode-utils";
-import * as DecodeUtils from "truffle-decode-utils";
+import { AstDefinition, AstReferences } from "@truffle/decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 
 export function getCalldataAllocations(referenceDeclarations: AstReferences): CalldataAllocations {
   let allocations: CalldataAllocations = {};

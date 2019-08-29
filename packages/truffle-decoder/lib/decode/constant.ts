@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:decode:constant");
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import read from "../read";
 import decodeValue from "./value";
 import { ConstantDefinitionPointer} from "../types/pointer";

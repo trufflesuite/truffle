@@ -6,7 +6,7 @@ import BN from "bn.js";
 
 import trace from "lib/trace/selectors";
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import {
   isCallMnemonic,
   isCreateMnemonic,

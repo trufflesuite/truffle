@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:decode:stack");
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import read from "../read";
 import decodeValue from "./value";
 import { decodeExternalFunction } from "./value";

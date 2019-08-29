@@ -6,7 +6,7 @@ import { assert } from "chai";
 import Ganache from "ganache-core";
 
 import { prepareContracts, lineOf } from "./helpers";
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as TruffleDecodeUtils from "@truffle/decode-utils";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";

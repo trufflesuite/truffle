@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 import data from "lib/data/selectors";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as TruffleDecodeUtils from "@truffle/decode-utils";
 
 const __CONTAINERS = `
 pragma solidity ^0.5.0;

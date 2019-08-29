@@ -9,7 +9,7 @@ import { decodeLiteral } from "./stack";
 import decodeCalldata from "./calldata";
 import decodeConstant from "./constant";
 import decodeSpecial from "./special";
-import { AstDefinition } from "truffle-decode-utils";
+import { AstDefinition } from "@truffle/decode-utils";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";

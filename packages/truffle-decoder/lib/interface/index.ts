@@ -1,4 +1,4 @@
-import { AstDefinition } from "truffle-decode-utils";
+import { AstDefinition } from "@truffle/decode-utils";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import decode from "../decode";

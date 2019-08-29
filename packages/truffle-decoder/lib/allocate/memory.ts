@@ -3,8 +3,8 @@ const debug = debugModule("decoder:allocate:memory");
 
 import { MemoryPointer } from "../types/pointer";
 import { MemoryAllocations, MemoryAllocation } from "../types/allocation";
-import { AstDefinition, AstReferences } from "truffle-decode-utils";
-import * as DecodeUtils from "truffle-decode-utils";
+import { AstDefinition, AstReferences } from "@truffle/decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 
 export function getMemoryAllocations(referenceDeclarations: AstReferences): MemoryAllocations {
   let allocations: MemoryAllocations = {};

@@ -4,7 +4,7 @@ const debug = debugModule("debugger:trace:sagas");
 import { take, takeEvery, put, select } from "redux-saga/effects";
 import { prefixName, isCallMnemonic } from "lib/helpers";
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 
 import * as actions from "../actions";
 

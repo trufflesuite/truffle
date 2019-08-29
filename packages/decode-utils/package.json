@@ -1,12 +1,12 @@
 {
-  "name": "truffle-decode-utils",
+  "name": "@truffle/decode-utils",
   "description": "Utilities for decoding data from the EVM",
   "license": "MIT",
   "author": "Truffle Suite <inquiry@trufflesuite.com>",
-  "homepage": "https://github.com/trufflesuite/truffle-decode-utils#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-decode-utils",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/decode-utils#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/decode-utils",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-decode-utils/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "1.0.16",
   "main": "dist/index.js",

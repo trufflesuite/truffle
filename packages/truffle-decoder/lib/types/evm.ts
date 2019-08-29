@@ -1,4 +1,4 @@
-import { AstReferences, Contexts } from "truffle-decode-utils";
+import { AstReferences, Contexts } from "@truffle/decode-utils";
 import { StorageAllocations, CalldataAllocations, MemoryAllocations, StorageMemberAllocations } from "./allocation";
 import { Slot } from "./storage";
 

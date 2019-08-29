@@ -5,7 +5,7 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 import { keccak256, extractPrimarySource } from "lib/helpers";
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 
 import BN from "bn.js";
 

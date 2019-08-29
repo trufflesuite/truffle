@@ -15,7 +15,7 @@ import data from "../selectors";
 
 import sum from "lodash.sum";
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import {
   getStorageAllocations,
   getMemoryAllocations,

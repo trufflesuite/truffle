@@ -8,7 +8,7 @@ import Ganache from "ganache-core";
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as TruffleDecodeUtils from "@truffle/decode-utils";
 
 import solidity from "lib/solidity/selectors";
 

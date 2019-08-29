@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:read:constant");
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import BN from "bn.js";
 
 export function readDefinition(definition: DecodeUtils.AstDefinition): Uint8Array {

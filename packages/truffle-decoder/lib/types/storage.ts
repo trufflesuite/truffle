@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:types:storage");
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import BN from "bn.js";
 
 export type StorageLength = {bytes: number} | {words: number};

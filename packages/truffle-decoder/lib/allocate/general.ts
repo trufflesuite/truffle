@@ -1,4 +1,4 @@
-import { AstDefinition, AstReferences } from "truffle-decode-utils";
+import { AstDefinition, AstReferences } from "@truffle/decode-utils";
 
 function getDeclarationsForTypes(contracts: AstDefinition[], types: string[]): AstReferences {
   let result: AstReferences = {};

@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:interface:contract-decoder");
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
@@ -15,7 +15,7 @@ import { Slot, isWordsLength } from "../types/storage";
 import { DecoderRequest, isStorageRequest, isCodeRequest } from "../types/request";
 import { ContractBeingDecodedHasNoNodeError } from "../types/errors";
 import decode from "../decode";
-import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "truffle-decode-utils";
+import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "@truffle/decode-utils";
 import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";

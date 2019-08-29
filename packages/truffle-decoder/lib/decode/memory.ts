@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decoder:decode:memory");
 
 import read from "../read";
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import decodeValue from "./value";
 import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";

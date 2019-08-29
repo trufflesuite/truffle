@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decoder:decode:storage");
 
 import read from "../read";
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import decodeValue from "./value";
 import { StoragePointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
@@ -84,7 +84,7 @@ export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, p
       debug("about to determine baseSize");
       let baseSize: Types.StorageLength = storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations);
       debug("baseSize %o", baseSize);
-      
+
       //we are going to make a list of child ranges, pushing them one by one onto
       //this list, and then decode them; the first part will vary based on whether
       //we're in the words case or the bytes case, the second will not

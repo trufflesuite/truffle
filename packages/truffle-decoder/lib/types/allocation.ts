@@ -1,6 +1,6 @@
 import { StorageLength } from "./storage";
 import { StoragePointer, ConstantDefinitionPointer, CalldataPointer, MemoryPointer } from "./pointer";
-import { AstDefinition } from "truffle-decode-utils";
+import { AstDefinition } from "@truffle/decode-utils";
 
 //holds a collection of storage allocations for structs and contracts, indexed
 //by the ID of the struct or contract

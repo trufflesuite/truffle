@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("decoder:decode:special");
 
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import decodeValue from "./value";
 import { EvmInfo } from "../types/evm";
 import { SpecialPointer } from "../types/pointer";

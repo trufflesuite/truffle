@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("decoder:decode:value");
 
 import read from "../read";
-import * as DecodeUtils from "truffle-decode-utils";
+import * as DecodeUtils from "@truffle/decode-utils";
 import BN from "bn.js";
 import utf8 from "utf8";
 import { DataPointer } from "../types/pointer";

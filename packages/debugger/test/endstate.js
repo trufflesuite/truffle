@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import evm from "lib/evm/selectors";
 import data from "lib/data/selectors";
 
-import * as TruffleDecodeUtils from "truffle-decode-utils";
+import * as TruffleDecodeUtils from "@truffle/decode-utils";
 
 const __FAILURE = `
 pragma solidity ~0.5;
