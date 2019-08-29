@@ -1,6 +1,6 @@
 {
   "name": "@truffle/code-utils",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Utilities for parsing and managing EVM-compatible bytecode",
   "main": "index.js",
   "scripts": {
