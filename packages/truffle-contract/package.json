@@ -1,6 +1,6 @@
 {
   "name": "truffle-contract",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,7 @@
   "dependencies": {
     "ethjs-abi": "0.1.8",
     "truffle-blockchain-utils": "^0.0.5",
-    "truffle-contract-schema": "^2.0.2",
+    "truffle-contract-schema": "^2.0.3",
     "truffle-error": "^0.0.3",
     "web3": "0.20.6"
   },

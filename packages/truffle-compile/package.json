@@ -1,6 +1,6 @@
 {
   "name": "truffle-compile",
-  "version": "3.0.14",
+  "version": "3.0.15",
   "description": "Compiler helper and artifact manager",
   "main": "index.js",
   "dependencies": {
@@ -9,14 +9,14 @@
     "debug": "^3.1.0",
     "graphlib": "^2.1.1",
     "solc": "0.4.26",
-    "truffle-config": "^1.0.7",
+    "truffle-config": "^1.0.8",
     "truffle-contract-sources": "^0.0.2",
     "truffle-error": "^0.0.3",
     "truffle-expect": "^0.0.4"
   },
   "devDependencies": {
     "mocha": "5.2.0",
-    "truffle-resolver": "^4.0.5"
+    "truffle-resolver": "^4.0.6"
   },
   "scripts": {
     "test": "mocha"
