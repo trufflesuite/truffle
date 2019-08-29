@@ -1,5 +1,5 @@
 {
-  "name": "truffle-compile",
+  "name": "@truffle/compile",
   "version": "4.2.2",
   "description": "Compiler helper and artifact manager",
   "main": "index.js",
@@ -36,19 +36,19 @@
   "scripts": {
     "test": "./scripts/test.sh"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-compile",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile",
   "keywords": [
     "ethereum",
     "truffle",
     "compile",
     "solidity"
   ],
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-compile/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-compile#readme",
+  "homepage": "https://github.com/trufflesuite/compile#readme",
   "publishConfig": {
     "access": "public"
   },

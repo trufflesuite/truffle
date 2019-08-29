@@ -38,7 +38,7 @@
     "ganache-core": "2.7.0",
     "mocha": "5.2.0",
     "temp": "^0.8.3",
-    "truffle-compile": "^4.2.2",
+    "@truffle/compile": "^4.2.2",
     "uglify-es": "^3.3.9"
   },
   "keywords": [

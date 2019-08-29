@@ -1,7 +1,7 @@
 const assert = require("chai").assert;
 const command = require("../../../lib/commands/obtain");
 const sinon = require("sinon");
-const CompilerSupplier = require("truffle-compile").CompilerSupplier;
+const CompilerSupplier = require("@truffle/compile").CompilerSupplier;
 let options, done, solc;
 
 describe("obtain", () => {

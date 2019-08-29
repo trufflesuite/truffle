@@ -64,7 +64,7 @@ const command = {
     }
   },
   listVersions: async function(options) {
-    const CompilerSupplier = require("truffle-compile").CompilerSupplier;
+    const CompilerSupplier = require("@truffle/compile").CompilerSupplier;
     const supplier = new CompilerSupplier();
 
     const log = options.logger.log;

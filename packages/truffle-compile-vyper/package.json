@@ -14,7 +14,7 @@
     "colors": "^1.1.2",
     "eslint": "^5.5.0",
     "minimatch": "^3.0.4",
-    "truffle-compile": "^4.2.2"
+    "@truffle/compile": "^4.2.2"
   },
   "devDependencies": {
     "mocha": "5.2.0",
