@@ -4,7 +4,7 @@ const debug = debugModule("test:helpers");
 import path from "path";
 import fs from "fs-extra";
 import Contracts from "@truffle/workflow-compile";
-import Debug from "truffle-debug-utils";
+import Debug from "@truffle/debug-utils";
 import Artifactor from "truffle-artifactor";
 import Web3 from "web3";
 import Migrate from "truffle-migrate";

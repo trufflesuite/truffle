@@ -62,7 +62,7 @@
     "remotedev-server": "^0.3.1",
     "truffle-artifactor": "^4.0.29",
     "@truffle/box": "^1.0.35",
-    "truffle-debug-utils": "^1.0.18",
+    "@truffle/debug-utils": "^1.0.18",
     "truffle-migrate": "^3.0.31",
     "truffle-resolver": "^5.0.15",
     "@truffle/workflow-compile": "^2.1.3",

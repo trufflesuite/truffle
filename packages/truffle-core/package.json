@@ -49,7 +49,7 @@
     "truffle-config": "^1.1.19",
     "truffle-contract": "^4.0.30",
     "truffle-contract-sources": "^0.1.5",
-    "truffle-debug-utils": "^1.0.18",
+    "@truffle/debug-utils": "^1.0.18",
     "truffle-debugger": "^5.0.25",
     "truffle-deployer": "^3.0.31",
     "@truffle/expect": "^0.0.9",

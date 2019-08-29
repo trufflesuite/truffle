@@ -6,7 +6,7 @@ import { assert } from "chai";
 import changeCase from "change-case";
 
 import { prepareContracts } from "test/helpers";
-import DebugUtils from "truffle-debug-utils";
+import DebugUtils from "@truffle/debug-utils";
 
 import Debugger from "lib/debugger";
 

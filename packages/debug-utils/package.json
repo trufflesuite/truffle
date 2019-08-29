@@ -1,5 +1,5 @@
 {
-  "name": "truffle-debug-utils",
+  "name": "@truffle/debug-utils",
   "version": "1.0.18",
   "description": "Integration utils for truffle/truffle-debugger",
   "dependencies": {
@@ -11,13 +11,13 @@
   "scripts": {
     "test": "mocha"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-debug-utils",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/debug-utils",
   "author": "Truffle Suite <inquiry@trufflesuite.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-debug-utils/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/truffle-debug-utils#readme",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/debug-utils#readme",
   "publishConfig": {
     "access": "public"
   },

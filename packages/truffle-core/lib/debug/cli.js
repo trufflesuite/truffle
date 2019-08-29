@@ -7,7 +7,7 @@ const BN = require("bn.js");
 const ora = require("ora");
 
 const Debugger = require("truffle-debugger");
-const DebugUtils = require("truffle-debug-utils");
+const DebugUtils = require("@truffle/debug-utils");
 
 const { DebugInterpreter } = require("./interpreter");
 const { DebugCompiler } = require("./compiler");
