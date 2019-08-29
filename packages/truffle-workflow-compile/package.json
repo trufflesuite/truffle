@@ -4,7 +4,7 @@
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
     "async": "2.6.1",
-    "lodash": "4.17.10",
+    "lodash": "^4.17.12",
     "mkdirp": "^0.5.1",
     "truffle-artifactor": "^3.0.8",
     "truffle-compile": "^3.0.14",
