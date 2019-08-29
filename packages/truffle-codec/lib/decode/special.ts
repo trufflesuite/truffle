@@ -2,13 +2,13 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:special");
 
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values } from "truffle-codec-utils";
+import { Types, Values, Errors } from "truffle-codec-utils";
 import decodeValue from "./value";
 import { EvmInfo } from "../types/evm";
 import { SpecialPointer } from "../types/pointer";
-import { DecoderRequest, GeneratorJunk } from "../types/request";
+import { DecoderRequest } from "../types/request";
 
-export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(dataType.typeClass === "magic") {
     return yield* decodeMagic(dataType, pointer, info);
   }
@@ -17,8 +17,7 @@ export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPoi
   }
 }
 
-export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
-  //note: that's Values.Result and not Values.MagicResult due to some TypeScript generator jank
+export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer, info: EvmInfo): Generator<DecoderRequest, Values.MagicResult, Uint8Array> {
 
   let {state} = info;
 
@@ -26,102 +25,102 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
     case "msg":
       return {
         type: dataType,
-        kind: "value",
+        kind: "value" as const,
         value: {
-          data: <Values.BytesDynamicResult> (yield* decodeValue(
+          data: yield* decodeValue(
             {
-              typeClass: "bytes",
-              kind: "dynamic",
-              location: "calldata"
+              typeClass: "bytes" as const,
+              kind: "dynamic" as const,
+              location: "calldata" as const
             },
             {
-              location: "calldata",
+              location: "calldata" as const,
               start: 0,
               length: state.calldata.length
             },
             info
-          )),
-          sig: <Values.BytesStaticResult> (yield* decodeValue(
+          ),
+          sig: yield* decodeValue(
             {
-              typeClass: "bytes",
-              kind: "static",
+              typeClass: "bytes" as const,
+              kind: "static" as const,
               length: CodecUtils.EVM.SELECTOR_SIZE
             },
             {
-              location: "calldata",
+              location: "calldata" as const,
               start: 0,
               length: CodecUtils.EVM.SELECTOR_SIZE,
             },
             info
-          )),
-          sender: <Values.AddressResult> (yield* decodeValue(
+          ),
+          sender: yield* decodeValue(
             {
-              typeClass: "address",
+              typeClass: "address" as const,
               payable: true
             },
-            {location: "special", special: "sender"},
+            {location: "special" as const, special: "sender" },
             info
-          )),
-          value: <Values.UintResult> (yield* decodeValue(
+          ),
+          value: yield* decodeValue(
             {
               typeClass: "uint",
               bits: 256
             },
-            {location: "special", special: "value"},
+            {location: "special" as const, special: "value" },
             info
-          ))
+          )
         }
       };
     case "tx":
       return {
         type: dataType,
-        kind: "value",
+        kind: "value" as const,
         value: {
-          origin: <Values.AddressResult> (yield* decodeValue(
+          origin: yield* decodeValue(
             {
-              typeClass: "address",
+              typeClass: "address" as const,
               payable: true
             },
-            {location: "special", special: "origin"},
+            {location: "special" as const, special: "origin"},
             info
-          )),
-          gasprice: <Values.UintResult> (yield* decodeValue(
+          ),
+          gasprice: yield* decodeValue(
             {
-              typeClass: "uint",
+              typeClass: "uint" as const,
               bits: 256
             },
-            {location: "special", special: "gasprice"},
+            {location: "special" as const, special: "gasprice"},
             info
-          ))
+          )
         }
       };
     case "block":
       let block: {[field: string]: Values.Result} = {
-        coinbase: <Values.AddressResult> (yield* decodeValue(
+        coinbase: yield* decodeValue(
           {
-            typeClass: "address",
+            typeClass: "address" as const,
             payable: true
           },
-          {location: "special", special: "coinbase"},
+          {location: "special" as const, special: "coinbase"},
           info
-        ))
+        )
       };
       //the other ones are all uint's, so let's handle them all at once; due to
       //the lack of generator arrow functions, we do it by mutating block
       const variables = ["difficulty", "gaslimit", "number", "timestamp"];
       for (let variable of variables) {
-        block[variable] = <Values.UintResult> (yield* decodeValue(
+        block[variable] = yield* decodeValue(
           {
-            typeClass: "uint",
+            typeClass: "uint" as const,
             bits: 256
           },
-          {location: "special", special: variable},
+          {location: "special" as const, special: variable},
           info
-        ));
+        );
       }
       return {
         type: dataType,
-        kind: "value",
+        kind: "value" as const,
         value: block
       };
   }

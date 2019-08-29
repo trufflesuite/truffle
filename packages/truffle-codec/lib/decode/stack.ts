@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:stack");
 
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values } from "truffle-codec-utils";
+import { Types, Values, Errors } from "truffle-codec-utils";
 import read from "../read";
 import decodeValue from "./value";
 import { decodeExternalFunction, checkPaddingLeft } from "./value";
@@ -11,25 +11,25 @@ import { decodeStorageReferenceByAddress } from "./storage";
 import { decodeAbiReferenceByAddress } from "./abi";
 import { StackPointer, StackLiteralPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { DecoderRequest, GeneratorJunk } from "../types/request";
+import { DecoderRequest } from "../types/request";
 
-export default function* decodeStack(dataType: Types.Type, pointer: StackPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export default function* decodeStack(dataType: Types.Type, pointer: StackPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   let rawValue: Uint8Array;
   try {
    rawValue = yield* read(pointer, info.state);
   }
-  catch(error) { //error: Errors.DecodingError
-    return {
+  catch(error) {
+    return <Errors.ErrorResult> { //no idea why TS is failing here
       type: dataType,
-      kind: "error",
-      error: error.error
+      kind: "error" as const,
+      error: (<Errors.DecodingError>error).error
     };
   }
-  const literalPointer: StackLiteralPointer = { location: "stackliteral", literal: rawValue };
+  const literalPointer: StackLiteralPointer = { location: "stackliteral" as const, literal: rawValue };
   return yield* decodeLiteral(dataType, literalPointer, info);
 }
 
-export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
 
   debug("type %O", dataType);
   debug("pointer %o", pointer);
@@ -70,7 +70,7 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
           //that in as the "base" value
           return yield* decodeAbiReferenceByAddress(
             dataType,
-            {location: "stackliteral", literal: locationOnly},
+            {location: "stackliteral" as const, literal: locationOnly},
             info,
             { abiPointerBase: -CodecUtils.EVM.WORD_SIZE}
           );
@@ -93,9 +93,9 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
       ||!checkPaddingLeft(selectorWord, CodecUtils.EVM.SELECTOR_SIZE)) {
       return {
         type: dataType,
-        kind: "error",
+        kind: "error" as const,
         error: {
-          kind: "FunctionExternalStackPaddingError",
+          kind: "FunctionExternalStackPaddingError" as const,
           rawAddress: CodecUtils.Conversion.toHexString(address),
           rawSelector: CodecUtils.Conversion.toHexString(selectorWord)
         }
@@ -104,8 +104,8 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
     let selector = selectorWord.slice(-CodecUtils.EVM.SELECTOR_SIZE);
     return {
       type: dataType,
-      kind: "value",
-      value: <Values.FunctionExternalValueInfo> (yield* decodeExternalFunction(address, selector, info))
+      kind: "value" as const,
+      value: yield* decodeExternalFunction(address, selector, info)
     };
   }
 

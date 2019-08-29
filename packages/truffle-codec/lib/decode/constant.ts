@@ -2,15 +2,15 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:constant");
 
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values } from "truffle-codec-utils";
+import { Types, Values, Errors } from "truffle-codec-utils";
 import read from "../read";
 import decodeValue from "./value";
 import { ConstantDefinitionPointer} from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { DecoderRequest, GeneratorJunk } from "../types/request";
+import { DecoderRequest } from "../types/request";
 import BN from "bn.js";
 
-export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
 
   debug("pointer %o", pointer);
 
@@ -26,18 +26,18 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
     try {
       word = yield* read(pointer, info.state);
     }
-    catch(error) { //error: Errors.DecodingError
+    catch(error) {
       return {
         type: dataType,
-        kind: "error",
-        error: error.error
+        kind: "error" as const,
+        error: (<Errors.DecodingError>error).error
       };
     }
     //not bothering to check padding; shouldn't be necessary
     let bytes = word.slice(CodecUtils.EVM.WORD_SIZE - size);
     return {
       type: dataType,
-      kind: "value",
+      kind: "value" as const,
       value: {
         asHex: CodecUtils.Conversion.toHexString(bytes)
       }
