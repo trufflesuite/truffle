@@ -58,7 +58,7 @@
     "truffle-interface-adapter": "^0.2.4",
     "truffle-migrate": "^3.0.31",
     "truffle-provider": "^0.1.15",
-    "truffle-provisioner": "^0.1.5",
+    "@truffle/provisioner": "^0.1.5",
     "@truffle/require": "^2.0.19",
     "truffle-resolver": "^5.0.15",
     "@truffle/workflow-compile": "^2.1.3",
