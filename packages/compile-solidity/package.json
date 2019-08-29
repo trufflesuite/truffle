@@ -1,7 +1,7 @@
 {
-  "name": "@truffle/compile",
+  "name": "@truffle/compile-solidity",
   "version": "4.2.2",
-  "description": "Compiler helper and artifact manager",
+  "description": "Compiler helper and artifact manager for Solidity files",
   "main": "index.js",
   "dependencies": {
     "colors": "^1.1.2",
@@ -36,7 +36,7 @@
   "scripts": {
     "test": "./scripts/test.sh"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-solidity",
   "keywords": [
     "ethereum",
     "truffle",
@@ -48,7 +48,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "homepage": "https://github.com/trufflesuite/compile#readme",
+  "homepage": "https://github.com/trufflesuite/compile-solidity#readme",
   "publishConfig": {
     "access": "public"
   },

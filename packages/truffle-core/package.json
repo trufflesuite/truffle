@@ -45,7 +45,7 @@
     "temp": "^0.8.3",
     "truffle-artifactor": "^4.0.29",
     "@truffle/box": "^1.0.35",
-    "@truffle/compile": "^4.2.2",
+    "@truffle/compile-solidity": "^4.2.2",
     "truffle-config": "^1.1.19",
     "truffle-contract": "^4.0.30",
     "truffle-contract-sources": "^0.1.5",

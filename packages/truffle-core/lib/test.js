@@ -11,7 +11,7 @@ const TestSource = require("./testing/testsource");
 const SolidityTest = require("./testing/soliditytest");
 const expect = require("@truffle/expect");
 const Migrate = require("truffle-migrate");
-const Profiler = require("@truffle/compile/profiler");
+const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
 
 chai.use(require("./assertions"));

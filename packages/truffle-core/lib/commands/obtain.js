@@ -11,7 +11,8 @@ module.exports = {
     ]
   },
   run: function(options, done) {
-    const CompilerSupplier = require("@truffle/compile").CompilerSupplier;
+    const CompilerSupplier = require("@truffle/compile-solidity")
+      .CompilerSupplier;
     const supplier = new CompilerSupplier();
     const SUPPORTED_COMPILERS = ["--solc"];
 

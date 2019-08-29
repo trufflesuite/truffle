@@ -1,7 +1,7 @@
 const debug = require("debug")("compile:test:test_ordering");
 var fs = require("fs");
 var path = require("path");
-var compile = require("@truffle/compile/new");
+var compile = require("@truffle/compile-solidity/new");
 var CompilerSupplier = require("../compilerSupplier");
 var assert = require("assert");
 const { findOne } = require("./helpers");

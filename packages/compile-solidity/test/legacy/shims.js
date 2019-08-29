@@ -1,6 +1,6 @@
 const { assert } = require("chai");
 
-const { shimBytecode } = require("@truffle/compile/legacy/shims");
+const { shimBytecode } = require("@truffle/compile-solidity/legacy/shims");
 
 describe("shimBytecode", () => {
   it("handles undefined", function() {

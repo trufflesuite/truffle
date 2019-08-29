@@ -1,5 +1,5 @@
 const pkg = require("../package.json");
-const { CompilerSupplier } = require("@truffle/compile");
+const { CompilerSupplier } = require("@truffle/compile-solidity");
 
 const info = config => {
   let bundleVersion;
