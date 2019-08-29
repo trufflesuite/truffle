@@ -114,7 +114,7 @@ function compileAll(options, callback) {
       execLigo(sourcePath, (err, compiledContract) => {
         if (err) return c(err);
 
-        // remove first extension from filename
+        // remove extension from filename
         const extension = path.extname(sourcePath);
         const basename = path.basename(sourcePath, extension);
 
@@ -138,7 +138,7 @@ function compileAll(options, callback) {
       if (err) return callback(err);
 
       const result = contracts.reduce((result, contract) => {
-        result[contract.contract_name] = contract;
+        result[contract.contractName] = contract;
 
         return result;
       }, {});
