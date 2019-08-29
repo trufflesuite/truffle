@@ -20,7 +20,7 @@ var command = {
   run: function(options, done) {
     var Config = require("truffle-config");
     var TruffleError = require("@truffle/error");
-    var Contracts = require("truffle-workflow-compile");
+    var Contracts = require("@truffle/workflow-compile");
     var CodeUtils = require("@truffle/code-utils");
 
     if (options._.length === 0) {

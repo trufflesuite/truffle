@@ -1,12 +1,12 @@
 {
-  "name": "truffle-require",
+  "name": "@truffle/require",
   "description": "Require and execute a Javascript module within a Truffle context",
   "license": "MIT",
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
-  "homepage": "https://github.com/trufflesuite/truffle-exec#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-require",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/require#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/require",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-exec/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "2.0.19",
   "main": "require.js",
