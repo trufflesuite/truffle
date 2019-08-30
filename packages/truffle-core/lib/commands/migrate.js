@@ -146,7 +146,7 @@ const command = {
     const Resolver = require("truffle-resolver");
     const Migrate = require("truffle-migrate");
     const Config = require("truffle-config");
-    const { Environment } = require("truffle-environment");
+    const { Environment } = require("@truffle/environment");
 
     let accept = true;
 
@@ -179,7 +179,7 @@ const command = {
     const Resolver = require("truffle-resolver");
     const Migrate = require("truffle-migrate");
     const Contracts = require("@truffle/workflow-compile");
-    const { Environment } = require("truffle-environment");
+    const { Environment } = require("@truffle/environment");
     const Config = require("truffle-config");
     const temp = require("temp").track();
     const { promisify } = require("util");

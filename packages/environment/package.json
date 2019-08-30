@@ -1,11 +1,11 @@
 {
   "private": false,
-  "name": "truffle-environment",
+  "name": "@truffle/environment",
   "description": "This package contains the code needed to determine environment-specific data",
   "license": "MIT",
   "author": "Faina Shalts",
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-environment#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-environment",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/environment#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/environment",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },

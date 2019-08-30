@@ -125,22 +125,28 @@ const Develop = {
 
     let connectedAlready = false;
 
-    this.connect(options, async function(error, disconnect) {
-      if (error) {
-        await self.start(ipcNetwork, ganacheOptions);
+    this.connect(
+      options,
+      async function(error, disconnect) {
+        if (error) {
+          await self.start(ipcNetwork, ganacheOptions);
 
-        options.retry = true;
-        self.connect(options, function(error, disconnect) {
-          if (connectedAlready) return;
+          options.retry = true;
+          self.connect(
+            options,
+            function(error, disconnect) {
+              if (connectedAlready) return;
 
+              connectedAlready = true;
+              callback(true, disconnect);
+            }
+          );
+        } else {
           connectedAlready = true;
-          callback(true, disconnect);
-        });
-      } else {
-        connectedAlready = true;
-        callback(false, disconnect);
+          callback(false, disconnect);
+        }
       }
-    });
+    );
   }
 };
 
