@@ -1,13 +1,13 @@
 const command = {
-  command: 'build',
-  description: 'Execute build pipeline (if configuration present)',
+  command: "build",
+  description: "Execute build pipeline (if configuration present)",
   builder: {},
-    help: {
+  help: {
     usage: "truffle build",
-    options: [],
+    options: []
   },
-  run: function (options, done) {
-    const Config = require("truffle-config");
+  run: function(options, done) {
+    const Config = require("@truffle/config");
     const Build = require("../build");
     const config = Config.detect(options);
 

@@ -1,7 +1,7 @@
 const assert = require("chai").assert;
 const Artifactor = require("../");
 const temp = require("temp").track();
-const contract = require("truffle-contract");
+const contract = require("@truffle/contract");
 const path = require("path");
 const requireNoCache = require("require-nocache")(module);
 

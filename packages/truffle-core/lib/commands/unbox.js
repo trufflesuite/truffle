@@ -110,7 +110,7 @@ const command = {
     ]
   },
   run(options, done) {
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const Box = require("@truffle/box");
     const OS = require("os");
 

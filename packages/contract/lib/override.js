@@ -1,10 +1,9 @@
-var Reason = require('./reason');
-var handlers = require('./handlers');
+var Reason = require("./reason");
+var handlers = require("./handlers");
 
 var override = {
-
-  timeoutMessage: 'not mined within', // Substring of timeout err fired by web3
-  defaultMaxBlocks: 50,               // Max # of blocks web3 will wait for a tx
+  timeoutMessage: "not mined within", // Substring of timeout err fired by web3
+  defaultMaxBlocks: 50, // Max # of blocks web3 will wait for a tx
   pollingInterval: 1000,
 
   /**
@@ -12,16 +11,15 @@ var override = {
    * @param  {Object} message       web3 error
    * @return {Object|undefined} receipt
    */
-  extractReceipt(message){
-    const hasReceipt = message &&
-                       message.includes('{');
-                       message.includes('}');
+  extractReceipt(message) {
+    const hasReceipt = message && message.includes("{");
+    message.includes("}");
 
-    if (hasReceipt){
-      const receiptString =  '{' + message.split('{')[1].trim();
+    if (hasReceipt) {
+      const receiptString = "{" + message.split("{")[1].trim();
       try {
         return JSON.parse(receiptString);
-      } catch (err){
+      } catch (err) {
         // ignore
       }
     }
@@ -36,23 +34,22 @@ var override = {
    * @param  {Object} context execution state
    * @param  {Object} err     error
    */
-  start: async function(context, web3Error){
+  start: async function(context, web3Error) {
     var constructor = this;
-    var blockNumber = null;
     var currentBlock = override.defaultMaxBlocks;
     var maxBlocks = constructor.timeoutBlocks;
 
-    var timedOut = web3Error.message && web3Error.message.includes(override.timeoutMessage);
+    var timedOut =
+      web3Error.message && web3Error.message.includes(override.timeoutMessage);
     var shouldWait = maxBlocks > currentBlock;
 
     // Reject after attempting to get reason string if we shouldn't be waiting.
-    if (!timedOut || !shouldWait){
-
+    if (!timedOut || !shouldWait) {
       // We might have been routed here in web3 >= beta.34 by their own status check
       // error. We want to extract the receipt, emit a receipt event
       // and reject it ourselves.
       var receipt = override.extractReceipt(web3Error.message);
-      if (receipt){
+      if (receipt) {
         await handlers.receipt(context, receipt);
         return;
       }
@@ -69,27 +66,25 @@ var override = {
     }
 
     // This will run every block from now until contract.timeoutBlocks
-    var listener = function(pollID){
-      var self = this;
+    var listener = function(pollID) {
       currentBlock++;
 
-      if (currentBlock > constructor.timeoutBlocks){
+      if (currentBlock > constructor.timeoutBlocks) {
         clearInterval(pollID);
         return;
       }
 
-      constructor.web3.eth.getTransactionReceipt(context.transactionHash)
+      constructor.web3.eth
+        .getTransactionReceipt(context.transactionHash)
         .then(result => {
           if (!result) return;
 
-          (result.contractAddress)
+          result.contractAddress
             ? constructor
                 .at(result.contractAddress)
                 .then(context.promiEvent.resolve)
                 .catch(context.promiEvent.reject)
-
             : constructor.promiEvent.resolve(result);
-
         })
         .catch(err => {
           clearInterval(pollID);
@@ -100,15 +95,15 @@ var override = {
     // Start polling
     let currentPollingBlock = await constructor.web3.eth.getBlockNumber();
 
-    const pollID = setInterval(async() => {
+    const pollID = setInterval(async () => {
       const newBlock = await constructor.web3.eth.getBlockNumber();
 
-      if(newBlock > currentPollingBlock){
+      if (newBlock > currentPollingBlock) {
         currentPollingBlock = newBlock;
         listener(pollID);
       }
     }, override.pollingInterval);
-  },
+  }
 };
 
 module.exports = override;

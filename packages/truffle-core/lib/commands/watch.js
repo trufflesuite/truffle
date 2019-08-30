@@ -11,7 +11,7 @@ const command = {
     options: []
   },
   run: function(options) {
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const sane = require("sane");
     const path = require("path");
 

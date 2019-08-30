@@ -50,7 +50,7 @@ const command = {
       .catch(err => done(err));
   },
   run: (options, done) => {
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const { Develop } = require("truffle-environment");
 
     const config = Config.detect(options);

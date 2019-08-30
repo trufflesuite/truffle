@@ -1,4 +1,4 @@
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 const path = require("path");
 const fs = require("fs");
 

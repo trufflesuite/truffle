@@ -11,7 +11,7 @@ A web3 provider which makes it possible to connect Truffle with Sawtooth Seth bl
 We intend to add support for all operations listed below, but items with a ❌ are yet to be completed.
 
  - `truffle migrate` ✔️
- - Use with `truffle-contract` in browser ✔️
+ - Use with `@truffle/contract` in browser ✔️
  - `truffle test` ✔️ (if running against seth build which includes hyperledger/sawtooth-seth#77)
  - `truffle debug` ❌
 

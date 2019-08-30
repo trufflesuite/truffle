@@ -16,5 +16,5 @@ packages/truffle/dependencies
 # @truffle/debugger
 packages/debugger/.tmp
 
-# truffle-contract
-packages/truffle-contract/dist
+# @truffle/contract
+packages/contract/dist
