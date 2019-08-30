@@ -4,7 +4,7 @@ const path = require("path");
 const assert = require("assert");
 const Resolver = require("truffle-resolver");
 const compile = require("@truffle/compile-solidity/new");
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 const { findOne } = require("./helpers");
 
 function waitSecond() {

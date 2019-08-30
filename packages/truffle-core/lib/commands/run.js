@@ -12,7 +12,7 @@ const command = {
     ]
   },
   run(options, done) {
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const Plugin = require("../plugin");
     const Run = require("../run");
     const config = Config.detect(options);

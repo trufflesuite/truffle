@@ -10,7 +10,7 @@
     "@truffle/compile-vyper": "^1.0.27",
     "@truffle/external-compile": "^1.0.16",
     "@truffle/artifactor": "^4.0.30",
-    "truffle-config": "^1.1.20",
+    "@truffle/config": "^1.1.20",
     "truffle-resolver": "^5.0.16"
   },
   "main": "index.js",
