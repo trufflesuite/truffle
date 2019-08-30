@@ -13,29 +13,33 @@ var templates = {
     variable: "example"
   },
   migration: {
-    filename: path.join(__dirname, "templates", "migration.js"),
+    filename: path.join(__dirname, "templates", "migration.js")
   }
 };
 
 var processFile = function(file_path, processfn, callback) {
-  fs.readFile(file_path, {encoding: "utf8"}, function(err, data) {
+  fs.readFile(file_path, { encoding: "utf8" }, function(err, data) {
     if (err != null) {
       callback(err);
       return;
     }
 
     var result = processfn(data);
-    fs.writeFile(file_path, result, {encoding: "utf8"}, callback);
+    fs.writeFile(file_path, result, { encoding: "utf8" }, callback);
   });
 };
 
 var replaceContents = function(file_path, find, replacement, callback) {
-  processFile(file_path, function(data) {
-    if (typeof find === "string") {
-      find = new RegExp(find, "g");
-    }
-    return data.replace(find, replacement);
-  }, callback);
+  processFile(
+    file_path,
+    function(data) {
+      if (typeof find === "string") {
+        find = new RegExp(find, "g");
+      }
+      return data.replace(find, replacement);
+    },
+    callback
+  );
 };
 
 var toUnderscoreFromCamel = function(string) {
@@ -52,7 +56,7 @@ var toUnderscoreFromCamel = function(string) {
 
 var Create = {
   contract: function(directory, name, options, callback) {
-    if(typeof options === "function") {
+    if (typeof options === "function") {
       callback = options;
     }
 
@@ -60,7 +64,9 @@ var Create = {
     var to = path.join(directory, name + ".sol");
 
     if (!options.force && fs.existsSync(to)) {
-      return callback(new Error('Can not create ' + name + '.sol: file exists'));
+      return callback(
+        new Error("Can not create " + name + ".sol: file exists")
+      );
     }
 
     copy.file(from, to, function(err) {
@@ -71,7 +77,7 @@ var Create = {
   },
 
   test: function(directory, name, options, callback) {
-    if(typeof options === "function") {
+    if (typeof options === "function") {
       callback = options;
     }
 
@@ -81,7 +87,9 @@ var Create = {
     var to = path.join(directory, underscored + ".js");
 
     if (!options.force && fs.existsSync(to)) {
-      return callback(new Error('Can not create ' + underscored + '.js: file exists'));
+      return callback(
+        new Error("Can not create " + underscored + ".js: file exists")
+      );
     }
 
     copy.file(from, to, function(err) {
@@ -94,14 +102,14 @@ var Create = {
     });
   },
   migration: function(directory, name, options, callback) {
-    if(typeof options === "function") {
+    if (typeof options === "function") {
       callback = options;
     }
 
     var underscored = toUnderscoreFromCamel(name || "");
     underscored = underscored.replace(/\./g, "_");
     var from = templates.migration.filename;
-    var filename = new Date().getTime() / 1000 | 0; // Only do seconds.
+    var filename = (new Date().getTime() / 1000) | 0; // Only do seconds.
 
     if (name != null && name !== "") {
       filename += "_" + underscored;
@@ -111,7 +119,9 @@ var Create = {
     var to = path.join(directory, filename);
 
     if (!options.force && fs.existsSync(to)) {
-      return callback(new Error('Can not create ' + filename + ': file exists'));
+      return callback(
+        new Error("Can not create " + filename + ": file exists")
+      );
     }
 
     copy.file(from, to, callback);

@@ -3,7 +3,7 @@ const assert = require("assert");
 const truffleVersion = require("../../package.json").version;
 let logger, config, nodeVersion;
 
-describe("truffle-core/lib/version", () => {
+describe("core/lib/version", () => {
   beforeEach(() => {
     logger = {
       log: function(stringToLog) {

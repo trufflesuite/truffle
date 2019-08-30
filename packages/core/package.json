@@ -1,11 +1,11 @@
 {
-  "name": "truffle-core",
+  "name": "@truffle/core",
   "description": "Core code for Truffle command line tool",
   "author": "consensys.net",
-  "homepage": "https://github.com/ConsenSys/truffle",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-core",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/core",
   "bugs": {
-    "url": "https://github.com/ConsenSys/truffle/issues"
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "5.0.34",
   "bin": {
@@ -78,7 +78,7 @@
   "authors": [
     {
       "name": "Tim Coulter",
-      "email": "tim@timothyjcoulter.com",
+      "email": "tim@trufflesuite.com",
       "url": "https://github.com/tcoulter"
     }
   ],

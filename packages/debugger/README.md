@@ -17,7 +17,7 @@ API Documentation for this library can be found at [trufflesuite.github.io/truff
 ## Library Usage
 
 _:warning: This documentation is currently a work in progress.
-Please see the [reference integration](https://github.com/trufflesuite/truffle/tree/master/packages/truffle-core/lib/commands/debug.js) provided by the `truffle debug` command._
+Please see the [reference integration](https://github.com/trufflesuite/truffle/tree/master/packages/core/lib/commands/debug.js) provided by the `truffle debug` command._
 
 ### Required Parameters
 

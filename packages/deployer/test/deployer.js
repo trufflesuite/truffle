@@ -194,7 +194,7 @@ describe("Deployer (sync)", function() {
     assert(output.includes("UsesLibrary"));
   });
 
-  // There's a chain like this in the truffle-core solidity-tests
+  // There's a chain like this in the @truffle/core solidity-tests
   it("deployer.deploy().then()", async function() {
     const migrate = function() {
       deployer

@@ -52,7 +52,7 @@
     "@truffle/box": "^1.0.35",
     "@truffle/debugger": "^5.0.26",
     "truffle-contract": "^4.0.31",
-    "truffle-core": "^5.0.34",
+    "@truffle/core": "^5.0.34",
     "web3": "1.2.1",
     "webpack": "^2.5.1",
     "webpack-bundle-analyzer": "^3.0.3",

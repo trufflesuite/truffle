@@ -54,10 +54,10 @@ NPM package.
 This repository ([trufflesuite/truffle](https://github.com/trufflesuite/truffle))
 is a distribution package and only contains logic to build Truffle for release.
 
-The main development repository is [trufflesuite/truffle-core](https://github.com/trufflesuite/truffle-core),
+The main development repository is [trufflesuite/core](https://github.com/trufflesuite/core),
 containing the command-line interface (CLI) and some core logic. Other Truffle
 repositories are included via dependencies specified in
-[`truffle-core`'s package.json](https://github.com/trufflesuite/truffle-core/blob/master/package.json)
+[`@truffle/core`'s package.json](https://github.com/trufflesuite/core/blob/master/package.json)
 
 Truffle uses [meta](https://github.com/mateodelnorte/meta) to help manage
 changes across multiple repositories.
@@ -94,7 +94,7 @@ in one package are used by the others:
     $ meta npm symlink
 
 (For instance, if you make a change to `truffle-migrate`, it will be used by
-`truffle-core`)
+`@truffle/core`)
 
 **Note for Windows Users**: Default permissions prevent users from making symbolic
 links. You may need to run your shell as an administrator, or change your policy
