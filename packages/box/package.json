@@ -1,6 +1,6 @@
 {
   "name": "@truffle/box",
-  "version": "1.0.35",
+  "version": "1.0.36",
   "description": "Truffle project boilerplate utility",
   "main": "box.js",
   "scripts": {
@@ -26,11 +26,11 @@
     "request": "^2.85.0",
     "request-promise-native": "^1.0.7",
     "tmp": "0.0.33",
-    "truffle-config": "^1.1.19",
+    "truffle-config": "^1.1.20",
     "vcsurl": "^0.1.1"
   },
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c"
 }

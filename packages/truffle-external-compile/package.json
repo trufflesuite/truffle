@@ -8,16 +8,16 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "1.0.15",
+  "version": "1.0.16",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
   "dependencies": {
+    "@truffle/contract-schema": "^3.0.14",
+    "@truffle/expect": "^0.0.10",
     "debug": "^4.1.0",
     "glob": "^7.1.2",
-    "@truffle/contract-schema": "^3.0.13",
-    "@truffle/expect": "^0.0.9",
     "web3-utils": "1.2.1"
   },
   "devDependencies": {
@@ -30,5 +30,5 @@
     "smart-contract",
     "truffle"
   ],
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c"
 }

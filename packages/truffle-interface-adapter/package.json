@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.4",
+  "version": "0.2.5",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
@@ -32,5 +32,6 @@
     "mocha": "^6.0.2",
     "ts-node": "^8.0.3",
     "typescript": "^3.3.3333"
-  }
+  },
+  "gitHead": "1ee7e21208fbff93267490729c2fac2e76bb6090"
 }

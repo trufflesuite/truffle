@@ -4,7 +4,7 @@
   "license": "MIT",
   "author": "Evgeniy Filatov <evgeniyfilatov@gmail.com>",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-compile-vyper",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
@@ -14,11 +14,11 @@
     "colors": "^1.1.2",
     "eslint": "^5.5.0",
     "minimatch": "^3.0.4",
-    "truffle-compile": "^4.2.2"
+    "truffle-compile": "^4.2.3"
   },
   "devDependencies": {
     "mocha": "5.2.0",
-    "truffle-config": "^1.1.19"
+    "truffle-config": "^1.1.20"
   },
   "keywords": [
     "compile",
@@ -29,5 +29,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c"
 }

@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.0.33",
+  "version": "5.0.34",
   "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
@@ -31,6 +31,7 @@
     "original-require": "1.0.1"
   },
   "devDependencies": {
+    "@truffle/box": "^1.0.36",
     "clean-webpack-plugin": "^0.1.16",
     "copy-webpack-plugin": "^4.0.1",
     "eslint": "^5.7.0",
@@ -49,9 +50,9 @@
     "stream-buffers": "^3.0.1",
     "tmp": "0.0.33",
     "@truffle/box": "^1.0.35",
-    "truffle-contract": "^4.0.30",
-    "truffle-core": "^5.0.33",
-    "@truffle/debugger": "^5.0.25",
+    "@truffle/debugger": "^5.0.26",
+    "truffle-contract": "^4.0.31",
+    "truffle-core": "^5.0.34",
     "web3": "1.2.1",
     "webpack": "^2.5.1",
     "webpack-bundle-analyzer": "^3.0.3",
@@ -67,6 +68,6 @@
       "url": "https://github.com/tcoulter"
     }
   ],
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
+  "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c",
   "namespace": "consensys"
 }
