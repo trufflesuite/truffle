@@ -1,9 +1,9 @@
-# truffle-artifactor
+# @truffle/artifactor
 
 This package saves contract artifacts into JSON files
 
 ```javascript
-const Artifactor = require("truffle-artifactor");
+const Artifactor = require("@truffle/artifactor");
 const artifactor = new Artifactor(__dirname);
 artifactor.save({/*...*/}); // => a promise saving MyContract.json to a given destination
 ```
@@ -26,7 +26,7 @@ The artifactor can be used with [truffle-contract](https://github.com/trufflesui
 ### Install
 
 ```
-$ npm install truffle-artifactor
+$ npm install @truffle/artifactor
 ```
 
 ### Example
@@ -34,7 +34,7 @@ $ npm install truffle-artifactor
 Here, we'll generate a `.json` files given a JSON object like [@truffle/contract-schema](https://github.com/trufflesuite/truffle/tree/develop/packages/contract-schema). This will give us a file which we can later `require` into other projects and contexts.
 
 ```javascript
-const Artifactor = require("truffle-artifactor");
+const Artifactor = require("@truffle/artifactor");
 const artifactor = new Artifactor(__dirname);
 
 // See truffle-schema for more info: https://github.com/trufflesuite/truffle/tree/develop/packages/contract-schema
