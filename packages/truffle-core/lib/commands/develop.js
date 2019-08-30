@@ -11,8 +11,16 @@ const command = {
     }
   },
   help: {
-    usage: "truffle develop",
-    options: []
+    usage: "truffle develop [--log]",
+    options: [
+      {
+        option: `--log`,
+        description:
+          `Start/Connect to a Truffle develop session and log all ` +
+          `rpc activity. You will\n                    need to open a ` +
+          `different Truffle develop or console session to interact via the repl.`
+      }
+    ]
   },
   runConsole: (config, ganacheOptions, done) => {
     const Console = require("../console");
@@ -42,7 +50,7 @@ const command = {
       .catch(err => done(err));
   },
   run: (options, done) => {
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const { Develop } = require("truffle-environment");
 
     const config = Config.detect(options);

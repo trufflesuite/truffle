@@ -33,13 +33,20 @@ const command = {
       describe: "Manually authorize deployments after seeing a preview",
       type: "boolean",
       default: false
+    },
+    "describe-json": {
+      describe: "Adds extra verbosity to the status of an ongoing migration",
+      type: "boolean",
+      default: false
     }
   },
   help: {
     usage:
-      "truffle migrate [--reset] [--f <number>] [--to <number>] " +
-      "[--network <name>]\n                                [--compile-all] " +
-      "[--verbose-rpc] [--interactive] [--dry-run] [--skip-dry-run]",
+      "truffle migrate [--reset] [--f <number>] [--to <number>] [--network <name>]\n" +
+      "                                " + // spacing to align with previous line
+      "[--compile-all] [--verbose-rpc] [--interactive] [--dry-run]\n" +
+      "                                " + // spacing to align with previous line
+      "[--skip-dry-run] [--describe-json]",
     options: [
       {
         option: "--reset",
@@ -87,6 +94,11 @@ const command = {
       {
         option: "--skip-dry-run",
         description: "Do not run a test or 'dry run' migration."
+      },
+      {
+        option: "--describe-json",
+        description:
+          "Adds extra verbosity to the status of an ongoing migration"
       }
     ]
   },
@@ -130,10 +142,10 @@ const command = {
   },
 
   prepareConfigForRealMigrations: async function(buildDir, options) {
-    const Artifactor = require("truffle-artifactor");
+    const Artifactor = require("@truffle/artifactor");
     const Resolver = require("truffle-resolver");
     const Migrate = require("truffle-migrate");
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const { Environment } = require("truffle-environment");
 
     let accept = true;
@@ -163,12 +175,12 @@ const command = {
   },
 
   run: function(options, done) {
-    const Artifactor = require("truffle-artifactor");
+    const Artifactor = require("@truffle/artifactor");
     const Resolver = require("truffle-resolver");
     const Migrate = require("truffle-migrate");
-    const Contracts = require("truffle-workflow-compile");
+    const Contracts = require("@truffle/workflow-compile");
     const { Environment } = require("truffle-environment");
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const temp = require("temp").track();
     const { promisify } = require("util");
     const promisifiedCopy = promisify(require("../copy"));
@@ -230,7 +242,7 @@ const command = {
     }
 
     async function runMigrations(config) {
-      Migrate.launchReporter();
+      Migrate.launchReporter(config);
 
       if (options.f) {
         await Migrate.runFrom(options.f, config);

@@ -1,6 +1,6 @@
 var MemoryLogger = require("../memorylogger");
 var CommandRunner = require("../commandrunner");
-var contract = require("truffle-contract");
+var contract = require("@truffle/contract");
 var fs = require("fs-extra");
 var path = require("path");
 var assert = require("assert");
@@ -12,13 +12,13 @@ var log = console.log;
 describe("Contract names", function() {
   let config;
   const logger = new MemoryLogger();
-  const project = path.join(__dirname, '../../sources/contract_names');
+  const project = path.join(__dirname, "../../sources/contract_names");
 
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
-  function processErr(err, output){
-    if (err){
+  function processErr(err, output) {
+    if (err) {
       log(output);
       throw new Error(err);
     }
@@ -44,7 +44,11 @@ describe("Contract names", function() {
       // The contract's name is Contract, but the file name is contract.
       // Not only should we not receive an error, but we should receive contract
       // artifacts relative to the contract name and not the file name.
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "Contract.json")));
+      assert(
+        fs.existsSync(
+          path.join(config.contracts_build_directory, "Contract.json")
+        )
+      );
 
       done();
     });
@@ -57,17 +61,28 @@ describe("Contract names", function() {
       const output = logger.contents();
       processErr(err, output);
 
-      const contractPath = path.join(config.contracts_build_directory, "Contract.json");
+      const contractPath = path.join(
+        config.contracts_build_directory,
+        "Contract.json"
+      );
       const Contract = contract(require(contractPath));
       Contract.setProvider(config.provider);
 
       const instance = await Contract.deployed();
-      assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!");
+      assert.notEqual(
+        instance.address,
+        null,
+        instance.contract_name + " didn't have an address!"
+      );
 
       // Now let's interact with our deployed contract JUST to ensure it actually did do
       // the right thing.
       const value = await instance.specialValue.call();
-      assert.equal(parseInt(value), 1337, "Somehow the wrong contract was deployed, because we don't have the correct value");
+      assert.equal(
+        parseInt(value),
+        1337,
+        "Somehow the wrong contract was deployed, because we don't have the correct value"
+      );
       done();
     });
   });
@@ -75,7 +90,10 @@ describe("Contract names", function() {
   it("will compile and migrate with relative imports (using filename)", function(done) {
     this.timeout(50000);
 
-    const contractPath = path.join(config.contracts_build_directory, "RelativeImport.json");
+    const contractPath = path.join(
+      config.contracts_build_directory,
+      "RelativeImport.json"
+    );
 
     CommandRunner.run("compile", config, function(err) {
       const output = logger.contents();
@@ -91,12 +109,20 @@ describe("Contract names", function() {
         RelativeImport.setProvider(config.provider);
 
         const instance = await RelativeImport.deployed();
-        assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!");
+        assert.notEqual(
+          instance.address,
+          null,
+          instance.contract_name + " didn't have an address!"
+        );
 
         // Now let's interact with our deployed contract JUST to ensure it actually did do
         // the right thing.
         const value = await instance.specialValue.call();
-        assert.equal(parseInt(value), 1337, "Somehow the wrong contract was deployed, because we don't have the correct value");
+        assert.equal(
+          parseInt(value),
+          1337,
+          "Somehow the wrong contract was deployed, because we don't have the correct value"
+        );
         done();
       });
     });

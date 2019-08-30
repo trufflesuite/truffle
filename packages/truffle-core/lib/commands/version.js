@@ -10,14 +10,14 @@ const command = {
     let config;
     const version = require("../version");
     const { logger } = options;
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
 
     try {
       config = Config.detect(options);
     } catch (error) {
       // Suppress error when truffle can't find a config
       if (error.message === "Could not find suitable configuration file.") {
-        config = null;
+        config = Config.default();
       } else {
         return done(error);
       }

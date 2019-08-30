@@ -4,9 +4,9 @@ const debug = debugModule("lib:debug:printer");
 const path = require("path");
 const safeEval = require("safe-eval");
 
-const DebugUtils = require("truffle-debug-utils");
+const DebugUtils = require("@truffle/debug-utils");
 
-const selectors = require("truffle-debugger").selectors;
+const selectors = require("@truffle/debugger").selectors;
 const { session, solidity, trace, controller } = selectors;
 
 class DebugPrinter {
@@ -34,6 +34,21 @@ class DebugPrinter {
 
   print(...args) {
     this.config.logger.log(...args);
+  }
+
+  printSessionLoaded() {
+    this.printAddressesAffected();
+    this.printHelp();
+    debug("Help printed");
+    this.printFile();
+    debug("File printed");
+    this.printState();
+    debug("State printed");
+  }
+
+  printSessionError() {
+    this.print(this.session.view(session.status.error));
+    this.printHelp();
   }
 
   printAddressesAffected() {

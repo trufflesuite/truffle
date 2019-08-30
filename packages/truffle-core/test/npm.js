@@ -1,13 +1,13 @@
 var assert = require("chai").assert;
-var Box = require("truffle-box");
+var Box = require("@truffle/box");
 var fs = require("fs-extra");
 var glob = require("glob");
 var path = require("path");
 var mkdirp = require("mkdirp");
 var async = require("async");
 var Resolver = require("truffle-resolver");
-var Artifactor = require("truffle-artifactor");
-var Contracts = require("truffle-workflow-compile");
+var Artifactor = require("@truffle/artifactor");
+var Contracts = require("@truffle/workflow-compile");
 
 describe("NPM integration", function() {
   var config;

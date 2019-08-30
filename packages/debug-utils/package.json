@@ -1,0 +1,30 @@
+{
+  "name": "@truffle/debug-utils",
+  "version": "1.0.18",
+  "description": "Integration utils for truffle/debugger",
+  "dependencies": {
+    "async": "2.6.1",
+    "debug": "^4.1.0",
+    "node-dir": "0.1.17"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/debug-utils",
+  "author": "Truffle Suite <inquiry@trufflesuite.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/debug-utils#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4",
+    "safe-eval": "^0.4.1"
+  }
+}

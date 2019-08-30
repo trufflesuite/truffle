@@ -1,17 +1,19 @@
 const pkg = require("../package.json");
-const solcpkg = require("solc/package.json");
+const { CompilerSupplier } = require("@truffle/compile-solidity");
 
-const info = () => {
+const info = config => {
   let bundleVersion;
   // NOTE: Webpack will replace BUNDLE_VERSION with a string.
-  if (typeof BUNDLE_VERSION != "undefined") {
-    bundleVersion = BUNDLE_VERSION;
-  }
+  if (typeof BUNDLE_VERSION != "undefined") bundleVersion = BUNDLE_VERSION;
+
+  let supplierOptions;
+  if (config && config.compilers) supplierOptions = config.compilers.solc;
+  const supplier = new CompilerSupplier(supplierOptions);
 
   return {
     core: pkg.version,
     bundle: bundleVersion,
-    solc: solcpkg.version
+    solc: supplier.config.version
   };
 };
 
@@ -37,7 +39,7 @@ const logSolidity = (logger = console, versionInformation, config) => {
     solcVersion = config.compilers.solc.version;
     logger.log(`Solidity - ${solcVersion} (solc-js)`);
   } else {
-    const versionInformation = info();
+    const versionInformation = info(config);
     solcVersion = versionInformation.solc;
     logger.log(`Solidity v${solcVersion} (solc-js)`);
   }
@@ -49,15 +51,15 @@ const logWeb3 = (logger = console) => {
 };
 
 const logAll = (logger = console, config) => {
-  const versionInformation = info();
+  const versionInformation = info(config);
   logTruffle(logger, versionInformation);
   logSolidity(logger, versionInformation, config);
   logNode(logger);
   logWeb3(logger);
 };
 
-const logTruffleAndNode = (logger = console) => {
-  const versionInformation = info();
+const logTruffleAndNode = (logger = console, config) => {
+  const versionInformation = info(config);
   logTruffle(logger, versionInformation);
   logNode(logger);
 };

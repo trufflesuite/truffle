@@ -1,7 +1,7 @@
 // Using web3 for its sha function...
 var Web3 = require("web3");
 const semver = require("semver");
-const Native = require("truffle-compile/compilerSupplier/loadingStrategies/Native");
+const Native = require("@truffle/compile-solidity/compilerSupplier/loadingStrategies/Native");
 
 var Deployed = {
   makeSolidityDeployedAddressesLibrary: function(
@@ -39,7 +39,7 @@ var Deployed = {
       if (version === "native") version = new Native().load().version();
       const v = semver.coerce(version);
       if (semver.lt(v, "0.5.0")) source = source.replace(/ payable/gm, "");
-      source = source.replace(/0.5.0/gm, v);
+      source = source.replace(/0\.5\.0/gm, v);
     }
 
     return source;

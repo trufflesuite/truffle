@@ -1,7 +1,7 @@
 import BN from "bn.js";
 import { Web3Shim } from "./web3-shim";
 import {AbiCoder as EthersAbi} from 'ethers/utils/abi-coder';
-import _ from "underscore";
+import _ from "lodash";
 
 export const QuorumDefinition = {
   async initNetworkType (web3: Web3Shim) {
@@ -143,7 +143,9 @@ const overrides = {
 
       returnValue[i] = decodedValue;
 
+      // @ts-ignore object not having name key
       if (_.isObject(output) && output.name) {
+        // @ts-ignore object not having name key
         returnValue[output.name] = decodedValue;
       }
 

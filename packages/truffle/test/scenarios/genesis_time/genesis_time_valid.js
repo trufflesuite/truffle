@@ -7,7 +7,7 @@ var path = require("path");
 var sandbox = require("../sandbox");
 const fs = require("fs-extra");
 
-describe("Genesis time config for truffle test, passing tests", function() {
+describe("Genesis time config for truffle test, passing tests [ @standalone ]", function() {
   const logger = new MemoryLogger();
   let config;
 

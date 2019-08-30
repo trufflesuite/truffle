@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const IPC = require("node-ipc").IPC;
-const Ganache = require("ganache-core");
+const Ganache = require("ganache-core/public-exports");
 const path = require("path");
 const debug = require("debug");
 
