@@ -1,6 +1,6 @@
 const path = require("path");
 const assert = require("assert");
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 const compile = require("../index");
 
 describe("vyper compiler", function() {

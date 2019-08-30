@@ -1,5 +1,5 @@
 const Migrate = require("../index");
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 const assert = require("assert");
 const sinon = require("sinon");
 let options, migrations;

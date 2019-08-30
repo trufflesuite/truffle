@@ -19,7 +19,7 @@ const command = {
     ]
   },
   run: function(options, done) {
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const Package = require("../package");
 
     if (options._ && options._.length > 0) options.packages = options._;

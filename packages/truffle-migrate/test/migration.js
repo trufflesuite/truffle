@@ -1,5 +1,5 @@
 const assert = require("assert");
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 const Migration = require("../migration");
 const sinon = require("sinon");
 let options, prepareForMigrationsReturn, fakeWeb3, migration, context, resolver;
