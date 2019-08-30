@@ -4,7 +4,7 @@
 const path = require("path");
 const CompilerSupplier = require("../compilerSupplier");
 const expect = require("@truffle/expect");
-const findContracts = require("truffle-contract-sources");
+const findContracts = require("@truffle/contract-sources");
 const semver = require("semver");
 const debug = require("debug")("compile:profiler");
 const { readAndParseArtifactFiles } = require("./readAndParseArtifactFiles");

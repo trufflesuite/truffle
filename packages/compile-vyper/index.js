@@ -6,7 +6,7 @@ const async = require("async");
 const colors = require("colors");
 const minimatch = require("minimatch");
 
-const find_contracts = require("truffle-contract-sources");
+const find_contracts = require("@truffle/contract-sources");
 const Profiler = require("@truffle/compile-solidity/profiler");
 
 const compiler = {

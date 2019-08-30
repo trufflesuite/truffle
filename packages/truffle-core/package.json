@@ -52,7 +52,7 @@
     "@truffle/artifactor": "^4.0.30",
     "truffle-config": "^1.1.20",
     "@truffle/contract": "^4.0.31",
-    "truffle-contract-sources": "^0.1.5",
+    "@truffle/contract-sources": "^0.1.5",
     "@truffle/debug-utils": "^1.0.18",
     "@truffle/debugger": "^5.0.26",
     "truffle-deployer": "^3.0.32",
