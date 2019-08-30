@@ -20,6 +20,10 @@
       "./typings",
       "node_modules/@types",
       "../../**/node_modules/@types/mocha",
+      "../../**/node_modules/@types/fs-extra",
+      "../../**/node_modules/@types/inquirer",
+      "../../**/node_modules/@types/request-promise-native",
+      "../../**/node_modules/@types/tmp"
     ]
   },
   "include": [
