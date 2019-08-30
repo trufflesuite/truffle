@@ -19,6 +19,8 @@
     "typeRoots": [
       "./typings",
       "../../**/node_modules/@types/mocha",
+      "../../**/node_modules/@types/web3",
+      "../../**/node_modules/@types/assert"
     ]
   },
   "include": [
