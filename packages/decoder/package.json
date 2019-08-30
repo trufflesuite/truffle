@@ -35,6 +35,9 @@
   "peerDependencies": {
     "truffle": "^5.0.14"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@truffle/contract-schema": "^3.0.14",
     "@types/bn.js": "^4.11.2",
