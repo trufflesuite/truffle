@@ -10,7 +10,7 @@ function DeferredChain() {
     self._error = arguments[1];
   });
   this.started = false;
-};
+}
 
 DeferredChain.prototype.then = function(fn) {
   var self = this;
@@ -27,7 +27,6 @@ DeferredChain.prototype.then = function(fn) {
 };
 
 DeferredChain.prototype.catch = function(fn) {
-  var self = this;
   this.chain = this.chain.catch(function() {
     var args = Array.prototype.slice.call(arguments);
 
@@ -45,4 +44,3 @@ DeferredChain.prototype.start = function() {
 };
 
 module.exports = DeferredChain;
-
