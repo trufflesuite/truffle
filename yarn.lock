@@ -5775,7 +5775,7 @@ ethjs-util@0.1.6, ethjs-util@^0.1.3, ethjs-util@^0.1.6:
     is-hex-prefixed "1.0.0"
     strip-hex-prefix "1.0.0"
 
-ethpm-registry@^0.1.0-next.3:
+ethpm-registry@0.1.0-next.3:
   version "0.1.0-next.3"
   resolved "https://registry.yarnpkg.com/ethpm-registry/-/ethpm-registry-0.1.0-next.3.tgz#e335e7f57cda3c1cead388db6833903121773e9c"
   integrity sha512-PZZ1wo7lf2J3xWfvdEHzG6gJzh2wJiw8jzBcLgqOicLQoxVzgzCCcF6GZKakIeDZfMilrP/0fm7uu5PviZzECg==

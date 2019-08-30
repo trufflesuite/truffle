@@ -1,6 +1,6 @@
 {
   "name": "@truffle/contract-schema",
-  "version": "3.0.13",
+  "version": "3.0.14",
   "description": "JSON schema for contract artifacts",
   "main": "index.js",
   "scripts": {
@@ -35,5 +35,8 @@
   "directories": {
     "spec": "./spec"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c"
 }

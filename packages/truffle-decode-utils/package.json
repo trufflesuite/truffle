@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-decode-utils/issues"
   },
-  "version": "1.0.16",
+  "version": "1.0.17",
   "main": "dist/index.js",
   "scripts": {
     "build": "node_modules/.bin/tsc",
@@ -34,5 +34,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "gitHead": "1ee7e21208fbff93267490729c2fac2e76bb6090"
 }
