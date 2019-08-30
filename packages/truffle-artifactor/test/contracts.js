@@ -1,12 +1,12 @@
 const assert = require("chai").assert;
 const Artifactor = require("../");
 const contract = require("truffle-contract");
-const Schema = require("truffle-contract-schema");
+const Schema = require("@truffle/contract-schema");
 const temp = require("temp").track();
 const path = require("path");
 const fs = require("fs");
 const requireNoCache = require("require-nocache")(module);
-const Compile = require("truffle-compile");
+const Compile = require("@truffle/compile-solidity/legacy");
 const Ganache = require("ganache-core");
 const Web3 = require("web3");
 const { promisify } = require("util");

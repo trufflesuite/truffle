@@ -1,14 +1,24 @@
 const ReplManager = require("./repl");
 const Command = require("./command");
-const provision = require("truffle-provisioner");
+const provision = require("@truffle/provisioner");
 const contract = require("truffle-contract");
 const { Web3Shim } = require("truffle-interface-adapter");
 const vm = require("vm");
-const expect = require("truffle-expect");
-const TruffleError = require("truffle-error");
+const expect = require("@truffle/expect");
+const TruffleError = require("@truffle/error");
 const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");
+
+const processInput = input => {
+  const inputComponents = input.trim().split(" ");
+  if (inputComponents.length === 0) return input;
+
+  if (inputComponents[0] === "truffle") {
+    return inputComponents.slice(1).join(" ");
+  }
+  return input.trim();
+};
 
 class Console extends EventEmitter {
   constructor(tasks, options) {
@@ -51,22 +61,21 @@ class Console extends EventEmitter {
     this.options.repl = this.repl;
 
     try {
-      const abstractions = this.provision();
+      this.web3.eth.getAccounts().then(fetchedAccounts => {
+        const abstractions = this.provision();
 
-      const getAccounts = async () => {
-        return await this.web3.eth.getAccounts();
-      };
-      this.repl.start({
-        prompt: "truffle(" + this.options.network + ")> ",
-        context: {
-          web3: this.web3,
-          accounts: getAccounts()
-        },
-        interpreter: this.interpret.bind(this),
-        done: callback
+        this.repl.start({
+          prompt: "truffle(" + this.options.network + ")> ",
+          context: {
+            web3: this.web3,
+            accounts: fetchedAccounts
+          },
+          interpreter: this.interpret.bind(this),
+          done: callback
+        });
+
+        this.resetContractsInConsoleContext(abstractions);
       });
-
-      this.resetContractsInConsoleContext(abstractions);
     } catch (error) {
       this.options.logger.log(
         "Unexpected error: Cannot provision contracts while instantiating the console."
@@ -124,9 +133,12 @@ class Console extends EventEmitter {
     this.repl.setContextVars(contextVars);
   }
 
-  interpret(cmd, context, filename, callback) {
-    if (this.command.getCommand(cmd.trim(), this.options.noAliases) != null) {
-      return this.command.run(cmd.trim(), this.options, error => {
+  interpret(input, context, filename, callback) {
+    const processedInput = processInput(input);
+    if (
+      this.command.getCommand(processedInput, this.options.noAliases) != null
+    ) {
+      return this.command.run(processedInput, this.options, error => {
         if (error) {
           // Perform error handling ourselves.
           if (error instanceof TruffleError) {
@@ -163,8 +175,8 @@ class Console extends EventEmitter {
     */
     let includesAwait = /^\s*((?:(?:var|const|let)\s+)?[a-zA-Z_$][0-9a-zA-Z_$]*\s*=\s*)?(\(?\s*await[\s\S]*)/;
 
-    const match = cmd.match(includesAwait);
-    let source = cmd;
+    const match = processedInput.match(includesAwait);
+    let source = processedInput;
     let assignment = null;
 
     // If our code includes an await, add special processing to ensure it's evaluated properly.

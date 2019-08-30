@@ -1,7 +1,7 @@
 const _ = require("lodash");
 const path = require("path");
-const Provider = require("truffle-provider");
-const TruffleError = require("truffle-error");
+const Provider = require("@truffle/provider");
+const TruffleError = require("@truffle/error");
 const Module = require("module");
 const findUp = require("find-up");
 const originalrequire = require("original-require");
@@ -310,7 +310,7 @@ class Config {
     const normalized = this.normalize(obj);
     const current = this.normalize(this);
 
-    return _.extend({}, current, normalized);
+    return _.extend(Object.create(Config.prototype), current, normalized);
   }
 
   merge(obj) {

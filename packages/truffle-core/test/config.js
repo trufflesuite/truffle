@@ -1,10 +1,10 @@
 var assert = require("chai").assert;
 var fs = require("fs-extra");
 var glob = require("glob");
-var Box = require("truffle-box");
-var Contracts = require("truffle-workflow-compile");
+var Box = require("@truffle/box");
+var Contracts = require("@truffle/workflow-compile");
 var Ganache = require("ganache-core");
-var provision = require("truffle-provisioner");
+var provision = require("@truffle/provisioner");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
 

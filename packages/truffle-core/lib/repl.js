@@ -1,5 +1,5 @@
 var repl = require("repl");
-var expect = require("truffle-expect");
+var expect = require("@truffle/expect");
 var async = require("async");
 var EventEmitter = require("events");
 var inherits = require("util").inherits;
@@ -113,9 +113,14 @@ ReplManager.prototype.stop = function(callback) {
   }
 };
 
-ReplManager.prototype.interpret = function(cmd, context, filename, callback) {
-  var currentContext = this.contexts[this.contexts.length - 1];
-  currentContext.interpreter(cmd, context, filename, callback);
+ReplManager.prototype.interpret = function(
+  replInput,
+  context,
+  filename,
+  callback
+) {
+  const currentContext = this.contexts[this.contexts.length - 1];
+  currentContext.interpreter(replInput, context, filename, callback);
 };
 
 module.exports = ReplManager;

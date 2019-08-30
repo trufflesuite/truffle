@@ -2,7 +2,7 @@ const debug = require("debug")("contract:utils"); // eslint-disable-line no-unus
 const web3Utils = require("web3-utils");
 const bigNumberify = require("ethers/utils/bignumber").bigNumberify;
 const abi = require("web3-eth-abi");
-const BlockchainUtils = require("truffle-blockchain-utils");
+const BlockchainUtils = require("@truffle/blockchain-utils");
 const reformat = require("./reformat");
 
 const Utils = {
@@ -31,7 +31,7 @@ const Utils = {
       privateFor: true
     };
 
-    for (field_name of Object.keys(val)) {
+    for (let field_name of Object.keys(val)) {
       if (allowed_fields[field_name]) return true;
     }
 
@@ -59,7 +59,12 @@ const Utils = {
           copy.data = "";
         }
 
-        const logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
+        let logArgs;
+        try {
+          logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
+        } catch (_) {
+          return null;
+        }
         copy.args = reformat.numbers.call(constructor, logArgs, logABI.inputs);
 
         delete copy.data;
@@ -149,7 +154,7 @@ const Utils = {
 
     const expected_arg_count = methodABI ? methodABI.inputs.length : 0;
 
-    tx_params = {};
+    let tx_params = {};
     const last_arg = args[args.length - 1];
 
     if (

@@ -1,10 +1,10 @@
 const Web3 = require("web3");
 const Web3Shim = require("truffle-interface-adapter").Web3Shim;
-const TruffleError = require("truffle-error");
-const expect = require("truffle-expect");
+const expect = require("@truffle/expect");
+const TruffleError = require("@truffle/error");
 const Resolver = require("truffle-resolver");
 const Artifactor = require("truffle-artifactor");
-const Ganache = require("ganache-core");
+const Ganache = require("ganache-core/public-exports");
 
 const Environment = {
   // It's important config is a Config object and not a vanilla object
