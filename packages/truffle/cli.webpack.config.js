@@ -13,7 +13,7 @@ module.exports = {
       __dirname,
       "../..",
       "node_modules",
-      "@truffle/environment",
+      "environment",
       "chain.js"
     ),
     analytics: path.join(
