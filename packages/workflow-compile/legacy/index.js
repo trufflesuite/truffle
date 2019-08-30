@@ -1,9 +1,9 @@
 const debug = require("debug")("workflow-compile");
 const mkdirp = require("mkdirp");
 const { promisify } = require("util");
-const solcCompile = require("truffle-compile/legacy");
-const vyperCompile = require("truffle-compile-vyper");
-const externalCompile = require("truffle-external-compile");
+const externalCompile = require("@truffle/external-compile");
+const solcCompile = require("@truffle/compile-solidity/legacy");
+const vyperCompile = require("@truffle/compile-vyper");
 const { prepareConfig, multiPromisify } = require("../utils");
 const {
   reportCompilationStarted,

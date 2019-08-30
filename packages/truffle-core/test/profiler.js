@@ -2,11 +2,11 @@ var assert = require("chai").assert;
 var fs = require("fs-extra");
 var glob = require("glob");
 var Box = require("@truffle/box");
-var Profiler = require("truffle-compile/profiler");
+var Profiler = require("@truffle/compile-solidity/profiler");
 var Resolver = require("truffle-resolver");
 var Artifactor = require("truffle-artifactor");
 
-// TOOD: Move this to truffle-compile!
+// TOOD: Move this to @truffle/compile-solidity!
 
 describe("profiler", function() {
   var config;
