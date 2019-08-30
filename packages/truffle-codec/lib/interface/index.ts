@@ -6,7 +6,7 @@ export { slotAddress } from "../read/storage";
 export { StoragePointer } from "../types/pointer";
 export { ContractAllocationInfo, StorageAllocations, StorageMemberAllocation, AbiAllocations, CalldataAllocations, EventAllocations } from "../types/allocation";
 export { Slot, isWordsLength, equalSlots } from "../types/storage";
-export { DecoderRequest, isStorageRequest, isCodeRequest } from "../types/request";
+export { DecoderRequest } from "../types/request";
 export { EvmInfo, AllocationInfo } from "../types/evm";
 export { CalldataDecoding, LogDecoding } from "../types/decoding";
 

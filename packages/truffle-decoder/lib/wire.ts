@@ -156,17 +156,19 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     const decoder = Codec.decodeCalldata(info);
 
     let result = decoder.next();
-    while(!result.done) {
-      let request = <Codec.DecoderRequest>(result.value);
+    while(result.done === false) {
+      let request = result.value;
       let response: Uint8Array;
-      //only code requests should occur here
-      if(Codec.isCodeRequest(request)) {
-        response = await this.getCode(request.address, block);
+      switch(request.type) {
+	case "code":
+          response = await this.getCode(request.address, block);
+	  break;
+	//not writing a storage case as it shouldn't occur here!
       }
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decoding = <Codec.CalldataDecoding>result.value;
+    const decoding = result.value;
     
     return {
       ...transaction,
@@ -193,17 +195,19 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     const decoder = Codec.decodeEvent(info, log.address, options.name);
 
     let result = decoder.next();
-    while(!result.done) {
-      let request = <Codec.DecoderRequest>(result.value);
+    while(result.done === false) {
+      let request = result.value;
       let response: Uint8Array;
-      //only code requests should occur here
-      if(Codec.isCodeRequest(request)) {
-        response = await this.getCode(request.address, block);
+      switch(request.type) {
+	case "code":
+          response = await this.getCode(request.address, block);
+	  break;
+	//not writing a storage case as it shouldn't occur here!
       }
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decodings = <Codec.LogDecoding[]>result.value;
+    const decodings = result.value;
     
     return {
       ...log,

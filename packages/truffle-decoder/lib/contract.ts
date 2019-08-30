@@ -248,21 +248,22 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
     const decoder = Codec.decodeVariable(variable.definition, variable.pointer, info);
 
     let result = decoder.next();
-    while(!result.done) {
-      let request = <Codec.DecoderRequest>(result.value);
+    while(result.done === false) {
+      let request = result.value;
       let response: Uint8Array;
-      if(Codec.isStorageRequest(request)) {
-        response = await this.getStorage(this.contractAddress, request.slot, block);
+      switch(request.type) {
+        case "storage":
+          response = await this.getStorage(this.contractAddress, request.slot, block);
+          break;
+        case "code":
+          response = await this.getCode(request.address, block);
+          break;
       }
-      else if(Codec.isCodeRequest(request)) {
-        response = await this.getCode(request.address, block);
-      }
-      //note: one of the above conditionals *must* be true by the type system.
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
 
-    return <Values.Result>result.value;
+    return result.value;
   }
 
   public async state(block: BlockType = "latest"): Promise<DecoderTypes.ContractState | undefined> {

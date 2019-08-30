@@ -5,27 +5,27 @@ import { AstDefinition, Types, Values } from "truffle-codec-utils";
 import * as CodecUtils from "truffle-codec-utils";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { DecoderRequest, GeneratorJunk } from "../types/request";
+import { DecoderRequest } from "../types/request";
 import { CalldataAllocation, EventAllocation, EventArgumentAllocation } from "../types/allocation";
 import { CalldataDecoding, LogDecoding, AbiArgument } from "../types/decoding";
 import { encodeTupleAbi } from "../encode/abi";
 import read from "../read";
 import decode from "../decode";
 
-export function* decodeVariable(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export function* decodeVariable(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
   let dataType = Types.definitionToType(definition, compiler);
   debug("definition %O", definition);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
-export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
+export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, CalldataDecoding, Uint8Array> {
   const context = info.currentContext;
   if(context === null) {
     //if we don't know the contract ID, we can't decode
     return {
-      kind: "unknown",
-      decodingMode: "full",
+      kind: "unknown" as const,
+      decodingMode: "full" as const,
       data: CodecUtils.Conversion.toHexString(info.state.calldata)
     }
   }
@@ -42,34 +42,34 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
   }
   else {
     //skipping any error-handling on this read, as a calldata read can't throw anyway
-    let rawSelector = <Uint8Array> (yield* read(
+    let rawSelector = yield* read(
       { location: "calldata",
         start: 0,
         length: CodecUtils.EVM.SELECTOR_SIZE
       },
       info.state
-    ));
+    );
     selector = CodecUtils.Conversion.toHexString(rawSelector);
     allocation = allocations.functionAllocations[selector];
   }
   if(allocation === undefined) {
     return {
-      kind: "message",
+      kind: "message" as const,
       class: contractType,
       abi: CodecUtils.AbiUtils.fallbackAbiForPayability(context.payable),
       data: CodecUtils.Conversion.toHexString(info.state.calldata),
-      decodingMode: "full",
+      decodingMode: "full" as const,
     };
   }
   //you can't map with a generator, so we have to do this map manually
   let decodedArguments: AbiArgument[] = [];
   for(const argumentAllocation of allocation.arguments) {
-    const value = <Values.Result> (yield* decode(
+    const value = yield* decode(
       Types.definitionToType(argumentAllocation.definition, compiler),
       argumentAllocation.pointer,
       info,
       { abiPointerBase: allocation.offset } //note the use of the offset for decoding pointers!
-    ));
+    );
     const name = argumentAllocation.definition.name;
     decodedArguments.push(
       name //deliberate general falsiness test
@@ -79,22 +79,22 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
   }
   if(isConstructor) {
     return {
-      kind: "constructor",
+      kind: "constructor" as const,
       class: contractType,
       arguments: decodedArguments,
-      abi: allocation.abi,
+      abi: <CodecUtils.AbiUtils.ConstructorAbiEntry> allocation.abi, //we know it's a constructor, but typescript doesn't
       bytecode: CodecUtils.Conversion.toHexString(info.state.calldata.slice(0, allocation.offset)),
-      decodingMode: "full",
+      decodingMode: "full" as const,
     };
   }
   else {
     return {
-      kind: "function",
+      kind: "function" as const,
       class: contractType,
-      abi: allocation.abi,
+      abi: <CodecUtils.AbiUtils.FunctionAbiEntry> allocation.abi, //we know it's a function, but typescript doesn't
       arguments: decodedArguments,
       selector,
-      decodingMode: "full"
+      decodingMode: "full" as const
     };
   }
 }
@@ -103,7 +103,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
 //leaving it alone for now, as I'm not sure what form those options will take
 //(and this is something we're a bit more OK with breaking since it's primarily
 //for internal use :) )
-export function* decodeEvent(info: EvmInfo, address: string, targetName?: string): IterableIterator<LogDecoding[] | DecoderRequest | Values.Result | GeneratorJunk> {
+export function* decodeEvent(info: EvmInfo, address: string, targetName?: string): Generator<DecoderRequest, LogDecoding[], Uint8Array> {
   const allocations = info.allocations.event;
   debug("event allocations: %O", allocations);
   let rawSelector: Uint8Array;
@@ -113,12 +113,12 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
   if(topicsCount > 0) {
-    rawSelector = <Uint8Array> (yield* read(
+    rawSelector = yield* read(
       { location: "eventtopic",
         topic: 0
       },
       info.state
-    ));
+    );
     selector = CodecUtils.Conversion.toHexString(rawSelector);
     ({ contract: contractAllocations, library: libraryAllocations } = allocations[topicsCount].bySelector[selector] || {contract: {}, library: {}});
   }
@@ -175,12 +175,12 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
     for(const argumentAllocation of allocation.arguments) {
       let value: Values.Result;
       try {
-        value = <Values.Result> (yield* decode(
+        value = yield* decode(
           Types.definitionToType(argumentAllocation.definition, attemptContext.compiler),
           argumentAllocation.pointer,
           info,
           { strictAbiMode: true } //turns on STRICT MODE to cause more errors to be thrown
-        ));
+        );
       }
       catch(_) {
         continue allocationAttempts; //if an error occurred, this isn't a valid decoding!
