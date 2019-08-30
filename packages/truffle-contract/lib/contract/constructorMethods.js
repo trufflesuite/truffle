@@ -1,4 +1,4 @@
-const Web3Shim = require("truffle-interface-adapter").Web3Shim;
+const { Web3Shim } = require("@truffle/interface-adapter");
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");

@@ -5,7 +5,7 @@ const vm = require("vm");
 const originalrequire = require("original-require");
 const expect = require("@truffle/expect");
 const Config = require("truffle-config");
-const Web3Shim = require("truffle-interface-adapter").Web3Shim;
+const { Web3Shim } = require("@truffle/interface-adapter");
 
 // options.file: path to file to execute. Must be a module that exports a function.
 // options.args: arguments passed to the exported function within file. If a callback

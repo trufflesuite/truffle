@@ -50,7 +50,7 @@ export type NetworkTypesConfig = Map<NetworkType, NetworkTypeDefinition>;
 // web3.js, and it was not intended to serve as the general purpose
 // truffle <=> all DLTs adapter. We have other commitments currently that
 // should drive the development of the correct architecture of
-// `truffle-interface-adapter`that should use this work in a more
+// `@truffle/interface-adapter`that should use this work in a more
 // sane and organized manner.
 export class Web3Shim extends Web3 {
   public networkType: NetworkType;

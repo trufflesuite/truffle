@@ -1,4 +1,4 @@
-var Web3Shim = require("truffle-interface-adapter").Web3Shim;
+var { Web3Shim } = require("@truffle/interface-adapter");
 var Config = require("truffle-config");
 var Migrate = require("truffle-migrate");
 var TestResolver = require("./testresolver");
