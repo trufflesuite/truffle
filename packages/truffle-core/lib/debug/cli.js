@@ -11,7 +11,7 @@ const DebugUtils = require("@truffle/debug-utils");
 
 const { DebugInterpreter } = require("./interpreter");
 const { DebugCompiler } = require("./compiler");
-const { shimBytecode } = require("truffle-compile/legacy/shims");
+const { shimBytecode } = require("@truffle/compile-solidity/legacy/shims");
 
 class CLIDebugger {
   constructor(config, { compilation } = {}) {

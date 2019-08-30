@@ -8,7 +8,7 @@
  *
  * truffleframework.com/docs/advanced/configuration
  *
- * To deploy via Infura you'll need a wallet provider (like truffle-hdwallet-provider)
+ * To deploy via Infura you'll need a wallet provider (like @truffle/hdwallet-provider)
  * to sign your transactions before they're sent to a remote public node. Infura API
  * keys are available for free at: infura.io/register
  *
@@ -18,10 +18,10 @@
  *
  */
 
-// const HDWallet = require('truffle-hdwallet-provider');
+// const HDWallet = require("@truffle/hdwallet-provider");
 // const infuraKey = "fj4jll3k.....";
 //
-// const fs = require('fs');
+// const fs = require("fs");
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 module.exports = {

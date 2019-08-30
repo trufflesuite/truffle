@@ -37,7 +37,7 @@ To start a @truffle/debugger session, you'll need the following:
 
 Optionally (and recommended), you can also provide a `files` argument:
 
-- `files` - An array of sourcePaths representing file indexes (from `solc` or `truffle-compile`)
+- `files` - An array of sourcePaths representing file indexes (from `solc` or `@truffle/compile-solidity`)
 
 ### Invocation
 

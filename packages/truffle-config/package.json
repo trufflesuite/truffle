@@ -24,7 +24,7 @@
     "find-up": "^2.1.0",
     "lodash": "^4.17.13",
     "original-require": "1.0.1",
-    "truffle-provider": "^0.1.16"
+    "@truffle/provider": "^0.1.16"
   },
   "publishConfig": {
     "access": "public"
