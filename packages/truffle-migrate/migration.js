@@ -1,8 +1,8 @@
 const path = require("path");
-const Deployer = require("truffle-deployer");
+const Deployer = require("@truffle/deployer");
 const Require = require("@truffle/require");
 const Emittery = require("emittery");
-const { Web3Shim } = require("truffle-interface-adapter");
+const { Web3Shim } = require("@truffle/interface-adapter");
 
 const ResolverIntercept = require("./resolverintercept");
 

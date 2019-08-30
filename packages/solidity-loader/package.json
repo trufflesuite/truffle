@@ -19,7 +19,7 @@
     "loader-utils": "^1.1.0",
     "schema-utils": "^1.0.0",
     "@truffle/config": "^1.1.20",
-    "truffle-core": "^5.0.34"
+    "@truffle/core": "^5.0.34"
   },
   "devDependencies": {
     "standard": "^11.0.1"

@@ -9,7 +9,7 @@ const Migration = require("./migration.js");
 const Emittery = require("emittery");
 
 /**
- *  This API is consumed by `truffle-core` at the `migrate` and `test` commands via
+ *  This API is consumed by `@truffle/core` at the `migrate` and `test` commands via
  *  the `.runMigrations` method.
  */
 const Migrate = {

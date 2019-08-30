@@ -1,6 +1,6 @@
-var debug = require("debug")("provider"); // eslint-disable-line no-unused-vars
+var debug = require("debug")("provider");
 var Web3 = require("web3");
-var Web3Shim = require("truffle-interface-adapter").Web3Shim;
+var { Web3Shim } = require("@truffle/interface-adapter");
 
 var wrapper = require("./wrapper");
 

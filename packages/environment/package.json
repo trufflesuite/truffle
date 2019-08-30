@@ -1,0 +1,28 @@
+{
+  "private": false,
+  "name": "@truffle/environment",
+  "description": "This package contains the code needed to determine environment-specific data",
+  "license": "MIT",
+  "author": "Faina Shalts",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/environment#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/environment",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.1.10",
+  "main": "index.js",
+  "dependencies": {
+    "@truffle/error": "^0.0.6",
+    "@truffle/expect": "^0.0.10",
+    "ganache-core": "2.7.0",
+    "node-ipc": "^9.1.1",
+    "@truffle/interface-adapter": "^0.2.5",
+    "@truffle/artifactor": "^4.0.30",
+    "truffle-resolver": "^5.0.16",
+    "web3": "1.2.1"
+  },
+  "devDependencies": {
+    "debug": "^4.1.0"
+  },
+  "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c"
+}
