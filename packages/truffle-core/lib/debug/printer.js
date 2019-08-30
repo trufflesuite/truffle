@@ -4,9 +4,9 @@ const debug = debugModule("lib:debug:printer");
 const path = require("path");
 const safeEval = require("safe-eval");
 
-const DebugUtils = require("truffle-debug-utils");
+const DebugUtils = require("@truffle/debug-utils");
 
-const selectors = require("truffle-debugger").selectors;
+const selectors = require("@truffle/debugger").selectors;
 const { session, solidity, trace, controller } = selectors;
 
 class DebugPrinter {
