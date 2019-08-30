@@ -22,7 +22,7 @@
     "mocha": "5.2.0",
     "require-nocache": "^1.0.0",
     "temp": "^0.8.3",
-    "truffle-contract": "^4.0.31",
+    "@truffle/contract": "^4.0.31",
     "web3": "1.2.1"
   },
   "publishConfig": {

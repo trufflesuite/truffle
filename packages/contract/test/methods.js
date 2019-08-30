@@ -465,7 +465,7 @@ describe("Methods", function() {
     it("errors with a revert reason", async function() {
       const example = await Example.new(1);
       try {
-        // At the moment, this test can't rely on truffle-contract's
+        // At the moment, this test can't rely on @truffle/contract's
         // gas estimation when running with geth.
         await example.triggerRequireWithReasonError({ gas: 1000000 });
         assert.fail();

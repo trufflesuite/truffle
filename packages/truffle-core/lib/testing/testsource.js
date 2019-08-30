@@ -1,7 +1,7 @@
 const Deployed = require("./deployed");
 const path = require("path");
 const fse = require("fs-extra");
-const contract = require("truffle-contract");
+const contract = require("@truffle/contract");
 const find_contracts = require("truffle-contract-sources");
 
 function TestSource(config) {

@@ -16,7 +16,7 @@ artifactor.save({/*...*/}); // => a promise saving MyContract.json to a given de
 * Packages up build artifacts into `.json` files, which can then be included in your project with a simple `require`.
 * Manages library addresses for linked libraries.
 
-The artifactor can be used with [truffle-contract](https://github.com/trufflesuite/truffle/tree/develop/packages/truffle-contract), which provides features above and beyond `web3`:
+The artifactor can be used with [@truffle/contract](https://github.com/trufflesuite/truffle/tree/develop/packages/contract), which provides features above and beyond `web3`:
 
 * Synchronized transactions for better control flow: transactions won't be considered finished until you're guaranteed they've been mined.
 * Promises. No more callback hell. Works well with `ES6` and `async/await`.
