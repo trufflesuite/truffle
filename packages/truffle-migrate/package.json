@@ -1,42 +1,42 @@
 {
   "name": "truffle-migrate",
-  "version": "3.0.26",
   "description": "On-chain migrations management",
+  "license": "MIT",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle-migrate#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-migrate",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle-migrate/issues"
+  },
+  "version": "3.0.32",
   "main": "index.js",
   "scripts": {
     "test": "mocha ./test/* ./test/**/*"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-migrate",
-  "keywords": [
-    "ethereum",
-    "truffle",
-    "migrations",
-    "deployment"
-  ],
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle-migrate/issues"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle-migrate#readme",
   "dependencies": {
+    "@truffle/expect": "^0.0.10",
+    "@truffle/reporters": "^1.0.13",
+    "@truffle/require": "^2.0.20",
     "async": "2.6.1",
     "emittery": "^0.4.0",
     "node-dir": "0.1.17",
-    "truffle-config": "^1.1.15",
-    "truffle-deployer": "^3.0.26",
-    "truffle-expect": "^0.0.9",
-    "truffle-interface-adapter": "^0.2.0",
-    "truffle-reporters": "^1.0.10",
-    "truffle-require": "^2.0.15",
-    "web3": "1.0.0-beta.37"
+    "@truffle/config": "^1.1.20",
+    "truffle-deployer": "^3.0.32",
+    "truffle-interface-adapter": "^0.2.5",
+    "web3": "1.2.1"
   },
   "devDependencies": {
     "mocha": "5.2.0",
     "sinon": "^7.3.2"
   },
+  "keywords": [
+    "deployment",
+    "ethereum",
+    "migrations",
+    "truffle"
+  ],
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c"
 }

@@ -11,7 +11,7 @@ const command = {
     options: []
   },
   run: function(options) {
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const sane = require("sane");
     const path = require("path");
 
@@ -66,7 +66,7 @@ const build = config => {
 
 const printSummary = (config, error) => {
   if (error) {
-    const TruffleError = require("truffle-error");
+    const TruffleError = require("@truffle/error");
     if (error instanceof TruffleError) {
       console.log(error.message);
     } else {

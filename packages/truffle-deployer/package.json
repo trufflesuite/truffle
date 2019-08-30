@@ -2,28 +2,28 @@
   "name": "truffle-deployer",
   "description": "Light deployment module for easily deploying Ethereum contracts",
   "license": "MIT",
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
-  "homepage": "https://github.com/trufflesuite/truffle-deployer#readme",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-deployer#readme",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-deployer",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle-deployer/issues"
   },
-  "version": "3.0.26",
+  "version": "3.0.32",
   "main": "index.js",
   "scripts": {
     "test": "mocha --no-warnings --timeout 10000 --exit"
   },
   "dependencies": {
+    "@truffle/expect": "^0.0.10",
     "emittery": "^0.4.0",
-    "truffle-contract": "^4.0.25",
-    "truffle-expect": "^0.0.9"
+    "@truffle/contract": "^4.0.31"
   },
   "devDependencies": {
-    "ganache-core": "2.5.7",
+    "@truffle/reporters": "^1.0.13",
+    "@truffle/workflow-compile": "^2.1.4",
+    "ganache-core": "2.7.0",
     "mocha": "5.2.0",
-    "truffle-reporters": "^1.0.10",
-    "truffle-workflow-compile": "^2.0.24",
-    "web3": "1.0.0-beta.37"
+    "web3": "1.2.1"
   },
   "keywords": [
     "contracts",
@@ -35,5 +35,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c"
 }

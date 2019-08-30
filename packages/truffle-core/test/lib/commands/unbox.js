@@ -1,6 +1,6 @@
 const assert = require("assert");
 const unbox = require("../../../lib/commands/unbox");
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 const sinon = require("sinon");
 const temp = require("temp").track();
 let tempDir, mockConfig;

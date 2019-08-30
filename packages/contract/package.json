@@ -1,0 +1,54 @@
+{
+  "name": "@truffle/contract",
+  "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
+  "license": "MIT",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/contract#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/contract",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "4.0.31",
+  "main": "index.js",
+  "scripts": {
+    "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
+    "prepare": "yarn compile",
+    "publish:next": "node ../truffle/scripts/prereleaseVersion.js next next",
+    "test": "./scripts/test.sh",
+    "test:debug": "$(yarn bin)/mocha --inspect-brk",
+    "test:trace": "$(yarn bin)/mocha --trace-warnings"
+  },
+  "dependencies": {
+    "@truffle/blockchain-utils": "^0.0.11",
+    "@truffle/contract-schema": "^3.0.14",
+    "@truffle/error": "^0.0.6",
+    "bignumber.js": "^7.2.1",
+    "ethers": "^4.0.0-beta.1",
+    "truffle-interface-adapter": "^0.2.5",
+    "web3": "1.2.1",
+    "web3-core-promievent": "1.2.1",
+    "web3-eth-abi": "1.2.1",
+    "web3-utils": "1.2.1"
+  },
+  "devDependencies": {
+    "async": "2.6.1",
+    "browserify": "^14.0.0",
+    "chai": "4.2.0",
+    "debug": "^4.1.0",
+    "ganache-core": "2.7.0",
+    "mocha": "5.2.0",
+    "temp": "^0.8.3",
+    "@truffle/compile-solidity": "^4.2.3",
+    "uglify-es": "^3.3.9"
+  },
+  "keywords": [
+    "abstraction",
+    "contract",
+    "ethereum",
+    "truffle"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c"
+}

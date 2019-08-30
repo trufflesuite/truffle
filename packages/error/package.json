@@ -1,0 +1,24 @@
+{
+  "name": "@truffle/error",
+  "version": "0.0.6",
+  "description": "Simple module that allows native Error objects to be extended",
+  "main": "index.js",
+  "scripts": {},
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/error",
+  "keywords": [
+    "ethereum",
+    "truffle",
+    "error",
+    "extendable"
+  ],
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/error#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c"
+}

@@ -15,7 +15,7 @@ var command = {
     ]
   },
   run: function(options, done) {
-    var Config = require("truffle-config");
+    var Config = require("@truffle/config");
     var OS = require("os");
     var UnboxCommand = require("./unbox");
 

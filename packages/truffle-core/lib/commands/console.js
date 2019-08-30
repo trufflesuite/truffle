@@ -19,7 +19,7 @@ const command = {
     ]
   },
   run: function(options, done) {
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const Console = require("../console");
     const { Environment } = require("truffle-environment");
 
