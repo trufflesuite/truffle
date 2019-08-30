@@ -1,10 +1,10 @@
 {
-  "name": "truffle-contract",
+  "name": "@truffle/contract",
   "description": "A better contract abstraction for Ethereum (formerly EtherPudding)",
   "license": "MIT",
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-contract#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle-contract",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/contract#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/contract",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },

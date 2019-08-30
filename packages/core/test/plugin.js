@@ -118,12 +118,12 @@ describe("plugin loader", () => {
 
       assert(
         pluginLoader.checkPluginModules({
-          plugins: ["@truffle/box", "truffle-config"],
+          plugins: ["@truffle/box", "@truffle/config"],
           working_directory: process.cwd()
         })
       );
       pluginArray = pluginLoader.checkPluginModules({
-        plugins: ["@truffle/box", "truffle-config"],
+        plugins: ["@truffle/box", "@truffle/config"],
         working_directory: process.cwd()
       });
       assert(pluginArray);
@@ -142,7 +142,7 @@ describe("plugin loader", () => {
       );
       assert.throws(
         () => {
-          pluginLoader.loadPluginModules(["@truffle/box", "truffle-config"]);
+          pluginLoader.loadPluginModules(["@truffle/box", "@truffle/config"]);
         },
         TruffleError,
         "TruffleError not thrown!"
@@ -250,7 +250,7 @@ describe("plugin loader", () => {
         );
         assert.throws(
           () => {
-            pluginLoader.loadPluginModules(["@truffle/box", "truffle-config"]);
+            pluginLoader.loadPluginModules(["@truffle/box", "@truffle/config"]);
           },
           TruffleError,
           "TruffleError not thrown!"

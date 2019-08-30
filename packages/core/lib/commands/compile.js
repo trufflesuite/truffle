@@ -49,7 +49,7 @@ const command = {
   },
   run: function(options, done) {
     const Contracts = require("@truffle/workflow-compile");
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const config = Config.detect(options);
 
     if (config.list !== undefined) {

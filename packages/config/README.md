@@ -1,9 +1,9 @@
-# truffle-config
+# @truffle/config
 Utility for interacting with truffle-config.js files
 
 ### Usage
  ```javascript
-const TruffleConfig = require("truffle-config");
+const TruffleConfig = require("@truffle/config");
 ```
 
 #### Instantiate default TruffleConfig object

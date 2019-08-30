@@ -1,4 +1,4 @@
-var contract = require("truffle-contract");
+var contract = require("@truffle/contract");
 
 var Schema = require("../index.js");
 var assert = require("assert");

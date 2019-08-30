@@ -1,4 +1,4 @@
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 const ua = require("universal-analytics");
 const assert = require("chai").assert;
 const sinon = require("sinon");

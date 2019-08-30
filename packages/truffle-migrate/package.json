@@ -20,9 +20,9 @@
     "async": "2.6.1",
     "emittery": "^0.4.0",
     "node-dir": "0.1.17",
-    "truffle-config": "^1.1.20",
     "@truffle/deployer": "^3.0.32",
     "@truffle/interface-adapter": "^0.2.5",
+    "@truffle/config": "^1.1.20",
     "web3": "1.2.1"
   },
   "devDependencies": {

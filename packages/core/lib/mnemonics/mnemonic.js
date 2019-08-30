@@ -1,13 +1,13 @@
 /**
  * @module mnemonic;
- * @requires module:truffle-config
+ * @requires module:@truffle/config
  * @requires module:seedrandom
  * @requires module:bip39
  * @requires module:ethereumjs-wallet/hdkey
  * @requires module:crypto
  */
 
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 const defaultUserConfig = Config.getUserConfig();
 const bip39 = require("bip39");
 const hdkey = require("ethereumjs-wallet/hdkey");

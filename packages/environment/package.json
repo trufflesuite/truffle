@@ -16,8 +16,8 @@
     "@truffle/expect": "^0.0.10",
     "ganache-core": "2.7.0",
     "node-ipc": "^9.1.1",
-    "truffle-artifactor": "^4.0.30",
     "@truffle/interface-adapter": "^0.2.5",
+    "@truffle/artifactor": "^4.0.30",
     "truffle-resolver": "^5.0.16",
     "web3": "1.2.1"
   },

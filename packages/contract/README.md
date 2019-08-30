@@ -1,11 +1,11 @@
-# truffle-contract
+# @truffle/contract
 
 Better Ethereum contract abstraction, for Node and the browser.
 
 ### Install
 
 ```
-$ npm install truffle-contract
+$ npm install @truffle/contract
 ```
 
 ### Features
@@ -17,11 +17,11 @@ $ npm install truffle-contract
 
 ### Usage
 
-First, set up a new web3 provider instance and initialize your contract, then `require("truffle-contract")`. The input to the `contract` function is a JSON blob defined by [@truffle/contract-schema](https://github.com/trufflesuite/truffle/tree/master/packages/contract-schema). This JSON blob is structured in a way that can be passed to all truffle-related projects.
+First, set up a new web3 provider instance and initialize your contract, then `require("@truffle/contract")`. The input to the `contract` function is a JSON blob defined by [@truffle/contract-schema](https://github.com/trufflesuite/truffle/tree/master/packages/contract-schema). This JSON blob is structured in a way that can be passed to all truffle-related projects.
 
 ```javascript
 var provider = new Web3.providers.HttpProvider("http://localhost:8545");
-var contract = require("truffle-contract");
+var contract = require("@truffle/contract");
 
 var MyContract = contract({
   abi: ...,
@@ -59,7 +59,7 @@ or equivalently in ES6 <sup>(node.js 8 or newer)</sup>:
 
 ### Browser Usage
 
-In your `head` element, include truffle-contract:
+In your `head` element, include @truffle/contract:
 
 ```
 <script type="text/javascript" src="./dist/truffle-contract.min.js"></script>
@@ -67,28 +67,28 @@ In your `head` element, include truffle-contract:
 
 Alternatively, you can use the non-minified versions for easier debugging.
 
-With this usage, `truffle-contract` will be available via the `TruffleContract` object:
+With this usage, `@truffle/contract` will be available via the `TruffleContract` object:
 
 ```
 var MyContract = TruffleContract(...);
 ```
 
-**Note**: Web3 and its dependencies are now bundled into truffle-contract
+**Note**: Web3 and its dependencies are now bundled into @truffle/contract
 v4.0.2 or higher.
 
 ### Full Example
 
-Let's use `truffle-contract` with an example contract from [Dapps For Beginners](https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/). In this case, the abstraction has been saved to a `.sol` file by [truffle-artifactor](https://github.com/trufflesuite/truffle/tree/master/packages/truffle-artifactor):
+Let's use `@truffle/contract` with an example contract from [Dapps For Beginners](https://dappsforbeginners.wordpress.com/tutorials/your-first-dapp/). In this case, the abstraction has been saved to a `.sol` file by [@truffle/artifactor](https://github.com/trufflesuite/truffle/tree/master/packages/artifactor):
 
 ```javascript
-// Require the package that was previosly saved by truffle-artifactor
+// Require the package that was previosly saved by @truffle/artifactor
 var MetaCoin = require("./path/to/MetaCoin.sol");
 
 // Remember to set the Web3 provider (see above).
 MetaCoin.setProvider(provider);
 
 // In this scenario, two users will send MetaCoin back and forth, showing
-// how truffle-contract allows for easy control flow.
+// how @truffle/contract allows for easy control flow.
 var account_one = "5b42bd01ff...";
 var account_two = "e1fd0d4a52...";
 
@@ -103,9 +103,9 @@ MetaCoin.at(contract_address).then(function(instance) {
   // to the account listed as account_two.
   return coin.sendCoin(account_two, 3, {from: account_one});
 }).then(function(result) {
-  // This code block will not be executed until truffle-contract has verified
+  // This code block will not be executed until @truffle/contract has verified
   // the transaction has been processed and it is included in a mined block.
-  // truffle-contract will error if the transaction hasn't been processed in 120 seconds.
+  // @truffle/contract will error if the transaction hasn't been processed in 120 seconds.
 
   // Since we're using promises, we can return a promise for a call that will
   // check account two's balance.
@@ -146,7 +146,7 @@ This function creates a new instance of the contract abstraction representing th
 
 #### `MyContract.deployed()`
 
-Creates an instance of the contract abstraction representing the contract at its deployed address. The deployed address is a special value given to truffle-contract that, when set, saves the address internally so that the deployed address can be inferred from the given Ethereum network being used. This allows you to write code referring to a specific deployed contract without having to manage those addresses yourself. Like `at()`, `deployed()` is thenable, and will resolve to a contract abstraction instance representing the deployed contract after ensuring that code exists at that location and that that address exists on the network being used.
+Creates an instance of the contract abstraction representing the contract at its deployed address. The deployed address is a special value given to @truffle/contract that, when set, saves the address internally so that the deployed address can be inferred from the given Ethereum network being used. This allows you to write code referring to a specific deployed contract without having to manage those addresses yourself. Like `at()`, `deployed()` is thenable, and will resolve to a contract abstraction instance representing the deployed contract after ensuring that code exists at that location and that that address exists on the network being used.
 
 #### `MyContract.link(instance)`
 
@@ -304,7 +304,7 @@ instance.getValue.call().then(function(val) {
 });
 ```
 
-Even more helpful, however is we *don't even need* to use `.call` when a function is marked as `view` or `pure`, because `truffle-contract` will automatically know that that function can only be interacted with via a call:
+Even more helpful, however is we *don't even need* to use `.call` when a function is marked as `view` or `pure`, because `@truffle/contract` will automatically know that that function can only be interacted with via a call:
 
 ```javascript
 instance.getValue().then(function(val) {
@@ -357,4 +357,4 @@ instance.setValue.estimateGas(5).then(function(result) {
 
 # Testing
 
-This package is the result of breaking up EtherPudding into multiple modules. Tests currently reside within [truffle-artifactor](https://github.com/trufflesuite/truffle/tree/master/packages/truffle-artifactor) but will soon move here.
+This package is the result of breaking up EtherPudding into multiple modules. Tests currently reside within [@truffle/artifactor](https://github.com/trufflesuite/truffle/tree/master/packages/artifactor) but will soon move here.

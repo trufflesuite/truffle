@@ -29,7 +29,7 @@ var command = {
     ]
   },
   run: function(options, done) {
-    var Config = require("truffle-config");
+    var Config = require("@truffle/config");
     var ConfigurationError = require("../errors/configurationerror");
     var create = require("../create");
 

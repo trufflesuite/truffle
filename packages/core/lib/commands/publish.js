@@ -7,7 +7,7 @@ var command = {
     options: []
   },
   run: function(options, done) {
-    var Config = require("truffle-config");
+    var Config = require("@truffle/config");
     var Package = require("../package");
 
     var config = Config.detect(options);
