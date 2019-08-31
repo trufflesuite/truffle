@@ -3,6 +3,7 @@
   "version": "1.1.20",
   "description": "Utility for interacting with truffle-config.js files",
   "main": "index.js",
+  "typings": "./typings/index.d.ts",
   "scripts": {
     "test": "mocha"
   },

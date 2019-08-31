@@ -1,5 +1,5 @@
 const assert = require("assert");
-const utils = require("../lib/utils/unbox");
+const utils = require("../dist/lib/utils/unbox");
 
 describe("utils", () => {
   describe("installBoxDependencies", () => {

@@ -2,8 +2,11 @@
   "name": "@truffle/box",
   "version": "1.0.36",
   "description": "Truffle project boilerplate utility",
-  "main": "box.js",
+  "main": "dist/box.js",
+  "types": "./typings/index.d.ts",
   "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
     "test": "mocha --timeout 10000"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/box",
@@ -16,8 +19,14 @@
   "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "license": "MIT",
   "devDependencies": {
+    "@types/fs-extra": "^8.0.0",
+    "@types/inquirer": "^6.0.3",
+    "@types/request-promise-native": "^1.0.16",
+    "@types/tmp": "^0.1.0",
     "mocha": "5.2.0",
-    "sinon": "^6.3.4"
+    "sinon": "^6.3.4",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.3"
   },
   "dependencies": {
     "fs-extra": "6.0.1",
