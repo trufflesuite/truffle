@@ -1,5 +1,6 @@
-const CodeUtils = require("../index");
-const assert = require("assert");
+import CodeUtils from "../";
+import assert from "assert";
+import { describe, it} from "mocha";
 
 describe("CodeUtils.parseCode", () => {
   // example contract hex code

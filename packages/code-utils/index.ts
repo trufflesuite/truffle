@@ -1,6 +1,7 @@
-const opcodes = require("./opcodes");
+import opcodes from "./opcodes";
+import { opcodeObject } from "typings";
 
-module.exports = {
+export = {
   /**
    * parseCode - return a list of instructions given a 0x-prefixed code string.
    *
@@ -17,10 +18,10 @@ module.exports = {
    * @param  {String} hexString Hex string representing the code
    * @return Array               Array of instructions
    */
-  parseCode(hexString, numInstructions = null) {
+  parseCode(hexString: string, numInstructions: number = null) {
     // Convert to an array of bytes
-    let code = (hexString.slice(2).match(/(..?)/g) || []).map(hex =>
-      parseInt(hex, 16)
+    let code: Array<number> = (hexString.slice(2).match(/(..?)/g) || []).map(
+      hex => parseInt(hex, 16)
     );
 
     let stripMetadata = numInstructions === null;
@@ -39,7 +40,7 @@ module.exports = {
       (stripMetadata || instructions.length < numInstructions);
       pc++
     ) {
-      let opcode = {};
+      let opcode: opcodeObject = {};
       opcode.pc = pc;
       opcode.name = opcodes(code[pc]);
       if (opcode.name.slice(0, 4) === "PUSH") {

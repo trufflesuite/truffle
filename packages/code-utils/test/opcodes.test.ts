@@ -1,5 +1,6 @@
-const opcodes = require("../opcodes");
-const assert = require("assert");
+import opcodes from "../opcodes";
+import assert from "assert";
+import { describe, it } from "mocha";
 
 describe("opcode parsing method", () => {
   it(`returns "INVALID" when passed an invalid opcode`, () => {
