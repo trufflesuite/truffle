@@ -2,8 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("codec:encode:abi");
 
 import { Values, Conversion as ConversionUtils, EVM as EVMUtils } from "truffle-codec-utils";
-import { AbiAllocations } from "../types/allocation";
-import { isTypeDynamic, abiSizeForType } from "../allocate/abi";
+import { AbiAllocations, AbiSizeInfo } from "../types/allocation";
+import { abiSizeInfo } from "../allocate/abi";
 import sum from "lodash.sum";
 import utf8 from "utf8";
 import BN from "bn.js";
@@ -137,7 +137,7 @@ export function encodeTupleAbi(tuple: Values.Result[], allocations?: AbiAllocati
   if(elementEncodings.some(element => element === undefined)) {
     return undefined;
   }
-  let isElementDynamic: boolean[] = tuple.map(element => isTypeDynamic(element.type, allocations));
+  let elementSizeInfo: AbiSizeInfo[] = tuple.map(element => abiSizeInfo(element.type, allocations));
   //heads and tails here are as discussed in the ABI docs;
   //for a static type the head is the encoding and the tail is empty,
   //for a dynamic type the head is the pointer and the tail is the encoding
@@ -145,13 +145,13 @@ export function encodeTupleAbi(tuple: Values.Result[], allocations?: AbiAllocati
   let tails: Uint8Array[] = [];
   //but first, we need to figure out where the first tail will start,
   //by adding up the sizes of all the heads (we can easily do this in
-  //advance via abiSizeForType, without needing to know the particular
+  //advance via elementSizeInfo, without needing to know the particular
   //values of the heads)
-  let startOfNextTail = sum(tuple.map(element => abiSizeForType(element.type, allocations)));
+  let startOfNextTail = sum(elementSizeInfo.map(elementInfo => elementInfo.size));
   for(let i = 0; i < tuple.length; i++) {
     let head: Uint8Array;
     let tail: Uint8Array;
-    if(!isElementDynamic[i]) {
+    if(!elementSizeInfo[i].dynamic) {
       //static case
       head = elementEncodings[i];
       tail = new Uint8Array(); //empty array

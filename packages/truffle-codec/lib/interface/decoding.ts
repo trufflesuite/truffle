@@ -65,12 +65,12 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
   let decodedArguments: AbiArgument[] = [];
   for(const argumentAllocation of allocation.arguments) {
     const value = <Values.Result> (yield* decode(
-      Types.definitionToType(argumentAllocation.definition, compiler),
+      argumentAllocation.type,
       argumentAllocation.pointer,
       info,
       { abiPointerBase: allocation.offset } //note the use of the offset for decoding pointers!
     ));
-    const name = argumentAllocation.definition.name;
+    const name = argumentAllocation.name;
     decodedArguments.push(
       name //deliberate general falsiness test
         ? { name, value }
@@ -164,7 +164,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
   let decodings: LogDecoding[] = [];
   allocationAttempts: for(const allocation of possibleAllocationsTotal) {
     //first: do a name check so we can skip decoding if name is wrong
-    if(targetName !== undefined && allocation.definition.name !== targetName) {
+    if(targetName !== undefined && allocation.abi.name !== targetName) {
       continue;
     }
     const id = allocation.contractId;
@@ -176,7 +176,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
       let value: Values.Result;
       try {
         value = <Values.Result> (yield* decode(
-          Types.definitionToType(argumentAllocation.definition, attemptContext.compiler),
+          argumentAllocation.type,
           argumentAllocation.pointer,
           info,
           { strictAbiMode: true } //turns on STRICT MODE to cause more errors to be thrown
@@ -185,7 +185,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
       catch(_) {
         continue allocationAttempts; //if an error occurred, this isn't a valid decoding!
       }
-      const name = argumentAllocation.definition.name;
+      const name = argumentAllocation.name;
       const indexed = argumentAllocation.pointer.location === "eventtopic";
       decodedArguments.push(
         name //deliberate general falsiness test
@@ -205,7 +205,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
     //are they equal?
     const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
     if(CodecUtils.EVM.equalData(encodedData, reEncodedData)) {
-      if(allocation.definition.anonymous) {
+      if(allocation.abi.anonymous) {
         decodings.push({
           kind: "anonymous",
           class: contractType,

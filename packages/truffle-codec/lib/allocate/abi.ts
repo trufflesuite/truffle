@@ -5,7 +5,7 @@ import * as Pointer from "../types/pointer";
 import * as Allocations from "../types/allocation";
 import { AstDefinition, AstReferences, AbiUtils } from "truffle-codec-utils";
 import * as CodecUtils from "truffle-codec-utils";
-import { UnknownUserDefinedTypeError } from "truffle-codec-utils";
+import { UnknownUserDefinedTypeError, Types } from "truffle-codec-utils";
 import { UnknownBaseContractIdError, NoDefinitionFoundForABIEntryError } from "../types/errors";
 import partition from "lodash.partition";
 
@@ -15,28 +15,28 @@ interface AbiAllocationInfo {
   allocations: Allocations.AbiAllocations;
 }
 
-export function getAbiAllocations(referenceDeclarations: AstReferences): Allocations.AbiAllocations {
+export function getAbiAllocations(userDefinedTypes: Types.TypesById): Allocations.AbiAllocations {
   let allocations: Allocations.AbiAllocations = {};
-  for(const node of Object.values(referenceDeclarations)) {
-    if(node.nodeType === "StructDefinition") {
-      allocations = allocateStruct(node, referenceDeclarations, allocations);
+  for(const dataType of Object.values(referenceDeclarations)) {
+    if(dataType.typeClass === "struct") {
+      allocations = allocateStruct(dataType, userDefinedTypes, allocations);
     }
   }
   return allocations;
 }
 
-function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: Allocations.AbiAllocations): Allocations.AbiAllocations {
-  return allocateMembers(structDefinition, structDefinition.members, referenceDeclarations, existingAllocations);
+function allocateStruct(dataType: Types.Type, userDefinedTypes: Types.TypesById, existingAllocations: Allocations.AbiAllocations): Allocations.AbiAllocations {
+  return allocateMembers(dataType.id, dataType.memberTypes, userDefinedTypes, existingAllocations);
 }
 
 //note: we will still allocate circular structs, even though they're not allowed in the abi, because it's
 //not worth the effort to detect them.  However on mappings or internal functions, we'll vomit (allocate null)
-function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[], referenceDeclarations: AstReferences, existingAllocations: Allocations.AbiAllocations, start: number = 0): Allocations.AbiAllocations {
+function allocateMembers(parentId: string, members: Types.NameTypePair[], userDefinedTypes: Types.TypesById, existingAllocations: Allocations.AbiAllocations, start: number = 0): Allocations.AbiAllocations {
   let dynamic: boolean = false;
   //note that we will mutate the start argument also!
 
   //don't allocate things that have already been allocated
-  if(parentNode.id in existingAllocations) {
+  if(parentId in existingAllocations) {
     return existingAllocations;
   }
 
@@ -44,15 +44,15 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
 
   let memberAllocations: Allocations.AbiMemberAllocation[] = [];
 
-  for(const member of definitions)
+  for(const member of members)
   {
     let length: number;
     let dynamicMember: boolean;
-    ({size: length, dynamic: dynamicMember, allocations} = abiSizeAndAllocate(member, referenceDeclarations, allocations));
+    ({size: length, dynamic: dynamicMember, allocations} = abiSizeAndAllocate(member.type, userDefinedTypes, allocations));
 
     //vomit on illegal types in calldata -- note the short-circuit!
     if(length === undefined) {
-      allocations[parentNode.id] = null;
+      allocations[parentId] = null;
       return allocations;
     }
 
@@ -63,7 +63,8 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     };
 
     memberAllocations.push({
-      definition: member,
+      name: member.name,
+      type: member.type,
       pointer
     });
 
@@ -71,7 +72,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     dynamic = dynamic || dynamicMember;
   }
 
-  allocations[parentNode.id] = {
+  allocations[parentId] = {
     definition: parentNode,
     members: memberAllocations,
     length: dynamic ? CodecUtils.EVM.WORD_SIZE : start,
@@ -85,8 +86,8 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
 //second return value is whether the type is dynamic
 //both will be undefined if type is a mapping or internal function
 //third return value is resulting allocations, INCLUDING the ones passed in
-function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: Allocations.AbiAllocations): AbiAllocationInfo {
-  switch (CodecUtils.Definition.typeClass(definition)) {
+function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesById, existingAllocations?: Allocations.AbiAllocations): AbiAllocationInfo {
+  switch (dataType.typeClass) {
     case "bool":
     case "address":
     case "contract":
@@ -111,7 +112,7 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
     case "bytes":
       return {
         size: CodecUtils.EVM.WORD_SIZE,
-        dynamic: CodecUtils.Definition.specifiedSize(definition) == null,
+        dynamic: dataType.kind === "dynamic",
         allocations: existingAllocations
       };
 
@@ -121,7 +122,7 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
       };
 
     case "function":
-      switch (CodecUtils.Definition.visibility(definition)) {
+      switch (dataType.visibility) {
         case "external":
           return {
             size: CodecUtils.EVM.WORD_SIZE,
@@ -135,47 +136,42 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
       }
 
     case "array": {
-      if(CodecUtils.Definition.isDynamicArray(definition)) {
-        return {
-          size: CodecUtils.EVM.WORD_SIZE,
-          dynamic: true,
-          allocations: existingAllocations
-        };
-      }
-      else {
-        //static array case
-        const length: number = CodecUtils.Definition.staticLength(definition);
-        if(length === 0) {
-          //arrays of length 0 are static regardless of base type
+      switch(dataType.kind) {
+        case "dynamic":
           return {
-            size: 0,
-            dynamic: false,
+            size: CodecUtils.EVM.WORD_SIZE,
+            dynamic: true,
             allocations: existingAllocations
           };
-        }
-        const baseDefinition: AstDefinition = definition.baseType || definition.typeName.baseType;
-        const {size: baseSize, dynamic, allocations} = abiSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
-        return {
-          size: length * baseSize,
-          dynamic,
-          allocations
-        };
+        case "static":
+          if(dataType.length === 0) {
+            //arrays of length 0 are static regardless of base type
+            return {
+              size: 0,
+              dynamic: false,
+              allocations: existingAllocations
+            };
+          }
+          const {size: baseSize, dynamic, allocations} = abiSizeAndAllocate(dataType.baseType, userDefinedTypes, existingAllocations);
+          return {
+            size: dataType.length * baseSize,
+            dynamic,
+            allocations
+          };
       }
     }
 
     case "struct": {
-      const referenceId: number = CodecUtils.Definition.typeId(definition);
       let allocations: Allocations.AbiAllocations = existingAllocations;
-      let allocation: Allocations.AbiAllocation | null | undefined = allocations[referenceId];
+      let allocation: Allocations.AbiAllocation | null | undefined = allocations[dataType.id];
       if(allocation === undefined) {
         //if we don't find an allocation, we'll have to do the allocation ourselves
-        const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
-        if(referenceDeclaration === undefined) {
-          let typeString = CodecUtils.Definition.typeString(definition);
-          throw new UnknownUserDefinedTypeError(referenceId, typeString);
+        const storedType = <Types.StructType> userDefinedTypes[dataType.id];
+        if(!storedType) {
+          throw new UnknownUserDefinedTypeError(dataType.id, Types.typeString(dataType));
         }
-        allocations = allocateStruct(referenceDeclaration, referenceDeclarations, existingAllocations);
-        allocation = allocations[referenceId];
+        allocations = allocateStruct(dataType, userDefinedTypes, existingAllocations);
+        allocation = allocations[dataType.id];
       }
       //having found our allocation, if it's not null, we can just look up its size and dynamicity
       if(allocation !== null) {
@@ -192,62 +188,35 @@ function abiSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: A
         };
       }
     }
+
+    case "tuple": {
+      //Warning! Yucky wasteful recomputation here!
+      let size = 0;
+      let dynamic = false;
+      //note that we don't just invoke allocateStruct here!
+      //why not? because it has no ID to store the result in!
+      //and we can't use a fake like -1 because there might be a recursive call to it,
+      //and then the results would overwrite each other
+      //I mean, we could do some hashing thing or something, but I think it's easier to just
+      //copy the logic in this one case (sorry)
+      for(let member of dataType.memberTypes) {
+        let { size: memberSize, dynamic: memberDynamic } = abiSizeAndAllocate(member.type, userDefinedTypes, existingAllocations);
+        size += memberSize;
+        dynamic = dynamic || memberDynamic;
+      }
+      return { size, dynamic, existingAllocations };
+    }
+
   }
 }
 
-//like abiSize, but for a Type object; also assumes you've already done allocation
-//(note: function for dynamic is separate, see below)
-//also, does not attempt to handle types that don't occur in calldata
-export function abiSizeForType(dataType: CodecUtils.Types.Type, allocations?: Allocations.AbiAllocations): number {
-  switch(dataType.typeClass) {
-    case "array":
-      switch(dataType.kind) {
-        case "dynamic":
-          return CodecUtils.EVM.WORD_SIZE;
-        case "static":
-          const length = dataType.length.toNumber(); //if this is too big, we have a problem!
-          const baseSize = abiSizeForType(dataType.baseType, allocations);
-          return length * baseSize;
-      }
-    case "struct":
-      const allocation = allocations[parseInt(dataType.id)];
-      if(!allocation) {
-        throw new CodecUtils.Errors.DecodingError(
-          {
-            kind: "UserDefinedTypeNotFoundError",
-            type: dataType
-          }
-        );
-      }
-      return allocation.length;
-    default:
-      return CodecUtils.EVM.WORD_SIZE;
-  }
-}
-
-//again, this function does not attempt to handle types that don't occur in the abi
-export function isTypeDynamic(dataType: CodecUtils.Types.Type, allocations?: Allocations.AbiAllocations): boolean {
-  switch(dataType.typeClass) {
-    case "string":
-      return true;
-    case "bytes":
-      return dataType.kind === "dynamic";
-    case "array":
-      return dataType.kind === "dynamic" || (dataType.length.gtn(0) && isTypeDynamic(dataType.baseType, allocations));
-    case "struct":
-      const allocation = allocations[parseInt(dataType.id)];
-      if(!allocation) {
-        throw new CodecUtils.Errors.DecodingError(
-          {
-            kind: "UserDefinedTypeNotFoundError",
-            type: dataType
-          }
-        );
-      }
-      return allocation.dynamic;
-    default:
-      return false;
-  }
+//assumes you've already done allocation! don't use if you haven't!
+export function abiSizeInfo(dataType: CodecUtils.Types.Type, allocations?: Allocations.AbiAllocations): Allocations.AbiSizeInfo {
+  let { size, dynamic } = abiSizeAndAllocate(dataType, null, allocations);
+  //the above line should work fine... as long as allocation is already done!
+  //the middle argument, userDefinedTypes, is only needed during allocation
+  //again, this function is only for use if allocation is done, so it's safe to pass null here
+  return { size, dynamic };
 }
 
 //allocates an external call
@@ -256,7 +225,9 @@ function allocateCalldata(
   abiEntry: AbiUtils.FunctionAbiEntry | AbiUtils.ConstructorAbiEntry,
   contractId: number,
   referenceDeclarations: AstReferences,
+  userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
+  compiler: CodecUtils.CompilerVersion,
   constructorContext?: CodecUtils.Contexts.DecoderContext
 ): Allocations.CalldataAllocation {
   const contractNode = referenceDeclarations[contractId];
@@ -265,6 +236,9 @@ function allocateCalldata(
   //(simultaneously: determine the offset)
   let node: AstDefinition;
   let offset: number;
+  let id: string;
+  let abiAllocation: Allocations.AbiAllocation;
+  let parameterTypes: Types.Type[];
   switch(abiEntry.type) {
     case "constructor":
       let rawLength = constructorContext.binary.length;
@@ -277,22 +251,21 @@ function allocateCalldata(
           abiEntry, functionNode, referenceDeclarations
         )
       );
-      if(node === undefined) {
-        //if we can't find it, just throw
-        throw new NoDefinitionFoundForABIEntryError(abiEntry, [contractId]);
-      }
+      //if we can't find it, we'll handle this below
       break;
     case "function":
       offset = CodecUtils.EVM.SELECTOR_SIZE;
       //search through base contracts, from most derived (right) to most base (left)
       node = linearizedBaseContracts.reduceRight(
         (foundNode: AstDefinition, baseContractId: number) => {
-          if(foundNode) {
-            return foundNode //once we've found something, we don't need to keep looking
+          if(foundNode !== undefined) {
+            return foundNode; //once we've found something, we don't need to keep looking
           };
           let baseContractNode = referenceDeclarations[baseContractId];
           if(baseContractNode === undefined) {
-            throw new UnknownBaseContractIdError(contractNode.id, contractNode.name, contractNode.contractKind, baseContractId);
+            return null; //return null rather than undefined so that this will propagate through
+            //(i.e. by returning null here we give up the search)
+            //(we don't want to continue due to possibility of grabbing the wrong override)
           }
           return baseContractNode.nodes.find( //may be undefined! that's OK!
             functionNode => AbiUtils.definitionMatchesAbi(
@@ -302,47 +275,55 @@ function allocateCalldata(
         },
         undefined //start with no node found
       );
-      if(node === undefined) {
-        //if we can't find it, just throw
-        //reverse the list (cloning first with slice) so that they're actually in the order searched
-        throw new NoDefinitionFoundForABIEntryError(abiEntry, linearizedBaseContracts.slice().reverse());
-      }
       break;
   }
-  //now: perform the allocation! however this will depend on whether
-  //we're looking at a normal function or a getter
-  let parameters: AstDefinition[];
-  switch(node.nodeType) {
-    case "FunctionDefinition":
-      parameters = node.parameters.parameters;
-      break;
-    case "VariableDeclaration":
-      //getter case
-      parameters = CodecUtils.getterInputs(node);
-      break;
-  }
-  const abiAllocation = allocateMembers(node, parameters, referenceDeclarations, abiAllocations, offset)[node.id];
-  //finally: transform it appropriately
-  let argumentsAllocation = [];
-  for(const member of abiAllocation.members) {
-    const position = parameters.findIndex(
-      (parameter: AstDefinition) => parameter.id === member.definition.id
+  if(node) {
+    //get the parameters; how this works depends on whether we're looking at
+    //a normal function or a getter
+    let parameters: AstDefinition[];
+    switch(node.nodeType) {
+      case "FunctionDefinition":
+        parameters = node.parameters.parameters;
+        break;
+      case "VariableDeclaration":
+        //getter case
+        parameters = CodecUtils.getterInputs(node);
+        break;
+    }
+    id = node.id.toString();
+    parameterTypes = parameters.map(
+      parameter => Types.definitionToType(parameter, compiler)
     );
-    argumentsAllocation[position] = {
-      definition: member.definition,
+  }
+  else {
+    //just use the ABI
+    id = "-1"; //fake irrelevant ID
+    parameterTypes = abiEntry.inputs.map(Types.abiParameterToType);
+  }
+  //now: perform the allocation!
+  abiAllocation = allocateMembers(id, parameterTypes, userDefinedTypes, abiAllocations, offset)[id];
+  //finally: transform it appropriately
+  let argumentsAllocation = abiAllocation.members.map(
+    member => ({
+      ...member,
       pointer: {
-        location: "calldata" as "calldata",
+        location: "calldata" const,
         start: member.pointer.start,
         length: member.pointer.length
       }
-    };
-  }
+    })
+  );
   return {
-    definition: abiAllocation.definition,
     abi: abiEntry,
     offset,
     arguments: argumentsAllocation
   };
+}
+
+interface EventParameterInfo {
+  name: string;
+  type: Types.Type;
+  indexed: boolean;
 }
 
 //allocates an event
@@ -351,21 +332,27 @@ function allocateEvent(
   abiEntry: AbiUtils.EventAbiEntry,
   contractId: number,
   referenceDeclarations: AstReferences,
-  abiAllocations: Allocations.AbiAllocations
+  userDefinedTypes: Types.TypesById,
+  abiAllocations: Allocations.AbiAllocations,
+  compiler: CodecUtils.CompilerVersion
 ): Allocations.EventAllocation {
   const contractNode = referenceDeclarations[contractId];
   const linearizedBaseContracts = contractNode.linearizedBaseContracts;
+  let parameterTypes: Types.Type[];
+  let id: string;
   //first: determine the corresponding event node
   //search through base contracts, from most derived (right) to most base (left)
   let node: AstDefinition;
   node = linearizedBaseContracts.reduceRight(
     (foundNode: AstDefinition, baseContractId: number) => {
-      if(foundNode) {
-        return foundNode //once we've found something, we don't need to keep looking
-      };
+      if(foundNode !== undefined) {
+        return foundNode; //once we've found something, we don't need to keep looking
+      }
       let baseContractNode = referenceDeclarations[baseContractId];
       if(baseContractNode === undefined) {
-        throw new UnknownBaseContractIdError(contractNode.id, contractNode.name, contractNode.contractKind, baseContractId);
+        return null; //return null rather than undefined so that this will propagate through
+        //(i.e. by returning null here we give up the search)
+        //(we don't want to continue due to possibility of grabbing the wrong override)
       }
       return baseContractNode.nodes.find( //may be undefined! that's OK!
         eventNode => AbiUtils.definitionMatchesAbi(
@@ -376,50 +363,64 @@ function allocateEvent(
     },
     undefined //start with no node found
   );
-  if(node === undefined) {
-    //if we can't find it, just throw
-    //reverse the list (cloning first with slice) so that they're actually in the order searched
-    throw new NoDefinitionFoundForABIEntryError(abiEntry, linearizedBaseContracts.slice().reverse());
+  //now: construct the list of parameter types, attaching indexedness info
+  //and overall position (for later reconstruction)
+  if(node) {
+    let id = node.id.toString();
+    let parameters = node.parameters.parameters;
+    parameterTypes = parameters.map(
+      definition => ({
+        type: Types.definitionToType(definition, compiler),
+        name: definition.name,
+        indexed: definition.indexed
+      })
+    );
+  }
+  else {
+    id = "-1"; //fake irrelevant ID
+    parameterTypes = abi.inputs.map(
+      abiParameter => ({
+        type: Types.abiParameterToType(abiParameter),
+        name: abiParameter.name,
+        indexed: abiParameter.indexed
+      })
+    );
   }
   //now: split the list of parameters into indexed and non-indexed
-  //but first attach positions so we can reconstruct the list later
-  const rawParameters = node.parameters.parameters;
-  const [indexed, nonIndexed] = partition(rawParameters, (parameter: AstDefinition) => parameter.indexed);
+  const [indexed, nonIndexed] = partition(parameterTypes, (parameter: TypeAndIndexedness) => parameter.indexed);
   //now: perform the allocation for the non-indexed parameters!
-  const abiAllocation = allocateMembers(node, nonIndexed, referenceDeclarations, abiAllocations)[node.id];
+  const abiAllocation = allocateMembers(id, nonIndexed.map(parameter => paramter.type), userDefinedTypes, abiAllocations)[id];
   //now: transform it appropriately
-  let argumentsAllocation = [];
-  for(const member of abiAllocation.members) {
-    const position = rawParameters.findIndex(
-      (parameter: AstDefinition) => parameter.id === member.definition.id
-    );
-    argumentsAllocation[position] = {
-      definition: member.definition,
+  const nonIndexedArgumentsAllocation = abiAllocation.members.map(
+    member => ({
+      ...member,
       pointer: {
-        location: "eventdata" as "eventdata",
+        location: "eventdata" as const,
         start: member.pointer.start,
         length: member.pointer.length
       }
-    };
-  }
-  //finally: add in the indexed parameters...
-  let currentTopic = node.anonymous ? 0 : 1; //if not anonymous, selector takes up topic 0
-  for(const parameterNode of indexed) {
-    const position = rawParameters.findIndex(
-      (parameter: AstDefinition) => parameter.id === parameterNode.id
-    );
-    argumentsAllocation[position] = {
-      definition: parameterNode,
+    })
+  );
+  //now: allocate the indexed parameters
+  const startingTopic = abi.anonymous ? 0 : 1; //if not anonymous, selector takes up topic 0
+  const indexedArgumentsAllocation = indexed.map(
+    ({ type, name }, position) => ({
+      type,
+      name,
       pointer: {
-        location: "eventtopic" as "eventtopic",
-        topic: currentTopic
+        location: "eventtopic" as const,
+        topic: startingTopic + position
       }
-    };
-    currentTopic++;
+    })
+  );
+  //finally: weave these back together
+  let argumentsAllocation = [];
+  for(let parameter of parameterTypes) {
+    let arrayToGrabFrom = parameter.indexed ? indexed : nonIndexed;
+    argumentsAllocation.push(arrayToGrabFrom.shift()); //note that push and shift both modify!
   }
   //...and return
   return {
-    definition: abiAllocation.definition,
     abi: abiEntry,
     contractId,
     arguments: argumentsAllocation
@@ -431,7 +432,9 @@ function getCalldataAllocationsForContract(
   contractId: number,
   constructorContext: CodecUtils.Contexts.DecoderContext,
   referenceDeclarations: AstReferences,
-  abiAllocations: Allocations.AbiAllocations
+  userDefinedTypes: Types.TypesById,
+  abiAllocations: Allocations.AbiAllocations,
+  compiler: CodecUtils.CompilerVersion
 ): Allocations.CalldataContractAllocation {
   let allocations: Allocations.CalldataContractAllocation = {
     constructorAllocation: defaultConstructorAllocation(constructorContext), //will be overridden if abi has a constructor
@@ -439,26 +442,34 @@ function getCalldataAllocationsForContract(
     functionAllocations: {}
   }
   for(let abiEntry of abi) {
-    if(abiEntry.type === "constructor") {
-      allocations.constructorAllocation = allocateCalldata(
-        abiEntry,
-        contractId,
-        referenceDeclarations,
-        abiAllocations,
-        constructorContext
-      );
-    }
-    else if(abiEntry.type === "function") {
-      allocations.functionAllocations[AbiUtils.abiSelector(abiEntry)] =
-        allocateCalldata(
+    switch(abiEntry.type) {
+      case "constructor":
+        allocations.constructorAllocation = allocateCalldata(
           abiEntry,
           contractId,
           referenceDeclarations,
+          userDefinedTypes,
           abiAllocations,
+          compiler,
           constructorContext
         );
+        break;
+      case "function":
+        allocations.functionAllocations[AbiUtils.abiSelector(abiEntry)] =
+          allocateCalldata(
+            abiEntry,
+            contractId,
+            referenceDeclarations,
+            userDefinedTypes,
+            abiAllocations,
+            compiler,
+            constructorContext
+          );
+        break;
+      default:
+        //skip over fallback and event
+        break;
     }
-    //skip over fallback and event
   }
   return allocations;
 }
@@ -474,11 +485,11 @@ function defaultConstructorAllocation(constructorContext: CodecUtils.Contexts.De
 }
 
 //note: contract allocation info should include constructor context
-export function getCalldataAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, abiAllocations: Allocations.AbiAllocations): Allocations.CalldataAllocations {
+export function getCalldataAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, userDefinedTypes: Types.TypesById, abiAllocations: Allocations.AbiAllocations): Allocations.CalldataAllocations {
   return Object.assign({}, ...contracts.map(
-    ({abi, id, constructorContext}) => ({
+    ({abi, id, compiler, constructorContext}) => ({
       [id]: getCalldataAllocationsForContract(
-        abi, id, constructorContext, referenceDeclarations, abiAllocations
+        abi, id, constructorContext, referenceDeclarations, typesById, abiAllocations, compiler
       )
     })
   ));
@@ -488,7 +499,9 @@ function getEventAllocationsForContract(
   abi: AbiUtils.Abi,
   contractId: number,
   referenceDeclarations: AstReferences,
-  abiAllocations: Allocations.AbiAllocations
+  userDefinedTypes: Types.TypesById,
+  abiAllocations: Allocations.AbiAllocations,
+  compiler: CodecUtils.CompilerVersion
 ): Allocations.EventAllocationTemporary[] {
   return abi.filter(
     (abiEntry: AbiUtils.AbiEntry) => abiEntry.type === "event"
@@ -497,22 +510,22 @@ function getEventAllocationsForContract(
       abiEntry.anonymous
       ? {
         topics: AbiUtils.topicsCount(abiEntry),
-        allocation: allocateEvent(abiEntry, contractId, referenceDeclarations, abiAllocations)
+        allocation: allocateEvent(abiEntry, contractId, referenceDeclarations, userDefinedTypes, abiAllocations, compiler)
       }
       : {
         selector: AbiUtils.abiSelector(abiEntry),
         topics: AbiUtils.topicsCount(abiEntry),
-        allocation: allocateEvent(abiEntry, contractId, referenceDeclarations, abiAllocations)
+        allocation: allocateEvent(abiEntry, contractId, referenceDeclarations, userDefinedTypes, abiAllocations, compiler)
       }
   );
 }
 
 //note: constructor context is ignored by this function; no need to pass it in
-export function getEventAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, abiAllocations: Allocations.AbiAllocations): Allocations.EventAllocations {
+export function getEventAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, userDefinedTypes: Types.TypesById, abiAllocations: Allocations.AbiAllocations): Allocations.EventAllocations {
   let allocations: Allocations.EventAllocations = {};
-  for(let {abi, id: contractId} of contracts) {
+  for(let {abi, id: contractId, compiler} of contracts) {
     let contractKind = referenceDeclarations[contractId].contractKind;
-    let contractAllocations = getEventAllocationsForContract(abi, contractId, referenceDeclarations, abiAllocations);
+    let contractAllocations = getEventAllocationsForContract(abi, contractId, referenceDeclarations, userDefinedTypes, abiAllocations, compiler);
     for(let {selector, topics, allocation} of contractAllocations) {
       if(allocations[topics] === undefined) {
         allocations[topics] = { bySelector: {}, anonymous: { contract: {}, library: {} } };

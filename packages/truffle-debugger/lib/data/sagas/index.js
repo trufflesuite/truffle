@@ -634,6 +634,7 @@ export function* recordAllocations() {
   );
   debug("contracts %O", contracts);
   const referenceDeclarations = yield select(data.views.referenceDeclarations);
+  const userDefinedTypes = yield select(data.views.userDefinedTypes);
   debug("referenceDeclarations %O", referenceDeclarations);
   const storageAllocations = getStorageAllocations(
     referenceDeclarations,
@@ -641,7 +642,7 @@ export function* recordAllocations() {
   );
   debug("storageAllocations %O", storageAllocations);
   const memoryAllocations = getMemoryAllocations(referenceDeclarations);
-  const calldataAllocations = getAbiAllocations(referenceDeclarations);
+  const calldataAllocations = getAbiAllocations(userDefinedTypes);
   yield put(
     actions.allocate(storageAllocations, memoryAllocations, calldataAllocations)
   );

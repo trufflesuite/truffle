@@ -1,12 +1,19 @@
 import { StorageLength } from "./storage";
 import * as Pointer from "./pointer";
-import { AstDefinition, Contexts, AbiUtils } from "truffle-codec-utils";
+import { AstDefinition, Contexts, AbiUtils, Types } from "truffle-codec-utils";
+import { Compiler } from "./compiler";
 
 //for passing to calldata/event allocation functions
 export interface ContractAllocationInfo {
   abi: AbiUtils.Abi;
   id: number;
   constructorContext?: Contexts.DecoderContext;
+  copmiler: CompilerVersion;
+}
+
+export interface AbiSizeInfo {
+  size: number;
+  dynamic: boolean;
 }
 
 //let's start with storage allocations
@@ -39,18 +46,18 @@ export interface StorageMemberAllocation {
 //in the abi
 
 export interface AbiAllocations {
-  [id: number]: AbiAllocation | null
+  [id: string]: AbiAllocation | null
 }
 
 export interface AbiAllocation {
-  definition: AstDefinition;
   length: number; //measured in bytes
   dynamic: boolean;
   members: AbiMemberAllocation[];
 }
 
 export interface AbiMemberAllocation {
-  definition: AstDefinition;
+  name: string;
+  type: Types.Type;
   pointer: Pointer.GenericAbiPointer;
 }
 
@@ -94,14 +101,14 @@ export interface CalldataContractAllocation {
 }
 
 export interface CalldataAllocation {
-  definition?: AstDefinition; //may be omitted for implicit constructor
   abi: AbiUtils.FunctionAbiEntry | AbiUtils.ConstructorAbiEntry;
   offset: number; //measured in bytes
   arguments: CalldataArgumentAllocation[];
 }
 
 export interface CalldataArgumentAllocation {
-  definition: AstDefinition;
+  name: string;
+  type: Types.Type;
   pointer: Pointer.CalldataPointer;
 }
 
@@ -133,14 +140,14 @@ export interface EventAllocations {
 }
 
 export interface EventAllocation {
-  definition: AstDefinition;
   abi: AbiUtils.EventAbiEntry;
   contractId: number;
   arguments: EventArgumentAllocation[];
 }
 
 export interface EventArgumentAllocation {
-  definition: AstDefinition;
+  name: string;
+  type: Types.Type;
   pointer: Pointer.EventDataPointer | Pointer.EventTopicPointer;
 }
 

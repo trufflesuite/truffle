@@ -77,19 +77,20 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     ({definitions: this.referenceDeclarations, types: this.userDefinedTypes} = this.collectUserDefinedTypes());
 
     let allocationInfo: Codec.ContractAllocationInfo[] = Object.entries(this.contracts).map(
-      ([id, { abi }]) => ({
+      ([id, { abi, compiler }]) => ({
         abi: AbiUtils.schemaAbiToAbi(abi),
         id: parseInt(id),
-        constructorContext: this.constructorContextsById[parseInt(id)]
+        constructorContext: this.constructorContextsById[parseInt(id)],
+        compiler
       })
     );
     debug("allocationInfo: %O", allocationInfo);
 
     this.allocations = {};
     this.allocations.storage = Codec.getStorageAllocations(this.referenceDeclarations, this.contractNodes);
-    this.allocations.abi = Codec.getAbiAllocations(this.referenceDeclarations);
-    this.allocations.calldata = Codec.getCalldataAllocations(allocationInfo, this.referenceDeclarations, this.allocations.abi);
-    this.allocations.event = Codec.getEventAllocations(allocationInfo, this.referenceDeclarations, this.allocations.abi);
+    this.allocations.abi = Codec.getAbiAllocations(this.userDefinedTypes);
+    this.allocations.calldata = Codec.getCalldataAllocations(allocationInfo, this.referenceDeclarations, this.userDefinedTypes, this.allocations.abi);
+    this.allocations.event = Codec.getEventAllocations(allocationInfo, this.referenceDeclarations, this.userDefinedTypes, this.allocations.abi);
     debug("done with allocation");
   }
 

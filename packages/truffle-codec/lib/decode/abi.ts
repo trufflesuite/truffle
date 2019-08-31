@@ -7,7 +7,7 @@ import { Types, Values } from "truffle-codec-utils";
 import decodeValue from "./value";
 import { AbiDataPointer, DataPointer } from "../types/pointer";
 import { AbiMemberAllocation } from "../types/allocation";
-import { abiSizeForType, isTypeDynamic } from "../allocate/abi";
+import { abiSizeInfo } from "../allocate/abi";
 import { EvmInfo } from "../types/evm";
 import { DecoderOptions } from "../types/options";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
@@ -19,7 +19,7 @@ export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer
   if(Types.isReferenceType(dataType)) {
     let dynamic: boolean;
     try {
-      dynamic = isTypeDynamic(dataType, info.allocations.abi);
+      dynamic = abiSizeInfo(dataType, info.allocations.abi).dynamic;
     }
     catch(error) { //error: Errors.DecodingError
       if(options.strictAbiMode) {
@@ -86,8 +86,9 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   debug("startPosition %d", startPosition);
 
   let dynamic: boolean;
+  let size: number;
   try {
-    dynamic = isTypeDynamic(dataType, allocations);
+    ({dynamic, size}) = abiSizeInfo(dataType, allocations);
   }
   catch(error) { //error: Errors.DecodingError
     if(strict) {
@@ -100,20 +101,6 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
     };
   }
   if(!dynamic) { //this will only come up when called from stack.ts
-    let size: number;
-    try {
-      size = abiSizeForType(dataType, allocations);
-    }
-    catch(error) { //error: Errors.DecodingError
-      if(strict) {
-        throw new StopDecodingError(error.error);
-      }
-      return {
-        type: dataType,
-        kind: "error",
-        error: error.error
-      };
-    }
     let staticPointer = {
       location,
       start: startPosition,
@@ -218,7 +205,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
 
       let baseSize: number;
       try {
-        baseSize = abiSizeForType(dataType.baseType, allocations);
+        baseSize = abiSizeInfo(dataType.baseType, allocations).size;
       }
       catch(error) { //error: Errors.DecodingError
         if(strict) {
@@ -268,7 +255,7 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
       const length = (<Types.ArrayTypeStatic>dataType).length.toNumber();
       let baseSize: number;
       try {
-        baseSize = abiSizeForType(dataType.baseType, info.allocations.abi);
+        baseSize = abiSizeInfo(dataType.baseType, info.allocations.abi).size;
       }
       catch(error) { //error: Errors.DecodingError
         if(options.strictAbiMode) {
@@ -341,7 +328,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
       length: memberPointer.length
     };
 
-    let memberName = memberAllocation.definition.name;
+    let memberName = memberAllocation.name;
     let storedType = <Types.StructType>userDefinedTypes[typeId];
     if(!storedType) {
       let error = {

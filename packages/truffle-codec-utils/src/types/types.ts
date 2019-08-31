@@ -773,4 +773,99 @@ export namespace Types {
     }
   }
 
+  //NOTE: the following two functions might not be exactly right for weird internal stuff,
+  //or for ABI-only stuff.  (E.g. for internal stuff sometimes it records whether things
+  //are pointers or not??  we don't track that so we can't recreate that)
+  //But what can you do.
+
+  export function typeString(dataType: type): string {
+    let baseString = typeStringWithoutLocation(dataType);
+    if(isReferenceType(dataType) && dataType.location) {
+      return baseString + " " + dataType.location;
+    }
+    else {
+      return baseString;
+    }
+  }
+
+  export function typeStringWithoutLocation(dataType: type): string {
+    switch(dataType.typeClass) {
+      case "uint":
+        return dataType.typeHint || `uint${dataType.bits}`;
+      case "int":
+        return dataType.typeHint || `int${dataType.bits}`;
+      case "bool":
+        return dataType.typeHint || "bool";
+      case "bytes":
+        if(dataType.typeHint) {
+          return dataType.typeHint;
+        }
+        switch(dataType.kind) {
+          case "dynamic":
+            return "bytes";
+          case "static":
+            return `bytes${dataType.length}`;
+          }
+      case "address":
+        return dataType.typeHint || (dataType.payable ? "address payable" : "address");
+      case "string":
+        return dataType.typeHint || "string";
+      case "fixed":
+        return dataType.typeHint || `fixed${dataType.bits}x${dataType.places}`;
+      case "ufixed":
+        return dataType.typeHint || `ufixed${dataType.bits}x${dataType.places}`;
+      case "array":
+        if(dataType.typeHint) {
+          return dataType.typeHint;
+        }
+        switch(dataType.kind) {
+          case "dynamic":
+            return `${typeStringWithoutLocation(dataType.baseType)}[]`;
+          case "static":
+            return `${typeStringWithoutLocation(dataType.baseType)}[${dataType.length}]`;
+        }
+      case "mapping":
+        return `mapping(${typeStringWithoutLocation(dataType.keyType)} => ${typeStringWithoutLocation(dataType.valueType)})`;
+      case "struct":
+      case "enum":
+        //combining these cases for simplicity
+        switch(dataType.kind) {
+          case "local":
+            return `${dataType.typeClass} ${dataType.definingContractname}.${dataType.typeName}`;
+          case "global": //WARNING, SPECULATIVE
+            return `${dataType.typeClass} ${dataType.typeName}`;
+        }
+      case "tuple":
+        return dataType.typeHint || "tuple(" + dataType.memberTypes.map(typeString).join(",") + ")"; //note that we do include location and do not put spaces
+      case "contract":
+        return dataType.contractKind + " " + dataType.typeName;
+      case "magic":
+        //no, this is not transposed!
+        const variableNames = {message: "msg", transaction: "tx", block: "block"};
+        return variableNames[dataType.variable];
+      case "function":
+        let visibilityString: string;
+        switch(dataType.visibility) {
+          case "external":
+            if(dataType.typeHint) {
+              return dataType.typeHint;
+            }
+            if(dataType.kind === "general") {
+              return "function"; //I guess???
+            }
+            visibilityString = " external"; //note the deliberate space!
+            break;
+          case "internal":
+            visibilityString = "";
+            break;
+        }
+        let mutabilityString = dataType.mutability === "nonpayable" ? " " + dataType.mutability : ""; //again, note the deliberate space
+        let inputList = dataType.inputParameterTypes.map(typeString).join(","); //note that we do include location, and do not put spaces
+        let outputList = dataType.outputParameterTypes.map(typeString).join(",");
+        let inputString = `function(${inputList})`;
+        let outputString = outputList === "" ? "" : ` returns (${outputList)})`; //again, note the deliberate space
+        return inputString + mutabilityString + visibilityString + outputString;
+    }
+  }
+
 }
