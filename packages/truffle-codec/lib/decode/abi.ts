@@ -240,6 +240,8 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
 
     case "struct":
       return yield* decodeAbiStructByPosition(dataType, location, startPosition, info, options);
+    case "tuple":
+      return yield* decodeAbiTupleByPosition(dataType, location, startPosition, info, options);
   }
 }
 
@@ -290,6 +292,8 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
 
     case "struct":
       return yield* decodeAbiStructByPosition(dataType, location, pointer.start, info, options);
+    case "tuple":
+      return yield* decodeAbiTupleByPosition(dataType, location, startPosition, info, options);
   }
 }
 
@@ -352,6 +356,36 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
       value: <Values.Result> (yield* decodeAbi(memberType, childPointer, info, {...options, abiPointerBase: startPosition}))
       //note that the base option is only needed in the dynamic case, but we're being indiscriminate
     });
+  }
+  return { 
+    type: dataType,
+    kind: "value",
+    value: decodedMembers
+  };
+}
+
+//note that this function takes the start position as a *number*; it does not take a pointer
+function* decodeAbiTupleByPosition(dataType: Types.TupleType, location: AbiLocation, startPosition: number, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+  //WARNING: This case is written in a way that involves a bunch of unnecessary recomputation!
+  //I'm writing it this way anyway for simplicity, to avoid rewriting the decoder
+  //However it may be worth revisiting this in the future if performance turns out to be a problem
+  //(changing this may be pretty hard though)
+
+  let decodedMembers: Values.NameValuePair[] = [];
+  let position = startPosition;
+  for(const { name, type: memberType } of dataTypes.memberTypes) {
+    const memberSize = abiSizeInfo(dataType.baseType, allocations).size;
+    const childPointer: AbiDataPointer = {
+      location,
+      start: position,
+      length: memberSize
+    };
+    decodedMembers.push({
+      name,
+      value: <Values.Result> (yield* decodeAbi(memberType, childPointer, info, {...options, abiPointerBase: startPosition}))
+      //note that the base option is only needed in the dynamic case, but we're being indiscriminate
+    });
+    position += memberSize;
   }
   return { 
     type: dataType,

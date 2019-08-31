@@ -108,6 +108,13 @@ export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): U
       }
       return encodeTupleAbi(coercedInput.value.map(({value}) => value), allocations);
     }
+    case "tuple": {
+      //WARNING: This case is written in a way that involves a bunch of unnecessary recomputation!
+      //(That may not be apparent from this one line, but it's true)
+      //I'm writing it this way anyway for simplicity, to avoid rewriting the encoder
+      //However it may be worth revisiting this in the future if performance turns out to be a problem
+      return encodeTupleAbi((<Values.TupleValue>input).value.map(({value}) => value), allocations);
+    }
   }
 }
 
