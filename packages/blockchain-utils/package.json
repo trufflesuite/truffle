@@ -2,9 +2,12 @@
   "name": "@truffle/blockchain-utils",
   "version": "0.0.11",
   "description": "Utilities for identifying and managing blockchains",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "./typings/index.d.ts",
   "scripts": {
-    "test": "mocha"
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/blockchain-utils",
   "keywords": [
@@ -23,6 +26,10 @@
   },
   "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c",
   "devDependencies": {
-    "mocha": "5.2.0"
+    "@types/assert": "^1.4.2",
+    "@types/web3": "^1.0.19",
+    "mocha": "5.2.0",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.3"
   }
 }
