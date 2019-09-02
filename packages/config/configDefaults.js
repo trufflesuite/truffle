@@ -45,7 +45,7 @@ const _values = ({ truffleDirectory, workingDirectory, network }) => {
   };
 };
 
-const props = ({ configObject }) => {
+const configProps = ({ configObject }) => {
   const resolveDirectory = value => {
     return path.resolve(configObject.working_directory, value);
   };
@@ -243,5 +243,5 @@ const props = ({ configObject }) => {
 
 module.exports = {
   _values,
-  props
+  configProps
 };
