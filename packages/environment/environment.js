@@ -2,7 +2,7 @@ const Web3 = require("web3");
 const { Web3Shim } = require("@truffle/interface-adapter");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
-const Resolver = require("truffle-resolver");
+const Resolver = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 const Ganache = require("ganache-core/public-exports");
 

@@ -61,7 +61,7 @@
     "@truffle/provisioner": "^0.1.5",
     "@truffle/interface-adapter": "^0.2.5",
     "truffle-migrate": "^3.0.32",
-    "truffle-resolver": "^5.0.16",
+    "@truffle/resolver": "^5.0.16",
     "universal-analytics": "^0.4.17",
     "web3": "1.2.1",
     "xregexp": "^4.2.4",
