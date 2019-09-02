@@ -1,2 +1,2 @@
-# truffle-migrate
+# @truffle/migrate
 On-chain migrations management
