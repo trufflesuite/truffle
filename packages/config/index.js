@@ -52,7 +52,8 @@ class Config {
             optimizer: {
               enabled: false,
               runs: 200
-            }
+            },
+            remappings: []
           }
         },
         vyper: {}
