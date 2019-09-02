@@ -1,4 +1,4 @@
-const Box = require("truffle-box");
+const Box = require("@truffle/box");
 const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
 const fs = require("fs-extra");

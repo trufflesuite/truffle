@@ -1,96 +1,79 @@
-var path = require("path");
-var fs = require("fs");
-var eachSeries = require("async/eachSeries");
+const path = require("path");
+const fs = require("fs");
 
-function FS(working_directory, contracts_build_directory) {
-  this.working_directory = working_directory;
-  this.contracts_build_directory = contracts_build_directory;
-}
+class FS {
+  constructor(workingDirectory, contractsBuildDirectory) {
+    this.workingDirectory = workingDirectory;
+    this.contractsBuildDirectory = contractsBuildDirectory;
+  }
 
-FS.prototype.require = function(import_path, search_path) {
-  search_path = search_path || this.contracts_build_directory;
+  require(importPath, searchPath = this.contractsBuildDirectory) {
+    const normalizedImportPath = path.normalize(importPath);
+    const contractName = this.getContractName(normalizedImportPath, searchPath);
 
-  // For Windows: Allow import paths to be either path separator ('\' or '/')
-  // by converting all '/' to the default (path.sep);
-  import_path = import_path.replace(/\//g, path.sep);
+    // If we have an absolute path, only check the file if it's a child of the workingDirectory.
+    if (path.isAbsolute(normalizedImportPath)) {
+      if (normalizedImportPath.indexOf(this.workingDirectory) !== 0) {
+        return null;
+      }
+    }
 
-  var contract_name = this.getContractName(import_path, search_path);
-
-  // If we have an absoulte path, only check the file if it's a child of the working_directory.
-  if (path.isAbsolute(import_path)) {
-    if (import_path.indexOf(this.working_directory) !== 0) {
+    try {
+      const result = fs.readFileSync(
+        path.join(searchPath, `${contractName}.json`),
+        "utf8"
+      );
+      return JSON.parse(result);
+    } catch (e) {
       return null;
     }
-    import_path = "./" + import_path.replace(this.working_directory);
   }
 
-  try {
-    var result = fs.readFileSync(path.join(search_path, contract_name + ".json"), "utf8");
-    return JSON.parse(result);
-  } catch (e) {
-    return null;
-  }
-};
-
-FS.prototype.getContractName = function(sourcePath, searchPath) {
-  searchPath = searchPath || this.contracts_build_directory;
-
-  var filenames = fs.readdirSync(searchPath);
-  for(var i = 0; i < filenames.length; i++) {
-    var filename = filenames[i];
-
-    var artifact = JSON.parse(
-      fs.readFileSync(path.resolve(searchPath, filename))
+  getContractName(sourcePath, searchPath = this.contractsBuildDirectory) {
+    const contractsBuildDirFiles = fs.readdirSync(searchPath);
+    const filteredBuildArtifacts = contractsBuildDirFiles.filter(
+      file => file.match(".json") != null
     );
 
-    if (artifact.sourcePath === sourcePath) {
-      return artifact.contractName;
-    }
-  };
+    filteredBuildArtifacts.forEach(buildArtifact => {
+      const artifact = JSON.parse(
+        fs.readFileSync(path.resolve(searchPath, buildArtifact))
+      );
 
-  // fallback
-  return path.basename(sourcePath, ".sol");
-};
-
-FS.prototype.resolve = function(import_path, imported_from, callback) {
-  imported_from = imported_from || "";
-
-  var possible_paths = [
-    import_path,
-    path.join(path.dirname(imported_from), import_path)
-  ];
-
-  var resolved_body = null;
-  var resolved_path = null;
-
-  eachSeries(possible_paths, function(possible_path, finished) {
-    if (resolved_body != null) {
-      return finished();
-    }
-
-    // Check the expected path.
-    fs.readFile(possible_path, {encoding: "utf8"}, function(err, body) {
-      // If there's an error, that means we can't read the source even if
-      // it exists. Treat it as if it doesn't by ignoring any errors.
-      // body will be undefined if error.
-      if (body) {
-        resolved_body = body;
-        resolved_path = possible_path;
+      if (artifact.sourcePath === sourcePath) {
+        return artifact.contractName;
       }
-
-      return finished();
     });
-  }, function(err) {
-    if (err) return callback(err);
-    callback(null, resolved_body, resolved_path);
-  });
-};
 
-// Here we're resolving from local files to local files, all absolute.
-FS.prototype.resolve_dependency_path = function(import_path, dependency_path) {
-  var dirname = path.dirname(import_path);
-  return path.resolve(path.join(dirname, dependency_path));
-};
+    // fallback
+    return path.basename(sourcePath, ".sol");
+  }
 
+  resolve(importPath, importedFrom, callback) {
+    importedFrom = importedFrom || "";
+    const possiblePaths = [
+      importPath,
+      path.join(path.dirname(importedFrom), importPath)
+    ];
+
+    possiblePaths.forEach(possiblePath => {
+      try {
+        const resolvedSource = fs.readFileSync(possiblePath, {
+          encoding: "utf8"
+        });
+        callback(null, resolvedSource, possiblePath);
+      } catch (error) {
+        // do nothing
+      }
+    });
+    callback(null);
+  }
+
+  // Here we're resolving from local files to local files, all absolute.
+  resolve_dependency_path(importPath, dependencyPath) {
+    const dirname = path.dirname(importPath);
+    return path.resolve(path.join(dirname, dependencyPath));
+  }
+}
 
 module.exports = FS;
