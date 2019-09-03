@@ -1,0 +1,20 @@
+{
+  "name": "@truffle/sawtooth-seth-provider",
+  "version": "0.0.4",
+  "description": "A web3 provider which makes it possible to connect Truffle with Sawtooth Seth blockchains.",
+  "main": "index.js",
+  "author": "Ben Burns",
+  "license": "MIT",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/sawtooth-seth-provider",
+  "homepage": "https://trufflesuite.com",
+  "bugs": {
+    "url": "https://github.com/benjamincburns/sawtooth-seth-provider/issues"
+  },
+  "dependencies": {
+    "debug": "^4.1.0",
+    "web3-provider-engine": "14.0.6"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -13,8 +13,8 @@ packages/truffle/.DS_Store
 packages/truffle/.tern-port
 packages/truffle/dependencies
 
-# truffle-debugger
-packages/truffle-debugger/.tmp
+# @truffle/debugger
+packages/debugger/.tmp
 
-# truffle-contract
-packages/truffle-contract/dist
+# @truffle/contract
+packages/contract/dist

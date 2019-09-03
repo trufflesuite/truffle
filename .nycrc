@@ -11,7 +11,7 @@
     "**/webpack",
     "**/*webpack.config*",
     "packages/truffle/nil.js",
-    "packages/truffle-debugger",
+    "packages/debugger",
     "notes/"
   ]
 }

@@ -1,0 +1,24 @@
+{
+  "name": "@truffle/code-utils",
+  "version": "1.2.5",
+  "description": "Utilities for parsing and managing EVM-compatible bytecode",
+  "main": "dist/index.js",
+  "types": "./typings/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
+  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/code-utils",
+  "author": "",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^12.6.8",
+    "mocha": "5.2.0",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.3"
+  }
+}
