@@ -1,15 +1,16 @@
-const Schema = require("@truffle/contract-schema");
-const fse = require("fs-extra");
-const path = require("path");
-const { writeArtifact, finalizeArtifact } = require("./utils");
+import Schema from "@truffle/contract-schema";
+import fse from "fs-extra";
+import path from "path";
+import { writeArtifact, finalizeArtifact } from "./utils";
 const debug = require("debug")("artifactor");
 
 class Artifactor {
-  constructor(destination) {
+  destination: string;
+  constructor(destination: string) {
     this.destination = destination;
   }
 
-  async save(artifactObject) {
+  async save(artifactObject: object) {
     const normalizedNewArtifact = Schema.normalize(artifactObject);
     const contractName = normalizedNewArtifact.contractName;
 
@@ -38,8 +39,8 @@ class Artifactor {
     }
   }
 
-  async saveAll(artifactObjects) {
-    let newArtifactObjects = {};
+  async saveAll(artifactObjects: any | Array<object>) {
+    let newArtifactObjects: any = {};
 
     if (Array.isArray(artifactObjects)) {
       const tmpArtifactArray = artifactObjects;
@@ -67,4 +68,4 @@ class Artifactor {
   }
 }
 
-module.exports = Artifactor;
+export = Artifactor;
