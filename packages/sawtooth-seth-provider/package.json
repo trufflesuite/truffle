@@ -14,5 +14,8 @@
     "debug": "^4.1.0",
     "web3-provider-engine": "14.0.6"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }
