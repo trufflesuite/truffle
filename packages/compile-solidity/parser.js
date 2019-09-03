@@ -50,9 +50,7 @@ module.exports = {
     const imports = errors
       .filter(({ message }) => !message.includes(failingImportFileName))
       .map(({ formattedMessage }) => {
-        const matches = formattedMessage.match(
-          /import\s*("|')([^'"]+)("|')/
-        );
+        const matches = formattedMessage.match(/import\s*("|')([^'"]+)("|')/);
 
         // Return the item between the quotes.
         if (matches) return matches[2];

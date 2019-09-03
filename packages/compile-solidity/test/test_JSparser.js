@@ -1,6 +1,6 @@
 const path = require("path");
 const assert = require("assert");
-const Resolver = require("truffle-resolver");
+const Resolver = require("@truffle/resolver");
 const compile = require("../index");
 
 describe("JSparser", () => {

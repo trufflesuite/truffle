@@ -18,7 +18,7 @@
     "node-ipc": "^9.1.1",
     "@truffle/interface-adapter": "^0.2.5",
     "@truffle/artifactor": "^4.0.30",
-    "truffle-resolver": "^5.0.16",
+    "@truffle/resolver": "^5.0.16",
     "web3": "1.2.1"
   },
   "devDependencies": {
