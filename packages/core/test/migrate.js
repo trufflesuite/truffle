@@ -1,6 +1,6 @@
 var assert = require("chai").assert;
 var Box = require("@truffle/box");
-var Migrate = require("truffle-migrate");
+var Migrate = require("@truffle/migrate");
 var Contracts = require("@truffle/workflow-compile");
 var Networks = require("../lib/networks");
 var path = require("path");

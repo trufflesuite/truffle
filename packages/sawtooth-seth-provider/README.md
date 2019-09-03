@@ -2,7 +2,7 @@
 
 This module is an early work in progress. For the moment it is totally unsupported and should only be used in an experimental context.
 
-# truffle-sawtooth-seth-provider
+# @truffle/sawtooth-seth-provider
 
 A web3 provider which makes it possible to connect Truffle with Sawtooth Seth blockchains.
 
@@ -35,14 +35,14 @@ For a more comprehensive understanding of Sawtooth's architecture, please see th
 
 ### Installation
 
-`npm install --save-dev truffle-sawtooth-seth-provider`
+`npm install --save-dev @truffle/sawtooth-seth-provider`
 
 ### Truffle configuration
 
 Example `truffle-config.js`:
 
 ```javascript
-const SethProvider = require('truffle-sawtooth-seth-provider');
+const SethProvider = require('@truffle/sawtooth-seth-provider');
 
 module.exports = {
   networks: {
