@@ -35,7 +35,8 @@ const _values = ({ truffleDirectory, workingDirectory, network }) => {
           optimizer: {
             enabled: false,
             runs: 200
-          }
+          },
+          remappings: []
         }
       },
       vyper: {}
