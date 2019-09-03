@@ -23,9 +23,13 @@ const overrides = {
     // instead of a hex networkID. Instead of trying to decode the hexToNumber,
     // let's just accept `fabric-evm` as a valid networkID for now.
     // @ts-ignore
-    //    await eztz.node.resetProvider()
+    const currentHost = web3.currentProvider.host
+    const parsedHost = currentHost.match(/(^https?:\/\/)(.*?)\:\d.*/)[2];
+    // @ts-ignore
+    await eztz.node.setProvider(parsedHost)
     // @ts-ignore
     const { chain_id } = await eztz.rpc.getHead()
+    // @ts-ignore
     return chain_id;
   };
   }
