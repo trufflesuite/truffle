@@ -3,6 +3,7 @@
   "version": "3.0.14",
   "description": "JSON schema for contract artifacts",
   "main": "index.js",
+  "typings": "./typings/index.d.ts",
   "scripts": {
     "prepare": "yarn run build",
     "build": "cd spec && json2ts -i contract-object.spec.json -o ./index.d.ts",
@@ -37,6 +38,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "gitHead": "2b5dd3fe3079aad66c1e74d0477c30e228cfae2c"
+  }
 }

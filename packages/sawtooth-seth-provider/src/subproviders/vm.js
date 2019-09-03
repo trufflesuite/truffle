@@ -5,7 +5,6 @@ const createVm = require("ethereumjs-vm/dist/hooked").fromWeb3Provider;
 const Block = require("ethereumjs-block");
 const FakeTransaction = require("ethereumjs-tx/fake.js");
 const ethUtil = require("ethereumjs-util");
-const createPayload = require("web3-provider-engine/util/create-payload.js");
 const rpcHexEncoding = require("web3-provider-engine/util/rpc-hex-encoding.js");
 const Subprovider = require("web3-provider-engine/subproviders/subprovider.js");
 
