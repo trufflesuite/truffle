@@ -15,7 +15,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "1ee7e21208fbff93267490729c2fac2e76bb6090",
   "devDependencies": {
     "@types/node": "^12.6.8",
     "mocha": "5.2.0",
