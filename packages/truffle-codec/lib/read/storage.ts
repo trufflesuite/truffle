@@ -54,7 +54,7 @@ export function slotAddressPrintout(slot: Slot): string {
  * @param slot - see slotAddress() code to understand how these work
  * @param offset - for array, offset from the keccak determined location
  */
-export function* read(storage: WordMapping, slot: Slot): IterableIterator<Uint8Array | DecoderRequest> {
+export function* read(storage: WordMapping, slot: Slot): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   debug("Slot printout: %s", slotAddressPrintout(slot));
   const address: BN = slotAddress(slot);
 
@@ -92,7 +92,7 @@ export function* read(storage: WordMapping, slot: Slot): IterableIterator<Uint8A
  * @param to - location (see ^). inclusive.
  * @param length - instead of `to`, number of bytes after `from`
  */
-export function* readRange(storage: WordMapping, range: Range): IterableIterator<Uint8Array | DecoderRequest> {
+export function* readRange(storage: WordMapping, range: Range): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   debug("readRange %o", range);
 
   let { from, to, length } = range;

@@ -3,32 +3,32 @@ const debug = debugModule("codec:decode:abi");
 
 import read from "../read";
 import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values } from "truffle-codec-utils";
+import { Types, Values, Errors } from "truffle-codec-utils";
 import decodeValue from "./value";
 import { AbiDataPointer, DataPointer } from "../types/pointer";
 import { AbiMemberAllocation } from "../types/allocation";
 import { abiSizeForType, isTypeDynamic } from "../allocate/abi";
 import { EvmInfo } from "../types/evm";
 import { DecoderOptions } from "../types/options";
-import { DecoderRequest, GeneratorJunk } from "../types/request";
+import { DecoderRequest } from "../types/request";
 import { StopDecodingError } from "../types/errors";
 
 type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
 
-export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(Types.isReferenceType(dataType)) {
     let dynamic: boolean;
     try {
       dynamic = isTypeDynamic(dataType, info.allocations.abi);
     }
-    catch(error) { //error: Errors.DecodingError
+    catch(error) {
       if(options.strictAbiMode) {
-        throw new StopDecodingError(error.error);
+        throw new StopDecodingError((<Errors.DecodingError>error).error);
       }
-      return {
+      return <Errors.ErrorResult> { //dunno why TS is failing at this inference
         type: dataType,
-        kind: "error",
-        error: error.error
+        kind: "error" as const,
+        error: (<Errors.DecodingError>error).error
       };
     }
     if(dynamic) {
@@ -44,7 +44,7 @@ export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer
   }
 }
 
-export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   let { strictAbiMode: strict, abiPointerBase: base } = options;
   base = base || 0; //in case base was undefined
   const { allocations: { abi: allocations }, state } = info;
@@ -58,14 +58,14 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   try {
     rawValue = yield* read(pointer, state);
   }
-  catch(error) { //error: Errors.DecodingError
+  catch(error) {
     if(strict) {
-      throw new StopDecodingError(error.error);
+      throw new StopDecodingError((<Errors.DecodingError>error).error);
     }
-    return {
+    return <Errors.ErrorResult> { //dunno why TS is failing here
       type: dataType,
-      kind: "error",
-      error: error.error
+      kind: "error" as const,
+      error: (<Errors.DecodingError>error).error
     };
   }
 
@@ -76,7 +76,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
     //conversion :)
     throw new StopDecodingError(
       { 
-        kind: "PointerTooLargeError",
+        kind: "PointerTooLargeError" as const,
         pointerAsBN: rawValueAsBN,
         dataLength: state[location].length
       }
@@ -89,14 +89,14 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   try {
     dynamic = isTypeDynamic(dataType, allocations);
   }
-  catch(error) { //error: Errors.DecodingError
+  catch(error) {
     if(strict) {
-      throw new StopDecodingError(error.error);
+      throw new StopDecodingError((<Errors.DecodingError>error).error);
     }
-    return {
+    return <Errors.ErrorResult> { //dunno why TS is failing here
       type: dataType,
-      kind: "error",
-      error: error.error
+      kind: "error" as const,
+      error: (<Errors.DecodingError>error).error
     };
   }
   if(!dynamic) { //this will only come up when called from stack.ts
@@ -104,14 +104,14 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
     try {
       size = abiSizeForType(dataType, allocations);
     }
-    catch(error) { //error: Errors.DecodingError
+    catch(error) {
       if(strict) {
-        throw new StopDecodingError(error.error);
+        throw new StopDecodingError((<Errors.DecodingError>error).error);
       }
-      return {
+      return <Errors.ErrorResult> { //dunno why TS is failing here
         type: dataType,
-        kind: "error",
-        error: error.error
+        kind: "error" as const,
+        error: (<Errors.DecodingError>error).error
       };
     }
     let staticPointer = {
@@ -129,20 +129,20 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
     case "string":
       //initial word contains length
       try {
-        rawLength = <Uint8Array> (yield* read({
+        rawLength = yield* read({
           location,
           start: startPosition,
           length: CodecUtils.EVM.WORD_SIZE
-        }, state));
+        }, state);
       }
-      catch(error) { //error: Errors.DecodingError
+      catch(error) {
         if(strict) {
-          throw new StopDecodingError(error.error);
+          throw new StopDecodingError((<Errors.DecodingError>error).error);
         }
-        return {
+        return <Errors.ErrorResult> { //dunno why TS is failing here
           type: dataType,
-          kind: "error",
-          error: error.error
+          kind: "error" as const,
+          error: (<Errors.DecodingError>error).error
         };
       }
       let lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
@@ -152,7 +152,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
         //be caught regardless
         throw new StopDecodingError(
           { 
-            kind: "OverlongArrayOrStringError",
+            kind: "OverlongArrayOrStringError" as const,
             lengthAsBN,
             dataLength: state[location].length
           }
@@ -174,20 +174,20 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
         case "dynamic":
           //initial word contains array length
           try {
-            rawLength = <Uint8Array> (yield* read({
+            rawLength = yield* read({
               location,
               start: startPosition,
               length: CodecUtils.EVM.WORD_SIZE
-            }, state));
+            }, state);
           }
           catch(error) { //error: Errors.DecodingError
             if(strict) {
-              throw new StopDecodingError(error.error);
+              throw new StopDecodingError((<Errors.DecodingError>error).error);
             }
             return {
               type: dataType,
-              kind: "error",
-              error: error.error
+              kind: "error" as const,
+              error: (<Errors.DecodingError>error).error
             };
           }
           let lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
@@ -197,7 +197,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
             //be caught regardless
             throw new StopDecodingError(
               { 
-                kind: "OverlongArrayOrStringError",
+                kind: "OverlongArrayOrStringError" as const,
                 lengthAsBN,
                 dataLength: state[location].length
               }
@@ -220,21 +220,21 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
       try {
         baseSize = abiSizeForType(dataType.baseType, allocations);
       }
-      catch(error) { //error: Errors.DecodingError
+      catch(error) {
         if(strict) {
-          throw new StopDecodingError(error.error);
+          throw new StopDecodingError((<Errors.DecodingError>error).error);
         }
         return {
           type: dataType,
-          kind: "error",
-          error: error.error
+          kind: "error" as const,
+          error: (<Errors.DecodingError>error).error
         };
       }
 
       let decodedChildren: Values.Result[] = [];
       for(let index = 0; index < length; index++) {
         decodedChildren.push(
-          <Values.Result> (yield* decodeAbi(
+          yield* decodeAbi(
             dataType.baseType,
             {
               location,
@@ -242,12 +242,12 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
               length: baseSize
             },
             info, { ...options, abiPointerBase: startPosition }
-          ))
+          )
         ); //pointer base is always start of list, never the length
       }
       return { 
         type: dataType,
-        kind: "value",
+        kind: "value" as const,
         value: decodedChildren
       };
 
@@ -256,7 +256,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   }
 }
 
-export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   debug("static");
   debug("pointer %o", pointer);
   const location = pointer.location;
@@ -272,19 +272,19 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
       }
       catch(error) { //error: Errors.DecodingError
         if(options.strictAbiMode) {
-          throw new StopDecodingError(error.error);
+          throw new StopDecodingError((<Errors.DecodingError>error).error);
         }
         return {
           type: dataType,
-          kind: "error",
-          error: error.error
+          kind: "error" as const,
+          error: (<Errors.DecodingError>error).error
         };
       }
 
       let decodedChildren: Values.Result[] = [];
       for(let index = 0; index < length; index++) {
         decodedChildren.push(
-          <Values.Result> (yield* decodeAbi(
+          yield* decodeAbi(
             dataType.baseType,
             {
               location,
@@ -292,12 +292,12 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
               length: baseSize
             },
             info, options
-          ))
+          )
         );
       }
       return { 
         type: dataType,
-        kind: "value",
+        kind: "value" as const,
         value: decodedChildren
       };
 
@@ -307,7 +307,7 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
 }
 
 //note that this function takes the start position as a *number*; it does not take a pointer
-function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLocation, startPosition: number, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLocation, startPosition: number, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   const { userDefinedTypes, allocations: { abi: allocations } } = info;
 
   const typeLocation = location === "eventdata"
@@ -318,7 +318,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
   const structAllocation = allocations[parseInt(typeId)];
   if(!structAllocation) {
     let error = {
-      kind: "UserDefinedTypeNotFoundError" as "UserDefinedTypeNotFoundError",
+      kind: "UserDefinedTypeNotFoundError" as const,
       type: dataType
     };
     if(options.strictAbiMode) {
@@ -326,7 +326,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
     }
     return {
       type: dataType,
-      kind: "error",
+      kind: "error" as const,
       error
     };
   }
@@ -345,7 +345,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
     let storedType = <Types.StructType>userDefinedTypes[typeId];
     if(!storedType) {
       let error = {
-        kind: "UserDefinedTypeNotFoundError" as "UserDefinedTypeNotFoundError",
+        kind: "UserDefinedTypeNotFoundError" as const,
         type: dataType
       };
       if(options.strictAbiMode) {
@@ -353,7 +353,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
       }
       return {
         type: dataType,
-        kind: "error",
+        kind: "error" as const,
         error
       };
     }
@@ -362,13 +362,13 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
 
     decodedMembers.push({
       name: memberName,
-      value: <Values.Result> (yield* decodeAbi(memberType, childPointer, info, {...options, abiPointerBase: startPosition}))
+      value: yield* decodeAbi(memberType, childPointer, info, {...options, abiPointerBase: startPosition})
       //note that the base option is only needed in the dynamic case, but we're being indiscriminate
     });
   }
   return { 
     type: dataType,
-    kind: "value",
+    kind: "value" as const,
     value: decodedMembers
   };
 }

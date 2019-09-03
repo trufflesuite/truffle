@@ -7,7 +7,7 @@ import { EvmState } from "../types/evm";
 import { DecoderRequest } from "../types/request";
 import { Errors } from "truffle-codec-utils";
 
-export default function* read(pointer: Pointer.DataPointer, state: EvmState): IterableIterator<Uint8Array | DecoderRequest> {
+export default function* read(pointer: Pointer.DataPointer, state: EvmState): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   switch(pointer.location) {
 
     case "stack":
