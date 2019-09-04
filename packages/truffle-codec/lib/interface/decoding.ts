@@ -58,7 +58,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
     return {
       kind: "message",
       class: contractType,
-      abi: context.hasFallbck ? CodecUtils.AbiUtils.fallbackAbiForPayability(context.payable) : null,
+      abi: context.hasFallback ? CodecUtils.AbiUtils.fallbackAbiForPayability(context.payable) : null,
       data: CodecUtils.Conversion.toHexString(info.state.calldata),
       decodingMode
     };
@@ -231,7 +231,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
           //2. abify all previously decoded values;
           decodedArguments = decodedArguments.map(argumentDecoding =>
             ({ ...argumentDecoding,
-              value: CodecUtils.abifyValue(argumentDecoding.value, info.userDefinedTypes)
+              value: CodecUtils.abifyResult(argumentDecoding.value, info.userDefinedTypes)
             })
           );
           //3. retry this particular decode in ABI mode.

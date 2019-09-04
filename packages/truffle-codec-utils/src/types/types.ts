@@ -778,7 +778,7 @@ export namespace Types {
   //are pointers or not??  we don't track that so we can't recreate that)
   //But what can you do.
 
-  export function typeString(dataType: type): string {
+  export function typeString(dataType: Type): string {
     let baseString = typeStringWithoutLocation(dataType);
     if(isReferenceType(dataType) && dataType.location) {
       return baseString + " " + dataType.location;
@@ -788,7 +788,7 @@ export namespace Types {
     }
   }
 
-  export function typeStringWithoutLocation(dataType: type): string {
+  export function typeStringWithoutLocation(dataType: Type): string {
     switch(dataType.typeClass) {
       case "uint":
         return dataType.typeHint || `uint${dataType.bits}`;
@@ -831,12 +831,12 @@ export namespace Types {
         //combining these cases for simplicity
         switch(dataType.kind) {
           case "local":
-            return `${dataType.typeClass} ${dataType.definingContractname}.${dataType.typeName}`;
+            return `${dataType.typeClass} ${dataType.definingContractName}.${dataType.typeName}`;
           case "global": //WARNING, SPECULATIVE
             return `${dataType.typeClass} ${dataType.typeName}`;
         }
       case "tuple":
-        return dataType.typeHint || "tuple(" + dataType.memberTypes.map(typeString).join(",") + ")"; //note that we do include location and do not put spaces
+        return dataType.typeHint || "tuple(" + dataType.memberTypes.map(memberType => typeString(memberType.type)).join(",") + ")"; //note that we do include location and do not put spaces
       case "contract":
         return dataType.contractKind + " " + dataType.typeName;
       case "magic":
@@ -847,11 +847,13 @@ export namespace Types {
         let visibilityString: string;
         switch(dataType.visibility) {
           case "external":
-            if(dataType.typeHint) {
-              return dataType.typeHint;
-            }
             if(dataType.kind === "general") {
-              return "function"; //I guess???
+              if(dataType.typeHint) {
+                return dataType.typeHint;
+              }
+              else {
+                return "function"; //I guess???
+              }
             }
             visibilityString = " external"; //note the deliberate space!
             break;
@@ -863,7 +865,7 @@ export namespace Types {
         let inputList = dataType.inputParameterTypes.map(typeString).join(","); //note that we do include location, and do not put spaces
         let outputList = dataType.outputParameterTypes.map(typeString).join(",");
         let inputString = `function(${inputList})`;
-        let outputString = outputList === "" ? "" : ` returns (${outputList)})`; //again, note the deliberate space
+        let outputString = outputList === "" ? "" : ` returns (${outputList})`; //again, note the deliberate space
         return inputString + mutabilityString + visibilityString + outputString;
     }
   }

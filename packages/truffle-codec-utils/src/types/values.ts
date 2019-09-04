@@ -31,12 +31,12 @@ export namespace Values {
 
   //This is the overall Result type.  It may encode an actual value or an error.
   export type Result = ElementaryResult
-    | ArrayResult | MappingResult | StructResult | MagicResult
+    | ArrayResult | MappingResult | StructResult | TupleResult | MagicResult
     | EnumResult
     | ContractResult | FunctionExternalResult | FunctionInternalResult;
   //for when you want an actual value
   export type Value = ElementaryValue
-    | ArrayValue | MappingValue | StructValue | MagicValue
+    | ArrayValue | MappingValue | StructValue | TupleValue | MagicValue
     | EnumValue
     | ContractValue | FunctionExternalValue | FunctionInternalValue;
 

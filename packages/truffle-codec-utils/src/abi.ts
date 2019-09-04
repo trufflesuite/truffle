@@ -104,7 +104,7 @@ export namespace AbiUtils {
   }
 
   export function abiHasFallback(abi: Abi) {
-    return abi.some(abiEntry: AbiEntry => abiEntry.type === "fallback");
+    return abi.some((abiEntry: AbiEntry) => abiEntry.type === "fallback");
   }
 
   //gets the fallback entry; if there isn't one, returns a default one

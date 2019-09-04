@@ -16,7 +16,9 @@ import { StopDecodingError } from "../types/errors";
 type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
 
 export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
-  if(Types.isReferenceType(dataType)) {
+  if(Types.isReferenceType(dataType) || dataType.typeClass === "tuple") {
+    //I don't want tuples to be considered a reference type, but it makes sense
+    //to group them for this purpose
     let dynamic: boolean;
     try {
       dynamic = abiSizeInfo(dataType, info.allocations.abi).dynamic;
@@ -44,7 +46,7 @@ export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer
   }
 }
 
-export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Types.TupleType, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   let { strictAbiMode: strict, abiPointerBase: base } = options;
   base = base || 0; //in case base was undefined
   const { allocations: { abi: allocations }, state } = info;
@@ -88,7 +90,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   let dynamic: boolean;
   let size: number;
   try {
-    ({dynamic, size}) = abiSizeInfo(dataType, allocations);
+    ({dynamic, size} = abiSizeInfo(dataType, allocations));
   }
   catch(error) { //error: Errors.DecodingError
     if(strict) {
@@ -245,7 +247,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   }
 }
 
-export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
+export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType | Types.TupleType, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   debug("static");
   debug("pointer %o", pointer);
   const location = pointer.location;
@@ -293,7 +295,7 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
     case "struct":
       return yield* decodeAbiStructByPosition(dataType, location, pointer.start, info, options);
     case "tuple":
-      return yield* decodeAbiTupleByPosition(dataType, location, startPosition, info, options);
+      return yield* decodeAbiTupleByPosition(dataType, location, pointer.start, info, options);
   }
 }
 
@@ -375,8 +377,8 @@ function* decodeAbiTupleByPosition(dataType: Types.TupleType, location: AbiLocat
 
   let decodedMembers: Values.NameValuePair[] = [];
   let position = startPosition;
-  for(const { name, type: memberType } of dataTypes.memberTypes) {
-    const memberSize = abiSizeInfo(dataType.baseType, allocations).size;
+  for(const { name, type: memberType } of dataType.memberTypes) {
+    const memberSize = abiSizeInfo(memberType, info.allocations.abi).size;
     const childPointer: AbiDataPointer = {
       location,
       start: position,

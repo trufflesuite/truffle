@@ -1,14 +1,13 @@
 import { StorageLength } from "./storage";
 import * as Pointer from "./pointer";
-import { AstDefinition, Contexts, AbiUtils, Types } from "truffle-codec-utils";
-import { Compiler } from "./compiler";
+import { AstDefinition, Contexts, AbiUtils, Types, CompilerVersion } from "truffle-codec-utils";
 
 //for passing to calldata/event allocation functions
 export interface ContractAllocationInfo {
   abi: AbiUtils.Abi;
   id: number;
   constructorContext?: Contexts.DecoderContext;
-  copmiler: CompilerVersion;
+  compiler: CompilerVersion;
 }
 
 export interface AbiSizeInfo {

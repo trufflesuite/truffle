@@ -26,7 +26,7 @@ export interface ConstructorDecoding {
 export interface MessageDecoding {
   kind: "message";
   class: CodecUtils.Types.ContractType;
-  abi: CodecUtils.AbiUtils.FallbackAbiEntry | undefined;
+  abi: CodecUtils.AbiUtils.FallbackAbiEntry | null; //null indicates no fallback ABI
   data: string;
   decodingMode: DecodingMode;
 }

@@ -33,14 +33,14 @@ export namespace Errors {
   }
 
   export type ErrorResult = ElementaryErrorResult
-    | ArrayErrorResult | MappingErrorResult | StructErrorResult | MagicErrorResult
+    | ArrayErrorResult | MappingErrorResult | StructErrorResult | MagicErrorResult | TupleErrorResult
     | EnumErrorResult
     | ContractErrorResult | FunctionExternalErrorResult | FunctionInternalErrorResult;
 
   export type DecoderError = GenericError
     | UintError | IntError | BoolError | BytesStaticError | BytesDynamicError | AddressError
     | StringError | FixedError | UfixedError
-    | ArrayError | MappingError | StructError | MagicError
+    | ArrayError | MappingError | StructError | MagicError | TupleError
     | EnumError | ContractError | FunctionExternalError | FunctionInternalError
     | InternalUseError;
   //note that at the moment, no reference type has its own error category, so

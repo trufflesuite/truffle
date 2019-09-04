@@ -15,9 +15,15 @@ interface AbiAllocationInfo {
   allocations: Allocations.AbiAllocations;
 }
 
+interface EventParameterInfo {
+  type: Types.Type;
+  name: string;
+  indexed: boolean;
+}
+
 export function getAbiAllocations(userDefinedTypes: Types.TypesById): Allocations.AbiAllocations {
   let allocations: Allocations.AbiAllocations = {};
-  for(const dataType of Object.values(referenceDeclarations)) {
+  for(const dataType of Object.values(userDefinedTypes)) {
     if(dataType.typeClass === "struct") {
       allocations = allocateStruct(dataType, userDefinedTypes, allocations);
     }
@@ -25,7 +31,7 @@ export function getAbiAllocations(userDefinedTypes: Types.TypesById): Allocation
   return allocations;
 }
 
-function allocateStruct(dataType: Types.Type, userDefinedTypes: Types.TypesById, existingAllocations: Allocations.AbiAllocations): Allocations.AbiAllocations {
+function allocateStruct(dataType: Types.StructType, userDefinedTypes: Types.TypesById, existingAllocations: Allocations.AbiAllocations): Allocations.AbiAllocations {
   return allocateMembers(dataType.id, dataType.memberTypes, userDefinedTypes, existingAllocations);
 }
 
@@ -143,7 +149,7 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
             allocations: existingAllocations
           };
         case "static":
-          if(dataType.length === 0) {
+          if(dataType.length.isZero()) {
             //arrays of length 0 are static regardless of base type
             return {
               size: 0,
@@ -153,7 +159,9 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
           }
           const {size: baseSize, dynamic, allocations} = abiSizeAndAllocate(dataType.baseType, userDefinedTypes, existingAllocations);
           return {
-            size: dataType.length * baseSize,
+            //WARNING!  The use of toNumber() here may throw an exception!
+            //I'm judging this OK since if you have arrays that large we have bigger problems :P
+            size: dataType.length.toNumber() * baseSize,
             dynamic,
             allocations
           };
@@ -203,7 +211,7 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
         size += memberSize;
         dynamic = dynamic || memberDynamic;
       }
-      return { size, dynamic, existingAllocations };
+      return { size, dynamic, allocations: existingAllocations };
     }
 
   }
@@ -237,7 +245,7 @@ function allocateCalldata(
   let offset: number;
   let id: string;
   let abiAllocation: Allocations.AbiAllocation;
-  let parameterTypes: Types.Type[];
+  let parameterTypes: Types.NameTypePair[];
   switch(abiEntry.type) {
     case "constructor":
       let rawLength = constructorContext.binary.length;
@@ -291,13 +299,19 @@ function allocateCalldata(
     }
     id = node.id.toString();
     parameterTypes = parameters.map(
-      parameter => Types.definitionToType(parameter, compiler)
+      parameter => ({
+        name: parameter.name,
+        type: Types.definitionToType(parameter, compiler)
+      })
     );
   }
   else {
     //just use the ABI
     id = "-1"; //fake irrelevant ID
-    parameterTypes = abiEntry.inputs.map(Types.abiParameterToType);
+    parameterTypes = abiEntry.inputs.map(parameter => ({
+      name: parameter.name,
+      type: Types.abiParameterToType(parameter)
+    }));
   }
   //now: perform the allocation!
   abiAllocation = allocateMembers(id, parameterTypes, userDefinedTypes, abiAllocations, offset)[id];
@@ -306,7 +320,7 @@ function allocateCalldata(
     member => ({
       ...member,
       pointer: {
-        location: "calldata" const,
+        location: "calldata" as const,
         start: member.pointer.start,
         length: member.pointer.length
       }
@@ -337,7 +351,7 @@ function allocateEvent(
 ): Allocations.EventAllocation {
   const contractNode = referenceDeclarations[contractId];
   const linearizedBaseContracts = contractNode.linearizedBaseContracts;
-  let parameterTypes: Types.Type[];
+  let parameterTypes: EventParameterInfo[];
   let id: string;
   //first: determine the corresponding event node
   //search through base contracts, from most derived (right) to most base (left)
@@ -377,7 +391,7 @@ function allocateEvent(
   }
   else {
     id = "-1"; //fake irrelevant ID
-    parameterTypes = abi.inputs.map(
+    parameterTypes = abiEntry.inputs.map(
       abiParameter => ({
         type: Types.abiParameterToType(abiParameter),
         name: abiParameter.name,
@@ -386,9 +400,9 @@ function allocateEvent(
     );
   }
   //now: split the list of parameters into indexed and non-indexed
-  const [indexed, nonIndexed] = partition(parameterTypes, (parameter: TypeAndIndexedness) => parameter.indexed);
+  const [indexed, nonIndexed] = partition(parameterTypes, (parameter: EventParameterInfo) => parameter.indexed);
   //now: perform the allocation for the non-indexed parameters!
-  const abiAllocation = allocateMembers(id, nonIndexed.map(parameter => paramter.type), userDefinedTypes, abiAllocations)[id];
+  const abiAllocation = allocateMembers(id, nonIndexed, userDefinedTypes, abiAllocations)[id]; //note the implicit conversion from EventParameterInfo to NameTypePair
   //now: transform it appropriately
   const nonIndexedArgumentsAllocation = abiAllocation.members.map(
     member => ({
@@ -401,7 +415,7 @@ function allocateEvent(
     })
   );
   //now: allocate the indexed parameters
-  const startingTopic = abi.anonymous ? 0 : 1; //if not anonymous, selector takes up topic 0
+  const startingTopic = abiEntry.anonymous ? 0 : 1; //if not anonymous, selector takes up topic 0
   const indexedArgumentsAllocation = indexed.map(
     ({ type, name }, position) => ({
       type,
@@ -413,9 +427,9 @@ function allocateEvent(
     })
   );
   //finally: weave these back together
-  let argumentsAllocation = [];
+  let argumentsAllocation: Allocations.EventArgumentAllocation[] = [];
   for(let parameter of parameterTypes) {
-    let arrayToGrabFrom = parameter.indexed ? indexed : nonIndexed;
+    let arrayToGrabFrom = parameter.indexed ? indexedArgumentsAllocation : nonIndexedArgumentsAllocation;
     argumentsAllocation.push(arrayToGrabFrom.shift()); //note that push and shift both modify!
   }
   //...and return
@@ -488,7 +502,7 @@ export function getCalldataAllocations(contracts: Allocations.ContractAllocation
   return Object.assign({}, ...contracts.map(
     ({abi, id, compiler, constructorContext}) => ({
       [id]: getCalldataAllocationsForContract(
-        abi, id, constructorContext, referenceDeclarations, typesById, abiAllocations, compiler
+        abi, id, constructorContext, referenceDeclarations, userDefinedTypes, abiAllocations, compiler
       )
     })
   ));
