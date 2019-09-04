@@ -73,7 +73,6 @@ function allocateMembers(parentId: string, members: Types.NameTypePair[], userDe
   }
 
   allocations[parentId] = {
-    definition: parentNode,
     members: memberAllocations,
     length: dynamic ? CodecUtils.EVM.WORD_SIZE : start,
     dynamic

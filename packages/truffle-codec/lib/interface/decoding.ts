@@ -6,8 +6,9 @@ import * as CodecUtils from "truffle-codec-utils";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
+import { StopDecodingError } from "../types/errors";
 import { CalldataAllocation, EventAllocation, EventArgumentAllocation } from "../types/allocation";
-import { CalldataDecoding, LogDecoding, AbiArgument } from "../types/decoding";
+import { CalldataDecoding, LogDecoding, AbiArgument, DecodingMode } from "../types/decoding";
 import { encodeTupleAbi } from "../encode/abi";
 import read from "../read";
 import decode from "../decode";
@@ -20,12 +21,13 @@ export function* decodeVariable(definition: AstDefinition, pointer: Pointer.Data
 }
 
 export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
+  let decodingMode: DecodingMode = "full"; //starts out full by default; degrades to abi if necessary
   const context = info.currentContext;
   if(context === null) {
     //if we don't know the contract ID, we can't decode
     return {
       kind: "unknown",
-      decodingMode: "full",
+      decodingMode,
       data: CodecUtils.Conversion.toHexString(info.state.calldata)
     }
   }
@@ -58,24 +60,56 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       class: contractType,
       abi: CodecUtils.AbiUtils.fallbackAbiForPayability(context.payable),
       data: CodecUtils.Conversion.toHexString(info.state.calldata),
-      decodingMode: "full",
+      decodingMode
     };
   }
   //you can't map with a generator, so we have to do this map manually
   let decodedArguments: AbiArgument[] = [];
-  for(const argumentAllocation of allocation.arguments) {
-    const value = <Values.Result> (yield* decode(
-      argumentAllocation.type,
-      argumentAllocation.pointer,
-      info,
-      { abiPointerBase: allocation.offset } //note the use of the offset for decoding pointers!
-    ));
-    const name = argumentAllocation.name;
-    decodedArguments.push(
-      name //deliberate general falsiness test
-        ? { name, value }
-        : { value }
-    );
+  try {
+    for(const argumentAllocation of allocation.arguments) {
+      const value = <Values.Result> (yield* decode(
+        argumentAllocation.type,
+        argumentAllocation.pointer,
+        info,
+        { 
+          abiPointerBase: allocation.offset, //note the use of the offset for decoding pointers!
+          allowRetry: decodingMode === "full"
+        }
+      ));
+      const name = argumentAllocation.name;
+      decodedArguments.push(
+        name //deliberate general falsiness test
+          ? { name, value }
+          : { value }
+      );
+    }
+  }
+  catch(error) {
+    if(error instanceof StopDecodingError && error.allowRetry && decodingMode === "full") {
+      decodingMode = "abi";
+      for(const argumentAllocation of allocation.arguments) {
+        const value = <Values.Result> (yield* decode(
+          CodecUtils.abifyType(argumentAllocation.type), //type is now abified!
+          argumentAllocation.pointer,
+          info,
+          { 
+            abiPointerBase: allocation.offset //note the use of the offset for decoding pointers!
+            //we no longer allow a retry, not that it matters
+          }
+        ));
+        const name = argumentAllocation.name;
+        decodedArguments.push(
+          name //deliberate general falsiness test
+            ? { name, value }
+            : { value }
+        );
+      }
+    }
+    //we shouldn't be getting other exceptions, but if we do, we don't know
+    //how to handle them, so uhhhh just rethrow I guess??
+    else {
+      throw error;
+    }
   }
   if(isConstructor) {
     return {
@@ -84,7 +118,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       arguments: decodedArguments,
       abi: allocation.abi,
       bytecode: CodecUtils.Conversion.toHexString(info.state.calldata.slice(0, allocation.offset)),
-      decodingMode: "full",
+      decodingMode
     };
   }
   else {
@@ -94,7 +128,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       abi: allocation.abi,
       arguments: decodedArguments,
       selector,
-      decodingMode: "full"
+      decodingMode
     };
   }
 }
@@ -167,6 +201,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
     if(targetName !== undefined && allocation.abi.name !== targetName) {
       continue;
     }
+    let decodingMode: DecodingMode = "full"; //starts out full by default; degrades to abi if necessary
     const id = allocation.contractId;
     const attemptContext = info.contexts[id];
     const contractType = CodecUtils.Contexts.contextToType(attemptContext);
@@ -174,16 +209,54 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
     let decodedArguments: AbiArgument[] = [];
     for(const argumentAllocation of allocation.arguments) {
       let value: Values.Result;
+      //if in full mode, use the allocation's listed data type.
+      //if in ABI mode, abify it before use.
+      let dataType = decodingMode === "full" ? argumentAllocation.type : CodecUtils.abifyType(argumentAllocation.type);
       try {
         value = <Values.Result> (yield* decode(
-          argumentAllocation.type,
+          dataType,
           argumentAllocation.pointer,
           info,
-          { strictAbiMode: true } //turns on STRICT MODE to cause more errors to be thrown
+          {
+            strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
+            allowRetry: decodingMode === "full" //this option is unnecessary but including for clarity
+          }
         ));
       }
-      catch(_) {
-        continue allocationAttempts; //if an error occurred, this isn't a valid decoding!
+      catch(error) {
+        if(error instanceof StopDecodingError && error.allowRetry && decodingMode === "full") {
+          //if a retry happens, we've got to do several things in order to switch to ABI mode:
+          //1. mark that we're switching to ABI mode;
+          decodingMode = "abi";
+          //2. abify all previously decoded values;
+          decodedArguments = decodedArguments.map(argumentDecoding =>
+            ({ ...argumentDecoding,
+              value: CodecUtils.abifyValue(argumentDecoding.value, info.userDefinedTypes)
+            })
+          );
+          //3. retry this particular decode in ABI mode.
+          try {
+            value = <Values.Result> (yield* decode(
+              CodecUtils.abifyType(argumentAllocation.type), //type is now abified!
+              argumentAllocation.pointer,
+              info,
+              {
+                strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
+                //retries no longer allowed, not that this has an effect
+              }
+            ));
+          }
+          catch(_) {
+            //if an error occurred on the retry, this isn't a valid decoding!
+            continue allocationAttempts;
+          }
+          //4. the remaining parameters will then automatically be decoded in ABI mode due to (1),
+          //so we don't need to do anything special there.
+        }
+        else {
+          //if any other sort of error occurred, this isn't a valid decoding!
+          continue allocationAttempts;
+        }
       }
       const name = argumentAllocation.name;
       const indexed = argumentAllocation.pointer.location === "eventtopic";
@@ -211,7 +284,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
           class: contractType,
           abi: allocation.abi,
           arguments: decodedArguments,
-          decodingMode: "full"
+          decodingMode
         });
       }
       else {
@@ -221,7 +294,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
           abi: allocation.abi,
           arguments: decodedArguments,
           selector,
-          decodingMode: "full"
+          decodingMode
         });
       }
     }

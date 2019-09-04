@@ -276,8 +276,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
           type: fullType,
           rawAsBN: numeric
         };
-        if(strict) {
-          throw new StopDecodingError(error);
+        if(strict || options.allowRetry) {
+          throw new StopDecodingError(error, true);
+          //note that we allow a retry if we couldn't locate the enum type!
         }
         return {
           type: fullType,
@@ -306,6 +307,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         };
         if(strict) {
           throw new StopDecodingError(error);
+          //note that we do NOT allow a retry here!
+          //if we *can* find the enum type but the value is out of range,
+          //we *know* that it is invalid!
         }
         return {
           type: fullType,

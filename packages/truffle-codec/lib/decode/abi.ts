@@ -312,8 +312,9 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
       kind: "UserDefinedTypeNotFoundError" as "UserDefinedTypeNotFoundError",
       type: dataType
     };
-    if(options.strictAbiMode) {
-      throw new StopDecodingError(error);
+    if(options.strictAbiMode || options.allowRetry) {
+      throw new StopDecodingError(error, true);
+      //note that we allow a retry if we couldn't locate the allocation!
     }
     return {
       type: dataType,
@@ -339,8 +340,9 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
         kind: "UserDefinedTypeNotFoundError" as "UserDefinedTypeNotFoundError",
         type: dataType
       };
-      if(options.strictAbiMode) {
-        throw new StopDecodingError(error);
+      if(options.strictAbiMode || options.allowRetry) {
+        throw new StopDecodingError(error, true);
+        //similarly we allow a retry if we couldn't locate the type
       }
       return {
         type: dataType,
