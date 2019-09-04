@@ -15,6 +15,7 @@ const Environment = {
     helpers.validateNetworkConfig(config);
 
     const web3 = new Web3Shim({
+      config,
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
