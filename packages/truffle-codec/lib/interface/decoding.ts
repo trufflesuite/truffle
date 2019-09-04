@@ -58,7 +58,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
     return {
       kind: "message",
       class: contractType,
-      abi: CodecUtils.AbiUtils.fallbackAbiForPayability(context.payable),
+      abi: context.hasFallbck ? CodecUtils.AbiUtils.fallbackAbiForPayability(context.payable) : null,
       data: CodecUtils.Conversion.toHexString(info.state.calldata),
       decodingMode
     };

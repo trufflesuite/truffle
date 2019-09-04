@@ -103,6 +103,10 @@ export namespace AbiUtils {
     return abiMutability(getFallbackEntry(abi)) === "payable";
   }
 
+  export function abiHasFallback(abi: Abi) {
+    return abi.some(abiEntry: AbiEntry => abiEntry.type === "fallback");
+  }
+
   //gets the fallback entry; if there isn't one, returns a default one
   export function getFallbackEntry(abi: Abi): FallbackAbiEntry {
     //no idea why TS's type inference is failing on this one...

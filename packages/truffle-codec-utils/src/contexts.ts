@@ -39,6 +39,7 @@ export namespace Contexts {
     contractKind?: ContractKind; //note: should never be "interface"
     abi?: AbiUtils.FunctionAbiBySelectors;
     payable?: boolean;
+    hasFallback?: boolean; //used just by the calldata decoder...
     compiler?: CompilerVersion;
   }
 
@@ -51,7 +52,7 @@ export namespace Contexts {
     contractName?: string;
     contractId?: number;
     contractKind?: ContractKind; //note: should never be "interface"
-    abi?: SchemaAbi;
+    abi?: AbiUtils.Abi;
     sourceMap?: string;
     primarySource?: number;
     compiler?: CompilerVersion;
