@@ -1,14 +1,16 @@
-import { Web3Shim } from "./web3-shim";
+import { Web3Shim, Web3ShimOptions } from "./web3-shim";
 // @ts-ignore
 import { eztz } from "eztz.js";
+import Sotez from "sotez";
 
 export const TezosDefinition = {
-  async initNetworkType (web3: Web3Shim) {
+  async initNetworkType(web3: Web3Shim, options: Web3ShimOptions) {
     // web3 expects getId to return a hexString convertible to a number
     // for fabric-evm we ignore the hexToNumber output formatter
     overrides.getId(web3);
+    overrides.getAccounts(web3, options);
   }
-}
+};
 
 const overrides = {
   // The ts-ignores are ignoring the checks that are
