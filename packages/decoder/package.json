@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.0.11",
+  "version": "3.0.12",
   "main": "dist/interface/index.js",
   "directories": {
     "lib": "lib"
@@ -21,6 +21,7 @@
   },
   "types": "lib/interface/index.ts",
   "dependencies": {
+    "@truffle/decode-utils": "^1.0.18",
     "abi-decoder": "^1.2.0",
     "async-eventemitter": "^0.2.4",
     "bn.js": "^4.11.8",
@@ -28,7 +29,6 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.isequal": "^4.5.0",
     "lodash.merge": "^4.6.1",
-    "@truffle/decode-utils": "^1.0.17",
     "utf8": "^3.0.0",
     "web3": "1.2.1"
   },
@@ -39,7 +39,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@truffle/contract-schema": "^3.0.14",
+    "@truffle/contract-schema": "^3.0.15",
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",
     "@types/lodash": "^4.14.116",

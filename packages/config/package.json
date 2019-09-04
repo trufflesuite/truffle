@@ -1,6 +1,6 @@
 {
   "name": "@truffle/config",
-  "version": "1.1.20",
+  "version": "1.1.21",
   "description": "Utility for interacting with truffle-config.js files",
   "main": "index.js",
   "typings": "./typings/index.d.ts",
@@ -20,12 +20,12 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/config#readme",
   "dependencies": {
-    "@truffle/error": "^0.0.6",
+    "@truffle/error": "^0.0.7",
+    "@truffle/provider": "^0.1.17",
     "configstore": "^4.0.0",
     "find-up": "^2.1.0",
     "lodash": "^4.17.13",
-    "original-require": "1.0.1",
-    "@truffle/provider": "^0.1.16"
+    "original-require": "1.0.1"
   },
   "publishConfig": {
     "access": "public"

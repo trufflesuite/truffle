@@ -1,6 +1,6 @@
 {
   "name": "@truffle/box",
-  "version": "1.0.36",
+  "version": "1.0.37",
   "description": "Truffle project boilerplate utility",
   "main": "dist/box.js",
   "types": "./typings/index.d.ts",
@@ -29,13 +29,13 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
+    "@truffle/config": "^1.1.21",
     "fs-extra": "6.0.1",
     "github-download": "^0.5.0",
     "ora": "^3.0.0",
     "request": "^2.85.0",
     "request-promise-native": "^1.0.7",
     "tmp": "0.0.33",
-    "@truffle/config": "^1.1.20",
     "vcsurl": "^0.1.1"
   },
   "publishConfig": {
