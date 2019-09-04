@@ -32,5 +32,8 @@
     "mocha": "^6.0.2",
     "ts-node": "^8.0.3",
     "typescript": "^3.3.3333"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
