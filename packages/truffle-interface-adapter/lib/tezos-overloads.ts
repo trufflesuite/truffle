@@ -33,10 +33,32 @@ const overrides = {
       return chain_id;
     };
   },
+
+  // The ts-ignores are ignoring the checks that are
+  // saying that web3.eth.getAccounts is a function and doesn't
+  // have a `method` property, which it does
+  getAccounts: (web3: Web3Shim, { config } : Web3ShimOptions) => {
     // @ts-ignore
-    const { chain_id } = await eztz.rpc.getHead()
+    const _oldGetAccounts = web3.eth.getAccounts;
     // @ts-ignore
-    return chain_id;
-  };
+    web3.eth.getAccounts = async () => {
+      // chaincode-fabric-ev1Gm currently returns a "fabric-evm" string
+      // instead of a hex networkID. Instead of trying to decode the hexToNumber,
+      // let's just accept `fabric-evm` as a valid networkID for now.
+      // @ts-ignore
+      //      const currentHost = web3.currentProvider.host;
+      //const parsedHost = currentHost.match(/(^https?:\/\/)(.*?)\:\d.*/)[2];
+      // @ts-ignore
+      /*
+      const sotez = new Sotez(parsedHost)
+      const res = await sotez.importKey('off during october arrive sister emotion case library narrow width barrel pool final boy toast', 'z8wZCNn0cC', 'krtuxjvm.gtqdzgqj@tezos.example.org');
+      await console.log(await sotez.key.publicKeyHash())*/
+      // @ts-ignore
+      const sotez = new Sotez()
+      //@ts-ignore
+      await sotez.importKey(config.networks[config.network].mnemonic, config.networks[config.network].passphrase, config.networks[config.network].email)
+      const currentAccount = await sotez.key.publicKeyHash()
+      return currentAccount;
+    };
   }
-}
+};
