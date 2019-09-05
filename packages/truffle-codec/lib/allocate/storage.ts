@@ -75,7 +75,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
         offset += 1;
     }
     //otherwise, we remain in place
-  
+
     let range: Range;
 
     if(isWordsLength(size)) {
@@ -112,7 +112,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
         },
       };
     }
-  
+
     memberAllocations.push({
       definition: node,
       pointer: {
@@ -120,7 +120,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
         range
       }
     });
-  
+
     //finally, adjust the current position.
     //if it was sized in words, move down that many slots and reset position w/in slot
     if(isWordsLength(size)) {
@@ -187,7 +187,7 @@ function allocateContract(contract: AstDefinition, referenceDeclarations: AstRef
     return getStateVariables(baseNode);
   }));
 
-  return allocateMembers(contract, vars, referenceDeclarations, existingAllocations, true); 
+  return allocateMembers(contract, vars, referenceDeclarations, existingAllocations, true);
     //size is not meaningful for contracts, so we pass suppressSize=true
 }
 

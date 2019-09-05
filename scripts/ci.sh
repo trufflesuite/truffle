@@ -37,8 +37,9 @@ elif [ "$GETH" = true ]; then
   sudo apt install -y jq
   docker pull ethereum/client-go:latest
   run_geth
+  sleep 30
   lerna run --scope truffle test --stream -- --exit
-  lerna run --scope truffle-contract test --stream -- --exit
+  lerna run --scope @truffle/contract test --stream -- --exit
 
 elif [ "$QUORUM" = true ]; then
 
@@ -85,6 +86,7 @@ elif [ "$PACKAGES" = true ]; then
 
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
+  sudo add-apt-repository -y ppa:ethereum/ethereum
   sudo apt update
   sudo apt install -y python3.6 python3.6-dev python3.6-venv solc
   wget https://bootstrap.pypa.io/get-pip.py
@@ -96,14 +98,15 @@ elif [ "$COVERAGE" = true ]; then
 
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
+  sudo add-apt-repository -y ppa:ethereum/ethereum
   sudo apt update
   sudo apt install -y jq python3.6 python3.6-dev python3.6-venv solc
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python3.6 get-pip.py
   sudo pip3 install vyper
-  cd packages/truffle-debugger && yarn test:coverage && \
-  cd ../../ && nyc lerna run --ignore truffle-debugger test && \
-  cat ./packages/truffle-debugger/coverage/lcov.info >> ./coverage/lcov.info && \
+  cd packages/debugger && yarn test:coverage && \
+  cd ../../ && nyc lerna run --ignore debugger test && \
+  cat ./packages/debugger/coverage/lcov.info >> ./coverage/lcov.info && \
   cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 
 fi

@@ -1,17 +1,17 @@
 {
   "name": "@truffle/workflow-compile",
-  "version": "2.1.3",
+  "version": "2.1.5",
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
+    "@truffle/artifactor": "^4.0.31",
+    "@truffle/compile-solidity": "^4.2.4",
+    "@truffle/compile-vyper": "^1.0.28",
+    "@truffle/config": "^1.1.21",
+    "@truffle/expect": "^0.0.11",
+    "@truffle/external-compile": "^1.0.17",
+    "@truffle/resolver": "^5.0.17",
     "fs-extra": "^7.0.1",
-    "mkdirp": "^0.5.1",
-    "truffle-artifactor": "^4.0.29",
-    "truffle-compile": "^4.2.2",
-    "truffle-compile-vyper": "^1.0.26",
-    "truffle-config": "^1.1.19",
-    "@truffle/expect": "^0.0.9",
-    "truffle-external-compile": "^1.0.15",
-    "truffle-resolver": "^5.0.15"
+    "mkdirp": "^0.5.1"
   },
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
   "devDependencies": {
     "debug": "^4.1.1",
     "mocha": "5.2.0"

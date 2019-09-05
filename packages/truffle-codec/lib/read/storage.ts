@@ -141,4 +141,3 @@ export function* readRange(storage: WordMapping, range: Range): Generator<Decode
 
   return data;
 }
-
