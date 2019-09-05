@@ -22,7 +22,8 @@ const MigrationsMessages = require("./messages");
  *  + `this.deployer`
  */
 class Reporter {
-  constructor() {
+  constructor(describeJson) {
+    this.migrator = null;
     this.deployer = null;
     this.migration = null;
     this.currentGasTotal = new web3Utils.BN(0);
@@ -34,11 +35,20 @@ class Reporter {
     this.currentFileIndex = -1;
     this.blockSpinner = null;
     this.currentBlockWait = "";
+    this.describeJson = describeJson;
 
     this.messages = new MigrationsMessages(this);
   }
 
   // ------------------------------------  Utilities -----------------------------------------------
+
+  /**
+   * Sets a Migrator instance to be the current master migrator events emitter source
+   * @param {Migration} migrator
+   */
+  setMigrator(migrator) {
+    this.migrator = migrator;
+  }
 
   /**
    * Sets a Migration instance to be the current migrations events emitter source
@@ -57,33 +67,60 @@ class Reporter {
   }
 
   /**
-   * Registers emitter handlers
+   * Registers emitter handlers for the migrator
+   */
+  listenMigrator() {
+    // Migrator
+    if (this.migrator && this.migrator.emitter) {
+      this.migrator.emitter.on(
+        "preAllMigrations",
+        this.preAllMigrations.bind(this)
+      );
+      this.migrator.emitter.on(
+        "postAllMigrations",
+        this.postAllMigrations.bind(this)
+      );
+    }
+  }
+
+  /**
+   * Registers emitter handlers for a migration/deployment
    */
   listen() {
     // Migration
-    this.migration.emitter.on("preMigrate", this.preMigrate.bind(this));
-    this.migration.emitter.on(
-      "startTransaction",
-      this.startTransaction.bind(this)
-    );
-    this.migration.emitter.on("endTransaction", this.endTransaction.bind(this));
-    this.migration.emitter.on("postMigrate", this.postMigrate.bind(this));
-    this.migration.emitter.on("error", this.error.bind(this));
+    if (this.migration && this.migration.emitter) {
+      this.migration.emitter.on("preMigrate", this.preMigrate.bind(this));
+      this.migration.emitter.on(
+        "startTransaction",
+        this.startTransaction.bind(this)
+      );
+      this.migration.emitter.on(
+        "endTransaction",
+        this.endTransaction.bind(this)
+      );
+      this.migration.emitter.on("postMigrate", this.postMigrate.bind(this));
+      this.migration.emitter.on("error", this.error.bind(this));
+    }
 
     // Deployment
-    this.deployer.emitter.on("preDeploy", this.preDeploy.bind(this));
-    this.deployer.emitter.on("postDeploy", this.postDeploy.bind(this));
-    this.deployer.emitter.on("deployFailed", this.deployFailed.bind(this));
-    this.deployer.emitter.on("linking", this.linking.bind(this));
-    this.deployer.emitter.on("error", this.error.bind(this));
-    this.deployer.emitter.on("transactionHash", this.hash.bind(this));
-    this.deployer.emitter.on("confirmation", this.confirmation.bind(this));
-    this.deployer.emitter.on("block", this.block.bind(this));
-    this.deployer.emitter.on(
-      "startTransaction",
-      this.startTransaction.bind(this)
-    );
-    this.deployer.emitter.on("endTransaction", this.endTransaction.bind(this));
+    if (this.deployer && this.deployer.emitter) {
+      this.deployer.emitter.on("preDeploy", this.preDeploy.bind(this));
+      this.deployer.emitter.on("postDeploy", this.postDeploy.bind(this));
+      this.deployer.emitter.on("deployFailed", this.deployFailed.bind(this));
+      this.deployer.emitter.on("linking", this.linking.bind(this));
+      this.deployer.emitter.on("error", this.error.bind(this));
+      this.deployer.emitter.on("transactionHash", this.hash.bind(this));
+      this.deployer.emitter.on("confirmation", this.confirmation.bind(this));
+      this.deployer.emitter.on("block", this.block.bind(this));
+      this.deployer.emitter.on(
+        "startTransaction",
+        this.startTransaction.bind(this)
+      );
+      this.deployer.emitter.on(
+        "endTransaction",
+        this.endTransaction.bind(this)
+      );
+    }
   }
 
   /**
@@ -220,6 +257,26 @@ class Reporter {
     return this.askBoolean("acceptDryRun");
   }
 
+  // -------------------------  Migrator File Handlers --------------------------------------------
+
+  /**
+   * Run when before any migration has started
+   * @param  {Object} data
+   */
+  async preAllMigrations(data) {
+    const message = this.messages.steps("preAllMigrations", data);
+    this.migrator.logger.log(message);
+  }
+
+  /**
+   * Run after all migrations have finished
+   * @param  {Object} data
+   */
+  async postAllMigrations(data) {
+    const message = this.messages.steps("postAllMigrations", data);
+    this.migrator.logger.log(message);
+  }
+
   // -------------------------  Migration File Handlers --------------------------------------------
 
   /**
@@ -235,6 +292,7 @@ class Reporter {
 
     this.summary.push({
       file: data.file,
+      number: data.number,
       deployments: []
     });
 
@@ -250,6 +308,7 @@ class Reporter {
    */
   async postMigrate(isLast) {
     let data = {};
+    data.number = this.summary[this.currentFileIndex].number;
     data.cost = this.getTotals().cost;
     this.summary[this.currentFileIndex].totalCost = data.cost;
 

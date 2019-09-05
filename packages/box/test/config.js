@@ -1,4 +1,4 @@
-const boxConfig = require("../lib/config");
+const boxConfig = require("../dist/lib/config");
 const assert = require("assert");
 
 describe("boxConfig", () => {

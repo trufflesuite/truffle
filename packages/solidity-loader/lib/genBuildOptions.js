@@ -1,4 +1,4 @@
-const TruffleConfig = require("truffle-config");
+const TruffleConfig = require("@truffle/config");
 const Logger = require("./logDecorator");
 const getTruffleConfig = require("./getTruffleConfig");
 
