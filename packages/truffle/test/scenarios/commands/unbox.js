@@ -4,7 +4,7 @@ const MemoryLogger = require("../memorylogger");
 const fse = require("fs-extra");
 const tmp = require("tmp");
 const path = require("path");
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 
 describe("truffle unbox [ @standalone ]", () => {
   let config;
