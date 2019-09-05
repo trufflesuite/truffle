@@ -994,9 +994,6 @@
   resolved "https://registry.yarnpkg.com/@truffle/error/-/error-0.0.6.tgz#75d499845b4b3a40537889e7d04c663afcaee85d"
   integrity sha512-QUM9ZWiwlXGixFGpV18g5I6vua6/r+ZV9W/5DQA5go9A3eZUNPHPaTKMIQPJLYn6+ZV5jg5H28zCHq56LHF3yA==
 
-"@truffle/expect@^0.0.9":
-  version "0.0.11"
-
 "@trufflesuite/chromafi@^2.1.1":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.1.1.tgz#31d377f26238e6434a18d5f080061949c04eb2f0"

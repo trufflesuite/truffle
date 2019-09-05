@@ -34,7 +34,6 @@
     "reselect-tree": "^1.3.1",
     "truffle-codec-utils": "^1.0.18",
     "truffle-codec": "^3.0.12",
-    "@truffle/expect": "^0.0.9",
     "web3": "1.2.1",
     "web3-eth-abi": "1.2.1"
   },
