@@ -462,9 +462,7 @@ export namespace Types {
       }
       case "struct": {
         let id = DefinitionUtils.typeId(definition).toString();
-        let qualifiedName = definition.typeName
-          ? definition.typeName.name
-          : definition.name;
+        let qualifiedName = DefinitionUtils.typeStringWithoutLocation(definition).match(/struct (.*)/)[1];
         let [definingContractName, typeName] = qualifiedName.split(".");
         if(forceLocation === null) {
           return {
@@ -487,9 +485,7 @@ export namespace Types {
       }
       case "enum": {
         let id = DefinitionUtils.typeId(definition).toString();
-        let qualifiedName = definition.typeName
-          ? definition.typeName.name
-          : definition.name;
+        let qualifiedName = DefinitionUtils.typeStringWithoutLocation(definition).match(/enum (.*)/)[1];
         let [definingContractName, typeName] = qualifiedName.split(".");
         return {
           typeClass,

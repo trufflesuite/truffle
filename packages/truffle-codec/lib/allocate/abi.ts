@@ -32,6 +32,9 @@ export function getAbiAllocations(userDefinedTypes: Types.TypesById): Allocation
 }
 
 function allocateStruct(dataType: Types.StructType, userDefinedTypes: Types.TypesById, existingAllocations: Allocations.AbiAllocations): Allocations.AbiAllocations {
+  debug("allocating struct: %O", dataType);
+  //NOTE: dataType here should be a *stored* type!
+  //it is up to the caller to take care of this
   return allocateMembers(dataType.id, dataType.memberTypes, userDefinedTypes, existingAllocations);
 }
 
@@ -177,8 +180,9 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
         if(!storedType) {
           throw new UnknownUserDefinedTypeError(dataType.id, Types.typeString(dataType));
         }
-        allocations = allocateStruct(dataType, userDefinedTypes, existingAllocations);
-        allocation = allocations[dataType.id];
+        debug("storedType: %O", storedType);
+        allocations = allocateStruct(storedType, userDefinedTypes, existingAllocations);
+        allocation = allocations[storedType.id];
       }
       //having found our allocation, if it's not null, we can just look up its size and dynamicity
       if(allocation !== null) {
