@@ -1,5 +1,5 @@
 declare class TruffleConfig {
-  constructor(truffleDirectory: string, workingDirectory: string, network: string);
+  constructor(truffleDirectory?: string, workingDirectory?: string, network?: string);
 }
 
 declare namespace TruffleConfig {

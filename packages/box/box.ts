@@ -13,13 +13,17 @@ function parseSandboxOptions(options: sandboxOptions) {
     return {
       name: options,
       unsafeCleanup: false,
-      setGracefulCleanup: false
+      setGracefulCleanup: false,
+      logger: console,
+      force: false
     };
   } else if (typeof options === "object") {
     return {
       name: options.name || "default",
       unsafeCleanup: options.unsafeCleanup || false,
-      setGracefulCleanup: options.setGracefulCleanup || false
+      setGracefulCleanup: options.setGracefulCleanup || false,
+      logger: options.logger || console,
+      force: options.force || false
     };
   }
 }
@@ -98,7 +102,13 @@ const Box = {
   // options.setGracefulCleanup
   //   Cleanup temporary files even when an uncaught exception occurs
   sandbox: async (options: sandboxOptions) => {
-    const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
+    const {
+      name,
+      unsafeCleanup,
+      setGracefulCleanup,
+      logger,
+      force
+    } = parseSandboxOptions(
       options
     );
 
@@ -106,10 +116,11 @@ const Box = {
 
     let config = new Config();
     const tmpDir = tmp.dirSync({ unsafeCleanup });
+    const unboxOptions = { logger, force };
     await Box.unbox(
       `https://github.com/trufflesuite/truffle-init-${name}`,
       tmpDir.name,
-      options,
+      unboxOptions,
       config
     );
     return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});

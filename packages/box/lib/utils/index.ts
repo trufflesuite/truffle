@@ -35,7 +35,7 @@ export = {
     return await config.read(configPath);
   },
 
-  setUpTempDirectory: events => {
+  setUpTempDirectory: (events: any) => {
     events.emit("unbox:preparingToDownload:start");
     const options = {
       dir: process.cwd(),

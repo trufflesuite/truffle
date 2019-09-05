@@ -4,6 +4,8 @@ export type sandboxOptionsObject = {
   name?: string;
   unsafeCleanup?: boolean;
   setGracefulCleanup?: boolean;
+  force?: boolean;
+  logger?: Console;
 };
 
 export type sandboxOptionsString = string;
