@@ -5,6 +5,7 @@ const Module = require("module");
 const findUp = require("find-up");
 const originalrequire = require("original-require");
 const Configstore = require("configstore");
+const { EventManager } = require("../truffle-events");
 
 const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
 const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename
@@ -17,6 +18,9 @@ class Config {
     this._values = _values({ truffleDirectory, workingDirectory, network });
 
     const props = configProps({ configObject: this });
+
+    const eventsOptions = eventManagerOptions(this);
+    this.events = new EventManager(eventsOptions);
 
     Object.keys(props).forEach(prop => {
       this.addProp(prop, props[prop]);
@@ -75,6 +79,8 @@ class Config {
   with(obj) {
     const normalized = this.normalize(obj);
     const current = this.normalize(this);
+    let eventsOptions = eventManagerOptions(this);
+    this.events.updateSubscriberOptions(eventsOptions);
 
     return _.extend(Object.create(Config.prototype), current, normalized);
   }
@@ -96,6 +102,8 @@ class Config {
         // Do nothing.
       }
     });
+    const eventsOptions = eventManagerOptions(this);
+    this.events.updateSubscriberOptions(eventsOptions);
 
     return this;
   }
@@ -141,6 +149,16 @@ Config.detect = (options = {}, filename) => {
   return Config.load(configFile, options);
 };
 
+// When new options are passed in, a new eventManager needs to be
+// attached as it might override some options (e.g. { quiet: true })
+const eventManagerOptions = config => {
+  let muteLogging;
+  const { quiet, logger, subscribers } = config;
+
+  if (quiet) muteLogging = true;
+  return { logger, muteLogging, subscribers };
+};
+
 Config.load = (file, options) => {
   const config = new Config();
 
@@ -153,6 +171,10 @@ Config.load = (file, options) => {
 
   config.merge(static_config);
   config.merge(options);
+
+  const eventsOptions = eventManagerOptions(config);
+  config.events.updateSubscriberOptions(eventsOptions);
+  config.events.initializeUserSubscribers(eventsOptions);
 
   return config;
 };

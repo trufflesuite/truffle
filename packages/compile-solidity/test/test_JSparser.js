@@ -2,7 +2,7 @@ const path = require("path");
 const assert = require("assert");
 const Resolver = require("@truffle/resolver");
 const compile = require("../index");
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 
 describe("JSparser", () => {
   const options = {

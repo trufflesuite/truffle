@@ -8,7 +8,7 @@ const {
   Local,
   VersionRange
 } = require("../../compilerSupplier/loadingStrategies");
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 const config = new Config();
 let supplier;
 const supplierOptions = { events: config.events };

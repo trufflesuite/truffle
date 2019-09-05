@@ -12,7 +12,7 @@ module.exports = {
   },
   run: function(options, done) {
     const SUPPORTED_COMPILERS = ["--solc"];
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const config = Config.default().with(options);
     const CompilerSupplier = require("@truffle/compile-solidity")
       .CompilerSupplier;
