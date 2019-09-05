@@ -65,11 +65,10 @@ const command = {
   },
 
   listVersions: async function(options) {
-    const CompilerSupplier = require("@truffle/compile-solidity")
-      .CompilerSupplier;
+    const { CompilerSupplier } = require("@truffle/compile-solidity");
     const supplier = new CompilerSupplier({
-      solcConfig: config.compilers.solc,
-      events: config.events
+      solcConfig: options.compilers.solc,
+      events: options.events
     });
 
     const log = options.logger.log;
