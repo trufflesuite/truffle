@@ -1,6 +1,6 @@
 {
   "name": "@truffle/solidity-utils",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Utilities for Solidity contracts",
   "main": "index.js",
   "scripts": {},
@@ -19,6 +19,5 @@
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/solidity-utils#readme",
   "publishConfig": {
     "access": "public"
-  },
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
+  }
 }

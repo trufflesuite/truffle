@@ -1,6 +1,6 @@
 {
   "name": "truffle-codec-utils",
-  "version": "1.0.15",
+  "version": "1.0.18",
   "description": "Utilities for decoding data from the EVM or encoding it for the EVM",
   "dependencies": {
     "bn.js": "^4.11.8",
@@ -9,7 +9,6 @@
     "semver": "^6.1.1",
     "web3": "^1.2.1"
   },
-  "version": "1.0.16",
   "main": "dist/index.js",
   "scripts": {
     "build": "node_modules/.bin/tsc",

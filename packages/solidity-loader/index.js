@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const { getOptions } = require("loader-utils");
 const validateOptions = require("schema-utils");
-const truffleMigrator = require("truffle-core/lib/commands/migrate");
+const truffleMigrator = require("@truffle/core/lib/commands/migrate");
 
 const Logger = require("./lib/logDecorator");
 const genBuildOptions = require("./lib/genBuildOptions");

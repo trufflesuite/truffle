@@ -1,0 +1,32 @@
+{
+  "name": "@truffle/compile-vyper",
+  "description": "Vyper compiler support",
+  "license": "MIT",
+  "author": "Evgeniy Filatov <evgeniyfilatov@gmail.com>",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-vyper",
+  "version": "1.0.28",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+    "@truffle/compile-solidity": "^4.2.4",
+    "async": "2.6.1",
+    "colors": "^1.1.2",
+    "eslint": "^5.5.0",
+    "minimatch": "^3.0.4"
+  },
+  "devDependencies": {
+    "@truffle/config": "^1.1.21",
+    "mocha": "5.2.0"
+  },
+  "keywords": [
+    "compile",
+    "ethereum",
+    "truffle",
+    "vyper"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
