@@ -6,8 +6,8 @@ const async = require("async");
 const colors = require("colors");
 const minimatch = require("minimatch");
 
-const find_contracts = require("truffle-contract-sources");
-const Profiler = require("truffle-compile/profiler");
+const find_contracts = require("@truffle/contract-sources");
+const Profiler = require("@truffle/compile-solidity/profiler");
 
 const compiler = {
   name: "ligo",
