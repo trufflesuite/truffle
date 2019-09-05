@@ -1,0 +1,6 @@
+node_modules
+.vscode
+
+*.abi
+*.bin
+test

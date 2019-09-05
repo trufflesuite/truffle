@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-describe("Truffle Library APIs", () => {
+describe("Truffle Library APIs [ @standalone ]", () => {
   // Avoid `npm test:raw`
   if (process.env.NO_BUILD) return;
 

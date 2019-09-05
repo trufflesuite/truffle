@@ -1,6 +1,6 @@
 var MemoryLogger = require("../memorylogger");
 var CommandRunner = require("../commandrunner");
-var contract = require("truffle-contract");
+var contract = require("@truffle/contract");
 var fs = require("fs");
 var path = require("path");
 var assert = require("assert");
@@ -9,13 +9,12 @@ var Server = require("../server");
 var Reporter = require("../reporter");
 
 describe("`truffle compile` as external", function() {
-
   // These tests rely on a solc jq dependency installed with apt-get
   // You can run them locally with `CI=true npm test`
   if (!process.env.CI) return;
 
   var config;
-  var project = path.join(__dirname, '../../sources/external_compile');
+  var project = path.join(__dirname, "../../sources/external_compile");
   var logger = new MemoryLogger();
 
   before("set up the server", function(done) {
@@ -48,10 +47,26 @@ describe("`truffle compile` as external", function() {
         return done(err);
       }
 
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "MetaCoin.json")));
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "ConvertLib.json")));
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "Migrations.json")));
-      assert(fs.existsSync(path.join(config.contracts_build_directory, "ExtraMetaCoin.json")));
+      assert(
+        fs.existsSync(
+          path.join(config.contracts_build_directory, "MetaCoin.json")
+        )
+      );
+      assert(
+        fs.existsSync(
+          path.join(config.contracts_build_directory, "ConvertLib.json")
+        )
+      );
+      assert(
+        fs.existsSync(
+          path.join(config.contracts_build_directory, "Migrations.json")
+        )
+      );
+      assert(
+        fs.existsSync(
+          path.join(config.contracts_build_directory, "ExtraMetaCoin.json")
+        )
+      );
 
       done();
     });
@@ -67,24 +82,45 @@ describe("`truffle compile` as external", function() {
         return done(err);
       }
 
-      var MetaCoin = contract(require(path.join(config.contracts_build_directory, "MetaCoin.json")));
-      var ConvertLib = contract(require(path.join(config.contracts_build_directory, "ConvertLib.json")));
-      var Migrations = contract(require(path.join(config.contracts_build_directory, "Migrations.json")));
-      var ExtraMetaCoin = contract(require(path.join(config.contracts_build_directory, "ExtraMetaCoin.json")));
+      var MetaCoin = contract(
+        require(path.join(config.contracts_build_directory, "MetaCoin.json"))
+      );
+      var ConvertLib = contract(
+        require(path.join(config.contracts_build_directory, "ConvertLib.json"))
+      );
+      var Migrations = contract(
+        require(path.join(config.contracts_build_directory, "Migrations.json"))
+      );
+      var ExtraMetaCoin = contract(
+        require(path.join(
+          config.contracts_build_directory,
+          "ExtraMetaCoin.json"
+        ))
+      );
 
       var promises = [];
 
-      [MetaCoin, ConvertLib, Migrations, ExtraMetaCoin].forEach(function(abstraction) {
+      [MetaCoin, ConvertLib, Migrations, ExtraMetaCoin].forEach(function(
+        abstraction
+      ) {
         abstraction.setProvider(config.provider);
 
-        promises.push(abstraction.deployed().then(function(instance) {
-          assert.notEqual(instance.address, null, instance.contract_name + " didn't have an address!");
-        }));
+        promises.push(
+          abstraction.deployed().then(function(instance) {
+            assert.notEqual(
+              instance.address,
+              null,
+              instance.contract_name + " didn't have an address!"
+            );
+          })
+        );
       });
 
-      Promise.all(promises).then(function() {
-        done();
-      }).catch(done);
+      Promise.all(promises)
+        .then(function() {
+          done();
+        })
+        .catch(done);
     });
   });
 
@@ -101,6 +137,4 @@ describe("`truffle compile` as external", function() {
       done();
     });
   });
-
-
 });
