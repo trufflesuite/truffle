@@ -5,11 +5,19 @@ const semver = require("semver");
 const { Docker, Local, Native, VersionRange } = require("./loadingStrategies");
 
 class CompilerSupplier {
-  constructor(_config) {
-    _config = _config || {};
-    const defaultConfig = { version: "0.5.8" };
-    this.config = Object.assign({}, defaultConfig, _config);
-    this.strategyOptions = { version: this.config.version };
+  constructor({ events, solcConfig }) {
+    const { version, docker, compilerRoots, parser } = solcConfig;
+    const defaultSolcVersion = "0.5.8";
+    this.events = events;
+    this.parser = parser;
+    this.version = version ? version : defaultSolcVersion;
+    this.docker = docker;
+    this.compilerRoots = compilerRoots;
+    this.strategyOptions = {};
+    if (version) this.strategyOptions.version = this.version;
+    if (docker) this.strategyOptions.docker = compilerRoots;
+    if (compilerRoots) this.strategyOptions.compilerRoots = compilerRoots;
+    if (events) this.strategyOptions.events = events;
   }
 
   badInputError(userSpecification) {
@@ -38,11 +46,11 @@ class CompilerSupplier {
   }
 
   load() {
-    const userSpecification = this.config.version;
+    const userSpecification = this.version;
 
     return new Promise(async (resolve, reject) => {
       let strategy;
-      const useDocker = this.config.docker;
+      const useDocker = this.docker;
       const useNative = userSpecification === "native";
       const useSpecifiedLocal =
         userSpecification && this.fileExists(userSpecification);
@@ -55,19 +63,13 @@ class CompilerSupplier {
       } else if (useSpecifiedLocal) {
         strategy = new Local(this.strategyOptions);
       } else if (isValidVersionRange) {
-        if (this.config.compilerRoots) {
-          this.strategyOptions.compilerRoots = this.config.compilerRoots;
-        }
         strategy = new VersionRange(this.strategyOptions);
       }
 
       if (strategy) {
         try {
           const solc = await strategy.load(userSpecification);
-          const parserSolc = await this.loadParserSolc(
-            this.config.parser,
-            solc
-          );
+          const parserSolc = await this.loadParserSolc(this.parser, solc);
           resolve({ solc, parserSolc });
         } catch (error) {
           reject(error);
@@ -83,9 +85,10 @@ class CompilerSupplier {
       this.checkParser(parser);
       const solcVersion = solc.version();
       const normalizedSolcVersion = semver.coerce(solcVersion).version;
-      return await new VersionRange({ version: normalizedSolcVersion }).load(
-        normalizedSolcVersion
-      );
+      const options = Object.assign({}, this.strategyOptions, {
+        version: normalizedSolcVersion
+      });
+      return await new VersionRange(options).load(normalizedSolcVersion);
     }
     return false;
   }

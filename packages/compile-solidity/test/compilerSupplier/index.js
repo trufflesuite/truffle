@@ -1,5 +1,6 @@
 const assert = require("assert");
 const sinon = require("sinon");
+const request = require("request-promise");
 const CompilerSupplier = require("../../compilerSupplier");
 const {
   Docker,
@@ -7,17 +8,20 @@ const {
   Local,
   VersionRange
 } = require("../../compilerSupplier/loadingStrategies");
-let supplier, config;
+const Config = require("truffle-config");
+const config = new Config();
+let supplier;
+const supplierOptions = { events: config.events };
 
 describe("CompilerSupplier", () => {
   describe("load()", () => {
     describe("when a docker tag is specified in the config", () => {
       beforeEach(() => {
-        config = {
+        supplierOptions.solcConfig = {
           docker: "randoDockerTagzzz",
           version: "0.4.25"
         };
-        supplier = new CompilerSupplier(config);
+        supplier = new CompilerSupplier(supplierOptions);
         sinon.stub(Docker.prototype, "load").returns("called Docker");
       });
       afterEach(() => {
@@ -42,8 +46,8 @@ describe("CompilerSupplier", () => {
       // HACK: Because of how the test script is set up, the word 'native' cannot be a
       // part of the it/describe strings above and below
       beforeEach(() => {
-        config = { version: "native" };
-        supplier = new CompilerSupplier(config);
+        supplierOptions.solcConfig = { version: "native" };
+        supplier = new CompilerSupplier(supplierOptions);
         sinon.stub(Native.prototype, "load").returns("called Native");
       });
       afterEach(() => {
@@ -66,7 +70,8 @@ describe("CompilerSupplier", () => {
 
     describe("when no version is specified in the config", () => {
       beforeEach(() => {
-        supplier = new CompilerSupplier();
+        supplierOptions.solcConfig = { version: undefined };
+        supplier = new CompilerSupplier(supplierOptions);
         sinon
           .stub(VersionRange.prototype, "load")
           .returns("called VersionRange");
@@ -91,8 +96,8 @@ describe("CompilerSupplier", () => {
 
     describe("when a solc version is specified in the config", () => {
       beforeEach(() => {
-        config = { version: "0.4.11" };
-        supplier = new CompilerSupplier(config);
+        supplierOptions.solcConfig = { version: "0.4.11" };
+        supplier = new CompilerSupplier(supplierOptions);
         sinon
           .stub(VersionRange.prototype, "load")
           .returns("called VersionRange");
@@ -117,38 +122,53 @@ describe("CompilerSupplier", () => {
 
     describe("when a user specifies the compiler url root", () => {
       beforeEach(() => {
+        sinon.stub(VersionRange.prototype, "addFileToCache");
         sinon.stub(VersionRange.prototype, "versionIsCached").returns(false);
+        sinon.stub(VersionRange.prototype, "fileIsCached").returns(false);
+        sinon.stub(VersionRange.prototype, "compilerFromString");
+        sinon
+          .stub(request, "get")
+          .withArgs(
+            "https://ethereum.github.io/solc-bin/bin/soljson-v0.5.0+commit.1d4f565a.js"
+          )
+          .returns("response");
       });
       afterEach(() => {
+        VersionRange.prototype.addFileToCache.restore();
         VersionRange.prototype.versionIsCached.restore();
+        VersionRange.prototype.fileIsCached.restore();
+        VersionRange.prototype.compilerFromString.restore();
+        request.get.restore();
       });
 
-      it("Uses the user specified url", done => {
+      it("loads VersionRange with the user specified urls", done => {
         // This doesn't really verify that user provided list is being used but this in combination with next test does.
         // I am not sure what's the best way to check if user specified list is being used.
-        config = {
-          version: "0.4.11",
-          compilerRoots: [
-            "https://f00dbabe",
-            "https://ethereum.github.io/solc-bin/bin/"
-          ]
+        supplierOptions.solcConfig = {
+          version: "0.5.0",
+          compilerRoots: ["https://ethereum.github.io/solc-bin/bin/"]
         };
-        supplier = new CompilerSupplier(config);
+        supplier = new CompilerSupplier(supplierOptions);
         supplier
           .load()
           .then(() => {
-            assert(true);
+            assert(
+              VersionRange.prototype.compilerFromString.calledWith("response")
+            );
             done();
           })
           .catch(() => {
             assert(false);
             done();
           });
-      });
+      }).timeout(30000);
 
       it("throws an error on incorrect user url", done => {
-        config = { version: "0.4.12", compilerRoots: ["https://f00dbabe"] };
-        supplier = new CompilerSupplier(config);
+        supplierOptions.solcConfig = {
+          version: "0.5.6",
+          compilerRoots: ["https://f00dbabe"]
+        };
+        supplier = new CompilerSupplier(supplierOptions);
         supplier
           .load()
           .then(() => {
@@ -165,8 +185,8 @@ describe("CompilerSupplier", () => {
 
     describe("when a solc version range is specified", () => {
       beforeEach(() => {
-        config = { version: "^0.4.11" };
-        supplier = new CompilerSupplier(config);
+        supplierOptions.solcConfig = { version: "^0.4.11" };
+        supplier = new CompilerSupplier(supplierOptions);
         sinon
           .stub(VersionRange.prototype, "load")
           .returns("called VersionRange");
@@ -191,8 +211,8 @@ describe("CompilerSupplier", () => {
 
     describe("when a path is specified in the config", () => {
       beforeEach(() => {
-        config = { version: "./some/path" };
-        supplier = new CompilerSupplier(config);
+        supplierOptions.solcConfig = { version: "./some/path" };
+        supplier = new CompilerSupplier(supplierOptions);
         sinon.stub(supplier, "fileExists").returns(true);
         sinon.stub(Local.prototype, "load").returns("called Local");
       });
@@ -217,8 +237,8 @@ describe("CompilerSupplier", () => {
 
     describe("when no valid values are specified", () => {
       beforeEach(() => {
-        config = { version: "globbity gloop" };
-        supplier = new CompilerSupplier(config);
+        supplierOptions.solcConfig = { version: "globbity gloop" };
+        supplier = new CompilerSupplier(supplierOptions);
       });
 
       it("throws an error", done => {

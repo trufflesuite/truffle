@@ -3,20 +3,24 @@ const fse = require("fs-extra");
 const assert = require("assert");
 const inquirer = require("inquirer");
 const sinon = require("sinon");
+const Config = require("truffle-config");
 const Box = require("../");
 const TRUFFLE_BOX_DEFAULT =
   "git@github.com:trufflesuite/truffle-init-default.git";
 const utils = require("../dist/lib/utils");
-let options, cleanupCallback;
+let options, cleanupCallback, config;
 
 describe("@truffle/box Box", () => {
   const destination = path.join(__dirname, ".truffle_test_tmp");
 
   beforeEach(() => {
     fse.ensureDirSync(destination);
+    config = Config.default();
+    sinon.stub(config.events, "emit");
   });
   afterEach(() => {
     fse.removeSync(destination);
+    config.events.emit.restore();
   });
 
   describe(".unbox()", () => {
@@ -29,15 +33,17 @@ describe("@truffle/box Box", () => {
     });
 
     it("unboxes truffle box from github", done => {
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination).then(truffleConfig => {
-        assert.ok(truffleConfig);
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config).then(
+        truffleConfig => {
+          assert.ok(truffleConfig);
 
-        assert(
-          fse.existsSync(path.join(destination, "truffle-config.js")),
-          "Unboxed project should have truffle config."
-        );
-        done();
-      });
+          assert(
+            fse.existsSync(path.join(destination, "truffle-config.js")),
+            "Unboxed project should have truffle config."
+          );
+          done();
+        }
+      );
     });
 
     it("does not copy the config files or ignored files in the config", () => {
@@ -77,7 +83,7 @@ describe("@truffle/box Box", () => {
       });
 
       it("calls the cleanup function if it is available", function(done) {
-        Box.unbox(TRUFFLE_BOX_DEFAULT, destination).catch(() => {
+        Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config).catch(() => {
           assert(cleanupCallback.called);
           done();
         });
@@ -94,7 +100,7 @@ describe("@truffle/box Box", () => {
     });
 
     it("unboxes truffle box when used", done => {
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }).then(
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }, config).then(
         truffleConfig => {
           assert.ok(truffleConfig);
 
@@ -108,10 +114,12 @@ describe("@truffle/box Box", () => {
     });
 
     it("runs without a prompt", done => {
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }).then(() => {
-        assert.strictEqual(inquirer.prompt.called, false);
-        done();
-      });
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }, config).then(
+        () => {
+          assert.strictEqual(inquirer.prompt.called, false);
+          done();
+        }
+      );
     });
 
     it("overwrites redundant files if init/unbox force flag used", done => {
@@ -129,18 +137,20 @@ describe("@truffle/box Box", () => {
       );
       const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
 
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }).then(() => {
-        assert(
-          fse.existsSync(truffleConfigPath),
-          "truffle-config.js wasn't recreated!"
-        );
-        const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
-        assert(
-          newConfig !== mockConfig,
-          "truffle-config.js wasn't overwritten!"
-        );
-        done();
-      });
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, { force: true }, config).then(
+        () => {
+          assert(
+            fse.existsSync(truffleConfigPath),
+            "truffle-config.js wasn't recreated!"
+          );
+          const newConfig = fse.readFileSync(truffleConfigPath, "utf8");
+          assert(
+            newConfig !== mockConfig,
+            "truffle-config.js wasn't overwritten!"
+          );
+          done();
+        }
+      );
     });
   });
 
@@ -165,7 +175,7 @@ describe("@truffle/box Box", () => {
     });
 
     it("prompts when redundant files/folders exist in target directory", done => {
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options).then(() => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config).then(() => {
         assert.strictEqual(inquirer.prompt.called, true);
         assert.strictEqual(inquirer.prompt.callCount, 2);
         done();
@@ -173,7 +183,7 @@ describe("@truffle/box Box", () => {
     });
 
     it("prompt questions call correctly", done => {
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options).then(() => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config).then(() => {
         assert(
           inquirer.prompt.getCall(0).args[0],
           "Prompt questions weren't called!"
@@ -197,7 +207,7 @@ describe("@truffle/box Box", () => {
       );
       const mockConfig = fse.readFileSync(truffleConfigPath, "utf8");
 
-      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options).then(() => {
+      Box.unbox(TRUFFLE_BOX_DEFAULT, destination, options, config).then(() => {
         assert(inquirer.prompt.called);
         assert(
           fse.existsSync(truffleConfigPath),

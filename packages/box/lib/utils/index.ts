@@ -2,20 +2,21 @@ import unbox from "./unbox";
 import fs from "fs";
 import config from "../config";
 import tmp from "tmp";
+import process from "process";
 const cwd = require("process").cwd();
 import path from "path";
-import ora from "ora";
 import { boxConfig, unboxOptions } from "typings";
 
 export = {
-  downloadBox: async (url: string, destination: string) => {
-    const downloadSpinner = ora("Downloading").start();
+  downloadBox: async (url: string, destination: string, events: any) => {
+    events.emit("unbox:downloadingBox:start");
+
     try {
       await unbox.verifyURL(url);
       await unbox.fetchRepository(url, destination);
-      downloadSpinner.succeed();
+      events.emit("unbox:downloadingBox:succeed");
     } catch (error) {
-      downloadSpinner.fail();
+      events.emit("unbox:fail");
       throw error;
     }
   },
@@ -34,21 +35,21 @@ export = {
     return await config.read(configPath);
   },
 
-  setUpTempDirectory: () => {
-    const prepareSpinner = ora("Preparing to download").start();
+  setUpTempDirectory: events => {
+    events.emit("unbox:preparingToDownload:start");
     const options = {
-      dir: cwd,
+      dir: process.cwd(),
       unsafeCleanup: true
     };
     try {
       const tmpDir = tmp.dirSync(options);
-      prepareSpinner.succeed();
+      events.emit("unbox:preparingToDownload:succeed");
       return {
         path: path.join(tmpDir.name, "box"),
         cleanupCallback: tmpDir.removeCallback
       };
     } catch (error) {
-      prepareSpinner.fail();
+      events.emit("unbox:fail");
       throw error;
     }
   },
@@ -63,13 +64,13 @@ export = {
     await unbox.copyTempIntoDestination(tempDir, destination, unpackBoxOptions);
   },
 
-  setUpBox: (boxConfig: boxConfig, destination: string) => {
-    const setUpSpinner = ora("Setting up box").start();
+  setUpBox: (boxConfig: boxConfig, destination: string, events: any) => {
+    events.emit("unbox:settingUpBox:start");
     try {
       unbox.installBoxDependencies(boxConfig, destination);
-      setUpSpinner.succeed();
+      events.emit("unbox:settingUpBox:succeed");
     } catch (error) {
-      setUpSpinner.fail();
+      events.emit("unbox:fail");
       throw error;
     }
   }

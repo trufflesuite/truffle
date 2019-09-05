@@ -11,13 +11,21 @@ module.exports = {
     ]
   },
   run: function(options, done) {
+    const SUPPORTED_COMPILERS = ["--solc"];
+    const Config = require("truffle-config");
+    const config = Config.default().with(options);
     const CompilerSupplier = require("@truffle/compile-solidity")
       .CompilerSupplier;
-    const supplier = new CompilerSupplier();
-    const SUPPORTED_COMPILERS = ["--solc"];
+    const supplierOptions = {
+      events: config.events,
+      solcConfig: config.compilers.solc
+    };
+    const supplier = new CompilerSupplier(supplierOptions);
+
+    config.events.emit("obtain:start");
 
     if (options.solc) {
-      return this.downloadAndCacheSolc({ options, supplier })
+      return this.downloadAndCacheSolc({ config, options, supplier })
         .then(done)
         .catch(done);
     }
@@ -30,12 +38,22 @@ module.exports = {
       `obtain' for more information and usage.`;
     return done(new Error(message));
   },
-  downloadAndCacheSolc: async ({ options, supplier }) => {
-    const logger = options.logger || console;
+
+  downloadAndCacheSolc: async ({ config, options, supplier }) => {
+    const { events } = config;
     const version = options.solc;
-    const solc = await supplier.downloadAndCacheSolc(version);
-    return logger.log(
-      `    > successfully downloaded and cached ${solc.version()}`
-    );
+    try {
+      const solc = await supplier.downloadAndCacheSolc(version);
+      events.emit("obtain:succeed", {
+        compiler: {
+          version: solc.version(),
+          name: "Solidity"
+        }
+      });
+      return;
+    } catch (error) {
+      events.emit("obtain:fail");
+      return;
+    }
   }
 };

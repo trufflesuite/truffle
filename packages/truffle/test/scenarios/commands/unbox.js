@@ -1,9 +1,10 @@
 const assert = require("assert");
 const CommandRunner = require("../commandrunner");
 const MemoryLogger = require("../memorylogger");
-const fs = require("fs-extra");
+const fse = require("fs-extra");
 const tmp = require("tmp");
 const path = require("path");
+const Config = require("truffle-config");
 
 describe("truffle unbox [ @standalone ]", () => {
   let config;
@@ -13,6 +14,7 @@ describe("truffle unbox [ @standalone ]", () => {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
     config = { working_directory: tempDir.name };
     config.logger = logger;
+    config = Config.default().merge(config);
   });
 
   afterEach("clear working_directory", () => {
@@ -23,19 +25,19 @@ describe("truffle unbox [ @standalone ]", () => {
     it("unboxes truffle-init-default", done => {
       CommandRunner.run("unbox --force", config, () => {
         assert(
-          fs.pathExistsSync(
+          fse.pathExistsSync(
             path.join(tempDir.name, "contracts", "ConvertLib.sol")
           ),
           "ConvertLib.sol does not exist"
         );
         assert(
-          fs.pathExistsSync(
+          fse.pathExistsSync(
             path.join(tempDir.name, "contracts", "Migrations.sol")
           ),
           "Migrations.sol does not exist"
         );
         assert(
-          fs.pathExistsSync(
+          fse.pathExistsSync(
             path.join(tempDir.name, "contracts", "MetaCoin.sol")
           ),
           "MetaCoin.sol does not exist"
@@ -53,8 +55,9 @@ describe("truffle unbox [ @standalone ]", () => {
             "unbox https://github.com/truffle-box/bare-box",
             config,
             () => {
-              const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(
+                fse.existsSync(path.join(tempDir.name, "truffle-config.js"))
+              );
               done();
             }
           );
@@ -67,8 +70,9 @@ describe("truffle unbox [ @standalone ]", () => {
             "unbox https://github.com/truffle-box/bare-box#truffle-test-branch",
             config,
             () => {
-              const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(
+                fse.existsSync(path.join(tempDir.name, "truffle-config.js"))
+              );
               done();
             }
           );
@@ -81,8 +85,17 @@ describe("truffle unbox [ @standalone ]", () => {
             "unbox https://github.com/truffle-box/bare-box#truffle-test-branch:path/to/subDir --force",
             config,
             () => {
-              const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(
+                fse.existsSync(
+                  path.join(
+                    tempDir.name,
+                    "path",
+                    "to",
+                    "subDir",
+                    "truffle-config.js"
+                  )
+                )
+              );
               done();
             }
           );
@@ -92,8 +105,9 @@ describe("truffle unbox [ @standalone ]", () => {
       describe("origin/master", () => {
         it("unboxes successfully", done => {
           CommandRunner.run("unbox truffle-box/bare-box", config, () => {
-            const output = logger.contents();
-            assert(output.includes("Unbox successful."));
+            assert(
+              fse.existsSync(path.join(tempDir.name, "truffle-config.js"))
+            );
             done();
           });
         }).timeout(20000);
@@ -105,8 +119,9 @@ describe("truffle unbox [ @standalone ]", () => {
             "unbox truffle-box/bare-box#truffle-test-branch",
             config,
             () => {
-              const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(
+                fse.existsSync(path.join(tempDir.name, "truffle-config.js"))
+              );
               done();
             }
           );
@@ -119,8 +134,17 @@ describe("truffle unbox [ @standalone ]", () => {
             "unbox truffle-box/bare-box#truffle-test-branch:path/to/subDir --force",
             config,
             () => {
-              const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(
+                fse.existsSync(
+                  path.join(
+                    tempDir.name,
+                    "path",
+                    "to",
+                    "subDir",
+                    "truffle-config.js"
+                  )
+                )
+              );
               done();
             }
           );
@@ -130,8 +154,9 @@ describe("truffle unbox [ @standalone ]", () => {
       describe("official truffle box", () => {
         it("unboxes successfully", done => {
           CommandRunner.run("unbox bare", config, () => {
-            const output = logger.contents();
-            assert(output.includes("Unbox successful."));
+            assert(
+              fse.existsSync(path.join(tempDir.name, "truffle-config.js"))
+            );
             done();
           });
         }).timeout(20000);
@@ -140,8 +165,9 @@ describe("truffle unbox [ @standalone ]", () => {
       describe("official truffle-box", () => {
         it("unboxes successfully", done => {
           CommandRunner.run("unbox bare-box", config, () => {
-            const output = logger.contents();
-            assert(output.includes("Unbox successful."));
+            assert(
+              fse.existsSync(path.join(tempDir.name, "truffle-config.js"))
+            );
             done();
           });
         }).timeout(20000);
@@ -150,8 +176,9 @@ describe("truffle unbox [ @standalone ]", () => {
       describe("official truffle box + branch", () => {
         it("unboxes successfully", done => {
           CommandRunner.run("unbox bare#truffle-test-branch", config, () => {
-            const output = logger.contents();
-            assert(output.includes("Unbox successful."));
+            assert(
+              fse.existsSync(path.join(tempDir.name, "truffle-config.js"))
+            );
             done();
           });
         }).timeout(20000);
@@ -163,8 +190,17 @@ describe("truffle unbox [ @standalone ]", () => {
             "unbox bare#truffle-test-branch:path/to/subDir --force",
             config,
             () => {
-              const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(
+                fse.existsSync(
+                  path.join(
+                    tempDir.name,
+                    "path",
+                    "to",
+                    "subDir",
+                    "truffle-config.js"
+                  )
+                )
+              );
               done();
             }
           );
@@ -177,8 +213,9 @@ describe("truffle unbox [ @standalone ]", () => {
             "unbox git@github.com:truffle-box/bare-box",
             config,
             () => {
-              const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(
+                fse.existsSync(path.join(tempDir.name, "truffle-config.js"))
+              );
               done();
             }
           );
@@ -205,8 +242,9 @@ describe("truffle unbox [ @standalone ]", () => {
             "unbox git@github.com:truffle-box/bare-box#truffle-test-branch",
             config,
             () => {
-              const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(
+                fse.existsSync(path.join(tempDir.name, "truffle-config.js"))
+              );
               done();
             }
           );
@@ -219,8 +257,17 @@ describe("truffle unbox [ @standalone ]", () => {
             "unbox git@github.com:truffle-box/bare-box#truffle-test-branch:path/to/subDir --force",
             config,
             () => {
-              const output = logger.contents();
-              assert(output.includes("Unbox successful."));
+              assert(
+                fse.existsSync(
+                  path.join(
+                    tempDir.name,
+                    "path",
+                    "to",
+                    "subDir",
+                    "truffle-config.js"
+                  )
+                )
+              );
               done();
             }
           );
@@ -297,15 +344,5 @@ describe("truffle unbox [ @standalone ]", () => {
         }).timeout(20000);
       });
     });
-  });
-  describe("when truffle-box.json contains commands", () => {
-    it("unboxes successfully and outputs commands", done => {
-      CommandRunner.run("unbox bare", config, () => {
-        const output = logger.contents();
-        assert(output.includes("Unbox successful."));
-        assert(output.includes("Test contracts:"));
-        done();
-      });
-    }).timeout(20000);
   });
 });

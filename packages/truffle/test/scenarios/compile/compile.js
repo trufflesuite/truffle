@@ -40,15 +40,11 @@ describe("Repeated compilation of contracts with inheritance [ @standalone ]", f
   }
 
   function waitSecond() {
-    return new Promise((resolve, reject) => setTimeout(() => resolve(), 1250));
+    return new Promise((resolve, _reject) => setTimeout(() => resolve(), 1250));
   }
 
   function getSource(key) {
     return fs.readFileSync(mapping[key].sourcePath);
-  }
-
-  function getArtifact(key) {
-    return fs.readFileSync(mapping[key].artifactPath);
   }
 
   function getArtifactStats() {

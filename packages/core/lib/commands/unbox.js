@@ -33,25 +33,6 @@ function normalizeURL(
   throw new Error("Box specified in invalid format");
 }
 
-/*
- * returns a list of messages, one for each command, formatted
- * so that:
- *
- *    command key:   command string
- *
- * are aligned
- */
-function formatCommands(commands) {
-  const names = Object.keys(commands);
-
-  const maxLength = Math.max.apply(null, names.map(({ length }) => length));
-
-  return names.map(name => {
-    const spacing = Array(maxLength - name.length + 1).join(" ");
-    return `  ${name}: ${spacing}${commands[name]}`;
-  });
-}
-
 function normalizeDestination(destination, working_directory) {
   const path = require("path");
   destination = path.join(working_directory, destination);
@@ -112,7 +93,6 @@ const command = {
   run(options, done) {
     const Config = require("@truffle/config");
     const Box = require("@truffle/box");
-    const OS = require("os");
 
     const config = Config.default().with({
       logger: console
@@ -125,16 +105,11 @@ const command = {
 
     const unboxOptions = Object.assign({}, options, { logger: config.logger });
 
-    Box.unbox(url, destination, unboxOptions)
-      .then(({ commands }) => {
-        config.logger.log(`\nUnbox successful. Sweet!${OS.EOL}`);
+    config.events.emit("unbox:start");
 
-        const commandMessages = formatCommands(commands);
-        if (commandMessages.length > 0) config.logger.log(`Commands:${OS.EOL}`);
-
-        commandMessages.forEach(message => config.logger.log(message));
-        config.logger.log("");
-
+    Box.unbox(url, destination, unboxOptions, config)
+      .then(async boxConfig => {
+        await config.events.emit("unbox:succeed", { boxConfig });
         done();
       })
       .catch(done);

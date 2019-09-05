@@ -5,6 +5,7 @@ const Schema = require("@truffle/contract-schema");
 const temp = require("temp").track();
 const path = require("path");
 const fs = require("fs");
+const Config = require("truffle-config");
 const requireNoCache = require("require-nocache")(module);
 const Compile = require("@truffle/compile-solidity/legacy");
 const Ganache = require("ganache-core");
@@ -12,12 +13,7 @@ const Web3 = require("web3");
 const { promisify } = require("util");
 
 describe("artifactor + require", () => {
-  let Example;
-  let accounts;
-  let abi;
-  let bytecode;
-  let networkID;
-  let artifactor;
+  let Example, accounts, abi, bytecode, networkID, artifactor, config;
   const provider = Ganache.provider();
   const web3 = new Web3();
   web3.setProvider(provider);
@@ -52,9 +48,10 @@ describe("artifactor + require", () => {
         loggedStuff: ""
       }
     };
+    config = Config.default().with(options);
 
     // Compile first
-    const result = await promisify(Compile)(sources, options);
+    const result = await promisify(Compile)(sources, config);
 
     // Clean up after solidity. Only remove solidity's listener,
     // which happens to be the first.

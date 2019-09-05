@@ -1,11 +1,12 @@
-var debug = require("debug")("test:util"); // eslint-disable-line no-unused-vars
-var fs = require("fs");
-var ganache = require("ganache-core");
-var Web3 = require("web3");
-var Web3PromiEvent = require("web3-core-promievent");
-var Compile = require("@truffle/compile-solidity/legacy");
-var contract = require("../");
-var path = require("path");
+const debug = require("debug")("test:util");
+const fs = require("fs");
+const ganache = require("ganache-core");
+const Web3 = require("web3");
+const Web3PromiEvent = require("web3-core-promievent");
+const Compile = require("@truffle/compile-solidity/legacy");
+const Config = require("truffle-config");
+const contract = require("../");
+const path = require("path");
 const { promisify } = require("util");
 
 var log = {
@@ -40,7 +41,7 @@ var util = {
     const sources = {
       [sourcePath]: fs.readFileSync(sourcePath, { encoding: "utf8" })
     };
-    const options = {
+    const config = Config.default().with({
       contracts_directory: path.join(__dirname, "sources"),
       quiet: true,
       compilers: {
@@ -54,9 +55,8 @@ var util = {
           }
         }
       }
-    };
-
-    const result = await promisify(Compile)(sources, options);
+    });
+    const result = await promisify(Compile)(sources, config);
 
     if (process.listeners("uncaughtException").length) {
       process.removeListener(

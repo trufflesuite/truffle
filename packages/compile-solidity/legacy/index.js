@@ -94,8 +94,8 @@ compile.with_dependencies = function(options, callback) {
       var hasTargets = required.length;
 
       hasTargets
-        ? self.display(required, options)
-        : self.display(allSources, options);
+        ? self.calculateCompiledSources(required, options)
+        : self.calculateCompiledSources(allSources, options);
 
       options.compilationTargets = required;
       compile(allSources, options, callback);
@@ -103,23 +103,23 @@ compile.with_dependencies = function(options, callback) {
   );
 };
 
-compile.display = function(paths, options) {
-  if (options.quiet !== true) {
-    if (!Array.isArray(paths)) {
-      paths = Object.keys(paths);
-    }
+compile.calculateCompiledSources = function(paths, options) {
+  if (!Array.isArray(paths)) paths = Object.keys(paths);
 
-    const blacklistRegex = /^truffle\//;
+  const blacklistRegex = /^truffle\//;
 
-    paths.sort().forEach(contract => {
+  const sources = paths
+    .sort()
+    .map(contract => {
       if (path.isAbsolute(contract)) {
         contract =
           "." + path.sep + path.relative(options.working_directory, contract);
       }
       if (contract.match(blacklistRegex)) return;
-      options.logger.log("> Compiling " + contract);
-    });
-  }
+      return contract;
+    })
+    .filter(contract => contract);
+  options.events.emit("compile:sourcesToCompile", { sourceFileNames: sources });
 };
 
 compile.CompilerSupplier = CompilerSupplier;
