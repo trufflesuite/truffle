@@ -2,7 +2,7 @@ const debug = require("debug")("decoder:test:wire-test");
 const assert = require("chai").assert;
 const BN = require("bn.js");
 
-const TruffleDecoder = require("../../../truffle-decoder");
+const TruffleDecoder = require("../../../decoder");
 const ConversionUtils = require("../../../truffle-codec-utils").Conversion;
 
 const WireTest = artifacts.require("WireTest");
