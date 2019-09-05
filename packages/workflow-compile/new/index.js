@@ -2,7 +2,7 @@ const debug = require("debug")("workflow-compile:new");
 const fse = require("fs-extra");
 const { prepareConfig, byContractName } = require("../utils");
 const { shimLegacy } = require("../shims");
-const { shimContract } = require("truffle-compile/legacy/shims");
+const { shimContract } = require("@truffle/compile-solidity/legacy/shims");
 const {
   reportCompilationStarted,
   reportNothingToCompile,
@@ -11,14 +11,18 @@ const {
 
 const SUPPORTED_COMPILERS = {
   solc: {
-    compiler: require("truffle-compile/new")
+    compiler: require("@truffle/compile-solidity/new")
   },
   vyper: {
-    compiler: require("truffle-compile-vyper"),
+    compiler: require("@truffle/compile-vyper"),
+    legacy: true
+  },
+  ligo: {
+    compiler: require("@truffle/compile-ligo"),
     legacy: true
   },
   external: {
-    compiler: require("truffle-external-compile"),
+    compiler: require("@truffle/external-compile"),
     legacy: true
   }
 };

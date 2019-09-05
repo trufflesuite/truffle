@@ -4,6 +4,7 @@
 class MigrationsMessages {
   constructor(reporter) {
     this.reporter = reporter;
+    this.describeJson = reporter.describeJson;
   }
 
   // ----------------------------------- Utilities -------------------------------------------------
@@ -22,6 +23,10 @@ class MigrationsMessages {
   // Emoji alternative
   onMissing() {
     return "**";
+  }
+
+  migrationStatus(msg) {
+    return `MIGRATION_STATUS:${JSON.stringify(msg)}`;
   }
 
   // ----------------------------------- Interactions ----------------------------------------------
@@ -186,16 +191,64 @@ class MigrationsMessages {
 
     const kinds = {
       // Deployments
-      deploying: () =>
-        self.underline(`Deploying '${data.contract.contractName}'`),
+      deploying: () => {
+        let output = "";
 
-      replacing: () =>
-        self.underline(`Replacing '${data.contract.contractName}'`),
+        if (self.describeJson) {
+          output +=
+            self.migrationStatus({
+              status: "deploying",
+              data: {
+                contractName: data.contract.contractName
+              }
+            }) + "\n";
+        }
 
-      reusing: () =>
-        self.underline(`Re-using deployed '${data.contract.contractName}'`) +
-        "\n" +
-        `   > ${"contract address:".padEnd(20)} ${data.contract.address}\n`,
+        output += self.underline(`Deploying '${data.contract.contractName}'`);
+
+        return output;
+      },
+
+      replacing: () => {
+        let output = "";
+
+        if (self.describeJson) {
+          output +=
+            self.migrationStatus({
+              status: "replacing",
+              data: {
+                contractName: data.contract.contractName,
+                priorAddress: data.contract.address
+              }
+            }) + "\n";
+        }
+
+        output += self.underline(`Replacing '${data.contract.contractName}'`);
+
+        return output;
+      },
+
+      reusing: () => {
+        let output = "";
+
+        if (self.describeJson) {
+          output +=
+            self.migrationStatus({
+              status: "reusing",
+              data: {
+                contractName: data.contract.contractName,
+                address: data.contract.address
+              }
+            }) + "\n";
+        }
+
+        output +=
+          self.underline(`Re-using deployed '${data.contract.contractName}'`) +
+          "\n" +
+          `   > ${"contract address:".padEnd(20)} ${data.contract.address}\n`;
+
+        return output;
+      },
 
       deployed: () => {
         if (reporter.blockSpinner) {
@@ -229,6 +282,23 @@ class MigrationsMessages {
           output += self.underline(
             `Pausing for ${reporter.confirmations} confirmations...`
           );
+
+        if (this.describeJson) {
+          output += self.migrationStatus({
+            status: "deployed",
+            data: Object.assign({}, data, {
+              contract: {
+                contractName: data.contract.contractName,
+                address: data.contract.address
+              },
+              instance: undefined,
+              receipt: {
+                transactionHash: data.receipt.transactionHash,
+                gasUsed: data.receipt.gasUsed
+              }
+            })
+          });
+        }
 
         return output;
       },
@@ -264,8 +334,53 @@ class MigrationsMessages {
         `   > ${"confirmation number:".padEnd(20)} ` +
         `${data.num} (block: ${data.block})`,
 
+      // Migrator
+      preAllMigrations: () => {
+        let output = "";
+
+        if (self.describeJson) {
+          const migrations = data.migrations.map(migration =>
+            migration.serializeable()
+          );
+          output += self.migrationStatus({
+            status: "preAllMigrations",
+            data: Object.assign({}, data, {
+              migrations
+            })
+          });
+        }
+
+        return output;
+      },
+
+      postAllMigrations: () => {
+        let output = "";
+
+        if (self.describeJson) {
+          output += self.migrationStatus({
+            status: "postAllMigrations",
+            data
+          });
+        }
+
+        return output;
+      },
+
       // Migrations
-      preMigrate: () => self.doubleline(`${data.file}`),
+      preMigrate: () => {
+        let output = "";
+        if (self.describeJson) {
+          output +=
+            self.migrationStatus({
+              status: "preMigrate",
+              data
+            }) + "\n";
+        }
+
+        output += self.doubleline(`${data.file}`);
+
+        return output;
+      },
 
       saving: () => `\n   * Saving migration`,
 
@@ -298,14 +413,43 @@ class MigrationsMessages {
           "\n" +
           `   > ${"Total cost:".padEnd(15)} ${data.cost.padStart(15)} ETH\n`;
 
+        if (self.describeJson) {
+          output +=
+            "\n" +
+            self.migrationStatus({
+              status: "postMigrate",
+              data
+            }) +
+            "\n";
+        }
+
         return output;
       },
 
-      lastMigrate: () =>
-        self.doubleline("Summary") +
-        "\n" +
-        `> ${"Total deployments:".padEnd(20)} ${data.totalDeployments}\n` +
-        `> ${"Final cost:".padEnd(20)} ${data.finalCost} ETH\n`,
+      lastMigrate: () => {
+        let output = "";
+
+        output +=
+          self.doubleline("Summary") +
+          "\n" +
+          `> ${"Total deployments:".padEnd(20)} ${data.totalDeployments}\n` +
+          `> ${"Final cost:".padEnd(20)} ${data.finalCost} ETH\n`;
+
+        if (self.describeJson) {
+          output +=
+            "\n" +
+            self.migrationStatus({
+              status: "lastMigrate",
+              data: {
+                totalDeployments: data.totalDeployments,
+                finalCost: data.finalCost
+              }
+            }) +
+            "\n";
+        }
+
+        return output;
+      },
 
       // Batch
       many: () => self.underline(`Deploying Batch`),

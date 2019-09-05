@@ -14,7 +14,7 @@
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": ""
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"

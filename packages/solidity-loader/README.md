@@ -7,7 +7,7 @@ A Webpack loader that allows importing a solidity contract directly. Importing r
 ```javascript
 const Web3 = require("web3"); // currently compatible up to web3@1.0.0-beta.37
 const provider = new Web3.providers.HttpProvider("http://localhost:8545");
-const contract = require("truffle-contract");
+const contract = require("@truffle/contract");
 
 import myContractArtifact from '../contracts/MyContract.sol';
 const MyContract = contract(myContractArtifact);

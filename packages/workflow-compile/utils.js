@@ -1,7 +1,7 @@
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 const expect = require("@truffle/expect");
-const Resolver = require("truffle-resolver");
-const Artifactor = require("truffle-artifactor");
+const Resolver = require("@truffle/resolver");
+const Artifactor = require("@truffle/artifactor");
 
 function prepareConfig(options) {
   expect.options(options, ["contracts_build_directory"]);
