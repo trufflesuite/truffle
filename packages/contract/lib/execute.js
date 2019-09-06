@@ -110,7 +110,7 @@ var execute = {
 
       function appendOriginalStackTrace(e) {
         e.hijackedStack = e.stack;
-        e.stack = originalStackTrace.replace(/^Error\n/, e.stack.split('\n')[0]);
+        e.stack = originalStackTrace.replace(/^Error: \n/, e.stack.split('\n')[0]);
         promiEvent.reject(e);
       }
 
@@ -166,7 +166,7 @@ var execute = {
 
       function appendOriginalStackTrace(e) {
         e.hijackedStack = e.stack;
-        e.stack = originalStackTrace.replace(/^Error\n/, e.stack.split('\n')[0]);
+        e.stack = originalStackTrace.replace(/^Error: \n/, e.stack.split('\n')[0]);
         promiEvent.reject(e);
       }
 
@@ -224,6 +224,7 @@ var execute = {
     return function() {
       var deferred;
       const promiEvent = new Web3PromiEvent();
+      var originalStackTrace = new Error().stack;
 
       execute
         .prepareCall(constructor, constructorABI, arguments)
@@ -236,7 +237,8 @@ var execute = {
           const context = {
             contract: constructor,
             promiEvent,
-            onlyEmitReceipt: true
+            onlyEmitReceipt: true,
+            originalStackTrace: originalStackTrace
           };
 
           var options = {
