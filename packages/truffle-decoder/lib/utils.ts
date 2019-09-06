@@ -1,5 +1,6 @@
 import { AstDefinition, AstReferences, AbiUtils, Contexts as ContextsUtils } from "truffle-codec-utils";
 import { ContractObject } from "truffle-contract-schema/spec";
+import * as CodecUtils from "truffle-codec-utils";
 
 export function getContractNode(contract: ContractObject): AstDefinition {
   return (contract.ast || {nodes: []}).nodes.find(
@@ -11,12 +12,19 @@ export function getContractNode(contract: ContractObject): AstDefinition {
 }
 
 export function makeContext(contract: ContractObject, node: AstDefinition, isConstructor = false): ContextsUtils.DecoderContext {
-  let abi = AbiUtils.schemaAbiToAbi(contract.abi);
+  const abi = AbiUtils.schemaAbiToAbi(contract.abi);
+  const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
+  const hash = CodecUtils.Conversion.toHexString(
+    CodecUtils.EVM.keccak256({type: "string",
+      value: binary
+    })
+  );
   return {
+    context: hash,
     contractName: contract.contractName,
-    binary: isConstructor ? contract.bytecode : contract.deployedBytecode,
-    contractId: node.id,
-    contractKind: node.contractKind,
+    binary,
+    contractId: node ? node.id : undefined,
+    contractKind: node ? node.contractKind : "contract", //assume contracts are ordinary contracts unless told otherwise
     isConstructor,
     abi: AbiUtils.computeSelectors(abi),
     payable: AbiUtils.abiHasPayableFallback(abi),

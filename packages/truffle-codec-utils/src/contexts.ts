@@ -12,7 +12,7 @@ import { CompilerVersion } from "./compiler";
 
 export namespace Contexts {
 
-  export type Contexts = DecoderContexts | DebuggerContexts | DecoderContextsById;
+  export type Contexts = DecoderContexts | DebuggerContexts;
 
   export type Context = DecoderContext | DebuggerContext;
 
@@ -20,20 +20,16 @@ export namespace Contexts {
     [context: string]: DecoderContext;
   }
 
-  export interface DecoderContextsById {
-    [id: number]: DecoderContext;
-  }
-
   export interface DebuggerContexts {
     [context: string]: DebuggerContext;
   }
 
   export interface DecoderContext {
+    context: string; //The context hash
     binary: string; //this should (for now) be the normalized binary, with "."s
     //in place of link references or other variable parts; this will probably
     //change in the future
-    isConstructor: boolean; //note: this will always be false, but the compiler
-    //complains if I try to specify that in the type for some reason...
+    isConstructor: boolean;
     contractName?: string;
     contractId?: number;
     contractKind?: ContractKind; //note: should never be "interface"
@@ -44,7 +40,7 @@ export namespace Contexts {
   }
 
   export interface DebuggerContext {
-    context: string;
+    context: string; //The context hash
     binary: string; //this should (for now) be the normalized binary, with "."s
     //in place of link references or other variable parts; this will probably
     //change in the future
@@ -60,7 +56,7 @@ export namespace Contexts {
   }
 
   //I split these next two apart because the type system was giving me trouble
-  export function findDecoderContext(contexts: DecoderContexts | DecoderContextsById, binary: string): DecoderContext | null {
+  export function findDecoderContext(contexts: DecoderContexts, binary: string): DecoderContext | null {
     debug("binary %s", binary);
     let context = Object.values(contexts).find(context =>
       matchContext(context, binary)
@@ -194,14 +190,25 @@ export namespace Contexts {
   }
 
   export function contextToType(context: DecoderContext | DebuggerContext): Types.ContractType {
-    return {
-      typeClass: "contract",
-      kind: "native",
-      id: context.contractId.toString(),
-      typeName: context.contractName,
-      contractKind: context.contractKind,
-      payable: context.payable
-    };
+    if(context.contractId !== undefined) {
+      return {
+        typeClass: "contract",
+        kind: "native",
+        id: context.contractId.toString(),
+        typeName: context.contractName,
+        contractKind: context.contractKind,
+        payable: context.payable
+      };
+    }
+    else {
+      return {
+        typeClass: "contract",
+        kind: "foreign",
+        typeName: context.contractName,
+        contractKind: context.contractKind,
+        payable: context.payable
+      };
+    }
   }
 
 }

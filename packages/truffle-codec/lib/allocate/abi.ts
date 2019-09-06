@@ -232,60 +232,68 @@ export function abiSizeInfo(dataType: CodecUtils.Types.Type, allocations?: Alloc
 
 //allocates an external call
 //NOTE: returns just a single allocation; assumes primary allocation is already complete!
+//NOTE: returns undefined if attempting to allocate a constructor but we don't have the
+//bytecode for the constructor
 function allocateCalldata(
   abiEntry: AbiUtils.FunctionAbiEntry | AbiUtils.ConstructorAbiEntry,
-  contractId: number,
+  contractNode: AstDefinition | undefined,
   referenceDeclarations: AstReferences,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
-  compiler: CodecUtils.CompilerVersion,
+  compiler: CodecUtils.CompilerVersion | undefined,
   constructorContext?: CodecUtils.Contexts.DecoderContext
-): Allocations.CalldataAllocation {
-  const contractNode = referenceDeclarations[contractId];
-  const linearizedBaseContracts = contractNode.linearizedBaseContracts;
+): Allocations.CalldataAllocation | undefined {
   //first: determine the corresponding function node
   //(simultaneously: determine the offset)
-  let node: AstDefinition;
+  let node: AstDefinition | undefined = undefined;
   let offset: number;
   let id: string;
   let abiAllocation: Allocations.AbiAllocation;
   let parameterTypes: Types.NameTypePair[];
   switch(abiEntry.type) {
     case "constructor":
+      if(!constructorContext) {
+        return undefined;
+      }
       let rawLength = constructorContext.binary.length;
       offset = (rawLength - 2)/2; //number of bytes in 0x-prefixed bytestring
       //for a constructor, we only want to search the particular contract
-      node = contractNode.nodes.find(
-        functionNode => AbiUtils.definitionMatchesAbi(
-          //note this needn't actually be a function node, but then it will
-          //return false (well, unless it's a getter node!)
-          abiEntry, functionNode, referenceDeclarations
-        )
-      );
+      if(contractNode) {
+        node = contractNode.nodes.find(
+          functionNode => AbiUtils.definitionMatchesAbi(
+            //note this needn't actually be a function node, but then it will
+            //return false (well, unless it's a getter node!)
+            abiEntry, functionNode, referenceDeclarations
+          )
+        );
+      }
       //if we can't find it, we'll handle this below
       break;
     case "function":
       offset = CodecUtils.EVM.SELECTOR_SIZE;
       //search through base contracts, from most derived (right) to most base (left)
-      node = linearizedBaseContracts.reduceRight(
-        (foundNode: AstDefinition, baseContractId: number) => {
-          if(foundNode !== undefined) {
-            return foundNode; //once we've found something, we don't need to keep looking
-          };
-          let baseContractNode = referenceDeclarations[baseContractId];
-          if(baseContractNode === undefined) {
-            return null; //return null rather than undefined so that this will propagate through
-            //(i.e. by returning null here we give up the search)
-            //(we don't want to continue due to possibility of grabbing the wrong override)
-          }
-          return baseContractNode.nodes.find( //may be undefined! that's OK!
-            functionNode => AbiUtils.definitionMatchesAbi(
-              abiEntry, functionNode, referenceDeclarations
-            )
-          );
-        },
-        undefined //start with no node found
-      );
+      if(contractNode) {
+        const linearizedBaseContracts = contractNode.linearizedBaseContracts;
+        node = linearizedBaseContracts.reduceRight(
+          (foundNode: AstDefinition, baseContractId: number) => {
+            if(foundNode !== undefined) {
+              return foundNode; //once we've found something, we don't need to keep looking
+            };
+            let baseContractNode = referenceDeclarations[baseContractId];
+            if(baseContractNode === undefined) {
+              return null; //return null rather than undefined so that this will propagate through
+              //(i.e. by returning null here we give up the search)
+              //(we don't want to continue due to possibility of grabbing the wrong override)
+            }
+            return baseContractNode.nodes.find( //may be undefined! that's OK!
+              functionNode => AbiUtils.definitionMatchesAbi(
+                abiEntry, functionNode, referenceDeclarations
+              )
+            );
+          },
+          undefined //start with no node found
+        );
+      }
       break;
   }
   if(node) {
@@ -305,7 +313,7 @@ function allocateCalldata(
     parameterTypes = parameters.map(
       parameter => ({
         name: parameter.name,
-        type: Types.definitionToType(parameter, compiler)
+        type: Types.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
       })
     );
   }
@@ -347,39 +355,42 @@ interface EventParameterInfo {
 //NOTE: returns just a single allocation; assumes primary allocation is already complete!
 function allocateEvent(
   abiEntry: AbiUtils.EventAbiEntry,
-  contractId: number,
+  contractNode: AstDefinition | undefined,
+  contextHash: string,
   referenceDeclarations: AstReferences,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
-  compiler: CodecUtils.CompilerVersion
+  compiler: CodecUtils.CompilerVersion | undefined
 ): Allocations.EventAllocation {
-  const contractNode = referenceDeclarations[contractId];
-  const linearizedBaseContracts = contractNode.linearizedBaseContracts;
   let parameterTypes: EventParameterInfo[];
   let id: string;
   //first: determine the corresponding event node
   //search through base contracts, from most derived (right) to most base (left)
-  let node: AstDefinition;
-  node = linearizedBaseContracts.reduceRight(
-    (foundNode: AstDefinition, baseContractId: number) => {
-      if(foundNode !== undefined) {
-        return foundNode; //once we've found something, we don't need to keep looking
-      }
-      let baseContractNode = referenceDeclarations[baseContractId];
-      if(baseContractNode === undefined) {
-        return null; //return null rather than undefined so that this will propagate through
-        //(i.e. by returning null here we give up the search)
-        //(we don't want to continue due to possibility of grabbing the wrong override)
-      }
-      return baseContractNode.nodes.find( //may be undefined! that's OK!
-        eventNode => AbiUtils.definitionMatchesAbi(
-          //note this needn't actually be a event node, but then it will return false
-          abiEntry, eventNode, referenceDeclarations
-        )
-      );
-    },
-    undefined //start with no node found
-  );
+  let node: AstDefinition | undefined = undefined;
+  if(contractNode) {
+    const linearizedBaseContracts = contractNode.linearizedBaseContracts;
+    node = linearizedBaseContracts.reduceRight(
+      (foundNode: AstDefinition, baseContractId: number) => {
+        if(foundNode !== undefined) {
+          return foundNode; //once we've found something, we don't need to keep looking
+        }
+        let baseContractNode = referenceDeclarations[baseContractId];
+        if(baseContractNode === undefined) {
+          return null; //return null rather than undefined so that this will propagate through
+          //(i.e. by returning null here we give up the search)
+          //(we don't want to continue due to possibility of grabbing the wrong override)
+        }
+        return baseContractNode.nodes.find( //may be undefined! that's OK!
+          eventNode => AbiUtils.definitionMatchesAbi(
+            //note this needn't actually be a event node, but then it will return false
+            abiEntry, eventNode, referenceDeclarations
+          )
+        );
+      },
+      undefined //start with no node found
+    );
+  }
+  //otherwise, leave node undefined
   //now: construct the list of parameter types, attaching indexedness info
   //and overall position (for later reconstruction)
   if(node) {
@@ -387,6 +398,7 @@ function allocateEvent(
     let parameters = node.parameters.parameters;
     parameterTypes = parameters.map(
       definition => ({
+        //note: if node is defined, compiler had better be defined, too!
         type: Types.definitionToType(definition, compiler),
         name: definition.name,
         indexed: definition.indexed
@@ -439,21 +451,21 @@ function allocateEvent(
   //...and return
   return {
     abi: abiEntry,
-    contractId,
+    contextHash,
     arguments: argumentsAllocation
   };
 }
 
 function getCalldataAllocationsForContract(
   abi: AbiUtils.Abi,
-  contractId: number,
+  contractNode: AstDefinition,
   constructorContext: CodecUtils.Contexts.DecoderContext,
   referenceDeclarations: AstReferences,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
   compiler: CodecUtils.CompilerVersion
-): Allocations.CalldataContractAllocation {
-  let allocations: Allocations.CalldataContractAllocation = {
+): Allocations.CalldataAllocationTemporary {
+  let allocations: Allocations.CalldataAllocationTemporary = {
     constructorAllocation: defaultConstructorAllocation(constructorContext), //will be overridden if abi has a constructor
     //(if it doesn't then it will remain as default)
     functionAllocations: {}
@@ -463,7 +475,7 @@ function getCalldataAllocationsForContract(
       case "constructor":
         allocations.constructorAllocation = allocateCalldata(
           abiEntry,
-          contractId,
+          contractNode,
           referenceDeclarations,
           userDefinedTypes,
           abiAllocations,
@@ -475,7 +487,7 @@ function getCalldataAllocationsForContract(
         allocations.functionAllocations[AbiUtils.abiSelector(abiEntry)] =
           allocateCalldata(
             abiEntry,
-            contractId,
+            contractNode,
             referenceDeclarations,
             userDefinedTypes,
             abiAllocations,
@@ -491,7 +503,11 @@ function getCalldataAllocationsForContract(
   return allocations;
 }
 
-function defaultConstructorAllocation(constructorContext: CodecUtils.Contexts.DecoderContext) {
+//note: returns undefined if undefined is passed in
+function defaultConstructorAllocation(constructorContext: CodecUtils.Contexts.DecoderContext): Allocations.CalldataAllocation | undefined {
+  if(!constructorContext) {
+    return undefined;
+  }
   let rawLength = constructorContext.binary.length;
   let offset = (rawLength - 2)/2; //number of bytes in 0x-prefixed bytestring
   return {
@@ -501,24 +517,41 @@ function defaultConstructorAllocation(constructorContext: CodecUtils.Contexts.De
   };
 }
 
-//note: contract allocation info should include constructor context
-export function getCalldataAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, userDefinedTypes: Types.TypesById, abiAllocations: Allocations.AbiAllocations): Allocations.CalldataAllocations {
-  return Object.assign({}, ...contracts.map(
-    ({abi, id, compiler, constructorContext}) => ({
-      [id]: getCalldataAllocationsForContract(
-        abi, id, constructorContext, referenceDeclarations, userDefinedTypes, abiAllocations, compiler
-      )
-    })
-  ));
+export function getCalldataAllocations(
+  contracts: Allocations.ContractAllocationInfo[],
+  referenceDeclarations: AstReferences,
+  userDefinedTypes: Types.TypesById,
+  abiAllocations: Allocations.AbiAllocations
+): Allocations.CalldataAllocations {
+  let allocations: Allocations.CalldataAllocations = {constructorAllocations: {}, functionAllocations: {}};
+  for(let contract of contracts) {
+    const contractAllocations = getCalldataAllocationsForContract(
+      contract.abi,
+      contract.contractNode,
+      contract.constructorContext,
+      referenceDeclarations,
+      userDefinedTypes,
+      abiAllocations,
+      contract.compiler
+    );
+    if(contract.constructorContext) {
+      allocations.constructorAllocations[contract.constructorContext.context] = contractAllocations.constructorAllocation;
+    }
+    if(contract.deployedContext) {
+      allocations.functionAllocations[contract.deployedContext.context] = contractAllocations.functionAllocations;
+    }
+  }
+  return allocations;
 }
 
 function getEventAllocationsForContract(
   abi: AbiUtils.Abi,
-  contractId: number,
+  contractNode: AstDefinition | undefined,
+  contextHash: string,
   referenceDeclarations: AstReferences,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
-  compiler: CodecUtils.CompilerVersion
+  compiler: CodecUtils.CompilerVersion | undefined
 ): Allocations.EventAllocationTemporary[] {
   return abi.filter(
     (abiEntry: AbiUtils.AbiEntry) => abiEntry.type === "event"
@@ -527,12 +560,12 @@ function getEventAllocationsForContract(
       abiEntry.anonymous
       ? {
         topics: AbiUtils.topicsCount(abiEntry),
-        allocation: allocateEvent(abiEntry, contractId, referenceDeclarations, userDefinedTypes, abiAllocations, compiler)
+        allocation: allocateEvent(abiEntry, contractNode, contextHash, referenceDeclarations, userDefinedTypes, abiAllocations, compiler)
       }
       : {
         selector: AbiUtils.abiSelector(abiEntry),
         topics: AbiUtils.topicsCount(abiEntry),
-        allocation: allocateEvent(abiEntry, contractId, referenceDeclarations, userDefinedTypes, abiAllocations, compiler)
+        allocation: allocateEvent(abiEntry, contractNode, contextHash, referenceDeclarations, userDefinedTypes, abiAllocations, compiler)
       }
   );
 }
@@ -540,9 +573,13 @@ function getEventAllocationsForContract(
 //note: constructor context is ignored by this function; no need to pass it in
 export function getEventAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, userDefinedTypes: Types.TypesById, abiAllocations: Allocations.AbiAllocations): Allocations.EventAllocations {
   let allocations: Allocations.EventAllocations = {};
-  for(let {abi, id: contractId, compiler} of contracts) {
-    let contractKind = referenceDeclarations[contractId].contractKind;
-    let contractAllocations = getEventAllocationsForContract(abi, contractId, referenceDeclarations, userDefinedTypes, abiAllocations, compiler);
+  for(let {abi, deployedContext, contractNode, compiler} of contracts) {
+    if(!deployedContext) {
+      continue;
+    }
+    let contractKind = deployedContext.contractKind;
+    let contextHash = deployedContext.context;
+    let contractAllocations = getEventAllocationsForContract(abi, contractNode, contextHash, referenceDeclarations, userDefinedTypes, abiAllocations, compiler);
     for(let {selector, topics, allocation} of contractAllocations) {
       if(allocations[topics] === undefined) {
         allocations[topics] = { bySelector: {}, anonymous: { contract: {}, library: {} } };
@@ -551,13 +588,13 @@ export function getEventAllocations(contracts: Allocations.ContractAllocationInf
         if(allocations[topics].bySelector[selector] === undefined) {
           allocations[topics].bySelector[selector] = { contract: {}, library: {} };
         }
-        allocations[topics].bySelector[selector][contractKind][contractId] = allocation;
+        allocations[topics].bySelector[selector][contractKind][contextHash] = allocation;
       }
       else {
-        if(allocations[topics].anonymous[contractKind][contractId] === undefined) {
-          allocations[topics].anonymous[contractKind][contractId] = [];
+        if(allocations[topics].anonymous[contractKind][contextHash] === undefined) {
+          allocations[topics].anonymous[contractKind][contextHash] = [];
         }
-        allocations[topics].anonymous[contractKind][contractId].push(allocation);
+        allocations[topics].anonymous[contractKind][contextHash].push(allocation);
       }
     }
   }

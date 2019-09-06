@@ -31,16 +31,16 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       data: CodecUtils.Conversion.toHexString(info.state.calldata)
     }
   }
-  const compiler = info.currentContext.compiler;
-  const contractId = context.contractId;
+  const compiler = context.compiler;
+  const contextHash = context.context;
   const contractType = CodecUtils.Contexts.contextToType(context);
-  const allocations = info.allocations.calldata[contractId];
+  const isConstructor: boolean = context.isConstructor;
+  const allocations = info.allocations.calldata;
   let allocation: CalldataAllocation;
-  let isConstructor: boolean = info.currentContext.isConstructor;
   let selector: string;
   //first: is this a creation call?
   if(isConstructor) {
-    allocation = allocations.constructorAllocation;
+    allocation = allocations.constructorAllocations[contextHash];
   }
   else {
     //skipping any error-handling on this read, as a calldata read can't throw anyway
@@ -52,7 +52,7 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       info.state
     ));
     selector = CodecUtils.Conversion.toHexString(rawSelector);
-    allocation = allocations.functionAllocations[selector];
+    allocation = allocations.functionAllocations[contextHash][selector];
   }
   if(allocation === undefined) {
     return {
@@ -142,8 +142,8 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
   debug("event allocations: %O", allocations);
   let rawSelector: Uint8Array;
   let selector: string;
-  let contractAllocations: {[contractId: number]: EventAllocation}; //for non-anonymous events
-  let libraryAllocations: {[contractId: number]: EventAllocation}; //similar
+  let contractAllocations: {[contextHash: string]: EventAllocation}; //for non-anonymous events
+  let libraryAllocations: {[contextHash: string]: EventAllocation}; //similar
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
   if(topicsCount > 0) {
@@ -175,9 +175,9 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
   let possibleContractAnonymousAllocations: EventAllocation[];
   if(contractContext) {
     //if we found the contract, maybe it's from that contract
-    const contractId = contractContext.contractId;
-    const contractAllocation = contractAllocations[contractId];
-    const contractAnonymousAllocation = contractAnonymousAllocations[contractId];
+    const contextHash = contractContext.context;
+    const contractAllocation = contractAllocations[contextHash];
+    const contractAnonymousAllocation = contractAnonymousAllocations[contextHash];
     possibleContractAllocations = contractAllocation
       ? [contractAllocation]
       : [];
@@ -202,8 +202,8 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
       continue;
     }
     let decodingMode: DecodingMode = "full"; //starts out full by default; degrades to abi if necessary
-    const id = allocation.contractId;
-    const attemptContext = info.contexts[id];
+    const contextHash = allocation.contextHash;
+    const attemptContext = info.contexts[contextHash];
     const contractType = CodecUtils.Contexts.contextToType(attemptContext);
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];

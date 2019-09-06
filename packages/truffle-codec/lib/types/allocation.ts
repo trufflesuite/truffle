@@ -5,7 +5,8 @@ import { AstDefinition, Contexts, AbiUtils, Types, CompilerVersion } from "truff
 //for passing to calldata/event allocation functions
 export interface ContractAllocationInfo {
   abi: AbiUtils.Abi;
-  id: number;
+  contractNode: AstDefinition;
+  deployedContext?: Contexts.DecoderContext;
   constructorContext?: Contexts.DecoderContext;
   compiler: CompilerVersion;
 }
@@ -83,18 +84,21 @@ export interface MemoryMemberAllocation {
 //track of length or dynamicity.  There's also no need for null allocation.
 //So basically this works like memory, except that we *do* store an offset
 //indicating the overall start position.
-//Also, we index by contract ID and then selector rather than by function ID
-//(and have a special one for the constructor)
+//Also, we index by context hash and then selector rather than by function ID
 //also, arguments are in an array by position, rather than being given by
 //node ID
 
 export interface CalldataAllocations {
-  [contractId: number]: CalldataContractAllocation
+  constructorAllocations: CalldataConstructorAllocations;
+  functionAllocations: CalldataFunctionAllocations;
 }
 
-export interface CalldataContractAllocation {
-  constructorAllocation: CalldataAllocation;
-  functionAllocations: {
+export interface CalldataConstructorAllocations {
+  [contextHash: string]: CalldataAllocation;
+}
+
+export interface CalldataFunctionAllocations {
+  [contextHash: string]: {
     [selector: string]: CalldataAllocation;
   };
 }
@@ -118,7 +122,7 @@ export interface CalldataArgumentAllocation {
 //2. then by anonymous or not
 //3. then by selector (this one is skipped for anonymou)
 //4. then by contract kind
-//5. then by contract ID
+//5. then by (deployed) context hash
 //(and then the anonymous ones are in an array)
 
 export interface EventAllocations {
@@ -126,13 +130,13 @@ export interface EventAllocations {
     bySelector: {
       [selector: string]: {
         [contractKind: string]: {
-          [contractId: number]: EventAllocation;
+          [contextHash: string]: EventAllocation;
         }
       }
     };
     anonymous: {
       [contractKind: string]: {
-        [contractId: number]: EventAllocation[];
+        [contextHash: string]: EventAllocation[];
       }
     }
   }
@@ -140,7 +144,7 @@ export interface EventAllocations {
 
 export interface EventAllocation {
   abi: AbiUtils.EventAbiEntry;
-  contractId: number;
+  contextHash: string;
   arguments: EventArgumentAllocation[];
 }
 
@@ -150,9 +154,16 @@ export interface EventArgumentAllocation {
   pointer: Pointer.EventDataPointer | Pointer.EventTopicPointer;
 }
 
-//NOTE: not for outside use!  just produced temporarily by the allocator!
+//NOTE: the folowing types are not for outside use!  just produced temporarily by the allocator!
 export interface EventAllocationTemporary {
   selector?: string; //leave out for anonymous
   topics: number;
   allocation: EventAllocation;
+}
+
+export interface CalldataAllocationTemporary {
+  constructorAllocation?: CalldataAllocation;
+  functionAllocations: {
+    [selector: string]: CalldataAllocation;
+  }
 }
