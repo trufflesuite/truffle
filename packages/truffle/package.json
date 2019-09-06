@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.0.29",
+  "version": "5.0.35",
   "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
@@ -31,11 +31,15 @@
     "original-require": "1.0.1"
   },
   "devDependencies": {
+    "@truffle/box": "^1.0.37",
+    "@truffle/contract": "^4.0.32",
+    "@truffle/core": "^5.0.35",
+    "@truffle/debugger": "^5.0.27",
     "clean-webpack-plugin": "^0.1.16",
     "copy-webpack-plugin": "^4.0.1",
     "eslint": "^5.7.0",
     "fs-extra": "6.0.1",
-    "ganache-core": "2.5.7",
+    "ganache-core": "2.7.0",
     "glob": "^7.1.2",
     "husky": "^1.1.2",
     "imports-loader": "^0.8.0",
@@ -48,11 +52,7 @@
     "shebang-loader": "0.0.1",
     "stream-buffers": "^3.0.1",
     "tmp": "0.0.33",
-    "truffle-box": "^1.0.32",
-    "truffle-contract": "^4.0.26",
-    "truffle-core": "^5.0.29",
-    "truffle-debugger": "^5.0.21",
-    "web3": "^1.2.0",
+    "web3": "1.2.1",
     "webpack": "^2.5.1",
     "webpack-bundle-analyzer": "^3.0.3",
     "yargs": "^8.0.2"
@@ -67,6 +67,5 @@
       "url": "https://github.com/tcoulter"
     }
   ],
-  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e",
   "namespace": "consensys"
 }

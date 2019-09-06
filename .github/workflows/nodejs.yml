@@ -1,0 +1,55 @@
+name: Node CI
+
+on:
+  push:
+    branches:
+    # long-lived branches
+    - master
+    - develop
+    - next
+
+    # other targets
+    - truffle-db
+
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest]
+        node-version: [8.x, 10.x, 12.x]
+        env: [GETH=true, QUORUM=true, PACKAGES=true, INTEGRATION=true]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm install -g yarn lerna
+    - run: yarn bootstrap
+    - run: ${{ matrix.env }} yarn ci
+    - uses: 8398a7/action-slack@v1.1.1
+      with:
+        type: failure
+        failedMenthon: ""
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      if: failure()
+
+  slack_notification:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: 8398a7/action-slack@v1.1.1
+        with:
+          type: success
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
