@@ -8,6 +8,7 @@ import * as CodecUtils from "truffle-codec-utils";
 import { UnknownUserDefinedTypeError, Types } from "truffle-codec-utils";
 import { UnknownBaseContractIdError, NoDefinitionFoundForABIEntryError } from "../types/errors";
 import partition from "lodash.partition";
+import { DecodingMode } from "../types/decoding";
 
 interface AbiAllocationInfo {
   size?: number; //left out for types that don't go in the abi
@@ -250,6 +251,7 @@ function allocateCalldata(
   let id: string;
   let abiAllocation: Allocations.AbiAllocation;
   let parameterTypes: Types.NameTypePair[];
+  let allocationMode: DecodingMode = "full"; //degrade to ABI if needed
   switch(abiEntry.type) {
     case "constructor":
       if(!constructorContext) {
@@ -296,7 +298,10 @@ function allocateCalldata(
       }
       break;
   }
-  if(node) {
+  if(!node) {
+    allocationMode = "abi";
+  }
+  if(allocationMode === "full") {
     //get the parameters; how this works depends on whether we're looking at
     //a normal function or a getter
     let parameters: AstDefinition[];
@@ -316,18 +321,27 @@ function allocateCalldata(
         type: Types.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
       })
     );
+    //now: perform the allocation!
+    try {
+      abiAllocation = allocateMembers(id, parameterTypes, userDefinedTypes, abiAllocations, offset)[id];
+    }
+    catch {
+      //if something goes wrong, switch to ABI mdoe
+      allocationMode = "abi";
+    }
   }
-  else {
-    //just use the ABI
+  if(allocationMode === "abi") { //THIS IS DELIBERATELY NOT AN ELSE
+    //this is the ABI case.  we end up here EITHER
+    //if node doesn't exist, OR if something went wrong
+    //during allocation
     id = "-1"; //fake irrelevant ID
     parameterTypes = abiEntry.inputs.map(parameter => ({
       name: parameter.name,
       type: Types.abiParameterToType(parameter)
     }));
+    abiAllocation = allocateMembers(id, parameterTypes, userDefinedTypes, abiAllocations, offset)[id];
   }
-  //now: perform the allocation!
-  abiAllocation = allocateMembers(id, parameterTypes, userDefinedTypes, abiAllocations, offset)[id];
-  //finally: transform it appropriately
+  //finally: transform the allocation appropriately
   let argumentsAllocation = abiAllocation.members.map(
     member => ({
       ...member,
@@ -341,7 +355,8 @@ function allocateCalldata(
   return {
     abi: abiEntry,
     offset,
-    arguments: argumentsAllocation
+    arguments: argumentsAllocation,
+    allocationMode
   };
 }
 
@@ -367,6 +382,7 @@ function allocateEvent(
   //first: determine the corresponding event node
   //search through base contracts, from most derived (right) to most base (left)
   let node: AstDefinition | undefined = undefined;
+  let allocationMode: DecodingMode = "full"; //degrade to abi as needed
   if(contractNode) {
     const linearizedBaseContracts = contractNode.linearizedBaseContracts;
     node = linearizedBaseContracts.reduceRight(
@@ -391,9 +407,15 @@ function allocateEvent(
     );
   }
   //otherwise, leave node undefined
+  if(!node) {
+    allocationMode = "abi";
+  }
   //now: construct the list of parameter types, attaching indexedness info
   //and overall position (for later reconstruction)
-  if(node) {
+  let indexed: EventParameterInfo[];
+  let nonIndexed: EventParameterInfo[];
+  let abiAllocation: Allocations.AbiAllocation; //the untransformed allocation for the non-indexed parameters
+  if(allocationMode === "full") {
     let id = node.id.toString();
     let parameters = node.parameters.parameters;
     parameterTypes = parameters.map(
@@ -404,8 +426,17 @@ function allocateEvent(
         indexed: definition.indexed
       })
     );
+    //now: split the list of parameters into indexed and non-indexed
+    [indexed, nonIndexed] = partition(parameterTypes, (parameter: EventParameterInfo) => parameter.indexed);
+    try {
+      //now: perform the allocation for the non-indexed parameters!
+      abiAllocation = allocateMembers(id, nonIndexed, userDefinedTypes, abiAllocations)[id]; //note the implicit conversion from EventParameterInfo to NameTypePair
+    }
+    catch {
+      allocationMode = "abi";
+    }
   }
-  else {
+  if(allocationMode === "abi") { //THIS IS DELIBERATELY NOT AN ELSE
     id = "-1"; //fake irrelevant ID
     parameterTypes = abiEntry.inputs.map(
       abiParameter => ({
@@ -414,12 +445,12 @@ function allocateEvent(
         indexed: abiParameter.indexed
       })
     );
+    //now: split the list of parameters into indexed and non-indexed
+    [indexed, nonIndexed] = partition(parameterTypes, (parameter: EventParameterInfo) => parameter.indexed);
+    //now: perform the allocation for the non-indexed parameters!
+    abiAllocation = allocateMembers(id, nonIndexed, userDefinedTypes, abiAllocations)[id]; //note the implicit conversion from EventParameterInfo to NameTypePair
   }
-  //now: split the list of parameters into indexed and non-indexed
-  const [indexed, nonIndexed] = partition(parameterTypes, (parameter: EventParameterInfo) => parameter.indexed);
-  //now: perform the allocation for the non-indexed parameters!
-  const abiAllocation = allocateMembers(id, nonIndexed, userDefinedTypes, abiAllocations)[id]; //note the implicit conversion from EventParameterInfo to NameTypePair
-  //now: transform it appropriately
+  //now: transform the result appropriately
   const nonIndexedArgumentsAllocation = abiAllocation.members.map(
     member => ({
       ...member,
@@ -452,7 +483,8 @@ function allocateEvent(
   return {
     abi: abiEntry,
     contextHash,
-    arguments: argumentsAllocation
+    arguments: argumentsAllocation,
+    allocationMode
   };
 }
 
@@ -513,7 +545,8 @@ function defaultConstructorAllocation(constructorContext: CodecUtils.Contexts.De
   return {
     offset,
     abi: AbiUtils.DEFAULT_CONSTRUCTOR_ABI,
-    arguments: [] as Allocations.CalldataArgumentAllocation[]
+    arguments: [] as Allocations.CalldataArgumentAllocation[],
+    allocationMode: "full"
   };
 }
 

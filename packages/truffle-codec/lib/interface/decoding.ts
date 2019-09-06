@@ -21,13 +21,12 @@ export function* decodeVariable(definition: AstDefinition, pointer: Pointer.Data
 }
 
 export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecoding | DecoderRequest | Values.Result | GeneratorJunk> {
-  let decodingMode: DecodingMode = "full"; //starts out full by default; degrades to abi if necessary
   const context = info.currentContext;
   if(context === null) {
     //if we don't know the contract ID, we can't decode
     return {
       kind: "unknown",
-      decodingMode,
+      decodingMode: "full",
       data: CodecUtils.Conversion.toHexString(info.state.calldata)
     }
   }
@@ -60,9 +59,10 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
       class: contractType,
       abi: context.hasFallback ? CodecUtils.AbiUtils.fallbackAbiForPayability(context.payable) : null,
       data: CodecUtils.Conversion.toHexString(info.state.calldata),
-      decodingMode
+      decodingMode: "full"
     };
   }
+  let decodingMode: DecodingMode = allocation.allocationMode; //starts out this way, degrades to ABI if necessary
   //you can't map with a generator, so we have to do this map manually
   let decodedArguments: AbiArgument[] = [];
   try {
@@ -201,7 +201,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
     if(targetName !== undefined && allocation.abi.name !== targetName) {
       continue;
     }
-    let decodingMode: DecodingMode = "full"; //starts out full by default; degrades to abi if necessary
+    let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     const contextHash = allocation.contextHash;
     const attemptContext = info.contexts[contextHash];
     const contractType = CodecUtils.Contexts.contextToType(attemptContext);

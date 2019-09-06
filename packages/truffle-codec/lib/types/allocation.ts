@@ -1,6 +1,7 @@
 import { StorageLength } from "./storage";
 import * as Pointer from "./pointer";
 import { AstDefinition, Contexts, AbiUtils, Types, CompilerVersion } from "truffle-codec-utils";
+import { DecodingMode } from "./decoding";
 
 //for passing to calldata/event allocation functions
 export interface ContractAllocationInfo {
@@ -107,6 +108,7 @@ export interface CalldataAllocation {
   abi: AbiUtils.FunctionAbiEntry | AbiUtils.ConstructorAbiEntry;
   offset: number; //measured in bytes
   arguments: CalldataArgumentAllocation[];
+  allocationMode: DecodingMode;
 }
 
 export interface CalldataArgumentAllocation {
@@ -146,6 +148,7 @@ export interface EventAllocation {
   abi: AbiUtils.EventAbiEntry;
   contextHash: string;
   arguments: EventArgumentAllocation[];
+  allocationMode: DecodingMode;
 }
 
 export interface EventArgumentAllocation {
