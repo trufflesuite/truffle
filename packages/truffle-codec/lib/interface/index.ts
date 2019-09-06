@@ -11,5 +11,6 @@ export { EvmInfo, AllocationInfo } from "../types/evm";
 export { CalldataDecoding, LogDecoding } from "../types/decoding";
 
 export { decodeVariable, decodeEvent, decodeCalldata } from "./decoding";
+export { abifyCalldataDecoding, abifyLogDecoding } from "./abify";
 
 export { encodeAbi, encodeTupleAbi } from "../encode/abi"; //we have no need to export these at present, but someone might want them?
