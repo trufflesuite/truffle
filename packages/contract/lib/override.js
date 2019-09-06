@@ -62,8 +62,10 @@ var override = {
         web3Error.message += ` -- Reason given: ${reason}.`;
       }
 
-      web3Error.hijackedStack = web3Error.stack;
-      web3Error.stack = context.originalStackTrace.replace(/^Error:\s\n/, web3Error.stack.split('\n')[0]);
+      if (context.originalStackTrace) {
+        web3Error.hijackedStack = web3Error.stack;
+        web3Error.stack = context.originalStackTrace.replace(/^Error:\s\n/, web3Error.stack.split('\n')[0]);
+      }
 
       return context.promiEvent.reject(web3Error);
     }
