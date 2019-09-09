@@ -105,14 +105,7 @@ var execute = {
       var defaultBlock = "latest";
       var args = Array.prototype.slice.call(arguments);
       var lastArg = args[args.length - 1];
-      var originalStackTrace = new Error().stack;
       var promiEvent = new Web3PromiEvent();
-
-      function appendOriginalStackTrace(e) {
-        e.hijackedStack = e.stack;
-        e.stack = originalStackTrace.replace(/^Error: \n/, e.stack.split('\n')[0]);
-        promiEvent.reject(e);
-      }
 
       // Extract defaultBlock parameter
       if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
@@ -142,7 +135,7 @@ var execute = {
           );
           return promiEvent.resolve(result);
         })
-        .catch(appendOriginalStackTrace);
+        .catch(promiEvent.reject);
 
       return promiEvent.eventEmitter;
     };
@@ -162,13 +155,6 @@ var execute = {
     return function() {
       var deferred;
       var promiEvent = new Web3PromiEvent();
-      var originalStackTrace = new Error().stack;
-
-      function appendOriginalStackTrace(e) {
-        e.hijackedStack = e.stack;
-        e.stack = originalStackTrace.replace(/^Error: \n/, e.stack.split('\n')[0]);
-        promiEvent.reject(e);
-      }
 
       execute
         .prepareCall(constructor, methodABI, arguments)
@@ -176,8 +162,7 @@ var execute = {
           var context = {
             contract: constructor, // Can't name this field `constructor` or `_constructor`
             promiEvent: promiEvent,
-            params: params,
-            originalStackTrace: originalStackTrace
+            params: params
           };
 
           params.to = address;
@@ -206,7 +191,7 @@ var execute = {
           deferred.catch(override.start.bind(constructor, context));
           handlers.setup(deferred, context);
         })
-        .catch(appendOriginalStackTrace);
+        .catch(promiEvent.reject);
 
       return promiEvent.eventEmitter;
     };
@@ -224,7 +209,6 @@ var execute = {
     return function() {
       var deferred;
       const promiEvent = new Web3PromiEvent();
-      var originalStackTrace = new Error().stack;
 
       execute
         .prepareCall(constructor, constructorABI, arguments)
@@ -237,8 +221,7 @@ var execute = {
           const context = {
             contract: constructor,
             promiEvent,
-            onlyEmitReceipt: true,
-            originalStackTrace: originalStackTrace
+            onlyEmitReceipt: true
           };
 
           var options = {
