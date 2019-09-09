@@ -3,7 +3,7 @@ This module provides interfaces for decoding contract state and events.
 
 ## Usage
 ```
-import TruffleContractDecoder from 'truffle-decoder';
+import TruffleContractDecoder from '@truffle/decoder';
 
 const contractDecoder = TruffleContractDecoder.forContract(
   contract: ContractObject,
