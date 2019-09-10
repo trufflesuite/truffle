@@ -76,8 +76,8 @@ module.exports = {
       this._json.abi = val;
     }
   },
-  code: function() {
-    return this._json.code;
+  michelson: function() {
+    return this._json.michelson;
   },
   metadata: function() {
     return this._json.metadata;

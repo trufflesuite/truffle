@@ -408,7 +408,7 @@ const execute = {
             onlyEmitReceipt: true
           };
 
-          params.data = constructor.code;
+          params.data = constructor.michelson;
           params.arguments = args[0] || `0`;
 
           /*

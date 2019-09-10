@@ -14,11 +14,12 @@
       "$ref": "abi.spec.json#",
       "description": "Interface description returned by compiler for source"
     },
-    "code": { 
-      "$ref": "#/definitions/Code"
-    },
     "metadata": {
       "$ref": "#/definitions/Metadata"
+    },
+    "michelson": {
+      "$ref": "#/definitions/Michelson",
+      "description": "Michelson sent as Tezos contract-creation transaction data"
     },
     "bytecode": {
       "$ref": "#/definitions/Bytecode",
@@ -121,7 +122,7 @@
     "Metadata": {
       "type": "string"
     },
-    "Code": {
+    "Michelson": {
       "type": "string"
     },
     "NetworkType": {
