@@ -306,7 +306,14 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
           type: fullType,
           rawAsBN: numeric
         };
-        if(strict) {
+        if(strict && !checkPaddingLeft(bytes, numBytes)) {
+          //note that second condition -- even in strict mode,
+          //if the enum is merely out of range rather than out of the ABI range,
+          //we do NOT throw an error here!  instead we simply return an error value,
+          //which we normally avoid doing in strict mode.  (the error will be caught
+          //later at the re-encoding step instead.)  why?  because we might be running
+          //in ABI mode, so we may need to abify this "value" rather than just throwing
+          //it out.
           throw new StopDecodingError(error);
           //note that we do NOT allow a retry here!
           //if we *can* find the enum type but the value is out of range,
