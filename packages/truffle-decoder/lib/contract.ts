@@ -91,6 +91,14 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return await this.wireDecoder.events(options);
   }
 
+  public abifyCalldataDecoding(decoding: Codec.CalldataDecoding): Codec.CalldataDecoding {
+    return this.wireDecoder.abifyCalldataDecoding(decoding);
+  }
+  
+  public abifyLogDecoding(decoding: Codec.LogDecoding): Codec.LogDecoding {
+    return this.wireDecoder.abifyLogDecoding(decoding);
+  }
+
   //the following functions are for internal use
   public getAllocations() {
     return this.allocations;
@@ -369,6 +377,14 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
 
   public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
     return await this.wireDecoder.decodeLogs(logs, {}, this.additionalContexts);
+  }
+
+  public abifyCalldataDecoding(decoding: Codec.CalldataDecoding): Codec.CalldataDecoding {
+    return this.wireDecoder.abifyCalldataDecoding(decoding);
+  }
+  
+  public abifyLogDecoding(decoding: Codec.LogDecoding): Codec.LogDecoding {
+    return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
   //note: by default restricts address to address of this

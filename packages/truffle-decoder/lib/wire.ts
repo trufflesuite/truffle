@@ -243,6 +243,14 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     return events;
   }
 
+  public abifyCalldataDecoding(decoding: Codec.CalldataDecoding): Codec.CalldataDecoding {
+    return Codec.abifyCalldataDecoding(decoding, this.userDefinedTypes);
+  }
+  
+  public abifyLogDecoding(decoding: Codec.LogDecoding): Codec.LogDecoding {
+    return Codec.abifyLogDecoding(decoding, this.userDefinedTypes);
+  }
+
   public onEvent(name: string, callback: Function): void {
     //this.web3.eth.subscribe(name);
   }

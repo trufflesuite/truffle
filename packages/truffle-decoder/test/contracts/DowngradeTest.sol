@@ -29,15 +29,16 @@ contract DowngradeTest {
 
   event CauseTrouble(function() external);
 
-  function shhImADecimal(int168 secretlyADecimal) public {
-    emit SecretlyADecimal(secretlyADecimal);
+  function shhImADecimal(int168 secretlyADecimal) public returns (int168) {
+    emit Done();
+    return secretlyADecimal;
   }
 
-  event SecretlyADecimal(int168);
+  event Done();
 
-  function enumSilliness(uint x, Ternary y, uint z) public {
+  function enumSilliness(Pair memory x, Ternary y, Pair memory z) public {
     emit EnumSilliness(x, y, z);
   }
 
-  event EnumSilliness(uint, Ternary, uint);
+  event EnumSilliness(Pair, Ternary, Pair);
 }

@@ -68,7 +68,11 @@ function verifyAbiFunctionDecoding(decoding, address) {
   assert.strictEqual(decoding.arguments[0].value.value.selector, selector);
 }
 
-async function runTestBody(DowngradeTest, fullMode = false) {
+async function runTestBody(
+  DowngradeTest,
+  skipFunctionTests = false,
+  fullMode = false
+) {
   let decoder = await TruffleDecoder.forProject(
     [DowngradeTest._json],
     web3.currentProvider
@@ -86,7 +90,7 @@ async function runTestBody(DowngradeTest, fullMode = false) {
 
   if (fullMode) {
     assert.strictEqual(txDecoding.decodingMode, "full");
-    txDecoding = TruffleCodec.abifyCalldataDecoding(txDecoding);
+    txDecoding = decoder.abifyCalldataDecoding(txDecoding);
   }
   verifyAbiDecoding(txDecoding, address);
 
@@ -94,29 +98,30 @@ async function runTestBody(DowngradeTest, fullMode = false) {
   let logDecoding = logDecodings[0];
   if (fullMode) {
     assert.strictEqual(logDecoding.decodingMode, "full");
-    logDecoding = TruffleCodec.abifyLogDecoding(logDecoding);
+    logDecoding = decoder.abifyLogDecoding(logDecoding);
   }
   verifyAbiDecoding(logDecoding, address);
 
-  //huh -- I thought I'd eliminated that exception, but I'm
-  //still getting it.  weird.  well, whatever...
-  try {
-    await deployedContract.causeTrouble();
-  } catch (_) {
-    //do nothing, get the result a different way
+  if (!skipFunctionTests) {
+    //huh -- I thought I'd eliminated that exception, but I'm
+    //still getting it.  weird.  well, whatever...
+    try {
+      await deployedContract.causeTrouble();
+    } catch (_) {
+      //do nothing, get the result a different way
+    }
+    //HACK
+    let fnEvents = await decoder.events();
+    assert.lengthOf(fnEvents, 1);
+    let fnDecodings = fnEvents[0].decodings;
+    assert.lengthOf(fnDecodings, 1);
+    let fnDecoding = fnDecodings[0];
+    if (fullMode) {
+      assert.strictEqual(fnDecoding.decodingMode, "full");
+      fnDecoding = decoder.abifyLogDecoding(fnDecoding);
+    }
+    verifyAbiFunctionDecoding(fnDecoding, address);
   }
-  //HACK
-  let fnEvents = await decoder.events();
-  assert.lengthOf(fnEvents, 1);
-  debug("the function log: %O", fnEvents[0]);
-  let fnDecodings = fnEvents[0].decodings;
-  assert.lengthOf(fnDecodings, 1);
-  let fnDecoding = fnDecodings[0];
-  if (fullMode) {
-    assert.strictEqual(fnDecoding.decodingMode, "full");
-    fnDecoding = TruffleCodec.abifyLogDecoding(fnDecoding);
-  }
-  verifyAbiFunctionDecoding(fnDecoding, address);
 }
 
 contract("DowngradeTest", _accounts => {
@@ -143,7 +148,7 @@ contract("DowngradeTest", _accounts => {
     structNode.nodeType = "Ninja"; //fake node type which will prevent
     //the decoder from recognizing it as a struct definition
 
-    await runTestBody(DowngradeTest);
+    await runTestBody(DowngradeTest, true);
   });
 
   it("Correctly degrades on decoding when error", async () => {
@@ -162,38 +167,22 @@ contract("DowngradeTest", _accounts => {
     enumNode.nodeType = "Ninja"; //fake node type which will prevent
     //the decoder from recognizing it as a enum definition
 
-    await runTestBody(DowngradeTest);
+    await runTestBody(DowngradeTest, true);
   });
 
   it("Correctly abifies after finishing", async () => {
     let DowngradeTest = DowngradeTestUnmodified; //for once, we're not modifiying it!
 
-    await runTestBody(DowngradeTest, true);
+    await runTestBody(DowngradeTest, false, true);
   });
 
   it("Correctly decodes decimals", async () => {
     //HACK
     let DowngradeTest = clonedeep(DowngradeTestUnmodified);
 
-    const tau = new Big("6.2831853072");
-    const taue10 = 62831853072;
-
-    //now, we're going to send this transaction with the unmodified ABI,
-    //because ethers encoder can't yet handle fixed-point
-
-    let deployedContract = await DowngradeTest.new();
-    let decimalResult = await deployedContract.shhImADecimal(taue10);
-    let decimalHash = decimalResult.tx;
-    let decimalTx = await web3.eth.getTransaction(decimalHash);
-    let decimalLog = decimalResult.receipt.rawLogs[0];
-
-    //...and now let's just go back and tweak that ABI a little before setting
-    //up the decoder...
+    //Let's tweak that ABI a little before setting up the decoder...
     DowngradeTest._json.abi.find(
       abiEntry => abiEntry.name === "shhImADecimal"
-    ).inputs[0].type = "fixed168x10";
-    DowngradeTest._json.abi.find(
-      abiEntry => abiEntry.name === "SecretlyADecimal"
     ).inputs[0].type = "fixed168x10";
 
     //...and now let's set up a decoder for our hacked-up contract artifact.
@@ -202,11 +191,47 @@ contract("DowngradeTest", _accounts => {
       web3.currentProvider
     );
 
+    //the ethers encoder can't yet handle fixed-point
+    //(and the hack I tried earlier didn't work because it messed up the signatures)
+    //so I'm going to use a *different* hack and send this transaction manually!
+
+    const tau = new Big("6.2831853072");
+    const wrappedTau = {
+      type: {
+        typeClass: "fixed",
+        bits: 168,
+        places: 10
+      },
+      kind: "value",
+      value: {
+        asBig: tau
+      }
+    };
+    const encodedTau = TruffleCodec.encodeTupleAbi([wrappedTau]);
+    const hexTau = ConversionUtils.toHexString(encodedTau);
+    const selector = web3.eth.abi.encodeFunctionSignature(
+      "shhImADecimal(fixed168x10)"
+    );
+    const data = selector + hexTau.slice(2); //(cut off initial 0x)
+
+    let deployedContract = await DowngradeTest.new();
+    let address = deployedContract.address;
+    let accounts = await web3.eth.getAccounts();
+    let decimalResult = await web3.eth.sendTransaction({
+      from: accounts[0],
+      to: address,
+      data
+    });
+
+    debug("decimalResult: %O", decimalResult);
+    let decimalHash = decimalResult.transactionHash;
+    let decimalTx = await web3.eth.getTransaction(decimalHash);
+
     //now, let's do the decoding
     let txDecoding = (await decoder.decodeTransaction(decimalTx)).decoding;
-    let logDecodings = (await decoder.decodeLog(decimalLog)).decodings;
 
     //now let's check the results!
+    debug("txDecoding: %O", txDecoding);
     assert.strictEqual(txDecoding.decodingMode, "abi");
     assert.strictEqual(txDecoding.kind, "function");
     assert.strictEqual(txDecoding.abi.name, "shhImADecimal");
@@ -218,20 +243,5 @@ contract("DowngradeTest", _accounts => {
     assert.strictEqual(txDecoding.arguments[0].value.type.places, 10);
     assert.strictEqual(txDecoding.arguments[0].value.kind, "value");
     assert(txDecoding.arguments[0].value.value.asBig.eq(tau));
-
-    //event decoding
-    assert.lengthOf(logDecodings, 1);
-    let logDecoding = logDecodings[0];
-    assert.strictEqual(logDecoding.decodingMode, "abi");
-    assert.strictEqual(logDecoding.kind, "event");
-    assert.strictEqual(logDecoding.abi.name, "SecretlyADecimal");
-    assert.lengthOf(logDecoding.arguments, 1);
-    assert.isUndefined(logDecoding.arguments[0].name);
-    assert.strictEqual(logDecoding.arguments[0].value.type.typeClass, "fixed");
-    assert.strictEqual(logDecoding.arguments[0].value.type.bits, 168);
-    assert.strictEqual(logDecoding.arguments[0].value.type.places, 10);
-    assert.strictEqual(logDecoding.arguments[0].value.type.places, 10);
-    assert.strictEqual(logDecoding.arguments[0].value.kind, "value");
-    assert(logDecoding.arguments[0].value.value.asBig.eq(tau));
   });
 });

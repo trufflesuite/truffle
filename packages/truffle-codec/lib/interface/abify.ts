@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:interface:abify");
 
 import { CalldataDecoding, LogDecoding } from "../types/decoding";
-import { abifyResult } from "truffle-codec-utils";
+import { abifyResult, Types } from "truffle-codec-utils";
 
 /* the following functions are not used anywhere in our code at present.
  * they are intended for external use -- the idea is that if you don't
@@ -13,7 +13,7 @@ import { abifyResult } from "truffle-codec-utils";
  * but you can, uh, throw an exception if you don't, I guess.)
  */
 
-export function abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
+export function abifyCalldataDecoding(decoding: CalldataDecoding, userDefinedTypes: Types.TypesById): CalldataDecoding {
   if(decoding.decodingMode === "abi") {
     return decoding;
   }
@@ -24,7 +24,7 @@ export function abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecod
         ...decoding,
         decodingMode: "abi",
         arguments: decoding.arguments.map(
-          ({name, value}) => ({name, value: abifyResult(value)})
+          ({name, value}) => ({name, value: abifyResult(value, userDefinedTypes)})
         )
       };
     default:
@@ -35,7 +35,7 @@ export function abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecod
   }
 }
 
-export function abifyLogDecoding(decoding: LogDecoding): LogDecoding {
+export function abifyLogDecoding(decoding: LogDecoding, userDefinedTypes: Types.TypesById): LogDecoding {
   if(decoding.decodingMode === "abi") {
     return decoding;
   }
@@ -43,7 +43,7 @@ export function abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     ...decoding,
     decodingMode: "abi",
     arguments: decoding.arguments.map(
-      ({name, value}) => ({name, value: abifyResult(value)})
+      ({name, value}) => ({name, value: abifyResult(value, userDefinedTypes)})
     )
   };
 }
