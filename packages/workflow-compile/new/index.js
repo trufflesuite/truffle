@@ -17,6 +17,10 @@ const SUPPORTED_COMPILERS = {
     compiler: require("@truffle/compile-vyper"),
     legacy: true
   },
+  ligo: {
+    compiler: require("@truffle/compile-ligo"),
+    legacy: true
+  },
   external: {
     compiler: require("@truffle/external-compile"),
     legacy: true

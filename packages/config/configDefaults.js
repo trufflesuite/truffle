@@ -39,7 +39,8 @@ const _values = ({ truffleDirectory, workingDirectory, network }) => {
           remappings: []
         }
       },
-      vyper: {}
+      vyper: {},
+      ligo: {}
     },
     logger: {
       log() {}
