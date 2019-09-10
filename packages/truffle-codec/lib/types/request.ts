@@ -1,5 +1,6 @@
 import BN from "bn.js";
 import { Values } from "truffle-codec-utils";
+import { ContractInfoAndContext } from "./decoding";
 
 export type DecoderRequest = StorageRequest | CodeRequest;
 
@@ -22,4 +23,4 @@ export function isCodeRequest(request: DecoderRequest): request is CodeRequest {
 }
 
 //HACK -- to help mitigate the generator problem
-export type GeneratorJunk = Uint8Array | Values.ContractValueInfo | Values.FunctionExternalValueInfo;
+export type GeneratorJunk = Uint8Array | ContractInfoAndContext | Values.ContractValueInfo | Values.FunctionExternalValueInfo;

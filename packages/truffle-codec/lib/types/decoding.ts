@@ -59,3 +59,9 @@ export interface AbiArgument {
   indexed?: boolean; //included for event parameters
   value: CodecUtils.Values.Result;
 }
+
+//the following types are intended for internal use only
+export interface ContractInfoAndContext {
+  contractInfo: CodecUtils.Values.ContractValueInfo;
+  context?: CodecUtils.Contexts.DecoderContext;
+}

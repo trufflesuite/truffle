@@ -12,6 +12,7 @@ import { EvmInfo } from "../types/evm";
 import { DecoderOptions } from "../types/options";
 import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { StopDecodingError } from "../types/errors";
+import { ContractInfoAndContext } from "../types/decoding";
 
 export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   const { state } = info;
@@ -412,7 +413,11 @@ export function decodeString(bytes: Uint8Array): Values.StringValueInfo {
 }
 
 //NOTE that this function returns a ContractValueInfo, not a ContractResult
-export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.ContractValueInfo | DecoderRequest | Uint8Array> {
+export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.ContractValueInfo | DecoderRequest | GeneratorJunk> {
+  return (<ContractInfoAndContext> (yield* decodeContractAndContext(addressBytes, info))).contractInfo;
+}
+
+function* decodeContractAndContext(addressBytes: Uint8Array, info: EvmInfo): IterableIterator<ContractInfoAndContext | DecoderRequest | Uint8Array> {
   let address = CodecUtils.Conversion.toAddress(addressBytes);
   let rawAddress = CodecUtils.Conversion.toHexString(addressBytes);
   let codeBytes: Uint8Array = yield {
@@ -421,19 +426,25 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Iterab
   };
   let code = CodecUtils.Conversion.toHexString(codeBytes);
   let context = CodecUtils.Contexts.findDecoderContext(info.contexts, code);
-  if(context !== null && context.contractName !== undefined) {
+  if(context !== null) {
     return {
-      kind: "known",
-      address,
-      rawAddress,
-      class: CodecUtils.Contexts.contextToType(context)
+      context,
+      contractInfo: {
+        kind: "known",
+        address,
+        rawAddress,
+        class: CodecUtils.Contexts.contextToType(context)
+      }
     };
   }
   else {
     return {
-      kind: "unknown",
-      address,
-      rawAddress
+      context,
+      contractInfo: {
+        kind: "unknown",
+        address,
+        rawAddress
+      }
     };
   }
 }
@@ -441,7 +452,7 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Iterab
 //note: address can have extra zeroes on the left like elsewhere, but selector should be exactly 4 bytes
 //NOTE this again returns a FunctionExternalValueInfo, not a FunctionExternalResult
 export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): IterableIterator<Values.FunctionExternalValueInfo | DecoderRequest | GeneratorJunk> {
-  let contract = <Values.ContractValueInfo> (yield* decodeContract(addressBytes, info));
+  let {contractInfo: contract, context} = <ContractInfoAndContext> (yield* decodeContractAndContext(addressBytes, info));
   let selector = CodecUtils.Conversion.toHexString(selectorBytes);
   if(contract.kind === "unknown") {
     return {
@@ -450,10 +461,6 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
       selector
     };
   }
-  let contractId = (<Types.ContractTypeNative> contract.class).id; //sorry! will be fixed soon!
-  let context = Object.values(info.contexts).find(
-    context => context.contractId.toString() === contractId //similarly! I hope!
-  );
   let abiEntry = context.abi !== undefined
     ? context.abi[selector]
     : undefined;
@@ -473,6 +480,7 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
 }
 
 //this one works a bit differently -- in order to handle errors, it *does* return a FunctionInternalResult
+//also note, I haven't put the same sort of error-handling in this one since it's only intended to run with full info (for now, anyway)
 export function decodeInternalFunction(dataType: Types.FunctionInternalType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
   let deployedPc: number = CodecUtils.Conversion.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = CodecUtils.Conversion.toBN(constructorPcBytes).toNumber();

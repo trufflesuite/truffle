@@ -16,7 +16,6 @@ import decode from "../decode";
 export function* decodeVariable(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<Values.Result | DecoderRequest | GeneratorJunk> {
   let compiler = info.currentContext.compiler;
   let dataType = Types.definitionToType(definition, compiler);
-  debug("definition %O", definition);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
@@ -139,7 +138,6 @@ export function* decodeCalldata(info: EvmInfo): IterableIterator<CalldataDecodin
 //for internal use :) )
 export function* decodeEvent(info: EvmInfo, address: string, targetName?: string): IterableIterator<LogDecoding[] | DecoderRequest | Values.Result | GeneratorJunk> {
   const allocations = info.allocations.event;
-  debug("event allocations: %O", allocations);
   let rawSelector: Uint8Array;
   let selector: string;
   let contractAllocations: {[contextHash: string]: EventAllocation}; //for non-anonymous events
@@ -198,6 +196,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
   let decodings: LogDecoding[] = [];
   allocationAttempts: for(const allocation of possibleAllocationsTotal) {
     //first: do a name check so we can skip decoding if name is wrong
+    debug("trying allocation: %O", allocation);
     if(targetName !== undefined && allocation.abi.name !== targetName) {
       continue;
     }
@@ -248,6 +247,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
           }
           catch(_) {
             //if an error occurred on the retry, this isn't a valid decoding!
+            debug("rejected due to exception on retry");
             continue allocationAttempts;
           }
           //4. the remaining parameters will then automatically be decoded in ABI mode due to (1),
@@ -255,6 +255,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
         }
         else {
           //if any other sort of error occurred, this isn't a valid decoding!
+          debug("rejected due to exception on first try: %O", error);
           continue allocationAttempts;
         }
       }
@@ -266,18 +267,17 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
           : { indexed, value }
       );
     }
-    debug("decodedArguments: %O", decodedArguments);
     //OK, so, having decoded the result, the question is: does it reencode to the original?
     //first, we have to filter out the indexed arguments, and also get rid of the name information
     const nonIndexedValues = decodedArguments
       .filter(argument => !argument.indexed)
       .map(argument => argument.value);
     //now, we can encode!
-    debug("nonIndexedValues: %O", nonIndexedValues);
     const reEncodedData = encodeTupleAbi(nonIndexedValues, info.allocations.abi);
     //are they equal?
     const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
     if(CodecUtils.EVM.equalData(encodedData, reEncodedData)) {
+      debug("allocation accepted!");
       if(allocation.abi.anonymous) {
         decodings.push({
           kind: "anonymous",

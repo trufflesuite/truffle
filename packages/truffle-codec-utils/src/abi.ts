@@ -193,7 +193,12 @@ export namespace AbiUtils {
   }
 
   export function definitionMatchesAbi(abiEntry: AbiEntry, definition: AstDefinition, referenceDeclarations: AstReferences): boolean {
-    return abisMatch(abiEntry, definitionToAbi(definition, referenceDeclarations));
+    try {
+      return abisMatch(abiEntry, definitionToAbi(definition, referenceDeclarations));
+    }
+    catch(_) {
+      return false; //if an exception occurs, well, that's not a match!
+    }
   }
 
   export function topicsCount(abiEntry: EventAbiEntry): number {

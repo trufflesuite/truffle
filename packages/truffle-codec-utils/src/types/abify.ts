@@ -134,28 +134,11 @@ export function abifyResult(result: Values.Result, userDefinedTypes?: Types.Type
       switch(result.type.visibility) {
         case "external": {
           let coercedResult = <Values.FunctionExternalResult> result;
-          switch(coercedResult.kind) {
-            case "value":
-              return {
-                kind: "value",
-                type: <Types.FunctionExternalType> abifyType(result.type, userDefinedTypes),
-                value: {
-                  kind: "unknown",
-                  selector: coercedResult.value.selector,
-                  contract: {
-                    kind: "unknown",
-                    address: coercedResult.value.contract.address,
-                    rawAddress: coercedResult.value.contract.rawAddress
-                  }
-                }
-              };
-            case "error":
-              return {
-                ...coercedResult,
-                type: <Types.FunctionExternalType> abifyType(result.type, userDefinedTypes)
-              };
+            return {
+              ...coercedResult,
+              type: <Types.FunctionExternalType> abifyType(result.type, userDefinedTypes)
+            };
           }
-        }
         case "internal": //these don't go in the ABI
           return undefined;
       }
