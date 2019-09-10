@@ -17,6 +17,10 @@
     "metadata": {
       "$ref": "#/definitions/Metadata"
     },
+    "michelson": {
+      "$ref": "#/definitions/Michelson",
+      "description": "Michelson sent as Tezos contract-creation transaction data"
+    },
     "bytecode": {
       "$ref": "#/definitions/Bytecode",
       "description": "Bytecode sent as contract-creation transaction data, with unresolved link references"
@@ -116,6 +120,9 @@
       "type": "object"
     },
     "Metadata": {
+      "type": "string"
+    },
+    "Michelson": {
       "type": "string"
     },
     "NetworkType": {
