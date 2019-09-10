@@ -63,6 +63,9 @@ var properties = {
   metadata: {
     sources: ["metadata"]
   },
+  michelson: {
+    sources: ["michelson"]
+  },
   bytecode: {
     sources: ["bytecode", "binary", "unlinked_binary", "evm.bytecode.object"],
     transform: function(value) {
