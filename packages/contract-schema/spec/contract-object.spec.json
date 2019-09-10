@@ -16,6 +16,7 @@
       "description": "Interface description returned by compiler for source"
     },
     "metadata": { "$ref": "#/definitions/Metadata" },
+    "code": { "$ref": "#/definitions/Code" },
     "bytecode": {
       "$ref": "#/definitions/Bytecode",
       "description": "Bytecode sent as contract-creation transaction data, with unresolved link references"
@@ -82,6 +83,10 @@
     },
 
     "Metadata": {
+      "type": "string"
+    },
+
+    "Code": {
       "type": "string"
     },
 
