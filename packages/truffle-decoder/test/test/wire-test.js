@@ -10,7 +10,7 @@ const WireTestParent = artifacts.require("WireTestParent");
 const WireTestLibrary = artifacts.require("WireTestLibrary");
 
 contract("WireTest", _accounts => {
-  it("should correctly decode transactions and events", async () => {
+  it("should correctly decode transactions and events", async function() {
     let deployedContract = await WireTest.new(true, "0xdeadbeef", 2);
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
@@ -384,7 +384,7 @@ contract("WireTest", _accounts => {
     );
   });
 
-  it("disambiguates events when possible and not when impossible", async () => {
+  it("disambiguates events when possible and not when impossible", async function() {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await TruffleDecoder.forProject(
@@ -505,7 +505,7 @@ contract("WireTest", _accounts => {
     );
   });
 
-  it("Handles anonymous events", async () => {
+  it("Handles anonymous events", async function() {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await TruffleDecoder.forProject(

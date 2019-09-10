@@ -14,6 +14,10 @@ contract DowngradeTest {
     Yes, No, MaybeSo
   }
 
+  enum PositionOnHill {
+    Up, Down, HalfwayUp
+  }
+
   function() external payable {
   }
 
@@ -36,9 +40,16 @@ contract DowngradeTest {
 
   event Done();
 
-  function enumSilliness(Pair memory x, Ternary y, Pair memory z) public {
-    emit EnumSilliness(x, y, z);
+  function enumSilliness(uint8 decoy1, uint8 decoy2, Ternary x, PositionOnHill y) public {
+    emit EnumSilliness1(decoy1, decoy2, x, y);
+    emit EnumSilliness2(decoy1, decoy2, x, y);
   }
 
-  event EnumSilliness(Pair, Ternary, Pair);
+  event EnumSilliness1(uint8 indexed, uint8 indexed, Ternary, PositionOnHill);
+  event EnumSilliness2(uint8, uint8, Ternary indexed, PositionOnHill indexed);
+}
+
+library DecoyLibrary {
+  event EnumSilliness1(uint8, uint8, DowngradeTest.Ternary indexed, DowngradeTest.PositionOnHill indexed);
+  event EnumSilliness2(uint8 indexed, uint8 indexed, DowngradeTest.Ternary, DowngradeTest.PositionOnHill);
 }

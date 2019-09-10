@@ -8,6 +8,7 @@ const TruffleCodec = require("../../../truffle-codec");
 const ConversionUtils = require("../../../truffle-codec-utils").Conversion;
 
 const DowngradeTestUnmodified = artifacts.require("DowngradeTest");
+const DecoyLibrary = artifacts.require("DecoyLibrary");
 
 //verify the decoding for run
 function verifyAbiDecoding(decoding, address) {
@@ -74,7 +75,8 @@ async function runTestBody(
   fullMode = false
 ) {
   let decoder = await TruffleDecoder.forProject(
-    [DowngradeTest._json],
+    [DowngradeTest._json, DecoyLibrary], //HACK: because we've clonedeep'd DowngradeTest,
+    //we need to pass in its _json rather than it itself (its getters have been stripped off)
     web3.currentProvider
   );
   let deployedContract = await DowngradeTest.new();
@@ -124,15 +126,15 @@ async function runTestBody(
   }
 }
 
-contract("DowngradeTest", _accounts => {
-  it("Correctly degrades on allocation when no node", async () => {
+contract("DowngradeTest", function(accounts) {
+  it("Correctly degrades on allocation when no node", async function() {
     let DowngradeTest = clonedeep(DowngradeTestUnmodified);
     DowngradeTest._json.ast = undefined;
 
     await runTestBody(DowngradeTest);
   });
 
-  it("Correctly degrades on allocation when error", async () => {
+  it("Correctly degrades on allocation when error", async function() {
     //HACK
     DowngradeTest = clonedeep(DowngradeTestUnmodified);
 
@@ -151,7 +153,7 @@ contract("DowngradeTest", _accounts => {
     await runTestBody(DowngradeTest, true);
   });
 
-  it("Correctly degrades on decoding when error", async () => {
+  it("Correctly degrades on decoding when error", async function() {
     //HACK
     let DowngradeTest = clonedeep(DowngradeTestUnmodified);
 
@@ -170,13 +172,13 @@ contract("DowngradeTest", _accounts => {
     await runTestBody(DowngradeTest, true);
   });
 
-  it("Correctly abifies after finishing", async () => {
+  it("Correctly abifies after finishing", async function() {
     let DowngradeTest = DowngradeTestUnmodified; //for once, we're not modifiying it!
 
     await runTestBody(DowngradeTest, false, true);
   });
 
-  it("Correctly decodes decimals", async () => {
+  it("Correctly decodes decimals", async function() {
     //HACK
     let DowngradeTest = clonedeep(DowngradeTestUnmodified);
 
@@ -187,7 +189,7 @@ contract("DowngradeTest", _accounts => {
 
     //...and now let's set up a decoder for our hacked-up contract artifact.
     let decoder = await TruffleDecoder.forProject(
-      [DowngradeTest._json],
+      [DowngradeTest._json, DecoyLibrary], //HACK: see clonedeep note above
       web3.currentProvider
     );
 
@@ -216,7 +218,6 @@ contract("DowngradeTest", _accounts => {
 
     let deployedContract = await DowngradeTest.new();
     let address = deployedContract.address;
-    let accounts = await web3.eth.getAccounts();
     let decimalResult = await web3.eth.sendTransaction({
       from: accounts[0],
       to: address,
@@ -244,4 +245,113 @@ contract("DowngradeTest", _accounts => {
     assert.strictEqual(txDecoding.arguments[0].value.kind, "value");
     assert(txDecoding.arguments[0].value.value.asBig.eq(tau));
   });
+
+  describe("Out-of-range enums", function() {
+    it("Doesn't include out-of-range enums in full mode", async function() {
+      let DowngradeTest = DowngradeTestUnmodified;
+      let decoder = await TruffleDecoder.forProject(
+        [DowngradeTest._json, DecoyLibrary], //not strictly necessary here, but see clonedeep comment above
+        web3.currentProvider
+      );
+      let deployedContract = await DowngradeTest.new();
+
+      let txArguments = [9, 9, 1, 1]; //note: 1 is in range; 9 is not
+
+      let result = await deployedContract.enumSilliness(...txArguments);
+      let nonIndexedLog = result.receipt.rawLogs[0];
+      let indexedLog = result.receipt.rawLogs[1];
+      //(these are the order they went in)
+
+      let nonIndexedLogDecodings = (await decoder.decodeLog(nonIndexedLog))
+        .decodings;
+      let indexedLogDecodings = (await decoder.decodeLog(indexedLog)).decodings;
+
+      assert.lengthOf(nonIndexedLogDecodings, 1); //because we're in full mode, the decoy decoding should be filtered out
+      assert.strictEqual(nonIndexedLogDecodings[0].decodingMode, "full");
+      assert.lengthOf(indexedLogDecodings, 1); //because we're in full mode, the decoy decoding should be filtered out
+      assert.strictEqual(indexedLogDecodings[0].decodingMode, "full");
+    });
+
+    it("Abifies correctly when failure occurs in first enum", async function() {
+      //HACK
+      let DowngradeTest = clonedeep(DowngradeTestUnmodified);
+
+      let contractNode = DowngradeTest._json.ast.nodes.find(
+        node =>
+          node.nodeType === "ContractDefinition" &&
+          node.name === "DowngradeTest"
+      );
+      let enumNode = contractNode.nodes.find(
+        node => node.nodeType === "EnumDefinition" && node.name === "Ternary"
+      );
+      enumNode.nodeType = "Ninja"; //fake node type which will prevent
+      //the decoder from recognizing it as a enum definition
+
+      await runEnumTestBody(DowngradeTest);
+    });
+
+    it("Abifies correctly when failure occurs in second enum", async function() {
+      //HACK
+      let DowngradeTest = clonedeep(DowngradeTestUnmodified);
+
+      let contractNode = DowngradeTest._json.ast.nodes.find(
+        node =>
+          node.nodeType === "ContractDefinition" &&
+          node.name === "DowngradeTest"
+      );
+      let enumNode = contractNode.nodes.find(
+        node =>
+          node.nodeType === "EnumDefinition" && node.name === "PositionOnHill"
+      );
+      enumNode.nodeType = "Ninja"; //fake node type which will prevent
+      //the decoder from recognizing it as a enum definition
+      await runEnumTestBody(DowngradeTest);
+    });
+  });
 });
+
+async function runEnumTestBody(DowngradeTest) {
+  let decoder = await TruffleDecoder.forProject(
+    [DowngradeTest._json, DecoyLibrary], //HACK: see clonedeep comment above
+    web3.currentProvider
+  );
+  let deployedContract = await DowngradeTest.new();
+
+  let txArguments = [9, 9, 1, 1]; //note: 1 is in range; 9 is not
+  //the decoy reading swaps the first two arguments with the second two
+  let swappedTxArguments = [
+    txArguments[2],
+    txArguments[3],
+    txArguments[0],
+    txArguments[1]
+  ];
+
+  let result = await deployedContract.enumSilliness(...txArguments);
+  let nonIndexedLog = result.receipt.rawLogs[0];
+  let indexedLog = result.receipt.rawLogs[1];
+  //(these are the order they went in)
+
+  let nonIndexedLogDecodings = (await decoder.decodeLog(nonIndexedLog))
+    .decodings;
+  let indexedLogDecodings = (await decoder.decodeLog(indexedLog)).decodings;
+
+  assert.lengthOf(nonIndexedLogDecodings, 2); //we're in ABI mode, so should have correct decoding and decoy decoding
+  let decoyDecoding1 = nonIndexedLogDecodings[1]; //decoy decoding should be second (library)
+  assert.strictEqual(decoyDecoding1.class.typeName, "DecoyLibrary"); //...but let's confirm that.
+  assert.strictEqual(decoyDecoding1.abi.name, "EnumSilliness1"); //also let's verify this is the right event
+  assert.strictEqual(decoyDecoding1.decodingMode, "abi");
+  let nativizedArguments1 = decoyDecoding1.arguments.map(({ value }) =>
+    ConversionUtils.nativize(value)
+  );
+  assert.deepStrictEqual(nativizedArguments1, swappedTxArguments);
+
+  assert.lengthOf(indexedLogDecodings, 2); //we're in ABI mode, so should have correct decoding and decoy decoding
+  let decoyDecoding2 = indexedLogDecodings[1]; //decoy decoding should be second (library)
+  assert.strictEqual(decoyDecoding2.class.typeName, "DecoyLibrary"); //...but let's confirm that.
+  assert.strictEqual(decoyDecoding2.abi.name, "EnumSilliness2"); //also let's verify this is the right event
+  assert.strictEqual(decoyDecoding2.decodingMode, "abi");
+  let nativizedArguments2 = decoyDecoding2.arguments.map(({ value }) =>
+    ConversionUtils.nativize(value)
+  );
+  assert.deepStrictEqual(nativizedArguments2, swappedTxArguments);
+}
