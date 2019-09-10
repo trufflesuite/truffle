@@ -484,7 +484,8 @@ function allocateEvent(
     abi: abiEntry,
     contextHash,
     arguments: argumentsAllocation,
-    allocationMode
+    allocationMode,
+    anonymous: abiEntry.anonymous
   };
 }
 

@@ -9,7 +9,7 @@ import { DecoderRequest, GeneratorJunk } from "../types/request";
 import { StopDecodingError } from "../types/errors";
 import { CalldataAllocation, EventAllocation, EventArgumentAllocation } from "../types/allocation";
 import { CalldataDecoding, LogDecoding, AbiArgument, DecodingMode } from "../types/decoding";
-import { encodeTupleAbi } from "../encode/abi";
+import { encodeAbi, encodeTupleAbi } from "../encode/abi";
 import read from "../read";
 import decode from "../decode";
 
@@ -274,31 +274,53 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
       .map(argument => argument.value);
     //now, we can encode!
     const reEncodedData = encodeTupleAbi(nonIndexedValues, info.allocations.abi);
-    //are they equal?
     const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
-    if(CodecUtils.EVM.equalData(encodedData, reEncodedData)) {
-      debug("allocation accepted!");
-      if(allocation.abi.anonymous) {
-        decodings.push({
-          kind: "anonymous",
-          class: contractType,
-          abi: allocation.abi,
-          arguments: decodedArguments,
-          decodingMode
-        });
-      }
-      else {
-        decodings.push({
-          kind: "event",
-          class: contractType,
-          abi: allocation.abi,
-          arguments: decodedArguments,
-          selector,
-          decodingMode
-        });
+    //are they equal?
+    if(!CodecUtils.EVM.equalData(reEncodedData, encodedData)) {
+      //if not, this allocation doesn't work
+      debug("rejected due to [non-indexed] mismatch");
+      continue;
+    }
+    //one last check -- let's check that the indexed arguments match up, too
+    const indexedValues = decodedArguments
+      .filter(argument => argument.indexed)
+      .map(argument => argument.value);
+    debug("indexedValues: %O", indexedValues);
+    const reEncodedTopics = indexedValues.map(
+      value => encodeAbi(value, info.allocations.abi) //NOTE: I should really use a different encoding function here,
+      //but I haven't written that function yet
+    );
+    const encodedTopics = info.state.eventtopics;
+    //now: do *these* match?
+    const selectorAdjustment = allocation.anonymous ? 0 : 1;
+    for(let i = 0; i < reEncodedTopics.length; i++) {
+      debug("encodedTopics[i]: %O", encodedTopics[i]);
+      if(!CodecUtils.EVM.equalData(reEncodedTopics[i], encodedTopics[i + selectorAdjustment])) {
+        debug("rejected due to indexed mismatch");
+        continue allocationAttempts;
       }
     }
-    //otherwise, just move on
+    //if we've made it here, the allocation works!  hooray!
+    debug("allocation accepted!");
+    if(allocation.abi.anonymous) {
+      decodings.push({
+        kind: "anonymous",
+        class: contractType,
+        abi: allocation.abi,
+        arguments: decodedArguments,
+        decodingMode
+      });
+    }
+    else {
+      decodings.push({
+        kind: "event",
+        class: contractType,
+        abi: allocation.abi,
+        arguments: decodedArguments,
+        selector,
+        decodingMode
+      });
+    }
   }
   return decodings;
 }

@@ -17,7 +17,16 @@ import BN from "bn.js";
 export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): Uint8Array | undefined {
   //errors can't be encoded
   if(input.kind === "error") {
-    return undefined;
+    debug("input: %O", input);
+    if(input.error.kind === "IndexedReferenceTypeError") {
+      //HACK: errors can't be encoded, *except* for indexed reference parameter errors.
+      //really this should go in a different encoding function, not encodeAbi, but I haven't
+      //written that function yet.  I'll move this case when I do.
+      return ConversionUtils.toBytes(input.error.raw, EVMUtils.WORD_SIZE);
+    }
+    else {
+      return undefined;
+    }
   }
   let bytes: Uint8Array;
   //TypeScript can at least infer in the rest of this that we're looking

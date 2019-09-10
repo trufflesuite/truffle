@@ -147,6 +147,7 @@ export interface EventAllocations {
 export interface EventAllocation {
   abi: AbiUtils.EventAbiEntry;
   contextHash: string;
+  anonymous: boolean;
   arguments: EventArgumentAllocation[];
   allocationMode: DecodingMode;
 }
