@@ -270,6 +270,10 @@ export namespace Conversion {
         return Object.assign({}, ...(<Values.StructValue>result).value.map(
           ({name, value}) => ({[name]: nativize(value)})
         ));
+      case "tuple":
+        return (<Values.TupleValue>result).value.map(
+          ({value}) => nativize(value)
+        );
       case "magic":
         return Object.assign({}, ...Object.entries((<Values.MagicValue>result).value).map(
             ([key, value]) => ({[key]: nativize(value)})
