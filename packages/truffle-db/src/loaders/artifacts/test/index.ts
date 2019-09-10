@@ -4,11 +4,11 @@ import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
 import { ArtifactsLoader } from "truffle-db/loaders/artifacts";
 import { generateId } from "truffle-db/helpers";
-import * as Contracts from "truffle-workflow-compile";
-import Migrate from "truffle-migrate";
-import { Environment } from "truffle-environment";
-import * as Config from "truffle-config";
-import * as Ganache from "ganache-core"
+import * as Contracts from "@truffle/workflow-compile";
+import Migrate from "@truffle/migrate";
+import { Environment } from "@truffle/environment";
+import Config from "@truffle/config";
+import Ganache from "ganache-core"
 import Web3 from "web3";
 import * as fse from "fs-extra";
 
@@ -88,7 +88,7 @@ const migratedArtifacts = [
 
 const migrationFileNames = ["MagicSquare.json", "Migrations.json", "SquareLib.json", "VyperStorage.json"];
 
-const migrationConfig = Config.detect({ workingDirectory: path.join(__dirname, "compilationSources") });
+const migrationConfig = (Config as any).detect({ workingDirectory: path.join(__dirname, "compilationSources") });
 migrationConfig.network = "development";
 
 const db = new TruffleDB(config);
@@ -256,7 +256,8 @@ describe("Compilation", () => {
       });
       bytecodeIds.push({ id: bytecodeId });
 
-      let networks = JSON.parse(await fse.readFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]))).networks;
+      const networksPath = await fse.readFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])).toString();
+      let networks = JSON.parse(networksPath).networks;
       const networksArray = Object.entries(networks);
 
       if(networksArray.length > 0) {
@@ -314,7 +315,8 @@ describe("Compilation", () => {
 
   afterAll(async() => {
     await Promise.all(artifacts.map(async(contract, index) => {
-    let migratedArtifact = JSON.parse(await fse.readFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])));
+    const migratedArtifactPath = await fse.readFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])).toString();
+    let migratedArtifact = JSON.parse(migratedArtifactPath);
     migratedArtifact.networks = {};
     migratedArtifact.updatedAt = '';
     await fse.remove(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]));

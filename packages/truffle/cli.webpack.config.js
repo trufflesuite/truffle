@@ -12,21 +12,21 @@ module.exports = {
       __dirname,
       "../..",
       "node_modules",
-      "truffle-core",
+      "@truffle/core",
       "cli.js"
     ),
     chain: path.join(
       __dirname,
       "../..",
       "node_modules",
-      "truffle-environment",
+      "@truffle/environment",
       "chain.js"
     ),
     analytics: path.join(
       __dirname,
       "../..",
       "node_modules",
-      "truffle-core",
+      "@truffle/core",
       "lib",
       "services",
       "analytics",
@@ -36,7 +36,7 @@ module.exports = {
       __dirname,
       "../..",
       "node_modules",
-      "truffle-core",
+      "@truffle/core",
       "index.js"
     )
   },
@@ -98,7 +98,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "Assert.sol"
@@ -109,7 +109,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertAddress.sol"
@@ -120,7 +120,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertAddressArray.sol"
@@ -131,7 +131,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertAddressPayableArray.sol"
@@ -142,7 +142,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertBalance.sol"
@@ -153,7 +153,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertBool.sol"
@@ -164,7 +164,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertBytes32.sol"
@@ -175,7 +175,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertBytes32Array.sol"
@@ -186,7 +186,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertGeneral.sol"
@@ -197,7 +197,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertInt.sol"
@@ -208,7 +208,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertIntArray.sol"
@@ -219,7 +219,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertString.sol"
@@ -230,7 +230,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertUint.sol"
@@ -241,7 +241,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "AssertUintArray.sol"
@@ -252,7 +252,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "NewSafeSend.sol"
@@ -263,7 +263,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "testing",
           "OldSafeSend.sol"
@@ -274,7 +274,7 @@ module.exports = {
           __dirname,
           "../..",
           "node_modules",
-          "truffle-core",
+          "@truffle/core",
           "lib",
           "templates/"
         ),

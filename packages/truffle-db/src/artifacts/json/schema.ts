@@ -7,9 +7,9 @@ import {
 } from "graphql";
 
 const rawSchemas = {
-  abi: require("truffle-contract-schema/spec/abi.spec.json"),
-  networkObject: require("truffle-contract-schema/spec/network-object.spec.json"),
-  contractObject: require("truffle-contract-schema/spec/contract-object.spec.json"),
+  abi: require("@truffle/contract-schema/spec/abi.spec.json"),
+  networkObject: require("@truffle/contract-schema/spec/network-object.spec.json"),
+  contractObject: require("@truffle/contract-schema/spec/contract-object.spec.json"),
 };
 
 import { resolvers } from "./resolvers";

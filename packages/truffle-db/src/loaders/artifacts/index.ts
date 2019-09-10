@@ -1,11 +1,11 @@
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db/db";
-import * as Contracts from "truffle-workflow-compile";
-import { ContractObject } from "truffle-contract-schema/spec";
+import * as Contracts from "@truffle/workflow-compile";
+import { ContractObject } from "@truffle/contract-schema/spec";
 import * as fse from "fs-extra";
 import path from "path";
-import * as Config from "truffle-config";
-import { Environment } from "truffle-environment";
+import Config from "@truffle/config";
+import { Environment } from "@truffle/environment";
 import Web3 from "web3";
 
 
@@ -393,10 +393,11 @@ export class ArtifactsLoader {
   async loadNetworks (contracts: Array<ContractObject>, artifacts:string, workingDirectory:string) {
     const networksByContract = await Promise.all(contracts.map(async ({ contract_name })=> {
       const contractName = contract_name.toString().concat('.json');
-      const artifactsNetworks = JSON.parse(await fse.readFile(path.join(artifacts,contractName))).networks;
+      const artifactsNetworksPath = await fse.readFile(path.join(artifacts,contractName)).toString();
+      const artifactsNetworks = JSON.parse(artifactsNetworksPath).networks;
       let configNetworks = [];
       if(Object.keys(artifactsNetworks).length) {
-        const config = Config.detect({ workingDirectory: workingDirectory });
+        const config = (Config as any).detect({ workingDirectory: workingDirectory });
         for(let network of Object.keys(config.networks)) {
            config.network = network;
            await Environment.detect(config);

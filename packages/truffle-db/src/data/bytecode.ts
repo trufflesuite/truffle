@@ -1,5 +1,5 @@
-const { parseCode } = require("truffle-code-utils");
-const { getHumanReadableSourceMap } = require("truffle-solidity-utils");
+const { parseCode } = require("@truffle/code-utils");
+const { getHumanReadableSourceMap } = require("@truffle/solidity-utils");
 
 export interface Instruction {
   pc: number,
