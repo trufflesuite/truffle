@@ -1,8 +1,36 @@
 const assert = require("assert");
 const fs = require("fs");
 const TruffleConfig = require("../");
+const sinon = require("sinon");
+const path = require("path");
+let expectedPath, options;
 
 describe("TruffleConfig.detect", () => {
+  describe("when a config path is provided", () => {
+    beforeEach(() => {
+      sinon.stub(TruffleConfig, "load");
+      options = { configPath: "/my/favorite/config.js" };
+      expectedPath = "/my/favorite/config.js";
+    });
+    afterEach(() => {
+      TruffleConfig.load.restore();
+    });
+
+    it("loads a config from the options if available", () => {
+      TruffleConfig.detect(options);
+      assert(TruffleConfig.load.calledWith(expectedPath));
+    });
+    it("loads a config even with a relative path", () => {
+      options.configPath = "../../config.js";
+      TruffleConfig.detect(options);
+      assert(
+        TruffleConfig.load.calledWith(
+          path.resolve(process.cwd(), "../../config.js")
+        )
+      );
+    });
+  });
+
   it("throws if a truffle config isn't detected", () => {
     assert.throws(() => {
       TruffleConfig.detect();
