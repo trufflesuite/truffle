@@ -66,7 +66,6 @@ describe("Migrate", () => {
 
   describe("runMigrations(migrations, options)", () => {
     beforeEach(() => {
-      sinon.stub(Migrate, "wrapProvider").returns("fake wrapped providerzzz");
       sinon.stub(Migrate, "wrapResolver");
       migrations = [
         {
@@ -77,28 +76,14 @@ describe("Migrate", () => {
       ];
     });
     afterEach(() => {
-      Migrate.wrapProvider.restore();
       Migrate.wrapResolver.restore();
     });
 
-    it("calls wrapProvider with the provider and logger", done => {
-      Migrate.runMigrations(migrations, options)
-        .then(() => {
-          assert(
-            Migrate.wrapProvider.calledWith(options.provider, options.logger)
-          );
-          done();
-        })
-        .catch(done);
-    });
     it("calls wrapResolver with the resolver and the wrapped provider", done => {
       Migrate.runMigrations(migrations, options)
         .then(() => {
           assert(
-            Migrate.wrapResolver.calledWith(
-              options.resolver,
-              "fake wrapped providerzzz"
-            )
+            Migrate.wrapResolver.calledWith(options.resolver, options.provider)
           );
           done();
         })
