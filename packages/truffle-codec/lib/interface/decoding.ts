@@ -64,10 +64,12 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
   let decodingMode: DecodingMode = allocation.allocationMode; //starts out this way, degrades to ABI if necessary
   //you can't map with a generator, so we have to do this map manually
   let decodedArguments: AbiArgument[] = [];
-  try {
-    for(const argumentAllocation of allocation.arguments) {
-      const value = yield* decode(
-        argumentAllocation.type,
+  for(const argumentAllocation of allocation.arguments) {
+    let value: Values.Result;
+    let dataType = decodingMode === "full" ? argumentAllocation.type : CodecUtils.abifyType(argumentAllocation.type);
+    try {
+      value = yield* decode(
+        dataType,
         argumentAllocation.pointer,
         info,
         { 
@@ -75,40 +77,44 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
           allowRetry: decodingMode === "full"
         }
       );
-      const name = argumentAllocation.name;
-      decodedArguments.push(
-        name //deliberate general falsiness test
-          ? { name, value }
-          : { value }
-      );
     }
-  }
-  catch(error) {
-    if(error instanceof StopDecodingError && error.allowRetry && decodingMode === "full") {
-      decodingMode = "abi";
-      for(const argumentAllocation of allocation.arguments) {
-        const value = yield* decode(
+    catch(error) {
+      if(error instanceof StopDecodingError && error.allowRetry && decodingMode === "full") {
+        //if a retry happens, we've got to do several things in order to switch to ABI mode:
+        //1. mark that we're switching to ABI mode;
+        decodingMode = "abi";
+        //2. abify all previously decoded values;
+        decodedArguments = decodedArguments.map(argumentDecoding =>
+          ({ ...argumentDecoding,
+            value: CodecUtils.abifyResult(argumentDecoding.value, info.userDefinedTypes)
+          })
+        );
+        //3. retry this particular decode in ABI mode.
+        //(no try/catch on this one because we can't actually handle errors here!
+        //not that they should be occurring)
+        value = yield* decode(
           CodecUtils.abifyType(argumentAllocation.type), //type is now abified!
           argumentAllocation.pointer,
           info,
-          { 
-            abiPointerBase: allocation.offset //note the use of the offset for decoding pointers!
-            //we no longer allow a retry, not that it matters
+          {
+            abiPointerBase: allocation.offset
           }
         );
-        const name = argumentAllocation.name;
-        decodedArguments.push(
-          name //deliberate general falsiness test
-            ? { name, value }
-            : { value }
-        );
+        //4. the remaining parameters will then automatically be decoded in ABI mode due to (1),
+        //so we don't need to do anything special there.
+      }
+      else {
+        //we shouldn't be getting other exceptions, but if we do, we don't know
+        //how to handle them, so uhhhh just rethrow I guess??
+        throw error;
       }
     }
-    //we shouldn't be getting other exceptions, but if we do, we don't know
-    //how to handle them, so uhhhh just rethrow I guess??
-    else {
-      throw error;
-    }
+    const name = argumentAllocation.name;
+    decodedArguments.push(
+      name //deliberate general falsiness test
+        ? { name, value }
+        : { value }
+    );
   }
   if(isConstructor) {
     return {
@@ -235,7 +241,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
           );
           //3. retry this particular decode in ABI mode.
           try {
-            value = <Values.Result> (yield* decode(
+            value = yield* decode(
               CodecUtils.abifyType(argumentAllocation.type), //type is now abified!
               argumentAllocation.pointer,
               info,
@@ -243,7 +249,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
                 strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
                 //retries no longer allowed, not that this has an effect
               }
-            ));
+            );
           }
           catch(_) {
             //if an error occurred on the retry, this isn't a valid decoding!
