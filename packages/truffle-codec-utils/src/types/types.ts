@@ -454,8 +454,7 @@ export namespace Types {
               kind: "specific",
               mutability,
               inputParameterTypes,
-              outputParameterTypes,
-              typeHint
+              outputParameterTypes
             };
         }
         break; //to satisfy typescript

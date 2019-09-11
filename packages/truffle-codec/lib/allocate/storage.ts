@@ -112,7 +112,6 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
         },
       };
     }
-  
     memberAllocations.push({
       definition: node,
       pointer: {
@@ -120,7 +119,6 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
         range
       }
     });
-  
     //finally, adjust the current position.
     //if it was sized in words, move down that many slots and reset position w/in slot
     if(isWordsLength(size)) {
