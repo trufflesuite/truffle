@@ -132,12 +132,19 @@ Config.search = (options = {}, filename) => {
 };
 
 Config.detect = (options = {}, filename) => {
-  const configFile = Config.search(options, filename);
+  const { configPath } = options;
+  let configFile;
+  if (configPath) {
+    configFile = path.isAbsolute(configPath)
+      ? configPath
+      : path.resolve(configPath);
+  } else {
+    configFile = Config.search(options, filename);
+  }
 
   if (!configFile) {
     throw new TruffleError("Could not find suitable configuration file.");
   }
-
   return Config.load(configFile, options);
 };
 
