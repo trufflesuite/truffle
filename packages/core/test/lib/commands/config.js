@@ -1,13 +1,13 @@
-var assert = require("chai").assert;
-var Box = require("truffle-box");
-var Artifactor = require("truffle-artifactor");
-var Resolver = require("truffle-resolver");
-var MemoryStream = require("memorystream");
-var command = require("../../../lib/commands/config");
-var path = require("path");
-var fs = require("fs-extra");
-var glob = require("glob");
-var Config = require("truffle-config");
+const assert = require("chai").assert;
+const Box = require("@truffle/box");
+const Artifactor = require("@truffle/artifactor");
+const Resolver = require("@truffle/resolver");
+const MemoryStream = require("memorystream");
+const command = require("../../../lib/commands/config");
+const path = require("path");
+const fs = require("fs-extra");
+const glob = require("glob");
+const Config = require("@truffle/config");
 
 describe("config", function() {
   var config;

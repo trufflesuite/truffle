@@ -3,7 +3,7 @@ const command = {
   description: "Set user-level configuration options",
   help: {
     usage:
-      "truffle config <enable|disable|get|read|set|write> <key> [<value-for-set>]",
+      "truffle config [--enable-analytics|--disable-analytics] [[<get|set> <key>] [<value-for-set>]]",
     options: [
       {
         option: "--enable-analytics",
@@ -15,28 +15,12 @@ const command = {
           "Disable Truffle's ability to send usage data to Google Analytics"
       },
       {
-        option: "enable",
-        discription: "Enable a Truffle Attribute"
-      },
-      {
-        option: "disable",
-        discription: "Disable a Truffle Attribute"
-      },
-      {
         option: "get",
-        discription: "Get a Truffle Attribute"
-      },
-      {
-        option: "read",
-        discription: "Get a Truffle Attribute"
+        discription: "Get a Truffle config option value."
       },
       {
         option: "set",
-        discription: "Set a Truffle Attribute"
-      },
-      {
-        option: "write",
-        discription: "Set a Truffle Attribute"
+        discription: "Set a Truffle config option value."
       }
     ]
   },
@@ -47,7 +31,7 @@ const command = {
     }
   },
   /**
-   * run config commands to get/set project/user-level config settings
+   * run config commands to get/set Truffle config options
    * @param {Object} options
    * @param {Func} callback
    */
@@ -57,7 +41,7 @@ const command = {
 
     let command;
     if (options.enableAnalytics || options.disableAnalytics) {
-      // TODO: Deprecate the --(en|dis)able-analytics flag in favor for `enable analytics`
+      // TODO: Deprecate the --(en|dis)able-analytics flag in favor of `set analytics true`
       command = {
         set: true,
         userLevel: true,
@@ -123,18 +107,7 @@ const parse = function(args) {
   let value = args[2];
 
   switch (option) {
-    case "enable": {
-      set = true;
-      value = true;
-      break;
-    }
-    case "disable": {
-      set = true;
-      value = false;
-      break;
-    }
-    case "get":
-    case "read": {
+    case "get": {
       set = false;
       if (typeof key === "undefined" || key === null || key === "") {
         // invalid key
@@ -143,8 +116,7 @@ const parse = function(args) {
 
       break;
     }
-    case "set":
-    case "write": {
+    case "set": {
       set = true;
       if (typeof key === "undefined" || key === null || key === "") {
         // invalid key
