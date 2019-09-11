@@ -3,7 +3,7 @@ const assert = require("chai").assert;
 const Big = require("big.js");
 const clonedeep = require("lodash.clonedeep");
 
-const TruffleDecoder = require("../../../truffle-decoder");
+const TruffleDecoder = require("../../../decoder");
 const TruffleCodec = require("../../../truffle-codec");
 const ConversionUtils = require("../../../truffle-codec-utils").Conversion;
 
