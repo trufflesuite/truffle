@@ -58,6 +58,8 @@ const codes: opcodes = {
   0x43: "NUMBER",
   0x44: "DIFFICULTY",
   0x45: "GASLIMIT",
+  0x46: "CHAINID",
+  0x47: "SELFBALANCE",
 
   // 0x50 range - 'storage' and execution
   0x50: "POP",
