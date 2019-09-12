@@ -79,6 +79,18 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         );
       }
     });
+
+    it("should append original stacktrace for OOG errors", async function() {
+      try {
+        await Example.new(1, { gas: 10 });
+        assert.fail();
+      } catch (e) {
+        assert(e.stack.includes("Error: base fee exceeds gas limit"), "Should keep hijacked error description");
+        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
+        assert(e.hijackedStack.includes("Error: base fee exceeds gas limit"), "Should preserve hijacked error message");
+        assert(e.hijackedStack.includes("dist/runTx.js:"), "Should preserve hijacked stack details");
+      }
+    });
   });
 
   describe(".method(): errors", function() {
@@ -215,6 +227,60 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         assert.fail();
       } catch (e) {
         assert(e.message.includes("out of gas"));
+      }
+    });
+
+    it("should append original stacktrace for .calls", async function() {
+      const example = await Example.new(1);
+      try {
+        await example.getValue("apples", "oranges", "pineapples");
+        assert.fail();
+      } catch (e) {
+        assert(e.stack.includes("Error: Invalid number of"), "Should keep hijacked error description");
+        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
+        assert(e.hijackedStack.includes("Error: Invalid number of"), "Should preserve hijacked error message");
+        assert(e.hijackedStack.includes("/lib/execute.js:"), "Should preserve hijacked stack details");
+      }
+    });
+
+    it("should append original stacktrace for .sends", async function() {
+      const example = await Example.new(1);
+      try {
+        await example.triggerRequireWithReasonError();
+        assert.fail();
+      } catch (e) {
+        assert(e.stack.includes("RuntimeError"), "Should keep hijacked error type");
+        assert(e.stack.includes("VM Exception"), "Should keep hijacked error details");
+        assert(e.stack.includes("revert reasonstring"), "Should keep hijacked error description");
+        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
+        assert(e.hijackedStack.includes("revert reasonstring"), "Should preserve hijacked error message");
+        assert(e.hijackedStack.includes("/utils/runtimeerror.js:"), "Should preserve hijacked stack details");
+      }
+    });
+
+    it("should append original stacktrace for argument parsing error", async function() {
+      const example = await Example.new(1);
+      try {
+        await example.setValue('foo');
+        assert.fail();
+      } catch (e) {
+        assert(e.stack.includes("Error: invalid number value ("), "Should keep hijacked error description");
+        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
+        assert(e.hijackedStack.includes("Error: invalid number value ("), "Should preserve hijacked error message");
+        assert(e.hijackedStack.includes("/utils/abi-coder.js:"), "Should preserve hijacked stack details");
+      }
+    });
+
+    it("should append original stacktrace for OOG errors", async function() {
+      const example = await Example.new(1);
+      try {
+        await example.setValue(10, { gas: 10 });
+        assert.fail();
+      } catch (e) {
+        assert(e.stack.includes("Error: base fee exceeds gas limit"), "Should keep hijacked error description");
+        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
+        assert(e.hijackedStack.includes("Error: base fee exceeds gas limit"), "Should preserve hijacked error message");
+        assert(e.hijackedStack.includes("dist/runTx.js:"), "Should preserve hijacked stack details");
       }
     });
   });
