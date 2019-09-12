@@ -54,28 +54,31 @@ function formatCommands(commands) {
 
 function normalizeDestination(destination, working_directory) {
   const path = require("path");
-  destination = path.join(working_directory, destination);
-  return destination;
+  if (path.isAbsolute(destination)) return destination;
+  return path.join(working_directory, destination);
 }
 
-function normalizeInput(options) {
-  let url = options;
-  let subDir;
+function normalizeInput([url, subDir]) {
+  if (subDir) return { url, destination: subDir };
 
   try {
     url = options.match(/(.*):/)[1]; // attempts to parse url from :path/to/subDir
     // handles instance where full url is being passed w/o a path
-    if (url.includes("http") && !url.includes("//")) return [options, ""];
+    if (url.includes("http") && !url.includes("//")) {
+      return { url, destination: "" };
+    }
     // handles instance where git@ is being passed w/o a path
-    if (url.includes("git") && !url.includes("/")) return [options, ""];
+    if (url.includes("git") && !url.includes("/")) {
+      return { url, destination: "" };
+    }
   } catch (_) {
     // return url if regex fails (no path specified)
-    return [url, ""];
+    return { url, destination: "" };
   }
 
   try {
     // if a path was specified
-    subDir = options.match(/:(?!\/)(.*)/)[1]; // enforces relative paths
+    subDir = url.match(/:(?!\/)(.*)/)[1]; // enforces relative paths
     // parses again if passed url git@ with path
     if (url.includes("git@")) subDir = subDir.match(/:(?!\/)(.*)/)[1];
   } catch (_) {
@@ -84,7 +87,7 @@ function normalizeInput(options) {
     );
   }
   // returns the parsed url & relative path
-  return [url, subDir];
+  return { url, destination: subDir };
 }
 
 const command = {
@@ -113,19 +116,23 @@ const command = {
     const Config = require("@truffle/config");
     const Box = require("@truffle/box");
     const OS = require("os");
+    const fse = require("fs-extra");
 
-    const config = Config.default().with({
-      logger: console
-    });
+    const config = Config.default().with({ logger: console });
 
-    let [url, destination] = normalizeInput(options._[0]);
+    ({ url, destination } = normalizeInput(options._));
 
     url = normalizeURL(url);
-    destination = normalizeDestination(destination, config.working_directory);
+    const normalizedDestination = normalizeDestination(
+      destination,
+      config.working_directory
+    );
+
+    fse.ensureDirSync(normalizedDestination);
 
     const unboxOptions = Object.assign({}, options, { logger: config.logger });
 
-    Box.unbox(url, destination, unboxOptions)
+    Box.unbox(url, normalizedDestination, unboxOptions)
       .then(({ commands }) => {
         config.logger.log(`\nUnbox successful. Sweet!${OS.EOL}`);
 
