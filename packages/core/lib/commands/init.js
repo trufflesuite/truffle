@@ -17,9 +17,9 @@ var command = {
   run: function(options, done) {
     const UnboxCommand = require("./unbox");
     const fse = require("fs-extra");
-
+    let inputPath;
     if (options._ && options._.length > 0) {
-      const inputPath = options._[0];
+      inputPath = options._[0];
       if (!fse.existsSync(inputPath)) fse.ensureDirSync(inputPath);
     }
 
