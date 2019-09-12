@@ -76,12 +76,18 @@ const googleAnalytics = {
         analyticsSet: true,
         analyticsMessageDateTime: Date.now()
       });
-    } else {
+    } else if (analyticsBool === false) {
       userConfig.set({
         enableAnalytics: false,
         analyticsSet: true,
         analyticsMessageDateTime: Date.now()
       });
+    } else {
+      const message =
+        `Error setting config option.` +
+        `\n> You must set the 'analytics' option to either 'true' ` +
+        `or 'false'. \n> The value you provided was ${analyticsBool}.`;
+      throw new Error(message);
     }
     return true;
   },

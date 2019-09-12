@@ -7,12 +7,12 @@ const command = {
     options: [
       {
         option: "--enable-analytics",
-        description: "Enable Truffle to send usage data to Google Analytics"
+        description: "Enable Truffle to send usage data to Google Analytics."
       },
       {
         option: "--disable-analytics",
         description:
-          "Disable Truffle's ability to send usage data to Google Analytics"
+          "Disable Truffle's ability to send usage data to Google Analytics."
       },
       {
         option: "get",
