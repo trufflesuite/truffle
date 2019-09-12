@@ -3,7 +3,12 @@
 # The below tells bash to stop the script if any of the commands fail
 set -ex
 
-npm login
+npm whoami
+if [ "$?" != "0" ];
+  then
+    npm login
+fi
+
 node ./scripts/npm-access.js
 lerna publish -- --access=public
 git checkout master

@@ -13,7 +13,13 @@ if [ "${distTag}" == "" ];
 fi
 
 echo "Publishing \"truffle@${distTag}\" from \"${currentGitBranch}\" branch."
-npm login
+
+npm whoami
+if [ "$?" != "0" ];
+  then
+    npm login
+fi
+
 node ./scripts/npm-access.js
 lerna version --no-git-tag-version --preid $distTag
 git add .
