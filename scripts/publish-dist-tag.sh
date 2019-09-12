@@ -22,7 +22,7 @@ fi
 
 node ./scripts/npm-access.js
 lerna version --no-git-tag-version --preid $distTag
-git add .
+git add packages/*/package.json
 git commit -m "Publish truffle@${distTag}"
 lerna publish from-package --dist-tag ${distTag}
 git push origin $currentGitBranch
