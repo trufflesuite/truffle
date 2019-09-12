@@ -5,10 +5,15 @@ set -ex
 
 LAST_PUBLISHED_TAG=$(awk -F\" '/"version":/ {print $4}' ./packages/truffle/package.json)
 
+## Get the latest branch states
 git checkout master
 git pull origin master
 git checkout develop
 git pull origin develop
+
+## Build
 yarn bootstrap
+
+## Get output of changes for release notes
 prs-merged-since --repo trufflesuite/truffle --tag v$LAST_PUBLISHED_TAG --format markdown
 lerna changed
