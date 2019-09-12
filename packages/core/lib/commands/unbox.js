@@ -59,35 +59,40 @@ function normalizeDestination(destination, working_directory) {
 }
 
 function normalizeInput([url, subDir]) {
-  if (subDir) return { url, destination: subDir };
-
+  // The subDir argument will override paths in the url
+  let destination = subDir ? subDir : "";
+  let parsedUrl;
   try {
-    url = options.match(/(.*):/)[1]; // attempts to parse url from :path/to/subDir
-    // handles instance where full url is being passed w/o a path
-    if (url.includes("http") && !url.includes("//")) {
-      return { url, destination: "" };
+    // attempts to parse url from :path/to/subDir
+    parsedUrl = url.match(/(.*):/)[1];
+    // handles instance where full url is being passed w/o a path in url
+    if (parsedUrl.includes("http") && !parsedUrl.includes("//")) {
+      return { url, destination };
     }
-    // handles instance where git@ is being passed w/o a path
-    if (url.includes("git") && !url.includes("/")) {
-      return { url, destination: "" };
+    // handles instance where git@ is being passed w/o a path in url
+    if (parsedUrl.includes("git") && !parsedUrl.includes("/")) {
+      return { url, destination };
     }
   } catch (_) {
-    // return url if regex fails (no path specified)
-    return { url, destination: "" };
+    // return url if regex fails (no path specified in url)
+    return { url, destination };
   }
 
+  if (destination !== "") return { url, destination };
+
   try {
-    // if a path was specified
-    subDir = url.match(/:(?!\/)(.*)/)[1]; // enforces relative paths
+    // if a path was specified in the url
+    destination = url.match(/:(?!\/)(.*)/)[1]; // enforces relative paths
     // parses again if passed url git@ with path
-    if (url.includes("git@")) subDir = subDir.match(/:(?!\/)(.*)/)[1];
+    if (parsedUrl.includes("git@"))
+      destination = destination.match(/:(?!\/)(.*)/)[1];
   } catch (_) {
     throw new Error(
-      `${options} not allowed! Please use a relative path (:path/to/subDir)`
+      `${url} not allowed! Please use a relative path (:path/to/subDir)`
     );
   }
   // returns the parsed url & relative path
-  return { url, destination: subDir };
+  return { url: parsedUrl, destination };
 }
 
 const command = {
@@ -121,8 +126,8 @@ const command = {
     const config = Config.default().with({ logger: console });
 
     ({ url, destination } = normalizeInput(options._));
-
     url = normalizeURL(url);
+
     const normalizedDestination = normalizeDestination(
       destination,
       config.working_directory
