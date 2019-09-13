@@ -4,7 +4,7 @@ import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
 import * as Contracts from "@truffle/workflow-compile";
 
-jest.mock("truffle-workflow-compile", () => ({
+jest.mock("@truffle/workflow-compile", () => ({
  compile: function(config, callback) {
    const magicSquare= require(path.join(__dirname,"..", "artifacts", "test", "sources", "MagicSquare.json"));
    const migrations = require(path.join(__dirname, "..", "artifacts", "test", "sources", "Migrations.json"));

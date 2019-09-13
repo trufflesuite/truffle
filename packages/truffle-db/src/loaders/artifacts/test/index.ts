@@ -26,7 +26,7 @@ afterAll(async (done) => {
 
 // mocking the truffle-workflow-compile to avoid jest timing issues
 // and also to keep from adding more time to Travis testing
-jest.mock("truffle-workflow-compile", () => ({
+jest.mock("@truffle/workflow-compile", () => ({
   compile: function(config, callback) {
     const magicSquare= require(path.join(__dirname, "sources", "MagicSquare.json"));
     const migrations = require(path.join(__dirname, "sources", "Migrations.json"));
