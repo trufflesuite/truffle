@@ -125,7 +125,7 @@ const command = {
 
     const config = Config.default().with({ logger: console });
 
-    ({ url, destination } = normalizeInput(options._));
+    let { url, destination } = normalizeInput(options._);
     url = normalizeURL(url);
 
     const normalizedDestination = normalizeDestination(
