@@ -256,8 +256,8 @@ describe("Compilation", () => {
       });
       bytecodeIds.push({ id: bytecodeId });
 
-      const networksPath = await fse.readFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])).toString();
-      let networks = JSON.parse(networksPath).networks;
+      const networksPath = fse.readFileSync(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])).toString();
+      let networks = JSON.parse(networksPath.toString()).networks;
       const networksArray = Object.entries(networks);
 
       if(networksArray.length > 0) {
@@ -315,12 +315,12 @@ describe("Compilation", () => {
 
   afterAll(async() => {
     await Promise.all(artifacts.map(async(contract, index) => {
-    const migratedArtifactPath = await fse.readFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])).toString();
-    let migratedArtifact = JSON.parse(migratedArtifactPath);
-    migratedArtifact.networks = {};
-    migratedArtifact.updatedAt = '';
-    await fse.remove(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]));
-    await fse.writeFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]), JSON.stringify(migratedArtifact, null, 2));
+      const migratedArtifactPath = fse.readFileSync(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])).toString();
+      let migratedArtifact = JSON.parse(migratedArtifactPath);
+      migratedArtifact.networks = {};
+      migratedArtifact.updatedAt = '';
+      fse.removeSync(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]));
+      fse.outputFileSync(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]), JSON.stringify(migratedArtifact, null, 2));
     }));
   });
 

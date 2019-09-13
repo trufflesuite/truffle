@@ -7915,6 +7915,11 @@ fs.realpath@^1.0.0:
   resolved "https://registry.yarnpkg.com/fs.realpath/-/fs.realpath-1.0.0.tgz#1504ad2523158caa40db4a2787cb01411994ea4f"
   integrity sha1-FQStJSMVjKpA20onh8sBQRmU6k8=
 
+fse@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/fse/-/fse-4.0.1.tgz#9e1db80203933cbe59ed75507f35adf2689ce1e9"
+  integrity sha512-5XLUrweQvJxSJKhBe3XjimHSJ2EUhYOG+K2tLQy8I9kp78Fa3CgUXqxAZWxE9+fsvnI5GVkHl4NDqbf1tSb93Q==
+
 fsevents@^1.0.0, fsevents@^1.2.7:
   version "1.2.9"
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-1.2.9.tgz#3f5ed66583ccd6f400b5a00db6f7e861363e388f"
