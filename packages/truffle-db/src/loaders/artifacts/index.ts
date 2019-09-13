@@ -397,7 +397,7 @@ export class ArtifactsLoader {
       const artifactsNetworks = JSON.parse(artifactsNetworksPath).networks;
       let configNetworks = [];
       if(Object.keys(artifactsNetworks).length) {
-        const config = (Config as any).detect({ workingDirectory: workingDirectory });
+        const config = Config.detect({ workingDirectory: workingDirectory });
         for(let network of Object.keys(config.networks)) {
            config.network = network;
            await Environment.detect(config);

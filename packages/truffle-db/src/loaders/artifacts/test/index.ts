@@ -88,7 +88,7 @@ const migratedArtifacts = [
 
 const migrationFileNames = ["MagicSquare.json", "Migrations.json", "SquareLib.json", "VyperStorage.json"];
 
-const migrationConfig = (Config as any).detect({ workingDirectory: path.join(__dirname, "compilationSources") });
+const migrationConfig = Config.detect({ workingDirectory: path.join(__dirname, "compilationSources") });
 migrationConfig.network = "development";
 
 const db = new TruffleDB(config);
