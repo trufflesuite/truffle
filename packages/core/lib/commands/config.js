@@ -38,6 +38,7 @@ const command = {
   run: function(options, done) {
     const googleAnalytics = require("../services/analytics/google.js");
     const Config = require("truffle-config");
+    const OS = require("os");
 
     let command;
     if (options.enableAnalytics || options.disableAnalytics) {
@@ -48,6 +49,11 @@ const command = {
         key: "analytics",
         value: options.enableAnalytics || false
       };
+      const message =
+        `> WARNING: The --enable-analytics and ` +
+        `--disable-analytics flags have been deprecated.${OS.EOL}> Please ` +
+        `use 'truffle config set analytics <boolean>'.`;
+      console.warn(OS.EOL + message + OS.EOL);
     } else {
       command = parse(options._);
     }
