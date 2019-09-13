@@ -132,8 +132,8 @@ Config.search = (options = {}, filename) => {
 };
 
 Config.detect = (options = {}, filename) => {
-  const { configPath } = options;
   let configFile;
+  const configPath = options.config;
   if (configPath) {
     configFile = path.isAbsolute(configPath)
       ? configPath
@@ -151,7 +151,7 @@ Config.detect = (options = {}, filename) => {
 Config.load = (file, options) => {
   const config = new Config();
 
-  config.working_directory = path.dirname(path.resolve(file));
+  config.working_directory = process.cwd();
 
   // The require-nocache module used to do this for us, but
   // it doesn't bundle very well. So we've pulled it out ourselves.
