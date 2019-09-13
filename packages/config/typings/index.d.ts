@@ -4,7 +4,7 @@ declare class TruffleConfig {
 
 declare namespace TruffleConfig {
   function load(file: string, options: any): TruffleConfig
-  function detect(options?: any, filename?: string):
+  function detect(options?: any, filename?: string): any
 }
 
 
