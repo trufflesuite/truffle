@@ -319,6 +319,7 @@ describe("Compilation", () => {
       let migratedArtifact = JSON.parse(migratedArtifactPath);
       migratedArtifact.networks = {};
       migratedArtifact.updatedAt = '';
+      migratedArtifact.schemaVersion = "3.0.11";
       fse.removeSync(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]));
       fse.outputFileSync(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]), JSON.stringify(migratedArtifact, null, 2));
     }));
