@@ -26,7 +26,16 @@ export function getAbiAllocations(userDefinedTypes: Types.TypesById): Allocation
   let allocations: Allocations.AbiAllocations = {};
   for(const dataType of Object.values(userDefinedTypes)) {
     if(dataType.typeClass === "struct") {
-      allocations = allocateStruct(dataType, userDefinedTypes, allocations);
+      try {
+        allocations = allocateStruct(dataType, userDefinedTypes, allocations);
+      }
+      catch(_) {
+        //if allocation fails... oh well, allocation fails, we do nothing and just move on :P
+        //note: a better way of handling this would probably be to *mark* it
+        //as failed rather than throwing an exception as that would lead to less
+        //recomputation, but this is simpler and I don't think the recomputation
+        //should really be a problem
+      }
     }
   }
   return allocations;

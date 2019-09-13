@@ -17,11 +17,11 @@ function verifyAbiDecoding(decoding, address) {
   assert.lengthOf(decoding.arguments, 4);
   //we'll skip verifying the names as well
 
-  //first argument: {x: 7, y: 5}
+  //first argument: {{x: 7, y: 5}, z: 3}
   assert.strictEqual(decoding.arguments[0].value.type.typeClass, "tuple");
   assert.deepEqual(ConversionUtils.nativize(decoding.arguments[0].value), [
-    7,
-    5
+    [7, 5],
+    3
   ]);
   //second argument: No (i.e. 1)
   assert.strictEqual(decoding.arguments[1].value.type.typeClass, "uint");
@@ -82,7 +82,7 @@ async function runTestBody(
   let deployedContract = await DowngradeTest.new();
   let address = deployedContract.address;
 
-  let result = await deployedContract.run([7, 5], 1, address, address);
+  let result = await deployedContract.run([[7, 5], 3], 1, address, address);
   let resultHash = result.tx;
   let resultTx = await web3.eth.getTransaction(resultHash);
   let resultLog = result.receipt.rawLogs[0];

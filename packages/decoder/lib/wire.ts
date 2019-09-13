@@ -87,7 +87,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     debug("allocationInfo: %O", allocationInfo);
 
     this.allocations = {};
-    this.allocations.storage = Codec.getStorageAllocations(this.referenceDeclarations, this.contractNodes);
     this.allocations.abi = Codec.getAbiAllocations(this.userDefinedTypes);
     this.allocations.calldata = Codec.getCalldataAllocations(allocationInfo, this.referenceDeclarations, this.userDefinedTypes, this.allocations.abi);
     this.allocations.event = Codec.getEventAllocations(allocationInfo, this.referenceDeclarations, this.userDefinedTypes, this.allocations.abi);

@@ -10,6 +10,11 @@ contract DowngradeTest {
     uint y;
   }
 
+  struct AsymmetricTriple {
+    Pair p;
+    uint z;
+  }
+
   enum Ternary {
     Yes, No, MaybeSo
   }
@@ -21,11 +26,11 @@ contract DowngradeTest {
   function() external payable {
   }
 
-  function run(Pair memory p, Ternary t, DowngradeTest dt, address payable a) public {
-    emit TheWorks(p, t, dt, a);
+  function run(AsymmetricTriple memory at, Ternary t, DowngradeTest dt, address payable ap) public {
+    emit TheWorks(at, t, dt, ap);
   }
 
-  event TheWorks(Pair, Ternary, DowngradeTest, address payable);
+  event TheWorks(AsymmetricTriple, Ternary, DowngradeTest, address payable);
   
   function causeTrouble() public {
     emit CauseTrouble(this.causeTrouble);
