@@ -23,7 +23,7 @@ export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesBy
     case "contract":
       return {
         typeClass: "address",
-        payable: false,
+        kind: "general",
         typeHint: Types.typeString(dataType)
       };
     case "function":

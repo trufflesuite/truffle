@@ -7,7 +7,6 @@ import { Contexts } from "./contexts";
 import { CompilerVersion } from "./compiler";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
-import semver from "semver";
 
 export namespace Definition {
 
@@ -144,22 +143,6 @@ export namespace Definition {
 
   export function isReference(definition: AstDefinition): boolean {
     return typeIdentifier(definition).match(/_(memory|storage|calldata)(_ptr)?$/) != null;
-  }
-
-  //HACK: you can set compiler to null to force nonpayable
-  export function isAddressPayable(definition: AstDefinition, compiler: CompilerVersion | null): boolean {
-    if(compiler === null) {
-      return false;
-    }
-    if(semver.satisfies(compiler.version, "~0.5 || >=0.5.0", {includePrerelease: true})) {
-      //note that we use ~0.5 || >=0.5.0 to make sure we include prerelease versions of
-      //0.5.0 (no, that is *not* what the includePrerelease flag doesn; that allows
-      //prerelease versions to be included *at all*)
-      return typeIdentifier(definition) === "t_address_payable";
-    }
-    else {
-      return true;
-    }
   }
 
   //note: only use this on things already verified to be references

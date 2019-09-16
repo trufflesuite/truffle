@@ -29,14 +29,14 @@ function verifyAbiDecoding(decoding, address) {
   assert.deepEqual(ConversionUtils.nativize(decoding.arguments[1].value), 1);
   //third argument: the contract (i.e. its address)
   assert.strictEqual(decoding.arguments[2].value.type.typeClass, "address");
-  assert.strictEqual(decoding.arguments[2].value.type.payable, false);
+  assert.strictEqual(decoding.arguments[2].value.type.kind, "general");
   assert.deepEqual(
     ConversionUtils.nativize(decoding.arguments[2].value),
     address
   );
   //fourth argument: the same thing
   assert.strictEqual(decoding.arguments[3].value.type.typeClass, "address");
-  assert.strictEqual(decoding.arguments[3].value.type.payable, false);
+  assert.strictEqual(decoding.arguments[3].value.type.kind, "general");
   assert.deepEqual(
     ConversionUtils.nativize(decoding.arguments[3].value),
     address

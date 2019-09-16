@@ -25,7 +25,6 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private contract: ContractObject;
   private contractNode: AstDefinition;
   private contractNetwork: string;
-  private context: Contexts.DecoderContext;
   private contextHash: string;
 
   private allocations: Codec.AllocationInfo;
@@ -50,7 +49,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     if(this.contract.deployedBytecode && this.contract.deployedBytecode !== "0x") {
       const unnormalizedContext = Utils.makeContext(this.contract, this.contractNode);
       this.contextHash = unnormalizedContext.context;
-      this.context = this.contexts[this.contextHash];
+      //we now throw away the unnormalized context, instead fetching the correct one from
+      //this.contexts (which is normalized) via the context getter below
     }
 
     this.allocations = {};
@@ -117,7 +117,6 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       contract: this.contract,
       contractNode: this.contractNode,
       contractNetwork: this.contractNetwork,
-      context: this.context,
       contextHash: this.contextHash,
     }
   }
@@ -127,7 +126,6 @@ interface ContractInfo {
   contract: ContractObject;
   contractNode: AstDefinition;
   contractNetwork: string;
-  context: Contexts.DecoderContext;
   contextHash: string;
 }
 
@@ -139,7 +137,6 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   private contractNetwork: string;
   private contractAddress: string;
   private contractCode: string;
-  private context: Contexts.DecoderContext;
   private contextHash: string;
 
   private contexts: Contexts.DecoderContexts = {}; //deployed contexts only
@@ -175,7 +172,6 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
       contract: this.contract,
       contractNode: this.contractNode,
       contractNetwork: this.contractNetwork,
-      context: this.context,
       contextHash: this.contextHash,
     } = this.contractDecoder.getContractInfo());
 
@@ -214,6 +210,10 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
       //mash these together like I'm about to
       this.contexts = {...this.contexts, ...this.additionalContexts};
     }
+  }
+
+  private get context(): Contexts.DecoderContext {
+    return this.contexts[this.contextHash];
   }
 
   private async decodeVariable(variable: Codec.StorageMemberAllocation, block: number): Promise<Values.Result> {

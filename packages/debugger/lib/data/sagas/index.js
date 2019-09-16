@@ -43,11 +43,7 @@ function* tickSaga() {
   yield* trace.signalTickSagaCompletion();
 }
 
-const DEFAULT_DECODE_OPTIONS = {
-  forceNonPayable: false
-};
-
-export function* decode(definition, ref, options = DEFAULT_DECODE_OPTIONS) {
+export function* decode(definition, ref) {
   let userDefinedTypes = yield select(data.views.userDefinedTypes);
   let state = yield select(data.current.state);
   let mappingKeys = yield select(data.views.mappingKeys);
@@ -62,15 +58,6 @@ export function* decode(definition, ref, options = DEFAULT_DECODE_OPTIONS) {
 
   let ZERO_WORD = new Uint8Array(CodecUtils.EVM.WORD_SIZE); //automatically filled with zeroes
   let NO_CODE = new Uint8Array(); //empty array
-
-  if (options.forceNonPayable) {
-    //HACK
-    //this option is passed when decoding mapping keys.
-    //it forces addresses to always be decoded as nonpayable
-    //(this works due to a hack in isAddressPayable, where you
-    //can pass compiler = null for that effect)
-    currentContext = { ...currentContext, compiler: null };
-  }
 
   let decoder = decodeVariable(definition, ref, {
     userDefinedTypes,
@@ -533,11 +520,10 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
       //so looking for a prior assignment will read the wrong value.
       //so instead it's preferable to use the constant directly.
       debug("about to decode simple literal");
-      return yield* decode(
-        keyDefinition,
-        { location: "definition", definition: indexDefinition },
-        { forceNonPayable: true }
-      );
+      return yield* decode(keyDefinition, {
+        location: "definition",
+        definition: indexDefinition
+      });
     } else if (indexReference) {
       //if a prior assignment is found
       let splicedDefinition;
@@ -556,9 +542,7 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
         splicedDefinition = keyDefinition;
       }
       debug("about to decode");
-      return yield* decode(splicedDefinition, indexReference, {
-        forceNonPayable: true
-      });
+      return yield* decode(splicedDefinition, indexReference);
     } else if (
       indexDefinition.referencedDeclaration &&
       scopes[indexDefinition.referencedDeclaration]
@@ -576,14 +560,10 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
         //next line filters out constants we don't know how to handle
         if (CodecUtils.Definition.isSimpleConstant(indexConstantDefinition)) {
           debug("about to decode simple constant");
-          return yield* decode(
-            keyDefinition,
-            {
-              location: "definition",
-              definition: indexConstantDeclaration.value
-            },
-            { forceNonPayable: true }
-          );
+          return yield* decode(keyDefinition, {
+            location: "definition",
+            definition: indexConstantDeclaration.value
+          });
         } else {
           return null; //can't decode; see below for more explanation
         }

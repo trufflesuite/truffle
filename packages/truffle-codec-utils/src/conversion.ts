@@ -26,6 +26,7 @@ export namespace Conversion {
       return new BN(bytes.toFixed()); //warning, better hope input is integer!
       //note: going through string may seem silly but it's actually not terrible here,
       //since BN is binary-based and Big is decimal-based
+      //[toFixed is like toString except it guarantees scientific notation is not used]
     } else if (typeof bytes.reduce === "function") {
       return bytes.reduce(
         (num: BN, byte: number) => num.shln(8).addn(byte),
@@ -168,6 +169,7 @@ export namespace Conversion {
         //note: going through string may seem silly but it's actually not terrible here,
         //since BN is binary-based and Big is decimal-based
         data = new BN(data.toFixed());
+        //[toFixed is like toString except it guarantees scientific notation is not used]
       }
 
       //note that the argument for toTwos is given in bits

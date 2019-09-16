@@ -6,20 +6,8 @@ const debug = debugModule("codec-utils:types:types");
 //classes here (at least for now)
 
 //Note: This is NOT intended to represent every possible type representable by
-//a Solidity type identifier!  Only possible types of variables, not of all
-//possible values.  (Though there may be some expansion in the future; in
-//particular, tuples will be added later.)
-//We do however count the builtin variables msg, block, and tx as variables
-//(not other builtins though for now) so there is some support for the magic
-//type.
-
-//We do include fixed and ufixed, even though these aren't implemented yet;
-//note though that values.ts does not include these.
-//Similarly with global structs and enums.
-//Foreign contract types aren't really implemented yet either, although
-//those aren't produced from definitions.
-//(General external functions aren't really implemented yet either for the
-//same reason.)
+//a Solidity type identifier!  Only possible types the decoder might need to
+//output, not all possible values.
 
 //NOTE: not all of these optional fields are actually implemented. Some are
 //just intended for the future.
@@ -29,7 +17,7 @@ const debug = debugModule("codec-utils:types:types");
 import BN from "bn.js";
 import * as Ast from "../ast";
 import { Definition as DefinitionUtils } from "../definition";
-import { CompilerVersion } from "../compiler";
+import { CompilerVersion, solidityFamily } from "../compiler";
 import { AbiUtils } from "../abi";
 
 export namespace Types {
@@ -71,9 +59,17 @@ export namespace Types {
     typeHint?: string;
   }
 
-  export interface AddressType {
+  export type AddressType = AddressTypeSpecific | AddressTypeGeneral;
+
+  export interface AddressTypeSpecific {
     typeClass: "address";
+    kind: "specific";
     payable: boolean;
+  }
+
+  export interface AddressTypeGeneral {
+    typeClass: "address";
+    kind: "general";
     typeHint?: string;
   }
 
@@ -266,8 +262,7 @@ export namespace Types {
   //things of elementary type)
   //NOTE: set forceLocation to *null* to force no location. leave it undefined
   //to not force a location.
-  //NOTE: set compiler to null to force addresses to *not* be payable (HACK)?
-  export function definitionToType(definition: Ast.AstDefinition, compiler: CompilerVersion | null, forceLocation?: Ast.Location | null): Type {
+  export function definitionToType(definition: Ast.AstDefinition, compiler: CompilerVersion, forceLocation?: Ast.Location | null): Type {
     debug("definition %O", definition);
     let typeClass = DefinitionUtils.typeClass(definition);
     let typeHint = DefinitionUtils.typeStringWithoutLocation(definition);
@@ -278,12 +273,21 @@ export namespace Types {
           typeHint
         };
       case "address": {
-        let payable = DefinitionUtils.isAddressPayable(definition, compiler);
-        return {
-          typeClass,
-          payable,
-          typeHint
+        switch(solidityFamily(compiler)) {
+          case "pre-0.5.0":
+            return {
+              typeClass,
+              kind: "general",
+              typeHint
+            };
+          case "0.5.x":
+            return {
+              typeClass,
+              kind: "specific",
+              payable: DefinitionUtils.typeIdentifier(definition) === "t_address_payable"
+            };
         }
+        break; //to satisfy typescript
       }
       case "uint": {
         let bytes = DefinitionUtils.specifiedSize(definition);
@@ -727,7 +731,7 @@ export namespace Types {
       case "address":
         return {
           typeClass,
-          payable: false,
+          kind: "general",
           typeHint
         };
       case "string":
@@ -802,7 +806,12 @@ export namespace Types {
             return `bytes${dataType.length}`;
           }
       case "address":
-        return dataType.typeHint || (dataType.payable ? "address payable" : "address");
+        switch(dataType.kind) {
+          case "general":
+            return dataType.typeHint || "address"; //I guess?
+          case "specific":
+            return dataType.payable ? "address payable" : "address";
+        }
       case "string":
         return dataType.typeHint || "string";
       case "fixed":
@@ -847,7 +856,7 @@ export namespace Types {
                 return dataType.typeHint;
               }
               else {
-                return "function"; //I guess???
+                return "function external"; //I guess???
               }
             }
             visibilityString = " external"; //note the deliberate space!

@@ -4,11 +4,7 @@ const debug = debugModule("codec-utils:types:values");
 //objects for Solidity values
 
 //Note: This is NOT intended to represent every possible value that exists
-//in Solidity!  Only possible values of variables.  (Though there may be
-//some expansion in the future; I'm definitely intending to add tuples.)
-//We do however count the builtin variables msg, block, and tx as variables
-//(not other builtins though for now) so there is some support for the magic
-//type.
+//in Solidity!  Only possible values the decoder might need to output.
 
 //NOTE: not all of these optional fields are actually implemented. Some are
 //just intended for the future.  More optional fields may be added in the
