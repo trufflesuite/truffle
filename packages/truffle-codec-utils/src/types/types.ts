@@ -6,20 +6,8 @@ const debug = debugModule("codec-utils:types:types");
 //classes here (at least for now)
 
 //Note: This is NOT intended to represent every possible type representable by
-//a Solidity type identifier!  Only possible types of variables, not of all
-//possible values.  (Though there may be some expansion in the future; in
-//particular, tuples will be added later.)
-//We do however count the builtin variables msg, block, and tx as variables
-//(not other builtins though for now) so there is some support for the magic
-//type.
-
-//We do include fixed and ufixed, even though these aren't implemented yet;
-//note though that values.ts does not include these.
-//Similarly with global structs and enums.
-//Foreign contract types aren't really implemented yet either, although
-//those aren't produced from definitions.
-//(General external functions aren't really implemented yet either for the
-//same reason.)
+//a Solidity type identifier!  Only possible types the decoder might need to
+//output, not all possible values.
 
 //NOTE: not all of these optional fields are actually implemented. Some are
 //just intended for the future.
@@ -29,7 +17,8 @@ const debug = debugModule("codec-utils:types:types");
 import BN from "bn.js";
 import * as Ast from "../ast";
 import { Definition as DefinitionUtils } from "../definition";
-import { CompilerVersion } from "../compiler";
+import { CompilerVersion, solidityFamily } from "../compiler";
+import { AbiUtils } from "../abi";
 
 export namespace Types {
 
@@ -70,9 +59,17 @@ export namespace Types {
     typeHint?: string;
   }
 
-  export interface AddressType {
+  export type AddressType = AddressTypeSpecific | AddressTypeGeneral;
+
+  export interface AddressTypeSpecific {
     typeClass: "address";
+    kind: "specific";
     payable: boolean;
+  }
+
+  export interface AddressTypeGeneral {
+    typeClass: "address";
+    kind: "general";
     typeHint?: string;
   }
 
@@ -265,34 +262,47 @@ export namespace Types {
   //things of elementary type)
   //NOTE: set forceLocation to *null* to force no location. leave it undefined
   //to not force a location.
-  //NOTE: set compiler to null to force addresses to *not* be payable (HACK)?
-  export function definitionToType(definition: Ast.AstDefinition, compiler: CompilerVersion | null, forceLocation?: Ast.Location | null): Type {
+  export function definitionToType(definition: Ast.AstDefinition, compiler: CompilerVersion, forceLocation?: Ast.Location | null): Type {
     debug("definition %O", definition);
     let typeClass = DefinitionUtils.typeClass(definition);
+    let typeHint = DefinitionUtils.typeStringWithoutLocation(definition);
     switch(typeClass) {
       case "bool":
         return {
-          typeClass
+          typeClass,
+          typeHint
         };
       case "address": {
-        let payable = DefinitionUtils.isAddressPayable(definition, compiler);
-        return {
-          typeClass,
-          payable
+        switch(solidityFamily(compiler)) {
+          case "pre-0.5.0":
+            return {
+              typeClass,
+              kind: "general",
+              typeHint
+            };
+          case "0.5.x":
+            return {
+              typeClass,
+              kind: "specific",
+              payable: DefinitionUtils.typeIdentifier(definition) === "t_address_payable"
+            };
         }
+        break; //to satisfy typescript
       }
       case "uint": {
         let bytes = DefinitionUtils.specifiedSize(definition);
         return {
           typeClass,
-          bits: bytes * 8
+          bits: bytes * 8,
+          typeHint
         };
       }
       case "int": { //typeScript won't let me group these for some reason
         let bytes = DefinitionUtils.specifiedSize(definition);
         return {
           typeClass,
-          bits: bytes * 8
+          bits: bytes * 8,
+          typeHint
         };
       }
       case "fixed": { //typeScript won't let me group these for some reason
@@ -301,7 +311,8 @@ export namespace Types {
         return {
           typeClass,
           bits: bytes * 8,
-          places
+          places,
+          typeHint
         };
       }
       case "ufixed": {
@@ -310,19 +321,22 @@ export namespace Types {
         return {
           typeClass,
           bits: bytes * 8,
-          places
+          places,
+          typeHint
         };
       }
       case "string": {
         if(forceLocation === null) {
           return {
-            typeClass
+            typeClass,
+            typeHint
           };
         }
         let location = forceLocation || DefinitionUtils.referenceType(definition);
         return {
           typeClass,
-          location
+          location,
+          typeHint
         };
       }
       case "bytes": {
@@ -331,20 +345,23 @@ export namespace Types {
           return {
             typeClass,
             kind: "static",
-            length
+            length,
+            typeHint
           }
         } else {
           if(forceLocation === null) {
             return {
               typeClass,
-              kind: "dynamic"
+              kind: "dynamic",
+              typeHint
             };
           }
           let location = forceLocation || DefinitionUtils.referenceType(definition);
           return {
             typeClass,
             kind: "dynamic",
-            location
+            location,
+            typeHint
           }
         }
       }
@@ -358,14 +375,16 @@ export namespace Types {
               typeClass,
               baseType,
               kind: "dynamic",
-              location
+              location,
+              typeHint
             }
           }
           else {
             return {
               typeClass,
               baseType,
-              kind: "dynamic"
+              kind: "dynamic",
+              typeHint
             }
           }
         } else {
@@ -376,7 +395,8 @@ export namespace Types {
               baseType,
               kind: "static",
               length,
-              location
+              location,
+              typeHint
             }
           }
           else {
@@ -384,7 +404,8 @@ export namespace Types {
               typeClass,
               baseType,
               kind: "static",
-              length
+              length,
+              typeHint
             }
           }
         }
@@ -444,9 +465,7 @@ export namespace Types {
       }
       case "struct": {
         let id = DefinitionUtils.typeId(definition).toString();
-        let qualifiedName = definition.typeName
-          ? definition.typeName.name
-          : definition.name;
+        let qualifiedName = DefinitionUtils.typeStringWithoutLocation(definition).match(/struct (.*)/)[1];
         let [definingContractName, typeName] = qualifiedName.split(".");
         if(forceLocation === null) {
           return {
@@ -469,9 +488,7 @@ export namespace Types {
       }
       case "enum": {
         let id = DefinitionUtils.typeId(definition).toString();
-        let qualifiedName = definition.typeName
-          ? definition.typeName.name
-          : definition.name;
+        let qualifiedName = DefinitionUtils.typeStringWithoutLocation(definition).match(/enum (.*)/)[1];
         let [definingContractName, typeName] = qualifiedName.split(".");
         return {
           typeClass,
@@ -650,6 +667,210 @@ export namespace Types {
     }
     else {
       return dataType;
+    }
+  }
+
+  export function abiParameterToType(abi: AbiUtils.AbiParameter): Type {
+    let typeName = abi.type;
+    let typeHint = abi.internalType;
+    //first: is it an array?
+    let arrayMatch = typeName.match(/(.*)\[(\d*)\]$/);
+    if(arrayMatch) {
+      let baseTypeName = arrayMatch[1];
+      let lengthAsString = arrayMatch[2]; //may be empty!
+      let baseAbi = {...abi, type: baseTypeName};
+      let baseType = abiParameterToType(baseAbi);
+      if(lengthAsString === "") {
+        return {
+          typeClass: "array",
+          kind: "dynamic",
+          baseType,
+          typeHint
+        }
+      }
+      else {
+        let length = new BN(lengthAsString);
+        return {
+          typeClass: "array",
+          kind: "static",
+          length,
+          baseType,
+          typeHint
+        }
+      }
+    }
+    //otherwise, here are the simple cases
+    let typeClass = typeName.match(/^([^0-9]+)/)[1];
+    switch(typeClass) {
+      case "uint":
+      case "int": {
+          let bits = typeName.match(/^u?int([0-9]+)/)[1];
+          return {
+            typeClass,
+            bits: parseInt(bits),
+            typeHint
+          };
+      }
+      case "bytes":
+        let length = typeName.match(/^bytes([0-9]*)/)[1];
+        if(length === "") {
+          return {
+            typeClass,
+            kind: "dynamic",
+            typeHint
+          };
+        }
+        else {
+          return {
+            typeClass,
+            kind: "static",
+            length: parseInt(length),
+            typeHint
+          };
+        }
+      case "address":
+        return {
+          typeClass,
+          kind: "general",
+          typeHint
+        };
+      case "string":
+      case "bool":
+        return {
+          typeClass,
+          typeHint
+        };
+      case "fixed":
+      case "ufixed": {
+          let [_, bits, places] = typeName.match(/^u?fixed([0-9]+)x([0-9]+)/);
+          return {
+            typeClass,
+            bits: parseInt(bits),
+            places: parseInt(places),
+            typeHint
+          };
+      }
+      case "function":
+        return {
+          typeClass,
+          visibility: "external",
+          kind: "general",
+          typeHint
+        }
+      case "tuple":
+        let memberTypes = abi.components.map(
+          component => ({
+            name: component.name || undefined, //leave undefined if component.name is empty string
+            type: abiParameterToType(component)
+          })
+        );
+        return {
+          typeClass,
+          memberTypes,
+          typeHint
+        };
+    }
+  }
+
+  //NOTE: the following two functions might not be exactly right for weird internal stuff,
+  //or for ABI-only stuff.  (E.g. for internal stuff sometimes it records whether things
+  //are pointers or not??  we don't track that so we can't recreate that)
+  //But what can you do.
+
+  export function typeString(dataType: Type): string {
+    let baseString = typeStringWithoutLocation(dataType);
+    if(isReferenceType(dataType) && dataType.location) {
+      return baseString + " " + dataType.location;
+    }
+    else {
+      return baseString;
+    }
+  }
+
+  export function typeStringWithoutLocation(dataType: Type): string {
+    switch(dataType.typeClass) {
+      case "uint":
+        return dataType.typeHint || `uint${dataType.bits}`;
+      case "int":
+        return dataType.typeHint || `int${dataType.bits}`;
+      case "bool":
+        return dataType.typeHint || "bool";
+      case "bytes":
+        if(dataType.typeHint) {
+          return dataType.typeHint;
+        }
+        switch(dataType.kind) {
+          case "dynamic":
+            return "bytes";
+          case "static":
+            return `bytes${dataType.length}`;
+          }
+      case "address":
+        switch(dataType.kind) {
+          case "general":
+            return dataType.typeHint || "address"; //I guess?
+          case "specific":
+            return dataType.payable ? "address payable" : "address";
+        }
+      case "string":
+        return dataType.typeHint || "string";
+      case "fixed":
+        return dataType.typeHint || `fixed${dataType.bits}x${dataType.places}`;
+      case "ufixed":
+        return dataType.typeHint || `ufixed${dataType.bits}x${dataType.places}`;
+      case "array":
+        if(dataType.typeHint) {
+          return dataType.typeHint;
+        }
+        switch(dataType.kind) {
+          case "dynamic":
+            return `${typeStringWithoutLocation(dataType.baseType)}[]`;
+          case "static":
+            return `${typeStringWithoutLocation(dataType.baseType)}[${dataType.length}]`;
+        }
+      case "mapping":
+        return `mapping(${typeStringWithoutLocation(dataType.keyType)} => ${typeStringWithoutLocation(dataType.valueType)})`;
+      case "struct":
+      case "enum":
+        //combining these cases for simplicity
+        switch(dataType.kind) {
+          case "local":
+            return `${dataType.typeClass} ${dataType.definingContractName}.${dataType.typeName}`;
+          case "global": //WARNING, SPECULATIVE
+            return `${dataType.typeClass} ${dataType.typeName}`;
+        }
+      case "tuple":
+        return dataType.typeHint || "tuple(" + dataType.memberTypes.map(memberType => typeString(memberType.type)).join(",") + ")"; //note that we do include location and do not put spaces
+      case "contract":
+        return dataType.contractKind + " " + dataType.typeName;
+      case "magic":
+        //no, this is not transposed!
+        const variableNames = {message: "msg", transaction: "tx", block: "block"};
+        return variableNames[dataType.variable];
+      case "function":
+        let visibilityString: string;
+        switch(dataType.visibility) {
+          case "external":
+            if(dataType.kind === "general") {
+              if(dataType.typeHint) {
+                return dataType.typeHint;
+              }
+              else {
+                return "function external"; //I guess???
+              }
+            }
+            visibilityString = " external"; //note the deliberate space!
+            break;
+          case "internal":
+            visibilityString = "";
+            break;
+        }
+        let mutabilityString = dataType.mutability === "nonpayable" ? " " + dataType.mutability : ""; //again, note the deliberate space
+        let inputList = dataType.inputParameterTypes.map(typeString).join(","); //note that we do include location, and do not put spaces
+        let outputList = dataType.outputParameterTypes.map(typeString).join(",");
+        let inputString = `function(${inputList})`;
+        let outputString = outputList === "" ? "" : ` returns (${outputList})`; //again, note the deliberate space
+        return inputString + mutabilityString + visibilityString + outputString;
     }
   }
 

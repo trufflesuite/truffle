@@ -12,6 +12,7 @@ export interface AstDefinition {
   constant?: boolean;
   id: number;
   name: string;
+  canonicalName?: string;
   linearizedBaseContracts?: number[];
   members?: AstDefinition[];
   nodes?: AstDefinition[];

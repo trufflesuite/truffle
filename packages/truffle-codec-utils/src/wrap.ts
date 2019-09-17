@@ -82,5 +82,6 @@ export function wrapElementaryValue(value: any, dataType: Types.Type): Values.El
           asBool: <boolean>value
         }
       };
+    //fixed and ufixed are not handled for now!
   }
 }

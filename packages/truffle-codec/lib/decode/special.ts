@@ -54,10 +54,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             info
           ),
           sender: yield* decodeValue(
-            {
-              typeClass: "address" as const,
-              payable: true
-            },
+	    senderType(info.currentContext.compiler),
             {location: "special" as const, special: "sender" },
             info
           ),
@@ -77,10 +74,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
         kind: "value" as const,
         value: {
           origin: yield* decodeValue(
-            {
-              typeClass: "address" as const,
-              payable: true
-            },
+	    externalAddressType(info.currentContext.compiler),
             {location: "special" as const, special: "origin"},
             info
           ),
@@ -97,10 +91,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
     case "block":
       let block: {[field: string]: Values.Result} = {
         coinbase: yield* decodeValue(
-          {
-            typeClass: "address" as const,
-            payable: true
-          },
+	  externalAddressType(info.currentContext.compiler),
           {location: "special" as const, special: "coinbase"},
           info
         )
@@ -123,5 +114,38 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
         kind: "value" as const,
         value: block
       };
+  }
+}
+
+//NOTE: this is going to change again in 0.6.x!  be ready!
+function senderType(compiler: CodecUtils.CompilerVersion): Types.AddressType {
+  switch(CodecUtils.solidityFamily(compiler)) {
+    case "pre-0.5.0":
+      return {
+	typeClass: "address",
+	kind: "general"
+      }
+    case "0.5.x":
+      return {
+	typeClass: "address",
+	kind: "specific",
+	payable: true
+      }
+  }
+}
+
+function externalAddressType(compiler: CodecUtils.CompilerVersion): Types.AddressType {
+  switch(CodecUtils.solidityFamily(compiler)) {
+    case "pre-0.5.0":
+      return {
+	typeClass: "address",
+	kind: "general"
+      }
+    case "0.5.x":
+      return {
+	typeClass: "address",
+	kind: "specific",
+	payable: true
+      }
   }
 }

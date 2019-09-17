@@ -236,7 +236,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
       const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
       if(referenceDeclaration === undefined) {
         let typeString = CodecUtils.Definition.typeString(definition);
-        throw new UnknownUserDefinedTypeError(referenceId, typeString);
+        throw new UnknownUserDefinedTypeError(referenceId.toString(), typeString);
       }
       const numValues: number = referenceDeclaration.members.length;
       return {
@@ -334,7 +334,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
         const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
         if(referenceDeclaration === undefined) {
           let typeString = CodecUtils.Definition.typeString(definition);
-          throw new UnknownUserDefinedTypeError(referenceId, typeString);
+          throw new UnknownUserDefinedTypeError(referenceId.toString(), typeString);
         }
         debug("definition %O", definition);
         allocations = allocateStruct(referenceDeclaration, referenceDeclarations, existingAllocations);
