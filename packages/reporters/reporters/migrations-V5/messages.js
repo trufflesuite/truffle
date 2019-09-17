@@ -289,7 +289,7 @@ class MigrationsMessages {
             data: Object.assign({}, data, {
               contract: {
                 contractName: data.contract.contractName,
-                address: data.contract.address
+                address: data.receipt.contractAddress
               },
               instance: undefined,
               receipt: {
