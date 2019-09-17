@@ -2,8 +2,9 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:memory");
 
 import read from "../read";
-import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values, Errors } from "truffle-codec-utils";
+import * as CodecUtils from "../utils";
+import { TypeUtils } from "../utils";
+import { Types, Values, Errors } from "../format";
 import decodeValue from "./value";
 import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";
@@ -11,7 +12,7 @@ import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";
 
 export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
-  if(Types.isReferenceType(dataType)) {
+  if(TypeUtils.isReferenceType(dataType)) {
     return yield* decodeMemoryReferenceByAddress(dataType, pointer, info);
   }
   else {
@@ -157,7 +158,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
           };
         }
         let storedMemberType = storedType.memberTypes[index].type;
-        let memberType = Types.specifyLocation(storedMemberType, "memory");
+        let memberType = TypeUtils.specifyLocation(storedMemberType, "memory");
 
         decodedMembers.push({
           name: memberName,

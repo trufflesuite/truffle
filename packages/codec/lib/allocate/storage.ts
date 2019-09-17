@@ -3,12 +3,13 @@ const debug = debugModule("codec:allocate:storage");
 
 import { StoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageAllocation, StorageMemberAllocation } from "../types/allocation";
-import { StorageLength, isWordsLength, Range } from "../types/storage";
-import { UnknownBaseContractIdError } from "../types/errors";
-import { UnknownUserDefinedTypeError } from "truffle-codec-utils";
-import { AstDefinition, AstReferences } from "truffle-codec-utils";
-import { readDefinition } from "../read/constant"
-import * as CodecUtils from "truffle-codec-utils";
+import { StorageLength, Range } from "../types/storage";
+import { isWordsLength } from "../utils/storage";
+import { UnknownBaseContractIdError, UnknownUserDefinedTypeError } from "../types/errors";
+import { AstDefinition, AstReferences } from "../types/ast";
+import * as CodecUtils from "../utils";
+import { TypeUtils } from "../utils";
+import * as Format from "../format";
 import BN from "bn.js";
 
 interface StorageAllocationInfo {
@@ -350,7 +351,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
 }
 
 //like storageSize, but for a Type object; also assumes you've already done allocation
-export function storageSizeForType(dataType: CodecUtils.Types.Type, userDefinedTypes?: CodecUtils.Types.TypesById, allocations?: StorageAllocations): StorageLength {
+export function storageSizeForType(dataType: Format.Types.Type, userDefinedTypes?: Format.Types.TypesById, allocations?: StorageAllocations): StorageLength {
   switch(dataType.typeClass) {
     case "bool":
       return {bytes: 1};
@@ -363,9 +364,9 @@ export function storageSizeForType(dataType: CodecUtils.Types.Type, userDefinedT
     case "ufixed":
       return {bytes: dataType.bits / 8 };
     case "enum": {
-      let fullType = <CodecUtils.Types.EnumType>CodecUtils.Types.fullType(dataType, userDefinedTypes);
+      let fullType = <Format.Types.EnumType>TypeUtils.fullType(dataType, userDefinedTypes);
       if(!fullType.options) {
-        throw new CodecUtils.Errors.DecodingError(
+        throw new Format.Errors.DecodingError(
           {
             kind: "UserDefinedTypeNotFoundError",
             type: dataType
@@ -417,7 +418,7 @@ export function storageSizeForType(dataType: CodecUtils.Types.Type, userDefinedT
     case "struct":
       let allocation = allocations[parseInt(dataType.id)];
       if(!allocation) {
-        throw new CodecUtils.Errors.DecodingError(
+        throw new Format.Errors.DecodingError(
           {
             kind: "UserDefinedTypeNotFoundError",
             type: dataType

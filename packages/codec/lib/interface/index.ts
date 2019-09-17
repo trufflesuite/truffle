@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("decoder");
+const debug = debugModule("codec:interface");
 
 import TruffleContractDecoder from "./contract";
 import { TruffleContractInstanceDecoder } from "./contract";

@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:read:storage");
 
-import * as CodecUtils from "truffle-codec-utils";
+import * as CodecUtils from "../utils";
 import { Slot, Range } from "../types/storage";
 import { WordMapping } from "../types/evm";
 import { DecoderRequest } from "../types/request";

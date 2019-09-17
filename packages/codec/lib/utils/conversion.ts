@@ -1,13 +1,13 @@
 import debugModule from "debug";
-const debug = debugModule("codec-utils:conversion");
+const debug = debugModule("codec:utils:conversion");
 
 import BN from "bn.js";
 import Big from "big.js";
 import Web3 from "web3";
 import { Constants } from "./constants";
-import { Types } from "./types/types";
-import { Values } from "./types/values";
-import { enumFullName } from "./types/inspect";
+import { Types } from "../format/types";
+import { Values } from "../format/values";
+import { enumFullName } from "./inspect";
 
 export namespace Conversion {
 

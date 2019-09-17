@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec-utils:types:errors");
+const debug = debugModule("codec:format:errors");
 
 //error counterpart to values.ts
 
@@ -9,10 +9,10 @@ const debug = debugModule("codec-utils:types:errors");
 
 import BN from "bn.js";
 import { Types } from "./types";
-import { InspectOptions } from "./inspect";
 import util from "util";
-import { AstDefinition } from "../ast";
-import { Definition as DefinitionUtils } from "../definition";
+import { AstDefinition } from "../types/ast";
+import { Definition as DefinitionUtils } from "../utils/definition";
+import { TypeUtils } from "../utils/datatype";
 
 export namespace Errors {
 
@@ -368,7 +368,7 @@ export namespace Errors {
   export function message(error: ErrorForThrowing) {
     switch(error.kind) {
       case "UserDefinedTypeNotFoundError":
-        let typeName = Types.isContractDefinedType(error.type)
+        let typeName = TypeUtils.isContractDefinedType(error.type)
           ? error.type.definingContractName + "." + error.type.typeName
           : error.type.typeName;
         return `Unknown ${error.type.typeClass} type ${typeName} of id ${error.type.id}`;

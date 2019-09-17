@@ -1,11 +1,12 @@
 import debugModule from "debug";
 const debug = debugModule("codec:read:constant");
 
-import * as CodecUtils from "truffle-codec-utils";
+import * as CodecUtils from "../utils";
+import { AstDefinition } from "../types/ast";
 import BN from "bn.js";
-import { Errors } from "truffle-codec-utils";
+import { Errors } from "../format";
 
-export function readDefinition(definition: CodecUtils.AstDefinition): Uint8Array {
+export function readDefinition(definition: AstDefinition): Uint8Array {
 
   debug("definition %o", definition);
 

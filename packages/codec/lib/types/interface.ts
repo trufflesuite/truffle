@@ -1,7 +1,9 @@
 import BN from "bn.js";
 import { ContractObject } from "@truffle/contract-schema/spec";
-import { AstDefinition, Values, Contexts } from "truffle-codec-utils";
-import { CalldataDecoding, LogDecoding } from "truffle-codec";
+import { DecoderContext } from "./contexts";
+import { AstDefinition } from "./ast";
+import { Values } from "../format/values";
+import { CalldataDecoding, LogDecoding } from "./decoding";
 import { Transaction, BlockType } from "web3/eth/types";
 import { Log } from "web3/types";
 
@@ -44,8 +46,8 @@ export interface CodeCache {
 export interface ContractAndContexts {
   contract: ContractObject;
   node: AstDefinition;
-  deployedContext?: Contexts.DecoderContext;
-  constructorContext?: Contexts.DecoderContext;
+  deployedContext?: DecoderContext;
+  constructorContext?: DecoderContext;
 }
 
 export interface EventOptions {

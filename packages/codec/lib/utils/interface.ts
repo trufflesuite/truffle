@@ -1,6 +1,9 @@
-import { AstDefinition, AstReferences, ContractKind, AbiUtils, Contexts as ContextsUtils, EVM as EVMUtils } from "truffle-codec-utils";
 import { ContractObject } from "@truffle/contract-schema/spec";
-import * as CodecUtils from "truffle-codec-utils";
+import { AbiUtils } from "./abi";
+import { DecoderContext } from "../types/contexts";
+import { Conversion as ConversionUtils } from "./conversion";
+import { EVM as EVMUtils } from "./evm";
+import { AstDefinition, AstReferences, ContractKind } from "../types/ast";
 
 export function getContractNode(contract: ContractObject): AstDefinition {
   return (contract.ast || {nodes: []}).nodes.find(
@@ -11,11 +14,11 @@ export function getContractNode(contract: ContractObject): AstDefinition {
   );
 }
 
-export function makeContext(contract: ContractObject, node: AstDefinition, isConstructor = false): ContextsUtils.DecoderContext {
+export function makeContext(contract: ContractObject, node: AstDefinition, isConstructor = false): DecoderContext {
   const abi = AbiUtils.schemaAbiToAbi(contract.abi);
   const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
-  const hash = CodecUtils.Conversion.toHexString(
-    CodecUtils.EVM.keccak256({type: "string",
+  const hash = ConversionUtils.toHexString(
+    EVMUtils.keccak256({type: "string",
       value: binary
     })
   );

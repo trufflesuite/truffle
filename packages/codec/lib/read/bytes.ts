@@ -1,6 +1,6 @@
 import BN from "bn.js";
 
-import * as CodecUtils from "truffle-codec-utils";
+import * as CodecUtils from "../utils";
 
 /**
  * read word from memory

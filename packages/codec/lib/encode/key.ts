@@ -1,7 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:encode:key");
 
-import { Values, Conversion as ConversionUtils, EVM as EVMUtils } from "truffle-codec-utils";
+import { Values } from "../format";
+import { Conversion as ConversionUtils, EVM as EVMUtils } from "../utils";
 import { stringToBytes } from "./abi";
 import BN from "bn.js";
 

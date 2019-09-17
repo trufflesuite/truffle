@@ -1,4 +1,6 @@
-import { AstDefinition, AstReferences, ContractKind, Mutability, Contexts, Types } from "truffle-codec-utils";
+import { DecoderContext, DecoderContexts } from "./contexts";
+import { AstDefinition, AstReferences, ContractKind, Mutability } from "./ast";
+import { Types } from "../format/types";
 import * as Allocations from "./allocation";
 import { Slot } from "./storage";
 
@@ -23,8 +25,8 @@ export interface EvmInfo {
   mappingKeys?: Slot[];
   userDefinedTypes?: Types.TypesById;
   allocations: AllocationInfo;
-  contexts?: Contexts.DecoderContexts;
-  currentContext?: Contexts.DecoderContext;
+  contexts?: DecoderContexts;
+  currentContext?: DecoderContext;
   internalFunctionsTable?: InternalFunctions;
 }
 

@@ -1,12 +1,12 @@
 import debugModule from "debug";
-const debug = debugModule("codec-utils:types:abify");
+const debug = debugModule("codec:format:abify");
 
-import { Types } from "./types";
-import { Values } from "./values";
-import { Errors } from "./errors";
-import { UnknownUserDefinedTypeError } from "../errors";
+import { Types, Values, Errors } from "../format";
+import { TypeUtils } from "./datatype";
+import { UnknownUserDefinedTypeError } from "../types/errors";
 import BN from "bn.js";
-import { Conversion as ConversionUtils } from "../conversion";
+import { Conversion as ConversionUtils } from "./conversion";
+import { CalldataDecoding, LogDecoding } from "../types/decoding";
 
 export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesById): Types.Type | undefined {
   switch(dataType.typeClass) {
@@ -24,7 +24,7 @@ export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesBy
       return {
         typeClass: "address",
         kind: "general",
-        typeHint: Types.typeString(dataType)
+        typeHint: TypeUtils.typeString(dataType)
       };
     case "function":
       switch(dataType.visibility) {
@@ -33,7 +33,7 @@ export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesBy
             typeClass: "function",
             visibility: "external",
             kind: "general",
-            typeHint: Types.typeString(dataType)
+            typeHint: TypeUtils.typeString(dataType)
           };
         case "internal": //these don't go in the ABI
           return undefined;
@@ -41,9 +41,9 @@ export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesBy
       break; //to satisfy TypeScript
     //the complex cases: struct & enum
     case "struct": {
-      const fullType = <Types.StructType> Types.fullType(dataType, userDefinedTypes);
+      const fullType = <Types.StructType> TypeUtils.fullType(dataType, userDefinedTypes);
       if(!fullType) {
-        let typeToDisplay = Types.typeString(dataType);
+        let typeToDisplay = TypeUtils.typeString(dataType);
         throw new UnknownUserDefinedTypeError(dataType.id, typeToDisplay);
       }
       const memberTypes = fullType.memberTypes.map(
@@ -54,14 +54,14 @@ export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesBy
       );
       return {
         typeClass: "tuple",
-        typeHint: Types.typeString(fullType),
+        typeHint: TypeUtils.typeString(fullType),
         memberTypes
       };
     }
     case "enum": {
-      const fullType = <Types.EnumType> Types.fullType(dataType, userDefinedTypes);
+      const fullType = <Types.EnumType> TypeUtils.fullType(dataType, userDefinedTypes);
       if(!fullType) {
-        let typeToDisplay = Types.typeString(dataType);
+        let typeToDisplay = TypeUtils.typeString(dataType);
         throw new UnknownUserDefinedTypeError(dataType.id, typeToDisplay);
       }
       let numOptions = fullType.options.length;
@@ -69,14 +69,14 @@ export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesBy
       return {
         typeClass: "uint",
         bits,
-        typeHint: Types.typeString(fullType)
+        typeHint: TypeUtils.typeString(fullType)
       };
     }
     //finally: arrays
     case "array":
       return {
         ...dataType,
-        typeHint: Types.typeString(dataType),
+        typeHint: TypeUtils.typeString(dataType),
         baseType: abifyType(dataType.baseType, userDefinedTypes)
       };
     //default case: just leave as-is
@@ -187,7 +187,7 @@ export function abifyResult(result: Values.Result, userDefinedTypes?: Types.Type
               numericValue = coercedResult.error.rawAsBN.clone();
               break;
             default:
-              let typeToDisplay = Types.typeString(result.type);
+              let typeToDisplay = TypeUtils.typeString(result.type);
               throw new UnknownUserDefinedTypeError(coercedResult.type.id, typeToDisplay);
           }
           break;
@@ -239,4 +239,48 @@ export function abifyResult(result: Values.Result, userDefinedTypes?: Types.Type
     default:
       return result;
   }
+}
+
+/* the following functions are not used anywhere in our code at present.
+ * they are intended for external use -- the idea is that if you don't
+ * like having to deal with the possibility of having the decoder return
+ * either a full-mode or an abi-mode decoding, well, you can always
+ * abify to ensure you get an abi-mode decoding.
+ * (if you want to ensure you get a full-mode decoding... well, you can't,
+ * but you can, uh, throw an exception if you don't, I guess.)
+ */
+
+export function abifyCalldataDecoding(decoding: CalldataDecoding, userDefinedTypes: Types.TypesById): CalldataDecoding {
+  if(decoding.decodingMode === "abi") {
+    return decoding;
+  }
+  switch(decoding.kind) {
+    case "function":
+    case "constructor":
+      return {
+        ...decoding,
+        decodingMode: "abi",
+        arguments: decoding.arguments.map(
+          ({name, value}) => ({name, value: abifyResult(value, userDefinedTypes)})
+        )
+      };
+    default:
+      return {
+        ...decoding,
+        decodingMode: "abi"
+      };
+  }
+}
+
+export function abifyLogDecoding(decoding: LogDecoding, userDefinedTypes: Types.TypesById): LogDecoding {
+  if(decoding.decodingMode === "abi") {
+    return decoding;
+  }
+  return {
+    ...decoding,
+    decodingMode: "abi",
+    arguments: decoding.arguments.map(
+      ({name, value}) => ({name, value: abifyResult(value, userDefinedTypes)})
+    )
+  };
 }

@@ -1,8 +1,11 @@
 import debugModule from "debug";
-const debug = debugModule("codec:interface:decoding");
+const debug = debugModule("codec:core:decoding");
 
-import { AstDefinition, Types, Values } from "truffle-codec-utils";
-import * as CodecUtils from "truffle-codec-utils";
+import { AstDefinition } from "../types/ast";
+import * as CodecUtils from "../utils";
+import { MakeType, abifyType, abifyResult } from "../utils";
+import { Types, Values } from "../format";
+import * as AbiTypes from "../types/abi";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { StopDecodingError } from "../types/errors";
@@ -15,7 +18,7 @@ import decode from "../decode";
 
 export function* decodeVariable(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
-  let dataType = Types.definitionToType(definition, compiler);
+  let dataType = MakeType.definitionToType(definition, compiler);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
@@ -31,7 +34,7 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
   }
   const compiler = context.compiler;
   const contextHash = context.context;
-  const contractType = CodecUtils.Contexts.contextToType(context);
+  const contractType = CodecUtils.ContextUtils.contextToType(context);
   const isConstructor: boolean = context.isConstructor;
   const allocations = info.allocations.calldata;
   let allocation: CalldataAllocation;
@@ -66,7 +69,7 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
   let decodedArguments: AbiArgument[] = [];
   for(const argumentAllocation of allocation.arguments) {
     let value: Values.Result;
-    let dataType = decodingMode === "full" ? argumentAllocation.type : CodecUtils.abifyType(argumentAllocation.type);
+    let dataType = decodingMode === "full" ? argumentAllocation.type : abifyType(argumentAllocation.type);
     try {
       value = yield* decode(
         dataType,
@@ -86,14 +89,14 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
         //2. abify all previously decoded values;
         decodedArguments = decodedArguments.map(argumentDecoding =>
           ({ ...argumentDecoding,
-            value: CodecUtils.abifyResult(argumentDecoding.value, info.userDefinedTypes)
+            value: abifyResult(argumentDecoding.value, info.userDefinedTypes)
           })
         );
         //3. retry this particular decode in ABI mode.
         //(no try/catch on this one because we can't actually handle errors here!
         //not that they should be occurring)
         value = yield* decode(
-          CodecUtils.abifyType(argumentAllocation.type), //type is now abified!
+          abifyType(argumentAllocation.type), //type is now abified!
           argumentAllocation.pointer,
           info,
           {
@@ -121,7 +124,7 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
       kind: "constructor" as const,
       class: contractType,
       arguments: decodedArguments,
-      abi: <CodecUtils.AbiUtils.ConstructorAbiEntry> allocation.abi, //we know it's a constructor, but typescript doesn't
+      abi: <AbiTypes.ConstructorAbiEntry> allocation.abi, //we know it's a constructor, but typescript doesn't
       bytecode: CodecUtils.Conversion.toHexString(info.state.calldata.slice(0, allocation.offset)),
       decodingMode
     };
@@ -130,7 +133,7 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
     return {
       kind: "function" as const,
       class: contractType,
-      abi: <CodecUtils.AbiUtils.FunctionAbiEntry> allocation.abi, //we know it's a function, but typescript doesn't
+      abi: <AbiTypes.FunctionAbiEntry> allocation.abi, //we know it's a function, but typescript doesn't
       arguments: decodedArguments,
       selector,
       decodingMode
@@ -174,7 +177,7 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
     address
   };
   const codeAsHex = CodecUtils.Conversion.toHexString(codeBytes);
-  const contractContext = CodecUtils.Contexts.findDecoderContext(info.contexts, codeAsHex);
+  const contractContext = CodecUtils.ContextUtils.findDecoderContext(info.contexts, codeAsHex);
   let possibleContractAllocations: EventAllocation[]; //excludes anonymous events
   let possibleContractAnonymousAllocations: EventAllocation[];
   if(contractContext) {
@@ -209,14 +212,14 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
     let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     const contextHash = allocation.contextHash;
     const attemptContext = info.contexts[contextHash];
-    const contractType = CodecUtils.Contexts.contextToType(attemptContext);
+    const contractType = CodecUtils.ContextUtils.contextToType(attemptContext);
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];
     for(const argumentAllocation of allocation.arguments) {
       let value: Values.Result;
       //if in full mode, use the allocation's listed data type.
       //if in ABI mode, abify it before use.
-      let dataType = decodingMode === "full" ? argumentAllocation.type : CodecUtils.abifyType(argumentAllocation.type);
+      let dataType = decodingMode === "full" ? argumentAllocation.type : abifyType(argumentAllocation.type);
       try {
         value = yield* decode(
           dataType,
@@ -236,13 +239,13 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
           //2. abify all previously decoded values;
           decodedArguments = decodedArguments.map(argumentDecoding =>
             ({ ...argumentDecoding,
-              value: CodecUtils.abifyResult(argumentDecoding.value, info.userDefinedTypes)
+              value: abifyResult(argumentDecoding.value, info.userDefinedTypes)
             })
           );
           //3. retry this particular decode in ABI mode.
           try {
             value = yield* decode(
-              CodecUtils.abifyType(argumentAllocation.type), //type is now abified!
+              abifyType(argumentAllocation.type), //type is now abified!
               argumentAllocation.pointer,
               info,
               {

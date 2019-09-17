@@ -1,14 +1,14 @@
 import debugModule from "debug";
-const debug = debugModule("codec-utils:definition2abi");
+const debug = debugModule("codec:utils:definition2abi");
 
-import { AstDefinition, AstReferences } from "./ast";
-import { AbiUtils } from "./abi";
+import { AstDefinition, AstReferences } from "../types/ast";
+import * as AbiTypes from "../types/abi";
 import { Definition } from "./definition";
-import { UnknownUserDefinedTypeError } from "./errors";
+import { UnknownUserDefinedTypeError } from "../types/errors";
 
 //the main function. just does some dispatch.
 //returns undefined on bad input
-export function definitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiUtils.AbiEntry | undefined {
+export function definitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiTypes.AbiEntry | undefined {
   switch(node.nodeType) {
     case "FunctionDefinition":
       if(node.visibility === "public" || node.visibility === "external") {
@@ -32,7 +32,7 @@ export function definitionToAbi(node: AstDefinition, referenceDeclarations: AstR
 }
 
 //note: not for FunctionTypeNames or VariableDeclarations
-function functionDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiUtils.FunctionAbiEntry | AbiUtils.ConstructorAbiEntry | AbiUtils.FallbackAbiEntry {
+function functionDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry | AbiTypes.FallbackAbiEntry {
   let kind = Definition.functionKind(node);
   let stateMutability = Definition.mutability(node);
   let payable = stateMutability === "payable";
@@ -55,7 +55,7 @@ function functionDefinitionToAbi(node: AstDefinition, referenceDeclarations: Ast
     case "constructor":
       inputs = parametersToAbi(node.parameters.parameters, referenceDeclarations);
       //note: need to coerce because of mutability restrictions
-      return <AbiUtils.ConstructorAbiEntry> {
+      return <AbiTypes.ConstructorAbiEntry> {
         type: "constructor",
         inputs,
         stateMutability,
@@ -63,7 +63,7 @@ function functionDefinitionToAbi(node: AstDefinition, referenceDeclarations: Ast
       };
     case "fallback":
       //note: need to coerce because of mutability restrictions
-      return <AbiUtils.FallbackAbiEntry> {
+      return <AbiTypes.FallbackAbiEntry> {
         type: "fallback",
         stateMutability,
         payable
@@ -71,7 +71,7 @@ function functionDefinitionToAbi(node: AstDefinition, referenceDeclarations: Ast
   }
 }
 
-function eventDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiUtils.EventAbiEntry {
+function eventDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiTypes.EventAbiEntry {
   let inputs = parametersToAbi(node.parameters.parameters, referenceDeclarations, true);
   let name = node.name;
   let anonymous = node.anonymous;
@@ -83,13 +83,13 @@ function eventDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstRef
   };
 }
 
-function parametersToAbi(nodes: AstDefinition[], referenceDeclarations: AstReferences, checkIndexed: boolean = false): AbiUtils.AbiParameter[] {
+function parametersToAbi(nodes: AstDefinition[], referenceDeclarations: AstReferences, checkIndexed: boolean = false): AbiTypes.AbiParameter[] {
   return nodes.map(node => parameterToAbi(node, referenceDeclarations, checkIndexed));
 }
 
-function parameterToAbi(node: AstDefinition, referenceDeclarations: AstReferences, checkIndexed: boolean = false): AbiUtils.AbiParameter {
+function parameterToAbi(node: AstDefinition, referenceDeclarations: AstReferences, checkIndexed: boolean = false): AbiTypes.AbiParameter {
   let name = node.name; //may be the empty string... or even undefined for a base type
-  let components: AbiUtils.AbiParameter[];
+  let components: AbiTypes.AbiParameter[];
   let indexed: boolean;
   if(checkIndexed) {
     indexed = node.indexed; //note: may be undefined for a base type
@@ -162,7 +162,7 @@ function toAbiType(node: AstDefinition, referenceDeclarations: AstReferences): s
   }
 }
 
-function getterDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiUtils.FunctionAbiEntry {
+function getterDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiTypes.FunctionAbiEntry {
   debug("getter node: %O", node);
   let name = node.name;
   let { inputs, outputs } = getterParameters(node, referenceDeclarations);

@@ -1,12 +1,14 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:special");
 
-import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values, Errors } from "truffle-codec-utils";
+import * as CodecUtils from "../utils";
+import { Types, Values, Errors } from "../format";
 import decodeValue from "./value";
 import { EvmInfo } from "../types/evm";
 import { SpecialPointer } from "../types/pointer";
 import { DecoderRequest } from "../types/request";
+import { CompilerVersion } from "../types/compiler";
+import { solidityFamily } from "../utils/compiler";
 
 export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(dataType.typeClass === "magic") {
@@ -118,8 +120,8 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
 }
 
 //NOTE: this is going to change again in 0.6.x!  be ready!
-function senderType(compiler: CodecUtils.CompilerVersion): Types.AddressType {
-  switch(CodecUtils.solidityFamily(compiler)) {
+function senderType(compiler: CompilerVersion): Types.AddressType {
+  switch(solidityFamily(compiler)) {
     case "pre-0.5.0":
       return {
 	typeClass: "address",
@@ -134,8 +136,8 @@ function senderType(compiler: CodecUtils.CompilerVersion): Types.AddressType {
   }
 }
 
-function externalAddressType(compiler: CodecUtils.CompilerVersion): Types.AddressType {
-  switch(CodecUtils.solidityFamily(compiler)) {
+function externalAddressType(compiler: CompilerVersion): Types.AddressType {
+  switch(solidityFamily(compiler)) {
     case "pre-0.5.0":
       return {
 	typeClass: "address",

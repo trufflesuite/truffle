@@ -1,4 +1,4 @@
-import { AstDefinition } from "truffle-codec-utils";
+import { AstDefinition } from "./ast";
 import { Range } from "./storage";
 
 export type DataPointer = StackPointer | MemoryPointer | StoragePointer

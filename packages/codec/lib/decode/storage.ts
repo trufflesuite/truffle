@@ -2,19 +2,21 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:storage");
 
 import read from "../read";
-import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values, Errors } from "truffle-codec-utils";
+import * as CodecUtils from "../utils";
+import { TypeUtils } from "../utils";
+import { Types, Values, Errors } from "../format";
 import decodeValue from "./value";
 import { StoragePointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { storageSizeForType } from "../allocate/storage";
 import { slotAddress } from "../read/storage";
 import * as StorageTypes from "../types/storage";
+import { isWordsLength } from "../utils/storage";
 import BN from "bn.js";
 import { DecoderRequest } from "../types/request";
 
 export default function* decodeStorage(dataType: Types.Type, pointer: StoragePointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
-  if(Types.isReferenceType(dataType)) {
+  if(TypeUtils.isReferenceType(dataType)) {
     return yield* decodeStorageReference(dataType, pointer, info);
   }
   else {
@@ -118,7 +120,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       //we're in the words case or the bytes case, the second will not
       let ranges: StorageTypes.Range[] = [];
 
-      if(StorageTypes.isWordsLength(baseSize)) {
+      if(isWordsLength(baseSize)) {
         //currentSlot will point to the start of the entry being decoded
         let currentSlot: StorageTypes.Slot = {
           path: pointer.range.from.slot,
@@ -299,7 +301,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
           };
         }
         let storedMemberType = storedType.memberTypes[index].type;
-        let memberType = Types.specifyLocation(storedMemberType, "storage" as const);
+        let memberType = TypeUtils.specifyLocation(storedMemberType, "storage" as const);
 
         decodedMembers.push({
           name: memberName,
@@ -348,7 +350,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
 
         let valuePointer: StoragePointer;
 
-        if(StorageTypes.isWordsLength(valueSize)) {
+        if(isWordsLength(valueSize)) {
           valuePointer = {
             location: "storage",
             range: {

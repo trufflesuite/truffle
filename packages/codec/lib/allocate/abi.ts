@@ -3,12 +3,16 @@ const debug = debugModule("codec:allocate:abi");
 
 import * as Pointer from "../types/pointer";
 import * as Allocations from "../types/allocation";
-import { AstDefinition, AstReferences, AbiUtils } from "truffle-codec-utils";
-import * as CodecUtils from "truffle-codec-utils";
-import { UnknownUserDefinedTypeError, Types } from "truffle-codec-utils";
-import { UnknownBaseContractIdError, NoDefinitionFoundForABIEntryError } from "../types/errors";
+import * as CodecUtils from "../utils";
+import { AbiUtils, TypeUtils, MakeType } from "../utils";
+import * as AbiTypes from "../types/abi";
+import { AstDefinition, AstReferences } from "../types/ast";
+import { Types } from "../format";
+import { UnknownBaseContractIdError, UnknownUserDefinedTypeError } from "../types/errors";
 import partition from "lodash.partition";
 import { DecodingMode } from "../types/decoding";
+import { CompilerVersion } from "../types/compiler";
+import { DecoderContext } from "../types/contexts";
 
 interface AbiAllocationInfo {
   size?: number; //left out for types that don't go in the abi
@@ -188,7 +192,7 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
         //if we don't find an allocation, we'll have to do the allocation ourselves
         const storedType = <Types.StructType> userDefinedTypes[dataType.id];
         if(!storedType) {
-          throw new UnknownUserDefinedTypeError(dataType.id, Types.typeString(dataType));
+          throw new UnknownUserDefinedTypeError(dataType.id, TypeUtils.typeString(dataType));
         }
         debug("storedType: %O", storedType);
         allocations = allocateStruct(storedType, userDefinedTypes, existingAllocations);
@@ -232,7 +236,7 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
 }
 
 //assumes you've already done allocation! don't use if you haven't!
-export function abiSizeInfo(dataType: CodecUtils.Types.Type, allocations?: Allocations.AbiAllocations): Allocations.AbiSizeInfo {
+export function abiSizeInfo(dataType: Types.Type, allocations?: Allocations.AbiAllocations): Allocations.AbiSizeInfo {
   let { size, dynamic } = abiSizeAndAllocate(dataType, null, allocations);
   //the above line should work fine... as long as allocation is already done!
   //the middle argument, userDefinedTypes, is only needed during allocation
@@ -245,13 +249,13 @@ export function abiSizeInfo(dataType: CodecUtils.Types.Type, allocations?: Alloc
 //NOTE: returns undefined if attempting to allocate a constructor but we don't have the
 //bytecode for the constructor
 function allocateCalldata(
-  abiEntry: AbiUtils.FunctionAbiEntry | AbiUtils.ConstructorAbiEntry,
+  abiEntry: AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry,
   contractNode: AstDefinition | undefined,
   referenceDeclarations: AstReferences,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
-  compiler: CodecUtils.CompilerVersion | undefined,
-  constructorContext?: CodecUtils.Contexts.DecoderContext
+  compiler: CompilerVersion | undefined,
+  constructorContext?: DecoderContext
 ): Allocations.CalldataAllocation | undefined {
   //first: determine the corresponding function node
   //(simultaneously: determine the offset)
@@ -327,7 +331,7 @@ function allocateCalldata(
     parameterTypes = parameters.map(
       parameter => ({
         name: parameter.name,
-        type: Types.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
+        type: MakeType.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
       })
     );
     //now: perform the allocation!
@@ -346,7 +350,7 @@ function allocateCalldata(
     id = "-1"; //fake irrelevant ID
     parameterTypes = abiEntry.inputs.map(parameter => ({
       name: parameter.name,
-      type: Types.abiParameterToType(parameter)
+      type: MakeType.abiParameterToType(parameter)
     }));
     abiAllocation = allocateMembers(id, parameterTypes, userDefinedTypes, abiAllocations, offset)[id];
   }
@@ -378,13 +382,13 @@ interface EventParameterInfo {
 //allocates an event
 //NOTE: returns just a single allocation; assumes primary allocation is already complete!
 function allocateEvent(
-  abiEntry: AbiUtils.EventAbiEntry,
+  abiEntry: AbiTypes.EventAbiEntry,
   contractNode: AstDefinition | undefined,
   contextHash: string,
   referenceDeclarations: AstReferences,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
-  compiler: CodecUtils.CompilerVersion | undefined
+  compiler: CompilerVersion | undefined
 ): Allocations.EventAllocation {
   let parameterTypes: EventParameterInfo[];
   let id: string;
@@ -430,7 +434,7 @@ function allocateEvent(
     parameterTypes = parameters.map(
       definition => ({
         //note: if node is defined, compiler had better be defined, too!
-        type: Types.definitionToType(definition, compiler),
+        type: MakeType.definitionToType(definition, compiler),
         name: definition.name,
         indexed: definition.indexed
       })
@@ -449,7 +453,7 @@ function allocateEvent(
     id = "-1"; //fake irrelevant ID
     parameterTypes = abiEntry.inputs.map(
       abiParameter => ({
-        type: Types.abiParameterToType(abiParameter),
+        type: MakeType.abiParameterToType(abiParameter),
         name: abiParameter.name,
         indexed: abiParameter.indexed
       })
@@ -499,13 +503,13 @@ function allocateEvent(
 }
 
 function getCalldataAllocationsForContract(
-  abi: AbiUtils.Abi,
+  abi: AbiTypes.Abi,
   contractNode: AstDefinition,
-  constructorContext: CodecUtils.Contexts.DecoderContext,
+  constructorContext: DecoderContext,
   referenceDeclarations: AstReferences,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
-  compiler: CodecUtils.CompilerVersion
+  compiler: CompilerVersion
 ): Allocations.CalldataAllocationTemporary {
   let allocations: Allocations.CalldataAllocationTemporary = {
     constructorAllocation: defaultConstructorAllocation(constructorContext), //will be overridden if abi has a constructor
@@ -546,7 +550,7 @@ function getCalldataAllocationsForContract(
 }
 
 //note: returns undefined if undefined is passed in
-function defaultConstructorAllocation(constructorContext: CodecUtils.Contexts.DecoderContext): Allocations.CalldataAllocation | undefined {
+function defaultConstructorAllocation(constructorContext: DecoderContext): Allocations.CalldataAllocation | undefined {
   if(!constructorContext) {
     return undefined;
   }
@@ -588,18 +592,18 @@ export function getCalldataAllocations(
 }
 
 function getEventAllocationsForContract(
-  abi: AbiUtils.Abi,
+  abi: AbiTypes.Abi,
   contractNode: AstDefinition | undefined,
   contextHash: string,
   referenceDeclarations: AstReferences,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
-  compiler: CodecUtils.CompilerVersion | undefined
+  compiler: CompilerVersion | undefined
 ): Allocations.EventAllocationTemporary[] {
   return abi.filter(
-    (abiEntry: AbiUtils.AbiEntry) => abiEntry.type === "event"
+    (abiEntry: AbiTypes.AbiEntry) => abiEntry.type === "event"
   ).map(
-    (abiEntry: AbiUtils.EventAbiEntry) =>
+    (abiEntry: AbiTypes.EventAbiEntry) =>
       abiEntry.anonymous
       ? {
         topics: AbiUtils.topicsCount(abiEntry),

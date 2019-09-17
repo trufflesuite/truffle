@@ -1,19 +1,25 @@
 import debugModule from "debug";
-const debug = debugModule("decoder:wire");
+const debug = debugModule("codec:interface:wire");
 
-import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values, Contexts } from "truffle-codec-utils";
+import * as CodecUtils from "../utils";
+import { Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils, abifyCalldataDecoding, abifyLogDecoding, MakeType } from "../utils";
+import * as Utils from "../utils/interface";
+import * as Contexts from "../types/contexts";
+import { AstDefinition, AstReferences } from "../types/ast";
+import { Types, Values } from "../format";
 import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
-import { Definition as DefinitionUtils, AbiUtils, EVM, AstDefinition, AstReferences } from "truffle-codec-utils";
 import { BlockType, Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
 import { Provider } from "web3/providers";
-import * as Codec from "truffle-codec";
-import * as DecoderTypes from "./types";
-import * as Utils from "./utils";
+import * as DecoderTypes from "../types/interface";
+import { EvmInfo, AllocationInfo } from "../types/evm";
+import { AbiAllocations, ContractAllocationInfo } from "../types/allocation";
+import { getAbiAllocations, getCalldataAllocations, getEventAllocations } from "../allocate/abi";
+import { decodeCalldata, decodeEvent } from "../core/decoding";
+import { CalldataDecoding, LogDecoding } from "../types/decoding";
 
 export default class TruffleWireDecoder extends AsyncEventEmitter {
   private web3: Web3;
@@ -27,7 +33,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
-  private allocations: Codec.AllocationInfo;
+  private allocations: AllocationInfo;
 
   private codeCache: DecoderTypes.CodeCache = {};
 
@@ -58,7 +64,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       contractsAndContexts.push({contract, node, deployedContext, constructorContext});
     }
 
-    this.contexts = <Contexts.DecoderContexts>Contexts.normalizeContexts(this.contexts);
+    this.contexts = <Contexts.DecoderContexts>ContextUtils.normalizeContexts(this.contexts);
     this.deployedContexts = Object.assign({}, ...Object.values(this.contexts).map(
       context => !context.isConstructor ? {[context.context]: context} : {}
     ));
@@ -75,7 +81,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
     ({definitions: this.referenceDeclarations, types: this.userDefinedTypes} = this.collectUserDefinedTypes());
 
-    let allocationInfo: Codec.ContractAllocationInfo[] = contractsAndContexts.map(
+    let allocationInfo: ContractAllocationInfo[] = contractsAndContexts.map(
       ({contract: { abi, compiler }, node, deployedContext, constructorContext}) => ({
         abi: AbiUtils.schemaAbiToAbi(abi),
         compiler,
@@ -87,9 +93,9 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     debug("allocationInfo: %O", allocationInfo);
 
     this.allocations = {};
-    this.allocations.abi = Codec.getAbiAllocations(this.userDefinedTypes);
-    this.allocations.calldata = Codec.getCalldataAllocations(allocationInfo, this.referenceDeclarations, this.userDefinedTypes, this.allocations.abi);
-    this.allocations.event = Codec.getEventAllocations(allocationInfo, this.referenceDeclarations, this.userDefinedTypes, this.allocations.abi);
+    this.allocations.abi = getAbiAllocations(this.userDefinedTypes);
+    this.allocations.calldata = getCalldataAllocations(allocationInfo, this.referenceDeclarations, this.userDefinedTypes, this.allocations.abi);
+    this.allocations.event = getEventAllocations(allocationInfo, this.referenceDeclarations, this.userDefinedTypes, this.allocations.abi);
     debug("done with allocation");
   }
 
@@ -101,14 +107,14 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       //first, add the contract itself
       const contractNode = this.contractNodes[id];
       references[id] = contractNode;
-      types[id] = Types.definitionToStoredType(contractNode, compiler);
+      types[id] = MakeType.definitionToStoredType(contractNode, compiler);
       //now, add its struct and enum definitions
       for(const node of contractNode.nodes) {
         if(node.nodeType === "StructDefinition" || node.nodeType === "EnumDefinition") {
           references[node.id] = node;
           //HACK even though we don't have all the references, we only need one:
           //the reference to the contract itself, which we just added, so we're good
-          types[node.id] = Types.definitionToStoredType(node, compiler, references);
+          types[node.id] = MakeType.definitionToStoredType(node, compiler, references);
         }
       }
     }
@@ -143,7 +149,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     const context = await this.getContextByAddress(transaction.to, block, transaction.input, additionalContexts);
 
     const data = CodecUtils.Conversion.toBytes(transaction.input);
-    const info: Codec.EvmInfo = {
+    const info: EvmInfo = {
       state: {
         storage: {},
         calldata: data,
@@ -153,7 +159,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       contexts: {...this.deployedContexts, ...additionalContexts},
       currentContext: context
     };
-    const decoder = Codec.decodeCalldata(info);
+    const decoder = decodeCalldata(info);
 
     let result = decoder.next();
     while(result.done === false) {
@@ -182,7 +188,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     const block = log.blockNumber;
     const data = CodecUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(CodecUtils.Conversion.toBytes);
-    const info: Codec.EvmInfo = {
+    const info: EvmInfo = {
       state: {
         storage: {},
         eventdata: data,
@@ -192,7 +198,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       allocations: this.allocations,
       contexts: {...this.deployedContexts, ...additionalContexts}
     };
-    const decoder = Codec.decodeEvent(info, log.address, options.name);
+    const decoder = decodeEvent(info, log.address, options.name);
 
     let result = decoder.next();
     while(result.done === false) {
@@ -246,12 +252,12 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     return events;
   }
 
-  public abifyCalldataDecoding(decoding: Codec.CalldataDecoding): Codec.CalldataDecoding {
-    return Codec.abifyCalldataDecoding(decoding, this.userDefinedTypes);
+  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
+    return abifyCalldataDecoding(decoding, this.userDefinedTypes);
   }
   
-  public abifyLogDecoding(decoding: Codec.LogDecoding): Codec.LogDecoding {
-    return Codec.abifyLogDecoding(decoding, this.userDefinedTypes);
+  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
+    return abifyLogDecoding(decoding, this.userDefinedTypes);
   }
 
   public onEvent(name: string, callback: Function): void {
@@ -277,7 +283,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     }
     //if neither of these hold... we have a problem
     let contexts = {...this.contexts, ...additionalContexts};
-    return Contexts.findDecoderContext(contexts, code);
+    return ContextUtils.findDecoderContext(contexts, code);
   }
 
   //the following functions are intended for internal use only
@@ -289,7 +295,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     return this.userDefinedTypes;
   }
 
-  public getAbiAllocations(): Codec.AbiAllocations {
+  public getAbiAllocations(): AbiAllocations {
     return this.allocations.abi;
   }
 

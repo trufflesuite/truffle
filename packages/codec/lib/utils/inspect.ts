@@ -1,10 +1,8 @@
 import debugModule from "debug";
-const debug = debugModule("codec-utils:types:inspect");
+const debug = debugModule("codec:format:inspect");
 
 import util from "util";
-import { Types } from "./types";
-import { Values } from "./values";
-import { Errors } from "./errors";
+import { Types, Values, Errors } from "../format";
 
 //we'll need to write a typing for the options type ourself, it seems; just
 //going to include the relevant properties here

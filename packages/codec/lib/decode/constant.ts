@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:constant");
 
-import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values, Errors } from "truffle-codec-utils";
+import * as CodecUtils from "../utils";
+import { Types, Values, Errors } from "../format";
 import read from "../read";
 import decodeValue from "./value";
 import { ConstantDefinitionPointer} from "../types/pointer";

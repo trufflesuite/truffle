@@ -2,8 +2,9 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:abi");
 
 import read from "../read";
-import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values, Errors } from "truffle-codec-utils";
+import * as CodecUtils from "../utils";
+import { TypeUtils } from "../utils";
+import { Types, Values, Errors } from "../format";
 import decodeValue from "./value";
 import { AbiDataPointer, DataPointer } from "../types/pointer";
 import { AbiMemberAllocation } from "../types/allocation";
@@ -16,7 +17,7 @@ import { StopDecodingError } from "../types/errors";
 type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
 
 export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
-  if(Types.isReferenceType(dataType) || dataType.typeClass === "tuple") {
+  if(TypeUtils.isReferenceType(dataType) || dataType.typeClass === "tuple") {
     //I don't want tuples to be considered a reference type, but it makes sense
     //to group them for this purpose
     let dynamic: boolean;
@@ -353,7 +354,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
       };
     }
     let storedMemberType = storedType.memberTypes[index].type;
-    let memberType = Types.specifyLocation(storedMemberType, typeLocation);
+    let memberType = TypeUtils.specifyLocation(storedMemberType, typeLocation);
 
     decodedMembers.push({
       name: memberName,

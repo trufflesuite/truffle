@@ -5,7 +5,7 @@ import * as constant from "./constant";
 import * as Pointer from "../types/pointer";
 import { EvmState } from "../types/evm";
 import { DecoderRequest } from "../types/request";
-import { Errors } from "truffle-codec-utils";
+import { Errors } from "../format";
 
 export default function* read(pointer: Pointer.DataPointer, state: EvmState): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   switch(pointer.location) {

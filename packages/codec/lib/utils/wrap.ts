@@ -1,11 +1,12 @@
 import debugModule from "debug";
-const debug = debugModule("codec-utils:wrap");
+const debug = debugModule("codec:utils:wrap");
 
 import Web3 from "web3";
 import BN from "bn.js";
-import { AstDefinition } from "./ast";
-import { Types } from "./types/types";
-import { Values } from "./types/values";
+import { AstDefinition } from "../types/ast";
+import { Types } from "../format/types";
+import { MakeType } from "./maketype";
+import { Values } from "../format/values";
 
 //Function for wrapping a value as an ElementaryValue
 //WARNING: this function does not check its inputs! Please check before using!
@@ -23,7 +24,7 @@ export function wrapElementaryViaDefinition(value: any, definition: AstDefinitio
   //force location to undefined, force address to nonpayable
   //(we force address to nonpayable since address payable can't be declared
   //as a mapping key type)
-  let dataType = Types.definitionToType(definition, null, null);
+  let dataType = MakeType.definitionToType(definition, null, null);
   return wrapElementaryValue(value, dataType);
 }
 

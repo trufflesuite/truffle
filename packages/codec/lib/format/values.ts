@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec-utils:types:values");
+const debug = debugModule("codec:format:values");
 
 //objects for Solidity values
 
@@ -15,9 +15,9 @@ import Big from "big.js";
 import { Types } from "./types";
 import { Errors } from "./errors";
 import util from "util";
-import { AstDefinition, Mutability } from "../ast";
-import { Definition as DefinitionUtils } from "../definition";
-import { AbiUtils } from "../abi";
+import { AstDefinition, Mutability } from "../types/ast";
+import { Definition as DefinitionUtils } from "../utils/definition";
+import { FunctionAbiEntry } from "../types/abi";
 
 export namespace Values {
 
@@ -322,7 +322,7 @@ export namespace Values {
     kind: "known";
     contract: ContractValueInfoKnown;
     selector: string; //formatted as a bytes4
-    abi: AbiUtils.FunctionAbiEntry;
+    abi: FunctionAbiEntry;
     //may have more optional fields added later, I'll leave these out for now
   }
 

@@ -1,10 +1,10 @@
 import debugModule from "debug";
-const debug = debugModule("codec-utils:definition");
+const debug = debugModule("codec:utils:definition");
 
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition, Scopes, Visibility, Mutability, Location, ContractKind } from "./ast";
-import { Contexts } from "./contexts";
-import { CompilerVersion } from "./compiler";
+import { AstDefinition, Scopes, Visibility, Mutability, Location, ContractKind } from "../types/ast";
+import { ContextUtils } from "./contexts";
+import { CompilerVersion } from "../types/compiler";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
 

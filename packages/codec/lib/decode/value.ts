@@ -2,8 +2,9 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:value");
 
 import read from "../read";
-import * as CodecUtils from "truffle-codec-utils";
-import { Types, Values, Errors } from "truffle-codec-utils";
+import * as CodecUtils from "../utils";
+import { TypeUtils } from "../utils";
+import { Types, Values, Errors } from "../format";
 import BN from "bn.js";
 import Big from "big.js";
 import utf8 from "utf8";
@@ -165,7 +166,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
           error
         };
       }
-      const fullType = <Types.ContractType>Types.fullType(dataType, info.userDefinedTypes);
+      const fullType = <Types.ContractType>TypeUtils.fullType(dataType, info.userDefinedTypes);
       const contractValueInfo = yield* decodeContract(bytes, info);
       return {
         type: fullType,
@@ -270,7 +271,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "enum": {
       const numeric = CodecUtils.Conversion.toBN(bytes);
-      const fullType = <Types.EnumType>Types.fullType(dataType, info.userDefinedTypes);
+      const fullType = <Types.EnumType>TypeUtils.fullType(dataType, info.userDefinedTypes);
       if(!fullType.options) {
         let error = {
           kind: "EnumNotFoundDecodingError" as const,
@@ -432,7 +433,7 @@ function* decodeContractAndContext(addressBytes: Uint8Array, info: EvmInfo): Gen
     address
   };
   let code = CodecUtils.Conversion.toHexString(codeBytes);
-  let context = CodecUtils.Contexts.findDecoderContext(info.contexts, code);
+  let context = CodecUtils.ContextUtils.findDecoderContext(info.contexts, code);
   if(context !== null) {
     return {
       context,
@@ -440,7 +441,7 @@ function* decodeContractAndContext(addressBytes: Uint8Array, info: EvmInfo): Gen
         kind: "known" as const,
         address,
         rawAddress,
-        class: CodecUtils.Contexts.contextToType(context)
+        class: CodecUtils.ContextUtils.contextToType(context)
       }
     };
   }
@@ -491,7 +492,7 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
 export function decodeInternalFunction(dataType: Types.FunctionInternalType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
   let deployedPc: number = CodecUtils.Conversion.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = CodecUtils.Conversion.toBN(constructorPcBytes).toNumber();
-  let context: Types.ContractType = CodecUtils.Contexts.contextToType(info.currentContext);
+  let context: Types.ContractType = CodecUtils.ContextUtils.contextToType(info.currentContext);
   //before anything else: do we even have an internal functions table?
   //if not, we'll just return the info we have without really attemting to decode
   if(!info.internalFunctionsTable) {

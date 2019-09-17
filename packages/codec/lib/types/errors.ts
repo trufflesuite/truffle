@@ -1,4 +1,4 @@
-import { AbiUtils, Errors } from "truffle-codec-utils";
+import { Errors } from "../format";
 
 export class UnknownBaseContractIdError extends Error {
   public derivedId: number;
@@ -13,32 +13,6 @@ export class UnknownBaseContractIdError extends Error {
     this.derivedName = derivedName;
     this.derivedKind = derivedKind;
     this.baseId = baseId;
-  }
-}
-
-export class NoDefinitionFoundForABIEntryError extends Error {
-  public abiEntry: AbiUtils.AbiEntry;
-  public contractsSearched: number[];
-  constructor(abiEntry: AbiUtils.AbiEntry, contractsSearched: number[]) {
-    let abiString;
-    switch(abiEntry.type) {
-      case "function":
-      case "event":
-        abiString = AbiUtils.abiSignature(abiEntry);
-        break;
-      case "constructor":
-        abiString = "constructor" + AbiUtils.abiTupleSignature(abiEntry.inputs);
-        break;
-      case "fallback":
-        abiString = "fallback";
-        break;
-    }
-    const contractsString = contractsSearched.join(", ");
-    const message = `Cannot locate AST node matching ABI entry ${abiString} in contract ID(s) ${contractsString}`;
-    super(message);
-    this.name = "NoDefinitionFoundForABIEntryError";
-    this.abiEntry = abiEntry;
-    this.contractsSearched = contractsSearched;
   }
 }
 
@@ -58,5 +32,17 @@ export class StopDecodingError extends Error {
     super(message);
     this.error = error;
     this.allowRetry = Boolean(allowRetry);
+  }
+}
+
+export class UnknownUserDefinedTypeError extends Error {
+  public typeString: string;
+  public id: string;
+  constructor(id: string, typeString: string) {
+    const message = `Cannot locate definition for ${typeString} (ID ${id})`;
+    super(message);
+    this.name = "UnknownUserDefinedTypeError";
+    this.id = id;
+    this.typeString = typeString;
   }
 }

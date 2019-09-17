@@ -1,4 +1,6 @@
-import * as CodecUtils from "truffle-codec-utils";
+import { DecoderContext } from "./contexts";
+import * as AbiTypes from "./abi";
+import { Types, Values } from "../format";
 
 export type CalldataDecoding = FunctionDecoding | ConstructorDecoding | MessageDecoding | UnknownDecoding;
 export type LogDecoding = EventDecoding | AnonymousDecoding;
@@ -7,26 +9,26 @@ export type DecodingMode = "full" | "abi";
 
 export interface FunctionDecoding {
   kind: "function";
-  class: CodecUtils.Types.ContractType;
+  class: Types.ContractType;
   arguments: AbiArgument[];
-  abi: CodecUtils.AbiUtils.FunctionAbiEntry;
+  abi: AbiTypes.FunctionAbiEntry;
   selector: string;
   decodingMode: DecodingMode;
 }
 
 export interface ConstructorDecoding {
   kind: "constructor";
-  class: CodecUtils.Types.ContractType;
+  class: Types.ContractType;
   arguments: AbiArgument[];
-  abi: CodecUtils.AbiUtils.ConstructorAbiEntry;
+  abi: AbiTypes.ConstructorAbiEntry;
   bytecode: string;
   decodingMode: DecodingMode;
 }
 
 export interface MessageDecoding {
   kind: "message";
-  class: CodecUtils.Types.ContractType;
-  abi: CodecUtils.AbiUtils.FallbackAbiEntry | null; //null indicates no fallback ABI
+  class: Types.ContractType;
+  abi: AbiTypes.FallbackAbiEntry | null; //null indicates no fallback ABI
   data: string;
   decodingMode: DecodingMode;
 }
@@ -39,29 +41,29 @@ export interface UnknownDecoding {
 
 export interface EventDecoding {
   kind: "event";
-  class: CodecUtils.Types.ContractType;
+  class: Types.ContractType;
   arguments: AbiArgument[];
-  abi: CodecUtils.AbiUtils.EventAbiEntry; //should be non-anonymous
+  abi: AbiTypes.EventAbiEntry; //should be non-anonymous
   selector: string;
   decodingMode: DecodingMode;
 }
 
 export interface AnonymousDecoding {
   kind: "anonymous";
-  class: CodecUtils.Types.ContractType;
+  class: Types.ContractType;
   arguments: AbiArgument[];
-  abi: CodecUtils.AbiUtils.EventAbiEntry; //should be anonymous
+  abi: AbiTypes.EventAbiEntry; //should be anonymous
   decodingMode: DecodingMode;
 }
 
 export interface AbiArgument {
   name?: string; //included if parameter is named
   indexed?: boolean; //included for event parameters
-  value: CodecUtils.Values.Result;
+  value: Values.Result;
 }
 
 //the following types are intended for internal use only
 export interface ContractInfoAndContext {
-  contractInfo: CodecUtils.Values.ContractValueInfo;
-  context?: CodecUtils.Contexts.DecoderContext;
+  contractInfo: Values.ContractValueInfo;
+  context?: DecoderContext;
 }

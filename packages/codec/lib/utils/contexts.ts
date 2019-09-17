@@ -1,58 +1,16 @@
 import debugModule from "debug";
-const debug = debugModule("codec-utils:contexts");
+const debug = debugModule("codec:utils:contexts");
 
 import { EVM } from "./evm";
 import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
 import { AbiUtils } from "./abi";
-import { Types } from "./types/types";
-import { AstDefinition, AstReferences, ContractKind } from "./ast";
-import { CompilerVersion } from "./compiler";
+import { Types } from "../format/types";
+import { AstDefinition, AstReferences, ContractKind } from "../types/ast";
+import { CompilerVersion } from "../types/compiler";
+import { Contexts, Context, DebuggerContexts, DecoderContexts, DecoderContext } from "../types/contexts";
 import escapeRegExp from "lodash.escaperegexp";
 
-export namespace Contexts {
-
-  export type Contexts = DecoderContexts | DebuggerContexts;
-
-  export type Context = DecoderContext | DebuggerContext;
-
-  export interface DecoderContexts {
-    [context: string]: DecoderContext;
-  }
-
-  export interface DebuggerContexts {
-    [context: string]: DebuggerContext;
-  }
-
-  export interface DecoderContext {
-    context: string; //The context hash
-    binary: string; //this should (for now) be the normalized binary, with "."s
-    //in place of link references or other variable parts; this will probably
-    //change in the future
-    isConstructor: boolean;
-    contractName?: string;
-    contractId?: number;
-    contractKind?: ContractKind; //note: should never be "interface"
-    abi?: AbiUtils.FunctionAbiBySelectors;
-    payable?: boolean;
-    hasFallback?: boolean; //used just by the calldata decoder...
-    compiler?: CompilerVersion;
-  }
-
-  export interface DebuggerContext {
-    context: string; //The context hash
-    binary: string; //this should (for now) be the normalized binary, with "."s
-    //in place of link references or other variable parts; this will probably
-    //change in the future
-    isConstructor: boolean;
-    contractName?: string;
-    contractId?: number;
-    contractKind?: ContractKind; //note: should never be "interface"
-    abi?: AbiUtils.Abi;
-    sourceMap?: string;
-    primarySource?: number;
-    compiler?: CompilerVersion;
-    payable?: boolean;
-  }
+export namespace ContextUtils {
 
   //I split these next two apart because the type system was giving me trouble
   export function findDecoderContext(contexts: DecoderContexts, binary: string): DecoderContext | null {
@@ -188,7 +146,7 @@ export namespace Contexts {
     return newContexts;
   }
 
-  export function contextToType(context: DecoderContext | DebuggerContext): Types.ContractType {
+  export function contextToType(context: Context): Types.ContractType {
     if(context.contractId !== undefined) {
       return {
         typeClass: "contract",
