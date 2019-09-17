@@ -1,7 +1,7 @@
 {
   "name": "@truffle/compile-solidity",
   "description": "Compiler helper and artifact manager for Solidity files",
-  "version": "4.2.4",
+  "version": "4.2.5",
   "main": "index.js",
   "dependencies": {
     "@truffle/config": "^1.1.21",

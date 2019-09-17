@@ -42,7 +42,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@truffle/contract-schema": "^3.0.15",
+    "@truffle/contract-schema": "^3.0.16",
     "@types/bn.js": "^4.11.5",
     "@types/debug": "^4.1.4",
     "@types/web3": "1.0.18",
