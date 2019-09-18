@@ -223,6 +223,14 @@ query GetContractInstance($id: ID!) {
       contract {
         name
       }
+      creation {
+        transactionHash
+        constructor {
+          createBytecode {
+            bytes
+          }
+        }
+      }
     }
   }
 }`;
@@ -292,6 +300,12 @@ describe("Compilation", () => {
           },
           contract: {
             name: contract["contractName"]
+          },
+          creation: {
+            transactionHash: networksArray[networksArray.length -1][1]["transactionHash"],
+            constructor: {
+              createBytecode: contract["bytecode"]
+            }
           }
         })
       }
@@ -464,6 +478,14 @@ describe("Compilation", () => {
               },
               contract: {
                 name
+              },
+              creation: {
+                transactionHash,
+                constructor: {
+                  createBytecode: {
+                    bytes
+                  }
+                }
               }
             }
           }
@@ -473,6 +495,8 @@ describe("Compilation", () => {
       expect(name).toEqual(contractInstances[index].contract.name);
       expect(networkId).toEqual(contractInstances[index].network.networkId);
       expect(address).toEqual(contractInstances[index].address);
+      expect(transactionHash).toEqual(contractInstances[index].creation.transactionHash);
+      expect(bytes).toEqual(contractInstances[index].creation.constructor.createBytecode);
     }
   })
 });
