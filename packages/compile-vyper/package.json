@@ -6,9 +6,6 @@
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-vyper",
   "version": "1.0.29",
   "main": "index.js",
-  "scripts": {
-    "test": "mocha"
-  },
   "dependencies": {
     "@truffle/compile-solidity": "^4.2.5",
     "async": "2.6.1",
