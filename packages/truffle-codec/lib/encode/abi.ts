@@ -1,8 +1,12 @@
+import debugModule from "debug";
+const debug = debugModule("codec:encode:abi");
+
 import { Values, Conversion as ConversionUtils, EVM as EVMUtils } from "truffle-codec-utils";
-import { AbiAllocations } from "../types/allocation";
-import { isTypeDynamic, abiSizeForType } from "../allocate/abi";
+import { AbiAllocations, AbiSizeInfo } from "../types/allocation";
+import { abiSizeInfo } from "../allocate/abi";
 import sum from "lodash.sum";
 import utf8 from "utf8";
+import BN from "bn.js";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
 //see: https://github.com/microsoft/TypeScript/issues/18758
@@ -13,7 +17,16 @@ import utf8 from "utf8";
 export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): Uint8Array | undefined {
   //errors can't be encoded
   if(input.kind === "error") {
-    return undefined;
+    debug("input: %O", input);
+    if(input.error.kind === "IndexedReferenceTypeError") {
+      //HACK: errors can't be encoded, *except* for indexed reference parameter errors.
+      //really this should go in a different encoding function, not encodeAbi, but I haven't
+      //written that function yet.  I'll move this case when I do.
+      return ConversionUtils.toBytes(input.error.raw, EVMUtils.WORD_SIZE);
+    }
+    else {
+      return undefined;
+    }
   }
   let bytes: Uint8Array;
   //TypeScript can at least infer in the rest of this that we're looking
@@ -75,7 +88,11 @@ export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): U
           return encoded;
       }
     }
-    //the fixed & ufixed cases will get skipped for now
+    case "fixed":
+    case "ufixed":
+      let bigValue = (<Values.FixedValue|Values.UfixedValue>input).value.asBig;
+      let shiftedValue = ConversionUtils.shiftBigUp(bigValue, input.type.places);
+      return ConversionUtils.toBytes(shiftedValue, EVMUtils.WORD_SIZE);
     case "array": {
       let coercedInput: Values.ArrayValue = <Values.ArrayValue> input;
       if(coercedInput.reference !== undefined) {
@@ -99,6 +116,13 @@ export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): U
         return undefined; //circular values can't be encoded
       }
       return encodeTupleAbi(coercedInput.value.map(({value}) => value), allocations);
+    }
+    case "tuple": {
+      //WARNING: This case is written in a way that involves a bunch of unnecessary recomputation!
+      //(That may not be apparent from this one line, but it's true)
+      //I'm writing it this way anyway for simplicity, to avoid rewriting the encoder
+      //However it may be worth revisiting this in the future if performance turns out to be a problem
+      return encodeTupleAbi((<Values.TupleValue>input).value.map(({value}) => value), allocations);
     }
   }
 }
@@ -129,7 +153,7 @@ export function encodeTupleAbi(tuple: Values.Result[], allocations?: AbiAllocati
   if(elementEncodings.some(element => element === undefined)) {
     return undefined;
   }
-  let isElementDynamic: boolean[] = tuple.map(element => isTypeDynamic(element.type, allocations));
+  let elementSizeInfo: AbiSizeInfo[] = tuple.map(element => abiSizeInfo(element.type, allocations));
   //heads and tails here are as discussed in the ABI docs;
   //for a static type the head is the encoding and the tail is empty,
   //for a dynamic type the head is the pointer and the tail is the encoding
@@ -137,13 +161,13 @@ export function encodeTupleAbi(tuple: Values.Result[], allocations?: AbiAllocati
   let tails: Uint8Array[] = [];
   //but first, we need to figure out where the first tail will start,
   //by adding up the sizes of all the heads (we can easily do this in
-  //advance via abiSizeForType, without needing to know the particular
+  //advance via elementSizeInfo, without needing to know the particular
   //values of the heads)
-  let startOfNextTail = sum(tuple.map(element => abiSizeForType(element.type, allocations)));
+  let startOfNextTail = sum(elementSizeInfo.map(elementInfo => elementInfo.size));
   for(let i = 0; i < tuple.length; i++) {
     let head: Uint8Array;
     let tail: Uint8Array;
-    if(!isElementDynamic[i]) {
+    if(!elementSizeInfo[i].dynamic) {
       //static case
       head = elementEncodings[i];
       tail = new Uint8Array(); //empty array
