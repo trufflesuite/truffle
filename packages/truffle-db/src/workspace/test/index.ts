@@ -31,7 +31,6 @@ class WorkspaceClient {
       { workspace: this.workspace }, // context vars
       variables
     );
-
     return result.data;
   }
 }
@@ -613,23 +612,67 @@ query GetContractInstance($id: ID!) {
     network {
       networkId
     }
+    contract {
+      name
+    }
+    creation {
+      transactionHash
+      constructor {
+        createBytecode {
+          bytes
+        }
+      }
+    }
   }
 }`;
 
 const AddContractInstances = gql`
-mutation AddContractInstances($address: String!, $netId: ID!) {
+input ContractInstanceNetworkInput {
+    id: ID!
+  }
+
+  input ContractInstanceContractInput {
+    id: ID!
+  }
+
+  input ContractInstanceCreationConstructorBytecodeInput {
+    id: ID!
+  }
+
+  input ContractInstanceCreationConstructorInput {
+    createBytecode: ContractInstanceCreationConstructorBytecodeInput!
+  }
+
+  input ContractInstanceCreationInput {
+    transactionHash: TransactionHash!
+    constructor: ContractInstanceCreationConstructorInput!
+  }
+
+  input ContractInstanceInput {
+    address: Address!
+    network: ContractInstanceNetworkInput!
+    creation: ContractInstanceCreationInput
+    contract: ContractInstanceContractInput
+  }
+mutation AddContractInstances($contractInstances: [ContractInstanceInput!]!) {
   contractInstancesAdd(input: {
-    contractInstances: [{
-      address: $address
-      network: {
-        id: $netId
-      }
-    }]
+    contractInstances: $contractInstances
   }) {
     contractInstances {
       address
       network {
         networkId
+      }
+      contract {
+        name
+      }
+      creation {
+        transactionHash
+        constructor {
+          createBytecode {
+            bytes
+          }
+        }
       }
     }
   }
@@ -657,23 +700,34 @@ describe("Contract Instance", () => {
     });
     expectedId = generateId({ address: address, network: { id: networkAdded.networksAdd.networks[0].id }})
 
-    variables = {
-      netId: networkAdded.networksAdd.networks[0].id,
+    variables = [{
       address: address,
-      contractId: generateId({
-        name: Migrations.contractName,
-        abi: { json: JSON.stringify(Migrations.abi) } ,
-        sourceContract: { index: 0 } ,
-        compilation: { id: "1234" }
-      }),
-      bytecodeId: generateId({ bytes: Migrations.bytecode })
-    }
+      network: {
+        id: networkAdded.networksAdd.networks[0].id
+      },
+      contract: {
+        id:  generateId({
+          name: Migrations.contractName,
+          abi: { json: JSON.stringify(Migrations.abi) } ,
+          sourceContract: { index: 0 } ,
+          compilation: { id:  '0x7f91bdeb02ae5fd772f829f41face7250ce9eada560e3e7fa7ed791c40d926bd' }
+        })
+      },
+      creation: {
+        transactionHash: Migrations.networks['5777'].transactionHash,
+        constructor: {
+          createBytecode: {
+            id: generateId({ bytes: Migrations.bytecode })
+          }
+        }
+      }
+    }];
   });
 
   it("adds contract instance", async () => {
     //add network
     {
-      const data = await client.execute(AddContractInstances, variables);
+      const data = await client.execute(AddContractInstances, { contractInstances: variables });
       expect(data).toHaveProperty("contractInstancesAdd");
 
       const { contractInstancesAdd } = data;
@@ -701,7 +755,7 @@ describe("Contract Instance", () => {
       expect(contractInstance).toHaveProperty("network");
 
       const { address, network } = contractInstance;
-      expect(address).toEqual(variables.address);
+      expect(address).toEqual(Object.values(Migrations.networks)[0]["address"]);
 
       const { networkId } = network;
       expect(networkId).toEqual(networkAdded.networksAdd.networks[0].networkId);
