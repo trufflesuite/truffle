@@ -7,7 +7,7 @@ import { Types, Values, Errors } from "truffle-codec-utils";
 import decodeValue from "./value";
 import { AbiDataPointer, DataPointer } from "../types/pointer";
 import { AbiMemberAllocation } from "../types/allocation";
-import { abiSizeForType, isTypeDynamic } from "../allocate/abi";
+import { abiSizeInfo } from "../allocate/abi";
 import { EvmInfo } from "../types/evm";
 import { DecoderOptions } from "../types/options";
 import { DecoderRequest } from "../types/request";
@@ -16,10 +16,12 @@ import { StopDecodingError } from "../types/errors";
 type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
 
 export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
-  if(Types.isReferenceType(dataType)) {
+  if(Types.isReferenceType(dataType) || dataType.typeClass === "tuple") {
+    //I don't want tuples to be considered a reference type, but it makes sense
+    //to group them for this purpose
     let dynamic: boolean;
     try {
-      dynamic = isTypeDynamic(dataType, info.allocations.abi);
+      dynamic = abiSizeInfo(dataType, info.allocations.abi).dynamic;
     }
     catch(error) {
       if(options.strictAbiMode) {
@@ -44,7 +46,7 @@ export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer
   }
 }
 
-export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Types.TupleType, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   let { strictAbiMode: strict, abiPointerBase: base } = options;
   base = base || 0; //in case base was undefined
   const { allocations: { abi: allocations }, state } = info;
@@ -86,8 +88,9 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
   debug("startPosition %d", startPosition);
 
   let dynamic: boolean;
+  let size: number;
   try {
-    dynamic = isTypeDynamic(dataType, allocations);
+    ({dynamic, size} = abiSizeInfo(dataType, allocations));
   }
   catch(error) {
     if(strict) {
@@ -100,20 +103,6 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
     };
   }
   if(!dynamic) { //this will only come up when called from stack.ts
-    let size: number;
-    try {
-      size = abiSizeForType(dataType, allocations);
-    }
-    catch(error) {
-      if(strict) {
-        throw new StopDecodingError((<Errors.DecodingError>error).error);
-      }
-      return <Errors.ErrorResult> { //dunno why TS is failing here
-        type: dataType,
-        kind: "error" as const,
-        error: (<Errors.DecodingError>error).error
-      };
-    }
     let staticPointer = {
       location,
       start: startPosition,
@@ -218,7 +207,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
 
       let baseSize: number;
       try {
-        baseSize = abiSizeForType(dataType.baseType, allocations);
+        baseSize = abiSizeInfo(dataType.baseType, allocations).size;
       }
       catch(error) {
         if(strict) {
@@ -253,10 +242,12 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType, poin
 
     case "struct":
       return yield* decodeAbiStructByPosition(dataType, location, startPosition, info, options);
+    case "tuple":
+      return yield* decodeAbiTupleByPosition(dataType, location, startPosition, info, options);
   }
 }
 
-export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType | Types.TupleType, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   debug("static");
   debug("pointer %o", pointer);
   const location = pointer.location;
@@ -268,7 +259,7 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
       const length = (<Types.ArrayTypeStatic>dataType).length.toNumber();
       let baseSize: number;
       try {
-        baseSize = abiSizeForType(dataType.baseType, info.allocations.abi);
+        baseSize = abiSizeInfo(dataType.baseType, info.allocations.abi).size;
       }
       catch(error) { //error: Errors.DecodingError
         if(options.strictAbiMode) {
@@ -303,11 +294,13 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType, pointer
 
     case "struct":
       return yield* decodeAbiStructByPosition(dataType, location, pointer.start, info, options);
+    case "tuple":
+      return yield* decodeAbiTupleByPosition(dataType, location, pointer.start, info, options);
   }
 }
 
 //note that this function takes the start position as a *number*; it does not take a pointer
-function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLocation, startPosition: number, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
+function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLocation, startPosition: number, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.StructResult, Uint8Array> {
   const { userDefinedTypes, allocations: { abi: allocations } } = info;
 
   const typeLocation = location === "eventdata"
@@ -321,8 +314,9 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
       kind: "UserDefinedTypeNotFoundError" as const,
       type: dataType
     };
-    if(options.strictAbiMode) {
-      throw new StopDecodingError(error);
+    if(options.strictAbiMode || options.allowRetry) {
+      throw new StopDecodingError(error, true);
+      //note that we allow a retry if we couldn't locate the allocation!
     }
     return {
       type: dataType,
@@ -341,15 +335,16 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
       length: memberPointer.length
     };
 
-    let memberName = memberAllocation.definition.name;
+    let memberName = memberAllocation.name;
     let storedType = <Types.StructType>userDefinedTypes[typeId];
     if(!storedType) {
       let error = {
         kind: "UserDefinedTypeNotFoundError" as const,
         type: dataType
       };
-      if(options.strictAbiMode) {
-        throw new StopDecodingError(error);
+      if(options.strictAbiMode || options.allowRetry) {
+        throw new StopDecodingError(error, true);
+        //similarly we allow a retry if we couldn't locate the type
       }
       return {
         type: dataType,
@@ -365,6 +360,36 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
       value: yield* decodeAbi(memberType, childPointer, info, {...options, abiPointerBase: startPosition})
       //note that the base option is only needed in the dynamic case, but we're being indiscriminate
     });
+  }
+  return { 
+    type: dataType,
+    kind: "value" as const,
+    value: decodedMembers
+  };
+}
+
+//note that this function takes the start position as a *number*; it does not take a pointer
+function* decodeAbiTupleByPosition(dataType: Types.TupleType, location: AbiLocation, startPosition: number, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.TupleResult, Uint8Array> {
+  //WARNING: This case is written in a way that involves a bunch of unnecessary recomputation!
+  //I'm writing it this way anyway for simplicity, to avoid rewriting the decoder
+  //However it may be worth revisiting this in the future if performance turns out to be a problem
+  //(changing this may be pretty hard though)
+
+  let decodedMembers: Values.NameValuePair[] = [];
+  let position = startPosition;
+  for(const { name, type: memberType } of dataType.memberTypes) {
+    const memberSize = abiSizeInfo(memberType, info.allocations.abi).size;
+    const childPointer: AbiDataPointer = {
+      location,
+      start: position,
+      length: memberSize
+    };
+    decodedMembers.push({
+      name,
+      value: yield* decodeAbi(memberType, childPointer, info, {...options, abiPointerBase: startPosition})
+      //note that the base option is only needed in the dynamic case, but we're being indiscriminate
+    });
+    position += memberSize;
   }
   return { 
     type: dataType,

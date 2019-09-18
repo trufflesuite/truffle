@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec-utils:conversion");
 
 import BN from "bn.js";
+import Big from "big.js";
 import Web3 from "web3";
 import { Constants } from "./constants";
 import { Types } from "./types/types";
@@ -11,17 +12,22 @@ import { enumFullName } from "./types/inspect";
 export namespace Conversion {
 
   /**
-   * @param bytes - undefined | string | number | BN | Uint8Array
+   * @param bytes - undefined | string | number | BN | Uint8Array | Big
    * @return {BN}
    */
-  export function toBN(bytes: undefined | string | number | BN | Uint8Array): BN {
+  export function toBN(bytes: undefined | string | number | BN | Uint8Array | Big): BN {
     if (bytes === undefined) {
       return undefined;
     } else if (typeof bytes == "string") {
       return new BN(bytes, 16);
     } else if (typeof bytes == "number" || BN.isBN(bytes)) {
       return new BN(bytes);
-    } else if (bytes.reduce) {
+    } else if (bytes instanceof Big) {
+      return new BN(bytes.toFixed()); //warning, better hope input is integer!
+      //note: going through string may seem silly but it's actually not terrible here,
+      //since BN is binary-based and Big is decimal-based
+      //[toFixed is like toString except it guarantees scientific notation is not used]
+    } else if (typeof bytes.reduce === "function") {
       return bytes.reduce(
         (num: BN, byte: number) => num.shln(8).addn(byte),
         new BN(0)
@@ -39,6 +45,12 @@ export namespace Conversion {
     } else {
       return toBN(bytes.map( (b) => 0xff - b )).addn(1).neg();
     }
+  }
+
+  export function toBig(value: BN | number): Big {
+    //note: going through string may seem silly but it's actually not terrible here,
+    //since BN (& number) is binary-based and Big is decimal-based
+    return new Big(value.toString());
   }
 
   /**
@@ -108,7 +120,7 @@ export namespace Conversion {
     return Web3.utils.toChecksumAddress(toHexString(bytes, Constants.ADDRESS_SIZE));
   }
 
-  export function toBytes(data: BN | string | number, length: number = 0): Uint8Array {
+  export function toBytes(data: BN | string | number | Big, length: number = 0): Uint8Array {
     //note that length is a minimum output length
     //strings will be 0-padded on left
     //numbers/BNs will be sign-padded on left
@@ -149,14 +161,39 @@ export namespace Conversion {
       return bytes;
     }
     else {
-      // BN/number case
+      // BN/Big/number case
       if(typeof data === "number") {
         data = new BN(data);
+      }
+      else if(data instanceof Big) {
+        //note: going through string may seem silly but it's actually not terrible here,
+        //since BN is binary-based and Big is decimal-based
+        data = new BN(data.toFixed());
+        //[toFixed is like toString except it guarantees scientific notation is not used]
       }
 
       //note that the argument for toTwos is given in bits
       return new Uint8Array(data.toTwos(length * 8).toArrayLike(Buffer, "be", length)); //big-endian
     }
+  }
+
+  //computes value * 10**decimalPlaces
+  export function shiftBigUp(value: Big, decimalPlaces: number): Big {
+    let newValue = new Big(value);
+    newValue.e += decimalPlaces;
+    return newValue;
+  }
+
+  //computes value * 10**-decimalPlaces
+  export function shiftBigDown(value: Big, decimalPlaces: number): Big {
+    let newValue = new Big(value);
+    newValue.e -= decimalPlaces;
+    return newValue;
+  }
+
+  //we don't need this yet, but we will eventually
+  export function countDecimalPlaces(value: Big): number {
+    return Math.max(0, value.c.length - value.e - 1);
   }
 
   //for convenience: invokes the nativize method on all the given variables
@@ -219,7 +256,12 @@ export namespace Conversion {
             return Buffer.from(coercedResult.value.asHex.slice(2), 'hex').toString();
         }
       }
-      //fixed and ufixed are skipped for now
+      case "fixed":
+      case "ufixed":
+        //HACK: Big doesn't have a toNumber() method, so we convert to string and then parse with Number
+        //NOTE: we don't bother setting the magic variables Big.NE or Big.PE first, as the choice of
+        //notation shouldn't affect the result (can you believe I have to write this? @_@)
+        return Number((<Values.FixedValue|Values.UfixedValue>result).value.asBig.toString()); //WARNING
       case "array": //WARNING: circular case not handled; will loop infinitely
         return (<Values.ArrayValue>result).value.map(nativize);
       case "mapping":
@@ -230,6 +272,10 @@ export namespace Conversion {
         return Object.assign({}, ...(<Values.StructValue>result).value.map(
           ({name, value}) => ({[name]: nativize(value)})
         ));
+      case "tuple":
+        return (<Values.TupleValue>result).value.map(
+          ({value}) => nativize(value)
+        );
       case "magic":
         return Object.assign({}, ...Object.entries((<Values.MagicValue>result).value).map(
             ([key, value]) => ({[key]: nativize(value)})

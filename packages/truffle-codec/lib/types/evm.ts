@@ -23,7 +23,7 @@ export interface EvmInfo {
   mappingKeys?: Slot[];
   userDefinedTypes?: Types.TypesById;
   allocations: AllocationInfo;
-  contexts?: Contexts.DecoderContextsById;
+  contexts?: Contexts.DecoderContexts;
   currentContext?: Contexts.DecoderContext;
   internalFunctionsTable?: InternalFunctions;
 }

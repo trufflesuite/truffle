@@ -33,14 +33,14 @@ export namespace Errors {
   }
 
   export type ErrorResult = ElementaryErrorResult
-    | ArrayErrorResult | MappingErrorResult | StructErrorResult | MagicErrorResult
+    | ArrayErrorResult | MappingErrorResult | StructErrorResult | MagicErrorResult | TupleErrorResult
     | EnumErrorResult
     | ContractErrorResult | FunctionExternalErrorResult | FunctionInternalErrorResult;
 
   export type DecoderError = GenericError
     | UintError | IntError | BoolError | BytesStaticError | BytesDynamicError | AddressError
     | StringError | FixedError | UfixedError
-    | ArrayError | MappingError | StructError | MagicError
+    | ArrayError | MappingError | StructError | MagicError | TupleError
     | EnumError | ContractError | FunctionExternalError | FunctionInternalError
     | InternalUseError;
   //note that at the moment, no reference type has its own error category, so
@@ -144,7 +144,6 @@ export namespace Errors {
   export type StringError = never; //again, string has no specific errors
 
   //Fixed & Ufixed
-  //These don't have a value format yet, so they just decode to errors for now!
   export interface FixedErrorResult {
     type: Types.FixedType;
     kind: "error";
@@ -156,14 +155,19 @@ export namespace Errors {
     error: GenericError | UfixedError;
   }
 
-  export type FixedError = FixedPointNotYetSupportedError;
-  export type UfixedError = FixedPointNotYetSupportedError;
+  export type FixedError = FixedPaddingError;
 
-  export interface FixedPointNotYetSupportedError {
+  export interface FixedPaddingError {
     raw: string; //hex string
-    kind: "FixedPointNotYetSupportedError";
+    kind: "FixedPaddingError";
   }
-  //no separate padding error here, that would be pointless right now; will make later
+
+  export type UfixedError = UfixedPaddingError;
+
+  export interface UfixedPaddingError {
+    raw: string; //hex string
+    kind: "UfixedPaddingError";
+  }
 
   /*
    * SECTION 3: CONTAINER TYPES (including magic)

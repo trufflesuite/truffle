@@ -4,20 +4,14 @@ const debug = debugModule("codec-utils:types:values");
 //objects for Solidity values
 
 //Note: This is NOT intended to represent every possible value that exists
-//in Solidity!  Only possible values of variables.  (Though there may be
-//some expansion in the future; I'm definitely intending to add tuples.)
-//We do however count the builtin variables msg, block, and tx as variables
-//(not other builtins though for now) so there is some support for the magic
-//type.
-
-//We don't include fixed and ufixed for now.  Those will be added when
-//implemented.
+//in Solidity!  Only possible values the decoder might need to output.
 
 //NOTE: not all of these optional fields are actually implemented. Some are
 //just intended for the future.  More optional fields may be added in the
 //future.
 
 import BN from "bn.js";
+import Big from "big.js";
 import { Types } from "./types";
 import { Errors } from "./errors";
 import util from "util";
@@ -33,12 +27,12 @@ export namespace Values {
 
   //This is the overall Result type.  It may encode an actual value or an error.
   export type Result = ElementaryResult
-    | ArrayResult | MappingResult | StructResult | MagicResult
+    | ArrayResult | MappingResult | StructResult | TupleResult | MagicResult
     | EnumResult
     | ContractResult | FunctionExternalResult | FunctionInternalResult;
   //for when you want an actual value
   export type Value = ElementaryValue
-    | ArrayValue | MappingValue | StructValue | MagicValue
+    | ArrayValue | MappingValue | StructValue | TupleValue | MagicValue
     | EnumValue
     | ContractValue | FunctionExternalValue | FunctionInternalValue;
 
@@ -54,7 +48,7 @@ export namespace Values {
   //note that we often want an elementary *value*, and not an error!
   //so let's define those types too
   export type ElementaryValue = UintValue | IntValue | BoolValue
-    | BytesValue | AddressValue | StringValue;
+    | BytesValue | AddressValue | StringValue | FixedValue | UfixedValue;
   //we don't include FixedValue or UfixedValue because those
   //aren't implemented yet
   export type BytesValue = BytesStaticValue | BytesDynamicValue;
@@ -156,10 +150,28 @@ export namespace Values {
   }
 
   //Fixed & Ufixed
-  //These don't have a value format yet, so they just decode to errors for now!
   
-  export type FixedResult = Errors.FixedErrorResult;
-  export type UfixedResult = Errors.UfixedErrorResult;
+  export type FixedResult = FixedValue | Errors.FixedErrorResult;
+
+  export interface FixedValue {
+    type: Types.FixedType;
+    kind: "value";
+    value: {
+      asBig: Big;
+      rawAsBig?: Big;
+    };
+  }
+
+  export type UfixedResult = UfixedValue | Errors.UfixedErrorResult;
+
+  export interface UfixedValue {
+    type: Types.UfixedType;
+    kind: "value";
+    value: {
+      asBig: Big;
+      rawAsBig?: Big;
+    };
+  }
 
   /*
    * SECTION 3: CONTAINER TYPES (including magic)

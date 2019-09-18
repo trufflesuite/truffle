@@ -36,6 +36,11 @@ export class ResultInspector {
           case "uint":
           case "int":
             return options.stylize((<Values.UintValue|Values.IntValue>this.result).value.asBN.toString(), "number");
+          case "fixed":
+          case "ufixed":
+            //note: because this is just for display, we don't bother adjusting the magic values Big.NE or Big.PE;
+            //we'll trust those to their defaults
+            return options.stylize((<Values.FixedValue|Values.UfixedValue>this.result).value.asBig.toString(), "number");
           case "bool":
             return util.inspect((<Values.BoolValue>this.result).value.asBool, options);
           case "bytes":
@@ -164,15 +169,17 @@ export class ResultInspector {
           case "UintPaddingError":
             return `Uint has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
           case "IntPaddingError":
-            return `Int out of range (padding error) (numeric value ${errorResult.error.raw})`;
+            return `Int out of range (padding error) (raw value ${errorResult.error.raw})`;
+          case "UintPaddingError":
+            return `Ufixed has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
+          case "FixedPaddingError":
+            return `Fixed out of range (padding error) (raw value ${errorResult.error.raw})`;
           case "BoolOutOfRangeError":
             return `Invalid boolean (numeric value ${errorResult.error.rawAsBN.toString()})`;
           case "BytesPaddingError":
             return `Bytestring has extra trailing bytes (padding error) (raw value ${errorResult.error.raw})`;
           case "AddressPaddingError":
             return `Address has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
-          case "FixedPointNotYetSupportedError":
-            return `Fixed-point decoding not yet supported (raw value: ${errorResult.error.raw})`;
           case "EnumOutOfRangeError":
             return `Invalid ${enumTypeName(errorResult.error.type)} (numeric value ${errorResult.error.rawAsBN.toString()})`;
           case "EnumNotFoundDecodingError":

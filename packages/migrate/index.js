@@ -130,7 +130,6 @@ const Migrate = {
       clone.logger = { log: function() {} };
     }
 
-    clone.provider = this.wrapProvider(options.provider, clone.logger);
     clone.resolver = this.wrapResolver(options.resolver, clone.provider);
 
     // Make migrations aware of their position in sequence
@@ -174,16 +173,6 @@ const Migrate = {
         }
       );
     });
-  },
-
-  wrapProvider: function(provider) {
-    return {
-      send: function(payload, callback) {
-        provider.send(payload, function(err, result) {
-          err ? callback(err) : callback(err, result);
-        });
-      }
-    };
   },
 
   wrapResolver: function(resolver, provider) {

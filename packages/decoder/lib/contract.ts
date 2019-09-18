@@ -20,15 +20,12 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private web3: Web3;
 
-  private contexts: Contexts.DecoderContexts;
+  private contexts: Contexts.DecoderContexts; //note: this is deployed contexts only!
 
   private contract: ContractObject;
   private contractNode: AstDefinition;
   private contractNetwork: string;
-  private context: Contexts.DecoderContext;
-  private constructorContext: Contexts.DecoderContext;
   private contextHash: string;
-  private constructorContextHash: string;
 
   private allocations: Codec.AllocationInfo;
   private stateVariableReferences: Codec.StorageMemberAllocation[];
@@ -42,7 +39,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.wireDecoder = wireDecoder;
     this.web3 = wireDecoder.getWeb3();
 
-    this.contexts = wireDecoder.getContexts().byHash;
+    this.contexts = wireDecoder.getDeployedContexts();
 
     this.contractNode = Utils.getContractNode(this.contract);
     if(this.contractNode === undefined) {
@@ -50,22 +47,10 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
 
     if(this.contract.deployedBytecode && this.contract.deployedBytecode !== "0x") {
-      const hash = CodecUtils.Conversion.toHexString(
-        CodecUtils.EVM.keccak256({type: "string",
-          value: this.contract.deployedBytecode
-        })
-      );
-      this.contextHash = hash;
-      this.context = this.contexts[hash];
-    }
-    if(this.contract.bytecode && this.contract.bytecode !== "0x") { //now the constructor version
-      const hash = CodecUtils.Conversion.toHexString(
-        CodecUtils.EVM.keccak256({type: "string",
-          value: this.contract.bytecode
-        })
-      );
-      this.constructorContextHash = hash;
-      this.constructorContext = this.contexts[hash];
+      const unnormalizedContext = Utils.makeContext(this.contract, this.contractNode);
+      this.contextHash = unnormalizedContext.context;
+      //we now throw away the unnormalized context, instead fetching the correct one from
+      //this.contexts (which is normalized) via the context getter below
     }
 
     this.allocations = {};
@@ -106,6 +91,14 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return await this.wireDecoder.events(options);
   }
 
+  public abifyCalldataDecoding(decoding: Codec.CalldataDecoding): Codec.CalldataDecoding {
+    return this.wireDecoder.abifyCalldataDecoding(decoding);
+  }
+  
+  public abifyLogDecoding(decoding: Codec.LogDecoding): Codec.LogDecoding {
+    return this.wireDecoder.abifyLogDecoding(decoding);
+  }
+
   //the following functions are for internal use
   public getAllocations() {
     return this.allocations;
@@ -124,10 +117,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       contract: this.contract,
       contractNode: this.contractNode,
       contractNetwork: this.contractNetwork,
-      context: this.context,
-      constructorContext: this.constructorContext,
       contextHash: this.contextHash,
-      constructorContextHash: this.constructorContextHash
     }
   }
 }
@@ -136,10 +126,7 @@ interface ContractInfo {
   contract: ContractObject;
   contractNode: AstDefinition;
   contractNetwork: string;
-  context: Contexts.DecoderContext;
-  constructorContext: Contexts.DecoderContext;
   contextHash: string;
-  constructorContextHash: string;
 }
 
 export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
@@ -150,15 +137,10 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   private contractNetwork: string;
   private contractAddress: string;
   private contractCode: string;
-  private context: Contexts.DecoderContext;
-  private constructorContext: Contexts.DecoderContext;
   private contextHash: string;
-  private constructorContextHash: string;
 
-  private contexts: Contexts.DecoderContexts = {};
-  private contextsById: Contexts.DecoderContextsById = {}; //deployed contexts only
-  private constructorContextsById: Contexts.DecoderContextsById = {};
-  private additionalContexts: Contexts.DecoderContextsById = {}; //for passing to wire decoder when contract has no deployedBytecode
+  private contexts: Contexts.DecoderContexts = {}; //deployed contexts only
+  private additionalContexts: Contexts.DecoderContexts = {}; //for passing to wire decoder when contract has no deployedBytecode
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
@@ -185,15 +167,12 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
 
     this.referenceDeclarations = this.wireDecoder.getReferenceDeclarations();
     this.userDefinedTypes = this.wireDecoder.getUserDefinedTypes();
-    ({ byHash: this.contexts, byId: this.contextsById, constructorsById: this.constructorContextsById } = this.wireDecoder.getContexts());
+    this.contexts = this.wireDecoder.getDeployedContexts();
     ({
       contract: this.contract,
       contractNode: this.contractNode,
       contractNetwork: this.contractNetwork,
-      context: this.context,
-      constructorContext: this.constructorContext,
       contextHash: this.contextHash,
-      constructorContextHash: this.constructorContextHash
     } = this.contractDecoder.getContractInfo());
 
     this.allocations = this.contractDecoder.getAllocations();
@@ -222,15 +201,19 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
       let extraContext = Utils.makeContext(this.contract, this.contractNode);
       //now override the binary
       extraContext.binary = this.contractCode;
-      this.additionalContexts = {[extraContext.contractId]: extraContext};
+      this.additionalContexts = {[extraContext.context]: extraContext};
       //the following line only has any effect if we're dealing with a library,
       //since the code we pulled from the blockchain obviously does not have unresolved link references!
       //(it's not strictly necessary even then, but, hey, why not?)
-      this.additionalContexts = <Contexts.DecoderContextsById>Contexts.normalizeContexts(this.additionalContexts);
+      this.additionalContexts = <Contexts.DecoderContexts>Contexts.normalizeContexts(this.additionalContexts);
       //again, since the code did not have unresolved link references, it is safe to just
       //mash these together like I'm about to
-      this.contextsById = {...this.contextsById, ...this.additionalContexts};
+      this.contexts = {...this.contexts, ...this.additionalContexts};
     }
+  }
+
+  private get context(): Contexts.DecoderContext {
+    return this.contexts[this.contextHash];
   }
 
   private async decodeVariable(variable: Codec.StorageMemberAllocation, block: number): Promise<Values.Result> {
@@ -241,7 +224,7 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
       mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: this.contextsById,
+      contexts: this.contexts,
       currentContext: this.context
     };
 
@@ -395,6 +378,14 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
 
   public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
     return await this.wireDecoder.decodeLogs(logs, {}, this.additionalContexts);
+  }
+
+  public abifyCalldataDecoding(decoding: Codec.CalldataDecoding): Codec.CalldataDecoding {
+    return this.wireDecoder.abifyCalldataDecoding(decoding);
+  }
+  
+  public abifyLogDecoding(decoding: Codec.LogDecoding): Codec.LogDecoding {
+    return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
   //note: by default restricts address to address of this
