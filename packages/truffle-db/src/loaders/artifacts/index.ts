@@ -320,7 +320,7 @@ export class ArtifactsLoader {
       const contractIds = await this.loadCompilationContracts(contracts[compiler.name], id, compiler.name);
       const networks = await this.loadNetworks(contracts[compiler.name], this.config["artifacts_directory"], this.config["contracts_directory"]);
       if(networks[0].length) {
-        this.loadContractInstances(contracts[compiler.name], contractIds.contractIds, networks);
+        this.loadContractInstances(contracts[compiler.name], contractIds.contractIds, networks, contractIds.bytecodeIds);
       }
     }))
   }
@@ -346,7 +346,7 @@ export class ArtifactsLoader {
     const contractsLoaded = await this.db.query(AddContracts, { contracts: contractObjects});
     const contractIds = contractsLoaded.data.workspace.contractsAdd.contracts.map( ({ id }) => ({ id }) );
 
-    return { compilerName: contracts[0].compiler.name, contractIds: contractIds };
+    return { compilerName: contracts[0].compiler.name, contractIds: contractIds, bytecodeIds: bytecodeIds };
 
   }
 
@@ -417,7 +417,7 @@ export class ArtifactsLoader {
   }
 
   async loadNetworks (contracts: Array<ContractObject>, artifacts:string, workingDirectory:string) {
-    const networksByContract = await Promise.all(contracts.map(async ({ contract_name })=> {
+    const networksByContract = await Promise.all(contracts.map(async ({ contract_name, bytecode })=> {
       const contractName = contract_name.toString().concat('.json');
       const artifactsNetworksPath = fse.readFileSync(path.join(artifacts,contractName));
       const artifactsNetworks = JSON.parse(artifactsNetworksPath.toString()).networks;
@@ -459,7 +459,9 @@ export class ArtifactsLoader {
               configNetworks.push({
                 contract: contractName,
                 id: id,
-                address: filteredNetwork[0][1]["address"]
+                address: filteredNetwork[0][1]["address"],
+                transactionHash: filteredNetwork[0][1]["transactionHash"],
+                bytecode: bytecode
               });
             }
           }
@@ -470,7 +472,7 @@ export class ArtifactsLoader {
     return networksByContract;
   }
 
-  async loadContractInstances (contracts: Array<ContractObject>, contractIds: Array<IdObject>, networksArray: Array<Array<LoaderNetworkObject>>) {
+  async loadContractInstances (contracts: Array<ContractObject>, contractIds: Array<IdObject>, networksArray: Array<Array<LoaderNetworkObject>>, bytecodeIds: Array<IdObject>) {
     // networksArray is an array of arrays of networks for each contract;
     // this first mapping maps to each contract
     const instances = networksArray.map((networks, index) => {
@@ -481,6 +483,12 @@ export class ArtifactsLoader {
           contract: contractIds[index],
           network: {
             id: network.id
+          },
+          creation: {
+            transactionHash: network.transactionHash,
+            constructor: {
+              createBytecode: bytecodeIds[index]
+            }
           }
         }
         return instance;
