@@ -171,13 +171,28 @@ export const schema = mergeSchemas({
     input ContractInstanceBytecodeInput {
       id: ID!
     }
+
     input ContractInstanceContractInput {
       id: ID!
+    }
+
+    input ContractInstanceCreationConstructorBytecodeInput {
+      id: ID!
+    }
+
+    input ContractInstanceCreationConstructorInput {
+      createBytecode: ContractInstanceCreationConstructorBytecodeInput!
+    }
+
+    input ContractInstanceCreationInput {
+      transactionHash: TransactionHash!
+      constructor: ContractInstanceCreationConstructorInput!
     }
 
     input ContractInstanceInput {
       address: Address!
       network: ContractInstanceNetworkInput
+      creation: ContractInstanceCreationInput
       contract: ContractInstanceContractInput
       callBytecode: ContractInstanceBytecodeInput
     }
