@@ -20,6 +20,9 @@
     "@truffle/config": "^1.1.21",
     "mocha": "5.2.0"
   },
+  "scripts": {
+    "test": "./scripts/test.sh"
+  },
   "keywords": [
     "compile",
     "ethereum",
