@@ -197,9 +197,23 @@ const AddContractInstances = gql`
     id: ID!
   }
 
+  input ContractInstanceCreationConstructorBytecodeInput {
+    id: ID!
+  }
+
+  input ContractInstanceCreationConstructorInput {
+    createBytecode: ContractInstanceCreationConstructorBytecodeInput!
+  }
+
+  input ContractInstanceCreationInput {
+    transactionHash: TransactionHash!
+    constructor: ContractInstanceCreationConstructorInput!
+  }
+
   input ContractInstanceInput {
     address: Address!
     network: ContractInstanceNetworkInput!
+    creation: ContractInstanceCreationInput
     contract: ContractInstanceContractInput
   }
 
@@ -213,10 +227,21 @@ const AddContractInstances = gql`
           network {
             name
             networkID
-            historicBlock
+            historicBlock {
+              height
+              hash
+            }
           }
           contract {
             name
+          }
+          creation {
+            transactionHash
+            constructor {
+              createBytecode {
+                bytes
+              }
+            }
           }
         }
       }
@@ -262,7 +287,8 @@ type WorkflowCompileResult = {
 type LoaderNetworkObject = {
   contract: string,
   id: string,
-  address: string
+  address: string,
+  transactionHash: string
 }
 
 type IdObject = {
