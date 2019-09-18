@@ -151,7 +151,11 @@ Config.detect = (options = {}, filename) => {
 Config.load = (file, options) => {
   const config = new Config();
 
-  config.working_directory = process.cwd();
+  if (options.config) {
+    config.working_directory = process.cwd();
+  } else {
+    config.working_directory = path.dirname(path.resolve(file));
+  }
 
   // The require-nocache module used to do this for us, but
   // it doesn't bundle very well. So we've pulled it out ourselves.
