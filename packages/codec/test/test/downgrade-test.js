@@ -3,9 +3,8 @@ const assert = require("chai").assert;
 const Big = require("big.js");
 const clonedeep = require("lodash.clonedeep");
 
-const TruffleDecoder = require("../../../decoder");
-const TruffleCodec = require("../../../truffle-codec");
-const ConversionUtils = require("../../../truffle-codec-utils").Conversion;
+const TruffleCodec = require("../../../codec");
+const ConversionUtils = TruffleCodec.Utils.Conversion;
 
 const DowngradeTestUnmodified = artifacts.require("DowngradeTest");
 const DecoyLibrary = artifacts.require("DecoyLibrary");
@@ -74,7 +73,7 @@ async function runTestBody(
   skipFunctionTests = false,
   fullMode = false
 ) {
-  let decoder = await TruffleDecoder.forProject(
+  let decoder = await TruffleCodec.forProject(
     [DowngradeTest._json, DecoyLibrary], //HACK: because we've clonedeep'd DowngradeTest,
     //we need to pass in its _json rather than it itself (its getters have been stripped off)
     web3.currentProvider
@@ -188,7 +187,7 @@ contract("DowngradeTest", function(accounts) {
     ).inputs[0].type = "fixed168x10";
 
     //...and now let's set up a decoder for our hacked-up contract artifact.
-    let decoder = await TruffleDecoder.forProject(
+    let decoder = await TruffleCodec.forProject(
       [DowngradeTest._json, DecoyLibrary], //HACK: see clonedeep note above
       web3.currentProvider
     );
@@ -249,7 +248,7 @@ contract("DowngradeTest", function(accounts) {
   describe("Out-of-range enums", function() {
     it("Doesn't include out-of-range enums in full mode", async function() {
       let DowngradeTest = DowngradeTestUnmodified;
-      let decoder = await TruffleDecoder.forProject(
+      let decoder = await TruffleCodec.forProject(
         [DowngradeTest._json, DecoyLibrary], //not strictly necessary here, but see clonedeep comment above
         web3.currentProvider
       );
@@ -311,7 +310,7 @@ contract("DowngradeTest", function(accounts) {
 });
 
 async function runEnumTestBody(DowngradeTest) {
-  let decoder = await TruffleDecoder.forProject(
+  let decoder = await TruffleCodec.forProject(
     [DowngradeTest._json, DecoyLibrary], //HACK: see clonedeep comment above
     web3.currentProvider
   );

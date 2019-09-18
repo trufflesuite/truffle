@@ -27,3 +27,4 @@ export { slotAddress } from "./read/storage";
 //might want them :P
 export { encodeAbi, encodeTupleAbi } from "./encode/abi";
 export { encodeMappingKey } from "./encode/key";
+//(actually we use at least one of these in tests atm so we'd better export!)

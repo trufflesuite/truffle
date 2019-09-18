@@ -18,6 +18,7 @@
   "dependencies": {
     "@truffle/artifactor": "^4.0.32",
     "@truffle/box": "^1.0.38",
+    "@truffle/codec": "^3.0.10",
     "@truffle/compile-solidity": "^4.2.5",
     "@truffle/config": "^1.1.21",
     "@truffle/contract": "^4.0.33",

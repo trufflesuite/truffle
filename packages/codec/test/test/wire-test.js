@@ -2,8 +2,8 @@ const debug = require("debug")("decoder:test:wire-test");
 const assert = require("chai").assert;
 const BN = require("bn.js");
 
-const TruffleDecoder = require("../../../decoder");
-const ConversionUtils = require("../../../truffle-codec-utils").Conversion;
+const TruffleCodec = require("../../../codec");
+const ConversionUtils = TruffleCodec.Utils.Conversion;
 
 const WireTest = artifacts.require("WireTest");
 const WireTestParent = artifacts.require("WireTestParent");
@@ -15,7 +15,7 @@ contract("WireTest", _accounts => {
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
 
-    const decoder = await TruffleDecoder.forProject(
+    const decoder = await TruffleCodec.forProject(
       [WireTest, WireTestParent, WireTestLibrary],
       web3.currentProvider
     );
@@ -387,7 +387,7 @@ contract("WireTest", _accounts => {
   it("disambiguates events when possible and not when impossible", async function() {
     let deployedContract = await WireTest.deployed();
 
-    const decoder = await TruffleDecoder.forProject(
+    const decoder = await TruffleCodec.forProject(
       [WireTest, WireTestParent, WireTestLibrary],
       web3.currentProvider
     );
@@ -508,7 +508,7 @@ contract("WireTest", _accounts => {
   it("Handles anonymous events", async function() {
     let deployedContract = await WireTest.deployed();
 
-    const decoder = await TruffleDecoder.forProject(
+    const decoder = await TruffleCodec.forProject(
       [WireTest, WireTestParent, WireTestLibrary],
       web3.currentProvider
     );

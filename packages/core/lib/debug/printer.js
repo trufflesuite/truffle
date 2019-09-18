@@ -5,7 +5,7 @@ const path = require("path");
 const safeEval = require("safe-eval");
 
 const DebugUtils = require("@truffle/debug-utils");
-const CodecUtils = require("truffle-codec-utils");
+const CodecUtils = require("@truffle/codec").Utils;
 
 const selectors = require("@truffle/debugger").selectors;
 const { session, solidity, trace, controller } = selectors;

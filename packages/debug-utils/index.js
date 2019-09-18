@@ -5,7 +5,7 @@ var async = require("async");
 var debug = require("debug")("debug-utils");
 var BN = require("bn.js");
 var util = require("util");
-var CodecUtils = require("truffle-codec-utils");
+var CodecUtils = require("@truffle/codec").Utils;
 
 var chromafi = require("@trufflesuite/chromafi");
 var hljsDefineSolidity = require("highlightjs-solidity");
