@@ -195,23 +195,27 @@ export class Workspace {
     return {
       contractInstances: Promise.all(contractInstances.map(
         async (contractInstanceInput) => {
-          const { address, network, contract, callBytecode } = contractInstanceInput;
+          const { address, network, creation, contract, callBytecode } = contractInstanceInput;
           // hash includes address and network of this contractInstance
           const id = soliditySha3(jsonStableStringify({
             address: address,
             network: { id: network.id }
           }));
 
-          const contractInstance = await this.contractInstance({ id }) || { ...contractInstanceInput, id };
+          const contractInstance = await this.contractInstance({ id });
 
-          await this.contractInstances.put({
-            ...contractInstance,
-            ...contractInstanceInput,
+          if(contractInstance) {
+            return contractInstance;
+          } else {
+            let contractInstanceAdded = await this.contractInstances.put({
+              ...contractInstance,
+              ...contractInstanceInput,
 
-            _id: id
-          });
+              _id: id
+            });
 
-          return contractInstance;
+            return { ...contractInstanceInput, id };
+          }
         }
       ))
     };
