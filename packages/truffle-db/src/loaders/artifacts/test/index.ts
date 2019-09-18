@@ -4,11 +4,11 @@ import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
 import { ArtifactsLoader } from "truffle-db/loaders/artifacts";
 import { generateId } from "truffle-db/helpers";
-import * as Contracts from "truffle-workflow-compile";
-import Migrate from "truffle-migrate";
-import { Environment } from "truffle-environment";
-import * as Config from "truffle-config";
-import * as Ganache from "ganache-core"
+import * as Contracts from "@truffle/workflow-compile";
+import Migrate from "@truffle/migrate";
+import { Environment } from "@truffle/environment";
+import Config from "@truffle/config";
+import Ganache from "ganache-core"
 import Web3 from "web3";
 import * as fse from "fs-extra";
 import * as tmp from "tmp";
@@ -28,7 +28,7 @@ afterAll(async (done) => {
 
 // mocking the truffle-workflow-compile to avoid jest timing issues
 // and also to keep from adding more time to Travis testing
-jest.mock("truffle-workflow-compile", () => ({
+jest.mock("@truffle/workflow-compile", () => ({
   compile: function(config, callback) {
     const magicSquare= require(path.join(__dirname, "sources", "MagicSquare.json"));
     const migrations = require(path.join(__dirname, "sources", "Migrations.json"));
@@ -206,7 +206,7 @@ const GetWorkspaceNetwork: boolean = gql`
 query GetWorkspaceNetwork($id: ID!) {
   workspace {
     network(id: $id) {
-      networkID
+      networkId
       id
       name
       historicBlock {
@@ -223,7 +223,7 @@ query GetContractInstance($id: ID!) {
     contractInstance(id: $id) {
       address
       network {
-        networkID
+        networkId
       }
       contract {
         name
@@ -236,7 +236,7 @@ describe("Compilation", () => {
   let sourceIds= [];
   let bytecodeIds = [];
   let compilationIds = [];
-  let networkIds = [];
+  let netIds = [];
   let migratedNetworks = [];
   let contractInstanceIds = [];
   let contractInstances = [];
@@ -246,7 +246,7 @@ describe("Compilation", () => {
   beforeAll(async () => {
     await Environment.detect(migrationConfig);
     const web3 = new Web3(migrationConfig.provider);
-    const networkID = await web3.eth.net.getId();
+    const networkId = await web3.eth.net.getId();
     migrationConfig.reset = true;
     await Migrate.run(migrationConfig);
     await Promise.all(artifacts.map(async(contract, index) => {
@@ -261,7 +261,8 @@ describe("Compilation", () => {
       });
       bytecodeIds.push({ id: bytecodeId });
 
-      let networks = JSON.parse(await fse.readFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]))).networks;
+      const networksPath = fse.readFileSync(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])).toString();
+      let networks = JSON.parse(networksPath.toString()).networks;
       const networksArray = Object.entries(networks);
 
       if(networksArray.length > 0) {
@@ -271,18 +272,18 @@ describe("Compilation", () => {
           hash: transaction.blockHash
         }
 
-        const networkId = generateId({
-          networkID: networkID,
+        const netId = generateId({
+          networkId: networkId,
           historicBlock: historicBlock
         });
-        networkIds.push({ id: networkId });
+        netIds.push({ id: netId });
         migratedNetworks.push({
-          networkID: networkID,
+          networkId: networkId,
           historicBlock: historicBlock
         })
         const contractInstanceId = generateId({
           network: {
-            id: networkId
+            id: netId
           },
           address: networksArray[networksArray.length -1][1]["address"]
         });
@@ -291,7 +292,7 @@ describe("Compilation", () => {
           address: networksArray[networksArray.length -1][1]["address"],
           network: {
             name: 'development',
-            networkID: networkID,
+            networkId: networkId,
             historicBlock: historicBlock
           },
           contract: {
@@ -319,11 +320,13 @@ describe("Compilation", () => {
 
   afterAll(async() => {
     await Promise.all(artifacts.map(async(contract, index) => {
-    let migratedArtifact = JSON.parse(await fse.readFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])));
-    migratedArtifact.networks = {};
-    migratedArtifact.updatedAt = '';
-    await fse.remove(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]));
-    await fse.writeFile(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]), JSON.stringify(migratedArtifact, null, 2));
+      const migratedArtifactPath = fse.readFileSync(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])).toString();
+      let migratedArtifact = JSON.parse(migratedArtifactPath);
+      migratedArtifact.networks = {};
+      migratedArtifact.updatedAt = '';
+      migratedArtifact.schemaVersion = "3.0.11";
+      fse.removeSync(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]));
+      fse.outputFileSync(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index]), JSON.stringify(migratedArtifact, null, 2));
     }));
   });
 
@@ -441,15 +444,15 @@ describe("Compilation", () => {
           workspace: {
             network: {
               name,
-              networkID,
+              networkId,
               historicBlock
             }
           }
         }
-      } = await db.query(GetWorkspaceNetwork, networkIds[index]);
+      } = await db.query(GetWorkspaceNetwork, netIds[index]);
 
       expect(name).toEqual("development");
-      expect(networkID).toEqual(migratedNetworks[index]["networkID"]);
+      expect(networkId).toEqual(migratedNetworks[index]["networkId"]);
       expect(historicBlock).toEqual(migratedNetworks[index]["historicBlock"]);
     }
   });
@@ -462,7 +465,7 @@ describe("Compilation", () => {
             contractInstance: {
               address,
               network: {
-                networkID
+                networkId
               },
               contract: {
                 name
@@ -473,7 +476,7 @@ describe("Compilation", () => {
       } = await db.query(GetWorkspaceContractInstance, contractInstanceIds[index]);
 
       expect(name).toEqual(contractInstances[index].contract.name);
-      expect(networkID).toEqual(contractInstances[index].network.networkID);
+      expect(networkId).toEqual(contractInstances[index].network.networkId);
       expect(address).toEqual(contractInstances[index].address);
     }
   })

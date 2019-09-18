@@ -1,6 +1,6 @@
 const tmp = require("tmp");
 const fs = require("fs-extra");
-const config = require("truffle-config");
+const config = require("@truffle/config");
 const path = require("path");
 
 module.exports = {

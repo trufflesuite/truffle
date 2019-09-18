@@ -1,6 +1,6 @@
 import fs from "fs";
 
-const TruffleResolver = require("truffle-resolver");
+const TruffleResolver = require("@truffle/resolver");
 
 export interface ITruffleResolver {
   require(name: string): any

@@ -1,4 +1,4 @@
-const Box = require("truffle-box");
+const Box = require("@truffle/box");
 const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
 const assert = require("assert");
@@ -20,20 +20,14 @@ describe("Typescript Tests", () => {
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
-  before("set up sandbox", function(done) {
-    this.timeout(10000);
-
+  before("set up sandbox", async function() {
     options = { name: "default#typescript", force: true };
-    Box.sandbox(options, (err, conf) => {
-      if (err) return done(err);
-      config = conf;
-      config.logger = logger;
-      config.network = "development";
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-      done();
-    });
+    config = await Box.sandbox(options);
+    config.logger = logger;
+    config.network = "development";
+    config.mocha = {
+      reporter: new Reporter(logger)
+    };
   });
 
   describe("testing contract behavior", () => {
@@ -55,4 +49,4 @@ describe("Typescript Tests", () => {
       });
     }).timeout(70000);
   });
-});
+}).timeout(10000);

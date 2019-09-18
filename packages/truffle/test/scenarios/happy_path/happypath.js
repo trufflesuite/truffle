@@ -1,7 +1,7 @@
-const Box = require("truffle-box");
+const Box = require("@truffle/box");
 const MemoryLogger = require("../memorylogger");
 const CommandRunner = require("../commandrunner");
-const contract = require("truffle-contract");
+const contract = require("@truffle/contract");
 const fs = require("fs");
 const path = require("path");
 const assert = require("assert");
@@ -21,19 +21,14 @@ describe("Happy path (truffle unbox)", function() {
     Server.stop(done);
   });
 
-  before("set up sandbox", function(done) {
-    this.timeout(10000);
+  before("set up sandbox", async () => {
     options = { name: "default", force: true };
-    Box.sandbox(options, function(err, conf) {
-      if (err) return done(err);
-      config = conf;
-      config.network = "development";
-      config.logger = logger;
-      config.mocha = {
-        reporter: new Reporter(logger)
-      };
-      done();
-    });
+    config = await Box.sandbox(options);
+    config.network = "development";
+    config.logger = logger;
+    config.mocha = {
+      reporter: new Reporter(logger)
+    };
   });
 
   it("will compile", function(done) {
@@ -123,4 +118,4 @@ describe("Happy path (truffle unbox)", function() {
       done();
     });
   });
-});
+}).timeout(10000);
