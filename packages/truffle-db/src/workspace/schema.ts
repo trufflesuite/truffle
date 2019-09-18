@@ -321,6 +321,13 @@ export const schema = mergeSchemas({
       callBytecode: {
         resolve: ({ callBytecode }, _, { workspace }) =>
           workspace.bytecode(callBytecode)
+      },
+      creation: {
+        resolve: async (input, _, { workspace }) => {
+          let bytecode = await workspace.bytecode(input.creation.constructor.createBytecode);
+          let transactionHash = input.creation.transactionHash;
+          return { transactionHash: transactionHash, constructor: { createBytecode: bytecode } }
+        }
       }
     },
     SourceContract: {
