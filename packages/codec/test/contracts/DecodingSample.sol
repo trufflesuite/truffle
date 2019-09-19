@@ -38,6 +38,7 @@ contract DecodingSample {
   S       varStructS;
 
   mapping(uint => uint) varMapping;
+  mapping(address => uint) varAddressMapping;
 
   uint[2]    fixedArrayUint;
   string[2]  fixedArrayString;
@@ -149,6 +150,7 @@ contract DecodingSample {
 
     varMapping[2] = 41;
     varMapping[3] = 107;
+    varAddressMapping[address(this)] = 683;
 
     functionExternal = this.example;
   }

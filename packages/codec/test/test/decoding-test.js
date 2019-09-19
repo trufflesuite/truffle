@@ -38,6 +38,7 @@ contract("DecodingSample", _accounts => {
 
     decoder.watchMappingKey("varMapping", 2);
     decoder.watchMappingKey("varMapping", 3);
+    decoder.watchMappingKey("varAddressMapping", address);
 
     const initialState = await decoder.state();
 
@@ -130,6 +131,7 @@ contract("DecodingSample", _accounts => {
 
     assert.equal(variables.varMapping[2], 41);
     assert.equal(variables.varMapping[3], 107);
+    assert.equal(variables.varAddressMapping[address], 683);
 
     assert.equal(
       variables.functionExternal,
