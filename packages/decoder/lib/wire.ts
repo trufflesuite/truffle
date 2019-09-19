@@ -22,9 +22,8 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
   private contracts: DecoderTypes.ContractMapping = {};
   private contractNodes: AstReferences = {};
-  private contexts: Contexts.DecoderContexts = {};
-  private contextsById: Contexts.DecoderContextsById = {}; //deployed contexts only
-  private constructorContextsById: Contexts.DecoderContextsById = {};
+  private contexts: Contexts.DecoderContexts = {}; //all contexts
+  private deployedContexts: Contexts.DecoderContexts = {};
 
   private referenceDeclarations: AstReferences;
   private userDefinedTypes: Types.TypesById;
@@ -37,59 +36,60 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
     this.web3 = new Web3(provider);
 
+    let contractsAndContexts: DecoderTypes.ContractAndContexts[] = [];
+
     for(let contract of contracts) {
       let node: AstDefinition = Utils.getContractNode(contract);
+      let deployedContext: Contexts.DecoderContext | undefined = undefined;
+      let constructorContext: Contexts.DecoderContext | undefined = undefined;
       if(node !== undefined) {
         this.contracts[node.id] = contract;
         this.contractNodes[node.id] = node;
-        if(contract.deployedBytecode && contract.deployedBytecode !== "0x") {
-          const context = Utils.makeContext(contract, node);
-          const hash = CodecUtils.Conversion.toHexString(
-            CodecUtils.EVM.keccak256({type: "string",
-              value: context.binary
-            })
-          );
-          this.contexts[hash] = context;
-        }
-        if(contract.bytecode && contract.bytecode !== "0x") {
-          const constructorContext = Utils.makeContext(contract, node, true);
-          const hash = CodecUtils.Conversion.toHexString(
-            CodecUtils.EVM.keccak256({type: "string",
-              value: constructorContext.binary
-            })
-          );
-          this.contexts[hash] = constructorContext;
-        }
       }
+      if(contract.deployedBytecode && contract.deployedBytecode !== "0x") {
+        deployedContext = Utils.makeContext(contract, node);
+        this.contexts[deployedContext.context] = deployedContext;
+        //note that we don't set up deployedContexts until after normalization!
+      }
+      if(contract.bytecode && contract.bytecode !== "0x") {
+        constructorContext = Utils.makeContext(contract, node, true);
+        this.contexts[constructorContext.context] = constructorContext;
+      }
+      contractsAndContexts.push({contract, node, deployedContext, constructorContext});
     }
 
     this.contexts = <Contexts.DecoderContexts>Contexts.normalizeContexts(this.contexts);
-    this.contextsById = Object.assign({}, ...Object.values(this.contexts).filter(
-      ({isConstructor}) => !isConstructor
-    ).map(context =>
-      ({[context.contractId]: context})
+    this.deployedContexts = Object.assign({}, ...Object.values(this.contexts).map(
+      context => !context.isConstructor ? {[context.context]: context} : {}
     ));
-    this.constructorContextsById = Object.assign({}, ...Object.values(this.contexts).filter(
-      ({isConstructor}) => isConstructor
-    ).map(context =>
-      ({[context.contractId]: context})
-    ));
+
+    for(let contractAndContexts of contractsAndContexts) {
+      //change everythign to normalized version
+      if(contractAndContexts.deployedContext) {
+        contractAndContexts.deployedContext = this.contexts[contractAndContexts.deployedContext.context]; //get normalized version
+      }
+      if(contractAndContexts.constructorContext) {
+        contractAndContexts.constructorContext = this.contexts[contractAndContexts.constructorContext.context]; //get normalized version
+      }
+    }
+
     ({definitions: this.referenceDeclarations, types: this.userDefinedTypes} = this.collectUserDefinedTypes());
 
-    let allocationInfo: Codec.ContractAllocationInfo[] = Object.entries(this.contracts).map(
-      ([id, { abi }]) => ({
+    let allocationInfo: Codec.ContractAllocationInfo[] = contractsAndContexts.map(
+      ({contract: { abi, compiler }, node, deployedContext, constructorContext}) => ({
         abi: AbiUtils.schemaAbiToAbi(abi),
-        id: parseInt(id),
-        constructorContext: this.constructorContextsById[parseInt(id)]
+        compiler,
+        contractNode: node,
+        deployedContext,
+        constructorContext
       })
     );
     debug("allocationInfo: %O", allocationInfo);
 
     this.allocations = {};
-    this.allocations.storage = Codec.getStorageAllocations(this.referenceDeclarations, this.contractNodes);
-    this.allocations.abi = Codec.getAbiAllocations(this.referenceDeclarations);
-    this.allocations.calldata = Codec.getCalldataAllocations(allocationInfo, this.referenceDeclarations, this.allocations.abi);
-    this.allocations.event = Codec.getEventAllocations(allocationInfo, this.referenceDeclarations, this.allocations.abi);
+    this.allocations.abi = Codec.getAbiAllocations(this.userDefinedTypes);
+    this.allocations.calldata = Codec.getCalldataAllocations(allocationInfo, this.referenceDeclarations, this.userDefinedTypes, this.allocations.abi);
+    this.allocations.event = Codec.getEventAllocations(allocationInfo, this.referenceDeclarations, this.userDefinedTypes, this.allocations.abi);
     debug("done with allocation");
   }
 
@@ -137,7 +137,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   }
 
   //NOTE: additionalContexts parameter is for internal use only.
-  public async decodeTransaction(transaction: Transaction, additionalContexts: Contexts.DecoderContextsById = {}): Promise<DecoderTypes.DecodedTransaction> {
+  public async decodeTransaction(transaction: Transaction, additionalContexts: Contexts.DecoderContexts = {}): Promise<DecoderTypes.DecodedTransaction> {
     debug("transaction: %O", transaction);
     const block = transaction.blockNumber;
     const context = await this.getContextByAddress(transaction.to, block, transaction.input, additionalContexts);
@@ -150,7 +150,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       },
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: {...this.contextsById, ...additionalContexts},
+      contexts: {...this.deployedContexts, ...additionalContexts},
       currentContext: context
     };
     const decoder = Codec.decodeCalldata(info);
@@ -178,7 +178,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
   //NOTE: options is meant for internal use; do not rely on it
   //NOTE: additionalContexts parameter is for internal use only.
-  public async decodeLog(log: Log, options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContextsById = {}): Promise<DecoderTypes.DecodedLog> {
+  public async decodeLog(log: Log, options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContexts = {}): Promise<DecoderTypes.DecodedLog> {
     const block = log.blockNumber;
     const data = CodecUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(CodecUtils.Conversion.toBytes);
@@ -190,7 +190,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
       },
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
-      contexts: {...this.contextsById, ...additionalContexts}
+      contexts: {...this.deployedContexts, ...additionalContexts}
     };
     const decoder = Codec.decodeEvent(info, log.address, options.name);
 
@@ -217,12 +217,12 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
   //NOTE: options is meant for internal use; do not rely on it
   //NOTE: additionalContexts parameter is for internal use only.
-  public async decodeLogs(logs: Log[], options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContextsById = {}): Promise<DecoderTypes.DecodedLog[]> {
+  public async decodeLogs(logs: Log[], options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContexts = {}): Promise<DecoderTypes.DecodedLog[]> {
     return await Promise.all(logs.map(log => this.decodeLog(log, options, additionalContexts)));
   }
 
   //NOTE: additionalContexts parameter is for internal use only.
-  public async events(options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContextsById = {}): Promise<DecoderTypes.DecodedLog[]> {
+  public async events(options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContexts = {}): Promise<DecoderTypes.DecodedLog[]> {
     let { address, name, fromBlock, toBlock } = options;
 
     const logs = await this.web3.eth.getPastLogs({
@@ -246,6 +246,14 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     return events;
   }
 
+  public abifyCalldataDecoding(decoding: Codec.CalldataDecoding): Codec.CalldataDecoding {
+    return Codec.abifyCalldataDecoding(decoding, this.userDefinedTypes);
+  }
+  
+  public abifyLogDecoding(decoding: Codec.LogDecoding): Codec.LogDecoding {
+    return Codec.abifyLogDecoding(decoding, this.userDefinedTypes);
+  }
+
   public onEvent(name: string, callback: Function): void {
     //this.web3.eth.subscribe(name);
   }
@@ -257,7 +265,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   //and checks this against the known contexts to determine the contract type
   //however, if this fails and constructorBinary is passed in, it will then also
   //attempt to determine it from that
-  private async getContextByAddress(address: string, block: number, constructorBinary?: string, additionalContexts: Contexts.DecoderContextsById = {}): Promise<Contexts.DecoderContext | null> {
+  private async getContextByAddress(address: string, block: number, constructorBinary?: string, additionalContexts: Contexts.DecoderContexts = {}): Promise<Contexts.DecoderContext | null> {
     let code: string;
     if(address !== null) {
       code = CodecUtils.Conversion.toHexString(
@@ -289,7 +297,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     return this.web3;
   }
 
-  public getContexts(): {byHash: Contexts.DecoderContexts, byId: Contexts.DecoderContextsById, constructorsById: Contexts.DecoderContextsById } {
-    return {byHash: this.contexts, byId: this.contextsById, constructorsById: this.constructorContextsById};
+  public getDeployedContexts(): Contexts.DecoderContexts {
+    return this.deployedContexts;
   }
 }

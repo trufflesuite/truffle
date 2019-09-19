@@ -1,7 +1,7 @@
 const assert = require("assert");
 const CommandRunner = require("../commandrunner");
 const MemoryLogger = require("../memorylogger");
-const fs = require("fs-extra");
+const fse = require("fs-extra");
 const tmp = require("tmp");
 const path = require("path");
 
@@ -23,19 +23,19 @@ describe("truffle unbox [ @standalone ]", () => {
     it("unboxes truffle-init-default", done => {
       CommandRunner.run("unbox --force", config, () => {
         assert(
-          fs.pathExistsSync(
+          fse.pathExistsSync(
             path.join(tempDir.name, "contracts", "ConvertLib.sol")
           ),
           "ConvertLib.sol does not exist"
         );
         assert(
-          fs.pathExistsSync(
+          fse.pathExistsSync(
             path.join(tempDir.name, "contracts", "Migrations.sol")
           ),
           "Migrations.sol does not exist"
         );
         assert(
-          fs.pathExistsSync(
+          fse.pathExistsSync(
             path.join(tempDir.name, "contracts", "MetaCoin.sol")
           ),
           "MetaCoin.sol does not exist"
@@ -221,6 +221,25 @@ describe("truffle unbox [ @standalone ]", () => {
             () => {
               const output = logger.contents();
               assert(output.includes("Unbox successful."));
+              done();
+            }
+          );
+        }).timeout(20000);
+      });
+
+      describe("when run with a path", () => {
+        it("unboxes successfully to the specified path", done => {
+          const myPath = "./candy/cane/lane";
+          CommandRunner.run(
+            `unbox truffle-box/bare-box ${myPath}`,
+            config,
+            error => {
+              if (error) done(error);
+              assert(
+                fse.pathExistsSync(
+                  path.join(tempDir.name, myPath, "truffle-config.js")
+                )
+              );
               done();
             }
           );

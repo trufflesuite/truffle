@@ -117,7 +117,7 @@ function parameterToAbi(node: AstDefinition, referenceDeclarations: AstReference
     let referenceDeclaration = referenceDeclarations[id];
     if(referenceDeclaration === undefined) {
       let typeToDisplay = Definition.typeString(node);
-      throw new UnknownUserDefinedTypeError(id, typeToDisplay);
+      throw new UnknownUserDefinedTypeError(id.toString(), typeToDisplay);
     }
     components = parametersToAbi(referenceDeclaration.members, referenceDeclarations, checkIndexed);
   }
@@ -146,7 +146,7 @@ function toAbiType(node: AstDefinition, referenceDeclarations: AstReferences): s
       let referenceDeclaration = referenceDeclarations[referenceId];
       if(referenceDeclaration === undefined) {
         let typeToDisplay = Definition.typeString(node);
-        throw new UnknownUserDefinedTypeError(referenceId, typeToDisplay);
+        throw new UnknownUserDefinedTypeError(referenceId.toString(), typeToDisplay);
       }
       let numOptions = referenceDeclaration.members.length;
       let bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
@@ -240,7 +240,7 @@ function getterParameters(node: AstDefinition, referenceDeclarations: AstReferen
     let referenceDeclaration = referenceDeclarations[id];
     if(referenceDeclaration === undefined) {
       let typeToDisplay = Definition.typeString(baseNode);
-      throw new UnknownUserDefinedTypeError(id, typeToDisplay);
+      throw new UnknownUserDefinedTypeError(id.toString(), typeToDisplay);
     }
     let outputs = referenceDeclaration.members.filter(
       member => Definition.typeClass(member) !== "array" && Definition.typeClass(member) !== "mapping"

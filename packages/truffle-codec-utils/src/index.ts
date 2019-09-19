@@ -12,3 +12,4 @@ export * from "./types/types";
 export * from "./types/values";
 export * from "./types/errors";
 export * from "./types/inspect";
+export * from "./types/abify";

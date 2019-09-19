@@ -9,10 +9,10 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.11",
+  "version": "0.1.12",
   "main": "index.js",
   "dependencies": {
-    "@truffle/artifactor": "^4.0.31",
+    "@truffle/artifactor": "^4.0.32",
     "@truffle/error": "^0.0.7",
     "@truffle/expect": "^0.0.11",
     "@truffle/interface-adapter": "^0.2.6",

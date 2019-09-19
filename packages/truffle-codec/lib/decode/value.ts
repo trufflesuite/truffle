@@ -5,12 +5,14 @@ import read from "../read";
 import * as CodecUtils from "truffle-codec-utils";
 import { Types, Values, Errors } from "truffle-codec-utils";
 import BN from "bn.js";
+import Big from "big.js";
 import utf8 from "utf8";
 import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderOptions } from "../types/options";
 import { DecoderRequest } from "../types/request";
 import { StopDecodingError } from "../types/errors";
+import { ContractInfoAndContext } from "../types/decoding";
 
 export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   const { state } = info;
@@ -57,7 +59,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       }
       else {
         let error = { 
-          kind: "BoolOutOfRangeError" as "BoolOutOfRangeError",
+          kind: "BoolOutOfRangeError" as const,
           rawAsBN: numeric
         };
         if(strict) {
@@ -151,7 +153,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "contract":
       if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
         let error = { 
-          kind: "ContractPaddingError" as "ContractPaddingError",
+          kind: "ContractPaddingError" as const,
           raw: CodecUtils.Conversion.toHexString(bytes)
         };
         if(strict) {
@@ -275,8 +277,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
           type: fullType,
           rawAsBN: numeric
         };
-        if(strict) {
-          throw new StopDecodingError(error);
+        if(strict || options.allowRetry) {
+          throw new StopDecodingError(error, true);
+          //note that we allow a retry if we couldn't locate the enum type!
         }
         return {
           type: fullType,
@@ -303,8 +306,18 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
           type: fullType,
           rawAsBN: numeric
         };
-        if(strict) {
+        if(strict && !checkPaddingLeft(bytes, numBytes)) {
+          //note that second condition -- even in strict mode,
+          //if the enum is merely out of range rather than out of the ABI range,
+          //we do NOT throw an error here!  instead we simply return an error value,
+          //which we normally avoid doing in strict mode.  (the error will be caught
+          //later at the re-encoding step instead.)  why?  because we might be running
+          //in ABI mode, so we may need to abify this "value" rather than just throwing
+          //it out.
           throw new StopDecodingError(error);
+          //note that we do NOT allow a retry here!
+          //if we *can* find the enum type but the value is out of range,
+          //we *know* that it is invalid!
         }
         return {
           type: fullType,
@@ -313,36 +326,67 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         };
       }
     }
+    //will have to split these once we actually support fixed-point
     case "fixed": {
-      //skipping padding check as we don't support this anyway
-      const hex = CodecUtils.Conversion.toHexString(bytes);
-      let error = {
-        kind: "FixedPointNotYetSupportedError" as const,
-        raw: hex
-      };
-      if(strict) {
-        throw new StopDecodingError(error);
+      //first, check padding (if needed)
+      if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
+        let error = { 
+          kind: "FixedPaddingError" as const,
+          raw: CodecUtils.Conversion.toHexString(bytes)
+        };
+        if(strict) {
+          throw new StopDecodingError(error);
+        }
+        return {
+          type: dataType,
+          kind: "error" as const,
+          error
+        };
       }
+      //now, truncate to appropriate length (keeping the bytes on the right)
+      bytes = bytes.slice(-dataType.bits/8);
+      let asBN = CodecUtils.Conversion.toSignedBN(bytes);
+      let rawAsBN = CodecUtils.Conversion.toSignedBN(rawBytes);
+      let asBig = CodecUtils.Conversion.shiftBigDown(CodecUtils.Conversion.toBig(asBN), dataType.places);
+      let rawAsBig = CodecUtils.Conversion.shiftBigDown(CodecUtils.Conversion.toBig(rawAsBN), dataType.places);
       return {
         type: dataType,
-        kind: "error" as const,
-        error
+        kind: "value" as const,
+        value: {
+          asBig,
+          rawAsBig
+        }
       };
     }
     case "ufixed": {
-      //sorry for duplication, but typescript requires it
-      const hex = CodecUtils.Conversion.toHexString(bytes);
-      let error = {
-        kind: "FixedPointNotYetSupportedError" as const,
-        raw: hex
-      };
-      if(strict) {
-        throw new StopDecodingError(error);
+      //first, check padding (if needed)
+      if(!permissivePadding && !checkPaddingLeft(bytes, dataType.bits/8)) {
+        let error = { 
+          kind: "UfixedPaddingError" as const,
+          raw: CodecUtils.Conversion.toHexString(bytes)
+        };
+        if(strict) {
+          throw new StopDecodingError(error);
+        }
+        return {
+          type: dataType,
+          kind: "error" as const,
+          error
+        };
       }
+      //now, truncate to appropriate length (keeping the bytes on the right)
+      bytes = bytes.slice(-dataType.bits/8);
+      let asBN = CodecUtils.Conversion.toBN(bytes);
+      let rawAsBN = CodecUtils.Conversion.toBN(rawBytes);
+      let asBig = CodecUtils.Conversion.shiftBigDown(CodecUtils.Conversion.toBig(asBN), dataType.places);
+      let rawAsBig = CodecUtils.Conversion.shiftBigDown(CodecUtils.Conversion.toBig(rawAsBN), dataType.places);
       return {
         type: dataType,
-        kind: "error" as const,
-        error
+        kind: "value" as const,
+        value: {
+          asBig,
+          rawAsBig
+        }
       };
     }
   }
@@ -377,6 +421,10 @@ export function decodeString(bytes: Uint8Array): Values.StringValueInfo {
 
 //NOTE that this function returns a ContractValueInfo, not a ContractResult
 export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Generator<DecoderRequest, Values.ContractValueInfo, Uint8Array> {
+  return (yield* decodeContractAndContext(addressBytes, info)).contractInfo;
+}
+
+function* decodeContractAndContext(addressBytes: Uint8Array, info: EvmInfo): Generator<DecoderRequest, ContractInfoAndContext, Uint8Array> {
   let address = CodecUtils.Conversion.toAddress(addressBytes);
   let rawAddress = CodecUtils.Conversion.toHexString(addressBytes);
   let codeBytes: Uint8Array = yield {
@@ -385,19 +433,25 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Genera
   };
   let code = CodecUtils.Conversion.toHexString(codeBytes);
   let context = CodecUtils.Contexts.findDecoderContext(info.contexts, code);
-  if(context !== null && context.contractName !== undefined) {
+  if(context !== null) {
     return {
-      kind: "known" as const,
-      address,
-      rawAddress,
-      class: CodecUtils.Contexts.contextToType(context)
+      context,
+      contractInfo: {
+        kind: "known" as const,
+        address,
+        rawAddress,
+        class: CodecUtils.Contexts.contextToType(context)
+      }
     };
   }
   else {
     return {
-      kind: "unknown" as const,
-      address,
-      rawAddress
+      context,
+      contractInfo: {
+        kind: "unknown" as const,
+        address,
+        rawAddress
+      }
     };
   }
 }
@@ -405,7 +459,7 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Genera
 //note: address can have extra zeroes on the left like elsewhere, but selector should be exactly 4 bytes
 //NOTE this again returns a FunctionExternalValueInfo, not a FunctionExternalResult
 export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): Generator<DecoderRequest, Values.FunctionExternalValueInfo, Uint8Array> {
-  let contract = yield* decodeContract(addressBytes, info);
+  let {contractInfo: contract, context} = yield* decodeContractAndContext(addressBytes, info);
   let selector = CodecUtils.Conversion.toHexString(selectorBytes);
   if(contract.kind === "unknown") {
     return {
@@ -414,10 +468,6 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
       selector
     };
   }
-  let contractId = (<Types.ContractTypeNative> contract.class).id; //sorry! will be fixed soon!
-  let context = Object.values(info.contexts).find(
-    context => context.contractId.toString() === contractId //similarly! I hope!
-  );
   let abiEntry = context.abi !== undefined
     ? context.abi[selector]
     : undefined;
@@ -437,6 +487,7 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
 }
 
 //this one works a bit differently -- in order to handle errors, it *does* return a FunctionInternalResult
+//also note, I haven't put the same sort of error-handling in this one since it's only intended to run with full info (for now, anyway)
 export function decodeInternalFunction(dataType: Types.FunctionInternalType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
   let deployedPc: number = CodecUtils.Conversion.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = CodecUtils.Conversion.toBN(constructorPcBytes).toNumber();

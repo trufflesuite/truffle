@@ -61,6 +61,7 @@ function modifierForInvocation(invocation, scopes) {
 //see data.views.contexts for an explanation
 function debuggerContextToDecoderContext(context) {
   let {
+    context: contextHash,
     contractName,
     binary,
     contractId,
@@ -71,6 +72,7 @@ function debuggerContextToDecoderContext(context) {
     compiler
   } = context;
   return {
+    context: contextHash,
     contractName,
     binary,
     contractId,
@@ -231,11 +233,10 @@ const data = createSelectorTree({
      * data.views.contexts
      * same as evm.info.contexts, but:
      * 0. we only include non-constructor contexts
-     * 1. we now index by contract ID rather than hash
-     * 2. we strip out context, sourceMap, and primarySource
-     * 3. we alter abi in two ways:
-     * 3a. we strip out everything but functions
-     * 3b. abi is now an object, not an array, and indexed by these signatures
+     * 1. we strip out sourceMap and primarySource
+     * 2. we alter abi in two ways:
+     * 2a. we strip out everything but functions
+     * 2b. abi is now an object, not an array, and indexed by these signatures
      */
     contexts: createLeaf([evm.info.contexts], contexts =>
       Object.assign(

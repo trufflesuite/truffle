@@ -28,7 +28,7 @@ function validateStructS2(s2, values) {
 }
 
 contract("DecodingSample", _accounts => {
-  it("should get the initial state properly", async () => {
+  it("should get the initial state properly", async function() {
     let deployedContract = await DecodingSample.deployed();
     let address = deployedContract.address;
     const decoder = await TruffleDecoder.forContractInstance(
