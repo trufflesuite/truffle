@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.0.36",
+  "version": "5.0.37",
   "bin": {
     "truffle": "./cli.js",
     "truffle-exec": "./exec.js"
