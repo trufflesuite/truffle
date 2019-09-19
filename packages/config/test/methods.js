@@ -9,7 +9,7 @@ describe("TruffleConfig.detect", () => {
   describe("when a config path is provided", () => {
     beforeEach(() => {
       sinon.stub(TruffleConfig, "load");
-      options = { configPath: "/my/favorite/config.js" };
+      options = { config: "/my/favorite/config.js" };
       expectedPath = "/my/favorite/config.js";
     });
     afterEach(() => {
@@ -21,7 +21,7 @@ describe("TruffleConfig.detect", () => {
       assert(TruffleConfig.load.calledWith(expectedPath));
     });
     it("loads a config even with a relative path", () => {
-      options.configPath = "../../config.js";
+      options.config = "../../config.js";
       TruffleConfig.detect(options);
       assert(
         TruffleConfig.load.calledWith(
@@ -31,10 +31,19 @@ describe("TruffleConfig.detect", () => {
     });
   });
 
-  it("throws if a truffle config isn't detected", () => {
-    assert.throws(() => {
-      TruffleConfig.detect();
-    }, "should have thrown!");
+  describe("when it can't find a config file", () => {
+    beforeEach(() => {
+      sinon.stub(TruffleConfig, "search").returns(undefined);
+    });
+    afterEach(() => {
+      TruffleConfig.search.restore();
+    });
+
+    it("throws if a truffle config isn't detected", () => {
+      assert.throws(() => {
+        TruffleConfig.detect();
+      }, "should have thrown!");
+    });
   });
 });
 
