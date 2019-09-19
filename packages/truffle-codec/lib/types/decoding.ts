@@ -26,7 +26,7 @@ export interface ConstructorDecoding {
 export interface MessageDecoding {
   kind: "message";
   class: CodecUtils.Types.ContractType;
-  abi: CodecUtils.AbiUtils.FallbackAbiEntry | undefined;
+  abi: CodecUtils.AbiUtils.FallbackAbiEntry | null; //null indicates no fallback ABI
   data: string;
   decodingMode: DecodingMode;
 }
@@ -58,4 +58,10 @@ export interface AbiArgument {
   name?: string; //included if parameter is named
   indexed?: boolean; //included for event parameters
   value: CodecUtils.Values.Result;
+}
+
+//the following types are intended for internal use only
+export interface ContractInfoAndContext {
+  contractInfo: CodecUtils.Values.ContractValueInfo;
+  context?: CodecUtils.Contexts.DecoderContext;
 }

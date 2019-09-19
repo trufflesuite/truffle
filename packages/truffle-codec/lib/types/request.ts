@@ -1,5 +1,6 @@
 import BN from "bn.js";
 import { Values } from "truffle-codec-utils";
+import { ContractInfoAndContext } from "./decoding";
 
 export type DecoderRequest = StorageRequest | CodeRequest;
 

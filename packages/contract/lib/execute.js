@@ -1,5 +1,5 @@
 const debug = require("debug")("contract:execute"); // eslint-disable-line no-unused-vars
-var Web3PromiEvent = require("web3-core-promievent");
+var PromiEvent = require("./promievent");
 var EventEmitter = require("events");
 var utils = require("./utils");
 var StatusError = require("./statuserror");
@@ -105,7 +105,7 @@ var execute = {
       var defaultBlock = "latest";
       var args = Array.prototype.slice.call(arguments);
       var lastArg = args[args.length - 1];
-      var promiEvent = new Web3PromiEvent();
+      var promiEvent = PromiEvent();
 
       // Extract defaultBlock parameter
       if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
@@ -154,7 +154,7 @@ var execute = {
 
     return function() {
       var deferred;
-      var promiEvent = new Web3PromiEvent();
+      var promiEvent = PromiEvent();
 
       execute
         .prepareCall(constructor, methodABI, arguments)
@@ -208,7 +208,7 @@ var execute = {
 
     return function() {
       var deferred;
-      const promiEvent = new Web3PromiEvent();
+      const promiEvent = PromiEvent();
 
       execute
         .prepareCall(constructor, constructorABI, arguments)

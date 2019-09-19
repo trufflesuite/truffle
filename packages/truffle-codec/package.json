@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "devDependencies": {
+    "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",
     "@types/lodash.partition": "^4.6.6",
@@ -35,6 +36,7 @@
     "typescript": "^3.6.2"
   },
   "dependencies": {
+    "big.js": "^5.2.2",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
     "lodash.partition": "^4.6.0",

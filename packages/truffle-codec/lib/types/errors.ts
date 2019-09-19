@@ -49,10 +49,14 @@ export class NoDefinitionFoundForABIEntryError extends Error {
 //type.
 export class StopDecodingError extends Error {
   public error: Errors.DecoderError;
-  constructor(error: Errors.DecoderError) {
+  public allowRetry: boolean; //setting this to true means that, if the error occurs
+  //when decoding in full mode, we allow an ABI-mode retry.  (if we were already in
+  //ABI mode, we give up.)
+  constructor(error: Errors.DecoderError, allowRetry?: boolean) {
     const message = `Stopping decoding: ${error.kind}`; //sorry about the bare-bones message,
     //but again, users shouldn't actually see this, so I think this should suffice for now
     super(message);
     this.error = error;
+    this.allowRetry = Boolean(allowRetry);
   }
 }

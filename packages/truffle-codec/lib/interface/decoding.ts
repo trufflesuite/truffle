@@ -5,17 +5,17 @@ import { AstDefinition, Types, Values } from "truffle-codec-utils";
 import * as CodecUtils from "truffle-codec-utils";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
+import { StopDecodingError } from "../types/errors";
 import { DecoderRequest } from "../types/request";
 import { CalldataAllocation, EventAllocation, EventArgumentAllocation } from "../types/allocation";
-import { CalldataDecoding, LogDecoding, AbiArgument } from "../types/decoding";
-import { encodeTupleAbi } from "../encode/abi";
+import { CalldataDecoding, LogDecoding, AbiArgument, DecodingMode } from "../types/decoding";
+import { encodeAbi, encodeTupleAbi } from "../encode/abi";
 import read from "../read";
 import decode from "../decode";
 
 export function* decodeVariable(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
   let dataType = Types.definitionToType(definition, compiler);
-  debug("definition %O", definition);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
@@ -29,16 +29,16 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
       data: CodecUtils.Conversion.toHexString(info.state.calldata)
     }
   }
-  const compiler = info.currentContext.compiler;
-  const contractId = context.contractId;
+  const compiler = context.compiler;
+  const contextHash = context.context;
   const contractType = CodecUtils.Contexts.contextToType(context);
-  const allocations = info.allocations.calldata[contractId];
+  const isConstructor: boolean = context.isConstructor;
+  const allocations = info.allocations.calldata;
   let allocation: CalldataAllocation;
-  let isConstructor: boolean = info.currentContext.isConstructor;
   let selector: string;
   //first: is this a creation call?
   if(isConstructor) {
-    allocation = allocations.constructorAllocation;
+    allocation = allocations.constructorAllocations[contextHash];
   }
   else {
     //skipping any error-handling on this read, as a calldata read can't throw anyway
@@ -50,27 +50,66 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
       info.state
     );
     selector = CodecUtils.Conversion.toHexString(rawSelector);
-    allocation = allocations.functionAllocations[selector];
+    allocation = allocations.functionAllocations[contextHash][selector];
   }
   if(allocation === undefined) {
     return {
       kind: "message" as const,
       class: contractType,
-      abi: CodecUtils.AbiUtils.fallbackAbiForPayability(context.payable),
+      abi: context.hasFallback ? CodecUtils.AbiUtils.fallbackAbiForPayability(context.payable) : null,
       data: CodecUtils.Conversion.toHexString(info.state.calldata),
       decodingMode: "full" as const,
     };
   }
+  let decodingMode: DecodingMode = allocation.allocationMode; //starts out this way, degrades to ABI if necessary
   //you can't map with a generator, so we have to do this map manually
   let decodedArguments: AbiArgument[] = [];
   for(const argumentAllocation of allocation.arguments) {
-    const value = yield* decode(
-      Types.definitionToType(argumentAllocation.definition, compiler),
-      argumentAllocation.pointer,
-      info,
-      { abiPointerBase: allocation.offset } //note the use of the offset for decoding pointers!
-    );
-    const name = argumentAllocation.definition.name;
+    let value: Values.Result;
+    let dataType = decodingMode === "full" ? argumentAllocation.type : CodecUtils.abifyType(argumentAllocation.type);
+    try {
+      value = yield* decode(
+        dataType,
+        argumentAllocation.pointer,
+        info,
+        { 
+          abiPointerBase: allocation.offset, //note the use of the offset for decoding pointers!
+          allowRetry: decodingMode === "full"
+        }
+      );
+    }
+    catch(error) {
+      if(error instanceof StopDecodingError && error.allowRetry && decodingMode === "full") {
+        //if a retry happens, we've got to do several things in order to switch to ABI mode:
+        //1. mark that we're switching to ABI mode;
+        decodingMode = "abi";
+        //2. abify all previously decoded values;
+        decodedArguments = decodedArguments.map(argumentDecoding =>
+          ({ ...argumentDecoding,
+            value: CodecUtils.abifyResult(argumentDecoding.value, info.userDefinedTypes)
+          })
+        );
+        //3. retry this particular decode in ABI mode.
+        //(no try/catch on this one because we can't actually handle errors here!
+        //not that they should be occurring)
+        value = yield* decode(
+          CodecUtils.abifyType(argumentAllocation.type), //type is now abified!
+          argumentAllocation.pointer,
+          info,
+          {
+            abiPointerBase: allocation.offset
+          }
+        );
+        //4. the remaining parameters will then automatically be decoded in ABI mode due to (1),
+        //so we don't need to do anything special there.
+      }
+      else {
+        //we shouldn't be getting other exceptions, but if we do, we don't know
+        //how to handle them, so uhhhh just rethrow I guess??
+        throw error;
+      }
+    }
+    const name = argumentAllocation.name;
     decodedArguments.push(
       name //deliberate general falsiness test
         ? { name, value }
@@ -84,7 +123,7 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
       arguments: decodedArguments,
       abi: <CodecUtils.AbiUtils.ConstructorAbiEntry> allocation.abi, //we know it's a constructor, but typescript doesn't
       bytecode: CodecUtils.Conversion.toHexString(info.state.calldata.slice(0, allocation.offset)),
-      decodingMode: "full" as const,
+      decodingMode
     };
   }
   else {
@@ -94,7 +133,7 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
       abi: <CodecUtils.AbiUtils.FunctionAbiEntry> allocation.abi, //we know it's a function, but typescript doesn't
       arguments: decodedArguments,
       selector,
-      decodingMode: "full" as const
+      decodingMode
     };
   }
 }
@@ -105,11 +144,10 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
 //for internal use :) )
 export function* decodeEvent(info: EvmInfo, address: string, targetName?: string): Generator<DecoderRequest, LogDecoding[], Uint8Array> {
   const allocations = info.allocations.event;
-  debug("event allocations: %O", allocations);
   let rawSelector: Uint8Array;
   let selector: string;
-  let contractAllocations: {[contractId: number]: EventAllocation}; //for non-anonymous events
-  let libraryAllocations: {[contractId: number]: EventAllocation}; //similar
+  let contractAllocations: {[contextHash: string]: EventAllocation}; //for non-anonymous events
+  let libraryAllocations: {[contextHash: string]: EventAllocation}; //similar
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
   if(topicsCount > 0) {
@@ -141,9 +179,9 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
   let possibleContractAnonymousAllocations: EventAllocation[];
   if(contractContext) {
     //if we found the contract, maybe it's from that contract
-    const contractId = contractContext.contractId;
-    const contractAllocation = contractAllocations[contractId];
-    const contractAnonymousAllocation = contractAnonymousAllocations[contractId];
+    const contextHash = contractContext.context;
+    const contractAllocation = contractAllocations[contextHash];
+    const contractAnonymousAllocation = contractAnonymousAllocations[contextHash];
     possibleContractAllocations = contractAllocation
       ? [contractAllocation]
       : [];
@@ -164,28 +202,70 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
   let decodings: LogDecoding[] = [];
   allocationAttempts: for(const allocation of possibleAllocationsTotal) {
     //first: do a name check so we can skip decoding if name is wrong
-    if(targetName !== undefined && allocation.definition.name !== targetName) {
+    debug("trying allocation: %O", allocation);
+    if(targetName !== undefined && allocation.abi.name !== targetName) {
       continue;
     }
-    const id = allocation.contractId;
-    const attemptContext = info.contexts[id];
+    let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
+    const contextHash = allocation.contextHash;
+    const attemptContext = info.contexts[contextHash];
     const contractType = CodecUtils.Contexts.contextToType(attemptContext);
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];
     for(const argumentAllocation of allocation.arguments) {
       let value: Values.Result;
+      //if in full mode, use the allocation's listed data type.
+      //if in ABI mode, abify it before use.
+      let dataType = decodingMode === "full" ? argumentAllocation.type : CodecUtils.abifyType(argumentAllocation.type);
       try {
         value = yield* decode(
-          Types.definitionToType(argumentAllocation.definition, attemptContext.compiler),
+          dataType,
           argumentAllocation.pointer,
           info,
-          { strictAbiMode: true } //turns on STRICT MODE to cause more errors to be thrown
+          {
+            strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
+            allowRetry: decodingMode === "full" //this option is unnecessary but including for clarity
+          }
         );
       }
-      catch(_) {
-        continue allocationAttempts; //if an error occurred, this isn't a valid decoding!
+      catch(error) {
+        if(error instanceof StopDecodingError && error.allowRetry && decodingMode === "full") {
+          //if a retry happens, we've got to do several things in order to switch to ABI mode:
+          //1. mark that we're switching to ABI mode;
+          decodingMode = "abi";
+          //2. abify all previously decoded values;
+          decodedArguments = decodedArguments.map(argumentDecoding =>
+            ({ ...argumentDecoding,
+              value: CodecUtils.abifyResult(argumentDecoding.value, info.userDefinedTypes)
+            })
+          );
+          //3. retry this particular decode in ABI mode.
+          try {
+            value = yield* decode(
+              CodecUtils.abifyType(argumentAllocation.type), //type is now abified!
+              argumentAllocation.pointer,
+              info,
+              {
+                strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
+                //retries no longer allowed, not that this has an effect
+              }
+            );
+          }
+          catch(_) {
+            //if an error occurred on the retry, this isn't a valid decoding!
+            debug("rejected due to exception on retry");
+            continue allocationAttempts;
+          }
+          //4. the remaining parameters will then automatically be decoded in ABI mode due to (1),
+          //so we don't need to do anything special there.
+        }
+        else {
+          //if any other sort of error occurred, this isn't a valid decoding!
+          debug("rejected due to exception on first try: %O", error);
+          continue allocationAttempts;
+        }
       }
-      const name = argumentAllocation.definition.name;
+      const name = argumentAllocation.name;
       const indexed = argumentAllocation.pointer.location === "eventtopic";
       decodedArguments.push(
         name //deliberate general falsiness test
@@ -193,39 +273,60 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
           : { indexed, value }
       );
     }
-    debug("decodedArguments: %O", decodedArguments);
     //OK, so, having decoded the result, the question is: does it reencode to the original?
     //first, we have to filter out the indexed arguments, and also get rid of the name information
     const nonIndexedValues = decodedArguments
       .filter(argument => !argument.indexed)
       .map(argument => argument.value);
     //now, we can encode!
-    debug("nonIndexedValues: %O", nonIndexedValues);
     const reEncodedData = encodeTupleAbi(nonIndexedValues, info.allocations.abi);
-    //are they equal?
     const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
-    if(CodecUtils.EVM.equalData(encodedData, reEncodedData)) {
-      if(allocation.definition.anonymous) {
-        decodings.push({
-          kind: "anonymous",
-          class: contractType,
-          abi: allocation.abi,
-          arguments: decodedArguments,
-          decodingMode: "full"
-        });
-      }
-      else {
-        decodings.push({
-          kind: "event",
-          class: contractType,
-          abi: allocation.abi,
-          arguments: decodedArguments,
-          selector,
-          decodingMode: "full"
-        });
+    //are they equal?
+    if(!CodecUtils.EVM.equalData(reEncodedData, encodedData)) {
+      //if not, this allocation doesn't work
+      debug("rejected due to [non-indexed] mismatch");
+      continue;
+    }
+    //one last check -- let's check that the indexed arguments match up, too
+    const indexedValues = decodedArguments
+      .filter(argument => argument.indexed)
+      .map(argument => argument.value);
+    debug("indexedValues: %O", indexedValues);
+    const reEncodedTopics = indexedValues.map(
+      value => encodeAbi(value, info.allocations.abi) //NOTE: I should really use a different encoding function here,
+      //but I haven't written that function yet
+    );
+    const encodedTopics = info.state.eventtopics;
+    //now: do *these* match?
+    const selectorAdjustment = allocation.anonymous ? 0 : 1;
+    for(let i = 0; i < reEncodedTopics.length; i++) {
+      debug("encodedTopics[i]: %O", encodedTopics[i]);
+      if(!CodecUtils.EVM.equalData(reEncodedTopics[i], encodedTopics[i + selectorAdjustment])) {
+        debug("rejected due to indexed mismatch");
+        continue allocationAttempts;
       }
     }
-    //otherwise, just move on
+    //if we've made it here, the allocation works!  hooray!
+    debug("allocation accepted!");
+    if(allocation.abi.anonymous) {
+      decodings.push({
+        kind: "anonymous",
+        class: contractType,
+        abi: allocation.abi,
+        arguments: decodedArguments,
+        decodingMode
+      });
+    }
+    else {
+      decodings.push({
+        kind: "event",
+        class: contractType,
+        abi: allocation.abi,
+        arguments: decodedArguments,
+        selector,
+        decodingMode
+      });
+    }
   }
   return decodings;
 }

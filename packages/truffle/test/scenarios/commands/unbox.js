@@ -273,6 +273,25 @@ describe("truffle unbox [ @standalone ]", () => {
           );
         }).timeout(20000);
       });
+
+      describe("when run with a path", () => {
+        it("unboxes successfully to the specified path", done => {
+          const myPath = "./candy/cane/lane";
+          CommandRunner.run(
+            `unbox truffle-box/bare-box ${myPath}`,
+            config,
+            error => {
+              if (error) done(error);
+              assert(
+                fse.pathExistsSync(
+                  path.join(tempDir.name, myPath, "truffle-config.js")
+                )
+              );
+              done();
+            }
+          );
+        }).timeout(20000);
+      });
     });
 
     describe("with invalid input", () => {

@@ -10,7 +10,7 @@ describe("Parser", () => {
 
   before("get code", async () => {
     source = fs.readFileSync(
-      path.join(__dirname, "./sources/badSources/MyContract.sol"),
+      path.join(__dirname, "./sources/v0.4.15/MyContract.sol"),
       "utf-8"
     );
 
@@ -32,7 +32,9 @@ describe("Parser", () => {
       "./Dependency.sol",
       "./path/to/AnotherDep.sol",
       "../../../path/to/AnotherDep.sol",
-      "ethpmpackage/Contract.sol"
+      "ethpmpackage/Contract.sol",
+      "./somePath.sol",
+      "./someImportWithNoSpace.sol"
     ];
 
     assert.deepEqual(imports, expected);
