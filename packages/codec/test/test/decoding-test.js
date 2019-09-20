@@ -4,6 +4,7 @@ const util = require("util"); // eslint-disable-line no-unused-vars
 const TruffleCodec = require("../../../codec");
 
 const DecodingSample = artifacts.require("DecodingSample");
+const DecodingSampleParent = artifacts.require("DecodingSampleParent");
 
 function validateStructS(struct, values) {
   assert.equal(typeof struct, "object");
@@ -32,7 +33,7 @@ contract("DecodingSample", _accounts => {
     let address = deployedContract.address;
     const decoder = await TruffleCodec.forContractInstance(
       DecodingSample,
-      [],
+      [DecodingSampleParent],
       web3.currentProvider
     );
 
@@ -51,6 +52,14 @@ contract("DecodingSample", _accounts => {
     // );
 
     assert.equal(initialState.name, "DecodingSample");
+    //before we move on to the main section, we'll test the defining classes
+    //of the first two variables
+    assert.equal(
+      initialState.variables[0].class.typeName,
+      "DecodingSampleParent"
+    );
+    assert.equal(initialState.variables[1].class.typeName, "DecodingSample");
+
     const variables = TruffleCodec.Utils.Conversion.nativizeDecoderVariables(
       initialState.variables
     );
