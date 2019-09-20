@@ -19,7 +19,7 @@ interface StorageAllocationInfo {
 
 interface DefinitionPair {
   definition: AstDefinition;
-  definedIn?: Format.Types.ContractType;
+  definedIn?: AstDefinition;
 }
 
 //contracts contains only the contracts to be allocated; any base classes not
@@ -192,14 +192,10 @@ function allocateContract(contract: AstDefinition, referenceDeclarations: AstRef
     if(baseNode === undefined) {
       throw new UnknownBaseContractIdError(contract.id, contract.name, contract.contractKind, id);
     }
-    let classObject = CodecUtils.MakeType.definitionToStoredType(baseNode, null, referenceDeclarations); //HACK
-    //for technical reasons, when this is called from the debugger, it's not always possible to know the compiler
-    //(due to how information is organized there)
-    //so... we just don't pass one in!  We pass null.  We get away with it because the compiler doesn't actually matter here!
     return getStateVariables(baseNode).map(
       definition => ({
         definition,
-        definedIn: classObject
+        definedIn: baseNode
       })
     );
   }));

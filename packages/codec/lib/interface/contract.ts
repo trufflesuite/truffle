@@ -257,7 +257,7 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
 
     return {
       name: variable.definition.name,
-      class: variable.definedIn,
+      class: <Types.ContractType> this.userDefinedTypes[variable.definedIn.id],
       value: result.value,
     };
   }
@@ -327,7 +327,7 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
       //again, we'll search backwards, although, uhhh...?
       return this.stateVariableReferences.slice().reverse().find(
         ({definition, definedIn}) =>
-          definition.name === variableName && definedIn.typeName === className
+          definition.name === variableName && definedIn.name === className
       );
     }
   }
