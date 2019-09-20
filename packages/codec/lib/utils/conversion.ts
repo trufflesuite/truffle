@@ -8,6 +8,7 @@ import { Constants } from "./constants";
 import { Types } from "../format/types";
 import { Values } from "../format/values";
 import { enumFullName } from "./inspect";
+import { DecodedVariable } from "../types/interface";
 
 export namespace Conversion {
 
@@ -196,11 +197,25 @@ export namespace Conversion {
     return Math.max(0, value.c.length - value.e - 1);
   }
 
+  //NOTE: Definitely do not use this in real code!  For tests only!
   //for convenience: invokes the nativize method on all the given variables
   export function nativizeVariables(variables: {[name: string]: Values.Result}): {[name: string]: any} {
     return Object.assign({}, ...Object.entries(variables).map(
       ([name, value]) => ({[name]: nativize(value)})
     ));
+  }
+  
+  //NOTE: Definitely do not use this in real code!  For tests only!
+  //for convenience: invokes the nativize method on all the given variables, and changes them to
+  //the old format
+  export function nativizeDecoderVariables(variables: DecodedVariable[]): {[name: string]: any} {
+    return Object.assign({}, ...variables.map(
+      ({name, value}) => ({[name]: nativize(value)})
+    ));
+    //note that the assignments are processed in order, so if multiple have same name, later
+    //(i.e. more derived) will overwrite earlier (i.e. baser)... be aware!  I mean, this is the
+    //right way to do overwriting, but it's still overwriting so still dangerous.
+    //Again, don't use this in real code!
   }
 
   //converts out of range booleans to true; something of a HACK

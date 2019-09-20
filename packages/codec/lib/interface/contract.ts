@@ -225,7 +225,7 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
     return this.contexts[this.contextHash];
   }
 
-  private async decodeVariable(variable: StorageMemberAllocation, block: number): Promise<Values.Result> {
+  private async decodeVariable(variable: StorageMemberAllocation, block: number): Promise<DecoderTypes.DecodedVariable> {
     const info: EvmInfo = {
       state: {
         storage: {},
@@ -255,7 +255,11 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
     }
     //at this point, result.value holds the final value
 
-    return result.value;
+    return {
+      name: variable.definition.name,
+      class: variable.definedIn,
+      value: result.value,
+    };
   }
 
   public async state(block: BlockType = "latest"): Promise<DecoderTypes.ContractState | undefined> {
@@ -268,7 +272,7 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
       code: this.contractCode,
       balanceAsBN: new BN(await this.web3.eth.getBalance(this.contractAddress, blockNumber)),
       nonceAsBN: new BN(await this.web3.eth.getTransactionCount(this.contractAddress, blockNumber)),
-      variables: {}
+      variables: []
     };
 
     debug("state called");
@@ -279,30 +283,53 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
       const decodedVariable = await this.decodeVariable(variable, blockNumber);
       debug("decoded");
 
-      result.variables[variable.definition.name] = decodedVariable;
-
-      debug("var %O", result.variables[variable.definition.name]);
+      result.variables.push(decodedVariable);
     }
 
     return result;
   }
 
+  //variable may be given by name, ID, or qualified name
   public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<Values.Result | undefined> {
     let blockNumber = typeof block === "number"
       ? block
       : (await this.web3.eth.getBlock(block)).number;
 
-    let variable: StorageMemberAllocation;
-    variable = this.stateVariableReferences.find(
-      ({definition}) => definition.name === nameOrId || definition.id == nameOrId
-    ); //there should be exactly one
-    //note: deliberate use of == in that second one to allow numeric strings to work
+    let variable = this.findVariableByNameOrId(nameOrId);
 
     if(variable === undefined) { //if user put in a bad name
       return undefined;
     }
 
-    return await this.decodeVariable(variable, blockNumber);
+    return (await this.decodeVariable(variable, blockNumber)).value;
+  }
+
+  private findVariableByNameOrId(nameOrId: string | number): StorageMemberAllocation | undefined {
+    //case 1: an ID was input
+    if(typeof nameOrId === "number" || nameOrId.match(/[0-9]+/)) {
+      let id: number = Number(nameOrId);
+      return this.stateVariableReferences.find(
+        ({definition}) => definition.id === nameOrId
+      );
+      //there should be exactly one; returns undefined if none
+    }
+    //case 2: a name was input
+    else if(!nameOrId.includes(".")) {
+      //we want to search *backwards*, to get most derived version;
+      //we use slice().reverse() to clone before reversing since reverse modifies
+      return this.stateVariableReferences.slice().reverse().find(
+        ({definition}) => definition.name === nameOrId
+      );
+    }
+    //case 3: a qualified name was input
+    else {
+      let [className, variableName] = nameOrId.split(".");
+      //again, we'll search backwards, although, uhhh...?
+      return this.stateVariableReferences.slice().reverse().find(
+        ({definition, definedIn}) =>
+          definition.name === variableName && definedIn.typeName === className
+      );
+    }
   }
 
   private async getStorage(address: string, slot: BN, block: number): Promise<Uint8Array> {
@@ -414,7 +441,7 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   //in addition to returning the slot we want, it also returns a definition
   //used in the recursive call
   //HOW TO USE:
-  //variable may be either a variable id (number or numeric string) or name (string)
+  //variable may be a variable id (number or numeric string) or name (string) or qualified name (also string)
   //struct members may be given either by id (number) or name (string)
   //array indices and numeric mapping keys may be BN, number, or numeric string
   //string mapping keys should be given as strings. duh.
@@ -424,11 +451,7 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   private constructSlot(variable: number | string, ...indices: any[]): [Slot | undefined , AstDefinition | undefined] {
     //base case: we need to locate the variable and its definition
     if(indices.length === 0) {
-      let allocation: StorageMemberAllocation;
-      allocation = this.stateVariableReferences.find(
-        ({definition}) => definition.name === variable || definition.id == variable
-      ); //there should be exactly one
-      //note: deliberate use of == in that second one to allow numeric strings to work
+      let allocation = this.findVariableByNameOrId(variable);
 
       let definition = allocation.definition;
       let pointer = allocation.pointer;

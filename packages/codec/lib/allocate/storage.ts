@@ -17,6 +17,11 @@ interface StorageAllocationInfo {
   allocations: StorageAllocations;
 }
 
+interface DefinitionPair {
+  definition: AstDefinition;
+  definedIn?: Format.Types.ContractType;
+}
+
 //contracts contains only the contracts to be allocated; any base classes not
 //being allocated should just be in referenceDeclarations
 export function getStorageAllocations(referenceDeclarations: AstReferences, contracts: AstReferences): StorageAllocations {
@@ -33,10 +38,13 @@ export function getStorageAllocations(referenceDeclarations: AstReferences, cont
 }
 
 function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
-  return allocateMembers(structDefinition, structDefinition.members, referenceDeclarations, existingAllocations);
+  let members = structDefinition.members.map(
+    definition => ({definition})
+  );
+  return allocateMembers(structDefinition, members, referenceDeclarations, existingAllocations);
 }
 
-function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[], referenceDeclarations: AstReferences, existingAllocations: StorageAllocations, suppressSize: boolean = false): StorageAllocations {
+function allocateMembers(parentNode: AstDefinition, definitions: DefinitionPair[], referenceDeclarations: AstReferences, existingAllocations: StorageAllocations, suppressSize: boolean = false): StorageAllocations {
   let offset: number = 0; //will convert to BN when placing in slot
   let index: number = CodecUtils.EVM.WORD_SIZE - 1;
 
@@ -50,7 +58,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
   //otherwise, we need to allocate
   let memberAllocations: StorageMemberAllocation[] = []
 
-  for(const node of definitions)
+  for(const {definition: node, definedIn} of definitions)
   {
 
     //first off: is this a constant? if so we use a different, simpler process
@@ -115,6 +123,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: AstDefinition[]
     }
     memberAllocations.push({
       definition: node,
+      definedIn,
       pointer: {
         location: "storage",
         range
@@ -183,7 +192,16 @@ function allocateContract(contract: AstDefinition, referenceDeclarations: AstRef
     if(baseNode === undefined) {
       throw new UnknownBaseContractIdError(contract.id, contract.name, contract.contractKind, id);
     }
-    return getStateVariables(baseNode);
+    let classObject = CodecUtils.MakeType.definitionToStoredType(baseNode, null, referenceDeclarations); //HACK
+    //for technical reasons, when this is called from the debugger, it's not always possible to know the compiler
+    //(due to how information is organized there)
+    //so... we just don't pass one in!  We pass null.  We get away with it because the compiler doesn't actually matter here!
+    return getStateVariables(baseNode).map(
+      definition => ({
+        definition,
+        definedIn: classObject
+      })
+    );
   }));
 
   return allocateMembers(contract, vars, referenceDeclarations, existingAllocations, true); 
