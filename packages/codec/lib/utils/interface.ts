@@ -14,7 +14,7 @@ export function getContractNode(contract: ContractObject): AstDefinition {
   );
 }
 
-export function makeContext(contract: ContractObject, node: AstDefinition, isConstructor = false): DecoderContext {
+export function makeContext(contract: ContractObject, node: AstDefinition | undefined, isConstructor = false): DecoderContext {
   const abi = AbiUtils.schemaAbiToAbi(contract.abi);
   const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
   const hash = ConversionUtils.toHexString(

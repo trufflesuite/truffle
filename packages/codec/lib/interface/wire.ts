@@ -18,6 +18,7 @@ import * as DecoderTypes from "../types/interface";
 import { EvmInfo, AllocationInfo } from "../types/evm";
 import { AbiAllocations, ContractAllocationInfo } from "../types/allocation";
 import { getAbiAllocations, getCalldataAllocations, getEventAllocations } from "../allocate/abi";
+import { getStorageAllocations } from "../allocate/storage";
 import { decodeCalldata, decodeEvent } from "../core/decoding";
 import { CalldataDecoding, LogDecoding } from "../types/decoding";
 
@@ -94,6 +95,7 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
 
     this.allocations = {};
     this.allocations.abi = getAbiAllocations(this.userDefinedTypes);
+    this.allocations.storage = getStorageAllocations(this.referenceDeclarations, {}); //not used by wire decoder itself, but used by contract decoder
     this.allocations.calldata = getCalldataAllocations(allocationInfo, this.referenceDeclarations, this.userDefinedTypes, this.allocations.abi);
     this.allocations.event = getEventAllocations(allocationInfo, this.referenceDeclarations, this.userDefinedTypes, this.allocations.abi);
     debug("done with allocation");
@@ -295,8 +297,11 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
     return this.userDefinedTypes;
   }
 
-  public getAbiAllocations(): AbiAllocations {
-    return this.allocations.abi;
+  public getAllocations(): AllocationInfo {
+    return {
+      abi: this.allocations.abi,
+      storage: this.allocations.storage
+    };
   }
 
   public getWeb3(): Web3 {

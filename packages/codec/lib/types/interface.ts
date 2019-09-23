@@ -12,7 +12,6 @@ export interface ContractState {
   balanceAsBN: BN;
   nonceAsBN: BN;
   code: string;
-  variables: DecodedVariable[];
 }
 
 export interface DecodedVariable {
@@ -59,24 +58,4 @@ export interface EventOptions {
   fromBlock?: BlockType;
   toBlock?: BlockType;
   address?: string; //ignored by contract decoder!
-}
-
-export class ContractBeingDecodedHasNoNodeError extends Error {
-  constructor() {
-    const message = "Contract does not appear to have been compiled with Solidity (cannot locate contract node)";
-    super(message);
-    this.name = "ContractBeingDecodedHasNoNodeError";
-  }
-}
-
-export class EventOrTransactionIsNotForThisContractError extends Error {
-  thisAddress: string;
-  decoderAddress: string;
-  constructor(thisAddress: string, decoderAddress: string) {
-    const message = "This event or transaction's address does not match that of the contract decoder";
-    super(message);
-    this.name = "EventOrTransactionIsNotForThisContractError";
-    this.thisAddress = thisAddress;
-    this.decoderAddress = decoderAddress;
-  }
 }
