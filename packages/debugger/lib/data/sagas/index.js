@@ -15,15 +15,15 @@ import data from "../selectors";
 
 import sum from "lodash.sum";
 
-import * as CodecUtils from "truffle-codec-utils";
 import {
+  Utils as CodecUtils,
   getStorageAllocations,
   getMemoryAllocations,
   getAbiAllocations,
   readStack,
   storageSize,
   decodeVariable
-} from "truffle-codec";
+} from "@truffle/codec";
 import BN from "bn.js";
 
 export function* scope(nodeId, pointer, parentId, sourceId) {

@@ -2,7 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("test:data:codex");
 
 import { assert } from "chai";
-import { Conversion as ConversionUtils } from "truffle-codec-utils";
+import { Utils } from "@truffle/codec";
+const ConversionUtils = Utils.Conversion;
 
 import Ganache from "ganache-core";
 

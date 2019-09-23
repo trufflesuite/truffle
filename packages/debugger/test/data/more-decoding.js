@@ -12,7 +12,7 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 import data from "lib/data/selectors";
 
-import * as TruffleCodecUtils from "truffle-codec-utils";
+import { Utils as TruffleCodecUtils } from "@truffle/codec";
 
 const __CONTAINERS = `
 pragma solidity ^0.5.0;
