@@ -10,6 +10,7 @@
   },
   "version": "1.0.18",
   "main": "dist/index.js",
+  "types": "index.d.ts",
   "scripts": {
     "prepare": "npx webpack --config webpack/webpack.config.js",
     "test": "mocha --timeout 5000"
