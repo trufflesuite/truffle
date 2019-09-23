@@ -28,11 +28,25 @@ export function getStorageAllocations(referenceDeclarations: AstReferences, cont
   let allocations: StorageAllocations = {};
   for(const node of Object.values(referenceDeclarations)) {
     if(node.nodeType === "StructDefinition") {
-      allocations = allocateStruct(node, referenceDeclarations, allocations);
+      try {
+        allocations = allocateStruct(node, referenceDeclarations, allocations);
+      }
+      catch(_) {
+        //if allocation fails... oh well, allocation fails, we do nothing and just move on :P
+        //note: a better way of handling this would probably be to *mark* it
+        //as failed rather than throwing an exception as that would lead to less
+        //recomputation, but this is simpler and I don't think the recomputation
+        //should really be a problem
+      }
     }
   }
   for(const contract of Object.values(contracts)) {
-    allocations = allocateContract(contract, referenceDeclarations, allocations);
+    try {
+      allocations = allocateContract(contract, referenceDeclarations, allocations);
+    }
+    catch(_) {
+      //similarly, we'll allow failure here too, and catch the problem elsewhere
+    }
   }
   return allocations;
 }

@@ -24,6 +24,7 @@ import { decodeVariable } from "../core/decoding";
 import { Slot } from "../types/storage";
 import { isWordsLength, equalSlots } from "../utils/storage";
 import { StoragePointer } from "../types/pointer";
+import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "../types/errors";
 
 export default class TruffleContractDecoder extends AsyncEventEmitter {
 
@@ -51,9 +52,6 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contexts = wireDecoder.getDeployedContexts();
 
     this.contractNode = Utils.getContractNode(this.contract);
-    if(this.contractNode === undefined) {
-      throw new DecoderTypes.ContractBeingDecodedHasNoNodeError();
-    }
 
     if(this.contract.deployedBytecode && this.contract.deployedBytecode !== "0x") {
       const unnormalizedContext = Utils.makeContext(this.contract, this.contractNode);
@@ -64,14 +62,20 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
     this.allocations = {};
     this.allocations.abi = this.wireDecoder.getAbiAllocations();
-    this.allocations.storage = getStorageAllocations(
-      this.wireDecoder.getReferenceDeclarations(),
-      {[this.contractNode.id]: this.contractNode}
-    );
+    if(this.contractNode) {
+      this.allocations.storage = getStorageAllocations(
+        this.wireDecoder.getReferenceDeclarations(),
+        {[this.contractNode.id]: this.contractNode}
+      );
 
-    debug("done with allocation");
-    this.stateVariableReferences = this.allocations.storage[this.contractNode.id].members;
-    debug("stateVariableReferences %O", this.stateVariableReferences);
+      debug("done with allocation");
+      if(this.allocations.storage[this.contractNode.id]) {
+        this.stateVariableReferences = this.allocations.storage[this.contractNode.id].members;
+      }
+      //if it doesn't exist, we will leave it undefined, and then throw an exception when
+      //we attempt to decode
+      debug("stateVariableReferences %O", this.stateVariableReferences);
+    }
   }
 
   public async init(): Promise<void> {
@@ -225,6 +229,15 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
     return this.contexts[this.contextHash];
   }
 
+  private checkAllocationSuccess(): void {
+    if(!this.contractNode) {
+      throw new ContractBeingDecodedHasNoNodeError(this.contract.contractName);
+    }
+    if(!this.stateVariableReferences) {
+      throw new ContractAllocationFailedError(this.contractNode.id, this.contract.contractName);
+    }
+  }
+
   private async decodeVariable(variable: StorageMemberAllocation, block: number): Promise<DecoderTypes.DecodedVariable> {
     const info: EvmInfo = {
       state: {
@@ -262,20 +275,23 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
     };
   }
 
-  public async state(block: BlockType = "latest"): Promise<DecoderTypes.ContractState | undefined> {
+  public async state(block: BlockType = "latest"): Promise<DecoderTypes.ContractState> {
+    return {
+      name: this.contract.contractName,
+      code: this.contractCode,
+      balanceAsBN: new BN(await this.web3.eth.getBalance(this.contractAddress, block)),
+      nonceAsBN: new BN(await this.web3.eth.getTransactionCount(this.contractAddress, block)),
+    };
+  }
+
+  public async variables(block: BlockType = "latest"): Promise<DecoderTypes.DecodedVariable[]> {
+    this.checkAllocationSuccess();
+
     let blockNumber = typeof block === "number"
       ? block
       : (await this.web3.eth.getBlock(block)).number;
 
-    let result: DecoderTypes.ContractState = {
-      name: this.contract.contractName,
-      code: this.contractCode,
-      balanceAsBN: new BN(await this.web3.eth.getBalance(this.contractAddress, blockNumber)),
-      nonceAsBN: new BN(await this.web3.eth.getTransactionCount(this.contractAddress, blockNumber)),
-      variables: []
-    };
-
-    debug("state called");
+    let result: DecoderTypes.DecodedVariable[] = [];
 
     for(const variable of this.stateVariableReferences) {
 
@@ -283,7 +299,7 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
       const decodedVariable = await this.decodeVariable(variable, blockNumber);
       debug("decoded");
 
-      result.variables.push(decodedVariable);
+      result.push(decodedVariable);
     }
 
     return result;
@@ -291,6 +307,8 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
 
   //variable may be given by name, ID, or qualified name
   public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<Values.Result | undefined> {
+    this.checkAllocationSuccess();
+
     let blockNumber = typeof block === "number"
       ? block
       : (await this.web3.eth.getBlock(block)).number;
@@ -366,6 +384,7 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   //feel free to mix arrays, mappings, and structs here!
   //see the comment on constructSlot for more detail on what forms are accepted
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
+    this.checkAllocationSuccess();
     let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
     //add mapping key and all ancestors
     debug("slot: %O", slot);
@@ -385,6 +404,7 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
 
   //input is similar to watchMappingKey; will unwatch all descendants too
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
+    this.checkAllocationSuccess();
     let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
     if(slot === undefined) {
       return; //not strictly necessary, but may as well

@@ -41,6 +41,7 @@ contract("DecodingSample", _accounts => {
     decoder.watchMappingKey("varMapping", 3);
 
     const initialState = await decoder.state();
+    const initialVariables = await decoder.variables();
 
     // used for debugging test results
     // console.log(
@@ -54,14 +55,11 @@ contract("DecodingSample", _accounts => {
     assert.equal(initialState.name, "DecodingSample");
     //before we move on to the main section, we'll test the defining classes
     //of the first two variables
-    assert.equal(
-      initialState.variables[0].class.typeName,
-      "DecodingSampleParent"
-    );
-    assert.equal(initialState.variables[1].class.typeName, "DecodingSample");
+    assert.equal(initialVariables[0].class.typeName, "DecodingSampleParent");
+    assert.equal(initialVariables[1].class.typeName, "DecodingSample");
 
     const variables = TruffleCodec.Utils.Conversion.nativizeDecoderVariables(
-      initialState.variables
+      initialVariables
     );
 
     assert.notStrictEqual(typeof variables.varUint, "undefined");
