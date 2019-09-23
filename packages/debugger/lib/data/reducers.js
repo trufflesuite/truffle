@@ -5,9 +5,9 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 
-import { slotAddress } from "truffle-codec";
+import { slotAddress, Utils } from "@truffle/codec";
+const { Conversion, Definition, EVM } = Utils;
 import { makeAssignment } from "lib/helpers";
-import { Conversion, Definition, EVM } from "truffle-codec-utils";
 
 const DEFAULT_SCOPES = {
   byId: {}

@@ -5,7 +5,7 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 import { keccak256, extractPrimarySource } from "lib/helpers";
-import * as CodecUtils from "truffle-codec-utils";
+import { Utils as CodecUtils } from "@truffle/codec";
 
 import BN from "bn.js";
 
@@ -61,7 +61,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
 
     case actions.NORMALIZE_CONTEXTS:
       return {
-        byContext: CodecUtils.Contexts.normalizeContexts(state.byContext)
+        byContext: CodecUtils.ContextUtils.normalizeContexts(state.byContext)
       };
 
     /*

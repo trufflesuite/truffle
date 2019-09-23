@@ -9,7 +9,7 @@ import { stableKeccak256 } from "lib/helpers";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import * as CodecUtils from "truffle-codec-utils";
+import { Utils as CodecUtils } from "@truffle/codec";
 
 /**
  * @private
@@ -157,7 +157,7 @@ const data = createSelectorTree({
           return Object.assign(
             {},
             ...Object.entries(referenceDeclarations).map(([id, node]) => ({
-              [id]: CodecUtils.Types.definitionToStoredType(
+              [id]: CodecUtils.MakeType.definitionToStoredType(
                 node,
                 sources[scopes[node.id].sourceId].compiler,
                 referenceDeclarations
@@ -701,6 +701,10 @@ const data = createSelectorTree({
                   .filter(v => variables[v.name] == undefined)
                   .map(v => ({ [v.name]: { astId: v.id } }))
               );
+              //NOTE: because these assignments are processed in order, that means
+              //that if a base class and derived class have variables with the same
+              //name, the derived version will be processed later and therefore overwrite --
+              //which is exactly what we want, so yay
 
               cur = scopes[cur].parentId;
             } while (cur != null);

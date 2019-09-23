@@ -23,6 +23,7 @@
     "@truffle/code-utils": "^1.2.7",
     "@truffle/expect": "^0.0.11",
     "@truffle/solidity-utils": "^1.2.5",
+    "@truffle/codec": "^3.0.10",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
     "json-pointer": "^0.6.0",
@@ -32,8 +33,6 @@
     "redux-saga": "1.0.0",
     "remote-redux-devtools": "^0.5.12",
     "reselect-tree": "^1.3.1",
-    "truffle-codec-utils": "^1.0.18",
-    "truffle-codec": "^3.0.10",
     "web3": "1.2.1",
     "web3-eth-abi": "1.2.1"
   },
