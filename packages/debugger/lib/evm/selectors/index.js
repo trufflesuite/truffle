@@ -6,7 +6,7 @@ import BN from "bn.js";
 
 import trace from "lib/trace/selectors";
 
-import * as CodecUtils from "truffle-codec-utils";
+import { Utils as CodecUtils } from "@truffle/codec";
 import {
   isCallMnemonic,
   isCreateMnemonic,
@@ -316,7 +316,7 @@ const evm = createSelectorTree({
        * (returns null on no match)
        */
       search: createLeaf(["/info/contexts"], contexts => binary =>
-        CodecUtils.Contexts.findDebuggerContext(contexts, binary)
+        CodecUtils.ContextUtils.findDebuggerContext(contexts, binary)
       )
     }
   },
