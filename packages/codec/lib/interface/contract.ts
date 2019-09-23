@@ -60,12 +60,12 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       //this.contexts (which is normalized) via the context getter below
     }
 
-    this.allocations = {};
-    this.allocations.abi = this.wireDecoder.getAbiAllocations();
+    this.allocations = this.wireDecoder.getAllocations();
     if(this.contractNode) {
       this.allocations.storage = getStorageAllocations(
-        this.wireDecoder.getReferenceDeclarations(),
-        {[this.contractNode.id]: this.contractNode}
+        this.wireDecoder.getReferenceDeclarations(), //redundant stuff will be skipped so this is fine
+        {[this.contractNode.id]: this.contractNode},
+        this.allocations.storage //existing allocations from wire decoder
       );
 
       debug("done with allocation");

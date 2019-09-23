@@ -24,8 +24,8 @@ interface DefinitionPair {
 
 //contracts contains only the contracts to be allocated; any base classes not
 //being allocated should just be in referenceDeclarations
-export function getStorageAllocations(referenceDeclarations: AstReferences, contracts: AstReferences): StorageAllocations {
-  let allocations: StorageAllocations = {};
+export function getStorageAllocations(referenceDeclarations: AstReferences, contracts: AstReferences, existingAllocations: StorageAllocations = {}): StorageAllocations {
+  let allocations = existingAllocations;
   for(const node of Object.values(referenceDeclarations)) {
     if(node.nodeType === "StructDefinition") {
       try {
