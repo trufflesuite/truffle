@@ -3,6 +3,7 @@ const debug = debugModule("codec:utils:wrap");
 
 import Web3 from "web3";
 import BN from "bn.js";
+import { CompilerVersion } from "../types/compiler";
 import { AstDefinition } from "../types/ast";
 import { Types } from "../format/types";
 import { MakeType } from "./maketype";
@@ -20,11 +21,8 @@ import { Values } from "../format/values";
 //1. check its inputs,
 //2. take a slightly different input format,
 //3. also be named differently and... it'll be different :P ]
-export function wrapElementaryViaDefinition(value: any, definition: AstDefinition): Values.ElementaryValue {
-  //force location to undefined, force address to nonpayable
-  //(we force address to nonpayable since address payable can't be declared
-  //as a mapping key type)
-  let dataType = MakeType.definitionToType(definition, null, null);
+export function wrapElementaryViaDefinition(value: any, definition: AstDefinition, compiler: CompilerVersion): Values.ElementaryValue {
+  let dataType = MakeType.definitionToType(definition, compiler, null); //force location to undefined
   return wrapElementaryValue(value, dataType);
 }
 

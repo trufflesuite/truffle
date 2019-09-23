@@ -470,7 +470,7 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
         break;
       case "mapping":
         let keyDefinition = parentDefinition.keyType || parentDefinition.typeName.keyType;
-        key = wrapElementaryViaDefinition(rawIndex, keyDefinition);
+        key = wrapElementaryViaDefinition(rawIndex, keyDefinition, this.contract.compiler);
         definition = parentDefinition.valueType || parentDefinition.typeName.valueType;
         slot = {
           path: parentSlot,
