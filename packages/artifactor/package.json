@@ -9,8 +9,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "test": "mocha",
-    "prepare": "yarn build"
+    "prepare": "yarn build",
+    "test": "mocha"
   },
   "dependencies": {
     "@truffle/contract-schema": "^3.0.16",
@@ -28,7 +28,7 @@
     "require-nocache": "^1.0.0",
     "temp": "^0.8.3",
     "ts-node": "^8.3.0",
-    "typescript": "^3.5.3",
+    "typescript": "^3.6.3",
     "web3": "1.2.1"
   },
   "publishConfig": {
