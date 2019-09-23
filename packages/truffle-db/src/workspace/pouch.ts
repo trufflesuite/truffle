@@ -55,7 +55,6 @@ export class Workspace {
   }
 
   jsondownpouch(opts:any, callback:any):any {
-    // console.debug("options?? %o", opts);
     const _opts = pouchdbUtils.assign({
       db: jsondown.default
     }, opts);

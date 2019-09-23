@@ -20,9 +20,11 @@ tmp.setGracefulCleanup();
 
 class WorkspaceClient {
   private workspace: Workspace;
+  private persistedWorkspace: Workspace;
 
   constructor () {
     this.workspace = new Workspace(tempDir.name);
+    this.persistedWorkspace = new Workspace(tempDir.name);
   }
 
   async execute (request, variables = {}) {
@@ -31,6 +33,18 @@ class WorkspaceClient {
       request,
       null, // root object, managed by workspace
       { workspace: this.workspace }, // context vars
+      variables
+    );
+
+    return result.data;
+  }
+
+  async executePersisted (request, variables = {}) {
+    const result = await graphql.execute(
+      schema,
+      request,
+      null, // root object, managed by workspace
+      { workspace: this.persistedWorkspace }, // context vars
       variables
     );
 
@@ -58,7 +72,7 @@ describe("ContractNames", () => {
   it("queries contract names", async () => {
     const client = new WorkspaceClient();
 
-    const data = await client.execute(GetContractNames);
+    const data = await client.executePersisted(GetContractNames);
     expect(data).toHaveProperty("contractNames");
 
     const { contractNames } = data;
@@ -134,7 +148,7 @@ describe("Source", () => {
 
     // ensure retrieved as matching
     {
-      const data = await client.execute(GetSource, { id: expectedId });
+      const data = await client.executePersisted(GetSource, { id: expectedId });
       expect(data).toHaveProperty("source");
 
       const { source } = data;
@@ -204,7 +218,7 @@ describe("Bytecode", () => {
 
     // ensure retrieved as matching
     {
-      const data = await client.execute(GetBytecode, { id: expectedId });
+      const data = await client.executePersisted(GetBytecode, { id: expectedId });
       expect(data).toHaveProperty("bytecode");
 
       const { bytecode } = data;
@@ -351,7 +365,7 @@ describe("Compilation", () => {
     }
       //ensure retrieved as matching
     {
-      const data = await client.execute(GetCompilation, { id: expectedId });
+      const data = await client.executePersisted(GetCompilation, { id: expectedId });
       expect(data).toHaveProperty("compilation");
 
       const { compilation } = data;
@@ -518,7 +532,7 @@ describe("Contract", () => {
 
     //ensure retrieved as matching
     {
-      const data = await client.execute(GetContract, { id: expectedId });
+      const data = await client.executePersisted(GetContract, { id: expectedId });
 
       expect(data).toHaveProperty("contract");
 
@@ -602,7 +616,7 @@ describe("Network", () => {
 
     // // ensure retrieved as matching
     {
-      const data = await client.execute(GetNetwork, { id: expectedId });
+      const data = await client.executePersisted(GetNetwork, { id: expectedId });
       expect(data).toHaveProperty("network");
 
       const { network } = data;
@@ -706,7 +720,7 @@ describe("Contract Instance", () => {
 
     // // ensure retrieved as matching
     {
-      const data = await client.execute(GetContractInstance, { id: expectedId });
+      const data = await client.executePersisted(GetContractInstance, { id: expectedId });
       expect(data).toHaveProperty("contractInstance");
 
       const { contractInstance } = data;
