@@ -2,7 +2,7 @@ import BN from "bn.js";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { DecoderContext } from "./contexts";
 import { AstDefinition } from "./ast";
-import { Values } from "../format/values";
+import { Types, Values } from "../format";
 import { CalldataDecoding, LogDecoding } from "./decoding";
 import { Transaction, BlockType } from "web3/eth/types";
 import { Log } from "web3/types";
@@ -12,10 +12,14 @@ export interface ContractState {
   balanceAsBN: BN;
   nonceAsBN: BN;
   code: string;
-  variables: {
-    [name: string]: Values.Result
-  };
-};
+  variables: DecodedVariable[];
+}
+
+export interface DecodedVariable {
+  name: string;
+  class: Types.ContractType;
+  value: Values.Result;
+}
 
 export interface DecodedTransaction extends Transaction {
   decoding: CalldataDecoding;

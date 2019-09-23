@@ -41,7 +41,9 @@ export interface StorageAllocation {
 //of a contract
 export interface StorageMemberAllocation {
   definition: AstDefinition;
-  pointer: Pointer.StoragePointer | Pointer.ConstantDefinitionPointer;
+  definedIn?: AstDefinition; //used only for variables of contracts, not structs
+  pointer: Pointer.StoragePointer | Pointer.ConstantDefinitionPointer; //latter case will only happen
+  //for variables of contracts, not structs
 }
 
 //abi types below work similar to storage types above; note these are only
