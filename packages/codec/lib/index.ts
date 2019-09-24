@@ -20,8 +20,6 @@ export { getAbiAllocations } from "./allocate/abi";
 export { getMemoryAllocations } from "./allocate/memory";
 //and to read the stack
 export { readStack } from "./read/stack";
-//and deal with slot addresses
-export { slotAddress } from "./read/storage";
 
 //finally, let's export the low-level encoding functions, because why not, someone
 //might want them :P

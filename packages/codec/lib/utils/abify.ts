@@ -232,7 +232,7 @@ export function abifyResult(result: Values.Result, userDefinedTypes?: Types.Type
         case "error":
           return {
             ...coercedResult,
-            type: <Types.FunctionExternalType> abifyType(result.type, userDefinedTypes)
+            type: <Types.ArrayType> abifyType(result.type, userDefinedTypes)
           };
       }
     }

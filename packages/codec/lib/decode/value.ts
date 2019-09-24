@@ -292,6 +292,9 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       const numBytes = Math.ceil(Math.log2(numOptions) / 8);
       if(numeric.ltn(numOptions)) {
         const name = fullType.options[numeric.toNumber()];
+        //NOTE: despite the use of toNumber(), I'm NOT catching exceptions here and returning an
+        //error value like elsewhere; I'm just letting this one fail.  Why?  Because if we have
+        //an enum with that many options in the first place, we have bigger problems!
         return {
           type: fullType,
           kind: "value" as const,

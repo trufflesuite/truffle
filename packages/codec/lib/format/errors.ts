@@ -13,6 +13,8 @@ import util from "util";
 import { AstDefinition } from "../types/ast";
 import { Definition as DefinitionUtils } from "../utils/definition";
 import { TypeUtils } from "../utils/datatype";
+import { Range } from "../types/storage";
+import { slotAddressPrintout } from "../utils/storage";
 
 export namespace Errors {
 
@@ -118,7 +120,7 @@ export namespace Errors {
     error: GenericError | BytesDynamicError;
   }
 
-  export type BytesDynamicError = never; //bytes dynamic has no specific errors atm
+  export type BytesDynamicError = DynamicDataImplementationError;
 
   //addresses
   export interface AddressErrorResult {
@@ -141,7 +143,7 @@ export namespace Errors {
     error: GenericError | StringError;
   }
 
-  export type StringError = never; //again, string has no specific errors
+  export type StringError = DynamicDataImplementationError;
 
   //Fixed & Ufixed
   export interface FixedErrorResult {
@@ -181,7 +183,7 @@ export namespace Errors {
     error: GenericError | ArrayError;
   }
 
-  export type ArrayError = never;
+  export type ArrayError = DynamicDataImplementationError;
 
   //Mappings
   export interface MappingErrorResult {
@@ -190,7 +192,7 @@ export namespace Errors {
     error: GenericError | MappingError;
   }
 
-  export type MappingError = never;
+  export type MappingError = never; //mappings have no type-specific errors
 
   //Structs
   export interface StructErrorResult {
@@ -199,7 +201,7 @@ export namespace Errors {
     error: GenericError | StructError;
   }
 
-  export type StructError = never;
+  export type StructError = DynamicDataImplementationError;
 
   //Tuples
   export interface TupleErrorResult {
@@ -208,7 +210,7 @@ export namespace Errors {
     error: GenericError | TupleError;
   }
 
-  export type TupleError = never;
+  export type TupleError = DynamicDataImplementationError;
 
   //Magic variables
   export interface MagicErrorResult {
@@ -217,7 +219,7 @@ export namespace Errors {
     error: GenericError | MagicError;
   }
 
-  export type MagicError = never;
+  export type MagicError = never; //neither do magic variables
 
   /*
    * SECTION 4: ENUMS
@@ -331,11 +333,11 @@ export namespace Errors {
    * SECTION 8: GENERIC ERRORS
    */
 
-  export type GenericError = UserDefinedTypeNotFoundError | IndexedReferenceTypeError
-    | UnsupportedConstantError | ReadErrorStack;
+  export type GenericError = UserDefinedTypeNotFoundError | IndexedReferenceTypeError | ReadError;
+  export type ReadError = UnsupportedConstantError | ReadErrorStack | ReadErrorBytes | ReadErrorStorage;
+  export type DynamicDataImplementationError = OverlongArraysAndStringsNotImplementedError | OverlargePointersNotImplementedError;
 
-  export type ErrorForThrowing = UserDefinedTypeNotFoundError |
-    UnsupportedConstantError | ReadErrorStack;
+  export type ErrorForThrowing = UserDefinedTypeNotFoundError | ReadError;
 
   //attempted to decode an indexed parameter of reference type error
   export interface IndexedReferenceTypeError {
@@ -362,6 +364,28 @@ export namespace Errors {
     to: number;
   }
 
+  export interface ReadErrorBytes {
+    kind: "ReadErrorBytes";
+    start: number;
+    length: number;
+  }
+
+  export interface ReadErrorStorage {
+    kind: "ReadErrorStorage";
+    range: Range;
+  }
+
+  export interface OverlongArraysAndStringsNotImplementedError {
+    kind: "OverlongArraysAndStringsNotImplementedError";
+    lengthAsBN: BN;
+    dataLength?: number; //only included when the special strict mode check fails
+  }
+
+  export interface OverlargePointersNotImplementedError {
+    kind: "OverlargePointersNotImplementedError";
+    pointerAsBN: BN;
+  }
+
   //this function gives an error message
   //for those errors that are meant to possibly
   //be wrapped in a DecodingError and thrown
@@ -373,9 +397,18 @@ export namespace Errors {
           : error.type.typeName;
         return `Unknown ${error.type.typeClass} type ${typeName} of id ${error.type.id}`;
       case "UnsupportedConstantError":
-        return `Unsupported constant type ${DefinitionUtils.typeClass(error.definition)}$`;
+        return `Unsupported constant type ${DefinitionUtils.typeClass(error.definition)}`;
       case "ReadErrorStack":
         return `Can't read stack from position ${error.from} to ${error.to}`;
+      case "ReadErrorBytes":
+        return `Can't read ${error.length} bytes from input starting at ${error.start}`;
+      case "ReadErrorStorage":
+        if(error.range.length) {
+          return `Can't read ${error.range.length} bytes from storage starting at index ${error.range.from.index} in ${slotAddressPrintout(error.range.from.slot)}`;
+        }
+        else {
+          return `Can't read storage from index ${error.range.from.index} in ${slotAddressPrintout(error.range.from.slot)} to index ${error.range.to.index} in ${slotAddressPrintout(error.range.to.slot)}`;
+        }
     }
   }
 
@@ -383,17 +416,11 @@ export namespace Errors {
   /* you should never see these returned.
    * they are only for internal use. */
 
-  export type InternalUseError = OverlongArrayOrStringError | PointerTooLargeError | InternalFunctionInABIError;
+  export type InternalUseError = OverlongArrayOrStringStrictModeError | InternalFunctionInABIError;
 
-  export interface OverlongArrayOrStringError {
-    kind: "OverlongArrayOrStringError";
+  export interface OverlongArrayOrStringStrictModeError {
+    kind: "OverlongArrayOrStringStrictModeError";
     lengthAsBN: BN;
-    dataLength: number;
-  }
-
-  export interface PointerTooLargeError {
-    kind: "PointerTooLargeError";
-    pointerAsBN: BN;
     dataLength: number;
   }
 

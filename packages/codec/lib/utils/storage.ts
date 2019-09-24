@@ -1,9 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:storage");
 
+import BN from "bn.js";
 import { Slot, StorageLength } from "../types/storage";
 import { EVM as EVMUtils } from "./evm";
-import { encodeMappingKey } from "../encode/key";
+import { encodeMappingKey, mappingKeyAsHex, keyInfoForPrinting } from "../encode/key";
 
 export function isWordsLength(size: StorageLength): size is {words: number} {
   return (<{words: number}>size).words !== undefined;
@@ -16,6 +17,46 @@ export function storageLengthToBytes(size: StorageLength): number {
   }
   else {
     return size.bytes;
+  }
+}
+
+/**
+ * convert a slot to a word corresponding to actual storage address
+ *
+ * if `slot` is an array, return hash of array values.
+ * if `slot` array is nested, recurse on sub-arrays
+ *
+ * @param slot - number or possibly-nested array of numbers
+ */
+export function slotAddress(slot: Slot): BN {
+  if (slot.key !== undefined && slot.path !== undefined) {
+    // mapping reference
+    return EVMUtils.keccak256(mappingKeyAsHex(slot.key), slotAddress(slot.path)).add(slot.offset);
+  }
+  else if (slot.path !== undefined) {
+    const pathAddress = slotAddress(slot.path);
+    const path: BN = slot.hashPath ? EVMUtils.keccak256(pathAddress) : pathAddress;
+    return path.add(slot.offset);
+  }
+  else {
+    return slot.offset;
+  }
+}
+
+export function slotAddressPrintout(slot: Slot): string {
+  if (slot.key !== undefined && slot.path !== undefined) {
+    // mapping reference
+    let {type: keyEncoding, value: keyValue} = keyInfoForPrinting(slot.key);
+    return "keccak(" + keyValue + " as " + keyEncoding + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
+  }
+  else if (slot.path !== undefined) {
+    const pathAddressPrintout = slotAddressPrintout(slot.path);
+    return slot.hashPath
+      ? "keccak(" + pathAddressPrintout + ")" + slot.offset.toString()
+      : pathAddressPrintout + slot.offset.toString();
+  }
+  else {
+    return slot.offset.toString();
   }
 }
 

@@ -1,6 +1,7 @@
 import BN from "bn.js";
 
 import * as CodecUtils from "../utils";
+import { Errors } from "../format";
 
 /**
  * read word from memory
@@ -23,6 +24,14 @@ export function read(memory: Uint8Array, offset: number) {
  * @param length - number
  */
 export function readBytes(memory: Uint8Array, offset: number, length: number) {
+
+  if(!Number.isSafeInteger(offset + length)) {
+    throw new Errors.DecodingError({
+      kind: "ReadErrorBytes" as const,
+      start: offset,
+      length
+    });
+  }
 
   // grab `length` bytes no matter what, here fill this array
   var bytes = new Uint8Array(length);

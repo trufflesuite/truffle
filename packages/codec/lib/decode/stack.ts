@@ -54,8 +54,36 @@ export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointe
         //straight to decodeValue.  this is to allow us to correctly handle the
         //case of msg.data used as a mapping key.
         if(dataType.typeClass === "bytes" || dataType.typeClass === "string") {
-          let start = CodecUtils.Conversion.toBN(pointer.literal.slice(0, CodecUtils.EVM.WORD_SIZE)).toNumber();
-          let length = CodecUtils.Conversion.toBN(pointer.literal.slice(CodecUtils.EVM.WORD_SIZE)).toNumber();
+          let startAsBN = CodecUtils.Conversion.toBN(pointer.literal.slice(0, CodecUtils.EVM.WORD_SIZE));
+          let lengthAsBN = CodecUtils.Conversion.toBN(pointer.literal.slice(CodecUtils.EVM.WORD_SIZE));
+          let start: number;
+          let length: number;
+          try {
+            start = startAsBN.toNumber();
+          }
+          catch(_) {
+            return <Errors.BytesDynamicErrorResult|Errors.StringErrorResult> { //again with the TS failures...
+              type: dataType,
+              kind: "error" as const,
+              error: {
+                kind: "OverlargePointersNotImplementedError" as const,
+                pointerAsBN: startAsBN
+              }
+            };
+          }
+          try {
+            length = lengthAsBN.toNumber();
+          }
+          catch(_) {
+            return <Errors.BytesDynamicErrorResult|Errors.StringErrorResult> { //again with the TS failures...
+              type: dataType,
+              kind: "error" as const,
+              error: {
+                kind: "OverlongArraysAndStringsNotImplementedError" as const,
+                lengthAsBN
+              }
+            };
+          }
           let newPointer = { location: "calldata" as "calldata", start, length };
           return yield* decodeValue(dataType, newPointer, info);
         }
