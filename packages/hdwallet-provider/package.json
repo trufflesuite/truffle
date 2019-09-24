@@ -26,8 +26,7 @@
     "ethereumjs-util": "^6.1.0",
     "ethereumjs-wallet": "^0.6.3",
     "web3": "1.2.1",
-    "web3-provider-engine": "https://github.com/trufflesuite/provider-engine#web3-one",
-    "websocket": "^1.0.30"
+    "web3-provider-engine": "https://github.com/trufflesuite/provider-engine#web3-one"
   },
   "devDependencies": {
     "@types/bip39": "^2.4.2",
