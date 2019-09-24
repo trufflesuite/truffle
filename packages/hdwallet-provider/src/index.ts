@@ -28,7 +28,7 @@ const singletonNonceSubProvider = new NonceSubProvider();
 class HDWalletProvider {
   private hdwallet?: EthereumHDKey;
   private walletHdpath: string;
-  private wallets: { [address: string]: ethJSWallet }; // TODO refactor
+  private wallets: { [address: string]: ethJSWallet };
   private addresses: string[];
 
   public engine: ProviderEngine;
@@ -52,7 +52,7 @@ class HDWalletProvider {
           `Malformed provider URL: '${provider}'`,
           'Please specify a correct URL, using the http, https, ws, or wss protocol.',
           ''
-        ].join("\n")
+        ].join('\n')
       );
     }
 
@@ -77,7 +77,7 @@ class HDWalletProvider {
         const wallet = this.hdwallet
           .derivePath(this.walletHdpath + i)
           .getWallet();
-        const addr = `0x${wallet.getAddress().toString("hex")}`;
+        const addr = `0x${wallet.getAddress().toString('hex')}`;
         this.addresses.push(addr);
         this.wallets[addr] = wallet;
       }
@@ -87,7 +87,7 @@ class HDWalletProvider {
     const ethUtilValidation = (privateKeys: string[]) => {
       // crank the addresses out
       for (let i = addressIndex; i < addressIndex + numAddresses; i++) {
-        const privateKey = Buffer.from(privateKeys[i].replace("0x", ""), "hex");
+        const privateKey = Buffer.from(privateKeys[i].replace('0x', ''), 'hex');
         if (EthUtil.isValidPrivate(privateKey)) {
           const wallet = ethJSWallet.fromPrivateKey(privateKey);
           const address = wallet.getAddressString();
@@ -112,9 +112,9 @@ class HDWalletProvider {
         },
         getPrivateKey(address: string, cb: any) {
           if (!tmp_wallets[address]) {
-            return cb("Account not found");
+            return cb('Account not found');
           } else {
-            cb(null, tmp_wallets[address].getPrivateKey().toString("hex"));
+            cb(null, tmp_wallets[address].getPrivateKey().toString('hex'));
           }
         },
         signTransaction(txParams: any, cb: any) {
@@ -123,20 +123,20 @@ class HDWalletProvider {
           if (tmp_wallets[from]) {
             pkey = tmp_wallets[from].getPrivateKey();
           } else {
-            cb("Account not found");
+            cb('Account not found');
           }
           const tx = new Transaction(txParams);
           tx.sign(pkey as Buffer);
-          const rawTx = `0x${tx.serialize().toString("hex")}`;
+          const rawTx = `0x${tx.serialize().toString('hex')}`;
           cb(null, rawTx);
         },
         signMessage({ data, from }: any, cb: any) {
           const dataIfExists = data;
           if (!dataIfExists) {
-            cb("No data to sign");
+            cb('No data to sign');
           }
           if (!tmp_wallets[from]) {
-            cb("Account not found");
+            cb('Account not found');
           }
           let pkey = tmp_wallets[from].getPrivateKey();
           const dataBuff = EthUtil.toBuffer(dataIfExists);
@@ -187,7 +187,7 @@ class HDWalletProvider {
   }
 
   public getAddress(idx?: number): string {
-    debugInstance("getting addresses", this.addresses[0], idx);
+    debugInstance('getting addresses', this.addresses[0], idx);
 
     if (!idx) {
       return this.addresses[0];
