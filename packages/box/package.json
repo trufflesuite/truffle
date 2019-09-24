@@ -1,33 +1,17 @@
 {
   "name": "@truffle/box",
-  "version": "1.0.38",
   "description": "Truffle project boilerplate utility",
+  "license": "MIT",
+  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/box",
+  "version": "1.0.38",
   "main": "dist/box.js",
-  "types": "./typings/index.d.ts",
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
     "test": "mocha --timeout 10000"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/box",
-  "keywords": [
-    "ethereum",
-    "truffle",
-    "project",
-    "boilerplate"
-  ],
-  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/fs-extra": "^8.0.0",
-    "@types/inquirer": "^6.0.3",
-    "@types/request-promise-native": "^1.0.16",
-    "@types/tmp": "^0.1.0",
-    "mocha": "5.2.0",
-    "sinon": "^6.3.4",
-    "ts-node": "^8.3.0",
-    "typescript": "^3.5.3"
-  },
+  "types": "./typings/index.d.ts",
   "dependencies": {
     "@truffle/config": "^1.1.21",
     "fs-extra": "6.0.1",
@@ -39,6 +23,22 @@
     "tmp": "0.0.33",
     "vcsurl": "^0.1.1"
   },
+  "devDependencies": {
+    "@types/fs-extra": "^8.0.0",
+    "@types/inquirer": "^6.0.3",
+    "@types/request-promise-native": "^1.0.16",
+    "@types/tmp": "^0.1.0",
+    "mocha": "5.2.0",
+    "sinon": "^6.3.4",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.6.3"
+  },
+  "keywords": [
+    "boilerplate",
+    "ethereum",
+    "project",
+    "truffle"
+  ],
   "publishConfig": {
     "access": "public"
   }

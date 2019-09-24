@@ -206,7 +206,10 @@ const Utils = {
 
         // Convert Web3 BN / BigNumber
       } else if (Utils.is_big_number(item)) {
-        const ethersBN = bigNumberify(item.toString());
+        const stringValue = web3Utils.isBigNumber(item)
+          ? item.toFixed() //prevents use of scientific notation
+          : item.toString();
+        const ethersBN = bigNumberify(stringValue);
         converted.push(ethersBN);
       } else {
         converted.push(item);
