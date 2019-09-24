@@ -1,16 +1,22 @@
-const bip39 = require("bip39");
-const ethJSWallet = require("ethereumjs-wallet");
-const hdkey = require("ethereumjs-wallet/hdkey");
-const debug = require("debug")("@truffle/hdwallet-provider");
-const ProviderEngine = require("web3-provider-engine");
-const FiltersSubprovider = require("web3-provider-engine/subproviders/filters.js");
-const NonceSubProvider = require("web3-provider-engine/subproviders/nonce-tracker.js");
-const HookedSubprovider = require("web3-provider-engine/subproviders/hooked-wallet.js");
-const ProviderSubprovider = require("web3-provider-engine/subproviders/provider.js");
-const Web3 = require("web3");
-const Transaction = require("ethereumjs-tx");
-const ethUtil = require("ethereumjs-util");
-const Url = require("url");
+import * as bip39 from 'bip39';
+import * as EthUtil from 'ethereumjs-util';
+import ethJSWallet from 'ethereumjs-wallet';
+import EthereumHDKey from 'ethereumjs-wallet/hdkey';
+import debug from 'debug';
+import { Transaction } from 'ethereumjs-tx';
+import ProviderEngine from 'web3-provider-engine';
+import FiltersSubprovider from 'web3-provider-engine/subproviders/filters';
+import NonceSubProvider from 'web3-provider-engine/subproviders/nonce-tracker';
+import HookedSubprovider from 'web3-provider-engine/subproviders/hooked-wallet';
+import ProviderSubprovider from 'web3-provider-engine/subproviders/provider';
+import Url from 'url';
+import Web3 from 'web3';
+import {
+  JSONRPCRequestPayload,
+  JSONRPCResponsePayload
+} from 'ethereum-protocol';
+
+const debugInstance = debug('@truffle/hdwallet-provider');
 
 // This line shares nonce state across multiple provider instances. Necessary
 // because within truffle the wallet is repeatedly newed if it's declared in the config within a
@@ -20,16 +26,22 @@ const Url = require("url");
 const singletonNonceSubProvider = new NonceSubProvider();
 
 class HDWalletProvider {
+  private hdwallet?: EthereumHDKey;
+  private walletHdpath: string;
+  private wallets: { [address: string]: ethJSWallet }; // TODO refactor
+  private addresses: string[];
+
+  public engine: ProviderEngine;
+
   constructor(
-    mnemonic,
-    provider,
-    address_index = 0,
-    num_addresses = 1,
-    shareNonce = true,
-    wallet_hdpath = "m/44'/60'/0'/0/"
+    mnemonic: string | string[],
+    provider: string | any,
+    addressIndex: number = 0,
+    numAddresses: number = 1,
+    shareNonce: boolean = true,
+    walletHdpath: string = `m/44'/60'/0'/0/`,
   ) {
-    this.hdwallet;
-    this.wallet_hdpath = wallet_hdpath;
+    this.walletHdpath = walletHdpath;
     this.wallets = {};
     this.addresses = [];
     this.engine = new ProviderEngine();
@@ -38,32 +50,32 @@ class HDWalletProvider {
       throw new Error(
         [
           `Malformed provider URL: '${provider}'`,
-          "Please specify a correct URL, using the http, https, ws, or wss protocol.",
-          ""
+          'Please specify a correct URL, using the http, https, ws, or wss protocol.',
+          ''
         ].join("\n")
       );
     }
 
     // private helper to normalize given mnemonic
-    const normalizePrivateKeys = mnemonic => {
+    const normalizePrivateKeys = (mnemonic: string | string[]): string[] | false => {
       if (Array.isArray(mnemonic)) return mnemonic;
-      else if (mnemonic && !mnemonic.includes(" ")) return [mnemonic];
+      else if (mnemonic && !mnemonic.includes(' ')) return [mnemonic];
       // if truthy, but no spaces in mnemonic
       else return false; // neither an array nor valid value passed;
     };
 
     // private helper to check if given mnemonic uses BIP39 passphrase protection
-    const checkBIP39Mnemonic = mnemonic => {
-      this.hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
+    const checkBIP39Mnemonic = (mnemonic: string) => {
+      this.hdwallet = EthereumHDKey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
 
       if (!bip39.validateMnemonic(mnemonic)) {
-        throw new Error("Mnemonic invalid or undefined");
+        throw new Error('Mnemonic invalid or undefined');
       }
 
       // crank the addresses out
-      for (let i = address_index; i < address_index + num_addresses; i++) {
+      for (let i = addressIndex; i < addressIndex + numAddresses; i++) {
         const wallet = this.hdwallet
-          .derivePath(this.wallet_hdpath + i)
+          .derivePath(this.walletHdpath + i)
           .getWallet();
         const addr = `0x${wallet.getAddress().toString("hex")}`;
         this.addresses.push(addr);
@@ -72,11 +84,11 @@ class HDWalletProvider {
     };
 
     // private helper leveraging ethUtils to populate wallets/addresses
-    const ethUtilValidation = privateKeys => {
+    const ethUtilValidation = (privateKeys: string[]) => {
       // crank the addresses out
-      for (let i = address_index; i < address_index + num_addresses; i++) {
+      for (let i = addressIndex; i < addressIndex + numAddresses; i++) {
         const privateKey = Buffer.from(privateKeys[i].replace("0x", ""), "hex");
-        if (ethUtil.isValidPrivate(privateKey)) {
+        if (EthUtil.isValidPrivate(privateKey)) {
           const wallet = ethJSWallet.fromPrivateKey(privateKey);
           const address = wallet.getAddressString();
           this.addresses.push(address);
@@ -87,7 +99,7 @@ class HDWalletProvider {
 
     const privateKeys = normalizePrivateKeys(mnemonic);
 
-    if (!privateKeys) checkBIP39Mnemonic(mnemonic);
+    if (!privateKeys) checkBIP39Mnemonic(mnemonic as string);
     else ethUtilValidation(privateKeys);
 
     const tmp_accounts = this.addresses;
@@ -95,17 +107,17 @@ class HDWalletProvider {
 
     this.engine.addProvider(
       new HookedSubprovider({
-        getAccounts(cb) {
+        getAccounts(cb: any) {
           cb(null, tmp_accounts);
         },
-        getPrivateKey(address, cb) {
+        getPrivateKey(address: string, cb: any) {
           if (!tmp_wallets[address]) {
             return cb("Account not found");
           } else {
             cb(null, tmp_wallets[address].getPrivateKey().toString("hex"));
           }
         },
-        signTransaction(txParams, cb) {
+        signTransaction(txParams: any, cb: any) {
           let pkey;
           const from = txParams.from.toLowerCase();
           if (tmp_wallets[from]) {
@@ -114,11 +126,11 @@ class HDWalletProvider {
             cb("Account not found");
           }
           const tx = new Transaction(txParams);
-          tx.sign(pkey);
+          tx.sign(pkey as Buffer);
           const rawTx = `0x${tx.serialize().toString("hex")}`;
           cb(null, rawTx);
         },
-        signMessage({ data, from }, cb) {
+        signMessage({ data, from }: any, cb: any) {
           const dataIfExists = data;
           if (!dataIfExists) {
             cb("No data to sign");
@@ -127,13 +139,13 @@ class HDWalletProvider {
             cb("Account not found");
           }
           let pkey = tmp_wallets[from].getPrivateKey();
-          const dataBuff = ethUtil.toBuffer(dataIfExists);
-          const msgHashBuff = ethUtil.hashPersonalMessage(dataBuff);
-          const sig = ethUtil.ecsign(msgHashBuff, pkey);
-          const rpcSig = ethUtil.toRpcSig(sig.v, sig.r, sig.s);
+          const dataBuff = EthUtil.toBuffer(dataIfExists);
+          const msgHashBuff = EthUtil.hashPersonalMessage(dataBuff);
+          const sig = EthUtil.ecsign(msgHashBuff, pkey);
+          const rpcSig = EthUtil.toRpcSig(sig.v, sig.r, sig.s);
           cb(null, rpcSig);
         },
-        signPersonalMessage(...args) {
+        signPersonalMessage(...args: any[]) {
           this.signMessage(...args);
         }
       })
@@ -144,12 +156,13 @@ class HDWalletProvider {
       : this.engine.addProvider(singletonNonceSubProvider);
 
     this.engine.addProvider(new FiltersSubprovider());
-    if (typeof provider === "string") {
+    if (typeof provider === 'string') {
       // shim Web3 to give it expected sendAsync method. Needed if web3-engine-provider upgraded!
       // Web3.providers.HttpProvider.prototype.sendAsync =
       // Web3.providers.HttpProvider.prototype.send;
       this.engine.addProvider(
         new ProviderSubprovider(
+          // @ts-ignore
           new Web3.providers.HttpProvider(provider, { keepAlive: false })
         )
       );
@@ -159,17 +172,23 @@ class HDWalletProvider {
     this.engine.start(); // Required by the provider engine.
   }
 
-  sendAsync(...args) {
-    this.engine.sendAsync.apply(this.engine, args);
+  public send(payload: JSONRPCRequestPayload): void {
+    return this.engine.send.apply(this.engine, [payload]);
   }
 
-  send(...args) {
-    return this.engine.send.apply(this.engine, args);
+  public sendAsync(
+    payload: JSONRPCRequestPayload,
+    callback: (
+      error: null | Error,
+      response: JSONRPCResponsePayload
+    ) => void
+  ): void {
+    this.engine.sendAsync.apply(this.engine, [payload, callback]);
   }
 
-  // returns the address of the given address_index, first checking the cache
-  getAddress(idx) {
-    debug("getting addresses", this.addresses[0], idx);
+  public getAddress(idx?: number): string {
+    debugInstance("getting addresses", this.addresses[0], idx);
+
     if (!idx) {
       return this.addresses[0];
     } else {
@@ -177,21 +196,20 @@ class HDWalletProvider {
     }
   }
 
-  // returns the addresses cache
-  getAddresses() {
+  public getAddresses(): string[] {
     return this.addresses;
+  }
+
+  public static isValidProvider(provider: string | any): boolean {
+    const validProtocols = ['http:', 'https:', 'ws:', 'wss:'];
+
+    if (typeof provider === 'string') {
+      const url = Url.parse(provider.toLowerCase());
+      return !!(validProtocols.includes(url.protocol || '') && url.slashes);
+    }
+
+    return true;
   }
 }
 
-HDWalletProvider.isValidProvider = provider => {
-  const validProtocols = ["http:", "https:", "ws:", "wss:"];
-
-  if (typeof provider === "string") {
-    const url = Url.parse(provider.toLowerCase());
-    return validProtocols.includes(url.protocol) && url.slashes;
-  }
-
-  return true;
-};
-
-module.exports = HDWalletProvider;
+export = HDWalletProvider;
