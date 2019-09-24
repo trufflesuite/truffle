@@ -40,12 +40,13 @@ describe("Parser", () => {
     assert.deepEqual(imports, expected);
   });
 
-  it("should return correct imports with native solc [ @native ]", () => {
+  it.skip("should return correct imports with native solc [ @native ]", () => {
     const options = {
       events: { emit: () => {} },
       solcConfig: { version: "native" }
     };
     const nativeSupplier = new CompilerSupplier(options);
+
     nativeSupplier.load().then(({ solc }) => {
       const imports = Parser.parseImports(source, solc);
       // Note that this test is important because certain parts of the solidity
@@ -62,7 +63,7 @@ describe("Parser", () => {
     });
   });
 
-  it("should return correct imports with docker solc [ @native ]", () => {
+  it.skip("should return correct imports with docker solc [ @native ]", () => {
     const options = {
       events: { emit: () => {} },
       solcConfig: {
@@ -71,6 +72,7 @@ describe("Parser", () => {
       }
     };
     const dockerSupplier = new CompilerSupplier(options);
+
     dockerSupplier.load().then(({ solc }) => {
       const imports = Parser.parseImports(source, solc);
       // Note that this test is important because certain parts of the solidity
