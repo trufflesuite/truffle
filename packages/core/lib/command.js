@@ -125,7 +125,8 @@ class Command {
         opt => !validOptions.includes(opt)
       );
 
-      if (invalidOptions.length > 0) {
+      // TODO: Remove exception for 'truffle run' when plugin options support added.
+      if (invalidOptions.length > 0 && result.name !== "run") {
         if (options.logger) {
           const log = options.logger.log || options.logger.debug;
           log(

@@ -33,6 +33,8 @@ jobs:
     - run: npm install -g yarn lerna
     - run: yarn bootstrap
     - run: ${{ matrix.env }} yarn ci
+      env:
+        CI: true
     - uses: 8398a7/action-slack@v1.1.1
       with:
         type: failure
@@ -52,4 +54,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        if: always()
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
