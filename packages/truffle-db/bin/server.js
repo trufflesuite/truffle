@@ -1,7 +1,7 @@
 const { ApolloServer } = require("apollo-server");
 
 const { TruffleDB } = require("truffle-db");
-const Config = require("truffle-config");
+const Config = require("@truffle/config");
 
 const port = 4444;
 
@@ -11,7 +11,8 @@ const config = Config.detect({
 
 const db = new TruffleDB({
   contracts_build_directory: config.contracts_build_directory,
-  contracts_directory: config.contracts_directory
+  contracts_directory: config.contracts_directory,
+  working_directory: config.working_directory
 });
 
 const { schema, context } = db;

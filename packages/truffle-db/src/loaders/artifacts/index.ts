@@ -273,6 +273,7 @@ type CompilationConfigObject = {
   contracts_directory?: string,
   contracts_build_directory?: string,
   artifacts_directory?: string,
+  working_directory?: string,
   all?: boolean
 }
 
