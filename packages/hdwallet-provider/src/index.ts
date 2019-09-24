@@ -2,7 +2,7 @@ import * as bip39 from 'bip39';
 import * as EthUtil from 'ethereumjs-util';
 import ethJSWallet from 'ethereumjs-wallet';
 import EthereumHDKey from 'ethereumjs-wallet/hdkey';
-import debug from 'debug';
+import debugModule from 'debug';
 import { Transaction } from 'ethereumjs-tx';
 import ProviderEngine from 'web3-provider-engine';
 import FiltersSubprovider from 'web3-provider-engine/subproviders/filters';
@@ -16,7 +16,7 @@ import {
   JSONRPCResponsePayload
 } from 'ethereum-protocol';
 
-const debugInstance = debug('@truffle/hdwallet-provider');
+const debug = debugModule('@truffle/hdwallet-provider');
 
 // This line shares nonce state across multiple provider instances. Necessary
 // because within truffle the wallet is repeatedly newed if it's declared in the config within a
@@ -187,7 +187,7 @@ class HDWalletProvider {
   }
 
   public getAddress(idx?: number): string {
-    debugInstance('getting addresses', this.addresses[0], idx);
+    debug('getting addresses', this.addresses[0], idx);
 
     if (!idx) {
       return this.addresses[0];
