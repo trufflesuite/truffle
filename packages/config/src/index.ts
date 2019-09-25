@@ -1,5 +1,6 @@
 import path from 'path';
 import lodash from 'lodash';
+import Module from 'module';
 import findUp from 'find-up';
 import Configstore from 'configstore';
 import TruffleError from '@truffle/error';
@@ -68,17 +69,7 @@ class TruffleConfig {
   }
 
   public normalize(obj: any): any {
-    const clone: any = {};
-
-    Object.keys(obj).forEach(key => {
-      try {
-        clone[key] = obj[key];
-      } catch (e) {
-        // Do nothing with values that throw.
-      }
-    });
-
-    return clone;
+    return { ...obj };
   }
 
   public with(obj: any): TruffleConfig {
