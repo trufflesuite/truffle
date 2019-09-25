@@ -49,10 +49,10 @@
     "ethpm-registry": "0.1.0-next.3",
     "fs-extra": "6.0.1",
     "ganache-core": "2.7.0",
+    "glob": "^7.1.4",
     "hdkey": "^1.1.0",
     "mkdirp": "^0.5.1",
     "mocha": "5.2.0",
-    "node-dir": "0.1.17",
     "node-emoji": "^1.8.1",
     "node-ipc": "^9.1.1",
     "original-require": "1.0.1",
@@ -69,7 +69,6 @@
   },
   "devDependencies": {
     "@truffle/blockchain-utils": "^0.0.12",
-    "glob": "^7.1.2",
     "memorystream": "^0.3.1"
   },
   "publishConfig": {
