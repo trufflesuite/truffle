@@ -1,12 +1,11 @@
-var assert = require("chai").assert;
-var path = require("path");
-var fs = require("fs-extra");
-var glob = require("glob");
-var Box = require("@truffle/box");
-var Create = require("../../lib/create");
-var dir = require("node-dir");
-var Resolver = require("@truffle/resolver");
-var Artifactor = require("@truffle/artifactor");
+const assert = require("chai").assert;
+const path = require("path");
+const fse = require("fs-extra");
+const glob = require("glob");
+const Box = require("@truffle/box");
+const Create = require("../../lib/create");
+const Resolver = require("@truffle/resolver");
+const Artifactor = require("@truffle/artifactor");
 
 describe("create", function() {
   var config;
@@ -20,7 +19,7 @@ describe("create", function() {
   after("Cleanup tmp files", function(done) {
     glob("tmp-*", (err, files) => {
       if (err) done(err);
-      files.forEach(file => fs.removeSync(file));
+      files.forEach(file => fse.removeSync(file));
       done();
     });
   });
@@ -34,11 +33,11 @@ describe("create", function() {
         "MyNewContract.sol"
       );
       assert.isTrue(
-        fs.existsSync(expected_file),
+        fse.existsSync(expected_file),
         `Contract to be created doesns't exist, ${expected_file}`
       );
 
-      var file_data = fs.readFileSync(expected_file, { encoding: "utf8" });
+      var file_data = fse.readFileSync(expected_file, { encoding: "utf8" });
       assert.isNotNull(file_data, "File's data is null");
       assert.notEqual(file_data, "", "File's data is blank");
       assert.isTrue(
@@ -60,7 +59,7 @@ describe("create", function() {
         "MyNewContract2.sol"
       );
       assert.isTrue(
-        fs.existsSync(expected_file),
+        fse.existsSync(expected_file),
         `Contract to be created doesns't exist, ${expected_file}`
       );
 
@@ -84,7 +83,7 @@ describe("create", function() {
         "MyNewContract3.sol"
       );
       assert.isTrue(
-        fs.existsSync(expected_file),
+        fse.existsSync(expected_file),
         `Contract to be created doesns't exist, ${expected_file}`
       );
 
@@ -107,11 +106,11 @@ describe("create", function() {
 
       var expected_file = path.join(config.test_directory, "my_new_test.js");
       assert.isTrue(
-        fs.existsSync(expected_file),
+        fse.existsSync(expected_file),
         `Test to be created doesns't exist, ${expected_file}`
       );
 
-      var file_data = fs.readFileSync(expected_file, { encoding: "utf8" });
+      var file_data = fse.readFileSync(expected_file, { encoding: "utf8" });
       assert.isNotNull(file_data, "File's data is null");
       assert.notEqual(file_data, "", "File's data is blank");
 
@@ -124,32 +123,29 @@ describe("create", function() {
       err
     ) {
       if (err) return done(err);
+      const files = glob.sync(`${config.migrations_directory}${path.sep}*`);
 
-      dir.files(config.migrations_directory, function(err, files) {
-        if (err) return done(err);
+      var found = false;
+      var expected_suffix = "_my_new_migration.js";
 
-        var found = false;
-        var expected_suffix = "_my_new_migration.js";
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i];
 
-        for (var i = 0; i < files.length; i++) {
-          var file = files[i];
+        if (
+          file.indexOf(expected_suffix) ===
+          file.length - expected_suffix.length
+        ) {
+          var file_data = fse.readFileSync(file, { encoding: "utf8" });
+          assert.isNotNull(file_data, "File's data is null");
+          assert.notEqual(file_data, "", "File's data is blank");
 
-          if (
-            file.indexOf(expected_suffix) ===
-            file.length - expected_suffix.length
-          ) {
-            var file_data = fs.readFileSync(file, { encoding: "utf8" });
-            assert.isNotNull(file_data, "File's data is null");
-            assert.notEqual(file_data, "", "File's data is blank");
-
-            return done();
-          }
+          return done();
         }
+      }
 
-        if (found === false) {
-          assert.fail("Could not find a file that matched expected name");
-        }
-      });
+      if (found === false) {
+        assert.fail("Could not find a file that matched expected name");
+      }
     });
   }); // it
 }).timeout(10000);
