@@ -9,30 +9,14 @@ const debug = debugModule("codec:format:errors");
 
 import BN from "bn.js";
 import { Types } from "./types";
-import util from "util";
 import { AstDefinition } from "../types/ast";
-import { Definition as DefinitionUtils } from "../utils/definition";
-import { TypeUtils } from "../utils/datatype";
 import { Range } from "../types/storage";
-import { slotAddressPrintout } from "../utils/storage";
 
 export namespace Errors {
 
   /*
    * SECTION 1: Generic types for values in general (including errors).
    */
-
-  //For when we need to throw an error, here's a wrapper class that extends Error.
-  //Apologies about the confusing name, but I wanted something that would make
-  //sense should it not be caught and thus accidentally exposed to the outside.
-  export class DecodingError extends Error{
-    error: ErrorForThrowing;
-    constructor(error: ErrorForThrowing) {
-      super(message(error));
-      this.error = error;
-      this.name = "DecodingError";
-    }
-  }
 
   export type ErrorResult = ElementaryErrorResult
     | ArrayErrorResult | MappingErrorResult | StructErrorResult | MagicErrorResult | TupleErrorResult
@@ -45,8 +29,6 @@ export namespace Errors {
     | ArrayError | MappingError | StructError | MagicError | TupleError
     | EnumError | ContractError | FunctionExternalError | FunctionInternalError
     | InternalUseError;
-  //note that at the moment, no reference type has its own error category, so
-  //no reference types are listed here; this also includes Magic
 
   /*
    * SECTION 2: Elementary values
@@ -384,32 +366,6 @@ export namespace Errors {
   export interface OverlargePointersNotImplementedError {
     kind: "OverlargePointersNotImplementedError";
     pointerAsBN: BN;
-  }
-
-  //this function gives an error message
-  //for those errors that are meant to possibly
-  //be wrapped in a DecodingError and thrown
-  export function message(error: ErrorForThrowing) {
-    switch(error.kind) {
-      case "UserDefinedTypeNotFoundError":
-        let typeName = TypeUtils.isContractDefinedType(error.type)
-          ? error.type.definingContractName + "." + error.type.typeName
-          : error.type.typeName;
-        return `Unknown ${error.type.typeClass} type ${typeName} of id ${error.type.id}`;
-      case "UnsupportedConstantError":
-        return `Unsupported constant type ${DefinitionUtils.typeClass(error.definition)}`;
-      case "ReadErrorStack":
-        return `Can't read stack from position ${error.from} to ${error.to}`;
-      case "ReadErrorBytes":
-        return `Can't read ${error.length} bytes from input starting at ${error.start}`;
-      case "ReadErrorStorage":
-        if(error.range.length) {
-          return `Can't read ${error.range.length} bytes from storage starting at index ${error.range.from.index} in ${slotAddressPrintout(error.range.from.slot)}`;
-        }
-        else {
-          return `Can't read storage from index ${error.range.from.index} in ${slotAddressPrintout(error.range.from.slot)} to index ${error.range.to.index} in ${slotAddressPrintout(error.range.to.slot)}`;
-        }
-    }
   }
 
   /* SECTION 9: Internal use errors */

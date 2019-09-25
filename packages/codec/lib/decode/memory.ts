@@ -11,6 +11,7 @@ import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";
+import { DecodingError } from "../types/errors";
 
 export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {
@@ -32,7 +33,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
     return <Errors.ErrorResult> { //dunno why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<Errors.DecodingError>error).error
+      error: (<DecodingError>error).error
     };
   }
 
@@ -71,7 +72,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         return <Errors.ErrorResult> { //dunno why TS is failing here
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error: (<DecodingError>error).error
         };
       }
       lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
@@ -112,7 +113,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
           return {
             type: dataType,
             kind: "error" as const,
-            error: (<Errors.DecodingError>error).error
+            error: (<DecodingError>error).error
           };
         }
         lengthAsBN = CodecUtils.Conversion.toBN(rawLength);

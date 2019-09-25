@@ -4,7 +4,7 @@ const debug = debugModule("codec:utils:storage");
 import BN from "bn.js";
 import { Slot, StorageLength } from "../types/storage";
 import { EVM as EVMUtils } from "./evm";
-import { encodeMappingKey, mappingKeyAsHex, keyInfoForPrinting } from "../encode/key";
+import { encodeMappingKey, mappingKeyAsHex } from "../encode/key";
 
 export function isWordsLength(size: StorageLength): size is {words: number} {
   return (<{words: number}>size).words !== undefined;
@@ -40,23 +40,6 @@ export function slotAddress(slot: Slot): BN {
   }
   else {
     return slot.offset;
-  }
-}
-
-export function slotAddressPrintout(slot: Slot): string {
-  if (slot.key !== undefined && slot.path !== undefined) {
-    // mapping reference
-    let {type: keyEncoding, value: keyValue} = keyInfoForPrinting(slot.key);
-    return "keccak(" + keyValue + " as " + keyEncoding + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
-  }
-  else if (slot.path !== undefined) {
-    const pathAddressPrintout = slotAddressPrintout(slot.path);
-    return slot.hashPath
-      ? "keccak(" + pathAddressPrintout + ")" + slot.offset.toString()
-      : pathAddressPrintout + slot.offset.toString();
-  }
-  else {
-    return slot.offset.toString();
   }
 }
 

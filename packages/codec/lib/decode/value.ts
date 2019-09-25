@@ -12,7 +12,7 @@ import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderOptions } from "../types/options";
 import { DecoderRequest } from "../types/request";
-import { StopDecodingError } from "../types/errors";
+import { DecodingError, StopDecodingError } from "../types/errors";
 import { ContractInfoAndContext } from "../types/decoding";
 
 export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
@@ -24,15 +24,15 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
   try {
     bytes = yield* read(pointer, state);
   }
-  catch(error) { //error: Errors.DecodingError
+  catch(error) { //error: DecodingError
     debug("segfault, pointer %o, state: %O", pointer, state);
     if(strict) {
-      throw new StopDecodingError((<Errors.DecodingError>error).error);
+      throw new StopDecodingError((<DecodingError>error).error);
     }
     return <Errors.ErrorResult> { //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<Errors.DecodingError>error).error
+      error: (<DecodingError>error).error
     };
   }
   rawBytes = bytes;

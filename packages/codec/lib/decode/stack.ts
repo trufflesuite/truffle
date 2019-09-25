@@ -13,6 +13,7 @@ import { decodeAbiReferenceByAddress } from "./abi";
 import { StackPointer, StackLiteralPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";
+import { DecodingError } from "../types/errors";
 
 export default function* decodeStack(dataType: Types.Type, pointer: StackPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   let rawValue: Uint8Array;
@@ -23,7 +24,7 @@ export default function* decodeStack(dataType: Types.Type, pointer: StackPointer
     return <Errors.ErrorResult> { //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<Errors.DecodingError>error).error
+      error: (<DecodingError>error).error
     };
   }
   const literalPointer: StackLiteralPointer = { location: "stackliteral" as const, literal: rawValue };

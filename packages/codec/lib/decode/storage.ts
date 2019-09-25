@@ -13,6 +13,7 @@ import * as StorageTypes from "../types/storage";
 import { isWordsLength, slotAddress } from "../utils/storage";
 import BN from "bn.js";
 import { DecoderRequest } from "../types/request";
+import { DecodingError } from "../types/errors";
 
 export default function* decodeStorage(dataType: Types.Type, pointer: StoragePointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {
@@ -38,7 +39,7 @@ export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, 
     return <Errors.ErrorResult> { //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<Errors.DecodingError>error).error
+      error: (<DecodingError>error).error
     };
   }
   const startOffset = CodecUtils.Conversion.toBN(rawValue);
@@ -46,11 +47,11 @@ export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, 
   try {
     rawSize = storageSizeForType(dataType, info.userDefinedTypes, allocations);
   }
-  catch(error) { //error: Errors.DecodingError
+  catch(error) { //error: DecodingError
     return <Errors.ErrorResult> { //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<Errors.DecodingError>error).error
+      error: (<DecodingError>error).error
     };
   }
   //we *know* the type being decoded must be sized in words, because it's a
@@ -98,7 +99,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
             return <Errors.ErrorResult> { //no idea why TS is failing here
               type: dataType,
               kind: "error" as const,
-              error: (<Errors.DecodingError>error).error
+              error: (<DecodingError>error).error
             };
           }
           lengthAsBN = CodecUtils.Conversion.toBN(data);
@@ -128,11 +129,11 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       try {
         baseSize = storageSizeForType(dataType.baseType, info.userDefinedTypes, allocations);
       }
-      catch(error) { //error: Errors.DecodingError
+      catch(error) { //error: DecodingError
         return {
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error: (<DecodingError>error).error
         };
       }
       debug("baseSize %o", baseSize);
@@ -238,7 +239,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         return <Errors.ErrorResult> { //no idea why TS is failing here
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error: (<DecodingError>error).error
         };
       }
 
@@ -373,11 +374,11 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       try {
         valueSize = storageSizeForType(valueType, info.userDefinedTypes, allocations);
       }
-      catch(error) { //error: Errors.DecodingError
+      catch(error) { //error: DecodingError
         return {
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error: (<DecodingError>error).error
         };
       }
 

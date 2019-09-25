@@ -14,7 +14,6 @@ import BN from "bn.js";
 import Big from "big.js";
 import { Types } from "./types";
 import { Errors } from "./errors";
-import util from "util";
 import { AstDefinition, Mutability } from "../types/ast";
 import { Definition as DefinitionUtils } from "../utils/definition";
 import { FunctionAbiEntry } from "../types/abi";

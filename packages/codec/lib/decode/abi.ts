@@ -13,7 +13,7 @@ import { abiSizeInfo } from "../allocate/abi";
 import { EvmInfo } from "../types/evm";
 import { DecoderOptions } from "../types/options";
 import { DecoderRequest } from "../types/request";
-import { StopDecodingError } from "../types/errors";
+import { DecodingError, StopDecodingError } from "../types/errors";
 
 type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
 
@@ -27,12 +27,12 @@ export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer
     }
     catch(error) {
       if(options.strictAbiMode) {
-        throw new StopDecodingError((<Errors.DecodingError>error).error);
+        throw new StopDecodingError((<DecodingError>error).error);
       }
       return <Errors.ErrorResult> { //dunno why TS is failing at this inference
         type: dataType,
         kind: "error" as const,
-        error: (<Errors.DecodingError>error).error
+        error: (<DecodingError>error).error
       };
     }
     if(dynamic) {
@@ -64,12 +64,12 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
   }
   catch(error) {
     if(strict) {
-      throw new StopDecodingError((<Errors.DecodingError>error).error);
+      throw new StopDecodingError((<DecodingError>error).error);
     }
     return <Errors.ErrorResult> { //dunno why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<Errors.DecodingError>error).error
+      error: (<DecodingError>error).error
     };
   }
 
@@ -102,12 +102,12 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
   }
   catch(error) {
     if(strict) {
-      throw new StopDecodingError((<Errors.DecodingError>error).error);
+      throw new StopDecodingError((<DecodingError>error).error);
     }
     return <Errors.ErrorResult> { //dunno why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<Errors.DecodingError>error).error
+      error: (<DecodingError>error).error
     };
   }
   if(!dynamic) { //this will only come up when called from stack.ts
@@ -135,12 +135,12 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
       }
       catch(error) {
         if(strict) {
-          throw new StopDecodingError((<Errors.DecodingError>error).error);
+          throw new StopDecodingError((<DecodingError>error).error);
         }
         return <Errors.ErrorResult> { //dunno why TS is failing here
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error: (<DecodingError>error).error
         };
       }
       lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
@@ -192,14 +192,14 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
               length: CodecUtils.EVM.WORD_SIZE
             }, state);
           }
-          catch(error) { //error: Errors.DecodingError
+          catch(error) { //error: DecodingError
             if(strict) {
-              throw new StopDecodingError((<Errors.DecodingError>error).error);
+              throw new StopDecodingError((<DecodingError>error).error);
             }
             return {
               type: dataType,
               kind: "error" as const,
-              error: (<Errors.DecodingError>error).error
+              error: (<DecodingError>error).error
             };
           }
           lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
@@ -247,12 +247,12 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
       }
       catch(error) {
         if(strict) {
-          throw new StopDecodingError((<Errors.DecodingError>error).error);
+          throw new StopDecodingError((<DecodingError>error).error);
         }
         return {
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error: (<DecodingError>error).error
         };
       }
 
@@ -319,14 +319,14 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType | Types.
       try {
         baseSize = abiSizeInfo(dataType.baseType, info.allocations.abi).size;
       }
-      catch(error) { //error: Errors.DecodingError
+      catch(error) { //error: DecodingError
         if(options.strictAbiMode) {
-          throw new StopDecodingError((<Errors.DecodingError>error).error);
+          throw new StopDecodingError((<DecodingError>error).error);
         }
         return {
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error: (<DecodingError>error).error
         };
       }
 

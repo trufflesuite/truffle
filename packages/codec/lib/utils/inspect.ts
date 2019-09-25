@@ -3,6 +3,7 @@ const debug = debugModule("codec:format:inspect");
 
 import util from "util";
 import { Types, Values, Errors } from "../format";
+import { message } from "./errors";
 
 //we'll need to write a typing for the options type ourself, it seems; just
 //going to include the relevant properties here
@@ -207,7 +208,7 @@ export class ResultInspector {
           case "ReadErrorStack":
           case "ReadErrorStorage":
           case "ReadErrorBytes":
-            return Errors.message(errorResult.error); //yay, these three are already defined!
+            return message(errorResult.error); //yay, these five are already defined!
         }
       }
     }

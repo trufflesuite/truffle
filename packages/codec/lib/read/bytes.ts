@@ -1,7 +1,7 @@
 import BN from "bn.js";
 
 import * as CodecUtils from "../utils";
-import { Errors } from "../format";
+import { DecodingError } from "../types/errors";
 
 /**
  * read word from memory
@@ -26,7 +26,7 @@ export function read(memory: Uint8Array, offset: number) {
 export function readBytes(memory: Uint8Array, offset: number, length: number) {
 
   if(!Number.isSafeInteger(offset + length)) {
-    throw new Errors.DecodingError({
+    throw new DecodingError({
       kind: "ReadErrorBytes" as const,
       start: offset,
       length

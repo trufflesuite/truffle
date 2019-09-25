@@ -2,11 +2,12 @@ import debugModule from "debug";
 const debug = debugModule("codec:read:storage");
 
 import * as CodecUtils from "../utils";
-import { slotAddress, slotAddressPrintout } from "../utils/storage";
+import { slotAddress } from "../utils/storage";
+import { slotAddressPrintout } from "../utils/errors";
 import { Slot, Range } from "../types/storage";
 import { WordMapping } from "../types/evm";
 import { DecoderRequest } from "../types/request";
-import { Errors } from "../format";
+import { DecodingError } from "../types/errors";
 import BN from "bn.js";
 
 /**
@@ -83,7 +84,7 @@ export function* readRange(storage: WordMapping, range: Range): Generator<Decode
     totalWords = totalWordsAsBN.toNumber();
   }
   catch(_) {
-    throw new Errors.DecodingError({
+    throw new DecodingError({
       kind: "ReadErrorStorage" as const,
       range
     });
