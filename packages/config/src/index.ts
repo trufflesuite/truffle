@@ -70,7 +70,7 @@ class TruffleConfig {
 
   public normalize(obj: any): any {
     const clone: any = {};
-    
+
     Object.keys(obj).forEach(key => {
       try {
         clone[key] = obj[key];
@@ -78,7 +78,7 @@ class TruffleConfig {
         // Do nothing with values that throw.
       }
     });
-    
+
     return clone;
   }
 
@@ -144,7 +144,16 @@ class TruffleConfig {
   }
 
   public static detect(options: any = {}, filename?: string): TruffleConfig {
-    const configFile = TruffleConfig.search(options, filename);
+    let configFile;
+    const configPath = options.config;
+    
+    if (configPath) {
+      configFile = path.isAbsolute(configPath)
+        ? configPath
+        : path.resolve(configPath);
+    } else {
+      configFile = TruffleConfig.search(options, filename);
+    }
 
     if (!configFile) {
       throw new TruffleError('Could not find suitable configuration file.');
@@ -154,7 +163,7 @@ class TruffleConfig {
   }
 
   public static load(file: string, options: any = {}): TruffleConfig {
-    const workingDirectory = path.dirname(path.resolve(file));
+    const workingDirectory = options.config ? process.cwd() : path.dirname(path.resolve(file));
 
     const config = new TruffleConfig(undefined, workingDirectory, undefined);
 

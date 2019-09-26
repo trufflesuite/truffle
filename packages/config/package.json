@@ -25,7 +25,9 @@
     "@types/configstore": "^4.0.0",
     "@types/find-up": "^2.1.0",
     "@types/node": "^12.7.7",
+    "@types/sinon": "^7.0.13",
     "mocha": "6.2.0",
+    "sinon": "^7.5.0",
     "ts-node": "^8.4.1",
     "typescript": "^3.6.3"
   },

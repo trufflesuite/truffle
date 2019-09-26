@@ -3,11 +3,49 @@ import path from 'path';
 import assert from 'assert';
 import TruffleConfig from '../dist';
 import { describe, it } from 'mocha';
+import sinon from 'sinon';
 
 const DEFAULT_CONFIG_FILENAME = './test/truffle-config.js';
 const BACKUP_CONFIG_FILENAME = './test/truffle.js'; // old config filename
 
+let expectedPath: string;
+let options: { config: string };
+
 describe('TruffleConfig.detect', () => {
+  describe('when a config path is provided', () => {
+    beforeEach(() => {
+      sinon.stub(TruffleConfig, 'load');
+      options = { config: '/my/favorite/config.js' };
+      expectedPath = '/my/favorite/config.js';
+    });
+    afterEach(() => {
+      (TruffleConfig as any).load.restore();
+    });
+
+    it('loads a config from the options if available', () => {
+      TruffleConfig.detect(options);
+      assert((TruffleConfig as any).load.calledWith(expectedPath));
+    });
+    it('loads a config even with a relative path', () => {
+      options.config = '../../config.js';
+      TruffleConfig.detect(options);
+      assert(
+        (TruffleConfig as any).load.calledWith(
+          path.resolve(process.cwd(), '../../config.js')
+        )
+      );
+    });
+  });
+});
+
+describe('when it can\'t find a config file', () => {
+  beforeEach(() => {
+    sinon.stub(TruffleConfig, 'search').returns(null);
+  });
+  afterEach(() => {
+    (TruffleConfig as any).search.restore();
+  });
+
   it('throws if a truffle config isn\'t detected', () => {
     assert.throws(() => {
       TruffleConfig.detect();
@@ -80,4 +118,3 @@ describe('TruffleConfig.search', () => {
     fs.closeSync(fs.openSync('./test/truffle-config.js', 'w'));
   });
 });
-
