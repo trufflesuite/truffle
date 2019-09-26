@@ -78,7 +78,7 @@ export function wrapElementaryValue(value: any, dataType: Types.Type): Values.El
         type: dataType,
         kind: "value",
         value: {
-          asBool: <boolean>value
+          asBoolean: <boolean>value
         }
       };
     //fixed and ufixed are not handled for now!

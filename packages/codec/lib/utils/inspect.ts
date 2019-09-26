@@ -41,7 +41,7 @@ export class ResultInspector {
             //we'll trust those to their defaults
             return options.stylize((<Values.FixedValue|Values.UfixedValue>this.result).value.asBig.toString(), "number");
           case "bool":
-            return util.inspect((<Values.BoolValue>this.result).value.asBool, options);
+            return util.inspect((<Values.BoolValue>this.result).value.asBoolean, options);
           case "bytes":
             let hex = (<Values.BytesValue>this.result).value.asHex;
             switch(this.result.type.kind) {

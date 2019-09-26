@@ -21,7 +21,7 @@ export function encodeMappingKey(input: Values.ElementaryValue): Uint8Array {
       return ConversionUtils.toBytes((<Values.UintValue|Values.IntValue>input).value.asBN, EVMUtils.WORD_SIZE);
     case "bool": {
       bytes = new Uint8Array(EVMUtils.WORD_SIZE); //is initialized to zeroes
-      if((<Values.BoolValue>input).value.asBool) {
+      if((<Values.BoolValue>input).value.asBoolean) {
         bytes[EVMUtils.WORD_SIZE - 1] = 1;
       }
       return bytes;
