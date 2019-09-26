@@ -21,6 +21,7 @@
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/config#readme",
   "dependencies": {
     "@truffle/error": "^0.0.7",
+    "@truffle/events": "^0.0.1",
     "@truffle/provider": "^0.1.17",
     "configstore": "^4.0.0",
     "find-up": "^2.1.0",

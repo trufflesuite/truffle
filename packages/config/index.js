@@ -5,7 +5,7 @@ const Module = require("module");
 const findUp = require("find-up");
 const originalrequire = require("original-require");
 const Configstore = require("configstore");
-const { EventManager } = require("../events");
+const { EventManager } = require("@truffle/events");
 
 const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
 const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename
