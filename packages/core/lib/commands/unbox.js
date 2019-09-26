@@ -119,7 +119,7 @@ const command = {
 
     config.events.emit("unbox:start");
 
-    Box.unbox(url, destination, unboxOptions, config)
+    Box.unbox(url, normalizedDestination, unboxOptions, config)
       .then(async boxConfig => {
         await config.events.emit("unbox:succeed", { boxConfig });
         done();
