@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:abi");
 
+import BN from "bn.js";
 import read from "../read";
 import * as CodecUtils from "../utils";
 import { TypeUtils } from "../utils";
@@ -12,7 +13,7 @@ import { abiSizeInfo } from "../allocate/abi";
 import { EvmInfo } from "../types/evm";
 import { DecoderOptions } from "../types/options";
 import { DecoderRequest } from "../types/request";
-import { StopDecodingError } from "../types/errors";
+import { DecodingError, StopDecodingError } from "../types/errors";
 
 type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
 
@@ -26,12 +27,12 @@ export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer
     }
     catch(error) {
       if(options.strictAbiMode) {
-        throw new StopDecodingError((<Errors.DecodingError>error).error);
+        throw new StopDecodingError((<DecodingError>error).error);
       }
       return <Errors.ErrorResult> { //dunno why TS is failing at this inference
         type: dataType,
         kind: "error" as const,
-        error: (<Errors.DecodingError>error).error
+        error: (<DecodingError>error).error
       };
     }
     if(dynamic) {
@@ -63,29 +64,35 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
   }
   catch(error) {
     if(strict) {
-      throw new StopDecodingError((<Errors.DecodingError>error).error);
+      throw new StopDecodingError((<DecodingError>error).error);
     }
     return <Errors.ErrorResult> { //dunno why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<Errors.DecodingError>error).error
+      error: (<DecodingError>error).error
     };
   }
 
   let rawValueAsBN = CodecUtils.Conversion.toBN(rawValue);
-  if(strict && rawValueAsBN.gtn(state[location].length)) {
-    //why is this check here??
-    //it's really just to protect us against the toNumber()
-    //conversion :)
-    throw new StopDecodingError(
-      { 
-        kind: "PointerTooLargeError" as const,
-        pointerAsBN: rawValueAsBN,
-        dataLength: state[location].length
-      }
-    );
+  let rawValueAsNumber: number;
+  try {
+    rawValueAsNumber = rawValueAsBN.toNumber();
   }
-  let startPosition = rawValueAsBN.toNumber() + base;
+  catch(_) {
+    let error = { 
+      kind: "OverlargePointersNotImplementedError" as const,
+      pointerAsBN: rawValueAsBN,
+    };
+    if(strict) {
+      throw new StopDecodingError(error);
+    }
+    return <Errors.ErrorResult> { //again with the TS failures...
+      type: dataType,
+      kind: "error" as const,
+      error
+    }
+  }
+  let startPosition = rawValueAsNumber + base;
   debug("startPosition %d", startPosition);
 
   let dynamic: boolean;
@@ -95,12 +102,12 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
   }
   catch(error) {
     if(strict) {
-      throw new StopDecodingError((<Errors.DecodingError>error).error);
+      throw new StopDecodingError((<DecodingError>error).error);
     }
     return <Errors.ErrorResult> { //dunno why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<Errors.DecodingError>error).error
+      error: (<DecodingError>error).error
     };
   }
   if(!dynamic) { //this will only come up when called from stack.ts
@@ -112,6 +119,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
     return yield* decodeAbiReferenceStatic(dataType, staticPointer, info, options);
   }
   let length: number;
+  let lengthAsBN: BN;
   let rawLength: Uint8Array;
   switch (dataType.typeClass) {
 
@@ -127,28 +135,42 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
       }
       catch(error) {
         if(strict) {
-          throw new StopDecodingError((<Errors.DecodingError>error).error);
+          throw new StopDecodingError((<DecodingError>error).error);
         }
         return <Errors.ErrorResult> { //dunno why TS is failing here
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error: (<DecodingError>error).error
         };
       }
-      let lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
+      lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
       if(strict && lengthAsBN.gtn(state[location].length)) {
         //you may notice that the comparison is a bit crude; that's OK, this is
         //just to prevent huge numbers from DOSing us, other errors will still
         //be caught regardless
         throw new StopDecodingError(
           { 
-            kind: "OverlongArrayOrStringError" as const,
+            kind: "OverlongArrayOrStringStrictModeError" as const,
             lengthAsBN,
             dataLength: state[location].length
           }
         );
       }
-      length = lengthAsBN.toNumber();
+      try {
+        length = lengthAsBN.toNumber();
+      }
+      catch(_) {
+        //note: if we're in this situation, we can assume we're not in strict mode,
+        //as the strict case was handled above
+        return <Errors.BytesDynamicErrorResult|Errors.StringErrorResult> { //again with the TS failures...
+          type: dataType,
+          kind: "error" as const,
+          error: {
+            kind: "OverlongArraysAndStringsNotImplementedError" as const,
+            lengthAsBN
+          }
+        };
+      }
 
       let childPointer: AbiDataPointer = {
         location,
@@ -170,36 +192,49 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
               length: CodecUtils.EVM.WORD_SIZE
             }, state);
           }
-          catch(error) { //error: Errors.DecodingError
+          catch(error) { //error: DecodingError
             if(strict) {
-              throw new StopDecodingError((<Errors.DecodingError>error).error);
+              throw new StopDecodingError((<DecodingError>error).error);
             }
             return {
               type: dataType,
               kind: "error" as const,
-              error: (<Errors.DecodingError>error).error
+              error: (<DecodingError>error).error
             };
           }
-          let lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
-          if(strict && lengthAsBN.gtn(state[location].length)) {
-            //you may notice that the comparison is a bit crude; that's OK, this is
-            //just to prevent huge numbers from DOSing us, other errors will still
-            //be caught regardless
-            throw new StopDecodingError(
-              { 
-                kind: "OverlongArrayOrStringError" as const,
-                lengthAsBN,
-                dataLength: state[location].length
-              }
-            );
-          }
-          length = lengthAsBN.toNumber();
+          lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
           startPosition += CodecUtils.EVM.WORD_SIZE; //increment startPosition
           //to next word, as first word was used for length
           break;
         case "static":
-          length = dataType.length.toNumber();
+          lengthAsBN = dataType.length;
           break;
+      }
+      if(strict && lengthAsBN.gtn(state[location].length)) {
+        //you may notice that the comparison is a bit crude; that's OK, this is
+        //just to prevent huge numbers from DOSing us, other errors will still
+        //be caught regardless
+        throw new StopDecodingError(
+          { 
+            kind: "OverlongArraysAndStringsNotImplementedError" as const,
+            lengthAsBN,
+            dataLength: state[location].length
+          }
+        );
+      }
+      try {
+        length = lengthAsBN.toNumber();
+      }
+      catch(_) {
+        //again, if we get here, we can assume we're not in strict mode
+        return {
+          type: dataType,
+          kind: "error" as const,
+          error: {
+            kind: "OverlongArraysAndStringsNotImplementedError" as const,
+            lengthAsBN
+          }
+        };
       }
 
       //note: I've written this fairly generically, but it is worth noting that
@@ -212,12 +247,12 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
       }
       catch(error) {
         if(strict) {
-          throw new StopDecodingError((<Errors.DecodingError>error).error);
+          throw new StopDecodingError((<DecodingError>error).error);
         }
         return {
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error: (<DecodingError>error).error
         };
       }
 
@@ -257,19 +292,41 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType | Types.
     case "array":
 
       //we're in the static case, so we know the array must be statically sized
-      const length = (<Types.ArrayTypeStatic>dataType).length.toNumber();
-      let baseSize: number;
+      const lengthAsBN = (<Types.ArrayTypeStatic>dataType).length;
+      let length: number;
       try {
-        baseSize = abiSizeInfo(dataType.baseType, info.allocations.abi).size;
+        length = lengthAsBN.toNumber();
       }
-      catch(error) { //error: Errors.DecodingError
+      catch(_) {
+        //note: since this is the static case, we don't bother including the stronger
+        //strict-mode guard against getting DOSed by large array sizes, since in this
+        //case we're not reading the size from the input; if there's a huge static size
+        //array, well, we'll just have to deal with it
+        let error = { 
+          kind: "OverlongArraysAndStringsNotImplementedError" as const,
+          lengthAsBN
+        };
         if(options.strictAbiMode) {
-          throw new StopDecodingError((<Errors.DecodingError>error).error);
+          throw new StopDecodingError(error);
         }
         return {
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error
+        }
+      }
+      let baseSize: number;
+      try {
+        baseSize = abiSizeInfo(dataType.baseType, info.allocations.abi).size;
+      }
+      catch(error) { //error: DecodingError
+        if(options.strictAbiMode) {
+          throw new StopDecodingError((<DecodingError>error).error);
+        }
+        return {
+          type: dataType,
+          kind: "error" as const,
+          error: (<DecodingError>error).error
         };
       }
 

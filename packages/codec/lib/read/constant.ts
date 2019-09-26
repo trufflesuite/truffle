@@ -4,7 +4,7 @@ const debug = debugModule("codec:read:constant");
 import * as CodecUtils from "../utils";
 import { AstDefinition } from "../types/ast";
 import BN from "bn.js";
-import { Errors } from "../format";
+import { DecodingError } from "../types/errors";
 
 export function readDefinition(definition: AstDefinition): Uint8Array {
 
@@ -24,7 +24,7 @@ export function readDefinition(definition: AstDefinition): Uint8Array {
       //unfortunately, other types of constants are just too complicated to
       //handle right now.  sorry.
       debug("unsupported constant definition type");
-      throw new Errors.DecodingError(
+      throw new DecodingError(
         {
           kind: "UnsupportedConstantError",
           definition

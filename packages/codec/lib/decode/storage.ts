@@ -9,11 +9,11 @@ import decodeValue from "./value";
 import { StoragePointer, DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { storageSizeForType } from "../allocate/storage";
-import { slotAddress } from "../read/storage";
 import * as StorageTypes from "../types/storage";
-import { isWordsLength } from "../utils/storage";
+import { isWordsLength, slotAddress } from "../utils/storage";
 import BN from "bn.js";
 import { DecoderRequest } from "../types/request";
+import { DecodingError } from "../types/errors";
 
 export default function* decodeStorage(dataType: Types.Type, pointer: StoragePointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {
@@ -39,7 +39,7 @@ export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, 
     return <Errors.ErrorResult> { //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<Errors.DecodingError>error).error
+      error: (<DecodingError>error).error
     };
   }
   const startOffset = CodecUtils.Conversion.toBN(rawValue);
@@ -47,11 +47,11 @@ export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, 
   try {
     rawSize = storageSizeForType(dataType, info.userDefinedTypes, allocations);
   }
-  catch(error) { //error: Errors.DecodingError
+  catch(error) { //error: DecodingError
     return <Errors.ErrorResult> { //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<Errors.DecodingError>error).error
+      error: (<DecodingError>error).error
     };
   }
   //we *know* the type being decoded must be sized in words, because it's a
@@ -87,17 +87,40 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
   switch (dataType.typeClass) {
     case "array": {
       debug("storage array! %o", pointer);
+      let lengthAsBN: BN;
       switch(dataType.kind) {
         case "dynamic":
           debug("dynamic array");
           debug("type %O", dataType);
-          data = yield* read(pointer, state);
-          length = CodecUtils.Conversion.toBN(data).toNumber();
+          try {
+            data = yield* read(pointer, state);
+          }
+          catch(error) {
+            return <Errors.ErrorResult> { //no idea why TS is failing here
+              type: dataType,
+              kind: "error" as const,
+              error: (<DecodingError>error).error
+            };
+          }
+          lengthAsBN = CodecUtils.Conversion.toBN(data);
           break;
         case "static":
           debug("static array");
-          length = dataType.length.toNumber();
+          lengthAsBN = dataType.length;
           break;
+      }
+      try {
+        length = lengthAsBN.toNumber();
+      }
+      catch(_) {
+        return {
+          type: dataType,
+          kind: "error" as const,
+          error: {
+            kind: "OverlongArraysAndStringsNotImplementedError" as const,
+            lengthAsBN
+          }
+        };
       }
       debug("length %o", length);
 
@@ -106,11 +129,11 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       try {
         baseSize = storageSizeForType(dataType.baseType, info.userDefinedTypes, allocations);
       }
-      catch(error) { //error: Errors.DecodingError
+      catch(error) { //error: DecodingError
         return {
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error: (<DecodingError>error).error
         };
       }
       debug("baseSize %o", baseSize);
@@ -209,7 +232,16 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
 
     case "bytes":
     case "string": {
-      data = yield* read(pointer, state);
+      try {
+        data = yield* read(pointer, state);
+      }
+      catch(error) {
+        return <Errors.ErrorResult> { //no idea why TS is failing here
+          type: dataType,
+          kind: "error" as const,
+          error: (<DecodingError>error).error
+        };
+      }
 
       debug("data %O", data);
       let lengthByte = data[CodecUtils.EVM.WORD_SIZE - 1];
@@ -225,7 +257,20 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         }}, info);
 
       } else {
-        length = CodecUtils.Conversion.toBN(data).subn(1).divn(2).toNumber();
+        let lengthAsBN: BN = CodecUtils.Conversion.toBN(data).subn(1).divn(2);
+        try {
+          length = lengthAsBN.toNumber();
+        }
+        catch(_) {
+          return <Errors.BytesDynamicErrorResult|Errors.StringErrorResult> { //again with the TS failures...
+            type: dataType,
+            kind: "error" as const,
+            error: {
+              kind: "OverlongArraysAndStringsNotImplementedError" as const,
+              lengthAsBN
+            }
+          };
+        }
         debug("new-word, length %o", length);
 
         return yield* decodeValue(dataType, { location: "storage" as const,
@@ -329,11 +374,11 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       try {
         valueSize = storageSizeForType(valueType, info.userDefinedTypes, allocations);
       }
-      catch(error) { //error: Errors.DecodingError
+      catch(error) { //error: DecodingError
         return {
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error: (<DecodingError>error).error
         };
       }
 

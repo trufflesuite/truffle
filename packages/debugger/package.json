@@ -23,7 +23,7 @@
     "@truffle/code-utils": "^1.2.7",
     "@truffle/expect": "^0.0.11",
     "@truffle/solidity-utils": "^1.2.5",
-    "@truffle/codec": "^3.0.10",
+    "@truffle/codec": "^3.0.12",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
     "json-pointer": "^0.6.0",

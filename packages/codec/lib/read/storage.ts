@@ -2,51 +2,13 @@ import debugModule from "debug";
 const debug = debugModule("codec:read:storage");
 
 import * as CodecUtils from "../utils";
+import { slotAddress } from "../utils/storage";
+import { slotAddressPrintout } from "../utils/errors";
 import { Slot, Range } from "../types/storage";
 import { WordMapping } from "../types/evm";
 import { DecoderRequest } from "../types/request";
-import { mappingKeyAsHex, keyInfoForPrinting } from "../encode/key";
+import { DecodingError } from "../types/errors";
 import BN from "bn.js";
-
-/**
- * convert a slot to a word corresponding to actual storage address
- *
- * if `slot` is an array, return hash of array values.
- * if `slot` array is nested, recurse on sub-arrays
- *
- * @param slot - number or possibly-nested array of numbers
- */
-export function slotAddress(slot: Slot): BN {
-  if (slot.key !== undefined && slot.path !== undefined) {
-    // mapping reference
-    return CodecUtils.EVM.keccak256(mappingKeyAsHex(slot.key), slotAddress(slot.path)).add(slot.offset);
-  }
-  else if (slot.path !== undefined) {
-    const pathAddress = slotAddress(slot.path);
-    const path: BN = slot.hashPath ? CodecUtils.EVM.keccak256(pathAddress) : pathAddress;
-    return path.add(slot.offset);
-  }
-  else {
-    return slot.offset;
-  }
-}
-
-export function slotAddressPrintout(slot: Slot): string {
-  if (slot.key !== undefined && slot.path !== undefined) {
-    // mapping reference
-    let {type: keyEncoding, value: keyValue} = keyInfoForPrinting(slot.key);
-    return "keccak(" + keyValue + " as " + keyEncoding + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
-  }
-  else if (slot.path !== undefined) {
-    const pathAddressPrintout = slotAddressPrintout(slot.path);
-    return slot.hashPath
-      ? "keccak(" + pathAddressPrintout + ")" + slot.offset.toString()
-      : pathAddressPrintout + slot.offset.toString();
-  }
-  else {
-    return slot.offset.toString();
-  }
-}
 
 /**
  * read slot from storage
@@ -112,17 +74,21 @@ export function* readRange(storage: WordMapping, range: Range): Generator<Decode
       },
       index: (from.index + length - 1) % CodecUtils.EVM.WORD_SIZE
     };
-  } else {
-    to = {
-      slot: to.slot,
-      index: to.index
-    }
   }
 
   debug("normalized readRange %o", {from,to});
 
-  let totalWords: number = to.slot.offset.sub(from.slot.offset).addn(1).toNumber();
-  debug("totalWords %o", totalWords);
+  let totalWordsAsBN: BN = to.slot.offset.sub(from.slot.offset).addn(1);
+  let totalWords: number;
+  try {
+    totalWords = totalWordsAsBN.toNumber();
+  }
+  catch(_) {
+    throw new DecodingError({
+      kind: "ReadErrorStorage" as const,
+      range
+    });
+  }
 
   let data = new Uint8Array(totalWords * CodecUtils.EVM.WORD_SIZE);
 

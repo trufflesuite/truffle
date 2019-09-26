@@ -3,6 +3,7 @@ const debug = debugModule("codec:format:inspect");
 
 import util from "util";
 import { Types, Values, Errors } from "../format";
+import { message } from "./errors";
 
 //we'll need to write a typing for the options type ourself, it seems; just
 //going to include the relevant properties here
@@ -198,10 +199,16 @@ export class ResultInspector {
             return `Malformed internal function w/constructor PC only (value: ${errorResult.error.constructorProgramCounter})`;
           case "IndexedReferenceTypeError":
             return `Cannot decode indexed parameter of reference type ${errorResult.error.type.typeClass} (raw value ${errorResult.error.raw})`;
+          case "OverlongArraysAndStringsNotImplementedError":
+            return `Array or string is too long (length ${errorResult.error.lengthAsBN.toString()}); decoding is not supported`;
+          case "OverlargePointersNotImplementedError":
+            return `Pointer is too large (value ${errorResult.error.pointerAsBN.toString()}); decoding is not supported`;
           case "UserDefinedTypeNotFoundError":
           case "UnsupportedConstantError":
           case "ReadErrorStack":
-            return Errors.message(errorResult.error); //yay, these three are already defined!
+          case "ReadErrorStorage":
+          case "ReadErrorBytes":
+            return message(errorResult.error); //yay, these five are already defined!
         }
       }
     }

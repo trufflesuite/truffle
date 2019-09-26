@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:memory");
 
+import BN from "bn.js";
 import read from "../read";
 import * as CodecUtils from "../utils";
 import { TypeUtils } from "../utils";
@@ -10,6 +11,7 @@ import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";
+import { DecodingError } from "../types/errors";
 
 export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {
@@ -31,12 +33,27 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
     return <Errors.ErrorResult> { //dunno why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<Errors.DecodingError>error).error
+      error: (<DecodingError>error).error
     };
   }
 
-  let startPosition = CodecUtils.Conversion.toBN(rawValue).toNumber();
+  let startPositionAsBN = CodecUtils.Conversion.toBN(rawValue);
+  let startPosition: number;
+  try {
+    startPosition = startPositionAsBN.toNumber();
+  }
+  catch(_) {
+    return <Errors.ErrorResult> { //again with the TS failures...
+      type: dataType,
+      kind: "error" as const,
+      error: {
+        kind: "OverlargePointersNotImplementedError" as const,
+        pointerAsBN: startPositionAsBN
+      }
+    };
+  }
   let rawLength: Uint8Array;
+  let lengthAsBN: BN;
   let length: number;
 
   switch (dataType.typeClass) {
@@ -55,10 +72,23 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         return <Errors.ErrorResult> { //dunno why TS is failing here
           type: dataType,
           kind: "error" as const,
-          error: (<Errors.DecodingError>error).error
+          error: (<DecodingError>error).error
         };
       }
-      length = CodecUtils.Conversion.toBN(rawLength).toNumber();
+      lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
+      try {
+        length = lengthAsBN.toNumber();
+      }
+      catch(_) {
+        return <Errors.BytesDynamicErrorResult|Errors.StringErrorResult> { //again with the TS failures...
+          type: dataType,
+          kind: "error" as const,
+          error: {
+            kind: "OverlongArraysAndStringsNotImplementedError" as const,
+            lengthAsBN
+          }
+        };
+      }
 
       let childPointer: MemoryPointer = {
         location: "memory" as const,
@@ -83,15 +113,28 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
           return {
             type: dataType,
             kind: "error" as const,
-            error: (<Errors.DecodingError>error).error
+            error: (<DecodingError>error).error
           };
         }
-        length = CodecUtils.Conversion.toBN(rawLength).toNumber();
+        lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
         startPosition += CodecUtils.EVM.WORD_SIZE; //increment startPosition
         //to next word, as first word was used for length
       }
       else {
-        length = dataType.length.toNumber();
+        lengthAsBN = dataType.length;
+      }
+      try {
+        length = lengthAsBN.toNumber();
+      }
+      catch(_) {
+        return {
+          type: dataType,
+          kind: "error" as const,
+          error: {
+            kind: "OverlongArraysAndStringsNotImplementedError" as const,
+            lengthAsBN
+          }
+        };
       }
 
       let baseType = dataType.baseType;

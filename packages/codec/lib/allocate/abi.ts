@@ -3,11 +3,14 @@ const debug = debugModule("codec:allocate:abi");
 
 import * as Pointer from "../types/pointer";
 import * as Allocations from "../types/allocation";
-import * as CodecUtils from "../utils";
-import { AbiUtils, TypeUtils, MakeType } from "../utils";
+import { AbiUtils } from "../utils/abi";
+import { TypeUtils } from "../utils/datatype";
+import { MakeType } from "../utils/maketype";
+import { EVM } from "../utils/evm";
+import { getterInputs } from "../utils/definition2abi";
 import * as AbiTypes from "../types/abi";
 import { AstDefinition, AstReferences } from "../types/ast";
-import { Types } from "../format";
+import { Types } from "../format/types";
 import { UnknownBaseContractIdError, UnknownUserDefinedTypeError } from "../types/errors";
 import partition from "lodash.partition";
 import { DecodingMode } from "../types/decoding";
@@ -97,7 +100,7 @@ function allocateMembers(parentId: string, members: Types.NameTypePair[], userDe
 
   allocations[parentId] = {
     members: memberAllocations,
-    length: dynamic ? CodecUtils.EVM.WORD_SIZE : start,
+    length: dynamic ? EVM.WORD_SIZE : start,
     dynamic
   };
 
@@ -119,21 +122,21 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
     case "ufixed":
     case "enum":
       return {
-        size: CodecUtils.EVM.WORD_SIZE,
+        size: EVM.WORD_SIZE,
         dynamic: false,
         allocations: existingAllocations
       };
 
     case "string":
       return {
-        size: CodecUtils.EVM.WORD_SIZE,
+        size: EVM.WORD_SIZE,
         dynamic: true,
         allocations: existingAllocations
       };
 
     case "bytes":
       return {
-        size: CodecUtils.EVM.WORD_SIZE,
+        size: EVM.WORD_SIZE,
         dynamic: dataType.kind === "dynamic",
         allocations: existingAllocations
       };
@@ -147,7 +150,7 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
       switch (dataType.visibility) {
         case "external":
           return {
-            size: CodecUtils.EVM.WORD_SIZE,
+            size: EVM.WORD_SIZE,
             dynamic: false,
             allocations: existingAllocations
           };
@@ -161,7 +164,7 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
       switch(dataType.kind) {
         case "dynamic":
           return {
-            size: CodecUtils.EVM.WORD_SIZE,
+            size: EVM.WORD_SIZE,
             dynamic: true,
             allocations: existingAllocations
           };
@@ -285,7 +288,7 @@ function allocateCalldata(
       //if we can't find it, we'll handle this below
       break;
     case "function":
-      offset = CodecUtils.EVM.SELECTOR_SIZE;
+      offset = EVM.SELECTOR_SIZE;
       //search through base contracts, from most derived (right) to most base (left)
       if(contractNode) {
         const linearizedBaseContracts = contractNode.linearizedBaseContracts;
@@ -324,7 +327,7 @@ function allocateCalldata(
         break;
       case "VariableDeclaration":
         //getter case
-        parameters = CodecUtils.getterInputs(node);
+        parameters = getterInputs(node);
         break;
     }
     id = node.id.toString();

@@ -1,8 +1,9 @@
 import debugModule from "debug";
 const debug = debugModule("codec:encode:abi");
 
-import { Values } from "../format";
-import { Conversion as ConversionUtils, EVM as EVMUtils } from "../utils";
+import { Values } from "../format/values";
+import { Conversion as ConversionUtils } from "../utils/conversion";
+import { EVM as EVMUtils } from "../utils/evm";
 import { AbiAllocations, AbiSizeInfo } from "../types/allocation";
 import { abiSizeInfo } from "../allocate/abi";
 import sum from "lodash.sum";
