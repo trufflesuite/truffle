@@ -7,7 +7,6 @@ import * as Utils from "../utils/interface";
 import * as Contexts from "../types/contexts";
 import { AstDefinition, AstReferences } from "../types/ast";
 import { Types, Values } from "../format";
-import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
@@ -22,7 +21,7 @@ import { getStorageAllocations } from "../allocate/storage";
 import { decodeCalldata, decodeEvent } from "../core/decoding";
 import { CalldataDecoding, LogDecoding } from "../types/decoding";
 
-export default class TruffleWireDecoder extends AsyncEventEmitter {
+export default class TruffleWireDecoder {
   private web3: Web3;
 
   private network: string;
@@ -39,7 +38,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   private codeCache: DecoderTypes.CodeCache = {};
 
   constructor(contracts: ContractObject[], provider: Provider) {
-    super();
 
     this.web3 = new Web3(provider);
 
@@ -260,13 +258,6 @@ export default class TruffleWireDecoder extends AsyncEventEmitter {
   
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return abifyLogDecoding(decoding, this.userDefinedTypes);
-  }
-
-  public onEvent(name: string, callback: Function): void {
-    //this.web3.eth.subscribe(name);
-  }
-
-  public removeEventListener(name: string): void {
   }
 
   //normally, this function gets the code of the given address at the given block,
