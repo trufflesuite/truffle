@@ -48,14 +48,14 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         return {
           type: dataType,
           kind: "value" as const,
-          value: { asBool: false }
+          value: { asBoolean: false }
         };
       }
       else if(numeric.eqn(1)) {
         return {
           type: dataType,
           kind: "value" as const,
-          value: { asBool: true }
+          value: { asBoolean: true }
         };
       }
       else {

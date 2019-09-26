@@ -79,7 +79,7 @@ export function keyInfoForPrinting(input: Values.ElementaryValue): {type: string
       //this is the case that won't work as valid input to soliditySha3 :)
       return {
         type: "uint",
-        value: (<Values.BoolValue>input).value.asBool.toString()
+        value: (<Values.BoolValue>input).value.asBoolean.toString()
       };
     case "bytes":
       switch(input.type.kind) {

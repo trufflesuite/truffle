@@ -7,7 +7,6 @@ import { DecoderContext, DecoderContexts } from "../types/contexts";
 import * as Utils from "../utils/interface";
 import { AstDefinition, AstReferences } from "../types/ast";
 import { Types, Values } from "../format";
-import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
@@ -26,7 +25,7 @@ import { isWordsLength, equalSlots } from "../utils/storage";
 import { StoragePointer } from "../types/pointer";
 import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "../types/errors";
 
-export default class TruffleContractDecoder extends AsyncEventEmitter {
+export default class TruffleContractDecoder {
 
   private web3: Web3;
 
@@ -43,7 +42,6 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private wireDecoder: TruffleWireDecoder;
 
   constructor(contract: ContractObject, wireDecoder: TruffleWireDecoder, address?: string) {
-    super();
 
     this.contract = contract;
     this.wireDecoder = wireDecoder;
@@ -142,7 +140,7 @@ interface ContractInfo {
   contextHash: string;
 }
 
-export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
+export class TruffleContractInstanceDecoder {
   private web3: Web3;
 
   private contract: ContractObject;
@@ -169,7 +167,6 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   private wireDecoder: TruffleWireDecoder;
 
   constructor(contractDecoder: TruffleContractDecoder, address?: string) {
-    super();
 
     this.contractDecoder = contractDecoder;
     if(address !== undefined) {
@@ -449,13 +446,6 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   //address undefined to not filter by adddress)
   public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
     return await this.wireDecoder.events({address: this.contractAddress, ...options}, this.additionalContexts);
-  }
-
-  public onEvent(name: string, callback: Function): void {
-    //this.web3.eth.subscribe(name);
-  }
-
-  public removeEventListener(name: string): void {
   }
 
   //in addition to returning the slot we want, it also returns a definition

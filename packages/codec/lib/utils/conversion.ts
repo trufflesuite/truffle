@@ -234,7 +234,7 @@ export namespace Conversion {
               type: <Types.BoolType> result.type,
               kind: "value",
               value: {
-                asBool: true
+                asBoolean: true
               }
             };
           default:
@@ -255,7 +255,7 @@ export namespace Conversion {
       case "int":
         return (<Values.UintValue|Values.IntValue>result).value.asBN.toNumber(); //WARNING
       case "bool":
-        return (<Values.BoolValue>result).value.asBool;
+        return (<Values.BoolValue>result).value.asBoolean;
       case "bytes":
         return (<Values.BytesValue>result).value.asHex;
       case "address":

@@ -38,7 +38,7 @@ export namespace Elementary {
     type: Types.BoolType;
     kind: "value";
     value: {
-      asBool: boolean;
+      asBoolean: boolean;
     };
   }
 

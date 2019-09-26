@@ -45,7 +45,7 @@ export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): U
       return ConversionUtils.toBytes((<Values.EnumValue>input).value.numericAsBN, EVMUtils.WORD_SIZE);
     case "bool": {
       bytes = new Uint8Array(EVMUtils.WORD_SIZE); //is initialized to zeroes
-      if((<Values.BoolValue>input).value.asBool) {
+      if((<Values.BoolValue>input).value.asBoolean) {
         bytes[EVMUtils.WORD_SIZE - 1] = 1;
       }
       return bytes;
