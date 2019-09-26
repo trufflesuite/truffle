@@ -132,19 +132,30 @@ Config.search = (options = {}, filename) => {
 };
 
 Config.detect = (options = {}, filename) => {
-  const configFile = Config.search(options, filename);
+  let configFile;
+  const configPath = options.config;
+  if (configPath) {
+    configFile = path.isAbsolute(configPath)
+      ? configPath
+      : path.resolve(configPath);
+  } else {
+    configFile = Config.search(options, filename);
+  }
 
   if (!configFile) {
     throw new TruffleError("Could not find suitable configuration file.");
   }
-
   return Config.load(configFile, options);
 };
 
 Config.load = (file, options) => {
   const config = new Config();
 
-  config.working_directory = path.dirname(path.resolve(file));
+  if (options.config) {
+    config.working_directory = process.cwd();
+  } else {
+    config.working_directory = path.dirname(path.resolve(file));
+  }
 
   // The require-nocache module used to do this for us, but
   // it doesn't bundle very well. So we've pulled it out ourselves.

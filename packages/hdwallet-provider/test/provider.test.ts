@@ -1,14 +1,15 @@
-const Ganache = require("ganache-core");
-const assert = require("assert");
-const WalletProvider = require("../src/index.js");
-const EthUtil = require("ethereumjs-util");
+import assert from 'assert';
+import Ganache from 'ganache-core';
+import * as EthUtil from 'ethereumjs-util';
+import Web3 from 'web3';
+import WalletProvider from '../dist';
+import { describe, it } from 'mocha';
 
-describe("HD Wallet Provider", function() {
-  const Web3 = require("web3");
+describe("HD Wallet Provider", function () {
   const web3 = new Web3();
   const port = 8545;
-  let server;
-  let provider;
+  let server: any;
+  let provider: WalletProvider;
 
   before(done => {
     server = Ganache.server();
@@ -20,11 +21,11 @@ describe("HD Wallet Provider", function() {
   });
 
   afterEach(() => {
-    web3.setProvider(null);
+    web3.setProvider(new Web3.providers.HttpProvider('ws://localhost:8545'));
     provider.engine.stop();
   });
 
-  it("provides for a mnemonic", function(done) {
+  it("provides for a mnemonic", function (done) {
     const truffleDevAccounts = [
       "0x627306090abab3a6e1400e9345bc60c78a8bef57",
       "0xf17f52151ebef6c7334fad080c5704d77216b732",
@@ -51,7 +52,7 @@ describe("HD Wallet Provider", function() {
     });
   });
 
-  it("throws on invalid mnemonic", function(done) {
+  it("throws on invalid mnemonic", function (done) {
     try {
       provider = new WalletProvider(
         "takoyaki is delicious",
@@ -66,7 +67,7 @@ describe("HD Wallet Provider", function() {
     }
   });
 
-  it("provides for a private key", function(done) {
+  it("provides for a private key", function (done) {
     const privateKey =
       "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580"; //random valid private key generated with ethkey
     provider = new WalletProvider(privateKey, `http://localhost:${port}`);
@@ -84,13 +85,13 @@ describe("HD Wallet Provider", function() {
     });
   });
 
-  it("provides for an array of private keys", function(done) {
+  it("provides for an array of private keys", function (done) {
     const privateKeys = [
       "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580",
       "9549f39decea7b7504e15572b2c6a72766df0281cea22bd1a3bc87166b1ca290"
     ];
 
-    const privateKeysByAddress = {
+    const privateKeysByAddress: { [address: string]: string } = {
       "0xc515db5834d8f110eee96c3036854dbf1d87de2b":
         "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580",
       "0xbd3366a0e5d2fb52691e3e08fabe136b0d4e5929":
