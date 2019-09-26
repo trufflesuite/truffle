@@ -66,8 +66,9 @@ describe("CompilerSupplier", function() {
           settings: {}
         }
       };
+      const config = new Config().with(options);
 
-      const { contracts } = await compile(oldPragmaPinSource, options);
+      const { contracts } = await compile(oldPragmaPinSource, config);
       const OldPragmaPin = findOne("OldPragmaPin", contracts);
 
       assert(OldPragmaPin.contractName === "OldPragmaPin");

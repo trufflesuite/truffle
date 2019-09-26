@@ -1,11 +1,14 @@
 {
-  "name": "truffle-events",
+  "name": "@truffle/events",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "emittery": "^0.4.1"
   }

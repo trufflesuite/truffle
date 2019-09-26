@@ -5,7 +5,7 @@ const Module = require("module");
 const findUp = require("find-up");
 const originalrequire = require("original-require");
 const Configstore = require("configstore");
-const { EventManager } = require("../truffle-events");
+const { EventManager } = require("../events");
 
 const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
 const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename
@@ -21,7 +21,6 @@ class Config {
 
     const eventsOptions = eventManagerOptions(this);
     this.events = new EventManager(eventsOptions);
-
     Object.keys(props).forEach(prop => {
       this.addProp(prop, props[prop]);
     });
