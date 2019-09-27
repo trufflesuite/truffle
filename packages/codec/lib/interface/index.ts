@@ -5,6 +5,7 @@ import TruffleContractDecoder from "./contract";
 import { TruffleContractInstanceDecoder } from "./contract";
 import TruffleWireDecoder from "./wire";
 export { TruffleContractDecoder, TruffleContractInstanceDecoder, TruffleWireDecoder };
+export * from "./errors";
 
 import { Provider } from "web3/providers";
 import { ContractObject } from "@truffle/contract-schema/spec";

@@ -23,7 +23,7 @@ import { decodeVariable } from "../core/decoding";
 import { Slot } from "../types/storage";
 import { isWordsLength, equalSlots } from "../utils/storage";
 import { StoragePointer } from "../types/pointer";
-import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "../types/errors";
+import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "../interface/errors";
 
 export default class TruffleContractDecoder {
 
@@ -105,7 +105,7 @@ export default class TruffleContractDecoder {
   public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
-  
+
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
@@ -436,7 +436,7 @@ export class TruffleContractInstanceDecoder {
   public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
-  
+
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
