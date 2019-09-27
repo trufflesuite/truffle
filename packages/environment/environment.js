@@ -76,8 +76,12 @@ const Environment = {
 const helpers = {
   setFromOnConfig: async (config, web3) => {
     if (config.from) return;
+    let accounts;
 
-    const accounts = await web3.eth.getAccounts();
+    // TODO temp stopgap!
+    if (config.networks[config.network].type === "tezos")
+      accounts = await web3.eth.getAccounts(config);
+    else accounts = await web3.eth.getAccounts();
     config.networks[config.network].from = accounts[0];
   },
 
