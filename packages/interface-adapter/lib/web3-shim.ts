@@ -78,4 +78,6 @@ export class Web3Shim extends Web3 {
     this.networkType = networkType;
     initInterface(this, options);
   }
+
+  public tez: TezosToolkit;
 };
