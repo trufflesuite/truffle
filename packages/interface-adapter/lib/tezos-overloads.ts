@@ -1,7 +1,5 @@
 import { Web3Shim, Web3ShimOptions } from "./web3-shim";
-// @ts-ignore
-import { eztz } from "eztz.js";
-import Sotez from "sotez";
+import { Tezos } from '@taquito/taquito';
 
 export const TezosDefinition = {
   async initNetworkType(web3: Web3Shim, options: Web3ShimOptions) {
