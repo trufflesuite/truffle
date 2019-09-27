@@ -12,7 +12,7 @@ import { DataPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderOptions } from "../types/options";
 import { DecoderRequest } from "../types/request";
-import { DecodingError, StopDecodingError } from "../types/errors";
+import { DecodingError, StopDecodingError } from "../decode/errors";
 import { ContractInfoAndContext } from "../types/decoding";
 
 export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
@@ -59,7 +59,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         };
       }
       else {
-        let error = { 
+        let error = {
           kind: "BoolOutOfRangeError" as const,
           rawAsBN: numeric
         };
@@ -77,7 +77,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "uint":
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingLeft(bytes, dataType.bits/8)) {
-        let error = { 
+        let error = {
           kind: "UintPaddingError" as const,
           raw: CodecUtils.Conversion.toHexString(bytes)
         };
@@ -103,7 +103,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "int":
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
-        let error = { 
+        let error = {
           kind: "IntPaddingError" as const,
           raw: CodecUtils.Conversion.toHexString(bytes)
         };
@@ -129,7 +129,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "address":
       if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
-        let error = { 
+        let error = {
           kind: "AddressPaddingError" as const,
           raw: CodecUtils.Conversion.toHexString(bytes)
         };
@@ -153,7 +153,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
 
     case "contract":
       if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
-        let error = { 
+        let error = {
           kind: "ContractPaddingError" as const,
           raw: CodecUtils.Conversion.toHexString(bytes)
         };
@@ -179,7 +179,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
         case "static":
           //first, check padding (if needed)
           if(!permissivePadding && !checkPaddingRight(bytes, dataType.length)) {
-            let error = { 
+            let error = {
               kind: "BytesPaddingError" as const,
               raw: CodecUtils.Conversion.toHexString(bytes)
             };
@@ -225,7 +225,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
       switch(dataType.visibility) {
         case "external":
           if(!checkPaddingRight(bytes, CodecUtils.EVM.ADDRESS_SIZE + CodecUtils.EVM.SELECTOR_SIZE)) {
-            let error = { 
+            let error = {
               kind: "FunctionExternalNonStackPaddingError" as const,
               raw: CodecUtils.Conversion.toHexString(bytes)
             };
@@ -334,7 +334,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "fixed": {
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
-        let error = { 
+        let error = {
           kind: "FixedPaddingError" as const,
           raw: CodecUtils.Conversion.toHexString(bytes)
         };
@@ -365,7 +365,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: DataPointer,
     case "ufixed": {
       //first, check padding (if needed)
       if(!permissivePadding && !checkPaddingLeft(bytes, dataType.bits/8)) {
-        let error = { 
+        let error = {
           kind: "UfixedPaddingError" as const,
           raw: CodecUtils.Conversion.toHexString(bytes)
         };

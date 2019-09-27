@@ -1,7 +1,7 @@
 import BN from "bn.js";
 
 import * as CodecUtils from "../utils";
-import { DecodingError } from "../types/errors";
+import { DecodingError } from "../decode/errors";
 
 /**
  * read word from memory

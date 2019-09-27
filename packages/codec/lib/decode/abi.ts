@@ -13,7 +13,7 @@ import { abiSizeInfo } from "../allocate/abi";
 import { EvmInfo } from "../types/evm";
 import { DecoderOptions } from "../types/options";
 import { DecoderRequest } from "../types/request";
-import { DecodingError, StopDecodingError } from "../types/errors";
+import { DecodingError, StopDecodingError } from "../decode/errors";
 
 type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
 
@@ -79,7 +79,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
     rawValueAsNumber = rawValueAsBN.toNumber();
   }
   catch(_) {
-    let error = { 
+    let error = {
       kind: "OverlargePointersNotImplementedError" as const,
       pointerAsBN: rawValueAsBN,
     };
@@ -149,7 +149,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
         //just to prevent huge numbers from DOSing us, other errors will still
         //be caught regardless
         throw new StopDecodingError(
-          { 
+          {
             kind: "OverlongArrayOrStringStrictModeError" as const,
             lengthAsBN,
             dataLength: state[location].length
@@ -215,7 +215,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
         //just to prevent huge numbers from DOSing us, other errors will still
         //be caught regardless
         throw new StopDecodingError(
-          { 
+          {
             kind: "OverlongArraysAndStringsNotImplementedError" as const,
             lengthAsBN,
             dataLength: state[location].length
@@ -270,7 +270,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
           )
         ); //pointer base is always start of list, never the length
       }
-      return { 
+      return {
         type: dataType,
         kind: "value" as const,
         value: decodedChildren
@@ -302,7 +302,7 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType | Types.
         //strict-mode guard against getting DOSed by large array sizes, since in this
         //case we're not reading the size from the input; if there's a huge static size
         //array, well, we'll just have to deal with it
-        let error = { 
+        let error = {
           kind: "OverlongArraysAndStringsNotImplementedError" as const,
           lengthAsBN
         };
@@ -344,7 +344,7 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType | Types.
           )
         );
       }
-      return { 
+      return {
         type: dataType,
         kind: "value" as const,
         value: decodedChildren
@@ -419,7 +419,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
       //note that the base option is only needed in the dynamic case, but we're being indiscriminate
     });
   }
-  return { 
+  return {
     type: dataType,
     kind: "value" as const,
     value: decodedMembers
@@ -449,7 +449,7 @@ function* decodeAbiTupleByPosition(dataType: Types.TupleType, location: AbiLocat
     });
     position += memberSize;
   }
-  return { 
+  return {
     type: dataType,
     kind: "value" as const,
     value: decodedMembers

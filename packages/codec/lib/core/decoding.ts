@@ -8,7 +8,7 @@ import { Types, Values } from "../format";
 import * as AbiTypes from "../types/abi";
 import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
-import { StopDecodingError } from "../types/errors";
+import { StopDecodingError } from "../decode/errors";
 import { DecoderRequest } from "../types/request";
 import { CalldataAllocation, EventAllocation, EventArgumentAllocation } from "../types/allocation";
 import { CalldataDecoding, LogDecoding, AbiArgument, DecodingMode } from "../types/decoding";

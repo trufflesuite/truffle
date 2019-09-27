@@ -7,7 +7,7 @@ import { slotAddressPrintout } from "../utils/errors";
 import { Slot, Range } from "../types/storage";
 import { WordMapping } from "../types/evm";
 import { DecoderRequest } from "../types/request";
-import { DecodingError } from "../types/errors";
+import { DecodingError } from "../decode/errors";
 import BN from "bn.js";
 
 /**

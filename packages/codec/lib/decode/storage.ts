@@ -13,7 +13,7 @@ import * as StorageTypes from "../types/storage";
 import { isWordsLength, slotAddress } from "../utils/storage";
 import BN from "bn.js";
 import { DecoderRequest } from "../types/request";
-import { DecodingError } from "../types/errors";
+import { DecodingError } from "../decode/errors";
 
 export default function* decodeStorage(dataType: Types.Type, pointer: StoragePointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {
@@ -137,7 +137,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         };
       }
       debug("baseSize %o", baseSize);
-      
+
       //we are going to make a list of child ranges, pushing them one by one onto
       //this list, and then decode them; the first part will vary based on whether
       //we're in the words case or the bytes case, the second will not

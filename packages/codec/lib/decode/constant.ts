@@ -8,7 +8,7 @@ import decodeValue from "./value";
 import { ConstantDefinitionPointer} from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";
-import { DecodingError } from "../types/errors";
+import { DecodingError } from "../decode/errors";
 import BN from "bn.js";
 
 export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
