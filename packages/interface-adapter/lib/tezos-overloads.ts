@@ -61,17 +61,22 @@ const overrides = {
       return [ currentAccount ];
     };
   },
+
+  getBlock: (web3: Web3Shim) => {
+    const _oldGetBlock = web3.eth.getBlock;
+
+    // @ts-ignore
+    web3.eth.getBlock = async (blockNumber = "head") => {
+      // translate ETH nomenclature to XTZ
       // @ts-ignore
-      /*
-      const sotez = new Sotez(parsedHost)
-      const res = await sotez.importKey('off during october arrive sister emotion case library narrow width barrel pool final boy toast', 'z8wZCNn0cC', 'krtuxjvm.gtqdzgqj@tezos.example.org');
-      await console.log(await sotez.key.publicKeyHash())*/
+      if (blockNumber === "latest") blockNumber = "head";
+      const { hardGasLimitPerBlock } = await web3.tez.rpc.getConstants();
+      const block = await web3.tez.rpc.getBlockHeader({ block: `${blockNumber}` })
       // @ts-ignore
-      const sotez = new Sotez()
-      //@ts-ignore
-      await sotez.importKey(config.networks[config.network].mnemonic, config.networks[config.network].passphrase, config.networks[config.network].email)
-      const currentAccount = await sotez.key.publicKeyHash()
-      return currentAccount;
+      block.gasLimit = hardGasLimitPerBlock;
+      return block;
+    };
+  },
     };
   }
 };
