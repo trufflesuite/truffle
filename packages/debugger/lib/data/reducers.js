@@ -16,6 +16,7 @@ const DEFAULT_SCOPES = {
 function scopes(state = DEFAULT_SCOPES, action) {
   var scope;
   var variables;
+  var visibles;
 
   switch (action.type) {
     case actions.SCOPE:
@@ -39,6 +40,10 @@ function scopes(state = DEFAULT_SCOPES, action) {
     case actions.DECLARE:
       scope = state.byId[action.node.scope] || {};
       variables = scope.variables || [];
+      visibles = scope.visibles || [];
+
+      let visible = action.node.visibility !== "private";
+      //so, public and internal are both visible
 
       return {
         byId: {
@@ -49,9 +54,12 @@ function scopes(state = DEFAULT_SCOPES, action) {
 
             variables: [
               ...variables,
-
               { name: action.node.name, id: action.node.id }
-            ]
+            ],
+
+            visibles: visible
+              ? [...visibles, { name: action.node.name, id: action.node.id }]
+              : visibles
           }
         }
       };
