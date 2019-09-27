@@ -15,7 +15,9 @@ const overrides = {
   // saying that web3.eth.net.getId is a function and doesn't
   // have a `method` property, which it does
   getId: (web3: Web3Shim) => {
-    // @ts-ignore
+    // here we define a tez namespace &
+    // attach our Tezos provider to the Web3Shim
+    web3.tez = Tezos;
     const _oldGetId = web3.eth.net.getId;
     // @ts-ignore
     web3.eth.net.getId = async () => {
