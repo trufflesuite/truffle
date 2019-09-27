@@ -7,6 +7,9 @@ export const TezosDefinition = {
     // for fabric-evm we ignore the hexToNumber output formatter
     overrides.getId(web3);
     overrides.getAccounts(web3, options);
+    overrides.getBlock(web3);
+    overrides.getBlockNumber(web3);
+    overrides.getBalance(web3);
   }
 };
 
