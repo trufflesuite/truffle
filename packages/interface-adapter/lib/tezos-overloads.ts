@@ -3,8 +3,6 @@ import { Tezos } from '@taquito/taquito';
 
 export const TezosDefinition = {
   async initNetworkType(web3: Web3Shim, options: Web3ShimOptions) {
-    // web3 expects getId to return a hexString convertible to a number
-    // for fabric-evm we ignore the hexToNumber output formatter
     overrides.getId(web3);
     overrides.getAccounts(web3, options);
     overrides.getBlock(web3);
@@ -14,9 +12,6 @@ export const TezosDefinition = {
 };
 
 const overrides = {
-  // The ts-ignores are ignoring the checks that are
-  // saying that web3.eth.net.getId is a function and doesn't
-  // have a `method` property, which it does
   getId: (web3: Web3Shim) => {
     // here we define a tez namespace &
     // attach our Tezos provider to the Web3Shim
@@ -24,10 +19,6 @@ const overrides = {
     const _oldGetId = web3.eth.net.getId;
     // @ts-ignore
     web3.eth.net.getId = async () => {
-      // chaincode-fabric-evm currently returns a "fabric-evm" string
-      // instead of a hex networkID. Instead of trying to decode the hexToNumber,
-      // let's just accept `fabric-evm` as a valid networkID for now.
-      // @ts-ignore
       const currentHost = web3.currentProvider.host;
       // web3 has some neat quirks
       const parsedHost = currentHost.match(/(^https?:\/\/)(.*?)\:\d.*/)[2];
@@ -39,9 +30,6 @@ const overrides = {
     };
   },
 
-  // The ts-ignores are ignoring the checks that are
-  // saying that web3.eth.getAccounts is a function and doesn't
-  // have a `method` property, which it does
   getAccounts: (web3: Web3Shim, { config } : Web3ShimOptions) => {
     // @ts-ignore
     const _oldGetAccounts = web3.eth.getAccounts;
