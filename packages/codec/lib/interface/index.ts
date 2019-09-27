@@ -4,6 +4,8 @@ const debug = debugModule("codec:interface");
 import TruffleContractDecoder from "./contract";
 import { TruffleContractInstanceDecoder } from "./contract";
 import TruffleWireDecoder from "./wire";
+export { TruffleContractDecoder, TruffleContractInstanceDecoder, TruffleWireDecoder };
+
 import { Provider } from "web3/providers";
 import { ContractObject } from "@truffle/contract-schema/spec";
 

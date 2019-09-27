@@ -2,12 +2,13 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:constant");
 
 import * as CodecUtils from "../utils";
-import { Types, Values, Errors } from "../format";
+import { Types, Values } from "../format";
 import read from "../read";
 import decodeValue from "./value";
 import { ConstantDefinitionPointer} from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";
+import { DecodingError } from "../types/errors";
 import BN from "bn.js";
 
 export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
@@ -30,7 +31,7 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
       return {
         type: dataType,
         kind: "error" as const,
-        error: (<Errors.DecodingError>error).error
+        error: (<DecodingError>error).error
       };
     }
     //not bothering to check padding; shouldn't be necessary

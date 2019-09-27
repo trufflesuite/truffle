@@ -5,7 +5,7 @@ import { StoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageAllocation, StorageMemberAllocation } from "../types/allocation";
 import { StorageLength, Range } from "../types/storage";
 import { isWordsLength } from "../utils/storage";
-import { UnknownBaseContractIdError, UnknownUserDefinedTypeError } from "../types/errors";
+import { UnknownBaseContractIdError, UnknownUserDefinedTypeError, DecodingError } from "../types/errors";
 import { AstDefinition, AstReferences } from "../types/ast";
 import * as CodecUtils from "../utils";
 import { TypeUtils } from "../utils";
@@ -394,7 +394,7 @@ export function storageSizeForType(dataType: Format.Types.Type, userDefinedTypes
     case "enum": {
       let fullType = <Format.Types.EnumType>TypeUtils.fullType(dataType, userDefinedTypes);
       if(!fullType.options) {
-        throw new Format.Errors.DecodingError(
+        throw new DecodingError(
           {
             kind: "UserDefinedTypeNotFoundError",
             type: dataType
@@ -446,7 +446,7 @@ export function storageSizeForType(dataType: Format.Types.Type, userDefinedTypes
     case "struct":
       let allocation = allocations[parseInt(dataType.id)];
       if(!allocation) {
-        throw new Format.Errors.DecodingError(
+        throw new DecodingError(
           {
             kind: "UserDefinedTypeNotFoundError",
             type: dataType

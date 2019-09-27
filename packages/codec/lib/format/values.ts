@@ -11,12 +11,10 @@ const debug = debugModule("codec:format:values");
 //future.
 
 import BN from "bn.js";
-import Big from "big.js";
 import { Types } from "./types";
 import { Errors } from "./errors";
-import util from "util";
-import { AstDefinition, Mutability } from "../types/ast";
-import { Definition as DefinitionUtils } from "../utils/definition";
+import { Elementary } from "./elementary";
+import { Mutability } from "../types/ast";
 import { FunctionAbiEntry } from "../types/abi";
 
 export namespace Values {
@@ -40,138 +38,55 @@ export namespace Values {
    * SECTION 2: Elementary values
    */
 
+  //NOTE: for technical reasons, the actual Value type definitions have been moved
+  //to elementary.ts, sorry!  see there for elementary Values; this part just re-exports
+  //those (and defines the Result types)
+
+  //overall groupings
   export type ElementaryResult = UintResult | IntResult | BoolResult
     | BytesResult | AddressResult | StringResult
     | FixedResult | UfixedResult;
   export type BytesResult = BytesStaticResult | BytesDynamicResult;
 
-  //note that we often want an elementary *value*, and not an error!
-  //so let's define those types too
-  export type ElementaryValue = UintValue | IntValue | BoolValue
-    | BytesValue | AddressValue | StringValue | FixedValue | UfixedValue;
-  //we don't include FixedValue or UfixedValue because those
-  //aren't implemented yet
-  export type BytesValue = BytesStaticValue | BytesDynamicValue;
+  export type ElementaryValue = Elementary.ElementaryValue;
+  export type BytesValue = Elementary.BytesValue;
 
-
-  //Uints
+  //integers
   export type UintResult = UintValue | Errors.UintErrorResult;
+  export type UintValue = Elementary.UintValue;
 
-  export interface UintValue {
-    type: Types.UintType;
-    kind: "value";
-    value: {
-      asBN: BN;
-      rawAsBN?: BN;
-    };
-  }
-
-  //Ints
   export type IntResult = IntValue | Errors.IntErrorResult;
+  export type IntValue = Elementary.IntValue;
 
-  export interface IntValue {
-    type: Types.IntType;
-    kind: "value";
-    value: {
-      asBN: BN;
-      rawAsBN?: BN;
-    };
-  }
-
-  //Bools
+  //bools
   export type BoolResult = BoolValue | Errors.BoolErrorResult;
+  export type BoolValue = Elementary.BoolValue;
 
-  export interface BoolValue {
-    type: Types.BoolType;
-    kind: "value";
-    value: {
-      asBool: boolean;
-    };
-  }
-
-  //bytes (static)
+  //bytes (static & dynaic)
   export type BytesStaticResult = BytesStaticValue | Errors.BytesStaticErrorResult;
+  export type BytesStaticValue = Elementary.BytesStaticValue;
 
-  export interface BytesStaticValue {
-    type: Types.BytesTypeStatic;
-    kind: "value";
-    value: {
-      asHex: string; //should be hex-formatted, with leading "0x"
-      rawAsHex?: string;
-    };
-  }
-
-  //bytes (dynamic)
   export type BytesDynamicResult = BytesDynamicValue | Errors.BytesDynamicErrorResult;
-
-  export interface BytesDynamicValue {
-    type: Types.BytesTypeDynamic;
-    kind: "value";
-    value: {
-      asHex: string; //should be hex-formatted, with leading "0x"
-    };
-  }
+  export type BytesDynamicValue = Elementary.BytesDynamicValue;
 
   //addresses
   export type AddressResult = AddressValue | Errors.AddressErrorResult;
+  export type AddressValue = Elementary.AddressValue;
 
-  export interface AddressValue {
-    type: Types.AddressType;
-    kind: "value";
-    value: {
-      asAddress: string; //should have 0x and be checksum-cased
-      rawAsHex?: string;
-    }
-  }
-
-  //strings
+  //strings & their info
   export type StringResult = StringValue | Errors.StringErrorResult;
+  export type StringValue = Elementary.StringValue;
 
-  //strings have a special new type as their value: StringValueInfo
-  export interface StringValue {
-    type: Types.StringType;
-    kind: "value";
-    value: StringValueInfo;
-  }
+  export type StringValueInfo = Elementary.StringValueInfo;
+  export type StringValueInfoValid = Elementary.StringValueInfoValid;
+  export type StringValueInfoMalformed = Elementary.StringValueInfoMalformed;
 
-  //these come in two types: valid strings and malformed strings
-  export type StringValueInfo = StringValueInfoValid | StringValueInfoMalformed;
-
-  //valid strings
-  export interface StringValueInfoValid {
-    kind: "valid";
-    asString: string;
-  }
-
-  //malformed strings
-  export interface StringValueInfoMalformed {
-    kind: "malformed";
-    asHex: string;
-  }
-
-  //Fixed & Ufixed
-  
+  //fixed & ufixed
   export type FixedResult = FixedValue | Errors.FixedErrorResult;
-
-  export interface FixedValue {
-    type: Types.FixedType;
-    kind: "value";
-    value: {
-      asBig: Big;
-      rawAsBig?: Big;
-    };
-  }
+  export type FixedValue = Elementary.FixedValue;
 
   export type UfixedResult = UfixedValue | Errors.UfixedErrorResult;
-
-  export interface UfixedValue {
-    type: Types.UfixedType;
-    kind: "value";
-    value: {
-      asBig: Big;
-      rawAsBig?: Big;
-    };
-  }
+  export type UfixedValue = Elementary.UfixedValue;
 
   /*
    * SECTION 3: CONTAINER TYPES (including magic)

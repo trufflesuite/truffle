@@ -1,8 +1,9 @@
 import debugModule from "debug";
 const debug = debugModule("codec:encode:abi");
 
-import { Values } from "../format";
-import { Conversion as ConversionUtils, EVM as EVMUtils } from "../utils";
+import { Values } from "../format/values";
+import { Conversion as ConversionUtils } from "../utils/conversion";
+import { EVM as EVMUtils } from "../utils/evm";
 import { AbiAllocations, AbiSizeInfo } from "../types/allocation";
 import { abiSizeInfo } from "../allocate/abi";
 import sum from "lodash.sum";
@@ -44,7 +45,7 @@ export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): U
       return ConversionUtils.toBytes((<Values.EnumValue>input).value.numericAsBN, EVMUtils.WORD_SIZE);
     case "bool": {
       bytes = new Uint8Array(EVMUtils.WORD_SIZE); //is initialized to zeroes
-      if((<Values.BoolValue>input).value.asBool) {
+      if((<Values.BoolValue>input).value.asBoolean) {
         bytes[EVMUtils.WORD_SIZE - 1] = 1;
       }
       return bytes;

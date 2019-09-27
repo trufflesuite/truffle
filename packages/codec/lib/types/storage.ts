@@ -1,4 +1,5 @@
-import { Values } from "../format/values";
+import { Elementary } from "../format/elementary";
+//import directly from Elementary to avoid circularity!
 import BN from "bn.js";
 
 export type StorageLength = {bytes: number} | {words: number};
@@ -15,7 +16,7 @@ export interface StoragePosition {
 };
 
 export interface Slot {
-  key?: Values.ElementaryValue;
+  key?: Elementary.ElementaryValue;
   path?: Slot;
   hashPath?: boolean;
   offset: BN;

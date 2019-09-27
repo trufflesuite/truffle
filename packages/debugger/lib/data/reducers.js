@@ -5,7 +5,7 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 
-import { slotAddress, Utils } from "@truffle/codec";
+import { Utils } from "@truffle/codec";
 const { Conversion, Definition, EVM } = Utils;
 import { makeAssignment } from "lib/helpers";
 
@@ -191,11 +191,11 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
 
       debug("slot %o", slot);
       let hexSlotAddress = Conversion.toHexString(
-        slotAddress(slot),
+        Utils.slotAddress(slot),
         EVM.WORD_SIZE
       );
       let parentAddress = slot.path
-        ? Conversion.toHexString(slotAddress(slot.path), EVM.WORD_SIZE)
+        ? Conversion.toHexString(Utils.slotAddress(slot.path), EVM.WORD_SIZE)
         : undefined;
 
       //this is going to be messy and procedural, sorry.  but let's start with
