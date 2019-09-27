@@ -26,6 +26,7 @@ const overrides = {
       // let's just accept `fabric-evm` as a valid networkID for now.
       // @ts-ignore
       const currentHost = web3.currentProvider.host;
+      // web3 has some neat quirks
       const parsedHost = currentHost.match(/(^https?:\/\/)(.*?)\:\d.*/)[2];
       // @ts-ignore
       await eztz.node.setProvider(parsedHost);
