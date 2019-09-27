@@ -18,7 +18,8 @@
     "rootDir": "lib",
     "typeRoots": [
       "../../**/node_modules/@types/bn.js",
-      "../../**/node_modules/@types/mocha"
+      "../../**/node_modules/@types/mocha",
+      "../../**/node_modules/@truffle/config"
     ]
   },
   "include": [
