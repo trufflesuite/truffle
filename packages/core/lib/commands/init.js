@@ -15,30 +15,17 @@ var command = {
     ]
   },
   run: function(options, done) {
-    var Config = require("@truffle/config");
-    var OS = require("os");
-    var UnboxCommand = require("./unbox");
-
-    var config = Config.default().with({
-      logger: console
-    });
-
+    const UnboxCommand = require("./unbox");
+    const fse = require("fs-extra");
+    let inputPath;
     if (options._ && options._.length > 0) {
-      config.logger.log(
-        "Error: `truffle init` no longer accepts a project template name as an argument."
-      );
-      config.logger.log();
-      config.logger.log(
-        " - For an empty project, use `truffle init` with no arguments" +
-          OS.EOL +
-          " - Or, browse the Truffle Boxes at <http://truffleframework.com/boxes>!"
-      );
-      process.exit(1);
+      inputPath = options._[0];
+      if (!fse.existsSync(inputPath)) fse.ensureDirSync(inputPath);
     }
 
     // defer to `truffle unbox` command with "bare" box as arg
-    var url = "https://github.com/truffle-box/bare-box.git";
-    options._ = [url];
+    const url = "https://github.com/truffle-box/bare-box.git";
+    options._ = [url, inputPath];
 
     UnboxCommand.run(options, done);
   }
