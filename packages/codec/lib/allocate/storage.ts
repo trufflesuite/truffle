@@ -5,12 +5,28 @@ import { StoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageAllocation, StorageMemberAllocation } from "../types/allocation";
 import { StorageLength, Range } from "../types/storage";
 import { isWordsLength } from "../utils/storage";
-import { UnknownBaseContractIdError, UnknownUserDefinedTypeError, DecodingError } from "../types/errors";
+import { UnknownUserDefinedTypeError, DecodingError } from "../types/errors";
 import { AstDefinition, AstReferences } from "../types/ast";
 import * as CodecUtils from "../utils";
 import { TypeUtils } from "../utils";
 import * as Format from "../format";
 import BN from "bn.js";
+
+export class UnknownBaseContractIdError extends Error {
+  public derivedId: number;
+  public derivedName: string;
+  public derivedKind: string;
+  public baseId: number;
+  constructor(derivedId: number, derivedName: string, derivedKind: string, baseId: number) {
+    const message = `Cannot locate base contract ID ${baseId} of ${derivedKind} ${derivedName} (ID ${derivedId})`;
+    super(message);
+    this.name = "UnknownBaseContractIdError";
+    this.derivedId = derivedId;
+    this.derivedName = derivedName;
+    this.derivedKind = derivedKind;
+    this.baseId = baseId;
+  }
+}
 
 interface StorageAllocationInfo {
   size: StorageLength;

@@ -16,7 +16,7 @@ export * from "./interface";
 export { decodeVariable, decodeEvent, decodeCalldata } from "./core/decoding";
 
 //the debugger needs to get its allocations, and deal with storage sizes
-export { getStorageAllocations, storageSize } from "./allocate/storage";
+export { UnknownBaseContractIdError, getStorageAllocations, storageSize } from "./allocate/storage";
 export { getAbiAllocations } from "./allocate/abi";
 export { getMemoryAllocations } from "./allocate/memory";
 //and to read the stack

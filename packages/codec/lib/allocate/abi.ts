@@ -11,7 +11,7 @@ import { getterInputs } from "../utils/definition2abi";
 import * as AbiTypes from "../types/abi";
 import { AstDefinition, AstReferences } from "../types/ast";
 import { Types } from "../format";
-import { UnknownBaseContractIdError, UnknownUserDefinedTypeError } from "../types/errors";
+import { UnknownUserDefinedTypeError } from "../types/errors";
 import partition from "lodash.partition";
 import { DecodingMode } from "../types/decoding";
 import { CompilerVersion } from "../types/compiler";
