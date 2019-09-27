@@ -44,12 +44,23 @@ const overrides = {
     const _oldGetAccounts = web3.eth.getAccounts;
     // @ts-ignore
     web3.eth.getAccounts = async () => {
-      // chaincode-fabric-ev1Gm currently returns a "fabric-evm" string
-      // instead of a hex networkID. Instead of trying to decode the hexToNumber,
-      // let's just accept `fabric-evm` as a valid networkID for now.
-      // @ts-ignore
-      //      const currentHost = web3.currentProvider.host;
-      //const parsedHost = currentHost.match(/(^https?:\/\/)(.*?)\:\d.*/)[2];
+      // here we import user's faucet account:
+      // email, passphrase, mnemonic, & secret are all REQUIRED.
+      // TODO: all logic to check if user is importing only a private secret key
+      // that would unlock the account, or a psk w/ passphrase
+      let mnemonic = config.networks[config.network].mnemonic;
+      if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ")
+      await web3.tez.importKey(
+        config.networks[config.network].email,
+        config.networks[config.network].passphrase,
+        mnemonic,
+        config.networks[config.network].secret
+      )
+
+      const currentAccount = await web3.tez.signer.publicKeyHash();
+      return [ currentAccount ];
+    };
+  },
       // @ts-ignore
       /*
       const sotez = new Sotez(parsedHost)
