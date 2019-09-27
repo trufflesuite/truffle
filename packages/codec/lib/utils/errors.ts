@@ -1,8 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:errors");
 
-import { Errors } from "../format/errors";
-import { Values } from "../format/values";
+import { Values, Errors } from "../format";
 import { TypeUtils } from "./datatype";
 import { Definition as DefinitionUtils } from "./definition";
 import { Slot } from "../types/storage";

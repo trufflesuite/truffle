@@ -1,4 +1,5 @@
-export * from "./types";
-export * from "./values";
-export * from "./errors";
-export * from "./elementary"; //this is just for typedoc purposes, please don't actually use this
+import * as Types from "./types";
+import * as Values from "./values";
+import * as Errors from "./errors";
+
+export { Types, Values, Errors };

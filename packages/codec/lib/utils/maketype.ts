@@ -7,7 +7,7 @@ import { Definition as DefinitionUtils } from "./definition";
 import { CompilerVersion } from "../types/compiler";
 import { solidityFamily } from "./compiler";
 import { AbiParameter } from "../types/abi";
-import { Types } from "../format/types";
+import { Types } from "../format";
 import { TypeUtils } from "./datatype";
 
 export namespace MakeType {

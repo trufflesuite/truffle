@@ -75,7 +75,7 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
         dataType,
         argumentAllocation.pointer,
         info,
-        { 
+        {
           abiPointerBase: allocation.offset, //note the use of the offset for decoding pointers!
           allowRetry: decodingMode === "full"
         }

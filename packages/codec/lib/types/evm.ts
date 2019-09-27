@@ -1,6 +1,6 @@
 import { DecoderContext, DecoderContexts } from "./contexts";
 import { AstDefinition, AstReferences, ContractKind, Mutability } from "./ast";
-import { Types } from "../format/types";
+import { Types } from "../format";
 import * as Allocations from "./allocation";
 import { Slot } from "./storage";
 

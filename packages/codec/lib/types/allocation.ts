@@ -4,7 +4,7 @@ import { DecoderContext } from "./contexts";
 import * as AbiTypes from "./abi";
 import { CompilerVersion } from "./compiler";
 import { AstDefinition } from "./ast";
-import { Types } from "../format/types";
+import { Types } from "../format";
 import { DecodingMode } from "./decoding";
 
 //for passing to calldata/event allocation functions

@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:datatype");
 
-import { Types } from "../format/types";
+import { Types } from "../format";
 import * as Ast from "../types/ast";
 
 export namespace TypeUtils {
@@ -46,7 +46,7 @@ export namespace TypeUtils {
     }
     return returnType;
   }
-  
+
   //the location argument here always forces, so passing undefined *will* force undefined
   export function specifyLocation(dataType: Types.Type, location: Ast.Location | undefined): Types.Type {
     if(TypeUtils.isReferenceType(dataType)) {

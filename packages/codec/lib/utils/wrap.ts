@@ -5,9 +5,8 @@ import Web3 from "web3";
 import BN from "bn.js";
 import { CompilerVersion } from "../types/compiler";
 import { AstDefinition } from "../types/ast";
-import { Types } from "../format/types";
 import { MakeType } from "./maketype";
-import { Values } from "../format/values";
+import { Types, Values } from "../format";
 
 //Function for wrapping a value as an ElementaryValue
 //WARNING: this function does not check its inputs! Please check before using!

@@ -5,8 +5,7 @@ import BN from "bn.js";
 import Big from "big.js";
 import Web3 from "web3";
 import { Constants } from "./constants";
-import { Types } from "../format/types";
-import { Values } from "../format/values";
+import { Types, Values } from "../format";
 import { enumFullName } from "./inspect";
 import { DecodedVariable } from "../types/interface";
 
@@ -204,7 +203,7 @@ export namespace Conversion {
       ([name, value]) => ({[name]: nativize(value)})
     ));
   }
-  
+
   //NOTE: Definitely do not use this in real code!  For tests only!
   //for convenience: invokes the nativize method on all the given variables, and changes them to
   //the old format
