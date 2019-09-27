@@ -8,7 +8,7 @@ const Resolver = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 
 describe("create", function() {
-  var config;
+  let config;
 
   before("Create a sandbox", async () => {
     config = await Box.sandbox("default");
@@ -28,20 +28,20 @@ describe("create", function() {
     Create.contract(config.contracts_directory, "MyNewContract", function(err) {
       if (err) return done(err);
 
-      var expected_file = path.join(
+      const expectedFile = path.join(
         config.contracts_directory,
         "MyNewContract.sol"
       );
       assert.isTrue(
-        fse.existsSync(expected_file),
-        `Contract to be created doesns't exist, ${expected_file}`
+        fse.existsSync(expectedFile),
+        `Contract to be created doesns't exist, ${expectedFile}`
       );
 
-      var file_data = fse.readFileSync(expected_file, { encoding: "utf8" });
-      assert.isNotNull(file_data, "File's data is null");
-      assert.notEqual(file_data, "", "File's data is blank");
+      const fileData = fse.readFileSync(expectedFile, { encoding: "utf8" });
+      assert.isNotNull(fileData, "File's data is null");
+      assert.notEqual(fileData, "", "File's data is blank");
       assert.isTrue(
-        file_data.includes("pragma solidity ^0.5.0"),
+        fileData.includes("pragma solidity ^0.5.0"),
         "File's solidity version does not match ^0.5.0"
       );
       done();
@@ -54,13 +54,13 @@ describe("create", function() {
     ) {
       if (err) return done(err);
 
-      var expected_file = path.join(
+      const expectedFile = path.join(
         config.contracts_directory,
         "MyNewContract2.sol"
       );
       assert.isTrue(
-        fse.existsSync(expected_file),
-        `Contract to be created doesns't exist, ${expected_file}`
+        fse.existsSync(expectedFile),
+        `Contract to be created doesns't exist, ${expectedFile}`
       );
 
       Create.contract(config.contracts_directory, "MyNewContract2", function(
@@ -78,16 +78,16 @@ describe("create", function() {
     ) {
       if (err) return done(err);
 
-      var expected_file = path.join(
+      const expectedFile = path.join(
         config.contracts_directory,
         "MyNewContract3.sol"
       );
       assert.isTrue(
-        fse.existsSync(expected_file),
-        `Contract to be created doesns't exist, ${expected_file}`
+        fse.existsSync(expectedFile),
+        `Contract to be created doesns't exist, ${expectedFile}`
       );
 
-      var options = { force: true };
+      const options = { force: true };
       Create.contract(
         config.contracts_directory,
         "MyNewContract3",
@@ -104,15 +104,15 @@ describe("create", function() {
     Create.test(config.test_directory, "MyNewTest", function(err) {
       if (err) return done(err);
 
-      var expected_file = path.join(config.test_directory, "my_new_test.js");
+      const expectedFile = path.join(config.test_directory, "my_new_test.js");
       assert.isTrue(
-        fse.existsSync(expected_file),
-        `Test to be created doesns't exist, ${expected_file}`
+        fse.existsSync(expectedFile),
+        `Test to be created doesns't exist, ${expectedFile}`
       );
 
-      var file_data = fse.readFileSync(expected_file, { encoding: "utf8" });
-      assert.isNotNull(file_data, "File's data is null");
-      assert.notEqual(file_data, "", "File's data is blank");
+      const fileData = fse.readFileSync(expectedFile, { encoding: "utf8" });
+      assert.isNotNull(fileData, "File's data is null");
+      assert.notEqual(fileData, "", "File's data is blank");
 
       done();
     });
@@ -125,19 +125,19 @@ describe("create", function() {
       if (err) return done(err);
       const files = glob.sync(`${config.migrations_directory}${path.sep}*`);
 
-      var found = false;
-      var expected_suffix = "_my_new_migration.js";
+      const found = false;
+      const expectedSuffix = "_my_new_migration.js";
 
-      for (var i = 0; i < files.length; i++) {
-        var file = files[i];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
 
         if (
-          file.indexOf(expected_suffix) ===
-          file.length - expected_suffix.length
+          file.indexOf(expectedSuffix) ===
+          file.length - expectedSuffix.length
         ) {
-          var file_data = fse.readFileSync(file, { encoding: "utf8" });
-          assert.isNotNull(file_data, "File's data is null");
-          assert.notEqual(file_data, "", "File's data is blank");
+          const fileData = fse.readFileSync(file, { encoding: "utf8" });
+          assert.isNotNull(fileData, "File's data is null");
+          assert.notEqual(fileData, "", "File's data is blank");
 
           return done();
         }
