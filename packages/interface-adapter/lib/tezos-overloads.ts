@@ -77,6 +77,15 @@ const overrides = {
       return block;
     };
   },
+
+  getBlockNumber: (web3: Web3Shim) => {
+    const _oldGetBlockNumber = web3.eth.getBlockNumber;
+
+    web3.eth.getBlockNumber = async () => {
+      const { level } = await web3.tez.rpc.getBlockHeader();
+      return level;
+    };
+  },
     };
   }
 };
