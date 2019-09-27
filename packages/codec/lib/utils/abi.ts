@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:abi");
 
-import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
+import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
 import { EVM as EVMUtils } from "./evm";
 import { AstDefinition, AstReferences, Mutability } from "../types/ast";
 import { definitionToAbi } from "./definition2abi";

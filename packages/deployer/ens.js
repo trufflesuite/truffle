@@ -1,5 +1,5 @@
 const ENSJS = require("ethereum-ens");
-const contract = require("truffle-contract");
+const contract = require("@truffle/contract");
 const sha3 = require("web3").utils.sha3;
 const { hash } = require("eth-ens-namehash");
 

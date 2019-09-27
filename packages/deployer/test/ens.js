@@ -4,7 +4,7 @@ const assert = require("assert");
 const Ganache = require("ganache-core");
 const ENS = require("../ens");
 const sinon = require("sinon");
-const HDWalletProvider = require("truffle-hdwallet-provider");
+const HDWalletProvider = require("@truffle/hdwallet-provider");
 const ENSJS = require("ethereum-ens");
 
 let ganacheOptions,
