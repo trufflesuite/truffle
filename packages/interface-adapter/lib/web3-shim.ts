@@ -1,22 +1,25 @@
 import Web3 from "web3";
 import { Provider } from "web3/providers";
 import Config from "@truffle/config";
+import { TezosToolkit } from "@taquito/taquito";
 
 import { TezosDefinition } from "./tezos-overloads";
 import { EthereumDefinition } from "./ethereum-overloads";
 import { QuorumDefinition } from "./quorum-overloads";
 import { FabricEvmDefinition } from "./fabric-evm-overloads";
 
-const initInterface = async(web3Shim: Web3Shim, options?: Web3ShimOptions) => {
-    const networkTypes: NetworkTypesConfig = new Map(Object.entries({
-      "tezos": TezosDefinition,
-      "ethereum": EthereumDefinition,
-      "quorum": QuorumDefinition,
+const initInterface = async (web3Shim: Web3Shim, options?: Web3ShimOptions) => {
+  const networkTypes: NetworkTypesConfig = new Map(
+    Object.entries({
+      tezos: TezosDefinition,
+      ethereum: EthereumDefinition,
+      quorum: QuorumDefinition,
       "fabric-evm": FabricEvmDefinition
-    }));
+    })
+  );
 
-    networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim, options);
-  }
+  networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim, options);
+};
 
 // March 13, 2019 - Mike Seese:
 // This is a temporary shim to support the basic, Ethereum-based
@@ -30,12 +33,15 @@ export interface Web3ShimOptions {
   config?: Config;
   provider?: Provider;
   networkType?: NetworkType;
-};
+}
 
-export type InitNetworkType = (web3Shim: Web3Shim, options?: Web3ShimOptions) => Promise<void>;
+export type InitNetworkType = (
+  web3Shim: Web3Shim,
+  options?: Web3ShimOptions
+) => Promise<void>;
 
 export interface NetworkTypeDefinition {
-  initNetworkType: InitNetworkType
+  initNetworkType: InitNetworkType;
 }
 
 export type NetworkTypesConfig = Map<NetworkType, NetworkTypeDefinition>;
@@ -80,4 +86,4 @@ export class Web3Shim extends Web3 {
   }
 
   public tez: TezosToolkit;
-};
+}
