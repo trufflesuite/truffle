@@ -86,6 +86,14 @@ const overrides = {
       return level;
     };
   },
+
+  getBalance: (web3: Web3Shim) => {
+    // since this is used in the tez reporter,
+    // decided to namespace a specific tez getBalance method
+    // @ts-ignore
+    web3.tez.getBalance = async(address) => {
+      const balance = (await web3.tez.tz.getBalance(address)).toString();
+      return balance;
     };
   }
 };
