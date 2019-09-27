@@ -28,12 +28,11 @@ const overrides = {
       const currentHost = web3.currentProvider.host;
       // web3 has some neat quirks
       const parsedHost = currentHost.match(/(^https?:\/\/)(.*?)\:\d.*/)[2];
-      // @ts-ignore
-      await eztz.node.setProvider(parsedHost);
-      // @ts-ignore
-      const { chain_id } = await eztz.rpc.getHead();
-      // @ts-ignore
-      return chain_id;
+      // sets the provider for subsequent Tezos provider calls
+      await web3.tez.setProvider({ rpc: parsedHost })
+      // @ts-ignore (typings incomplete)
+      const { chainId } = await web3.tez.rpc.getBlockHeader();
+      return chainId;
     };
   },
 
