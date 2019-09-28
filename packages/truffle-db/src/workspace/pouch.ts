@@ -4,6 +4,15 @@ import PouchDBFind from "pouchdb-find";
 
 import { soliditySha3 } from "web3-utils";
 
+type PouchApi = {
+  sources?: PouchDB.Database,
+  bytecodes?: PouchDB.Database,
+  compilations?: PouchDB.Database,
+  contracts?: PouchDB.Database,
+  contractInstances?: PouchDB.Database,
+  networks?: PouchDB.Database
+}
+
 const jsonStableStringify = require('json-stable-stringify');
 
 const resources = {
@@ -37,21 +46,18 @@ const resources = {
 }
 
 export class Workspace {
-  sources: PouchDB.Database;
-  bytecodes: PouchDB.Database;
-  compilations: PouchDB.Database;
-  contracts: PouchDB.Database;
-  contractInstances: PouchDB.Database;
-  networks: PouchDB.Database;
+
+  dbApi: PouchApi;
 
   private ready: Promise<void>;
 
   constructor () {
+    this.dbApi = {}
     PouchDB.plugin(PouchDBMemoryAdapter);
     PouchDB.plugin(PouchDBFind);
 
     for (let resource of Object.keys(resources)) {
-      this[resource] = new PouchDB(resource, { adapter: "memory" });
+      this.dbApi[resource] = new PouchDB(resource, { adapter: "memory" });
     }
 
     this.ready = this.initialize();
@@ -59,7 +65,7 @@ export class Workspace {
 
   async initialize() {
     for (let [resource, definition] of Object.entries(resources)) {
-      const db = this[resource];
+      const db = this.dbApi[resource];
 
       const { createIndexes } = definition;
 
@@ -72,7 +78,7 @@ export class Workspace {
   async contractNames () {
     await this.ready;
 
-    const { docs }: any = await this.contracts.find({
+    const { docs }: any = await this.dbApi.contracts.find({
       selector: {},
       fields: ['name']
     })
@@ -84,7 +90,7 @@ export class Workspace {
 
     try {
       const result = {
-        ...await this.contracts.get(id),
+        ...await this.dbApi.contracts.get(id),
 
         id
       }
@@ -110,12 +116,13 @@ export class Workspace {
             constructor: contractConstructor
           } = contractInput;
           const id = soliditySha3(jsonStableStringify({ name: name, abi: abi, sourceContract: sourceContract, compilation: compilation }));
+
           const contract = await this.contract( { id } );
 
           if(contract) {
             return contract;
           } else {
-            const contractAdded = await this.contracts.put({
+            const contractAdded = await this.dbApi.contracts.put({
             ...contractInput,
             _id: id,
             });
@@ -132,7 +139,7 @@ export class Workspace {
 
     try {
       return  {
-        ... await this.compilations.get(id),
+        ... await this.dbApi.compilations.get(id),
 
         id
       };
@@ -159,7 +166,7 @@ export class Workspace {
 
          const compilation = await this.compilation({ id }) || { ...compilationInput, id };
 
-          await this.compilations.put({
+          await this.dbApi.compilations.put({
             ...compilation,
             ...compilationInput,
 
@@ -178,7 +185,7 @@ export class Workspace {
 
     try {
       return {
-        ...await this.contractInstances.get(id),
+        ...await this.dbApi.contractInstances.get(id),
 
         id
       };
@@ -207,7 +214,7 @@ export class Workspace {
           if(contractInstance) {
             return contractInstance;
           } else {
-            let contractInstanceAdded = await this.contractInstances.put({
+            let contractInstanceAdded = await this.dbApi.contractInstances.put({
               ...contractInstance,
               ...contractInstanceInput,
 
@@ -226,7 +233,7 @@ export class Workspace {
 
     try {
       return {
-        ...await this.networks.get(id),
+        ...await this.dbApi.networks.get(id),
 
         id
       };
@@ -254,7 +261,7 @@ export class Workspace {
           if(network) {
             return network;
           } else {
-            const networkAdded = await this.networks.put({
+            const networkAdded = await this.dbApi.networks.put({
               ...networkInput,
               _id: id
             });
@@ -271,7 +278,7 @@ export class Workspace {
 
     try {
       return {
-        ...await this.sources.get(id),
+        ...await this.dbApi.sources.get(id),
 
         id
       };
@@ -297,7 +304,7 @@ export class Workspace {
 
           const source = await this.source({ id }) || { ...sourceInput, id };
 
-          await this.sources.put({
+          await this.dbApi.sources.put({
             ...source,
             ...sourceInput,
 
@@ -315,7 +322,7 @@ export class Workspace {
 
     try {
       return {
-        ...await this.bytecodes.get(id),
+        ...await this.dbApi.bytecodes.get(id),
 
         id
       };
@@ -338,7 +345,7 @@ export class Workspace {
 
           const bytecode = await this.bytecode({ id }) || { ...bytecodeInput, id };
 
-          await this.bytecodes.put({
+          await this.dbApi.bytecodes.put({
             ...bytecode,
             ...bytecodeInput,
 
