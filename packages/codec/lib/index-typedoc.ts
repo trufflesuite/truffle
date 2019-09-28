@@ -1,8 +1,16 @@
 /**
+ * Usage:
+ *
+ * ```
+ * import { ... } from "@truffle/codec";
+ * ```
+ *
  * @module @truffle/codec
  *//** */
 
-export * from "./format";
+import * as Format from "./format";
+export { Format };
+
 export * from "./interface";
 export * from "./types/interface";
 export * from "./types/decoding";
