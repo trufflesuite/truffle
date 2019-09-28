@@ -76,8 +76,6 @@ export class Workspace {
 
     this.adapter(PouchDB);
 
-    // this.adapter(PouchDB);
-
     for (let resource of Object.keys(resources)) {
       let savePath = this.getSavePath(workingDirectory, resource);
       this[resource] = new PouchDB(savePath, { adapter: "jsondown"});
