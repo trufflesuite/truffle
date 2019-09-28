@@ -1,5 +1,5 @@
+import _ from 'lodash';
 import * as path from 'path';
-import lodash from 'lodash';
 import Provider from '@truffle/provider';
 import TruffleConfig from './';
 
@@ -32,10 +32,10 @@ export const getInitialConfig = ({
     resolver: null,
     artifactor: null,
     ethpm: {
-      ipfs_host: "ipfs.infura.io",
-      ipfs_protocol: "https",
-      registry: "0x8011df4830b4f696cd81393997e5371b93338878",
-      install_provider_uri: "https://ropsten.infura.io/truffle"
+      ipfs_host: 'ipfs.infura.io',
+      ipfs_protocol: 'https',
+      registry: '0x8011df4830b4f696cd81393997e5371b93338878',
+      install_provider_uri: 'https://ropsten.infura.io/truffle'
     },
     compilers: {
       solc: {
@@ -84,33 +84,33 @@ export const configProps = ({
     compilers() { },
 
     build_directory: {
-      default: () => path.join(configObject.working_directory, "build"),
+      default: () => path.join(configObject.working_directory, 'build'),
       transform: resolveDirectory
     },
     contracts_directory: {
-      default: () => path.join(configObject.working_directory, "contracts"),
+      default: () => path.join(configObject.working_directory, 'contracts'),
       transform: resolveDirectory
     },
     contracts_build_directory: {
-      default: () => path.join(configObject.build_directory, "contracts"),
+      default: () => path.join(configObject.build_directory, 'contracts'),
       transform: resolveDirectory
     },
     migrations_directory: {
-      default: () => path.join(configObject.working_directory, "migrations"),
+      default: () => path.join(configObject.working_directory, 'migrations'),
       transform: resolveDirectory
     },
     migrations_file_extension_regexp() {
       return /^\.(js|es6?)$/;
     },
     test_directory: {
-      default: () => path.join(configObject.working_directory, "test"),
+      default: () => path.join(configObject.working_directory, 'test'),
       transform: resolveDirectory
     },
     test_file_extension_regexp() {
       return /.*\.(js|ts|es|es6|jsx|sol)$/;
     },
     example_project_directory: {
-      default: () => path.join(configObject.truffle_directory, "example"),
+      default: () => path.join(configObject.truffle_directory, 'example'),
       transform: resolveDirectory
     },
     network_id: {
@@ -123,7 +123,7 @@ export const configProps = ({
       },
       set() {
         throw new Error(
-          "Do not set config.network_id. Instead, set config.networks and then config.networks[<network name>].network_id"
+          'Do not set config.network_id. Instead, set config.networks and then config.networks[<network name>].network_id'
         );
       }
     },
@@ -132,7 +132,7 @@ export const configProps = ({
         const network = configObject.network;
 
         if (network === null || network === undefined) {
-          throw new Error("Network not set. Cannot determine network to use.");
+          throw new Error('Network not set. Cannot determine network to use.');
         }
 
         let config = configObject.networks[network];
@@ -141,13 +141,13 @@ export const configProps = ({
           config = {};
         }
 
-        config = lodash.extend({}, defaultTXValues, config);
+        config = _.extend({}, defaultTXValues, config);
 
         return config;
       },
       set() {
         throw new Error(
-          "Don't set config.network_config. Instead, set config.networks with the desired values."
+          'Don\'t set config.network_config. Instead, set config.networks with the desired values.'
         );
       }
     },
@@ -161,7 +161,7 @@ export const configProps = ({
       },
       set() {
         throw new Error(
-          "Don't set config.from directly. Instead, set config.networks and then config.networks[<network name>].from"
+          'Don\'t set config.from directly. Instead, set config.networks and then config.networks[<network name>].from'
         );
       }
     },
@@ -175,7 +175,7 @@ export const configProps = ({
       },
       set() {
         throw new Error(
-          "Don't set config.gas directly. Instead, set config.networks and then config.networks[<network name>].gas"
+          'Don\'t set config.gas directly. Instead, set config.networks and then config.networks[<network name>].gas'
         );
       }
     },
@@ -189,7 +189,7 @@ export const configProps = ({
       },
       set() {
         throw new Error(
-          "Don't set config.gasPrice directly. Instead, set config.networks and then config.networks[<network name>].gasPrice"
+          'Don\'t set config.gasPrice directly. Instead, set config.networks and then config.networks[<network name>].gasPrice'
         );
       }
     },
@@ -206,7 +206,7 @@ export const configProps = ({
       },
       set() {
         throw new Error(
-          "Don't set config.provider directly. Instead, set config.networks and then set config.networks[<network name>].provider"
+          'Don\'t set config.provider directly. Instead, set config.networks and then set config.networks[<network name>].provider'
         );
       }
     },
@@ -220,7 +220,7 @@ export const configProps = ({
       },
       set() {
         throw new Error(
-          "Don't set config.confirmations directly. Instead, set config.networks and then config.networks[<network name>].confirmations"
+          'Don\'t set config.confirmations directly. Instead, set config.networks and then config.networks[<network name>].confirmations'
         );
       }
     },
@@ -234,7 +234,7 @@ export const configProps = ({
       },
       set() {
         throw new Error(
-          "Don't set config.production directly. Instead, set config.networks and then config.networks[<network name>].production"
+          'Don\'t set config.production directly. Instead, set config.networks and then config.networks[<network name>].production'
         );
       }
     },
@@ -248,7 +248,7 @@ export const configProps = ({
       },
       set() {
         throw new Error(
-          "Don't set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks"
+          'Don\'t set config.timeoutBlocks directly. Instead, set config.networks and then config.networks[<network name>].timeoutBlocks'
         );
       }
     }

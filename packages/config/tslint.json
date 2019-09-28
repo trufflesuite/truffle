@@ -1,0 +1,7 @@
+{
+  "rules": {
+    "no-var-keyword": true,
+    "prefer-const": true,
+    "quotemark": [true, "single"]
+  }
+}
