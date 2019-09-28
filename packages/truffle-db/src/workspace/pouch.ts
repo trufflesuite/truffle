@@ -1,19 +1,21 @@
 import PouchDB from "pouchdb";
 import PouchDBMemoryAdapter from "pouchdb-adapter-memory";
 import PouchDBFind from "pouchdb-find";
-
+import pouchdbDebug from "pouchdb-debug"
 import { soliditySha3 } from "web3-utils";
+import jsonStableStringify from 'json-stable-stringify';
 
 type PouchApi = {
-  sources?: PouchDB.Database,
   bytecodes?: PouchDB.Database,
   compilations?: PouchDB.Database,
-  contracts?: PouchDB.Database,
   contractInstances?: PouchDB.Database,
+  contracts?: PouchDB.Database,
   networks?: PouchDB.Database
-}
+  sources?: PouchDB.Database
+};
 
-const jsonStableStringify = require('json-stable-stringify');
+type IWorkspaceQueryResource = keyof PouchApi
+type IWorkspaceQueryResourceCollection = DataModel.IWorkspaceQuery[keyof Pick<DataModel.IWorkspaceQuery, IWorkspaceQueryResource>];
 
 const resources = {
   contracts: {
@@ -47,19 +49,20 @@ const resources = {
 
 export class Workspace {
 
-  dbApi: PouchApi;
+  private dbApi: PouchApi;
 
   private ready: Promise<void>;
 
   constructor () {
     this.dbApi = {}
+    PouchDB.plugin(pouchdbDebug);
+
     PouchDB.plugin(PouchDBMemoryAdapter);
     PouchDB.plugin(PouchDBFind);
 
     for (let resource of Object.keys(resources)) {
       this.dbApi[resource] = new PouchDB(resource, { adapter: "memory" });
     }
-
     this.ready = this.initialize();
   }
 
@@ -74,6 +77,46 @@ export class Workspace {
       }
     }
   }
+
+  private async fetchAll(res : IWorkspaceQueryResource): Promise<IWorkspaceQueryResourceCollection> {
+    await this.ready;
+
+    try {
+      const query = { selector: {} }
+      const { docs } : any = await this.dbApi[res].find(query);
+
+      return docs.map(doc => ({...doc, id: doc['_id']}));
+    } catch (error) {
+      console.log(`Error fetching all ${res}\n`)
+      console.log(error)
+      return []
+    }
+  }
+
+  async bytecodes(): Promise<IWorkspaceQueryResourceCollection> {
+    return this.fetchAll("bytecodes")
+  }
+
+  async contracts(): Promise<IWorkspaceQueryResourceCollection> {
+    return this.fetchAll("contracts")
+  }
+
+  async compilations(): Promise<IWorkspaceQueryResourceCollection> {
+    return this.fetchAll("compilations")
+  }
+
+  async contractInstances(): Promise<IWorkspaceQueryResourceCollection> {
+    return this.fetchAll("contractInstances")
+  }
+
+  async networks(): Promise<IWorkspaceQueryResourceCollection> {
+    return this.fetchAll("networks")
+  }
+
+  async sources(): Promise<IWorkspaceQueryResourceCollection> {
+    return this.fetchAll("sources")
+  }
+
 
   async contractNames () {
     await this.ready;
@@ -140,7 +183,6 @@ export class Workspace {
     try {
       return  {
         ... await this.dbApi.compilations.get(id),
-
         id
       };
 
@@ -169,8 +211,6 @@ export class Workspace {
           await this.dbApi.compilations.put({
             ...compilation,
             ...compilationInput,
-
-
             _id: id
           });
 
@@ -261,7 +301,7 @@ export class Workspace {
           if(network) {
             return network;
           } else {
-            const networkAdded = await this.dbApi.networks.put({
+            await this.dbApi.networks.put({
               ...networkInput,
               _id: id
             });
@@ -290,7 +330,7 @@ export class Workspace {
   async sourcesAdd ({ input }) {
     await this.ready;
 
-    const { sources } = input;
+    const { sources } = input
 
     return {
       sources: Promise.all(sources.map(
