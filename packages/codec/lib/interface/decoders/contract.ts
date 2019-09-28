@@ -1,31 +1,31 @@
 import debugModule from "debug";
-const debug = debugModule("codec:interface:contract");
+const debug = debugModule("codec:interface:decoders:contract");
 
-import * as CodecUtils from "../utils";
-import { wrapElementaryViaDefinition, Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils } from "../utils";
-import { DecoderContext, DecoderContexts } from "../types/contexts";
-import * as Utils from "../utils/interface";
-import { AstDefinition, AstReferences } from "../types/ast";
-import { Types, Values } from "../format";
+import * as CodecUtils from "../../utils";
+import { wrapElementaryViaDefinition, Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils } from "../../utils";
+import { DecoderContext, DecoderContexts } from "../../types/contexts";
+import * as Utils from "../../utils/interface";
+import { AstDefinition, AstReferences } from "../../types/ast";
+import { Types, Values } from "../../format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
-import TruffleWireDecoder from "./wire";
+import WireDecoder from "./wire";
 import { BlockType, Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
 import { Provider } from "web3/providers";
-import * as DecoderTypes from "../types/interface";
-import { EvmInfo, AllocationInfo } from "../types/evm";
-import { StorageMemberAllocation } from "../types/allocation";
-import { getStorageAllocations, storageSize } from "../allocate/storage";
-import { CalldataDecoding, LogDecoding } from "../types/decoding";
-import { decodeVariable } from "../core/decoding";
-import { Slot } from "../types/storage";
-import { isWordsLength, equalSlots } from "../utils/storage";
-import { StoragePointer } from "../types/pointer";
-import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "../interface/errors";
+import * as DecoderTypes from "../../types/interface";
+import { EvmInfo, AllocationInfo } from "../../types/evm";
+import { StorageMemberAllocation } from "../../types/allocation";
+import { getStorageAllocations, storageSize } from "../../allocate/storage";
+import { CalldataDecoding, LogDecoding } from "../../types/decoding";
+import { decodeVariable } from "../../core/decoding";
+import { Slot } from "../../types/storage";
+import { isWordsLength, equalSlots } from "../../utils/storage";
+import { StoragePointer } from "../../types/pointer";
+import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "../../interface/errors";
 
-export default class TruffleContractDecoder {
+export default class ContractDecoder {
 
   private web3: Web3;
 
@@ -39,9 +39,12 @@ export default class TruffleContractDecoder {
   private allocations: AllocationInfo;
   private stateVariableReferences: StorageMemberAllocation[];
 
-  private wireDecoder: TruffleWireDecoder;
+  private wireDecoder: WireDecoder;
 
-  constructor(contract: ContractObject, wireDecoder: TruffleWireDecoder, address?: string) {
+  /**
+   * @private
+   */
+  constructor(contract: ContractObject, wireDecoder: WireDecoder, address?: string) {
 
     this.contract = contract;
     this.wireDecoder = wireDecoder;
@@ -80,8 +83,8 @@ export default class TruffleContractDecoder {
     this.contractNetwork = (await this.web3.eth.net.getId()).toString();
   }
 
-  public async forInstance(address?: string): Promise<TruffleContractInstanceDecoder> {
-    let instanceDecoder = new TruffleContractInstanceDecoder(this, address);
+  public async forInstance(address?: string): Promise<ContractInstanceDecoder> {
+    let instanceDecoder = new ContractInstanceDecoder(this, address);
     await instanceDecoder.init();
     return instanceDecoder;
   }
@@ -140,7 +143,7 @@ interface ContractInfo {
   contextHash: string;
 }
 
-export class TruffleContractInstanceDecoder {
+export class ContractInstanceDecoder {
   private web3: Web3;
 
   private contract: ContractObject;
@@ -163,10 +166,13 @@ export class TruffleContractInstanceDecoder {
 
   private storageCache: DecoderTypes.StorageCache = {};
 
-  private contractDecoder: TruffleContractDecoder;
-  private wireDecoder: TruffleWireDecoder;
+  private contractDecoder: ContractDecoder;
+  private wireDecoder: WireDecoder;
 
-  constructor(contractDecoder: TruffleContractDecoder, address?: string) {
+  /**
+   * @private
+   */
+  constructor(contractDecoder: ContractDecoder, address?: string) {
 
     this.contractDecoder = contractDecoder;
     if(address !== undefined) {

@@ -1,27 +1,27 @@
 import debugModule from "debug";
-const debug = debugModule("codec:interface:wire");
+const debug = debugModule("codec:interface:decoders:wire");
 
-import * as CodecUtils from "../utils";
-import { Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils, abifyCalldataDecoding, abifyLogDecoding, MakeType } from "../utils";
-import * as Utils from "../utils/interface";
-import * as Contexts from "../types/contexts";
-import { AstDefinition, AstReferences } from "../types/ast";
-import { Types, Values } from "../format";
+import * as CodecUtils from "../../utils";
+import { Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils, abifyCalldataDecoding, abifyLogDecoding, MakeType } from "../../utils";
+import * as Utils from "../../utils/interface";
+import * as Contexts from "../../types/contexts";
+import { AstDefinition, AstReferences } from "../../types/ast";
+import { Types, Values } from "../../format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
 import { BlockType, Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
 import { Provider } from "web3/providers";
-import * as DecoderTypes from "../types/interface";
-import { EvmInfo, AllocationInfo } from "../types/evm";
-import { AbiAllocations, ContractAllocationInfo } from "../types/allocation";
-import { getAbiAllocations, getCalldataAllocations, getEventAllocations } from "../allocate/abi";
-import { getStorageAllocations } from "../allocate/storage";
-import { decodeCalldata, decodeEvent } from "../core/decoding";
-import { CalldataDecoding, LogDecoding } from "../types/decoding";
+import * as DecoderTypes from "../../types/interface";
+import { EvmInfo, AllocationInfo } from "../../types/evm";
+import { AbiAllocations, ContractAllocationInfo } from "../../types/allocation";
+import { getAbiAllocations, getCalldataAllocations, getEventAllocations } from "../../allocate/abi";
+import { getStorageAllocations } from "../../allocate/storage";
+import { decodeCalldata, decodeEvent } from "../../core/decoding";
+import { CalldataDecoding, LogDecoding } from "../../types/decoding";
 
-export default class TruffleWireDecoder {
+export default class WireDecoder {
   private web3: Web3;
 
   private network: string;
@@ -37,6 +37,9 @@ export default class TruffleWireDecoder {
 
   private codeCache: DecoderTypes.CodeCache = {};
 
+  /**
+   * @private
+   */
   constructor(contracts: ContractObject[], provider: Provider) {
 
     this.web3 = new Web3(provider);
@@ -175,7 +178,7 @@ export default class TruffleWireDecoder {
     }
     //at this point, result.value holds the final value
     const decoding = result.value;
-    
+
     return {
       ...transaction,
       decoding
@@ -214,7 +217,7 @@ export default class TruffleWireDecoder {
     }
     //at this point, result.value holds the final value
     const decodings = result.value;
-    
+
     return {
       ...log,
       decodings
@@ -255,7 +258,7 @@ export default class TruffleWireDecoder {
   public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
     return abifyCalldataDecoding(decoding, this.userDefinedTypes);
   }
-  
+
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return abifyLogDecoding(decoding, this.userDefinedTypes);
   }
