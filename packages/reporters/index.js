@@ -1,5 +1,7 @@
-const migrationsV5 = require("./reporters/migrations-V5/reporter");
+const EthMigrationsV5 = require("./reporters/EthMigrations-V5/reporter");
+const TezosMigrationsV5 = require("./reporters/TezosMigrationsV5/reporter");
 
 module.exports = {
-  migrationsV5: migrationsV5
+  EthMigrationsV5,
+  TezosMigrationsV5
 };
