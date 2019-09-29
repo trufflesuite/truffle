@@ -29,7 +29,11 @@ class Migration {
    */
   async _load(options, context, deployer, resolver) {
     // Load assets and run `execute`
-    const accounts = await context.web3.eth.getAccounts();
+    // TODO temp stopgap!
+    let accounts;
+    if (options.networks[options.network].type === "tezos")
+      accounts = await context.web3.eth.getAccounts(options);
+    else accounts = await context.web3.eth.getAccounts();
     const requireOptions = {
       file: this.file,
       context: context,
