@@ -193,9 +193,12 @@ const Migrate = {
 
   lastCompletedMigration: async function(options) {
     let Migrations;
-
     try {
-      Migrations = options.resolver.require("Migrations");
+      Migrations = options.resolver.require(
+        "Migrations" //, TODO: not sure about this!!
+        //            undefined,
+        // options.networks[options.network].type
+      );
     } catch (error) {
       const message = `Could not find built Migrations contract: ${
         error.message
