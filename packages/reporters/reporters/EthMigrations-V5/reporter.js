@@ -21,7 +21,7 @@ const MigrationsMessages = require("./messages");
  *  + `this.migration`
  *  + `this.deployer`
  */
-class Reporter {
+class EthReporter {
   constructor(describeJson) {
     this.migrator = null;
     this.deployer = null;
@@ -506,4 +506,4 @@ class Reporter {
   }
 }
 
-module.exports = Reporter;
+module.exports = EthReporter;
