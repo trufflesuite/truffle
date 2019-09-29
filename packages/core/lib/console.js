@@ -112,7 +112,7 @@ class Console extends EventEmitter {
     });
 
     const abstractions = jsonBlobs.map(json => {
-      const abstraction = contract(json);
+      const abstraction = contract(json, this.options);
       provision(abstraction, this.options);
       return abstraction;
     });
