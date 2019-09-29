@@ -4,7 +4,10 @@ const path = require("path");
 const async = require("async");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
-const Reporter = require("@truffle/reporters").migrationsV5;
+const {
+  EthMigrationsV5: EthReporter,
+  TezosMigrationsV5: TezosReporter
+} = require("@truffle/reporters");
 const Migration = require("./migration.js");
 const Emittery = require("emittery");
 
@@ -19,7 +22,9 @@ const Migrate = {
   logger: null,
 
   launchReporter: function(config) {
-    Migrate.reporter = new Reporter(config.describeJson || false);
+    if (config.networks[config.network].type === "tezos")
+      Migrate.reporter = new TezosReporter(config.describeJson || false);
+    else Migrate.reporter = new EthReporter(config.describeJson || false);
     this.logger = config.logger;
   },
 
