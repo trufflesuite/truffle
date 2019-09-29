@@ -130,7 +130,7 @@ const Migrate = {
       clone.logger = { log: function() {} };
     }
 
-    clone.resolver = this.wrapResolver(options.resolver, clone.provider);
+    clone.resolver = this.wrapResolver(options);
 
     // Make migrations aware of their position in sequence
     const total = migrations.length;
@@ -175,7 +175,7 @@ const Migrate = {
     });
   },
 
-  wrapResolver: function(resolver, provider) {
+  wrapResolver: function({ resolver, provider }) {
     return {
       require: function(import_path, search_path) {
         const abstraction = resolver.require(import_path, search_path);
