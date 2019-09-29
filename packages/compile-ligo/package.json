@@ -16,6 +16,9 @@
   "scripts": {
     "test": ""
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   }
