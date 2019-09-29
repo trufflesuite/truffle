@@ -3,7 +3,9 @@ const Contract = require("./lib/contract");
 const truffleContractVersion = require("./package.json").version;
 
 const contract = (json = {}, networkType = "ethereum") => {
-  const normalizedArtifactObject = Schema.normalize(json);
+  const normalizedArtifactObject = Object.assign({}, Schema.normalize(json), {
+    networkType
+  });
 
   // Note we don't use `new` here at all. This will cause the class to
   // "mutate" instead of instantiate an instance.
