@@ -1,6 +1,6 @@
 {
   "name": "@truffle/codec",
-  "version": "3.0.12",
+  "version": "3.0.13-alphaTez.0",
   "description": "A decoder and encoder for Solidity variables of all sorts",
   "main": "dist/index.js",
   "types": "lib/index.ts",
@@ -33,7 +33,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@truffle/contract-schema": "^3.0.11",
+    "@truffle/contract-schema": "^3.0.17-alphaTez.0",
     "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",

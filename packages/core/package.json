@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.0.37",
+  "version": "5.0.38-alphaTez.0",
   "bin": {
     "truffle": "./cli.js",
     "truffle-exec": "./exec.js"
@@ -16,25 +16,25 @@
     "test": "mocha ./test/** ./test/**/*"
   },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.32",
-    "@truffle/box": "^1.0.38",
-    "@truffle/codec": "^3.0.10",
-    "@truffle/compile-solidity": "^4.2.5",
-    "@truffle/config": "^1.1.21",
-    "@truffle/contract": "^4.0.33",
-    "@truffle/contract-sources": "^0.1.6",
-    "@truffle/debug-utils": "^1.0.19",
-    "@truffle/debugger": "^5.0.28",
-    "@truffle/deployer": "^3.0.34",
-    "@truffle/error": "^0.0.7",
-    "@truffle/expect": "^0.0.11",
-    "@truffle/interface-adapter": "^0.2.6",
-    "@truffle/migrate": "^3.0.34",
-    "@truffle/provider": "^0.1.17",
-    "@truffle/provisioner": "^0.1.6",
-    "@truffle/require": "^2.0.21",
-    "@truffle/resolver": "^5.0.17",
-    "@truffle/workflow-compile": "^2.1.6",
+    "@truffle/artifactor": "^4.0.33-alphaTez.0",
+    "@truffle/box": "^1.0.39-alphaTez.0",
+    "@truffle/codec": "^3.0.13-alphaTez.0",
+    "@truffle/compile-solidity": "^4.2.6-alphaTez.0",
+    "@truffle/config": "^1.1.22-alphaTez.0",
+    "@truffle/contract": "^4.0.34-alphaTez.0",
+    "@truffle/contract-sources": "^0.1.7-alphaTez.0",
+    "@truffle/debug-utils": "^1.0.20-alphaTez.0",
+    "@truffle/debugger": "^5.0.29-alphaTez.0",
+    "@truffle/deployer": "^3.0.35-alphaTez.0",
+    "@truffle/error": "^0.0.8-alphaTez.0",
+    "@truffle/expect": "^0.0.12-alphaTez.0",
+    "@truffle/interface-adapter": "^0.2.7-alphaTez.0",
+    "@truffle/migrate": "^3.0.35-alphaTez.0",
+    "@truffle/provider": "^0.1.18-alphaTez.0",
+    "@truffle/provisioner": "^0.1.7-alphaTez.0",
+    "@truffle/require": "^2.0.22-alphaTez.0",
+    "@truffle/resolver": "^5.0.18-alphaTez.0",
+    "@truffle/workflow-compile": "^2.1.7-alphaTez.0",
     "app-module-path": "^2.2.0",
     "async": "2.6.1",
     "bip39": "^2.2.0",
@@ -69,7 +69,7 @@
     "yargs": "^8.0.2"
   },
   "devDependencies": {
-    "@truffle/blockchain-utils": "^0.0.12",
+    "@truffle/blockchain-utils": "^0.0.13-alphaTez.0",
     "glob": "^7.1.2",
     "memorystream": "^0.3.1"
   },
