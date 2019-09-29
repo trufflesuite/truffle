@@ -8,8 +8,9 @@ const contract = (json = {}, { networks, network: networkName }) => {
     ? networks[networkName].type
     : "ethereum";
 
+  // TODO: figure out if passing networkName is necessary
   const normalizedArtifactObject = Object.assign({}, Schema.normalize(json), {
-    networkType,
+    networkType
     //    networkName
   });
 
