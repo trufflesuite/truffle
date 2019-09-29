@@ -44,6 +44,7 @@ class Console extends EventEmitter {
     this.command = new Command(tasks);
 
     this.web3 = new Web3Shim({
+      config: options,
       provider: options.provider,
       networkType: options.networks[options.network].type
     });
