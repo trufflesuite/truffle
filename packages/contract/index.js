@@ -8,6 +8,11 @@ const contract = (json = {}, { networks, network: networkName }) => {
     ? networks[networkName].type
     : "ethereum";
 
+  const normalizedArtifactObject = Object.assign({}, Schema.normalize(json), {
+    networkType,
+    //    networkName
+  });
+
   // Note we don't use `new` here at all. This will cause the class to
   // "mutate" instead of instantiate an instance
   if (networkType === "tezos")
