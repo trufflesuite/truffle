@@ -18,7 +18,7 @@ type ContractInstance {
 type ContractInstanceCreation {
   transactionHash: TransactionHash
   constructorArgs: [Value]
-  contractConstructor: Constructor
+  constructor: Constructor
 }
 
 type Constructor {
