@@ -263,17 +263,28 @@ const data = createSelectorTree({
             let linearizedBaseContractsFromBase = definition.linearizedBaseContracts
               .slice()
               .reverse();
+            linearizedBaseContractsFromBase.pop(); //remove the last element, i.e.,
+            //the contract itself, because we want to treat that one specially
             //now, we put it all together
             newScope.variables = []
               .concat(
+                //concatenate the variables lists from the base classes
                 ...linearizedBaseContractsFromBase.map(
                   contractId => scopes[contractId].variables || []
                   //we need the || [] because contracts with no state variables
                   //have variables undefined rather than empty like you'd expect
                 )
               )
+              .filter(
+                variable =>
+                  inlined[variable.id].definition.visibility !== "private"
+                //filter out private variables from the base classes
+              )
+              //add in the variables for the contract itself -- note that here
+              //private variables are not filtered out!
+              .concat(scopes[id].variables || [])
               .filter(variable => {
-                //...except, HACK, let's filter out those constants we don't know
+                //HACK: let's filter out those constants we don't know
                 //how to read.  they'll just clutter things up.
                 debug("variable %O", variable);
                 let definition = inlined[variable.id].definition;
