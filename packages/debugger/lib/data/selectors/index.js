@@ -263,21 +263,14 @@ const data = createSelectorTree({
             let linearizedBaseContractsFromBase = definition.linearizedBaseContracts
               .slice()
               .reverse();
-            //...but wait, we want to treat the last one specially, so let's pop that
-            //off
-            linearizedBaseContractsFromBase.pop();
             //now, we put it all together
             newScope.variables = []
               .concat(
                 ...linearizedBaseContractsFromBase.map(
-                  contractId => scopes[contractId].visibles || []
+                  contractId => scopes[contractId].variables || []
                   //we need the || [] because contracts with no state variables
                   //have variables undefined rather than empty like you'd expect
                 )
-              )
-              .concat(
-                scopes[id].variables || []
-                //for the last one we use all variables, not just visibles
               )
               .filter(variable => {
                 //...except, HACK, let's filter out those constants we don't know
@@ -290,8 +283,6 @@ const data = createSelectorTree({
                 );
               });
 
-            //NOTE: we don't bother altering newScope.visibles -- you shouldn't
-            //be using that from this point out :P
             return { [id]: newScope };
           })
         )
