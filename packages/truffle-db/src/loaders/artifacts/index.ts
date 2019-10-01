@@ -1,6 +1,6 @@
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db/db";
-import * as Contracts from "@truffle/workflow-compile";
+import * as Contracts from "@truffle/workflow-compile/new";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import * as fse from "fs-extra";
 import path from "path";

@@ -4,7 +4,7 @@ import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
 import { ArtifactsLoader } from "truffle-db/loaders/artifacts";
 import { generateId } from "truffle-db/helpers";
-import * as Contracts from "@truffle/workflow-compile";
+import * as Contracts from "@truffle/workflow-compile/new";
 import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
 import Config from "@truffle/config";
@@ -26,7 +26,7 @@ afterAll(async (done) => {
 
 // mocking the truffle-workflow-compile to avoid jest timing issues
 // and also to keep from adding more time to Travis testing
-jest.mock("@truffle/workflow-compile", () => ({
+jest.mock("@truffle/workflow-compile/new", () => ({
   compile: function(config, callback) {
     const magicSquare= require(path.join(__dirname, "sources", "MagicSquare.json"));
     const migrations = require(path.join(__dirname, "sources", "Migrations.json"));
