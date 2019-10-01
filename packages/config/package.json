@@ -7,8 +7,6 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "lint": "tslint src/**/*.ts",
-    "lint:fix": "yarn lint -- --fix",
     "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/config",
@@ -31,7 +29,6 @@
     "mocha": "6.2.0",
     "sinon": "^7.5.0",
     "ts-node": "^8.4.1",
-    "tslint": "^5.20.0",
     "typescript": "^3.6.3"
   },
   "dependencies": {

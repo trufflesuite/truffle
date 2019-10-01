@@ -1,14 +1,14 @@
-import path from 'path';
-import lodash from 'lodash';
-import Module from 'module';
-import findUp from 'find-up';
-import Configstore from 'configstore';
-import TruffleError from '@truffle/error';
-import originalRequire from 'original-require';
-import { getInitialConfig, configProps } from './configDefaults';
+import path from "path";
+import lodash from "lodash";
+import Module from "module";
+import findUp from "find-up";
+import Configstore from "configstore";
+import TruffleError from "@truffle/error";
+import originalRequire from "original-require";
+import { getInitialConfig, configProps } from "./configDefaults";
 
-const DEFAULT_CONFIG_FILENAME = 'truffle-config.js';
-const BACKUP_CONFIG_FILENAME = 'truffle.js'; // old config filename
+const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
+const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename
 
 class TruffleConfig {
   [key: string]: any;
@@ -19,15 +19,20 @@ class TruffleConfig {
   constructor(
     truffleDirectory?: string,
     workingDirectory?: string,
-    network?: any,
+    network?: any
   ) {
-    this._deepCopy = ['compilers'];
-    this._values = getInitialConfig({ truffleDirectory, workingDirectory, network });
+    this._deepCopy = ["compilers"];
+    this._values = getInitialConfig({
+      truffleDirectory,
+      workingDirectory,
+      network
+    });
 
     const props = configProps({ configObject: this });
 
-    Object.entries(props)
-      .forEach(([propName, descriptor]) => this.addProp(propName, descriptor));
+    Object.entries(props).forEach(([propName, descriptor]) =>
+      this.addProp(propName, descriptor)
+    );
   }
 
   public addProp(propertyName: string, descriptor: any): void {
@@ -42,7 +47,7 @@ class TruffleConfig {
     Object.defineProperty(this, propertyName, {
       get:
         descriptor.get ||
-        function () {
+        function() {
           // value is specified
           if (propertyName in self._values) {
             return self._values[propertyName];
@@ -58,7 +63,7 @@ class TruffleConfig {
         },
       set:
         descriptor.set ||
-        function (value) {
+        function(value) {
           self._values[propertyName] = descriptor.transform
             ? descriptor.transform(value)
             : value;
@@ -86,7 +91,11 @@ class TruffleConfig {
     const current = this.normalize(this);
     const normalized = this.normalize(obj);
 
-    return lodash.extend(Object.create(TruffleConfig.prototype), current, normalized);
+    return lodash.extend(
+      Object.create(TruffleConfig.prototype),
+      current,
+      normalized
+    );
   }
 
   public merge(obj: any): TruffleConfig {
@@ -97,7 +106,7 @@ class TruffleConfig {
 
     propertyNames.forEach(key => {
       try {
-        if (typeof clone[key] === 'object' && this._deepCopy.includes(key)) {
+        if (typeof clone[key] === "object" && this._deepCopy.includes(key)) {
           this[key] = lodash.merge(this[key], clone[key]);
         } else {
           this[key] = clone[key];
@@ -108,7 +117,7 @@ class TruffleConfig {
     });
 
     return this;
-  };
+  }
 
   public static default(): TruffleConfig {
     return new TruffleConfig();
@@ -120,7 +129,7 @@ class TruffleConfig {
     };
 
     if (!filename) {
-      const isWin = process.platform === 'win32';
+      const isWin = process.platform === "win32";
       const defaultConfig = findUp.sync(DEFAULT_CONFIG_FILENAME, searchOptions);
       const backupConfig = findUp.sync(BACKUP_CONFIG_FILENAME, searchOptions);
 
@@ -146,7 +155,7 @@ class TruffleConfig {
   public static detect(options: any = {}, filename?: string): TruffleConfig {
     let configFile;
     const configPath = options.config;
-    
+
     if (configPath) {
       configFile = path.isAbsolute(configPath)
         ? configPath
@@ -156,14 +165,16 @@ class TruffleConfig {
     }
 
     if (!configFile) {
-      throw new TruffleError('Could not find suitable configuration file.');
+      throw new TruffleError("Could not find suitable configuration file.");
     }
 
     return TruffleConfig.load(configFile, options);
   }
 
   public static load(file: string, options: any = {}): TruffleConfig {
-    const workingDirectory = options.config ? process.cwd() : path.dirname(path.resolve(file));
+    const workingDirectory = options.config
+      ? process.cwd()
+      : path.dirname(path.resolve(file));
 
     const config = new TruffleConfig(undefined, workingDirectory, undefined);
 
@@ -180,7 +191,7 @@ class TruffleConfig {
   }
 
   public static getUserConfig(): Configstore {
-    return new Configstore('truffle', {}, { globalConfigPath: true });
+    return new Configstore("truffle", {}, { globalConfigPath: true });
   }
 
   public static getTruffleDataDirectory(): string {
