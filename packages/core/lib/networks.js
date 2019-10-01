@@ -86,7 +86,7 @@ const Networks = {
 
       let network_names = Object.keys(networks).sort();
 
-      const star_networks = network_names.filter(function(network_name) {
+      const star_networks = network_names.filter(network_name => {
         return (
           config.networks[network_name] != null &&
           config.networks[network_name].network_id === "*"
@@ -94,11 +94,11 @@ const Networks = {
       });
 
       // Remove * networks from network names.
-      network_names = network_names.filter(function(network_name) {
+      network_names = network_names.filter(network_name => {
         return star_networks.indexOf(network_name) < 0;
       });
 
-      const unknown_networks = network_names.filter(function(network_name) {
+      const unknown_networks = network_names.filter(network_name => {
         const configured_networks = Object.keys(config.networks);
         let found = false;
         for (let i = 0; i < configured_networks.length; i++) {
@@ -128,7 +128,7 @@ const Networks = {
             OS.EOL
         );
 
-        star_networks.forEach(function(network_name) {
+        star_networks.forEach(network_name => {
           config.logger.log("    " + network_name);
         });
 
@@ -143,7 +143,7 @@ const Networks = {
 
         let output = Object.keys(networks[network_name])
           .sort()
-          .map(function(contract_name) {
+          .map(contract_name => {
             const address = networks[network_name][contract_name];
             return contract_name + ": " + address;
           });
@@ -202,9 +202,7 @@ const Networks = {
                 return reject(e);
               }
 
-              Object.keys(body.networks).forEach(function(
-                installed_network_id
-              ) {
+              Object.keys(body.networks).forEach(installed_network_id => {
                 let found = false;
                 for (let i = 0; i < configured_networks.length; i++) {
                   const configured_network = configured_networks[i];
@@ -242,7 +240,7 @@ const Networks = {
 
       // TODO: Display what's removed?
       Promise.all(promises)
-        .then(function() {
+        .then(() => {
           callback();
         })
         .catch(callback);
