@@ -4,3 +4,4 @@ test
 .travis.yml
 tsconfig.json
 src
+typings
