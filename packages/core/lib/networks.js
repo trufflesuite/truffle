@@ -8,75 +8,76 @@ const { Web3Shim } = require("@truffle/interface-adapter");
 
 const Networks = {
   deployed: function(options, callback) {
-    fs.readdir(options.contracts_build_directory, function(err, files) {
-      if (err) {
-        // We can't read the directory. Act like we found nothing.
-        files = [];
-      }
+    let files;
+    try {
+      files = fs.readdirSync(options.contracts_build_directory);
+    } catch (error) {
+      // We can't read the directory. Act like we found nothing.
+      files = [];
+    }
 
-      const promises = [];
+    const promises = [];
 
-      files.forEach(function(file) {
-        promises.push(
-          new Promise(function(accept, reject) {
-            fs.readFile(
-              path.join(options.contracts_build_directory, file),
-              "utf8",
-              function(err, body) {
-                if (err) return reject(err);
+    files.forEach(function(file) {
+      promises.push(
+        new Promise(function(accept, reject) {
+          fs.readFile(
+            path.join(options.contracts_build_directory, file),
+            "utf8",
+            function(err, body) {
+              if (err) return reject(err);
 
-                try {
-                  body = JSON.parse(body);
-                } catch (e) {
-                  return reject(e);
-                }
-
-                accept(body);
-              }
-            );
-          })
-        );
-      });
-
-      Promise.all(promises)
-        .then(function(binaries) {
-          const ids_to_names = {};
-          const networks = {};
-
-          // binaries.map(function(b) {return b.contract_name + ": " + JSON.stringify(b.networks, null, 2)}).forEach(function(b) {
-          //   console.log(b);
-          // });
-
-          Object.keys(options.networks).forEach(function(network_name) {
-            const network = options.networks[network_name];
-            const network_id = network.network_id;
-
-            if (network_id == null) return;
-
-            ids_to_names[network_id] = network_name;
-            networks[network_name] = {};
-          });
-
-          binaries.forEach(function(json) {
-            Object.keys(json.networks).forEach(function(network_id) {
-              const network_name = ids_to_names[network_id] || network_id;
-
-              if (networks[network_name] == null) {
-                networks[network_name] = {};
+              try {
+                body = JSON.parse(body);
+              } catch (e) {
+                return reject(e);
               }
 
-              const address = json.networks[network_id].address;
-
-              if (address == null) return;
-
-              networks[network_name][json.contractName] = address;
-            });
-          });
-
-          callback(null, networks);
+              accept(body);
+            }
+          );
         })
-        .catch(callback);
+      );
     });
+
+    Promise.all(promises)
+      .then(function(binaries) {
+        const ids_to_names = {};
+        const networks = {};
+
+        // binaries.map(function(b) {return b.contract_name + ": " + JSON.stringify(b.networks, null, 2)}).forEach(function(b) {
+        //   console.log(b);
+        // });
+
+        Object.keys(options.networks).forEach(function(network_name) {
+          const network = options.networks[network_name];
+          const network_id = network.network_id;
+
+          if (network_id == null) return;
+
+          ids_to_names[network_id] = network_name;
+          networks[network_name] = {};
+        });
+
+        binaries.forEach(function(json) {
+          Object.keys(json.networks).forEach(function(network_id) {
+            const network_name = ids_to_names[network_id] || network_id;
+
+            if (networks[network_name] == null) {
+              networks[network_name] = {};
+            }
+
+            const address = json.networks[network_id].address;
+
+            if (address == null) return;
+
+            networks[network_name][json.contractName] = address;
+          });
+        });
+
+        callback(null, networks);
+      })
+      .catch(callback);
   },
 
   display: function(config, callback) {
