@@ -9,7 +9,7 @@ module.exports = {
     return wrapper.wrap(provider, options);
   },
 
-  create: function(options) {
+  create: async function(options) {
     var provider;
 
     if (options.provider && typeof options.provider === "function") {
@@ -27,18 +27,24 @@ module.exports = {
       );
     }
 
-    return this.wrap(provider, options);
+    try {
+      await this.testConnection(provider);
+      return this.wrap(provider, options);
+    } catch (error) {
+      const rpcErrorMessage = `Invalid JSON RPC response`;
+      if (error.message.includes(rpcErrorMessage)) {
+        const message =
+          `There was a problem connecting with the provider ` +
+          `that you supplied. \nPlease ensure that you supplied a valid ` +
+          `provider in your config.`;
+        throw new Error(message);
+      }
+      throw error;
+    }
   },
 
-  test_connection: function(provider, callback) {
-    var web3 = new Web3Shim({ provider });
-    var fail = new Error(
-      "Could not connect to your RPC client. Please check your RPC configuration."
-    );
-
-    web3.eth
-      .getCoinbase()
-      .then(coinbase => callback(null, coinbase))
-      .catch(() => callback(fail, null));
+  testConnection: provider => {
+    const web3 = new Web3Shim({ provider });
+    return web3.eth.getBlockNumber();
   }
 };
