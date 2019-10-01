@@ -21,22 +21,24 @@ describe("Provider", function() {
   });
 
   it("accepts host and port", async () => {
-    const provider = await Provider.create({ host, port });
+    const provider = Provider.create({ host, port });
     assert(provider);
 
     try {
       await Provider.testConnection(provider);
     } catch (error) {
-      assert.ifError(error);
+      assert.fail(error.message);
     }
   });
 
   it("fails to connect to the wrong port", async () => {
+    const provider = Provider.create({ host, port: "54321" });
+
     try {
-      await Provider.create({ host, port: "54321" });
+      await Provider.testConnection(provider);
       assert(false);
     } catch (error) {
-      const snippet = `There was a problem connecting with the provider`;
+      const snippet = `Could not connect to your Ethereum client`;
       if (error.message.includes(snippet)) {
         assert(true);
       } else {
@@ -46,10 +48,11 @@ describe("Provider", function() {
   });
 
   it("accepts a provider instance", async () => {
+    const provider = Provider.create({
+      provider: new Ganache.provider()
+    });
     try {
-      const provider = await Provider.create({
-        provider: new Ganache.provider()
-      });
+      await Provider.testConnection(provider);
       assert(provider);
     } catch (error) {
       assert.fail("There was an error testing the provider.");
@@ -57,12 +60,13 @@ describe("Provider", function() {
   });
 
   it("accepts a function that returns a provider instance", async () => {
+    const provider = Provider.create({
+      provider: function() {
+        return new Ganache.provider();
+      }
+    });
     try {
-      const provider = await Provider.create({
-        provider: function() {
-          return new Ganache.provider();
-        }
-      });
+      await Provider.testConnection(provider);
       assert(provider);
     } catch (error) {
       assert.fail("There was an error testing the provider.");
@@ -70,15 +74,17 @@ describe("Provider", function() {
   });
 
   it("fails when given a bogus provider url", async () => {
+    const provider = Provider.create({
+      provider: new Web3.providers.HttpProvider("http://127.0.0.1:9999")
+    });
+
     try {
-      await Provider.create({
-        provider: new Web3.providers.HttpProvider("http://127.0.0.1:9999")
-      });
+      await Provider.testConnection(provider);
       assert.fail(
         "The provider was instantiated correctly. That shouldn't have happened"
       );
     } catch (error) {
-      const snippet = `There was a problem connecting with the provider`;
+      const snippet = `Could not connect to your Ethereum client`;
       if (error.message.includes(snippet)) {
         assert(true);
       } else {
