@@ -25,7 +25,7 @@ describe("Provider", function() {
     assert(provider);
 
     try {
-      await Provider.testConnection(provider);
+      await Provider.testConnection({ provider });
     } catch (error) {
       assert.fail(error.message);
     }
@@ -35,7 +35,7 @@ describe("Provider", function() {
     const provider = Provider.create({ host, port: "54321" });
 
     try {
-      await Provider.testConnection(provider);
+      await Provider.testConnection({ provider });
       assert(false);
     } catch (error) {
       const snippet = `Could not connect to your Ethereum client`;
@@ -52,7 +52,7 @@ describe("Provider", function() {
       provider: new Ganache.provider()
     });
     try {
-      await Provider.testConnection(provider);
+      await Provider.testConnection({ provider });
       assert(provider);
     } catch (error) {
       assert.fail("There was an error testing the provider.");
@@ -66,7 +66,7 @@ describe("Provider", function() {
       }
     });
     try {
-      await Provider.testConnection(provider);
+      await Provider.testConnection({ provider });
       assert(provider);
     } catch (error) {
       assert.fail("There was an error testing the provider.");
@@ -79,7 +79,7 @@ describe("Provider", function() {
     });
 
     try {
-      await Provider.testConnection(provider);
+      await Provider.testConnection({ provider });
       assert.fail(
         "The provider was instantiated correctly. That shouldn't have happened"
       );
