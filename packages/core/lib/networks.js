@@ -102,8 +102,8 @@ const Networks = {
         const configuredNetworks = Object.keys(config.networks);
         let found = false;
         for (let i = 0; i < configuredNetworks.length; i++) {
-          const configured_network_name = configuredNetworks[i];
-          if (networkName === configured_network_name) {
+          const configuredNetworkName = configuredNetworks[i];
+          if (networkName === configuredNetworkName) {
             found = true;
             break;
           }
@@ -128,8 +128,8 @@ const Networks = {
             OS.EOL
         );
 
-        starNetworks.forEach(network_name => {
-          config.logger.log("    " + network_name);
+        starNetworks.forEach(networkName => {
+          config.logger.log("    " + networkName);
         });
 
         config.logger.log(
@@ -138,31 +138,29 @@ const Networks = {
         );
       }
 
-      networkNames.forEach(function(network_name) {
+      networkNames.forEach(function(networkName) {
         config.logger.log("");
 
-        let output = Object.keys(networks[network_name])
+        let output = Object.keys(networks[networkName])
           .sort()
           .map(contract_name => {
-            const address = networks[network_name][contract_name];
+            const address = networks[networkName][contract_name];
             return contract_name + ": " + address;
           });
 
-        if (output.length === 0) {
-          output = ["No contracts deployed."];
-        }
+        if (output.length === 0) output = ["No contracts deployed."];
 
         let message = "Network: ";
 
-        const is_id = config.networks[network_name] == null;
+        const is_id = config.networks[networkName] == null;
 
         if (is_id) {
-          message += "UNKNOWN (id: " + network_name + ")";
+          message += "UNKNOWN (id: " + networkName + ")";
         } else {
           message +=
-            network_name +
+            networkName +
             " (id: " +
-            config.networks[network_name].network_id +
+            config.networks[networkName].network_id +
             ")";
         }
 
@@ -183,68 +181,71 @@ const Networks = {
   },
 
   clean: function(config, callback) {
-    fs.readdir(config.contracts_build_directory, function(err, files) {
-      if (err) return callback(err);
+    let files;
+    try {
+      files = fs.readdirSync(config.contracts_build_directory);
+    } catch (error) {
+      return callback(error);
+    }
 
-      const configured_networks = Object.keys(config.networks);
-      const promises = [];
+    const configured_networks = Object.keys(config.networks);
+    const promises = [];
 
-      files.forEach(function(file) {
-        promises.push(
-          new Promise(function(accept, reject) {
-            const file_path = path.join(config.contracts_build_directory, file);
-            fs.readFile(file_path, "utf8", function(err, body) {
-              if (err) return reject(err);
+    files.forEach(function(file) {
+      promises.push(
+        new Promise(function(accept, reject) {
+          const file_path = path.join(config.contracts_build_directory, file);
+          fs.readFile(file_path, "utf8", function(err, body) {
+            if (err) return reject(err);
 
-              try {
-                body = JSON.parse(body);
-              } catch (e) {
-                return reject(e);
+            try {
+              body = JSON.parse(body);
+            } catch (e) {
+              return reject(e);
+            }
+
+            Object.keys(body.networks).forEach(installed_network_id => {
+              let found = false;
+              for (let i = 0; i < configured_networks.length; i++) {
+                const configured_network = configured_networks[i];
+
+                // If an installed network id matches a configured id, then we can ignore this one.
+                if (
+                  installed_network_id ===
+                  config.networks[configured_network].network_id
+                ) {
+                  found = true;
+                  break;
+                }
               }
 
-              Object.keys(body.networks).forEach(installed_network_id => {
-                let found = false;
-                for (let i = 0; i < configured_networks.length; i++) {
-                  const configured_network = configured_networks[i];
-
-                  // If an installed network id matches a configured id, then we can ignore this one.
-                  if (
-                    installed_network_id ===
-                    config.networks[configured_network].network_id
-                  ) {
-                    found = true;
-                    break;
-                  }
-                }
-
-                // If we didn't find a suitable configuration, delete this network.
-                if (found === false) {
-                  delete body.networks[installed_network_id];
-                }
-              });
-
-              // Our work is done here. Save the file.
-              fs.writeFile(
-                file_path,
-                JSON.stringify(body, null, 2),
-                "utf8",
-                function(err) {
-                  if (err) return reject(err);
-                  accept(body);
-                }
-              );
+              // If we didn't find a suitable configuration, delete this network.
+              if (found === false) {
+                delete body.networks[installed_network_id];
+              }
             });
-          })
-        );
-      });
 
-      // TODO: Display what's removed?
-      Promise.all(promises)
-        .then(() => {
-          callback();
+            // Our work is done here. Save the file.
+            fs.writeFile(
+              file_path,
+              JSON.stringify(body, null, 2),
+              "utf8",
+              function(err) {
+                if (err) return reject(err);
+                accept(body);
+              }
+            );
+          });
         })
-        .catch(callback);
+      );
     });
+
+    // TODO: Display what's removed?
+    Promise.all(promises)
+      .then(() => {
+        callback();
+      })
+      .catch(callback);
   },
 
   // Try to connect to every named network except for "test" and "development"
