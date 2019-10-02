@@ -163,18 +163,12 @@ const Networks = {
     config.logger.log("");
   },
 
-  clean: function(config, callback) {
-    let files;
-    try {
-      files = fs.readdirSync(config.contracts_build_directory);
-    } catch (error) {
-      return callback(error);
-    }
-
+  clean: async function(config) {
+    let files = fs.readdirSync(config.contracts_build_directory);
     const configuredNetworks = Object.keys(config.networks);
     const promises = [];
 
-    files.forEach(function(file) {
+    files.forEach(file => {
       promises.push(
         new Promise((resolve, reject) => {
           const filePath = path.join(config.contracts_build_directory, file);
@@ -217,11 +211,7 @@ const Networks = {
     });
 
     // TODO: Display what's removed?
-    Promise.all(promises)
-      .then(() => {
-        callback();
-      })
-      .catch(callback);
+    return Promise.all(promises);
   },
 
   // Try to connect to every named network except for "test" and "development"

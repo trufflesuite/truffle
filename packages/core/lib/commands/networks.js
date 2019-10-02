@@ -20,13 +20,15 @@ var command = {
     ]
   },
   run: function(options, done) {
-    var Config = require("@truffle/config");
-    var Networks = require("../networks");
+    const Config = require("@truffle/config");
+    const Networks = require("../networks");
 
-    var config = Config.detect(options);
+    const config = Config.detect(options);
 
     if (options.clean) {
-      Networks.clean(config, done);
+      Networks.clean(config)
+        .then(() => done())
+        .catch(done);
     } else {
       Networks.display(config)
         .then(() => done())
