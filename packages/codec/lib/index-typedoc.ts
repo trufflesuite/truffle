@@ -8,7 +8,7 @@
  * @module @truffle/codec
  *//** */
 
-import * as Format from "./format";
+import * as Format from "@truffle/codec/format";
 export { Format };
 
 export * from "./interface";

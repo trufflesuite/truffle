@@ -2,7 +2,7 @@ import BN from "bn.js";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { DecoderContext } from "./contexts";
 import { AstDefinition } from "./ast";
-import { Types, Values } from "../format";
+import { Types, Values } from "@truffle/codec/format";
 import { CalldataDecoding, LogDecoding } from "./decoding";
 import { Transaction, BlockType } from "web3/eth/types";
 import { Log } from "web3/types";

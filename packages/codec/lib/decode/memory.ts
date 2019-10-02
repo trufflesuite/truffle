@@ -2,16 +2,16 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:memory");
 
 import BN from "bn.js";
-import read from "../read";
-import * as CodecUtils from "../utils";
-import { TypeUtils } from "../utils";
-import { Types, Values, Errors } from "../format";
+import read from "@truffle/codec/read";
+import * as CodecUtils from "@truffle/codec/utils";
+import { TypeUtils } from "@truffle/codec/utils";
+import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
-import { MemoryPointer, DataPointer } from "../types/pointer";
-import { MemoryMemberAllocation } from "../types/allocation";
-import { EvmInfo } from "../types/evm";
-import { DecoderRequest } from "../types/request";
-import { DecodingError } from "../decode/errors";
+import { MemoryPointer, DataPointer } from "@truffle/codec/types/pointer";
+import { MemoryMemberAllocation } from "@truffle/codec/types/allocation";
+import { EvmInfo } from "@truffle/codec/types/evm";
+import { DecoderRequest } from "@truffle/codec/types/request";
+import { DecodingError } from "@truffle/codec/decode/errors";
 
 export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {

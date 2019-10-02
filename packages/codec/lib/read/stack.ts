@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:read:stack");
 
-import * as CodecUtils from "../utils";
-import { DecodingError } from "../decode/errors";
+import * as CodecUtils from "@truffle/codec/utils";
+import { DecodingError } from "@truffle/codec/decode/errors";
 
 export function readStack(stack: Uint8Array[], from: number, to: number): Uint8Array {
   if(from < 0 || to >= stack.length) {

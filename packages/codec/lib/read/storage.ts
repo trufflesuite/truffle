@@ -1,13 +1,13 @@
 import debugModule from "debug";
 const debug = debugModule("codec:read:storage");
 
-import * as CodecUtils from "../utils";
-import { slotAddress } from "../utils/storage";
-import { slotAddressPrintout } from "../utils/errors";
-import { Slot, Range } from "../types/storage";
-import { WordMapping } from "../types/evm";
-import { DecoderRequest } from "../types/request";
-import { DecodingError } from "../decode/errors";
+import * as CodecUtils from "@truffle/codec/utils";
+import { slotAddress } from "@truffle/codec/utils/storage";
+import { slotAddressPrintout } from "@truffle/codec/utils/errors";
+import { Slot, Range } from "@truffle/codec/types/storage";
+import { WordMapping } from "@truffle/codec/types/evm";
+import { DecoderRequest } from "@truffle/codec/types/request";
+import { DecodingError } from "@truffle/codec/decode/errors";
 import BN from "bn.js";
 
 /**

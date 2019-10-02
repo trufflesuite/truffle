@@ -1,21 +1,21 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:abi");
 
-import * as Pointer from "../types/pointer";
-import * as Allocations from "../types/allocation";
-import { AbiUtils } from "../utils/abi";
-import { TypeUtils } from "../utils/datatype";
-import { MakeType } from "../utils/maketype";
-import { EVM } from "../utils/evm";
-import { getterInputs } from "../utils/definition2abi";
-import * as AbiTypes from "../types/abi";
-import { AstDefinition, AstReferences } from "../types/ast";
-import { Types } from "../format";
-import { UnknownUserDefinedTypeError } from "../types/errors";
+import * as Pointer from "@truffle/codec/types/pointer";
+import * as Allocations from "@truffle/codec/types/allocation";
+import { AbiUtils } from "@truffle/codec/utils/abi";
+import { TypeUtils } from "@truffle/codec/utils/datatype";
+import { MakeType } from "@truffle/codec/utils/maketype";
+import { EVM } from "@truffle/codec/utils/evm";
+import { getterInputs } from "@truffle/codec/utils/definition2abi";
+import * as AbiTypes from "@truffle/codec/types/abi";
+import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import { Types } from "@truffle/codec/format";
+import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
 import partition from "lodash.partition";
-import { DecodingMode } from "../types/decoding";
-import { CompilerVersion } from "../types/compiler";
-import { DecoderContext } from "../types/contexts";
+import { DecodingMode } from "@truffle/codec/types/decoding";
+import { CompilerVersion } from "@truffle/codec/types/compiler";
+import { DecoderContext } from "@truffle/codec/types/contexts";
 
 interface AbiAllocationInfo {
   size?: number; //left out for types that don't go in the abi

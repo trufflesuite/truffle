@@ -1,25 +1,25 @@
 import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:wire");
 
-import * as CodecUtils from "../../utils";
-import { Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils, abifyCalldataDecoding, abifyLogDecoding, MakeType } from "../../utils";
-import * as Utils from "../../utils/interface";
-import * as Contexts from "../../types/contexts";
-import { AstDefinition, AstReferences } from "../../types/ast";
-import { Types, Values } from "../../format";
+import * as CodecUtils from "@truffle/codec/utils";
+import { Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils, abifyCalldataDecoding, abifyLogDecoding, MakeType } from "@truffle/codec/utils";
+import * as Utils from "@truffle/codec/utils/interface";
+import * as Contexts from "@truffle/codec/types/contexts";
+import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import { Types, Values } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
 import { BlockType, Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
 import { Provider } from "web3/providers";
-import * as DecoderTypes from "../../types/interface";
-import { EvmInfo, AllocationInfo } from "../../types/evm";
-import { AbiAllocations, ContractAllocationInfo } from "../../types/allocation";
-import { getAbiAllocations, getCalldataAllocations, getEventAllocations } from "../../allocate/abi";
-import { getStorageAllocations } from "../../allocate/storage";
-import { decodeCalldata, decodeEvent } from "../../core/decoding";
-import { CalldataDecoding, LogDecoding } from "../../types/decoding";
+import * as DecoderTypes from "@truffle/codec/types/interface";
+import { EvmInfo, AllocationInfo } from "@truffle/codec/types/evm";
+import { AbiAllocations, ContractAllocationInfo } from "@truffle/codec/types/allocation";
+import { getAbiAllocations, getCalldataAllocations, getEventAllocations } from "@truffle/codec/allocate/abi";
+import { getStorageAllocations } from "@truffle/codec/allocate/storage";
+import { decodeCalldata, decodeEvent } from "@truffle/codec/core/decoding";
+import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
 
 export default class WireDecoder {
   private web3: Web3;

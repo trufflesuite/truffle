@@ -5,9 +5,9 @@ import BN from "bn.js";
 import Big from "big.js";
 import Web3 from "web3";
 import { Constants } from "./constants";
-import { Types, Values } from "../format";
+import { Types, Values } from "@truffle/codec/format";
 import { enumFullName } from "./inspect";
-import { DecodedVariable } from "../types/interface";
+import { DecodedVariable } from "@truffle/codec/types/interface";
 
 export namespace Conversion {
 

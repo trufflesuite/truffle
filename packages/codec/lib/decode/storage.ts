@@ -1,19 +1,19 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:storage");
 
-import read from "../read";
-import * as CodecUtils from "../utils";
-import { TypeUtils } from "../utils";
-import { Types, Values, Errors } from "../format";
+import read from "@truffle/codec/read";
+import * as CodecUtils from "@truffle/codec/utils";
+import { TypeUtils } from "@truffle/codec/utils";
+import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
-import { StoragePointer, DataPointer } from "../types/pointer";
-import { EvmInfo } from "../types/evm";
-import { storageSizeForType } from "../allocate/storage";
-import * as StorageTypes from "../types/storage";
-import { isWordsLength, slotAddress } from "../utils/storage";
+import { StoragePointer, DataPointer } from "@truffle/codec/types/pointer";
+import { EvmInfo } from "@truffle/codec/types/evm";
+import { storageSizeForType } from "@truffle/codec/allocate/storage";
+import * as StorageTypes from "@truffle/codec/types/storage";
+import { isWordsLength, slotAddress } from "@truffle/codec/utils/storage";
 import BN from "bn.js";
-import { DecoderRequest } from "../types/request";
-import { DecodingError } from "../decode/errors";
+import { DecoderRequest } from "@truffle/codec/types/request";
+import { DecodingError } from "@truffle/codec/decode/errors";
 
 export default function* decodeStorage(dataType: Types.Type, pointer: StoragePointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {

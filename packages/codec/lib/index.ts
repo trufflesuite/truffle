@@ -1,7 +1,7 @@
 //So, what shall codec export...?
 
 //First: export the data format
-import * as Format from "./format";
+import * as Format from "@truffle/codec/format";
 export { Format };
 
 //next: export all the utils!

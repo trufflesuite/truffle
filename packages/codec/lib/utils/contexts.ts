@@ -4,10 +4,10 @@ const debug = debugModule("codec:utils:contexts");
 import { EVM } from "./evm";
 import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
 import { AbiUtils } from "./abi";
-import { Types } from "../format";
-import { AstDefinition, AstReferences, ContractKind } from "../types/ast";
-import { CompilerVersion } from "../types/compiler";
-import { Contexts, Context, DebuggerContexts, DecoderContexts, DecoderContext } from "../types/contexts";
+import { Types } from "@truffle/codec/format";
+import { AstDefinition, AstReferences, ContractKind } from "@truffle/codec/types/ast";
+import { CompilerVersion } from "@truffle/codec/types/compiler";
+import { Contexts, Context, DebuggerContexts, DecoderContexts, DecoderContext } from "@truffle/codec/types/contexts";
 import escapeRegExp from "lodash.escaperegexp";
 
 export namespace ContextUtils {
