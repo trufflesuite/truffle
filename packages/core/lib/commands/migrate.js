@@ -179,6 +179,7 @@ const command = {
     const Resolver = require("@truffle/resolver");
     const Migrate = require("@truffle/migrate");
     const Contracts = require("@truffle/workflow-compile");
+    const Provider = require("@truffle/provider");
     const { Environment } = require("@truffle/environment");
     const Config = require("@truffle/config");
     const temp = require("temp").track();
@@ -190,6 +191,8 @@ const command = {
     Contracts.compile(conf)
       .then(async () => {
         await Environment.detect(conf);
+        await Provider.testConnection(conf);
+
         const {
           dryRunOnly,
           dryRunAndMigrations
@@ -217,9 +220,7 @@ const command = {
         }
         done();
       })
-      .catch(error => {
-        done(error);
-      });
+      .catch(done);
 
     async function setupDryRunEnvironmentThenRunMigrations(config) {
       await Environment.fork(config);

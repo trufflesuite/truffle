@@ -1,8 +1,7 @@
-var debug = require("debug")("provider");
-var Web3 = require("web3");
-var { Web3Shim } = require("@truffle/interface-adapter");
-
-var wrapper = require("./wrapper");
+const debug = require("debug")("provider");
+const Web3 = require("web3");
+const { Web3Shim } = require("@truffle/interface-adapter");
+const wrapper = require("./wrapper");
 
 module.exports = {
   wrap: function(provider, options) {
@@ -10,8 +9,12 @@ module.exports = {
   },
 
   create: function(options) {
-    var provider;
+    const provider = this.getProvider(options);
+    return this.wrap(provider, options);
+  },
 
+  getProvider: function(options) {
+    let provider;
     if (options.provider && typeof options.provider === "function") {
       provider = options.provider();
     } else if (options.provider) {
@@ -26,11 +29,11 @@ module.exports = {
         { keepAlive: false }
       );
     }
-
-    return this.wrap(provider, options);
+    return provider;
   },
 
-  testConnection: async provider => {
+  testConnection: async function(options) {
+    const provider = this.getProvider(options);
     const web3 = new Web3Shim({ provider });
     await web3.eth.getBlockNumber();
     return true;
