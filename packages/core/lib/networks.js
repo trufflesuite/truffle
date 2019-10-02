@@ -188,14 +188,14 @@ const Networks = {
       return callback(error);
     }
 
-    const configured_networks = Object.keys(config.networks);
+    const configuredNetworks = Object.keys(config.networks);
     const promises = [];
 
     files.forEach(function(file) {
       promises.push(
         new Promise(function(accept, reject) {
-          const file_path = path.join(config.contracts_build_directory, file);
-          fs.readFile(file_path, "utf8", function(err, body) {
+          const filePath = path.join(config.contracts_build_directory, file);
+          fs.readFile(filePath, "utf8", function(err, body) {
             if (err) return reject(err);
 
             try {
@@ -204,15 +204,15 @@ const Networks = {
               return reject(e);
             }
 
-            Object.keys(body.networks).forEach(installed_network_id => {
+            Object.keys(body.networks).forEach(installedNetworkId => {
               let found = false;
-              for (let i = 0; i < configured_networks.length; i++) {
-                const configured_network = configured_networks[i];
+              for (let i = 0; i < configuredNetworks.length; i++) {
+                const configuredNetwork = configuredNetworks[i];
 
                 // If an installed network id matches a configured id, then we can ignore this one.
                 if (
-                  installed_network_id ===
-                  config.networks[configured_network].network_id
+                  installedNetworkId ===
+                  config.networks[configuredNetwork].network_id
                 ) {
                   found = true;
                   break;
@@ -221,13 +221,13 @@ const Networks = {
 
               // If we didn't find a suitable configuration, delete this network.
               if (found === false) {
-                delete body.networks[installed_network_id];
+                delete body.networks[installedNetworkId];
               }
             });
 
             // Our work is done here. Save the file.
             fs.writeFile(
-              file_path,
+              filePath,
               JSON.stringify(body, null, 2),
               "utf8",
               function(err) {
