@@ -49,25 +49,25 @@ const Networks = {
         //   console.log(b);
         // });
 
-        Object.keys(options.networks).forEach(function(network_name) {
-          const network = options.networks[network_name];
-          const network_id = network.network_id;
+        Object.keys(options.networks).forEach(networkName => {
+          const network = options.networks[networkName];
+          const networkId = network.network_id;
 
-          if (network_id == null) return;
+          if (networkId == null) return;
 
-          ids_to_names[network_id] = network_name;
-          networks[network_name] = {};
+          ids_to_names[networkId] = networkName;
+          networks[networkName] = {};
         });
 
         binaries.forEach(function(json) {
-          Object.keys(json.networks).forEach(function(network_id) {
-            const network_name = ids_to_names[network_id] || network_id;
+          Object.keys(json.networks).forEach(networkId => {
+            const network_name = ids_to_names[networkId] || networkId;
 
             if (networks[network_name] == null) {
               networks[network_name] = {};
             }
 
-            const address = json.networks[network_id].address;
+            const address = json.networks[networkId].address;
 
             if (address == null) return;
 
@@ -84,26 +84,26 @@ const Networks = {
     this.deployed(config, function(err, networks) {
       if (err) return callback(err);
 
-      let network_names = Object.keys(networks).sort();
+      let networkNames = Object.keys(networks).sort();
 
-      const star_networks = network_names.filter(network_name => {
+      const starNetworks = networkNames.filter(networkName => {
         return (
-          config.networks[network_name] != null &&
-          config.networks[network_name].network_id === "*"
+          config.networks[networkName] != null &&
+          config.networks[networkName].network_id === "*"
         );
       });
 
       // Remove * networks from network names.
-      network_names = network_names.filter(network_name => {
-        return star_networks.indexOf(network_name) < 0;
+      networkNames = networkNames.filter(networkName => {
+        return starNetworks.indexOf(networkName) < 0;
       });
 
-      const unknown_networks = network_names.filter(network_name => {
-        const configured_networks = Object.keys(config.networks);
+      const unknownNetworks = networkNames.filter(networkName => {
+        const configuredNetworks = Object.keys(config.networks);
         let found = false;
-        for (let i = 0; i < configured_networks.length; i++) {
-          const configured_network_name = configured_networks[i];
-          if (network_name === configured_network_name) {
+        for (let i = 0; i < configuredNetworks.length; i++) {
+          const configured_network_name = configuredNetworks[i];
+          if (networkName === configured_network_name) {
             found = true;
             break;
           }
@@ -118,9 +118,9 @@ const Networks = {
       //   There's a least one network deployed to
       //   And one of those networks deployed to is unknown (i.e., unconfigured).
       if (
-        star_networks.length > 0 &&
-        network_names.length > 0 &&
-        unknown_networks.length > 0
+        starNetworks.length > 0 &&
+        networkNames.length > 0 &&
+        unknownNetworks.length > 0
       ) {
         config.logger.log(
           OS.EOL +
@@ -128,7 +128,7 @@ const Networks = {
             OS.EOL
         );
 
-        star_networks.forEach(network_name => {
+        starNetworks.forEach(network_name => {
           config.logger.log("    " + network_name);
         });
 
@@ -138,7 +138,7 @@ const Networks = {
         );
       }
 
-      network_names.forEach(function(network_name) {
+      networkNames.forEach(function(network_name) {
         config.logger.log("");
 
         let output = Object.keys(networks[network_name])
@@ -170,7 +170,7 @@ const Networks = {
         config.logger.log("  " + output.join("\n  "));
       });
 
-      if (network_names.length === 0) {
+      if (networkNames.length === 0) {
         config.logger.log(
           OS.EOL + "Contracts have not been deployed to any network."
         );
