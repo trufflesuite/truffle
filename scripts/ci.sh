@@ -63,7 +63,7 @@ elif [ "$FABRICEVM" = true ]; then
   mkdir -p src/github.com/hyperledger
   cd src/github.com/hyperledger
   git clone https://github.com/hyperledger/fabric-chaincode-evm
-  curl -sSL http://bit.ly/2ysbOFE | bash -s 1.4.1
+  curl -sSL http://bit.ly/2ysbOFE | bash -s
   cd fabric-samples/first-network
   yq w -i docker-compose-cli.yaml "services.cli.volumes[+]" "./../../fabric-chaincode-evm:/opt/gopath/src/github.com/hyperledger/fabric-chaincode-evm"
   yes Y | ./byfn.sh up
