@@ -193,49 +193,42 @@ const Networks = {
 
     files.forEach(function(file) {
       promises.push(
-        new Promise(function(accept, reject) {
+        new Promise((resolve, reject) => {
           const filePath = path.join(config.contracts_build_directory, file);
-          fs.readFile(filePath, "utf8", function(err, body) {
-            if (err) return reject(err);
+          let body;
+          try {
+            const fileContents = fs.readFileSync(filePath, "utf8");
+            body = JSON.parse(fileContents);
+          } catch (error) {
+            reject(error);
+          }
 
-            try {
-              body = JSON.parse(body);
-            } catch (e) {
-              return reject(e);
+          Object.keys(body.networks).forEach(installedNetworkId => {
+            let found = false;
+            for (let i = 0; i < configuredNetworks.length; i++) {
+              const configuredNetwork = configuredNetworks[i];
+
+              // If an installed network id matches a configured id, then we can ignore this one.
+              if (
+                installedNetworkId ===
+                config.networks[configuredNetwork].network_id
+              ) {
+                found = true;
+                break;
+              }
             }
 
-            Object.keys(body.networks).forEach(installedNetworkId => {
-              let found = false;
-              for (let i = 0; i < configuredNetworks.length; i++) {
-                const configuredNetwork = configuredNetworks[i];
-
-                // If an installed network id matches a configured id, then we can ignore this one.
-                if (
-                  installedNetworkId ===
-                  config.networks[configuredNetwork].network_id
-                ) {
-                  found = true;
-                  break;
-                }
-              }
-
-              // If we didn't find a suitable configuration, delete this network.
-              if (found === false) {
-                delete body.networks[installedNetworkId];
-              }
-            });
-
-            // Our work is done here. Save the file.
-            fs.writeFile(
-              filePath,
-              JSON.stringify(body, null, 2),
-              "utf8",
-              function(err) {
-                if (err) return reject(err);
-                accept(body);
-              }
-            );
+            // If we didn't find a suitable configuration, delete this network.
+            if (found === false) delete body.networks[installedNetworkId];
           });
+
+          try {
+            // Our work is done here. Save the file.
+            fs.writeFileSync(filePath, JSON.stringify(body, null, 2), "utf8");
+            resolve(body);
+          } catch (error) {
+            reject(error);
+          }
         })
       );
     });
