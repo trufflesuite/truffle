@@ -7,7 +7,7 @@ const async = require("async");
 const { Web3Shim } = require("@truffle/interface-adapter");
 
 const Networks = {
-  deployed: function(options, callback) {
+  deployed: async function(options) {
     let files;
     try {
       files = fs.readdirSync(options.contracts_build_directory);
@@ -33,144 +33,140 @@ const Networks = {
       );
     });
 
-    Promise.all(promises)
-      .then(function(binaries) {
-        const ids_to_names = {};
-        const networks = {};
+    const binaries = await Promise.all(promises);
+    const idsToNames = {};
+    const networks = {};
 
-        // binaries.map(function(b) {return b.contract_name + ": " + JSON.stringify(b.networks, null, 2)}).forEach(function(b) {
-        //   console.log(b);
-        // });
+    // binaries.map(function(b) {return b.contract_name + ": " + JSON.stringify(b.networks, null, 2)}).forEach(function(b) {
+    //   console.log(b);
+    // });
 
-        Object.keys(options.networks).forEach(networkName => {
-          const network = options.networks[networkName];
-          const networkId = network.network_id;
+    Object.keys(options.networks).forEach(networkName => {
+      const network = options.networks[networkName];
+      const networkId = network.network_id;
 
-          if (networkId == null) return;
+      if (networkId == null) return;
 
-          ids_to_names[networkId] = networkName;
+      idsToNames[networkId] = networkName;
+      networks[networkName] = {};
+    });
+
+    binaries.forEach(json => {
+      Object.keys(json.networks).forEach(networkId => {
+        const networkName = idsToNames[networkId] || networkId;
+
+        if (networks[networkName] == null) {
           networks[networkName] = {};
-        });
+        }
 
-        binaries.forEach(function(json) {
-          Object.keys(json.networks).forEach(networkId => {
-            const network_name = ids_to_names[networkId] || networkId;
+        const address = json.networks[networkId].address;
 
-            if (networks[network_name] == null) {
-              networks[network_name] = {};
-            }
+        if (address == null) return;
 
-            const address = json.networks[networkId].address;
-
-            if (address == null) return;
-
-            networks[network_name][json.contractName] = address;
-          });
-        });
-
-        callback(null, networks);
-      })
-      .catch(callback);
+        networks[networkName][json.contractName] = address;
+      });
+    });
+    return networks;
   },
 
   display: function(config, callback) {
-    this.deployed(config, function(err, networks) {
-      if (err) return callback(err);
+    this.deployed(config)
+      .then(networks => {
+        let networkNames = Object.keys(networks).sort();
 
-      let networkNames = Object.keys(networks).sort();
-
-      const starNetworks = networkNames.filter(networkName => {
-        return (
-          config.networks[networkName] != null &&
-          config.networks[networkName].network_id === "*"
-        );
-      });
-
-      // Remove * networks from network names.
-      networkNames = networkNames.filter(networkName => {
-        return starNetworks.indexOf(networkName) < 0;
-      });
-
-      const unknownNetworks = networkNames.filter(networkName => {
-        const configuredNetworks = Object.keys(config.networks);
-        let found = false;
-        for (let i = 0; i < configuredNetworks.length; i++) {
-          const configuredNetworkName = configuredNetworks[i];
-          if (networkName === configuredNetworkName) {
-            found = true;
-            break;
-          }
-        }
-
-        return !found;
-      });
-
-      // Only display this warning if:
-      //
-      //   At least one network is configured with the wildcard ('*') network id
-      //   There's a least one network deployed to
-      //   And one of those networks deployed to is unknown (i.e., unconfigured).
-      if (
-        starNetworks.length > 0 &&
-        networkNames.length > 0 &&
-        unknownNetworks.length > 0
-      ) {
-        config.logger.log(
-          OS.EOL +
-            "The following networks are configured to match any network id ('*'):" +
-            OS.EOL
-        );
-
-        starNetworks.forEach(networkName => {
-          config.logger.log("    " + networkName);
+        const starNetworks = networkNames.filter(networkName => {
+          return (
+            config.networks[networkName] != null &&
+            config.networks[networkName].network_id === "*"
+          );
         });
 
-        config.logger.log(
-          OS.EOL +
-            "Closely inspect the deployed networks below, and use `truffle networks --clean` to remove any networks that don't match your configuration. You should not use the wildcard configuration ('*') for staging and production networks for which you intend to deploy your application."
-        );
-      }
+        // Remove * networks from network names.
+        networkNames = networkNames.filter(networkName => {
+          return starNetworks.indexOf(networkName) < 0;
+        });
 
-      networkNames.forEach(function(networkName) {
-        config.logger.log("");
+        const unknownNetworks = networkNames.filter(networkName => {
+          const configuredNetworks = Object.keys(config.networks);
+          let found = false;
+          for (let i = 0; i < configuredNetworks.length; i++) {
+            const configuredNetworkName = configuredNetworks[i];
+            if (networkName === configuredNetworkName) {
+              found = true;
+              break;
+            }
+          }
 
-        let output = Object.keys(networks[networkName])
-          .sort()
-          .map(contract_name => {
-            const address = networks[networkName][contract_name];
-            return contract_name + ": " + address;
+          return !found;
+        });
+
+        // Only display this warning if:
+        //
+        //   At least one network is configured with the wildcard ('*') network id
+        //   There's a least one network deployed to
+        //   And one of those networks deployed to is unknown (i.e., unconfigured).
+        if (
+          starNetworks.length > 0 &&
+          networkNames.length > 0 &&
+          unknownNetworks.length > 0
+        ) {
+          config.logger.log(
+            OS.EOL +
+              "The following networks are configured to match any network id ('*'):" +
+              OS.EOL
+          );
+
+          starNetworks.forEach(networkName => {
+            config.logger.log("    " + networkName);
           });
 
-        if (output.length === 0) output = ["No contracts deployed."];
-
-        let message = "Network: ";
-
-        const is_id = config.networks[networkName] == null;
-
-        if (is_id) {
-          message += "UNKNOWN (id: " + networkName + ")";
-        } else {
-          message +=
-            networkName +
-            " (id: " +
-            config.networks[networkName].network_id +
-            ")";
+          config.logger.log(
+            OS.EOL +
+              "Closely inspect the deployed networks below, and use `truffle networks --clean` to remove any networks that don't match your configuration. You should not use the wildcard configuration ('*') for staging and production networks for which you intend to deploy your application."
+          );
         }
 
-        config.logger.log(message);
-        config.logger.log("  " + output.join("\n  "));
-      });
+        networkNames.forEach(function(networkName) {
+          config.logger.log("");
 
-      if (networkNames.length === 0) {
-        config.logger.log(
-          OS.EOL + "Contracts have not been deployed to any network."
-        );
-      }
+          let output = Object.keys(networks[networkName])
+            .sort()
+            .map(contract_name => {
+              const address = networks[networkName][contract_name];
+              return contract_name + ": " + address;
+            });
 
-      config.logger.log("");
+          if (output.length === 0) output = ["No contracts deployed."];
 
-      callback();
-    });
+          let message = "Network: ";
+
+          const is_id = config.networks[networkName] == null;
+
+          if (is_id) {
+            message += "UNKNOWN (id: " + networkName + ")";
+          } else {
+            message +=
+              networkName +
+              " (id: " +
+              config.networks[networkName].network_id +
+              ")";
+          }
+
+          config.logger.log(message);
+          config.logger.log("  " + output.join("\n  "));
+        });
+
+        if (networkNames.length === 0) {
+          config.logger.log(
+            OS.EOL + "Contracts have not been deployed to any network."
+          );
+        }
+
+        config.logger.log("");
+
+        callback();
+      })
+      .catch(callback);
   },
 
   clean: function(config, callback) {
