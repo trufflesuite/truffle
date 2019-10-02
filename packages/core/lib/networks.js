@@ -18,24 +18,17 @@ const Networks = {
 
     const promises = [];
 
-    files.forEach(function(file) {
+    files.forEach(file => {
       promises.push(
-        new Promise(function(accept, reject) {
-          fs.readFile(
-            path.join(options.contracts_build_directory, file),
-            "utf8",
-            function(err, body) {
-              if (err) return reject(err);
-
-              try {
-                body = JSON.parse(body);
-              } catch (e) {
-                return reject(e);
-              }
-
-              accept(body);
-            }
-          );
+        new Promise((resolve, reject) => {
+          try {
+            const filePath = path.join(options.contracts_build_directory, file);
+            const fileContents = fs.readFileSync(filePath, "utf8");
+            const body = JSON.parse(fileContents);
+            resolve(body);
+          } catch (error) {
+            return reject(error);
+          }
         })
       );
     });
@@ -255,9 +248,9 @@ const Networks = {
 
     async.each(
       networks,
-      async function(network_name, finished) {
+      (network_name, finished) => {
         const provider = Provider.create(options.networks[network_name]);
-        BlockchainUtils.asURI(provider, function(err, uri) {
+        BlockchainUtils.asURI(provider, (err, uri) => {
           if (err) {
             result.failed.push(network_name);
           } else {
