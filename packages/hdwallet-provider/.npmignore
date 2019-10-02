@@ -1,7 +1,6 @@
 .idea
 .vscode
 test
-.travis.yml
 tsconfig.json
 src
 typings
