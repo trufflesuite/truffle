@@ -28,7 +28,9 @@ var command = {
     if (options.clean) {
       Networks.clean(config, done);
     } else {
-      Networks.display(config, done);
+      Networks.display(config)
+        .then(() => done())
+        .catch(done);
     }
   }
 };
