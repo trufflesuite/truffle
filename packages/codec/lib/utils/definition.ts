@@ -1,8 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:definition");
 
-import { Ast } from "@truffle/codec/types";
-import * as Common from "@truffle/codec/types/common";
+import { Ast, Common } from "@truffle/codec/types";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
 
