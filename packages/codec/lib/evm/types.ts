@@ -1,9 +1,5 @@
-import { DecoderContext, DecoderContexts } from "./contexts";
-import * as Ast from "./ast";
-import { ContractKind, Mutability } from "./common";
+import { Allocation, Ast, Common, Contexts, Storage } from "@truffle/codec/types";
 import { Types } from "@truffle/codec/format";
-import * as Allocation from "./allocation";
-import { Slot } from "./storage";
 
 export interface EvmState {
   storage: WordMapping;
@@ -23,11 +19,11 @@ export interface WordMapping {
 
 export interface EvmInfo {
   state: EvmState;
-  mappingKeys?: Slot[];
+  mappingKeys?: Storage.Slot[];
   userDefinedTypes?: Types.TypesById;
   allocations: AllocationInfo;
-  contexts?: DecoderContexts;
-  currentContext?: DecoderContext;
+  contexts?: Contexts.DecoderContexts;
+  currentContext?: Contexts.DecoderContext;
   internalFunctionsTable?: InternalFunctions;
 }
 
@@ -49,12 +45,12 @@ export interface InternalFunction {
   node?: Ast.Definition;
   name?: string;
   id?: number;
-  mutability?: Mutability;
+  mutability?: Common.Mutability;
   contractPointer?: string;
   contractNode?: Ast.Definition;
   contractName?: string;
   contractId?: number;
-  contractKind?: ContractKind;
+  contractKind?: Common.ContractKind;
   contractPayable?: boolean;
   isDesignatedInvalid: boolean;
 }

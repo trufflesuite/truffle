@@ -10,7 +10,8 @@ import {
   ContextUtils
 } from "@truffle/codec/utils";
 import * as Utils from "@truffle/codec/utils/interface";
-import { Ast, Pointer, Allocation, Contexts, Storage, Evm, Decoding } from "@truffle/codec/types";
+import { Ast, Pointer, Allocation, Contexts, Storage, Decoding } from "@truffle/codec/types";
+import * as Evm from "@truffle/codec/evm";
 import * as DecoderTypes from "../types";
 import { Types, Values } from "@truffle/codec/format";
 import Web3 from "web3";
@@ -44,7 +45,7 @@ export default class ContractDecoder {
   private contractNetwork: string;
   private contextHash: string;
 
-  private allocations: Evm.AllocationInfo;
+  private allocations: Evm.Types.AllocationInfo;
   private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
   private wireDecoder: WireDecoder;
@@ -238,7 +239,7 @@ export class ContractInstanceDecoder {
 
   private referenceDeclarations: Ast.References;
   private userDefinedTypes: Types.TypesById;
-  private allocations: Evm.AllocationInfo;
+  private allocations: Evm.Types.AllocationInfo;
 
   private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
@@ -337,7 +338,7 @@ export class ContractInstanceDecoder {
   }
 
   private async decodeVariable(variable: Allocation.StorageMemberAllocation, block: number): Promise<DecoderTypes.DecodedVariable> {
-    const info: Evm.EvmInfo = {
+    const info: Evm.Types.EvmInfo = {
       state: {
         storage: {}
       },

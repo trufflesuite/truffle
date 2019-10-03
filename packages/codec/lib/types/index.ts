@@ -22,9 +22,6 @@ export { Decoding };
 import * as Errors from "./errors";
 export { Errors };
 
-import * as Evm from "./evm";
-export { Evm };
-
 import * as Options from "./options";
 export { Options }
 
