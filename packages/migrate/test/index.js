@@ -79,12 +79,10 @@ describe("Migrate", () => {
       Migrate.wrapResolver.restore();
     });
 
-    it("calls wrapResolver with the resolver and the wrapped provider", done => {
+    it("calls wrapResolver with options", done => {
       Migrate.runMigrations(migrations, options)
         .then(() => {
-          assert(
-            Migrate.wrapResolver.calledWith(options.resolver, options.provider)
-          );
+          assert(Migrate.wrapResolver.calledWith(options));
           done();
         })
         .catch(done);
