@@ -6,12 +6,12 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import utf8 from "utf8";
-import { Contexts, Pointer, Options } from "@truffle/codec/types";
+import { Contexts, Pointer } from "@truffle/codec/types";
 import * as Decoding from "./types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeValue(dataType: Types.Type, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo, options: Options.DecoderOptions = {}): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeValue(dataType: Types.Type, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo, options: Decoding.DecoderOptions = {}): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   const { state } = info;
   const { permissivePadding, strictAbiMode: strict } = options; //if these are undefined they'll still be falsy so OK
 

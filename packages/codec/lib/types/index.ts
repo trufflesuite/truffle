@@ -16,9 +16,6 @@ export { Common };
 import * as Errors from "./errors";
 export { Errors };
 
-import * as Options from "./options";
-export { Options }
-
 import * as Pointer from "./pointer";
 export { Pointer };
 
