@@ -2,7 +2,7 @@ import { DecoderContext, DecoderContexts } from "./contexts";
 import * as Ast from "./ast";
 import { ContractKind, Mutability } from "./common";
 import { Types } from "@truffle/codec/format";
-import * as Allocations from "./allocation";
+import * as Allocation from "./allocation";
 import { Slot } from "./storage";
 
 export interface EvmState {
@@ -32,11 +32,11 @@ export interface EvmInfo {
 }
 
 export interface AllocationInfo {
-  storage?: Allocations.StorageAllocations;
-  memory?: Allocations.MemoryAllocations;
-  abi?: Allocations.AbiAllocations;
-  calldata?: Allocations.CalldataAllocations;
-  event?: Allocations.EventAllocations;
+  storage?: Allocation.StorageAllocations;
+  memory?: Allocation.MemoryAllocations;
+  abi?: Allocation.AbiAllocations;
+  calldata?: Allocation.CalldataAllocations;
+  event?: Allocation.EventAllocations;
 }
 
 export interface InternalFunctions {
