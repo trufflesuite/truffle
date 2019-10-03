@@ -1,25 +1,25 @@
 import { Mutability, ContractKind } from "./common";
 
-export interface AstTypeDescriptions {
+export interface TypeDescriptions {
   typeIdentifier: string;
   typeString?: string;
 }
 
-export interface AstDefinition {
+export interface Definition {
   constant?: boolean;
   id: number;
   name: string;
   canonicalName?: string;
   linearizedBaseContracts?: number[];
-  members?: AstDefinition[];
-  nodes?: AstDefinition[];
+  members?: Definition[];
+  nodes?: Definition[];
   nodeType: string;
   scope?: number;
   src: string;
   stateVariable?: boolean;
   storageLocation?: string;
-  typeDescriptions: AstTypeDescriptions;
-  typeName?: AstDefinition;
+  typeDescriptions: TypeDescriptions;
+  typeName?: Definition;
   expression?: {
     referencedDeclaration?: any;
   };
@@ -32,20 +32,20 @@ export interface AstDefinition {
   hexValue?: string;
   referencedDeclaration?: any;
   parameters?: {
-    parameters: AstDefinition[];
+    parameters: Definition[];
   };
   returnParameters?: {
-    parameters: AstDefinition[];
+    parameters: Definition[];
   };
   parameterTypes?: {
-    parameters: AstDefinition[];
+    parameters: Definition[];
   };
   returnParameterTypes?: {
-    parameters: AstDefinition[];
+    parameters: Definition[];
   };
-  baseType?: AstDefinition;
-  keyType?: AstDefinition;
-  valueType?: AstDefinition;
+  baseType?: Definition;
+  keyType?: Definition;
+  valueType?: Definition;
   payable?: boolean;
   indexed?: boolean;
   anonymous?: boolean;
@@ -56,8 +56,8 @@ export interface AstDefinition {
   //in the future, but sticking with this for now.
 }
 
-export interface AstReferences {
-  [nodeId: number]: AstDefinition;
+export interface References {
+  [nodeId: number]: Definition;
 };
 
 //the debugger uses this
@@ -71,6 +71,6 @@ export interface Scopes {
       name: string;
       id: number;
     }[];
-    definition?: AstDefinition;
+    definition?: Definition;
   }
 }

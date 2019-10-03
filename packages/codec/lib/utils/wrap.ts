@@ -4,7 +4,7 @@ const debug = debugModule("codec:utils:wrap");
 import Web3 from "web3";
 import BN from "bn.js";
 import { CompilerVersion } from "@truffle/codec/types/compiler";
-import { AstDefinition } from "@truffle/codec/types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import { MakeType } from "./maketype";
 import { Types, Values } from "@truffle/codec/format";
 
@@ -20,7 +20,7 @@ import { Types, Values } from "@truffle/codec/format";
 //1. check its inputs,
 //2. take a slightly different input format,
 //3. also be named differently and... it'll be different :P ]
-export function wrapElementaryViaDefinition(value: any, definition: AstDefinition, compiler: CompilerVersion): Values.ElementaryValue {
+export function wrapElementaryViaDefinition(value: any, definition: Ast.Definition, compiler: CompilerVersion): Values.ElementaryValue {
   let dataType = MakeType.definitionToType(definition, compiler, null); //force location to undefined
   return wrapElementaryValue(value, dataType);
 }

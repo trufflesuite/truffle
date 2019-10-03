@@ -3,7 +3,7 @@ const debug = debugModule("codec:utils:abi");
 
 import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import { Mutability } from "@truffle/codec/types/common";
 import { definitionToAbi } from "./definition2abi";
 import * as AbiTypes from "@truffle/codec/types/abi";
@@ -148,7 +148,7 @@ export namespace AbiUtils {
     }
   }
 
-  export function definitionMatchesAbi(abiEntry: AbiTypes.AbiEntry, definition: AstDefinition, referenceDeclarations: AstReferences): boolean {
+  export function definitionMatchesAbi(abiEntry: AbiTypes.AbiEntry, definition: Ast.Definition, referenceDeclarations: Ast.References): boolean {
     try {
       return abisMatch(abiEntry, definitionToAbi(definition, referenceDeclarations));
     }

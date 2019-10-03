@@ -1,4 +1,4 @@
-import { AstDefinition } from "./ast";
+import * as Ast from "./ast";
 import { Range } from "./storage";
 
 export type DataPointer = StackPointer | MemoryPointer | StoragePointer
@@ -55,7 +55,7 @@ export interface StackLiteralPointer {
 
 export interface ConstantDefinitionPointer {
   location: "definition",
-  definition: AstDefinition;
+  definition: Ast.Definition;
 }
 
 export interface SpecialPointer {

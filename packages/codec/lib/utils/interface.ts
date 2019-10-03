@@ -3,19 +3,19 @@ import { AbiUtils } from "./abi";
 import { DecoderContext } from "@truffle/codec/types/contexts";
 import { Conversion as ConversionUtils } from "./conversion";
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import { ContractKind } from "@truffle/codec/types/common";
 
-export function getContractNode(contract: ContractObject): AstDefinition {
+export function getContractNode(contract: ContractObject): Ast.Definition {
   return (contract.ast || {nodes: []}).nodes.find(
-    (contractNode: AstDefinition) =>
+    (contractNode: Ast.Definition) =>
     contractNode.nodeType === "ContractDefinition"
     && (contractNode.name === contract.contractName
       || contractNode.name === contract.contract_name)
   );
 }
 
-export function makeContext(contract: ContractObject, node: AstDefinition | undefined, isConstructor = false): DecoderContext {
+export function makeContext(contract: ContractObject, node: Ast.Definition | undefined, isConstructor = false): DecoderContext {
   const abi = AbiUtils.schemaAbiToAbi(contract.abi);
   const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
   const hash = ConversionUtils.toHexString(
@@ -38,7 +38,7 @@ export function makeContext(contract: ContractObject, node: AstDefinition | unde
 }
 
 //attempts to determine if the given contract is a library or not
-function contractKind(contract: ContractObject, node?: AstDefinition): ContractKind {
+function contractKind(contract: ContractObject, node?: Ast.Definition): ContractKind {
   //first: if we have a node, use its listed contract kind
   if(node) {
     return node.contractKind;

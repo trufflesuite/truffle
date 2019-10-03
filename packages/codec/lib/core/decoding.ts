@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:core:decoding");
 
-import { AstDefinition } from "@truffle/codec/types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import * as CodecUtils from "@truffle/codec/utils";
 import { MakeType, abifyType, abifyResult } from "@truffle/codec/utils";
 import { Types, Values } from "@truffle/codec/format";
@@ -16,7 +16,7 @@ import { encodeAbi, encodeTupleAbi } from "@truffle/codec/encode/abi";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
 
-export function* decodeVariable(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeVariable(definition: Ast.Definition, pointer: Pointer.DataPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
   let dataType = MakeType.definitionToType(definition, compiler);
   return yield* decode(dataType, pointer, info); //no need to pass an offset

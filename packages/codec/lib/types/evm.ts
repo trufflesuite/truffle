@@ -1,5 +1,5 @@
 import { DecoderContext, DecoderContexts } from "./contexts";
-import { AstDefinition, AstReferences } from "./ast";
+import * as Ast from "./ast";
 import { ContractKind, Mutability } from "./common";
 import { Types } from "@truffle/codec/format";
 import * as Allocations from "./allocation";
@@ -46,12 +46,12 @@ export interface InternalFunctions {
 export interface InternalFunction {
   source?: number;
   pointer?: string;
-  node?: AstDefinition;
+  node?: Ast.Definition;
   name?: string;
   id?: number;
   mutability?: Mutability;
   contractPointer?: string;
-  contractNode?: AstDefinition;
+  contractNode?: Ast.Definition;
   contractName?: string;
   contractId?: number;
   contractKind?: ContractKind;

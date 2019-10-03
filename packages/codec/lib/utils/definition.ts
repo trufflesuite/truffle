@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:definition");
 
-import { AstDefinition, Scopes } from "@truffle/codec/types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import { Visibility, Mutability, Location, ContractKind } from "@truffle/codec/types/common";
 import { CompilerVersion } from "@truffle/codec/types/compiler";
 import BN from "bn.js";
@@ -9,16 +9,16 @@ import cloneDeep from "lodash.clonedeep";
 
 export namespace Definition {
 
-  export function typeIdentifier(definition: AstDefinition): string {
+  export function typeIdentifier(definition: Ast.Definition): string {
     return definition.typeDescriptions.typeIdentifier;
   }
 
-  export function typeString(definition: AstDefinition): string {
+  export function typeString(definition: Ast.Definition): string {
     return definition.typeDescriptions.typeString;
   }
 
   //returns the type string, but with location (if any) stripped off the end
-  export function typeStringWithoutLocation(definition: AstDefinition): string {
+  export function typeStringWithoutLocation(definition: Ast.Definition): string {
     return typeString(definition).replace(/ (storage|memory|calldata)$/, "");
   }
 
@@ -28,7 +28,7 @@ export namespace Definition {
    *  `t_uint256` becomes `uint`
    *  `t_struct$_Thing_$20_memory_ptr` becomes `struct`
    */
-  export function typeClass(definition: AstDefinition): string {
+  export function typeClass(definition: Ast.Definition): string {
     return typeIdentifier(definition).match(/t_([^$_0-9]+)/)[1];
   }
 
@@ -37,14 +37,14 @@ export namespace Definition {
    * e.g.:
    * `t_uint256` becomes `uint256`
    */
-  export function typeClassLongForm(definition: AstDefinition): string {
+  export function typeClassLongForm(definition: Ast.Definition): string {
     return typeIdentifier(definition).match(/t_([^$_]+)/)[1];
   }
 
   //for user-defined types -- structs, enums, contracts
   //often you can get these from referencedDeclaration, but not
   //always
-  export function typeId(definition: AstDefinition): number {
+  export function typeId(definition: Ast.Definition): number {
     debug("definition %O", definition);
     return parseInt(
       typeIdentifier(definition)
@@ -56,7 +56,7 @@ export namespace Definition {
    * (not for use on other types! will cause an error!)
    * should only return "internal" or "external"
    */
-  export function visibility(definition: AstDefinition): Visibility {
+  export function visibility(definition: Ast.Definition): Visibility {
     return <Visibility> (definition.typeName ?
       definition.typeName.visibility : definition.visibility);
   }
@@ -66,7 +66,7 @@ export namespace Definition {
    * e.g. uint48 -> 6
    * @return size in bytes for explicit type size, or `null` if not stated
    */
-  export function specifiedSize(definition: AstDefinition): number {
+  export function specifiedSize(definition: Ast.Definition): number {
     let specified = typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/);
 
     if (!specified) {
@@ -93,17 +93,17 @@ export namespace Definition {
   /**
    * for fixed-point types, obviously
    */
-  export function decimalPlaces(definition: AstDefinition): number {
+  export function decimalPlaces(definition: Ast.Definition): number {
     return parseInt(
       typeIdentifier(definition).match(/t_[a-z]+[0-9]+x([0-9]+)/)[1]
     );
   }
 
-  export function isArray(definition: AstDefinition): boolean {
+  export function isArray(definition: Ast.Definition): boolean {
     return typeIdentifier(definition).match(/^t_array/) != null;
   }
 
-  export function isDynamicArray(definition: AstDefinition): boolean {
+  export function isDynamicArray(definition: Ast.Definition): boolean {
     return isArray(definition) && (
       //NOTE: we do this by parsing the type identifier, rather than by just
       //checking the length field, because we might be using this on a faked-up
@@ -115,7 +115,7 @@ export namespace Definition {
 
   //length of a statically sized array -- please only use for arrays
   //already verified to be static!
-  export function staticLength(definition: AstDefinition): number {
+  export function staticLength(definition: Ast.Definition): number {
     //NOTE: we do this by parsing the type identifier, rather than by just
     //checking the length field, because we might be using this on a faked-up
     //definition
@@ -123,39 +123,39 @@ export namespace Definition {
   }
 
   //see staticLength for explanation
-  export function staticLengthAsString(definition: AstDefinition): string {
+  export function staticLengthAsString(definition: Ast.Definition): string {
     return typeIdentifier(definition).match(
       /\$(\d+)_(storage|memory|calldata)(_ptr)?$/)[1];
   }
 
-  export function isStruct(definition: AstDefinition): boolean {
+  export function isStruct(definition: Ast.Definition): boolean {
     return typeIdentifier(definition).match(/^t_struct/) != null;
   }
 
-  export function isMapping(definition: AstDefinition): boolean {
+  export function isMapping(definition: Ast.Definition): boolean {
     return typeIdentifier(definition).match(/^t_mapping/) != null;
   }
 
-  export function isEnum(definition: AstDefinition): boolean {
+  export function isEnum(definition: Ast.Definition): boolean {
     return typeIdentifier(definition).match(/^t_enum/) != null;
   }
 
-  export function isReference(definition: AstDefinition): boolean {
+  export function isReference(definition: Ast.Definition): boolean {
     return typeIdentifier(definition).match(/_(memory|storage|calldata)(_ptr)?$/) != null;
   }
 
   //note: only use this on things already verified to be references
-  export function referenceType(definition: AstDefinition): Location {
+  export function referenceType(definition: Ast.Definition): Location {
     return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1] as Location;
   }
 
   //only for contract types, obviously! will yield nonsense otherwise!
-  export function contractKind(definition: AstDefinition): ContractKind {
+  export function contractKind(definition: Ast.Definition): ContractKind {
     return typeString(definition).split(" ")[0] as ContractKind;
   }
 
   //stack size, in words, of a given type
-  export function stackSize(definition: AstDefinition): number {
+  export function stackSize(definition: Ast.Definition): number {
     if(typeClass(definition) === "function" &&
       visibility(definition) === "external") {
       return 2;
@@ -172,14 +172,14 @@ export namespace Definition {
     return 1;
   }
 
-  export function isSimpleConstant(definition: AstDefinition): boolean {
+  export function isSimpleConstant(definition: Ast.Definition): boolean {
     const types = ["stringliteral", "rational"];
     return types.includes(typeClass(definition));
   }
 
   //definition: a storage reference definition
   //location: the location you want it to refer to instead
-  export function spliceLocation(definition: AstDefinition, location: Location): AstDefinition {
+  export function spliceLocation(definition: Ast.Definition, location: Location): Ast.Definition {
     debug("definition %O", definition);
     return {
       ...definition,
@@ -202,14 +202,14 @@ export namespace Definition {
 
   //extract the actual numerical value from a node of type rational.
   //currently assumes result will be integer (currently returns BN)
-  export function rationalValue(definition: AstDefinition): BN {
+  export function rationalValue(definition: Ast.Definition): BN {
     let identifier = typeIdentifier(definition);
     let absoluteValue: string = identifier.match(/_(\d+)_by_1$/)[1];
     let isNegative: boolean = identifier.match(/_minus_/) != null;
     return isNegative? new BN(absoluteValue).neg() : new BN(absoluteValue);
   }
 
-  export function baseDefinition(definition: AstDefinition): AstDefinition {
+  export function baseDefinition(definition: Ast.Definition): Ast.Definition {
     if (definition.typeName && definition.typeName.baseType) {
       return definition.typeName.baseType;
     }
@@ -229,7 +229,7 @@ export namespace Definition {
     }
 
     // another HACK - we get away with it because we're only using that one property
-    let result: AstDefinition = cloneDeep(definition);
+    let result: Ast.Definition = cloneDeep(definition);
     result.typeDescriptions.typeIdentifier = baseIdentifier;
     return result;
 
@@ -239,8 +239,8 @@ export namespace Definition {
 
   //for use for mappings and arrays only!
   //for arrays, fakes up a uint definition
-  export function keyDefinition(definition: AstDefinition, scopes?: Scopes): AstDefinition {
-    let result: AstDefinition;
+  export function keyDefinition(definition: Ast.Definition, scopes?: Ast.Scopes): Ast.Definition {
+    let result: Ast.Definition;
     switch(typeClass(definition)) {
       case "mapping":
         //first: is there a key type already there? if so just use that
@@ -304,14 +304,14 @@ export namespace Definition {
   //returns input parameters, then output parameters
   //NOTE: ONLY FOR VARIABLE DECLARATIONS OF FUNCTION TYPE
   //NOT FOR FUNCTION DEFINITIONS
-  export function parameters(definition: AstDefinition): [AstDefinition[], AstDefinition[]] {
+  export function parameters(definition: Ast.Definition): [Ast.Definition[], Ast.Definition[]] {
     let typeObject = definition.typeName || definition;
     return [typeObject.parameterTypes.parameters, typeObject.returnParameterTypes.parameters];
   }
 
   //compatibility function, since pre-0.5.0 functions don't have node.kind
   //returns undefined if you don't put in a function node
-  export function functionKind(node: AstDefinition): string | undefined {
+  export function functionKind(node: Ast.Definition): string | undefined {
     if(node.nodeType !== "FunctionDefinition") {
       return undefined;
     }
@@ -331,7 +331,7 @@ export namespace Definition {
   //similar compatibility function for mutability for pre-0.4.16 versions
   //returns undefined if you don't give it a FunctionDefinition or
   //VariableDeclaration
-  export function mutability(node: AstDefinition): Mutability | undefined {
+  export function mutability(node: Ast.Definition): Mutability | undefined {
     node = node.typeName || node;
     if(node.nodeType !== "FunctionDefinition" && node.nodeType !== "FunctionTypeName") {
       return undefined;
@@ -353,7 +353,7 @@ export namespace Definition {
   }
 
   //takes a contract definition and asks, does it have a payable fallback function?
-  export function isContractPayable(definition: AstDefinition): boolean {
+  export function isContractPayable(definition: Ast.Definition): boolean {
     let fallback = definition.nodes.find(
       node => node.nodeType === "FunctionDefinition" &&
         functionKind(node) === "fallback"
@@ -367,7 +367,7 @@ export namespace Definition {
   //spoofed definitions we'll need
   //we'll give them id -1 to indicate that they're spoofed
 
-  export const NOW_DEFINITION: AstDefinition = {
+  export const NOW_DEFINITION: Ast.Definition = {
     id: -1,
     src: "0:0:-1",
     name: "now",
@@ -378,7 +378,7 @@ export namespace Definition {
     }
   }
 
-  export const MSG_DEFINITION: AstDefinition = {
+  export const MSG_DEFINITION: Ast.Definition = {
     id: -1,
     src: "0:0:-1",
     name: "msg",
@@ -389,7 +389,7 @@ export namespace Definition {
     }
   };
 
-  export const TX_DEFINITION: AstDefinition = {
+  export const TX_DEFINITION: Ast.Definition = {
     id: -1,
     src: "0:0:-1",
     name: "tx",
@@ -400,7 +400,7 @@ export namespace Definition {
     }
   };
 
-  export const BLOCK_DEFINITION: AstDefinition = {
+  export const BLOCK_DEFINITION: Ast.Definition = {
     id: -1,
     src: "0:0:-1",
     name: "block",
@@ -411,7 +411,7 @@ export namespace Definition {
     }
   };
 
-  export function spoofThisDefinition(contractName: string, contractId: number, contractKind: ContractKind): AstDefinition {
+  export function spoofThisDefinition(contractName: string, contractId: number, contractKind: ContractKind): Ast.Definition {
     let formattedName = contractName.replace(/\$/g, "$$".repeat(3));
     //note that string.replace treats $'s specially in the replacement string;
     //we want 3 $'s for each $ in the input, so we need to put *6* $'s in the
