@@ -10,7 +10,9 @@ export { Ast };
 import * as Compiler from "./compiler";
 export { Compiler };
 
-export * from "./contexts";
+import * as Contexts from "./contexts";
+export { Contexts };
+
 export * from "./decoding";
 export * from "./errors";
 export * from "./evm";
