@@ -1,5 +1,4 @@
-import { DecoderContext } from "./contexts";
-import * as AbiTypes from "./abi";
+import { Abi, Contexts } from "@truffle/codec/types";
 import { Types, Values } from "@truffle/codec/format";
 
 export type CalldataDecoding = FunctionDecoding | ConstructorDecoding | MessageDecoding | UnknownDecoding;
@@ -11,7 +10,7 @@ export interface FunctionDecoding {
   kind: "function";
   class: Types.ContractType;
   arguments: AbiArgument[];
-  abi: AbiTypes.FunctionAbiEntry;
+  abi: Abi.FunctionAbiEntry;
   selector: string;
   decodingMode: DecodingMode;
 }
@@ -20,7 +19,7 @@ export interface ConstructorDecoding {
   kind: "constructor";
   class: Types.ContractType;
   arguments: AbiArgument[];
-  abi: AbiTypes.ConstructorAbiEntry;
+  abi: Abi.ConstructorAbiEntry;
   bytecode: string;
   decodingMode: DecodingMode;
 }
@@ -28,7 +27,7 @@ export interface ConstructorDecoding {
 export interface MessageDecoding {
   kind: "message";
   class: Types.ContractType;
-  abi: AbiTypes.FallbackAbiEntry | null; //null indicates no fallback ABI
+  abi: Abi.FallbackAbiEntry | null; //null indicates no fallback ABI
   data: string;
   decodingMode: DecodingMode;
 }
@@ -43,7 +42,7 @@ export interface EventDecoding {
   kind: "event";
   class: Types.ContractType;
   arguments: AbiArgument[];
-  abi: AbiTypes.EventAbiEntry; //should be non-anonymous
+  abi: Abi.EventAbiEntry; //should be non-anonymous
   selector: string;
   decodingMode: DecodingMode;
 }
@@ -52,7 +51,7 @@ export interface AnonymousDecoding {
   kind: "anonymous";
   class: Types.ContractType;
   arguments: AbiArgument[];
-  abi: AbiTypes.EventAbiEntry; //should be anonymous
+  abi: Abi.EventAbiEntry; //should be anonymous
   decodingMode: DecodingMode;
 }
 
@@ -65,5 +64,5 @@ export interface AbiArgument {
 //the following types are intended for internal use only
 export interface ContractInfoAndContext {
   contractInfo: Values.ContractValueInfo;
-  context?: DecoderContext;
+  context?: Contexts.DecoderContext;
 }

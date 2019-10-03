@@ -13,6 +13,6 @@ export { Format };
 
 export * from "./interface";
 
-import * as Decoding from "./types/decoding";
+import * as Decoding from "./decode/types";
 export { Decoding };
 // export * from "./types/errors";
