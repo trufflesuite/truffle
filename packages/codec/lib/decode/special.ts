@@ -5,9 +5,8 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { Types, Values } from "@truffle/codec/format";
 import decodeValue from "./value";
 import { EvmInfo } from "@truffle/codec/types/evm";
-import { Pointer } from "@truffle/codec/types";
+import { Pointer, Compiler } from "@truffle/codec/types";
 import { DecoderRequest } from "@truffle/codec/types/request";
-import * as Compiler from "@truffle/codec/types/compiler";
 import { solidityFamily } from "@truffle/codec/utils/compiler";
 
 export default function* decodeSpecial(dataType: Types.Type, pointer: Pointer.SpecialPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
