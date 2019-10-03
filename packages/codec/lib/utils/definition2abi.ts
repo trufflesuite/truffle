@@ -3,7 +3,7 @@ const debug = debugModule("codec:utils:definition2abi");
 
 import { Ast, Abi as AbiTypes } from "@truffle/codec/types";
 import { Definition } from "./definition";
-import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
+import * as Errors from "@truffle/codec/types/errors";
 
 //the main function. just does some dispatch.
 //returns undefined on bad input
@@ -116,7 +116,7 @@ function parameterToAbi(node: Ast.Definition, referenceDeclarations: Ast.Referen
     let referenceDeclaration = referenceDeclarations[id];
     if(referenceDeclaration === undefined) {
       let typeToDisplay = Definition.typeString(node);
-      throw new UnknownUserDefinedTypeError(id.toString(), typeToDisplay);
+      throw new Errors.UnknownUserDefinedTypeError(id.toString(), typeToDisplay);
     }
     components = parametersToAbi(referenceDeclaration.members, referenceDeclarations, checkIndexed);
   }
@@ -145,7 +145,7 @@ function toAbiType(node: Ast.Definition, referenceDeclarations: Ast.References):
       let referenceDeclaration = referenceDeclarations[referenceId];
       if(referenceDeclaration === undefined) {
         let typeToDisplay = Definition.typeString(node);
-        throw new UnknownUserDefinedTypeError(referenceId.toString(), typeToDisplay);
+        throw new Errors.UnknownUserDefinedTypeError(referenceId.toString(), typeToDisplay);
       }
       let numOptions = referenceDeclaration.members.length;
       let bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
@@ -239,7 +239,7 @@ function getterParameters(node: Ast.Definition, referenceDeclarations: Ast.Refer
     let referenceDeclaration = referenceDeclarations[id];
     if(referenceDeclaration === undefined) {
       let typeToDisplay = Definition.typeString(baseNode);
-      throw new UnknownUserDefinedTypeError(id.toString(), typeToDisplay);
+      throw new Errors.UnknownUserDefinedTypeError(id.toString(), typeToDisplay);
     }
     let outputs = referenceDeclaration.members.filter(
       member => Definition.typeClass(member) !== "array" && Definition.typeClass(member) !== "mapping"
