@@ -18,7 +18,10 @@ export { Common };
 
 export * from "./decoding";
 export * from "./errors";
-export * from "./evm";
+
+import * as Evm from "./evm";
+export { Evm };
+
 export * from "./interface";
 export * from "./options";
 export * from "./pointer";

@@ -10,8 +10,7 @@ import decodeConstant from "./constant";
 import decodeSpecial from "./special";
 import decodeTopic from "./event";
 import { Types, Values } from "@truffle/codec/format";
-import { Pointer } from "@truffle/codec/types";
-import * as Evm from "@truffle/codec/types/evm";
+import { Pointer, Evm } from "@truffle/codec/types";
 import { DecoderOptions } from "@truffle/codec/types/options";
 import { DecoderRequest } from "@truffle/codec/types/request";
 

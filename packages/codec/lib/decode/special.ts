@@ -4,8 +4,7 @@ const debug = debugModule("codec:decode:special");
 import * as CodecUtils from "@truffle/codec/utils";
 import { Types, Values } from "@truffle/codec/format";
 import decodeValue from "./value";
-import * as Evm from "@truffle/codec/types/evm";
-import { Pointer, Compiler } from "@truffle/codec/types";
+import { Pointer, Compiler, Evm } from "@truffle/codec/types";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { solidityFamily } from "@truffle/codec/utils/compiler";
 
