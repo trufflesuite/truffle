@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:core:decoding");
 
-import * as Ast from "@truffle/codec/types/ast";
+import { Ast } from "@truffle/codec/types";
 import * as CodecUtils from "@truffle/codec/utils";
 import { MakeType, abifyType, abifyResult } from "@truffle/codec/utils";
 import { Types, Values } from "@truffle/codec/format";

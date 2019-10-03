@@ -5,7 +5,7 @@ import { EVM } from "./evm";
 import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
 import { AbiUtils } from "./abi";
 import { Types } from "@truffle/codec/format";
-import * as Ast from "@truffle/codec/types/ast";
+import { Ast } from "@truffle/codec/types";
 import { ContractKind } from "@truffle/codec/types/common";
 import { CompilerVersion } from "@truffle/codec/types/compiler";
 import { Contexts, Context, DebuggerContexts, DecoderContexts, DecoderContext } from "@truffle/codec/types/contexts";
