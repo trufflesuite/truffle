@@ -7,7 +7,7 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
-import * as Pointer from "@truffle/codec/types/pointer";
+import { Pointer } from "@truffle/codec/types";
 import { AbiMemberAllocation } from "@truffle/codec/types/allocation";
 import { abiSizeInfo } from "@truffle/codec/allocate/abi";
 import { EvmInfo } from "@truffle/codec/types/evm";
