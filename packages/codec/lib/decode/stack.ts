@@ -11,11 +11,11 @@ import { decodeMemoryReferenceByAddress } from "./memory";
 import { decodeStorageReferenceByAddress } from "./storage";
 import { decodeAbiReferenceByAddress } from "./abi";
 import { Pointer } from "@truffle/codec/types";
-import { EvmInfo } from "@truffle/codec/types/evm";
+import * as Evm from "@truffle/codec/types/evm";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeStack(dataType: Types.Type, pointer: Pointer.StackPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeStack(dataType: Types.Type, pointer: Pointer.StackPointer, info: Evm.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   let rawValue: Uint8Array;
   try {
    rawValue = yield* read(pointer, info.state);
@@ -31,7 +31,7 @@ export default function* decodeStack(dataType: Types.Type, pointer: Pointer.Stac
   return yield* decodeLiteral(dataType, literalPointer, info);
 }
 
-export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiteralPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiteralPointer, info: Evm.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
 
   debug("type %O", dataType);
   debug("pointer %o", pointer);

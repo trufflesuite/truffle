@@ -5,7 +5,7 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { slotAddress } from "@truffle/codec/utils/storage";
 import { slotAddressPrintout } from "@truffle/codec/utils/errors";
 import { Storage } from "@truffle/codec/types";
-import { WordMapping } from "@truffle/codec/types/evm";
+import * as Evm from "@truffle/codec/types/evm";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";
 import BN from "bn.js";
@@ -16,7 +16,7 @@ import BN from "bn.js";
  * @param slot - see slotAddress() code to understand how these work
  * @param offset - for array, offset from the keccak determined location
  */
-export function* read(storage: WordMapping, slot: Storage.Slot): Generator<DecoderRequest, Uint8Array, Uint8Array> {
+export function* read(storage: Evm.WordMapping, slot: Storage.Slot): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   debug("Slot printout: %s", slotAddressPrintout(slot));
   const address: BN = slotAddress(slot);
 
@@ -54,7 +54,7 @@ export function* read(storage: WordMapping, slot: Storage.Slot): Generator<Decod
  * @param to - location (see ^). inclusive.
  * @param length - instead of `to`, number of bytes after `from`
  */
-export function* readRange(storage: WordMapping, range: Storage.Range): Generator<DecoderRequest, Uint8Array, Uint8Array> {
+export function* readRange(storage: Evm.WordMapping, range: Storage.Range): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   debug("readRange %o", range);
 
   let { from, to, length } = range;

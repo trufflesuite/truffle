@@ -18,7 +18,7 @@ import { Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
 import { Provider } from "web3/providers";
 import * as DecoderTypes from "@truffle/codec/types/interface";
-import { EvmInfo, AllocationInfo } from "@truffle/codec/types/evm";
+import * as Evm from "@truffle/codec/types/evm";
 import {
   getAbiAllocations,
   getCalldataAllocations,
@@ -43,7 +43,7 @@ export default class WireDecoder {
 
   private referenceDeclarations: Ast.References;
   private userDefinedTypes: Types.TypesById;
-  private allocations: AllocationInfo;
+  private allocations: Evm.AllocationInfo;
 
   private codeCache: DecoderTypes.CodeCache = {};
 
@@ -227,7 +227,7 @@ export default class WireDecoder {
     );
 
     const data = CodecUtils.Conversion.toBytes(transaction.input);
-    const info: EvmInfo = {
+    const info: Evm.EvmInfo = {
       state: {
         storage: {},
         calldata: data
@@ -278,7 +278,7 @@ export default class WireDecoder {
     const block = log.blockNumber;
     const data = CodecUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(CodecUtils.Conversion.toBytes);
-    const info: EvmInfo = {
+    const info: Evm.EvmInfo = {
       state: {
         storage: {},
         eventdata: data,
@@ -428,7 +428,7 @@ export default class WireDecoder {
   /**
    * @hidden
    */
-  public getAllocations(): AllocationInfo {
+  public getAllocations(): Evm.AllocationInfo {
     return {
       abi: this.allocations.abi,
       storage: this.allocations.storage
