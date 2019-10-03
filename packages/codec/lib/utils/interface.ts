@@ -1,6 +1,6 @@
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { AbiUtils } from "./abi";
-import { DecoderContext } from "@truffle/codec/types/contexts";
+import * as Contexts from "@truffle/codec/types/contexts";
 import { Conversion as ConversionUtils } from "./conversion";
 import { EVM as EVMUtils } from "./evm";
 import { Ast } from "@truffle/codec/types";
@@ -15,7 +15,7 @@ export function getContractNode(contract: ContractObject): Ast.Definition {
   );
 }
 
-export function makeContext(contract: ContractObject, node: Ast.Definition | undefined, isConstructor = false): DecoderContext {
+export function makeContext(contract: ContractObject, node: Ast.Definition | undefined, isConstructor = false): Contexts.DecoderContext {
   const abi = AbiUtils.schemaAbiToAbi(contract.abi);
   const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
   const hash = ConversionUtils.toHexString(
