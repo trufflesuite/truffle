@@ -7,7 +7,7 @@ import { Location } from "@truffle/codec/types/common";
 import { Definition as DefinitionUtils } from "./definition";
 import { CompilerVersion } from "@truffle/codec/types/compiler";
 import { solidityFamily } from "./compiler";
-import { AbiParameter } from "@truffle/codec/types/abi";
+import * as Abi from "@truffle/codec/types/abi";
 import { Types } from "@truffle/codec/format";
 import { TypeUtils } from "./datatype";
 
@@ -350,7 +350,7 @@ export namespace MakeType {
     }
   }
 
-  export function abiParameterToType(abi: AbiParameter): Types.Type {
+  export function abiParameterToType(abi: Abi.AbiParameter): Types.Type {
     let typeName = abi.type;
     let typeHint = abi.internalType;
     //first: is it an array?
