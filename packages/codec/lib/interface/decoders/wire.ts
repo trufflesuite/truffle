@@ -5,7 +5,7 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils, abifyCalldataDecoding, abifyLogDecoding, MakeType } from "@truffle/codec/utils";
 import * as Utils from "@truffle/codec/utils/interface";
 import * as Contexts from "@truffle/codec/types/contexts";
-import * as Ast from "@truffle/codec/types/ast";
+import { Ast } from "@truffle/codec/types";
 import { Types, Values } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";

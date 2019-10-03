@@ -9,7 +9,7 @@ import { MakeType } from "@truffle/codec/utils/maketype";
 import { EVM } from "@truffle/codec/utils/evm";
 import { getterInputs } from "@truffle/codec/utils/definition2abi";
 import * as AbiTypes from "@truffle/codec/types/abi";
-import * as Ast from "@truffle/codec/types/ast";
+import { Ast } from "@truffle/codec/types";
 import { Types } from "@truffle/codec/format";
 import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
 import partition from "lodash.partition";

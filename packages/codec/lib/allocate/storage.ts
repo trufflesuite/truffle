@@ -7,7 +7,7 @@ import { StorageLength, Range } from "@truffle/codec/types/storage";
 import { isWordsLength } from "@truffle/codec/utils/storage";
 import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
 import { DecodingError } from "@truffle/codec/decode/errors";
-import * as Ast from "@truffle/codec/types/ast";
+import { Ast } from "@truffle/codec/types";
 import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import * as Format from "@truffle/codec/format";

@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:format:maketype");
 
 import BN from "bn.js";
-import * as Ast from "@truffle/codec/types/ast";
+import { Ast } from "@truffle/codec/types";
 import { Location } from "@truffle/codec/types/common";
 import { Definition as DefinitionUtils } from "./definition";
 import { CompilerVersion } from "@truffle/codec/types/compiler";

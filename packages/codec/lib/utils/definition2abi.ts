@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:definition2abi");
 
-import * as Ast from "@truffle/codec/types/ast";
+import { Ast } from "@truffle/codec/types";
 import * as AbiTypes from "@truffle/codec/types/abi";
 import { Definition } from "./definition";
 import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";

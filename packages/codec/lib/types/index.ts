@@ -1,6 +1,7 @@
 export * from "./abi";
 export * from "./allocation";
-export * from "./ast";
+import * as Ast from "./ast";
+export { Ast };
 export * from "./compiler";
 export * from "./contexts";
 export * from "./decoding";
