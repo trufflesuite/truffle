@@ -3,6 +3,7 @@ const debug = debugModule("codec:format:maketype");
 
 import BN from "bn.js";
 import * as Ast from "@truffle/codec/types/ast";
+import { Location } from "@truffle/codec/types/common";
 import { Definition as DefinitionUtils } from "./definition";
 import { CompilerVersion } from "@truffle/codec/types/compiler";
 import { solidityFamily } from "./compiler";
@@ -17,7 +18,7 @@ export namespace MakeType {
   //things of elementary type)
   //NOTE: set forceLocation to *null* to force no location. leave it undefined
   //to not force a location.
-  export function definitionToType(definition: Ast.AstDefinition, compiler: CompilerVersion, forceLocation?: Ast.Location | null): Types.Type {
+  export function definitionToType(definition: Ast.AstDefinition, compiler: CompilerVersion, forceLocation?: Location | null): Types.Type {
     debug("definition %O", definition);
     let typeClass = DefinitionUtils.typeClass(definition);
     let typeHint = DefinitionUtils.typeStringWithoutLocation(definition);

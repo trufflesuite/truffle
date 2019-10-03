@@ -3,7 +3,8 @@ const debug = debugModule("codec:utils:abi");
 
 import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition, AstReferences, Mutability } from "@truffle/codec/types/ast";
+import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import { Mutability } from "@truffle/codec/types/common";
 import { definitionToAbi } from "./definition2abi";
 import * as AbiTypes from "@truffle/codec/types/abi";
 import Web3 from "web3";

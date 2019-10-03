@@ -15,7 +15,8 @@ const debug = debugModule("codec:format:types");
 //that might change in the future.
 
 import BN from "bn.js";
-import * as Ast from "@truffle/codec/types/ast";
+
+import { Location, Mutability, ContractKind } from "@truffle/codec/types/common";
 
 export type Type = UintType | IntType | BoolType | BytesType | AddressType
   | FixedType | UfixedType | StringType | ArrayType | MappingType | FunctionType
@@ -50,7 +51,7 @@ export interface BytesTypeStatic {
 export interface BytesTypeDynamic {
   typeClass: "bytes";
   kind: "dynamic";
-  location?: Ast.Location;
+  location?: Location;
   typeHint?: string;
 }
 
@@ -70,7 +71,7 @@ export interface AddressTypeGeneral {
 
 export interface StringType {
   typeClass: "string";
-  location?: Ast.Location;
+  location?: Location;
   typeHint?: string;
 }
 
@@ -95,7 +96,7 @@ export interface ArrayTypeStatic {
   kind: "static";
   baseType: Type;
   length: BN;
-  location?: Ast.Location;
+  location?: Location;
   typeHint?: string;
 }
 
@@ -103,7 +104,7 @@ export interface ArrayTypeDynamic {
   typeClass: "array";
   kind: "dynamic";
   baseType: Type;
-  location?: Ast.Location;
+  location?: Location;
   typeHint?: string;
 }
 
@@ -122,7 +123,7 @@ export type FunctionType = FunctionInternalType | FunctionExternalType;
 export interface FunctionInternalType {
   typeClass: "function";
   visibility: "internal";
-  mutability: Ast.Mutability;
+  mutability: Mutability;
   inputParameterTypes: Type[];
   outputParameterTypes: Type[];
   //we do not presently support bound functions
@@ -134,7 +135,7 @@ export interface FunctionExternalTypeSpecific {
   typeClass: "function";
   visibility: "external";
   kind: "specific";
-  mutability: Ast.Mutability;
+  mutability: Mutability;
   inputParameterTypes: Type[];
   outputParameterTypes: Type[];
   //we do not presently support bound functions
@@ -176,7 +177,7 @@ export interface StructTypeLocal {
    * these should be in order
    */
   memberTypes?: NameTypePair[];
-  location?: Ast.Location;
+  location?: Location;
 }
 
 export interface StructTypeGlobal {
@@ -191,7 +192,7 @@ export interface StructTypeGlobal {
    * these should be in order
    */
   memberTypes?: NameTypePair[];
-  location?: Ast.Location;
+  location?: Location;
 }
 
 export interface OptionallyNamedType {
@@ -254,7 +255,7 @@ export interface ContractTypeNative {
    */
   id: string;
   typeName: string;
-  contractKind?: Ast.ContractKind;
+  contractKind?: ContractKind;
   /**
    * Indicates whether contract has payable fallback function
    */
@@ -267,7 +268,7 @@ export interface ContractTypeForeign {
   typeClass: "contract";
   kind: "foreign";
   typeName: string;
-  contractKind?: Ast.ContractKind;
+  contractKind?: ContractKind;
   /**
    * Indicates whether contract has payable fallback function
    */
