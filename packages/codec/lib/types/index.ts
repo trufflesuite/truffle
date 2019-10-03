@@ -28,13 +28,14 @@ export { Evm };
 import * as Interface from "./interface";
 export { Interface };
 
-export * from "./options";
-export * from "./pointer";
+import * as Options from "./options";
+export { Options }
 
 import * as Pointer from "./pointer";
 export { Pointer };
 
-export * from "./request";
+import * as Request from "./request";
+export { Request };
 
 import * as Storage from "./storage";
 export { Storage };

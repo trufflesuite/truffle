@@ -5,9 +5,7 @@ import decodeValue from "./value";
 import read from "@truffle/codec/read";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import { Conversion as ConversionUtils, TypeUtils } from "@truffle/codec/utils";
-import { Pointer, Evm } from "@truffle/codec/types";
-import * as Options from "@truffle/codec/types/options";
-import * as Request from "@truffle/codec/types/request";
+import { Pointer, Evm, Options, Request } from "@truffle/codec/types";
 
 export default function* decodeTopic(dataType: Types.Type, pointer: Pointer.EventTopicPointer, info: Evm.EvmInfo, options: Options.DecoderOptions = {}): Generator<Request.DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {

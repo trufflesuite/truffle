@@ -10,8 +10,7 @@ import { decodeExternalFunction, checkPaddingLeft } from "./value";
 import { decodeMemoryReferenceByAddress } from "./memory";
 import { decodeStorageReferenceByAddress } from "./storage";
 import { decodeAbiReferenceByAddress } from "./abi";
-import { Pointer, Evm } from "@truffle/codec/types";
-import * as Request from "@truffle/codec/types/request";
+import { Pointer, Evm, Request } from "@truffle/codec/types";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
 export default function* decodeStack(dataType: Types.Type, pointer: Pointer.StackPointer, info: Evm.EvmInfo): Generator<Request.DecoderRequest, Values.Result, Uint8Array> {
