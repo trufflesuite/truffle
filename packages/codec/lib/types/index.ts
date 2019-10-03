@@ -7,7 +7,9 @@ export { Allocation };
 import * as Ast from "./ast";
 export { Ast };
 
-export * from "./compiler";
+import * as Compiler from "./compiler";
+export { Compiler };
+
 export * from "./contexts";
 export * from "./decoding";
 export * from "./errors";

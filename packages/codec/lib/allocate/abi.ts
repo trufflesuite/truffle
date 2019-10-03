@@ -6,12 +6,11 @@ import { TypeUtils } from "@truffle/codec/utils/datatype";
 import { MakeType } from "@truffle/codec/utils/maketype";
 import { EVM } from "@truffle/codec/utils/evm";
 import { getterInputs } from "@truffle/codec/utils/definition2abi";
-import { Ast, Pointer, Abi as AbiTypes, Allocation } from "@truffle/codec/types";
+import { Ast, Pointer, Abi as AbiTypes, Allocation, Compiler } from "@truffle/codec/types";
 import { Types } from "@truffle/codec/format";
 import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
 import partition from "lodash.partition";
 import { DecodingMode } from "@truffle/codec/types/decoding";
-import * as Compiler from "@truffle/codec/types/compiler";
 import { DecoderContext } from "@truffle/codec/types/contexts";
 
 interface AbiAllocationInfo {
