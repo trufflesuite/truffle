@@ -25,7 +25,7 @@ import {
 } from "@truffle/codec/allocate/abi";
 import { getStorageAllocations } from "@truffle/codec/allocate/storage";
 import { decodeCalldata, decodeEvent } from "@truffle/codec/core/decoding";
-import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
+import * as Decoding from "@truffle/codec/types/decoding";
 
 /**
  * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.
@@ -369,7 +369,7 @@ export default class WireDecoder {
    * on decodings produced by other instances may not work consistently.
    * @param decoding The decoding to abify
    */
-  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
+  public abifyCalldataDecoding(decoding: Decoding.CalldataDecoding): Decoding.CalldataDecoding {
     return abifyCalldataDecoding(decoding, this.userDefinedTypes);
   }
 
@@ -381,7 +381,7 @@ export default class WireDecoder {
    * on decodings produced by other instances may not work consistently.
    * @param decoding The decoding to abify
    */
-  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
+  public abifyLogDecoding(decoding: Decoding.LogDecoding): Decoding.LogDecoding {
     return abifyLogDecoding(decoding, this.userDefinedTypes);
   }
 

@@ -10,7 +10,7 @@ import { Pointer, Evm } from "@truffle/codec/types";
 import { DecoderOptions } from "@truffle/codec/types/options";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
-import { ContractInfoAndContext } from "@truffle/codec/types/decoding";
+import * as Decoding from "@truffle/codec/types/decoding";
 
 export default function* decodeValue(dataType: Types.Type, pointer: Pointer.DataPointer, info: Evm.EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   const { state } = info;
@@ -425,7 +425,7 @@ export function* decodeContract(addressBytes: Uint8Array, info: Evm.EvmInfo): Ge
   return (yield* decodeContractAndContext(addressBytes, info)).contractInfo;
 }
 
-function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.EvmInfo): Generator<DecoderRequest, ContractInfoAndContext, Uint8Array> {
+function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.EvmInfo): Generator<DecoderRequest, Decoding.ContractInfoAndContext, Uint8Array> {
   let address = CodecUtils.Conversion.toAddress(addressBytes);
   let rawAddress = CodecUtils.Conversion.toHexString(addressBytes);
   let codeBytes: Uint8Array = yield {

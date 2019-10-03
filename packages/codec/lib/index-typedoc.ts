@@ -20,15 +20,6 @@ export {
   EventOptions
 } from "./types/interface";
 
-export {
-  AbiArgument,
-  CalldataDecoding,
-  LogDecoding,
-  AnonymousDecoding,
-  ConstructorDecoding,
-  EventDecoding,
-  FunctionDecoding,
-  MessageDecoding,
-  UnknownDecoding
-} from "./types/decoding";
+import * as Decoding from "./types/decoding";
+export { Decoding };
 // export * from "./types/errors";

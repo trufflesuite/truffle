@@ -23,7 +23,7 @@ import {
   getStorageAllocations,
   storageSize
 } from "@truffle/codec/allocate/storage";
-import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
+import * as Decoding from "@truffle/codec/types/decoding";
 import { decodeVariable } from "@truffle/codec/core/decoding";
 import { isWordsLength, equalSlots } from "@truffle/codec/utils/storage";
 import {
@@ -155,14 +155,14 @@ export default class ContractDecoder {
   /**
    * See [[WireDecoder.abifyCalldataDecoding]].
    */
-  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
+  public abifyCalldataDecoding(decoding: Decoding.CalldataDecoding): Decoding.CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
 
   /**
    * See [[WireDecoder.abifyLogDecoding]].
    */
-  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
+  public abifyLogDecoding(decoding: Decoding.LogDecoding): Decoding.LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
@@ -683,14 +683,14 @@ export class ContractInstanceDecoder {
   /**
    * See [[WireDecoder.abifyCalldataDecoding]].
    */
-  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
+  public abifyCalldataDecoding(decoding: Decoding.CalldataDecoding): Decoding.CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
 
   /**
    * See [[WireDecoder.abifyLogDecoding]].
    */
-  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
+  public abifyLogDecoding(decoding: Decoding.LogDecoding): Decoding.LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
