@@ -6,7 +6,8 @@ import { TypeUtils } from "@truffle/codec/utils/datatype";
 import { MakeType } from "@truffle/codec/utils/maketype";
 import { EVM } from "@truffle/codec/utils/evm";
 import { getterInputs } from "@truffle/codec/utils/definition2abi";
-import { Ast, Pointer, Abi as AbiTypes, Allocation, Compiler, Contexts, Errors, Decoding } from "@truffle/codec/types";
+import { Ast, Pointer, Abi as AbiTypes, Compiler, Contexts, Errors, Decoding } from "@truffle/codec/types";
+import * as Allocation from "./types";
 import { Types } from "@truffle/codec/format";
 import partition from "lodash.partition";
 

@@ -1,9 +1,6 @@
 import * as Abi from "./abi";
 export { Abi };
 
-import * as Allocation from "./allocation";
-export { Allocation };
-
 import * as Ast from "./ast";
 export { Ast };
 
