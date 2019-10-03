@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:memory");
 
-import { Ast, Pointer, Allocation } from "@truffle/codec/types";
+import { Ast, Allocation } from "@truffle/codec/types";
 import * as CodecUtils from "@truffle/codec/utils";
 
 export function getMemoryAllocations(referenceDeclarations: Ast.References): Allocation.MemoryAllocations {

@@ -3,7 +3,6 @@ const debug = debugModule("codec:utils:definition");
 
 import { Ast } from "@truffle/codec/types";
 import { Visibility, Mutability, Location, ContractKind } from "@truffle/codec/types/common";
-import * as Compiler from "@truffle/codec/types/compiler";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
 

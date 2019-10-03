@@ -5,7 +5,6 @@ import { Values } from "@truffle/codec/format";
 import { Conversion as ConversionUtils } from "@truffle/codec/utils/conversion";
 import { EVM as EVMUtils } from "@truffle/codec/utils/evm";
 import { stringToBytes } from "./abi";
-import BN from "bn.js";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
 //see: https://github.com/microsoft/TypeScript/issues/18758

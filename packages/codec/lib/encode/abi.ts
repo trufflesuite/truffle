@@ -8,7 +8,6 @@ import { Allocation } from "@truffle/codec/types";
 import { abiSizeInfo } from "@truffle/codec/allocate/abi";
 import sum from "lodash.sum";
 import utf8 from "utf8";
-import BN from "bn.js";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
 //see: https://github.com/microsoft/TypeScript/issues/18758

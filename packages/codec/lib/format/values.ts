@@ -15,7 +15,6 @@ import * as Types from "./types";
 import * as Errors from "./errors";
 import {
   ElementaryValue,
-  BytesValue,
   UintValue,
   IntValue,
   BoolValue,
@@ -23,9 +22,6 @@ import {
   BytesDynamicValue,
   AddressValue,
   StringValue,
-  StringValueInfo,
-  StringValueInfoValid,
-  StringValueInfoMalformed,
   FixedValue,
   UfixedValue
 } from "./elementary";

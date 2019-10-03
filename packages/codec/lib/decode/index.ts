@@ -1,7 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode");
 
-import decodeValue from "./value";
 import decodeMemory from "./memory";
 import decodeStorage from "./storage";
 import decodeStack from "./stack";
