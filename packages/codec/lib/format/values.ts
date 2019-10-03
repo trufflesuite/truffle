@@ -30,7 +30,7 @@ import {
   UfixedValue
 } from "./elementary";
 import { Mutability } from "@truffle/codec/types/common";
-import { FunctionAbiEntry } from "@truffle/codec/types/abi";
+import * as Abi from "@truffle/codec/types/abi";
 
 export * from "./elementary";
 
@@ -306,7 +306,7 @@ export interface FunctionExternalValueInfoKnown {
    * formatted as a hex string
    */
   selector: string;
-  abi: FunctionAbiEntry;
+  abi: Abi.FunctionAbiEntry;
   //may have more optional fields added later, I'll leave these out for now
 }
 
