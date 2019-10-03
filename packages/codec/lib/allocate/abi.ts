@@ -8,7 +8,7 @@ import { EVM } from "@truffle/codec/utils/evm";
 import { getterInputs } from "@truffle/codec/utils/definition2abi";
 import { Ast, Pointer, Abi as AbiTypes, Allocation, Compiler, Contexts } from "@truffle/codec/types";
 import { Types } from "@truffle/codec/format";
-import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
+import * as Errors from "@truffle/codec/types/errors";
 import partition from "lodash.partition";
 import { DecodingMode } from "@truffle/codec/types/decoding";
 
@@ -190,7 +190,7 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
         //if we don't find an allocation, we'll have to do the allocation ourselves
         const storedType = <Types.StructType> userDefinedTypes[dataType.id];
         if(!storedType) {
-          throw new UnknownUserDefinedTypeError(dataType.id, TypeUtils.typeString(dataType));
+          throw new Errors.UnknownUserDefinedTypeError(dataType.id, TypeUtils.typeString(dataType));
         }
         debug("storedType: %O", storedType);
         allocations = allocateStruct(storedType, userDefinedTypes, existingAllocations);

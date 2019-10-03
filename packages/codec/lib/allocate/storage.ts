@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:allocate:storage");
 
 import { isWordsLength } from "@truffle/codec/utils/storage";
-import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
+import * as Errors from "@truffle/codec/types/errors";
 import { DecodingError } from "@truffle/codec/decode/errors";
 import { Ast, Allocation, Storage } from "@truffle/codec/types";
 import * as CodecUtils from "@truffle/codec/utils";
@@ -279,7 +279,7 @@ function storageSizeAndAllocate(definition: Ast.Definition, referenceDeclaration
       const referenceDeclaration: Ast.Definition = referenceDeclarations[referenceId];
       if(referenceDeclaration === undefined) {
         let typeString = CodecUtils.Definition.typeString(definition);
-        throw new UnknownUserDefinedTypeError(referenceId.toString(), typeString);
+        throw new Errors.UnknownUserDefinedTypeError(referenceId.toString(), typeString);
       }
       const numValues: number = referenceDeclaration.members.length;
       return {
@@ -377,7 +377,7 @@ function storageSizeAndAllocate(definition: Ast.Definition, referenceDeclaration
         const referenceDeclaration: Ast.Definition = referenceDeclarations[referenceId];
         if(referenceDeclaration === undefined) {
           let typeString = CodecUtils.Definition.typeString(definition);
-          throw new UnknownUserDefinedTypeError(referenceId.toString(), typeString);
+          throw new Errors.UnknownUserDefinedTypeError(referenceId.toString(), typeString);
         }
         debug("definition %O", definition);
         allocations = allocateStruct(referenceDeclaration, referenceDeclarations, existingAllocations);
