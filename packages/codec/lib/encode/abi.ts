@@ -4,7 +4,7 @@ const debug = debugModule("codec:encode:abi");
 import { Values } from "@truffle/codec/format";
 import { Conversion as ConversionUtils } from "@truffle/codec/utils/conversion";
 import { EVM as EVMUtils } from "@truffle/codec/utils/evm";
-import { AbiAllocations, AbiSizeInfo } from "@truffle/codec/types/allocation";
+import * as Allocation from "@truffle/codec/types/allocation";
 import { abiSizeInfo } from "@truffle/codec/allocate/abi";
 import sum from "lodash.sum";
 import utf8 from "utf8";
@@ -16,7 +16,7 @@ import BN from "bn.js";
 
 //NOTE: Tuple (as opposed to struct) is not supported yet!
 //Coming soon though!
-export function encodeAbi(input: Values.Result, allocations?: AbiAllocations): Uint8Array | undefined {
+export function encodeAbi(input: Values.Result, allocations?: Allocation.AbiAllocations): Uint8Array | undefined {
   //errors can't be encoded
   if(input.kind === "error") {
     debug("input: %O", input);
@@ -150,12 +150,12 @@ function padAndPrependLength(bytes: Uint8Array): Uint8Array {
   return encoded;
 }
 
-export function encodeTupleAbi(tuple: Values.Result[], allocations?: AbiAllocations): Uint8Array | undefined {
+export function encodeTupleAbi(tuple: Values.Result[], allocations?: Allocation.AbiAllocations): Uint8Array | undefined {
   let elementEncodings = tuple.map(element => encodeAbi(element, allocations));
   if(elementEncodings.some(element => element === undefined)) {
     return undefined;
   }
-  let elementSizeInfo: AbiSizeInfo[] = tuple.map(element => abiSizeInfo(element.type, allocations));
+  let elementSizeInfo: Allocation.AbiSizeInfo[] = tuple.map(element => abiSizeInfo(element.type, allocations));
   //heads and tails here are as discussed in the ABI docs;
   //for a static type the head is the encoding and the tail is empty,
   //for a dynamic type the head is the pointer and the tail is the encoding

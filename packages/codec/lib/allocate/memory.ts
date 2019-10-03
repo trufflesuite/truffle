@@ -1,12 +1,12 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:memory");
 
-import { MemoryAllocations, MemoryAllocation, MemoryMemberAllocation } from "@truffle/codec/types/allocation";
+import * as Allocation from "@truffle/codec/types/allocation";
 import { Ast, Pointer } from "@truffle/codec/types";
 import * as CodecUtils from "@truffle/codec/utils";
 
-export function getMemoryAllocations(referenceDeclarations: Ast.References): MemoryAllocations {
-  let allocations: MemoryAllocations = {};
+export function getMemoryAllocations(referenceDeclarations: Ast.References): Allocation.MemoryAllocations {
+  let allocations: Allocation.MemoryAllocations = {};
   for(const node of Object.values(referenceDeclarations)) {
     if(node.nodeType === "StructDefinition") {
       allocations[node.id] = allocateStruct(node);
@@ -17,8 +17,8 @@ export function getMemoryAllocations(referenceDeclarations: Ast.References): Mem
 
 //unlike in storage and calldata, we'll just return the one allocation, nothing fancy
 //that's because allocating one struct can never necessitate allocating another
-function allocateStruct(definition: Ast.Definition): MemoryAllocation {
-  let memberAllocations: MemoryMemberAllocation[] = [];
+function allocateStruct(definition: Ast.Definition): Allocation.MemoryAllocation {
+  let memberAllocations: Allocation.MemoryMemberAllocation[] = [];
   let position = 0;
   for(const member of definition.members) {
     const length = CodecUtils.Definition.isMapping(member)
