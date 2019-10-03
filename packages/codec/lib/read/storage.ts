@@ -4,8 +4,7 @@ const debug = debugModule("codec:read:storage");
 import * as CodecUtils from "@truffle/codec/utils";
 import { slotAddress } from "@truffle/codec/utils/storage";
 import { slotAddressPrintout } from "@truffle/codec/utils/errors";
-import { Storage, Evm } from "@truffle/codec/types";
-import * as Request from "@truffle/codec/types/request";
+import { Storage, Evm, Request } from "@truffle/codec/types";
 import { DecodingError } from "@truffle/codec/decode/errors";
 import BN from "bn.js";
 

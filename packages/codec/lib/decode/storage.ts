@@ -6,11 +6,10 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
-import { Pointer, Storage as StorageTypes, Evm } from "@truffle/codec/types";
+import { Pointer, Storage as StorageTypes, Evm, Request } from "@truffle/codec/types";
 import { storageSizeForType } from "@truffle/codec/allocate/storage";
 import { isWordsLength, slotAddress } from "@truffle/codec/utils/storage";
 import BN from "bn.js";
-import * as Request from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
 export default function* decodeStorage(dataType: Types.Type, pointer: Pointer.StoragePointer, info: Evm.EvmInfo): Generator<Request.DecoderRequest, Values.Result, Uint8Array> {
