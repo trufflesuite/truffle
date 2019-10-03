@@ -7,7 +7,7 @@ import decodeValue from "./value";
 import { EvmInfo } from "@truffle/codec/types/evm";
 import { Pointer } from "@truffle/codec/types";
 import { DecoderRequest } from "@truffle/codec/types/request";
-import { CompilerVersion } from "@truffle/codec/types/compiler";
+import * as Compiler from "@truffle/codec/types/compiler";
 import { solidityFamily } from "@truffle/codec/utils/compiler";
 
 export default function* decodeSpecial(dataType: Types.Type, pointer: Pointer.SpecialPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
@@ -120,7 +120,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: Pointer.Special
 }
 
 //NOTE: this is going to change again in 0.6.x!  be ready!
-function senderType(compiler: CompilerVersion): Types.AddressType {
+function senderType(compiler: Compiler.CompilerVersion): Types.AddressType {
   switch(solidityFamily(compiler)) {
     case "pre-0.5.0":
       return {
@@ -136,7 +136,7 @@ function senderType(compiler: CompilerVersion): Types.AddressType {
   }
 }
 
-function externalAddressType(compiler: CompilerVersion): Types.AddressType {
+function externalAddressType(compiler: Compiler.CompilerVersion): Types.AddressType {
   switch(solidityFamily(compiler)) {
     case "pre-0.5.0":
       return {

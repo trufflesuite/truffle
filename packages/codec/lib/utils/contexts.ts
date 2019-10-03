@@ -7,7 +7,7 @@ import { AbiUtils } from "./abi";
 import { Types } from "@truffle/codec/format";
 import { Ast } from "@truffle/codec/types";
 import { ContractKind } from "@truffle/codec/types/common";
-import { CompilerVersion } from "@truffle/codec/types/compiler";
+import * as Compiler from "@truffle/codec/types/compiler";
 import { Contexts, Context, DebuggerContexts, DecoderContexts, DecoderContext } from "@truffle/codec/types/contexts";
 import escapeRegExp from "lodash.escaperegexp";
 

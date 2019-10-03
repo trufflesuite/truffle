@@ -5,7 +5,7 @@ import BN from "bn.js";
 import { Ast, Abi } from "@truffle/codec/types";
 import { Location } from "@truffle/codec/types/common";
 import { Definition as DefinitionUtils } from "./definition";
-import { CompilerVersion } from "@truffle/codec/types/compiler";
+import * as Compiler from "@truffle/codec/types/compiler";
 import { solidityFamily } from "./compiler";
 import { Types } from "@truffle/codec/format";
 import { TypeUtils } from "./datatype";
@@ -17,7 +17,7 @@ export namespace MakeType {
   //things of elementary type)
   //NOTE: set forceLocation to *null* to force no location. leave it undefined
   //to not force a location.
-  export function definitionToType(definition: Ast.Definition, compiler: CompilerVersion, forceLocation?: Location | null): Types.Type {
+  export function definitionToType(definition: Ast.Definition, compiler: Compiler.CompilerVersion, forceLocation?: Location | null): Types.Type {
     debug("definition %O", definition);
     let typeClass = DefinitionUtils.typeClass(definition);
     let typeHint = DefinitionUtils.typeStringWithoutLocation(definition);
@@ -280,7 +280,7 @@ export namespace MakeType {
 
   //whereas the above takes variable definitions, this takes the actual type
   //definition
-  export function definitionToStoredType(definition: Ast.Definition, compiler: CompilerVersion, referenceDeclarations?: Ast.References): Types.UserDefinedType {
+  export function definitionToStoredType(definition: Ast.Definition, compiler: Compiler.CompilerVersion, referenceDeclarations?: Ast.References): Types.UserDefinedType {
     switch(definition.nodeType) {
       case "StructDefinition": {
         let id = definition.id.toString();
