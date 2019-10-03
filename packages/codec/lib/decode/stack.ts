@@ -10,12 +10,12 @@ import { decodeExternalFunction, checkPaddingLeft } from "./value";
 import { decodeMemoryReferenceByAddress } from "./memory";
 import { decodeStorageReferenceByAddress } from "./storage";
 import { decodeAbiReferenceByAddress } from "./abi";
-import { StackPointer, StackLiteralPointer } from "@truffle/codec/types/pointer";
+import * as Pointer from "@truffle/codec/types/pointer";
 import { EvmInfo } from "@truffle/codec/types/evm";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeStack(dataType: Types.Type, pointer: StackPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeStack(dataType: Types.Type, pointer: Pointer.StackPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   let rawValue: Uint8Array;
   try {
    rawValue = yield* read(pointer, info.state);
@@ -27,11 +27,11 @@ export default function* decodeStack(dataType: Types.Type, pointer: StackPointer
       error: (<DecodingError>error).error
     };
   }
-  const literalPointer: StackLiteralPointer = { location: "stackliteral" as const, literal: rawValue };
+  const literalPointer: Pointer.StackLiteralPointer = { location: "stackliteral" as const, literal: rawValue };
   return yield* decodeLiteral(dataType, literalPointer, info);
 }
 
-export function* decodeLiteral(dataType: Types.Type, pointer: StackLiteralPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiteralPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
 
   debug("type %O", dataType);
   debug("pointer %o", pointer);

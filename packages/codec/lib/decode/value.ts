@@ -8,14 +8,14 @@ import { Types, Values, Errors } from "@truffle/codec/format";
 import BN from "bn.js";
 import Big from "big.js";
 import utf8 from "utf8";
-import { DataPointer } from "@truffle/codec/types/pointer";
+import * as Pointer from "@truffle/codec/types/pointer";
 import { EvmInfo } from "@truffle/codec/types/evm";
 import { DecoderOptions } from "@truffle/codec/types/options";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
 import { ContractInfoAndContext } from "@truffle/codec/types/decoding";
 
-export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeValue(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   const { state } = info;
   const { permissivePadding, strictAbiMode: strict } = options; //if these are undefined they'll still be falsy so OK
 

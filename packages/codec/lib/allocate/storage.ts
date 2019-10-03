@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:storage");
 
-import { StoragePointer } from "@truffle/codec/types/pointer";
+import * as Pointer from "@truffle/codec/types/pointer";
 import { StorageAllocations, StorageAllocation, StorageMemberAllocation } from "@truffle/codec/types/allocation";
 import { StorageLength, Range } from "@truffle/codec/types/storage";
 import { isWordsLength } from "@truffle/codec/utils/storage";
