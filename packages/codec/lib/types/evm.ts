@@ -1,5 +1,6 @@
 import { DecoderContext, DecoderContexts } from "./contexts";
-import { AstDefinition, AstReferences, ContractKind, Mutability } from "./ast";
+import { AstDefinition, AstReferences } from "./ast";
+import { ContractKind, Mutability } from "./common";
 import { Types } from "@truffle/codec/format";
 import * as Allocations from "./allocation";
 import { Slot } from "./storage";

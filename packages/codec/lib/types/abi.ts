@@ -1,4 +1,4 @@
-import { Mutability } from "./ast";
+import { Mutability } from "./common";
 
 export type Abi = AbiEntry[];
 
