@@ -25,7 +25,9 @@ export { Errors };
 import * as Evm from "./evm";
 export { Evm };
 
-export * from "./interface";
+import * as Interface from "./interface";
+export { Interface };
+
 export * from "./options";
 export * from "./pointer";
 
