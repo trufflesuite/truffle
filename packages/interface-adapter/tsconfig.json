@@ -17,13 +17,12 @@
     },
     "rootDir": "lib",
     "typeRoots": [
-      "./typings",
       "../../**/node_modules/@types/bn.js",
-      "../../**/node_modules/@types/mocha"
+      "../../**/node_modules/@types/mocha",
+      "../../**/node_modules/@truffle/config"
     ]
   },
   "include": [
-    "./lib/**/*.ts",
-    "./typings/**/*.d.ts"
+    "./lib/**/*.ts"
   ]
 }

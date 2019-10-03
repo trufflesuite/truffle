@@ -2,7 +2,7 @@ const assert = require("assert");
 const CommandRunner = require("../commandrunner");
 const path = require("path");
 const tmp = require("tmp");
-const fs = require("fs");
+const fse = require("fs-extra");
 
 describe("truffle init [ @standalone ]", () => {
   let tempDir, config;
@@ -20,6 +20,7 @@ describe("truffle init [ @standalone ]", () => {
 
   it("does not error", done => {
     CommandRunner.run("init", config, error => {
+      if (error) done(error);
       assert(typeof error === "undefined");
       done();
     });
@@ -27,8 +28,29 @@ describe("truffle init [ @standalone ]", () => {
 
   it("unboxes a project with a truffle config", done => {
     CommandRunner.run("init", config, () => {
-      assert(fs.existsSync(path.join(tempDir.name, "truffle-config.js")));
+      assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
       done();
     });
   }).timeout(20000);
+
+  describe("when a path is provided", () => {
+    it("initializes with a relative path", done => {
+      const myPath = "./my/favorite/folder/structure";
+      CommandRunner.run(`init ${myPath}`, config, error => {
+        if (error) done(error);
+        assert(
+          fse.existsSync(path.join(tempDir.name, myPath, "truffle-config.js"))
+        );
+        done();
+      });
+    }).timeout(20000);
+    it("initializes with an absolute path", done => {
+      const myPath = path.join(tempDir.name, "somethingElse");
+      CommandRunner.run(`init ${myPath}`, config, error => {
+        if (error) done(error);
+        assert(fse.existsSync(path.join(myPath, "truffle-config.js")));
+        done();
+      });
+    }).timeout(20000);
+  });
 });

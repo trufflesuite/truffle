@@ -125,6 +125,7 @@ function compileAll(options, callback) {
 
         const contractDefinition = {
           contractName,
+          abi: [], // TEMP!
           sourcePath,
           source: sourceContents,
           code: compiledContract,

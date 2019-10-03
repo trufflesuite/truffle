@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import evm from "lib/evm/selectors";
 import data from "lib/data/selectors";
 
-import * as TruffleCodecUtils from "truffle-codec-utils";
+import { Utils as TruffleCodecUtils } from "@truffle/codec";
 
 const __FAILURE = `
 pragma solidity ~0.5;

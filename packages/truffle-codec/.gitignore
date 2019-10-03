@@ -1,6 +1,0 @@
-node_modules
-dist
-.vscode
-
-*.abi
-*.bin

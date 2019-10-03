@@ -22,14 +22,15 @@ function Resolver(options) {
 
 // This function might be doing too much. If so, too bad (for now).
 Resolver.prototype.require = function(import_path, search_path) {
-  var self = this;
-
-  for (let i = 0; i < self.sources.length; i++) {
-    var source = self.sources[i];
+  for (let i = 0; i < this.sources.length; i++) {
+    var source = this.sources[i];
     var result = source.require(import_path, search_path);
     if (result) {
-      var abstraction = contract(result);
-      provision(abstraction, self.options);
+      var abstraction = contract(
+        result,
+        this.options.networks[this.options.network].type
+      );
+      provision(abstraction, this.options);
       return abstraction;
     }
   }

@@ -1,0 +1,51 @@
+{
+  "name": "@truffle/tezos-contract",
+  "version": "0.1.1-alphaTez.0",
+  "description": "> TODO: description",
+  "author": "CruzMolina <7537712+CruzMolina@users.noreply.github.com>",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "license": "MIT",
+  "main": "./lib/tezosContract.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle.git"
+  },
+  "scripts": {
+    "test": ""
+  },
+  "dependencies": {
+    "@truffle/blockchain-utils": "^0.0.13-alphaTez.0",
+    "@truffle/contract-schema": "^3.0.17-alphaTez.0",
+    "@truffle/error": "^0.0.8-alphaTez.0",
+    "@truffle/interface-adapter": "^0.2.7-alphaTez.0",
+    "bignumber.js": "^7.2.1",
+    "ethers": "^4.0.0-beta.1",
+    "web3": "1.2.1",
+    "web3-core-promievent": "1.2.1",
+    "web3-eth-abi": "1.2.1",
+    "web3-utils": "1.2.1"
+  },
+  "devDependencies": {
+    "@truffle/compile-solidity": "^4.2.6-alphaTez.0",
+    "async": "2.6.1",
+    "browserify": "14.0.0",
+    "chai": "4.2.0",
+    "debug": "^4.1.0",
+    "ganache-core": "2.7.0",
+    "mocha": "5.2.0",
+    "temp": "^0.8.3",
+    "uglify-es": "3.3.9"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  }
+}

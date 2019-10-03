@@ -17,7 +17,7 @@ import * as session from "lib/session/actions";
 
 import BN from "bn.js";
 import Web3 from "web3"; //just for utils!
-import * as CodecUtils from "truffle-codec-utils";
+import { Utils as CodecUtils } from "@truffle/codec";
 
 import Web3Adapter from "../adapter";
 

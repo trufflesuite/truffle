@@ -2,7 +2,7 @@ import { assert } from "chai";
 
 import BN from "bn.js";
 
-import * as TruffleCodecUtils from "truffle-codec-utils";
+import { Utils as TruffleCodecUtils } from "@truffle/codec";
 
 describe("Utils", function() {
   describe("typeClass()", function() {

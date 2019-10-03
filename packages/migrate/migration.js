@@ -29,7 +29,11 @@ class Migration {
    */
   async _load(options, context, deployer, resolver) {
     // Load assets and run `execute`
-    const accounts = await context.web3.eth.getAccounts();
+    // TODO temp stopgap!
+    let accounts;
+    if (options.networks[options.network].type === "tezos")
+      accounts = await context.web3.eth.getAccounts(options);
+    else accounts = await context.web3.eth.getAccounts();
     const requireOptions = {
       file: this.file,
       context: context,
@@ -146,7 +150,7 @@ class Migration {
 
     // Get file path and emit pre-migration event
     const file = path.relative(options.migrations_directory, this.file);
-    const block = await web3.eth.getBlock("latest");
+    const { gasLimit } = await web3.eth.getBlock("latest");
 
     const preMigrationsData = {
       file: file,
@@ -154,7 +158,7 @@ class Migration {
       isFirst: this.isFirst,
       network: options.network,
       networkId: options.network_id,
-      blockLimit: block.gasLimit
+      blockLimit: gasLimit
     };
 
     await this.emitter.emit("preMigrate", preMigrationsData);
@@ -164,6 +168,7 @@ class Migration {
   prepareForMigrations(options) {
     const logger = options.logger;
     const web3 = new Web3Shim({
+      config: options,
       provider: options.provider,
       networkType: options.networks[options.network].type
     });

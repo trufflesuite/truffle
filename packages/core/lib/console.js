@@ -44,6 +44,7 @@ class Console extends EventEmitter {
     this.command = new Command(tasks);
 
     this.web3 = new Web3Shim({
+      config: options,
       provider: options.provider,
       networkType: options.networks[options.network].type
     });
@@ -52,30 +53,35 @@ class Console extends EventEmitter {
     this.repl.on("exit", () => this.emit("exit"));
   }
 
-  start(callback) {
+  async start(callback) {
     if (!this.repl) this.repl = new Repl(this.options);
 
     // TODO: This should probalby be elsewhere.
     // It's here to ensure the repl manager instance gets
     // passed down to commands.
     this.options.repl = this.repl;
+    const config = this.options;
 
     try {
-      this.web3.eth.getAccounts().then(fetchedAccounts => {
-        const abstractions = this.provision();
+      let accounts;
+      // TODO temp stopgap!
+      if (config.networks[config.network].type === "tezos")
+        accounts = await this.web3.eth.getAccounts(config);
+      else accounts = await this.web3.eth.getAccounts();
 
-        this.repl.start({
-          prompt: "truffle(" + this.options.network + ")> ",
-          context: {
-            web3: this.web3,
-            accounts: fetchedAccounts
-          },
-          interpreter: this.interpret.bind(this),
-          done: callback
-        });
+      const abstractions = this.provision();
 
-        this.resetContractsInConsoleContext(abstractions);
+      this.repl.start({
+        prompt: "truffle(" + this.options.network + ")> ",
+        context: {
+          web3: this.web3,
+          accounts
+        },
+        interpreter: this.interpret.bind(this),
+        done: callback
       });
+
+      this.resetContractsInConsoleContext(abstractions);
     } catch (error) {
       this.options.logger.log(
         "Unexpected error: Cannot provision contracts while instantiating the console."
@@ -111,7 +117,7 @@ class Console extends EventEmitter {
     });
 
     const abstractions = jsonBlobs.map(json => {
-      const abstraction = contract(json);
+      const abstraction = contract(json, this.options);
       provision(abstraction, this.options);
       return abstraction;
     });

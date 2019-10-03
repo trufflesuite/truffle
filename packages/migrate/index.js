@@ -4,7 +4,10 @@ const path = require("path");
 const async = require("async");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
-const Reporter = require("@truffle/reporters").migrationsV5;
+const {
+  EthMigrationsV5: EthReporter,
+  TezosMigrationsV5: TezosReporter
+} = require("@truffle/reporters");
 const Migration = require("./migration.js");
 const Emittery = require("emittery");
 
@@ -19,7 +22,9 @@ const Migrate = {
   logger: null,
 
   launchReporter: function(config) {
-    Migrate.reporter = new Reporter(config.describeJson || false);
+    if (config.networks[config.network].type === "tezos")
+      Migrate.reporter = new TezosReporter(config.describeJson || false);
+    else Migrate.reporter = new EthReporter(config.describeJson || false);
     this.logger = config.logger;
   },
 
@@ -130,8 +135,7 @@ const Migrate = {
       clone.logger = { log: function() {} };
     }
 
-    clone.provider = this.wrapProvider(options.provider, clone.logger);
-    clone.resolver = this.wrapResolver(options.resolver, clone.provider);
+    clone.resolver = this.wrapResolver(options);
 
     // Make migrations aware of their position in sequence
     const total = migrations.length;
@@ -176,17 +180,7 @@ const Migrate = {
     });
   },
 
-  wrapProvider: function(provider) {
-    return {
-      send: function(payload, callback) {
-        provider.send(payload, function(err, result) {
-          err ? callback(err) : callback(err, result);
-        });
-      }
-    };
-  },
-
-  wrapResolver: function(resolver, provider) {
+  wrapResolver: function({ resolver, provider }) {
     return {
       require: function(import_path, search_path) {
         const abstraction = resolver.require(import_path, search_path);
@@ -199,9 +193,12 @@ const Migrate = {
 
   lastCompletedMigration: async function(options) {
     let Migrations;
-
     try {
-      Migrations = options.resolver.require("Migrations");
+      Migrations = options.resolver.require(
+        "Migrations" //, TODO: not sure about this!!
+        //            undefined,
+        // options.networks[options.network].type
+      );
     } catch (error) {
       const message = `Could not find built Migrations contract: ${
         error.message

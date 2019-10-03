@@ -77,6 +77,10 @@ module.exports = {
         return callback(null, "commonjs mocha");
       }
 
+      if (/^sotez$/.test(request)) {
+        return callback(null, "commonjs mocha");
+      }
+
       callback();
     }
   ],
