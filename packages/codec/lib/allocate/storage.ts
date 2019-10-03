@@ -2,9 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("codec:allocate:storage");
 
 import { isWordsLength } from "@truffle/codec/utils/storage";
-import * as Errors from "@truffle/codec/types/errors";
 import { DecodingError } from "@truffle/codec/decode/errors";
-import { Ast, Allocation, Storage } from "@truffle/codec/types";
+import { Ast, Allocation, Storage, Errors } from "@truffle/codec/types";
 import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import * as Format from "@truffle/codec/format";

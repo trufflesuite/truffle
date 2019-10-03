@@ -17,7 +17,9 @@ import * as Common from "./common";
 export { Common };
 
 export * from "./decoding";
-export * from "./errors";
+
+import * as Errors from "./errors";
+export { Errors };
 
 import * as Evm from "./evm";
 export { Evm };
