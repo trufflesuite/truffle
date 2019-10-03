@@ -13,6 +13,9 @@ export { Compiler };
 import * as Contexts from "./contexts";
 export { Contexts };
 
+import * as Common from "./common";
+export { Common };
+
 export * from "./decoding";
 export * from "./errors";
 export * from "./evm";
