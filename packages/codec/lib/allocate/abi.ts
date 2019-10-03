@@ -9,7 +9,7 @@ import { MakeType } from "@truffle/codec/utils/maketype";
 import { EVM } from "@truffle/codec/utils/evm";
 import { getterInputs } from "@truffle/codec/utils/definition2abi";
 import * as AbiTypes from "@truffle/codec/types/abi";
-import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import { Types } from "@truffle/codec/format";
 import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
 import partition from "lodash.partition";
@@ -253,8 +253,8 @@ export function abiSizeInfo(dataType: Types.Type, allocations?: Allocations.AbiA
 //bytecode for the constructor
 function allocateCalldata(
   abiEntry: AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry,
-  contractNode: AstDefinition | undefined,
-  referenceDeclarations: AstReferences,
+  contractNode: Ast.Definition | undefined,
+  referenceDeclarations: Ast.References,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
   compiler: CompilerVersion | undefined,
@@ -262,7 +262,7 @@ function allocateCalldata(
 ): Allocations.CalldataAllocation | undefined {
   //first: determine the corresponding function node
   //(simultaneously: determine the offset)
-  let node: AstDefinition | undefined = undefined;
+  let node: Ast.Definition | undefined = undefined;
   let offset: number;
   let id: string;
   let abiAllocation: Allocations.AbiAllocation;
@@ -293,7 +293,7 @@ function allocateCalldata(
       if(contractNode) {
         const linearizedBaseContracts = contractNode.linearizedBaseContracts;
         node = linearizedBaseContracts.reduceRight(
-          (foundNode: AstDefinition, baseContractId: number) => {
+          (foundNode: Ast.Definition, baseContractId: number) => {
             if(foundNode !== undefined) {
               return foundNode; //once we've found something, we don't need to keep looking
             };
@@ -320,7 +320,7 @@ function allocateCalldata(
   if(allocationMode === "full") {
     //get the parameters; how this works depends on whether we're looking at
     //a normal function or a getter
-    let parameters: AstDefinition[];
+    let parameters: Ast.Definition[];
     switch(node.nodeType) {
       case "FunctionDefinition":
         parameters = node.parameters.parameters;
@@ -386,9 +386,9 @@ interface EventParameterInfo {
 //NOTE: returns just a single allocation; assumes primary allocation is already complete!
 function allocateEvent(
   abiEntry: AbiTypes.EventAbiEntry,
-  contractNode: AstDefinition | undefined,
+  contractNode: Ast.Definition | undefined,
   contextHash: string,
-  referenceDeclarations: AstReferences,
+  referenceDeclarations: Ast.References,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
   compiler: CompilerVersion | undefined
@@ -397,12 +397,12 @@ function allocateEvent(
   let id: string;
   //first: determine the corresponding event node
   //search through base contracts, from most derived (right) to most base (left)
-  let node: AstDefinition | undefined = undefined;
+  let node: Ast.Definition | undefined = undefined;
   let allocationMode: DecodingMode = "full"; //degrade to abi as needed
   if(contractNode) {
     const linearizedBaseContracts = contractNode.linearizedBaseContracts;
     node = linearizedBaseContracts.reduceRight(
-      (foundNode: AstDefinition, baseContractId: number) => {
+      (foundNode: Ast.Definition, baseContractId: number) => {
         if(foundNode !== undefined) {
           return foundNode; //once we've found something, we don't need to keep looking
         }
@@ -507,9 +507,9 @@ function allocateEvent(
 
 function getCalldataAllocationsForContract(
   abi: AbiTypes.Abi,
-  contractNode: AstDefinition,
+  contractNode: Ast.Definition,
   constructorContext: DecoderContext,
-  referenceDeclarations: AstReferences,
+  referenceDeclarations: Ast.References,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
   compiler: CompilerVersion
@@ -569,7 +569,7 @@ function defaultConstructorAllocation(constructorContext: DecoderContext): Alloc
 
 export function getCalldataAllocations(
   contracts: Allocations.ContractAllocationInfo[],
-  referenceDeclarations: AstReferences,
+  referenceDeclarations: Ast.References,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations
 ): Allocations.CalldataAllocations {
@@ -596,9 +596,9 @@ export function getCalldataAllocations(
 
 function getEventAllocationsForContract(
   abi: AbiTypes.Abi,
-  contractNode: AstDefinition | undefined,
+  contractNode: Ast.Definition | undefined,
   contextHash: string,
-  referenceDeclarations: AstReferences,
+  referenceDeclarations: Ast.References,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocations.AbiAllocations,
   compiler: CompilerVersion | undefined
@@ -621,7 +621,7 @@ function getEventAllocationsForContract(
 }
 
 //note: constructor context is ignored by this function; no need to pass it in
-export function getEventAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: AstReferences, userDefinedTypes: Types.TypesById, abiAllocations: Allocations.AbiAllocations): Allocations.EventAllocations {
+export function getEventAllocations(contracts: Allocations.ContractAllocationInfo[], referenceDeclarations: Ast.References, userDefinedTypes: Types.TypesById, abiAllocations: Allocations.AbiAllocations): Allocations.EventAllocations {
   let allocations: Allocations.EventAllocations = {};
   for(let {abi, deployedContext, contractNode, compiler} of contracts) {
     if(!deployedContext) {

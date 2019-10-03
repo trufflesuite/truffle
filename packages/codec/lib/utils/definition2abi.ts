@@ -1,14 +1,14 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:definition2abi");
 
-import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import * as AbiTypes from "@truffle/codec/types/abi";
 import { Definition } from "./definition";
 import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
 
 //the main function. just does some dispatch.
 //returns undefined on bad input
-export function definitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiTypes.AbiEntry | undefined {
+export function definitionToAbi(node: Ast.Definition, referenceDeclarations: Ast.References): AbiTypes.AbiEntry | undefined {
   switch(node.nodeType) {
     case "FunctionDefinition":
       if(node.visibility === "public" || node.visibility === "external") {
@@ -32,7 +32,7 @@ export function definitionToAbi(node: AstDefinition, referenceDeclarations: AstR
 }
 
 //note: not for FunctionTypeNames or VariableDeclarations
-function functionDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry | AbiTypes.FallbackAbiEntry {
+function functionDefinitionToAbi(node: Ast.Definition, referenceDeclarations: Ast.References): AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry | AbiTypes.FallbackAbiEntry {
   let kind = Definition.functionKind(node);
   let stateMutability = Definition.mutability(node);
   let payable = stateMutability === "payable";
@@ -71,7 +71,7 @@ function functionDefinitionToAbi(node: AstDefinition, referenceDeclarations: Ast
   }
 }
 
-function eventDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiTypes.EventAbiEntry {
+function eventDefinitionToAbi(node: Ast.Definition, referenceDeclarations: Ast.References): AbiTypes.EventAbiEntry {
   let inputs = parametersToAbi(node.parameters.parameters, referenceDeclarations, true);
   let name = node.name;
   let anonymous = node.anonymous;
@@ -83,11 +83,11 @@ function eventDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstRef
   };
 }
 
-function parametersToAbi(nodes: AstDefinition[], referenceDeclarations: AstReferences, checkIndexed: boolean = false): AbiTypes.AbiParameter[] {
+function parametersToAbi(nodes: Ast.Definition[], referenceDeclarations: Ast.References, checkIndexed: boolean = false): AbiTypes.AbiParameter[] {
   return nodes.map(node => parameterToAbi(node, referenceDeclarations, checkIndexed));
 }
 
-function parameterToAbi(node: AstDefinition, referenceDeclarations: AstReferences, checkIndexed: boolean = false): AbiTypes.AbiParameter {
+function parameterToAbi(node: Ast.Definition, referenceDeclarations: Ast.References, checkIndexed: boolean = false): AbiTypes.AbiParameter {
   let name = node.name; //may be the empty string... or even undefined for a base type
   let components: AbiTypes.AbiParameter[];
   let indexed: boolean;
@@ -134,7 +134,7 @@ function parameterToAbi(node: AstDefinition, referenceDeclarations: AstReference
 //it returns how that type is notated in the ABI -- just the string,
 //to be clear, not components of tuples
 //again, NOT FOR ARRAYS
-function toAbiType(node: AstDefinition, referenceDeclarations: AstReferences): string {
+function toAbiType(node: Ast.Definition, referenceDeclarations: Ast.References): string {
   let basicType = Definition.typeClassLongForm(node); //get that whole first segment!
   switch(basicType) {
     case "contract":
@@ -162,7 +162,7 @@ function toAbiType(node: AstDefinition, referenceDeclarations: AstReferences): s
   }
 }
 
-function getterDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstReferences): AbiTypes.FunctionAbiEntry {
+function getterDefinitionToAbi(node: Ast.Definition, referenceDeclarations: Ast.References): AbiTypes.FunctionAbiEntry {
   debug("getter node: %O", node);
   let name = node.name;
   let { inputs, outputs } = getterParameters(node, referenceDeclarations);
@@ -197,9 +197,9 @@ function getterDefinitionToAbi(node: AstDefinition, referenceDeclarations: AstRe
 //here's a simplified function that just does the inputs. it's for use by the
 //allocator. I'm keeping it separate because it doesn't require a
 //referenceDeclarations argument.
-export function getterInputs(node: AstDefinition): AstDefinition[] {
+export function getterInputs(node: Ast.Definition): Ast.Definition[] {
   node = node.typeName || node;
-  let inputs: AstDefinition[] = [];
+  let inputs: Ast.Definition[] = [];
   while(Definition.typeClass(node) === "array" || Definition.typeClass(node) === "mapping") {
     let keyNode = Definition.keyDefinition(node); //note: if node is an array, this spoofs up a uint256 definition
     inputs.push({...keyNode, name: ""}); //getter input params have no name
@@ -218,9 +218,9 @@ export function getterInputs(node: AstDefinition): AstDefinition[] {
 //again, despite the duplication, this function is kept separate from the
 //more straightforward getterInputs function because, since it has to handle
 //outputs too, it requires referenceDeclarations
-function getterParameters(node: AstDefinition, referenceDeclarations: AstReferences): {inputs: AstDefinition[], outputs: AstDefinition[]} {
-  let baseNode: AstDefinition = node.typeName || node;
-  let inputs: AstDefinition[] = [];
+function getterParameters(node: Ast.Definition, referenceDeclarations: Ast.References): {inputs: Ast.Definition[], outputs: Ast.Definition[]} {
+  let baseNode: Ast.Definition = node.typeName || node;
+  let inputs: Ast.Definition[] = [];
   while(Definition.typeClass(baseNode) === "array" || Definition.typeClass(baseNode) === "mapping") {
     let keyNode = Definition.keyDefinition(baseNode); //note: if baseNode is an array, this spoofs up a uint256 definition
     inputs.push({...keyNode, name: ""}); //again, getter input params have no name

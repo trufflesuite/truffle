@@ -5,7 +5,7 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { wrapElementaryViaDefinition, Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils } from "@truffle/codec/utils";
 import { DecoderContext, DecoderContexts } from "@truffle/codec/types/contexts";
 import * as Utils from "@truffle/codec/utils/interface";
-import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import { Types, Values } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
@@ -32,7 +32,7 @@ export default class ContractDecoder {
   private contexts: DecoderContexts; //note: this is deployed contexts only!
 
   private contract: ContractObject;
-  private contractNode: AstDefinition;
+  private contractNode: Ast.Definition;
   private contractNetwork: string;
   private contextHash: string;
 
@@ -138,7 +138,7 @@ export default class ContractDecoder {
 
 interface ContractInfo {
   contract: ContractObject;
-  contractNode: AstDefinition;
+  contractNode: Ast.Definition;
   contractNetwork: string;
   contextHash: string;
 }
@@ -147,7 +147,7 @@ export class ContractInstanceDecoder {
   private web3: Web3;
 
   private contract: ContractObject;
-  private contractNode: AstDefinition;
+  private contractNode: Ast.Definition;
   private contractNetwork: string;
   private contractAddress: string;
   private contractCode: string;
@@ -156,7 +156,7 @@ export class ContractInstanceDecoder {
   private contexts: DecoderContexts = {}; //deployed contexts only
   private additionalContexts: DecoderContexts = {}; //for passing to wire decoder when contract has no deployedBytecode
 
-  private referenceDeclarations: AstReferences;
+  private referenceDeclarations: Ast.References;
   private userDefinedTypes: Types.TypesById;
   private allocations: AllocationInfo;
 
@@ -464,7 +464,7 @@ export class ContractInstanceDecoder {
   //bytes mapping keys should be given as hex strings beginning with "0x"
   //address mapping keys are like bytes; checksum case is not required
   //boolean mapping keys may be given either as booleans, or as string "true" or "false"
-  private constructSlot(variable: number | string, ...indices: any[]): [Slot | undefined , AstDefinition | undefined] {
+  private constructSlot(variable: number | string, ...indices: any[]): [Slot | undefined , Ast.Definition | undefined] {
     //base case: we need to locate the variable and its definition
     if(indices.length === 0) {
       let allocation = this.findVariableByNameOrId(variable);
@@ -487,7 +487,7 @@ export class ContractInstanceDecoder {
     let index: any;
     let key: Values.ElementaryValue;
     let slot: Slot;
-    let definition: AstDefinition;
+    let definition: Ast.Definition;
     switch(DefinitionUtils.typeClass(parentDefinition)) {
       case "array":
         if(rawIndex instanceof BN) {

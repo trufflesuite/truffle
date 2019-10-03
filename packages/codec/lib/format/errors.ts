@@ -9,7 +9,7 @@ const debug = debugModule("codec:format:errors");
 
 import BN from "bn.js";
 import * as Types from "./types";
-import { AstDefinition } from "@truffle/codec/types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import { Range } from "@truffle/codec/types/storage";
 
 /*
@@ -335,7 +335,7 @@ export interface UserDefinedTypeNotFoundError {
 //Read errors
 export interface UnsupportedConstantError {
   kind: "UnsupportedConstantError";
-  definition: AstDefinition;
+  definition: Ast.Definition;
 }
 
 export interface ReadErrorStack {

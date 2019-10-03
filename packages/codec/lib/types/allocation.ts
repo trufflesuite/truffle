@@ -3,14 +3,14 @@ import * as Pointer from "./pointer";
 import { DecoderContext } from "./contexts";
 import * as AbiTypes from "./abi";
 import { CompilerVersion } from "./compiler";
-import { AstDefinition } from "./ast";
+import * as Ast from "./ast";
 import { Types } from "@truffle/codec/format";
 import { DecodingMode } from "./decoding";
 
 //for passing to calldata/event allocation functions
 export interface ContractAllocationInfo {
   abi: AbiTypes.Abi;
-  contractNode: AstDefinition;
+  contractNode: Ast.Definition;
   deployedContext?: DecoderContext;
   constructorContext?: DecoderContext;
   compiler: CompilerVersion;
@@ -32,7 +32,7 @@ export interface StorageAllocations {
 //an individual storage allocation for (the members of) a struct or (the state
 //variables of) a contract
 export interface StorageAllocation {
-  definition: AstDefinition;
+  definition: Ast.Definition;
   size?: StorageLength; //only used for structs
   members: StorageMemberAllocation[];
 }
@@ -40,8 +40,8 @@ export interface StorageAllocation {
 //an individual storage reference for a member of a struct or a state variable
 //of a contract
 export interface StorageMemberAllocation {
-  definition: AstDefinition;
-  definedIn?: AstDefinition; //used only for variables of contracts, not structs
+  definition: Ast.Definition;
+  definedIn?: Ast.Definition; //used only for variables of contracts, not structs
   pointer: Pointer.StoragePointer | Pointer.ConstantDefinitionPointer; //latter case will only happen
   //for variables of contracts, not structs
 }
@@ -77,12 +77,12 @@ export interface MemoryAllocations {
 }
 
 export interface MemoryAllocation {
-  definition: AstDefinition;
+  definition: Ast.Definition;
   members: MemoryMemberAllocation[];
 }
 
 export interface MemoryMemberAllocation {
-  definition: AstDefinition;
+  definition: Ast.Definition;
   pointer: Pointer.MemoryPointer;
 }
 

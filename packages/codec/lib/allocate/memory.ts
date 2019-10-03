@@ -3,10 +3,10 @@ const debug = debugModule("codec:allocate:memory");
 
 import { MemoryPointer } from "@truffle/codec/types/pointer";
 import { MemoryAllocations, MemoryAllocation, MemoryMemberAllocation } from "@truffle/codec/types/allocation";
-import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import * as CodecUtils from "@truffle/codec/utils";
 
-export function getMemoryAllocations(referenceDeclarations: AstReferences): MemoryAllocations {
+export function getMemoryAllocations(referenceDeclarations: Ast.References): MemoryAllocations {
   let allocations: MemoryAllocations = {};
   for(const node of Object.values(referenceDeclarations)) {
     if(node.nodeType === "StructDefinition") {
@@ -18,7 +18,7 @@ export function getMemoryAllocations(referenceDeclarations: AstReferences): Memo
 
 //unlike in storage and calldata, we'll just return the one allocation, nothing fancy
 //that's because allocating one struct can never necessitate allocating another
-function allocateStruct(definition: AstDefinition): MemoryAllocation {
+function allocateStruct(definition: Ast.Definition): MemoryAllocation {
   let memberAllocations: MemoryMemberAllocation[] = [];
   let position = 0;
   for(const member of definition.members) {

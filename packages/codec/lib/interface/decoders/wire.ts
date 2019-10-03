@@ -5,7 +5,7 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils, abifyCalldataDecoding, abifyLogDecoding, MakeType } from "@truffle/codec/utils";
 import * as Utils from "@truffle/codec/utils/interface";
 import * as Contexts from "@truffle/codec/types/contexts";
-import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import { Types, Values } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
@@ -27,11 +27,11 @@ export default class WireDecoder {
   private network: string;
 
   private contracts: DecoderTypes.ContractMapping = {};
-  private contractNodes: AstReferences = {};
+  private contractNodes: Ast.References = {};
   private contexts: Contexts.DecoderContexts = {}; //all contexts
   private deployedContexts: Contexts.DecoderContexts = {};
 
-  private referenceDeclarations: AstReferences;
+  private referenceDeclarations: Ast.References;
   private userDefinedTypes: Types.TypesById;
   private allocations: AllocationInfo;
 
@@ -47,7 +47,7 @@ export default class WireDecoder {
     let contractsAndContexts: DecoderTypes.ContractAndContexts[] = [];
 
     for(let contract of contracts) {
-      let node: AstDefinition = Utils.getContractNode(contract);
+      let node: Ast.Definition = Utils.getContractNode(contract);
       let deployedContext: Contexts.DecoderContext | undefined = undefined;
       let constructorContext: Contexts.DecoderContext | undefined = undefined;
       if(node !== undefined) {
@@ -102,8 +102,8 @@ export default class WireDecoder {
     debug("done with allocation");
   }
 
-  private collectUserDefinedTypes(): {definitions: AstReferences, types: Types.TypesById} {
-    let references: AstReferences = {};
+  private collectUserDefinedTypes(): {definitions: Ast.References, types: Types.TypesById} {
+    let references: Ast.References = {};
     let types: Types.TypesById = {};
     for(const id in this.contracts) {
       const compiler = this.contracts[id].compiler;
@@ -283,7 +283,7 @@ export default class WireDecoder {
   }
 
   //the following functions are intended for internal use only
-  public getReferenceDeclarations(): AstReferences {
+  public getReferenceDeclarations(): Ast.References {
     return this.referenceDeclarations;
   }
 

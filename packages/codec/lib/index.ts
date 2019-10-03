@@ -37,7 +37,7 @@ export * from "./types/decoding"; //all the decoding result types
 export * from "./types/errors"; //the various errors we might throw
 
 //for those who want more low-level stuff...
-export { AstDefinition, AstReferences } from "./types/ast";
+export { Definition as AstDefinition, References as AstReferences } from "./types/ast";
 export { DataPointer } from "./types/pointer";
 export { EvmInfo } from "./types/evm";
 export { StorageAllocations, AbiAllocations, MemoryAllocations } from "./types/allocation";

@@ -7,7 +7,7 @@ import { StorageLength, Range } from "@truffle/codec/types/storage";
 import { isWordsLength } from "@truffle/codec/utils/storage";
 import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
 import { DecodingError } from "@truffle/codec/decode/errors";
-import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import * as Format from "@truffle/codec/format";
@@ -35,13 +35,13 @@ interface StorageAllocationInfo {
 }
 
 interface DefinitionPair {
-  definition: AstDefinition;
-  definedIn?: AstDefinition;
+  definition: Ast.Definition;
+  definedIn?: Ast.Definition;
 }
 
 //contracts contains only the contracts to be allocated; any base classes not
 //being allocated should just be in referenceDeclarations
-export function getStorageAllocations(referenceDeclarations: AstReferences, contracts: AstReferences, existingAllocations: StorageAllocations = {}): StorageAllocations {
+export function getStorageAllocations(referenceDeclarations: Ast.References, contracts: Ast.References, existingAllocations: StorageAllocations = {}): StorageAllocations {
   let allocations = existingAllocations;
   for(const node of Object.values(referenceDeclarations)) {
     if(node.nodeType === "StructDefinition") {
@@ -68,14 +68,14 @@ export function getStorageAllocations(referenceDeclarations: AstReferences, cont
   return allocations;
 }
 
-function allocateStruct(structDefinition: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
+function allocateStruct(structDefinition: Ast.Definition, referenceDeclarations: Ast.References, existingAllocations: StorageAllocations): StorageAllocations {
   let members = structDefinition.members.map(
     definition => ({definition})
   );
   return allocateMembers(structDefinition, members, referenceDeclarations, existingAllocations);
 }
 
-function allocateMembers(parentNode: AstDefinition, definitions: DefinitionPair[], referenceDeclarations: AstReferences, existingAllocations: StorageAllocations, suppressSize: boolean = false): StorageAllocations {
+function allocateMembers(parentNode: Ast.Definition, definitions: DefinitionPair[], referenceDeclarations: Ast.References, existingAllocations: StorageAllocations, suppressSize: boolean = false): StorageAllocations {
   let offset: number = 0; //will convert to BN when placing in slot
   let index: number = CodecUtils.EVM.WORD_SIZE - 1;
 
@@ -202,14 +202,14 @@ function allocateMembers(parentNode: AstDefinition, definitions: DefinitionPair[
   return allocations;
 }
 
-function getStateVariables(contractNode: AstDefinition): AstDefinition[] {
+function getStateVariables(contractNode: Ast.Definition): Ast.Definition[] {
   // process for state variables
-  return contractNode.nodes.filter( (node: AstDefinition) =>
+  return contractNode.nodes.filter( (node: Ast.Definition) =>
     node.nodeType === "VariableDeclaration" && node.stateVariable
   );
 }
 
-function allocateContract(contract: AstDefinition, referenceDeclarations: AstReferences, existingAllocations: StorageAllocations): StorageAllocations {
+function allocateContract(contract: Ast.Definition, referenceDeclarations: Ast.References, existingAllocations: StorageAllocations): StorageAllocations {
 
   let allocations: StorageAllocations = {...existingAllocations};
 
@@ -238,11 +238,11 @@ function allocateContract(contract: AstDefinition, referenceDeclarations: AstRef
 //NOTE: This wrapper function is for use by the decoder ONLY, after allocation is done.
 //The allocator should (and does) instead use a direct call to storageSizeAndAllocate,
 //not to the wrapper, because it may need the allocations returned.
-export function storageSize(definition: AstDefinition, referenceDeclarations?: AstReferences, allocations?: StorageAllocations): StorageLength {
+export function storageSize(definition: Ast.Definition, referenceDeclarations?: Ast.References, allocations?: StorageAllocations): StorageLength {
   return storageSizeAndAllocate(definition, referenceDeclarations, allocations).size;
 }
 
-function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations?: AstReferences, existingAllocations?: StorageAllocations): StorageAllocationInfo {
+function storageSizeAndAllocate(definition: Ast.Definition, referenceDeclarations?: Ast.References, existingAllocations?: StorageAllocations): StorageAllocationInfo {
   switch (CodecUtils.Definition.typeClass(definition)) {
     case "bool":
       return {
@@ -279,7 +279,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
         //note: we use the preexisting function here for convenience, but we
         //should never need to worry about faked-up enum definitions, so just
         //checking the referencedDeclaration field would also work
-      const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
+      const referenceDeclaration: Ast.Definition = referenceDeclarations[referenceId];
       if(referenceDeclaration === undefined) {
         let typeString = CodecUtils.Definition.typeString(definition);
         throw new UnknownUserDefinedTypeError(referenceId.toString(), typeString);
@@ -349,7 +349,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
             allocations: existingAllocations
           };
         }
-        const baseDefinition: AstDefinition = CodecUtils.Definition.baseDefinition(definition);
+        const baseDefinition: Ast.Definition = CodecUtils.Definition.baseDefinition(definition);
         const {size: baseSize, allocations} = storageSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
         if(!isWordsLength(baseSize)) {
           //bytes case
@@ -377,7 +377,7 @@ function storageSizeAndAllocate(definition: AstDefinition, referenceDeclarations
       let allocation: StorageAllocation | undefined = allocations[referenceId]; //may be undefined!
       if(allocation === undefined) {
         //if we don't find an allocation, we'll have to do the allocation ourselves
-        const referenceDeclaration: AstDefinition = referenceDeclarations[referenceId];
+        const referenceDeclaration: Ast.Definition = referenceDeclarations[referenceId];
         if(referenceDeclaration === undefined) {
           let typeString = CodecUtils.Definition.typeString(definition);
           throw new UnknownUserDefinedTypeError(referenceId.toString(), typeString);
