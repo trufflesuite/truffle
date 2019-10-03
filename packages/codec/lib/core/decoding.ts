@@ -1,11 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("codec:core:decoding");
 
-import { Ast, Pointer, Abi as AbiTypes, Allocation } from "@truffle/codec/types";
+import { Ast, Pointer, Abi as AbiTypes, Allocation, Evm } from "@truffle/codec/types";
 import * as CodecUtils from "@truffle/codec/utils";
 import { MakeType, abifyType, abifyResult } from "@truffle/codec/utils";
 import { Values } from "@truffle/codec/format";
-import * as Evm from "@truffle/codec/types/evm";
 import { StopDecodingError } from "@truffle/codec/decode/errors";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { CalldataDecoding, LogDecoding, AbiArgument, DecodingMode } from "@truffle/codec/types/decoding";

@@ -10,8 +10,7 @@ import { decodeExternalFunction, checkPaddingLeft } from "./value";
 import { decodeMemoryReferenceByAddress } from "./memory";
 import { decodeStorageReferenceByAddress } from "./storage";
 import { decodeAbiReferenceByAddress } from "./abi";
-import { Pointer } from "@truffle/codec/types";
-import * as Evm from "@truffle/codec/types/evm";
+import { Pointer, Evm } from "@truffle/codec/types";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
