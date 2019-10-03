@@ -10,7 +10,7 @@ import {
   ContextUtils
 } from "@truffle/codec/utils";
 import * as Utils from "@truffle/codec/utils/interface";
-import { Ast, Pointer, Allocation, Contexts, Storage, Evm } from "@truffle/codec/types";
+import { Ast, Pointer, Allocation, Contexts, Storage, Evm, Decoding } from "@truffle/codec/types";
 import { Types, Values } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
@@ -23,7 +23,6 @@ import {
   getStorageAllocations,
   storageSize
 } from "@truffle/codec/allocate/storage";
-import * as Decoding from "@truffle/codec/types/decoding";
 import { decodeVariable } from "@truffle/codec/core/decoding";
 import { isWordsLength, equalSlots } from "@truffle/codec/utils/storage";
 import {

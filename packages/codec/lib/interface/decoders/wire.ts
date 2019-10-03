@@ -10,7 +10,7 @@ import {
   MakeType
 } from "@truffle/codec/utils";
 import * as Utils from "@truffle/codec/utils/interface";
-import { Ast, Allocation, Contexts, Evm } from "@truffle/codec/types";
+import { Ast, Allocation, Contexts, Evm, Decoding } from "@truffle/codec/types";
 import { Types } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
@@ -25,7 +25,6 @@ import {
 } from "@truffle/codec/allocate/abi";
 import { getStorageAllocations } from "@truffle/codec/allocate/storage";
 import { decodeCalldata, decodeEvent } from "@truffle/codec/core/decoding";
-import * as Decoding from "@truffle/codec/types/decoding";
 
 /**
  * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.

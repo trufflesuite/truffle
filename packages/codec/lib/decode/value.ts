@@ -6,11 +6,10 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import utf8 from "utf8";
-import { Pointer, Evm } from "@truffle/codec/types";
+import { Pointer, Evm, Decoding } from "@truffle/codec/types";
 import { DecoderOptions } from "@truffle/codec/types/options";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
-import * as Decoding from "@truffle/codec/types/decoding";
 
 export default function* decodeValue(dataType: Types.Type, pointer: Pointer.DataPointer, info: Evm.EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   const { state } = info;

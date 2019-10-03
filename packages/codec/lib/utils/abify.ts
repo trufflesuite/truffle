@@ -3,10 +3,9 @@ const debug = debugModule("codec:format:abify");
 
 import * as Format from "@truffle/codec/format";
 import { TypeUtils } from "./datatype";
-import { Errors } from "@truffle/codec/types";
+import { Errors, Decoding } from "@truffle/codec/types";
 import BN from "bn.js";
 import { Conversion as ConversionUtils } from "./conversion";
-import * as Decoding from "@truffle/codec/types/decoding";
 
 export function abifyType(dataType: Format.Types.Type, userDefinedTypes?: Format.Types.TypesById): Format.Types.Type | undefined {
   switch(dataType.typeClass) {
