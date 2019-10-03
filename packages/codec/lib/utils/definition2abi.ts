@@ -1,10 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:definition2abi");
 
-import { AstDefinition, AstReferences } from "../types/ast";
-import * as AbiTypes from "../types/abi";
+import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import * as AbiTypes from "@truffle/codec/types/abi";
 import { Definition } from "./definition";
-import { UnknownUserDefinedTypeError } from "../types/errors";
+import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
 
 //the main function. just does some dispatch.
 //returns undefined on bad input

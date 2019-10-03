@@ -2,9 +2,9 @@ import debugModule from "debug";
 const debug = debugModule("codec:utils:storage");
 
 import BN from "bn.js";
-import { Slot, StorageLength } from "../types/storage";
+import { Slot, StorageLength } from "@truffle/codec/types/storage";
 import { EVM as EVMUtils } from "./evm";
-import { encodeMappingKey, mappingKeyAsHex } from "../encode/key";
+import { encodeMappingKey, mappingKeyAsHex } from "@truffle/codec/encode/key";
 
 export function isWordsLength(size: StorageLength): size is {words: number} {
   return (<{words: number}>size).words !== undefined;

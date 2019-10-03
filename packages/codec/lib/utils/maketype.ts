@@ -2,12 +2,12 @@ import debugModule from "debug";
 const debug = debugModule("codec:format:maketype");
 
 import BN from "bn.js";
-import * as Ast from "../types/ast";
+import * as Ast from "@truffle/codec/types/ast";
 import { Definition as DefinitionUtils } from "./definition";
-import { CompilerVersion } from "../types/compiler";
+import { CompilerVersion } from "@truffle/codec/types/compiler";
 import { solidityFamily } from "./compiler";
-import { AbiParameter } from "../types/abi";
-import { Types } from "../format";
+import { AbiParameter } from "@truffle/codec/types/abi";
+import { Types } from "@truffle/codec/format";
 import { TypeUtils } from "./datatype";
 
 export namespace MakeType {

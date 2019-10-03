@@ -9,8 +9,8 @@ const debug = debugModule("codec:format:errors");
 
 import BN from "bn.js";
 import * as Types from "./types";
-import { AstDefinition } from "../types/ast";
-import { Range } from "../types/storage";
+import { AstDefinition } from "@truffle/codec/types/ast";
+import { Range } from "@truffle/codec/types/storage";
 
 /*
  * SECTION 1: Generic types for values in general (including errors).

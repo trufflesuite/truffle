@@ -1,19 +1,19 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:value");
 
-import read from "../read";
-import * as CodecUtils from "../utils";
-import { TypeUtils } from "../utils";
-import { Types, Values, Errors } from "../format";
+import read from "@truffle/codec/read";
+import * as CodecUtils from "@truffle/codec/utils";
+import { TypeUtils } from "@truffle/codec/utils";
+import { Types, Values, Errors } from "@truffle/codec/format";
 import BN from "bn.js";
 import Big from "big.js";
 import utf8 from "utf8";
-import { DataPointer } from "../types/pointer";
-import { EvmInfo } from "../types/evm";
-import { DecoderOptions } from "../types/options";
-import { DecoderRequest } from "../types/request";
-import { DecodingError, StopDecodingError } from "../decode/errors";
-import { ContractInfoAndContext } from "../types/decoding";
+import { DataPointer } from "@truffle/codec/types/pointer";
+import { EvmInfo } from "@truffle/codec/types/evm";
+import { DecoderOptions } from "@truffle/codec/types/options";
+import { DecoderRequest } from "@truffle/codec/types/request";
+import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
+import { ContractInfoAndContext } from "@truffle/codec/types/decoding";
 
 export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   const { state } = info;

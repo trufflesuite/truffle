@@ -1,5 +1,5 @@
-import { Errors } from "../format";
-import { message } from "../utils/errors";
+import { Errors } from "@truffle/codec/format";
+import { message } from "@truffle/codec/utils/errors";
 
 //For when we need to throw an error, here's a wrapper class that extends Error.
 //Apologies about the confusing name, but I wanted something that would make

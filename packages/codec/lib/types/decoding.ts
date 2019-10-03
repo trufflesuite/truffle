@@ -1,6 +1,6 @@
 import { DecoderContext } from "./contexts";
 import * as AbiTypes from "./abi";
-import { Types, Values } from "../format";
+import { Types, Values } from "@truffle/codec/format";
 
 export type CalldataDecoding = FunctionDecoding | ConstructorDecoding | MessageDecoding | UnknownDecoding;
 export type LogDecoding = EventDecoding | AnonymousDecoding;

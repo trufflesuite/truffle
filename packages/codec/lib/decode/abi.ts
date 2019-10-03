@@ -2,18 +2,18 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:abi");
 
 import BN from "bn.js";
-import read from "../read";
-import * as CodecUtils from "../utils";
-import { TypeUtils } from "../utils";
-import { Types, Values, Errors } from "../format";
+import read from "@truffle/codec/read";
+import * as CodecUtils from "@truffle/codec/utils";
+import { TypeUtils } from "@truffle/codec/utils";
+import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
-import { AbiDataPointer, DataPointer } from "../types/pointer";
-import { AbiMemberAllocation } from "../types/allocation";
-import { abiSizeInfo } from "../allocate/abi";
-import { EvmInfo } from "../types/evm";
-import { DecoderOptions } from "../types/options";
-import { DecoderRequest } from "../types/request";
-import { DecodingError, StopDecodingError } from "../decode/errors";
+import { AbiDataPointer, DataPointer } from "@truffle/codec/types/pointer";
+import { AbiMemberAllocation } from "@truffle/codec/types/allocation";
+import { abiSizeInfo } from "@truffle/codec/allocate/abi";
+import { EvmInfo } from "@truffle/codec/types/evm";
+import { DecoderOptions } from "@truffle/codec/types/options";
+import { DecoderRequest } from "@truffle/codec/types/request";
+import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
 
 type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
 

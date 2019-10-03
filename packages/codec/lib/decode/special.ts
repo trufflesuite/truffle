@@ -1,14 +1,14 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:special");
 
-import * as CodecUtils from "../utils";
-import { Types, Values, Errors } from "../format";
+import * as CodecUtils from "@truffle/codec/utils";
+import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
-import { EvmInfo } from "../types/evm";
-import { SpecialPointer } from "../types/pointer";
-import { DecoderRequest } from "../types/request";
-import { CompilerVersion } from "../types/compiler";
-import { solidityFamily } from "../utils/compiler";
+import { EvmInfo } from "@truffle/codec/types/evm";
+import { SpecialPointer } from "@truffle/codec/types/pointer";
+import { DecoderRequest } from "@truffle/codec/types/request";
+import { CompilerVersion } from "@truffle/codec/types/compiler";
+import { solidityFamily } from "@truffle/codec/utils/compiler";
 
 export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(dataType.typeClass === "magic") {

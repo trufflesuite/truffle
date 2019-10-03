@@ -1,7 +1,7 @@
 import BN from "bn.js";
 
-import * as CodecUtils from "../utils";
-import { DecodingError } from "../decode/errors";
+import * as CodecUtils from "@truffle/codec/utils";
+import { DecodingError } from "@truffle/codec/decode/errors";
 
 /**
  * read word from memory
