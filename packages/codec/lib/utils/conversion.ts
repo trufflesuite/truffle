@@ -7,7 +7,7 @@ import Web3 from "web3";
 import { Constants } from "./constants";
 import { Types, Values } from "@truffle/codec/format";
 import { enumFullName } from "./inspect";
-import * as Interface from "@truffle/codec/types/interface";
+import { Interface } from "@truffle/codec/types";
 
 export namespace Conversion {
 
