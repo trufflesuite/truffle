@@ -8,7 +8,7 @@ import { Types, Values } from "@truffle/codec/format";
 import { EvmInfo } from "@truffle/codec/types/evm";
 import { StopDecodingError } from "@truffle/codec/decode/errors";
 import { DecoderRequest } from "@truffle/codec/types/request";
-import { CalldataAllocation, EventAllocation, EventArgumentAllocation } from "@truffle/codec/types/allocation";
+import * as Allocation from "@truffle/codec/types/allocation";
 import { CalldataDecoding, LogDecoding, AbiArgument, DecodingMode } from "@truffle/codec/types/decoding";
 import { encodeAbi, encodeTupleAbi } from "@truffle/codec/encode/abi";
 import read from "@truffle/codec/read";
@@ -35,7 +35,7 @@ export function* decodeCalldata(info: EvmInfo): Generator<DecoderRequest, Callda
   const contractType = CodecUtils.ContextUtils.contextToType(context);
   const isConstructor: boolean = context.isConstructor;
   const allocations = info.allocations.calldata;
-  let allocation: CalldataAllocation;
+  let allocation: Allocation.CalldataAllocation;
   let selector: string;
   //first: is this a creation call?
   if(isConstructor) {
@@ -147,8 +147,8 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
   const allocations = info.allocations.event;
   let rawSelector: Uint8Array;
   let selector: string;
-  let contractAllocations: {[contextHash: string]: EventAllocation}; //for non-anonymous events
-  let libraryAllocations: {[contextHash: string]: EventAllocation}; //similar
+  let contractAllocations: {[contextHash: string]: Allocation.EventAllocation}; //for non-anonymous events
+  let libraryAllocations: {[contextHash: string]: Allocation.EventAllocation}; //similar
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
   if(topicsCount > 0) {
@@ -176,8 +176,8 @@ export function* decodeEvent(info: EvmInfo, address: string, targetName?: string
   };
   const codeAsHex = CodecUtils.Conversion.toHexString(codeBytes);
   const contractContext = CodecUtils.ContextUtils.findDecoderContext(info.contexts, codeAsHex);
-  let possibleContractAllocations: EventAllocation[]; //excludes anonymous events
-  let possibleContractAnonymousAllocations: EventAllocation[];
+  let possibleContractAllocations: Allocation.EventAllocation[]; //excludes anonymous events
+  let possibleContractAnonymousAllocations: Allocation.EventAllocation[];
   if(contractContext) {
     //if we found the contract, maybe it's from that contract
     const contextHash = contractContext.context;

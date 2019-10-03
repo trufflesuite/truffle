@@ -15,7 +15,7 @@ import { Log } from "web3/types";
 import { Provider } from "web3/providers";
 import * as DecoderTypes from "@truffle/codec/types/interface";
 import { EvmInfo, AllocationInfo } from "@truffle/codec/types/evm";
-import { AbiAllocations, ContractAllocationInfo } from "@truffle/codec/types/allocation";
+import * as Allocation from "@truffle/codec/types/allocation";
 import { getAbiAllocations, getCalldataAllocations, getEventAllocations } from "@truffle/codec/allocate/abi";
 import { getStorageAllocations } from "@truffle/codec/allocate/storage";
 import { decodeCalldata, decodeEvent } from "@truffle/codec/core/decoding";
@@ -83,7 +83,7 @@ export default class WireDecoder {
 
     ({definitions: this.referenceDeclarations, types: this.userDefinedTypes} = this.collectUserDefinedTypes());
 
-    let allocationInfo: ContractAllocationInfo[] = contractsAndContexts.map(
+    let allocationInfo: Allocation.ContractAllocationInfo[] = contractsAndContexts.map(
       ({contract: { abi, compiler }, node, deployedContext, constructorContext}) => ({
         abi: AbiUtils.schemaAbiToAbi(abi),
         compiler,
