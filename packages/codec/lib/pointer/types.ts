@@ -1,5 +1,4 @@
-import * as Ast from "./ast";
-import { Range } from "./storage";
+import { Ast, Storage } from "@truffle/codec/types";
 
 export type DataPointer = StackPointer | MemoryPointer | StoragePointer
   | CalldataPointer | StackLiteralPointer | ConstantDefinitionPointer
@@ -45,7 +44,7 @@ export interface GenericAbiPointer {
 
 export interface StoragePointer {
   location: "storage",
-  range: Range;
+  range: Storage.Range;
 }
 
 export interface StackLiteralPointer {

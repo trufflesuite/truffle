@@ -16,8 +16,5 @@ export { Common };
 import * as Errors from "./errors";
 export { Errors };
 
-import * as Pointer from "./pointer";
-export { Pointer };
-
 import * as Storage from "./storage";
 export { Storage };

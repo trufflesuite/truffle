@@ -2,7 +2,7 @@ import * as storage from "./storage";
 import * as bytes from "./bytes";
 import * as stack from "./stack";
 import * as constant from "./constant";
-import { Pointer } from "@truffle/codec/types";
+import * as Pointer from "@truffle/codec/pointer/types";
 import * as Decoding from "@truffle/codec/decode/types";
 import * as Evm from "@truffle/codec/evm";
 
