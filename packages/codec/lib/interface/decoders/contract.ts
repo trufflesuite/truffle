@@ -11,7 +11,7 @@ import {
 } from "@truffle/codec/utils";
 import { DecoderContext, DecoderContexts } from "@truffle/codec/types/contexts";
 import * as Utils from "@truffle/codec/utils/interface";
-import { Ast, Pointer } from "@truffle/codec/types";
+import { Ast, Pointer, Allocation } from "@truffle/codec/types";
 import { Types, Values } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
@@ -22,7 +22,6 @@ import { Log } from "web3/types";
 import { Provider } from "web3/providers";
 import * as DecoderTypes from "@truffle/codec/types/interface";
 import { EvmInfo, AllocationInfo } from "@truffle/codec/types/evm";
-import * as Allocation from "@truffle/codec/types/allocation";
 import {
   getStorageAllocations,
   storageSize
