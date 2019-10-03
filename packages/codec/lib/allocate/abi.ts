@@ -11,7 +11,7 @@ import { Types } from "@truffle/codec/format";
 import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
 import partition from "lodash.partition";
 import { DecodingMode } from "@truffle/codec/types/decoding";
-import { CompilerVersion } from "@truffle/codec/types/compiler";
+import * as Compiler from "@truffle/codec/types/compiler";
 import { DecoderContext } from "@truffle/codec/types/contexts";
 
 interface AbiAllocationInfo {
@@ -254,7 +254,7 @@ function allocateCalldata(
   referenceDeclarations: Ast.References,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocation.AbiAllocations,
-  compiler: CompilerVersion | undefined,
+  compiler: Compiler.CompilerVersion | undefined,
   constructorContext?: DecoderContext
 ): Allocation.CalldataAllocation | undefined {
   //first: determine the corresponding function node
@@ -388,7 +388,7 @@ function allocateEvent(
   referenceDeclarations: Ast.References,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocation.AbiAllocations,
-  compiler: CompilerVersion | undefined
+  compiler: Compiler.CompilerVersion | undefined
 ): Allocation.EventAllocation {
   let parameterTypes: EventParameterInfo[];
   let id: string;
@@ -509,7 +509,7 @@ function getCalldataAllocationsForContract(
   referenceDeclarations: Ast.References,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocation.AbiAllocations,
-  compiler: CompilerVersion
+  compiler: Compiler.CompilerVersion
 ): Allocation.CalldataAllocationTemporary {
   let allocations: Allocation.CalldataAllocationTemporary = {
     constructorAllocation: defaultConstructorAllocation(constructorContext), //will be overridden if abi has a constructor
@@ -598,7 +598,7 @@ function getEventAllocationsForContract(
   referenceDeclarations: Ast.References,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocation.AbiAllocations,
-  compiler: CompilerVersion | undefined
+  compiler: Compiler.CompilerVersion | undefined
 ): Allocation.EventAllocationTemporary[] {
   return abi.filter(
     (abiEntry: AbiTypes.AbiEntry) => abiEntry.type === "event"
