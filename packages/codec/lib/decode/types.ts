@@ -1,5 +1,4 @@
-import { DecoderContext } from "./contexts";
-import * as AbiTypes from "./abi";
+import { Abi, Contexts } from "@truffle/codec/types";
 import { Types, Values } from "@truffle/codec/format";
 
 /**
@@ -47,7 +46,7 @@ export interface FunctionDecoding {
    * The ABI entry for the function that was called.  You can use this
    * to extract the name, for instance.
    */
-  abi: AbiTypes.FunctionAbiEntry;
+  abi: Abi.FunctionAbiEntry;
   /**
    * The selector for the function that was called, as a hexadecimal string.
    */
@@ -85,7 +84,7 @@ export interface ConstructorDecoding {
    * default constructors don't actually get an ABI entry, we still return an
    * ABI entry regardless in that case.
    */
-  abi: AbiTypes.ConstructorAbiEntry;
+  abi: Abi.ConstructorAbiEntry;
   /**
    * The bytecode of the constructor that was called.
    */
@@ -114,7 +113,7 @@ export interface MessageDecoding {
    * The ABI entry for the contract's fallback function; will be null if
    * there is none.
    */
-  abi: AbiTypes.FallbackAbiEntry | null; //null indicates no fallback ABI
+  abi: Abi.FallbackAbiEntry | null; //null indicates no fallback ABI
   /**
    * The data that was sent to the contract.
    */
@@ -168,7 +167,7 @@ export interface EventDecoding {
    * The ABI entry for the event.  You can use this to extract the name, for
    * instance.
    */
-  abi: AbiTypes.EventAbiEntry; //should be non-anonymous
+  abi: Abi.EventAbiEntry; //should be non-anonymous
   /**
    * The selector for the event, as a hexadecimal string.
    */
@@ -202,7 +201,7 @@ export interface AnonymousDecoding {
    * The ABI entry for the event.  You can use this to extract the name, for
    * instance.
    */
-  abi: AbiTypes.EventAbiEntry; //should be anonymous
+  abi: Abi.EventAbiEntry; //should be anonymous
   /**
    * The decoding mode that was used; see the README for more on these.
    */
@@ -235,5 +234,5 @@ export interface AbiArgument {
  */
 export interface ContractInfoAndContext {
   contractInfo: Values.ContractValueInfo;
-  context?: DecoderContext;
+  context?: Contexts.DecoderContext;
 }

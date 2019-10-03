@@ -6,7 +6,8 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import utf8 from "utf8";
-import { Pointer, Decoding, Options, Request } from "@truffle/codec/types";
+import { Pointer, Options, Request } from "@truffle/codec/types";
+import * as Decoding from "./types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
 

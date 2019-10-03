@@ -1,4 +1,5 @@
-import { Decoding, Storage, Pointer, Abi as AbiTypes, Ast, Contexts, Compiler } from "@truffle/codec/types";
+import { Storage, Pointer, Abi as AbiTypes, Ast, Contexts, Compiler } from "@truffle/codec/types";
+import * as Decoding from "@truffle/codec/decode/types";
 import { Types } from "@truffle/codec/format";
 
 //for passing to calldata/event allocation functions
