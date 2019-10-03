@@ -3,7 +3,7 @@ const debug = debugModule("codec:interface:decoders:contract");
 
 import * as CodecUtils from "@truffle/codec/utils";
 import { wrapElementaryViaDefinition, Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils } from "@truffle/codec/utils";
-import { DecoderContext, DecoderContexts } from "@truffle/codec/types/contexts";
+import * as Contexts from "@truffle/codec/types/contexts";
 import * as Utils from "@truffle/codec/utils/interface";
 import { Ast, Pointer, Allocation } from "@truffle/codec/types";
 import { Types, Values } from "@truffle/codec/format";
@@ -26,7 +26,7 @@ export default class ContractDecoder {
 
   private web3: Web3;
 
-  private contexts: DecoderContexts; //note: this is deployed contexts only!
+  private contexts: Contexts.DecoderContexts; //note: this is deployed contexts only!
 
   private contract: ContractObject;
   private contractNode: Ast.Definition;
@@ -150,8 +150,8 @@ export class ContractInstanceDecoder {
   private contractCode: string;
   private contextHash: string;
 
-  private contexts: DecoderContexts = {}; //deployed contexts only
-  private additionalContexts: DecoderContexts = {}; //for passing to wire decoder when contract has no deployedBytecode
+  private contexts: Contexts.DecoderContexts = {}; //deployed contexts only
+  private additionalContexts: Contexts.DecoderContexts = {}; //for passing to wire decoder when contract has no deployedBytecode
 
   private referenceDeclarations: Ast.References;
   private userDefinedTypes: Types.TypesById;
@@ -218,14 +218,14 @@ export class ContractInstanceDecoder {
       //the following line only has any effect if we're dealing with a library,
       //since the code we pulled from the blockchain obviously does not have unresolved link references!
       //(it's not strictly necessary even then, but, hey, why not?)
-      this.additionalContexts = <DecoderContexts>ContextUtils.normalizeContexts(this.additionalContexts);
+      this.additionalContexts = <Contexts.DecoderContexts>ContextUtils.normalizeContexts(this.additionalContexts);
       //again, since the code did not have unresolved link references, it is safe to just
       //mash these together like I'm about to
       this.contexts = {...this.contexts, ...this.additionalContexts};
     }
   }
 
-  private get context(): DecoderContext {
+  private get context(): Contexts.DecoderContext {
     return this.contexts[this.contextHash];
   }
 

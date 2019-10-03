@@ -11,7 +11,7 @@ import { Types } from "@truffle/codec/format";
 import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
 import partition from "lodash.partition";
 import { DecodingMode } from "@truffle/codec/types/decoding";
-import { DecoderContext } from "@truffle/codec/types/contexts";
+import * as Contexts from "@truffle/codec/types/contexts";
 
 interface AbiAllocationInfo {
   size?: number; //left out for types that don't go in the abi
@@ -254,7 +254,7 @@ function allocateCalldata(
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocation.AbiAllocations,
   compiler: Compiler.CompilerVersion | undefined,
-  constructorContext?: DecoderContext
+  constructorContext?: Contexts.DecoderContext
 ): Allocation.CalldataAllocation | undefined {
   //first: determine the corresponding function node
   //(simultaneously: determine the offset)
@@ -504,7 +504,7 @@ function allocateEvent(
 function getCalldataAllocationsForContract(
   abi: AbiTypes.Abi,
   contractNode: Ast.Definition,
-  constructorContext: DecoderContext,
+  constructorContext: Contexts.DecoderContext,
   referenceDeclarations: Ast.References,
   userDefinedTypes: Types.TypesById,
   abiAllocations: Allocation.AbiAllocations,
@@ -549,7 +549,7 @@ function getCalldataAllocationsForContract(
 }
 
 //note: returns undefined if undefined is passed in
-function defaultConstructorAllocation(constructorContext: DecoderContext): Allocation.CalldataAllocation | undefined {
+function defaultConstructorAllocation(constructorContext: Contexts.DecoderContext): Allocation.CalldataAllocation | undefined {
   if(!constructorContext) {
     return undefined;
   }
