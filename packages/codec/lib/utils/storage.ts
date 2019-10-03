@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:utils:storage");
 
 import BN from "bn.js";
-import * as Storage from "@truffle/codec/types/storage";
+import { Storage } from "@truffle/codec/types";
 import { EVM as EVMUtils } from "./evm";
 import { encodeMappingKey, mappingKeyAsHex } from "@truffle/codec/encode/key";
 
