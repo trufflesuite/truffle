@@ -4,7 +4,7 @@ const debug = debugModule("codec:utils:errors");
 import { Values, Errors } from "@truffle/codec/format";
 import { TypeUtils } from "./datatype";
 import { Definition as DefinitionUtils } from "./definition";
-import { Slot } from "@truffle/codec/types/storage";
+import { Storage } from "@truffle/codec/types";
 
 //this function gives an error message
 //for those errors that are meant to possibly
@@ -32,7 +32,7 @@ export function message(error: Errors.ErrorForThrowing) {
   }
 }
 
-export function slotAddressPrintout(slot: Slot): string {
+export function slotAddressPrintout(slot: Storage.Slot): string {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
     let {type: keyEncoding, value: keyValue} = keyInfoForPrinting(slot.key);

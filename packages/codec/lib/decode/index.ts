@@ -1,7 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode");
 
-import decodeValue from "./value";
 import decodeMemory from "./memory";
 import decodeStorage from "./storage";
 import decodeStack from "./stack";
@@ -11,12 +10,11 @@ import decodeConstant from "./constant";
 import decodeSpecial from "./special";
 import decodeTopic from "./event";
 import { Types, Values } from "@truffle/codec/format";
-import * as Pointer from "@truffle/codec/types/pointer";
-import { EvmInfo } from "@truffle/codec/types/evm";
-import { DecoderOptions } from "@truffle/codec/types/options";
-import { DecoderRequest } from "@truffle/codec/types/request";
+import { Pointer } from "@truffle/codec/types";
+import * as Decoding from "./types";
+import * as Evm from "@truffle/codec/evm";
 
-export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo, options: Decoding.DecoderOptions = {}): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 

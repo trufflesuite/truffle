@@ -12,17 +12,7 @@ import * as Format from "@truffle/codec/format";
 export { Format };
 
 export * from "./interface";
-export {
-  ContractState, DecodedVariable, DecodedTransaction, DecodedLog, EventOptions
-} from "./types/interface";
 
-export {
-  AbiArgument,
-  AnonymousDecoding,
-  ConstructorDecoding,
-  EventDecoding,
-  FunctionDecoding,
-  MessageDecoding,
-  UnknownDecoding
-} from "./types/decoding";
+import * as Decoding from "./decode/types";
+export { Decoding };
 // export * from "./types/errors";

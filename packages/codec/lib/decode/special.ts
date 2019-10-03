@@ -2,15 +2,14 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:special");
 
 import * as CodecUtils from "@truffle/codec/utils";
-import { Types, Values, Errors } from "@truffle/codec/format";
+import { Types, Values } from "@truffle/codec/format";
 import decodeValue from "./value";
-import { EvmInfo } from "@truffle/codec/types/evm";
-import { SpecialPointer } from "@truffle/codec/types/pointer";
-import { DecoderRequest } from "@truffle/codec/types/request";
-import { CompilerVersion } from "@truffle/codec/types/compiler";
+import { Pointer, Compiler } from "@truffle/codec/types";
+import * as Decoding from "./types";
+import * as Evm from "@truffle/codec/evm";
 import { solidityFamily } from "@truffle/codec/utils/compiler";
 
-export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeSpecial(dataType: Types.Type, pointer: Pointer.SpecialPointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   if(dataType.typeClass === "magic") {
     return yield* decodeMagic(dataType, pointer, info);
   }
@@ -19,7 +18,7 @@ export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPoi
   }
 }
 
-export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer, info: EvmInfo): Generator<DecoderRequest, Values.MagicResult, Uint8Array> {
+export function* decodeMagic(dataType: Types.MagicType, pointer: Pointer.SpecialPointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.MagicResult, Uint8Array> {
 
   let {state} = info;
 
@@ -120,7 +119,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
 }
 
 //NOTE: this is going to change again in 0.6.x!  be ready!
-function senderType(compiler: CompilerVersion): Types.AddressType {
+function senderType(compiler: Compiler.CompilerVersion): Types.AddressType {
   switch(solidityFamily(compiler)) {
     case "pre-0.5.0":
       return {
@@ -136,7 +135,7 @@ function senderType(compiler: CompilerVersion): Types.AddressType {
   }
 }
 
-function externalAddressType(compiler: CompilerVersion): Types.AddressType {
+function externalAddressType(compiler: Compiler.CompilerVersion): Types.AddressType {
   switch(solidityFamily(compiler)) {
     case "pre-0.5.0":
       return {

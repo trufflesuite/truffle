@@ -3,9 +3,12 @@ const debug = debugModule("codec:interface:decoders:contract");
 
 import * as CodecUtils from "@truffle/codec/utils";
 import { wrapElementaryViaDefinition, Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils } from "@truffle/codec/utils";
-import { DecoderContext, DecoderContexts } from "@truffle/codec/types/contexts";
 import * as Utils from "@truffle/codec/utils/interface";
-import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import { Ast, Pointer, Contexts, Storage } from "@truffle/codec/types";
+import * as Decoding from "@truffle/codec/decode/types";
+import * as Evm from "@truffle/codec/evm";
+import * as Allocation from "@truffle/codec/allocate/types";
+import * as DecoderTypes from "../types";
 import { Types, Values } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
@@ -13,31 +16,24 @@ import BN from "bn.js";
 import WireDecoder from "./wire";
 import { BlockType, Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
-import { Provider } from "web3/providers";
-import * as DecoderTypes from "@truffle/codec/types/interface";
-import { EvmInfo, AllocationInfo } from "@truffle/codec/types/evm";
-import { StorageMemberAllocation } from "@truffle/codec/types/allocation";
 import { getStorageAllocations, storageSize } from "@truffle/codec/allocate/storage";
-import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
 import { decodeVariable } from "@truffle/codec/core/decoding";
-import { Slot } from "@truffle/codec/types/storage";
 import { isWordsLength, equalSlots } from "@truffle/codec/utils/storage";
-import { StoragePointer } from "@truffle/codec/types/pointer";
 import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "@truffle/codec/interface/errors";
 
 export default class ContractDecoder {
 
   private web3: Web3;
 
-  private contexts: DecoderContexts; //note: this is deployed contexts only!
+  private contexts: Contexts.DecoderContexts; //note: this is deployed contexts only!
 
   private contract: ContractObject;
-  private contractNode: AstDefinition;
+  private contractNode: Ast.AstNode;
   private contractNetwork: string;
   private contextHash: string;
 
-  private allocations: AllocationInfo;
-  private stateVariableReferences: StorageMemberAllocation[];
+  private allocations: Evm.Types.AllocationInfo;
+  private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
   private wireDecoder: WireDecoder;
 
@@ -105,11 +101,11 @@ export default class ContractDecoder {
     return await this.wireDecoder.events(options);
   }
 
-  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
+  public abifyCalldataDecoding(decoding: Decoding.CalldataDecoding): Decoding.CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
 
-  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
+  public abifyLogDecoding(decoding: Decoding.LogDecoding): Decoding.LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
@@ -138,7 +134,7 @@ export default class ContractDecoder {
 
 interface ContractInfo {
   contract: ContractObject;
-  contractNode: AstDefinition;
+  contractNode: Ast.AstNode;
   contractNetwork: string;
   contextHash: string;
 }
@@ -147,22 +143,22 @@ export class ContractInstanceDecoder {
   private web3: Web3;
 
   private contract: ContractObject;
-  private contractNode: AstDefinition;
+  private contractNode: Ast.AstNode;
   private contractNetwork: string;
   private contractAddress: string;
   private contractCode: string;
   private contextHash: string;
 
-  private contexts: DecoderContexts = {}; //deployed contexts only
-  private additionalContexts: DecoderContexts = {}; //for passing to wire decoder when contract has no deployedBytecode
+  private contexts: Contexts.DecoderContexts = {}; //deployed contexts only
+  private additionalContexts: Contexts.DecoderContexts = {}; //for passing to wire decoder when contract has no deployedBytecode
 
-  private referenceDeclarations: AstReferences;
+  private referenceDeclarations: Ast.AstNodes;
   private userDefinedTypes: Types.TypesById;
-  private allocations: AllocationInfo;
+  private allocations: Evm.Types.AllocationInfo;
 
-  private stateVariableReferences: StorageMemberAllocation[];
+  private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
-  private mappingKeys: Slot[] = [];
+  private mappingKeys: Storage.Slot[] = [];
 
   private storageCache: DecoderTypes.StorageCache = {};
 
@@ -221,14 +217,14 @@ export class ContractInstanceDecoder {
       //the following line only has any effect if we're dealing with a library,
       //since the code we pulled from the blockchain obviously does not have unresolved link references!
       //(it's not strictly necessary even then, but, hey, why not?)
-      this.additionalContexts = <DecoderContexts>ContextUtils.normalizeContexts(this.additionalContexts);
+      this.additionalContexts = <Contexts.DecoderContexts>ContextUtils.normalizeContexts(this.additionalContexts);
       //again, since the code did not have unresolved link references, it is safe to just
       //mash these together like I'm about to
       this.contexts = {...this.contexts, ...this.additionalContexts};
     }
   }
 
-  private get context(): DecoderContext {
+  private get context(): Contexts.DecoderContext {
     return this.contexts[this.contextHash];
   }
 
@@ -241,8 +237,8 @@ export class ContractInstanceDecoder {
     }
   }
 
-  private async decodeVariable(variable: StorageMemberAllocation, block: number): Promise<DecoderTypes.DecodedVariable> {
-    const info: EvmInfo = {
+  private async decodeVariable(variable: Allocation.StorageMemberAllocation, block: number): Promise<DecoderTypes.DecodedVariable> {
+    const info: Evm.Types.EvmInfo = {
       state: {
         storage: {},
       },
@@ -325,7 +321,7 @@ export class ContractInstanceDecoder {
     return (await this.decodeVariable(variable, blockNumber)).value;
   }
 
-  private findVariableByNameOrId(nameOrId: string | number): StorageMemberAllocation | undefined {
+  private findVariableByNameOrId(nameOrId: string | number): Allocation.StorageMemberAllocation | undefined {
     //case 1: an ID was input
     if(typeof nameOrId === "number" || nameOrId.match(/[0-9]+/)) {
       let id: number = Number(nameOrId);
@@ -388,7 +384,7 @@ export class ContractInstanceDecoder {
   //see the comment on constructSlot for more detail on what forms are accepted
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    let slot: Storage.Slot | undefined = this.constructSlot(variable, ...indices)[0];
     //add mapping key and all ancestors
     debug("slot: %O", slot);
     while(slot !== undefined &&
@@ -408,7 +404,7 @@ export class ContractInstanceDecoder {
   //input is similar to watchMappingKey; will unwatch all descendants too
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    let slot: Storage.Slot | undefined = this.constructSlot(variable, ...indices)[0];
     if(slot === undefined) {
       return; //not strictly necessary, but may as well
     }
@@ -439,11 +435,11 @@ export class ContractInstanceDecoder {
     return await this.wireDecoder.decodeLogs(logs, {}, this.additionalContexts);
   }
 
-  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
+  public abifyCalldataDecoding(decoding: Decoding.CalldataDecoding): Decoding.CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
 
-  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
+  public abifyLogDecoding(decoding: Decoding.LogDecoding): Decoding.LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
@@ -464,7 +460,7 @@ export class ContractInstanceDecoder {
   //bytes mapping keys should be given as hex strings beginning with "0x"
   //address mapping keys are like bytes; checksum case is not required
   //boolean mapping keys may be given either as booleans, or as string "true" or "false"
-  private constructSlot(variable: number | string, ...indices: any[]): [Slot | undefined , AstDefinition | undefined] {
+  private constructSlot(variable: number | string, ...indices: any[]): [Storage.Slot | undefined , Ast.AstNode | undefined] {
     //base case: we need to locate the variable and its definition
     if(indices.length === 0) {
       let allocation = this.findVariableByNameOrId(variable);
@@ -486,8 +482,8 @@ export class ContractInstanceDecoder {
     let rawIndex = indices[indices.length - 1];
     let index: any;
     let key: Values.ElementaryValue;
-    let slot: Slot;
-    let definition: AstDefinition;
+    let slot: Storage.Slot;
+    let definition: Ast.AstNode;
     switch(DefinitionUtils.typeClass(parentDefinition)) {
       case "array":
         if(rawIndex instanceof BN) {
@@ -519,7 +515,7 @@ export class ContractInstanceDecoder {
         break;
       case "struct":
         let parentId = DefinitionUtils.typeId(parentDefinition);
-        let allocation: StorageMemberAllocation;
+        let allocation: Allocation.StorageMemberAllocation;
         if(typeof rawIndex === "number") {
           index = rawIndex;
           allocation = this.allocations.storage[parentId].members[index];
@@ -534,7 +530,7 @@ export class ContractInstanceDecoder {
         slot = {
           path: parentSlot,
           //need type coercion here -- we know structs don't contain constants but the compiler doesn't
-          offset: (<StoragePointer>allocation.pointer).range.from.slot.offset.clone()
+          offset: (<Pointer.StoragePointer>allocation.pointer).range.from.slot.offset.clone()
         }
         break;
       default:

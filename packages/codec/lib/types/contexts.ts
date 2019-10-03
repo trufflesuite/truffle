@@ -1,5 +1,5 @@
 import * as AbiTypes from "./abi";
-import { ContractKind } from "./ast";
+import { ContractKind } from "./common";
 import { CompilerVersion } from "./compiler";
 
 export type Contexts = DecoderContexts | DebuggerContexts;

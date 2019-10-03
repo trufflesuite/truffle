@@ -1,28 +1,25 @@
-export type Location = "storage" | "memory" | "calldata";
-export type Visibility = "internal" | "external";
-export type Mutability = "pure" | "view" | "nonpayable" | "payable";
-export type ContractKind = "contract" | "library" | "interface";
+import { Mutability, ContractKind } from "./common";
 
-export interface AstTypeDescriptions {
+export interface TypeDescriptions {
   typeIdentifier: string;
   typeString?: string;
 }
 
-export interface AstDefinition {
+export interface AstNode {
   constant?: boolean;
   id: number;
   name: string;
   canonicalName?: string;
   linearizedBaseContracts?: number[];
-  members?: AstDefinition[];
-  nodes?: AstDefinition[];
+  members?: AstNode[];
+  nodes?: AstNode[];
   nodeType: string;
   scope?: number;
   src: string;
   stateVariable?: boolean;
   storageLocation?: string;
-  typeDescriptions: AstTypeDescriptions;
-  typeName?: AstDefinition;
+  typeDescriptions: TypeDescriptions;
+  typeName?: AstNode;
   expression?: {
     referencedDeclaration?: any;
   };
@@ -35,20 +32,20 @@ export interface AstDefinition {
   hexValue?: string;
   referencedDeclaration?: any;
   parameters?: {
-    parameters: AstDefinition[];
+    parameters: AstNode[];
   };
   returnParameters?: {
-    parameters: AstDefinition[];
+    parameters: AstNode[];
   };
   parameterTypes?: {
-    parameters: AstDefinition[];
+    parameters: AstNode[];
   };
   returnParameterTypes?: {
-    parameters: AstDefinition[];
+    parameters: AstNode[];
   };
-  baseType?: AstDefinition;
-  keyType?: AstDefinition;
-  valueType?: AstDefinition;
+  baseType?: AstNode;
+  keyType?: AstNode;
+  valueType?: AstNode;
   payable?: boolean;
   indexed?: boolean;
   anonymous?: boolean;
@@ -59,8 +56,8 @@ export interface AstDefinition {
   //in the future, but sticking with this for now.
 }
 
-export interface AstReferences {
-  [nodeId: number]: AstDefinition;
+export interface AstNodes {
+  [nodeId: number]: AstNode;
 };
 
 //the debugger uses this
@@ -74,6 +71,6 @@ export interface Scopes {
       name: string;
       id: number;
     }[];
-    definition?: AstDefinition;
+    definition?: AstNode;
   }
 }

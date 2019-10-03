@@ -1,19 +1,14 @@
-import { StorageLength } from "./storage";
-import * as Pointer from "./pointer";
-import { DecoderContext } from "./contexts";
-import * as AbiTypes from "./abi";
-import { CompilerVersion } from "./compiler";
-import { AstDefinition } from "./ast";
+import { Storage, Pointer, Abi as AbiTypes, Ast, Contexts, Compiler } from "@truffle/codec/types";
+import * as Decoding from "@truffle/codec/decode/types";
 import { Types } from "@truffle/codec/format";
-import { DecodingMode } from "./decoding";
 
 //for passing to calldata/event allocation functions
 export interface ContractAllocationInfo {
   abi: AbiTypes.Abi;
-  contractNode: AstDefinition;
-  deployedContext?: DecoderContext;
-  constructorContext?: DecoderContext;
-  compiler: CompilerVersion;
+  contractNode: Ast.AstNode;
+  deployedContext?: Contexts.DecoderContext;
+  constructorContext?: Contexts.DecoderContext;
+  compiler: Compiler.CompilerVersion;
 }
 
 export interface AbiSizeInfo {
@@ -32,16 +27,16 @@ export interface StorageAllocations {
 //an individual storage allocation for (the members of) a struct or (the state
 //variables of) a contract
 export interface StorageAllocation {
-  definition: AstDefinition;
-  size?: StorageLength; //only used for structs
+  definition: Ast.AstNode;
+  size?: Storage.StorageLength; //only used for structs
   members: StorageMemberAllocation[];
 }
 
 //an individual storage reference for a member of a struct or a state variable
 //of a contract
 export interface StorageMemberAllocation {
-  definition: AstDefinition;
-  definedIn?: AstDefinition; //used only for variables of contracts, not structs
+  definition: Ast.AstNode;
+  definedIn?: Ast.AstNode; //used only for variables of contracts, not structs
   pointer: Pointer.StoragePointer | Pointer.ConstantDefinitionPointer; //latter case will only happen
   //for variables of contracts, not structs
 }
@@ -77,12 +72,12 @@ export interface MemoryAllocations {
 }
 
 export interface MemoryAllocation {
-  definition: AstDefinition;
+  definition: Ast.AstNode;
   members: MemoryMemberAllocation[];
 }
 
 export interface MemoryMemberAllocation {
-  definition: AstDefinition;
+  definition: Ast.AstNode;
   pointer: Pointer.MemoryPointer;
 }
 
@@ -114,7 +109,7 @@ export interface CalldataAllocation {
   abi: AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry;
   offset: number; //measured in bytes
   arguments: CalldataArgumentAllocation[];
-  allocationMode: DecodingMode;
+  allocationMode: Decoding.DecodingMode;
 }
 
 export interface CalldataArgumentAllocation {
@@ -155,7 +150,7 @@ export interface EventAllocation {
   contextHash: string;
   anonymous: boolean;
   arguments: EventArgumentAllocation[];
-  allocationMode: DecodingMode;
+  allocationMode: Decoding.DecodingMode;
 }
 
 export interface EventArgumentAllocation {

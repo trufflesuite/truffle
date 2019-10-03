@@ -3,9 +3,8 @@ const debug = debugModule("codec:utils:abi");
 
 import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition, AstReferences, Mutability } from "@truffle/codec/types/ast";
+import { Ast, Abi as AbiTypes, Common } from "@truffle/codec/types";
 import { definitionToAbi } from "./definition2abi";
-import * as AbiTypes from "@truffle/codec/types/abi";
 import Web3 from "web3";
 
 //NOTE: SchemaAbi is kind of loose and a pain to use.
@@ -77,7 +76,7 @@ export namespace AbiUtils {
   }
 
   //shim for old abi versions
-  function abiMutability(abiEntry: AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry | AbiTypes.FallbackAbiEntry): Mutability {
+  function abiMutability(abiEntry: AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry | AbiTypes.FallbackAbiEntry): Common.Mutability {
     if(abiEntry.stateMutability !== undefined) {
       return abiEntry.stateMutability;
     }
@@ -147,7 +146,7 @@ export namespace AbiUtils {
     }
   }
 
-  export function definitionMatchesAbi(abiEntry: AbiTypes.AbiEntry, definition: AstDefinition, referenceDeclarations: AstReferences): boolean {
+  export function definitionMatchesAbi(abiEntry: AbiTypes.AbiEntry, definition: Ast.AstNode, referenceDeclarations: Ast.AstNodes): boolean {
     try {
       return abisMatch(abiEntry, definitionToAbi(definition, referenceDeclarations));
     }

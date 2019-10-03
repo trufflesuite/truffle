@@ -1,8 +1,6 @@
-import { DecoderContext, DecoderContexts } from "./contexts";
-import { AstDefinition, AstReferences, ContractKind, Mutability } from "./ast";
+import { Ast, Common, Contexts, Storage } from "@truffle/codec/types";
+import * as Allocation from "@truffle/codec/allocate/types";
 import { Types } from "@truffle/codec/format";
-import * as Allocations from "./allocation";
-import { Slot } from "./storage";
 
 export interface EvmState {
   storage: WordMapping;
@@ -22,20 +20,20 @@ export interface WordMapping {
 
 export interface EvmInfo {
   state: EvmState;
-  mappingKeys?: Slot[];
+  mappingKeys?: Storage.Slot[];
   userDefinedTypes?: Types.TypesById;
   allocations: AllocationInfo;
-  contexts?: DecoderContexts;
-  currentContext?: DecoderContext;
+  contexts?: Contexts.DecoderContexts;
+  currentContext?: Contexts.DecoderContext;
   internalFunctionsTable?: InternalFunctions;
 }
 
 export interface AllocationInfo {
-  storage?: Allocations.StorageAllocations;
-  memory?: Allocations.MemoryAllocations;
-  abi?: Allocations.AbiAllocations;
-  calldata?: Allocations.CalldataAllocations;
-  event?: Allocations.EventAllocations;
+  storage?: Allocation.StorageAllocations;
+  memory?: Allocation.MemoryAllocations;
+  abi?: Allocation.AbiAllocations;
+  calldata?: Allocation.CalldataAllocations;
+  event?: Allocation.EventAllocations;
 }
 
 export interface InternalFunctions {
@@ -45,15 +43,15 @@ export interface InternalFunctions {
 export interface InternalFunction {
   source?: number;
   pointer?: string;
-  node?: AstDefinition;
+  node?: Ast.AstNode;
   name?: string;
   id?: number;
-  mutability?: Mutability;
+  mutability?: Common.Mutability;
   contractPointer?: string;
-  contractNode?: AstDefinition;
+  contractNode?: Ast.AstNode;
   contractName?: string;
   contractId?: number;
-  contractKind?: ContractKind;
+  contractKind?: Common.ContractKind;
   contractPayable?: boolean;
   isDesignatedInvalid: boolean;
 }

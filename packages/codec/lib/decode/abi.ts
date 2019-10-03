@@ -7,17 +7,15 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
-import { AbiDataPointer, DataPointer } from "@truffle/codec/types/pointer";
-import { AbiMemberAllocation } from "@truffle/codec/types/allocation";
+import { Pointer } from "@truffle/codec/types";
+import * as Decoding from "./types";
+import * as Evm from "@truffle/codec/evm";
 import { abiSizeInfo } from "@truffle/codec/allocate/abi";
-import { EvmInfo } from "@truffle/codec/types/evm";
-import { DecoderOptions } from "@truffle/codec/types/options";
-import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
 
 type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
 
-export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeAbi(dataType: Types.Type, pointer: Pointer.AbiDataPointer, info: Evm.Types.EvmInfo, options: Decoding.DecoderOptions = {}): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType) || dataType.typeClass === "tuple") {
     //I don't want tuples to be considered a reference type, but it makes sense
     //to group them for this purpose
@@ -48,7 +46,7 @@ export default function* decodeAbi(dataType: Types.Type, pointer: AbiDataPointer
   }
 }
 
-export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Types.TupleType, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Types.TupleType, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo, options: Decoding.DecoderOptions = {}): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   let { strictAbiMode: strict, abiPointerBase: base } = options;
   base = base || 0; //in case base was undefined
   const { allocations: { abi: allocations }, state } = info;
@@ -172,7 +170,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
         };
       }
 
-      let childPointer: AbiDataPointer = {
+      let childPointer: Pointer.AbiDataPointer = {
         location,
         start: startPosition + CodecUtils.EVM.WORD_SIZE,
         length
@@ -283,7 +281,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
   }
 }
 
-export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType | Types.TupleType, pointer: AbiDataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType | Types.TupleType, pointer: Pointer.AbiDataPointer, info: Evm.Types.EvmInfo, options: Decoding.DecoderOptions = {}): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   debug("static");
   debug("pointer %o", pointer);
   const location = pointer.location;
@@ -358,7 +356,7 @@ export function* decodeAbiReferenceStatic(dataType: Types.ReferenceType | Types.
 }
 
 //note that this function takes the start position as a *number*; it does not take a pointer
-function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLocation, startPosition: number, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.StructResult, Uint8Array> {
+function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLocation, startPosition: number, info: Evm.Types.EvmInfo, options: Decoding.DecoderOptions = {}): Generator<Decoding.DecoderRequest, Values.StructResult, Uint8Array> {
   const { userDefinedTypes, allocations: { abi: allocations } } = info;
 
   const typeLocation = location === "eventdata"
@@ -387,7 +385,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
   for(let index = 0; index < structAllocation.members.length; index++) {
     const memberAllocation = structAllocation.members[index];
     const memberPointer = memberAllocation.pointer;
-    const childPointer: AbiDataPointer = {
+    const childPointer: Pointer.AbiDataPointer = {
       location,
       start: startPosition + memberPointer.start,
       length: memberPointer.length
@@ -427,7 +425,7 @@ function* decodeAbiStructByPosition(dataType: Types.StructType, location: AbiLoc
 }
 
 //note that this function takes the start position as a *number*; it does not take a pointer
-function* decodeAbiTupleByPosition(dataType: Types.TupleType, location: AbiLocation, startPosition: number, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.TupleResult, Uint8Array> {
+function* decodeAbiTupleByPosition(dataType: Types.TupleType, location: AbiLocation, startPosition: number, info: Evm.Types.EvmInfo, options: Decoding.DecoderOptions = {}): Generator<Decoding.DecoderRequest, Values.TupleResult, Uint8Array> {
   //WARNING: This case is written in a way that involves a bunch of unnecessary recomputation!
   //I'm writing it this way anyway for simplicity, to avoid rewriting the decoder
   //However it may be worth revisiting this in the future if performance turns out to be a problem
@@ -437,7 +435,7 @@ function* decodeAbiTupleByPosition(dataType: Types.TupleType, location: AbiLocat
   let position = startPosition;
   for(const { name, type: memberType } of dataType.memberTypes) {
     const memberSize = abiSizeInfo(memberType, info.allocations.abi).size;
-    const childPointer: AbiDataPointer = {
+    const childPointer: Pointer.AbiDataPointer = {
       location,
       start: position,
       length: memberSize

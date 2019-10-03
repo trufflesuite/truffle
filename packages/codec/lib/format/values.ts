@@ -15,7 +15,6 @@ import * as Types from "./types";
 import * as Errors from "./errors";
 import {
   ElementaryValue,
-  BytesValue,
   UintValue,
   IntValue,
   BoolValue,
@@ -23,14 +22,11 @@ import {
   BytesDynamicValue,
   AddressValue,
   StringValue,
-  StringValueInfo,
-  StringValueInfoValid,
-  StringValueInfoMalformed,
   FixedValue,
   UfixedValue
 } from "./elementary";
-import { Mutability } from "@truffle/codec/types/ast";
-import { FunctionAbiEntry } from "@truffle/codec/types/abi";
+import * as Common from "@truffle/codec/types/common";
+import * as Abi from "@truffle/codec/types/abi";
 
 export * from "./elementary";
 
@@ -236,7 +232,7 @@ export interface FunctionExternalValueInfoKnown {
   kind: "known";
   contract: ContractValueInfoKnown;
   selector: string; //formatted as a bytes4
-  abi: FunctionAbiEntry;
+  abi: Abi.FunctionAbiEntry;
   //may have more optional fields added later, I'll leave these out for now
 }
 
@@ -281,7 +277,7 @@ export interface FunctionInternalValueInfoKnown {
   constructorProgramCounter: number;
   name: string;
   definedIn: Types.ContractType;
-  mutability?: Mutability;
+  mutability?: Common.Mutability;
   //may have more optional fields added later
 }
 

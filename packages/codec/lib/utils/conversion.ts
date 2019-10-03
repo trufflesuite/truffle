@@ -5,9 +5,9 @@ import BN from "bn.js";
 import Big from "big.js";
 import Web3 from "web3";
 import { Constants } from "./constants";
-import { Types, Values } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import { enumFullName } from "./inspect";
-import { DecodedVariable } from "@truffle/codec/types/interface";
+import * as Types from "@truffle/codec/interface/types";
 
 export namespace Conversion {
 
@@ -198,7 +198,7 @@ export namespace Conversion {
 
   //NOTE: Definitely do not use this in real code!  For tests only!
   //for convenience: invokes the nativize method on all the given variables
-  export function nativizeVariables(variables: {[name: string]: Values.Result}): {[name: string]: any} {
+  export function nativizeVariables(variables: {[name: string]: Format.Values.Result}): {[name: string]: any} {
     return Object.assign({}, ...Object.entries(variables).map(
       ([name, value]) => ({[name]: nativize(value)})
     ));
@@ -207,7 +207,7 @@ export namespace Conversion {
   //NOTE: Definitely do not use this in real code!  For tests only!
   //for convenience: invokes the nativize method on all the given variables, and changes them to
   //the old format
-  export function nativizeDecoderVariables(variables: DecodedVariable[]): {[name: string]: any} {
+  export function nativizeDecoderVariables(variables: Types.DecodedVariable[]): {[name: string]: any} {
     return Object.assign({}, ...variables.map(
       ({name, value}) => ({[name]: nativize(value)})
     ));
@@ -221,7 +221,7 @@ export namespace Conversion {
   //NOTE: does NOT do this recursively inside structs, arrays, etc!
   //I mean, those aren't elementary and therefore aren't in the domain
   //anyway, but still
-  export function cleanBool(result: Values.ElementaryResult): Values.ElementaryResult {
+  export function cleanBool(result: Format.Values.ElementaryResult): Format.Values.ElementaryResult {
     switch(result.kind) {
       case "value":
         return result;
@@ -230,7 +230,7 @@ export namespace Conversion {
           case "BoolOutOfRangeError":
             //return true
             return {
-              type: <Types.BoolType> result.type,
+              type: <Format.Types.BoolType> result.type,
               kind: "value",
               value: {
                 asBoolean: true
@@ -245,22 +245,22 @@ export namespace Conversion {
   //HACK! Avoid using! Only use this if:
   //1. you absolutely have to, or
   //2. it's just testing, not real code
-  export function nativize(result: Values.Result): any {
+  export function nativize(result: Format.Values.Result): any {
     if(result.kind === "error") {
       return undefined;
     }
     switch(result.type.typeClass) {
       case "uint":
       case "int":
-        return (<Values.UintValue|Values.IntValue>result).value.asBN.toNumber(); //WARNING
+        return (<Format.Values.UintValue|Format.Values.IntValue>result).value.asBN.toNumber(); //WARNING
       case "bool":
-        return (<Values.BoolValue>result).value.asBoolean;
+        return (<Format.Values.BoolValue>result).value.asBoolean;
       case "bytes":
-        return (<Values.BytesValue>result).value.asHex;
+        return (<Format.Values.BytesValue>result).value.asHex;
       case "address":
-        return (<Values.AddressValue>result).value.asAddress;
+        return (<Format.Values.AddressValue>result).value.asAddress;
       case "string": {
-        let coercedResult = <Values.StringValue> result;
+        let coercedResult = <Format.Values.StringValue> result;
         switch(coercedResult.value.kind) {
           case "valid":
             return coercedResult.value.asString;
@@ -275,29 +275,29 @@ export namespace Conversion {
         //HACK: Big doesn't have a toNumber() method, so we convert to string and then parse with Number
         //NOTE: we don't bother setting the magic variables Big.NE or Big.PE first, as the choice of
         //notation shouldn't affect the result (can you believe I have to write this? @_@)
-        return Number((<Values.FixedValue|Values.UfixedValue>result).value.asBig.toString()); //WARNING
+        return Number((<Format.Values.FixedValue|Format.Values.UfixedValue>result).value.asBig.toString()); //WARNING
       case "array": //WARNING: circular case not handled; will loop infinitely
-        return (<Values.ArrayValue>result).value.map(nativize);
+        return (<Format.Values.ArrayValue>result).value.map(nativize);
       case "mapping":
-        return Object.assign({}, ...(<Values.MappingValue>result).value.map(
+        return Object.assign({}, ...(<Format.Values.MappingValue>result).value.map(
           ({key, value}) => ({[nativize(key).toString()]: nativize(value)})
         ));
       case "struct": //WARNING: circular case not handled; will loop infinitely
-        return Object.assign({}, ...(<Values.StructValue>result).value.map(
+        return Object.assign({}, ...(<Format.Values.StructValue>result).value.map(
           ({name, value}) => ({[name]: nativize(value)})
         ));
       case "tuple":
-        return (<Values.TupleValue>result).value.map(
+        return (<Format.Values.TupleValue>result).value.map(
           ({value}) => nativize(value)
         );
       case "magic":
-        return Object.assign({}, ...Object.entries((<Values.MagicValue>result).value).map(
+        return Object.assign({}, ...Object.entries((<Format.Values.MagicValue>result).value).map(
             ([key, value]) => ({[key]: nativize(value)})
         ));
       case "enum":
-        return enumFullName(<Values.EnumValue>result);
+        return enumFullName(<Format.Values.EnumValue>result);
       case "contract": {
-        let coercedResult = <Values.ContractValue> result;
+        let coercedResult = <Format.Values.ContractValue> result;
         switch(coercedResult.value.kind) {
           case "known":
             return `${coercedResult.value.class.typeName}(${coercedResult.value.address})`;
@@ -309,7 +309,7 @@ export namespace Conversion {
       case "function":
         switch(result.type.visibility) {
           case "external": {
-            let coercedResult = <Values.FunctionExternalValue> result;
+            let coercedResult = <Format.Values.FunctionExternalValue> result;
             switch(coercedResult.value.kind) {
               case "known":
                 return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).${coercedResult.value.abi.name}`
@@ -320,7 +320,7 @@ export namespace Conversion {
             }
           }
           case "internal": {
-            let coercedResult = <Values.FunctionInternalValue> result;
+            let coercedResult = <Format.Values.FunctionInternalValue> result;
             switch(coercedResult.value.kind) {
               case "function":
                 return `${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}`;

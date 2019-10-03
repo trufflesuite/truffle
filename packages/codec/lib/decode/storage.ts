@@ -6,16 +6,15 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
-import { StoragePointer, DataPointer } from "@truffle/codec/types/pointer";
-import { EvmInfo } from "@truffle/codec/types/evm";
+import { Pointer, Storage as StorageTypes } from "@truffle/codec/types";
+import * as Decoding from "./types";
+import * as Evm from "@truffle/codec/evm";
 import { storageSizeForType } from "@truffle/codec/allocate/storage";
-import * as StorageTypes from "@truffle/codec/types/storage";
 import { isWordsLength, slotAddress } from "@truffle/codec/utils/storage";
 import BN from "bn.js";
-import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeStorage(dataType: Types.Type, pointer: StoragePointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeStorage(dataType: Types.Type, pointer: Pointer.StoragePointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {
     return yield* decodeStorageReference(dataType, pointer, info);
   }
@@ -27,7 +26,7 @@ export default function* decodeStorage(dataType: Types.Type, pointer: StoragePoi
 //decodes storage at the address *read* from the pointer -- hence why this takes DataPointer rather than StoragePointer.
 //NOTE: ONLY for use with pointers to reference types!
 //Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
-export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
 
   const allocations = info.allocations.storage;
 
@@ -77,7 +76,7 @@ export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, 
   return yield* decodeStorageReference(dataType, newPointer, info);
 }
 
-export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: StoragePointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: Pointer.StoragePointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   var data;
   var length;
 
@@ -309,7 +308,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
 
       for(let index = 0; index < members.length; index++) {
         const memberAllocation = members[index];
-        const memberPointer = <StoragePointer>memberAllocation.pointer;
+        const memberPointer = <Pointer.StoragePointer>memberAllocation.pointer;
           //the type system thinks memberPointer might also be a constant
           //definition pointer.  However, structs can't contain constants,
           //so *we* know it's not, and can safely coerce it.
@@ -393,7 +392,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
 
       for (const {key} of keySlots) {
 
-        let valuePointer: StoragePointer;
+        let valuePointer: Pointer.StoragePointer;
 
         if(isWordsLength(valueSize)) {
           valuePointer = {

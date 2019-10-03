@@ -2,18 +2,14 @@ import debugModule from "debug";
 const debug = debugModule("codec:utils:contexts");
 
 import { EVM } from "./evm";
-import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
-import { AbiUtils } from "./abi";
 import { Types } from "@truffle/codec/format";
-import { AstDefinition, AstReferences, ContractKind } from "@truffle/codec/types/ast";
-import { CompilerVersion } from "@truffle/codec/types/compiler";
-import { Contexts, Context, DebuggerContexts, DecoderContexts, DecoderContext } from "@truffle/codec/types/contexts";
+import { Contexts } from "@truffle/codec/types";
 import escapeRegExp from "lodash.escaperegexp";
 
 export namespace ContextUtils {
 
   //I split these next two apart because the type system was giving me trouble
-  export function findDecoderContext(contexts: DecoderContexts, binary: string): DecoderContext | null {
+  export function findDecoderContext(contexts: Contexts.DecoderContexts, binary: string): Contexts.DecoderContext | null {
     debug("binary %s", binary);
     let context = Object.values(contexts).find(context =>
       matchContext(context, binary)
@@ -22,7 +18,7 @@ export namespace ContextUtils {
     return context !== undefined ? context : null;
   }
 
-  export function findDebuggerContext(contexts: DebuggerContexts, binary: string): string | null {
+  export function findDebuggerContext(contexts: Contexts.DebuggerContexts, binary: string): string | null {
     debug("binary %s", binary);
     let context = Object.values(contexts).find(context =>
       matchContext(context, binary)
@@ -31,7 +27,7 @@ export namespace ContextUtils {
     return context !== undefined ? context.context : null;
   }
 
-  export function matchContext(context: Context, givenBinary: string): boolean {
+  export function matchContext(context: Contexts.Context, givenBinary: string): boolean {
     let { binary, isConstructor } = context;
     let lengthDifference = givenBinary.length - binary.length;
     //first: if it's not a constructor, they'd better be equal in length.
@@ -60,7 +56,7 @@ export namespace ContextUtils {
     return true;
   }
 
-  export function normalizeContexts(contexts: Contexts): Contexts {
+  export function normalizeContexts(contexts: Contexts.Contexts): Contexts.Contexts {
     //unfortunately, due to our current link references format, we can't
     //really use the binary from the artifact directly -- neither for purposes
     //of matching, nor for purposes of decoding internal functions.  So, we
@@ -70,7 +66,7 @@ export namespace ContextUtils {
     debug("normalizing contexts");
 
     //first, let's clone the input
-    let newContexts: Contexts = {...contexts};
+    let newContexts: Contexts.Contexts = {...contexts};
 
     debug("contexts cloned");
     debug("cloned contexts: %O", newContexts);
@@ -146,7 +142,7 @@ export namespace ContextUtils {
     return newContexts;
   }
 
-  export function contextToType(context: Context): Types.ContractType {
+  export function contextToType(context: Contexts.Context): Types.ContractType {
     if(context.contractId !== undefined) {
       return {
         typeClass: "contract",

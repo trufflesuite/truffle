@@ -2,24 +2,22 @@ import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:wire");
 
 import * as CodecUtils from "@truffle/codec/utils";
-import { Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils, abifyCalldataDecoding, abifyLogDecoding, MakeType } from "@truffle/codec/utils";
+import { AbiUtils, ContextUtils, abifyCalldataDecoding, abifyLogDecoding, MakeType } from "@truffle/codec/utils";
 import * as Utils from "@truffle/codec/utils/interface";
-import * as Contexts from "@truffle/codec/types/contexts";
-import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
-import { Types, Values } from "@truffle/codec/format";
+import { Ast, Contexts } from "@truffle/codec/types";
+import * as Allocation from "@truffle/codec/allocate/types";
+import * as Decoding from "@truffle/codec/decode/types";
+import * as Evm from "@truffle/codec/evm";
+import * as DecoderTypes from "../types";
+import { Types } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
-import BN from "bn.js";
-import { BlockType, Transaction } from "web3/eth/types";
+import { Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
 import { Provider } from "web3/providers";
-import * as DecoderTypes from "@truffle/codec/types/interface";
-import { EvmInfo, AllocationInfo } from "@truffle/codec/types/evm";
-import { AbiAllocations, ContractAllocationInfo } from "@truffle/codec/types/allocation";
 import { getAbiAllocations, getCalldataAllocations, getEventAllocations } from "@truffle/codec/allocate/abi";
 import { getStorageAllocations } from "@truffle/codec/allocate/storage";
 import { decodeCalldata, decodeEvent } from "@truffle/codec/core/decoding";
-import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
 
 export default class WireDecoder {
   private web3: Web3;
@@ -27,13 +25,13 @@ export default class WireDecoder {
   private network: string;
 
   private contracts: DecoderTypes.ContractMapping = {};
-  private contractNodes: AstReferences = {};
+  private contractNodes: Ast.AstNodes = {};
   private contexts: Contexts.DecoderContexts = {}; //all contexts
   private deployedContexts: Contexts.DecoderContexts = {};
 
-  private referenceDeclarations: AstReferences;
+  private referenceDeclarations: Ast.AstNodes;
   private userDefinedTypes: Types.TypesById;
-  private allocations: AllocationInfo;
+  private allocations: Evm.Types.AllocationInfo;
 
   private codeCache: DecoderTypes.CodeCache = {};
 
@@ -47,7 +45,7 @@ export default class WireDecoder {
     let contractsAndContexts: DecoderTypes.ContractAndContexts[] = [];
 
     for(let contract of contracts) {
-      let node: AstDefinition = Utils.getContractNode(contract);
+      let node: Ast.AstNode = Utils.getContractNode(contract);
       let deployedContext: Contexts.DecoderContext | undefined = undefined;
       let constructorContext: Contexts.DecoderContext | undefined = undefined;
       if(node !== undefined) {
@@ -83,7 +81,7 @@ export default class WireDecoder {
 
     ({definitions: this.referenceDeclarations, types: this.userDefinedTypes} = this.collectUserDefinedTypes());
 
-    let allocationInfo: ContractAllocationInfo[] = contractsAndContexts.map(
+    let allocationInfo: Allocation.ContractAllocationInfo[] = contractsAndContexts.map(
       ({contract: { abi, compiler }, node, deployedContext, constructorContext}) => ({
         abi: AbiUtils.schemaAbiToAbi(abi),
         compiler,
@@ -102,8 +100,8 @@ export default class WireDecoder {
     debug("done with allocation");
   }
 
-  private collectUserDefinedTypes(): {definitions: AstReferences, types: Types.TypesById} {
-    let references: AstReferences = {};
+  private collectUserDefinedTypes(): {definitions: Ast.AstNodes, types: Types.TypesById} {
+    let references: Ast.AstNodes = {};
     let types: Types.TypesById = {};
     for(const id in this.contracts) {
       const compiler = this.contracts[id].compiler;
@@ -152,7 +150,7 @@ export default class WireDecoder {
     const context = await this.getContextByAddress(transaction.to, block, transaction.input, additionalContexts);
 
     const data = CodecUtils.Conversion.toBytes(transaction.input);
-    const info: EvmInfo = {
+    const info: Evm.Types.EvmInfo = {
       state: {
         storage: {},
         calldata: data,
@@ -191,7 +189,7 @@ export default class WireDecoder {
     const block = log.blockNumber;
     const data = CodecUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(CodecUtils.Conversion.toBytes);
-    const info: EvmInfo = {
+    const info: Evm.Types.EvmInfo = {
       state: {
         storage: {},
         eventdata: data,
@@ -255,11 +253,11 @@ export default class WireDecoder {
     return events;
   }
 
-  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
+  public abifyCalldataDecoding(decoding: Decoding.CalldataDecoding): Decoding.CalldataDecoding {
     return abifyCalldataDecoding(decoding, this.userDefinedTypes);
   }
 
-  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
+  public abifyLogDecoding(decoding: Decoding.LogDecoding): Decoding.LogDecoding {
     return abifyLogDecoding(decoding, this.userDefinedTypes);
   }
 
@@ -283,7 +281,7 @@ export default class WireDecoder {
   }
 
   //the following functions are intended for internal use only
-  public getReferenceDeclarations(): AstReferences {
+  public getReferenceDeclarations(): Ast.AstNodes {
     return this.referenceDeclarations;
   }
 
@@ -291,7 +289,7 @@ export default class WireDecoder {
     return this.userDefinedTypes;
   }
 
-  public getAllocations(): AllocationInfo {
+  public getAllocations(): Evm.Types.AllocationInfo {
     return {
       abi: this.allocations.abi,
       storage: this.allocations.storage

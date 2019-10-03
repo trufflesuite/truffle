@@ -5,17 +5,13 @@ import read from "@truffle/codec/read";
 import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
-import BN from "bn.js";
-import Big from "big.js";
 import utf8 from "utf8";
-import { DataPointer } from "@truffle/codec/types/pointer";
-import { EvmInfo } from "@truffle/codec/types/evm";
-import { DecoderOptions } from "@truffle/codec/types/options";
-import { DecoderRequest } from "@truffle/codec/types/request";
+import { Contexts, Pointer } from "@truffle/codec/types";
+import * as Decoding from "./types";
+import * as Evm from "@truffle/codec/evm";
 import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
-import { ContractInfoAndContext } from "@truffle/codec/types/decoding";
 
-export default function* decodeValue(dataType: Types.Type, pointer: DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeValue(dataType: Types.Type, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo, options: Decoding.DecoderOptions = {}): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   const { state } = info;
   const { permissivePadding, strictAbiMode: strict } = options; //if these are undefined they'll still be falsy so OK
 
@@ -424,11 +420,11 @@ export function decodeString(bytes: Uint8Array): Values.StringValueInfo {
 }
 
 //NOTE that this function returns a ContractValueInfo, not a ContractResult
-export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Generator<DecoderRequest, Values.ContractValueInfo, Uint8Array> {
+export function* decodeContract(addressBytes: Uint8Array, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.ContractValueInfo, Uint8Array> {
   return (yield* decodeContractAndContext(addressBytes, info)).contractInfo;
 }
 
-function* decodeContractAndContext(addressBytes: Uint8Array, info: EvmInfo): Generator<DecoderRequest, ContractInfoAndContext, Uint8Array> {
+function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, ContractInfoAndContext, Uint8Array> {
   let address = CodecUtils.Conversion.toAddress(addressBytes);
   let rawAddress = CodecUtils.Conversion.toHexString(addressBytes);
   let codeBytes: Uint8Array = yield {
@@ -462,7 +458,7 @@ function* decodeContractAndContext(addressBytes: Uint8Array, info: EvmInfo): Gen
 
 //note: address can have extra zeroes on the left like elsewhere, but selector should be exactly 4 bytes
 //NOTE this again returns a FunctionExternalValueInfo, not a FunctionExternalResult
-export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): Generator<DecoderRequest, Values.FunctionExternalValueInfo, Uint8Array> {
+export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.FunctionExternalValueInfo, Uint8Array> {
   let {contractInfo: contract, context} = yield* decodeContractAndContext(addressBytes, info);
   let selector = CodecUtils.Conversion.toHexString(selectorBytes);
   if(contract.kind === "unknown") {
@@ -492,7 +488,7 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
 
 //this one works a bit differently -- in order to handle errors, it *does* return a FunctionInternalResult
 //also note, I haven't put the same sort of error-handling in this one since it's only intended to run with full info (for now, anyway)
-export function decodeInternalFunction(dataType: Types.FunctionInternalType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: EvmInfo): Values.FunctionInternalResult {
+export function decodeInternalFunction(dataType: Types.FunctionInternalType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: Evm.Types.EvmInfo): Values.FunctionInternalResult {
   let deployedPc: number = CodecUtils.Conversion.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = CodecUtils.Conversion.toBN(constructorPcBytes).toNumber();
   let context: Types.ContractType = CodecUtils.ContextUtils.contextToType(info.currentContext);
@@ -621,3 +617,10 @@ function checkPaddingSigned(bytes: Uint8Array, length: number): boolean {
   let signByte = value[0] & 0x80 ? 0xff : 0x00;
   return padding.every(paddingByte => paddingByte === signByte);
 }
+
+//the following type is intended for internal use only
+export interface ContractInfoAndContext {
+  contractInfo: Values.ContractValueInfo;
+  context?: Contexts.DecoderContext;
+}
+
