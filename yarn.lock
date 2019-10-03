@@ -1044,6 +1044,71 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
+"@taquito/http-utils@^4.1.0-beta.6":
+  version "4.1.0-beta.6"
+  resolved "https://registry.yarnpkg.com/@taquito/http-utils/-/http-utils-4.1.0-beta.6.tgz#c7fa4353f6c2ae1437e6f34003eebde3044144c1"
+  integrity sha512-gbFT2K/zGc+ibxCOj6Dun1BiyLWJYrYC8sPWDo9b8GzVRC3k+BYigC5bgPQceNTGKKCAZ8iLz2HQIg5aG7IemA==
+  dependencies:
+    xhr2-cookies "^1.1.0"
+
+"@taquito/indexer@^4.1.0-beta.6":
+  version "4.1.0-beta.6"
+  resolved "https://registry.yarnpkg.com/@taquito/indexer/-/indexer-4.1.0-beta.6.tgz#3e61d92db356b828241a2ba36ad3b0be11af5092"
+  integrity sha512-z/Lvezkkto9LXI3nGzONg2ANKvCTI1ee1wT9fTlNBZ6EMm8fxvmhyYWJWxIhdKUsDzLvNyYt+ZNS55YfVpmbNg==
+  dependencies:
+    "@taquito/http-utils" "^4.1.0-beta.6"
+    bignumber.js "^9.0.0"
+
+"@taquito/michelson-encoder@^4.1.0-beta.6":
+  version "4.1.0-beta.6"
+  resolved "https://registry.yarnpkg.com/@taquito/michelson-encoder/-/michelson-encoder-4.1.0-beta.6.tgz#71b6bcae670b1356716b283a71c3e554ce56ea1b"
+  integrity sha512-lc7WF1rAIqCLcsI62H+HeWc/LffrPOHy+L1Pz/WHHOiRsCNe+6OX+5P4DFsoEXFXNLHJIpIkdPop1N5QWb9cew==
+  dependencies:
+    "@taquito/utils" "^4.1.0-beta.6"
+    bignumber.js "^9.0.0"
+
+"@taquito/rpc@^4.1.0-beta.6":
+  version "4.1.0-beta.6"
+  resolved "https://registry.yarnpkg.com/@taquito/rpc/-/rpc-4.1.0-beta.6.tgz#daf5da5bd7f3eb9e65f2dcfddff8253aade71c29"
+  integrity sha512-FvMMRpR984YBvrZ8btgiOFPLE4BBW25MMq3LGj0Izu02iVqMGcu+xhIpxK2QABAqDt0t1SyMZZxZQHJBLxGA+A==
+  dependencies:
+    "@taquito/http-utils" "^4.1.0-beta.6"
+    bignumber.js "^9.0.0"
+    lodash "^4.17.15"
+
+"@taquito/signer@^4.1.0-beta.6":
+  version "4.1.0-beta.6"
+  resolved "https://registry.yarnpkg.com/@taquito/signer/-/signer-4.1.0-beta.6.tgz#5f30c1bd23de09fee23bebe4aa9dfe270d249aa0"
+  integrity sha512-yEvjHMuNihY1DOB5DUKi809abXYMxN4tJvPC546c6kNnjBRQqkVzKUseF3ffEWJZPeD1YSxFNqd+uny6UFsH9g==
+  dependencies:
+    "@taquito/utils" "^4.1.0-beta.6"
+    bignumber.js "^9.0.0"
+    bip39 "^3.0.2"
+    elliptic "^6.5.1"
+    libsodium-wrappers "^0.7.5"
+    pbkdf2 "^3.0.17"
+    typedarray-to-buffer "^3.1.5"
+
+"@taquito/taquito@^4.1.0-beta.5":
+  version "4.1.0-beta.6"
+  resolved "https://registry.yarnpkg.com/@taquito/taquito/-/taquito-4.1.0-beta.6.tgz#05cef4e83a8f30412fce383dcadc36a1028c9fe6"
+  integrity sha512-Rt0yYIJZ8DoyqQI48xV0M6yhoFds4F8YogF7F95qPelpt6UuBxnYWD6CqwmC6vHrVHl/SjmWYCV8gQK3PQTh1Q==
+  dependencies:
+    "@taquito/indexer" "^4.1.0-beta.6"
+    "@taquito/michelson-encoder" "^4.1.0-beta.6"
+    "@taquito/rpc" "^4.1.0-beta.6"
+    "@taquito/signer" "^4.1.0-beta.6"
+    "@taquito/utils" "^4.1.0-beta.6"
+    bignumber.js "^9.0.0"
+
+"@taquito/utils@^4.1.0-beta.6":
+  version "4.1.0-beta.6"
+  resolved "https://registry.yarnpkg.com/@taquito/utils/-/utils-4.1.0-beta.6.tgz#0934b738ee4fe884c35b1cf37c5c7f6644388bb3"
+  integrity sha512-EOeIGjCvjOfEfdAaSCzr80kkPQTU+d/5xfEw/189D5TXTPWED7gv8GdR4+WNwOR90mYJZcYdfa2uLFhJf5JBnQ==
+  dependencies:
+    bs58check "^2.1.2"
+    buffer "^5.2.1"
+
 "@truffle/error@^0.0.6":
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/@truffle/error/-/error-0.0.6.tgz#75d499845b4b3a40537889e7d04c663afcaee85d"
@@ -1145,7 +1210,7 @@
     "@types/minimatch" "*"
     "@types/node" "*"
 
-"@types/inquirer@^6.0.3":
+"@types/inquirer@6.0.3":
   version "6.0.3"
   resolved "https://registry.yarnpkg.com/@types/inquirer/-/inquirer-6.0.3.tgz#597b3c1aa4a575899841ab99bb4f1774d0b8c090"
   integrity sha512-lBsdZScFMaFYYIE3Y6CWX22B9VeY2NerT1kyU2heTc3u/W6a+Om6Au2q0rMzBrzynN0l4QoABhI0cbNdyz6fDg==
@@ -1227,6 +1292,11 @@
   version "12.0.4"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.0.4.tgz#46832183115c904410c275e34cf9403992999c32"
   integrity sha512-j8YL2C0fXq7IONwl/Ud5Kt0PeXw22zGERt+HSSnwbKOJVsAGkEz3sFCYwaF9IOuoG1HOtE0vKCj6sXF7Q0+Vaw==
+
+"@types/node@11.11.6":
+  version "11.11.6"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-11.11.6.tgz#df929d1bb2eee5afdda598a41930fe50b43eaa6a"
+  integrity sha512-Exw4yUWMBXM3X+8oqzJNRqZSwUAaS4+7NdvHqQuFi/d+synz++xmX3QIf+BFqneW8N31R8Ky+sikfZUXq07ggQ==
 
 "@types/node@^10.3.2", "@types/node@^10.9.4":
   version "10.14.8"
@@ -2715,6 +2785,11 @@ bignumber.js@7.2.1, bignumber.js@^7.2.1:
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-7.2.1.tgz#80c048759d826800807c4bfd521e50edbba57a5f"
   integrity sha512-S4XzBk5sMB+Rcb/LNcpzXr57VRTxgAvaAEDAl1AwRx27j00hT84O6OkteE7u8UB3NuaaygCRrEpqox4uDOrbdQ==
 
+bignumber.js@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.0.0.tgz#805880f84a329b5eac6e7cb6f8274b6d82bdf075"
+  integrity sha512-t/OYhhJ2SD+YGBQcjY8GzzDHEk9f3nerxjtfa6tlMXfe7frs/WozhvCNoGvpM0P3bNf3Gq5ZRMlGr5f3r4/N8A==
+
 binary-extensions@^1.0.0:
   version "1.13.1"
   resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-1.13.1.tgz#598afe54755b2868a5330d2aff9d4ebb53209b65"
@@ -2748,6 +2823,16 @@ bip39@^2.2.0, bip39@^2.4.2:
     randombytes "^2.0.1"
     safe-buffer "^5.0.1"
     unorm "^1.3.3"
+
+bip39@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/bip39/-/bip39-3.0.2.tgz#2baf42ff3071fc9ddd5103de92e8f80d9257ee32"
+  integrity sha512-J4E1r2N0tUylTKt07ibXvhpT2c5pyAFgvuA5q1H9uDy6dEGpjV8jmymh3MTYJDLCNbIVClSB9FbND49I6N24MQ==
+  dependencies:
+    "@types/node" "11.11.6"
+    create-hash "^1.1.0"
+    pbkdf2 "^3.0.9"
+    randombytes "^2.0.1"
 
 bip66@^1.1.5:
   version "1.1.5"
@@ -2928,6 +3013,66 @@ browserify-zlib@^0.2.0, browserify-zlib@~0.2.0:
   integrity sha512-Z942RysHXmJrhqk88FmKBVq/v5tqmSkDz7p54G/MGyjMnCFFnC79XWNbg+Vta8W6Wb2qtSZTSxIGkJrRpCFEiA==
   dependencies:
     pako "~1.0.5"
+
+browserify-zlib@~0.1.2:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/browserify-zlib/-/browserify-zlib-0.1.4.tgz#bb35f8a519f600e0fa6b8485241c979d0141fb2d"
+  integrity sha1-uzX4pRn2AOD6a4SFJByXnQFB+y0=
+  dependencies:
+    pako "~0.2.0"
+
+browserify@14.0.0:
+  version "14.0.0"
+  resolved "https://registry.yarnpkg.com/browserify/-/browserify-14.0.0.tgz#67e6cfe7acb2fb1a1908e8a763452306de0bcf38"
+  integrity sha1-Z+bP56yy+xoZCOinY0UjBt4Lzzg=
+  dependencies:
+    JSONStream "^1.0.3"
+    assert "^1.4.0"
+    browser-pack "^6.0.1"
+    browser-resolve "^1.11.0"
+    browserify-zlib "~0.1.2"
+    buffer "^5.0.2"
+    cached-path-relative "^1.0.0"
+    concat-stream "~1.5.1"
+    console-browserify "^1.1.0"
+    constants-browserify "~1.0.0"
+    crypto-browserify "^3.0.0"
+    defined "^1.0.0"
+    deps-sort "^2.0.0"
+    domain-browser "~1.1.0"
+    duplexer2 "~0.1.2"
+    events "~1.1.0"
+    glob "^7.1.0"
+    has "^1.0.0"
+    htmlescape "^1.1.0"
+    https-browserify "~0.0.0"
+    inherits "~2.0.1"
+    insert-module-globals "^7.0.0"
+    labeled-stream-splicer "^2.0.0"
+    module-deps "^4.0.8"
+    os-browserify "~0.1.1"
+    parents "^1.0.1"
+    path-browserify "~0.0.0"
+    process "~0.11.0"
+    punycode "^1.3.2"
+    querystring-es3 "~0.2.0"
+    read-only-stream "^2.0.0"
+    readable-stream "^2.0.2"
+    resolve "^1.1.4"
+    shasum "^1.0.0"
+    shell-quote "^1.6.1"
+    stream-browserify "^2.0.0"
+    stream-http "^2.0.0"
+    string_decoder "~0.10.0"
+    subarg "^1.0.0"
+    syntax-error "^1.1.1"
+    through2 "^2.0.0"
+    timers-browserify "^1.0.1"
+    tty-browserify "~0.0.0"
+    url "~0.11.0"
+    util "~0.10.1"
+    vm-browserify "~0.0.1"
+    xtend "^4.0.0"
 
 browserify@^14.0.0:
   version "14.5.0"
@@ -4917,6 +5062,19 @@ elliptic@^6.0.0, elliptic@^6.4.0, elliptic@^6.4.1:
   version "6.4.1"
   resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.4.1.tgz#c2d0b7776911b86722c632c3c06c60f2f819939a"
   integrity sha512-BsXLz5sqX8OHcsh7CqBMztyXARmGQ3LWPtGjJi6DiJHq5C/qvi9P3OqgswKSDftbu8+IoI/QDTAm2fFnQ9SZSQ==
+  dependencies:
+    bn.js "^4.4.0"
+    brorand "^1.0.1"
+    hash.js "^1.0.0"
+    hmac-drbg "^1.0.0"
+    inherits "^2.0.1"
+    minimalistic-assert "^1.0.0"
+    minimalistic-crypto-utils "^1.0.0"
+
+elliptic@^6.5.1:
+  version "6.5.1"
+  resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.1.tgz#c380f5f909bf1b9b4428d028cd18d3b0efd6b52b"
+  integrity sha512-xvJINNLbTeWQjrl6X+7eQCrIy/YPv5XCpKW6kB5mKvtnGILoLDcySuwomfdzt0BMdLNVnuRNTuzKNHj0bva1Cg==
   dependencies:
     bn.js "^4.4.0"
     brorand "^1.0.1"
@@ -7682,6 +7840,11 @@ https-browserify@^1.0.0:
   resolved "https://registry.yarnpkg.com/https-browserify/-/https-browserify-1.0.0.tgz#ec06c10e0a34c0f2faf199f7fd7fc78fffd03c73"
   integrity sha1-7AbBDgo0wPL68Zn3/X/Hj//QPHM=
 
+https-browserify@~0.0.0:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/https-browserify/-/https-browserify-0.0.1.tgz#3f91365cabe60b77ed0ebba24b454e3e09d95a82"
+  integrity sha1-P5E2XKvmC3ftDruiS0VOPgnZWoI=
+
 https-proxy-agent@^2.2.0, https-proxy-agent@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/https-proxy-agent/-/https-proxy-agent-2.2.1.tgz#51552970fa04d723e04c56d04178c3f92592bbc0"
@@ -9206,6 +9369,18 @@ levn@^0.3.0, levn@~0.3.0:
   dependencies:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
+
+libsodium-wrappers@^0.7.5:
+  version "0.7.5"
+  resolved "https://registry.yarnpkg.com/libsodium-wrappers/-/libsodium-wrappers-0.7.5.tgz#a880a99250edecead36a336b9d9eb7192ca405b4"
+  integrity sha512-QE9Q+FxLLGdJRiJTuC2GB3LEHZeHX/VcbMQeNPdAixEKo86JPy6bOWND1XmMLu0tjWUu0xIY0YpJYQApxIZwbQ==
+  dependencies:
+    libsodium "0.7.5"
+
+libsodium@0.7.5:
+  version "0.7.5"
+  resolved "https://registry.yarnpkg.com/libsodium/-/libsodium-0.7.5.tgz#a45a0a88a6f7a39291b053447908a76570138e09"
+  integrity sha512-0YVU2QJc5sDR5HHkGCaliYImS7pGeXi11fiOfm4DirBd96PJVZIn3LJa06ZOFjLNsWkL3UbNjYhLRUOABPL9vw==
 
 liftoff@2.5.0:
   version "2.5.0"
@@ -11156,6 +11331,11 @@ os-browserify@^0.3.0, os-browserify@~0.3.0:
   resolved "https://registry.yarnpkg.com/os-browserify/-/os-browserify-0.3.0.tgz#854373c7f5c2315914fc9bfc6bd8238fdda1ec27"
   integrity sha1-hUNzx/XCMVkU/Jv8a9gjj92h7Cc=
 
+os-browserify@~0.1.1:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/os-browserify/-/os-browserify-0.1.2.tgz#49ca0293e0b19590a5f5de10c7f265a617d8fe54"
+  integrity sha1-ScoCk+CxlZCl9d4Qx/JlphfY/lQ=
+
 os-homedir@^1.0.0, os-homedir@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/os-homedir/-/os-homedir-1.0.2.tgz#ffbc4988336e0e833de0c168c7ef152121aa7fb3"
@@ -11327,6 +11507,11 @@ package-hash@^3.0.0:
     hasha "^3.0.0"
     lodash.flattendeep "^4.4.0"
     release-zalgo "^1.0.0"
+
+pako@~0.2.0:
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/pako/-/pako-0.2.9.tgz#f3f7522f4ef782348da8161bad9ecfd51bf83a75"
+  integrity sha1-8/dSL073gjSNqBYbrZ7P1Rv4OnU=
 
 pako@~1.0.5:
   version "1.0.10"
@@ -11591,7 +11776,7 @@ pathval@^1.1.0:
   resolved "https://registry.yarnpkg.com/pathval/-/pathval-1.1.0.tgz#b942e6d4bde653005ef6b71361def8727d0645e0"
   integrity sha1-uULm1L3mUwBe9rcTYd74cn0GReA=
 
-pbkdf2@^3.0.3, pbkdf2@^3.0.9:
+pbkdf2@^3.0.17, pbkdf2@^3.0.3, pbkdf2@^3.0.9:
   version "3.0.17"
   resolved "https://registry.yarnpkg.com/pbkdf2/-/pbkdf2-3.0.17.tgz#976c206530617b14ebb32114239f7b09336e93a6"
   integrity sha512-U/il5MsrZp7mGg3mSQfn742na2T+1/vHDCG5/iTI3X9MKUuYUZVLQhyRsg06mCgDBTd57TxzgZt7P+fYfjRLtA==
@@ -13844,7 +14029,7 @@ string_decoder@^1.0.0, string_decoder@^1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
-string_decoder@~0.10.x:
+string_decoder@~0.10.0, string_decoder@~0.10.x:
   version "0.10.31"
   resolved "https://registry.yarnpkg.com/string_decoder/-/string_decoder-0.10.31.tgz#62e203bc41766c6c28c9fc84301dab1c5310fa94"
   integrity sha1-YuIDvEF2bGwoyfyEMB2rHFMQ+pQ=
@@ -14721,7 +14906,7 @@ typewiselite@~1.0.0:
   resolved "https://registry.yarnpkg.com/typewiselite/-/typewiselite-1.0.0.tgz#c8882fa1bb1092c06005a97f34ef5c8508e3664e"
   integrity sha1-yIgvobsQksBgBal/NO9chQjjZk4=
 
-uglify-es@^3.3.9:
+uglify-es@3.3.9, uglify-es@^3.3.9:
   version "3.3.9"
   resolved "https://registry.yarnpkg.com/uglify-es/-/uglify-es-3.3.9.tgz#0c1c4f0700bed8dbc124cdb304d2592ca203e677"
   integrity sha512-r+MU0rfv4L/0eeW3xZrd16t4NZfK8Ld4SWVglYBb7ez5uXFWHuVRs6xCTrf1yirs9a4j4Y27nn7SRfO6v67XsQ==
@@ -15873,7 +16058,7 @@ xhr-request@^1.0.1:
     url-set-query "^1.0.0"
     xhr "^2.0.4"
 
-xhr2-cookies@1.1.0:
+xhr2-cookies@1.1.0, xhr2-cookies@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/xhr2-cookies/-/xhr2-cookies-1.1.0.tgz#7d77449d0999197f155cb73b23df72505ed89d48"
   integrity sha1-fXdEnQmZGX8VXLc7I99yUF7YnUg=
