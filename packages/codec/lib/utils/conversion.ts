@@ -7,7 +7,7 @@ import Web3 from "web3";
 import { Constants } from "./constants";
 import { Types, Values } from "@truffle/codec/format";
 import { enumFullName } from "./inspect";
-import { DecodedVariable } from "@truffle/codec/types/interface";
+import * as Interface from "@truffle/codec/types/interface";
 
 export namespace Conversion {
 
@@ -207,7 +207,7 @@ export namespace Conversion {
   //NOTE: Definitely do not use this in real code!  For tests only!
   //for convenience: invokes the nativize method on all the given variables, and changes them to
   //the old format
-  export function nativizeDecoderVariables(variables: DecodedVariable[]): {[name: string]: any} {
+  export function nativizeDecoderVariables(variables: Interface.DecodedVariable[]): {[name: string]: any} {
     return Object.assign({}, ...variables.map(
       ({name, value}) => ({[name]: nativize(value)})
     ));
