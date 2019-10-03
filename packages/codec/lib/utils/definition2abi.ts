@@ -1,9 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:definition2abi");
 
-import { Ast, Abi as AbiTypes } from "@truffle/codec/types";
+import { Ast, Abi as AbiTypes, Errors } from "@truffle/codec/types";
 import { Definition } from "./definition";
-import * as Errors from "@truffle/codec/types/errors";
 
 //the main function. just does some dispatch.
 //returns undefined on bad input
