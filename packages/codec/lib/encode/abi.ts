@@ -4,7 +4,7 @@ const debug = debugModule("codec:encode:abi");
 import { Values } from "@truffle/codec/format";
 import { Conversion as ConversionUtils } from "@truffle/codec/utils/conversion";
 import { EVM as EVMUtils } from "@truffle/codec/utils/evm";
-import { Allocation } from "@truffle/codec/types";
+import * as Allocation from "@truffle/codec/allocate/types";
 import { abiSizeInfo } from "@truffle/codec/allocate/abi";
 import sum from "lodash.sum";
 import utf8 from "utf8";

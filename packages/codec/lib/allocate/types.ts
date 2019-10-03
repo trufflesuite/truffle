@@ -1,19 +1,13 @@
-import { StorageLength } from "./storage";
-import * as Pointer from "./pointer";
-import { DecoderContext } from "./contexts";
-import * as AbiTypes from "./abi";
-import { CompilerVersion } from "./compiler";
-import * as Ast from "./ast";
+import { Decoding, Storage, Pointer, Abi as AbiTypes, Ast, Contexts, Compiler } from "@truffle/codec/types";
 import { Types } from "@truffle/codec/format";
-import { DecodingMode } from "./decoding";
 
 //for passing to calldata/event allocation functions
 export interface ContractAllocationInfo {
   abi: AbiTypes.Abi;
   contractNode: Ast.Definition;
-  deployedContext?: DecoderContext;
-  constructorContext?: DecoderContext;
-  compiler: CompilerVersion;
+  deployedContext?: Contexts.DecoderContext;
+  constructorContext?: Contexts.DecoderContext;
+  compiler: Compiler.CompilerVersion;
 }
 
 export interface AbiSizeInfo {
@@ -33,7 +27,7 @@ export interface StorageAllocations {
 //variables of) a contract
 export interface StorageAllocation {
   definition: Ast.Definition;
-  size?: StorageLength; //only used for structs
+  size?: Storage.StorageLength; //only used for structs
   members: StorageMemberAllocation[];
 }
 
@@ -114,7 +108,7 @@ export interface CalldataAllocation {
   abi: AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry;
   offset: number; //measured in bytes
   arguments: CalldataArgumentAllocation[];
-  allocationMode: DecodingMode;
+  allocationMode: Decoding.DecodingMode;
 }
 
 export interface CalldataArgumentAllocation {
@@ -155,7 +149,7 @@ export interface EventAllocation {
   contextHash: string;
   anonymous: boolean;
   arguments: EventArgumentAllocation[];
-  allocationMode: DecodingMode;
+  allocationMode: Decoding.DecodingMode;
 }
 
 export interface EventArgumentAllocation {

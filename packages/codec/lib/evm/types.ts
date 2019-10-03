@@ -1,4 +1,5 @@
-import { Allocation, Ast, Common, Contexts, Storage } from "@truffle/codec/types";
+import { Ast, Common, Contexts, Storage } from "@truffle/codec/types";
+import * as Allocation from "@truffle/codec/allocate/types";
 import { Types } from "@truffle/codec/format";
 
 export interface EvmState {

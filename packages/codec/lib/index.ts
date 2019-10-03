@@ -40,7 +40,7 @@ export * from "./types/errors"; //the various errors we might throw
 export { Definition as AstDefinition, References as AstReferences } from "./types/ast";
 export { DataPointer } from "./types/pointer";
 export { EvmInfo } from "./evm/types";
-export { StorageAllocations, AbiAllocations, MemoryAllocations } from "./types/allocation";
+export { StorageAllocations, AbiAllocations, MemoryAllocations } from "./allocate/types";
 export { StorageLength } from "./types/storage";
 //and for those who want *all* the types...
 import * as InternalTypes from "./types";
