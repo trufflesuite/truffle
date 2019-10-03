@@ -1,3 +1,5 @@
+import BN from "bn.js";
+
 import { Abi } from "@truffle/codec/types";
 import { Types, Values } from "@truffle/codec/format";
 
@@ -59,4 +61,16 @@ export interface AbiArgument {
   name?: string; //included if parameter is named
   indexed?: boolean; //included for event parameters
   value: Values.Result;
+}
+
+export type DecoderRequest = StorageRequest | CodeRequest;
+
+export interface StorageRequest {
+  type: "storage";
+  slot: BN; //will add more fields as needed
+}
+
+export interface CodeRequest {
+  type: "code";
+  address: string;
 }

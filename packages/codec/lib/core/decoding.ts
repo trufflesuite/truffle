@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:core:decoding");
 
-import { Ast, Pointer, Abi as AbiTypes, Request } from "@truffle/codec/types";
+import { Ast, Pointer, Abi as AbiTypes } from "@truffle/codec/types";
 import * as Allocation from "@truffle/codec/allocate/types";
 import * as Decoding from "@truffle/codec/decode/types";
 import * as Evm from "@truffle/codec/evm";
@@ -13,13 +13,13 @@ import { encodeAbi, encodeTupleAbi } from "@truffle/codec/encode/abi";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
 
-export function* decodeVariable(definition: Ast.Definition, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<Request.DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeVariable(definition: Ast.Definition, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
   let dataType = MakeType.definitionToType(definition, compiler);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
-export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<Request.DecoderRequest, Decoding.CalldataDecoding, Uint8Array> {
+export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Decoding.CalldataDecoding, Uint8Array> {
   const context = info.currentContext;
   if(context === null) {
     //if we don't know the contract ID, we can't decode
@@ -142,7 +142,7 @@ export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<Request.Deco
 //leaving it alone for now, as I'm not sure what form those options will take
 //(and this is something we're a bit more OK with breaking since it's primarily
 //for internal use :) )
-export function* decodeEvent(info: Evm.Types.EvmInfo, address: string, targetName?: string): Generator<Request.DecoderRequest, Decoding.LogDecoding[], Uint8Array> {
+export function* decodeEvent(info: Evm.Types.EvmInfo, address: string, targetName?: string): Generator<Decoding.DecoderRequest, Decoding.LogDecoding[], Uint8Array> {
   const allocations = info.allocations.event;
   let rawSelector: Uint8Array;
   let selector: string;

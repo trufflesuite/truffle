@@ -22,8 +22,5 @@ export { Options }
 import * as Pointer from "./pointer";
 export { Pointer };
 
-import * as Request from "./request";
-export { Request };
-
 import * as Storage from "./storage";
 export { Storage };

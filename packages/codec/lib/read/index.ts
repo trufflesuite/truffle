@@ -2,10 +2,11 @@ import * as storage from "./storage";
 import * as bytes from "./bytes";
 import * as stack from "./stack";
 import * as constant from "./constant";
-import { Pointer, Request } from "@truffle/codec/types";
+import { Pointer } from "@truffle/codec/types";
+import * as Decoding from "@truffle/codec/decode/types";
 import * as Evm from "@truffle/codec/evm";
 
-export default function* read(pointer: Pointer.DataPointer, state: Evm.Types.EvmState): Generator<Request.DecoderRequest, Uint8Array, Uint8Array> {
+export default function* read(pointer: Pointer.DataPointer, state: Evm.Types.EvmState): Generator<Decoding.DecoderRequest, Uint8Array, Uint8Array> {
   switch(pointer.location) {
 
     case "stack":
