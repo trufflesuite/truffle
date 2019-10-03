@@ -47,7 +47,7 @@ export interface CodeCache {
 
 export interface ContractAndContexts {
   contract: ContractObject;
-  node: Ast.Definition;
+  node: Ast.AstNode;
   deployedContext?: Contexts.DecoderContext;
   constructorContext?: Contexts.DecoderContext;
 }

@@ -5,21 +5,21 @@ export interface TypeDescriptions {
   typeString?: string;
 }
 
-export interface Definition {
+export interface AstNode {
   constant?: boolean;
   id: number;
   name: string;
   canonicalName?: string;
   linearizedBaseContracts?: number[];
-  members?: Definition[];
-  nodes?: Definition[];
+  members?: AstNode[];
+  nodes?: AstNode[];
   nodeType: string;
   scope?: number;
   src: string;
   stateVariable?: boolean;
   storageLocation?: string;
   typeDescriptions: TypeDescriptions;
-  typeName?: Definition;
+  typeName?: AstNode;
   expression?: {
     referencedDeclaration?: any;
   };
@@ -30,19 +30,19 @@ export interface Definition {
   stateMutability?: Mutability;
   referencedDeclaration?: any;
   parameters?: {
-    parameters: Definition[];
+    parameters: AstNode[];
   };
   returnParameters?: {
-    parameters: Definition[];
+    parameters: AstNode[];
   };
   parameterTypes?: {
-    parameters: Definition[];
+    parameters: AstNode[];
   };
   returnParameterTypes?: {
-    parameters: Definition[];
+    parameters: AstNode[];
   };
-  keyType?: Definition;
-  valueType?: Definition;
+  keyType?: AstNode;
+  valueType?: AstNode;
   indexed?: boolean;
   anonymous?: boolean;
   contractKind?: ContractKind;
@@ -50,8 +50,8 @@ export interface Definition {
   [k: string]: any;
 }
 
-export interface References {
-  [nodeId: number]: Definition;
+export interface AstNodes {
+  [nodeId: number]: AstNode;
 };
 
 //the debugger uses this
@@ -65,6 +65,6 @@ export interface Scopes {
       name: string;
       id: number;
     }[];
-    definition?: Definition;
+    definition?: AstNode;
   }
 }

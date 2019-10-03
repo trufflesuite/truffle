@@ -32,13 +32,13 @@ interface StorageAllocationInfo {
 }
 
 interface DefinitionPair {
-  definition: Ast.Definition;
-  definedIn?: Ast.Definition;
+  definition: Ast.AstNode;
+  definedIn?: Ast.AstNode;
 }
 
 //contracts contains only the contracts to be allocated; any base classes not
 //being allocated should just be in referenceDeclarations
-export function getStorageAllocations(referenceDeclarations: Ast.References, contracts: Ast.References, existingAllocations: Allocation.StorageAllocations = {}): Allocation.StorageAllocations {
+export function getStorageAllocations(referenceDeclarations: Ast.AstNodes, contracts: Ast.AstNodes, existingAllocations: Allocation.StorageAllocations = {}): Allocation.StorageAllocations {
   let allocations = existingAllocations;
   for(const node of Object.values(referenceDeclarations)) {
     if(node.nodeType === "StructDefinition") {
@@ -65,14 +65,14 @@ export function getStorageAllocations(referenceDeclarations: Ast.References, con
   return allocations;
 }
 
-function allocateStruct(structDefinition: Ast.Definition, referenceDeclarations: Ast.References, existingAllocations: Allocation.StorageAllocations): Allocation.StorageAllocations {
+function allocateStruct(structDefinition: Ast.AstNode, referenceDeclarations: Ast.AstNodes, existingAllocations: Allocation.StorageAllocations): Allocation.StorageAllocations {
   let members = structDefinition.members.map(
     definition => ({definition})
   );
   return allocateMembers(structDefinition, members, referenceDeclarations, existingAllocations);
 }
 
-function allocateMembers(parentNode: Ast.Definition, definitions: DefinitionPair[], referenceDeclarations: Ast.References, existingAllocations: Allocation.StorageAllocations, suppressSize: boolean = false): Allocation.StorageAllocations {
+function allocateMembers(parentNode: Ast.AstNode, definitions: DefinitionPair[], referenceDeclarations: Ast.AstNodes, existingAllocations: Allocation.StorageAllocations, suppressSize: boolean = false): Allocation.StorageAllocations {
   let offset: number = 0; //will convert to BN when placing in slot
   let index: number = CodecUtils.EVM.WORD_SIZE - 1;
 
@@ -199,14 +199,14 @@ function allocateMembers(parentNode: Ast.Definition, definitions: DefinitionPair
   return allocations;
 }
 
-function getStateVariables(contractNode: Ast.Definition): Ast.Definition[] {
+function getStateVariables(contractNode: Ast.AstNode): Ast.AstNode[] {
   // process for state variables
-  return contractNode.nodes.filter( (node: Ast.Definition) =>
+  return contractNode.nodes.filter( (node: Ast.AstNode) =>
     node.nodeType === "VariableDeclaration" && node.stateVariable
   );
 }
 
-function allocateContract(contract: Ast.Definition, referenceDeclarations: Ast.References, existingAllocations: Allocation.StorageAllocations): Allocation.StorageAllocations {
+function allocateContract(contract: Ast.AstNode, referenceDeclarations: Ast.AstNodes, existingAllocations: Allocation.StorageAllocations): Allocation.StorageAllocations {
 
   let allocations: Allocation.StorageAllocations = {...existingAllocations};
 
@@ -235,11 +235,11 @@ function allocateContract(contract: Ast.Definition, referenceDeclarations: Ast.R
 //NOTE: This wrapper function is for use by the decoder ONLY, after allocation is done.
 //The allocator should (and does) instead use a direct call to storageSizeAndAllocate,
 //not to the wrapper, because it may need the allocations returned.
-export function storageSize(definition: Ast.Definition, referenceDeclarations?: Ast.References, allocations?: Allocation.StorageAllocations): Storage.StorageLength {
+export function storageSize(definition: Ast.AstNode, referenceDeclarations?: Ast.AstNodes, allocations?: Allocation.StorageAllocations): Storage.StorageLength {
   return storageSizeAndAllocate(definition, referenceDeclarations, allocations).size;
 }
 
-function storageSizeAndAllocate(definition: Ast.Definition, referenceDeclarations?: Ast.References, existingAllocations?: Allocation.StorageAllocations): StorageAllocationInfo {
+function storageSizeAndAllocate(definition: Ast.AstNode, referenceDeclarations?: Ast.AstNodes, existingAllocations?: Allocation.StorageAllocations): StorageAllocationInfo {
   switch (CodecUtils.Definition.typeClass(definition)) {
     case "bool":
       return {
@@ -276,7 +276,7 @@ function storageSizeAndAllocate(definition: Ast.Definition, referenceDeclaration
         //note: we use the preexisting function here for convenience, but we
         //should never need to worry about faked-up enum definitions, so just
         //checking the referencedDeclaration field would also work
-      const referenceDeclaration: Ast.Definition = referenceDeclarations[referenceId];
+      const referenceDeclaration: Ast.AstNode = referenceDeclarations[referenceId];
       if(referenceDeclaration === undefined) {
         let typeString = CodecUtils.Definition.typeString(definition);
         throw new Errors.UnknownUserDefinedTypeError(referenceId.toString(), typeString);
@@ -346,7 +346,7 @@ function storageSizeAndAllocate(definition: Ast.Definition, referenceDeclaration
             allocations: existingAllocations
           };
         }
-        const baseDefinition: Ast.Definition = CodecUtils.Definition.baseDefinition(definition);
+        const baseDefinition: Ast.AstNode = CodecUtils.Definition.baseDefinition(definition);
         const {size: baseSize, allocations} = storageSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
         if(!isWordsLength(baseSize)) {
           //bytes case
@@ -374,7 +374,7 @@ function storageSizeAndAllocate(definition: Ast.Definition, referenceDeclaration
       let allocation: Allocation.StorageAllocation | undefined = allocations[referenceId]; //may be undefined!
       if(allocation === undefined) {
         //if we don't find an allocation, we'll have to do the allocation ourselves
-        const referenceDeclaration: Ast.Definition = referenceDeclarations[referenceId];
+        const referenceDeclaration: Ast.AstNode = referenceDeclarations[referenceId];
         if(referenceDeclaration === undefined) {
           let typeString = CodecUtils.Definition.typeString(definition);
           throw new Errors.UnknownUserDefinedTypeError(referenceId.toString(), typeString);

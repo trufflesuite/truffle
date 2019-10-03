@@ -28,7 +28,7 @@ export default class ContractDecoder {
   private contexts: Contexts.DecoderContexts; //note: this is deployed contexts only!
 
   private contract: ContractObject;
-  private contractNode: Ast.Definition;
+  private contractNode: Ast.AstNode;
   private contractNetwork: string;
   private contextHash: string;
 
@@ -134,7 +134,7 @@ export default class ContractDecoder {
 
 interface ContractInfo {
   contract: ContractObject;
-  contractNode: Ast.Definition;
+  contractNode: Ast.AstNode;
   contractNetwork: string;
   contextHash: string;
 }
@@ -143,7 +143,7 @@ export class ContractInstanceDecoder {
   private web3: Web3;
 
   private contract: ContractObject;
-  private contractNode: Ast.Definition;
+  private contractNode: Ast.AstNode;
   private contractNetwork: string;
   private contractAddress: string;
   private contractCode: string;
@@ -152,7 +152,7 @@ export class ContractInstanceDecoder {
   private contexts: Contexts.DecoderContexts = {}; //deployed contexts only
   private additionalContexts: Contexts.DecoderContexts = {}; //for passing to wire decoder when contract has no deployedBytecode
 
-  private referenceDeclarations: Ast.References;
+  private referenceDeclarations: Ast.AstNodes;
   private userDefinedTypes: Types.TypesById;
   private allocations: Evm.Types.AllocationInfo;
 
@@ -460,7 +460,7 @@ export class ContractInstanceDecoder {
   //bytes mapping keys should be given as hex strings beginning with "0x"
   //address mapping keys are like bytes; checksum case is not required
   //boolean mapping keys may be given either as booleans, or as string "true" or "false"
-  private constructSlot(variable: number | string, ...indices: any[]): [Storage.Slot | undefined , Ast.Definition | undefined] {
+  private constructSlot(variable: number | string, ...indices: any[]): [Storage.Slot | undefined , Ast.AstNode | undefined] {
     //base case: we need to locate the variable and its definition
     if(indices.length === 0) {
       let allocation = this.findVariableByNameOrId(variable);
@@ -483,7 +483,7 @@ export class ContractInstanceDecoder {
     let index: any;
     let key: Values.ElementaryValue;
     let slot: Storage.Slot;
-    let definition: Ast.Definition;
+    let definition: Ast.AstNode;
     switch(DefinitionUtils.typeClass(parentDefinition)) {
       case "array":
         if(rawIndex instanceof BN) {

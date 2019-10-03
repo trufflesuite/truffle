@@ -6,7 +6,7 @@ import { Ast } from "@truffle/codec/types";
 import BN from "bn.js";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export function readDefinition(definition: Ast.Definition): Uint8Array {
+export function readDefinition(definition: Ast.AstNode): Uint8Array {
 
   debug("definition %o", definition);
 

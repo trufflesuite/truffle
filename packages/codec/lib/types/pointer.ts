@@ -55,7 +55,7 @@ export interface StackLiteralPointer {
 
 export interface ConstantDefinitionPointer {
   location: "definition",
-  definition: Ast.Definition;
+  definition: Ast.AstNode;
 }
 
 export interface SpecialPointer {

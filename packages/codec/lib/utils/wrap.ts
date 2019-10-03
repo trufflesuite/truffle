@@ -19,7 +19,7 @@ import { Types, Values } from "@truffle/codec/format";
 //1. check its inputs,
 //2. take a slightly different input format,
 //3. also be named differently and... it'll be different :P ]
-export function wrapElementaryViaDefinition(value: any, definition: Ast.Definition, compiler: Compiler.CompilerVersion): Values.ElementaryValue {
+export function wrapElementaryViaDefinition(value: any, definition: Ast.AstNode, compiler: Compiler.CompilerVersion): Values.ElementaryValue {
   let dataType = MakeType.definitionToType(definition, compiler, null); //force location to undefined
   return wrapElementaryValue(value, dataType);
 }

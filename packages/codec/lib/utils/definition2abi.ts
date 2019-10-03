@@ -6,7 +6,7 @@ import { Definition } from "./definition";
 
 //the main function. just does some dispatch.
 //returns undefined on bad input
-export function definitionToAbi(node: Ast.Definition, referenceDeclarations: Ast.References): AbiTypes.AbiEntry | undefined {
+export function definitionToAbi(node: Ast.AstNode, referenceDeclarations: Ast.AstNodes): AbiTypes.AbiEntry | undefined {
   switch(node.nodeType) {
     case "FunctionDefinition":
       if(node.visibility === "public" || node.visibility === "external") {
@@ -30,7 +30,7 @@ export function definitionToAbi(node: Ast.Definition, referenceDeclarations: Ast
 }
 
 //note: not for FunctionTypeNames or VariableDeclarations
-function functionDefinitionToAbi(node: Ast.Definition, referenceDeclarations: Ast.References): AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry | AbiTypes.FallbackAbiEntry {
+function functionDefinitionToAbi(node: Ast.AstNode, referenceDeclarations: Ast.AstNodes): AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry | AbiTypes.FallbackAbiEntry {
   let kind = Definition.functionKind(node);
   let stateMutability = Definition.mutability(node);
   let payable = stateMutability === "payable";
@@ -69,7 +69,7 @@ function functionDefinitionToAbi(node: Ast.Definition, referenceDeclarations: As
   }
 }
 
-function eventDefinitionToAbi(node: Ast.Definition, referenceDeclarations: Ast.References): AbiTypes.EventAbiEntry {
+function eventDefinitionToAbi(node: Ast.AstNode, referenceDeclarations: Ast.AstNodes): AbiTypes.EventAbiEntry {
   let inputs = parametersToAbi(node.parameters.parameters, referenceDeclarations, true);
   let name = node.name;
   let anonymous = node.anonymous;
@@ -81,11 +81,11 @@ function eventDefinitionToAbi(node: Ast.Definition, referenceDeclarations: Ast.R
   };
 }
 
-function parametersToAbi(nodes: Ast.Definition[], referenceDeclarations: Ast.References, checkIndexed: boolean = false): AbiTypes.AbiParameter[] {
+function parametersToAbi(nodes: Ast.AstNode[], referenceDeclarations: Ast.AstNodes, checkIndexed: boolean = false): AbiTypes.AbiParameter[] {
   return nodes.map(node => parameterToAbi(node, referenceDeclarations, checkIndexed));
 }
 
-function parameterToAbi(node: Ast.Definition, referenceDeclarations: Ast.References, checkIndexed: boolean = false): AbiTypes.AbiParameter {
+function parameterToAbi(node: Ast.AstNode, referenceDeclarations: Ast.AstNodes, checkIndexed: boolean = false): AbiTypes.AbiParameter {
   let name = node.name; //may be the empty string... or even undefined for a base type
   let components: AbiTypes.AbiParameter[];
   let indexed: boolean;
@@ -132,7 +132,7 @@ function parameterToAbi(node: Ast.Definition, referenceDeclarations: Ast.Referen
 //it returns how that type is notated in the ABI -- just the string,
 //to be clear, not components of tuples
 //again, NOT FOR ARRAYS
-function toAbiType(node: Ast.Definition, referenceDeclarations: Ast.References): string {
+function toAbiType(node: Ast.AstNode, referenceDeclarations: Ast.AstNodes): string {
   let basicType = Definition.typeClassLongForm(node); //get that whole first segment!
   switch(basicType) {
     case "contract":
@@ -160,7 +160,7 @@ function toAbiType(node: Ast.Definition, referenceDeclarations: Ast.References):
   }
 }
 
-function getterDefinitionToAbi(node: Ast.Definition, referenceDeclarations: Ast.References): AbiTypes.FunctionAbiEntry {
+function getterDefinitionToAbi(node: Ast.AstNode, referenceDeclarations: Ast.AstNodes): AbiTypes.FunctionAbiEntry {
   debug("getter node: %O", node);
   let name = node.name;
   let { inputs, outputs } = getterParameters(node, referenceDeclarations);
@@ -195,9 +195,9 @@ function getterDefinitionToAbi(node: Ast.Definition, referenceDeclarations: Ast.
 //here's a simplified function that just does the inputs. it's for use by the
 //allocator. I'm keeping it separate because it doesn't require a
 //referenceDeclarations argument.
-export function getterInputs(node: Ast.Definition): Ast.Definition[] {
+export function getterInputs(node: Ast.AstNode): Ast.AstNode[] {
   node = node.typeName || node;
-  let inputs: Ast.Definition[] = [];
+  let inputs: Ast.AstNode[] = [];
   while(Definition.typeClass(node) === "array" || Definition.typeClass(node) === "mapping") {
     let keyNode = Definition.keyDefinition(node); //note: if node is an array, this spoofs up a uint256 definition
     inputs.push({...keyNode, name: ""}); //getter input params have no name
@@ -216,9 +216,9 @@ export function getterInputs(node: Ast.Definition): Ast.Definition[] {
 //again, despite the duplication, this function is kept separate from the
 //more straightforward getterInputs function because, since it has to handle
 //outputs too, it requires referenceDeclarations
-function getterParameters(node: Ast.Definition, referenceDeclarations: Ast.References): {inputs: Ast.Definition[], outputs: Ast.Definition[]} {
-  let baseNode: Ast.Definition = node.typeName || node;
-  let inputs: Ast.Definition[] = [];
+function getterParameters(node: Ast.AstNode, referenceDeclarations: Ast.AstNodes): {inputs: Ast.AstNode[], outputs: Ast.AstNode[]} {
+  let baseNode: Ast.AstNode = node.typeName || node;
+  let inputs: Ast.AstNode[] = [];
   while(Definition.typeClass(baseNode) === "array" || Definition.typeClass(baseNode) === "mapping") {
     let keyNode = Definition.keyDefinition(baseNode); //note: if baseNode is an array, this spoofs up a uint256 definition
     inputs.push({...keyNode, name: ""}); //again, getter input params have no name
