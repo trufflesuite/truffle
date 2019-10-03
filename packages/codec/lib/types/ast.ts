@@ -31,6 +31,8 @@ export interface AstDefinition {
   //that's intended for functions but this could be other
   //things
   stateMutability?: Mutability;
+  kind?: string;
+  hexValue?: string;
   referencedDeclaration?: any;
   parameters?: {
     parameters: AstDefinition[];
@@ -44,13 +46,17 @@ export interface AstDefinition {
   returnParameterTypes?: {
     parameters: AstDefinition[];
   };
+  baseType?: AstDefinition;
   keyType?: AstDefinition;
   valueType?: AstDefinition;
+  payable?: boolean;
   indexed?: boolean;
   anonymous?: boolean;
   contractKind?: ContractKind;
   isConstructor?: boolean;
-  [k: string]: any;
+  //Note: May need to add more in the future.
+  //May also want to create a proper system of AstNode types
+  //in the future, but sticking with this for now.
 }
 
 export interface AstReferences {
