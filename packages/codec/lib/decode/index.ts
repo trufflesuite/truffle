@@ -10,9 +10,10 @@ import decodeConstant from "./constant";
 import decodeSpecial from "./special";
 import decodeTopic from "./event";
 import { Types, Values } from "@truffle/codec/format";
-import { Pointer, Evm, Options, Request } from "@truffle/codec/types";
+import { Pointer, Options, Request } from "@truffle/codec/types";
+import * as Evm from "@truffle/codec/evm";
 
-export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: Evm.EvmInfo, options: Options.DecoderOptions = {}): Generator<Request.DecoderRequest, Values.Result, Uint8Array> {
+export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo, options: Options.DecoderOptions = {}): Generator<Request.DecoderRequest, Values.Result, Uint8Array> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 

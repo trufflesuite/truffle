@@ -4,7 +4,8 @@ const debug = debugModule("codec:interface:decoders:wire");
 import * as CodecUtils from "@truffle/codec/utils";
 import { AbiUtils, ContextUtils, abifyCalldataDecoding, abifyLogDecoding, MakeType } from "@truffle/codec/utils";
 import * as Utils from "@truffle/codec/utils/interface";
-import { Ast, Allocation, Contexts, Evm, Decoding } from "@truffle/codec/types";
+import { Ast, Allocation, Contexts, Decoding } from "@truffle/codec/types";
+import * as Evm from "@truffle/codec/evm";
 import * as DecoderTypes from "../types";
 import { Types } from "@truffle/codec/format";
 import Web3 from "web3";
@@ -28,7 +29,7 @@ export default class WireDecoder {
 
   private referenceDeclarations: Ast.References;
   private userDefinedTypes: Types.TypesById;
-  private allocations: Evm.AllocationInfo;
+  private allocations: Evm.Types.AllocationInfo;
 
   private codeCache: DecoderTypes.CodeCache = {};
 
@@ -147,7 +148,7 @@ export default class WireDecoder {
     const context = await this.getContextByAddress(transaction.to, block, transaction.input, additionalContexts);
 
     const data = CodecUtils.Conversion.toBytes(transaction.input);
-    const info: Evm.EvmInfo = {
+    const info: Evm.Types.EvmInfo = {
       state: {
         storage: {},
         calldata: data,
@@ -186,7 +187,7 @@ export default class WireDecoder {
     const block = log.blockNumber;
     const data = CodecUtils.Conversion.toBytes(log.data);
     const topics = log.topics.map(CodecUtils.Conversion.toBytes);
-    const info: Evm.EvmInfo = {
+    const info: Evm.Types.EvmInfo = {
       state: {
         storage: {},
         eventdata: data,
@@ -286,7 +287,7 @@ export default class WireDecoder {
     return this.userDefinedTypes;
   }
 
-  public getAllocations(): Evm.AllocationInfo {
+  public getAllocations(): Evm.Types.AllocationInfo {
     return {
       abi: this.allocations.abi,
       storage: this.allocations.storage

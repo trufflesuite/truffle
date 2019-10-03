@@ -39,7 +39,7 @@ export * from "./types/errors"; //the various errors we might throw
 //for those who want more low-level stuff...
 export { Definition as AstDefinition, References as AstReferences } from "./types/ast";
 export { DataPointer } from "./types/pointer";
-export { EvmInfo } from "./types/evm";
+export { EvmInfo } from "./evm/types";
 export { StorageAllocations, AbiAllocations, MemoryAllocations } from "./types/allocation";
 export { StorageLength } from "./types/storage";
 //and for those who want *all* the types...
