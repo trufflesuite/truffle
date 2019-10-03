@@ -9,7 +9,7 @@ import { getterInputs } from "@truffle/codec/utils/definition2abi";
 import { Ast, Pointer, Abi as AbiTypes, Allocation, Compiler, Contexts, Errors } from "@truffle/codec/types";
 import { Types } from "@truffle/codec/format";
 import partition from "lodash.partition";
-import { DecodingMode } from "@truffle/codec/types/decoding";
+import * as Decoding from "@truffle/codec/types/decoding";
 
 interface AbiAllocationInfo {
   size?: number; //left out for types that don't go in the abi
@@ -261,7 +261,7 @@ function allocateCalldata(
   let id: string;
   let abiAllocation: Allocation.AbiAllocation;
   let parameterTypes: Types.NameTypePair[];
-  let allocationMode: DecodingMode = "full"; //degrade to ABI if needed
+  let allocationMode: Decoding.DecodingMode = "full"; //degrade to ABI if needed
   switch(abiEntry.type) {
     case "constructor":
       if(!constructorContext) {
@@ -392,7 +392,7 @@ function allocateEvent(
   //first: determine the corresponding event node
   //search through base contracts, from most derived (right) to most base (left)
   let node: Ast.Definition | undefined = undefined;
-  let allocationMode: DecodingMode = "full"; //degrade to abi as needed
+  let allocationMode: Decoding.DecodingMode = "full"; //degrade to abi as needed
   if(contractNode) {
     const linearizedBaseContracts = contractNode.linearizedBaseContracts;
     node = linearizedBaseContracts.reduceRight(

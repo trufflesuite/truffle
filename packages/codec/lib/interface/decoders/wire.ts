@@ -15,7 +15,7 @@ import * as DecoderTypes from "@truffle/codec/types/interface";
 import { getAbiAllocations, getCalldataAllocations, getEventAllocations } from "@truffle/codec/allocate/abi";
 import { getStorageAllocations } from "@truffle/codec/allocate/storage";
 import { decodeCalldata, decodeEvent } from "@truffle/codec/core/decoding";
-import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
+import * as Decoding from "@truffle/codec/types/decoding";
 
 export default class WireDecoder {
   private web3: Web3;
@@ -251,11 +251,11 @@ export default class WireDecoder {
     return events;
   }
 
-  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
+  public abifyCalldataDecoding(decoding: Decoding.CalldataDecoding): Decoding.CalldataDecoding {
     return abifyCalldataDecoding(decoding, this.userDefinedTypes);
   }
 
-  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
+  public abifyLogDecoding(decoding: Decoding.LogDecoding): Decoding.LogDecoding {
     return abifyLogDecoding(decoding, this.userDefinedTypes);
   }
 

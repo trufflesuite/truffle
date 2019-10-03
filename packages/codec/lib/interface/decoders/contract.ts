@@ -14,7 +14,7 @@ import { BlockType, Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
 import * as DecoderTypes from "@truffle/codec/types/interface";
 import { getStorageAllocations, storageSize } from "@truffle/codec/allocate/storage";
-import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
+import * as Decoding from "@truffle/codec/types/decoding";
 import { decodeVariable } from "@truffle/codec/core/decoding";
 import { isWordsLength, equalSlots } from "@truffle/codec/utils/storage";
 import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "@truffle/codec/interface/errors";
@@ -99,11 +99,11 @@ export default class ContractDecoder {
     return await this.wireDecoder.events(options);
   }
 
-  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
+  public abifyCalldataDecoding(decoding: Decoding.CalldataDecoding): Decoding.CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
 
-  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
+  public abifyLogDecoding(decoding: Decoding.LogDecoding): Decoding.LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
@@ -433,11 +433,11 @@ export class ContractInstanceDecoder {
     return await this.wireDecoder.decodeLogs(logs, {}, this.additionalContexts);
   }
 
-  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
+  public abifyCalldataDecoding(decoding: Decoding.CalldataDecoding): Decoding.CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
 
-  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
+  public abifyLogDecoding(decoding: Decoding.LogDecoding): Decoding.LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
 

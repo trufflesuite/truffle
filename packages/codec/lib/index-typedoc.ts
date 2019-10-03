@@ -16,13 +16,6 @@ export {
   ContractState, DecodedVariable, DecodedTransaction, DecodedLog, EventOptions
 } from "./types/interface";
 
-export {
-  AbiArgument,
-  AnonymousDecoding,
-  ConstructorDecoding,
-  EventDecoding,
-  FunctionDecoding,
-  MessageDecoding,
-  UnknownDecoding
-} from "./types/decoding";
+import * as Decoding from "./types/decoding";
+export { Decoding };
 // export * from "./types/errors";
