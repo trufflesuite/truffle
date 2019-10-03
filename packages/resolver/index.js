@@ -26,7 +26,10 @@ Resolver.prototype.require = function(import_path, search_path) {
     var source = this.sources[i];
     var result = source.require(import_path, search_path);
     if (result) {
-      var abstraction = contract(result, this.options);
+      var abstraction = contract(
+        result,
+        this.options.networks[this.options.network].type
+      );
       provision(abstraction, this.options);
       return abstraction;
     }
