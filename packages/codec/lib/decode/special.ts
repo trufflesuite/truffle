@@ -5,10 +5,10 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { Types, Values } from "@truffle/codec/format";
 import decodeValue from "./value";
 import { Pointer, Compiler, Evm } from "@truffle/codec/types";
-import { DecoderRequest } from "@truffle/codec/types/request";
+import * as Request from "@truffle/codec/types/request";
 import { solidityFamily } from "@truffle/codec/utils/compiler";
 
-export default function* decodeSpecial(dataType: Types.Type, pointer: Pointer.SpecialPointer, info: Evm.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeSpecial(dataType: Types.Type, pointer: Pointer.SpecialPointer, info: Evm.EvmInfo): Generator<Request.DecoderRequest, Values.Result, Uint8Array> {
   if(dataType.typeClass === "magic") {
     return yield* decodeMagic(dataType, pointer, info);
   }
@@ -17,7 +17,7 @@ export default function* decodeSpecial(dataType: Types.Type, pointer: Pointer.Sp
   }
 }
 
-export function* decodeMagic(dataType: Types.MagicType, pointer: Pointer.SpecialPointer, info: Evm.EvmInfo): Generator<DecoderRequest, Values.MagicResult, Uint8Array> {
+export function* decodeMagic(dataType: Types.MagicType, pointer: Pointer.SpecialPointer, info: Evm.EvmInfo): Generator<Request.DecoderRequest, Values.MagicResult, Uint8Array> {
 
   let {state} = info;
 

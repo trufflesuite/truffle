@@ -7,11 +7,11 @@ import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import utf8 from "utf8";
 import { Pointer, Evm, Decoding } from "@truffle/codec/types";
-import { DecoderOptions } from "@truffle/codec/types/options";
-import { DecoderRequest } from "@truffle/codec/types/request";
+import * as Options from "@truffle/codec/types/options";
+import * as Request from "@truffle/codec/types/request";
 import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeValue(dataType: Types.Type, pointer: Pointer.DataPointer, info: Evm.EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeValue(dataType: Types.Type, pointer: Pointer.DataPointer, info: Evm.EvmInfo, options: Options.DecoderOptions = {}): Generator<Request.DecoderRequest, Values.Result, Uint8Array> {
   const { state } = info;
   const { permissivePadding, strictAbiMode: strict } = options; //if these are undefined they'll still be falsy so OK
 
@@ -420,11 +420,11 @@ export function decodeString(bytes: Uint8Array): Values.StringValueInfo {
 }
 
 //NOTE that this function returns a ContractValueInfo, not a ContractResult
-export function* decodeContract(addressBytes: Uint8Array, info: Evm.EvmInfo): Generator<DecoderRequest, Values.ContractValueInfo, Uint8Array> {
+export function* decodeContract(addressBytes: Uint8Array, info: Evm.EvmInfo): Generator<Request.DecoderRequest, Values.ContractValueInfo, Uint8Array> {
   return (yield* decodeContractAndContext(addressBytes, info)).contractInfo;
 }
 
-function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.EvmInfo): Generator<DecoderRequest, Decoding.ContractInfoAndContext, Uint8Array> {
+function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.EvmInfo): Generator<Request.DecoderRequest, Decoding.ContractInfoAndContext, Uint8Array> {
   let address = CodecUtils.Conversion.toAddress(addressBytes);
   let rawAddress = CodecUtils.Conversion.toHexString(addressBytes);
   let codeBytes: Uint8Array = yield {
@@ -458,7 +458,7 @@ function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.EvmInfo):
 
 //note: address can have extra zeroes on the left like elsewhere, but selector should be exactly 4 bytes
 //NOTE this again returns a FunctionExternalValueInfo, not a FunctionExternalResult
-export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: Evm.EvmInfo): Generator<DecoderRequest, Values.FunctionExternalValueInfo, Uint8Array> {
+export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: Evm.EvmInfo): Generator<Request.DecoderRequest, Values.FunctionExternalValueInfo, Uint8Array> {
   let {contractInfo: contract, context} = yield* decodeContractAndContext(addressBytes, info);
   let selector = CodecUtils.Conversion.toHexString(selectorBytes);
   if(contract.kind === "unknown") {
