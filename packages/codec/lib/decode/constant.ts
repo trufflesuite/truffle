@@ -9,7 +9,6 @@ import { Pointer } from "@truffle/codec/types";
 import { EvmInfo } from "@truffle/codec/types/evm";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";
-import BN from "bn.js";
 
 export default function* decodeConstant(dataType: Types.Type, pointer: Pointer.ConstantDefinitionPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
 

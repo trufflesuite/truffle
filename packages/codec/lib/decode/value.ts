@@ -5,8 +5,6 @@ import read from "@truffle/codec/read";
 import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
-import BN from "bn.js";
-import Big from "big.js";
 import utf8 from "utf8";
 import { Pointer } from "@truffle/codec/types";
 import { EvmInfo } from "@truffle/codec/types/evm";

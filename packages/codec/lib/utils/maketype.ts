@@ -8,7 +8,6 @@ import { Definition as DefinitionUtils } from "./definition";
 import * as Compiler from "@truffle/codec/types/compiler";
 import { solidityFamily } from "./compiler";
 import { Types } from "@truffle/codec/format";
-import { TypeUtils } from "./datatype";
 
 export namespace MakeType {
 

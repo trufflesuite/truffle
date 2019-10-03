@@ -9,7 +9,6 @@ import { Pointer } from "@truffle/codec/types";
 import { EvmInfo } from "@truffle/codec/types/evm";
 import { DecoderOptions } from "@truffle/codec/types/options";
 import { DecoderRequest } from "@truffle/codec/types/request";
-import { StopDecodingError } from "@truffle/codec/decode/errors";
 
 export default function* decodeTopic(dataType: Types.Type, pointer: Pointer.EventTopicPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {

@@ -13,7 +13,6 @@ import BN from "bn.js";
 import WireDecoder from "./wire";
 import { BlockType, Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
-import { Provider } from "web3/providers";
 import * as DecoderTypes from "@truffle/codec/types/interface";
 import { EvmInfo, AllocationInfo } from "@truffle/codec/types/evm";
 import { getStorageAllocations, storageSize } from "@truffle/codec/allocate/storage";

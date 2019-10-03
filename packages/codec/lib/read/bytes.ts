@@ -1,5 +1,3 @@
-import BN from "bn.js";
-
 import * as CodecUtils from "@truffle/codec/utils";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
