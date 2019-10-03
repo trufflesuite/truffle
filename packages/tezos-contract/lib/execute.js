@@ -237,7 +237,7 @@ var execute = {
             contract: constructor
           });
 
-          const testParams = {
+          const originateParams = {
             balance: params.value || "0",
             code: params.data,
             init: `${params.arguments}`, // TODO: robust encoding/decoding of deployer params from migration scripts
@@ -246,7 +246,7 @@ var execute = {
             gasLimit: 800000
           };
 
-          deferred = web3.tez.contract.originate(testParams);
+          deferred = web3.tez.contract.originate(originateParams);
 
           try {
             const receipt = await deferred;
