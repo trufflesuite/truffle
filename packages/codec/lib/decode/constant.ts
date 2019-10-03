@@ -6,10 +6,10 @@ import { Types, Values } from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import decodeValue from "./value";
 import { Pointer, Evm } from "@truffle/codec/types";
-import { DecoderRequest } from "@truffle/codec/types/request";
+import * as Request from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeConstant(dataType: Types.Type, pointer: Pointer.ConstantDefinitionPointer, info: Evm.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeConstant(dataType: Types.Type, pointer: Pointer.ConstantDefinitionPointer, info: Evm.EvmInfo): Generator<Request.DecoderRequest, Values.Result, Uint8Array> {
 
   debug("pointer %o", pointer);
 

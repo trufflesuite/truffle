@@ -10,10 +10,10 @@ import { Pointer, Storage as StorageTypes, Evm } from "@truffle/codec/types";
 import { storageSizeForType } from "@truffle/codec/allocate/storage";
 import { isWordsLength, slotAddress } from "@truffle/codec/utils/storage";
 import BN from "bn.js";
-import { DecoderRequest } from "@truffle/codec/types/request";
+import * as Request from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeStorage(dataType: Types.Type, pointer: Pointer.StoragePointer, info: Evm.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeStorage(dataType: Types.Type, pointer: Pointer.StoragePointer, info: Evm.EvmInfo): Generator<Request.DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {
     return yield* decodeStorageReference(dataType, pointer, info);
   }
@@ -25,7 +25,7 @@ export default function* decodeStorage(dataType: Types.Type, pointer: Pointer.St
 //decodes storage at the address *read* from the pointer -- hence why this takes DataPointer rather than StoragePointer.
 //NOTE: ONLY for use with pointers to reference types!
 //Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
-export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, pointer: Pointer.DataPointer, info: Evm.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, pointer: Pointer.DataPointer, info: Evm.EvmInfo): Generator<Request.DecoderRequest, Values.Result, Uint8Array> {
 
   const allocations = info.allocations.storage;
 
@@ -75,7 +75,7 @@ export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, 
   return yield* decodeStorageReference(dataType, newPointer, info);
 }
 
-export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: Pointer.StoragePointer, info: Evm.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: Pointer.StoragePointer, info: Evm.EvmInfo): Generator<Request.DecoderRequest, Values.Result, Uint8Array> {
   var data;
   var length;
 
