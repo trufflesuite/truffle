@@ -4,7 +4,7 @@ const debug = debugModule("codec:read:storage");
 import * as CodecUtils from "@truffle/codec/utils";
 import { slotAddress } from "@truffle/codec/utils/storage";
 import { slotAddressPrintout } from "@truffle/codec/utils/errors";
-import * as Storage from "@truffle/codec/types/storage";
+import { Storage } from "@truffle/codec/types";
 import { WordMapping } from "@truffle/codec/types/evm";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";

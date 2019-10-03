@@ -4,7 +4,7 @@ const debug = debugModule("codec:utils:errors");
 import { Values, Errors } from "@truffle/codec/format";
 import { TypeUtils } from "./datatype";
 import { Definition as DefinitionUtils } from "./definition";
-import * as Storage from "@truffle/codec/types/storage";
+import { Storage } from "@truffle/codec/types";
 
 //this function gives an error message
 //for those errors that are meant to possibly

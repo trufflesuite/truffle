@@ -27,4 +27,6 @@ import * as Pointer from "./pointer";
 export { Pointer };
 
 export * from "./request";
-export * from "./storage";
+
+import * as Storage from "./storage";
+export { Storage };
