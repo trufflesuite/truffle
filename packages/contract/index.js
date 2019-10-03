@@ -3,11 +3,7 @@ const Contract = require("./lib/contract");
 const truffleContractVersion = require("./package.json").version;
 const TezosContract = require("@truffle/tezos-contract");
 
-const contract = (json = {}, { networks, network: networkName }) => {
-  const networkType = networks[networkName].type
-    ? networks[networkName].type
-    : "ethereum";
-
+const contract = (json = {}, networkType = "ethereum") => {
   // TODO: figure out if passing networkName is necessary
   const normalizedArtifactObject = Object.assign({}, Schema.normalize(json), {
     networkType
