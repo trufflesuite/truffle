@@ -5,7 +5,7 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { Types, Values } from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import decodeValue from "./value";
-import * as Pointer from "@truffle/codec/types/pointer";
+import { Pointer } from "@truffle/codec/types";
 import { EvmInfo } from "@truffle/codec/types/evm";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";

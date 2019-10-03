@@ -8,7 +8,7 @@ import { Types, Values, Errors } from "@truffle/codec/format";
 import BN from "bn.js";
 import Big from "big.js";
 import utf8 from "utf8";
-import * as Pointer from "@truffle/codec/types/pointer";
+import { Pointer } from "@truffle/codec/types";
 import { EvmInfo } from "@truffle/codec/types/evm";
 import { DecoderOptions } from "@truffle/codec/types/options";
 import { DecoderRequest } from "@truffle/codec/types/request";

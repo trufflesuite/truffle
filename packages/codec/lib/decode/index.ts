@@ -11,7 +11,7 @@ import decodeConstant from "./constant";
 import decodeSpecial from "./special";
 import decodeTopic from "./event";
 import { Types, Values } from "@truffle/codec/format";
-import * as Pointer from "@truffle/codec/types/pointer";
+import { Pointer } from "@truffle/codec/types";
 import { EvmInfo } from "@truffle/codec/types/evm";
 import { DecoderOptions } from "@truffle/codec/types/options";
 import { DecoderRequest } from "@truffle/codec/types/request";

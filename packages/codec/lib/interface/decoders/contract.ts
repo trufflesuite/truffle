@@ -5,7 +5,7 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { wrapElementaryViaDefinition, Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils } from "@truffle/codec/utils";
 import { DecoderContext, DecoderContexts } from "@truffle/codec/types/contexts";
 import * as Utils from "@truffle/codec/utils/interface";
-import { Ast } from "@truffle/codec/types";
+import { Ast, Pointer } from "@truffle/codec/types";
 import { Types, Values } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
@@ -22,7 +22,6 @@ import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
 import { decodeVariable } from "@truffle/codec/core/decoding";
 import { Slot } from "@truffle/codec/types/storage";
 import { isWordsLength, equalSlots } from "@truffle/codec/utils/storage";
-import * as Pointer from "@truffle/codec/types/pointer";
 import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "@truffle/codec/interface/errors";
 
 export default class ContractDecoder {
