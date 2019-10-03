@@ -1,9 +1,8 @@
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { AbiUtils } from "./abi";
-import * as Contexts from "@truffle/codec/types/contexts";
 import { Conversion as ConversionUtils } from "./conversion";
 import { EVM as EVMUtils } from "./evm";
-import { Ast } from "@truffle/codec/types";
+import { Ast, Contexts } from "@truffle/codec/types";
 import { ContractKind } from "@truffle/codec/types/common";
 
 export function getContractNode(contract: ContractObject): Ast.Definition {

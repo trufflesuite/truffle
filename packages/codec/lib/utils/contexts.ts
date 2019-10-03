@@ -3,7 +3,7 @@ const debug = debugModule("codec:utils:contexts");
 
 import { EVM } from "./evm";
 import { Types } from "@truffle/codec/format";
-import * as Contexts from "@truffle/codec/types/contexts";
+import { Contexts } from "@truffle/codec/types";
 import escapeRegExp from "lodash.escaperegexp";
 
 export namespace ContextUtils {

@@ -9,9 +9,8 @@ import {
   EVM,
   ContextUtils
 } from "@truffle/codec/utils";
-import * as Contexts from "@truffle/codec/types/contexts";
 import * as Utils from "@truffle/codec/utils/interface";
-import { Ast, Pointer, Allocation } from "@truffle/codec/types";
+import { Ast, Pointer, Allocation, Contexts } from "@truffle/codec/types";
 import { Types, Values } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
