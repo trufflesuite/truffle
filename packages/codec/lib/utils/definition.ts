@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:utils:definition");
 
 import { Ast } from "@truffle/codec/types";
-import { Visibility, Mutability, Location, ContractKind } from "@truffle/codec/types/common";
+import * as Common from "@truffle/codec/types/common";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
 
@@ -55,8 +55,8 @@ export namespace Definition {
    * (not for use on other types! will cause an error!)
    * should only return "internal" or "external"
    */
-  export function visibility(definition: Ast.Definition): Visibility {
-    return <Visibility> (definition.typeName ?
+  export function visibility(definition: Ast.Definition): Common.Visibility {
+    return <Common.Visibility> (definition.typeName ?
       definition.typeName.visibility : definition.visibility);
   }
 
@@ -144,13 +144,13 @@ export namespace Definition {
   }
 
   //note: only use this on things already verified to be references
-  export function referenceType(definition: Ast.Definition): Location {
-    return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1] as Location;
+  export function referenceType(definition: Ast.Definition): Common.Location {
+    return typeIdentifier(definition).match(/_([^_]+)(_ptr)?$/)[1] as Common.Location;
   }
 
   //only for contract types, obviously! will yield nonsense otherwise!
-  export function contractKind(definition: Ast.Definition): ContractKind {
-    return typeString(definition).split(" ")[0] as ContractKind;
+  export function contractKind(definition: Ast.Definition): Common.ContractKind {
+    return typeString(definition).split(" ")[0] as Common.ContractKind;
   }
 
   //stack size, in words, of a given type
@@ -178,7 +178,7 @@ export namespace Definition {
 
   //definition: a storage reference definition
   //location: the location you want it to refer to instead
-  export function spliceLocation(definition: Ast.Definition, location: Location): Ast.Definition {
+  export function spliceLocation(definition: Ast.Definition, location: Common.Location): Ast.Definition {
     debug("definition %O", definition);
     return {
       ...definition,
@@ -330,7 +330,7 @@ export namespace Definition {
   //similar compatibility function for mutability for pre-0.4.16 versions
   //returns undefined if you don't give it a FunctionDefinition or
   //VariableDeclaration
-  export function mutability(node: Ast.Definition): Mutability | undefined {
+  export function mutability(node: Ast.Definition): Common.Mutability | undefined {
     node = node.typeName || node;
     if(node.nodeType !== "FunctionDefinition" && node.nodeType !== "FunctionTypeName") {
       return undefined;
@@ -410,7 +410,7 @@ export namespace Definition {
     }
   };
 
-  export function spoofThisDefinition(contractName: string, contractId: number, contractKind: ContractKind): Ast.Definition {
+  export function spoofThisDefinition(contractName: string, contractId: number, contractKind: Common.ContractKind): Ast.Definition {
     let formattedName = contractName.replace(/\$/g, "$$".repeat(3));
     //note that string.replace treats $'s specially in the replacement string;
     //we want 3 $'s for each $ in the input, so we need to put *6* $'s in the

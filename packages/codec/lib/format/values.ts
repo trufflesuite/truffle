@@ -25,7 +25,7 @@ import {
   FixedValue,
   UfixedValue
 } from "./elementary";
-import { Mutability } from "@truffle/codec/types/common";
+import * as Common from "@truffle/codec/types/common";
 import * as Abi from "@truffle/codec/types/abi";
 
 export * from "./elementary";
@@ -277,7 +277,7 @@ export interface FunctionInternalValueInfoKnown {
   constructorProgramCounter: number;
   name: string;
   definedIn: Types.ContractType;
-  mutability?: Mutability;
+  mutability?: Common.Mutability;
   //may have more optional fields added later
 }
 

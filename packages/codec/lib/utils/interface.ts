@@ -3,7 +3,7 @@ import { AbiUtils } from "./abi";
 import { Conversion as ConversionUtils } from "./conversion";
 import { EVM as EVMUtils } from "./evm";
 import { Ast, Contexts } from "@truffle/codec/types";
-import { ContractKind } from "@truffle/codec/types/common";
+import * as Common from "@truffle/codec/types/common";
 
 export function getContractNode(contract: ContractObject): Ast.Definition {
   return (contract.ast || {nodes: []}).nodes.find(
@@ -37,7 +37,7 @@ export function makeContext(contract: ContractObject, node: Ast.Definition | und
 }
 
 //attempts to determine if the given contract is a library or not
-function contractKind(contract: ContractObject, node?: Ast.Definition): ContractKind {
+function contractKind(contract: ContractObject, node?: Ast.Definition): Common.ContractKind {
   //first: if we have a node, use its listed contract kind
   if(node) {
     return node.contractKind;

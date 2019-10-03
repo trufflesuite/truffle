@@ -16,7 +16,7 @@ const debug = debugModule("codec:format:types");
 
 import BN from "bn.js";
 
-import { Location, Mutability, ContractKind } from "@truffle/codec/types/common";
+import * as Common from "@truffle/codec/types/common";
 
 export type Type = UintType | IntType | BoolType | BytesType | AddressType
   | FixedType | UfixedType | StringType | ArrayType | MappingType | FunctionType
@@ -51,7 +51,7 @@ export interface BytesTypeStatic {
 export interface BytesTypeDynamic {
   typeClass: "bytes";
   kind: "dynamic";
-  location?: Location;
+  location?: Common.Location;
   typeHint?: string;
 }
 
@@ -71,7 +71,7 @@ export interface AddressTypeGeneral {
 
 export interface StringType {
   typeClass: "string";
-  location?: Location;
+  location?: Common.Location;
   typeHint?: string;
 }
 
@@ -96,7 +96,7 @@ export interface ArrayTypeStatic {
   kind: "static";
   baseType: Type;
   length: BN;
-  location?: Location;
+  location?: Common.Location;
   typeHint?: string;
 }
 
@@ -104,7 +104,7 @@ export interface ArrayTypeDynamic {
   typeClass: "array";
   kind: "dynamic";
   baseType: Type;
-  location?: Location;
+  location?: Common.Location;
   typeHint?: string;
 }
 
@@ -123,7 +123,7 @@ export type FunctionType = FunctionInternalType | FunctionExternalType;
 export interface FunctionInternalType {
   typeClass: "function";
   visibility: "internal";
-  mutability: Mutability;
+  mutability: Common.Mutability;
   inputParameterTypes: Type[];
   outputParameterTypes: Type[];
   //we do not presently support bound functions
@@ -135,7 +135,7 @@ export interface FunctionExternalTypeSpecific {
   typeClass: "function";
   visibility: "external";
   kind: "specific";
-  mutability: Mutability;
+  mutability: Common.Mutability;
   inputParameterTypes: Type[];
   outputParameterTypes: Type[];
   //we do not presently support bound functions
@@ -167,7 +167,7 @@ export interface StructTypeLocal {
   definingContractName: string;
   definingContract?: ContractTypeNative;
   memberTypes?: NameTypePair[]; //these should be in order
-  location?: Location;
+  location?: Common.Location;
 }
 
 export interface StructTypeGlobal {
@@ -176,7 +176,7 @@ export interface StructTypeGlobal {
   id: string;
   typeName: string;
   memberTypes?: NameTypePair[]; //these should be in order
-  location?: Location;
+  location?: Common.Location;
 }
 
 export interface OptionallyNamedType {
@@ -217,7 +217,7 @@ export interface ContractTypeNative {
   kind: "native";
   id: string;
   typeName: string;
-  contractKind?: ContractKind;
+  contractKind?: Common.ContractKind;
   payable?: boolean; //will be useful in the future
   //may have more optional members defined later, but I'll leave these out for
   //now
@@ -227,7 +227,7 @@ export interface ContractTypeForeign {
   typeClass: "contract";
   kind: "foreign";
   typeName: string;
-  contractKind?: ContractKind;
+  contractKind?: Common.ContractKind;
   payable?: boolean; //will be useful in the future
   //may have more optional members defined later, but I'll leave these out for
   //now

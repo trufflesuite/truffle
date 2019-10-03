@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:utils:datatype");
 
 import { Types } from "@truffle/codec/format";
-import { Location } from "@truffle/codec/types/common";
+import * as Common from "@truffle/codec/types/common";
 
 export namespace TypeUtils {
 
@@ -48,7 +48,7 @@ export namespace TypeUtils {
   }
 
   //the location argument here always forces, so passing undefined *will* force undefined
-  export function specifyLocation(dataType: Types.Type, location: Location | undefined): Types.Type {
+  export function specifyLocation(dataType: Types.Type, location: Common.Location | undefined): Types.Type {
     if(TypeUtils.isReferenceType(dataType)) {
       switch(dataType.typeClass) {
         case "string":
