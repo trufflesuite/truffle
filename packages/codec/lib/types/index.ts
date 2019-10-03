@@ -16,7 +16,8 @@ export { Contexts };
 import * as Common from "./common";
 export { Common };
 
-export * from "./decoding";
+import * as Decoding from "./decoding";
+export { Decoding };
 
 import * as Errors from "./errors";
 export { Errors };

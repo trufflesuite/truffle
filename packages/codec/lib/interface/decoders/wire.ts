@@ -4,7 +4,7 @@ const debug = debugModule("codec:interface:decoders:wire");
 import * as CodecUtils from "@truffle/codec/utils";
 import { AbiUtils, ContextUtils, abifyCalldataDecoding, abifyLogDecoding, MakeType } from "@truffle/codec/utils";
 import * as Utils from "@truffle/codec/utils/interface";
-import { Ast, Allocation, Contexts, Evm } from "@truffle/codec/types";
+import { Ast, Allocation, Contexts, Evm, Decoding } from "@truffle/codec/types";
 import { Types } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
@@ -15,7 +15,6 @@ import * as DecoderTypes from "@truffle/codec/types/interface";
 import { getAbiAllocations, getCalldataAllocations, getEventAllocations } from "@truffle/codec/allocate/abi";
 import { getStorageAllocations } from "@truffle/codec/allocate/storage";
 import { decodeCalldata, decodeEvent } from "@truffle/codec/core/decoding";
-import * as Decoding from "@truffle/codec/types/decoding";
 
 export default class WireDecoder {
   private web3: Web3;
