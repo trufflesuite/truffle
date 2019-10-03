@@ -17,7 +17,7 @@ import { EvmInfo, AllocationInfo } from "@truffle/codec/types/evm";
 import { getStorageAllocations, storageSize } from "@truffle/codec/allocate/storage";
 import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
 import { decodeVariable } from "@truffle/codec/core/decoding";
-import { Slot } from "@truffle/codec/types/storage";
+import * as Storage from "@truffle/codec/types/storage";
 import { isWordsLength, equalSlots } from "@truffle/codec/utils/storage";
 import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "@truffle/codec/interface/errors";
 
@@ -158,7 +158,7 @@ export class ContractInstanceDecoder {
 
   private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
-  private mappingKeys: Slot[] = [];
+  private mappingKeys: Storage.Slot[] = [];
 
   private storageCache: DecoderTypes.StorageCache = {};
 
@@ -384,7 +384,7 @@ export class ContractInstanceDecoder {
   //see the comment on constructSlot for more detail on what forms are accepted
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    let slot: Storage.Slot | undefined = this.constructSlot(variable, ...indices)[0];
     //add mapping key and all ancestors
     debug("slot: %O", slot);
     while(slot !== undefined &&
@@ -404,7 +404,7 @@ export class ContractInstanceDecoder {
   //input is similar to watchMappingKey; will unwatch all descendants too
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    let slot: Storage.Slot | undefined = this.constructSlot(variable, ...indices)[0];
     if(slot === undefined) {
       return; //not strictly necessary, but may as well
     }
@@ -460,7 +460,7 @@ export class ContractInstanceDecoder {
   //bytes mapping keys should be given as hex strings beginning with "0x"
   //address mapping keys are like bytes; checksum case is not required
   //boolean mapping keys may be given either as booleans, or as string "true" or "false"
-  private constructSlot(variable: number | string, ...indices: any[]): [Slot | undefined , Ast.Definition | undefined] {
+  private constructSlot(variable: number | string, ...indices: any[]): [Storage.Slot | undefined , Ast.Definition | undefined] {
     //base case: we need to locate the variable and its definition
     if(indices.length === 0) {
       let allocation = this.findVariableByNameOrId(variable);
@@ -482,7 +482,7 @@ export class ContractInstanceDecoder {
     let rawIndex = indices[indices.length - 1];
     let index: any;
     let key: Values.ElementaryValue;
-    let slot: Slot;
+    let slot: Storage.Slot;
     let definition: Ast.Definition;
     switch(DefinitionUtils.typeClass(parentDefinition)) {
       case "array":

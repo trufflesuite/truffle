@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:storage");
 
-import { StorageLength, Range } from "@truffle/codec/types/storage";
+import * as Storage from "@truffle/codec/types/storage";
 import { isWordsLength } from "@truffle/codec/utils/storage";
 import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
 import { DecodingError } from "@truffle/codec/decode/errors";
@@ -28,7 +28,7 @@ export class UnknownBaseContractIdError extends Error {
 }
 
 interface StorageAllocationInfo {
-  size: StorageLength;
+  size: Storage.StorageLength;
   allocations: Allocation.StorageAllocations;
 }
 
@@ -101,7 +101,7 @@ function allocateMembers(parentNode: Ast.Definition, definitions: DefinitionPair
       continue;
     }
 
-    let size: StorageLength;
+    let size: Storage.StorageLength;
     ({size, allocations} = storageSizeAndAllocate(node, referenceDeclarations, allocations));
 
     //if it's sized in words (and we're not at the start of slot) we need to start on a new slot
@@ -114,7 +114,7 @@ function allocateMembers(parentNode: Ast.Definition, definitions: DefinitionPair
     }
     //otherwise, we remain in place
 
-    let range: Range;
+    let range: Storage.Range;
 
     if(isWordsLength(size)) {
       //words case
@@ -236,7 +236,7 @@ function allocateContract(contract: Ast.Definition, referenceDeclarations: Ast.R
 //NOTE: This wrapper function is for use by the decoder ONLY, after allocation is done.
 //The allocator should (and does) instead use a direct call to storageSizeAndAllocate,
 //not to the wrapper, because it may need the allocations returned.
-export function storageSize(definition: Ast.Definition, referenceDeclarations?: Ast.References, allocations?: Allocation.StorageAllocations): StorageLength {
+export function storageSize(definition: Ast.Definition, referenceDeclarations?: Ast.References, allocations?: Allocation.StorageAllocations): Storage.StorageLength {
   return storageSizeAndAllocate(definition, referenceDeclarations, allocations).size;
 }
 
@@ -394,7 +394,7 @@ function storageSizeAndAllocate(definition: Ast.Definition, referenceDeclaration
 }
 
 //like storageSize, but for a Type object; also assumes you've already done allocation
-export function storageSizeForType(dataType: Format.Types.Type, userDefinedTypes?: Format.Types.TypesById, allocations?: Allocation.StorageAllocations): StorageLength {
+export function storageSizeForType(dataType: Format.Types.Type, userDefinedTypes?: Format.Types.TypesById, allocations?: Allocation.StorageAllocations): Storage.StorageLength {
   switch(dataType.typeClass) {
     case "bool":
       return {bytes: 1};

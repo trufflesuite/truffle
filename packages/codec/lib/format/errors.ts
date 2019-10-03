@@ -10,7 +10,7 @@ const debug = debugModule("codec:format:errors");
 import BN from "bn.js";
 import * as Types from "./types";
 import * as Ast from "@truffle/codec/types/ast";
-import { Range } from "@truffle/codec/types/storage";
+import * as Storage from "@truffle/codec/types/storage";
 
 /*
  * SECTION 1: Generic types for values in general (including errors).
@@ -352,7 +352,7 @@ export interface ReadErrorBytes {
 
 export interface ReadErrorStorage {
   kind: "ReadErrorStorage";
-  range: Range;
+  range: Storage.Range;
 }
 
 export interface OverlongArraysAndStringsNotImplementedError {
