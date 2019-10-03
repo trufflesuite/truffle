@@ -1,4 +1,4 @@
-import { Abi, Contexts } from "@truffle/codec/types";
+import { Abi } from "@truffle/codec/types";
 import { Types, Values } from "@truffle/codec/format";
 
 export type CalldataDecoding = FunctionDecoding | ConstructorDecoding | MessageDecoding | UnknownDecoding;
@@ -59,10 +59,4 @@ export interface AbiArgument {
   name?: string; //included if parameter is named
   indexed?: boolean; //included for event parameters
   value: Values.Result;
-}
-
-//the following types are intended for internal use only
-export interface ContractInfoAndContext {
-  contractInfo: Values.ContractValueInfo;
-  context?: Contexts.DecoderContext;
 }

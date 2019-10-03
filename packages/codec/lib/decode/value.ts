@@ -6,8 +6,7 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import utf8 from "utf8";
-import { Pointer, Options, Request } from "@truffle/codec/types";
-import * as Decoding from "./types";
+import { Contexts, Pointer, Options, Request } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
 
@@ -424,7 +423,7 @@ export function* decodeContract(addressBytes: Uint8Array, info: Evm.Types.EvmInf
   return (yield* decodeContractAndContext(addressBytes, info)).contractInfo;
 }
 
-function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.Types.EvmInfo): Generator<Request.DecoderRequest, Decoding.ContractInfoAndContext, Uint8Array> {
+function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.Types.EvmInfo): Generator<Request.DecoderRequest, ContractInfoAndContext, Uint8Array> {
   let address = CodecUtils.Conversion.toAddress(addressBytes);
   let rawAddress = CodecUtils.Conversion.toHexString(addressBytes);
   let codeBytes: Uint8Array = yield {
@@ -617,3 +616,10 @@ function checkPaddingSigned(bytes: Uint8Array, length: number): boolean {
   let signByte = value[0] & 0x80 ? 0xff : 0x00;
   return padding.every(paddingByte => paddingByte === signByte);
 }
+
+//the following type is intended for internal use only
+export interface ContractInfoAndContext {
+  contractInfo: Values.ContractValueInfo;
+  context?: Contexts.DecoderContext;
+}
+
