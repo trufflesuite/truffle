@@ -1,4 +1,4 @@
-import { Abi, Contexts } from "@truffle/codec/types";
+import { Abi } from "@truffle/codec/types";
 import { Types, Values } from "@truffle/codec/format";
 
 /**
@@ -226,13 +226,4 @@ export interface AbiArgument {
    * see the [[DecodedLog]] documentation for why).
    */
   value: Values.Result;
-}
-
-//the following types are intended for internal use only
-/**
- * @hidden
- */
-export interface ContractInfoAndContext {
-  contractInfo: Values.ContractValueInfo;
-  context?: Contexts.DecoderContext;
 }
