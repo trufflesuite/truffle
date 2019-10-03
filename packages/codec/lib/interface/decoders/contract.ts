@@ -26,7 +26,7 @@ import {
 } from "@truffle/codec/allocate/storage";
 import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
 import { decodeVariable } from "@truffle/codec/core/decoding";
-import { Slot } from "@truffle/codec/types/storage";
+import * as Storage from "@truffle/codec/types/storage";
 import { isWordsLength, equalSlots } from "@truffle/codec/utils/storage";
 import {
   ContractBeingDecodedHasNoNodeError,
@@ -245,7 +245,7 @@ export class ContractInstanceDecoder {
 
   private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
-  private mappingKeys: Slot[] = [];
+  private mappingKeys: Storage.Slot[] = [];
 
   private storageCache: DecoderTypes.StorageCache = {};
 
@@ -603,7 +603,7 @@ export class ContractInstanceDecoder {
    */
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    let slot: Storage.Slot | undefined = this.constructSlot(variable, ...indices)[0];
     //add mapping key and all ancestors
     debug("slot: %O", slot);
     while (
@@ -637,8 +637,8 @@ export class ContractInstanceDecoder {
    */
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
-    if (slot === undefined) {
+    let slot: Storage.Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    if(slot === undefined) {
       return; //not strictly necessary, but may as well
     }
     //remove mapping key and all descendants
@@ -725,7 +725,7 @@ export class ContractInstanceDecoder {
   private constructSlot(
     variable: number | string,
     ...indices: any[]
-  ): [Slot | undefined, Ast.Definition | undefined] {
+  ): [Storage.Slot | undefined, Ast.Definition | undefined] {
     //base case: we need to locate the variable and its definition
     if (indices.length === 0) {
       let allocation = this.findVariableByNameOrId(variable);
@@ -751,7 +751,7 @@ export class ContractInstanceDecoder {
     let rawIndex = indices[indices.length - 1];
     let index: any;
     let key: Values.ElementaryValue;
-    let slot: Slot;
+    let slot: Storage.Slot;
     let definition: Ast.Definition;
     switch(DefinitionUtils.typeClass(parentDefinition)) {
       case "array":
