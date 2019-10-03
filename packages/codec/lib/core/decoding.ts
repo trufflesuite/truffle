@@ -13,7 +13,7 @@ import { encodeAbi, encodeTupleAbi } from "@truffle/codec/encode/abi";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
 
-export function* decodeVariable(definition: Ast.Definition, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeVariable(definition: Ast.AstNode, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
   let dataType = MakeType.definitionToType(definition, compiler);
   return yield* decode(dataType, pointer, info); //no need to pass an offset

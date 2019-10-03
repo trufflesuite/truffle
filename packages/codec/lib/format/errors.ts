@@ -435,7 +435,7 @@ export interface UserDefinedTypeNotFoundError {
 //Read errors
 export interface UnsupportedConstantError {
   kind: "UnsupportedConstantError";
-  definition: Ast.Definition;
+  definition: Ast.AstNode;
 }
 
 export interface ReadErrorStack {

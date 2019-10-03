@@ -38,11 +38,11 @@ export default class WireDecoder {
   private network: string;
 
   private contracts: DecoderTypes.ContractMapping = {};
-  private contractNodes: Ast.References = {};
+  private contractNodes: Ast.AstNodes = {};
   private contexts: Contexts.DecoderContexts = {}; //all contexts
   private deployedContexts: Contexts.DecoderContexts = {};
 
-  private referenceDeclarations: Ast.References;
+  private referenceDeclarations: Ast.AstNodes;
   private userDefinedTypes: Types.TypesById;
   private allocations: Evm.Types.AllocationInfo;
 
@@ -57,7 +57,7 @@ export default class WireDecoder {
     let contractsAndContexts: DecoderTypes.ContractAndContexts[] = [];
 
     for(let contract of contracts) {
-      let node: Ast.Definition = Utils.getContractNode(contract);
+      let node: Ast.AstNode = Utils.getContractNode(contract);
       let deployedContext: Contexts.DecoderContext | undefined = undefined;
       let constructorContext: Contexts.DecoderContext | undefined = undefined;
       if (node !== undefined) {
@@ -149,10 +149,10 @@ export default class WireDecoder {
   }
 
   private collectUserDefinedTypes(): {
-    definitions: Ast.References;
+    definitions: Ast.AstNodes;
     types: Types.TypesById;
   } {
-    let references: Ast.References = {};
+    let references: Ast.AstNodes = {};
     let types: Types.TypesById = {};
     for (const id in this.contracts) {
       const compiler = this.contracts[id].compiler;
@@ -415,7 +415,7 @@ export default class WireDecoder {
   /**
    * @hidden
    */
-  public getReferenceDeclarations(): Ast.References {
+  public getReferenceDeclarations(): Ast.AstNodes {
     return this.referenceDeclarations;
   }
 

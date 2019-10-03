@@ -43,12 +43,12 @@ export interface InternalFunctions {
 export interface InternalFunction {
   source?: number;
   pointer?: string;
-  node?: Ast.Definition;
+  node?: Ast.AstNode;
   name?: string;
   id?: number;
   mutability?: Common.Mutability;
   contractPointer?: string;
-  contractNode?: Ast.Definition;
+  contractNode?: Ast.AstNode;
   contractName?: string;
   contractId?: number;
   contractKind?: Common.ContractKind;

@@ -146,7 +146,7 @@ export namespace AbiUtils {
     }
   }
 
-  export function definitionMatchesAbi(abiEntry: AbiTypes.AbiEntry, definition: Ast.Definition, referenceDeclarations: Ast.References): boolean {
+  export function definitionMatchesAbi(abiEntry: AbiTypes.AbiEntry, definition: Ast.AstNode, referenceDeclarations: Ast.AstNodes): boolean {
     try {
       return abisMatch(abiEntry, definitionToAbi(definition, referenceDeclarations));
     }

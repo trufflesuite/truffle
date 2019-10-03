@@ -14,7 +14,7 @@ export namespace MakeType {
   //things of elementary type)
   //NOTE: set forceLocation to *null* to force no location. leave it undefined
   //to not force a location.
-  export function definitionToType(definition: Ast.Definition, compiler: Compiler.CompilerVersion, forceLocation?: Common.Location | null): Types.Type {
+  export function definitionToType(definition: Ast.AstNode, compiler: Compiler.CompilerVersion, forceLocation?: Common.Location | null): Types.Type {
     debug("definition %O", definition);
     let typeClass = DefinitionUtils.typeClass(definition);
     let typeHint = DefinitionUtils.typeStringWithoutLocation(definition);
@@ -277,7 +277,7 @@ export namespace MakeType {
 
   //whereas the above takes variable definitions, this takes the actual type
   //definition
-  export function definitionToStoredType(definition: Ast.Definition, compiler: Compiler.CompilerVersion, referenceDeclarations?: Ast.References): Types.UserDefinedType {
+  export function definitionToStoredType(definition: Ast.AstNode, compiler: Compiler.CompilerVersion, referenceDeclarations?: Ast.AstNodes): Types.UserDefinedType {
     switch(definition.nodeType) {
       case "StructDefinition": {
         let id = definition.id.toString();
@@ -290,7 +290,7 @@ export namespace MakeType {
           let contractDefinition = Object.values(referenceDeclarations).find(
             node => node.nodeType === "ContractDefinition" &&
             node.nodes.some(
-              (subNode: Ast.Definition) => subNode.id.toString() === id
+              (subNode: Ast.AstNode) => subNode.id.toString() === id
             )
           );
           definingContract = <Types.ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
@@ -314,7 +314,7 @@ export namespace MakeType {
           let contractDefinition = Object.values(referenceDeclarations).find(
             node => node.nodeType === "ContractDefinition" &&
             node.nodes.some(
-              (subNode: Ast.Definition) => subNode.id.toString() === id
+              (subNode: Ast.AstNode) => subNode.id.toString() === id
             )
           );
           definingContract = <Types.ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
