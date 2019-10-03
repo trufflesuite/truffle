@@ -7,13 +7,13 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
-import { MemoryPointer, DataPointer } from "@truffle/codec/types/pointer";
+import * as Pointer from "@truffle/codec/types/pointer";
 import { MemoryMemberAllocation } from "@truffle/codec/types/allocation";
 import { EvmInfo } from "@truffle/codec/types/evm";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeMemory(dataType: Types.Type, pointer: Pointer.MemoryPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {
     return yield* decodeMemoryReferenceByAddress(dataType, pointer, info);
   }
@@ -22,7 +22,7 @@ export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPoint
   }
 }
 
-export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, pointer: DataPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, pointer: Pointer.DataPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   const { state } = info;
   // debug("pointer %o", pointer);
   let rawValue: Uint8Array;
@@ -90,7 +90,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         };
       }
 
-      let childPointer: MemoryPointer = {
+      let childPointer: Pointer.MemoryPointer = {
         location: "memory" as const,
         start: startPosition + CodecUtils.EVM.WORD_SIZE,
         length
@@ -182,7 +182,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
       for(let index = 0; index < structAllocation.members.length; index++) {
         const memberAllocation = structAllocation.members[index];
         const memberPointer = memberAllocation.pointer;
-        const childPointer: MemoryPointer = {
+        const childPointer: Pointer.MemoryPointer = {
           location: "memory" as const,
           start: startPosition + memberPointer.start,
           length: memberPointer.length //always equals WORD_SIZE or 0

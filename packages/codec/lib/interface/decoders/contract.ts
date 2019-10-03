@@ -31,7 +31,7 @@ import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
 import { decodeVariable } from "@truffle/codec/core/decoding";
 import { Slot } from "@truffle/codec/types/storage";
 import { isWordsLength, equalSlots } from "@truffle/codec/utils/storage";
-import { StoragePointer } from "@truffle/codec/types/pointer";
+import * as Pointer from "@truffle/codec/types/pointer";
 import {
   ContractBeingDecodedHasNoNodeError,
   ContractAllocationFailedError
@@ -761,13 +761,8 @@ export class ContractInstanceDecoder {
     let index: any;
     let key: Values.ElementaryValue;
     let slot: Slot;
-<<<<<<< HEAD
-    let definition: AstDefinition;
-    switch (DefinitionUtils.typeClass(parentDefinition)) {
-=======
     let definition: Ast.Definition;
     switch(DefinitionUtils.typeClass(parentDefinition)) {
->>>>>>> 4eb090d9c... Namespace AST types
       case "array":
         if (rawIndex instanceof BN) {
           index = rawIndex.clone();
@@ -823,10 +818,8 @@ export class ContractInstanceDecoder {
         slot = {
           path: parentSlot,
           //need type coercion here -- we know structs don't contain constants but the compiler doesn't
-          offset: (<StoragePointer>(
-            allocation.pointer
-          )).range.from.slot.offset.clone()
-        };
+          offset: (<Pointer.StoragePointer>allocation.pointer).range.from.slot.offset.clone()
+        }
         break;
       default:
         return [undefined, undefined];

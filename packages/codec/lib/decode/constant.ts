@@ -5,13 +5,13 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { Types, Values } from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import decodeValue from "./value";
-import { ConstantDefinitionPointer} from "@truffle/codec/types/pointer";
+import * as Pointer from "@truffle/codec/types/pointer";
 import { EvmInfo } from "@truffle/codec/types/evm";
 import { DecoderRequest } from "@truffle/codec/types/request";
 import { DecodingError } from "@truffle/codec/decode/errors";
 import BN from "bn.js";
 
-export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeConstant(dataType: Types.Type, pointer: Pointer.ConstantDefinitionPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
 
   debug("pointer %o", pointer);
 
