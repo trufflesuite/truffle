@@ -8,6 +8,9 @@ export { Decoders };
 import * as Errors from "./errors";
 export { Errors };
 
+import * as Types from "./types";
+export { Types };
+
 import { Provider } from "web3/providers";
 import { ContractObject } from "@truffle/contract-schema/spec";
 

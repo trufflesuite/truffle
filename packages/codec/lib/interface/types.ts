@@ -1,9 +1,7 @@
 import BN from "bn.js";
 import { ContractObject } from "@truffle/contract-schema/spec";
-import { DecoderContext } from "./contexts";
-import * as Ast from "./ast";
 import { Types, Values } from "@truffle/codec/format";
-import { CalldataDecoding, LogDecoding } from "./decoding";
+import { Ast, Contexts, Decoding } from "@truffle/codec/types";
 import { Transaction, BlockType } from "web3/eth/types";
 import { Log } from "web3/types";
 
@@ -59,7 +57,7 @@ export interface DecodedTransaction extends Transaction {
    * The decoding of the transaction.  Note that transactions are not decoded in strict mode,
    * so there will always be a decoding, although it may contain errors.
    */
-  decoding: CalldataDecoding;
+  decoding: Decoding.CalldataDecoding;
 }
 
 /**
@@ -88,7 +86,7 @@ export interface DecodedLog extends Log {
    *
    * Note that different decodings may use different decoding modes.
    */
-  decodings: LogDecoding[];
+  decodings: Decoding.LogDecoding[];
 }
 
 export interface ContractMapping {
@@ -112,8 +110,8 @@ export interface CodeCache {
 export interface ContractAndContexts {
   contract: ContractObject;
   node: Ast.Definition;
-  deployedContext?: DecoderContext;
-  constructorContext?: DecoderContext;
+  deployedContext?: Contexts.DecoderContext;
+  constructorContext?: Contexts.DecoderContext;
 }
 
 /**
