@@ -2,7 +2,8 @@ import { ContractObject } from "@truffle/contract-schema/spec";
 import { AbiUtils } from "./abi";
 import { Conversion as ConversionUtils } from "./conversion";
 import { EVM as EVMUtils } from "./evm";
-import { Ast, Contexts, Common } from "@truffle/codec/types";
+import { Ast, Common } from "@truffle/codec/types";
+import * as Contexts from "@truffle/codec/contexts/types";
 
 export function getContractNode(contract: ContractObject): Ast.AstNode {
   return (contract.ast || {nodes: []}).nodes.find(

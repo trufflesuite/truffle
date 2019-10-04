@@ -10,7 +10,8 @@ import {
   MakeType
 } from "@truffle/codec/utils";
 import * as Utils from "@truffle/codec/utils/interface";
-import { Ast, Contexts } from "@truffle/codec/types";
+import { Ast } from "@truffle/codec/types";
+import * as Contexts from "@truffle/codec/contexts/types";
 import * as Allocation from "@truffle/codec/allocate/types";
 import * as Decoding from "@truffle/codec/decode/types";
 import * as Evm from "@truffle/codec/evm";

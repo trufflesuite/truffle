@@ -10,7 +10,8 @@ import {
   ContextUtils
 } from "@truffle/codec/utils";
 import * as Utils from "@truffle/codec/utils/interface";
-import { Ast, Contexts, Storage } from "@truffle/codec/types";
+import { Ast, Storage } from "@truffle/codec/types";
+import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer/types";
 import * as Decoding from "@truffle/codec/decode/types";
 import * as Evm from "@truffle/codec/evm";
