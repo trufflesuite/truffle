@@ -6,7 +6,7 @@ import { TypeUtils } from "@truffle/codec/utils/datatype";
 import { MakeType } from "@truffle/codec/utils/maketype";
 import { EVM } from "@truffle/codec/utils/evm";
 import { getterInputs } from "@truffle/codec/utils/definition2abi";
-import { Compiler, Errors } from "@truffle/codec/types";
+import { Compiler, Common } from "@truffle/codec/types";
 import * as Ast from "@truffle/codec/ast/types";
 import * as AbiTypes from "@truffle/codec/abi/types";
 import * as Contexts from "@truffle/codec/contexts/types";
@@ -194,7 +194,7 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
         //if we don't find an allocation, we'll have to do the allocation ourselves
         const storedType = <Types.StructType> userDefinedTypes[dataType.id];
         if(!storedType) {
-          throw new Errors.UnknownUserDefinedTypeError(dataType.id, TypeUtils.typeString(dataType));
+          throw new Common.UnknownUserDefinedTypeError(dataType.id, TypeUtils.typeString(dataType));
         }
         debug("storedType: %O", storedType);
         allocations = allocateStruct(storedType, userDefinedTypes, existingAllocations);

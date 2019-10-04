@@ -3,7 +3,7 @@ const debug = debugModule("codec:format:abify");
 
 import * as Format from "@truffle/codec/format";
 import { TypeUtils } from "./datatype";
-import { Errors } from "@truffle/codec/types";
+import { Common } from "@truffle/codec/types";
 import * as Decoding from "@truffle/codec/decode/types";
 import BN from "bn.js";
 import { Conversion as ConversionUtils } from "./conversion";
@@ -44,7 +44,7 @@ export function abifyType(dataType: Format.Types.Type, userDefinedTypes?: Format
       const fullType = <Format.Types.StructType> TypeUtils.fullType(dataType, userDefinedTypes);
       if(!fullType) {
         let typeToDisplay = TypeUtils.typeString(dataType);
-        throw new Errors.UnknownUserDefinedTypeError(dataType.id, typeToDisplay);
+        throw new Common.UnknownUserDefinedTypeError(dataType.id, typeToDisplay);
       }
       const memberTypes = fullType.memberTypes.map(
         ({name, type: memberType}) => ({
@@ -62,7 +62,7 @@ export function abifyType(dataType: Format.Types.Type, userDefinedTypes?: Format
       const fullType = <Format.Types.EnumType> TypeUtils.fullType(dataType, userDefinedTypes);
       if(!fullType) {
         let typeToDisplay = TypeUtils.typeString(dataType);
-        throw new Errors.UnknownUserDefinedTypeError(dataType.id, typeToDisplay);
+        throw new Common.UnknownUserDefinedTypeError(dataType.id, typeToDisplay);
       }
       let numOptions = fullType.options.length;
       let bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
@@ -188,7 +188,7 @@ export function abifyResult(result: Format.Values.Result, userDefinedTypes?: For
               break;
             default:
               let typeToDisplay = TypeUtils.typeString(result.type);
-              throw new Errors.UnknownUserDefinedTypeError(coercedResult.type.id, typeToDisplay);
+              throw new Common.UnknownUserDefinedTypeError(coercedResult.type.id, typeToDisplay);
           }
           break;
       }
