@@ -2,7 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("codec:format:maketype");
 
 import BN from "bn.js";
-import { Ast, Abi, Compiler, Common } from "@truffle/codec/types";
+import { Ast, Compiler, Common } from "@truffle/codec/types";
+import * as Abi from "@truffle/codec/abi/types";
 import { Definition as DefinitionUtils } from "./definition";
 import { solidityFamily } from "./compiler";
 import { Types } from "@truffle/codec/format";

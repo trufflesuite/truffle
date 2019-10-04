@@ -1,6 +1,6 @@
 import BN from "bn.js";
 
-import { Abi } from "@truffle/codec/types";
+import * as Abi from "@truffle/codec/abi/types";
 import { Types, Values } from "@truffle/codec/format";
 
 /**

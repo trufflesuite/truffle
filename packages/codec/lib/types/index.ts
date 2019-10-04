@@ -1,6 +1,3 @@
-import * as Abi from "./abi";
-export { Abi };
-
 import * as Ast from "./ast";
 export { Ast };
 

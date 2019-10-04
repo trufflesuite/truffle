@@ -1,4 +1,4 @@
-import { Mutability } from "./common";
+import * as Common from "@truffle/codec/types/common";
 
 export type Abi = AbiEntry[];
 
@@ -9,7 +9,7 @@ export interface FunctionAbiEntry {
   name: string;
   inputs: AbiParameter[];
   outputs: AbiParameter[];
-  stateMutability?: Mutability; //only in newer ones
+  stateMutability?: Common.Mutability; //only in newer ones
   constant?: boolean; //only in older ones
   payable?: boolean; //only in older ones
 }

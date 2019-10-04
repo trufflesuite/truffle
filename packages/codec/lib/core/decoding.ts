@@ -1,7 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:core:decoding");
 
-import { Ast, Abi as AbiTypes } from "@truffle/codec/types";
+import { Ast } from "@truffle/codec/types";
+import * as AbiTypes from "@truffle/codec/abi/types";
 import * as Pointer from "@truffle/codec/pointer/types";
 import * as Allocation from "@truffle/codec/allocate/types";
 import * as Decoding from "@truffle/codec/decode/types";
