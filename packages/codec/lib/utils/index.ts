@@ -8,7 +8,6 @@ export * from "./wrap";
 export * from "./interface";
 export * from "./datatype";
 export * from "./compiler";
-export * from "./storage";
 export * from "./maketype";
 export * from "./abify";
 export * from "./inspect";

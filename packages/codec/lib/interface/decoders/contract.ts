@@ -10,7 +10,7 @@ import {
   ContextUtils
 } from "@truffle/codec/utils";
 import * as Utils from "@truffle/codec/utils/interface";
-import * as Storage from "@truffle/codec/storage/types";
+import * as Storage from "@truffle/codec/storage";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer/types";
@@ -30,7 +30,6 @@ import {
   storageSize
 } from "@truffle/codec/allocate/storage";
 import { decodeVariable } from "@truffle/codec/core/decoding";
-import { isWordsLength, equalSlots } from "@truffle/codec/utils/storage";
 import {
   ContractBeingDecodedHasNoNodeError,
   ContractAllocationFailedError
@@ -248,7 +247,7 @@ export class ContractInstanceDecoder {
 
   private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
-  private mappingKeys: Storage.Slot[] = [];
+  private mappingKeys: Storage.Types.Slot[] = [];
 
   private storageCache: DecoderTypes.StorageCache = {};
 
@@ -606,13 +605,13 @@ export class ContractInstanceDecoder {
    */
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Storage.Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    let slot: Storage.Types.Slot | undefined = this.constructSlot(variable, ...indices)[0];
     //add mapping key and all ancestors
     debug("slot: %O", slot);
     while (
       slot !== undefined &&
       this.mappingKeys.every(
-        existingSlot => !equalSlots(existingSlot, slot)
+        existingSlot => !Storage.Utils.equalSlots(existingSlot, slot)
         //we put the newness requirement in the while condition rather than a
         //separate if because if we hit one ancestor that's not new, the futher
         //ones won't be either
@@ -640,14 +639,14 @@ export class ContractInstanceDecoder {
    */
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Storage.Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    let slot: Storage.Types.Slot | undefined = this.constructSlot(variable, ...indices)[0];
     if(slot === undefined) {
       return; //not strictly necessary, but may as well
     }
     //remove mapping key and all descendants
     this.mappingKeys = this.mappingKeys.filter(existingSlot => {
       while (existingSlot !== undefined) {
-        if (equalSlots(existingSlot, slot)) {
+        if (Storage.Utils.equalSlots(existingSlot, slot)) {
           return false; //if it matches, remove it
         }
         existingSlot = existingSlot.path;
@@ -728,7 +727,7 @@ export class ContractInstanceDecoder {
   private constructSlot(
     variable: number | string,
     ...indices: any[]
-  ): [Storage.Slot | undefined, Ast.AstNode | undefined] {
+  ): [Storage.Types.Slot | undefined, Ast.AstNode | undefined] {
     //base case: we need to locate the variable and its definition
     if (indices.length === 0) {
       let allocation = this.findVariableByNameOrId(variable);
@@ -754,7 +753,7 @@ export class ContractInstanceDecoder {
     let rawIndex = indices[indices.length - 1];
     let index: any;
     let key: Values.ElementaryValue;
-    let slot: Storage.Slot;
+    let slot: Storage.Types.Slot;
     let definition: Ast.AstNode;
     switch(DefinitionUtils.typeClass(parentDefinition)) {
       case "array":
@@ -765,12 +764,12 @@ export class ContractInstanceDecoder {
         }
         definition =
           parentDefinition.baseType || parentDefinition.typeName.baseType;
-        let size = storageSize(
+        let size = Storage.Utils.storageSize(
           definition,
           this.referenceDeclarations,
           this.allocations.storage
         );
-        if (!isWordsLength(size)) {
+        if (!Storage.Utils.isWordsLength(size)) {
           return [undefined, undefined];
         }
         slot = {

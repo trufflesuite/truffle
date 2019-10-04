@@ -1,16 +1,18 @@
 import debugModule from "debug";
-const debug = debugModule("codec:utils:storage");
+const debug = debugModule("codec:storage:utils");
 
 import BN from "bn.js";
-import * as Storage from "@truffle/codec/storage/types";
-import { EVM as EVMUtils } from "./evm";
+
+import { EVM as EVMUtils } from "@truffle/codec/utils/evm";
 import { encodeMappingKey, mappingKeyAsHex } from "@truffle/codec/encode/key";
 
-export function isWordsLength(size: Storage.StorageLength): size is {words: number} {
+import { StorageLength, Slot } from "./types";
+
+export function isWordsLength(size: StorageLength): size is {words: number} {
   return (<{words: number}>size).words !== undefined;
 }
 
-export function storageLengthToBytes(size: Storage.StorageLength): number {
+export function storageLengthToBytes(size: StorageLength): number {
   if(isWordsLength(size)) {
     debug("size.words %d", size.words);
     return size.words * EVMUtils.WORD_SIZE;
@@ -28,7 +30,7 @@ export function storageLengthToBytes(size: Storage.StorageLength): number {
  *
  * @param slot - number or possibly-nested array of numbers
  */
-export function slotAddress(slot: Storage.Slot): BN {
+export function slotAddress(slot: Slot): BN {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
     return EVMUtils.keccak256(mappingKeyAsHex(slot.key), slotAddress(slot.path)).add(slot.offset);
@@ -45,7 +47,7 @@ export function slotAddress(slot: Storage.Slot): BN {
 
 //note: this function compares slots mostly by structure,
 //rather than by their numerical value
-export function equalSlots(slot1: Storage.Slot | undefined, slot2: Storage.Slot | undefined): boolean {
+export function equalSlots(slot1: Slot | undefined, slot2: Slot | undefined): boolean {
   if(!slot1 || !slot2) {
     return !slot1 && !slot2; //if either is undefined, it's true only if both are
   }

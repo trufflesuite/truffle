@@ -1,10 +1,9 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:storage");
 
-import { isWordsLength } from "@truffle/codec/utils/storage";
 import { DecodingError } from "@truffle/codec/decode/errors";
 import * as Common from "@truffle/codec/common/types";
-import * as Storage from "@truffle/codec/storage/types";
+import * as Storage from "@truffle/codec/storage";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Allocation from "./types";
 import * as CodecUtils from "@truffle/codec/utils";
@@ -29,7 +28,7 @@ export class UnknownBaseContractIdError extends Error {
 }
 
 interface StorageAllocationInfo {
-  size: Storage.StorageLength;
+  size: Storage.Types.StorageLength;
   allocations: Allocation.StorageAllocations;
 }
 
@@ -102,12 +101,12 @@ function allocateMembers(parentNode: Ast.AstNode, definitions: DefinitionPair[],
       continue;
     }
 
-    let size: Storage.StorageLength;
+    let size: Storage.Types.StorageLength;
     ({size, allocations} = storageSizeAndAllocate(node, referenceDeclarations, allocations));
 
     //if it's sized in words (and we're not at the start of slot) we need to start on a new slot
     //if it's sized in bytes but there's not enough room, we also need a new slot
-    if ( isWordsLength(size)
+    if ( Storage.Utils.isWordsLength(size)
       ? index < CodecUtils.EVM.WORD_SIZE - 1
       : size.bytes > index + 1) {
         index = CodecUtils.EVM.WORD_SIZE - 1;
@@ -115,9 +114,9 @@ function allocateMembers(parentNode: Ast.AstNode, definitions: DefinitionPair[],
     }
     //otherwise, we remain in place
 
-    let range: Storage.Range;
+    let range: Storage.Types.Range;
 
-    if(isWordsLength(size)) {
+    if(Storage.Utils.isWordsLength(size)) {
       //words case
       range = {
         from: {
@@ -161,7 +160,7 @@ function allocateMembers(parentNode: Ast.AstNode, definitions: DefinitionPair[],
     });
     //finally, adjust the current position.
     //if it was sized in words, move down that many slots and reset position w/in slot
-    if(isWordsLength(size)) {
+    if(Storage.Utils.isWordsLength(size)) {
       offset += size.words;
       index = CodecUtils.EVM.WORD_SIZE - 1;
     }
@@ -237,7 +236,7 @@ function allocateContract(contract: Ast.AstNode, referenceDeclarations: Ast.AstN
 //NOTE: This wrapper function is for use by the decoder ONLY, after allocation is done.
 //The allocator should (and does) instead use a direct call to storageSizeAndAllocate,
 //not to the wrapper, because it may need the allocations returned.
-export function storageSize(definition: Ast.AstNode, referenceDeclarations?: Ast.AstNodes, allocations?: Allocation.StorageAllocations): Storage.StorageLength {
+export function storageSize(definition: Ast.AstNode, referenceDeclarations?: Ast.AstNodes, allocations?: Allocation.StorageAllocations): Storage.Types.StorageLength {
   return storageSizeAndAllocate(definition, referenceDeclarations, allocations).size;
 }
 
@@ -350,7 +349,7 @@ function storageSizeAndAllocate(definition: Ast.AstNode, referenceDeclarations?:
         }
         const baseDefinition: Ast.AstNode = CodecUtils.Definition.baseDefinition(definition);
         const {size: baseSize, allocations} = storageSizeAndAllocate(baseDefinition, referenceDeclarations, existingAllocations);
-        if(!isWordsLength(baseSize)) {
+        if(!Storage.Utils.isWordsLength(baseSize)) {
           //bytes case
           const perWord: number = Math.floor(CodecUtils.EVM.WORD_SIZE / baseSize.bytes);
           debug("length %o", length);
@@ -395,7 +394,7 @@ function storageSizeAndAllocate(definition: Ast.AstNode, referenceDeclarations?:
 }
 
 //like storageSize, but for a Type object; also assumes you've already done allocation
-export function storageSizeForType(dataType: Format.Types.Type, userDefinedTypes?: Format.Types.TypesById, allocations?: Allocation.StorageAllocations): Storage.StorageLength {
+export function storageSizeForType(dataType: Format.Types.Type, userDefinedTypes?: Format.Types.TypesById, allocations?: Allocation.StorageAllocations): Storage.Types.StorageLength {
   switch(dataType.typeClass) {
     case "bool":
       return {bytes: 1};
@@ -447,7 +446,7 @@ export function storageSizeForType(dataType: Format.Types.Type, userDefinedTypes
             return {words: 1};
           }
           let baseSize = storageSizeForType(dataType.baseType, userDefinedTypes, allocations);
-          if(!isWordsLength(baseSize)) {
+          if(!Storage.Utils.isWordsLength(baseSize)) {
             //bytes case
             const perWord: number = Math.floor(CodecUtils.EVM.WORD_SIZE / baseSize.bytes);
             debug("length %o", length);
