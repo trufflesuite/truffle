@@ -32,7 +32,7 @@ export { encodeMappingKey } from "./encode/key";
 
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface
-export { ContractState, DecodedVariable, DecodedTransaction, DecodedLog, EventOptions } from "./interface/types";
+export { ContractState, StateVariable, DecodedTransaction, DecodedLog, EventOptions } from "./interface/types";
 export * from "./decode/types"; //all the decoding result types
 export { UnknownUserDefinedTypeError } from "./common/types"; //the various errors we might throw
 

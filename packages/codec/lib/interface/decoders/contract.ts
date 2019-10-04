@@ -341,7 +341,7 @@ export class ContractInstanceDecoder {
     }
   }
 
-  private async decodeVariable(variable: Allocation.StorageMemberAllocation, block: number): Promise<DecoderTypes.DecodedVariable> {
+  private async decodeVariable(variable: Allocation.StorageMemberAllocation, block: number): Promise<DecoderTypes.StateVariable> {
     const info: Evm.Types.EvmInfo = {
       state: {
         storage: {}
@@ -426,7 +426,7 @@ export class ContractInstanceDecoder {
    */
   public async variables(
     block: BlockType = "latest"
-  ): Promise<DecoderTypes.DecodedVariable[]> {
+  ): Promise<DecoderTypes.StateVariable[]> {
     this.checkAllocationSuccess();
 
     let blockNumber =
@@ -434,7 +434,7 @@ export class ContractInstanceDecoder {
         ? block
         : (await this.web3.eth.getBlock(block)).number;
 
-    let result: DecoderTypes.DecodedVariable[] = [];
+    let result: DecoderTypes.StateVariable[] = [];
 
     for (const variable of this.stateVariableReferences) {
       debug("about to decode %s", variable.definition.name);

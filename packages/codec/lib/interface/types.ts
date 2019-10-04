@@ -32,7 +32,7 @@ export interface ContractState {
 /**
  * This type represents one of the decoded contract's state variables.
  */
-export interface DecodedVariable {
+export interface StateVariable {
   /**
    * The name of the variable.  Note that due to inheritance, this may not be unique.
    */

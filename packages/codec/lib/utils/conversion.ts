@@ -207,7 +207,7 @@ export namespace Conversion {
   //NOTE: Definitely do not use this in real code!  For tests only!
   //for convenience: invokes the nativize method on all the given variables, and changes them to
   //the old format
-  export function nativizeDecoderVariables(variables: Types.DecodedVariable[]): {[name: string]: any} {
+  export function nativizeDecoderVariables(variables: Types.StateVariable[]): {[name: string]: any} {
     return Object.assign({}, ...variables.map(
       ({name, value}) => ({[name]: nativize(value)})
     ));
