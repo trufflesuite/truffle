@@ -3,7 +3,7 @@ const debug = debugModule("codec:utils:wrap");
 
 import Web3 from "web3";
 import BN from "bn.js";
-import { Compiler } from "@truffle/codec/types";
+import * as Compiler from "@truffle/codec/compiler/types";
 import * as Ast from "@truffle/codec/ast/types";
 import { MakeType } from "./maketype";
 import { Types, Values } from "@truffle/codec/format";

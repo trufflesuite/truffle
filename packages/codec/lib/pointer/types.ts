@@ -1,5 +1,5 @@
-import { Storage } from "@truffle/codec/types";
 import * as Ast from "@truffle/codec/ast/types";
+import * as Storage from "@truffle/codec/storage/types";
 
 export type DataPointer = StackPointer | MemoryPointer | StoragePointer
   | CalldataPointer | StackLiteralPointer | ConstantDefinitionPointer

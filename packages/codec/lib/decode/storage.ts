@@ -6,7 +6,7 @@ import * as CodecUtils from "@truffle/codec/utils";
 import { TypeUtils } from "@truffle/codec/utils";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
-import { Storage as StorageTypes } from "@truffle/codec/types";
+import * as StorageTypes from "@truffle/codec/storage/types";
 import * as Pointer from "@truffle/codec/pointer/types";
 import * as Decoding from "./types";
 import * as Evm from "@truffle/codec/evm";

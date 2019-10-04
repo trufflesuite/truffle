@@ -2,7 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("codec:format:maketype");
 
 import BN from "bn.js";
-import { Compiler, Common } from "@truffle/codec/types";
+import * as Common from "@truffle/codec/common/types";
+import * as Compiler from "@truffle/codec/compiler/types";
 import * as Abi from "@truffle/codec/abi/types";
 import * as Ast from "@truffle/codec/ast/types";
 import { Definition as DefinitionUtils } from "./definition";

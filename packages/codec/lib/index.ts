@@ -34,14 +34,11 @@ export { encodeMappingKey } from "./encode/key";
 //public-facing types for the interface
 export { ContractState, DecodedVariable, DecodedTransaction, DecodedLog, EventOptions } from "./interface/types";
 export * from "./decode/types"; //all the decoding result types
-export { UnknownUserDefinedTypeError } from "./types/common"; //the various errors we might throw
+export { UnknownUserDefinedTypeError } from "./common/types"; //the various errors we might throw
 
 //for those who want more low-level stuff...
 export { AstNode, AstNodes } from "./ast/types";
 export { DataPointer } from "./pointer/types";
 export { EvmInfo } from "./evm/types";
 export { StorageAllocations, AbiAllocations, MemoryAllocations } from "./allocate/types";
-export { StorageLength } from "./types/storage";
-//and for those who want *all* the types...
-import * as InternalTypes from "./types";
-export { InternalTypes }; //warning: not organized!
+export { StorageLength } from "./storage/types";

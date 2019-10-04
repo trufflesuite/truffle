@@ -4,7 +4,7 @@ const debug = debugModule("codec:decode:special");
 import * as CodecUtils from "@truffle/codec/utils";
 import { Types, Values } from "@truffle/codec/format";
 import decodeValue from "./value";
-import { Compiler } from "@truffle/codec/types";
+import * as Compiler from "@truffle/codec/compiler/types";
 import * as Pointer from "@truffle/codec/pointer/types";
 import * as Decoding from "./types";
 import * as Evm from "@truffle/codec/evm";

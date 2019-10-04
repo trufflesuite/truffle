@@ -2,7 +2,7 @@ import { ContractObject } from "@truffle/contract-schema/spec";
 import { AbiUtils } from "./abi";
 import { Conversion as ConversionUtils } from "./conversion";
 import { EVM as EVMUtils } from "./evm";
-import { Common } from "@truffle/codec/types";
+import * as Common from "@truffle/codec/common/types";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 

@@ -25,7 +25,7 @@ import {
   FixedValue,
   UfixedValue
 } from "./elementary";
-import * as Common from "@truffle/codec/types/common";
+import * as Common from "@truffle/codec/common/types";
 import * as Abi from "@truffle/codec/abi/types";
 
 export * from "./elementary";
