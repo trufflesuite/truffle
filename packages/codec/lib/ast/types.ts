@@ -1,4 +1,4 @@
-import { Mutability, ContractKind } from "./common";
+import * as Common from "@truffle/codec/types/common";
 
 export interface TypeDescriptions {
   typeIdentifier: string;
@@ -27,7 +27,7 @@ export interface AstNode {
   visibility?: string; //not using Visibility type above,
   //that's intended for functions but this could be other
   //things
-  stateMutability?: Mutability;
+  stateMutability?: Common.Mutability;
   kind?: string;
   hexValue?: string;
   referencedDeclaration?: any;
@@ -49,7 +49,7 @@ export interface AstNode {
   payable?: boolean;
   indexed?: boolean;
   anonymous?: boolean;
-  contractKind?: ContractKind;
+  contractKind?: Common.ContractKind;
   isConstructor?: boolean;
   //Note: May need to add more in the future.
   //May also want to create a proper system of AstNode types

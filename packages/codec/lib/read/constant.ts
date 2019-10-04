@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:read:constant");
 
 import * as CodecUtils from "@truffle/codec/utils";
-import { Ast } from "@truffle/codec/types";
+import * as Ast from "@truffle/codec/ast/types";
 import BN from "bn.js";
 import { DecodingError } from "@truffle/codec/decode/errors";
 

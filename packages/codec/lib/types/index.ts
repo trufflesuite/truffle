@@ -1,6 +1,3 @@
-import * as Ast from "./ast";
-export { Ast };
-
 import * as Compiler from "./compiler";
 export { Compiler };
 

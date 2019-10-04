@@ -1,4 +1,5 @@
-import { Storage, Ast, Compiler } from "@truffle/codec/types";
+import { Storage, Compiler } from "@truffle/codec/types";
+import * as Ast from "@truffle/codec/ast/types";
 import * as AbiTypes from "@truffle/codec/abi/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer/types";

@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:memory");
 
-import { Ast } from "@truffle/codec/types";
+import * as Ast from "@truffle/codec/ast/types";
 import * as Allocation from "./types";
 import * as CodecUtils from "@truffle/codec/utils";
 

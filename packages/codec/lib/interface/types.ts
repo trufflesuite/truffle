@@ -1,7 +1,7 @@
 import BN from "bn.js";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { Types, Values } from "@truffle/codec/format";
-import { Ast } from "@truffle/codec/types";
+import * as Ast from "@truffle/codec/ast/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Decoding from "@truffle/codec/decode/types";
 import { Transaction, BlockType } from "web3/eth/types";
