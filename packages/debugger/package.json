@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.0.29-alphaTez.0",
+  "version": "5.0.30",
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
@@ -37,12 +37,12 @@
     "web3-eth-abi": "1.2.1"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.33-alphaTez.0",
-    "@truffle/box": "^1.0.39-alphaTez.0",
     "@truffle/debug-utils": "^1.0.20-alphaTez.0",
-    "@truffle/migrate": "^3.0.35-alphaTez.0",
     "@truffle/resolver": "^5.0.18-alphaTez.0",
-    "@truffle/workflow-compile": "^2.1.7-alphaTez.0",
+    "@truffle/artifactor": "^4.0.34",
+    "@truffle/box": "^1.0.40",
+    "@truffle/migrate": "^3.0.36",
+    "@truffle/workflow-compile": "^2.1.8",
     "async": "2.6.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",

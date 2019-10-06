@@ -199,14 +199,17 @@ function codex(state = DEFAULT_CODEX, action) {
     accounts: {
       ...frame.accounts,
       [address]: {
-        ...frame.accounts[address],
+        code: "0x", //this will get overridden if it already exists!
+        context: null, //similarly!
+        ...frame.accounts[address], //may be undefined
         storage: {
-          ...frame.accounts[address].storage,
+          ...(frame.accounts[address] || {}).storage, //may be undefined
           [slot]: value
         }
       }
     }
   });
+  //(note that {...undefined} just expands to {} and is OK)
 
   const updateFrameCode = (frame, address, code, context) => {
     let existingPage = frame.accounts[address] || { storage: {} };
@@ -242,6 +245,7 @@ function codex(state = DEFAULT_CODEX, action) {
       return [...state, state[state.length - 1]];
 
     case actions.CREATE:
+      debug("create action");
       //on a create, make a new stackframe, then add a new pages to the
       //codex if necessary; don't add a zero page though (or pages that already
       //exist)
@@ -273,6 +277,7 @@ function codex(state = DEFAULT_CODEX, action) {
       return newState;
 
     case actions.STORE: {
+      debug("store action");
       //on a store, the relevant page should already exist, so we can just
       //add or update the needed slot
       const { address, slot, value } = action;
@@ -292,6 +297,7 @@ function codex(state = DEFAULT_CODEX, action) {
     }
 
     case actions.LOAD: {
+      debug("load action");
       //loads are a little more complicated -- usually we do nothing, but if
       //it's an external load (there was nothing already there), then we want
       //to update *every* stackframe
@@ -319,12 +325,14 @@ function codex(state = DEFAULT_CODEX, action) {
     }
 
     case actions.RETURN_CALL:
+      debug("return from call");
       //we want to pop the top while making the new top a copy of the old top;
       //that is to say, we want to drop just the element *second* from the top
       //NOTE: we don't ever go down to 1 element!
       return safeSave(state);
 
     case actions.RETURN_CREATE: {
+      debug("return from create");
       //we're going to do the same things in this case as in the usual return
       //case, but first we need to record the code that was returned
       const { address, code, context } = action;
@@ -342,14 +350,17 @@ function codex(state = DEFAULT_CODEX, action) {
     }
 
     case actions.FAIL:
+      debug("fail action");
       //pop the stack
       //NOTE: we don't ever go down to 1 element!
       return safePop(state);
 
     case actions.RESET:
+      debug("reset action");
       return [state[0]]; //leave the -1 frame on the stack
 
     case actions.UNLOAD_TRANSACTION:
+      debug("unload action");
       return DEFAULT_CODEX;
 
     case actions.ADD_INSTANCE: {
