@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.0.34-alphaTez.0",
+  "version": "4.0.35",
   "main": "index.js",
   "typings": "./typings/index.d.ts",
   "scripts": {
@@ -32,7 +32,7 @@
     "web3-utils": "1.2.1"
   },
   "devDependencies": {
-    "@truffle/compile-solidity": "^4.2.6-alphaTez.0",
+    "@truffle/compile-solidity": "^4.2.7",
     "async": "2.6.1",
     "browserify": "^14.0.0",
     "chai": "4.2.0",

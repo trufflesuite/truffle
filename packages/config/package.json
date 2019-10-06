@@ -1,11 +1,13 @@
 {
   "name": "@truffle/config",
-  "version": "1.1.22-alphaTez.0",
+  "version": "1.2.1",
   "description": "Utility for interacting with truffle-config.js files",
-  "main": "index.js",
-  "typings": "./typings/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha"
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/config",
   "keywords": [
@@ -19,18 +21,26 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/config#readme",
+  "devDependencies": {
+    "@types/configstore": "^4.0.0",
+    "@types/find-up": "^2.1.0",
+    "@types/node": "^12.7.7",
+    "@types/sinon": "^7.0.13",
+    "mocha": "6.2.0",
+    "sinon": "^7.5.0",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.3"
+  },
   "dependencies": {
     "@truffle/error": "^0.0.8-alphaTez.0",
     "@truffle/provider": "^0.1.18-alphaTez.0",
     "configstore": "^4.0.0",
     "find-up": "^2.1.0",
     "lodash": "^4.17.13",
+    "module": "^1.2.5",
     "original-require": "1.0.1"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "devDependencies": {
-    "mocha": "5.2.0"
   }
 }

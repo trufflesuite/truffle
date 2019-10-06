@@ -1,12 +1,12 @@
 {
   "name": "@truffle/workflow-compile",
-  "version": "2.1.7-alphaTez.0",
+  "version": "2.1.8",
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
-    "@truffle/artifactor": "^4.0.33-alphaTez.0",
-    "@truffle/compile-solidity": "^4.2.6-alphaTez.0",
-    "@truffle/compile-vyper": "^1.0.30-alphaTez.0",
-    "@truffle/config": "^1.1.22-alphaTez.0",
+    "@truffle/artifactor": "^4.0.34",
+    "@truffle/compile-solidity": "^4.2.7",
+    "@truffle/compile-vyper": "^1.0.31",
+    "@truffle/config": "^1.2.1",
     "@truffle/expect": "^0.0.12-alphaTez.0",
     "@truffle/external-compile": "^1.0.19-alphaTez.0",
     "@truffle/resolver": "^5.0.18-alphaTez.0",

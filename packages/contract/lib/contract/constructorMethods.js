@@ -216,7 +216,7 @@ module.exports = Contract => ({
     bootstrap(temp);
 
     temp.web3 = new Web3Shim({
-      type: temp.networkType
+      networkType: temp.networkType
     });
     temp.class_defaults = temp.prototype.defaults || {};
 

@@ -4,20 +4,20 @@
   "license": "MIT",
   "author": "Evgeniy Filatov <evgeniyfilatov@gmail.com>",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-vyper",
-  "version": "1.0.30-alphaTez.0",
+  "version": "1.0.31",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/compile-solidity": "^4.2.6-alphaTez.0",
+    "@truffle/compile-solidity": "^4.2.7",
     "async": "2.6.1",
     "colors": "^1.1.2",
     "eslint": "^5.5.0",
     "minimatch": "^3.0.4"
   },
   "devDependencies": {
-    "@truffle/config": "^1.1.22-alphaTez.0",
+    "@truffle/config": "^1.2.1",
     "mocha": "5.2.0"
   },
   "keywords": [
