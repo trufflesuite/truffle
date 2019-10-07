@@ -118,12 +118,13 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
           instance.address
         );
 
-        fn.call = execute.call.call(
+        // TODO: not supported in Tezos (as of writing this comment)
+        /*fn.call = execute.call.call(
           constructor,
           tezosMethod,
           method,
           instance.address
-        );
+        );*/
 
         fn.sendTransaction = execute.send.call(
           constructor,
@@ -132,19 +133,24 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
           instance.address
         );
 
+        // TODO: not supported in Tezos (as of writing this comment)
+        /*
         fn.estimateGas = execute.estimate.call(
           constructor,
           tezosMethod,
           method,
           instance.address
-        );
+        );*/
 
+        // TODO: not supported in Tezos (as of writing this comment)
+        /*
         fn.request = execute.request.call(
           constructor,
           tezosMethod,
           method,
           instance.address
         );
+        */
 
         return fn;
       };
