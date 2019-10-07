@@ -170,6 +170,8 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
     // fallback
     instance.sendTransaction = instance.main;
 
+    instance.storage = () => { return instance.contract.storage(); };
+
     // Prefer user defined `send`
     if (!instance.send) {
       instance.send = (value, txParams = {}) => {
