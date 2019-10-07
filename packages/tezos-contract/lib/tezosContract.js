@@ -170,21 +170,28 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
     // fallback
     instance.sendTransaction = instance.main;
 
-    instance.storage = () => { return instance.contract.storage(); };
+    instance.storage = () => {
+      return instance.contract.storage();
+    };
 
     // Prefer user defined `send`
     if (!instance.send) {
-      instance.send = async(value, txParams = {}) => {
-        const packet = Object.assign({ to: instance.address, amount: value }, txParams);
-        const op = await instance.constructor.web3.tez.contract.transfer(packet);
-        await op.confirmation()
+      instance.send = async (value, txParams = {}) => {
+        const packet = Object.assign(
+          { to: instance.address, amount: value },
+          txParams
+        );
+        const op = await instance.constructor.web3.tez.contract.transfer(
+          packet
+        );
+        await op.confirmation();
         return op;
       };
     }
 
     // Other events
-    instance.allEvents = execute.allEvents.call(constructor, contract);
-    instance.getPastEvents = execute.getPastEvents.call(constructor, contract);
+    //instance.allEvents = execute.allEvents.call(constructor, contract);
+    //instance.getPastEvents = execute.getPastEvents.call(constructor, contract);
   }
 
   Contract._constructorMethods = constructorMethods(Contract);
