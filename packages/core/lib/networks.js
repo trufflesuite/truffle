@@ -25,7 +25,7 @@ const Networks = {
     const idsToNames = {};
     const networks = {};
 
-    Object.keys(options.networks).forEach(networkName => {
+    for (let networkName in options.networks) {
       const network = options.networks[networkName];
       const networkId = network.network_id;
 
@@ -33,22 +33,20 @@ const Networks = {
 
       idsToNames[networkId] = networkName;
       networks[networkName] = {};
-    });
+    }
 
     binaries.forEach(json => {
-      Object.keys(json.networks).forEach(networkId => {
+      for (let networkId in json.networks) {
         const networkName = idsToNames[networkId] || networkId;
 
-        if (networks[networkName] == null) {
-          networks[networkName] = {};
-        }
+        if (networks[networkName] == null) networks[networkName] = {};
 
         const address = json.networks[networkId].address;
 
         if (address == null) return;
 
         networks[networkName][json.contractName] = address;
-      });
+      }
     });
     return networks;
   },
