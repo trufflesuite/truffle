@@ -174,9 +174,11 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
 
     // Prefer user defined `send`
     if (!instance.send) {
-      instance.send = (value, txParams = {}) => {
-        const packet = Object.assign({ value: value }, txParams);
-        return instance.sendTransaction(packet);
+      instance.send = async(value, txParams = {}) => {
+        const packet = Object.assign({ to: instance.address, amount: value }, txParams);
+        const op = await instance.constructor.web3.tez.contract.transfer(packet);
+        await op.confirmation()
+        return op;
       };
     }
 
