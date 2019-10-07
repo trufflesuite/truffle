@@ -241,9 +241,9 @@ var execute = {
             balance: params.value || "0",
             code: params.data,
             init: `${params.arguments}`, // TODO: robust encoding/decoding of deployer params from migration scripts
-            fee: 500000,
-            storageLimit: 50000,
-            gasLimit: 800000
+            fee: params.fee,
+            storageLimit: params.storageLimit,
+            gasLimit: params.gasLimit || params.gas
           };
 
           deferred = web3.tez.contract.originate(originateParams);
