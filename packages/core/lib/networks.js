@@ -35,7 +35,7 @@ const Networks = {
       networks[networkName] = {};
     }
 
-    binaries.forEach(json => {
+    for (let json of binaries) {
       for (let networkId in json.networks) {
         const networkName = idsToNames[networkId] || networkId;
 
@@ -47,7 +47,7 @@ const Networks = {
 
         networks[networkName][json.contractName] = address;
       }
-    });
+    }
     return networks;
   },
 
