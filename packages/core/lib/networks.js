@@ -156,7 +156,7 @@ const Networks = {
       const fileContents = fs.readFileSync(filePath, "utf8");
       const body = JSON.parse(fileContents);
 
-      Object.keys(body.networks).forEach(installedNetworkId => {
+      for (let installedNetworkId of body.networks) {
         let found = false;
         for (let i = 0; i < configuredNetworks.length; i++) {
           const configuredNetwork = configuredNetworks[i];
@@ -172,7 +172,7 @@ const Networks = {
 
         // If we didn't find a suitable configuration, delete this network.
         if (found === false) delete body.networks[installedNetworkId];
-      });
+      }
 
       // Our work is done here. Save the file.
       fs.writeFileSync(filePath, JSON.stringify(body, null, 2), "utf8");
