@@ -20,13 +20,6 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
     var instance = this;
     var constructor = instance.constructor;
 
-    // Disambiguate between .at() and .new()
-    if (typeof contract === "string") {
-      var web3Instance = new constructor.web3.eth.Contract(constructor.abi);
-      web3Instance.options.address = contract;
-      contract = web3Instance;
-    }
-
     // Core:
     instance.methods = {};
     //    instance.abi = constructor.abi;
