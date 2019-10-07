@@ -5,7 +5,7 @@
   "license": "MIT",
   "author": "Tim Coulter",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/artifactor",
-  "version": "4.0.33",
+  "version": "4.0.34",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -18,7 +18,7 @@
     "lodash": "^4.17.13"
   },
   "devDependencies": {
-    "@truffle/contract": "^4.0.34",
+    "@truffle/contract": "^4.0.35",
     "@types/fs-extra": "^8.0.0",
     "@types/node": "^12.6.2",
     "chai": "4.2.0",
