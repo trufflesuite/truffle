@@ -35,7 +35,7 @@ module.exports = Contract => ({
     if (
       address == null ||
       typeof address !== "string" ||
-      address.length !== 42
+      address.length !== 36
     ) {
       throw new Error(
         `Invalid address passed to ${this.contractName}.at(): ${address}`
