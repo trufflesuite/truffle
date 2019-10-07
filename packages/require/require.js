@@ -94,29 +94,32 @@ const Require = {
   },
 
   exec: function(options, done) {
-    expect.options(options, [
-      "contracts_build_directory",
-      "file",
-      "resolver",
-      "provider",
-      "network",
-      "network_id"
-    ]);
-
-    const web3 = new Web3Shim({
-      provider: options.provider,
-      networkType: options.networks[options.network].type
-    });
-
+    const callbackPassed = typeof done === "function";
     try {
+      expect.options(options, [
+        "contracts_build_directory",
+        "file",
+        "resolver",
+        "provider",
+        "network",
+        "network_id"
+      ]);
+
+      const web3 = new Web3Shim({
+        provider: options.provider,
+        networkType: options.networks[options.network].type
+      });
+
       const fn = this.file({
         file: options.file,
         context: { web3 },
         resolver: options.resolver
       });
-      fn(done);
+      if (callbackPassed) return fn(done);
+      return fn;
     } catch (error) {
-      done(error);
+      if (callbackPassed) return done(error);
+      throw error;
     }
   }
 };
