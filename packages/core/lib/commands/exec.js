@@ -72,9 +72,7 @@ const command = {
         }
 
         // `--compile`
-        if (options.c || options.compile) {
-          return Contracts.compile(config);
-        }
+        if (options.c || options.compile) return Contracts.compile(config);
         return;
       })
       .then(() => {
