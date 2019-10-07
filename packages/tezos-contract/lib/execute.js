@@ -1,11 +1,9 @@
 const debug = require("debug")("tezos-contract:execute"); // eslint-disable-line no-unused-vars
 var Web3PromiEvent = require("web3-core-promievent");
-//var { default: Sotez } = require("sotez");
 var EventEmitter = require("events");
 var utils = require("./utils");
 var StatusError = require("./statuserror");
 var Reason = require("./reason");
-var handlers = require("./handlers");
 var override = require("./override");
 var reformat = require("./reformat");
 
@@ -148,31 +146,28 @@ var execute = {
    * @param  {String}   address    Deployed address of the targeted instance
    * @return {PromiEvent}          Resolves a transaction receipt (via the receipt handler)
    */
-  send: function(fn, methodABI, address) {
+  send: function(fn, address) {
     var constructor = this;
-    var web3 = constructor.web3;
 
     return function() {
       var deferred;
       var promiEvent = new Web3PromiEvent();
 
       execute
-        .prepareCall(constructor, methodABI, arguments)
+        .prepareCall(constructor, arguments)
         .then(async ({ args, params, network }) => {
-          var context = {
+          const context = {
             contract: constructor, // Can't name this field `constructor` or `_constructor`
-            promiEvent: promiEvent,
-            params: params
+            promiEvent,
+            params
           };
 
-          params.to = address;
-          params.data = fn ? fn(...args).encodeABI() : params.data;
+          const methodCall = fn(...args);
 
           promiEvent.eventEmitter.emit("execute:send:method", {
             fn,
             args,
             address,
-            abi: methodABI,
             contract: constructor
           });
 
@@ -187,9 +182,28 @@ var execute = {
             return;
           }
 
-          deferred = web3.eth.sendTransaction(params);
-          deferred.catch(override.start.bind(constructor, context));
-          handlers.setup(deferred, context);
+          params = {
+            amount: params.amount || 0,
+            fee: params.fee,
+            gasLimit: params.gasLimit || params.gas
+          };
+
+          deferred = methodCall.send(params);
+
+          try {
+            const receipt = await deferred;
+            context.promiEvent.eventEmitter.emit("receipt", receipt);
+            context.promiEvent.eventEmitter.emit(
+              "transactionHash",
+              receipt.hash
+            );
+            await receipt.confirmation();
+            context.promiEvent.resolve({ tx: receipt.hash, receipt });
+          } catch (error) {
+            context.promiEvent.eventEmitter.emit("error", error);
+            // TODO: improve error handling
+            throw Error(error);
+          }
         })
         .catch(promiEvent.reject);
 
