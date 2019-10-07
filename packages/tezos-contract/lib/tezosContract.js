@@ -167,13 +167,8 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
           );*/
     }
 
-    // sendTransaction / send
-    instance.sendTransaction = execute.send.call(
-      constructor,
-      null,
-      null,
-      instance.address
-    );
+    // fallback
+    instance.sendTransaction = instance.main;
 
     // Prefer user defined `send`
     if (!instance.send) {
