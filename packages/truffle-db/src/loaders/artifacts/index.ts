@@ -280,7 +280,7 @@ const AddNetworks = gql`
 `;
 
 type WorkflowCompileResult = {
-  outputs: { [compilerName: string]: string[] },
+  compilations: { [compilerName: string]: { sourceIndexes: Array<string>, contracts: Array<ContractObject> } },
   contracts: { [contractName: string]: ContractObject }
 };
 
@@ -318,10 +318,10 @@ export class ArtifactsLoader {
 
     //map contracts and contract instances to compiler
     await Promise.all(compilations.data.workspace.compilationsAdd.compilations.map(async ({compiler, id}) => {
-      const contractIds = await this.loadCompilationContracts(contracts[compiler.name], id, compiler.name);
-      const networks = await this.loadNetworks(contracts[compiler.name], this.config["artifacts_directory"], this.config["contracts_directory"]);
+      const contractIds = await this.loadCompilationContracts(contracts[compiler.name].contracts, id, compiler.name);
+      const networks = await this.loadNetworks(contracts[compiler.name].contracts, this.config["artifacts_directory"], this.config["contracts_directory"]);
       if(networks[0].length) {
-        this.loadContractInstances(contracts[compiler.name], contractIds.contractIds, networks, contractIds.bytecodeIds);
+        this.loadContractInstances(contracts[compiler.name].contracts, contractIds.contractIds, networks, contractIds.bytecodeIds);
       }
     }))
   }
@@ -388,20 +388,6 @@ export class ArtifactsLoader {
     }));
   }
 
-  async organizeContractsByCompiler (result: WorkflowCompileResult) {
-    const { outputs, contracts } = result;
-
-    return Object.entries(outputs)
-      .map( ([compilerName, sourcePaths]) => ({
-        [compilerName]: sourcePaths.map(
-          (sourcePath) => Object.values(contracts)
-            .filter( (contract) => contract.sourcePath === sourcePath)
-            [0] || undefined
-        )
-      }))
-      .reduce((a, b) => ({ ...a, ...b }), {});
-  }
-
   async setCompilation (organizedCompilation: Array<ContractObject>) {
     const sourceIds = await this.loadCompilationSources(organizedCompilation);
     const sourceContracts = await this.compilationSourceContracts(organizedCompilation, sourceIds);
@@ -418,9 +404,9 @@ export class ArtifactsLoader {
   }
 
   async loadNetworks (contracts: Array<ContractObject>, artifacts:string, workingDirectory:string) {
-    const networksByContract = await Promise.all(contracts.map(async ({ contract_name, bytecode })=> {
-      const contractName = contract_name.toString().concat('.json');
-      const artifactsNetworksPath = fse.readFileSync(path.join(artifacts,contractName));
+    const networksByContract = await Promise.all(contracts.map(async ({ contractName, bytecode })=> {
+      const name = contractName.toString().concat('.json');
+      const artifactsNetworksPath = fse.readFileSync(path.join(artifacts,name));
       const artifactsNetworks = JSON.parse(artifactsNetworksPath.toString()).networks;
       let configNetworks = [];
       if(Object.keys(artifactsNetworks).length) {
@@ -503,11 +489,13 @@ export class ArtifactsLoader {
 
   async loadCompilation (compilationConfig: CompilationConfigObject) {
     const compilationOutput = await Contracts.compile(compilationConfig);
-    const contracts = await this.organizeContractsByCompiler(compilationOutput);
-    const compilationObjects = await Promise.all(Object.values(contracts)
-      .filter(contractsArray => contractsArray.length > 0)
-      .map(contractsArray => this.setCompilation(contractsArray)));
+    const contracts = compilationOutput.compilations;
 
+    const compilationObjects = await Promise.all(Object.values(contracts)
+      .filter(contracts => contracts["contracts"].length > 0)
+      .map(({ contracts }) => {
+        return this.setCompilation(contracts)
+      }));
 
     const compilations = await this.db.query(AddCompilation, { compilations: compilationObjects });
 

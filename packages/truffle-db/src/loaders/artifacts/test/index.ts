@@ -32,34 +32,45 @@ jest.mock("@truffle/workflow-compile/new", () => ({
     const migrations = require(path.join(__dirname, "sources", "Migrations.json"));
     const squareLib = require(path.join(__dirname, "sources", "SquareLib.json"));
     const vyperStorage = require(path.join(__dirname, "sources", "VyperStorage.json"));
-    const returnValue = {
-      "outputs": {
-        "solc": [
+    const returnValue =
+    {
+      compilations: {
+        solc: {
+          sourceIndexes:
+          [
           "/Users/fainashalts/solidity-magic-square/contracts/MagicSquare.sol",
           "/Users/fainashalts/solidity-magic-square/contracts/Migrations.sol",
           "/Users/fainashalts/solidity-magic-square/contracts/SquareLib.sol"
-        ],
-        "vyper": [
-           "/Users/fainashalts/truffle-six/testing2/contracts/VyperStorage.vy",
-        ]
-      },
-      "contracts": [{
-        "contract_name": "MagicSquare",
-        ...magicSquare
-      },
-      {
-        "contract_name": "Migrations",
-        ...migrations
-      },
-      {
-        "contract_name": "SquareLib",
-        ...squareLib
-      },
-      {
-        "contract_name": "VyperStorage",
-        ...vyperStorage
-      },
-      ]
+          ],
+          contracts:
+          [{
+            "contract_name": "MagicSquare",
+            ...magicSquare
+          },
+          {
+            "contract_name": "Migrations",
+            ...migrations
+          },
+          {
+            "contract_name": "SquareLib",
+            ...squareLib
+          }
+          ]
+        },
+        vyper: {
+          sourceIndexes:
+          [
+            "/Users/fainashalts/solidity-magic-square/contracts/VyperStorage.sol"
+          ],
+          contracts:
+          [
+            {
+            "contract_name": "VyperStorage",
+            ...vyperStorage
+            }
+          ]
+        }
+      }
     }
     return returnValue;
   }
