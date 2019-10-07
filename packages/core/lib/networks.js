@@ -148,52 +148,39 @@ const Networks = {
   clean: async function(config) {
     let files = fs.readdirSync(config.contracts_build_directory);
     const configuredNetworks = Object.keys(config.networks);
-    const promises = [];
+    const results = [];
 
     files.forEach(file => {
-      promises.push(
-        new Promise((resolve, reject) => {
-          const filePath = path.join(config.contracts_build_directory, file);
-          let body;
-          try {
-            const fileContents = fs.readFileSync(filePath, "utf8");
-            body = JSON.parse(fileContents);
-          } catch (error) {
-            reject(error);
+      const filePath = path.join(config.contracts_build_directory, file);
+
+      const fileContents = fs.readFileSync(filePath, "utf8");
+      const body = JSON.parse(fileContents);
+
+      Object.keys(body.networks).forEach(installedNetworkId => {
+        let found = false;
+        for (let i = 0; i < configuredNetworks.length; i++) {
+          const configuredNetwork = configuredNetworks[i];
+
+          // If an installed network id matches a configured id, then we can ignore this one.
+          if (
+            installedNetworkId === config.networks[configuredNetwork].network_id
+          ) {
+            found = true;
+            break;
           }
+        }
 
-          Object.keys(body.networks).forEach(installedNetworkId => {
-            let found = false;
-            for (let i = 0; i < configuredNetworks.length; i++) {
-              const configuredNetwork = configuredNetworks[i];
+        // If we didn't find a suitable configuration, delete this network.
+        if (found === false) delete body.networks[installedNetworkId];
+      });
 
-              // If an installed network id matches a configured id, then we can ignore this one.
-              if (
-                installedNetworkId ===
-                config.networks[configuredNetwork].network_id
-              ) {
-                found = true;
-                break;
-              }
-            }
-
-            // If we didn't find a suitable configuration, delete this network.
-            if (found === false) delete body.networks[installedNetworkId];
-          });
-
-          try {
-            // Our work is done here. Save the file.
-            fs.writeFileSync(filePath, JSON.stringify(body, null, 2), "utf8");
-            resolve(body);
-          } catch (error) {
-            reject(error);
-          }
-        })
-      );
+      // Our work is done here. Save the file.
+      fs.writeFileSync(filePath, JSON.stringify(body, null, 2), "utf8");
+      results.push(body);
     });
 
     // TODO: Display what's removed?
-    return Promise.all(promises);
+    return results;
   },
 
   // Try to connect to every named network except for "test" and "development"
