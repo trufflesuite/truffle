@@ -128,9 +128,7 @@ describe("create", function() {
       const found = false;
       const expectedSuffix = "_my_new_migration.js";
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-
+      for (let file of files) {
         if (
           file.indexOf(expectedSuffix) ===
           file.length - expectedSuffix.length
