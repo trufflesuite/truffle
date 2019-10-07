@@ -25,10 +25,6 @@ const Networks = {
     const idsToNames = {};
     const networks = {};
 
-    // binaries.map(function(b) {return b.contract_name + ": " + JSON.stringify(b.networks, null, 2)}).forEach(function(b) {
-    //   console.log(b);
-    // });
-
     Object.keys(options.networks).forEach(networkName => {
       const network = options.networks[networkName];
       const networkId = network.network_id;
