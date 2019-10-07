@@ -16,24 +16,12 @@ const Networks = {
       files = [];
     }
 
-    const promises = [];
-
-    files.forEach(file => {
-      promises.push(
-        new Promise((resolve, reject) => {
-          try {
-            const filePath = path.join(options.contracts_build_directory, file);
-            const fileContents = fs.readFileSync(filePath, "utf8");
-            const body = JSON.parse(fileContents);
-            resolve(body);
-          } catch (error) {
-            return reject(error);
-          }
-        })
-      );
+    const binaries = files.map(file => {
+      const filePath = path.join(options.contracts_build_directory, file);
+      const fileContents = fs.readFileSync(filePath, "utf8");
+      return JSON.parse(fileContents);
     });
 
-    const binaries = await Promise.all(promises);
     const idsToNames = {};
     const networks = {};
 
