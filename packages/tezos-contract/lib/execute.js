@@ -4,7 +4,6 @@ var EventEmitter = require("events");
 var utils = require("./utils");
 var StatusError = require("./statuserror");
 var Reason = require("./reason");
-var override = require("./override");
 var reformat = require("./reformat");
 
 var execute = {
@@ -201,7 +200,7 @@ var execute = {
             context.promiEvent.resolve({ tx: receipt.hash, receipt });
           } catch (error) {
             context.promiEvent.eventEmitter.emit("error", error);
-            throw Error(`Error: \n${JSON.stringify(error, null, " ")}`)
+            throw Error(`Error: \n${JSON.stringify(error, null, " ")}`);
           }
         })
         .catch(promiEvent.reject);
@@ -289,9 +288,7 @@ var execute = {
             context.promiEvent.resolve(new constructor(contractInstance));
           } catch (web3Error) {
             context.promiEvent.eventEmitter.emit("error", web3Error);
-            // Manage web3's 50 blocks' timeout error.
-            // Web3's own subscriptions go dead here.
-            await override.start.call(constructor, context, web3Error);
+            throw Error(`Error: \n${JSON.stringify(web3Error, null, " ")}`);
           }
         })
         .catch(promiEvent.reject);
