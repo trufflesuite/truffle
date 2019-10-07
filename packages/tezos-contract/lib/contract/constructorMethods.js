@@ -57,7 +57,8 @@ module.exports = Contract => ({
       await this.detectNetwork();
       utils.checkNetworkArtifactMatch(this);
       utils.checkDeployment(this);
-      return new this(this.address);
+      const contract = await this.web3.tez.contract.at(this.address);
+      return new this(contract);
     } catch (error) {
       throw error;
     }
