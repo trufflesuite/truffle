@@ -1,12 +1,9 @@
 const debug = require("debug")("tezos-contract:execute"); // eslint-disable-line no-unused-vars
 var Web3PromiEvent = require("web3-core-promievent");
-//var { default: Sotez } = require("sotez");
 var EventEmitter = require("events");
 var utils = require("./utils");
 var StatusError = require("./statuserror");
 var Reason = require("./reason");
-var handlers = require("./handlers");
-var override = require("./override");
 var reformat = require("./reformat");
 
 var execute = {
@@ -148,31 +145,28 @@ var execute = {
    * @param  {String}   address    Deployed address of the targeted instance
    * @return {PromiEvent}          Resolves a transaction receipt (via the receipt handler)
    */
-  send: function(fn, methodABI, address) {
+  send: function(fn, address) {
     var constructor = this;
-    var web3 = constructor.web3;
 
     return function() {
       var deferred;
       var promiEvent = new Web3PromiEvent();
 
       execute
-        .prepareCall(constructor, methodABI, arguments)
+        .prepareCall(constructor, arguments)
         .then(async ({ args, params, network }) => {
-          var context = {
+          const context = {
             contract: constructor, // Can't name this field `constructor` or `_constructor`
-            promiEvent: promiEvent,
-            params: params
+            promiEvent,
+            params
           };
 
-          params.to = address;
-          params.data = fn ? fn(...args).encodeABI() : params.data;
+          const methodCall = fn(...args);
 
           promiEvent.eventEmitter.emit("execute:send:method", {
             fn,
             args,
             address,
-            abi: methodABI,
             contract: constructor
           });
 
@@ -187,9 +181,27 @@ var execute = {
             return;
           }
 
-          deferred = web3.eth.sendTransaction(params);
-          deferred.catch(override.start.bind(constructor, context));
-          handlers.setup(deferred, context);
+          params = {
+            amount: params.amount || 0,
+            fee: params.fee,
+            gasLimit: params.gasLimit || params.gas
+          };
+
+          deferred = methodCall.send(params);
+
+          try {
+            const receipt = await deferred;
+            context.promiEvent.eventEmitter.emit("receipt", receipt);
+            context.promiEvent.eventEmitter.emit(
+              "transactionHash",
+              receipt.hash
+            );
+            await receipt.confirmation();
+            context.promiEvent.resolve({ tx: receipt.hash, receipt });
+          } catch (error) {
+            context.promiEvent.eventEmitter.emit("error", error);
+            throw Error(`Error: \n${JSON.stringify(error, null, " ")}`);
+          }
         })
         .catch(promiEvent.reject);
 
@@ -241,9 +253,9 @@ var execute = {
             balance: params.value || "0",
             code: params.data,
             init: `${params.arguments}`, // TODO: robust encoding/decoding of deployer params from migration scripts
-            fee: 500000,
-            storageLimit: 50000,
-            gasLimit: 800000
+            fee: params.fee,
+            storageLimit: params.storageLimit,
+            gasLimit: params.gasLimit || params.gas
           };
 
           deferred = web3.tez.contract.originate(originateParams);
@@ -276,9 +288,7 @@ var execute = {
             context.promiEvent.resolve(new constructor(contractInstance));
           } catch (web3Error) {
             context.promiEvent.eventEmitter.emit("error", web3Error);
-            // Manage web3's 50 blocks' timeout error.
-            // Web3's own subscriptions go dead here.
-            await override.start.call(constructor, context, web3Error);
+            throw Error(`Error: \n${JSON.stringify(web3Error, null, " ")}`);
           }
         })
         .catch(promiEvent.reject);

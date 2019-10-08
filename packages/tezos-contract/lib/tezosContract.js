@@ -20,13 +20,6 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
     var instance = this;
     var constructor = instance.constructor;
 
-    // Disambiguate between .at() and .new()
-    if (typeof contract === "string") {
-      var web3Instance = new constructor.web3.eth.Contract(constructor.abi);
-      web3Instance.options.address = contract;
-      contract = web3Instance;
-    }
-
     // Core:
     instance.methods = {};
     //    instance.abi = constructor.abi;
@@ -125,12 +118,13 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
           instance.address
         );
 
-        fn.call = execute.call.call(
+        // TODO: not supported in Tezos (as of writing this comment)
+        /*fn.call = execute.call.call(
           constructor,
           tezosMethod,
           method,
           instance.address
-        );
+        );*/
 
         fn.sendTransaction = execute.send.call(
           constructor,
@@ -139,19 +133,24 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
           instance.address
         );
 
+        // TODO: not supported in Tezos (as of writing this comment)
+        /*
         fn.estimateGas = execute.estimate.call(
           constructor,
           tezosMethod,
           method,
           instance.address
-        );
+        );*/
 
+        // TODO: not supported in Tezos (as of writing this comment)
+        /*
         fn.request = execute.request.call(
           constructor,
           tezosMethod,
           method,
           instance.address
         );
+        */
 
         return fn;
       };
@@ -168,25 +167,31 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
           );*/
     }
 
-    // sendTransaction / send
-    instance.sendTransaction = execute.send.call(
-      constructor,
-      null,
-      null,
-      instance.address
-    );
+    // fallback
+    instance.sendTransaction = instance.main;
+
+    instance.storage = () => {
+      return instance.contract.storage();
+    };
 
     // Prefer user defined `send`
     if (!instance.send) {
-      instance.send = (value, txParams = {}) => {
-        const packet = Object.assign({ value: value }, txParams);
-        return instance.sendTransaction(packet);
+      instance.send = async (value, txParams = {}) => {
+        const packet = Object.assign(
+          { to: instance.address, amount: value },
+          txParams
+        );
+        const op = await instance.constructor.web3.tez.contract.transfer(
+          packet
+        );
+        await op.confirmation();
+        return op;
       };
     }
 
     // Other events
-    instance.allEvents = execute.allEvents.call(constructor, contract);
-    instance.getPastEvents = execute.getPastEvents.call(constructor, contract);
+    //instance.allEvents = execute.allEvents.call(constructor, contract);
+    //instance.getPastEvents = execute.getPastEvents.call(constructor, contract);
   }
 
   Contract._constructorMethods = constructorMethods(Contract);
