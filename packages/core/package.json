@@ -61,7 +61,6 @@
     "source-map-support": "^0.5.3",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
-    "truffle-init": "^1.0.7",
     "universal-analytics": "^0.4.17",
     "web3": "1.2.1",
     "xregexp": "^4.2.4",
