@@ -2,7 +2,7 @@ import * as bip39 from "bip39";
 import * as EthUtil from "ethereumjs-util";
 import ethJSWallet from "ethereumjs-wallet";
 import EthereumHDKey from "ethereumjs-wallet/hdkey";
-import { Transaction } from "ethereumjs-tx";
+import Transaction from "ethereumjs-tx";
 import ProviderEngine from "web3-provider-engine";
 import FiltersSubprovider from "web3-provider-engine/subproviders/filters";
 import NonceSubProvider from "web3-provider-engine/subproviders/nonce-tracker";
