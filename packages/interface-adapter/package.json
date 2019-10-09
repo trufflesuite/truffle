@@ -18,7 +18,7 @@
     "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
   },
   "dependencies": {
-    "@taquito/taquito": "^4.1.0-beta.5",
+    "@taquito/taquito": "^5.0.1-beta.0",
     "@truffle/config": "^1.1.22-alphaTez.0",
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
