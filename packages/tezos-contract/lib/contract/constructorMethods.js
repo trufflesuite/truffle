@@ -35,7 +35,7 @@ module.exports = Contract => ({
     if (
       address == null ||
       typeof address !== "string" ||
-      address.length !== 42
+      address.length !== 36
     ) {
       throw new Error(
         `Invalid address passed to ${this.contractName}.at(): ${address}`
@@ -44,9 +44,8 @@ module.exports = Contract => ({
 
     try {
       await this.detectNetwork();
-      const onChainCode = await this.web3.eth.getCode(address);
-      await utils.checkCode(onChainCode, this.contractName, address);
-      return new this(address);
+      const contract = await this.web3.tez.contract.at(this.address);
+      return new this(contract);
     } catch (error) {
       throw error;
     }
@@ -58,7 +57,8 @@ module.exports = Contract => ({
       await this.detectNetwork();
       utils.checkNetworkArtifactMatch(this);
       utils.checkDeployment(this);
-      return new this(this.address);
+      const contract = await this.web3.tez.contract.at(this.address);
+      return new this(contract);
     } catch (error) {
       throw error;
     }

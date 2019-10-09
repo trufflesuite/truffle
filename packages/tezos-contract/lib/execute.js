@@ -1,12 +1,9 @@
 const debug = require("debug")("tezos-contract:execute"); // eslint-disable-line no-unused-vars
 var Web3PromiEvent = require("web3-core-promievent");
-//var { default: Sotez } = require("sotez");
 var EventEmitter = require("events");
 var utils = require("./utils");
 var StatusError = require("./statuserror");
 var Reason = require("./reason");
-var handlers = require("./handlers");
-var override = require("./override");
 var reformat = require("./reformat");
 
 var execute = {
@@ -23,7 +20,7 @@ var execute = {
 
     return new Promise(function(accept) {
       // Always prefer specified gas - this includes gas set by class_defaults
-      if (params.gas) return accept(params.gas);
+      if (params.gasLimit) return accept(params.gasLimit);
       if (!constructor.autoGas) return accept();
 
       web3.eth
@@ -148,48 +145,63 @@ var execute = {
    * @param  {String}   address    Deployed address of the targeted instance
    * @return {PromiEvent}          Resolves a transaction receipt (via the receipt handler)
    */
-  send: function(fn, methodABI, address) {
+  send: function(fn, address) {
     var constructor = this;
-    var web3 = constructor.web3;
 
     return function() {
       var deferred;
       var promiEvent = new Web3PromiEvent();
 
       execute
-        .prepareCall(constructor, methodABI, arguments)
+        .prepareCall(constructor, arguments)
         .then(async ({ args, params, network }) => {
-          var context = {
+          const context = {
             contract: constructor, // Can't name this field `constructor` or `_constructor`
-            promiEvent: promiEvent,
-            params: params
+            promiEvent,
+            params
           };
 
-          params.to = address;
-          params.data = fn ? fn(...args).encodeABI() : params.data;
+          const methodCall = fn(...args);
 
           promiEvent.eventEmitter.emit("execute:send:method", {
             fn,
             args,
             address,
-            abi: methodABI,
             contract: constructor
           });
 
           try {
-            params.gas = await execute.getGasEstimate.call(
+            /*            params.gas = await execute.getGasEstimate.call(
               constructor,
               params,
               network.blockLimit
-            );
+            );*/
           } catch (error) {
             promiEvent.reject(error);
             return;
           }
 
-          deferred = web3.eth.sendTransaction(params);
-          deferred.catch(override.start.bind(constructor, context));
-          handlers.setup(deferred, context);
+          params = {
+            amount: params.amount || 0,
+            fee: params.fee,
+            gasLimit: params.gasLimit || params.gas
+          };
+
+          deferred = methodCall.send(params);
+
+          try {
+            const receipt = await deferred;
+            context.promiEvent.eventEmitter.emit("receipt", receipt);
+            context.promiEvent.eventEmitter.emit(
+              "transactionHash",
+              receipt.hash
+            );
+            await receipt.confirmation();
+            context.promiEvent.resolve({ tx: receipt.hash, receipt });
+          } catch (error) {
+            context.promiEvent.eventEmitter.emit("error", error);
+            throw Error(`Error: \n${JSON.stringify(error, null, " ")}`);
+          }
         })
         .catch(promiEvent.reject);
 
@@ -223,12 +235,12 @@ var execute = {
 
           params.data = constructor.code;
           params.arguments = args[0] || `0`;
-
+          /*
           params.gas = await execute.getGasEstimate.call(
             constructor,
             params,
             blockLimit
-          );
+          );*/
 
           context.params = params;
 
@@ -237,228 +249,16 @@ var execute = {
             contract: constructor
           });
 
-          const testParams = {
+          const originateParams = {
             balance: params.value || "0",
-            code: [
-              { prim: "parameter", args: [{ prim: "int" }] },
-              { prim: "storage", args: [{ prim: "int" }] },
-              {
-                prim: "code",
-                args: [
-                  [
-                    [],
-                    [],
-                    [],
-                    [
-                      {
-                        prim: "PUSH",
-                        args: [{ prim: "int" }, { int: "0" }]
-                      },
-                      [
-                        [
-                          [
-                            [
-                              {
-                                prim: "DIP",
-                                args: [[{ prim: "DUP" }]]
-                              },
-                              { prim: "SWAP" }
-                            ],
-                            { prim: "DIP", args: [[[]]] }
-                          ],
-                          { prim: "CAR" }
-                        ],
-                        [
-                          [
-                            [
-                              [
-                                {
-                                  prim: "DIP",
-                                  args: [
-                                    [
-                                      [
-                                        {
-                                          prim: "DIP",
-                                          args: [[{ prim: "DUP" }]]
-                                        },
-                                        { prim: "SWAP" }
-                                      ]
-                                    ]
-                                  ]
-                                },
-                                { prim: "SWAP" }
-                              ],
-                              { prim: "DIP", args: [[[]]] }
-                            ],
-                            { prim: "CDR" }
-                          ],
-                          [
-                            [
-                              [],
-                              [
-                                {
-                                  prim: "DIP",
-                                  args: [[{ prim: "DUP" }]]
-                                },
-                                { prim: "SWAP" }
-                              ],
-                              [],
-                              {
-                                prim: "DIP",
-                                args: [
-                                  [
-                                    [
-                                      {
-                                        prim: "DIP",
-                                        args: [
-                                          [
-                                            [
-                                              {
-                                                prim: "DIP",
-                                                args: [
-                                                  [
-                                                    {
-                                                      prim: "DUP"
-                                                    }
-                                                  ]
-                                                ]
-                                              },
-                                              { prim: "SWAP" }
-                                            ]
-                                          ]
-                                        ]
-                                      },
-                                      { prim: "SWAP" }
-                                    ]
-                                  ]
-                                ]
-                              },
-                              [],
-                              {
-                                prim: "DIP",
-                                args: [[{ prim: "DROP" }]]
-                              },
-                              [],
-                              [
-                                { prim: "SWAP" },
-                                {
-                                  prim: "DIP",
-                                  args: [
-                                    [
-                                      [
-                                        { prim: "SWAP" },
-                                        {
-                                          prim: "DIP",
-                                          args: [
-                                            [
-                                              {
-                                                prim: "DIP",
-                                                args: [
-                                                  [
-                                                    {
-                                                      prim: "DROP"
-                                                    }
-                                                  ]
-                                                ]
-                                              }
-                                            ]
-                                          ]
-                                        }
-                                      ]
-                                    ]
-                                  ]
-                                }
-                              ],
-                              [],
-                              {
-                                prim: "PUSH",
-                                args: [{ prim: "unit" }, { prim: "Unit" }]
-                              }
-                            ],
-                            { prim: "DROP" },
-                            [
-                              [
-                                {
-                                  prim: "NIL",
-                                  args: [{ prim: "operation" }]
-                                },
-                                {
-                                  prim: "DIP",
-                                  args: [
-                                    [
-                                      [
-                                        [
-                                          {
-                                            prim: "DIP",
-                                            args: [
-                                              [
-                                                [
-                                                  {
-                                                    prim: "DIP",
-                                                    args: [
-                                                      [
-                                                        {
-                                                          prim: "DUP"
-                                                        }
-                                                      ]
-                                                    ]
-                                                  },
-                                                  {
-                                                    prim: "SWAP"
-                                                  }
-                                                ]
-                                              ]
-                                            ]
-                                          },
-                                          { prim: "SWAP" }
-                                        ],
-                                        {
-                                          prim: "DIP",
-                                          args: [[[]]]
-                                        }
-                                      ]
-                                    ]
-                                  ]
-                                }
-                              ],
-                              { prim: "PAIR" }
-                            ]
-                          ],
-                          [],
-                          {
-                            prim: "DIP",
-                            args: [[{ prim: "DROP" }]]
-                          }
-                        ],
-                        [],
-                        {
-                          prim: "DIP",
-                          args: [[{ prim: "DROP" }]]
-                        }
-                      ],
-                      [],
-                      {
-                        prim: "DIP",
-                        args: [[{ prim: "DROP" }]]
-                      }
-                    ],
-                    [],
-                    {
-                      prim: "DIP",
-                      args: [[{ prim: "DROP" }]]
-                    },
-                    []
-                  ]
-                ]
-              }
-            ],
-            init: `${params.arguments}`, // { int: "0" }, // TODO: robust encoding/decoding of deployer params from migration scripts
-            fee: 500000,
-            storageLimit: 50000,
-            gasLimit: 800000
+            code: params.data,
+            init: `${params.arguments}`, // TODO: robust encoding/decoding of deployer params from migration scripts
+            fee: params.fee,
+            storageLimit: params.storageLimit,
+            gasLimit: params.gasLimit || params.gas
           };
 
-          deferred = web3.tez.contract.originate(testParams);
+          deferred = web3.tez.contract.originate(originateParams);
 
           try {
             const receipt = await deferred;
@@ -488,9 +288,7 @@ var execute = {
             context.promiEvent.resolve(new constructor(contractInstance));
           } catch (web3Error) {
             context.promiEvent.eventEmitter.emit("error", web3Error);
-            // Manage web3's 50 blocks' timeout error.
-            // Web3's own subscriptions go dead here.
-            await override.start.call(constructor, context, web3Error);
+            throw Error(`Error: \n${JSON.stringify(web3Error, null, " ")}`);
           }
         })
         .catch(promiEvent.reject);

@@ -18,6 +18,7 @@ const overrides = {
     web3.tez = Tezos;
     const _oldGetId = web3.eth.net.getId;
 
+    // @ts-ignore
     web3.eth.net.getId = async () => {
       // @ts-ignore (typings incomplete)
       const currentHost = web3.currentProvider.host;
