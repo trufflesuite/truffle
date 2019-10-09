@@ -1,7 +1,7 @@
 const Mocha = require("mocha");
 const chai = require("chai");
 const path = require("path");
-const Web3 = require("web3");
+const { Web3Shim } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 const Contracts = require("@truffle/workflow-compile/new");
 const Resolver = require("@truffle/resolver");
@@ -36,8 +36,10 @@ const Test = {
 
     // `accounts` will be populated before each contract() invocation
     // and passed to it so tests don't have to call it themselves.
-    const web3 = new Web3();
-    web3.setProvider(config.provider);
+    const web3 = new Web3Shim({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+    });
 
     // Override console.warn() because web3 outputs gross errors to it.
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
