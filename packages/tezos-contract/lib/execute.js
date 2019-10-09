@@ -171,11 +171,11 @@ var execute = {
           });
 
           try {
-            params.gas = await execute.getGasEstimate.call(
+            /*            params.gas = await execute.getGasEstimate.call(
               constructor,
               params,
               network.blockLimit
-            );
+            );*/
           } catch (error) {
             promiEvent.reject(error);
             return;
@@ -235,12 +235,12 @@ var execute = {
 
           params.data = constructor.code;
           params.arguments = args[0] || `0`;
-
+          /*
           params.gas = await execute.getGasEstimate.call(
             constructor,
             params,
             blockLimit
-          );
+          );*/
 
           context.params = params;
 
