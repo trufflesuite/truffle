@@ -97,7 +97,7 @@ describe("commands/unbox.js", () => {
           );
         });
         Promise.all(promises).then(() => done());
-      });
+      }).timeout(5000);
     });
   });
 });
