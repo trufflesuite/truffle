@@ -1068,11 +1068,6 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@truffle/error@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@truffle/error/-/error-0.0.6.tgz#75d499845b4b3a40537889e7d04c663afcaee85d"
-  integrity sha512-QUM9ZWiwlXGixFGpV18g5I6vua6/r+ZV9W/5DQA5go9A3eZUNPHPaTKMIQPJLYn6+ZV5jg5H28zCHq56LHF3yA==
-
 "@types/assert@^1.4.2":
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/@types/assert/-/assert-1.4.2.tgz#e9116f5abf9cbd0c86ed22e38185b71e7f44071c"
@@ -2775,7 +2770,7 @@ bl@^1.0.0:
     readable-stream "^2.3.5"
     safe-buffer "^5.1.1"
 
-bluebird@^3.4.1, bluebird@^3.5.0, bluebird@^3.5.1, bluebird@^3.5.3, bluebird@^3.5.5:
+bluebird@^3.5.0, bluebird@^3.5.1, bluebird@^3.5.3, bluebird@^3.5.5:
   version "3.5.5"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.5.tgz#a8d0afd73251effbbd5fe384a77d73003c17a71f"
   integrity sha512-5am6HnnfN+urzt4yfg7IgTbotDjIT/u8AJpEt0sIU9FtXfVeezXAPKswrG+xKUCOYAINpSdgZVDU6QFh+cuH3w==
@@ -10942,13 +10937,6 @@ npm-pick-manifest@^3.0.0:
     npm-package-arg "^6.0.0"
     semver "^5.4.1"
 
-npm-programmatic@0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/npm-programmatic/-/npm-programmatic-0.0.6.tgz#3c8f4dbb210efd65b99ee6a5ac76f27b4d5d6b78"
-  integrity sha1-PI9NuyEO/WW5nualrHbye01da3g=
-  dependencies:
-    bluebird "^3.4.1"
-
 npm-run-path@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/npm-run-path/-/npm-run-path-2.0.2.tgz#35a9232dfa35d7067b4cb2ddf2357b1871536c5f"
@@ -14630,18 +14618,6 @@ truffle-blockchain-utils@^0.0.10:
   resolved "https://registry.yarnpkg.com/truffle-blockchain-utils/-/truffle-blockchain-utils-0.0.10.tgz#18b772673635a95a893f7083f7be6bd62227462b"
   integrity sha512-gVvagLCvYD0QXfnkxy6I48P6O+d7TEY0smc2VFuwldl1/clLVWE+KfBO/jFMaAz+nupTQeKvPhNTeyh3JAsCeA==
 
-truffle-config@^1.0.1:
-  version "1.1.20"
-  resolved "https://registry.yarnpkg.com/truffle-config/-/truffle-config-1.1.20.tgz#9152b47c0d6f371b81c55d072b99f6dcadae91d1"
-  integrity sha512-Pam/e593+T4AY3oVgpQlOAnnFJGa+hYuhnn90DPOcTvoD7Fp1oBpnZ0sAy9bGT3YnUuB/ae7q9Phm/tYM5ffpw==
-  dependencies:
-    "@truffle/error" "^0.0.6"
-    configstore "^4.0.0"
-    find-up "^2.1.0"
-    lodash "^4.17.13"
-    original-require "1.0.1"
-    truffle-provider "^0.1.16"
-
 truffle-contract-schema@^3.0.13:
   version "3.0.13"
   resolved "https://registry.yarnpkg.com/truffle-contract-schema/-/truffle-contract-schema-3.0.13.tgz#8ace5734a0d57bfebc6ab3b60bf0883d46c68fdc"
@@ -14672,19 +14648,7 @@ truffle-error@^0.0.5:
   resolved "https://registry.yarnpkg.com/truffle-error/-/truffle-error-0.0.5.tgz#6b5740c9f3aac74f47b85d654fff7fe2c1fc5e0e"
   integrity sha512-JpzPLMPSCE0vaZ3vH5NO5u42GpMj/Y1SRBkQ6b69PSw3xMSH1umApN32cEcg1nnh8q5FNYc5FnKu0m4tiBffyQ==
 
-truffle-init@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/truffle-init/-/truffle-init-1.0.7.tgz#c3de57fbddfa77ae93642ae025f41c1157de2ba7"
-  integrity sha1-w95X+936d66TZCrgJfQcEVfeK6c=
-  dependencies:
-    fs-extra "^2.0.0"
-    github-download "^0.5.0"
-    npm-programmatic "0.0.6"
-    rimraf "^2.5.4"
-    temp "^0.8.3"
-    truffle-config "^1.0.1"
-
-truffle-interface-adapter@^0.2.4, truffle-interface-adapter@^0.2.5:
+truffle-interface-adapter@^0.2.4:
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/truffle-interface-adapter/-/truffle-interface-adapter-0.2.5.tgz#aa0bee635517b4a8e06adcdc99eacb993e68c243"
   integrity sha512-EL39OpP8FcZ99ne1Rno3jImfb92Nectd4iVsZzoEUCBfbwHe7sr0k+i45guoruSoP8nMUE81Mov2s8I5pi6d9Q==
@@ -14692,15 +14656,6 @@ truffle-interface-adapter@^0.2.4, truffle-interface-adapter@^0.2.5:
     bn.js "^4.11.8"
     ethers "^4.0.32"
     lodash "^4.17.13"
-    web3 "1.2.1"
-
-truffle-provider@^0.1.16:
-  version "0.1.16"
-  resolved "https://registry.yarnpkg.com/truffle-provider/-/truffle-provider-0.1.16.tgz#05db46a4bda9b7e6503f8701f2b03ccb1e6c78ba"
-  integrity sha512-3d5WqSKIzZcpgW44mdfF97s+Tgh2a/3Ly6vHJirBV9OZDUtiAzP6WVnlRNvmlDJXFCDqt6Yb9qQWoXFHbYoR6w==
-  dependencies:
-    "@truffle/error" "^0.0.6"
-    truffle-interface-adapter "^0.2.5"
     web3 "1.2.1"
 
 tryer@^1.0.0:
