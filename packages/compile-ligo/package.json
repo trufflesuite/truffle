@@ -14,7 +14,7 @@
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
   "scripts": {
-    "test": "mocha --timeout 10000"
+    "test": "./scripts/test.sh"
   },
   "publishConfig": {
     "access": "public"
