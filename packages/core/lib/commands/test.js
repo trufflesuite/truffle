@@ -148,6 +148,7 @@ const command = {
       try {
         fs.statSync(config.contracts_build_directory);
       } catch (_error) {
+        config.logger.log("Using network '" + config.network + "'." + OS.EOL);
         return run();
       }
 
