@@ -20,7 +20,7 @@ var execute = {
 
     return new Promise(function(accept) {
       // Always prefer specified gas - this includes gas set by class_defaults
-      if (params.gas) return accept(params.gas);
+      if (params.gasLimit) return accept(params.gasLimit);
       if (!constructor.autoGas) return accept();
 
       web3.eth
