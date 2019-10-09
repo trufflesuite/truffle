@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.7-alphaTez.0",
+  "version": "0.3.0-alphaTez.0",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@taquito/taquito": "^5.0.1-beta.0",
-    "@truffle/config": "^1.1.22-alphaTez.0",
+    "@truffle/config": "^1.2.2-alphaTez.0",
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
     "lodash": "^4.17.13",
