@@ -37,7 +37,7 @@ const command = {
    */
   run: function(options, done) {
     const googleAnalytics = require("../services/analytics/google.js");
-    const Config = require("truffle-config");
+    const Config = require("@truffle/config");
     const OS = require("os");
 
     let command;
