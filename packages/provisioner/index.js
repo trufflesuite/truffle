@@ -14,7 +14,8 @@ var provision = function(abstraction, options) {
   }
 
   ["from", "gas", "gasPrice"].forEach(function(key) {
-    if (options[key]) {
+    // TODO: handle contract class default logic better
+    if (options[key] && options.networks[options.network].type !== "tezos") {
       var obj = {};
       obj[key] = options[key];
       abstraction.defaults(obj);
