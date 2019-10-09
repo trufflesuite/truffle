@@ -185,7 +185,7 @@ const Test = {
   performInitialDeploy: function(config, resolver) {
     const migrateConfig = config.with({
       reset: true,
-      resolver: resolver,
+      resolver,
       quiet: true
     });
     return Migrate.run(migrateConfig);
