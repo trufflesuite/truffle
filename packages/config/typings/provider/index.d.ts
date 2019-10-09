@@ -1,1 +1,1 @@
-declare module '@truffle/provider';
+declare module "@truffle/provider";

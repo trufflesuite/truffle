@@ -1,1 +1,1 @@
-declare module 'original-require';
+declare module "original-require";
