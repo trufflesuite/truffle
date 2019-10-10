@@ -84,8 +84,8 @@ function checkLigo(callback) {
 }
 
 // Execute ligo for single source file
-function execLigo(sourcePath, callback) {
-  const command = `docker run -v $PWD:$PWD --rm -i ligolang/ligo:next compile-contract ${sourcePath} main`;
+function execLigo(sourcePath, entryPoint, callback) {
+  const command = `docker run -v $PWD:$PWD --rm -i ligolang/ligo:next compile-contract ${sourcePath} ${entryPoint}`;
 
   exec(command, { maxBuffer: 600 * 1024 }, (err, stdout, stderr) => {
     if (err)
@@ -111,7 +111,7 @@ function compileAll(options, callback) {
   async.map(
     options.paths,
     (sourcePath, c) => {
-      execLigo(sourcePath, (err, compiledContract) => {
+      execLigo(sourcePath, "main", (err, compiledContract) => {
         if (err) return c(err);
 
         // remove extension from filename
