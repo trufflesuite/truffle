@@ -42,7 +42,7 @@ const Environment = {
       fork: config.provider,
       gasLimit: block.gasLimit
     };
-    if (accounts.length > 0) options.unlocked_accounts = accounts;
+    if (accounts.length > 0) ganacheOptions.unlocked_accounts = accounts;
 
     config.networks[forkedNetwork] = {
       network_id: config.network_id,
