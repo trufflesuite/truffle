@@ -14,7 +14,7 @@ const compiler = {
   version: "next"
 };
 
-const LIGO_PATTERN = "**/*.ligo";
+const LIGO_PATTERN = "**/*.{ligo,mligo}";
 
 // -------- TODO: Common with truffle-compile --------
 
