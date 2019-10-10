@@ -104,6 +104,7 @@ function execLigo(sourcePath, entryPoint, callback) {
 
 // compile all options.paths
 function compileAll(options, callback) {
+  const entryPoint = options._[0] || "main";
   options.logger = options.logger || console;
 
   compile.display(options.paths, options);
@@ -111,7 +112,7 @@ function compileAll(options, callback) {
   async.map(
     options.paths,
     (sourcePath, c) => {
-      execLigo(sourcePath, "main", (err, compiledContract) => {
+      execLigo(sourcePath, entryPoint, (err, compiledContract) => {
         if (err) return c(err);
 
         // remove extension from filename
