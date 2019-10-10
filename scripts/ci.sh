@@ -84,6 +84,7 @@ elif [ "$FABRICEVM" = true ]; then
 
 elif [ "$PACKAGES" = true ]; then
 
+  docker pull ligolang/ligo:next
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo add-apt-repository -y ppa:ethereum/ethereum
@@ -96,6 +97,7 @@ elif [ "$PACKAGES" = true ]; then
 
 elif [ "$COVERAGE" = true ]; then
 
+  docker pull ligolang/ligo:next
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo add-apt-repository -y ppa:ethereum/ethereum
