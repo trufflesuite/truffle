@@ -17,49 +17,48 @@ describe("ligo compiler", () => {
 
       paths.forEach(path => {
         assert(
-          [".ligo"].some(extension => path.indexOf(extension) !== -1),
+          [".ligo", ".mligo"].some(extension => path.indexOf(extension) !== -1),
           "Paths should only be ligo files"
         );
       });
 
-      [
-        contracts.LigoContract1 //,
-        //        contracts.LigoContract2
-      ].forEach((contract, index) => {
-        assert.notEqual(
-          contract,
-          undefined,
-          `Compiled contract should be LigoContract${index + 1}`
-        );
+      [contracts.LigoContract1, contracts.LigoContract2].forEach(
+        (contract, index) => {
+          assert.notEqual(
+            contract,
+            undefined,
+            `Compiled contract should be LigoContract${index + 1}`
+          );
 
-        assert.equal(
-          contract.contractName,
-          `LigoContract${index + 1}`,
-          "Contract name is set incorrectly"
-        );
+          assert.equal(
+            contract.contractName,
+            `LigoContract${index + 1}`,
+            "Contract name is set incorrectly"
+          );
 
-        assert.equal(
-          contract.abi.length,
-          0,
-          "LIGO compiler doesn't currently output contract ABI, something is amiss!"
-        );
+          assert.equal(
+            contract.abi.length,
+            0,
+            "LIGO compiler doesn't currently output contract ABI, something is amiss!"
+          );
 
-        assert(
-          /([parameter][storage][code]){1}/.test(contract.code),
-          "Contract code stored improperly, something is wrong!"
-        );
+          assert(
+            /([parameter][storage][code]){1}/.test(contract.code),
+            "Contract code stored improperly, something is wrong!"
+          );
 
-        assert(
-          contract.source.includes("function main"),
-          "Contract source stored improperly, something is wrong!"
-        );
+          assert(
+            contract.source.includes("main"),
+            "Contract source stored improperly, something is wrong!"
+          );
 
-        assert.equal(
-          contract.compiler.name,
-          "ligo",
-          "Compiler name set incorrectly!"
-        );
-      });
+          assert.equal(
+            contract.compiler.name,
+            "ligo",
+            "Compiler name set incorrectly!"
+          );
+        }
+      );
 
       done();
     });
