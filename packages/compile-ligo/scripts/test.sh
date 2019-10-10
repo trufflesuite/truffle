@@ -3,5 +3,5 @@
 set -o errexit
 
 if [ "$CI" = true ]; then
-  mocha ./test/** --timeout 10000 $@
+  mocha --timeout 10000 $@
 fi
