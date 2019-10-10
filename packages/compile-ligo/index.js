@@ -53,7 +53,7 @@ compile.necessary = (options, callback) => {
   });
 };
 
-compile.display = (paths, { quiet, working_directory, logger }) => {
+compile.display = (paths, { quiet, working_directory, logger }, entryPoint) => {
   if (quiet !== true) {
     if (!Array.isArray(paths)) {
       paths = Object.keys(paths);
@@ -65,6 +65,7 @@ compile.display = (paths, { quiet, working_directory, logger }) => {
       }
       logger.log(`> Compiling ${contract}`);
     });
+    logger.log(`> Using entry point "${entryPoint}"`);
   }
 };
 
@@ -107,7 +108,7 @@ function compileAll(options, callback) {
   const entryPoint = options._[0] || "main";
   options.logger = options.logger || console;
 
-  compile.display(options.paths, options);
+  compile.display(options.paths, options, entryPoint);
 
   async.map(
     options.paths,
