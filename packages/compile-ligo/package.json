@@ -14,12 +14,16 @@
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
   "scripts": {
-    "test": ""
+    "test": "./scripts/test.sh"
   },
   "publishConfig": {
     "access": "public"
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "devDependencies": {
+    "@truffle/config": "^1.2.2-alphaTez.0",
+    "mocha": "5.2.0"
   }
 }
