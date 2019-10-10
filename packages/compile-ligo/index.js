@@ -53,7 +53,7 @@ compile.necessary = (options, callback) => {
   });
 };
 
-compile.display = (paths, { quiet, working_directory, logger }) => {
+compile.display = (paths, { quiet, working_directory, logger }, entryPoint) => {
   if (quiet !== true) {
     if (!Array.isArray(paths)) {
       paths = Object.keys(paths);
@@ -65,6 +65,7 @@ compile.display = (paths, { quiet, working_directory, logger }) => {
       }
       logger.log(`> Compiling ${contract}`);
     });
+    logger.log(`> Using entry point "${entryPoint}"`);
   }
 };
 
@@ -84,8 +85,8 @@ function checkLigo(callback) {
 }
 
 // Execute ligo for single source file
-function execLigo(sourcePath, callback) {
-  const command = `docker run -v $PWD:$PWD --rm -i ligolang/ligo:next compile-contract ${sourcePath} main`;
+function execLigo(sourcePath, entryPoint, callback) {
+  const command = `docker run -v $PWD:$PWD --rm -i ligolang/ligo:next compile-contract ${sourcePath} ${entryPoint}`;
 
   exec(command, { maxBuffer: 600 * 1024 }, (err, stdout, stderr) => {
     if (err)
@@ -104,14 +105,15 @@ function execLigo(sourcePath, callback) {
 
 // compile all options.paths
 function compileAll(options, callback) {
+  const entryPoint = options._[0] || "main";
   options.logger = options.logger || console;
 
-  compile.display(options.paths, options);
+  compile.display(options.paths, options, entryPoint);
 
   async.map(
     options.paths,
     (sourcePath, c) => {
-      execLigo(sourcePath, (err, compiledContract) => {
+      execLigo(sourcePath, entryPoint, (err, compiledContract) => {
         if (err) return c(err);
 
         // remove extension from filename

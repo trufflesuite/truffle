@@ -7,13 +7,14 @@ describe("ligo compiler", () => {
   const defaultSettings = {
     contracts_directory: path.join(__dirname, "./sources/"),
     quiet: true,
-    all: true
+    all: true,
+    _: []
   };
   const config = new Config().merge(defaultSettings);
 
   it("compiles ligo contracts", done => {
     compile.all(config, (err, contracts, paths) => {
-      assert.equal(err, null, "Compiles without error");
+      assert.equal(err, null, "Compiles with an error!");
 
       paths.forEach(path => {
         assert(
@@ -83,6 +84,31 @@ describe("ligo compiler", () => {
       );
 
       done();
+    });
+  });
+
+  describe("when passed an entry point", () => {
+    const configWithValidEntryPoint = new Config()
+      .merge(defaultSettings)
+      .merge({ _: ["main"] });
+    const configWithBadEntryPoint = new Config()
+      .merge(defaultSettings)
+      .merge({ _: ["bad"] });
+
+    it("compiles successfully when passed a valid entry", done => {
+      compile.all(configWithValidEntryPoint, (err, contracts) => {
+        assert.equal(err, null, "Compiled with an error!");
+        assert(contracts, "Contracts missing!");
+        done();
+      });
+    });
+
+    it("errors when passed an invalid entry", done => {
+      compile.all(configWithBadEntryPoint, (err, contracts) => {
+        assert(err, "Should not have compiled!");
+        assert.equal(contracts, null, "Contracts should be missing!");
+        done();
+      });
     });
   });
 });
