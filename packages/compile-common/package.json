@@ -17,6 +17,7 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "dependencies": {
+    "@truffle/compile-solidity": "^4.2.8",
     "@truffle/contract-sources": "^0.1.6"
   }
 }
