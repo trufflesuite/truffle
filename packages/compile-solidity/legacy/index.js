@@ -33,15 +33,11 @@ const compile = function(sources, options, callback) {
     .catch(callback);
 };
 
-// -------- Common helpers --------
+// -------- Pass Common helpers --------
 
-compile.all = Common.all;
+Object.assign(compile, Common);
 
-compile.necessary = Common.necessary;
-
-compile.display = Common.display;
-
-// -------- End of Common helpers --------
+// -------- Start of compile-solidity specific methods --------
 
 compile.with_dependencies = function(options, callback) {
   var self = this;
