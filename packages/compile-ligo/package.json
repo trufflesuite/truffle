@@ -1,6 +1,6 @@
 {
   "name": "@truffle/compile-ligo",
-  "version": "0.1.2-alphaTez.0",
+  "version": "0.2.0-alphaTez.0",
   "description": "> TODO: description",
   "author": "CruzMolina <7537712+CruzMolina@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
@@ -23,7 +23,7 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "devDependencies": {
-    "@truffle/config": "^1.2.2-alphaTez.0",
+    "@truffle/config": "^1.2.3-alphaTez.0",
     "mocha": "5.2.0"
   },
   "dependencies": {

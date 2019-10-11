@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.0.14-alphaTez.0",
+  "version": "0.0.15-alphaTez.0",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

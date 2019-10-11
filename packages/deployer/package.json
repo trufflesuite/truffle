@@ -8,19 +8,19 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.0.37-alphaTez.0",
+  "version": "3.0.38-alphaTez.0",
   "main": "index.js",
   "scripts": {
     "test": "mocha --no-warnings --timeout 10000 --exit"
   },
   "dependencies": {
-    "@truffle/contract": "^4.1.0-alphaTez.0",
-    "@truffle/expect": "^0.0.13-alphaTez.0",
+    "@truffle/contract": "^4.1.1-alphaTez.0",
+    "@truffle/expect": "^0.0.14-alphaTez.0",
     "emittery": "^0.4.0"
   },
   "devDependencies": {
-    "@truffle/reporters": "^2.0.0-alphaTez.0",
-    "@truffle/workflow-compile": "^2.1.9-alphaTez.0",
+    "@truffle/reporters": "^2.0.1-alphaTez.0",
+    "@truffle/workflow-compile": "^2.1.10-alphaTez.0",
     "ganache-core": "2.7.0",
     "mocha": "5.2.0",
     "web3": "1.2.1"

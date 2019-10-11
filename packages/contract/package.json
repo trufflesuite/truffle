@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.1.0-alphaTez.0",
+  "version": "4.1.1-alphaTez.0",
   "main": "index.js",
   "typings": "./typings/index.d.ts",
   "scripts": {
@@ -20,10 +20,10 @@
     "test:trace": "$(yarn bin)/mocha --trace-warnings"
   },
   "dependencies": {
-    "@truffle/blockchain-utils": "^0.0.14-alphaTez.0",
-    "@truffle/contract-schema": "^3.1.0-alphaTez.0",
-    "@truffle/error": "^0.0.9-alphaTez.0",
-    "@truffle/interface-adapter": "^0.3.0-alphaTez.0",
+    "@truffle/blockchain-utils": "^0.0.15-alphaTez.0",
+    "@truffle/contract-schema": "^3.1.1-alphaTez.0",
+    "@truffle/error": "^0.0.10-alphaTez.0",
+    "@truffle/interface-adapter": "^0.3.1-alphaTez.0",
     "bignumber.js": "^7.2.1",
     "ethers": "^4.0.0-beta.1",
     "web3": "1.2.1",
@@ -32,7 +32,7 @@
     "web3-utils": "1.2.1"
   },
   "devDependencies": {
-    "@truffle/compile-solidity": "^4.2.8-alphaTez.0",
+    "@truffle/compile-solidity": "^4.2.9-alphaTez.0",
     "async": "2.6.1",
     "browserify": "^14.0.0",
     "chai": "4.2.0",

@@ -5,7 +5,7 @@
   "license": "MIT",
   "author": "Tim Coulter",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/artifactor",
-  "version": "4.0.35-alphaTez.0",
+  "version": "4.0.36-alphaTez.0",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -13,12 +13,12 @@
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/contract-schema": "^3.1.0-alphaTez.0",
+    "@truffle/contract-schema": "^3.1.1-alphaTez.0",
     "fs-extra": "6.0.1",
     "lodash": "^4.17.13"
   },
   "devDependencies": {
-    "@truffle/contract": "^4.1.0-alphaTez.0",
+    "@truffle/contract": "^4.1.1-alphaTez.0",
     "@types/fs-extra": "^8.0.0",
     "@types/node": "^12.6.2",
     "chai": "4.2.0",
