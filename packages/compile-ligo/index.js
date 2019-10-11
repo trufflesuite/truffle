@@ -6,7 +6,7 @@ const async = require("async");
 const colors = require("colors");
 const minimatch = require("minimatch");
 
-const find_contracts = require("@truffle/contract-sources");
+const Common = require("@truffle/compile-common");
 const Profiler = require("@truffle/compile-solidity/profiler");
 
 const compiler = {
@@ -20,17 +20,7 @@ const LIGO_PATTERN = "**/*.{ligo,mligo}";
 
 const compile = {};
 
-// contracts_directory: String. Directory where .ligo files can be found.
-// quiet: Boolean. Suppress output. Defaults to false.
-// strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.all = (options, callback) => {
-  find_contracts(options.contracts_directory, (err, files) => {
-    if (err) return callback(err);
-
-    options.paths = files;
-    compile.with_dependencies(options, callback);
-  });
-};
+compile.all = Common.all;
 
 // contracts_directory: String. Directory where .ligo files can be found.
 // build_directory: String. Optional. Directory where .tz files can be found. Only required if `all` is false.
@@ -175,7 +165,7 @@ function updateContractsDirectory(options) {
 
 // wrapper for compile.all. only updates contracts_directory to find .ligo
 compileLigo.all = (options, callback) =>
-  compile.all(updateContractsDirectory(options), callback);
+  compile.all(compile, updateContractsDirectory(options), callback);
 
 // wrapper for compile.necessary. only updates contracts_directory to find .ligo
 compileLigo.necessary = (options, callback) =>
