@@ -1,5 +1,4 @@
 const debug = require("debug")("compile:legacy"); // eslint-disable-line no-unused-vars
-const path = require("path");
 const expect = require("@truffle/expect");
 const Common = require("@truffle/compile-common");
 const Config = require("@truffle/config");
@@ -34,9 +33,15 @@ const compile = function(sources, options, callback) {
     .catch(callback);
 };
 
+// -------- Common helpers --------
+
 compile.all = Common.all;
 
 compile.necessary = Common.necessary;
+
+compile.display = Common.display;
+
+// -------- End of Common helpers --------
 
 compile.with_dependencies = function(options, callback) {
   var self = this;
@@ -72,25 +77,6 @@ compile.with_dependencies = function(options, callback) {
       compile(allSources, options, callback);
     }
   );
-};
-
-compile.display = function(paths, options) {
-  if (options.quiet !== true) {
-    if (!Array.isArray(paths)) {
-      paths = Object.keys(paths);
-    }
-
-    const blacklistRegex = /^truffle\//;
-
-    paths.sort().forEach(contract => {
-      if (path.isAbsolute(contract)) {
-        contract =
-          "." + path.sep + path.relative(options.working_directory, contract);
-      }
-      if (contract.match(blacklistRegex)) return;
-      options.logger.log("> Compiling " + contract);
-    });
-  }
 };
 
 compile.CompilerSupplier = CompilerSupplier;
