@@ -1,3 +1,4 @@
+const path = require("path");
 const { promisify } = require("util");
 const findContracts = promisify(require("@truffle/contract-sources"));
 const { ProfilerUpdated } = promisify(
@@ -49,5 +50,14 @@ Common.display = (paths, { quiet, working_directory, logger }, entryPoint) => {
     if (entryPoint) logger.log(`> Using entry point "${entryPoint}"`);
   }
 };
+
+// append CONTRACT_EXT_PATTERN to contracts_directory in options and return updated options
+Common.updateContractsDirectory = (options, CONTRACT_EXT_PATTERN) =>
+  options.with({
+    contracts_directory: path.join(
+      options.contracts_directory,
+      CONTRACT_EXT_PATTERN
+    )
+  });
 
 module.exports = Common;
