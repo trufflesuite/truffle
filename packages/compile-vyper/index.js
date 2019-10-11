@@ -15,17 +15,11 @@ const compiler = {
 
 const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py}";
 
-// -------- Common helpers --------
+// -------- Pass Common helpers --------
 
-const compile = {};
+const compile = { ...Common };
 
-compile.all = Common.all;
-
-compile.necessary = Common.necessary;
-
-compile.display = Common.display;
-
-// -------- End of Common helpers --------
+// -------- Start of compile-vyper specific methods --------
 
 // Check that vyper is available, save its version
 function checkVyper(callback) {
