@@ -10,7 +10,6 @@
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/compile-solidity": "^4.2.8-alphaTez.0",
     "async": "2.6.1",
     "colors": "^1.1.2",
     "eslint": "^5.5.0",
