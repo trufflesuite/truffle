@@ -15,5 +15,8 @@
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "dependencies": {
+    "@truffle/contract-sources": "^0.1.6"
   }
 }
