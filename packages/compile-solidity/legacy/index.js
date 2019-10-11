@@ -35,10 +35,9 @@ const compile = function(sources, options, callback) {
 
 // -------- Common helpers --------
 
-compile.all = Common.all;
-
-compile.necessary = Common.necessary;
-
+compile.all = (options, callback) => Common.all(compile, options, callback);
+compile.necessary = (options, callback) =>
+  Common.necessary(compile, options, callback);
 compile.display = Common.display;
 
 // -------- End of Common helpers --------
