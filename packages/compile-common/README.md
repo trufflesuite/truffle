@@ -1,11 +1,2 @@
-# `compile-common`
-
-> TODO: description
-
-## Usage
-
-```
-const compileCommon = require('compile-common');
-
-// TODO: DEMONSTRATE API
-```
+# @truffle/compile-common
+Library for common compiler helpers
