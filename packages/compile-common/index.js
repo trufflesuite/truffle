@@ -1,9 +1,8 @@
 const path = require("path");
 const { promisify } = require("util");
 const findContracts = promisify(require("@truffle/contract-sources"));
-const { ProfilerUpdated } = promisify(
-  require("@truffle/compile-solidity/profiler").updated
-);
+const { updated } = require("@truffle/compile-solidity/profiler");
+const ProfilerUpdated = promisify(updated);
 
 const Common = {};
 
