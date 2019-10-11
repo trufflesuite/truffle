@@ -15,7 +15,7 @@ const compiler = {
 
 const LIGO_PATTERN = "**/*.{ligo,mligo}";
 
-// -------- TODO: Common with truffle-compile --------
+// -------- Common helpers --------
 
 const compile = {};
 
@@ -23,23 +23,9 @@ compile.all = Common.all;
 
 compile.necessary = Common.necessary;
 
-compile.display = (paths, { quiet, working_directory, logger }, entryPoint) => {
-  if (quiet !== true) {
-    if (!Array.isArray(paths)) {
-      paths = Object.keys(paths);
-    }
+compile.display = Common.display;
 
-    paths.sort().forEach(contract => {
-      if (path.isAbsolute(contract)) {
-        contract = `.${path.sep}${path.relative(working_directory, contract)}`;
-      }
-      logger.log(`> Compiling ${contract}`);
-    });
-    logger.log(`> Using entry point "${entryPoint}"`);
-  }
-};
-
-// -------- End of common with truffle-compile --------
+// -------- End of Common helpers --------
 
 // Check that ligo is available
 function checkLigo(callback) {
