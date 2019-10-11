@@ -1,4 +1,4 @@
-const { callbackify, promisify } = require("util");
+const { promisify } = require("util");
 const findContracts = promisify(require("@truffle/contract-sources"));
 const { ProfilerUpdated } = promisify(
   require("@truffle/compile-solidity/profiler").updated
@@ -32,6 +32,22 @@ Common.necessary = async (compile, options, callback) => {
 
   options.paths = updated;
   compile.with_dependencies(options, callback);
+};
+
+Common.display = (paths, { quiet, working_directory, logger }, entryPoint) => {
+  if (quiet !== true) {
+    if (!Array.isArray(paths)) paths = Object.keys(paths);
+
+    const blacklistRegex = /^truffle\//;
+
+    paths.sort().forEach(contract => {
+      if (path.isAbsolute(contract))
+        contract = `.${path.sep}${path.relative(working_directory, contract)}`;
+      if (contract.match(blacklistRegex)) return;
+      logger.log(`> Compiling ${contract}`);
+    });
+    if (entryPoint) logger.log(`> Using entry point "${entryPoint}"`);
+  }
 };
 
 module.exports = Common;
