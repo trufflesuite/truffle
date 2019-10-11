@@ -1,34 +1,23 @@
 {
-  "name": "@truffle/compile-ligo",
-  "version": "0.1.2-alphaTez.0",
-  "description": "> TODO: description",
+  "name": "@truffle/compile-common",
+  "version": "0.1.0",
+  "description": "Library for common compiler helpers",
   "author": "CruzMolina <7537712+CruzMolina@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "license": "MIT",
   "main": "index.js",
-  "directories": {
-    "test": "tests"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
   "scripts": {
-    "test": "./scripts/test.sh"
-  },
-  "publishConfig": {
-    "access": "public"
+    "test": ""
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "devDependencies": {
-    "@truffle/config": "^1.2.2-alphaTez.0",
-    "mocha": "5.2.0"
-  },
   "dependencies": {
-    "async": "^3.1.0",
-    "colors": "^1.4.0",
-    "minimatch": "^3.0.4"
+    "@truffle/compile-solidity": "^4.2.8",
+    "@truffle/contract-sources": "^0.1.6"
   }
 }

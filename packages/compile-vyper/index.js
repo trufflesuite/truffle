@@ -6,8 +6,7 @@ const async = require("async");
 const colors = require("colors");
 const minimatch = require("minimatch");
 
-const find_contracts = require("@truffle/contract-sources");
-const Profiler = require("@truffle/compile-solidity/profiler");
+const Common = require("@truffle/compile-common");
 
 const compiler = {
   name: "vyper",
@@ -16,60 +15,11 @@ const compiler = {
 
 const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py}";
 
-// -------- TODO: Common with @truffle/compile-solidity --------
+// -------- Pass Common helpers --------
 
-const compile = {};
+const compile = Object.assign({}, Common);
 
-// contracts_directory: String. Directory where .sol files can be found.
-// quiet: Boolean. Suppress output. Defaults to false.
-// strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.all = function(options, callback) {
-  find_contracts(options.contracts_directory, function(err, files) {
-    if (err) return callback(err);
-
-    options.paths = files;
-    compile.with_dependencies(options, callback);
-  });
-};
-
-// contracts_directory: String. Directory where .sol files can be found.
-// build_directory: String. Optional. Directory where .sol.js files can be found. Only required if `all` is false.
-// all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
-//      in the build directory to see what needs to be compiled.
-// quiet: Boolean. Suppress output. Defaults to false.
-// strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.necessary = function(options, callback) {
-  options.logger = options.logger || console;
-
-  Profiler.updated(options, function(err, updated) {
-    if (err) return callback(err);
-
-    if (updated.length === 0 && options.quiet !== true) {
-      return callback(null, [], {});
-    }
-
-    options.paths = updated;
-    compile.with_dependencies(options, callback);
-  });
-};
-
-compile.display = function(paths, options) {
-  if (options.quiet !== true) {
-    if (!Array.isArray(paths)) {
-      paths = Object.keys(paths);
-    }
-
-    paths.sort().forEach(contract => {
-      if (path.isAbsolute(contract)) {
-        contract =
-          "." + path.sep + path.relative(options.working_directory, contract);
-      }
-      options.logger.log("> Compiling " + contract);
-    });
-  }
-};
-
-// -------- End of common with @truffle/compile-solidity --------
+// -------- Start of compile-vyper specific methods --------
 
 // Check that vyper is available, save its version
 function checkVyper(callback) {
@@ -185,22 +135,21 @@ function compileVyper(options, callback) {
   });
 }
 
-// append .vy pattern to contracts_directory in options and return updated options
-function updateContractsDirectory(options) {
-  return options.with({
-    contracts_directory: path.join(options.contracts_directory, VYPER_PATTERN)
-  });
-}
-
 // wrapper for compile.all. only updates contracts_directory to find .vy
-compileVyper.all = function(options, callback) {
-  return compile.all(updateContractsDirectory(options), callback);
-};
+compileVyper.all = (options, callback) =>
+  compile.all(
+    compile,
+    compile.updateContractsDirectory(options, VYPER_PATTERN),
+    callback
+  );
 
 // wrapper for compile.necessary. only updates contracts_directory to find .vy
-compileVyper.necessary = function(options, callback) {
-  return compile.necessary(updateContractsDirectory(options), callback);
-};
+compileVyper.necessary = (options, callback) =>
+  compile.necessary(
+    compile,
+    compile.updateContractsDirectory(options, VYPER_PATTERN),
+    callback
+  );
 
 compile.with_dependencies = compileVyper;
 module.exports = compileVyper;
