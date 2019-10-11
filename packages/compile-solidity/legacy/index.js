@@ -36,26 +36,7 @@ const compile = function(sources, options, callback) {
 
 compile.all = Common.all;
 
-// contracts_directory: String. Directory where .sol files can be found.
-// build_directory: String. Optional. Directory where .sol.js files can be found. Only required if `all` is false.
-// all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
-//      in the build directory to see what needs to be compiled.
-// quiet: Boolean. Suppress output. Defaults to false.
-// strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.necessary = function(options, callback) {
-  options.logger = options.logger || console;
-
-  Profiler.updated(options, function(err, updated) {
-    if (err) return callback(err);
-
-    if (updated.length === 0 && options.quiet !== true) {
-      return callback(null, [], {});
-    }
-
-    options.paths = updated;
-    compile.with_dependencies(options, callback);
-  });
-};
+compile.necessary = Common.necessary;
 
 compile.with_dependencies = function(options, callback) {
   var self = this;
