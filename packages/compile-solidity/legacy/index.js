@@ -1,7 +1,7 @@
 const debug = require("debug")("compile:legacy"); // eslint-disable-line no-unused-vars
 const path = require("path");
 const expect = require("@truffle/expect");
-const findContracts = require("@truffle/contract-sources");
+const Common = require("@truffle/compile-common");
 const Config = require("@truffle/config");
 const Profiler = require("../profiler");
 const CompilerSupplier = require("../compilerSupplier");
@@ -34,17 +34,7 @@ const compile = function(sources, options, callback) {
     .catch(callback);
 };
 
-// contracts_directory: String. Directory where .sol files can be found.
-// quiet: Boolean. Suppress output. Defaults to false.
-// strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.all = function(options, callback) {
-  findContracts(options.contracts_directory, function(err, files) {
-    if (err) return callback(err);
-
-    options.paths = files;
-    compile.with_dependencies(options, callback);
-  });
-};
+compile.all = Common.all;
 
 // contracts_directory: String. Directory where .sol files can be found.
 // build_directory: String. Optional. Directory where .sol.js files can be found. Only required if `all` is false.
