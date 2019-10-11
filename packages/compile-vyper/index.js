@@ -135,26 +135,21 @@ function compileVyper(options, callback) {
   });
 }
 
-// append .vy pattern to contracts_directory in options and return updated options
-function updateContractsDirectory(options) {
-  return options.with({
-    contracts_directory: path.join(options.contracts_directory, VYPER_PATTERN)
-  });
-}
-
 // wrapper for compile.all. only updates contracts_directory to find .vy
-compileVyper.all = function(options, callback) {
-  return compile.all(compile, updateContractsDirectory(options), callback);
-};
-
-// wrapper for compile.necessary. only updates contracts_directory to find .vy
-compileVyper.necessary = function(options, callback) {
-  return compile.necessary(
+compileVyper.all = (options, callback) =>
+  compile.all(
     compile,
-    updateContractsDirectory(options),
+    compile.updateContractsDirectory(options, VYPER_PATTERN),
     callback
   );
-};
+
+// wrapper for compile.necessary. only updates contracts_directory to find .vy
+compileVyper.necessary = (options, callback) =>
+  compile.necessary(
+    compile,
+    compile.updateContractsDirectory(options, VYPER_PATTERN),
+    callback
+  );
 
 compile.with_dependencies = compileVyper;
 module.exports = compileVyper;
