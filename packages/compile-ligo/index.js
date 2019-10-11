@@ -15,17 +15,11 @@ const compiler = {
 
 const LIGO_PATTERN = "**/*.{ligo,mligo}";
 
-// -------- Common helpers --------
+// -------- Pass Common helpers --------
 
-const compile = {};
+const compile = { ...Common };
 
-compile.all = Common.all;
-
-compile.necessary = Common.necessary;
-
-compile.display = Common.display;
-
-// -------- End of Common helpers --------
+// -------- Start of compile-ligo specific methods --------
 
 // Check that ligo is available
 function checkLigo(callback) {
