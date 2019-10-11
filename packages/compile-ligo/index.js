@@ -7,7 +7,6 @@ const colors = require("colors");
 const minimatch = require("minimatch");
 
 const Common = require("@truffle/compile-common");
-const Profiler = require("@truffle/compile-solidity/profiler");
 
 const compiler = {
   name: "ligo",
@@ -22,26 +21,7 @@ const compile = {};
 
 compile.all = Common.all;
 
-// contracts_directory: String. Directory where .ligo files can be found.
-// build_directory: String. Optional. Directory where .tz files can be found. Only required if `all` is false.
-// all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
-//      in the build directory to see what needs to be compiled.
-// quiet: Boolean. Suppress output. Defaults to false.
-// strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.necessary = (options, callback) => {
-  options.logger = options.logger || console;
-
-  Profiler.updated(options, (err, updated) => {
-    if (err) return callback(err);
-
-    if (updated.length === 0 && options.quiet !== true) {
-      return callback(null, [], {});
-    }
-
-    options.paths = updated;
-    compile.with_dependencies(options, callback);
-  });
-};
+compile.necessary = Common.necessary;
 
 compile.display = (paths, { quiet, working_directory, logger }, entryPoint) => {
   if (quiet !== true) {
@@ -169,7 +149,7 @@ compileLigo.all = (options, callback) =>
 
 // wrapper for compile.necessary. only updates contracts_directory to find .ligo
 compileLigo.necessary = (options, callback) =>
-  compile.necessary(updateContractsDirectory(options), callback);
+  compile.necessary(compile, updateContractsDirectory(options), callback);
 
 compile.with_dependencies = compileLigo;
 module.exports = compileLigo;
