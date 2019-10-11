@@ -116,20 +116,21 @@ function compileLigo(options, callback) {
   });
 }
 
-// append .ligo pattern to contracts_directory in options and return updated options
-function updateContractsDirectory(options) {
-  return options.with({
-    contracts_directory: path.join(options.contracts_directory, LIGO_PATTERN)
-  });
-}
-
 // wrapper for compile.all. only updates contracts_directory to find .ligo
 compileLigo.all = (options, callback) =>
-  compile.all(compile, updateContractsDirectory(options), callback);
+  compile.all(
+    compile,
+    compile.updateContractsDirectory(options, LIGO_PATTERN),
+    callback
+  );
 
 // wrapper for compile.necessary. only updates contracts_directory to find .ligo
 compileLigo.necessary = (options, callback) =>
-  compile.necessary(compile, updateContractsDirectory(options), callback);
+  compile.necessary(
+    compile,
+    compile.updateContractsDirectory(options, LIGO_PATTERN),
+    callback
+  );
 
 compile.with_dependencies = compileLigo;
 module.exports = compileLigo;
