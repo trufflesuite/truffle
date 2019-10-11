@@ -17,7 +17,7 @@ const VYPER_PATTERN = "**/*.{vy,v.py,vyper.py}";
 
 // -------- Pass Common helpers --------
 
-const compile = { ...Common };
+const compile = Object.assign({}, Common);
 
 // -------- Start of compile-vyper specific methods --------
 
