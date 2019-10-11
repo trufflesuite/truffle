@@ -35,7 +35,10 @@ const compile = function(sources, options, callback) {
 
 // -------- Pass Common helpers --------
 
-Object.assign(compile, Common);
+compile.all = (options, callback) => Common.all(compile, options, callback);
+compile.necessary = (options, callback) =>
+  Common.necessary(compile, options, callback);
+compile.display = Common.display;
 
 // -------- Start of compile-solidity specific methods --------
 
