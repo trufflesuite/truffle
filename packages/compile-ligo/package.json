@@ -25,5 +25,10 @@
   "devDependencies": {
     "@truffle/config": "^1.2.2-alphaTez.0",
     "mocha": "5.2.0"
+  },
+  "dependencies": {
+    "async": "^3.1.0",
+    "colors": "^1.4.0",
+    "minimatch": "^3.0.4"
   }
 }
