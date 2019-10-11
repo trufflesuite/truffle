@@ -17,7 +17,7 @@ const LIGO_PATTERN = "**/*.{ligo,mligo}";
 
 // -------- Pass Common helpers --------
 
-const compile = { ...Common };
+const compile = Object.assign({}, Common);
 
 // -------- Start of compile-ligo specific methods --------
 
