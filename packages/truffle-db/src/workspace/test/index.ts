@@ -527,6 +527,15 @@ query GetNetwork($id: ID!) {
   }
 }`;
 
+const GetAllNetworks = gql`
+  query getAllNetworks {
+    networks  {
+      id
+      networkId
+    }
+  }
+`
+
 const AddNetworks = gql`
 mutation AddNetworks($networkId: NetworkId!, $height: Int!, $hash: String!) {
   networksAdd(input: {
@@ -545,62 +554,81 @@ mutation AddNetworks($networkId: NetworkId!, $height: Int!, $hash: String!) {
   }
 }`;
 
-describe("Network", () => {
-  it("adds network", async () => {
-    const client = new WorkspaceClient();
-    const expectedId = generateId({
-      networkId: Object.keys(Migrations.networks)[0],
-      historicBlock: {
-        height: 1,
-        hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
-      }
-    })
-    const variables = {
-      networkId: Object.keys(Migrations.networks)[0],
+
+describe ('Network', () => {
+  const client = new WorkspaceClient();
+  const expectedHash = '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
+  const expectedId = generateId({
+    networkId: Object.keys(Migrations.networks)[0],
+    historicBlock: {
       height: 1,
-      hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
+      hash: expectedHash
     }
+  })
 
-    //add network
-    {
-      const data = await client.execute(AddNetworks,
-        {
-          networkId: variables.networkId,
-          height: variables.height,
-          hash: variables.hash
-        }
-      );
+  const variables = {
+    networkId: Object.keys(Migrations.networks)[0],
+    height: 1,
+    hash: expectedHash
+  }
 
-      expect(data).toHaveProperty("networksAdd");
+  let data
 
-      const { networksAdd } = data;
-      expect(networksAdd).toHaveProperty("networks");
+  beforeEach(async () => {
+    data = await client.execute(AddNetworks,
+      {
+        networkId: variables.networkId,
+        height: variables.height,
+        hash: variables.hash
+      }
+    );
+  })
 
-      const { networks } = networksAdd;
-      expect(networks).toHaveLength(1);
+  test('can be added', () => {
+    expect(data).toHaveProperty("networksAdd");
 
-      const network = networks[0];
-      expect(network).toHaveProperty("id");
+    const { networksAdd } = data;
+    expect(networksAdd).toHaveProperty("networks");
 
-      const { id } = network;
-      expect(id).toEqual(expectedId);
-    }
+    const { networks } = networksAdd;
+    expect(networks).toHaveLength(1);
 
-    // // ensure retrieved as matching
-    {
-      const data = await client.execute(GetNetwork, { id: expectedId });
-      expect(data).toHaveProperty("network");
+    const network = networks[0];
+    expect(network).toHaveProperty("id");
 
-      const { network } = data;
-      expect(network).toHaveProperty("id");
-      expect(network).toHaveProperty("networkId");
+    const { id } = network;
+    expect(id).toEqual(expectedId);
+  })
 
-      const { id, networkId } = network;
-      expect(id).toEqual(expectedId);
-      expect(networkId).toEqual(variables.networkId);
-    }
-  });
-});
+  test('can be queried', async () => {
+    data = await client.execute(GetNetwork, { id: expectedId });
+    expect(data).toHaveProperty("network");
+
+    const { network } = data;
+    expect(network).toHaveProperty("id");
+    expect(network).toHaveProperty("networkId");
+
+    const { id, networkId } = network;
+    expect(id).toEqual(expectedId);
+    expect(networkId).toEqual(variables.networkId);
+  })
+
+  test('can retrieve all networks', async () => {
+    data = await client.execute(GetAllNetworks, {});
+    expect(data).toHaveProperty("networks");
+
+    const { networks } = data;
+    expect(Array.isArray(networks)).toBeTruthy
+
+    const network = networks[0]
+    expect(network).toHaveProperty("networkId");
+
+    const { id, networkId } = network;
+    expect(id).toEqual(expectedId);
+    expect(networkId).toEqual(variables.networkId);
+  })
+})
+
 
 /*
  * Contract Instance
