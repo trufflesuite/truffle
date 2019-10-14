@@ -48,7 +48,10 @@ module.exports = Contract => ({
       await this.detectNetwork();
       const onChainCode = await this.web3.eth.getCode(address);
       await utils.checkCode(onChainCode, this.contractName, address);
-      return new this(address);
+      const contractInstance = new this.web3.eth.Contract(this.abi);
+      contractInstance.options.address = address;
+      contractInstance.transactionHash = this.transactionHash;
+      return new this(contractInstance);
     } catch (error) {
       throw error;
     }
