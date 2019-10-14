@@ -3,7 +3,6 @@ const debug = debugModule("codec:utils:conversion");
 
 import BN from "bn.js";
 import Big from "big.js";
-import Web3 from "web3";
 import * as Format from "@truffle/codec/format";
 import { enumFullName } from "./inspect";
 import * as Types from "@truffle/codec/interface/types";
