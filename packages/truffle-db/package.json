@@ -89,8 +89,10 @@
       "^test/(.*)": "<rootDir>/test/$1"
     },
     "testMatch": [
-      "<rootDir>/src/**/test/*.+(ts|js)",
-      "<rootDir>/test/**/test/*.+(ts|js)"
+      "<rootDir>/src/**/test/index.(ts|js)",
+      "<rootDir>/test/**/test/index.(ts|js)",
+      "<rootDir>/src/**/test/*\\.(spec|test)\\.(ts|js)",
+      "<rootDir>/test/**/test/*\\.(spec|test)\\.(ts|js)"
     ]
   },
   "_moduleAliases": {
