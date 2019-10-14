@@ -3,7 +3,7 @@ const debug = debugModule("codec:decode:value");
 
 import read from "@truffle/codec/read";
 import * as CodecUtils from "@truffle/codec/utils";
-import { TypeUtils } from "@truffle/codec/utils";
+import * as TypeUtils from "@truffle/codec/utils/datatype";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import utf8 from "utf8";
 import * as Contexts from "@truffle/codec/contexts/types";

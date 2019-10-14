@@ -7,7 +7,7 @@ import * as Storage from "@truffle/codec/storage";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Allocation from "./types";
 import * as CodecUtils from "@truffle/codec/utils";
-import { TypeUtils } from "@truffle/codec/utils";
+import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
 import BN from "bn.js";
 

@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:stack");
 
 import * as CodecUtils from "@truffle/codec/utils";
-import { TypeUtils } from "@truffle/codec/utils";
+import * as TypeUtils from "@truffle/codec/utils/datatype";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import decodeValue from "./value";

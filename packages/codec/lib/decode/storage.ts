@@ -3,7 +3,7 @@ const debug = debugModule("codec:decode:storage");
 
 import read from "@truffle/codec/read";
 import * as CodecUtils from "@truffle/codec/utils";
-import { TypeUtils } from "@truffle/codec/utils";
+import * as TypeUtils from "@truffle/codec/utils/datatype";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
 import * as Storage from "@truffle/codec/storage";
