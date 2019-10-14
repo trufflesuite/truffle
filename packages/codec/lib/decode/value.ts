@@ -145,7 +145,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
         type: dataType,
         kind: "value" as const,
         value: {
-          asAddress: ConversionUtils.toAddress(bytes),
+          asAddress: EvmUtils.toAddress(bytes),
           rawAsHex: ConversionUtils.toHexString(rawBytes)
         }
       };
@@ -428,7 +428,7 @@ export function* decodeContract(addressBytes: Uint8Array, info: Evm.Types.EvmInf
 }
 
 function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, ContractInfoAndContext, Uint8Array> {
-  let address = ConversionUtils.toAddress(addressBytes);
+  let address = EvmUtils.toAddress(addressBytes);
   let rawAddress = ConversionUtils.toHexString(addressBytes);
   let codeBytes: Uint8Array = yield {
     type: "code" as const,

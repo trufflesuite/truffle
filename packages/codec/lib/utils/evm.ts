@@ -52,3 +52,35 @@ export function equalData(bytes1: Uint8Array | undefined, bytes2: Uint8Array | u
   }
   return true;
 }
+
+export function toAddress(bytes: Uint8Array | string): string {
+
+  if(typeof bytes === "string") {
+    //in this case, we can do some simple string manipulation and
+    //then pass to web3
+    let hex = bytes; //just renaming for clarity
+    if (hex.startsWith("0x")) {
+      hex = hex.slice(2);
+    }
+    if(hex.length < 2 * Constants.ADDRESS_SIZE)
+    {
+      hex = hex.padStart(2 * Constants.ADDRESS_SIZE, "0");
+    }
+    if(hex.length > 2 * Constants.ADDRESS_SIZE)
+    {
+      hex = "0x" + hex.slice(hex.length - 2 * Constants.ADDRESS_SIZE);
+    }
+    return Web3.utils.toChecksumAddress(hex);
+  }
+  //otherwise, we're in the Uint8Array case, which we can't fully handle ourself
+
+  //truncate *on left* to 20 bytes
+  if(bytes.length > Constants.ADDRESS_SIZE) {
+    bytes = bytes.slice(bytes.length - Constants.ADDRESS_SIZE, bytes.length);
+  }
+
+  //now, convert to hex string and apply checksum case that second argument
+  //(which ensures it's padded to 20 bytes) shouldn't actually ever be
+  //needed, but I'll be safe and include it
+  return Web3.utils.toChecksumAddress(ConversionUtils.toHexString(bytes, Constants.ADDRESS_SIZE));
+}
