@@ -45,6 +45,7 @@ module.exports = Contract => ({
     try {
       await this.detectNetwork();
       const contract = await this.web3.tez.contract.at(this.address);
+      contract.transactionHash = this.transactionHash;
       return new this(contract);
     } catch (error) {
       throw error;
@@ -58,6 +59,7 @@ module.exports = Contract => ({
       utils.checkNetworkArtifactMatch(this);
       utils.checkDeployment(this);
       const contract = await this.web3.tez.contract.at(this.address);
+      contract.transactionHash = this.transactionHash;
       return new this(contract);
     } catch (error) {
       throw error;

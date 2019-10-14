@@ -86,6 +86,10 @@ var util = {
 
     web3.setProvider(provider);
     instance.setProvider(provider);
+    const networkID = await web3.eth.net.getId();
+    // provision instance
+    instance.setNetwork(networkID);
+    instance._json.networks[`${networkID}`] = "";
     util.web3 = web3;
 
     const accs = await web3.eth.getAccounts();
