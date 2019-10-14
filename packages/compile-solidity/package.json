@@ -4,6 +4,7 @@
   "version": "4.2.9-alphaTez.0",
   "main": "index.js",
   "dependencies": {
+    "@truffle/compile-common": "^0.1.0",
     "@truffle/config": "^1.2.3-alphaTez.0",
     "@truffle/contract-sources": "^0.2.1-alphaTez.0",
     "@truffle/error": "^0.0.10-alphaTez.0",
