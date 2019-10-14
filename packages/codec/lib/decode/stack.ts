@@ -1,7 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:stack");
 
-import * as CodecUtils from "@truffle/codec/utils";
+import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as EvmUtils from "@truffle/codec/utils/evm";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import read from "@truffle/codec/read";
@@ -55,8 +56,8 @@ export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiter
         //straight to decodeValue.  this is to allow us to correctly handle the
         //case of msg.data used as a mapping key.
         if(dataType.typeClass === "bytes" || dataType.typeClass === "string") {
-          let startAsBN = CodecUtils.Conversion.toBN(pointer.literal.slice(0, CodecUtils.EVM.WORD_SIZE));
-          let lengthAsBN = CodecUtils.Conversion.toBN(pointer.literal.slice(CodecUtils.EVM.WORD_SIZE));
+          let startAsBN = ConversionUtils.toBN(pointer.literal.slice(0, EvmUtils.WORD_SIZE));
+          let lengthAsBN = ConversionUtils.toBN(pointer.literal.slice(EvmUtils.WORD_SIZE));
           let start: number;
           let length: number;
           try {
@@ -94,7 +95,7 @@ export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiter
           //in this case, we're actually going to *throw away* the length info,
           //because it makes the logic simpler -- we'll get the length info back
           //from calldata
-          let locationOnly = pointer.literal.slice(0, CodecUtils.EVM.WORD_SIZE);
+          let locationOnly = pointer.literal.slice(0, EvmUtils.WORD_SIZE);
           //HACK -- in order to read the correct location, we need to add an offset
           //of -32 (since, again, we're throwing away the length info), so we pass
           //that in as the "base" value
@@ -102,7 +103,7 @@ export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiter
             dataType,
             {location: "stackliteral" as const, literal: locationOnly},
             info,
-            { abiPointerBase: -CodecUtils.EVM.WORD_SIZE}
+            { abiPointerBase: -EvmUtils.WORD_SIZE}
           );
         }
         else {
@@ -117,21 +118,21 @@ export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiter
   //next: do we have an external function?  these work differently on the stack
   //than elsewhere, so we can't just pass it on to decodeValue.
   if(dataType.typeClass === "function" && dataType.visibility === "external") {
-    let address = pointer.literal.slice(0, CodecUtils.EVM.WORD_SIZE);
-    let selectorWord = pointer.literal.slice(-CodecUtils.EVM.WORD_SIZE);
-    if(!checkPaddingLeft(address, CodecUtils.EVM.ADDRESS_SIZE)
-      ||!checkPaddingLeft(selectorWord, CodecUtils.EVM.SELECTOR_SIZE)) {
+    let address = pointer.literal.slice(0, EvmUtils.WORD_SIZE);
+    let selectorWord = pointer.literal.slice(-EvmUtils.WORD_SIZE);
+    if(!checkPaddingLeft(address, EvmUtils.ADDRESS_SIZE)
+      ||!checkPaddingLeft(selectorWord, EvmUtils.SELECTOR_SIZE)) {
       return {
         type: dataType,
         kind: "error" as const,
         error: {
           kind: "FunctionExternalStackPaddingError" as const,
-          rawAddress: CodecUtils.Conversion.toHexString(address),
-          rawSelector: CodecUtils.Conversion.toHexString(selectorWord)
+          rawAddress: ConversionUtils.toHexString(address),
+          rawSelector: ConversionUtils.toHexString(selectorWord)
         }
       };
     }
-    let selector = selectorWord.slice(-CodecUtils.EVM.SELECTOR_SIZE);
+    let selector = selectorWord.slice(-EvmUtils.SELECTOR_SIZE);
     return {
       type: dataType,
       kind: "value" as const,

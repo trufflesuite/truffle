@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:special");
 
-import * as CodecUtils from "@truffle/codec/utils";
+import * as EvmUtils from "@truffle/codec/utils/evm";
 import { Types, Values } from "@truffle/codec/format";
 import decodeValue from "./value";
 import * as Compiler from "@truffle/codec/compiler/types";
@@ -46,12 +46,12 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: Pointer.Special
             {
               typeClass: "bytes" as const,
               kind: "static" as const,
-              length: CodecUtils.EVM.SELECTOR_SIZE
+              length: EvmUtils.SELECTOR_SIZE
             },
             {
               location: "calldata" as const,
               start: 0,
-              length: CodecUtils.EVM.SELECTOR_SIZE,
+              length: EvmUtils.SELECTOR_SIZE,
             },
             info
           ),

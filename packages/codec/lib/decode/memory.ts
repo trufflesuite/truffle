@@ -3,7 +3,8 @@ const debug = debugModule("codec:decode:memory");
 
 import BN from "bn.js";
 import read from "@truffle/codec/read";
-import * as CodecUtils from "@truffle/codec/utils";
+import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as EvmUtils from "@truffle/codec/utils/evm";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
@@ -36,7 +37,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
     };
   }
 
-  let startPositionAsBN = CodecUtils.Conversion.toBN(rawValue);
+  let startPositionAsBN = ConversionUtils.toBN(rawValue);
   let startPosition: number;
   try {
     startPosition = startPositionAsBN.toNumber();
@@ -64,7 +65,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         rawLength = yield* read({
           location: "memory" as const,
           start: startPosition,
-          length: CodecUtils.EVM.WORD_SIZE
+          length: EvmUtils.WORD_SIZE
         }, state);
       }
       catch(error) {
@@ -74,7 +75,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
           error: (<DecodingError>error).error
         };
       }
-      lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
+      lengthAsBN = ConversionUtils.toBN(rawLength);
       try {
         length = lengthAsBN.toNumber();
       }
@@ -91,7 +92,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
 
       let childPointer: Pointer.MemoryPointer = {
         location: "memory" as const,
-        start: startPosition + CodecUtils.EVM.WORD_SIZE,
+        start: startPosition + EvmUtils.WORD_SIZE,
         length
       };
 
@@ -105,7 +106,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
           rawLength = yield* read({
             location: "memory" as const,
             start: startPosition,
-            length: CodecUtils.EVM.WORD_SIZE
+            length: EvmUtils.WORD_SIZE
           }, state);
         }
         catch(error) {
@@ -115,8 +116,8 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
             error: (<DecodingError>error).error
           };
         }
-        lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
-        startPosition += CodecUtils.EVM.WORD_SIZE; //increment startPosition
+        lengthAsBN = ConversionUtils.toBN(rawLength);
+        startPosition += EvmUtils.WORD_SIZE; //increment startPosition
         //to next word, as first word was used for length
       }
       else {
@@ -145,8 +146,8 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
             baseType,
             {
               location: "memory" as const,
-              start: startPosition + index * CodecUtils.EVM.WORD_SIZE,
-              length: CodecUtils.EVM.WORD_SIZE
+              start: startPosition + index * EvmUtils.WORD_SIZE,
+              length: EvmUtils.WORD_SIZE
             },
             info
           )

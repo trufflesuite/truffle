@@ -2,8 +2,9 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:storage");
 
 import read from "@truffle/codec/read";
-import * as CodecUtils from "@truffle/codec/utils";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
+import * as EvmUtils from "@truffle/codec/utils/evm";
+import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
 import * as Storage from "@truffle/codec/storage";
@@ -41,7 +42,7 @@ export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, 
       error: (<DecodingError>error).error
     };
   }
-  const startOffset = CodecUtils.Conversion.toBN(rawValue);
+  const startOffset = ConversionUtils.toBN(rawValue);
   let rawSize: Storage.Types.StorageLength;
   try {
     rawSize = storageSizeForType(dataType, info.userDefinedTypes, allocations);
@@ -69,7 +70,7 @@ export function* decodeStorageReferenceByAddress(dataType: Types.ReferenceType, 
       slot: {
         offset: startOffset.addn(size - 1)
       },
-      index: CodecUtils.EVM.WORD_SIZE - 1
+      index: EvmUtils.WORD_SIZE - 1
     }
   }};
   //dispatch to decodeStorageReference
@@ -101,7 +102,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
               error: (<DecodingError>error).error
             };
           }
-          lengthAsBN = CodecUtils.Conversion.toBN(data);
+          lengthAsBN = ConversionUtils.toBN(data);
           break;
         case "static":
           debug("static array");
@@ -166,7 +167,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
                 offset: currentSlot.offset.addn(baseSize.words - 1),
                 hashPath: currentSlot.hashPath
               },
-              index: CodecUtils.EVM.WORD_SIZE - 1
+              index: EvmUtils.WORD_SIZE - 1
             },
           };
 
@@ -177,18 +178,18 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       }
       else {
 
-        const perWord = Math.floor(CodecUtils.EVM.WORD_SIZE / baseSize.bytes);
+        const perWord = Math.floor(EvmUtils.WORD_SIZE / baseSize.bytes);
         debug("perWord %d", perWord);
 
         //currentPosition will point to the start of the entry being decoded
-        //note we have baseSize.bytes <= CodecUtils.EVM.WORD_SIZE
+        //note we have baseSize.bytes <= EvmUtils.WORD_SIZE
         let currentPosition: Storage.Types.StoragePosition = {
           slot: {
             path: pointer.range.from.slot,
             offset: new BN(0),
             hashPath: dataType.kind === "dynamic"
           },
-          index: CodecUtils.EVM.WORD_SIZE - baseSize.bytes //note the starting index!
+          index: EvmUtils.WORD_SIZE - baseSize.bytes //note the starting index!
         };
 
         for (let i = 0; i < length; i++) {
@@ -209,7 +210,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
           currentPosition.index -= baseSize.bytes;
           if (currentPosition.index < 0) {
             currentPosition.slot.offset.iaddn(1);
-            currentPosition.index = CodecUtils.EVM.WORD_SIZE - baseSize.bytes;
+            currentPosition.index = EvmUtils.WORD_SIZE - baseSize.bytes;
           }
         }
       }
@@ -243,7 +244,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
       }
 
       debug("data %O", data);
-      let lengthByte = data[CodecUtils.EVM.WORD_SIZE - 1];
+      let lengthByte = data[EvmUtils.WORD_SIZE - 1];
 
       if (lengthByte % 2 == 0) {
         // string lives in word, length is last byte / 2
@@ -256,7 +257,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
         }}, info);
 
       } else {
-        let lengthAsBN: BN = CodecUtils.Conversion.toBN(data).subn(1).divn(2);
+        let lengthAsBN: BN = ConversionUtils.toBN(data).subn(1).divn(2);
         try {
           length = lengthAsBN.toNumber();
         }
@@ -412,7 +413,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
                   path: baseSlot,
                   offset: new BN(valueSize.words - 1)
                 },
-                index: CodecUtils.EVM.WORD_SIZE - 1
+                index: EvmUtils.WORD_SIZE - 1
               }
             }
           };
@@ -427,7 +428,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
                   path: baseSlot,
                   offset: new BN(0)
                 },
-                index: CodecUtils.EVM.WORD_SIZE - valueSize.bytes
+                index: EvmUtils.WORD_SIZE - valueSize.bytes
               },
               to: {
                 slot: {
@@ -435,7 +436,7 @@ export function* decodeStorageReference(dataType: Types.ReferenceType, pointer: 
                   path: baseSlot,
                   offset: new BN(0)
                 },
-                index: CodecUtils.EVM.WORD_SIZE - 1
+                index: EvmUtils.WORD_SIZE - 1
               }
             }
           };

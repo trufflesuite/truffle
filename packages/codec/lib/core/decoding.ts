@@ -7,8 +7,12 @@ import * as Pointer from "@truffle/codec/pointer/types";
 import * as Allocation from "@truffle/codec/allocate/types";
 import * as Decoding from "@truffle/codec/decode/types";
 import * as Evm from "@truffle/codec/evm";
-import * as CodecUtils from "@truffle/codec/utils";
-import { MakeType, abifyType, abifyResult } from "@truffle/codec/utils";
+import { abifyType, abifyResult } from "@truffle/codec/utils/abify";
+import * as AbiUtils from "@truffle/codec/utils/abi";
+import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as ContextUtils from "@truffle/codec/utils/contexts";
+import * as EvmUtils from "@truffle/codec/utils/evm";
+import * as MakeType from "@truffle/codec/utils/maketype";
 import { Values } from "@truffle/codec/format";
 import { StopDecodingError } from "@truffle/codec/decode/errors";
 import { encodeAbi, encodeTupleAbi } from "@truffle/codec/encode/abi";
@@ -28,12 +32,12 @@ export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<Decoding.Dec
     return {
       kind: "unknown" as const,
       decodingMode: "full" as const,
-      data: CodecUtils.Conversion.toHexString(info.state.calldata)
+      data: ConversionUtils.toHexString(info.state.calldata)
     }
   }
   const compiler = context.compiler;
   const contextHash = context.context;
-  const contractType = CodecUtils.ContextUtils.contextToType(context);
+  const contractType = ContextUtils.contextToType(context);
   const isConstructor: boolean = context.isConstructor;
   const allocations = info.allocations.calldata;
   let allocation: Allocation.CalldataAllocation;
@@ -47,19 +51,19 @@ export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<Decoding.Dec
     let rawSelector = yield* read(
       { location: "calldata",
         start: 0,
-        length: CodecUtils.EVM.SELECTOR_SIZE
+        length: EvmUtils.SELECTOR_SIZE
       },
       info.state
     );
-    selector = CodecUtils.Conversion.toHexString(rawSelector);
+    selector = ConversionUtils.toHexString(rawSelector);
     allocation = allocations.functionAllocations[contextHash][selector];
   }
   if(allocation === undefined) {
     return {
       kind: "message" as const,
       class: contractType,
-      abi: context.hasFallback ? CodecUtils.AbiUtils.fallbackAbiForPayability(context.payable) : null,
-      data: CodecUtils.Conversion.toHexString(info.state.calldata),
+      abi: context.hasFallback ? AbiUtils.fallbackAbiForPayability(context.payable) : null,
+      data: ConversionUtils.toHexString(info.state.calldata),
       decodingMode: "full" as const,
     };
   }
@@ -124,7 +128,7 @@ export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<Decoding.Dec
       class: contractType,
       arguments: decodedArguments,
       abi: <AbiTypes.ConstructorAbiEntry> allocation.abi, //we know it's a constructor, but typescript doesn't
-      bytecode: CodecUtils.Conversion.toHexString(info.state.calldata.slice(0, allocation.offset)),
+      bytecode: ConversionUtils.toHexString(info.state.calldata.slice(0, allocation.offset)),
       decodingMode
     };
   }
@@ -159,7 +163,7 @@ export function* decodeEvent(info: Evm.Types.EvmInfo, address: string, targetNam
       },
       info.state
     );
-    selector = CodecUtils.Conversion.toHexString(rawSelector);
+    selector = ConversionUtils.toHexString(rawSelector);
     ({ contract: contractAllocations, library: libraryAllocations } = allocations[topicsCount].bySelector[selector] || {contract: {}, library: {}});
   }
   else {
@@ -175,8 +179,8 @@ export function* decodeEvent(info: Evm.Types.EvmInfo, address: string, targetNam
     type: "code",
     address
   };
-  const codeAsHex = CodecUtils.Conversion.toHexString(codeBytes);
-  const contractContext = CodecUtils.ContextUtils.findDecoderContext(info.contexts, codeAsHex);
+  const codeAsHex = ConversionUtils.toHexString(codeBytes);
+  const contractContext = ContextUtils.findDecoderContext(info.contexts, codeAsHex);
   let possibleContractAllocations: Allocation.EventAllocation[]; //excludes anonymous events
   let possibleContractAnonymousAllocations: Allocation.EventAllocation[];
   if(contractContext) {
@@ -211,7 +215,7 @@ export function* decodeEvent(info: Evm.Types.EvmInfo, address: string, targetNam
     let decodingMode: Decoding.DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     const contextHash = allocation.contextHash;
     const attemptContext = info.contexts[contextHash];
-    const contractType = CodecUtils.ContextUtils.contextToType(attemptContext);
+    const contractType = ContextUtils.contextToType(attemptContext);
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: Decoding.AbiArgument[] = [];
     for(const argumentAllocation of allocation.arguments) {
@@ -284,7 +288,7 @@ export function* decodeEvent(info: Evm.Types.EvmInfo, address: string, targetNam
     const reEncodedData = encodeTupleAbi(nonIndexedValues, info.allocations.abi);
     const encodedData = info.state.eventdata; //again, not great to read this directly, but oh well
     //are they equal?
-    if(!CodecUtils.EVM.equalData(reEncodedData, encodedData)) {
+    if(!EvmUtils.equalData(reEncodedData, encodedData)) {
       //if not, this allocation doesn't work
       debug("rejected due to [non-indexed] mismatch");
       continue;
@@ -303,7 +307,7 @@ export function* decodeEvent(info: Evm.Types.EvmInfo, address: string, targetNam
     const selectorAdjustment = allocation.anonymous ? 0 : 1;
     for(let i = 0; i < reEncodedTopics.length; i++) {
       debug("encodedTopics[i]: %O", encodedTopics[i]);
-      if(!CodecUtils.EVM.equalData(reEncodedTopics[i], encodedTopics[i + selectorAdjustment])) {
+      if(!EvmUtils.equalData(reEncodedTopics[i], encodedTopics[i + selectorAdjustment])) {
         debug("rejected due to indexed mismatch");
         continue allocationAttempts;
       }

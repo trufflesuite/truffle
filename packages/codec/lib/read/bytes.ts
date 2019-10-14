@@ -1,4 +1,4 @@
-import * as CodecUtils from "@truffle/codec/utils";
+import { WORD_SIZE } from "@truffle/codec/utils/evm";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
 /**
@@ -11,7 +11,7 @@ import { DecodingError } from "@truffle/codec/decode/errors";
  * @return {BN}
  */
 export function read(memory: Uint8Array, offset: number) {
-  return readBytes(memory, offset, CodecUtils.EVM.WORD_SIZE);
+  return readBytes(memory, offset, WORD_SIZE);
 }
 
 /**

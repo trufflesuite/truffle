@@ -1,7 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:constant");
 
-import * as CodecUtils from "@truffle/codec/utils";
+import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as EvmUtils from "@truffle/codec/utils/evm";
 import { Types, Values } from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import decodeValue from "./value";
@@ -34,12 +35,12 @@ export default function* decodeConstant(dataType: Types.Type, pointer: Pointer.C
       };
     }
     //not bothering to check padding; shouldn't be necessary
-    let bytes = word.slice(CodecUtils.EVM.WORD_SIZE - size);
+    let bytes = word.slice(EvmUtils.WORD_SIZE - size);
     return {
       type: dataType,
       kind: "value" as const,
       value: {
-        asHex: CodecUtils.Conversion.toHexString(bytes)
+        asHex: ConversionUtils.toHexString(bytes)
       }
     }; //we'll skip including a raw value, as that would be meaningless
   }

@@ -3,7 +3,8 @@ const debug = debugModule("codec:decode:abi");
 
 import BN from "bn.js";
 import read from "@truffle/codec/read";
-import * as CodecUtils from "@truffle/codec/utils";
+import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as EvmUtils from "@truffle/codec/utils/evm";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
@@ -71,7 +72,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
     };
   }
 
-  let rawValueAsBN = CodecUtils.Conversion.toBN(rawValue);
+  let rawValueAsBN = ConversionUtils.toBN(rawValue);
   let rawValueAsNumber: number;
   try {
     rawValueAsNumber = rawValueAsBN.toNumber();
@@ -128,7 +129,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
         rawLength = yield* read({
           location,
           start: startPosition,
-          length: CodecUtils.EVM.WORD_SIZE
+          length: EvmUtils.WORD_SIZE
         }, state);
       }
       catch(error) {
@@ -141,7 +142,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
           error: (<DecodingError>error).error
         };
       }
-      lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
+      lengthAsBN = ConversionUtils.toBN(rawLength);
       if(strict && lengthAsBN.gtn(state[location].length)) {
         //you may notice that the comparison is a bit crude; that's OK, this is
         //just to prevent huge numbers from DOSing us, other errors will still
@@ -172,7 +173,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
 
       let childPointer: Pointer.AbiDataPointer = {
         location,
-        start: startPosition + CodecUtils.EVM.WORD_SIZE,
+        start: startPosition + EvmUtils.WORD_SIZE,
         length
       }
 
@@ -187,7 +188,7 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
             rawLength = yield* read({
               location,
               start: startPosition,
-              length: CodecUtils.EVM.WORD_SIZE
+              length: EvmUtils.WORD_SIZE
             }, state);
           }
           catch(error) { //error: DecodingError
@@ -200,8 +201,8 @@ export function* decodeAbiReferenceByAddress(dataType: Types.ReferenceType | Typ
               error: (<DecodingError>error).error
             };
           }
-          lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
-          startPosition += CodecUtils.EVM.WORD_SIZE; //increment startPosition
+          lengthAsBN = ConversionUtils.toBN(rawLength);
+          startPosition += EvmUtils.WORD_SIZE; //increment startPosition
           //to next word, as first word was used for length
           break;
         case "static":

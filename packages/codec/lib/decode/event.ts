@@ -4,7 +4,7 @@ const debug = debugModule("codec:decode:event");
 import decodeValue from "./value";
 import read from "@truffle/codec/read";
 import { Types, Values, Errors } from "@truffle/codec/format";
-import { Conversion as ConversionUtils } from "@truffle/codec/utils";
+import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Pointer from "@truffle/codec/pointer/types";
 import * as Decoding from "./types";

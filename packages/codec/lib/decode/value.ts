@@ -2,8 +2,10 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:value");
 
 import read from "@truffle/codec/read";
-import * as CodecUtils from "@truffle/codec/utils";
+import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as ContextUtils from "@truffle/codec/utils/contexts";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
+import * as EvmUtils from "@truffle/codec/utils/evm";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import utf8 from "utf8";
 import * as Contexts from "@truffle/codec/contexts/types";
@@ -40,7 +42,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
   switch(dataType.typeClass) {
 
     case "bool": {
-      const numeric = CodecUtils.Conversion.toBN(bytes);
+      const numeric = ConversionUtils.toBN(bytes);
       if(numeric.eqn(0)) {
         return {
           type: dataType,
@@ -76,7 +78,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
       if(!permissivePadding && !checkPaddingLeft(bytes, dataType.bits/8)) {
         let error = {
           kind: "UintPaddingError" as const,
-          raw: CodecUtils.Conversion.toHexString(bytes)
+          raw: ConversionUtils.toHexString(bytes)
         };
         if(strict) {
           throw new StopDecodingError(error);
@@ -93,8 +95,8 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
         type: dataType,
         kind: "value" as const,
         value: {
-          asBN: CodecUtils.Conversion.toBN(bytes),
-          rawAsBN: CodecUtils.Conversion.toBN(rawBytes)
+          asBN: ConversionUtils.toBN(bytes),
+          rawAsBN: ConversionUtils.toBN(rawBytes)
         }
       };
     case "int":
@@ -102,7 +104,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
       if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
         let error = {
           kind: "IntPaddingError" as const,
-          raw: CodecUtils.Conversion.toHexString(bytes)
+          raw: ConversionUtils.toHexString(bytes)
         };
         if(strict) {
           throw new StopDecodingError(error);
@@ -119,16 +121,16 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
         type: dataType,
         kind: "value" as const,
         value: {
-          asBN: CodecUtils.Conversion.toSignedBN(bytes),
-          rawAsBN: CodecUtils.Conversion.toSignedBN(rawBytes)
+          asBN: ConversionUtils.toSignedBN(bytes),
+          rawAsBN: ConversionUtils.toSignedBN(rawBytes)
         }
       };
 
     case "address":
-      if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
+      if(!permissivePadding && !checkPaddingLeft(bytes, EvmUtils.ADDRESS_SIZE)) {
         let error = {
           kind: "AddressPaddingError" as const,
-          raw: CodecUtils.Conversion.toHexString(bytes)
+          raw: ConversionUtils.toHexString(bytes)
         };
         if(strict) {
           throw new StopDecodingError(error);
@@ -143,16 +145,16 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
         type: dataType,
         kind: "value" as const,
         value: {
-          asAddress: CodecUtils.Conversion.toAddress(bytes),
-          rawAsHex: CodecUtils.Conversion.toHexString(rawBytes)
+          asAddress: ConversionUtils.toAddress(bytes),
+          rawAsHex: ConversionUtils.toHexString(rawBytes)
         }
       };
 
     case "contract":
-      if(!permissivePadding && !checkPaddingLeft(bytes, CodecUtils.EVM.ADDRESS_SIZE)) {
+      if(!permissivePadding && !checkPaddingLeft(bytes, EvmUtils.ADDRESS_SIZE)) {
         let error = {
           kind: "ContractPaddingError" as const,
-          raw: CodecUtils.Conversion.toHexString(bytes)
+          raw: ConversionUtils.toHexString(bytes)
         };
         if(strict) {
           throw new StopDecodingError(error);
@@ -178,7 +180,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
           if(!permissivePadding && !checkPaddingRight(bytes, dataType.length)) {
             let error = {
               kind: "BytesPaddingError" as const,
-              raw: CodecUtils.Conversion.toHexString(bytes)
+              raw: ConversionUtils.toHexString(bytes)
             };
             if(strict) {
               throw new StopDecodingError(error);
@@ -195,8 +197,8 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
             type: dataType,
             kind: "value" as const,
             value: {
-              asHex: CodecUtils.Conversion.toHexString(bytes),
-              rawAsHex: CodecUtils.Conversion.toHexString(rawBytes)
+              asHex: ConversionUtils.toHexString(bytes),
+              rawAsHex: ConversionUtils.toHexString(rawBytes)
             }
           };
         case "dynamic":
@@ -205,7 +207,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
             type: dataType,
             kind: "value" as const,
             value: {
-              asHex: CodecUtils.Conversion.toHexString(bytes),
+              asHex: ConversionUtils.toHexString(bytes),
             }
           };
       }
@@ -221,10 +223,10 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
     case "function":
       switch(dataType.visibility) {
         case "external":
-          if(!checkPaddingRight(bytes, CodecUtils.EVM.ADDRESS_SIZE + CodecUtils.EVM.SELECTOR_SIZE)) {
+          if(!checkPaddingRight(bytes, EvmUtils.ADDRESS_SIZE + EvmUtils.SELECTOR_SIZE)) {
             let error = {
               kind: "FunctionExternalNonStackPaddingError" as const,
-              raw: CodecUtils.Conversion.toHexString(bytes)
+              raw: ConversionUtils.toHexString(bytes)
             };
             if(strict) {
               throw new StopDecodingError(error);
@@ -235,8 +237,8 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
               error
             };
           }
-          const address = bytes.slice(0, CodecUtils.EVM.ADDRESS_SIZE);
-          const selector = bytes.slice(CodecUtils.EVM.ADDRESS_SIZE, CodecUtils.EVM.ADDRESS_SIZE + CodecUtils.EVM.SELECTOR_SIZE);
+          const address = bytes.slice(0, EvmUtils.ADDRESS_SIZE);
+          const selector = bytes.slice(EvmUtils.ADDRESS_SIZE, EvmUtils.ADDRESS_SIZE + EvmUtils.SELECTOR_SIZE);
           return {
             type: dataType,
             kind: "value" as const,
@@ -250,24 +252,24 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
               { kind: "InternalFunctionInABIError" as const }
             );
           }
-          if(!checkPaddingLeft(bytes, 2 * CodecUtils.EVM.PC_SIZE)) {
+          if(!checkPaddingLeft(bytes, 2 * EvmUtils.PC_SIZE)) {
             return {
               type: dataType,
               kind: "error" as const,
               error: {
                 kind: "FunctionInternalPaddingError" as const,
-                raw: CodecUtils.Conversion.toHexString(bytes)
+                raw: ConversionUtils.toHexString(bytes)
               }
             };
           }
-          const deployedPc = bytes.slice(-CodecUtils.EVM.PC_SIZE);
-          const constructorPc = bytes.slice(-CodecUtils.EVM.PC_SIZE * 2, -CodecUtils.EVM.PC_SIZE);
+          const deployedPc = bytes.slice(-EvmUtils.PC_SIZE);
+          const constructorPc = bytes.slice(-EvmUtils.PC_SIZE * 2, -EvmUtils.PC_SIZE);
           return decodeInternalFunction(dataType, deployedPc, constructorPc, info);
       }
       break; //to satisfy TypeScript
 
     case "enum": {
-      const numeric = CodecUtils.Conversion.toBN(bytes);
+      const numeric = ConversionUtils.toBN(bytes);
       const fullType = <Types.EnumType>TypeUtils.fullType(dataType, info.userDefinedTypes);
       if(!fullType.options) {
         let error = {
@@ -333,7 +335,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
       if(!permissivePadding && !checkPaddingSigned(bytes, dataType.bits/8)) {
         let error = {
           kind: "FixedPaddingError" as const,
-          raw: CodecUtils.Conversion.toHexString(bytes)
+          raw: ConversionUtils.toHexString(bytes)
         };
         if(strict) {
           throw new StopDecodingError(error);
@@ -346,10 +348,10 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
       bytes = bytes.slice(-dataType.bits/8);
-      let asBN = CodecUtils.Conversion.toSignedBN(bytes);
-      let rawAsBN = CodecUtils.Conversion.toSignedBN(rawBytes);
-      let asBig = CodecUtils.Conversion.shiftBigDown(CodecUtils.Conversion.toBig(asBN), dataType.places);
-      let rawAsBig = CodecUtils.Conversion.shiftBigDown(CodecUtils.Conversion.toBig(rawAsBN), dataType.places);
+      let asBN = ConversionUtils.toSignedBN(bytes);
+      let rawAsBN = ConversionUtils.toSignedBN(rawBytes);
+      let asBig = ConversionUtils.shiftBigDown(ConversionUtils.toBig(asBN), dataType.places);
+      let rawAsBig = ConversionUtils.shiftBigDown(ConversionUtils.toBig(rawAsBN), dataType.places);
       return {
         type: dataType,
         kind: "value" as const,
@@ -364,7 +366,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
       if(!permissivePadding && !checkPaddingLeft(bytes, dataType.bits/8)) {
         let error = {
           kind: "UfixedPaddingError" as const,
-          raw: CodecUtils.Conversion.toHexString(bytes)
+          raw: ConversionUtils.toHexString(bytes)
         };
         if(strict) {
           throw new StopDecodingError(error);
@@ -377,10 +379,10 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
       bytes = bytes.slice(-dataType.bits/8);
-      let asBN = CodecUtils.Conversion.toBN(bytes);
-      let rawAsBN = CodecUtils.Conversion.toBN(rawBytes);
-      let asBig = CodecUtils.Conversion.shiftBigDown(CodecUtils.Conversion.toBig(asBN), dataType.places);
-      let rawAsBig = CodecUtils.Conversion.shiftBigDown(CodecUtils.Conversion.toBig(rawAsBN), dataType.places);
+      let asBN = ConversionUtils.toBN(bytes);
+      let rawAsBN = ConversionUtils.toBN(rawBytes);
+      let asBig = ConversionUtils.shiftBigDown(ConversionUtils.toBig(asBN), dataType.places);
+      let rawAsBig = ConversionUtils.shiftBigDown(ConversionUtils.toBig(rawAsBN), dataType.places);
       return {
         type: dataType,
         kind: "value" as const,
@@ -412,7 +414,7 @@ export function decodeString(bytes: Uint8Array): Values.StringValueInfo {
   catch(_) {
     //we're going to ignore the precise error and just assume it's because
     //the string was malformed (what else could it be?)
-    let hexString = CodecUtils.Conversion.toHexString(bytes);
+    let hexString = ConversionUtils.toHexString(bytes);
     return {
       kind: "malformed" as const,
       asHex: hexString
@@ -426,14 +428,14 @@ export function* decodeContract(addressBytes: Uint8Array, info: Evm.Types.EvmInf
 }
 
 function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, ContractInfoAndContext, Uint8Array> {
-  let address = CodecUtils.Conversion.toAddress(addressBytes);
-  let rawAddress = CodecUtils.Conversion.toHexString(addressBytes);
+  let address = ConversionUtils.toAddress(addressBytes);
+  let rawAddress = ConversionUtils.toHexString(addressBytes);
   let codeBytes: Uint8Array = yield {
     type: "code" as const,
     address
   };
-  let code = CodecUtils.Conversion.toHexString(codeBytes);
-  let context = CodecUtils.ContextUtils.findDecoderContext(info.contexts, code);
+  let code = ConversionUtils.toHexString(codeBytes);
+  let context = ContextUtils.findDecoderContext(info.contexts, code);
   if(context !== null) {
     return {
       context,
@@ -441,7 +443,7 @@ function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.Types.Evm
         kind: "known" as const,
         address,
         rawAddress,
-        class: CodecUtils.ContextUtils.contextToType(context)
+        class: ContextUtils.contextToType(context)
       }
     };
   }
@@ -461,7 +463,7 @@ function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.Types.Evm
 //NOTE this again returns a FunctionExternalValueInfo, not a FunctionExternalResult
 export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.FunctionExternalValueInfo, Uint8Array> {
   let {contractInfo: contract, context} = yield* decodeContractAndContext(addressBytes, info);
-  let selector = CodecUtils.Conversion.toHexString(selectorBytes);
+  let selector = ConversionUtils.toHexString(selectorBytes);
   if(contract.kind === "unknown") {
     return {
       kind: "unknown" as const,
@@ -490,9 +492,9 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
 //this one works a bit differently -- in order to handle errors, it *does* return a FunctionInternalResult
 //also note, I haven't put the same sort of error-handling in this one since it's only intended to run with full info (for now, anyway)
 export function decodeInternalFunction(dataType: Types.FunctionInternalType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: Evm.Types.EvmInfo): Values.FunctionInternalResult {
-  let deployedPc: number = CodecUtils.Conversion.toBN(deployedPcBytes).toNumber();
-  let constructorPc: number = CodecUtils.Conversion.toBN(constructorPcBytes).toNumber();
-  let context: Types.ContractType = CodecUtils.ContextUtils.contextToType(info.currentContext);
+  let deployedPc: number = ConversionUtils.toBN(deployedPcBytes).toNumber();
+  let constructorPc: number = ConversionUtils.toBN(constructorPcBytes).toNumber();
+  let context: Types.ContractType = ContextUtils.contextToType(info.currentContext);
   //before anything else: do we even have an internal functions table?
   //if not, we'll just return the info we have without really attemting to decode
   if(!info.internalFunctionsTable) {

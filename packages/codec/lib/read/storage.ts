@@ -1,7 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:read:storage");
 
-import * as CodecUtils from "@truffle/codec/utils";
+import * as EvmUtils from "@truffle/codec/utils/evm";
+import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import { slotAddressPrintout } from "@truffle/codec/utils/errors";
 import * as Storage from "@truffle/codec/storage";
 import * as Decoding from "@truffle/codec/decode/types";
@@ -19,9 +20,9 @@ export function* read(storage: Evm.Types.WordMapping, slot: Storage.Types.Slot):
   debug("Slot printout: %s", slotAddressPrintout(slot));
   const address: BN = Storage.Utils.slotAddress(slot);
 
-  // debug("reading slot: %o", CodecUtils.toHexString(address));
+  // debug("reading slot: %o", ConversionUtils.toHexString(address));
 
-  const hexAddress = CodecUtils.Conversion.toHexString(address, CodecUtils.EVM.WORD_SIZE);
+  const hexAddress = ConversionUtils.toHexString(address, EvmUtils.WORD_SIZE);
   let word: Uint8Array = storage[hexAddress];
 
   //if we can't find the word in the map, we place a request to the invoker to supply it
@@ -68,10 +69,10 @@ export function* readRange(storage: Evm.Types.WordMapping, range: Storage.Types.
       slot: {
         path: from.slot.path || undefined,
         offset: from.slot.offset.addn(
-          Math.floor((from.index + length - 1) / CodecUtils.EVM.WORD_SIZE)
+          Math.floor((from.index + length - 1) / EvmUtils.WORD_SIZE)
         )
       },
-      index: (from.index + length - 1) % CodecUtils.EVM.WORD_SIZE
+      index: (from.index + length - 1) % EvmUtils.WORD_SIZE
     };
   }
 
@@ -89,18 +90,18 @@ export function* readRange(storage: Evm.Types.WordMapping, range: Storage.Types.
     });
   }
 
-  let data = new Uint8Array(totalWords * CodecUtils.EVM.WORD_SIZE);
+  let data = new Uint8Array(totalWords * EvmUtils.WORD_SIZE);
 
   for (let i = 0; i < totalWords; i++) {
     let offset = from.slot.offset.addn(i);
     const word = yield* read(storage, { ...from.slot, offset });
     if (typeof word !== "undefined") {
-      data.set(word, i * CodecUtils.EVM.WORD_SIZE);
+      data.set(word, i * EvmUtils.WORD_SIZE);
     }
   }
   debug("words %o", data);
 
-  data = data.slice(from.index, (totalWords - 1) * CodecUtils.EVM.WORD_SIZE + to.index + 1);
+  data = data.slice(from.index, (totalWords - 1) * EvmUtils.WORD_SIZE + to.index + 1);
 
   debug("data: %o", data);
 
