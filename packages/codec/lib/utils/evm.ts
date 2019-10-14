@@ -4,15 +4,13 @@ const debug = debugModule("codec:utils:evm");
 import BN from "bn.js";
 import Web3 from "web3";
 import * as ConversionUtils from "./conversion";
-import * as Constants from "./constants";
 
-//the following constants are re-exported from EVM for convenience
-export const WORD_SIZE = Constants.WORD_SIZE;
-export const ADDRESS_SIZE = Constants.ADDRESS_SIZE;
-export const SELECTOR_SIZE = Constants.SELECTOR_SIZE;
-export const PC_SIZE = Constants.PC_SIZE;
-export const MAX_WORD = Constants.MAX_WORD;
-export const ZERO_ADDRESS = Constants.ZERO_ADDRESS;
+export const WORD_SIZE = 0x20;
+export const ADDRESS_SIZE = 20;
+export const SELECTOR_SIZE = 4; //function selectors, not event selectors
+export const PC_SIZE = 4;
+export const MAX_WORD = new BN(-1).toTwos(WORD_SIZE * 8);
+export const ZERO_ADDRESS = "0x" + "00".repeat(ADDRESS_SIZE);
 
 //beware of using this for generic strings! (it's fine for bytestrings, or
 //strings representing numbers) if you want to use this on a generic string,
@@ -62,25 +60,25 @@ export function toAddress(bytes: Uint8Array | string): string {
     if (hex.startsWith("0x")) {
       hex = hex.slice(2);
     }
-    if(hex.length < 2 * Constants.ADDRESS_SIZE)
+    if(hex.length < 2 * ADDRESS_SIZE)
     {
-      hex = hex.padStart(2 * Constants.ADDRESS_SIZE, "0");
+      hex = hex.padStart(2 * ADDRESS_SIZE, "0");
     }
-    if(hex.length > 2 * Constants.ADDRESS_SIZE)
+    if(hex.length > 2 * ADDRESS_SIZE)
     {
-      hex = "0x" + hex.slice(hex.length - 2 * Constants.ADDRESS_SIZE);
+      hex = "0x" + hex.slice(hex.length - 2 * ADDRESS_SIZE);
     }
     return Web3.utils.toChecksumAddress(hex);
   }
   //otherwise, we're in the Uint8Array case, which we can't fully handle ourself
 
   //truncate *on left* to 20 bytes
-  if(bytes.length > Constants.ADDRESS_SIZE) {
-    bytes = bytes.slice(bytes.length - Constants.ADDRESS_SIZE, bytes.length);
+  if(bytes.length > ADDRESS_SIZE) {
+    bytes = bytes.slice(bytes.length - ADDRESS_SIZE, bytes.length);
   }
 
   //now, convert to hex string and apply checksum case that second argument
   //(which ensures it's padded to 20 bytes) shouldn't actually ever be
   //needed, but I'll be safe and include it
-  return Web3.utils.toChecksumAddress(ConversionUtils.toHexString(bytes, Constants.ADDRESS_SIZE));
+  return Web3.utils.toChecksumAddress(ConversionUtils.toHexString(bytes, ADDRESS_SIZE));
 }
