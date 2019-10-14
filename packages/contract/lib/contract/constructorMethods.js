@@ -63,7 +63,10 @@ module.exports = Contract => ({
       await this.detectNetwork();
       utils.checkNetworkArtifactMatch(this);
       utils.checkDeployment(this);
-      return new this(this.address);
+      const contractInstance = new this.web3.eth.Contract(this.abi);
+      contractInstance.options.address = this.address;
+      contractInstance.transactionHash = this.transactionHash;
+      return new this(contractInstance);
     } catch (error) {
       throw error;
     }
