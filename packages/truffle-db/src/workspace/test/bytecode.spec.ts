@@ -5,46 +5,44 @@ const { GetBytecode } = Query;
 const { AddBytecode } = Mutation;
 
 describe("Bytecode", () => {
-  it("adds bytecode", async () => {
-    const client = new WorkspaceClient();
+  let wsClient;
+  let expectedId;
+  let variables, addBytecodeResult;
 
-    const expectedId = generateId({ bytes: Migrations.bytecode });
+  beforeEach(async () => {
+    wsClient = new WorkspaceClient();
+    expectedId = generateId({ bytes: Migrations.bytecode });
+    variables = { bytes: Migrations.bytecode };
+    addBytecodeResult = await wsClient.execute(AddBytecode, { bytes: variables.bytes });
+  });
 
-    const variables = {
-      bytes: Migrations.bytecode
-    };
+  test ("can be added", async () => {
+    expect(addBytecodeResult).toHaveProperty("bytecodesAdd");
 
-    // add bytecode
-    {
-      const data = await client.execute(AddBytecode, { bytes: variables.bytes });
-      expect(data).toHaveProperty("bytecodesAdd");
+    const { bytecodesAdd } = addBytecodeResult;
+    expect(bytecodesAdd).toHaveProperty("bytecodes");
 
-      const { bytecodesAdd } = data;
-      expect(bytecodesAdd).toHaveProperty("bytecodes");
+    const { bytecodes } = bytecodesAdd;
+    expect(bytecodes).toHaveLength(1);
 
-      const { bytecodes } = bytecodesAdd;
-      expect(bytecodes).toHaveLength(1);
+    const bytecode = bytecodes[0];
+    expect(bytecode).toHaveProperty("id");
 
-      const bytecode = bytecodes[0];
-      expect(bytecode).toHaveProperty("id");
+    const { id } = bytecode;
+    expect(id).toEqual(expectedId);
+  });
 
-      const { id } = bytecode;
-      expect(id).toEqual(expectedId);
-    }
+  test("can be queried", async() =>{
+    const executionResult = await wsClient.execute(GetBytecode, { id: expectedId });
+    expect(executionResult).toHaveProperty("bytecode");
 
-    // ensure retrieved as matching
-    {
-      const data = await client.execute(GetBytecode, { id: expectedId });
-      expect(data).toHaveProperty("bytecode");
+    const { bytecode } = executionResult;
+    expect(bytecode).toHaveProperty("id");
+    expect(bytecode).toHaveProperty("bytes");
 
-      const { bytecode } = data;
-      expect(bytecode).toHaveProperty("id");
-      expect(bytecode).toHaveProperty("bytes");
-
-      const { id, bytes } = bytecode;
-      expect(id).toEqual(expectedId);
-      expect(bytes).toEqual(variables.bytes);
-    }
+    const { id, bytes } = bytecode;
+    expect(id).toEqual(expectedId);
+    expect(bytes).toEqual(variables.bytes);
   });
 });
 
