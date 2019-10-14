@@ -1,4 +1,6 @@
-export * from "./conversion";
+import * as Conversion from "./conversion";
+export { Conversion };
+
 export * from "./evm";
 export * from "./definition";
 export * from "./contexts";

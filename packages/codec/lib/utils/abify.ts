@@ -6,7 +6,7 @@ import * as TypeUtils from "./datatype";
 import * as Common from "@truffle/codec/common/types";
 import * as Decoding from "@truffle/codec/decode/types";
 import BN from "bn.js";
-import { Conversion as ConversionUtils } from "./conversion";
+import * as ConversionUtils from "./conversion";
 
 export function abifyType(dataType: Format.Types.Type, userDefinedTypes?: Format.Types.TypesById): Format.Types.Type | undefined {
   switch(dataType.typeClass) {

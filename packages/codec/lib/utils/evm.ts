@@ -3,7 +3,7 @@ const debug = debugModule("codec:utils:evm");
 
 import BN from "bn.js";
 import Web3 from "web3";
-import { Conversion as ConversionUtils } from "./conversion";
+import * as ConversionUtils from "./conversion";
 import * as Constants from "./constants";
 
 export namespace EVM {

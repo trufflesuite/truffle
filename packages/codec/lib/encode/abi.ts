@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:encode:abi");
 
 import { Values } from "@truffle/codec/format";
-import { Conversion as ConversionUtils } from "@truffle/codec/utils/conversion";
+import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import { EVM as EVMUtils } from "@truffle/codec/utils/evm";
 import * as Allocation from "@truffle/codec/allocate/types";
 import { abiSizeInfo } from "@truffle/codec/allocate/abi";

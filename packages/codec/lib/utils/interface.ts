@@ -1,6 +1,6 @@
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { AbiUtils } from "./abi";
-import { Conversion as ConversionUtils } from "./conversion";
+import * as ConversionUtils from "./conversion";
 import { EVM as EVMUtils } from "./evm";
 import * as Common from "@truffle/codec/common/types";
 import * as Ast from "@truffle/codec/ast/types";
