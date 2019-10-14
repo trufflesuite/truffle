@@ -4,13 +4,13 @@ import { Query } from './queries';
 const { GetContractNames } = Query;
 
 describe("ContractNames", () => {
-  it("queries contract names", async () => {
-    const client = new WorkspaceClient();
+  test("can be queried", async () => {
+    const wsClient = new WorkspaceClient();
 
-    const data = await client.execute(GetContractNames);
-    expect(data).toHaveProperty("contractNames");
+    const result = await wsClient.execute(GetContractNames);
+    expect(result).toHaveProperty("contractNames");
 
-    const { contractNames } = data;
+    const { contractNames } = result;
     expect(contractNames).toEqual([]);
   });
 });
