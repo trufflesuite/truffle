@@ -1133,6 +1133,14 @@
     bs58check "^2.1.2"
     buffer "^5.2.1"
 
+"@truffle/compile-common@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@truffle/compile-common/-/compile-common-0.1.0.tgz#0a41f7c428a833b1a773d290adef78333162db03"
+  integrity sha512-Tp0xk/wRfDQAlh7TviIyzapIhQfRGf97Z3+t8UhMH2EngjYKr7fV0Dou6ZGl3cYvc8iV8cSFrYrfox6cV0mPVg==
+  dependencies:
+    "@truffle/compile-solidity" "^4.2.8"
+    "@truffle/contract-sources" "^0.1.6"
+
 "@truffle/compile-solidity@^4.2.8":
   version "4.2.8"
   resolved "https://registry.yarnpkg.com/@truffle/compile-solidity/-/compile-solidity-4.2.8.tgz#92593180e8c61c3581cd40afa3f0366c2cdc8965"
