@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:format:abify");
 
 import * as Format from "@truffle/codec/format";
-import { TypeUtils } from "./datatype";
+import * as TypeUtils from "./datatype";
 import * as Common from "@truffle/codec/common/types";
 import * as Decoding from "@truffle/codec/decode/types";
 import BN from "bn.js";
