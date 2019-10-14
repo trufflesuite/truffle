@@ -1,7 +1,7 @@
 const debug = require("debug")("compile:new"); // eslint-disable-line no-unused-vars
-const path = require("path");
 const { promisify } = require("util");
 const expect = require("@truffle/expect");
+const Common = require("@truffle/compile-common");
 const findContracts = require("@truffle/contract-sources");
 const Config = require("@truffle/config");
 const Profiler = require("../profiler");
@@ -106,24 +106,7 @@ compile.with_dependencies = async function(options) {
   return await compile(allSources, options);
 };
 
-compile.display = function(paths, options) {
-  if (options.quiet !== true) {
-    if (!Array.isArray(paths)) {
-      paths = Object.keys(paths);
-    }
-
-    const blacklistRegex = /^truffle\//;
-
-    paths.sort().forEach(contract => {
-      if (path.isAbsolute(contract)) {
-        contract =
-          "." + path.sep + path.relative(options.working_directory, contract);
-      }
-      if (contract.match(blacklistRegex)) return;
-      options.logger.log("> Compiling " + contract);
-    });
-  }
-};
+compile.display = Common.display;
 
 compile.CompilerSupplier = CompilerSupplier;
 module.exports = compile;
