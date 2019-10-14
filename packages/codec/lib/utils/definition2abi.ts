@@ -4,7 +4,7 @@ const debug = debugModule("codec:utils:definition2abi");
 import * as Common from "@truffle/codec/common/types";
 import * as Ast from "@truffle/codec/ast/types";
 import * as AbiTypes from "@truffle/codec/abi/types";
-import { Definition } from "./definition";
+import * as Definition from "./definition";
 
 //the main function. just does some dispatch.
 //returns undefined on bad input

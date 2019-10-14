@@ -1,10 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:abi");
 
-import { AbiUtils } from "@truffle/codec/utils/abi";
+import * as AbiUtils from "@truffle/codec/utils/abi";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
-import { MakeType } from "@truffle/codec/utils/maketype";
-import { EVM } from "@truffle/codec/utils/evm";
+import * as MakeType from "@truffle/codec/utils/maketype";
+import * as EVM from "@truffle/codec/utils/evm";
 import { getterInputs } from "@truffle/codec/utils/definition2abi";
 import * as Common from "@truffle/codec/common/types";
 import * as Compiler from "@truffle/codec/compiler/types";

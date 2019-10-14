@@ -3,7 +3,7 @@ const debug = debugModule("codec:storage:utils");
 
 import BN from "bn.js";
 
-import { EVM as EVMUtils } from "@truffle/codec/utils/evm";
+import * as EVMUtils from "@truffle/codec/utils/evm";
 import { encodeMappingKey, mappingKeyAsHex } from "@truffle/codec/encode/key";
 
 import { StorageLength, Slot } from "./types";

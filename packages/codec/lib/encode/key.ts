@@ -3,7 +3,7 @@ const debug = debugModule("codec:encode:key");
 
 import { Values } from "@truffle/codec/format";
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
-import { EVM as EVMUtils } from "@truffle/codec/utils/evm";
+import * as EVMUtils from "@truffle/codec/utils/evm";
 import { stringToBytes } from "./abi";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
