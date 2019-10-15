@@ -9,13 +9,13 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.12",
+  "version": "0.1.14",
   "main": "index.js",
   "dependencies": {
-    "@truffle/artifactor": "^4.0.32",
+    "@truffle/artifactor": "^4.0.34",
     "@truffle/error": "^0.0.7",
     "@truffle/expect": "^0.0.11",
-    "@truffle/interface-adapter": "^0.2.6",
+    "@truffle/interface-adapter": "^0.2.7",
     "@truffle/resolver": "^5.0.17",
     "ganache-core": "2.7.0",
     "node-ipc": "^9.1.1",
