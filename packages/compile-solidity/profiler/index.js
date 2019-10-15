@@ -1,65 +1,13 @@
-// Compares .sol files to their .sol.js counterparts,
-// determines which .sol files have been updated.
-
 const path = require("path");
 const CompilerSupplier = require("../compilerSupplier");
 const expect = require("@truffle/expect");
 const findContracts = require("@truffle/contract-sources");
 const semver = require("semver");
 const debug = require("debug")("compile:profiler");
-const { readAndParseArtifactFiles } = require("./readAndParseArtifactFiles");
-const {
-  minimumUpdatedTimePerSource
-} = require("./minimumUpdatedTimePerSource");
-const { findUpdatedFiles } = require("./findUpdatedFiles");
 const { isExplicitlyRelative } = require("./isExplicitlyRelative");
 const { getImports } = require("./getImports");
 
 module.exports = {
-  async updated(options, callback) {
-    const callbackPassed = typeof callback === "function";
-    expect.options(options, ["resolver"]);
-
-    const { contracts_directory, contracts_build_directory } = options;
-
-    async function getFiles() {
-      if (options.files) {
-        return options.files;
-      } else {
-        return findContracts(contracts_directory);
-      }
-    }
-
-    let sourceFilesArtifacts = {};
-    let sourceFilesArtifactsUpdatedTimes = {};
-
-    try {
-      const sourceFiles = await getFiles();
-      sourceFilesArtifacts = readAndParseArtifactFiles(
-        sourceFiles,
-        contracts_build_directory
-      );
-      sourceFilesArtifactsUpdatedTimes = minimumUpdatedTimePerSource(
-        sourceFilesArtifacts
-      );
-      const updatedFiles = findUpdatedFiles(
-        sourceFilesArtifacts,
-        sourceFilesArtifactsUpdatedTimes
-      );
-      if (callbackPassed) {
-        callback(null, updatedFiles);
-      } else {
-        return updatedFiles;
-      }
-    } catch (error) {
-      if (callbackPassed) {
-        callback(error);
-      } else {
-        throw error;
-      }
-    }
-  },
-
   // Returns the minimal set of sources to pass to solc as compilations targets,
   // as well as the complete set of sources so solc can resolve the comp targets' imports.
   required_sources(options, callback) {
