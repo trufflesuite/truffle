@@ -175,8 +175,11 @@ class HDWalletProvider {
     this.engine.start(); // Required by the provider engine.
   }
 
-  public send(payload: JSONRPCRequestPayload): void {
-    return this.engine.send.apply(this.engine, [payload]);
+  public send(
+    payload: JSONRPCRequestPayload,
+    callback: (error: null | Error, response: JSONRPCResponsePayload) => void
+  ): void {
+    return this.engine.send.apply(this.engine, [payload, callback]);
   }
 
   public sendAsync(
