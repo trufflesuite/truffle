@@ -6,8 +6,6 @@ import * as Types from "./types";
 //so let's define those types too
 export type ElementaryValue = UintValue | IntValue | BoolValue
   | BytesValue | AddressValue | StringValue | FixedValue | UfixedValue;
-//we don't include FixedValue or UfixedValue because those
-//aren't implemented yet
 export type BytesValue = BytesStaticValue | BytesDynamicValue;
 
 
@@ -45,7 +43,10 @@ export interface BytesStaticValue {
   type: Types.BytesTypeStatic;
   kind: "value";
   value: {
-    asHex: string; //should be hex-formatted, with leading "0x"
+    /**
+     * should be hex-formatted, with leading "0x"
+     */
+    asHex: string;
     rawAsHex?: string;
   };
 }
@@ -55,7 +56,10 @@ export interface BytesDynamicValue {
   type: Types.BytesTypeDynamic;
   kind: "value";
   value: {
-    asHex: string; //should be hex-formatted, with leading "0x"
+    /**
+     * should be hex-formatted, with leading "0x"
+     */
+    asHex: string;
   };
 }
 
@@ -64,7 +68,13 @@ export interface AddressValue {
   type: Types.AddressType;
   kind: "value";
   value: {
-    asAddress: string; //should have 0x and be checksum-cased
+    /**
+     * should have leading "0x" and be checksum-cased
+     */
+    asAddress: string;
+    /**
+     * just a hex string, so no checksum
+     */
     rawAsHex?: string;
   }
 }
@@ -77,18 +87,28 @@ export interface StringValue {
   value: StringValueInfo;
 }
 
-//these come in two types: valid strings and malformed strings
+
+/**
+ * these come in two types: valid strings and malformed strings
+ */
 export type StringValueInfo = StringValueInfoValid | StringValueInfoMalformed;
 
-//valid strings
+/**
+ * valid strings
+ */
 export interface StringValueInfoValid {
   kind: "valid";
   asString: string;
 }
 
-//malformed strings
+/**
+ * malformed strings
+ */
 export interface StringValueInfoMalformed {
   kind: "malformed";
+  /**
+   * should be hex-formatted, with leading "0x"
+   */
   asHex: string;
 }
 

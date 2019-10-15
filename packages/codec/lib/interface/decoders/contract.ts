@@ -25,6 +25,10 @@ import { isWordsLength, equalSlots } from "@truffle/codec/utils/storage";
 import { StoragePointer } from "@truffle/codec/types/pointer";
 import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "@truffle/codec/interface/errors";
 
+/**
+ * The ContractDecoder class.  Spawns the ContractInstanceDecoder class.
+ * Also, decodes transactions and logs.  See below for a method listing.
+ */
 export default class ContractDecoder {
 
   private web3: Web3;
@@ -79,53 +83,101 @@ export default class ContractDecoder {
     }
   }
 
+  /**
+   * @hidden
+   */
   public async init(): Promise<void> {
     this.contractNetwork = (await this.web3.eth.net.getId()).toString();
   }
 
+  /**
+   * Constructs a contract instance decoder for a given instance of this contract.
+   * @param address The address of the contract instance decode.  If left out, it will be autodetected.
+   */
   public async forInstance(address?: string): Promise<ContractInstanceDecoder> {
     let instanceDecoder = new ContractInstanceDecoder(this, address);
     await instanceDecoder.init();
     return instanceDecoder;
   }
 
+  /**
+   * Takes a Web3 Transaction object and returns a copy of that object but with
+   * an additional decoding field.  This field holds a CalldataDecoding; see the
+   * documentation on DecodedTransaction for more.
+   * @param transaction The transaction to be decoded.
+   */
   public async decodeTransaction(transaction: Transaction): Promise<DecoderTypes.DecodedTransaction> {
     return await this.wireDecoder.decodeTransaction(transaction);
   }
 
+  /**
+   * Takes a Web3 Log object and returns a copy of that object but with
+   * an additional decodings field.  This field holds an array of LogDecodings;
+   * see the documentation on DecodedLog for more.
+   * @param log The log to be decoded.
+   */
   public async decodeLog(log: Log): Promise<DecoderTypes.DecodedLog> {
     return await this.wireDecoder.decodeLog(log);
   }
 
+  /**
+   * Similar to decodeLog, but operates on an array of logs and decodes them all.
+   * @param logs The logs to be decoded.
+   */
   public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
     return await this.wireDecoder.decodeLogs(logs);
   }
 
+  /**
+   * Gets all events meeting certain conditions and decodes them.
+   * This function is fairly rudimentary at the moment but more functionality
+   * will be added in the future.
+   * @param options Used to determine what events to fetch; see the documentation on the EventOptions type for more.
+   */
   public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
     return await this.wireDecoder.events(options);
   }
 
+  /**
+   * See WireDecoder.abifyCallDataDecoding
+   */
   public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
 
+  /**
+   * See WireDecoder.abifyLogDecoding
+   */
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
   //the following functions are for internal use
+
+  /**
+   * @hidden
+   */
   public getAllocations() {
     return this.allocations;
   }
 
+  /**
+   * @hidden
+   */
   public getStateVariableReferences() {
     return this.stateVariableReferences;
   }
 
+  /**
+   * @hidden
+   */
   public getWireDecoder() {
     return this.wireDecoder;
   }
 
+  /**
+   * @hidden
+   */
   public getContractInfo(): ContractInfo {
     return {
       contract: this.contract,
@@ -143,6 +195,21 @@ interface ContractInfo {
   contextHash: string;
 }
 
+/**
+ * The ContractInstanceDecoder class.  Decodes storage for a specified
+ * instance.  Also, decodes transactions and logs.  See below for a method
+ * listing.
+ *
+ * Note that when using this class to decode transactions and logs, it does
+ * have one advantage over using the WireDecoder or ContractDecoder.  If the
+ * artifact for the class does not have a deployedBytecode field, the
+ * WireDecoder (and therefore also the ContractDecoder) will not be able to
+ * tell that this instance is of that class, and so will fail to decode
+ * transactions sent to it or logs originating from it.  However, the
+ * ContractInstanceDecoder has that information and will make use of it, making
+ * it possible for it to decode transactions sent to this instance, or logs
+ * originating from it, even if the deployedBytecode field is misssing.
+ */
 export class ContractInstanceDecoder {
   private web3: Web3;
 
@@ -199,6 +266,9 @@ export class ContractInstanceDecoder {
     }
   }
 
+  /**
+   * @hidden
+   */
   public async init(): Promise<void> {
     this.contractCode = CodecUtils.Conversion.toHexString(
       await this.getCode(this.contractAddress, await this.web3.eth.getBlockNumber())
@@ -278,6 +348,12 @@ export class ContractInstanceDecoder {
     };
   }
 
+  /**
+   * Returns information about the state of the contract, but does not include
+   * information about the storage or decoded variables.  See the documentation
+   * for the ContractState type for more.
+   * @param block The block to inspect the contract's state at.  Defaults to latest.
+   */
   public async state(block: BlockType = "latest"): Promise<DecoderTypes.ContractState> {
     return {
       name: this.contract.contractName,
@@ -287,6 +363,19 @@ export class ContractInstanceDecoder {
     };
   }
 
+  /**
+   * Decodes the contract's variables; returns an array of these decoded variables.
+   * See the documentation of the DecodedVariable type for more.
+   * Note that variable decoding can only operate in full mode; if the decoder wasn't able to
+   * start up in full mode, this method will throw an exception.
+   * Note that decoding mappings requires first watching mapping keys in order to get any results;
+   * see the documentation for watchMappingKey.
+   * Additional methods to make mapping decoding a less manual affair are planned for the future.
+   * Also, due to a technical limitation, it is not currently possible to
+   * usefully decode internal function pointers.  See the FunctionInternalValue
+   * documentation and the README for more on how these are handled.
+   * @param block The block to inspect the contract's variables at.  Defaults to latest.
+   */
   public async variables(block: BlockType = "latest"): Promise<DecoderTypes.DecodedVariable[]> {
     this.checkAllocationSuccess();
 
@@ -308,7 +397,13 @@ export class ContractInstanceDecoder {
     return result;
   }
 
-  //variable may be given by name, ID, or qualified name
+  /**
+   * Decodes an individual contract variable; returns its value as a Result.
+   * See the documentation for variables() for various caveats that also apply here.
+   * If the variable can't be located, returns undefined.  In the future this will probably throw an exception instead.
+   * @param nameOrId The name (or numeric ID, if you know that) of the variable.  Can be given as a qualified name, allowing one to get at shadowed variables from base contracts.  If given by ID, can be given as a number or numeric string.
+   * @param block The block to inspect the contract's variables at.  Defaults to latest.
+   */
   public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<Values.Result | undefined> {
     this.checkAllocationSuccess();
 
@@ -382,10 +477,21 @@ export class ContractInstanceDecoder {
     return await this.wireDecoder.getCode(address, block);
   }
 
-  //EXAMPLE: to watch a.b.c[d][e], use watchMappingKey("a", "b", "c", d, e)
-  //(this will watch all ancestors too, or at least ones given by mapping keys)
-  //feel free to mix arrays, mappings, and structs here!
-  //see the comment on constructSlot for more detail on what forms are accepted
+  /**
+   * Watches a mapping key; adds it to the decoder's list of watched mapping keys.
+   * This affects the results of both variables() and variable().
+   * When a mapping is decoded, only the values at its watched keys will be included in its value.
+   * Note that it is possible to watch mappings that are inside structs, arrays, other mappings, etc;
+   * see below for more on how to do this.
+   * Note that watching mapping keys is only possible in full mode; if the decoder wasn't able to
+   * start up in full mode, this method will throw an exception.
+   * Warning: At the moment, this function does very little to check its input.  Bad input may have
+   * unpredictable results.  This will be remedied in the future (by having it throw exceptions on
+   * bad input), but right now essentially no checking is implemented.
+   * Also, there may be slight changes to the format of indices in the future.
+   * @param variable The variable that the mapping lives under; this works like the nameOrId argument to variable().  If the mapping is a top-level state variable, put the mapping itself here.  Otherwise, put the top-level state variable it lives under.
+   * @param indices Further arguments to watchMappingKey, if given, will be interpreted as indices into or members of the variable identified by the variable argument.  Thus, if we have a struct type MapStruct with a mapping(string => string) called "map", and we have a variable arr of type MapStruct[], then one could watch arr[3].map["hello"] by calling watchMappingKey("arr", 3, "map", "hello").  Array indices and mapping keys are specified by value; struct members are specified by name or (if you know it) numeric ID.  Numeric values can be given as number, BN, or numeric string.  Bytestring values are given as hex strings.  Boolean values are given as booleans, or as the strings "true" or "false".  Address values are given as hex strings; they are currently not required to be in checksum case, but this will likely change in the future, so don't rely on that.  Note that if the path to a given mapping key includes mapping keys above it, any ancestors will also be watched automatically.  E.g., if m is of type mapping(uint => mapping(uint => uint)), then watching m[3][5] will also automatically watch m[3]; otherwise, watching m[3][5] wouldn't do much of anything.
+   */
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
     let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
@@ -405,7 +511,14 @@ export class ContractInstanceDecoder {
     }
   }
 
-  //input is similar to watchMappingKey; will unwatch all descendants too
+  /**
+   * Opposite of watchMappingKey; unwatches the specified mapping key.  See watchMappingKey
+   * for more on how watching mapping keys works, and on how the parameters work.
+   * Note that unwatching a mapping key will also unwatch all its descendants.
+   * E.g., if m is of type mapping(uint => mapping(uint => uint)), then unwatching
+   * m[0] will also unwatch m[0][0], m[0][1], etc, if these are currently watched.
+   * This function has the same caveats as watchMappingKey.
+   */
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
     let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
@@ -427,29 +540,50 @@ export class ContractInstanceDecoder {
   //all descendants, you'll need to alter watchMappingKey to use an if rather
   //than a while
 
+  /**
+   * See ContractDecoder.decodeTransaction
+   */
   public async decodeTransaction(transaction: Transaction): Promise<DecoderTypes.DecodedTransaction> {
     return await this.wireDecoder.decodeTransaction(transaction, this.additionalContexts);
   }
 
+  /**
+   * See ContractDecoder.decodeLog
+   */
   public async decodeLog(log: Log): Promise<DecoderTypes.DecodedLog> {
     return await this.wireDecoder.decodeLog(log, {}, this.additionalContexts);
   }
 
+  /**
+   * See ContractDecoder.decodeLogs
+   */
   public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
     return await this.wireDecoder.decodeLogs(logs, {}, this.additionalContexts);
   }
 
+  /**
+   * See WireDecoder.abifyCallDataDecoding
+   */
   public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
 
+  /**
+   * See WireDecoder.abifyLogDecoding
+   */
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
-  //note: by default restricts address to address of this
-  //contract, but you can override this (including by specifying
-  //address undefined to not filter by adddress)
+  /**
+   * Gets all events meeting certain conditions and decodes them.
+   * This function is fairly rudimentary at the moment but more functionality
+   * will be added in the future.
+   * Note that unlike other variants of this function, this one, by default, restricts to events originating from this instance's address.
+   * If you don't want to restrict like that, you can explicitly set address = undefined in the options to disable this.
+   * (You can also of course set a different address to restrict to that.)
+   * @param options Used to determine what events to fetch; see the documentation on the EventOptions type for more.
+   */
   public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
     return await this.wireDecoder.events({address: this.contractAddress, ...options}, this.additionalContexts);
   }

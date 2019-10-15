@@ -151,6 +151,10 @@ export interface FunctionExternalTypeGeneral {
 export type ContractDefinedType = StructTypeLocal | EnumTypeLocal;
 export type UserDefinedType = ContractDefinedType | ContractTypeNative | StructTypeGlobal | EnumTypeGlobal;
 
+/**
+ * Structs may be local (defined in a contract) or global (defined outside of any contract);
+ * the latter will be introduced in Solidity 0.6.x
+ */
 export type StructType = StructTypeLocal | StructTypeGlobal;
 
 export interface NameTypePair {
@@ -161,20 +165,32 @@ export interface NameTypePair {
 export interface StructTypeLocal {
   typeClass: "struct";
   kind: "local";
+  /**
+   * Internal ID.  Format may change in future.
+   */
   id: string;
   typeName: string;
   definingContractName: string;
   definingContract?: ContractTypeNative;
-  memberTypes?: NameTypePair[]; //these should be in order
+  /**
+   * these should be in order
+   */
+  memberTypes?: NameTypePair[];
   location?: Ast.Location;
 }
 
 export interface StructTypeGlobal {
   typeClass: "struct";
   kind: "global";
+  /**
+   * Internal ID.  Format may change in future.
+   */
   id: string;
   typeName: string;
-  memberTypes?: NameTypePair[]; //these should be in order
+  /**
+   * these should be in order
+   */
+  memberTypes?: NameTypePair[];
   location?: Ast.Location;
 }
 
@@ -189,34 +205,59 @@ export interface TupleType {
   typeHint?: string;
 }
 
+/**
+ * Enums may be local (defined in a contract) or global (defined outside of any contract);
+ * the latter will be introduced in Solidity 0.6.x
+ */
 export type EnumType = EnumTypeLocal | EnumTypeGlobal;
 
 export interface EnumTypeLocal {
   typeClass: "enum";
   kind: "local";
+  /**
+   * Internal ID.  Format may change in future.
+   */
   id: string;
   typeName: string;
   definingContractName: string;
   definingContract?: ContractTypeNative;
-  options?: string[]; //these should be in order
+  /**
+   * these should be in order
+   */
+  options?: string[];
 }
 
 export interface EnumTypeGlobal {
   typeClass: "enum";
   kind: "global";
+  /**
+   * Internal ID.  Format may change in future.
+   */
   id: string;
   typeName: string;
-  options?: string[]; //these should be in order
+  /**
+   * these should be in order
+   */
+  options?: string[];
 }
 
+/**
+ * Contract types may be native (has Solidity info) or foreign (lacking Solidity info).
+ */
 export type ContractType = ContractTypeNative | ContractTypeForeign;
 
 export interface ContractTypeNative {
   typeClass: "contract";
   kind: "native";
+  /**
+   * Internal ID.  Format may change in future.
+   */
   id: string;
   typeName: string;
   contractKind?: Ast.ContractKind;
+  /**
+   * Indicates whether contract has payable fallback function
+   */
   payable?: boolean; //will be useful in the future
   //may have more optional members defined later, but I'll leave these out for
   //now
@@ -227,6 +268,9 @@ export interface ContractTypeForeign {
   kind: "foreign";
   typeName: string;
   contractKind?: Ast.ContractKind;
+  /**
+   * Indicates whether contract has payable fallback function
+   */
   payable?: boolean; //will be useful in the future
   //may have more optional members defined later, but I'll leave these out for
   //now
@@ -251,4 +295,3 @@ export type ReferenceType = ArrayType | MappingType | StructType | StringType | 
 export interface TypesById {
   [id: string]: UserDefinedType;
 };
-

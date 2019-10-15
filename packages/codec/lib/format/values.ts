@@ -97,7 +97,10 @@ export type ArrayResult = ArrayValue | Errors.ArrayErrorResult;
 export interface ArrayValue {
   type: Types.ArrayType;
   kind: "value";
-  reference?: number; //will be used in the future for circular values
+  /**
+   * will be used in the future for circular vales
+   */
+  reference?: number;
   value: Result[];
 }
 
@@ -109,8 +112,10 @@ export interface MappingValue {
   kind: "value";
   //note that since mappings live in storage, a circular
   //mapping is impossible
-  value: KeyValuePair[]; //order is irrelevant
-  //note that key is not allowed to be an error!
+  /**
+   * order is irrelevant; also note keys must be values, not errors
+   */
+  value: KeyValuePair[];
 }
 
 export interface KeyValuePair {
@@ -124,8 +129,14 @@ export type StructResult = StructValue | Errors.StructErrorResult;
 export interface StructValue {
   type: Types.StructType;
   kind: "value";
-  reference?: number; //will be used in the future for circular values
-  value: NameValuePair[]; //these should be stored in order!
+  /**
+   * will be used in the future for circular vales
+   */
+  reference?: number;
+  /**
+   * these should be stored in order!
+   */
+  value: NameValuePair[];
 }
 
 export interface NameValuePair {
@@ -172,6 +183,9 @@ export interface EnumValue {
   kind: "value";
   value: {
     name: string;
+    /**
+     * the numeric value of the enum
+     */
     numericAsBN: BN;
   };
 };
@@ -190,25 +204,43 @@ export interface ContractValue {
   value: ContractValueInfo;
 }
 
-//There are two types -- one for contracts whose class we can identify, and one
-//for when we can't identify the class.
+/**
+ * There are two types -- one for contracts whose class we can identify, and one
+ * for when we can't identify the class.
+ */
 export type ContractValueInfo = ContractValueInfoKnown | ContractValueInfoUnknown;
 
-//when we can identify the class
+/**
+ * when we can identify the class
+ */
 export interface ContractValueInfoKnown {
   kind: "known";
-  address: string; //should be formatted as address
-  //NOT an AddressResult, note
+  /**
+   * should be formatted as address (leading "0x", checksum-cased);
+   * note that this is not an AddressResult!
+   */
+  address: string;
+  /**
+   * this is just a hexstring; no checksum (also longer than 20 bytes)
+   */
   rawAddress?: string;
   class: Types.ContractType;
   //may have more optional members defined later, but I'll leave these out for now
 }
 
-//when we can't
+/**
+ * when we can't identify the class
+ */
 export interface ContractValueInfoUnknown {
   kind: "unknown";
-  address: string; //should be formatted as address
-  //NOT an AddressResult, note
+  /**
+   * should be formatted as address (leading "0x", checksum-cased);
+   * note that this is not an AddressResult!
+   */
+  address: string;
+  /**
+   * this is just a hexstring; no checksum (also longer than 20 bytes)
+   */
   rawAddress?: string;
 }
 
@@ -225,33 +257,53 @@ export interface FunctionExternalValue {
   value: FunctionExternalValueInfo;
 }
 
-//External function values come in 3 types:
+/**
+ * External function values come in 3 types:
+ * 1. known function of known class
+ * 2. known class, but can't locate function
+ * 3. can't determine class
+ */
 export type FunctionExternalValueInfo =
   FunctionExternalValueInfoKnown //known function of known class
   | FunctionExternalValueInfoInvalid //known class, but can't locate function
   | FunctionExternalValueInfoUnknown; //can't determine class
 
-//known function of known class
+/**
+ * known function of known class
+ */
 export interface FunctionExternalValueInfoKnown {
   kind: "known";
   contract: ContractValueInfoKnown;
-  selector: string; //formatted as a bytes4
+  /**
+   * formatted as a hex string
+   */
+  selector: string;
   abi: FunctionAbiEntry;
   //may have more optional fields added later, I'll leave these out for now
 }
 
-//known class but can't locate function
+/**
+ * known class but can't locate function
+ */
 export interface FunctionExternalValueInfoInvalid {
   kind: "invalid";
   contract: ContractValueInfoKnown;
-  selector: string; //formatted as a bytes4
+  /**
+   * formatted as a hex string
+   */
+  selector: string;
 }
 
-//can't even locate class
+/**
+ * can't even locate class
+ */
 export interface FunctionExternalValueInfoUnknown {
   kind: "unknown";
   contract: ContractValueInfoUnknown;
-  selector: string; //formatted as a bytes4
+  /**
+   * formatted as a hex string
+   */
+  selector: string;
 }
 
 /*
@@ -267,13 +319,20 @@ export interface FunctionInternalValue {
   value: FunctionInternalValueInfo;
 }
 
-//these also come in 3 types
+/**
+ * Internal functions come in three types:
+ * 1. An actual function,
+ * 2. A default value,
+ * 3. A special value to indicate that decoding internal functions isn't supported in this context.
+ */
 export type FunctionInternalValueInfo =
   FunctionInternalValueInfoKnown //actual function
   | FunctionInternalValueInfoException //default value
   | FunctionInternalValueInfoUnknown; //decoding not supported in this context
 
-//actual function
+/**
+ * An actual internal function
+ */
 export interface FunctionInternalValueInfoKnown {
   kind: "function"
   context: Types.ContractType;
@@ -285,7 +344,12 @@ export interface FunctionInternalValueInfoKnown {
   //may have more optional fields added later
 }
 
-//default value
+/**
+ * A default value -- internal functions have two default values
+ * depending on whether they live in storage or elsewhere.
+ * In storage the default value is 0 for both program counters.
+ * Elsewhere they're both nonzero.
+ */
 export interface FunctionInternalValueInfoException {
   kind: "exception"
   context: Types.ContractType;
@@ -293,7 +357,15 @@ export interface FunctionInternalValueInfoException {
   constructorProgramCounter: number;
 }
 
-//value returned to indicate that decoding is not supported outside the debugger
+/**
+ * This type is used when decoding internal functions from the high-level
+ * decoding interface, which presently doesn't support detailed decoding of
+ * internal functions.  (The debugger, however, supports it!  You can get this
+ * detailed information in the debugger!)  You'll still get the program counter
+ * values, but further information will be absent.  Note you'll get this even
+ * if really it should decode to an error, because the decoding interface
+ * doesn't have the information to determine that it's an error.  
+ */
 export interface FunctionInternalValueInfoUnknown {
   kind: "unknown"
   context: Types.ContractType;

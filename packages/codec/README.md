@@ -1,15 +1,161 @@
-# Truffle Decoder Core
-This module provides interfaces for decoding Solidity variables.  This is a
-fairly low-level interface meant to be used by e.g. a debugger; for a
-higher-level interface, see the `truffle-contract-decoder` package instead.
+# Truffle Decoder
+
+This module provides interfaces for decoding contract state, transaction
+calldata, and events.
+
+It's split into three classes: The wire decoder, the contract decoder, and the
+contract instance decoder.  The wire decoder is associated to the project as a
+whole and decodes transaction calldata and events.  The contract decoder is
+associated to a specific contract class.  It has all the capabilities of the
+wire decoder, but in addition it acts as a factory for contract instance
+decoders.  The contract instance decoder is associated to a specific contract
+instance; it too has all the capabilities of the wire decoder, but it can also
+decode the state variables for the specific instance.  (In addition, in the case
+that the contract does not include a `deployedBytecode` field in its artifact,
+which can hinder decoding certain things, the contract instance decoder can
+sometimes work around this where the other decoders cannot.)
+
+This documentation describes the current state of the decoder, but you should
+expect to see improvements soon.  Note that most of the documentation is not
+found in this README, but rather in this package's TypeDoc.  However, this
+README describes the overall approach.
 
 ## Usage
-```
-import { forEvmState } from 'truffle-decoder-core';
 
-const decoder = forEvmState(definition, pointer, info);
-```
+### Initialization
 
-The variable `decoder` will then contain a generator you can use to decode your
-variable.  It may make requests for storage or for code; responses should be in
-the form of a `Uint8Array`.
+Create a decoder with one of the methods `forProject`, `forContract`,
+`forContractWithDecoder`, or `forContractInstance`.  See the documentation of
+these methods for details.
+
+### Methods
+
+See the documentation for the individual decoder classes for a method listing.
+
+### Decoding modes and abification
+
+The decoder can operate in either of two modes: Full mode or ABI mode.  In ABI
+mode, it decodes purely based on the information in the ABI.  In full mode, it
+uses Solidity AST information to provide a more detailed decoding.  Due to
+various technical reasons, full mode is not always reliably available.  The only
+way to guarantee the use of full mode is if all your contracts are written in
+Solidity and they were all compiled simultaneously.
+
+The decoder will always run in full mode when possible, but sometimes the
+necessary information may be missing or, for technical reasons, unusable.  In
+this case, it will fall back into ABI mode.  Decodings are always marked with
+which mode produced them so you can distinguish, as the format of a result may
+differ substantially due to which mode was used.
+
+If you want to simplify matters and to not have to deal with this distinction,
+the decoder provides methods for converting a given decoding to ABI mode.  So
+you can run the decoder in whatever mode it runs in, then run the result through
+these functions to ensure you get an ABI mode result.  As noted above, there's
+no way to ensure you get a full mode result.
+
+(There are two slight differences between running the decoder in full mode and
+abifying afterward, versus simply running the decoder in ABI mode.  Firstly,
+full mode will reject certain invalid decodings that ABI mode cannot recognize
+as invalid.  Secondly, the abified version of a full-mode decoding does contain
+slightly more information than an actual ABI-mode decoding, just in an
+ABI-mode-compatible format.)
+
+Note that modes are always applied at the level of the whole decoding; different
+variables in the same decoding will always be decoded with the same mode.
+However, if an object (such as a log) admits *multiple* decodings, these
+different decodings may occur in different modes.
+
+Note that decoding of state variables is only available in full mode; attempting
+to decode state variables will result in an exception if full mode is not
+possible.
+
+### Output format: `Type`s and `Result`s
+
+This will be a brief explanation of the format of decoded variables.  For full
+detail, I recommend seeing the documentation for `Format`.
+
+Each decoded value is a `Result`.  A `Result` has the following fields:
+
+1. `type`: This is a `Type` object describing the value's type.  Each `Type`
+has a `typeClass` field describing the overall broad type, such as `"uint"` or
+`"bytes"`, together with additional information that gives the specific type.  I
+won't go into further detail about these here; I recommend simply looking at
+`Format.Types` to see how these work.
+
+2. `kind`: This is either `"value"`, in which case the `Result` is a `Value`, or
+`"error"`, in which case the `Result` is an `ErrorResult`.  In the former case,
+there will be a `value` field containing the decoded value.  In the latter case,
+there will be an `error` field indicating what went wrong.  *Warning*: When
+decoding a complex type, such as an array, mapping, or array, getting a kind of
+`"value"` does not necessarily mean the individual elements were decoded
+successfully.  Even if the `Result` for the array (mapping, struct) as a whole
+has kind "value"`, the elements might still have kind `"error"`.
+
+3. `value`: As mentioned, this is included when `kind` is equal to `"value"`.
+It contains information about the actual decoded value.  I recommend seeing
+`Format.Values` for more information.
+
+4. `error`: The alternative to `value`.  Generally includes information about
+the raw data that led to the error.  See `Format.Errors` for more
+information.
+
+5. `reference`: This field is a debugger-only feature so I'll skip explaining it
+here; it won't come up when using this interface.
+ 
+Rather than explain the format in detail -- you can see the TypeDoc for that -- I'd
+instead like to take a moment to answer the question: What counts as a value,
+and what counts as an error?
+
+In general, the answer is that anything that can be generated via Solidity
+alone (i.e. no assembly), with correctly-encoded inputs, and without making use
+of compiler bugs, is a value, not an error.  That means that, for instance, the
+following things are values, not errors:
+
+1. A variable of contract type whose address does not actually hold a contract
+of that type;
+
+2. An external function pointer that does not correspond to a valid function;
+
+3. A string containing invalid UTF-8;
+
+etc.
+
+By contrast, the following *are* errors:
+
+1. A `bool` which is neither `false` (0) nor `true` (1);
+
+2. An `enum` which is out of range;
+
+etc.
+
+(You may be wondering about the enum case here, because if you go sufficiently
+far back, to Solidity 0.4.4 or earlier, it *was* possible to generate
+out-of-range enums without resorting to assembly or compiler bugs.  However, the
+decoder is not intended to support Solidity older than 0.4.9 (except in ABI-only
+mode, which doesn't know about enums), so we consider it an error.  There are also
+additional technical reasons why supporting out-of-range enums as a value would be
+difficult.)
+
+There are three special cases here that are likely worthy of note.
+
+Firstly, internal function pointers currently can't be meaningfully decoded via
+this interface.  However, they decode to a bare-bones value, not an error, as it
+is (in a sense) our own fault that we can't decode these, so it doesn't make
+sense to report an error, which would mean that something is wrong with the
+encoded data itself.  This value that it decodes to will give the program
+counter values it corresponds to, but will not include the function name or
+defining class, as this interface is not presently capable of that.
+
+(When using the debugger, an invalid internal function pointer will decode to an
+error.  However, when using this interface, we have no way of discerning whether
+the pointer is valid or not, so internal function pointers will always decode to
+a value, if an uninformative one.)
+
+Secondly, when decoding events, it is impossible to decode indexed parameters
+of reference type.  Thus, these decode to an error
+(`IndexedReferenceTypeError`, which see) rather than to a value.
+
+Finally, except when decoding events, we do not return an error if the pointers
+in an ABI-encoded array or tuple are arranged in a nonstandard way, or if
+strings or bytestrings are incorrectly padded, because it is not worth the
+trouble to detect these conditions.

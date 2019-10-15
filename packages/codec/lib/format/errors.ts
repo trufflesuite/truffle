@@ -47,7 +47,10 @@ export interface UintErrorResult {
 export type UintError = UintPaddingError;
 
 export interface UintPaddingError {
-  raw: string; //hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "UintPaddingError";
 }
 
@@ -61,7 +64,10 @@ export interface IntErrorResult {
 export type IntError = IntPaddingError;
 
 export interface IntPaddingError {
-  raw: string; //hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "IntPaddingError";
 }
 
@@ -89,7 +95,10 @@ export interface BytesStaticErrorResult {
 export type BytesStaticError = BytesPaddingError;
 
 export interface BytesPaddingError {
-  raw: string; //should be hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "BytesPaddingError";
 }
 
@@ -112,7 +121,10 @@ export interface AddressErrorResult {
 export type AddressError = AddressPaddingError;
 
 export interface AddressPaddingError {
-  raw: string; //should be hex string
+  /**
+   * hex string; no checksum
+   */
+  raw: string;
   kind: "AddressPaddingError";
 }
 
@@ -140,14 +152,20 @@ export interface UfixedErrorResult {
 export type FixedError = FixedPaddingError;
 
 export interface FixedPaddingError {
-  raw: string; //hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "FixedPaddingError";
 }
 
 export type UfixedError = UfixedPaddingError;
 
 export interface UfixedPaddingError {
-  raw: string; //hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "UfixedPaddingError";
 }
 
@@ -241,7 +259,10 @@ export interface ContractErrorResult {
 export type ContractError = ContractPaddingError;
 
 export interface ContractPaddingError {
-  raw: string; //should be hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "ContractPaddingError";
 }
 
@@ -258,13 +279,28 @@ export interface FunctionExternalErrorResult {
 
 export type FunctionExternalError = FunctionExternalNonStackPaddingError | FunctionExternalStackPaddingError;
 
+/**
+ * padding error for external function pointer located anywhere other than the stack
+ */
 export interface FunctionExternalNonStackPaddingError {
-  raw: string; //should be hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "FunctionExternalNonStackPaddingError";
 }
 
+/**
+ * padding error for external function pointer located on the stack
+ */
 export interface FunctionExternalStackPaddingError {
+  /**
+   * hex string (no checksum; also longer than 20 bytes)
+   */
   rawAddress: string;
+  /**
+   * hex string (but longer than 4 bytes)
+   */
   rawSelector: string;
   kind: "FunctionExternalStackPaddingError";
 }
@@ -284,10 +320,18 @@ export type FunctionInternalError = FunctionInternalPaddingError | NoSuchInterna
   | DeployedFunctionInConstructorError | MalformedInternalFunctionError;
 
 export interface FunctionInternalPaddingError {
-  raw: string; //should be hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "FunctionInternalPaddingError";
 }
 
+/**
+ * Indicates that the function pointer being decoded
+ * fails to point to a valid function, and also is not one of the
+ * default values
+ */
 export interface NoSuchInternalFunctionError {
   kind: "NoSuchInternalFunctionError";
   context: Types.ContractType;
@@ -295,6 +339,10 @@ export interface NoSuchInternalFunctionError {
   constructorProgramCounter: number;
 }
 
+/**
+ * Indicates that this is a deployed-style pointer,
+ * despite the fact that you're in a constructor
+ */
 export interface DeployedFunctionInConstructorError {
   kind: "DeployedFunctionInConstructorError";
   context: Types.ContractType;
@@ -302,6 +350,10 @@ export interface DeployedFunctionInConstructorError {
   constructorProgramCounter: number;
 }
 
+/**
+ * Used when the deployed PC is zero but the constructor PC
+ * is nonzero
+ */
 export interface MalformedInternalFunctionError {
   kind: "MalformedInternalFunctionError";
   context: Types.ContractType;
@@ -319,11 +371,17 @@ export type DynamicDataImplementationError = OverlongArraysAndStringsNotImplemen
 
 export type ErrorForThrowing = UserDefinedTypeNotFoundError | ReadError;
 
-//attempted to decode an indexed parameter of reference type error
+/**
+ * Used when decoding an indexed parameter of reference type.  These can't meaningfully
+ * be decoded, so instead they decode to an error, sorry.
+ */
 export interface IndexedReferenceTypeError {
   kind: "IndexedReferenceTypeError";
   type: Types.ReferenceType;
-  raw: string; //should be hex string
+  /**
+   * hex string
+   */
+  raw: string;
 }
 
 //type-location error

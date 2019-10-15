@@ -21,6 +21,9 @@ import { getStorageAllocations } from "@truffle/codec/allocate/storage";
 import { decodeCalldata, decodeEvent } from "@truffle/codec/core/decoding";
 import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
 
+/**
+ * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.
+ */
 export default class WireDecoder {
   private web3: Web3;
 
@@ -124,7 +127,10 @@ export default class WireDecoder {
     return {definitions: references, types};
   }
 
-  //for internal use
+  /**
+   * @hidden
+   * for internal use
+   */
   public async getCode(address: string, block: number): Promise<Uint8Array> {
     //first, set up any preliminary layers as needed
     if(this.codeCache[block] === undefined) {
@@ -145,7 +151,13 @@ export default class WireDecoder {
     return code;
   }
 
-  //NOTE: additionalContexts parameter is for internal use only.
+  /**
+   * Takes a Web3 Transaction object and returns a copy of that object but with
+   * an additional decoding field.  This field holds a CalldataDecoding; see the
+   * documentation on DecodedTransaction for more.
+   * @param transaction The transaction to be decoded.
+   * @param additionalContexts For internal use only; please don't use this.
+   */
   public async decodeTransaction(transaction: Transaction, additionalContexts: Contexts.DecoderContexts = {}): Promise<DecoderTypes.DecodedTransaction> {
     debug("transaction: %O", transaction);
     const block = transaction.blockNumber;
@@ -185,8 +197,14 @@ export default class WireDecoder {
     };
   }
 
-  //NOTE: options is meant for internal use; do not rely on it
-  //NOTE: additionalContexts parameter is for internal use only.
+  /**
+   * Takes a Web3 Log object and returns a copy of that object but with
+   * an additional decodings field.  This field holds an array of LogDecodings;
+   * see the documentation on DecodedLog for more.
+   * @param log The log to be decoded.
+   * @param options Meant for internal use; please don't use this.
+   * @param additionalContexts For internal use only; please don't use this.
+   */
   public async decodeLog(log: Log, options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContexts = {}): Promise<DecoderTypes.DecodedLog> {
     const block = log.blockNumber;
     const data = CodecUtils.Conversion.toBytes(log.data);
@@ -224,13 +242,23 @@ export default class WireDecoder {
     };
   }
 
-  //NOTE: options is meant for internal use; do not rely on it
-  //NOTE: additionalContexts parameter is for internal use only.
+  /**
+   * Similar to decodeLog, but operates on an array of logs and decodes them all.
+   * @param logs The logs to be decoded.
+   * @param options Meant for internal use; please don't use this.
+   * @param additionalContexts For internal use only; please don't use this.
+   */
   public async decodeLogs(logs: Log[], options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContexts = {}): Promise<DecoderTypes.DecodedLog[]> {
     return await Promise.all(logs.map(log => this.decodeLog(log, options, additionalContexts)));
   }
 
-  //NOTE: additionalContexts parameter is for internal use only.
+  /**
+   * Gets all events meeting certain conditions and decodes them.
+   * This function is fairly rudimentary at the moment but more functionality
+   * will be added in the future.
+   * @param options Used to determine what events to fetch; see the documentation on the EventOptions type for more.
+   * @param additionalContexts For internal use only; please don't use this.
+   */
   public async events(options: DecoderTypes.EventOptions = {}, additionalContexts: Contexts.DecoderContexts = {}): Promise<DecoderTypes.DecodedLog[]> {
     let { address, name, fromBlock, toBlock } = options;
 
@@ -255,10 +283,24 @@ export default class WireDecoder {
     return events;
   }
 
+  /**
+   * Takes a CalldataDecoding, which may have been produced in full mode or ABI mode,
+   * and converts it to its ABI mode equivalent.  See the README for more information.
+   * Please only use on decodings produced by this same decoder instance; use
+   * on decodings produced by other instances may not work consistently.
+   * @param decoding The decoding to abify
+   */
   public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
     return abifyCalldataDecoding(decoding, this.userDefinedTypes);
   }
 
+  /**
+   * Takes a LogDecoding, which may have been produced in full mode or ABI mode,
+   * and converts it to its ABI mode equivalent.  See the README for more information.
+   * Please only use on decodings produced by this same decoder instance; use
+   * on decodings produced by other instances may not work consistently.
+   * @param decoding The decoding to abify
+   */
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return abifyLogDecoding(decoding, this.userDefinedTypes);
   }
@@ -283,14 +325,24 @@ export default class WireDecoder {
   }
 
   //the following functions are intended for internal use only
+
+  /**
+   * @hidden
+   */
   public getReferenceDeclarations(): AstReferences {
     return this.referenceDeclarations;
   }
 
+  /**
+   * @hidden
+   */
   public getUserDefinedTypes(): Types.TypesById {
     return this.userDefinedTypes;
   }
 
+  /**
+   * @hidden
+   */
   public getAllocations(): AllocationInfo {
     return {
       abi: this.allocations.abi,
@@ -298,10 +350,16 @@ export default class WireDecoder {
     };
   }
 
+  /**
+   * @hidden
+   */
   public getWeb3(): Web3 {
     return this.web3;
   }
 
+  /**
+   * @hidden
+   */
   public getDeployedContexts(): Contexts.DecoderContexts {
     return this.deployedContexts;
   }
