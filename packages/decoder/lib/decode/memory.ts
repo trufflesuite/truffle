@@ -9,16 +9,23 @@ import { MemoryMemberAllocation } from "../types/allocation";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";
 
-export default function* decodeMemory(definition: DecodeUtils.AstDefinition, pointer: MemoryPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
-  if(DecodeUtils.Definition.isReference(definition)) {
+export default function* decodeMemory(
+  definition: DecodeUtils.AstDefinition,
+  pointer: MemoryPointer,
+  info: EvmInfo
+): Generator<DecoderRequest, any, Uint8Array> {
+  if (DecodeUtils.Definition.isReference(definition)) {
     return yield* decodeMemoryReferenceByAddress(definition, pointer, info);
-  }
-  else {
+  } else {
     return yield* decodeValue(definition, pointer, info);
   }
 }
 
-export function* decodeMemoryReferenceByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
+export function* decodeMemoryReferenceByAddress(
+  definition: DecodeUtils.AstDefinition,
+  pointer: DataPointer,
+  info: EvmInfo
+): Generator<DecoderRequest, any, Uint8Array> {
   const { state } = info;
   // debug("pointer %o", pointer);
   let rawValue: Uint8Array = yield* read(pointer, state);
@@ -27,48 +34,66 @@ export function* decodeMemoryReferenceByAddress(definition: DecodeUtils.AstDefin
   let length;
 
   switch (DecodeUtils.Definition.typeClass(definition)) {
-
     case "bytes":
     case "string":
-      length = DecodeUtils.Conversion.toBN(yield* read({
-        memory: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE}
-      }, state)).toNumber(); //initial word contains length
+      length = DecodeUtils.Conversion.toBN(
+        yield* read(
+          {
+            memory: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE }
+          },
+          state
+        )
+      ).toNumber(); //initial word contains length
 
       let childPointer: MemoryPointer = {
         memory: { start: startPosition + DecodeUtils.EVM.WORD_SIZE, length }
-      }
+      };
 
       return yield* decodeValue(definition, childPointer, info);
 
     case "array":
-
       if (DecodeUtils.Definition.isDynamicArray(definition)) {
-        length = DecodeUtils.Conversion.toBN(yield* read({
-          memory: { start: startPosition, length: DecodeUtils.EVM.WORD_SIZE },
-          }, state)).toNumber();  // initial word contains array length
+        length = DecodeUtils.Conversion.toBN(
+          yield* read(
+            {
+              memory: {
+                start: startPosition,
+                length: DecodeUtils.EVM.WORD_SIZE
+              }
+            },
+            state
+          )
+        ).toNumber(); // initial word contains array length
         startPosition += DecodeUtils.EVM.WORD_SIZE; //increment startPosition to
         //next word, as first word was used for length
-      }
-      else {
+      } else {
         length = DecodeUtils.Definition.staticLength(definition);
       }
 
       let baseDefinition = definition.baseType || definition.typeName.baseType;
-        //I'm deliberately not using the DecodeUtils function for this, because
-        //we should *not* need a faked-up type here!
+      //I'm deliberately not using the DecodeUtils function for this, because
+      //we should *not* need a faked-up type here!
 
       // replace erroneous `_storage_` type identifiers with `_memory_`
-      baseDefinition = DecodeUtils.Definition.spliceLocation(baseDefinition, "memory");
+      baseDefinition = DecodeUtils.Definition.spliceLocation(
+        baseDefinition,
+        "memory"
+      );
 
       let decodedChildren = [];
-      for(let index = 0; index < length; index++) {
-        decodedChildren.push(yield* decodeMemory(
-          baseDefinition,
-          { memory: {
-            start: startPosition + index * DecodeUtils.EVM.WORD_SIZE,
-            length: DecodeUtils.EVM.WORD_SIZE
-          }},
-          info));
+      for (let index = 0; index < length; index++) {
+        decodedChildren.push(
+          yield* decodeMemory(
+            baseDefinition,
+            {
+              memory: {
+                start: startPosition + index * DecodeUtils.EVM.WORD_SIZE,
+                length: DecodeUtils.EVM.WORD_SIZE
+              }
+            },
+            info
+          )
+        );
       }
       return decodedChildren;
 
@@ -83,7 +108,7 @@ export function* decodeMemoryReferenceByAddress(definition: DecodeUtils.AstDefin
       debug("structAllocation %O", structAllocation);
 
       let decodedMembers: any = {};
-      for(let memberAllocation of Object.values(structAllocation.members)) {
+      for (let memberAllocation of Object.values(structAllocation.members)) {
         const memberPointer = memberAllocation.pointer;
         const childPointer: MemoryPointer = {
           memory: {
@@ -95,7 +120,10 @@ export function* decodeMemoryReferenceByAddress(definition: DecodeUtils.AstDefin
         let memberDefinition = memberAllocation.definition;
 
         // replace erroneous `_storage` type identifiers with `_memory`
-        memberDefinition = DecodeUtils.Definition.spliceLocation(memberDefinition, "memory");
+        memberDefinition = DecodeUtils.Definition.spliceLocation(
+          memberDefinition,
+          "memory"
+        );
         //there also used to be code here to add on the "_ptr" ending when absent, but we
         //presently ignore that ending, so we'll skip that
 
@@ -108,7 +136,5 @@ export function* decodeMemoryReferenceByAddress(definition: DecodeUtils.AstDefin
     default:
       // debug("Unknown memory reference type: %s", DecodeUtils.typeIdentifier(definition));
       return undefined;
-
   }
-
 }
