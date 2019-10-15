@@ -8,32 +8,25 @@ const { AddContractInstances } = Mutation;
 
 
 describe("Contract Instance", () => {
-  const client = new WorkspaceClient();
+  const wsClient = new WorkspaceClient();
   let variables;
   let expectedId;
-  let networkAdded;
+  let addNetworkResult;
 
   beforeEach(async () => {
-    const network = {
-      netId: Object.keys(Migrations.networks)[0],
-      historicBlock: {
-        height: 1,
-        hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
-      }
-    };
     const address = Object.values(Migrations.networks)[0]["address"];
-    networkAdded = await client.execute(AddNetworks, {
+    addNetworkResult = await wsClient.execute(AddNetworks, {
       networkId: Object.keys(Migrations.networks)[0],
       height: 1,
       hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
     });
 
-    expectedId = generateId({ address: address, network: { id: networkAdded.networksAdd.networks[0].id }});
+    expectedId = generateId({ address: address, network: { id: addNetworkResult.networksAdd.networks[0].id }});
 
     variables = [{
       address: address,
       network: {
-        id: networkAdded.networksAdd.networks[0].id
+        id: addNetworkResult.networksAdd.networks[0].id
       },
       contract: {
         id:  generateId({
@@ -54,41 +47,38 @@ describe("Contract Instance", () => {
     }];
   });
 
-  it("adds contract instance", async () => {
-    //add network
-    {
-      const data = await client.execute(AddContractInstances, { contractInstances: variables });
-      expect(data).toHaveProperty("contractInstancesAdd");
+  test("can be added", async () => {
+    const addContractInstancesResult = await wsClient.execute(AddContractInstances, { contractInstances: variables });
+    expect(addContractInstancesResult).toHaveProperty("contractInstancesAdd");
 
-      const { contractInstancesAdd } = data;
-      expect(contractInstancesAdd).toHaveProperty("contractInstances");
+    const { contractInstancesAdd } = addContractInstancesResult;
+    expect(contractInstancesAdd).toHaveProperty("contractInstances");
 
-      const { contractInstances } = contractInstancesAdd;
-      expect(contractInstances[0]).toHaveProperty("address");
-      expect(contractInstances[0]).toHaveProperty("network");
+    const { contractInstances } = contractInstancesAdd;
+    expect(contractInstances[0]).toHaveProperty("address");
+    expect(contractInstances[0]).toHaveProperty("network");
 
-      const { address, network } = contractInstances[0];
-      expect(address).toEqual(Object.values(Migrations.networks)[0]["address"]);
-      expect(network).toHaveProperty("networkId");
+    const { address, network } = contractInstances[0];
+    expect(address).toEqual(Object.values(Migrations.networks)[0]["address"]);
+    expect(network).toHaveProperty("networkId");
 
-      const { networkId } = network;
-      expect(networkId).toEqual(Object.keys(Migrations.networks)[0]);
-    }
+    const { networkId } = network;
+    expect(networkId).toEqual(Object.keys(Migrations.networks)[0]);
 
-    // // ensure retrieved as matching
-    {
-      const data = await client.execute(GetContractInstance, { id: expectedId });
-      expect(data).toHaveProperty("contractInstance");
+  });
 
-      const { contractInstance } = data;
-      expect(contractInstance).toHaveProperty("address");
-      expect(contractInstance).toHaveProperty("network");
+  test("can be queried", async() => {
+    const getContractInstanceResult = await wsClient.execute(GetContractInstance, { id: expectedId });
+    expect(getContractInstanceResult).toHaveProperty("contractInstance");
 
-      const { address, network } = contractInstance;
-      expect(address).toEqual(Object.values(Migrations.networks)[0]["address"]);
+    const { contractInstance } = getContractInstanceResult;
+    expect(contractInstance).toHaveProperty("address");
+    expect(contractInstance).toHaveProperty("network");
 
-      const { networkId } = network;
-      expect(networkId).toEqual(networkAdded.networksAdd.networks[0].networkId);
-    }
+    const { address, network } = contractInstance;
+    expect(address).toEqual(Object.values(Migrations.networks)[0]["address"]);
+
+    const { networkId } = network;
+    expect(networkId).toEqual(addNetworkResult.networksAdd.networks[0].networkId);
   });
 });
