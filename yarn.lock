@@ -1073,10 +1073,10 @@
   resolved "https://registry.yarnpkg.com/@truffle/error/-/error-0.0.6.tgz#75d499845b4b3a40537889e7d04c663afcaee85d"
   integrity sha512-QUM9ZWiwlXGixFGpV18g5I6vua6/r+ZV9W/5DQA5go9A3eZUNPHPaTKMIQPJLYn6+ZV5jg5H28zCHq56LHF3yA==
 
-"@trufflesuite/chromafi@^2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.1.1.tgz#31d377f26238e6434a18d5f080061949c04eb2f0"
-  integrity sha512-G9L+xWPwvza+i5BOksQZnPev0yn4S5Esfeh++gm50nolYlfiIp71u8m/CBhy5agdXGoVINBenEy/M+pl5fqHFA==
+"@trufflesuite/chromafi@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.1.2.tgz#50715070093c5543a406a2cc85fa70fc8d1a36ab"
+  integrity sha512-KcfjcH3B8+lHfSTfugFPBpMZmppLNCnM6/PP8ByrQLSACyjh9UOMUWHAW3FDHKEt1cOCzIFXrx2f4AFFrQFxSg==
   dependencies:
     ansi-mark "^1.0.0"
     ansi-regex "^3.0.0"
@@ -1084,11 +1084,11 @@
     camelcase "^4.1.0"
     chalk "^2.3.2"
     cheerio "^1.0.0-rc.2"
-    deepmerge "^2.1.0"
     detect-indent "^5.0.0"
     he "^1.1.1"
     highlight.js "^9.12.0"
     husky "^0.14.3"
+    lodash.merge "^4.6.2"
     min-indent "^1.0.0"
     strip-ansi "^4.0.0"
     strip-indent "^2.0.0"
@@ -4556,11 +4556,6 @@ deepmerge@3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-3.2.0.tgz#58ef463a57c08d376547f8869fdc5bcee957f44e"
   integrity sha512-6+LuZGU7QCNUnAJyX8cIrlzoEgggTM6B7mm+znKOX4t5ltluT9KLjN6g61ECMS0LTsLW7yDpNoxhix5FZcrIow==
-
-deepmerge@^2.1.0:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-2.2.1.tgz#5d3ff22a01c00f645405a2fbc17d0778a1801170"
-  integrity sha512-R9hc1Xa/NOBi9WRVUWg19rl1UB7Tt4kuPd+thNJgFZoxXsTz7ncaPaeIm+40oSGuP33DfMb4sZt1QIGiJzC4EA==
 
 default-compare@^1.0.0:
   version "1.0.0"
@@ -9662,6 +9657,11 @@ lodash.merge@^4.4.0, lodash.merge@^4.6.0:
   version "4.6.1"
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.1.tgz#adc25d9cb99b9391c59624f379fbba60d7111d54"
   integrity sha512-AOYza4+Hf5z1/0Hztxpm2/xiPZgi/cjMqdnKTUWTBSKchJlxXXuUSxCCl8rJlf4g6yww/j6mA8nC8Hw/EZWxKQ==
+
+lodash.merge@^4.6.2:
+  version "4.6.2"
+  resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
+  integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
 
 lodash.once@^4.0.0:
   version "4.1.1"

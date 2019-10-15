@@ -4,7 +4,7 @@
   "description": "Integration utils for truffle/debugger",
   "dependencies": {
     "@truffle/codec": "^3.0.10",
-    "@trufflesuite/chromafi": "^2.1.1",
+    "@trufflesuite/chromafi": "^2.1.2",
     "async": "2.6.1",
     "chalk": "^2.4.2",
     "debug": "^4.1.0",
