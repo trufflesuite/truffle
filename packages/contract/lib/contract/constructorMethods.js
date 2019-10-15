@@ -48,7 +48,11 @@ module.exports = Contract => ({
       await this.detectNetwork();
       const onChainCode = await this.web3.eth.getCode(address);
       await utils.checkCode(onChainCode, this.contractName, address);
-      return new this(address);
+      const contractInstance = new this.web3.eth.Contract(this.abi);
+      contractInstance.options.address = address;
+      if (this._json.networks[this.network_id])
+        contractInstance.transactionHash = this.transactionHash;
+      return new this(contractInstance);
     } catch (error) {
       throw error;
     }
@@ -60,7 +64,10 @@ module.exports = Contract => ({
       await this.detectNetwork();
       utils.checkNetworkArtifactMatch(this);
       utils.checkDeployment(this);
-      return new this(this.address);
+      const contractInstance = new this.web3.eth.Contract(this.abi);
+      contractInstance.options.address = this.address;
+      contractInstance.transactionHash = this.transactionHash;
+      return new this(contractInstance);
     } catch (error) {
       throw error;
     }
