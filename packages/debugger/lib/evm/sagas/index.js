@@ -82,15 +82,15 @@ export function* callstackAndCodexSaga() {
     debug("exceptional halt!");
 
     yield put(actions.fail());
+  } else if (yield select(evm.current.step.isInstantCallOrCreate)) {
+    // if there is no binary (e.g. for precompiles or externally owned
+    // accounts), or if the call fails instantly (callstack overflow or not
+    // enough ether), there will be no trace steps for the called code, and so
+    // we shouldn't tell the debugger that we're entering another execution
+    // context
+    // (so we do nothing)
   } else if (yield select(evm.current.step.isCall)) {
     debug("got call");
-    // if there is no binary (e.g. in the case of precompiled contracts or
-    // externally owned accounts), then there will be no trace steps for the
-    // called code, and so we shouldn't tell the debugger that we're entering
-    // another execution context
-    if (yield select(evm.current.step.callsPrecompileOrExternal)) {
-      return;
-    }
 
     let address = yield select(evm.current.step.callAddress);
     let data = yield select(evm.current.step.callData);

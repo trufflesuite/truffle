@@ -93,6 +93,24 @@ contract RevertTest {
 }
 `;
 
+const __OVER_TRANSFER = `
+pragma solidity ^0.5.0;
+
+contract BadTransferTest {
+
+  Recipient recipient;
+
+  function run() public {
+    recipient = (new Recipient).value(address(this).balance + 1 wei)();
+  }
+}
+
+contract Recipient {
+  constructor() public payable {
+  }
+}
+`;
+
 const __ADJUSTMENT = `
 pragma solidity ^0.5.0;
 
@@ -113,7 +131,8 @@ let sources = {
   "SingleCall.sol": __SINGLE_CALL,
   "NestedCall.sol": __NESTED_CALL,
   "FailedCall.sol": __FAILED_CALL,
-  "AdjustTest.sol": __ADJUSTMENT
+  "AdjustTest.sol": __ADJUSTMENT,
+  "BadTransfer.sol": __OVER_TRANSFER
 };
 
 describe("Solidity Debugging", function() {
@@ -266,6 +285,48 @@ describe("Solidity Debugging", function() {
       let instance = await abstractions.SingleCall.deployed();
       let receipt = await instance.runSha();
       let txHash = receipt.tx;
+
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        files,
+        contracts: artifacts
+      });
+
+      let session = bugger.connect();
+
+      let hasBegun = false; //we don't check until it's nonzero, since it
+      //starts as zero now
+
+      while (!session.view(trace.finished)) {
+        let actual = session.view(solidity.current.functionDepth);
+        if (actual !== 0) {
+          hasBegun = true;
+        }
+        if (hasBegun) {
+          assert.equal(actual, numExpected);
+        }
+
+        await session.stepNext();
+      }
+
+      assert(hasBegun); //check for non-vacuity of the above tests
+    });
+
+    //NOTE: this is same as previous test except for the transaction run;
+    //not bothering to factor for now
+    it("is unaffected by overly large transfers", async function() {
+      const numExpected = 1;
+
+      let instance = await abstractions.BadTransferTest.deployed();
+      //HACK: because this transaction fails, we have to extract the hash from
+      //the resulting exception (there is supposed to be a non-hacky way but it
+      //does not presently work)
+      let txHash;
+      try {
+        await instance.run(); //this will throw because of the revert
+      } catch (error) {
+        txHash = error.hashes[0]; //it's the only hash involved
+      }
 
       let bugger = await Debugger.forTx(txHash, {
         provider,

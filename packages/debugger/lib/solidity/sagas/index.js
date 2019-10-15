@@ -27,16 +27,17 @@ function* functionDepthSaga() {
     //we do this case first so we can be sure we're not failing in any of the
     //other cases below!
     yield put(actions.externalReturn());
+  } else if (
+    yield select(solidity.current.willCallOrCreateButInstantlyReturn)
+  ) {
+    //do nothing
+    //again, we put this second so we can be sure the other cases are not this
   } else if (yield select(solidity.current.willJump)) {
     let jumpDirection = yield select(solidity.current.jumpDirection);
     yield put(actions.jump(jumpDirection));
   } else if (yield select(solidity.current.willCall)) {
     debug("about to call");
-    if (yield select(solidity.current.callsPrecompileOrExternal)) {
-      //call to precompile or externally-owned account; do nothing
-    } else {
-      yield put(actions.externalCall());
-    }
+    yield put(actions.externalCall());
   } else if (yield select(solidity.current.willCreate)) {
     yield put(actions.externalCall());
   } else if (yield select(solidity.current.willReturn)) {
