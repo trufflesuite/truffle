@@ -5,7 +5,7 @@ const { AddSource, AddBytecode, AddCompilation, AddContracts } = Mutation;
 const { GetContract } = Query;
 
 describe("Contract", () => {
-  const client = new WorkspaceClient();
+  let wsClient;
 
   let compilationId;
   let sourceId;
@@ -13,19 +13,21 @@ describe("Contract", () => {
   let expectedId;
 
   beforeEach(async () => {
+    wsClient = new WorkspaceClient();
+
     //add source and get id
     const sourceVariables = {
       contents: Migrations.source,
       sourcePath: Migrations.sourcePath
     };
-    const sourceResult = await client.execute(AddSource, sourceVariables);
+    const sourceResult = await wsClient.execute(AddSource, sourceVariables);
     sourceId = sourceResult.sourcesAdd.sources[0].id;
 
     //add bytecode and get id
     const bytecodeVariables = {
       bytes: Migrations.bytecode
     };
-    const bytecodeResult = await client.execute(AddBytecode, bytecodeVariables);
+    const bytecodeResult = await wsClient.execute(AddBytecode, bytecodeVariables);
     bytecodeId = bytecodeResult.bytecodesAdd.bytecodes[0].id;
 
     // add compilation and get id
@@ -35,21 +37,12 @@ describe("Contract", () => {
       sourceId: sourceId,
       abi: JSON.stringify(Migrations.abi)
     };
-    const compilationResult = await client.execute(AddCompilation, compilationVariables);
+    const compilationResult = await wsClient.execute(AddCompilation, compilationVariables);
     compilationId = compilationResult.compilationsAdd.compilations[0].id;
 
   });
 
-
-  it("adds contracts", async () => {
-    const client = new WorkspaceClient();
-
-    const expectedId = generateId({
-      name: Migrations.contractName,
-      abi: { json: JSON.stringify(Migrations.abi) } ,
-      sourceContract: { index: 0 } ,
-      compilation: { id: compilationId }
-    });
+  test("can be added", async() => {
 
     const variables = {
       contractName: Migrations.contractName,
@@ -57,42 +50,47 @@ describe("Contract", () => {
       bytecodeId: bytecodeId,
       abi: JSON.stringify(Migrations.abi)
     };
+    const addContractsResult = await wsClient.execute(AddContracts, variables);
 
-    // add contracts
-    {
-      const data = await client.execute(AddContracts, variables);
+    expect(addContractsResult).toHaveProperty("contractsAdd");
 
-      expect(data).toHaveProperty("contractsAdd");
+    const { contractsAdd } = addContractsResult;
+    expect(contractsAdd).toHaveProperty("contracts");
 
-      const { contractsAdd } = data;
-      expect(contractsAdd).toHaveProperty("contracts");
+    const { contracts } = contractsAdd;
+    expect(contracts).toHaveLength(1);
 
-      const { contracts } = contractsAdd;
-      expect(contracts).toHaveLength(1);
+    const contract = contracts[0];
 
-      const contract = contracts[0];
+    expect(contract).toHaveProperty("id");
+    expect(contract).toHaveProperty("name");
+    expect(contract).toHaveProperty("sourceContract");
 
-      expect(contract).toHaveProperty("id");
-      expect(contract).toHaveProperty("name");
-      expect(contract).toHaveProperty("sourceContract");
+    const { sourceContract } = contract;
+    expect(sourceContract).toHaveProperty("name");
+    expect(sourceContract).toHaveProperty("source");
+    expect(sourceContract).toHaveProperty("ast");
 
-      const { sourceContract } = contract;
-      expect(sourceContract).toHaveProperty("name");
-      expect(sourceContract).toHaveProperty("source");
-      expect(sourceContract).toHaveProperty("ast");
-    }
-
-    //ensure retrieved as matching
-    {
-      const data = await client.execute(GetContract, { id: expectedId });
-
-      expect(data).toHaveProperty("contract");
-
-      const { contract } = data;
-      expect(contract).toHaveProperty("name");
-      expect(contract).toHaveProperty("sourceContract");
-      expect(contract).toHaveProperty("abi");
-    }
   });
+
+  test("can be queried", async() => {
+    expectedId = generateId({
+      name: Migrations.contractName,
+      abi: { json: JSON.stringify(Migrations.abi) } ,
+      sourceContract: { index: 0 } ,
+      compilation: { id: compilationId }
+    });
+
+    const getContractResult = await wsClient.execute(GetContract, { id: expectedId });
+
+    expect(getContractResult).toHaveProperty("contract");
+
+    const { contract } = getContractResult;
+    expect(contract).toHaveProperty("name");
+    expect(contract).toHaveProperty("sourceContract");
+    expect(contract).toHaveProperty("abi");
+
+  });
+
 });
 
