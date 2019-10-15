@@ -365,10 +365,10 @@ let solidity = createSelectorTree({
     willCreate: createLeaf([evm.current.step.isCreate], x => x),
 
     /**
-     * solidity.current.callsPrecompileOrExternal
+     * solidity.current.willCallOrCreateButInstantlyReturn
      */
-    callsPrecompileOrExternal: createLeaf(
-      [evm.current.step.callsPrecompileOrExternal],
+    willCallOrCreateButInstantlyReturn: createLeaf(
+      [evm.current.step.isInstantCallOrCreate],
       x => x
     ),
 

@@ -451,14 +451,19 @@ const evm = createSelectorTree({
       ),
 
       /**
-       * evm.current.step.callsPrecompileOrExternal
+       * evm.current.step.isInstantCallOrReturn
        *
-       * are we calling a precompiled contract or an externally-owned account,
-       * rather than a contract account that isn't precompiled?
+       * are we doing a call or create for which there are no trace steps?
+       * This can happen if:
+       * 1. we call a precompile
+       * 2. we call an externally-owned account
+       * 3. we do a call or create but the call stack is exhausted
+       * 4. we attempt to transfer more ether than we have
        */
-      callsPrecompileOrExternal: createLeaf(
-        ["./isCall", "/current/state/depth", "/next/state/depth"],
-        (calls, currentDepth, nextDepth) => calls && currentDepth === nextDepth
+      isInstantCallOrCreate: createLeaf(
+        ["./isCall", "./isCreate", "/current/state/depth", "/next/state/depth"],
+        (calls, creates, currentDepth, nextDepth) =>
+          (calls || creates) && currentDepth === nextDepth
       ),
 
       /**
