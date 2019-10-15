@@ -1,14 +1,15 @@
-const Ganache = require("ganache-core");
-const assert = require("assert");
-const WalletProvider = require("../src/index.js");
-const EthUtil = require("ethereumjs-util");
+import assert from "assert";
+import Ganache from "ganache-core";
+import * as EthUtil from "ethereumjs-util";
+import Web3 from "web3";
+import WalletProvider from "../dist";
+import { describe, it } from "mocha";
 
 describe("HD Wallet Provider", function() {
-  const Web3 = require("web3");
   const web3 = new Web3();
   const port = 8545;
-  let server;
-  let provider;
+  let server: any;
+  let provider: WalletProvider;
 
   before(done => {
     server = Ganache.server();
@@ -20,7 +21,7 @@ describe("HD Wallet Provider", function() {
   });
 
   afterEach(() => {
-    web3.setProvider(null);
+    web3.setProvider(new Web3.providers.HttpProvider("ws://localhost:8545"));
     provider.engine.stop();
   });
 
@@ -90,7 +91,7 @@ describe("HD Wallet Provider", function() {
       "9549f39decea7b7504e15572b2c6a72766df0281cea22bd1a3bc87166b1ca290"
     ];
 
-    const privateKeysByAddress = {
+    const privateKeysByAddress: { [address: string]: string } = {
       "0xc515db5834d8f110eee96c3036854dbf1d87de2b":
         "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580",
       "0xbd3366a0e5d2fb52691e3e08fabe136b0d4e5929":

@@ -2,7 +2,8 @@ import BN from "bn.js";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { DecoderContext } from "./contexts";
 import { AstDefinition } from "./ast";
-import { Types, Values } from "../format";
+import { Types } from "../format/types";
+import { Values } from "../format/values";
 import { CalldataDecoding, LogDecoding } from "./decoding";
 import { Transaction, BlockType } from "web3/eth/types";
 import { Log } from "web3/types";
@@ -30,7 +31,7 @@ export interface DecodedLog extends Log {
 
 export interface ContractMapping {
   [nodeId: number]: ContractObject;
-};
+}
 
 export interface StorageCache {
   [block: number]: {

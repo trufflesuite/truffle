@@ -11,12 +11,13 @@ import { enumFullName } from "./inspect";
 import { DecodedVariable } from "../types/interface";
 
 export namespace Conversion {
-
   /**
    * @param bytes - undefined | string | number | BN | Uint8Array | Big
    * @return {BN}
    */
-  export function toBN(bytes: undefined | string | number | BN | Uint8Array | Big): BN {
+  export function toBN(
+    bytes: undefined | string | number | BN | Uint8Array | Big
+  ): BN {
     if (bytes === undefined) {
       return undefined;
     } else if (typeof bytes == "string") {
@@ -41,10 +42,13 @@ export namespace Conversion {
    * @return {BN}
    */
   export function toSignedBN(bytes: Uint8Array): BN {
-    if (bytes[0] < 0x80) {  // if first bit is 0
+    if (bytes[0] < 0x80) {
+      // if first bit is 0
       return toBN(bytes);
     } else {
-      return toBN(bytes.map( (b) => 0xff - b )).addn(1).neg();
+      return toBN(bytes.map(b => 0xff - b))
+        .addn(1)
+        .neg();
     }
   }
 
@@ -59,8 +63,10 @@ export namespace Conversion {
    * @param padLength - number - minimum desired byte length (left-pad with zeroes)
    * @return {string}
    */
-  export function toHexString(bytes: Uint8Array | BN, padLength: number = 0): string {
-
+  export function toHexString(
+    bytes: Uint8Array | BN,
+    padLength: number = 0
+  ): string {
     if (BN.isBN(bytes)) {
       bytes = toBytes(bytes);
     }
@@ -83,27 +89,25 @@ export namespace Conversion {
     debug("bytes: %o", bytes);
 
     let string = bytes.reduce(
-      (str, byte) => `${str}${pad(byte.toString(16))}`, ""
+      (str, byte) => `${str}${pad(byte.toString(16))}`,
+      ""
     );
 
     return `0x${string}`;
   }
 
   export function toAddress(bytes: Uint8Array | string): string {
-
-    if(typeof bytes === "string") {
+    if (typeof bytes === "string") {
       //in this case, we can do some simple string manipulation and
       //then pass to web3
       let hex = bytes; //just renaming for clarity
       if (hex.startsWith("0x")) {
         hex = hex.slice(2);
       }
-      if(hex.length < 2 * Constants.ADDRESS_SIZE)
-      {
+      if (hex.length < 2 * Constants.ADDRESS_SIZE) {
         hex = hex.padStart(2 * Constants.ADDRESS_SIZE, "0");
       }
-      if(hex.length > 2 * Constants.ADDRESS_SIZE)
-      {
+      if (hex.length > 2 * Constants.ADDRESS_SIZE) {
         hex = "0x" + hex.slice(hex.length - 2 * Constants.ADDRESS_SIZE);
       }
       return Web3.utils.toChecksumAddress(hex);
@@ -111,17 +115,22 @@ export namespace Conversion {
     //otherwise, we're in the Uint8Array case, which we can't fully handle ourself
 
     //truncate *on left* to 20 bytes
-    if(bytes.length > Constants.ADDRESS_SIZE) {
+    if (bytes.length > Constants.ADDRESS_SIZE) {
       bytes = bytes.slice(bytes.length - Constants.ADDRESS_SIZE, bytes.length);
     }
 
     //now, convert to hex string and apply checksum case that second argument
     //(which ensures it's padded to 20 bytes) shouldn't actually ever be
     //needed, but I'll be safe and include it
-    return Web3.utils.toChecksumAddress(toHexString(bytes, Constants.ADDRESS_SIZE));
+    return Web3.utils.toChecksumAddress(
+      toHexString(bytes, Constants.ADDRESS_SIZE)
+    );
   }
 
-  export function toBytes(data: BN | string | number | Big, length: number = 0): Uint8Array {
+  export function toBytes(
+    data: BN | string | number | Big,
+    length: number = 0
+  ): Uint8Array {
     //note that length is a minimum output length
     //strings will be 0-padded on left
     //numbers/BNs will be sign-padded on left
@@ -131,14 +140,13 @@ export namespace Conversion {
     //generic strings to hex)
 
     if (typeof data === "string") {
-
       let hex = data; //renaming for clarity
 
       if (hex.startsWith("0x")) {
         hex = hex.slice(2);
       }
 
-      if(hex === "") {
+      if (hex === "") {
         //this special case is necessary because the match below will return null,
         //not an empty array, when given an empty string
         return new Uint8Array(0);
@@ -149,8 +157,7 @@ export namespace Conversion {
       }
 
       let bytes = new Uint8Array(
-        hex.match(/.{2}/g)
-          .map( (byte) => parseInt(byte, 16) )
+        hex.match(/.{2}/g).map(byte => parseInt(byte, 16))
       );
 
       if (bytes.length < length) {
@@ -160,13 +167,11 @@ export namespace Conversion {
       }
 
       return bytes;
-    }
-    else {
+    } else {
       // BN/Big/number case
-      if(typeof data === "number") {
+      if (typeof data === "number") {
         data = new BN(data);
-      }
-      else if(data instanceof Big) {
+      } else if (data instanceof Big) {
         //note: going through string may seem silly but it's actually not terrible here,
         //since BN is binary-based and Big is decimal-based
         data = new BN(data.toFixed());
@@ -174,7 +179,9 @@ export namespace Conversion {
       }
 
       //note that the argument for toTwos is given in bits
-      return new Uint8Array(data.toTwos(length * 8).toArrayLike(Buffer, "be", length)); //big-endian
+      return new Uint8Array(
+        data.toTwos(length * 8).toArrayLike(Buffer, "be", length)
+      ); //big-endian
     }
   }
 
@@ -199,19 +206,27 @@ export namespace Conversion {
 
   //NOTE: Definitely do not use this in real code!  For tests only!
   //for convenience: invokes the nativize method on all the given variables
-  export function nativizeVariables(variables: {[name: string]: Values.Result}): {[name: string]: any} {
-    return Object.assign({}, ...Object.entries(variables).map(
-      ([name, value]) => ({[name]: nativize(value)})
-    ));
+  export function nativizeVariables(variables: {
+    [name: string]: Values.Result;
+  }): { [name: string]: any } {
+    return Object.assign(
+      {},
+      ...Object.entries(variables).map(([name, value]) => ({
+        [name]: nativize(value)
+      }))
+    );
   }
-  
+
   //NOTE: Definitely do not use this in real code!  For tests only!
   //for convenience: invokes the nativize method on all the given variables, and changes them to
   //the old format
-  export function nativizeDecoderVariables(variables: DecodedVariable[]): {[name: string]: any} {
-    return Object.assign({}, ...variables.map(
-      ({name, value}) => ({[name]: nativize(value)})
-    ));
+  export function nativizeDecoderVariables(
+    variables: DecodedVariable[]
+  ): { [name: string]: any } {
+    return Object.assign(
+      {},
+      ...variables.map(({ name, value }) => ({ [name]: nativize(value) }))
+    );
     //note that the assignments are processed in order, so if multiple have same name, later
     //(i.e. more derived) will overwrite earlier (i.e. baser)... be aware!  I mean, this is the
     //right way to do overwriting, but it's still overwriting so still dangerous.
@@ -222,19 +237,21 @@ export namespace Conversion {
   //NOTE: does NOT do this recursively inside structs, arrays, etc!
   //I mean, those aren't elementary and therefore aren't in the domain
   //anyway, but still
-  export function cleanBool(result: Values.ElementaryResult): Values.ElementaryResult {
-    switch(result.kind) {
+  export function cleanBool(
+    result: Values.ElementaryResult
+  ): Values.ElementaryResult {
+    switch (result.kind) {
       case "value":
         return result;
       case "error":
-        switch(result.error.kind) {
+        switch (result.error.kind) {
           case "BoolOutOfRangeError":
             //return true
             return {
-              type: <Types.BoolType> result.type,
+              type: <Types.BoolType>result.type,
               kind: "value",
               value: {
-                asBool: true
+                asBoolean: true
               }
             };
           default:
@@ -247,28 +264,33 @@ export namespace Conversion {
   //1. you absolutely have to, or
   //2. it's just testing, not real code
   export function nativize(result: Values.Result): any {
-    if(result.kind === "error") {
+    if (result.kind === "error") {
       return undefined;
     }
-    switch(result.type.typeClass) {
+    switch (result.type.typeClass) {
       case "uint":
       case "int":
-        return (<Values.UintValue|Values.IntValue>result).value.asBN.toNumber(); //WARNING
+        return (<Values.UintValue | Values.IntValue>(
+          result
+        )).value.asBN.toNumber(); //WARNING
       case "bool":
-        return (<Values.BoolValue>result).value.asBool;
+        return (<Values.BoolValue>result).value.asBoolean;
       case "bytes":
         return (<Values.BytesValue>result).value.asHex;
       case "address":
         return (<Values.AddressValue>result).value.asAddress;
       case "string": {
-        let coercedResult = <Values.StringValue> result;
-        switch(coercedResult.value.kind) {
+        let coercedResult = <Values.StringValue>result;
+        switch (coercedResult.value.kind) {
           case "valid":
             return coercedResult.value.asString;
           case "malformed":
             // this will turn malformed utf-8 into replacement characters (U+FFFD) (WARNING)
             // note we need to cut off the 0x prefix
-            return Buffer.from(coercedResult.value.asHex.slice(2), 'hex').toString();
+            return Buffer.from(
+              coercedResult.value.asHex.slice(2),
+              "hex"
+            ).toString();
         }
       }
       case "fixed":
@@ -276,55 +298,78 @@ export namespace Conversion {
         //HACK: Big doesn't have a toNumber() method, so we convert to string and then parse with Number
         //NOTE: we don't bother setting the magic variables Big.NE or Big.PE first, as the choice of
         //notation shouldn't affect the result (can you believe I have to write this? @_@)
-        return Number((<Values.FixedValue|Values.UfixedValue>result).value.asBig.toString()); //WARNING
+        return Number(
+          (<Values.FixedValue | Values.UfixedValue>(
+            result
+          )).value.asBig.toString()
+        ); //WARNING
       case "array": //WARNING: circular case not handled; will loop infinitely
         return (<Values.ArrayValue>result).value.map(nativize);
       case "mapping":
-        return Object.assign({}, ...(<Values.MappingValue>result).value.map(
-          ({key, value}) => ({[nativize(key).toString()]: nativize(value)})
-        ));
+        return Object.assign(
+          {},
+          ...(<Values.MappingValue>result).value.map(({ key, value }) => ({
+            [nativize(key).toString()]: nativize(value)
+          }))
+        );
       case "struct": //WARNING: circular case not handled; will loop infinitely
-        return Object.assign({}, ...(<Values.StructValue>result).value.map(
-          ({name, value}) => ({[name]: nativize(value)})
-        ));
+        return Object.assign(
+          {},
+          ...(<Values.StructValue>result).value.map(({ name, value }) => ({
+            [name]: nativize(value)
+          }))
+        );
       case "tuple":
-        return (<Values.TupleValue>result).value.map(
-          ({value}) => nativize(value)
+        return (<Values.TupleValue>result).value.map(({ value }) =>
+          nativize(value)
         );
       case "magic":
-        return Object.assign({}, ...Object.entries((<Values.MagicValue>result).value).map(
-            ([key, value]) => ({[key]: nativize(value)})
-        ));
+        return Object.assign(
+          {},
+          ...Object.entries((<Values.MagicValue>result).value).map(
+            ([key, value]) => ({ [key]: nativize(value) })
+          )
+        );
       case "enum":
         return enumFullName(<Values.EnumValue>result);
       case "contract": {
-        let coercedResult = <Values.ContractValue> result;
-        switch(coercedResult.value.kind) {
+        let coercedResult = <Values.ContractValue>result;
+        switch (coercedResult.value.kind) {
           case "known":
-            return `${coercedResult.value.class.typeName}(${coercedResult.value.address})`;
+            return `${coercedResult.value.class.typeName}(${
+              coercedResult.value.address
+            })`;
           case "unknown":
             return coercedResult.value.address;
         }
         break; //to satisfy typescript
       }
       case "function":
-        switch(result.type.visibility) {
+        switch (result.type.visibility) {
           case "external": {
-            let coercedResult = <Values.FunctionExternalValue> result;
-            switch(coercedResult.value.kind) {
+            let coercedResult = <Values.FunctionExternalValue>result;
+            switch (coercedResult.value.kind) {
               case "known":
-                return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).${coercedResult.value.abi.name}`
+                return `${coercedResult.value.contract.class.typeName}(${
+                  coercedResult.value.contract.address
+                }).${coercedResult.value.abi.name}`;
               case "invalid":
-                return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).call(${coercedResult.value.selector}...)`
+                return `${coercedResult.value.contract.class.typeName}(${
+                  coercedResult.value.contract.address
+                }).call(${coercedResult.value.selector}...)`;
               case "unknown":
-                return `${coercedResult.value.contract.address}.call(${coercedResult.value.selector}...)`
+                return `${coercedResult.value.contract.address}.call(${
+                  coercedResult.value.selector
+                }...)`;
             }
           }
           case "internal": {
-            let coercedResult = <Values.FunctionInternalValue> result;
-            switch(coercedResult.value.kind) {
+            let coercedResult = <Values.FunctionInternalValue>result;
+            switch (coercedResult.value.kind) {
               case "function":
-                return `${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}`;
+                return `${coercedResult.value.definedIn.typeName}.${
+                  coercedResult.value.name
+                }`;
               case "exception":
                 return coercedResult.value.deployedProgramCounter === 0
                   ? `<zero>`

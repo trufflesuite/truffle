@@ -9,51 +9,64 @@ const debug = debugModule("codec:format:errors");
 
 import BN from "bn.js";
 import { Types } from "./types";
-import util from "util";
 import { AstDefinition } from "../types/ast";
-import { Definition as DefinitionUtils } from "../utils/definition";
-import { TypeUtils } from "../utils/datatype";
+import { Range } from "../types/storage";
 
 export namespace Errors {
-
   /*
    * SECTION 1: Generic types for values in general (including errors).
    */
 
-  //For when we need to throw an error, here's a wrapper class that extends Error.
-  //Apologies about the confusing name, but I wanted something that would make
-  //sense should it not be caught and thus accidentally exposed to the outside.
-  export class DecodingError extends Error{
-    error: ErrorForThrowing;
-    constructor(error: ErrorForThrowing) {
-      super(message(error));
-      this.error = error;
-      this.name = "DecodingError";
-    }
-  }
-
-  export type ErrorResult = ElementaryErrorResult
-    | ArrayErrorResult | MappingErrorResult | StructErrorResult | MagicErrorResult | TupleErrorResult
+  export type ErrorResult =
+    | ElementaryErrorResult
+    | ArrayErrorResult
+    | MappingErrorResult
+    | StructErrorResult
+    | MagicErrorResult
+    | TupleErrorResult
     | EnumErrorResult
-    | ContractErrorResult | FunctionExternalErrorResult | FunctionInternalErrorResult;
+    | ContractErrorResult
+    | FunctionExternalErrorResult
+    | FunctionInternalErrorResult;
 
-  export type DecoderError = GenericError
-    | UintError | IntError | BoolError | BytesStaticError | BytesDynamicError | AddressError
-    | StringError | FixedError | UfixedError
-    | ArrayError | MappingError | StructError | MagicError | TupleError
-    | EnumError | ContractError | FunctionExternalError | FunctionInternalError
+  export type DecoderError =
+    | GenericError
+    | UintError
+    | IntError
+    | BoolError
+    | BytesStaticError
+    | BytesDynamicError
+    | AddressError
+    | StringError
+    | FixedError
+    | UfixedError
+    | ArrayError
+    | MappingError
+    | StructError
+    | MagicError
+    | TupleError
+    | EnumError
+    | ContractError
+    | FunctionExternalError
+    | FunctionInternalError
     | InternalUseError;
-  //note that at the moment, no reference type has its own error category, so
-  //no reference types are listed here; this also includes Magic
 
   /*
    * SECTION 2: Elementary values
    */
 
-  export type ElementaryErrorResult = UintErrorResult | IntErrorResult | BoolErrorResult
-    | BytesErrorResult | AddressErrorResult | StringErrorResult
-    | FixedErrorResult | UfixedErrorResult;
-  export type BytesErrorResult = BytesStaticErrorResult | BytesDynamicErrorResult;
+  export type ElementaryErrorResult =
+    | UintErrorResult
+    | IntErrorResult
+    | BoolErrorResult
+    | BytesErrorResult
+    | AddressErrorResult
+    | StringErrorResult
+    | FixedErrorResult
+    | UfixedErrorResult;
+  export type BytesErrorResult =
+    | BytesStaticErrorResult
+    | BytesDynamicErrorResult;
 
   //Uints
   export interface UintErrorResult {
@@ -118,7 +131,7 @@ export namespace Errors {
     error: GenericError | BytesDynamicError;
   }
 
-  export type BytesDynamicError = never; //bytes dynamic has no specific errors atm
+  export type BytesDynamicError = DynamicDataImplementationError;
 
   //addresses
   export interface AddressErrorResult {
@@ -141,7 +154,7 @@ export namespace Errors {
     error: GenericError | StringError;
   }
 
-  export type StringError = never; //again, string has no specific errors
+  export type StringError = DynamicDataImplementationError;
 
   //Fixed & Ufixed
   export interface FixedErrorResult {
@@ -181,7 +194,7 @@ export namespace Errors {
     error: GenericError | ArrayError;
   }
 
-  export type ArrayError = never;
+  export type ArrayError = DynamicDataImplementationError;
 
   //Mappings
   export interface MappingErrorResult {
@@ -190,7 +203,7 @@ export namespace Errors {
     error: GenericError | MappingError;
   }
 
-  export type MappingError = never;
+  export type MappingError = never; //mappings have no type-specific errors
 
   //Structs
   export interface StructErrorResult {
@@ -199,7 +212,7 @@ export namespace Errors {
     error: GenericError | StructError;
   }
 
-  export type StructError = never;
+  export type StructError = DynamicDataImplementationError;
 
   //Tuples
   export interface TupleErrorResult {
@@ -208,7 +221,7 @@ export namespace Errors {
     error: GenericError | TupleError;
   }
 
-  export type TupleError = never;
+  export type TupleError = DynamicDataImplementationError;
 
   //Magic variables
   export interface MagicErrorResult {
@@ -217,7 +230,7 @@ export namespace Errors {
     error: GenericError | MagicError;
   }
 
-  export type MagicError = never;
+  export type MagicError = never; //neither do magic variables
 
   /*
    * SECTION 4: ENUMS
@@ -274,7 +287,9 @@ export namespace Errors {
     error: GenericError | FunctionExternalError;
   }
 
-  export type FunctionExternalError = FunctionExternalNonStackPaddingError | FunctionExternalStackPaddingError;
+  export type FunctionExternalError =
+    | FunctionExternalNonStackPaddingError
+    | FunctionExternalStackPaddingError;
 
   export interface FunctionExternalNonStackPaddingError {
     raw: string; //should be hex string
@@ -298,8 +313,11 @@ export namespace Errors {
     error: GenericError | FunctionInternalError;
   }
 
-  export type FunctionInternalError = FunctionInternalPaddingError | NoSuchInternalFunctionError
-    | DeployedFunctionInConstructorError | MalformedInternalFunctionError;
+  export type FunctionInternalError =
+    | FunctionInternalPaddingError
+    | NoSuchInternalFunctionError
+    | DeployedFunctionInConstructorError
+    | MalformedInternalFunctionError;
 
   export interface FunctionInternalPaddingError {
     raw: string; //should be hex string
@@ -331,11 +349,20 @@ export namespace Errors {
    * SECTION 8: GENERIC ERRORS
    */
 
-  export type GenericError = UserDefinedTypeNotFoundError | IndexedReferenceTypeError
-    | UnsupportedConstantError | ReadErrorStack;
+  export type GenericError =
+    | UserDefinedTypeNotFoundError
+    | IndexedReferenceTypeError
+    | ReadError;
+  export type ReadError =
+    | UnsupportedConstantError
+    | ReadErrorStack
+    | ReadErrorBytes
+    | ReadErrorStorage;
+  export type DynamicDataImplementationError =
+    | OverlongArraysAndStringsNotImplementedError
+    | OverlargePointersNotImplementedError;
 
-  export type ErrorForThrowing = UserDefinedTypeNotFoundError |
-    UnsupportedConstantError | ReadErrorStack;
+  export type ErrorForThrowing = UserDefinedTypeNotFoundError | ReadError;
 
   //attempted to decode an indexed parameter of reference type error
   export interface IndexedReferenceTypeError {
@@ -362,38 +389,39 @@ export namespace Errors {
     to: number;
   }
 
-  //this function gives an error message
-  //for those errors that are meant to possibly
-  //be wrapped in a DecodingError and thrown
-  export function message(error: ErrorForThrowing) {
-    switch(error.kind) {
-      case "UserDefinedTypeNotFoundError":
-        let typeName = TypeUtils.isContractDefinedType(error.type)
-          ? error.type.definingContractName + "." + error.type.typeName
-          : error.type.typeName;
-        return `Unknown ${error.type.typeClass} type ${typeName} of id ${error.type.id}`;
-      case "UnsupportedConstantError":
-        return `Unsupported constant type ${DefinitionUtils.typeClass(error.definition)}$`;
-      case "ReadErrorStack":
-        return `Can't read stack from position ${error.from} to ${error.to}`;
-    }
+  export interface ReadErrorBytes {
+    kind: "ReadErrorBytes";
+    start: number;
+    length: number;
+  }
+
+  export interface ReadErrorStorage {
+    kind: "ReadErrorStorage";
+    range: Range;
+  }
+
+  export interface OverlongArraysAndStringsNotImplementedError {
+    kind: "OverlongArraysAndStringsNotImplementedError";
+    lengthAsBN: BN;
+    dataLength?: number; //only included when the special strict mode check fails
+  }
+
+  export interface OverlargePointersNotImplementedError {
+    kind: "OverlargePointersNotImplementedError";
+    pointerAsBN: BN;
   }
 
   /* SECTION 9: Internal use errors */
   /* you should never see these returned.
    * they are only for internal use. */
 
-  export type InternalUseError = OverlongArrayOrStringError | PointerTooLargeError | InternalFunctionInABIError;
+  export type InternalUseError =
+    | OverlongArrayOrStringStrictModeError
+    | InternalFunctionInABIError;
 
-  export interface OverlongArrayOrStringError {
-    kind: "OverlongArrayOrStringError";
+  export interface OverlongArrayOrStringStrictModeError {
+    kind: "OverlongArrayOrStringStrictModeError";
     lengthAsBN: BN;
-    dataLength: number;
-  }
-
-  export interface PointerTooLargeError {
-    kind: "PointerTooLargeError";
-    pointerAsBN: BN;
     dataLength: number;
   }
 
@@ -401,5 +429,4 @@ export namespace Errors {
   export interface InternalFunctionInABIError {
     kind: "InternalFunctionInABIError";
   }
-
 }

@@ -1,15 +1,24 @@
-const path = require("path");
-const _ = require("lodash");
-const Provider = require("@truffle/provider");
+import _ from "lodash";
+import * as path from "path";
+import Provider from "@truffle/provider";
+import TruffleConfig from "./";
 
-// This is a list of multi-level keys with defaults
-// we need to _.merge. Using this list for safety
-// vs. just merging all objects.
-const _values = ({ truffleDirectory, workingDirectory, network }) => {
+export const getInitialConfig = ({
+  truffleDirectory,
+  workingDirectory,
+  network
+}: {
+  truffleDirectory?: string;
+  workingDirectory?: string;
+  network?: string;
+}) => {
+  const truffle_directory =
+    truffleDirectory || path.resolve(path.join(__dirname, "../"));
+  const working_directory = workingDirectory || process.cwd();
+
   return {
-    truffle_directory:
-      truffleDirectory || path.resolve(path.join(__dirname, "../")),
-    working_directory: workingDirectory || process.cwd(),
+    truffle_directory,
+    working_directory,
     network,
     networks: {},
     verboseRpc: false,
@@ -47,16 +56,20 @@ const _values = ({ truffleDirectory, workingDirectory, network }) => {
   };
 };
 
-const configProps = ({ configObject }) => {
-  const resolveDirectory = value => {
-    return path.resolve(configObject.working_directory, value);
-  };
+export const configProps = ({
+  configObject
+}: {
+  configObject: TruffleConfig;
+}) => {
+  const resolveDirectory = (value: string): string =>
+    path.resolve(configObject.working_directory, value);
 
   const defaultTXValues = {
     gas: 6721975,
     gasPrice: 20000000000, // 20 gwei,
     from: null
   };
+
   return {
     // These are already set.
     truffle_directory() {},
@@ -123,15 +136,15 @@ const configProps = ({ configObject }) => {
           throw new Error("Network not set. Cannot determine network to use.");
         }
 
-        let conf = configObject.networks[network];
+        let config = configObject.networks[network];
 
-        if (conf === null || conf === undefined) {
+        if (config === null || config === undefined) {
           config = {};
         }
 
-        conf = _.extend({}, defaultTXValues, conf);
+        config = _.extend({}, defaultTXValues, config);
 
-        return conf;
+        return config;
       },
       set() {
         throw new Error(
@@ -241,9 +254,4 @@ const configProps = ({ configObject }) => {
       }
     }
   };
-};
-
-module.exports = {
-  _values,
-  configProps
 };

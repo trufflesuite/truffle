@@ -2,16 +2,20 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:constant");
 
 import * as CodecUtils from "../utils";
-import { Types, Values, Errors } from "../format";
+import { Types, Values } from "../format";
 import read from "../read";
 import decodeValue from "./value";
-import { ConstantDefinitionPointer} from "../types/pointer";
+import { ConstantDefinitionPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";
+import { DecodingError } from "../types/errors";
 import BN from "bn.js";
 
-export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
-
+export default function* decodeConstant(
+  dataType: Types.Type,
+  pointer: ConstantDefinitionPointer,
+  info: EvmInfo
+): Generator<DecoderRequest, Values.Result, Uint8Array> {
   debug("pointer %o", pointer);
 
   //normally, we just dispatch to decodeValue.
@@ -20,17 +24,16 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
   //of the word, but readDefinition will put them at the *end* of the
   //word.  So we'll have to adjust things ourselves.
 
-  if(dataType.typeClass === "bytes" && dataType.kind === "static") {
+  if (dataType.typeClass === "bytes" && dataType.kind === "static") {
     let size = dataType.length;
     let word: Uint8Array;
     try {
       word = yield* read(pointer, info.state);
-    }
-    catch(error) {
+    } catch (error) {
       return {
         type: dataType,
         kind: "error" as const,
-        error: (<Errors.DecodingError>error).error
+        error: (<DecodingError>error).error
       };
     }
     //not bothering to check padding; shouldn't be necessary

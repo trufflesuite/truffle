@@ -11,167 +11,105 @@ const debug = debugModule("codec:format:values");
 //future.
 
 import BN from "bn.js";
-import Big from "big.js";
 import { Types } from "./types";
 import { Errors } from "./errors";
-import util from "util";
-import { AstDefinition, Mutability } from "../types/ast";
-import { Definition as DefinitionUtils } from "../utils/definition";
+import { Elementary } from "./elementary";
+import { Mutability } from "../types/ast";
 import { FunctionAbiEntry } from "../types/abi";
 
 export namespace Values {
-
   /*
    * SECTION 1: Generic types for values in general (including errors).
    */
 
   //This is the overall Result type.  It may encode an actual value or an error.
-  export type Result = ElementaryResult
-    | ArrayResult | MappingResult | StructResult | TupleResult | MagicResult
+  export type Result =
+    | ElementaryResult
+    | ArrayResult
+    | MappingResult
+    | StructResult
+    | TupleResult
+    | MagicResult
     | EnumResult
-    | ContractResult | FunctionExternalResult | FunctionInternalResult;
+    | ContractResult
+    | FunctionExternalResult
+    | FunctionInternalResult;
   //for when you want an actual value
-  export type Value = ElementaryValue
-    | ArrayValue | MappingValue | StructValue | TupleValue | MagicValue
+  export type Value =
+    | ElementaryValue
+    | ArrayValue
+    | MappingValue
+    | StructValue
+    | TupleValue
+    | MagicValue
     | EnumValue
-    | ContractValue | FunctionExternalValue | FunctionInternalValue;
+    | ContractValue
+    | FunctionExternalValue
+    | FunctionInternalValue;
 
   /*
    * SECTION 2: Elementary values
    */
 
-  export type ElementaryResult = UintResult | IntResult | BoolResult
-    | BytesResult | AddressResult | StringResult
-    | FixedResult | UfixedResult;
+  //NOTE: for technical reasons, the actual Value type definitions have been moved
+  //to elementary.ts, sorry!  see there for elementary Values; this part just re-exports
+  //those (and defines the Result types)
+
+  //overall groupings
+  export type ElementaryResult =
+    | UintResult
+    | IntResult
+    | BoolResult
+    | BytesResult
+    | AddressResult
+    | StringResult
+    | FixedResult
+    | UfixedResult;
   export type BytesResult = BytesStaticResult | BytesDynamicResult;
 
-  //note that we often want an elementary *value*, and not an error!
-  //so let's define those types too
-  export type ElementaryValue = UintValue | IntValue | BoolValue
-    | BytesValue | AddressValue | StringValue | FixedValue | UfixedValue;
-  //we don't include FixedValue or UfixedValue because those
-  //aren't implemented yet
-  export type BytesValue = BytesStaticValue | BytesDynamicValue;
+  export type ElementaryValue = Elementary.ElementaryValue;
+  export type BytesValue = Elementary.BytesValue;
 
-
-  //Uints
+  //integers
   export type UintResult = UintValue | Errors.UintErrorResult;
+  export type UintValue = Elementary.UintValue;
 
-  export interface UintValue {
-    type: Types.UintType;
-    kind: "value";
-    value: {
-      asBN: BN;
-      rawAsBN?: BN;
-    };
-  }
-
-  //Ints
   export type IntResult = IntValue | Errors.IntErrorResult;
+  export type IntValue = Elementary.IntValue;
 
-  export interface IntValue {
-    type: Types.IntType;
-    kind: "value";
-    value: {
-      asBN: BN;
-      rawAsBN?: BN;
-    };
-  }
-
-  //Bools
+  //bools
   export type BoolResult = BoolValue | Errors.BoolErrorResult;
+  export type BoolValue = Elementary.BoolValue;
 
-  export interface BoolValue {
-    type: Types.BoolType;
-    kind: "value";
-    value: {
-      asBool: boolean;
-    };
-  }
+  //bytes (static & dynaic)
+  export type BytesStaticResult =
+    | BytesStaticValue
+    | Errors.BytesStaticErrorResult;
+  export type BytesStaticValue = Elementary.BytesStaticValue;
 
-  //bytes (static)
-  export type BytesStaticResult = BytesStaticValue | Errors.BytesStaticErrorResult;
-
-  export interface BytesStaticValue {
-    type: Types.BytesTypeStatic;
-    kind: "value";
-    value: {
-      asHex: string; //should be hex-formatted, with leading "0x"
-      rawAsHex?: string;
-    };
-  }
-
-  //bytes (dynamic)
-  export type BytesDynamicResult = BytesDynamicValue | Errors.BytesDynamicErrorResult;
-
-  export interface BytesDynamicValue {
-    type: Types.BytesTypeDynamic;
-    kind: "value";
-    value: {
-      asHex: string; //should be hex-formatted, with leading "0x"
-    };
-  }
+  export type BytesDynamicResult =
+    | BytesDynamicValue
+    | Errors.BytesDynamicErrorResult;
+  export type BytesDynamicValue = Elementary.BytesDynamicValue;
 
   //addresses
   export type AddressResult = AddressValue | Errors.AddressErrorResult;
+  export type AddressValue = Elementary.AddressValue;
 
-  export interface AddressValue {
-    type: Types.AddressType;
-    kind: "value";
-    value: {
-      asAddress: string; //should have 0x and be checksum-cased
-      rawAsHex?: string;
-    }
-  }
-
-  //strings
+  //strings & their info
   export type StringResult = StringValue | Errors.StringErrorResult;
+  export type StringValue = Elementary.StringValue;
 
-  //strings have a special new type as their value: StringValueInfo
-  export interface StringValue {
-    type: Types.StringType;
-    kind: "value";
-    value: StringValueInfo;
-  }
+  export type StringValueInfo = Elementary.StringValueInfo;
+  export type StringValueInfoValid = Elementary.StringValueInfoValid;
+  export type StringValueInfoMalformed = Elementary.StringValueInfoMalformed;
 
-  //these come in two types: valid strings and malformed strings
-  export type StringValueInfo = StringValueInfoValid | StringValueInfoMalformed;
-
-  //valid strings
-  export interface StringValueInfoValid {
-    kind: "valid";
-    asString: string;
-  }
-
-  //malformed strings
-  export interface StringValueInfoMalformed {
-    kind: "malformed";
-    asHex: string;
-  }
-
-  //Fixed & Ufixed
-  
+  //fixed & ufixed
   export type FixedResult = FixedValue | Errors.FixedErrorResult;
-
-  export interface FixedValue {
-    type: Types.FixedType;
-    kind: "value";
-    value: {
-      asBig: Big;
-      rawAsBig?: Big;
-    };
-  }
+  export type FixedValue = Elementary.FixedValue;
 
   export type UfixedResult = UfixedValue | Errors.UfixedErrorResult;
-
-  export interface UfixedValue {
-    type: Types.UfixedType;
-    kind: "value";
-    value: {
-      asBig: Big;
-      rawAsBig?: Big;
-    };
-  }
+  export type UfixedValue = Elementary.UfixedValue;
 
   /*
    * SECTION 3: CONTAINER TYPES (including magic)
@@ -241,7 +179,7 @@ export namespace Values {
     kind: "value";
     //a magic variable can't be circular, duh!
     value: {
-      [field: string]: Result
+      [field: string]: Result;
     };
   }
 
@@ -260,7 +198,7 @@ export namespace Values {
       name: string;
       numericAsBN: BN;
     };
-  };
+  }
 
   /*
    * SECTION 5: CONTRACTS
@@ -278,7 +216,9 @@ export namespace Values {
 
   //There are two types -- one for contracts whose class we can identify, and one
   //for when we can't identify the class.
-  export type ContractValueInfo = ContractValueInfoKnown | ContractValueInfoUnknown;
+  export type ContractValueInfo =
+    | ContractValueInfoKnown
+    | ContractValueInfoUnknown;
 
   //when we can identify the class
   export interface ContractValueInfoKnown {
@@ -303,7 +243,9 @@ export namespace Values {
    */
 
   //external functions
-  export type FunctionExternalResult = FunctionExternalValue | Errors.FunctionExternalErrorResult;
+  export type FunctionExternalResult =
+    | FunctionExternalValue
+    | Errors.FunctionExternalErrorResult;
 
   export interface FunctionExternalValue {
     type: Types.FunctionExternalType;
@@ -313,7 +255,7 @@ export namespace Values {
 
   //External function values come in 3 types:
   export type FunctionExternalValueInfo =
-    FunctionExternalValueInfoKnown //known function of known class
+    | FunctionExternalValueInfoKnown //known function of known class
     | FunctionExternalValueInfoInvalid //known class, but can't locate function
     | FunctionExternalValueInfoUnknown; //can't determine class
 
@@ -345,7 +287,9 @@ export namespace Values {
    */
 
   //Internal functions
-  export type FunctionInternalResult = FunctionInternalValue | Errors.FunctionInternalErrorResult;
+  export type FunctionInternalResult =
+    | FunctionInternalValue
+    | Errors.FunctionInternalErrorResult;
 
   export interface FunctionInternalValue {
     type: Types.FunctionInternalType;
@@ -355,13 +299,13 @@ export namespace Values {
 
   //these also come in 3 types
   export type FunctionInternalValueInfo =
-    FunctionInternalValueInfoKnown //actual function
+    | FunctionInternalValueInfoKnown //actual function
     | FunctionInternalValueInfoException //default value
     | FunctionInternalValueInfoUnknown; //decoding not supported in this context
 
   //actual function
   export interface FunctionInternalValueInfoKnown {
-    kind: "function"
+    kind: "function";
     context: Types.ContractType;
     deployedProgramCounter: number;
     constructorProgramCounter: number;
@@ -373,7 +317,7 @@ export namespace Values {
 
   //default value
   export interface FunctionInternalValueInfoException {
-    kind: "exception"
+    kind: "exception";
     context: Types.ContractType;
     deployedProgramCounter: number;
     constructorProgramCounter: number;
@@ -381,7 +325,7 @@ export namespace Values {
 
   //value returned to indicate that decoding is not supported outside the debugger
   export interface FunctionInternalValueInfoUnknown {
-    kind: "unknown"
+    kind: "unknown";
     context: Types.ContractType;
     deployedProgramCounter: number;
     constructorProgramCounter: number;

@@ -1,8 +1,13 @@
 import { DecoderContext } from "./contexts";
 import * as AbiTypes from "./abi";
-import { Types, Values } from "../format";
+import { Types } from "../format/types";
+import { Values } from "../format/values";
 
-export type CalldataDecoding = FunctionDecoding | ConstructorDecoding | MessageDecoding | UnknownDecoding;
+export type CalldataDecoding =
+  | FunctionDecoding
+  | ConstructorDecoding
+  | MessageDecoding
+  | UnknownDecoding;
 export type LogDecoding = EventDecoding | AnonymousDecoding;
 
 export type DecodingMode = "full" | "abi";

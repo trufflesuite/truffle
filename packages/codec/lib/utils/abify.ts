@@ -8,8 +8,11 @@ import BN from "bn.js";
 import { Conversion as ConversionUtils } from "./conversion";
 import { CalldataDecoding, LogDecoding } from "../types/decoding";
 
-export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesById): Types.Type | undefined {
-  switch(dataType.typeClass) {
+export function abifyType(
+  dataType: Types.Type,
+  userDefinedTypes?: Types.TypesById
+): Types.Type | undefined {
+  switch (dataType.typeClass) {
     //we only need to specially handle types that don't go in
     //the ABI, or that have some information loss when going
     //in the ABI
@@ -27,7 +30,7 @@ export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesBy
         typeHint: TypeUtils.typeString(dataType)
       };
     case "function":
-      switch(dataType.visibility) {
+      switch (dataType.visibility) {
         case "external":
           return {
             typeClass: "function",
@@ -41,13 +44,15 @@ export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesBy
       break; //to satisfy TypeScript
     //the complex cases: struct & enum
     case "struct": {
-      const fullType = <Types.StructType> TypeUtils.fullType(dataType, userDefinedTypes);
-      if(!fullType) {
+      const fullType = <Types.StructType>(
+        TypeUtils.fullType(dataType, userDefinedTypes)
+      );
+      if (!fullType) {
         let typeToDisplay = TypeUtils.typeString(dataType);
         throw new UnknownUserDefinedTypeError(dataType.id, typeToDisplay);
       }
       const memberTypes = fullType.memberTypes.map(
-        ({name, type: memberType}) => ({
+        ({ name, type: memberType }) => ({
           name,
           type: abifyType(memberType, userDefinedTypes)
         })
@@ -59,8 +64,10 @@ export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesBy
       };
     }
     case "enum": {
-      const fullType = <Types.EnumType> TypeUtils.fullType(dataType, userDefinedTypes);
-      if(!fullType) {
+      const fullType = <Types.EnumType>(
+        TypeUtils.fullType(dataType, userDefinedTypes)
+      );
+      if (!fullType) {
         let typeToDisplay = TypeUtils.typeString(dataType);
         throw new UnknownUserDefinedTypeError(dataType.id, typeToDisplay);
       }
@@ -85,23 +92,26 @@ export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesBy
   }
 }
 
-export function abifyResult(result: Values.Result, userDefinedTypes?: Types.TypesById): Values.Result | undefined {
-  switch(result.type.typeClass) {
+export function abifyResult(
+  result: Values.Result,
+  userDefinedTypes?: Types.TypesById
+): Values.Result | undefined {
+  switch (result.type.typeClass) {
     case "mapping": //doesn't go in ABI
     case "magic": //doesn't go in ABI
       return undefined;
     case "address":
       //abify the type but leave the value alone
       return {
-        ...<Values.AddressResult> result,
-        type: <Types.AddressType> abifyType(result.type, userDefinedTypes)
+        ...(<Values.AddressResult>result),
+        type: <Types.AddressType>abifyType(result.type, userDefinedTypes)
       };
     case "contract": {
-      let coercedResult = <Values.ContractResult> result;
-      switch(coercedResult.kind) {
+      let coercedResult = <Values.ContractResult>result;
+      switch (coercedResult.kind) {
         case "value":
           return {
-            type: <Types.AddressType> abifyType(result.type, userDefinedTypes),
+            type: <Types.AddressType>abifyType(result.type, userDefinedTypes),
             kind: "value",
             value: {
               asAddress: coercedResult.value.address,
@@ -109,10 +119,12 @@ export function abifyResult(result: Values.Result, userDefinedTypes?: Types.Type
             }
           };
         case "error":
-          switch(coercedResult.error.kind) {
+          switch (coercedResult.error.kind) {
             case "ContractPaddingError":
               return {
-                type: <Types.AddressType> abifyType(result.type, userDefinedTypes),
+                type: <Types.AddressType>(
+                  abifyType(result.type, userDefinedTypes)
+                ),
                 kind: "error",
                 error: {
                   kind: "AddressPaddingError",
@@ -122,49 +134,53 @@ export function abifyResult(result: Values.Result, userDefinedTypes?: Types.Type
             default:
               //other contract errors are generic errors!
               //but TS doesn't know this so we coerce
-              return <Errors.AddressErrorResult> {
+              return <Errors.AddressErrorResult>{
                 ...coercedResult,
-                type: <Types.AddressType> abifyType(result.type, userDefinedTypes)
+                type: <Types.AddressType>(
+                  abifyType(result.type, userDefinedTypes)
+                )
               };
           }
       }
       break; //to satisfy typescript
     }
     case "function":
-      switch(result.type.visibility) {
+      switch (result.type.visibility) {
         case "external": {
-          let coercedResult = <Values.FunctionExternalResult> result;
-            return {
-              ...coercedResult,
-              type: <Types.FunctionExternalType> abifyType(result.type, userDefinedTypes)
-            };
-          }
+          let coercedResult = <Values.FunctionExternalResult>result;
+          return {
+            ...coercedResult,
+            type: <Types.FunctionExternalType>(
+              abifyType(result.type, userDefinedTypes)
+            )
+          };
+        }
         case "internal": //these don't go in the ABI
           return undefined;
       }
       break; //to satisfy TypeScript
     case "struct": {
-      let coercedResult = <Values.StructResult> result;
-      switch(coercedResult.kind) {
+      let coercedResult = <Values.StructResult>result;
+      switch (coercedResult.kind) {
         case "value":
-          if(coercedResult.reference !== undefined) {
+          if (coercedResult.reference !== undefined) {
             return undefined; //no circular values in the ABI!
           }
           let abifiedMembers = coercedResult.value.map(
-            ({name, value: member}) => ({
+            ({ name, value: member }) => ({
               name,
               value: abifyResult(member, userDefinedTypes)
             })
           );
           return {
             kind: "value",
-            type: <Types.StructType> abifyType(result.type, userDefinedTypes), //note: may throw exception
+            type: <Types.StructType>abifyType(result.type, userDefinedTypes), //note: may throw exception
             value: abifiedMembers
           };
         case "error":
           return {
             ...coercedResult,
-            type: <Types.StructType> abifyType(result.type, userDefinedTypes) //note: may throw exception
+            type: <Types.StructType>abifyType(result.type, userDefinedTypes) //note: may throw exception
           };
       }
     }
@@ -172,15 +188,15 @@ export function abifyResult(result: Values.Result, userDefinedTypes?: Types.Type
       //NOTE: this is the one case where errors are converted to non-error values!!
       //(other than recursively, I mean)
       //be aware!
-      let coercedResult = <Values.EnumResult> result;
-      let uintType = <Types.UintType> abifyType(result.type, userDefinedTypes); //may throw exception
+      let coercedResult = <Values.EnumResult>result;
+      let uintType = <Types.UintType>abifyType(result.type, userDefinedTypes); //may throw exception
       let numericValue: BN;
-      switch(coercedResult.kind) {
+      switch (coercedResult.kind) {
         case "value":
           numericValue = coercedResult.value.numericAsBN.clone();
           break;
         case "error":
-          switch(coercedResult.error.kind) {
+          switch (coercedResult.error.kind) {
             case "EnumOutOfRangeError":
             case "EnumNotFoundDecodingError":
               //group these together
@@ -188,12 +204,15 @@ export function abifyResult(result: Values.Result, userDefinedTypes?: Types.Type
               break;
             default:
               let typeToDisplay = TypeUtils.typeString(result.type);
-              throw new UnknownUserDefinedTypeError(coercedResult.type.id, typeToDisplay);
+              throw new UnknownUserDefinedTypeError(
+                coercedResult.type.id,
+                typeToDisplay
+              );
           }
           break;
       }
       //now: is it within range or not?
-      if(numericValue.bitLength() <= uintType.bits) {
+      if (numericValue.bitLength() <= uintType.bits) {
         return {
           type: uintType,
           kind: "value",
@@ -201,8 +220,7 @@ export function abifyResult(result: Values.Result, userDefinedTypes?: Types.Type
             asBN: numericValue
           }
         };
-      }
-      else {
+      } else {
         //note: if we started with a value we had better not end up with an error :P
         return {
           type: uintType,
@@ -215,24 +233,24 @@ export function abifyResult(result: Values.Result, userDefinedTypes?: Types.Type
       }
     }
     case "array": {
-      let coercedResult = <Values.ArrayResult> result;
-      switch(coercedResult.kind) {
+      let coercedResult = <Values.ArrayResult>result;
+      switch (coercedResult.kind) {
         case "value":
-          if(coercedResult.reference !== undefined) {
+          if (coercedResult.reference !== undefined) {
             return undefined; //no circular values in the ABI!
           }
-          let abifiedMembers = coercedResult.value.map(
-            member => abifyResult(member, userDefinedTypes)
+          let abifiedMembers = coercedResult.value.map(member =>
+            abifyResult(member, userDefinedTypes)
           );
           return {
             kind: "value",
-            type: <Types.ArrayType> abifyType(result.type, userDefinedTypes),
+            type: <Types.ArrayType>abifyType(result.type, userDefinedTypes),
             value: abifiedMembers
           };
         case "error":
           return {
             ...coercedResult,
-            type: <Types.FunctionExternalType> abifyType(result.type, userDefinedTypes)
+            type: <Types.ArrayType>abifyType(result.type, userDefinedTypes)
           };
       }
     }
@@ -250,19 +268,23 @@ export function abifyResult(result: Values.Result, userDefinedTypes?: Types.Type
  * but you can, uh, throw an exception if you don't, I guess.)
  */
 
-export function abifyCalldataDecoding(decoding: CalldataDecoding, userDefinedTypes: Types.TypesById): CalldataDecoding {
-  if(decoding.decodingMode === "abi") {
+export function abifyCalldataDecoding(
+  decoding: CalldataDecoding,
+  userDefinedTypes: Types.TypesById
+): CalldataDecoding {
+  if (decoding.decodingMode === "abi") {
     return decoding;
   }
-  switch(decoding.kind) {
+  switch (decoding.kind) {
     case "function":
     case "constructor":
       return {
         ...decoding,
         decodingMode: "abi",
-        arguments: decoding.arguments.map(
-          ({name, value}) => ({name, value: abifyResult(value, userDefinedTypes)})
-        )
+        arguments: decoding.arguments.map(({ name, value }) => ({
+          name,
+          value: abifyResult(value, userDefinedTypes)
+        }))
       };
     default:
       return {
@@ -272,15 +294,19 @@ export function abifyCalldataDecoding(decoding: CalldataDecoding, userDefinedTyp
   }
 }
 
-export function abifyLogDecoding(decoding: LogDecoding, userDefinedTypes: Types.TypesById): LogDecoding {
-  if(decoding.decodingMode === "abi") {
+export function abifyLogDecoding(
+  decoding: LogDecoding,
+  userDefinedTypes: Types.TypesById
+): LogDecoding {
+  if (decoding.decodingMode === "abi") {
     return decoding;
   }
   return {
     ...decoding,
     decodingMode: "abi",
-    arguments: decoding.arguments.map(
-      ({name, value}) => ({name, value: abifyResult(value, userDefinedTypes)})
-    )
+    arguments: decoding.arguments.map(({ name, value }) => ({
+      name,
+      value: abifyResult(value, userDefinedTypes)
+    }))
   };
 }

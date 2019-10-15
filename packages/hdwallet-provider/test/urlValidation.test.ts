@@ -1,5 +1,7 @@
-const assert = require("assert");
-const WalletProvider = require("../src/index.js");
+import assert from "assert";
+import WalletProvider from "../dist";
+import { describe, it } from "mocha";
+
 const { isValidProvider } = WalletProvider;
 
 describe("HD Wallet Provider Validator", () => {

@@ -1,11 +1,17 @@
 import { Errors } from "../format";
+import { message } from "../utils/errors";
 
 export class UnknownBaseContractIdError extends Error {
   public derivedId: number;
   public derivedName: string;
   public derivedKind: string;
   public baseId: number;
-  constructor(derivedId: number, derivedName: string, derivedKind: string, baseId: number) {
+  constructor(
+    derivedId: number,
+    derivedName: string,
+    derivedKind: string,
+    baseId: number
+  ) {
     const message = `Cannot locate base contract ID ${baseId} of ${derivedKind} ${derivedName} (ID ${derivedId})`;
     super(message);
     this.name = "UnknownBaseContractIdError";
@@ -13,6 +19,18 @@ export class UnknownBaseContractIdError extends Error {
     this.derivedName = derivedName;
     this.derivedKind = derivedKind;
     this.baseId = baseId;
+  }
+}
+
+//For when we need to throw an error, here's a wrapper class that extends Error.
+//Apologies about the confusing name, but I wanted something that would make
+//sense should it not be caught and thus accidentally exposed to the outside.
+export class DecodingError extends Error {
+  public error: Errors.ErrorForThrowing;
+  constructor(error: Errors.ErrorForThrowing) {
+    super(message(error));
+    this.error = error;
+    this.name = "DecodingError";
   }
 }
 

@@ -2,12 +2,17 @@ import debugModule from "debug";
 const debug = debugModule("codec:interface:contract");
 
 import * as CodecUtils from "../utils";
-import { wrapElementaryViaDefinition, Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils } from "../utils";
+import {
+  wrapElementaryViaDefinition,
+  Definition as DefinitionUtils,
+  AbiUtils,
+  EVM,
+  ContextUtils
+} from "../utils";
 import { DecoderContext, DecoderContexts } from "../types/contexts";
 import * as Utils from "../utils/interface";
 import { AstDefinition, AstReferences } from "../types/ast";
 import { Types, Values } from "../format";
-import AsyncEventEmitter from "async-eventemitter";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
@@ -24,10 +29,12 @@ import { decodeVariable } from "../core/decoding";
 import { Slot } from "../types/storage";
 import { isWordsLength, equalSlots } from "../utils/storage";
 import { StoragePointer } from "../types/pointer";
-import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "../types/errors";
+import {
+  ContractBeingDecodedHasNoNodeError,
+  ContractAllocationFailedError
+} from "../types/errors";
 
-export default class TruffleContractDecoder extends AsyncEventEmitter {
-
+export default class TruffleContractDecoder {
   private web3: Web3;
 
   private contexts: DecoderContexts; //note: this is deployed contexts only!
@@ -42,9 +49,11 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private wireDecoder: TruffleWireDecoder;
 
-  constructor(contract: ContractObject, wireDecoder: TruffleWireDecoder, address?: string) {
-    super();
-
+  constructor(
+    contract: ContractObject,
+    wireDecoder: TruffleWireDecoder,
+    address?: string
+  ) {
     this.contract = contract;
     this.wireDecoder = wireDecoder;
     this.web3 = wireDecoder.getWeb3();
@@ -53,24 +62,32 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
     this.contractNode = Utils.getContractNode(this.contract);
 
-    if(this.contract.deployedBytecode && this.contract.deployedBytecode !== "0x") {
-      const unnormalizedContext = Utils.makeContext(this.contract, this.contractNode);
+    if (
+      this.contract.deployedBytecode &&
+      this.contract.deployedBytecode !== "0x"
+    ) {
+      const unnormalizedContext = Utils.makeContext(
+        this.contract,
+        this.contractNode
+      );
       this.contextHash = unnormalizedContext.context;
       //we now throw away the unnormalized context, instead fetching the correct one from
       //this.contexts (which is normalized) via the context getter below
     }
 
     this.allocations = this.wireDecoder.getAllocations();
-    if(this.contractNode) {
+    if (this.contractNode) {
       this.allocations.storage = getStorageAllocations(
         this.wireDecoder.getReferenceDeclarations(), //redundant stuff will be skipped so this is fine
-        {[this.contractNode.id]: this.contractNode},
+        { [this.contractNode.id]: this.contractNode },
         this.allocations.storage //existing allocations from wire decoder
       );
 
       debug("done with allocation");
-      if(this.allocations.storage[this.contractNode.id]) {
-        this.stateVariableReferences = this.allocations.storage[this.contractNode.id].members;
+      if (this.allocations.storage[this.contractNode.id]) {
+        this.stateVariableReferences = this.allocations.storage[
+          this.contractNode.id
+        ].members;
       }
       //if it doesn't exist, we will leave it undefined, and then throw an exception when
       //we attempt to decode
@@ -82,13 +99,17 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contractNetwork = (await this.web3.eth.net.getId()).toString();
   }
 
-  public async forInstance(address?: string): Promise<TruffleContractInstanceDecoder> {
+  public async forInstance(
+    address?: string
+  ): Promise<TruffleContractInstanceDecoder> {
     let instanceDecoder = new TruffleContractInstanceDecoder(this, address);
     await instanceDecoder.init();
     return instanceDecoder;
   }
 
-  public async decodeTransaction(transaction: Transaction): Promise<DecoderTypes.DecodedTransaction> {
+  public async decodeTransaction(
+    transaction: Transaction
+  ): Promise<DecoderTypes.DecodedTransaction> {
     return await this.wireDecoder.decodeTransaction(transaction);
   }
 
@@ -100,14 +121,16 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return await this.wireDecoder.decodeLogs(logs);
   }
 
-  public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
+  public async events(
+    options: DecoderTypes.EventOptions = {}
+  ): Promise<DecoderTypes.DecodedLog[]> {
     return await this.wireDecoder.events(options);
   }
 
   public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
-  
+
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
@@ -130,8 +153,8 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       contract: this.contract,
       contractNode: this.contractNode,
       contractNetwork: this.contractNetwork,
-      contextHash: this.contextHash,
-    }
+      contextHash: this.contextHash
+    };
   }
 }
 
@@ -142,7 +165,7 @@ interface ContractInfo {
   contextHash: string;
 }
 
-export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
+export class TruffleContractInstanceDecoder {
   private web3: Web3;
 
   private contract: ContractObject;
@@ -169,10 +192,8 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   private wireDecoder: TruffleWireDecoder;
 
   constructor(contractDecoder: TruffleContractDecoder, address?: string) {
-    super();
-
     this.contractDecoder = contractDecoder;
-    if(address !== undefined) {
+    if (address !== undefined) {
       this.contractAddress = address;
     }
     this.wireDecoder = this.contractDecoder.getWireDecoder();
@@ -185,23 +206,31 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
       contract: this.contract,
       contractNode: this.contractNode,
       contractNetwork: this.contractNetwork,
-      contextHash: this.contextHash,
+      contextHash: this.contextHash
     } = this.contractDecoder.getContractInfo());
 
     this.allocations = this.contractDecoder.getAllocations();
     this.stateVariableReferences = this.contractDecoder.getStateVariableReferences();
 
-    if(this.contractAddress === undefined) {
-      this.contractAddress = this.contract.networks[this.contractNetwork].address;
+    if (this.contractAddress === undefined) {
+      this.contractAddress = this.contract.networks[
+        this.contractNetwork
+      ].address;
     }
   }
 
   public async init(): Promise<void> {
     this.contractCode = CodecUtils.Conversion.toHexString(
-      await this.getCode(this.contractAddress, await this.web3.eth.getBlockNumber())
+      await this.getCode(
+        this.contractAddress,
+        await this.web3.eth.getBlockNumber()
+      )
     );
 
-    if(!this.contract.deployedBytecode || this.contract.deployedBytecode === "0x") {
+    if (
+      !this.contract.deployedBytecode ||
+      this.contract.deployedBytecode === "0x"
+    ) {
       //if this contract does *not* have the deployedBytecode field, then the decoder core
       //has no way of knowing that contracts or function pointers with its address
       //are of its class; this is an especial problem for function pointers, as it
@@ -214,14 +243,16 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
       let extraContext = Utils.makeContext(this.contract, this.contractNode);
       //now override the binary
       extraContext.binary = this.contractCode;
-      this.additionalContexts = {[extraContext.context]: extraContext};
+      this.additionalContexts = { [extraContext.context]: extraContext };
       //the following line only has any effect if we're dealing with a library,
       //since the code we pulled from the blockchain obviously does not have unresolved link references!
       //(it's not strictly necessary even then, but, hey, why not?)
-      this.additionalContexts = <DecoderContexts>ContextUtils.normalizeContexts(this.additionalContexts);
+      this.additionalContexts = <DecoderContexts>(
+        ContextUtils.normalizeContexts(this.additionalContexts)
+      );
       //again, since the code did not have unresolved link references, it is safe to just
       //mash these together like I'm about to
-      this.contexts = {...this.contexts, ...this.additionalContexts};
+      this.contexts = { ...this.contexts, ...this.additionalContexts };
     }
   }
 
@@ -230,18 +261,24 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   }
 
   private checkAllocationSuccess(): void {
-    if(!this.contractNode) {
+    if (!this.contractNode) {
       throw new ContractBeingDecodedHasNoNodeError(this.contract.contractName);
     }
-    if(!this.stateVariableReferences) {
-      throw new ContractAllocationFailedError(this.contractNode.id, this.contract.contractName);
+    if (!this.stateVariableReferences) {
+      throw new ContractAllocationFailedError(
+        this.contractNode.id,
+        this.contract.contractName
+      );
     }
   }
 
-  private async decodeVariable(variable: StorageMemberAllocation, block: number): Promise<DecoderTypes.DecodedVariable> {
+  private async decodeVariable(
+    variable: StorageMemberAllocation,
+    block: number
+  ): Promise<DecoderTypes.DecodedVariable> {
     const info: EvmInfo = {
       state: {
-        storage: {},
+        storage: {}
       },
       mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
@@ -253,12 +290,16 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
     const decoder = decodeVariable(variable.definition, variable.pointer, info);
 
     let result = decoder.next();
-    while(result.done === false) {
+    while (result.done === false) {
       let request = result.value;
       let response: Uint8Array;
-      switch(request.type) {
+      switch (request.type) {
         case "storage":
-          response = await this.getStorage(this.contractAddress, request.slot, block);
+          response = await this.getStorage(
+            this.contractAddress,
+            request.slot,
+            block
+          );
           break;
         case "code":
           response = await this.getCode(request.address, block);
@@ -270,31 +311,39 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
 
     return {
       name: variable.definition.name,
-      class: <Types.ContractType> this.userDefinedTypes[variable.definedIn.id],
-      value: result.value,
+      class: <Types.ContractType>this.userDefinedTypes[variable.definedIn.id],
+      value: result.value
     };
   }
 
-  public async state(block: BlockType = "latest"): Promise<DecoderTypes.ContractState> {
+  public async state(
+    block: BlockType = "latest"
+  ): Promise<DecoderTypes.ContractState> {
     return {
       name: this.contract.contractName,
       code: this.contractCode,
-      balanceAsBN: new BN(await this.web3.eth.getBalance(this.contractAddress, block)),
-      nonceAsBN: new BN(await this.web3.eth.getTransactionCount(this.contractAddress, block)),
+      balanceAsBN: new BN(
+        await this.web3.eth.getBalance(this.contractAddress, block)
+      ),
+      nonceAsBN: new BN(
+        await this.web3.eth.getTransactionCount(this.contractAddress, block)
+      )
     };
   }
 
-  public async variables(block: BlockType = "latest"): Promise<DecoderTypes.DecodedVariable[]> {
+  public async variables(
+    block: BlockType = "latest"
+  ): Promise<DecoderTypes.DecodedVariable[]> {
     this.checkAllocationSuccess();
 
-    let blockNumber = typeof block === "number"
-      ? block
-      : (await this.web3.eth.getBlock(block)).number;
+    let blockNumber =
+      typeof block === "number"
+        ? block
+        : (await this.web3.eth.getBlock(block)).number;
 
     let result: DecoderTypes.DecodedVariable[] = [];
 
-    for(const variable of this.stateVariableReferences) {
-
+    for (const variable of this.stateVariableReferences) {
       debug("about to decode %s", variable.definition.name);
       const decodedVariable = await this.decodeVariable(variable, blockNumber);
       debug("decoded");
@@ -306,69 +355,80 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   }
 
   //variable may be given by name, ID, or qualified name
-  public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<Values.Result | undefined> {
+  public async variable(
+    nameOrId: string | number,
+    block: BlockType = "latest"
+  ): Promise<Values.Result | undefined> {
     this.checkAllocationSuccess();
 
-    let blockNumber = typeof block === "number"
-      ? block
-      : (await this.web3.eth.getBlock(block)).number;
+    let blockNumber =
+      typeof block === "number"
+        ? block
+        : (await this.web3.eth.getBlock(block)).number;
 
     let variable = this.findVariableByNameOrId(nameOrId);
 
-    if(variable === undefined) { //if user put in a bad name
+    if (variable === undefined) {
+      //if user put in a bad name
       return undefined;
     }
 
     return (await this.decodeVariable(variable, blockNumber)).value;
   }
 
-  private findVariableByNameOrId(nameOrId: string | number): StorageMemberAllocation | undefined {
+  private findVariableByNameOrId(
+    nameOrId: string | number
+  ): StorageMemberAllocation | undefined {
     //case 1: an ID was input
-    if(typeof nameOrId === "number" || nameOrId.match(/[0-9]+/)) {
+    if (typeof nameOrId === "number" || nameOrId.match(/[0-9]+/)) {
       let id: number = Number(nameOrId);
       return this.stateVariableReferences.find(
-        ({definition}) => definition.id === nameOrId
+        ({ definition }) => definition.id === nameOrId
       );
       //there should be exactly one; returns undefined if none
     }
     //case 2: a name was input
-    else if(!nameOrId.includes(".")) {
+    else if (!nameOrId.includes(".")) {
       //we want to search *backwards*, to get most derived version;
       //we use slice().reverse() to clone before reversing since reverse modifies
-      return this.stateVariableReferences.slice().reverse().find(
-        ({definition}) => definition.name === nameOrId
-      );
+      return this.stateVariableReferences
+        .slice()
+        .reverse()
+        .find(({ definition }) => definition.name === nameOrId);
     }
     //case 3: a qualified name was input
     else {
       let [className, variableName] = nameOrId.split(".");
       //again, we'll search backwards, although, uhhh...?
-      return this.stateVariableReferences.slice().reverse().find(
-        ({definition, definedIn}) =>
-          definition.name === variableName && definedIn.name === className
-      );
+      return this.stateVariableReferences
+        .slice()
+        .reverse()
+        .find(
+          ({ definition, definedIn }) =>
+            definition.name === variableName && definedIn.name === className
+        );
     }
   }
 
-  private async getStorage(address: string, slot: BN, block: number): Promise<Uint8Array> {
+  private async getStorage(
+    address: string,
+    slot: BN,
+    block: number
+  ): Promise<Uint8Array> {
     //first, set up any preliminary layers as needed
-    if(this.storageCache[block] === undefined) {
+    if (this.storageCache[block] === undefined) {
       this.storageCache[block] = {};
     }
-    if(this.storageCache[block][address] === undefined) {
+    if (this.storageCache[block][address] === undefined) {
       this.storageCache[block][address] = {};
     }
     //now, if we have it cached, just return it
-    if(this.storageCache[block][address][slot.toString()] !== undefined) {
+    if (this.storageCache[block][address][slot.toString()] !== undefined) {
       return this.storageCache[block][address][slot.toString()];
     }
     //otherwise, get it, cache it, and return it
     let word = CodecUtils.Conversion.toBytes(
-      await this.web3.eth.getStorageAt(
-        address,
-        slot,
-        block
-      ),
+      await this.web3.eth.getStorageAt(address, slot, block),
       CodecUtils.EVM.WORD_SIZE
     );
     this.storageCache[block][address][slot.toString()] = word;
@@ -388,15 +448,18 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
     let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
     //add mapping key and all ancestors
     debug("slot: %O", slot);
-    while(slot !== undefined &&
-      this.mappingKeys.every(existingSlot =>
-      !equalSlots(existingSlot,slot)
+    while (
+      slot !== undefined &&
+      this.mappingKeys.every(
+        existingSlot => !equalSlots(existingSlot, slot)
         //we put the newness requirement in the while condition rather than a
         //separate if because if we hit one ancestor that's not new, the futher
         //ones won't be either
-    )) {
-      if(slot.key !== undefined) { //only add mapping keys
-          this.mappingKeys = [...this.mappingKeys, slot];
+      )
+    ) {
+      if (slot.key !== undefined) {
+        //only add mapping keys
+        this.mappingKeys = [...this.mappingKeys, slot];
       }
       slot = slot.path;
     }
@@ -406,13 +469,13 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
     let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
-    if(slot === undefined) {
+    if (slot === undefined) {
       return; //not strictly necessary, but may as well
     }
     //remove mapping key and all descendants
-    this.mappingKeys = this.mappingKeys.filter( existingSlot => {
-      while(existingSlot !== undefined) {
-        if(equalSlots(existingSlot, slot)) {
+    this.mappingKeys = this.mappingKeys.filter(existingSlot => {
+      while (existingSlot !== undefined) {
+        if (equalSlots(existingSlot, slot)) {
           return false; //if it matches, remove it
         }
         existingSlot = existingSlot.path;
@@ -424,8 +487,13 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   //all descendants, you'll need to alter watchMappingKey to use an if rather
   //than a while
 
-  public async decodeTransaction(transaction: Transaction): Promise<DecoderTypes.DecodedTransaction> {
-    return await this.wireDecoder.decodeTransaction(transaction, this.additionalContexts);
+  public async decodeTransaction(
+    transaction: Transaction
+  ): Promise<DecoderTypes.DecodedTransaction> {
+    return await this.wireDecoder.decodeTransaction(
+      transaction,
+      this.additionalContexts
+    );
   }
 
   public async decodeLog(log: Log): Promise<DecoderTypes.DecodedLog> {
@@ -439,7 +507,7 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
-  
+
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
@@ -447,15 +515,13 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   //note: by default restricts address to address of this
   //contract, but you can override this (including by specifying
   //address undefined to not filter by adddress)
-  public async events(options: DecoderTypes.EventOptions = {}): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.events({address: this.contractAddress, ...options}, this.additionalContexts);
-  }
-
-  public onEvent(name: string, callback: Function): void {
-    //this.web3.eth.subscribe(name);
-  }
-
-  public removeEventListener(name: string): void {
+  public async events(
+    options: DecoderTypes.EventOptions = {}
+  ): Promise<DecoderTypes.DecodedLog[]> {
+    return await this.wireDecoder.events(
+      { address: this.contractAddress, ...options },
+      this.additionalContexts
+    );
   }
 
   //in addition to returning the slot we want, it also returns a definition
@@ -468,14 +534,18 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
   //bytes mapping keys should be given as hex strings beginning with "0x"
   //address mapping keys are like bytes; checksum case is not required
   //boolean mapping keys may be given either as booleans, or as string "true" or "false"
-  private constructSlot(variable: number | string, ...indices: any[]): [Slot | undefined , AstDefinition | undefined] {
+  private constructSlot(
+    variable: number | string,
+    ...indices: any[]
+  ): [Slot | undefined, AstDefinition | undefined] {
     //base case: we need to locate the variable and its definition
-    if(indices.length === 0) {
+    if (indices.length === 0) {
       let allocation = this.findVariableByNameOrId(variable);
 
       let definition = allocation.definition;
       let pointer = allocation.pointer;
-      if(pointer.location !== "storage") { //i.e., if it's a constant
+      if (pointer.location !== "storage") {
+        //i.e., if it's a constant
         return [undefined, undefined];
       }
       return [pointer.range.from.slot, definition];
@@ -483,8 +553,11 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
 
     //main case
     let parentIndices = indices.slice(0, -1); //remove last index
-    let [parentSlot, parentDefinition] = this.constructSlot(variable, ...parentIndices);
-    if(parentSlot === undefined) {
+    let [parentSlot, parentDefinition] = this.constructSlot(
+      variable,
+      ...parentIndices
+    );
+    if (parentSlot === undefined) {
       return [undefined, undefined];
     }
     let rawIndex = indices[indices.length - 1];
@@ -492,59 +565,70 @@ export class TruffleContractInstanceDecoder extends AsyncEventEmitter {
     let key: Values.ElementaryValue;
     let slot: Slot;
     let definition: AstDefinition;
-    switch(DefinitionUtils.typeClass(parentDefinition)) {
+    switch (DefinitionUtils.typeClass(parentDefinition)) {
       case "array":
-        if(rawIndex instanceof BN) {
+        if (rawIndex instanceof BN) {
           index = rawIndex.clone();
-        }
-        else {
+        } else {
           index = new BN(rawIndex);
         }
-        definition = parentDefinition.baseType || parentDefinition.typeName.baseType;
-        let size = storageSize(definition, this.referenceDeclarations, this.allocations.storage);
-        if(!isWordsLength(size)) {
+        definition =
+          parentDefinition.baseType || parentDefinition.typeName.baseType;
+        let size = storageSize(
+          definition,
+          this.referenceDeclarations,
+          this.allocations.storage
+        );
+        if (!isWordsLength(size)) {
           return [undefined, undefined];
         }
         slot = {
           path: parentSlot,
           offset: index.muln(size.words),
           hashPath: DefinitionUtils.isDynamicArray(parentDefinition)
-        }
+        };
         break;
       case "mapping":
-        let keyDefinition = parentDefinition.keyType || parentDefinition.typeName.keyType;
-        key = wrapElementaryViaDefinition(rawIndex, keyDefinition, this.contract.compiler);
-        definition = parentDefinition.valueType || parentDefinition.typeName.valueType;
+        let keyDefinition =
+          parentDefinition.keyType || parentDefinition.typeName.keyType;
+        key = wrapElementaryViaDefinition(
+          rawIndex,
+          keyDefinition,
+          this.contract.compiler
+        );
+        definition =
+          parentDefinition.valueType || parentDefinition.typeName.valueType;
         slot = {
           path: parentSlot,
           key,
           offset: new BN(0)
-        }
+        };
         break;
       case "struct":
         let parentId = DefinitionUtils.typeId(parentDefinition);
         let allocation: StorageMemberAllocation;
-        if(typeof rawIndex === "number") {
+        if (typeof rawIndex === "number") {
           index = rawIndex;
           allocation = this.allocations.storage[parentId].members[index];
           definition = allocation.definition;
-        }
-        else {
-          allocation = Object.values(this.allocations.storage[parentId].members)
-          .find(({definition}) => definition.name === rawIndex); //there should be exactly one
+        } else {
+          allocation = Object.values(
+            this.allocations.storage[parentId].members
+          ).find(({ definition }) => definition.name === rawIndex); //there should be exactly one
           definition = allocation.definition;
           index = definition.id; //not really necessary, but may as well
         }
         slot = {
           path: parentSlot,
           //need type coercion here -- we know structs don't contain constants but the compiler doesn't
-          offset: (<StoragePointer>allocation.pointer).range.from.slot.offset.clone()
-        }
+          offset: (<StoragePointer>(
+            allocation.pointer
+          )).range.from.slot.offset.clone()
+        };
         break;
       default:
         return [undefined, undefined];
     }
     return [slot, definition];
   }
-
 }

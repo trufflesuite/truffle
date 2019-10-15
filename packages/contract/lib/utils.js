@@ -13,6 +13,10 @@ const Utils = {
   is_big_number(val) {
     if (typeof val !== "object") return false;
 
+    //NOTE: For some reason, contrary to the docs,
+    //web3Utils.isBigNumber returns true not only for
+    //bignumber.js BigNumbers, but also for ethers BigNumbers,
+    //even though these are totally different things.
     return web3Utils.isBN(val) || web3Utils.isBigNumber(val);
   },
 
@@ -209,7 +213,10 @@ const Utils = {
 
         // Convert Web3 BN / BigNumber
       } else if (Utils.is_big_number(item)) {
-        const stringValue = web3Utils.isBigNumber(item)
+        //HACK: Since we can't rely on web3Utils.isBigNumber to tell
+        //whether we have a bignumber.js BigNumber, we'll just check
+        //whether it has the toFixed method
+        const stringValue = item.toFixed
           ? item.toFixed() //prevents use of scientific notation
           : item.toString();
         const ethersBN = bigNumberify(stringValue);
