@@ -10,7 +10,15 @@ import { EvmInfo } from "../types/evm";
 import { EvmEnum } from "../interface/contract-decoder";
 import { DecoderRequest } from "../types/request";
 
-export default function* decodeValue(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<undefined | boolean | BN | string | DecoderRequest | Uint8Array> {
+export default function* decodeValue(
+  definition: DecodeUtils.AstDefinition,
+  pointer: DataPointer,
+  info: EvmInfo
+): Generator<
+  DecoderRequest,
+  undefined | boolean | BN | string | EvmEnum,
+  Uint8Array
+> {
   //NOTE: this does not actually return a Uint8Aarray, but due to the use of yield* read,
   //we have to include it in the type :-/
   const { state } = info;
@@ -47,24 +55,31 @@ export default function* decodeValue(definition: DecodeUtils.AstDefinition, poin
       return yield* decodeContract(bytes, info);
 
     case "bytes":
-      debug("typeIdentifier %s %o", DecodeUtils.Definition.typeIdentifier(definition), bytes);
+      debug(
+        "typeIdentifier %s %o",
+        DecodeUtils.Definition.typeIdentifier(definition),
+        bytes
+      );
       //if there's a static size, we want to truncate to that length
       length = DecodeUtils.Definition.specifiedSize(definition);
-      if(length !== null) {
+      if (length !== null) {
         bytes = bytes.slice(0, length);
       }
       //we don't need to pass in length here, since that's for *adding* padding
       return DecodeUtils.Conversion.toHexString(bytes);
 
     case "string":
-      debug("typeIdentifier %s %o", DecodeUtils.Definition.typeIdentifier(definition), bytes);
+      debug(
+        "typeIdentifier %s %o",
+        DecodeUtils.Definition.typeIdentifier(definition),
+        bytes
+      );
       if (typeof bytes == "string") {
         return bytes;
       }
       try {
         return utf8.decode(String.fromCharCode.apply(undefined, bytes));
-      }
-      catch(error) {
+      } catch (error) {
         return null; //HACK: we use null as our error value here rather than
         //undefined to prevent potentially throwing the debugger into an
         //infinite loop
@@ -74,43 +89,61 @@ export default function* decodeValue(definition: DecodeUtils.AstDefinition, poin
     case "enum":
       const numRepresentation = DecodeUtils.Conversion.toBN(bytes).toNumber();
       debug("numRepresentation %d", numRepresentation);
-      const referenceId = definition.referencedDeclaration || (definition.typeName ? definition.typeName.referencedDeclaration : undefined);
+      const referenceId =
+        definition.referencedDeclaration ||
+        (definition.typeName
+          ? definition.typeName.referencedDeclaration
+          : undefined);
       const enumDeclaration = info.referenceDeclarations[referenceId];
       const decodedValue = enumDeclaration.members[numRepresentation].name;
 
       return <EvmEnum>{
         type: enumDeclaration.name,
         value: enumDeclaration.name + "." + decodedValue
-      }
+      };
 
     case "function":
       switch (DecodeUtils.Definition.visibility(definition)) {
         case "external":
           let address = bytes.slice(0, DecodeUtils.EVM.ADDRESS_SIZE);
-          let selector = bytes.slice(DecodeUtils.EVM.ADDRESS_SIZE, DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE);
+          let selector = bytes.slice(
+            DecodeUtils.EVM.ADDRESS_SIZE,
+            DecodeUtils.EVM.ADDRESS_SIZE + DecodeUtils.EVM.SELECTOR_SIZE
+          );
           return yield* decodeExternalFunction(address, selector, info);
         case "internal":
           let pc: Uint8Array;
-          if(info.currentContext.isConstructor) {
+          if (info.currentContext.isConstructor) {
             //get 2nd-to-last 4 bytes
-            pc = bytes.slice(-DecodeUtils.EVM.PC_SIZE * 2, -DecodeUtils.EVM.PC_SIZE);
-          }
-          else {
+            pc = bytes.slice(
+              -DecodeUtils.EVM.PC_SIZE * 2,
+              -DecodeUtils.EVM.PC_SIZE
+            );
+          } else {
             //get last 4 bytes
             pc = bytes.slice(-DecodeUtils.EVM.PC_SIZE);
           }
           return decodeInternalFunction(pc, info);
         default:
-          debug("unknown visibility: %s", DecodeUtils.Definition.visibility(definition));
+          debug(
+            "unknown visibility: %s",
+            DecodeUtils.Definition.visibility(definition)
+          );
       }
 
     default:
-      debug("Unknown value type: %s", DecodeUtils.Definition.typeIdentifier(definition));
+      debug(
+        "Unknown value type: %s",
+        DecodeUtils.Definition.typeIdentifier(definition)
+      );
       return undefined;
   }
 }
 
-export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): IterableIterator<string | DecoderRequest | Uint8Array> {
+export function* decodeContract(
+  addressBytes: Uint8Array,
+  info: EvmInfo
+): Generator<DecoderRequest, string, Uint8Array> {
   let address = DecodeUtils.Conversion.toAddress(addressBytes);
   let codeBytes: Uint8Array = yield {
     type: "code",
@@ -118,16 +151,19 @@ export function* decodeContract(addressBytes: Uint8Array, info: EvmInfo): Iterab
   };
   let code = DecodeUtils.Conversion.toHexString(codeBytes);
   let context = DecodeUtils.Contexts.findDecoderContext(info.contexts, code);
-  if(context !== null && context.contractName !== undefined) {
+  if (context !== null && context.contractName !== undefined) {
     return context.contractName + "(" + address + ")";
-  }
-  else {
+  } else {
     return address;
   }
 }
 
 //note: address can have extra zeroes on the left like elsewhere, but selector should be exactly 4 bytes
-export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: EvmInfo): IterableIterator<string | DecoderRequest | Uint8Array> {
+export function* decodeExternalFunction(
+  addressBytes: Uint8Array,
+  selectorBytes: Uint8Array,
+  info: EvmInfo
+): Generator<DecoderRequest, string, Uint8Array> {
   //note: yes, this shares a fair amount of code with decodeContract.
   //I'm going to factor this in a later PR; I'm deliberately not doing that
   //for now, though.
@@ -139,40 +175,41 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
   };
   let code = DecodeUtils.Conversion.toHexString(codeBytes);
   let context = DecodeUtils.Contexts.findDecoderContext(info.contexts, code);
-  if(context === null || context.contractName === undefined) {
+  if (context === null || context.contractName === undefined) {
     //note: I'm assuming it never occurs that we have the ABI but not the
     //contract name
     return `${address}.call(${selector}...)`;
   }
-  let abiEntry = context.abi !== undefined
-    ? context.abi[selector]
-    : undefined;
-  if(abiEntry === undefined) {
+  let abiEntry = context.abi !== undefined ? context.abi[selector] : undefined;
+  if (abiEntry === undefined) {
     return `${context.contractName}(${address}).call(${selector}...)`;
   }
   let functionName = abiEntry.name;
   return `${context.contractName}(${address}).${functionName}`;
 }
 
-export function decodeInternalFunction(pcBytes: Uint8Array, info: EvmInfo): string | undefined {
+export function decodeInternalFunction(
+  pcBytes: Uint8Array,
+  info: EvmInfo
+): string | undefined {
   let pc: number = DecodeUtils.Conversion.toBN(pcBytes).toNumber();
   //before anything else: do we even have an internal functions table?
   //if not, this is being (presumably) used from the contract decoder, and we don't
   //support decoding internal functions there
-  if(!info.internalFunctionsTable) {
+  if (!info.internalFunctionsTable) {
     return "<decoding not supported>";
   }
   //also before we continue: is the PC zero? if so let's just return that
-  if(pc === 0) {
+  if (pc === 0) {
     return "<zero>";
   }
   //otherwise, we get our function
   let functionEntry = info.internalFunctionsTable[pc];
-  if(!functionEntry) {
+  if (!functionEntry) {
     //if it's not zero and there's no entry... we give up :P
     return undefined;
   }
-  if(functionEntry.isDesignatedInvalid) {
+  if (functionEntry.isDesignatedInvalid) {
     return "assert(false)";
   }
   return functionEntry.contractName + "." + functionEntry.name;

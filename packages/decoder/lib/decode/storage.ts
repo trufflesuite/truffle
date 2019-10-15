@@ -13,12 +13,18 @@ import BN from "bn.js";
 import { EvmStruct, EvmMapping } from "../interface/contract-decoder";
 import { DecoderRequest } from "../types/request";
 
-export default function* decodeStorage(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
-  if(DecodeUtils.Definition.isReference(definition) || DecodeUtils.Definition.isMapping(definition)) {
+export default function* decodeStorage(
+  definition: DecodeUtils.AstDefinition,
+  pointer: StoragePointer,
+  info: EvmInfo
+): Generator<DecoderRequest, any, Uint8Array> {
+  if (
+    DecodeUtils.Definition.isReference(definition) ||
+    DecodeUtils.Definition.isMapping(definition)
+  ) {
     //note that mappings are not caught by isReference and must be checked for separately
     return yield* decodeStorageReference(definition, pointer, info);
-  }
-  else {
+  } else {
     return yield* decodeValue(definition, pointer, info);
   }
 }
@@ -26,34 +32,45 @@ export default function* decodeStorage(definition: DecodeUtils.AstDefinition, po
 //decodes storage at the address *read* from the pointer -- hence why this takes DataPointer rather than StoragePointer.
 //NOTE: ONLY for use with pointers to reference types!
 //Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
-export function* decodeStorageReferenceByAddress(definition: DecodeUtils.AstDefinition, pointer: DataPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
-
+export function* decodeStorageReferenceByAddress(
+  definition: DecodeUtils.AstDefinition,
+  pointer: DataPointer,
+  info: EvmInfo
+): Generator<DecoderRequest, any, Uint8Array> {
   const rawValue: Uint8Array = yield* read(pointer, info.state);
   const startOffset = DecodeUtils.Conversion.toBN(rawValue);
   //we *know* the type being decoded must be sized in words, because it's a
   //reference type, but TypeScript doesn't, so we'll have to use a type
   //coercion
-  const size = (<{words: number}>storageSize(definition, info.referenceDeclarations, info.storageAllocations)).words;
+  const size = (<{ words: number }>(
+    storageSize(definition, info.referenceDeclarations, info.storageAllocations)
+  )).words;
   //now, construct the storage pointer
-  const newPointer = { storage: {
-    from: {
-      slot: {
-        offset: startOffset
+  const newPointer = {
+    storage: {
+      from: {
+        slot: {
+          offset: startOffset
+        },
+        index: 0
       },
-      index: 0
-    },
-    to: {
-      slot: {
-        offset: startOffset.addn(size - 1)
-      },
-      index: DecodeUtils.EVM.WORD_SIZE - 1
+      to: {
+        slot: {
+          offset: startOffset.addn(size - 1)
+        },
+        index: DecodeUtils.EVM.WORD_SIZE - 1
+      }
     }
-  }};
+  };
   //dispatch to decodeStorageReference
   return yield* decodeStorageReference(definition, newPointer, info);
 }
 
-export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, pointer: StoragePointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
+export function* decodeStorageReference(
+  definition: DecodeUtils.AstDefinition,
+  pointer: StoragePointer,
+  info: EvmInfo
+): Generator<DecoderRequest, any, Uint8Array> {
   var data;
   var length;
 
@@ -68,21 +85,28 @@ export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, p
         data = yield* read(pointer, state);
 
         length = DecodeUtils.Conversion.toBN(data).toNumber();
-      }
-      else {
+      } else {
         debug("static array");
         length = DecodeUtils.Definition.staticLength(definition);
       }
       debug("length %o", length);
 
-      const baseDefinition = definition.baseType || definition.typeName.baseType;
-        //I'm deliberately not using the DecodeUtils function for this, because
-        //we should *not* need a faked-up type here!
-      const referenceId = baseDefinition.referencedDeclaration ||
-        (baseDefinition.typeName ? baseDefinition.typeName.referencedDeclaration : undefined);
+      const baseDefinition =
+        definition.baseType || definition.typeName.baseType;
+      //I'm deliberately not using the DecodeUtils function for this, because
+      //we should *not* need a faked-up type here!
+      const referenceId =
+        baseDefinition.referencedDeclaration ||
+        (baseDefinition.typeName
+          ? baseDefinition.typeName.referencedDeclaration
+          : undefined);
 
       debug("about to determine baseSize");
-      let baseSize: Types.StorageLength = storageSize(baseDefinition, info.referenceDeclarations, info.storageAllocations);
+      let baseSize: Types.StorageLength = storageSize(
+        baseDefinition,
+        info.referenceDeclarations,
+        info.storageAllocations
+      );
       debug("baseSize %o", baseSize);
 
       //we are going to make a list of child ranges, pushing them one by one onto
@@ -90,7 +114,7 @@ export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, p
       //we're in the words case or the bytes case, the second will not
       let ranges: Types.Range[] = [];
 
-      if(Types.isWordsLength(baseSize)) {
+      if (Types.isWordsLength(baseSize)) {
         //currentSlot will point to the start of the entry being decoded
         let currentSlot: Types.Slot = {
           path: pointer.storage.from.slot,
@@ -115,16 +139,14 @@ export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, p
                 hashPath: currentSlot.hashPath
               },
               index: DecodeUtils.EVM.WORD_SIZE - 1
-            },
+            }
           };
 
           ranges.push(childRange);
 
           currentSlot.offset.iaddn(baseSize.words);
         }
-      }
-      else {
-
+      } else {
         const perWord = Math.floor(DecodeUtils.EVM.WORD_SIZE / baseSize.bytes);
         debug("perWord %d", perWord);
 
@@ -164,9 +186,9 @@ export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, p
 
       let decodedChildren: any[] = [];
 
-      for(let childRange of ranges) {
+      for (let childRange of ranges) {
         decodedChildren.push(
-          yield* decodeStorage(baseDefinition, {storage: childRange}, info)
+          yield* decodeStorage(baseDefinition, { storage: childRange }, info)
         );
       }
 
@@ -191,34 +213,45 @@ export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, p
         length = lengthByte / 2;
         debug("in-word; length %o", length);
 
-        return yield* decodeValue(definition, { storage: {
-          from: { slot: pointer.storage.from.slot, index: 0 },
-          to: { slot: pointer.storage.from.slot, index: length - 1}
-        }}, info);
-
+        return yield* decodeValue(
+          definition,
+          {
+            storage: {
+              from: { slot: pointer.storage.from.slot, index: 0 },
+              to: { slot: pointer.storage.from.slot, index: length - 1 }
+            }
+          },
+          info
+        );
       } else {
-        length = DecodeUtils.Conversion.toBN(data).subn(1).divn(2).toNumber();
+        length = DecodeUtils.Conversion.toBN(data)
+          .subn(1)
+          .divn(2)
+          .toNumber();
         debug("new-word, length %o", length);
 
-        return yield* decodeValue(definition, {
-          storage: {
-            from: {
-              slot: {
-                path: pointer.storage.from.slot,
-                offset: new BN(0),
-                hashPath: true
+        return yield* decodeValue(
+          definition,
+          {
+            storage: {
+              from: {
+                slot: {
+                  path: pointer.storage.from.slot,
+                  offset: new BN(0),
+                  hashPath: true
+                },
+                index: 0
               },
-              index: 0
-            },
-            length
-          }
-        }, info);
+              length
+            }
+          },
+          info
+        );
       }
     }
 
     case "struct": {
-
-      const referencedDeclaration = (definition.typeName)
+      const referencedDeclaration = definition.typeName
         ? definition.typeName.referencedDeclaration
         : definition.referencedDeclaration;
 
@@ -238,11 +271,11 @@ export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, p
       for (let memberAllocation of members) {
         let memberDefinition = memberAllocation.definition;
         const memberPointer = <StoragePointer>memberAllocation.pointer;
-          //the type system thinks memberPointer might also be a constant
-          //definition pointer.  However, structs can't contain constants,
-          //so *we* know it's not, and can safely coerce it.
+        //the type system thinks memberPointer might also be a constant
+        //definition pointer.  However, structs can't contain constants,
+        //so *we* know it's not, and can safely coerce it.
         debug("pointer %O", pointer);
-        const childRange : Types.Range = {
+        const childRange: Types.Range = {
           from: {
             slot: {
               path: pointer.storage.from.slot,
@@ -258,11 +291,12 @@ export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, p
               //note that memberPointer should have no path
             },
             index: memberPointer.storage.to.index
-          },
+          }
         };
         const val = yield* decodeStorage(
           memberDefinition,
-          {storage: childRange}, info
+          { storage: childRange },
+          info
         );
 
         result.members[memberDefinition.name] = {
@@ -276,13 +310,17 @@ export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, p
     }
 
     case "mapping": {
-
       debug("decoding mapping");
       debug("name %s", definition.name);
 
       const keyDefinition = definition.keyType || definition.typeName.keyType;
-      const valueDefinition = definition.valueType || definition.typeName.valueType;
-      const valueSize = storageSize(valueDefinition, info.referenceDeclarations, info.storageAllocations)
+      const valueDefinition =
+        definition.valueType || definition.typeName.valueType;
+      const valueSize = storageSize(
+        valueDefinition,
+        info.referenceDeclarations,
+        info.storageAllocations
+      );
 
       const result: EvmMapping = {
         name: definition.name,
@@ -297,14 +335,14 @@ export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, p
       debug("baseSlot %o", baseSlot);
       debug("base slot address %o", slotAddress(baseSlot));
 
-      const keySlots = info.mappingKeys.filter( ({path}) =>
-        slotAddress(baseSlot).eq(slotAddress(path)));
+      const keySlots = info.mappingKeys.filter(({ path }) =>
+        slotAddress(baseSlot).eq(slotAddress(path))
+      );
 
-      for (const {key, keyEncoding} of keySlots) {
-
+      for (const { key, keyEncoding } of keySlots) {
         let valuePointer: StoragePointer;
 
-        if(Types.isWordsLength(valueSize)) {
+        if (Types.isWordsLength(valueSize)) {
           valuePointer = {
             storage: {
               from: {
@@ -327,8 +365,7 @@ export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, p
               }
             }
           };
-        }
-        else {
+        } else {
           valuePointer = {
             storage: {
               from: {
@@ -355,15 +392,21 @@ export function* decodeStorageReference(definition: DecodeUtils.AstDefinition, p
 
         //note at this point, key could be a string, hex string,
         //BN, or boolean
-        result.members[key.toString()] =
-          yield* decodeStorage(valueDefinition, valuePointer, info);
+        result.members[key.toString()] = yield* decodeStorage(
+          valueDefinition,
+          valuePointer,
+          info
+        );
       }
 
       return result;
     }
 
     default: {
-      debug("Unknown storage reference type: %s", DecodeUtils.Definition.typeIdentifier(definition));
+      debug(
+        "Unknown storage reference type: %s",
+        DecodeUtils.Definition.typeIdentifier(definition)
+      );
       return undefined;
     }
   }
