@@ -54,7 +54,7 @@ compile.necessary = async function(options) {
 
   const paths = [
     ...new Set([
-      ...(await promisify(Common.updatedFiles)(options)),
+      ...(await Common.updatedFiles(options)),
       ...(options.files || [])
     ])
   ];
