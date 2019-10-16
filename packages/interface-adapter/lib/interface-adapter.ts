@@ -5,16 +5,19 @@ import { EthereumDefinition } from "./ethereum-overloads";
 import { QuorumDefinition } from "./quorum-overloads";
 import { FabricEvmDefinition } from "./fabric-evm-overloads";
 
-const initInterface = async(web3Shim: Web3Shim) => {
-
-    const networkTypes: NetworkTypesConfig = new Map(Object.entries({
-      "ethereum": EthereumDefinition,
-      "quorum": QuorumDefinition,
+const initInterface = async (interfaceAdapter: InterfaceAdapter) => {
+  const networkTypes: NetworkTypesConfig = new Map(
+    Object.entries({
+      ethereum: EthereumDefinition,
+      quorum: QuorumDefinition,
       "fabric-evm": FabricEvmDefinition
-    }));
+    })
+  );
 
-    networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim);
-  }
+  networkTypes
+    .get(interfaceAdapter.networkType)
+    .initNetworkType(interfaceAdapter);
+};
 
 // March 13, 2019 - Mike Seese:
 // This is a temporary shim to support the basic, Ethereum-based
@@ -24,15 +27,17 @@ const initInterface = async(web3Shim: Web3Shim) => {
 
 export type NetworkType = string;
 
-export interface Web3ShimOptions {
+export interface InterfaceAdapterOptions {
   provider?: Provider;
   networkType?: NetworkType;
-};
+}
 
-export type InitNetworkType = (web3Shim: Web3Shim) => Promise<void>;
+export type InitNetworkType = (
+  interfaceAdapter: InterfaceAdapter
+) => Promise<void>;
 
 export interface NetworkTypeDefinition {
-  initNetworkType: InitNetworkType
+  initNetworkType: InitNetworkType;
 }
 
 export type NetworkTypesConfig = Map<NetworkType, NetworkTypeDefinition>;
@@ -52,10 +57,10 @@ export type NetworkTypesConfig = Map<NetworkType, NetworkTypeDefinition>;
 // should drive the development of the correct architecture of
 // `@truffle/interface-adapter`that should use this work in a more
 // sane and organized manner.
-export class Web3Shim extends Web3 {
+export class InterfaceAdapter extends Web3 {
   public networkType: NetworkType;
 
-  constructor(options?: Web3ShimOptions) {
+  constructor(options?: InterfaceAdapterOptions) {
     super();
 
     if (options) {
@@ -75,4 +80,4 @@ export class Web3Shim extends Web3 {
     this.networkType = networkType;
     initInterface(this);
   }
-};
+}
