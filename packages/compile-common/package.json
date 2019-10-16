@@ -20,7 +20,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@truffle/compile-solidity": "^4.2.8",
-    "@truffle/contract-sources": "^0.1.6"
+    "@truffle/contract-sources": "^0.1.6",
+    "@truffle/expect": "^0.0.11",
+    "fs-extra": "^8.1.0"
   }
 }
