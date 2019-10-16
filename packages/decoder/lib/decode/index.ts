@@ -14,15 +14,19 @@ import * as Pointer from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";
 
-export default function* decode(definition: AstDefinition, pointer: Pointer.DataPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
+export default function* decode(
+  definition: AstDefinition,
+  pointer: Pointer.DataPointer,
+  info: EvmInfo
+): Generator<DecoderRequest, any, Uint8Array> {
   debug("Decoding %s", definition.name);
   debug("pointer %O", pointer);
 
-  if(Pointer.isStoragePointer(pointer)) {
-    return yield* decodeStorage(definition, pointer, info)
+  if (Pointer.isStoragePointer(pointer)) {
+    return yield* decodeStorage(definition, pointer, info);
   }
 
-  if(Pointer.isStackPointer(pointer)) {
+  if (Pointer.isStackPointer(pointer)) {
     return yield* decodeStack(definition, pointer, info);
   }
 
@@ -30,24 +34,24 @@ export default function* decode(definition: AstDefinition, pointer: Pointer.Data
     return yield* decodeLiteral(definition, pointer, info);
   }
 
-  if(Pointer.isConstantDefinitionPointer(pointer)) {
+  if (Pointer.isConstantDefinitionPointer(pointer)) {
     return yield* decodeConstant(definition, pointer, info);
     //I'd like to just use decodeValue, but unfortunately there are some special
     //cases to deal with
   }
 
-  if(Pointer.isSpecialPointer(pointer)) {
+  if (Pointer.isSpecialPointer(pointer)) {
     return yield* decodeSpecial(definition, pointer, info);
   }
 
   //NOTE: the following two cases shouldn't come up but they've been left in as
   //fallback cases
 
-  if(Pointer.isMemoryPointer(pointer)) {
+  if (Pointer.isMemoryPointer(pointer)) {
     return yield* decodeMemory(definition, pointer, info);
   }
 
-  if(Pointer.isCalldataPointer(pointer)) {
+  if (Pointer.isCalldataPointer(pointer)) {
     return yield* decodeCalldata(definition, pointer, info);
   }
 }
