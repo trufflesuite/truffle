@@ -12624,7 +12624,7 @@ request-promise@^4.2.2:
     stealthy-require "^1.1.1"
     tough-cookie "^2.3.3"
 
-request@^2.12.0, request@^2.55.0, request@^2.67.0, request@^2.79.0, request@^2.85.0, request@^2.86.0, request@^2.87.0, request@^2.88.0:
+request@^2.12.0, request@^2.55.0, request@^2.79.0, request@^2.85.0, request@^2.86.0, request@^2.87.0, request@^2.88.0:
   version "2.88.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.88.0.tgz#9c2fca4f7d35b592efe57c7f0a55e81052124fef"
   integrity sha512-NAqBSrijGLZdM0WZNsInLJpkJokL72XYjUpnB0iwsRgxh7dB6COrHnTBNwN0E+lHDAJzu7kLAkDeY08z2/A0hg==
@@ -14207,7 +14207,7 @@ tapable@^0.2.7, tapable@~0.2.5:
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-0.2.9.tgz#af2d8bbc9b04f74ee17af2b4d9048f807acd18a8"
   integrity sha512-2wsvQ+4GwBvLPLWsNfLCDYGsW6xb7aeC6utq2Qh0PFwgEy7K7dsma9Jsmb2zSQj7GvYAyUGSntLtsv++GmgL1A==
 
-tape@^4.4.0, tape@^4.6.3:
+tape@^4.6.3:
   version "4.11.0"
   resolved "https://registry.yarnpkg.com/tape/-/tape-4.11.0.tgz#63d41accd95e45a23a874473051c57fdbc58edc1"
   integrity sha512-yixvDMX7q7JIs/omJSzSZrqulOV51EC9dK8dM0TzImTIkHWfe2/kFyL5v+d9C+SrCMaICk59ujsqFAVidDqDaA==
@@ -15477,10 +15477,9 @@ web3-net@1.2.1:
     web3-core-method "1.2.1"
     web3-utils "1.2.1"
 
-web3-provider-engine@14.0.6:
+web3-provider-engine@14.0.6, "web3-provider-engine@https://github.com/trufflesuite/provider-engine#web3-one":
   version "14.0.6"
-  resolved "https://registry.yarnpkg.com/web3-provider-engine/-/web3-provider-engine-14.0.6.tgz#cbdd66fe20c0136a3a495cbe40d18b6c4160d5f0"
-  integrity sha512-tr5cGSyxfSC/JqiUpBlJtfZpwQf1yAA8L/zy1C6fDFm0ntR974pobJ4v4676atpZne4Ze5VFy3kPPahHe9gQiQ==
+  resolved "https://github.com/trufflesuite/provider-engine#3538c60bc4836b73ccae1ac3f64c8fed8ef19c1a"
   dependencies:
     async "^2.5.0"
     backoff "^2.5.0"
@@ -15497,9 +15496,8 @@ web3-provider-engine@14.0.6:
     json-stable-stringify "^1.0.1"
     promise-to-callback "^1.0.0"
     readable-stream "^2.2.9"
-    request "^2.67.0"
+    request "^2.85.0"
     semaphore "^1.0.3"
-    tape "^4.4.0"
     ws "^5.1.1"
     xhr "^2.2.0"
     xtend "^4.0.1"
@@ -15534,31 +15532,6 @@ web3-provider-engine@14.2.1:
   version "14.2.1"
   resolved "https://registry.yarnpkg.com/web3-provider-engine/-/web3-provider-engine-14.2.1.tgz#ef351578797bf170e08d529cb5b02f8751329b95"
   integrity sha512-iSv31h2qXkr9vrL6UZDm4leZMc32SjWJFGOp/D92JXfcEboCqraZyuExDkpxKw8ziTufXieNM7LSXNHzszYdJw==
-  dependencies:
-    async "^2.5.0"
-    backoff "^2.5.0"
-    clone "^2.0.0"
-    cross-fetch "^2.1.0"
-    eth-block-tracker "^3.0.0"
-    eth-json-rpc-infura "^3.1.0"
-    eth-sig-util "^1.4.2"
-    ethereumjs-block "^1.2.2"
-    ethereumjs-tx "^1.2.0"
-    ethereumjs-util "^5.1.5"
-    ethereumjs-vm "^2.3.4"
-    json-rpc-error "^2.0.0"
-    json-stable-stringify "^1.0.1"
-    promise-to-callback "^1.0.0"
-    readable-stream "^2.2.9"
-    request "^2.85.0"
-    semaphore "^1.0.3"
-    ws "^5.1.1"
-    xhr "^2.2.0"
-    xtend "^4.0.1"
-
-"web3-provider-engine@https://github.com/trufflesuite/provider-engine#web3-one":
-  version "14.0.6"
-  resolved "https://github.com/trufflesuite/provider-engine#3538c60bc4836b73ccae1ac3f64c8fed8ef19c1a"
   dependencies:
     async "^2.5.0"
     backoff "^2.5.0"
