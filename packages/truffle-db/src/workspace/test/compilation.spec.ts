@@ -1,10 +1,6 @@
+import gql from "graphql-tag";
 import { generateId, Migrations, WorkspaceClient } from './utils';
-import { Query, Mutation } from './queries';
-
-const { AddSource } = Mutation;
-
-const { GetCompilation } = Query;
-const { AddCompilation } = Mutation;
+import { AddSource } from './source.spec';
 
 describe("Compilation", () => {
   const wsClient = new WorkspaceClient();
@@ -88,3 +84,72 @@ describe("Compilation", () => {
     }
   });
 });
+
+export const GetCompilation = gql`
+  query GetCompilation($id: ID!) {
+    compilation(id: $id) {
+      id
+      compiler {
+        name
+        version
+      }
+      sources {
+        id
+        contents
+      }
+      contracts {
+        source {
+          contents
+        }
+      }
+    }
+  }
+`;
+
+export const AddCompilation = gql`
+  mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sourceId: ID!, $abi:String!) {
+    compilationsAdd(input: {
+      compilations: [{
+        compiler: {
+          name: $compilerName
+          version: $compilerVersion
+        }
+        contracts: [
+        {
+          name:"testing",
+          ast: {
+            json: $abi
+          }
+          source: {
+            id: $sourceId
+          }
+        }]
+        sources: [
+          {
+           id: $sourceId
+          }
+        ]
+      }]
+    }) {
+      compilations {
+        id
+        compiler {
+          name
+        }
+        sources {
+          contents
+        }
+        contracts {
+          source {
+            contents
+            sourcePath
+          }
+          ast {
+            json
+          }
+          name
+        }
+      }
+    }
+  }
+`;

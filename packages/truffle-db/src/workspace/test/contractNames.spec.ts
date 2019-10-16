@@ -1,7 +1,5 @@
+import gql from "graphql-tag";
 import { WorkspaceClient } from './utils';
-import { Query } from './queries';
-
-const { GetContractNames } = Query;
 
 describe("ContractNames", () => {
   test("can be queried", async () => {
@@ -16,3 +14,8 @@ describe("ContractNames", () => {
 });
 
 
+export const GetContractNames = gql`
+  query GetContractNames {
+    contractNames
+  }
+`;

@@ -1,11 +1,7 @@
+import gql from "graphql-tag";
 import { generateId, Migrations, WorkspaceClient } from './utils';
-import { Query, Mutation } from './queries';
 
-const { AddNetworks } = Mutation;
-
-const { GetContractInstance } = Query;
-const { AddContractInstances } = Mutation;
-
+import { AddNetworks } from './network.spec';
 
 describe("Contract Instance", () => {
   const wsClient = new WorkspaceClient();
@@ -82,3 +78,80 @@ describe("Contract Instance", () => {
     expect(networkId).toEqual(addNetworkResult.networksAdd.networks[0].networkId);
   });
 });
+
+export const GetContractInstance = gql`
+  query GetContractInstance($id: ID!) {
+    contractInstance(id: $id) {
+      address
+      network {
+        networkId
+      }
+      contract {
+        name
+      }
+      creation {
+        transactionHash
+        constructor {
+          createBytecode {
+            bytes
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const AddContractInstances = gql`
+  input ContractInstanceNetworkInput {
+      id: ID!
+    }
+
+    input ContractInstanceContractInput {
+      id: ID!
+    }
+
+    input ContractInstanceCreationConstructorBytecodeInput {
+      id: ID!
+    }
+
+    input ContractInstanceCreationConstructorInput {
+      createBytecode: ContractInstanceCreationConstructorBytecodeInput!
+    }
+
+    input ContractInstanceCreationInput {
+      transactionHash: TransactionHash!
+      constructor: ContractInstanceCreationConstructorInput!
+    }
+
+    input ContractInstanceInput {
+      address: Address!
+      network: ContractInstanceNetworkInput!
+      creation: ContractInstanceCreationInput
+      contract: ContractInstanceContractInput
+    }
+  mutation AddContractInstances($contractInstances: [ContractInstanceInput!]!) {
+    contractInstancesAdd(input: {
+      contractInstances: $contractInstances
+    }) {
+      contractInstances {
+        address
+        network {
+          networkId
+        }
+        contract {
+          name
+        }
+        creation {
+          transactionHash
+          constructor {
+            createBytecode {
+              bytes
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+

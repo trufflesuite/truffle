@@ -1,8 +1,5 @@
+import gql from "graphql-tag";
 import { generateId, Migrations, WorkspaceClient } from './utils';
-import { Query, Mutation } from './queries';
-
-const { GetNetwork } = Query;
-const { AddNetworks } = Mutation;
 
 describe ('Network', () => {
   const wsClient = new WorkspaceClient();
@@ -62,4 +59,33 @@ describe ('Network', () => {
     expect(networkId).toEqual(variables.networkId);
   });
 });
+
+
+export const GetNetwork = gql`
+  query GetNetwork($id: ID!) {
+    network(id: $id) {
+      networkId
+      id
+    }
+  }
+`;
+
+export const AddNetworks = gql`
+  mutation AddNetworks($networkId: NetworkId!, $height: Int!, $hash: String!) {
+    networksAdd(input: {
+      networks: [{
+        networkId: $networkId
+        historicBlock: {
+          height: $height
+          hash: $hash
+        }
+      }]
+    }) {
+      networks {
+        networkId
+        id
+      }
+    }
+  }
+`;
 

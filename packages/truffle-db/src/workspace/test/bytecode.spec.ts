@@ -1,8 +1,5 @@
+import gql from "graphql-tag";
 import { generateId, Migrations, WorkspaceClient } from './utils';
-import { Query, Mutation } from './queries';
-
-const { GetBytecode } = Query;
-const { AddBytecode } = Mutation;
 
 describe("Bytecode", () => {
   let wsClient;
@@ -46,3 +43,25 @@ describe("Bytecode", () => {
   });
 });
 
+export const GetBytecode = gql`
+  query GetBytecode($id: ID!) {
+    bytecode(id: $id) {
+      id
+      bytes
+    }
+  }
+`
+
+export const AddBytecode = gql`
+  mutation AddBytecode($bytes: Bytes!) {
+    bytecodesAdd(input: {
+      bytecodes: [{
+        bytes: $bytes
+      }]
+    }) {
+      bytecodes {
+        id
+      }
+    }
+  }
+`
