@@ -6,30 +6,32 @@ import { Server } from "http";
 import Web3 from "web3";
 import Ganache from "ganache-core";
 
-import { Web3Shim } from "../lib";
+import { InterfaceAdapter } from "../lib";
 
 const port = 12345;
 
-async function prepareGanache(quorumEnabled: boolean): Promise<{ server: Server, web3Shim: Web3Shim }> {
+async function prepareGanache(
+  quorumEnabled: boolean
+): Promise<{ server: Server; interfaceAdapter: InterfaceAdapter }> {
   return new Promise((resolve, reject) => {
     const server = Ganache.server();
     server.listen(port, (err: Error) => {
       if (err) reject(err);
 
-      const web3Shim = new Web3Shim({
+      const interfaceAdapter = new InterfaceAdapter({
         provider: new Web3.providers.HttpProvider(`http://127.0.0.1:${port}`),
         networkType: quorumEnabled ? "quorum" : "ethereum"
       });
       resolve({
         server,
-        web3Shim
+        interfaceAdapter
       });
     });
   });
 }
 
-const expectedOutput = [ { name: 'retVal', type: 'uint256' } ];
-const emptyByte = '';
+const expectedOutput = [{ name: "retVal", type: "uint256" }];
+const emptyByte = "";
 
 describe("Quorum decodeParameters Overload", function() {
   it("decodes an empty byte to a '0' string value w/ quorum=true", async function() {
@@ -37,7 +39,10 @@ describe("Quorum decodeParameters Overload", function() {
       let preparedGanache;
       try {
         preparedGanache = await prepareGanache(true);
-        const result = await preparedGanache.web3Shim.eth.abi.decodeParameters(expectedOutput, emptyByte);
+        const result = await preparedGanache.interfaceAdapter.eth.abi.decodeParameters(
+          expectedOutput,
+          emptyByte
+        );
         assert(result);
         assert(result.retVal === "0");
         preparedGanache.server.close(resolve);
@@ -55,8 +60,11 @@ describe("Quorum decodeParameters Overload", function() {
       let preparedGanache: any;
       try {
         preparedGanache = await prepareGanache(false);
-        assert.throws(async() => {
-          await preparedGanache.web3Shim.eth.abi.decodeParameters(expectedOutput, emptyByte);
+        assert.throws(async () => {
+          await preparedGanache.interfaceAdapter.eth.abi.decodeParameters(
+            expectedOutput,
+            emptyByte
+          );
         });
         preparedGanache.server.close(resolve);
       } catch (e) {
