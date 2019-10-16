@@ -1,6 +1,6 @@
 {
   "name": "@truffle/compile-common",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Library for common compiler helpers",
   "author": "CruzMolina <7537712+CruzMolina@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
