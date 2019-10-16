@@ -7,46 +7,57 @@ import { EvmInfo } from "../types/evm";
 import { SpecialPointer } from "../types/pointer";
 import { DecoderRequest } from "../types/request";
 
-export default function* decodeSpecial(definition: DecodeUtils.AstDefinition, pointer: SpecialPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
-  if(DecodeUtils.Definition.typeClass(definition) === "magic") { //that's right, magic!
+export default function* decodeSpecial(
+  definition: DecodeUtils.AstDefinition,
+  pointer: SpecialPointer,
+  info: EvmInfo
+): Generator<DecoderRequest, any, Uint8Array> {
+  if (DecodeUtils.Definition.typeClass(definition) === "magic") {
+    //that's right, magic!
     return yield* decodeMagic(definition, pointer, info);
-  }
-  else {
+  } else {
     return yield* decodeValue(definition, pointer, info);
   }
 }
 
-export function* decodeMagic(definition: DecodeUtils.AstDefinition, pointer: SpecialPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
+export function* decodeMagic(
+  definition: DecodeUtils.AstDefinition,
+  pointer: SpecialPointer,
+  info: EvmInfo
+): Generator<DecoderRequest, any, Uint8Array> {
+  let { state } = info;
 
-  let {state} = info;
-
-  switch(pointer.special) {
+  switch (pointer.special) {
     case "msg":
       return {
         data: yield* decodeValue(
           DecodeUtils.Definition.MSG_DATA_DEFINITION,
-          {calldata: {
-            start: 0,
-            length: state.calldata.length
-          }},
+          {
+            calldata: {
+              start: 0,
+              length: state.calldata.length
+            }
+          },
           info
         ),
         sig: yield* decodeValue(
           DecodeUtils.Definition.MSG_SIG_DEFINITION,
-          {calldata: {
-            start: 0,
-            length: DecodeUtils.EVM.SELECTOR_SIZE,
-          }},
+          {
+            calldata: {
+              start: 0,
+              length: DecodeUtils.EVM.SELECTOR_SIZE
+            }
+          },
           info
         ),
         sender: yield* decodeValue(
           DecodeUtils.Definition.spoofAddressPayableDefinition("sender"),
-          {special: "sender"},
+          { special: "sender" },
           info
         ),
         value: yield* decodeValue(
           DecodeUtils.Definition.spoofUintDefinition("value"),
-          {special: "value"},
+          { special: "value" },
           info
         )
       };
@@ -54,12 +65,12 @@ export function* decodeMagic(definition: DecodeUtils.AstDefinition, pointer: Spe
       return {
         origin: yield* decodeValue(
           DecodeUtils.Definition.spoofAddressPayableDefinition("origin"),
-          {special: "origin"},
+          { special: "origin" },
           info
         ),
         gasprice: yield* decodeValue(
           DecodeUtils.Definition.spoofUintDefinition("gasprice"),
-          {special: "gasprice"},
+          { special: "gasprice" },
           info
         )
       };
@@ -67,7 +78,7 @@ export function* decodeMagic(definition: DecodeUtils.AstDefinition, pointer: Spe
       let block: any = {
         coinbase: yield* decodeValue(
           DecodeUtils.Definition.spoofAddressPayableDefinition("coinbase"),
-          {special: "coinbase"},
+          { special: "coinbase" },
           info
         )
       };
@@ -77,11 +88,11 @@ export function* decodeMagic(definition: DecodeUtils.AstDefinition, pointer: Spe
       for (let variable of variables) {
         block[variable] = yield* decodeValue(
           DecodeUtils.Definition.spoofUintDefinition(variable),
-          {special: variable},
+          { special: variable },
           info
         );
       }
-    return block;
+      return block;
     default:
       debug("Unrecognized magic variable!");
   }

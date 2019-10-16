@@ -20,18 +20,22 @@ export function slotAddress(slot: Slot): BN {
     // mapping reference
     let key = slot.key;
     let keyEncoding = slot.keyEncoding;
-    if(keyEncoding === undefined) { //HACK: booleans must be handled manually
+    if (keyEncoding === undefined) {
+      //HACK: booleans must be handled manually
       key = key ? new BN(1) : new BN(0);
       keyEncoding = "uint";
     }
-    return DecodeUtils.EVM.keccak256({type: keyEncoding, value: key}, slotAddress(slot.path)).add(slot.offset);
-  }
-  else if (slot.path !== undefined) {
+    return DecodeUtils.EVM.keccak256(
+      { type: keyEncoding, value: key },
+      slotAddress(slot.path)
+    ).add(slot.offset);
+  } else if (slot.path !== undefined) {
     const pathAddress = slotAddress(slot.path);
-    const path: BN = slot.hashPath ? DecodeUtils.EVM.keccak256(pathAddress) : pathAddress;
+    const path: BN = slot.hashPath
+      ? DecodeUtils.EVM.keccak256(pathAddress)
+      : pathAddress;
     return path.add(slot.offset);
-  }
-  else {
+  } else {
     return slot.offset;
   }
 }
@@ -40,15 +44,22 @@ export function slotAddressPrintout(slot: Slot): string {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
     let keyEncoding = slot.keyEncoding ? slot.keyEncoding : "uint"; //HACK for booleans
-    return "keccak(" + slot.key + " as " + keyEncoding + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
-  }
-  else if (slot.path !== undefined) {
+    return (
+      "keccak(" +
+      slot.key +
+      " as " +
+      keyEncoding +
+      ", " +
+      slotAddressPrintout(slot.path) +
+      ") + " +
+      slot.offset.toString()
+    );
+  } else if (slot.path !== undefined) {
     const pathAddressPrintout = slotAddressPrintout(slot.path);
     return slot.hashPath
       ? "keccak(" + pathAddressPrintout + ")" + slot.offset.toString()
       : pathAddressPrintout + slot.offset.toString();
-  }
-  else {
+  } else {
     return slot.offset.toString();
   }
 }
@@ -59,19 +70,25 @@ export function slotAddressPrintout(slot: Slot): string {
  * @param slot - see slotAddress() code to understand how these work
  * @param offset - for array, offset from the keccak determined location
  */
-export function* read(storage: WordMapping, slot: Slot): IterableIterator<Uint8Array | DecoderRequest> {
+export function* read(
+  storage: WordMapping,
+  slot: Slot
+): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   debug("Slot printout: %s", slotAddressPrintout(slot));
   const address: BN = slotAddress(slot);
 
   // debug("reading slot: %o", DecodeUtils.toHexString(address));
 
-  const hexAddress = DecodeUtils.Conversion.toHexString(address, DecodeUtils.EVM.WORD_SIZE);
+  const hexAddress = DecodeUtils.Conversion.toHexString(
+    address,
+    DecodeUtils.EVM.WORD_SIZE
+  );
   let word: Uint8Array = storage[hexAddress];
 
   //if we can't find the word in the map, we place a request to the invoker to supply it
   //(contract-decoder will look it up from the blockchain, while the debugger will just
   //say 0)
-  if(word === undefined) {
+  if (word === undefined) {
     word = yield {
       type: "storage",
       slot: address
@@ -97,11 +114,14 @@ export function* read(storage: WordMapping, slot: Slot): IterableIterator<Uint8A
  * @param to - location (see ^). inclusive.
  * @param length - instead of `to`, number of bytes after `from`
  */
-export function* readRange(storage: WordMapping, range: Range): IterableIterator<Uint8Array | DecoderRequest> {
+export function* readRange(
+  storage: WordMapping,
+  range: Range
+): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   // debug("readRange %o", range);
 
   let { from, to, length } = range;
-  if (typeof length === "undefined" && !to || length && to) {
+  if ((typeof length === "undefined" && !to) || (length && to)) {
     throw new Error("must specify exactly one `to`|`length`");
   }
 
@@ -124,7 +144,7 @@ export function* readRange(storage: WordMapping, range: Range): IterableIterator
     to = {
       slot: to.slot,
       index: to.index
-    }
+    };
   }
 
   // debug("normalized readRange %o", {from,to});
@@ -147,7 +167,10 @@ export function* readRange(storage: WordMapping, range: Range): IterableIterator
   }
   // debug("words %o", data);
 
-  data = data.slice(from.index, (totalWords - 1) * DecodeUtils.EVM.WORD_SIZE + to.index + 1);
+  data = data.slice(
+    from.index,
+    (totalWords - 1) * DecodeUtils.EVM.WORD_SIZE + to.index + 1
+  );
 
   // debug("data: %o", data);
 

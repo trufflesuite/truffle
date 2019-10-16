@@ -350,6 +350,7 @@ class DebugInterpreter {
         case "u":
         case "n":
         case "c":
+        case ";":
           //are we "finished" because we've reached the end, or because
           //nothing is loaded?
           if (this.session.view(selectors.session.status.loaded)) {
@@ -451,9 +452,18 @@ class DebugInterpreter {
       case "B":
         await this.setOrClearBreakpoint(splitArgs, false);
         break;
-      case ";":
       case "p":
         if (this.session.view(selectors.session.status.loaded)) {
+          this.printer.printFile();
+          this.printer.printInstruction();
+          this.printer.printState();
+        }
+        await this.printer.printWatchExpressionsResults(
+          this.enabledExpressions
+        );
+        break;
+      case ";":
+        if (!this.session.view(trace.finishedOrUnloaded)) {
           this.printer.printFile();
           this.printer.printInstruction();
           this.printer.printState();
