@@ -7,7 +7,7 @@ const findUpdatedFiles = require("./findUpdatedFiles");
 
 // Compares contract files to their artifact counterparts,
 // determines which contract files have been updated.
-const updatedFiles = async (options, callback) => {
+const updatedFiles = async options => {
   expect.options(options, ["resolver"]);
 
   const { contracts_directory, contracts_build_directory } = options;
@@ -33,9 +33,9 @@ const updatedFiles = async (options, callback) => {
       sourceFilesArtifacts,
       sourceFilesArtifactsUpdatedTimes
     );
-    callback(null, updatedFiles);
+    return updatedFiles;
   } catch (error) {
-    callback(error);
+    throw error;
   }
 };
 
