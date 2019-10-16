@@ -180,64 +180,56 @@ const Test = {
     return Migrate.run(migrateConfig);
   },
 
-  defineSolidityTests: function(mocha, contracts, dependencyPaths, runner) {
-    return new Promise(resolve => {
-      contracts.forEach(contract => {
-        SolidityTest.define(contract, dependencyPaths, runner, mocha);
-      });
-
-      resolve();
+  defineSolidityTests: async (mocha, contracts, dependencyPaths, runner) => {
+    contracts.forEach(contract => {
+      SolidityTest.define(contract, dependencyPaths, runner, mocha);
     });
   },
 
-  setJSTestGlobals: function(web3, accounts, testResolver, runner) {
-    return new Promise(function(accept) {
-      global.web3 = web3;
-      global.assert = chai.assert;
-      global.expect = chai.expect;
-      global.artifacts = {
-        require: import_path => testResolver.require(import_path)
-      };
+  setJSTestGlobals: async function(web3, accounts, testResolver, runner) {
+    global.web3 = web3;
+    global.assert = chai.assert;
+    global.expect = chai.expect;
+    global.artifacts = {
+      require: import_path => testResolver.require(import_path)
+    };
 
-      const template = function(tests) {
-        this.timeout(runner.TEST_TIMEOUT);
+    const template = function(tests) {
+      this.timeout(runner.TEST_TIMEOUT);
 
-        before("prepare suite", function(done) {
-          this.timeout(runner.BEFORE_TIMEOUT);
-          runner.initialize(done);
-        });
+      before("prepare suite", function(done) {
+        this.timeout(runner.BEFORE_TIMEOUT);
+        runner.initialize(done);
+      });
 
-        beforeEach("before test", function(done) {
-          runner.startTest(this, done);
-        });
+      beforeEach("before test", function(done) {
+        runner.startTest(this, done);
+      });
 
-        afterEach("after test", function(done) {
-          runner.endTest(this, done);
-        });
+      afterEach("after test", function(done) {
+        runner.endTest(this, done);
+      });
 
-        tests(accounts);
-      };
+      tests(accounts);
+    };
 
-      global.contract = function(name, tests) {
-        Mocha.describe("Contract: " + name, function() {
-          template.bind(this, tests)();
-        });
-      };
+    global.contract = function(name, tests) {
+      Mocha.describe("Contract: " + name, function() {
+        template.bind(this, tests)();
+      });
+    };
 
-      global.contract.only = function(name, tests) {
-        Mocha.describe.only("Contract: " + name, function() {
-          template.bind(this, tests)();
-        });
-      };
+    global.contract.only = function(name, tests) {
+      Mocha.describe.only("Contract: " + name, function() {
+        template.bind(this, tests)();
+      });
+    };
 
-      global.contract.skip = function(name, tests) {
-        Mocha.describe.skip("Contract: " + name, function() {
-          template.bind(this, tests)();
-        });
-      };
-
-      accept();
-    });
+    global.contract.skip = function(name, tests) {
+      Mocha.describe.skip("Contract: " + name, function() {
+        template.bind(this, tests)();
+      });
+    };
   }
 };
 
