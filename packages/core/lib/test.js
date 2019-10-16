@@ -1,5 +1,4 @@
 const Mocha = require("mocha");
-const { promisify } = require("util");
 const chai = require("chai");
 const path = require("path");
 const Web3 = require("web3");
@@ -151,9 +150,7 @@ const Test = {
     testResolver
   ) {
     const updated =
-      (await promisify(updatedFiles)(
-        config.with({ resolver: testResolver })
-      )) || [];
+      (await updatedFiles(config.with({ resolver: testResolver }))) || [];
 
     const compileConfig = config.with({
       all: config.compileAll === true,
