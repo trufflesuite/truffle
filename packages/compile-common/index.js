@@ -1,8 +1,7 @@
 const path = require("path");
 const { promisify } = require("util");
 const findContracts = promisify(require("@truffle/contract-sources"));
-const { updated } = require("@truffle/compile-solidity/profiler");
-const ProfilerUpdated = promisify(updated);
+const updatedFiles = require("./utils");
 
 const Common = {};
 
@@ -58,5 +57,8 @@ Common.updateContractsDirectory = (options, CONTRACT_EXT_PATTERN) =>
       CONTRACT_EXT_PATTERN
     )
   });
+
+// expose until adjusted for new compile-solidity interface
+Common.updatedFiles = updatedFiles;
 
 module.exports = Common;
