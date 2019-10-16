@@ -21,7 +21,7 @@ Common.necessary = async (compile, options, callback) => {
   options.logger = options.logger || console;
 
   try {
-    updated = await ProfilerUpdated(options);
+    updated = await updatedFiles(options);
   } catch (error) {
     return callback(error);
   }
