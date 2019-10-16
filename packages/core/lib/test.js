@@ -115,7 +115,6 @@ const Test = {
     return new Promise(resolve => {
       mocha.run(failures => {
         config.logger.warn = warn;
-
         resolve(failures);
       });
     });
@@ -123,21 +122,15 @@ const Test = {
 
   createMocha: function(config) {
     // Allow people to specify config.mocha in their config.
-    var mochaConfig = config.mocha || {};
+    const mochaConfig = config.mocha || {};
 
     // If the command line overrides color usage, use that.
-    if (config.colors != null) {
-      mochaConfig.useColors = config.colors;
-    }
+    if (config.colors != null) mochaConfig.useColors = config.colors;
 
     // Default to true if configuration isn't set anywhere.
-    if (mochaConfig.useColors == null) {
-      mochaConfig.useColors = true;
-    }
+    if (mochaConfig.useColors == null) mochaConfig.useColors = true;
 
-    var mocha = new Mocha(mochaConfig);
-
-    return mocha;
+    return new Mocha(mochaConfig);
   },
 
   getAccounts: function(web3) {
