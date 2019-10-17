@@ -20,6 +20,15 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
     var instance = this;
     var constructor = instance.constructor;
 
+    // Disambiguate between .at()/.deployed() & .new()
+    // in this case contract is a contract address string
+    if (typeof contract === "string") {
+      const contractInstance = new constructor.web3.eth.Contract(
+        constructor.abi
+      );
+      contractInstance.options.address = contract;
+      contract = contractInstance;
+    }
     // Core:
     instance.methods = {};
     instance.abi = constructor.abi;
