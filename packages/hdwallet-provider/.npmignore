@@ -1,2 +1,6 @@
 .idea
 .vscode
+test
+tsconfig.json
+src
+typings

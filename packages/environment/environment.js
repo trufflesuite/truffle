@@ -38,14 +38,15 @@ const Environment = {
     const upstreamNetwork = config.network;
     const upstreamConfig = config.networks[upstreamNetwork];
     const forkedNetwork = config.network + "-fork";
+    const ganacheOptions = {
+      fork: config.provider,
+      gasLimit: block.gasLimit
+    };
+    if (accounts.length > 0) ganacheOptions.unlocked_accounts = accounts;
 
     config.networks[forkedNetwork] = {
       network_id: config.network_id,
-      provider: Ganache.provider({
-        fork: config.provider,
-        unlocked_accounts: accounts,
-        gasLimit: block.gasLimit
-      }),
+      provider: Ganache.provider(ganacheOptions),
       from: config.from,
       gas: upstreamConfig.gas,
       gasPrice: upstreamConfig.gasPrice

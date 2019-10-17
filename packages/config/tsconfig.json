@@ -6,25 +6,20 @@
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
+    "declaration": true,
+    "strict": true,
     "outDir": "dist",
     "baseUrl": ".",
-    "lib": ["es2017"],
-    "paths": {
-      "web3": [
-        "../../node_modules/@types/web3/index",
-        "node_modules/web3/index"
-      ]
-    },
-    "rootDir": ".",
+    "lib": ["es2017", "dom"],
+    "rootDir": "./src",
     "typeRoots": [
       "./typings",
-      "node_modules/@types",
       "../../node_modules/@types/mocha",
       "../../node_modules/@types/node"
     ]
   },
   "include": [
-    "./**/*.ts",
+    "./src/**/*.ts",
     "./typings/**/*.d.ts"
   ]
 }
