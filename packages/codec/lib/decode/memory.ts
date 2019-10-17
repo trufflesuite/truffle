@@ -11,7 +11,7 @@ import { MemoryPointer, DataPointer } from "../types/pointer";
 import { MemoryMemberAllocation } from "../types/allocation";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";
-import { DecodingError } from "../types/errors";
+import { DecodingError } from "../decode/errors";
 
 export default function* decodeMemory(dataType: Types.Type, pointer: MemoryPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {

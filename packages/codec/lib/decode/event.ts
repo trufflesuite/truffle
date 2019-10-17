@@ -9,7 +9,7 @@ import { EventTopicPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderOptions } from "../types/options";
 import { DecoderRequest } from "../types/request";
-import { StopDecodingError } from "../types/errors";
+import { StopDecodingError } from "../decode/errors";
 
 export default function* decodeTopic(dataType: Types.Type, pointer: EventTopicPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {

@@ -1,7 +1,6 @@
 import { DecoderContext } from "./contexts";
 import * as AbiTypes from "./abi";
-import { Types } from "../format/types";
-import { Values } from "../format/values";
+import { Types, Values } from "../format";
 
 export type CalldataDecoding = FunctionDecoding | ConstructorDecoding | MessageDecoding | UnknownDecoding;
 export type LogDecoding = EventDecoding | AnonymousDecoding;

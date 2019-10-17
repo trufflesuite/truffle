@@ -5,12 +5,29 @@ import { StoragePointer } from "../types/pointer";
 import { StorageAllocations, StorageAllocation, StorageMemberAllocation } from "../types/allocation";
 import { StorageLength, Range } from "../types/storage";
 import { isWordsLength } from "../utils/storage";
-import { UnknownBaseContractIdError, UnknownUserDefinedTypeError, DecodingError } from "../types/errors";
+import { UnknownUserDefinedTypeError } from "../types/errors";
+import { DecodingError } from "../decode/errors";
 import { AstDefinition, AstReferences } from "../types/ast";
 import * as CodecUtils from "../utils";
 import { TypeUtils } from "../utils";
 import * as Format from "../format";
 import BN from "bn.js";
+
+export class UnknownBaseContractIdError extends Error {
+  public derivedId: number;
+  public derivedName: string;
+  public derivedKind: string;
+  public baseId: number;
+  constructor(derivedId: number, derivedName: string, derivedKind: string, baseId: number) {
+    const message = `Cannot locate base contract ID ${baseId} of ${derivedKind} ${derivedName} (ID ${derivedId})`;
+    super(message);
+    this.name = "UnknownBaseContractIdError";
+    this.derivedId = derivedId;
+    this.derivedName = derivedName;
+    this.derivedKind = derivedKind;
+    this.baseId = baseId;
+  }
+}
 
 interface StorageAllocationInfo {
   size: StorageLength;
@@ -98,7 +115,7 @@ function allocateMembers(parentNode: AstDefinition, definitions: DefinitionPair[
         offset += 1;
     }
     //otherwise, we remain in place
-  
+
     let range: Range;
 
     if(isWordsLength(size)) {
@@ -214,7 +231,7 @@ function allocateContract(contract: AstDefinition, referenceDeclarations: AstRef
     );
   }));
 
-  return allocateMembers(contract, vars, referenceDeclarations, existingAllocations, true); 
+  return allocateMembers(contract, vars, referenceDeclarations, existingAllocations, true);
     //size is not meaningful for contracts, so we pass suppressSize=true
 }
 

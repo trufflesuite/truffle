@@ -4,7 +4,7 @@ const debug = debugModule("codec:read:constant");
 import * as CodecUtils from "../utils";
 import { AstDefinition } from "../types/ast";
 import BN from "bn.js";
-import { DecodingError } from "../types/errors";
+import { DecodingError } from "../decode/errors";
 
 export function readDefinition(definition: AstDefinition): Uint8Array {
 

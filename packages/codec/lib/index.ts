@@ -1,7 +1,8 @@
 //So, what shall codec export...?
 
 //First: export the data format
-export * from "./format";
+import * as Format from "./format";
+export { Format };
 
 //next: export all the utils!
 //you can't do "export * as Name" for whatever reason so...
@@ -12,11 +13,12 @@ export { Utils };
 export * from "./interface";
 
 //now... various low-level stuff we want to export!
-//the actual decoding functions
+//the actual decoding functions and related errors
 export { decodeVariable, decodeEvent, decodeCalldata } from "./core/decoding";
+export { DecodingError, StopDecodingError } from "./decode/errors";
 
 //the debugger needs to get its allocations, and deal with storage sizes
-export { getStorageAllocations, storageSize } from "./allocate/storage";
+export { UnknownBaseContractIdError, getStorageAllocations, storageSize } from "./allocate/storage";
 export { getAbiAllocations } from "./allocate/abi";
 export { getMemoryAllocations } from "./allocate/memory";
 //and to read the stack

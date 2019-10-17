@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:encode:abi");
 
-import { Values } from "../format/values";
+import { Values } from "../format";
 import { Conversion as ConversionUtils } from "../utils/conversion";
 import { EVM as EVMUtils } from "../utils/evm";
 import { AbiAllocations, AbiSizeInfo } from "../types/allocation";
