@@ -4,7 +4,7 @@
   "license": "MIT",
   "author": "",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/code-utils",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

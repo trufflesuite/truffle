@@ -37,6 +37,10 @@
       "prettier --write",
       "eslint --fix",
       "git add"
+    ],
+    "*.ts": [
+      "prettier --write",
+      "git add"
     ]
   }
 }
