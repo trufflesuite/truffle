@@ -3,8 +3,9 @@ const assert = require("chai").assert;
 const Big = require("big.js");
 const clonedeep = require("lodash.clonedeep");
 
-const TruffleCodec = require("../../../codec");
-const ConversionUtils = TruffleCodec.Utils.Conversion;
+const TruffleCodec = require("../..");
+const ConversionUtils = require("../../../codec/dist/lib/utils/conversion");
+const { encodeTupleAbi } = require("../../../codec");
 
 const DowngradeTestUnmodified = artifacts.require("DowngradeTest");
 const DecoyLibrary = artifacts.require("DecoyLibrary");
@@ -208,7 +209,7 @@ contract("DowngradeTest", function(accounts) {
         asBig: tau
       }
     };
-    const encodedTau = TruffleCodec.encodeTupleAbi([wrappedTau]);
+    const encodedTau = encodeTupleAbi([wrappedTau]);
     const hexTau = ConversionUtils.toHexString(encodedTau);
     const selector = web3.eth.abi.encodeFunctionSignature(
       "shhImADecimal(fixed168x10)"

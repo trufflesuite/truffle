@@ -1,13 +1,14 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:abi");
 
+// untyped import since no @types/web3-utils exists
+const Web3Utils = require("web3-utils");
 import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import * as EVMUtils from "./evm";
 import * as Common from "@truffle/codec/common/types";
 import * as Ast from "@truffle/codec/ast/types";
 import * as AbiTypes from "@truffle/codec/abi/types";
 import { definitionToAbi } from "./definition2abi";
-import Web3 from "web3";
 
 //NOTE: SchemaAbi is kind of loose and a pain to use.
 //So we'll generally coerce things to Abi before use.
@@ -115,7 +116,7 @@ export function abiSelector(abiEntry: AbiTypes.FunctionAbiEntry | AbiTypes.Event
   let signature = abiSignature(abiEntry);
   //NOTE: web3's soliditySha3 has a problem if the empty
   //string is passed in.  Fortunately, that should never happen here.
-  let hash = Web3.utils.soliditySha3({type: "string", value: signature});
+  let hash = Web3Utils.soliditySha3({type: "string", value: signature});
   switch(abiEntry.type) {
     case "event":
       return hash;

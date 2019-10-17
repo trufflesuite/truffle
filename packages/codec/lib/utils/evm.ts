@@ -2,7 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("codec:utils:evm");
 
 import BN from "bn.js";
-import Web3 from "web3";
+// untyped import since no @types/web3-utils exists
+const Web3Utils = require("web3-utils");
 import * as ConversionUtils from "./conversion";
 
 export const WORD_SIZE = 0x20;
@@ -22,7 +23,7 @@ export function keccak256(...args: any[]): BN {
 
   // debug("args %o", args);
 
-  const rawSha: string | null = Web3.utils.soliditySha3(...args);
+  const rawSha: string | null = Web3Utils.soliditySha3(...args);
   debug("rawSha %o", rawSha);
   let sha: string;
   if(rawSha === null) {
@@ -68,7 +69,7 @@ export function toAddress(bytes: Uint8Array | string): string {
     {
       hex = "0x" + hex.slice(hex.length - 2 * ADDRESS_SIZE);
     }
-    return Web3.utils.toChecksumAddress(hex);
+    return Web3Utils.toChecksumAddress(hex);
   }
   //otherwise, we're in the Uint8Array case, which we can't fully handle ourself
 
@@ -80,5 +81,5 @@ export function toAddress(bytes: Uint8Array | string): string {
   //now, convert to hex string and apply checksum case that second argument
   //(which ensures it's padded to 20 bytes) shouldn't actually ever be
   //needed, but I'll be safe and include it
-  return Web3.utils.toChecksumAddress(ConversionUtils.toHexString(bytes, ADDRESS_SIZE));
+  return Web3Utils.toChecksumAddress(ConversionUtils.toHexString(bytes, ADDRESS_SIZE));
 }

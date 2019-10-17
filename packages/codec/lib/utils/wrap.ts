@@ -1,7 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:wrap");
 
-import Web3 from "web3";
+// untyped import since no @types/web3-utils exists
+const Web3Utils = require("web3-utils");
 import BN from "bn.js";
 import * as Compiler from "@truffle/codec/compiler/types";
 import * as Ast from "@truffle/codec/ast/types";
@@ -46,7 +47,7 @@ export function wrapElementaryValue(value: any, dataType: Types.Type): Values.El
         }
       };
     case "address":
-      value = Web3.utils.toChecksumAddress(value);
+      value = Web3Utils.toChecksumAddress(value);
       return {
         type: dataType,
         kind: "value",

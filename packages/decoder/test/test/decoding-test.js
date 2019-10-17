@@ -1,7 +1,8 @@
 const assert = require("assert");
 const util = require("util"); // eslint-disable-line no-unused-vars
 
-const TruffleCodec = require("../../../codec");
+const TruffleCodec = require("../..");
+const { nativizeDecoderVariables } = require("../../dist/utils");
 
 const DecodingSample = artifacts.require("DecodingSample");
 const DecodingSampleParent = artifacts.require("DecodingSampleParent");
@@ -59,9 +60,7 @@ contract("DecodingSample", _accounts => {
     assert.equal(initialVariables[0].class.typeName, "DecodingSampleParent");
     assert.equal(initialVariables[1].class.typeName, "DecodingSample");
 
-    const variables = TruffleCodec.Utils.Conversion.nativizeDecoderVariables(
-      initialVariables
-    );
+    const variables = nativizeDecoderVariables(initialVariables);
 
     assert.notStrictEqual(typeof variables.varUint, "undefined");
 

@@ -2,8 +2,8 @@ const debug = require("debug")("decoder:test:wire-test");
 const assert = require("chai").assert;
 const BN = require("bn.js");
 
-const TruffleCodec = require("../../../codec");
-const ConversionUtils = TruffleCodec.Utils.Conversion;
+const TruffleCodec = require("../..");
+const ConversionUtils = require("../../../codec/dist/lib/utils/conversion");
 
 const WireTest = artifacts.require("WireTest");
 const WireTestParent = artifacts.require("WireTestParent");

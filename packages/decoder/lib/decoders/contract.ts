@@ -28,10 +28,7 @@ import {
   storageSize
 } from "@truffle/codec/allocate/storage";
 import { decodeVariable } from "@truffle/codec/core/decoding";
-import {
-  ContractBeingDecodedHasNoNodeError,
-  ContractAllocationFailedError
-} from "@truffle/codec/interface/errors";
+import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "../errors";
 
 /**
  * The ContractDecoder class.  Spawns the [[ContractInstanceDecoder]] class.

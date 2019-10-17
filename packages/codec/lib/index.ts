@@ -9,9 +9,6 @@ export { Format };
 import * as Utils from "./utils";
 export { Utils };
 
-//next: export the interface, duh
-export * from "./interface";
-
 //now... various low-level stuff we want to export!
 //the actual decoding functions and related errors
 export { decodeVariable, decodeEvent, decodeCalldata } from "./core/decoding";
@@ -32,7 +29,6 @@ export { encodeMappingKey } from "./encode/key";
 
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface
-export { ContractState, StateVariable, DecodedTransaction, DecodedLog, EventOptions } from "./interface/types";
 export * from "./decode/types"; //all the decoding result types
 export { UnknownUserDefinedTypeError } from "./common/types"; //the various errors we might throw
 

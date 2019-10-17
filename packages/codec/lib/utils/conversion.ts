@@ -5,7 +5,6 @@ import BN from "bn.js";
 import Big from "big.js";
 import * as Format from "@truffle/codec/format";
 import { enumFullName } from "./inspect";
-import * as Types from "@truffle/codec/interface/types";
 
 /**
  * @param bytes - undefined | string | number | BN | Uint8Array | Big
@@ -167,19 +166,6 @@ export function nativizeVariables(variables: {[name: string]: Format.Values.Resu
   return Object.assign({}, ...Object.entries(variables).map(
     ([name, value]) => ({[name]: nativize(value)})
   ));
-}
-
-//NOTE: Definitely do not use this in real code!  For tests only!
-//for convenience: invokes the nativize method on all the given variables, and changes them to
-//the old format
-export function nativizeDecoderVariables(variables: Types.StateVariable[]): {[name: string]: any} {
-  return Object.assign({}, ...variables.map(
-    ({name, value}) => ({[name]: nativize(value)})
-  ));
-  //note that the assignments are processed in order, so if multiple have same name, later
-  //(i.e. more derived) will overwrite earlier (i.e. baser)... be aware!  I mean, this is the
-  //right way to do overwriting, but it's still overwriting so still dangerous.
-  //Again, don't use this in real code!
 }
 
 //converts out of range booleans to true; something of a HACK
