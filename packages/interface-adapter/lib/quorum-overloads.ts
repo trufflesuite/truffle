@@ -6,6 +6,7 @@ import _ from "lodash";
 export const QuorumDefinition = {
   async initNetworkType(web3: InterfaceAdapter) {
     // duck punch some of web3's output formatters
+    overrides.getId(web3);
     overrides.getBlock(web3);
     overrides.getTransaction(web3);
     overrides.getTransactionReceipt(web3);
@@ -17,6 +18,10 @@ const overrides = {
   // The ts-ignores are ignoring the checks that are
   // saying that web3.eth.getBlock is a function and doesn't
   // have a `method` property, which it does
+  getId: (web3: InterfaceAdapter) => {
+    web3.getNetworkId = web3.eth.net.getId;
+  },
+
   getBlock: (web3: InterfaceAdapter) => {
     // @ts-ignore
     const _oldBlockFormatter = web3.eth.getBlock.method.outputFormatter;
