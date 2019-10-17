@@ -63,14 +63,10 @@ const command = {
       Environment.detect(config).catch(done);
     }
 
-    let ipcDisconnect;
-    let files = [];
+    let ipcDisconnect, files;
 
     try {
       files = determineTestFilesToRun(options, config);
-      files = files.filter(file => {
-        return file.match(config.test_file_extension_regexp) !== null;
-      });
     } catch (error) {
       return done(error);
     }
@@ -168,7 +164,9 @@ const command = {
         files =
           directoryContents.filter(item => fs.statSync(item).isFile()) || [];
       }
-      return files;
+      return files.filter(file => {
+        return file.match(config.test_file_extension_regexp) !== null;
+      });
     },
     prepareConfigAndRunTests: ({ config, temporaryDirectory, files }) => {
       const Artifactor = require("@truffle/artifactor");
