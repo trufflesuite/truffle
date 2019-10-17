@@ -16,11 +16,13 @@ const overrides = {
     // @ts-ignore
     const _oldGetIdFormatter = web3.eth.net.getId.method.outputFormatter;
     // @ts-ignore
-    web3.eth.net.getId.method.outputFormatter = (hexId: Number|String) => {
+    web3.eth.net.getId.method.outputFormatter = (hexId: Number | String) => {
       // chaincode-fabric-evm currently returns a "fabric-evm" string
       // instead of a hex networkID. Instead of trying to decode the hexToNumber,
       // let's just accept `fabric-evm` as a valid networkID for now.
       return hexId;
     };
+
+    web3.getNetworkId = web3.eth.net.getId;
   }
 };
