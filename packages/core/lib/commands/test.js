@@ -47,7 +47,6 @@ const command = {
     const {
       copyArtifactsToTempDir,
       determineTestFilesToRun,
-      performCleanup,
       prepareConfigAndRunTests
     } = this.helpers;
 
@@ -86,8 +85,9 @@ const command = {
             temporaryDirectory
           });
         })
-        .then(() => performCleanup(ipcDisconnect))
-        .then(() => done())
+        .then(numberOfFailures => {
+          done.call(null, numberOfFailures);
+        })
         .catch(done);
     } else {
       const ipcOptions = { network: "test" };
@@ -116,8 +116,10 @@ const command = {
                 temporaryDirectory
               });
             })
-            .then(() => performCleanup(ipcDisconnect))
-            .then(() => done())
+            .then(numberOfFailures => {
+              done.call(null, numberOfFailures);
+              ipcDisconnect();
+            })
             .catch(done);
         }
       );
@@ -168,10 +170,7 @@ const command = {
       }
       return files;
     },
-    performCleanup: ipcDisconnect => {
-      if (ipcDisconnect) ipcDisconnect();
-    },
-    prepareConfigAndRunTests: async ({ config, temporaryDirectory, files }) => {
+    prepareConfigAndRunTests: ({ config, temporaryDirectory, files }) => {
       const Artifactor = require("@truffle/artifactor");
       const Test = require("../test");
       // Set a new artifactor; don't rely on the one created by Environments.
@@ -182,7 +181,7 @@ const command = {
         test_files: files,
         contracts_build_directory: temporaryDirectory
       });
-      await Test.run(testConfig);
+      return Test.run(testConfig);
     }
   }
 };
