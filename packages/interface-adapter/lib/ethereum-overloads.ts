@@ -5,6 +5,7 @@ export const EthereumDefinition = {
   async initNetworkType(web3: InterfaceAdapter) {
     // truffle has started expecting gas used/limit to be
     // hex strings to support bignumbers for other ledgers
+    overrides.getId(web3);
     overrides.getBlock(web3);
     overrides.getTransaction(web3);
     overrides.getTransactionReceipt(web3);
@@ -15,6 +16,10 @@ const overrides = {
   // The ts-ignores are ignoring the checks that are
   // saying that web3.eth.getBlock is a function and doesn't
   // have a `method` property, which it does
+  getId: (web3: InterfaceAdapter) => {
+    web3.getNetworkId = web3.eth.net.getId;
+  },
+
   getBlock: (web3: InterfaceAdapter) => {
     // @ts-ignore
     const _oldFormatter = web3.eth.getBlock.method.outputFormatter;
