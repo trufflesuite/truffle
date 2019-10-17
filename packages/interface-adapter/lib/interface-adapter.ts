@@ -1,5 +1,5 @@
 import Web3 from "web3";
-import { Provider } from "web3/providers";
+import { Callback, Provider } from "web3/providers";
 
 import { EthereumDefinition } from "./ethereum-overloads";
 import { QuorumDefinition } from "./quorum-overloads";
@@ -25,7 +25,7 @@ const initInterface = async (interfaceAdapter: InterfaceAdapter) => {
 // will undergo better architecture before TruffleCon to support
 // other non-Ethereum-based ledgers.
 
-export type NetworkType = string;
+export type NetworkType = String;
 
 export interface InterfaceAdapterOptions {
   provider?: Provider;
@@ -80,4 +80,8 @@ export class InterfaceAdapter extends Web3 {
     this.networkType = networkType;
     initInterface(this);
   }
+
+  public getNetworkId: (
+    cb?: Callback<Number | String>
+  ) => Promise<Number | String>;
 }
