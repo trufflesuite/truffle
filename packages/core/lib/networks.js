@@ -1,253 +1,186 @@
-var fs = require("fs");
-var path = require("path");
-var OS = require("os");
-var BlockchainUtils = require("@truffle/blockchain-utils");
-var Provider = require("@truffle/provider");
-var async = require("async");
-var { Web3Shim } = require("@truffle/interface-adapter");
+const fs = require("fs");
+const path = require("path");
+const OS = require("os");
+const BlockchainUtils = require("@truffle/blockchain-utils");
+const Provider = require("@truffle/provider");
+const async = require("async");
+const { Web3Shim } = require("@truffle/interface-adapter");
 
-var Networks = {
-  deployed: function(options, callback) {
-    fs.readdir(options.contracts_build_directory, function(err, files) {
-      if (err) {
-        // We can't read the directory. Act like we found nothing.
-        files = [];
-      }
+const Networks = {
+  deployed: async function(options) {
+    let files;
+    try {
+      files = fs.readdirSync(options.contracts_build_directory);
+    } catch (error) {
+      // We can't read the directory. Act like we found nothing.
+      files = [];
+    }
 
-      var promises = [];
-
-      files.forEach(function(file) {
-        promises.push(
-          new Promise(function(accept, reject) {
-            fs.readFile(
-              path.join(options.contracts_build_directory, file),
-              "utf8",
-              function(err, body) {
-                if (err) return reject(err);
-
-                try {
-                  body = JSON.parse(body);
-                } catch (e) {
-                  return reject(e);
-                }
-
-                accept(body);
-              }
-            );
-          })
-        );
-      });
-
-      Promise.all(promises)
-        .then(function(binaries) {
-          var ids_to_names = {};
-          var networks = {};
-
-          // binaries.map(function(b) {return b.contract_name + ": " + JSON.stringify(b.networks, null, 2)}).forEach(function(b) {
-          //   console.log(b);
-          // });
-
-          Object.keys(options.networks).forEach(function(network_name) {
-            var network = options.networks[network_name];
-            var network_id = network.network_id;
-
-            if (network_id == null) {
-              return;
-            }
-
-            ids_to_names[network_id] = network_name;
-            networks[network_name] = {};
-          });
-
-          binaries.forEach(function(json) {
-            Object.keys(json.networks).forEach(function(network_id) {
-              var network_name = ids_to_names[network_id] || network_id;
-
-              if (networks[network_name] == null) {
-                networks[network_name] = {};
-              }
-
-              var address = json.networks[network_id].address;
-
-              if (address == null) return;
-
-              networks[network_name][json.contractName] = address;
-            });
-          });
-
-          callback(null, networks);
-        })
-        .catch(callback);
+    const binaries = files.map(file => {
+      const filePath = path.join(options.contracts_build_directory, file);
+      const fileContents = fs.readFileSync(filePath, "utf8");
+      return JSON.parse(fileContents);
     });
+
+    const idsToNames = {};
+    const networks = {};
+
+    for (let networkName in options.networks) {
+      const network = options.networks[networkName];
+      const networkId = network.network_id;
+
+      if (networkId == null) return;
+
+      idsToNames[networkId] = networkName;
+      networks[networkName] = {};
+    }
+
+    for (let json of binaries) {
+      for (let networkId in json.networks) {
+        const networkName = idsToNames[networkId] || networkId;
+
+        if (networks[networkName] == null) networks[networkName] = {};
+
+        const address = json.networks[networkId].address;
+
+        if (address == null) return;
+
+        networks[networkName][json.contractName] = address;
+      }
+    }
+    return networks;
   },
 
-  display: function(config, callback) {
-    this.deployed(config, function(err, networks) {
-      if (err) return callback(err);
+  display: async function(config) {
+    const networks = await this.deployed(config);
+    let networkNames = Object.keys(networks).sort();
 
-      var network_names = Object.keys(networks).sort();
+    const starNetworks = networkNames.filter(networkName => {
+      return (
+        config.networks[networkName] != null &&
+        config.networks[networkName].network_id === "*"
+      );
+    });
 
-      var star_networks = network_names.filter(function(network_name) {
-        return (
-          config.networks[network_name] != null &&
-          config.networks[network_name].network_id === "*"
-        );
+    // Remove * networks from network names.
+    networkNames = networkNames.filter(networkName => {
+      return starNetworks.indexOf(networkName) < 0;
+    });
+
+    const unknownNetworks = networkNames.filter(networkName => {
+      const configuredNetworks = Object.keys(config.networks);
+      let found = false;
+      for (let i = 0; i < configuredNetworks.length; i++) {
+        const configuredNetworkName = configuredNetworks[i];
+        if (networkName === configuredNetworkName) {
+          found = true;
+          break;
+        }
+      }
+
+      return !found;
+    });
+
+    // Only display this warning if:
+    //
+    //   At least one network is configured with the wildcard ('*') network id
+    //   There's a least one network deployed to
+    //   And one of those networks deployed to is unknown (i.e., unconfigured).
+    if (
+      starNetworks.length > 0 &&
+      networkNames.length > 0 &&
+      unknownNetworks.length > 0
+    ) {
+      config.logger.log(
+        OS.EOL +
+          "The following networks are configured to match any network id ('*'):" +
+          OS.EOL
+      );
+
+      starNetworks.forEach(networkName => {
+        config.logger.log("    " + networkName);
       });
 
-      // Remove * networks from network names.
-      network_names = network_names.filter(function(network_name) {
-        return star_networks.indexOf(network_name) < 0;
-      });
+      config.logger.log(
+        OS.EOL +
+          "Closely inspect the deployed networks below, and use `truffle networks --clean` to remove any networks that don't match your configuration. You should not use the wildcard configuration ('*') for staging and production networks for which you intend to deploy your application."
+      );
+    }
 
-      var unknown_networks = network_names.filter(function(network_name) {
-        var configured_networks = Object.keys(config.networks);
-        var found = false;
-        for (var i = 0; i < configured_networks.length; i++) {
-          var configured_network_name = configured_networks[i];
-          if (network_name === configured_network_name) {
+    networkNames.forEach(networkName => {
+      config.logger.log("");
+
+      let output = Object.keys(networks[networkName])
+        .sort()
+        .map(contract_name => {
+          const address = networks[networkName][contract_name];
+          return contract_name + ": " + address;
+        });
+
+      if (output.length === 0) output = ["No contracts deployed."];
+
+      let message = "Network: ";
+
+      const is_id = config.networks[networkName] == null;
+
+      if (is_id) {
+        message += "UNKNOWN (id: " + networkName + ")";
+      } else {
+        message +=
+          networkName +
+          " (id: " +
+          config.networks[networkName].network_id +
+          ")";
+      }
+
+      config.logger.log(message);
+      config.logger.log("  " + output.join("\n  "));
+    });
+
+    if (networkNames.length === 0) {
+      config.logger.log(
+        OS.EOL + "Contracts have not been deployed to any network."
+      );
+    }
+    config.logger.log("");
+  },
+
+  clean: async function(config) {
+    let files = fs.readdirSync(config.contracts_build_directory);
+    const configuredNetworks = Object.keys(config.networks);
+    const results = [];
+
+    files.forEach(file => {
+      const filePath = path.join(config.contracts_build_directory, file);
+
+      const fileContents = fs.readFileSync(filePath, "utf8");
+      const body = JSON.parse(fileContents);
+
+      for (let installedNetworkId of body.networks) {
+        let found = false;
+        for (let i = 0; i < configuredNetworks.length; i++) {
+          const configuredNetwork = configuredNetworks[i];
+
+          // If an installed network id matches a configured id, then we can ignore this one.
+          if (
+            installedNetworkId === config.networks[configuredNetwork].network_id
+          ) {
             found = true;
             break;
           }
         }
 
-        return !found;
-      });
-
-      // Only display this warning if:
-      //
-      //   At least one network is configured with the wildcard ('*') network id
-      //   There's a least one network deployed to
-      //   And one of those networks deployed to is unknown (i.e., unconfigured).
-      if (
-        star_networks.length > 0 &&
-        network_names.length > 0 &&
-        unknown_networks.length > 0
-      ) {
-        config.logger.log(
-          OS.EOL +
-            "The following networks are configured to match any network id ('*'):" +
-            OS.EOL
-        );
-
-        star_networks.forEach(function(network_name) {
-          config.logger.log("    " + network_name);
-        });
-
-        config.logger.log(
-          OS.EOL +
-            "Closely inspect the deployed networks below, and use `truffle networks --clean` to remove any networks that don't match your configuration. You should not use the wildcard configuration ('*') for staging and production networks for which you intend to deploy your application."
-        );
+        // If we didn't find a suitable configuration, delete this network.
+        if (found === false) delete body.networks[installedNetworkId];
       }
 
-      network_names.forEach(function(network_name) {
-        config.logger.log("");
-
-        var output = Object.keys(networks[network_name])
-          .sort()
-          .map(function(contract_name) {
-            var address = networks[network_name][contract_name];
-            return contract_name + ": " + address;
-          });
-
-        if (output.length === 0) {
-          output = ["No contracts deployed."];
-        }
-
-        var message = "Network: ";
-
-        var is_id = config.networks[network_name] == null;
-
-        if (is_id) {
-          message += "UNKNOWN (id: " + network_name + ")";
-        } else {
-          message +=
-            network_name +
-            " (id: " +
-            config.networks[network_name].network_id +
-            ")";
-        }
-
-        config.logger.log(message);
-        config.logger.log("  " + output.join("\n  "));
-      });
-
-      if (network_names.length === 0) {
-        config.logger.log(
-          OS.EOL + "Contracts have not been deployed to any network."
-        );
-      }
-
-      config.logger.log("");
-
-      callback();
+      // Our work is done here. Save the file.
+      fs.writeFileSync(filePath, JSON.stringify(body, null, 2), "utf8");
+      results.push(body);
     });
-  },
 
-  clean: function(config, callback) {
-    fs.readdir(config.contracts_build_directory, function(err, files) {
-      if (err) return callback(err);
-
-      var configured_networks = Object.keys(config.networks);
-      var promises = [];
-
-      files.forEach(function(file) {
-        promises.push(
-          new Promise(function(accept, reject) {
-            var file_path = path.join(config.contracts_build_directory, file);
-            fs.readFile(file_path, "utf8", function(err, body) {
-              if (err) return reject(err);
-
-              try {
-                body = JSON.parse(body);
-              } catch (e) {
-                return reject(e);
-              }
-
-              Object.keys(body.networks).forEach(function(
-                installed_network_id
-              ) {
-                var found = false;
-                for (var i = 0; i < configured_networks.length; i++) {
-                  var configured_network = configured_networks[i];
-
-                  // If an installed network id matches a configured id, then we can ignore this one.
-                  if (
-                    installed_network_id ===
-                    config.networks[configured_network].network_id
-                  ) {
-                    found = true;
-                    break;
-                  }
-                }
-
-                // If we didn't find a suitable configuration, delete this network.
-                if (found === false) {
-                  delete body.networks[installed_network_id];
-                }
-              });
-
-              // Our work is done here. Save the file.
-              fs.writeFile(
-                file_path,
-                JSON.stringify(body, null, 2),
-                "utf8",
-                function(err) {
-                  if (err) return reject(err);
-                  accept(body);
-                }
-              );
-            });
-          })
-        );
-      });
-
-      // TODO: Display what's removed?
-      Promise.all(promises)
-        .then(function() {
-          callback();
-        })
-        .catch(callback);
-    });
+    // TODO: Display what's removed?
+    return results;
   },
 
   // Try to connect to every named network except for "test" and "development"
@@ -257,16 +190,16 @@ var Networks = {
       networks = Object.keys(options.networks);
     }
 
-    var result = {
+    const result = {
       uris: {},
       failed: []
     };
 
     async.each(
       networks,
-      function(network_name, finished) {
-        var provider = Provider.create(options.networks[network_name]);
-        BlockchainUtils.asURI(provider, function(err, uri) {
+      (network_name, finished) => {
+        const provider = Provider.create(options.networks[network_name]);
+        BlockchainUtils.asURI(provider, (err, uri) => {
           if (err) {
             result.failed.push(network_name);
           } else {
@@ -275,40 +208,35 @@ var Networks = {
           finished();
         });
       },
-      function(err) {
-        if (err) return callback(err);
+      error => {
+        if (error) return callback(error);
         callback(null, result);
       }
     );
   },
 
-  matchesNetwork: function(network_id, network_options, callback) {
-    var provider = Provider.create(network_options);
+  matchesNetwork: async function(network_id, network_options, callback) {
+    const provider = Provider.create(network_options);
 
-    var first = network_id + "";
-    var second = network_options.network_id + "";
+    const first = network_id + "";
+    const second = network_options.network_id + "";
 
-    if (first === second) {
-      return callback(null, true);
-    }
+    if (first === second) return callback(null, true);
 
-    var isFirstANumber = isNaN(parseInt(network_id)) === false;
-    var isSecondANumber = isNaN(parseInt(network_options.network_id)) === false;
+    const isFirstANumber = isNaN(parseInt(network_id)) === false;
+    const isSecondANumber =
+      isNaN(parseInt(network_options.network_id)) === false;
 
     // If both network ids are numbers, then they don't match, and we should quit.
-    if (isFirstANumber && isSecondANumber) {
-      return callback(null, false);
-    }
+    if (isFirstANumber && isSecondANumber) return callback(null, false);
 
-    var web3 = new Web3Shim({
+    const web3 = new Web3Shim({
       provider,
       networkType: network_options.type
     });
     web3.eth.net
       .getId(current_network_id => {
-        if (first === current_network_id) {
-          return callback(null, true);
-        }
+        if (first === current_network_id) return callback(null, true);
 
         if (isFirstANumber === false) {
           BlockchainUtils.matches(first, provider, callback);

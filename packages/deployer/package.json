@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.0.37-alphaTez.0",
+  "version": "3.0.37",
   "main": "index.js",
   "scripts": {
     "test": "mocha --no-warnings --timeout 10000 --exit"
@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@truffle/reporters": "^2.0.0-alphaTez.0",
-    "@truffle/workflow-compile": "^2.1.9-alphaTez.0",
+    "@truffle/workflow-compile": "^2.1.9",
     "ganache-core": "2.7.0",
     "mocha": "5.2.0",
     "web3": "1.2.1"

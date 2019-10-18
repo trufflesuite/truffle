@@ -1,7 +1,7 @@
 import BN from "bn.js";
 
 import * as CodecUtils from "../utils";
-import { DecodingError } from "../types/errors";
+import { DecodingError } from "../decode/errors";
 
 /**
  * read word from memory
@@ -24,8 +24,7 @@ export function read(memory: Uint8Array, offset: number) {
  * @param length - number
  */
 export function readBytes(memory: Uint8Array, offset: number, length: number) {
-
-  if(!Number.isSafeInteger(offset + length)) {
+  if (!Number.isSafeInteger(offset + length)) {
     throw new DecodingError({
       kind: "ReadErrorBytes" as const,
       start: offset,
@@ -47,8 +46,7 @@ export function readBytes(memory: Uint8Array, offset: number, length: number) {
   let readLength;
   if (excess > 0) {
     readLength = memory.length - offset;
-  }
-  else {
+  } else {
     readLength = length;
   }
 

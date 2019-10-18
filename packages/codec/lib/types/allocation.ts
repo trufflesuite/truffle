@@ -4,7 +4,7 @@ import { DecoderContext } from "./contexts";
 import * as AbiTypes from "./abi";
 import { CompilerVersion } from "./compiler";
 import { AstDefinition } from "./ast";
-import { Types } from "../format/types";
+import { Types } from "../format";
 import { DecodingMode } from "./decoding";
 
 //for passing to calldata/event allocation functions
@@ -26,7 +26,7 @@ export interface AbiSizeInfo {
 //holds a collection of storage allocations for structs and contracts, indexed
 //by the ID of the struct or contract
 export interface StorageAllocations {
-  [id: number]: StorageAllocation
+  [id: number]: StorageAllocation;
 }
 
 //an individual storage allocation for (the members of) a struct or (the state
@@ -53,7 +53,7 @@ export interface StorageMemberAllocation {
 //in the abi
 
 export interface AbiAllocations {
-  [id: string]: AbiAllocation | null
+  [id: string]: AbiAllocation | null;
 }
 
 export interface AbiAllocation {
@@ -73,7 +73,7 @@ export interface AbiMemberAllocation {
 //Note: for mappings we use a pointer of length 0
 
 export interface MemoryAllocations {
-  [id: number]: MemoryAllocation
+  [id: number]: MemoryAllocation;
 }
 
 export interface MemoryAllocation {
@@ -139,15 +139,15 @@ export interface EventAllocations {
       [selector: string]: {
         [contractKind: string]: {
           [contextHash: string]: EventAllocation;
-        }
-      }
+        };
+      };
     };
     anonymous: {
       [contractKind: string]: {
         [contextHash: string]: EventAllocation[];
-      }
-    }
-  }
+      };
+    };
+  };
 }
 
 export interface EventAllocation {
@@ -175,5 +175,5 @@ export interface CalldataAllocationTemporary {
   constructorAllocation?: CalldataAllocation;
   functionAllocations: {
     [selector: string]: CalldataAllocation;
-  }
+  };
 }

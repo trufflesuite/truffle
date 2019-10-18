@@ -31,10 +31,10 @@
     "original-require": "1.0.1"
   },
   "devDependencies": {
-    "@truffle/box": "^1.0.41-alphaTez.0",
+    "@truffle/box": "^1.0.41",
     "@truffle/contract": "^4.1.0-alphaTez.0",
     "@truffle/core": "^5.1.0-alphaTez.0",
-    "@truffle/debugger": "^5.0.31-alphaTez.0",
+    "@truffle/debugger": "^5.0.31",
     "clean-webpack-plugin": "^0.1.16",
     "copy-webpack-plugin": "^4.0.1",
     "eslint": "^5.7.0",
