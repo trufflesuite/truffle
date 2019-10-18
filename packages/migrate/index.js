@@ -202,7 +202,7 @@ const Migrate = {
 
     const migrationsOnChain = async (migrationsAddress, callback) => {
       return (
-        (await Migrations.web3.eth.getCode(migrationsAddress, callback)) !==
+        (await Migrations.adapter.eth.getCode(migrationsAddress, callback)) !==
         "0x"
       );
     };
