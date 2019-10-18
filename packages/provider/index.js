@@ -1,6 +1,6 @@
 var debug = require("debug")("provider");
 var Web3 = require("web3");
-var { Web3Shim } = require("@truffle/interface-adapter");
+var { InterfaceAdapter } = require("@truffle/interface-adapter");
 
 var wrapper = require("./wrapper");
 
@@ -31,12 +31,12 @@ module.exports = {
   },
 
   test_connection: function(provider, callback) {
-    var web3 = new Web3Shim({ provider });
+    var adapter = new InterfaceAdapter({ provider });
     var fail = new Error(
       "Could not connect to your RPC client. Please check your RPC configuration."
     );
 
-    web3.eth
+    adapter.eth
       .getCoinbase()
       .then(coinbase => callback(null, coinbase))
       .catch(() => callback(fail, null));
