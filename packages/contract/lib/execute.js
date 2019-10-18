@@ -18,6 +18,7 @@ var execute = {
    */
   getGasEstimate: function(params, blockLimit) {
     var constructor = this;
+    const interfaceAdapter = this.interfaceAdapter;
     var web3 = this.web3;
 
     return new Promise(function(accept) {
