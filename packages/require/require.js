@@ -4,7 +4,7 @@ const Module = require("module");
 const vm = require("vm");
 const originalrequire = require("original-require");
 const expect = require("@truffle/expect");
-const { Web3Shim } = require("@truffle/interface-adapter");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 
 // options.file: path to file to execute. Must be a module that exports a function.
@@ -103,7 +103,7 @@ const Require = {
       "network_id"
     ]);
 
-    const web3 = new Web3Shim({
+    const adapter = new InterfaceAdapter({
       provider: options.provider,
       networkType: options.networks[options.network].type
     });
@@ -111,7 +111,7 @@ const Require = {
     try {
       const fn = this.file({
         file: options.file,
-        context: { web3 },
+        context: { adapter, web3: adapter },
         resolver: options.resolver
       });
       fn(done);
