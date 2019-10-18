@@ -73,18 +73,18 @@ class Deployment {
    * meant to be cancelled immediately on resolution of the
    * contract instance or on error. (See stopBlockPolling)
    * @private
-   * @param  {Object}    web3
+   * @param  {Object}    adapter
    */
-  async _startBlockPolling(web3) {
+  async _startBlockPolling(adapter) {
     const self = this;
     const startTime = new Date().getTime();
 
     let secondsWaited = 0;
     let blocksWaited = 0;
-    let currentBlock = await web3.eth.getBlockNumber();
+    let currentBlock = await adapter.eth.getBlockNumber();
 
     self.blockPoll = setInterval(async () => {
-      const newBlock = await web3.eth.getBlockNumber();
+      const newBlock = await adapter.eth.getBlockNumber();
 
       blocksWaited = newBlock - currentBlock + blocksWaited;
       currentBlock = newBlock;
@@ -114,18 +114,18 @@ class Deployment {
    * @private
    * @param  {Number} blocksToWait
    * @param  {Object} receipt
-   * @param  {Object} web3
+   * @param  {Object} adapter
    * @return {Promise}             Resolves after `blockToWait` blocks
    */
-  async _waitBlocks(blocksToWait, state, web3) {
+  async _waitBlocks(blocksToWait, state, adapter) {
     const self = this;
-    let currentBlock = await web3.eth.getBlockNumber();
+    let currentBlock = await adapter.eth.getBlockNumber();
 
     return new Promise(accept => {
       let blocksHeard = 0;
 
       const poll = setInterval(async () => {
-        const newBlock = await web3.eth.getBlockNumber();
+        const newBlock = await adapter.eth.getBlockNumber();
 
         if (newBlock > currentBlock) {
           blocksHeard = newBlock - currentBlock + blocksHeard;
@@ -289,7 +289,7 @@ class Deployment {
 
       const isDeployed = contract.isDeployed();
       const newArgs = await Promise.all(args);
-      const currentBlock = await contract.web3.eth.getBlock("latest");
+      const currentBlock = await contract.adapter.eth.getBlock("latest");
 
       // Last arg can be an object that tells us not to overwrite.
       if (newArgs.length > 0) {
@@ -341,7 +341,7 @@ class Deployment {
           .on("transactionHash", self._hashCb.bind(promiEvent, self, state))
           .on("receipt", self._receiptCb.bind(promiEvent, self, state));
 
-        await self._startBlockPolling(contract.web3);
+        await self._startBlockPolling(contract.adapter);
 
         // Get instance (or error)
         try {
@@ -381,7 +381,7 @@ class Deployment {
 
       // Wait for `n` blocks
       if (self.confirmations !== 0 && shouldDeploy) {
-        await self._waitBlocks(self.confirmations, state, contract.web3);
+        await self._waitBlocks(self.confirmations, state, contract.adapter);
       }
       // Finish: Ensure the address and tx-hash are set on the contract.
       contract.address = instance.address;
