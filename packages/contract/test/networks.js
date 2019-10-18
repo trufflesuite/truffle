@@ -20,7 +20,7 @@ var log = {
 };
 
 function getAndSetAccounts(contract, done) {
-  contract.web3.eth
+  contract.adapter.eth
     .getAccounts()
     .then(function(accs) {
       contract.defaults({
@@ -96,7 +96,7 @@ describe("Different networks: ", function() {
 
   it("does not deploy to the same network (eth_getCode)", function(done) {
     function getCode(firstContract, secondContract, callback) {
-      firstContract.web3.eth.getCode(secondContract.address, callback);
+      firstContract.adapter.eth.getCode(secondContract.address, callback);
     }
 
     getCode(ExampleOne, ExampleTwo, function(err, code) {

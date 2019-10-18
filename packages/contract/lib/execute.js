@@ -18,14 +18,14 @@ var execute = {
    */
   getGasEstimate: function(params, blockLimit) {
     var constructor = this;
-    var web3 = this.web3;
+    var adapter = this.adapter;
 
     return new Promise(function(accept) {
       // Always prefer specified gas - this includes gas set by class_defaults
       if (params.gas) return accept(params.gas);
       if (!constructor.autoGas) return accept();
 
-      web3.eth
+      adapter.eth
         .estimateGas(params)
         .then(gas => {
           const bestEstimate = utils.multiplyBigNumberByDecimal(
@@ -150,7 +150,7 @@ var execute = {
    */
   send: function(fn, methodABI, address) {
     var constructor = this;
-    var web3 = constructor.web3;
+    var adapter = constructor.adapter;
 
     return function() {
       var deferred;
@@ -187,7 +187,7 @@ var execute = {
             return;
           }
 
-          deferred = web3.eth.sendTransaction(params);
+          deferred = adapter.eth.sendTransaction(params);
           deferred.catch(override.start.bind(constructor, context));
           handlers.setup(deferred, context);
         })
@@ -204,7 +204,7 @@ var execute = {
    */
   deploy: function(constructorABI) {
     var constructor = this;
-    var web3 = constructor.web3;
+    var adapter = constructor.adapter;
 
     return function() {
       var deferred;
@@ -229,7 +229,7 @@ var execute = {
             arguments: args
           };
 
-          var contract = new web3.eth.Contract(constructor.abi);
+          var contract = new adapter.eth.Contract(constructor.abi);
           params.data = contract.deploy(options).encodeABI();
 
           params.gas = await execute.getGasEstimate.call(
@@ -246,13 +246,13 @@ var execute = {
             contract: constructor
           });
 
-          deferred = web3.eth.sendTransaction(params);
+          deferred = adapter.eth.sendTransaction(params);
           handlers.setup(deferred, context);
 
           try {
             const receipt = await deferred;
             if (receipt.status !== undefined && !receipt.status) {
-              var reason = await Reason.get(params, web3);
+              var reason = await Reason.get(params, adapter);
 
               var error = new StatusError(
                 params,
@@ -264,7 +264,7 @@ var execute = {
               return context.promiEvent.reject(error);
             }
 
-            var web3Instance = new web3.eth.Contract(
+            var web3Instance = new adapter.eth.Contract(
               constructor.abi,
               receipt.contractAddress
             );
@@ -445,7 +445,7 @@ var execute = {
 
         delete res.params["data"]; // Is this necessary?
 
-        var instance = new constructor.web3.eth.Contract(
+        var instance = new constructor.adapter.eth.Contract(
           constructor.abi,
           res.params
         );

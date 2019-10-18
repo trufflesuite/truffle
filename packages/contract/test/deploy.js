@@ -239,11 +239,12 @@ describe("Deployments", function() {
       this.timeout(50000);
 
       // Mock web3 non-response, fire error @ block 50, resolve receipt @ block 52.
-      const tempSendTransaction = Example.web3.eth.sendTransaction;
-      const tempGetTransactionReceipt = Example.web3.eth.getTransactionReceipt;
+      const tempSendTransaction = Example.adapter.eth.sendTransaction;
+      const tempGetTransactionReceipt =
+        Example.adapter.eth.getTransactionReceipt;
 
-      Example.web3.eth.sendTransaction = util.fakeSendTransaction;
-      Example.web3.eth.getTransactionReceipt = util.fakeNoReceipt;
+      Example.adapter.eth.sendTransaction = util.fakeSendTransaction;
+      Example.adapter.eth.getTransactionReceipt = util.fakeNoReceipt;
       Example.timeoutBlocks = 52;
 
       const example = await Example.new(1).on(
@@ -255,14 +256,14 @@ describe("Deployments", function() {
           await util.fakeReject();
           await util.evm_mine();
           await util.evm_mine();
-          Example.web3.eth.getTransactionReceipt = util.fakeGotReceipt;
+          Example.adapter.eth.getTransactionReceipt = util.fakeGotReceipt;
           await util.evm_mine();
         }
       );
 
       // Restore web3
-      Example.web3.eth.sendTransaction = tempSendTransaction;
-      Example.web3.eth.getTransactionReceipt = tempGetTransactionReceipt;
+      Example.adapter.eth.sendTransaction = tempSendTransaction;
+      Example.adapter.eth.getTransactionReceipt = tempGetTransactionReceipt;
 
       await example.setValue(77);
       const newValue = await example.value();
