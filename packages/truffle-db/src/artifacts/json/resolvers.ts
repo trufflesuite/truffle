@@ -1,4 +1,5 @@
 import fs from "fs";
+import { shimBytecode } from "@truffle/workflow-compile/shims";
 
 const TruffleResolver = require("@truffle/resolver");
 
@@ -22,6 +23,9 @@ export const resolvers = {
 
         const artifact = truffleResolver.require(name)._json;
 
+        const linkedBytecodeCreate = shimBytecode(artifact.bytecode);
+        const linkedBytecodeCall = shimBytecode(artifact.deployedBytecode);
+
         const result = {
           ...artifact,
 
@@ -32,6 +36,8 @@ export const resolvers = {
             json: JSON.stringify(artifact.ast)
           },
           source: { contents: artifact.source, sourcePath: artifact.sourcePath },
+          bytecode: { bytes: linkedBytecodeCreate.bytes, linkReferences: linkedBytecodeCreate.linkReferences },
+          deployedBytecode: { bytes: linkedBytecodeCall.bytes, linkReferences: linkedBytecodeCall.linkReferences }
         };
 
         if (networkId) {

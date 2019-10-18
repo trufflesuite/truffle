@@ -72,14 +72,19 @@ type LinkValue {
 
 type LinkReference {
   offsets: [ByteOffset!]!
+  name: String
   length: Int!
 }
 
 type Bytecode {
   bytes: Bytes!
-  sourceMap: String,
   instructions: [Instruction!],
   linkReferences: [LinkReference]
+}
+
+type SourceMap {
+  bytecode: Bytecode!
+  instructionSourceRange: SourceRange
 }
 
 type Instruction {

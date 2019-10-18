@@ -107,9 +107,9 @@ export const schema = mergeSchemas({
           deployedBytecode
         }`,
         resolve: ({
-          deployedBytecode: bytes,
+          deployedBytecode: deployedBytecode,
           deployedSourceMap: sourceMap
-        }) => ({ bytes, sourceMap })
+        }) => ({ deployedBytecode, sourceMap })
       },
     },
 
@@ -134,13 +134,14 @@ export const schema = mergeSchemas({
       },
       constructor: {
         fragment: `... on ContractObject {
-            bytecode
+            bytecode { bytes, linkReferences { offsets, name, length } }
           }`,
           resolve: (obj) => {
             const { bytecode } = obj;
             const contractConstructor = {
               createBytecode: {
-                bytes: bytecode
+                bytes: bytecode.bytes,
+                linkReferences: bytecode.linkReferences
               }
             }
             return contractConstructor;

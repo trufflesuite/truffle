@@ -284,7 +284,41 @@ const translations = [
         }
       }
     }
-  })
+  }),
+
+  ({ contractObject, ...schemas }) => ({
+    ...schemas,
+
+    contractObject: {
+      ...contractObject,
+
+      properties: {
+        ...contractObject.properties,
+        bytecode: {
+          type: "object",
+          properties: {
+            bytes: { type: "string" },
+            linkReferences: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  offsets: {
+                    type: "array",
+                    items: {
+                      type: "integer"
+                    }
+                  },
+                  name: { type: "string" },
+                  length: { type: "integer" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }),
 ];
 
 

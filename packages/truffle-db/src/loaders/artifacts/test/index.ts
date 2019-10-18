@@ -11,6 +11,7 @@ import Config from "@truffle/config";
 import Ganache from "ganache-core"
 import Web3 from "web3";
 import * as fse from "fs-extra";
+import { shimBytecode } from "@truffle/workflow-compile/shims";
 
 let server;
 const port = 8545;
@@ -76,7 +77,7 @@ jest.mock("@truffle/workflow-compile/new", () => ({
   }
 }));
 
-const fixturesDirectory = path.join(__dirname, "sources");
+const fixturesDirectory = path.join(__dirname, "compilationSources", "build", "contracts");
 
 // minimal config
 const config = {
@@ -106,11 +107,11 @@ const db = new TruffleDB(config);
 const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
 
 const artifacts = [
-  require(path.join(__dirname, "sources", "MagicSquare.json")),
-  require(path.join(__dirname, "sources", "Migrations.json")),
-  require(path.join(__dirname, "sources", "SquareLib.json")),
-  require(path.join(__dirname, "sources", "VyperStorage.json"))
-   ];
+  require(path.join(__dirname, "compilationSources", "build", "contracts", "MagicSquare.json")),
+  require(path.join(__dirname, "compilationSources", "build", "contracts", "Migrations.json")),
+  require(path.join(__dirname, "compilationSources", "build", "contracts", "SquareLib.json")),
+  require(path.join(__dirname, "compilationSources", "build", "contracts", "VyperStorage.json"))
+];
 
 const GetWorkspaceBytecode: boolean = gql`
 query GetWorkspaceBytecode($id: ID!) {
@@ -270,9 +271,8 @@ describe("Compilation", () => {
       });
       sourceIds.push({id: sourceId});
 
-      let bytecodeId = generateId({
-        bytes: contract["bytecode"]
-      });
+      const shimBytecodeObject = shimBytecode(contract["bytecode"]);
+      let bytecodeId = generateId(shimBytecodeObject);
       bytecodeIds.push({ id: bytecodeId });
 
       const networksPath = fse.readFileSync(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])).toString();
@@ -404,7 +404,8 @@ describe("Compilation", () => {
         }
       } = await db.query(GetWorkspaceBytecode, bytecodeIds[index]);
 
-      expect(bytes).toEqual(artifacts[index].bytecode);
+      let shimmedBytecode = shimBytecode(artifacts[index].bytecode)
+      expect(bytes).toEqual(shimmedBytecode.bytes);
 
     }
   });
@@ -449,8 +450,9 @@ describe("Compilation", () => {
         }
       } = await db.query(GetWorkspaceContract, contractIds[index]);
 
+      let shimmedBytecode = shimBytecode(artifacts[index].bytecode)
+      expect(bytes).toEqual(shimmedBytecode.bytes);
       expect(name).toEqual(artifacts[index].contractName);
-      expect(bytes).toEqual(artifacts[index].bytecode);
       expect(contents).toEqual(artifacts[index].source);
       expect(version).toEqual(artifacts[index].compiler.version);
       expect(id).toEqual(contractIds[index].id);
@@ -503,11 +505,12 @@ describe("Compilation", () => {
         }
       } = await db.query(GetWorkspaceContractInstance, contractInstanceIds[index]);
 
+      let shimmedBytecode = shimBytecode(contractInstances[index].creation.constructor.createBytecode);
       expect(name).toEqual(contractInstances[index].contract.name);
       expect(networkId).toEqual(contractInstances[index].network.networkId);
       expect(address).toEqual(contractInstances[index].address);
       expect(transactionHash).toEqual(contractInstances[index].creation.transactionHash);
-      expect(bytes).toEqual(contractInstances[index].creation.constructor.createBytecode);
+      expect(bytes).toEqual(shimmedBytecode.bytes);
     }
   })
 });

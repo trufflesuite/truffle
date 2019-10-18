@@ -7,11 +7,19 @@ import path from "path";
 import Config from "@truffle/config";
 import { Environment } from "@truffle/environment";
 import Web3 from "web3";
+import { shimBytecode } from "@truffle/workflow-compile/shims";
 
 
 const AddBytecodes = gql`
+input LinkReferenceInput {
+  offsets: [Int]
+  name: String
+  length: Int
+}
+
 input BytecodeInput {
   bytes: Bytes!
+  linkReferences: [LinkReferenceInput]!
 }
 
 mutation AddBytecodes($bytecodes: [BytecodeInput!]!) {
@@ -315,7 +323,6 @@ export class ArtifactsLoader {
   async load (): Promise<void> {
     const compilationsOutput = await this.loadCompilation(this.config);
     const { compilations, contracts } = compilationsOutput;
-
     //map contracts and contract instances to compiler
     await Promise.all(compilations.data.workspace.compilationsAdd.compilations.map(async ({compiler, id}) => {
       const contractIds = await this.loadCompilationContracts(contracts[compiler.name].contracts, id, compiler.name);
@@ -327,7 +334,7 @@ export class ArtifactsLoader {
   }
 
   async loadCompilationContracts (contracts: Array<ContractObject>, compilationId: string, compilerName: string) {
-    const bytecodeIds = await this.loadCompilationBytecodes(contracts);
+    const bytecodeIds = await this.loadBytecodes(contracts);
     const contractObjects = contracts.map((contract, index) => ({
       name: contract["contract_name"],
       abi: {
@@ -345,20 +352,24 @@ export class ArtifactsLoader {
     }));
 
     const contractsLoaded = await this.db.query(AddContracts, { contracts: contractObjects});
+
     const contractIds = contractsLoaded.data.workspace.contractsAdd.contracts.map( ({ id }) => ({ id }) );
 
     return { compilerName: contracts[0].compiler.name, contractIds: contractIds, bytecodeIds: bytecodeIds };
 
   }
 
-  async loadCompilationBytecodes (contracts: Array<ContractObject>) {
+  async loadBytecodes (contracts: Array<ContractObject>) {
     // transform contract objects into data model bytecode inputs
     // and run mutation
-    const result = await this.db.query(AddBytecodes, {
-      bytecodes: contracts.map(
-        ({ bytecode }) => ({ bytes: bytecode })
-      )
+
+    const bytecodes = contracts.map(
+    ({ deployedBytecode, bytecode }) => {
+      return bytecode;
     });
+
+    const result = await this.db.query(AddBytecodes, { bytecodes });
+
     const bytecodeIds = result.data.workspace.bytecodesAdd.bytecodes
 
     return bytecodeIds;
@@ -476,7 +487,8 @@ export class ArtifactsLoader {
             constructor: {
               createBytecode: bytecodeIds[index]
             }
-          }
+          },
+
         }
         return instance;
       });
