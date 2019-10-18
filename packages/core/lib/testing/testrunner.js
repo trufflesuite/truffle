@@ -1,4 +1,4 @@
-var { Web3Shim } = require("@truffle/interface-adapter");
+var { InterfaceAdapter } = require("@truffle/interface-adapter");
 var Config = require("@truffle/config");
 var Migrate = require("@truffle/migrate");
 var TestResolver = require("./testresolver");
@@ -28,7 +28,7 @@ function TestRunner(options = {}) {
   this.first_snapshot = true;
   this.initial_snapshot = null;
   this.known_events = {};
-  this.web3 = new Web3Shim({
+  this.adapter = new InterfaceAdapter({
     provider: options.provider,
     networkType: options.networks[options.network].type
   });
@@ -80,7 +80,7 @@ TestRunner.prototype.initialize = function(callback) {
             if (abi.type === "event") {
               var signature =
                 abi.name + "(" + _.map(abi.inputs, "type").join(",") + ")";
-              self.known_events[self.web3.utils.sha3(signature)] = {
+              self.known_events[self.adapter.utils.sha3(signature)] = {
                 signature: signature,
                 abi_entry: abi
               };
@@ -141,11 +141,11 @@ TestRunner.prototype.resetState = function(callback) {
 
 TestRunner.prototype.startTest = function(mocha, callback) {
   var self = this;
-  this.web3.eth
+  this.adapter.eth
     .getBlockNumber()
     .then(result => {
-      var one = self.web3.utils.toBN(1);
-      result = self.web3.utils.toBN(result);
+      var one = self.adapter.utils.toBN(1);
+      result = self.adapter.utils.toBN(result);
 
       // Add one in base 10
       self.currentTestStartBlock = result.add(one);

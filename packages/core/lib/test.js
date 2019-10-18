@@ -1,7 +1,7 @@
 const Mocha = require("mocha");
 const chai = require("chai");
 const path = require("path");
-const Web3 = require("web3");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 const Contracts = require("@truffle/workflow-compile/new");
 const Resolver = require("@truffle/resolver");
@@ -36,8 +36,10 @@ const Test = {
 
     // `accounts` will be populated before each contract() invocation
     // and passed to it so tests don't have to call it themselves.
-    const web3 = new Web3();
-    web3.setProvider(config.provider);
+    const adapter = new InterfaceAdapter({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+    });
 
     // Override console.warn() because web3 outputs gross errors to it.
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
@@ -72,7 +74,7 @@ const Test = {
       mocha.addFile(file);
     });
 
-    const accounts = await this.getAccounts(web3);
+    const accounts = await this.getAccounts(adapter);
 
     if (!config.resolver) config.resolver = new Resolver(config);
 
@@ -105,7 +107,12 @@ const Test = {
       runner
     );
 
-    await this.setJSTestGlobals(web3, accounts, testResolver, runner);
+    await this.setJSTestGlobals({
+      adapter,
+      accounts,
+      testResolver,
+      runner
+    });
 
     // Finally, run mocha.
     process.on("unhandledRejection", reason => {
@@ -140,8 +147,8 @@ const Test = {
     return mocha;
   },
 
-  getAccounts: function(web3) {
-    return web3.eth.getAccounts();
+  getAccounts: function(adapter) {
+    return adapter.eth.getAccounts();
   },
 
   compileContractsWithTestFilesIfNeeded: async function(
@@ -190,9 +197,10 @@ const Test = {
     });
   },
 
-  setJSTestGlobals: function(web3, accounts, testResolver, runner) {
-    return new Promise(function(accept) {
-      global.web3 = web3;
+  setJSTestGlobals: function({ adapter, accounts, testResolver, runner }) {
+    return new Promise(accept => {
+      global.web3 = adapter;
+      global.adapter = adapter;
       global.assert = chai.assert;
       global.expect = chai.expect;
       global.artifacts = {

@@ -4,7 +4,7 @@ const Networks = require("./networks");
 const EthPM = require("ethpm");
 const EthPMRegistry = require("ethpm-registry");
 const Web3 = require("web3");
-const { Web3Shim } = require("@truffle/interface-adapter");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 const async = require("async");
 const path = require("path");
 const fs = require("fs");
@@ -131,7 +131,7 @@ const Package = {
     options.network = "ropsten";
 
     var provider = options.provider;
-    var web3 = new Web3Shim({
+    var adapter = new InterfaceAdapter({
       provider: options.provider,
       networkType: "ethereum"
     });
@@ -150,7 +150,7 @@ const Package = {
     self.publishable_artifacts(options, function(err, artifacts) {
       if (err) return callback(err);
 
-      web3.eth
+      adapter.eth
         .getAccounts()
         .then(async accs => {
           var registry = await EthPMRegistry.use(
