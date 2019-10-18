@@ -1,5 +1,5 @@
 const Web3 = require("web3");
-const { Web3Shim } = require("@truffle/interface-adapter");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
 const Resolver = require("@truffle/resolver");
@@ -14,26 +14,26 @@ const Environment = {
     helpers.setUpConfig(config);
     helpers.validateNetworkConfig(config);
 
-    const web3 = new Web3Shim({
+    const adapter = new InterfaceAdapter({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
 
-    await helpers.detectAndSetNetworkId(config, web3);
-    await helpers.setFromOnConfig(config, web3);
+    await helpers.detectAndSetNetworkId(config, adapter);
+    await helpers.setFromOnConfig(config, adapter);
   },
 
   // Ensure you call Environment.detect() first.
   fork: async function(config) {
     expect.options(config, ["from", "provider", "networks", "network"]);
 
-    const web3 = new Web3Shim({
+    const adapter = new InterfaceAdapter({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
 
-    const accounts = await web3.eth.getAccounts();
-    const block = await web3.eth.getBlock("latest");
+    const accounts = await adapter.eth.getAccounts();
+    const block = await adapter.eth.getBlock("latest");
 
     const upstreamNetwork = config.network;
     const upstreamConfig = config.networks[upstreamNetwork];
@@ -74,16 +74,16 @@ const Environment = {
 };
 
 const helpers = {
-  setFromOnConfig: async (config, web3) => {
+  setFromOnConfig: async (config, adapter) => {
     if (config.from) return;
 
-    const accounts = await web3.eth.getAccounts();
+    const accounts = await adapter.eth.getAccounts();
     config.networks[config.network].from = accounts[0];
   },
 
-  detectAndSetNetworkId: async (config, web3) => {
+  detectAndSetNetworkId: async (config, adapter) => {
     const configNetworkId = config.networks[config.network].network_id;
-    const providerNetworkId = await web3.eth.net.getId();
+    const providerNetworkId = await adapter.getNetworkId();
     if (configNetworkId !== "*") {
       // Ensure the network id matches the one in the config for safety
       if (providerNetworkId.toString() !== configNetworkId.toString()) {
