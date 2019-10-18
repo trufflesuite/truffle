@@ -1,6 +1,6 @@
 import { DecoderContext, DecoderContexts } from "./contexts";
 import { AstDefinition, AstReferences, ContractKind, Mutability } from "./ast";
-import { Types } from "../format/types";
+import { Types } from "../format";
 import * as Allocations from "./allocation";
 import { Slot } from "./storage";
 
@@ -10,14 +10,14 @@ export interface EvmState {
   memory?: Uint8Array;
   calldata?: Uint8Array;
   specials?: {
-    [builtin: string]: Uint8Array //sorry
+    [builtin: string]: Uint8Array; //sorry
   };
   eventdata?: Uint8Array;
   eventtopics?: Uint8Array[];
 }
 
 export interface WordMapping {
-  [slotAddress: string]: Uint8Array
+  [slotAddress: string]: Uint8Array;
 }
 
 export interface EvmInfo {
@@ -39,7 +39,7 @@ export interface AllocationInfo {
 }
 
 export interface InternalFunctions {
-  [pc: number]: InternalFunction
+  [pc: number]: InternalFunction;
 }
 
 export interface InternalFunction {

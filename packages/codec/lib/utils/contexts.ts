@@ -4,16 +4,24 @@ const debug = debugModule("codec:utils:contexts");
 import { EVM } from "./evm";
 import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
 import { AbiUtils } from "./abi";
-import { Types } from "../format/types";
+import { Types } from "../format";
 import { AstDefinition, AstReferences, ContractKind } from "../types/ast";
 import { CompilerVersion } from "../types/compiler";
-import { Contexts, Context, DebuggerContexts, DecoderContexts, DecoderContext } from "../types/contexts";
+import {
+  Contexts,
+  Context,
+  DebuggerContexts,
+  DecoderContexts,
+  DecoderContext
+} from "../types/contexts";
 import escapeRegExp from "lodash.escaperegexp";
 
 export namespace ContextUtils {
-
   //I split these next two apart because the type system was giving me trouble
-  export function findDecoderContext(contexts: DecoderContexts, binary: string): DecoderContext | null {
+  export function findDecoderContext(
+    contexts: DecoderContexts,
+    binary: string
+  ): DecoderContext | null {
     debug("binary %s", binary);
     let context = Object.values(contexts).find(context =>
       matchContext(context, binary)
@@ -22,7 +30,10 @@ export namespace ContextUtils {
     return context !== undefined ? context : null;
   }
 
-  export function findDebuggerContext(contexts: DebuggerContexts, binary: string): string | null {
+  export function findDebuggerContext(
+    contexts: DebuggerContexts,
+    binary: string
+  ): string | null {
     debug("binary %s", binary);
     let context = Object.values(contexts).find(context =>
       matchContext(context, binary)
@@ -70,7 +81,7 @@ export namespace ContextUtils {
     debug("normalizing contexts");
 
     //first, let's clone the input
-    let newContexts: Contexts = {...contexts};
+    let newContexts: Contexts = { ...contexts };
 
     debug("contexts cloned");
     debug("cloned contexts: %O", newContexts);
@@ -94,9 +105,7 @@ export namespace ContextUtils {
     //unfortunately, str.replace() will only replace all if you use a /g regexp;
     //note that because names may contain '$', we need to escape them
     //(also we prepend "__" because that's the placeholder format)
-    let regexps = names.map(
-      name => new RegExp(escapeRegExp("__" + name), "g")
-    );
+    let regexps = names.map(name => new RegExp(escapeRegExp("__" + name), "g"));
 
     debug("regexps prepared");
 
@@ -124,17 +133,11 @@ export namespace ContextUtils {
     //but there's one more step -- libraries' deployedBytecode will include
     //0s in place of their own address instead of a link reference at the
     //beginning, so we need to account for that too
-    const pushAddressInstruction = (
-      0x60 +
-      EVM.ADDRESS_SIZE -
-      1
-    ).toString(16); //"73"
+    const pushAddressInstruction = (0x60 + EVM.ADDRESS_SIZE - 1).toString(16); //"73"
     for (let context of Object.values(newContexts)) {
       if (context.contractKind === "library" && !context.isConstructor) {
         context.binary = context.binary.replace(
-          "0x" +
-            pushAddressInstruction +
-            "00".repeat(EVM.ADDRESS_SIZE),
+          "0x" + pushAddressInstruction + "00".repeat(EVM.ADDRESS_SIZE),
           "0x" + pushAddressInstruction + replacement
         );
       }
@@ -147,7 +150,7 @@ export namespace ContextUtils {
   }
 
   export function contextToType(context: Context): Types.ContractType {
-    if(context.contractId !== undefined) {
+    if (context.contractId !== undefined) {
       return {
         typeClass: "contract",
         kind: "native",
@@ -156,8 +159,7 @@ export namespace ContextUtils {
         contractKind: context.contractKind,
         payable: context.payable
       };
-    }
-    else {
+    } else {
       return {
         typeClass: "contract",
         kind: "foreign",
@@ -167,5 +169,4 @@ export namespace ContextUtils {
       };
     }
   }
-
 }

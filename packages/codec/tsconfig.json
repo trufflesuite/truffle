@@ -14,7 +14,7 @@
       "web3/types": ["../../node_modules/@types/web3/types", "node_modules/web3/types"],
       "web3/eth/types": ["../../node_modules/@types/web3/eth/types", "node_modules/web3/eth/types"]
     },
-    "rootDir": "lib",
+    "rootDir": ".",
     "typeRoots": [
       "./typings",
       "../../**/node_modules/@types/bn.js",

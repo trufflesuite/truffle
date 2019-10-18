@@ -21,7 +21,7 @@
     "bindings": "^1.5.0",
     "bip39": "^2.4.2",
     "ethereum-protocol": "^1.0.1",
-    "ethereumjs-tx": "^2.1.1",
+    "ethereumjs-tx": "^1.0.0",
     "ethereumjs-util": "^6.1.0",
     "ethereumjs-wallet": "^0.6.3",
     "web3": "1.2.1",
@@ -30,6 +30,7 @@
   "devDependencies": {
     "@types/bip39": "^2.4.2",
     "@types/ethereum-protocol": "^1.0.0",
+    "@types/ethereumjs-tx": "^1.0.1",
     "@types/ethereumjs-util": "^5.2.0",
     "@types/mocha": "^5.2.7",
     "@types/web3-provider-engine": "^14.0.0",
