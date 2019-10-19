@@ -41,6 +41,25 @@ describe("Bytecode", () => {
     expect(id).toEqual(expectedId);
     expect(bytes).toEqual(variables.bytes);
   });
+
+  test("can retrieve all bytecodes", async() => {
+    const executionResult = await wsClient.execute(GetAllBytecodes);
+    expect(executionResult).toHaveProperty("bytecodes");
+
+    const { bytecodes } = executionResult;
+
+    expect(bytecodes).toHaveProperty("length")
+
+    bytecodes.forEach(bc => {
+      expect(bc).toHaveProperty("id");
+      expect(bc).toHaveProperty("bytes");
+      expect(bc).toHaveProperty("linkReferences");
+      expect(bc).toHaveProperty("sourceMap");
+      expect(bc).toHaveProperty("instructions");
+    })
+
+  })
+
 });
 
 export const GetBytecode = gql`
@@ -50,7 +69,26 @@ export const GetBytecode = gql`
       bytes
     }
   }
-`
+`;
+
+export const GetAllBytecodes = gql`
+  query GetAllBytecodes {
+    bytecodes {
+      id
+      bytes
+      linkReferences {
+        id
+        offsets
+        length
+      }
+      sourceMap
+      instructions {
+        opcode
+      }
+    }
+
+  }
+`;
 
 export const AddBytecode = gql`
   mutation AddBytecode($bytes: Bytes!) {
