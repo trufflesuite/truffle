@@ -22,6 +22,24 @@ export const GetContractInstance = gql`
   }
 `;
 
+export const GetAllContractInstances = gql`
+  query getAllContractInstances {
+    contractInstances {
+      id
+      address
+      network {
+        name
+        networkId
+      }
+      contract {
+        id
+        name
+      }
+    }
+
+  }
+`;
+
 export const AddContractInstances = gql`
   input ContractInstanceNetworkInput {
       id: ID!

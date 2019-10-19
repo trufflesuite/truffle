@@ -1,7 +1,7 @@
 import { generateId, Migrations, WorkspaceClient } from './utils';
 
 import { AddNetworks } from './network.graphql';
-import { AddContractInstances, GetContractInstance } from './contractInstances.graphql';
+import { AddContractInstances, GetContractInstance, GetAllContractInstances } from './contractInstances.graphql';
 
 describe("Contract Instance", () => {
   const wsClient = new WorkspaceClient();
@@ -76,5 +76,25 @@ describe("Contract Instance", () => {
 
     const { networkId } = network;
     expect(networkId).toEqual(addNetworkResult.networksAdd.networks[0].networkId);
+  });
+
+  test("can retrieve all contractInstances", async() => {
+    const getAllContractInstancesResult = await wsClient.execute(GetAllContractInstances);
+    expect(getAllContractInstancesResult).toHaveProperty("contractInstances");
+
+    const { contractInstances } = getAllContractInstancesResult;
+
+    expect(contractInstances).toHaveProperty("length");
+
+    const firstContractInstance = contractInstances[0];
+
+    expect(firstContractInstance).toHaveProperty("id");
+    expect(firstContractInstance).toHaveProperty("address");
+
+    expect(firstContractInstance).toHaveProperty("network");
+    expect(firstContractInstance).toHaveProperty("network.name");
+    expect(firstContractInstance).toHaveProperty("network.networkId");
+
+    expect(firstContractInstance).toHaveProperty("contract");
   });
 });
