@@ -83,6 +83,20 @@ describe("Compilation", () => {
       expect(contents).not.toBeNull();
     }
   });
+
+  test("can retrieve all compilations", async () => {
+    const allCompilationsResult = await wsClient.execute(GetAllCompilations);
+    expect(allCompilationsResult).toHaveProperty("compilations");
+
+    const { compilations } = allCompilationsResult;
+    expect(compilations).toHaveProperty("length");
+
+    const firstCompilation = compilations[0];
+
+    expect(firstCompilation).toHaveProperty("compiler");
+    expect(firstCompilation).toHaveProperty("sources");
+    expect(firstCompilation).toHaveProperty("sources.0.id");
+  });
 });
 
 export const GetCompilation = gql`
@@ -101,6 +115,22 @@ export const GetCompilation = gql`
         source {
           contents
         }
+      }
+    }
+  }
+`;
+
+export const GetAllCompilations = gql`
+  query getAllCompilations {
+    compilations {
+      compiler {
+        name
+        version
+        settings
+      }
+
+      sources {
+        id
       }
     }
   }
