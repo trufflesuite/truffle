@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.0.40",
+  "version": "5.0.41",
   "bin": {
     "truffle": "./cli.js",
     "truffle-exec": "./exec.js"
@@ -17,13 +17,13 @@
   },
   "dependencies": {
     "@truffle/artifactor": "^4.0.35",
-    "@truffle/box": "^1.0.41",
+    "@truffle/box": "^1.0.42",
     "@truffle/compile-solidity": "^4.2.8",
     "@truffle/config": "^1.2.2",
     "@truffle/contract": "^4.0.36",
     "@truffle/contract-sources": "^0.1.6",
     "@truffle/debug-utils": "^1.0.19",
-    "@truffle/debugger": "^5.0.31",
+    "@truffle/debugger": "^5.0.32",
     "@truffle/deployer": "^3.0.37",
     "@truffle/error": "^0.0.7",
     "@truffle/expect": "^0.0.11",
