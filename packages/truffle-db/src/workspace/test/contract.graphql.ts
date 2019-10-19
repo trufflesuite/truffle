@@ -19,6 +19,32 @@ export const GetContract = gql`
   }
 `;
 
+export const GetAllContracts = gql`
+  query getAllContracts {
+    contracts {
+      name
+      sourceContract {
+        name
+      }
+      source {
+        id
+      }
+      abi {
+        json
+      }
+      compilation {
+        compiler {
+          version
+        }
+      }
+      sourceContract {
+        source {
+          sourcePath
+        }
+      }
+    }
+  }
+`;
 
 export const AddContracts = gql`
   mutation addContracts($contractName: String, $compilationId: ID!, $bytecodeId:ID!, $abi:String!) {

@@ -3,7 +3,7 @@ import { generateId, Migrations, WorkspaceClient } from './utils';
 import { AddSource } from './source.graphql';
 import { AddBytecode } from './bytecode.graphql';
 import { AddCompilation } from './compilation.graphql';
-import { AddContracts, GetContract } from './contract.graphql';
+import { AddContracts, GetContract, GetAllContracts } from './contract.graphql';
 
 describe("Contract", () => {
   let wsClient;
@@ -91,6 +91,25 @@ describe("Contract", () => {
     expect(contract).toHaveProperty("sourceContract");
     expect(contract).toHaveProperty("abi");
 
+  });
+
+  test("can retrieve all contracts", async() => {
+    const getAllContractsResult = await wsClient.execute(GetAllContracts);
+
+    expect(getAllContractsResult).toHaveProperty("contracts");
+
+    const { contracts } = getAllContractsResult;
+    expect(contracts).toHaveProperty("length");
+
+    const firstContract = contracts[0];
+
+    expect(firstContract).toHaveProperty("name");
+    expect(firstContract).toHaveProperty("sourceContract");
+    expect(firstContract).toHaveProperty("abi");
+    expect(firstContract).toHaveProperty("abi.json");
+    expect(firstContract).toHaveProperty("compilation");
+    expect(firstContract).toHaveProperty("compilation.compiler.version");
+    expect(firstContract).toHaveProperty("sourceContract.source.sourcePath");
   });
 
 });
