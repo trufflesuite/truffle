@@ -1,5 +1,5 @@
 import { generateId, Migrations, WorkspaceClient } from './utils';
-import { GetSource, AddSource } from './source.graphql'
+import { AddSource, GetSource, GetAllSources } from './source.graphql'
 
 describe("Source", () => {
   let wsClient, addSourceResult
@@ -50,6 +50,21 @@ describe("Source", () => {
     expect(contents).toEqual(variables.contents);
     expect(sourcePath).toEqual(variables.sourcePath);
 
+  });
+
+  test("can retrieve all sources", async() => {
+    const getAllSourcesResult = await wsClient.execute(GetAllSources);
+    expect(getAllSourcesResult).toHaveProperty("sources");
+
+    const { sources } = getAllSourcesResult;
+    expect(sources).toHaveProperty("length");
+
+    const firstSource = sources[0];
+
+    expect(firstSource).toHaveProperty("id");
+    expect(firstSource).toHaveProperty("ast");
+    expect(firstSource).toHaveProperty("contents");
+    expect(firstSource).toHaveProperty("sourcePath");
   });
 
 });
