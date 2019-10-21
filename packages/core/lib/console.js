@@ -1,7 +1,7 @@
 const ReplManager = require("./repl");
 const Command = require("./command");
 const provision = require("@truffle/provisioner");
-const { Web3Shim } = require("@truffle/interface-adapter");
+const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const contract = require("@truffle/contract");
 const vm = require("vm");
 const expect = require("@truffle/expect");
@@ -43,6 +43,7 @@ class Console extends EventEmitter {
     this.repl = options.repl || new ReplManager(options);
     this.command = new Command(tasks);
 
+    this.interfaceAdapter = new InterfaceAdapter();
     this.web3 = new Web3Shim({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -68,6 +69,7 @@ class Console extends EventEmitter {
           prompt: "truffle(" + this.options.network + ")> ",
           context: {
             web3: this.web3,
+            interfaceAdapter: this.interfaceAdapter,
             accounts: fetchedAccounts
           },
           interpreter: this.interpret.bind(this),

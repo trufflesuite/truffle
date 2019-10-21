@@ -1,7 +1,7 @@
 const Mocha = require("mocha");
 const chai = require("chai");
 const path = require("path");
-const Web3 = require("web3");
+const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 const Contracts = require("@truffle/workflow-compile/new");
 const Resolver = require("@truffle/resolver");
@@ -34,10 +34,14 @@ const Test = {
       return path.resolve(testFile);
     });
 
+    const interfaceAdapter = new InterfaceAdapter();
+
     // `accounts` will be populated before each contract() invocation
     // and passed to it so tests don't have to call it themselves.
-    const web3 = new Web3();
-    web3.setProvider(config.provider);
+    const web3 = new Web3Shim({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+    });
 
     // Override console.warn() because web3 outputs gross errors to it.
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
@@ -72,7 +76,7 @@ const Test = {
       mocha.addFile(file);
     });
 
-    const accounts = await this.getAccounts(web3);
+    const accounts = await this.getAccounts(web3, interfaceAdapter);
 
     if (!config.resolver) config.resolver = new Resolver(config);
 
@@ -105,7 +109,13 @@ const Test = {
       runner
     );
 
-    await this.setJSTestGlobals(web3, accounts, testResolver, runner);
+    await this.setJSTestGlobals(
+      web3,
+      interfaceAdapter,
+      accounts,
+      testResolver,
+      runner
+    );
 
     // Finally, run mocha.
     process.on("unhandledRejection", reason => {
@@ -140,7 +150,7 @@ const Test = {
     return mocha;
   },
 
-  getAccounts: function(web3) {
+  getAccounts: function(web3, interfaceAdapter) {
     return web3.eth.getAccounts();
   },
 
@@ -190,8 +200,15 @@ const Test = {
     });
   },
 
-  setJSTestGlobals: function(web3, accounts, testResolver, runner) {
+  setJSTestGlobals: function(
+    web3,
+    interfaceAdapter,
+    accounts,
+    testResolver,
+    runner
+  ) {
     return new Promise(function(accept) {
+      global.interfaceAdapter = interfaceAdapter;
       global.web3 = web3;
       global.assert = chai.assert;
       global.expect = chai.expect;

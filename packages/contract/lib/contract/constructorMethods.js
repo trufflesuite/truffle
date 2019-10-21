@@ -1,4 +1,4 @@
-const { Web3Shim } = require("@truffle/interface-adapter");
+const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
@@ -215,6 +215,7 @@ module.exports = Contract => ({
 
     bootstrap(temp);
 
+    temp.interfaceAdapter = new InterfaceAdapter();
     temp.web3 = new Web3Shim({
       networkType: temp.networkType
     });
