@@ -10,6 +10,8 @@ const version = require("./lib/version");
 const versionInfo = version.info();
 const XRegExp = require("xregexp");
 
+const { reformatArguments } = require("./utils");
+
 // pre-flight check: Node version compatibility
 const minimumNodeVersion = "8.9.4";
 if (!semver.satisfies(process.version, ">=" + minimumNodeVersion)) {
@@ -49,6 +51,9 @@ if (userWantsGeneralHelp) {
   command.displayGeneralHelp();
   process.exit(0);
 }
+
+// Reformat the arguments to allow --option=value
+reformatArguments(inputArguments);
 
 command.run(inputArguments, options, function(err) {
   if (err) {
