@@ -77,7 +77,7 @@ class ENS {
     }
   }
 
-  async setAddress(name, addressOrContract, from) {
+  async setAddress(name, addressOrContract, { from }) {
     this.validateSetAddressInputs({ addressOrContract, name, from });
     const address = this.parseAddress(addressOrContract);
     this.setENSJS();
