@@ -215,7 +215,9 @@ module.exports = Contract => ({
 
     bootstrap(temp);
 
-    temp.interfaceAdapter = new InterfaceAdapter();
+    temp.interfaceAdapter = new InterfaceAdapter({
+      networkType: temp.networkType
+    });
     temp.web3 = new Web3Shim({
       networkType: temp.networkType
     });
