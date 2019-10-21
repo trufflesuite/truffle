@@ -3,6 +3,7 @@ const yargs = require("yargs/yargs");
 const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
+const { extractFlags } = require("./utils/utils"); // Contains utility methods
 
 class Command {
   constructor(commands) {
@@ -104,14 +105,8 @@ class Command {
     try {
       // while in `console` & `develop`, input is passed as a string, not as an array
       if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ");
-      const inputOptions = inputStrings
-        .map(string => {
-          return string.startsWith("--") ? string : null;
-        })
-        .filter(item => {
-          return item != null;
-        });
-
+      const inputOptions = extractFlags(inputStrings); // Method `extractFlags(args)` : Extracts the `--option` flags from
+      // arguments
       const validOptions = result.command.help.options
         .map(item => {
           let opt = item.option.split(" ")[0];
