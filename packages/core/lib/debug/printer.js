@@ -5,6 +5,7 @@ const path = require("path");
 const safeEval = require("safe-eval");
 
 const DebugUtils = require("@truffle/debug-utils");
+const CodecUtils = require("@truffle/codec").Utils;
 
 const selectors = require("@truffle/debugger").selectors;
 const { session, solidity, trace, controller } = selectors;
@@ -30,6 +31,16 @@ class DebugPrinter {
 
       return result;
     };
+
+    this.colorizedSources = {};
+    for (const source of Object.values(
+      this.session.view(solidity.info.sources)
+    )) {
+      const id = source.id;
+      const uncolorized = source.source;
+      const colorized = DebugUtils.colorize(uncolorized);
+      this.colorizedSources[id] = colorized;
+    }
   }
 
   print(...args) {
@@ -82,28 +93,41 @@ class DebugPrinter {
     this.config.logger.log(message + ":");
   }
 
-  printState() {
-    const source = this.session.view(solidity.current.source).source;
-    const range = this.session.view(solidity.current.sourceRange);
-    debug("source: %o", source);
-    debug("range: %o", range);
+  printState(contextBefore = 2, contextAfter = 0) {
+    const { id: sourceId, source } = this.session.view(solidity.current.source);
 
-    // We were splitting on OS.EOL, but it turns out on Windows,
-    // in some environments (perhaps?) line breaks are still denoted by just \n
-    const splitLines = str => str.split(/\r?\n/g);
-
-    if (!source) {
+    if (sourceId === undefined) {
       this.config.logger.log();
       this.config.logger.log("1: // No source code found.");
       this.config.logger.log("");
       return;
     }
 
+    const colorizedSource = this.colorizedSources[sourceId];
+
+    const range = this.session.view(solidity.current.sourceRange);
+    debug("range: %o", range);
+
+    // We were splitting on OS.EOL, but it turns out on Windows,
+    // in some environments (perhaps?) line breaks are still denoted by just \n
+    const splitLines = str => str.split(/\r?\n/g);
+
     const lines = splitLines(source);
+    const colorizedLines = splitLines(colorizedSource);
 
     this.config.logger.log("");
 
-    this.config.logger.log(DebugUtils.formatRangeLines(lines, range.lines));
+    //HACK -- the line-pointer formatter doesn't work right with colorized
+    //lines, so we pass in the uncolored version too
+    this.config.logger.log(
+      DebugUtils.formatRangeLines(
+        colorizedLines,
+        range.lines,
+        lines,
+        contextBefore,
+        contextAfter
+      )
+    );
 
     this.config.logger.log("");
   }
@@ -269,7 +293,7 @@ class DebugPrinter {
     //if we're not in the single-variable case, we'll need to do some
     //things to Javascriptify our variables so that the JS syntax for
     //using them is closer to the Solidity syntax
-    variables = DebugUtils.nativize(variables);
+    variables = CodecUtils.Conversion.nativizeVariables(variables);
 
     let context = Object.assign(
       { $: this.select },
@@ -310,7 +334,7 @@ class DebugPrinter {
     try {
       let result = safeEval(expr, context);
       result = DebugUtils.cleanConstructors(result); //HACK
-      const formatted = DebugUtils.formatValue(result, indent);
+      const formatted = DebugUtils.formatValue(result, indent, true);
       this.config.logger.log(formatted);
       this.config.logger.log();
     } catch (e) {
@@ -330,7 +354,7 @@ class DebugPrinter {
       if (!suppress) {
         this.config.logger.log(e);
       } else {
-        this.config.logger.log(DebugUtils.formatValue(undefined));
+        this.config.logger.log(DebugUtils.formatValue(undefined, indent, true));
       }
     }
   }

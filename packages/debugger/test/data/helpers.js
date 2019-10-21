@@ -4,9 +4,9 @@ const debug = debugModule("test:data:decode");
 import Ganache from "ganache-core";
 import { assert } from "chai";
 import changeCase from "change-case";
+import { Utils as CodecUtils } from "@truffle/codec";
 
 import { prepareContracts } from "test/helpers";
-import DebugUtils from "@truffle/debug-utils";
 
 import Debugger from "lib/debugger";
 
@@ -85,9 +85,7 @@ async function prepareDebugger(testName, sources) {
 }
 
 async function decode(name) {
-  let result = await this.session.variable(name);
-
-  return DebugUtils.nativize(result);
+  return CodecUtils.Conversion.nativize(await this.session.variable(name));
 }
 
 export function describeDecoding(testName, fixtures, selector, generateSource) {

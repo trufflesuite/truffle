@@ -20,11 +20,10 @@
     "test:debug": "NODE_ENV=testing node --inspect ./node_modules/.bin/mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive"
   },
   "dependencies": {
-    "@truffle/code-utils": "^1.2.8",
-    "@truffle/decode-utils": "^1.0.18",
-    "@truffle/decoder": "^3.0.13",
     "@truffle/expect": "^0.0.11",
     "@truffle/solidity-utils": "^1.2.5",
+    "@truffle/codec": "^3.0.12",
+    "@truffle/code-utils": "^1.2.8",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
     "json-pointer": "^0.6.0",

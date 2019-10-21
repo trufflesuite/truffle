@@ -1,6 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session");
 
+import { Utils as CodecUtils } from "@truffle/codec";
+
 import configureStore from "lib/store";
 
 import * as controller from "lib/controller/actions";
@@ -129,6 +131,7 @@ export default class Session {
 
       let contractId = contractNode.id;
       let contractKind = contractNode.contractKind;
+      abi = CodecUtils.AbiUtils.schemaAbiToAbi(abi); //let's handle this up front
 
       debug("contractName %s", contractName);
       debug("sourceMap %o", sourceMap);

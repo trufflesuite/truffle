@@ -20,7 +20,7 @@ const command = {
     const watchOptions = {
       ignored: [
         "build/**/**",
-        /[\/\\]\./ // Ignore files prefixed with .
+        /[/\\]\./ // Ignore files prefixed with .
       ]
     };
     // Certain large codebases have trouble with the watch command.

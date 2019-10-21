@@ -9,7 +9,7 @@ import { stableKeccak256 } from "lib/helpers";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import * as DecodeUtils from "@truffle/decode-utils";
+import { Utils as CodecUtils } from "@truffle/codec";
 
 /**
  * @private
@@ -50,7 +50,7 @@ function modifierForInvocation(invocation, scopes) {
       return rawNode.nodes.find(
         node =>
           node.nodeType === "FunctionDefinition" &&
-          DecodeUtils.Definition.functionKind(node) === "constructor"
+          CodecUtils.Definition.functionKind(node) === "constructor"
       );
     default:
       //we should never hit this case
@@ -61,20 +61,26 @@ function modifierForInvocation(invocation, scopes) {
 //see data.views.contexts for an explanation
 function debuggerContextToDecoderContext(context) {
   let {
+    context: contextHash,
     contractName,
     binary,
     contractId,
     contractKind,
     isConstructor,
-    abi
+    abi,
+    payable,
+    compiler
   } = context;
   return {
+    context: contextHash,
     contractName,
     binary,
     contractId,
     contractKind,
     isConstructor,
-    abi: DecodeUtils.Contexts.abiToFunctionAbiWithSignatures(abi)
+    abi: CodecUtils.AbiUtils.computeSelectors(abi),
+    payable,
+    compiler
   };
 }
 
@@ -144,6 +150,23 @@ const data = createSelectorTree({
      * data.views.userDefinedTypes
      */
     userDefinedTypes: {
+      //user-defined types for passing to the decoder
+      _: createLeaf(
+        ["../referenceDeclarations", "/info/scopes", solidity.info.sources],
+        (referenceDeclarations, scopes, sources) => {
+          return Object.assign(
+            {},
+            ...Object.entries(referenceDeclarations).map(([id, node]) => ({
+              [id]: CodecUtils.MakeType.definitionToStoredType(
+                node,
+                sources[scopes[node.id].sourceId].compiler,
+                referenceDeclarations
+              )
+            }))
+          );
+        }
+      ),
+
       /*
        * data.views.userDefinedTypes.contractDefinitions
        * restrict to contracts only, and get their definitions
@@ -201,7 +224,7 @@ const data = createSelectorTree({
       Object.assign(
         {},
         ...Object.entries(instances).map(([address, { binary }]) => ({
-          [address]: DecodeUtils.Conversion.toBytes(binary)
+          [address]: CodecUtils.Conversion.toBytes(binary)
         }))
       )
     ),
@@ -210,12 +233,10 @@ const data = createSelectorTree({
      * data.views.contexts
      * same as evm.info.contexts, but:
      * 0. we only include non-constructor contexts
-     * 1. we now index by contract ID rather than hash
-     * 2. we strip out context, sourceMap, primarySource, and compiler
-     * 3. we alter abi in several ways:
-     * 3a. we strip abi down to just (ordinary) functions
-     * 3b. we augment these functions with signatures (here meaning selectors)
-     * 3c. abi is now an object, not an array, and indexed by these signatures
+     * 1. we strip out sourceMap and primarySource
+     * 2. we alter abi in two ways:
+     * 2a. we strip out everything but functions
+     * 2b. abi is now an object, not an array, and indexed by these signatures
      */
     contexts: createLeaf([evm.info.contexts], contexts =>
       Object.assign(
@@ -290,7 +311,7 @@ const data = createSelectorTree({
                 let definition = inlined[variable.id].definition;
                 return (
                   !definition.constant ||
-                  DecodeUtils.Definition.isSimpleConstant(definition.value)
+                  CodecUtils.Definition.isSimpleConstant(definition.value)
                 );
               });
 
@@ -310,9 +331,38 @@ const data = createSelectorTree({
      */
     allocations: {
       /*
-       * data.info.allocations.storage
+       * data.info.allocations.storage (namespace)
        */
-      storage: createLeaf(["/state"], state => state.info.allocations.storage),
+      storage: {
+        /*
+         * data.info.allocations.storage (selector)
+         */
+        _: createLeaf(["/state"], state => state.info.allocations.storage),
+
+        /*
+         * data.info.allocations.storage.byId
+         * Same as data.info.allocations.storage, but uses the old allocation
+         * format (more convenient for debugger) where members are stored by ID
+         * in an object instead of by index in an array
+         */
+        byId: createLeaf(["./_"], allocations =>
+          Object.assign(
+            {},
+            ...Object.entries(allocations).map(([id, allocation]) => ({
+              [id]: {
+                definition: allocation.definition,
+                size: allocation.size,
+                members: Object.assign(
+                  {},
+                  ...allocation.members.map(memberAllocation => ({
+                    [memberAllocation.definition.id]: memberAllocation
+                  }))
+                )
+              }
+            }))
+          )
+        )
+      },
 
       /*
        * data.info.allocations.memory
@@ -320,9 +370,9 @@ const data = createSelectorTree({
       memory: createLeaf(["/state"], state => state.info.allocations.memory),
 
       /*
-       * data.info.allocations.calldata
+       * data.info.allocations.abi
        */
-      calldata: createLeaf(["/state"], state => state.info.allocations.calldata)
+      abi: createLeaf(["/state"], state => state.info.allocations.abi)
     },
 
     /**
@@ -378,7 +428,7 @@ const data = createSelectorTree({
       stack: createLeaf(
         [evm.current.state.stack],
 
-        words => (words || []).map(word => DecodeUtils.Conversion.toBytes(word))
+        words => (words || []).map(word => CodecUtils.Conversion.toBytes(word))
       ),
 
       /**
@@ -387,7 +437,7 @@ const data = createSelectorTree({
       memory: createLeaf(
         [evm.current.state.memory],
 
-        words => DecodeUtils.Conversion.toBytes(words.join(""))
+        words => CodecUtils.Conversion.toBytes(words.join(""))
       ),
 
       /**
@@ -396,7 +446,7 @@ const data = createSelectorTree({
       calldata: createLeaf(
         [evm.current.call],
 
-        ({ data }) => DecodeUtils.Conversion.toBytes(data)
+        ({ data }) => CodecUtils.Conversion.toBytes(data)
       ),
 
       /**
@@ -409,7 +459,7 @@ const data = createSelectorTree({
           Object.assign(
             {},
             ...Object.entries(mapping).map(([address, word]) => ({
-              [`0x${address}`]: DecodeUtils.Conversion.toBytes(word)
+              [`0x${address}`]: CodecUtils.Conversion.toBytes(word)
             }))
           )
       ),
@@ -423,24 +473,24 @@ const data = createSelectorTree({
       specials: createLeaf(
         ["/current/address", evm.current.call, evm.transaction.globals],
         (address, { sender, value }, { tx, block }) => ({
-          this: DecodeUtils.Conversion.toBytes(address),
+          this: CodecUtils.Conversion.toBytes(address),
 
-          sender: DecodeUtils.Conversion.toBytes(sender),
+          sender: CodecUtils.Conversion.toBytes(sender),
 
-          value: DecodeUtils.Conversion.toBytes(value),
+          value: CodecUtils.Conversion.toBytes(value),
 
           //let's crack open that tx and block!
           ...Object.assign(
             {},
             ...Object.entries(tx).map(([variable, value]) => ({
-              [variable]: DecodeUtils.Conversion.toBytes(value)
+              [variable]: CodecUtils.Conversion.toBytes(value)
             }))
           ),
 
           ...Object.assign(
             {},
             ...Object.entries(block).map(([variable, value]) => ({
-              [variable]: DecodeUtils.Conversion.toBytes(value)
+              [variable]: CodecUtils.Conversion.toBytes(value)
             }))
           )
         })
@@ -662,6 +712,10 @@ const data = createSelectorTree({
                   .filter(v => variables[v.name] == undefined)
                   .map(v => ({ [v.name]: { astId: v.id } }))
               );
+              //NOTE: because these assignments are processed in order, that means
+              //that if a base class and derived class have variables with the same
+              //name, the derived version will be processed later and therefore overwrite --
+              //which is exactly what we want, so yay
 
               cur = scopes[cur].parentId;
             } while (cur != null);
@@ -703,10 +757,10 @@ const data = createSelectorTree({
               })
             );
             let builtins = {
-              msg: DecodeUtils.Definition.MSG_DEFINITION,
-              tx: DecodeUtils.Definition.TX_DEFINITION,
-              block: DecodeUtils.Definition.BLOCK_DEFINITION,
-              now: DecodeUtils.Definition.spoofUintDefinition("now")
+              msg: CodecUtils.Definition.MSG_DEFINITION,
+              tx: CodecUtils.Definition.TX_DEFINITION,
+              block: CodecUtils.Definition.BLOCK_DEFINITION,
+              now: CodecUtils.Definition.NOW_DEFINITION
             };
             //only include this when it has a proper definition
             if (thisDefinition) {
@@ -725,9 +779,10 @@ const data = createSelectorTree({
           ["/current/contract"],
           contractNode =>
             contractNode && contractNode.nodeType === "ContractDefinition"
-              ? DecodeUtils.Definition.spoofThisDefinition(
+              ? CodecUtils.Definition.spoofThisDefinition(
                   contractNode.name,
-                  contractNode.id
+                  contractNode.id,
+                  contractNode.contractKind
                 )
               : null
         )
@@ -820,7 +875,7 @@ const data = createSelectorTree({
       stack: createLeaf(
         [evm.next.state.stack],
 
-        words => (words || []).map(word => DecodeUtils.Conversion.toBytes(word))
+        words => (words || []).map(word => CodecUtils.Conversion.toBytes(word))
       )
     },
 
@@ -897,7 +952,7 @@ const data = createSelectorTree({
 
         step =>
           ((step || {}).stack || []).map(word =>
-            DecodeUtils.Conversion.toBytes(word)
+            CodecUtils.Conversion.toBytes(word)
           )
       )
     }
