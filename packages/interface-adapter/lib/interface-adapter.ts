@@ -1,3 +1,10 @@
+import { Web3Shim, Web3ShimOptions } from "./web3-shim";
+
+export interface InterfaceAdapterOptions extends Web3ShimOptions {}
+
+
+
+
 export class InterfaceAdapter {
   /* ... */
   constructor (networkType) {
