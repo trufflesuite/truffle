@@ -1,44 +1,54 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:stack");
 
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
-import * as EvmUtils from "@truffle/codec/utils/evm";
-import * as TypeUtils from "@truffle/codec/utils/datatype";
-import { Types, Values, Errors } from "@truffle/codec/format";
-import read from "@truffle/codec/read";
+import * as ConversionUtils from "lib/utils/conversion";
+import * as EvmUtils from "lib/utils/evm";
+import * as TypeUtils from "lib/utils/datatype";
+import { Types, Values, Errors } from "lib/format";
+import read from "lib/read";
 import decodeValue from "./value";
 import { decodeExternalFunction, checkPaddingLeft } from "./value";
 import { decodeMemoryReferenceByAddress } from "./memory";
 import { decodeStorageReferenceByAddress } from "./storage";
 import { decodeAbiReferenceByAddress } from "./abi";
-import * as Pointer from "@truffle/codec/pointer/types";
+import * as Pointer from "lib/pointer/types";
 import * as Decoding from "./types";
-import * as Evm from "@truffle/codec/evm";
-import { DecodingError } from "@truffle/codec/decode/errors";
+import * as Evm from "lib/evm";
+import { DecodingError } from "lib/decode/errors";
 
-export default function* decodeStack(dataType: Types.Type, pointer: Pointer.StackPointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeStack(
+  dataType: Types.Type,
+  pointer: Pointer.StackPointer,
+  info: Evm.Types.EvmInfo
+): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   let rawValue: Uint8Array;
   try {
-   rawValue = yield* read(pointer, info.state);
-  }
-  catch(error) {
-    return <Errors.ErrorResult> { //no idea why TS is failing here
+    rawValue = yield* read(pointer, info.state);
+  } catch (error) {
+    return <Errors.ErrorResult>{
+      //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
       error: (<DecodingError>error).error
     };
   }
-  const literalPointer: Pointer.StackLiteralPointer = { location: "stackliteral" as const, literal: rawValue };
+  const literalPointer: Pointer.StackLiteralPointer = {
+    location: "stackliteral" as const,
+    literal: rawValue
+  };
   return yield* decodeLiteral(dataType, literalPointer, info);
 }
 
-export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiteralPointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
-
+export function* decodeLiteral(
+  dataType: Types.Type,
+  pointer: Pointer.StackLiteralPointer,
+  info: Evm.Types.EvmInfo
+): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   debug("type %O", dataType);
   debug("pointer %o", pointer);
 
-  if(TypeUtils.isReferenceType(dataType)) {
-    switch(dataType.location) {
+  if (TypeUtils.isReferenceType(dataType)) {
+    switch (dataType.location) {
       case "memory":
         //first: do we have a memory pointer? if so we can just dispatch to
         //decodeMemoryReference
@@ -55,16 +65,20 @@ export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiter
         //if it's a string or bytes, we will interpret the pointer ourself and skip
         //straight to decodeValue.  this is to allow us to correctly handle the
         //case of msg.data used as a mapping key.
-        if(dataType.typeClass === "bytes" || dataType.typeClass === "string") {
-          let startAsBN = ConversionUtils.toBN(pointer.literal.slice(0, EvmUtils.WORD_SIZE));
-          let lengthAsBN = ConversionUtils.toBN(pointer.literal.slice(EvmUtils.WORD_SIZE));
+        if (dataType.typeClass === "bytes" || dataType.typeClass === "string") {
+          let startAsBN = ConversionUtils.toBN(
+            pointer.literal.slice(0, EvmUtils.WORD_SIZE)
+          );
+          let lengthAsBN = ConversionUtils.toBN(
+            pointer.literal.slice(EvmUtils.WORD_SIZE)
+          );
           let start: number;
           let length: number;
           try {
             start = startAsBN.toNumber();
-          }
-          catch(_) {
-            return <Errors.BytesDynamicErrorResult|Errors.StringErrorResult> { //again with the TS failures...
+          } catch (_) {
+            return <Errors.BytesDynamicErrorResult | Errors.StringErrorResult>{
+              //again with the TS failures...
               type: dataType,
               kind: "error" as const,
               error: {
@@ -75,9 +89,9 @@ export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiter
           }
           try {
             length = lengthAsBN.toNumber();
-          }
-          catch(_) {
-            return <Errors.BytesDynamicErrorResult|Errors.StringErrorResult> { //again with the TS failures...
+          } catch (_) {
+            return <Errors.BytesDynamicErrorResult | Errors.StringErrorResult>{
+              //again with the TS failures...
               type: dataType,
               kind: "error" as const,
               error: {
@@ -86,12 +100,16 @@ export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiter
               }
             };
           }
-          let newPointer = { location: "calldata" as "calldata", start, length };
+          let newPointer = {
+            location: "calldata" as "calldata",
+            start,
+            length
+          };
           return yield* decodeValue(dataType, newPointer, info);
         }
 
         //otherwise, is it a dynamic array?
-        if(dataType.typeClass === "array" && dataType.kind === "dynamic") {
+        if (dataType.typeClass === "array" && dataType.kind === "dynamic") {
           //in this case, we're actually going to *throw away* the length info,
           //because it makes the logic simpler -- we'll get the length info back
           //from calldata
@@ -101,27 +119,30 @@ export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiter
           //that in as the "base" value
           return yield* decodeAbiReferenceByAddress(
             dataType,
-            {location: "stackliteral" as const, literal: locationOnly},
+            { location: "stackliteral" as const, literal: locationOnly },
             info,
-            { abiPointerBase: -EvmUtils.WORD_SIZE}
+            { abiPointerBase: -EvmUtils.WORD_SIZE }
           );
-        }
-        else {
+        } else {
           //multivalue case -- this case is straightforward
           //pass in 0 as the base since this is an absolute pointer
           //(yeah we don't need to but let's be explicit)
-          return yield* decodeAbiReferenceByAddress(dataType, pointer, info, { abiPointerBase: 0 });
+          return yield* decodeAbiReferenceByAddress(dataType, pointer, info, {
+            abiPointerBase: 0
+          });
         }
     }
   }
 
   //next: do we have an external function?  these work differently on the stack
   //than elsewhere, so we can't just pass it on to decodeValue.
-  if(dataType.typeClass === "function" && dataType.visibility === "external") {
+  if (dataType.typeClass === "function" && dataType.visibility === "external") {
     let address = pointer.literal.slice(0, EvmUtils.WORD_SIZE);
     let selectorWord = pointer.literal.slice(-EvmUtils.WORD_SIZE);
-    if(!checkPaddingLeft(address, EvmUtils.ADDRESS_SIZE)
-      ||!checkPaddingLeft(selectorWord, EvmUtils.SELECTOR_SIZE)) {
+    if (
+      !checkPaddingLeft(address, EvmUtils.ADDRESS_SIZE) ||
+      !checkPaddingLeft(selectorWord, EvmUtils.SELECTOR_SIZE)
+    ) {
       return {
         type: dataType,
         kind: "error" as const,
@@ -144,5 +165,7 @@ export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiter
   //however, note that because we're on the stack, we use the permissive padding
   //option so that errors won't result due to values with bad padding
   //(of numeric or bytesN type, anyway)
-  return yield* decodeValue(dataType, pointer, info, { permissivePadding: true });
+  return yield* decodeValue(dataType, pointer, info, {
+    permissivePadding: true
+  });
 }

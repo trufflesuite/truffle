@@ -1,18 +1,21 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:constant");
 
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
-import * as EvmUtils from "@truffle/codec/utils/evm";
-import { Types, Values } from "@truffle/codec/format";
-import read from "@truffle/codec/read";
+import * as ConversionUtils from "lib/utils/conversion";
+import * as EvmUtils from "lib/utils/evm";
+import { Types, Values } from "lib/format";
+import read from "lib/read";
 import decodeValue from "./value";
-import * as Pointer from "@truffle/codec/pointer/types";
+import * as Pointer from "lib/pointer/types";
 import * as Decoding from "./types";
-import * as Evm from "@truffle/codec/evm";
-import { DecodingError } from "@truffle/codec/decode/errors";
+import * as Evm from "lib/evm";
+import { DecodingError } from "lib/decode/errors";
 
-export default function* decodeConstant(dataType: Types.Type, pointer: Pointer.ConstantDefinitionPointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
-
+export default function* decodeConstant(
+  dataType: Types.Type,
+  pointer: Pointer.ConstantDefinitionPointer,
+  info: Evm.Types.EvmInfo
+): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   debug("pointer %o", pointer);
 
   //normally, we just dispatch to decodeValue.
@@ -21,13 +24,12 @@ export default function* decodeConstant(dataType: Types.Type, pointer: Pointer.C
   //of the word, but readDefinition will put them at the *end* of the
   //word.  So we'll have to adjust things ourselves.
 
-  if(dataType.typeClass === "bytes" && dataType.kind === "static") {
+  if (dataType.typeClass === "bytes" && dataType.kind === "static") {
     let size = dataType.length;
     let word: Uint8Array;
     try {
       word = yield* read(pointer, info.state);
-    }
-    catch(error) {
+    } catch (error) {
       return {
         type: dataType,
         kind: "error" as const,

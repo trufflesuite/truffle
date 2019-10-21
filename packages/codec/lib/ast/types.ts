@@ -1,4 +1,4 @@
-import * as Common from "@truffle/codec/common/types";
+import * as Common from "lib/common/types";
 
 export interface TypeDescriptions {
   typeIdentifier: string;
@@ -58,7 +58,7 @@ export interface AstNode {
 
 export interface AstNodes {
   [nodeId: number]: AstNode;
-};
+}
 
 //the debugger uses this
 export interface Scopes {
@@ -72,5 +72,5 @@ export interface Scopes {
       id: number;
     }[];
     definition?: AstNode;
-  }
+  };
 }

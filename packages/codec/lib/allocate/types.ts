@@ -1,11 +1,11 @@
-import * as Compiler from "@truffle/codec/compiler/types";
-import * as Storage from "@truffle/codec/storage/types";
-import * as Ast from "@truffle/codec/ast/types";
-import * as AbiTypes from "@truffle/codec/abi/types";
-import * as Contexts from "@truffle/codec/contexts/types";
-import * as Pointer from "@truffle/codec/pointer/types";
-import * as Decoding from "@truffle/codec/decode/types";
-import { Types } from "@truffle/codec/format";
+import * as Compiler from "lib/compiler/types";
+import * as Storage from "lib/storage/types";
+import * as Ast from "lib/ast/types";
+import * as AbiTypes from "lib/abi/types";
+import * as Contexts from "lib/contexts/types";
+import * as Pointer from "lib/pointer/types";
+import * as Decoding from "lib/decode/types";
+import { Types } from "lib/format";
 
 //for passing to calldata/event allocation functions
 export interface ContractAllocationInfo {
@@ -26,7 +26,7 @@ export interface AbiSizeInfo {
 //holds a collection of storage allocations for structs and contracts, indexed
 //by the ID of the struct or contract
 export interface StorageAllocations {
-  [id: number]: StorageAllocation
+  [id: number]: StorageAllocation;
 }
 
 //an individual storage allocation for (the members of) a struct or (the state
@@ -53,7 +53,7 @@ export interface StorageMemberAllocation {
 //in the abi
 
 export interface AbiAllocations {
-  [id: string]: AbiAllocation | null
+  [id: string]: AbiAllocation | null;
 }
 
 export interface AbiAllocation {
@@ -73,7 +73,7 @@ export interface AbiMemberAllocation {
 //Note: for mappings we use a pointer of length 0
 
 export interface MemoryAllocations {
-  [id: number]: MemoryAllocation
+  [id: number]: MemoryAllocation;
 }
 
 export interface MemoryAllocation {
@@ -139,15 +139,15 @@ export interface EventAllocations {
       [selector: string]: {
         [contractKind: string]: {
           [contextHash: string]: EventAllocation;
-        }
-      }
+        };
+      };
     };
     anonymous: {
       [contractKind: string]: {
         [contextHash: string]: EventAllocation[];
-      }
-    }
-  }
+      };
+    };
+  };
 }
 
 export interface EventAllocation {
@@ -175,5 +175,5 @@ export interface CalldataAllocationTemporary {
   constructorAllocation?: CalldataAllocation;
   functionAllocations: {
     [selector: string]: CalldataAllocation;
-  }
+  };
 }

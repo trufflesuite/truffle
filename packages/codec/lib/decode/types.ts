@@ -1,7 +1,7 @@
 import BN from "bn.js";
 
-import * as Abi from "@truffle/codec/abi/types";
-import { Types, Values } from "@truffle/codec/format";
+import * as Abi from "lib/abi/types";
+import { Types, Values } from "lib/format";
 
 /**
  * A type representing a transaction (calldata) decoding.  As you can see, these come in four types,

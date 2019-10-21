@@ -1,9 +1,9 @@
 import debugModule from "debug";
 const debug = debugModule("codec:encode:key");
 
-import { Values } from "@truffle/codec/format";
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
-import * as EVMUtils from "@truffle/codec/utils/evm";
+import { Values } from "lib/format";
+import * as ConversionUtils from "lib/utils/conversion";
+import * as EVMUtils from "lib/utils/evm";
 import { stringToBytes } from "./abi";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
@@ -14,20 +14,23 @@ export function encodeMappingKey(input: Values.ElementaryValue): Uint8Array {
   let bytes: Uint8Array;
   //TypeScript can at least infer in the rest of this that we're looking
   //at a value, not an error!  But that's hardly enough...
-  switch(input.type.typeClass) {
+  switch (input.type.typeClass) {
     case "uint":
     case "int":
-      return ConversionUtils.toBytes((<Values.UintValue|Values.IntValue>input).value.asBN, EVMUtils.WORD_SIZE);
+      return ConversionUtils.toBytes(
+        (<Values.UintValue | Values.IntValue>input).value.asBN,
+        EVMUtils.WORD_SIZE
+      );
     case "bool": {
       bytes = new Uint8Array(EVMUtils.WORD_SIZE); //is initialized to zeroes
-      if((<Values.BoolValue>input).value.asBoolean) {
+      if ((<Values.BoolValue>input).value.asBoolean) {
         bytes[EVMUtils.WORD_SIZE - 1] = 1;
       }
       return bytes;
     }
     case "bytes":
       bytes = ConversionUtils.toBytes((<Values.BytesValue>input).value.asHex);
-      switch(input.type.kind) {
+      switch (input.type.kind) {
         case "static":
           let padded = new Uint8Array(EVMUtils.WORD_SIZE); //initialized to zeroes
           padded.set(bytes);
@@ -36,10 +39,15 @@ export function encodeMappingKey(input: Values.ElementaryValue): Uint8Array {
           return bytes; //NO PADDING IS USED
       }
     case "address":
-      return ConversionUtils.toBytes((<Values.AddressValue>input).value.asAddress, EVMUtils.WORD_SIZE);
+      return ConversionUtils.toBytes(
+        (<Values.AddressValue>input).value.asAddress,
+        EVMUtils.WORD_SIZE
+      );
     case "string": {
-      let coercedInput: Values.StringValue = <Values.StringValue> input;
-      switch(coercedInput.value.kind) { //NO PADDING IS USED
+      let coercedInput: Values.StringValue = <Values.StringValue>input;
+      switch (
+        coercedInput.value.kind //NO PADDING IS USED
+      ) {
         case "valid":
           return stringToBytes(coercedInput.value.asString);
         case "malformed":
@@ -49,8 +57,12 @@ export function encodeMappingKey(input: Values.ElementaryValue): Uint8Array {
     }
     case "fixed":
     case "ufixed":
-      let bigValue = (<Values.FixedValue|Values.UfixedValue>input).value.asBig;
-      let shiftedValue = ConversionUtils.shiftBigUp(bigValue, input.type.places);
+      let bigValue = (<Values.FixedValue | Values.UfixedValue>input).value
+        .asBig;
+      let shiftedValue = ConversionUtils.shiftBigUp(
+        bigValue,
+        input.type.places
+      );
       return ConversionUtils.toBytes(shiftedValue, EVMUtils.WORD_SIZE);
   }
 }

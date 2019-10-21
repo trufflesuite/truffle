@@ -9,19 +9,23 @@ import decodeAbi from "./abi";
 import decodeConstant from "./constant";
 import decodeSpecial from "./special";
 import decodeTopic from "./event";
-import { Types, Values } from "@truffle/codec/format";
-import * as Pointer from "@truffle/codec/pointer/types";
+import { Types, Values } from "lib/format";
+import * as Pointer from "lib/pointer/types";
 import * as Decoding from "./types";
-import * as Evm from "@truffle/codec/evm";
+import * as Evm from "lib/evm";
 
-export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo, options: Decoding.DecoderOptions = {}): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
+export default function* decode(
+  dataType: Types.Type,
+  pointer: Pointer.DataPointer,
+  info: Evm.Types.EvmInfo,
+  options: Decoding.DecoderOptions = {}
+): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 
-  switch(pointer.location) {
-
+  switch (pointer.location) {
     case "storage":
-      return yield* decodeStorage(dataType, pointer, info)
+      return yield* decodeStorage(dataType, pointer, info);
 
     case "stack":
       return yield* decodeStack(dataType, pointer, info);

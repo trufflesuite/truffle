@@ -2,31 +2,35 @@ import debugModule from "debug";
 const debug = debugModule("codec:format:maketype");
 
 import BN from "bn.js";
-import * as Common from "@truffle/codec/common/types";
-import * as Compiler from "@truffle/codec/compiler/types";
-import * as Abi from "@truffle/codec/abi/types";
-import * as Ast from "@truffle/codec/ast/types";
+import * as Common from "lib/common/types";
+import * as Compiler from "lib/compiler/types";
+import * as Abi from "lib/abi/types";
+import * as Ast from "lib/ast/types";
 import * as DefinitionUtils from "./definition";
 import { solidityFamily } from "./compiler";
-import { Types } from "@truffle/codec/format";
+import { Types } from "lib/format";
 
 //NOTE: the following function will *not* work for arbitrary nodes! It will,
 //however, work for the ones we need (i.e., variable definitions, and arbitrary
 //things of elementary type)
 //NOTE: set forceLocation to *null* to force no location. leave it undefined
 //to not force a location.
-export function definitionToType(definition: Ast.AstNode, compiler: Compiler.CompilerVersion, forceLocation?: Common.Location | null): Types.Type {
+export function definitionToType(
+  definition: Ast.AstNode,
+  compiler: Compiler.CompilerVersion,
+  forceLocation?: Common.Location | null
+): Types.Type {
   debug("definition %O", definition);
   let typeClass = DefinitionUtils.typeClass(definition);
   let typeHint = DefinitionUtils.typeStringWithoutLocation(definition);
-  switch(typeClass) {
+  switch (typeClass) {
     case "bool":
       return {
         typeClass,
         typeHint
       };
     case "address": {
-      switch(solidityFamily(compiler)) {
+      switch (solidityFamily(compiler)) {
         case "pre-0.5.0":
           return {
             typeClass,
@@ -37,7 +41,8 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
           return {
             typeClass,
             kind: "specific",
-            payable: DefinitionUtils.typeIdentifier(definition) === "t_address_payable"
+            payable:
+              DefinitionUtils.typeIdentifier(definition) === "t_address_payable"
           };
       }
       break; //to satisfy typescript
@@ -50,7 +55,8 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
         typeHint
       };
     }
-    case "int": { //typeScript won't let me group these for some reason
+    case "int": {
+      //typeScript won't let me group these for some reason
       let bytes = DefinitionUtils.specifiedSize(definition);
       return {
         typeClass,
@@ -58,7 +64,8 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
         typeHint
       };
     }
-    case "fixed": { //typeScript won't let me group these for some reason
+    case "fixed": {
+      //typeScript won't let me group these for some reason
       let bytes = DefinitionUtils.specifiedSize(definition);
       let places = DefinitionUtils.decimalPlaces(definition);
       return {
@@ -79,7 +86,7 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
       };
     }
     case "string": {
-      if(forceLocation === null) {
+      if (forceLocation === null) {
         return {
           typeClass,
           typeHint
@@ -94,55 +101,55 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
     }
     case "bytes": {
       let length = DefinitionUtils.specifiedSize(definition);
-      if(length !== null) {
+      if (length !== null) {
         return {
           typeClass,
           kind: "static",
           length,
           typeHint
-        }
+        };
       } else {
-        if(forceLocation === null) {
+        if (forceLocation === null) {
           return {
             typeClass,
             kind: "dynamic",
             typeHint
           };
         }
-        let location = forceLocation || DefinitionUtils.referenceType(definition);
+        let location =
+          forceLocation || DefinitionUtils.referenceType(definition);
         return {
           typeClass,
           kind: "dynamic",
           location,
           typeHint
-        }
+        };
       }
     }
     case "array": {
       let baseDefinition = DefinitionUtils.baseDefinition(definition);
       let baseType = definitionToType(baseDefinition, compiler, forceLocation);
       let location = forceLocation || DefinitionUtils.referenceType(definition);
-      if(DefinitionUtils.isDynamicArray(definition)) {
-        if(forceLocation !== null) {
+      if (DefinitionUtils.isDynamicArray(definition)) {
+        if (forceLocation !== null) {
           return {
             typeClass,
             baseType,
             kind: "dynamic",
             location,
             typeHint
-          }
-        }
-        else {
+          };
+        } else {
           return {
             typeClass,
             baseType,
             kind: "dynamic",
             typeHint
-          }
+          };
         }
       } else {
         let length = new BN(DefinitionUtils.staticLengthAsString(definition));
-        if(forceLocation !== null) {
+        if (forceLocation !== null) {
           return {
             typeClass,
             baseType,
@@ -150,16 +157,15 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
             length,
             location,
             typeHint
-          }
-        }
-        else {
+          };
+        } else {
           return {
             typeClass,
             baseType,
             kind: "static",
             length,
             typeHint
-          }
+          };
         }
       }
     }
@@ -167,14 +173,21 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
       let keyDefinition = DefinitionUtils.keyDefinition(definition);
       //note that we can skip the scopes argument here! that's only needed when
       //a general node, rather than a declaration, is being passed in
-      let keyType = <Types.ElementaryType>definitionToType(keyDefinition, compiler, null);
+      let keyType = <Types.ElementaryType>(
+        definitionToType(keyDefinition, compiler, null)
+      );
       //suppress the location on the key type (it'll be given as memory but
       //this is meaningless)
       //also, we have to tell TypeScript ourselves that this will be an elementary
       //type; it has no way of knowing that
-      let valueDefinition = definition.valueType || definition.typeName.valueType;
-      let valueType = definitionToType(valueDefinition, compiler, forceLocation);
-      if(forceLocation === null) {
+      let valueDefinition =
+        definition.valueType || definition.typeName.valueType;
+      let valueType = definitionToType(
+        valueDefinition,
+        compiler,
+        forceLocation
+      );
+      if (forceLocation === null) {
         return {
           typeClass,
           keyType,
@@ -191,11 +204,17 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
     case "function": {
       let visibility = DefinitionUtils.visibility(definition);
       let mutability = DefinitionUtils.mutability(definition);
-      let [inputParameters, outputParameters] = DefinitionUtils.parameters(definition);
+      let [inputParameters, outputParameters] = DefinitionUtils.parameters(
+        definition
+      );
       //note: don't force a location on these! use the listed location!
-      let inputParameterTypes = inputParameters.map(parameter => definitionToType(parameter, compiler));
-      let outputParameterTypes = outputParameters.map(parameter => definitionToType(parameter, compiler));
-      switch(visibility) {
+      let inputParameterTypes = inputParameters.map(parameter =>
+        definitionToType(parameter, compiler)
+      );
+      let outputParameterTypes = outputParameters.map(parameter =>
+        definitionToType(parameter, compiler)
+      );
+      switch (visibility) {
         case "internal":
           return {
             typeClass,
@@ -218,9 +237,11 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
     }
     case "struct": {
       let id = DefinitionUtils.typeId(definition).toString();
-      let qualifiedName = DefinitionUtils.typeStringWithoutLocation(definition).match(/struct (.*)/)[1];
+      let qualifiedName = DefinitionUtils.typeStringWithoutLocation(
+        definition
+      ).match(/struct (.*)/)[1];
       let [definingContractName, typeName] = qualifiedName.split(".");
-      if(forceLocation === null) {
+      if (forceLocation === null) {
         return {
           typeClass,
           kind: "local",
@@ -241,7 +262,9 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
     }
     case "enum": {
       let id = DefinitionUtils.typeId(definition).toString();
-      let qualifiedName = DefinitionUtils.typeStringWithoutLocation(definition).match(/enum (.*)/)[1];
+      let qualifiedName = DefinitionUtils.typeStringWithoutLocation(
+        definition
+      ).match(/enum (.*)/)[1];
       let [definingContractName, typeName] = qualifiedName.split(".");
       return {
         typeClass,
@@ -263,38 +286,53 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
         id,
         typeName,
         contractKind
-      }
+      };
     }
     case "magic": {
       let typeIdentifier = DefinitionUtils.typeIdentifier(definition);
-      let variable = <Types.MagicVariableName> typeIdentifier.match(/^t_magic_(.*)$/)[1];
+      let variable = <Types.MagicVariableName>(
+        typeIdentifier.match(/^t_magic_(.*)$/)[1]
+      );
       return {
         typeClass,
         variable
-      }
+      };
     }
   }
 }
 
 //whereas the above takes variable definitions, this takes the actual type
 //definition
-export function definitionToStoredType(definition: Ast.AstNode, compiler: Compiler.CompilerVersion, referenceDeclarations?: Ast.AstNodes): Types.UserDefinedType {
-  switch(definition.nodeType) {
+export function definitionToStoredType(
+  definition: Ast.AstNode,
+  compiler: Compiler.CompilerVersion,
+  referenceDeclarations?: Ast.AstNodes
+): Types.UserDefinedType {
+  switch (definition.nodeType) {
     case "StructDefinition": {
       let id = definition.id.toString();
-      let [definingContractName, typeName] = definition.canonicalName.split(".");
-      let memberTypes: {name: string, type: Types.Type}[] = definition.members.map(
-        member => ({name: member.name, type: definitionToType(member, compiler, null)})
+      let [definingContractName, typeName] = definition.canonicalName.split(
+        "."
       );
+      let memberTypes: {
+        name: string;
+        type: Types.Type;
+      }[] = definition.members.map(member => ({
+        name: member.name,
+        type: definitionToType(member, compiler, null)
+      }));
       let definingContract;
-      if(referenceDeclarations) {
+      if (referenceDeclarations) {
         let contractDefinition = Object.values(referenceDeclarations).find(
-          node => node.nodeType === "ContractDefinition" &&
-          node.nodes.some(
-            (subNode: Ast.AstNode) => subNode.id.toString() === id
-          )
+          node =>
+            node.nodeType === "ContractDefinition" &&
+            node.nodes.some(
+              (subNode: Ast.AstNode) => subNode.id.toString() === id
+            )
         );
-        definingContract = <Types.ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
+        definingContract = <Types.ContractTypeNative>(
+          definitionToStoredType(contractDefinition, compiler)
+        ); //can skip reference declarations
       }
       return {
         typeClass: "struct",
@@ -308,17 +346,22 @@ export function definitionToStoredType(definition: Ast.AstNode, compiler: Compil
     }
     case "EnumDefinition": {
       let id = definition.id.toString();
-      let [definingContractName, typeName] = definition.canonicalName.split(".");
+      let [definingContractName, typeName] = definition.canonicalName.split(
+        "."
+      );
       let options = definition.members.map(member => member.name);
       let definingContract;
-      if(referenceDeclarations) {
+      if (referenceDeclarations) {
         let contractDefinition = Object.values(referenceDeclarations).find(
-          node => node.nodeType === "ContractDefinition" &&
-          node.nodes.some(
-            (subNode: Ast.AstNode) => subNode.id.toString() === id
-          )
+          node =>
+            node.nodeType === "ContractDefinition" &&
+            node.nodes.some(
+              (subNode: Ast.AstNode) => subNode.id.toString() === id
+            )
         );
-        definingContract = <Types.ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
+        definingContract = <Types.ContractTypeNative>(
+          definitionToStoredType(contractDefinition, compiler)
+        ); //can skip reference declarations
       }
       return {
         typeClass: "enum",
@@ -352,20 +395,19 @@ export function abiParameterToType(abi: Abi.AbiParameter): Types.Type {
   let typeHint = abi.internalType;
   //first: is it an array?
   let arrayMatch = typeName.match(/(.*)\[(\d*)\]$/);
-  if(arrayMatch) {
+  if (arrayMatch) {
     let baseTypeName = arrayMatch[1];
     let lengthAsString = arrayMatch[2]; //may be empty!
-    let baseAbi = {...abi, type: baseTypeName};
+    let baseAbi = { ...abi, type: baseTypeName };
     let baseType = abiParameterToType(baseAbi);
-    if(lengthAsString === "") {
+    if (lengthAsString === "") {
       return {
         typeClass: "array",
         kind: "dynamic",
         baseType,
         typeHint
-      }
-    }
-    else {
+      };
+    } else {
       let length = new BN(lengthAsString);
       return {
         typeClass: "array",
@@ -373,31 +415,30 @@ export function abiParameterToType(abi: Abi.AbiParameter): Types.Type {
         length,
         baseType,
         typeHint
-      }
+      };
     }
   }
   //otherwise, here are the simple cases
   let typeClass = typeName.match(/^([^0-9]+)/)[1];
-  switch(typeClass) {
+  switch (typeClass) {
     case "uint":
     case "int": {
-        let bits = typeName.match(/^u?int([0-9]+)/)[1];
-        return {
-          typeClass,
-          bits: parseInt(bits),
-          typeHint
-        };
+      let bits = typeName.match(/^u?int([0-9]+)/)[1];
+      return {
+        typeClass,
+        bits: parseInt(bits),
+        typeHint
+      };
     }
     case "bytes":
       let length = typeName.match(/^bytes([0-9]*)/)[1];
-      if(length === "") {
+      if (length === "") {
         return {
           typeClass,
           kind: "dynamic",
           typeHint
         };
-      }
-      else {
+      } else {
         return {
           typeClass,
           kind: "static",
@@ -419,13 +460,13 @@ export function abiParameterToType(abi: Abi.AbiParameter): Types.Type {
       };
     case "fixed":
     case "ufixed": {
-        let [_, bits, places] = typeName.match(/^u?fixed([0-9]+)x([0-9]+)/);
-        return {
-          typeClass,
-          bits: parseInt(bits),
-          places: parseInt(places),
-          typeHint
-        };
+      let [_, bits, places] = typeName.match(/^u?fixed([0-9]+)x([0-9]+)/);
+      return {
+        typeClass,
+        bits: parseInt(bits),
+        places: parseInt(places),
+        typeHint
+      };
     }
     case "function":
       return {
@@ -433,14 +474,12 @@ export function abiParameterToType(abi: Abi.AbiParameter): Types.Type {
         visibility: "external",
         kind: "general",
         typeHint
-      }
+      };
     case "tuple":
-      let memberTypes = abi.components.map(
-        component => ({
-          name: component.name || undefined, //leave undefined if component.name is empty string
-          type: abiParameterToType(component)
-        })
-      );
+      let memberTypes = abi.components.map(component => ({
+        name: component.name || undefined, //leave undefined if component.name is empty string
+        type: abiParameterToType(component)
+      }));
       return {
         typeClass,
         memberTypes,

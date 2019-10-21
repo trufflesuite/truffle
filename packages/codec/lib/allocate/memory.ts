@@ -1,15 +1,17 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:memory");
 
-import * as Ast from "@truffle/codec/ast/types";
+import * as Ast from "lib/ast/types";
 import * as Allocation from "./types";
-import * as DefinitionUtils from "@truffle/codec/utils/definition";
-import * as EvmUtils from "@truffle/codec/utils/evm";
+import * as DefinitionUtils from "lib/utils/definition";
+import * as EvmUtils from "lib/utils/evm";
 
-export function getMemoryAllocations(referenceDeclarations: Ast.AstNodes): Allocation.MemoryAllocations {
+export function getMemoryAllocations(
+  referenceDeclarations: Ast.AstNodes
+): Allocation.MemoryAllocations {
   let allocations: Allocation.MemoryAllocations = {};
-  for(const node of Object.values(referenceDeclarations)) {
-    if(node.nodeType === "StructDefinition") {
+  for (const node of Object.values(referenceDeclarations)) {
+    if (node.nodeType === "StructDefinition") {
       allocations[node.id] = allocateStruct(node);
     }
   }
@@ -21,10 +23,8 @@ export function getMemoryAllocations(referenceDeclarations: Ast.AstNodes): Alloc
 function allocateStruct(definition: Ast.AstNode): Allocation.MemoryAllocation {
   let memberAllocations: Allocation.MemoryMemberAllocation[] = [];
   let position = 0;
-  for(const member of definition.members) {
-    const length = DefinitionUtils.isMapping(member)
-      ? 0
-      : EvmUtils.WORD_SIZE;
+  for (const member of definition.members) {
+    const length = DefinitionUtils.isMapping(member) ? 0 : EvmUtils.WORD_SIZE;
     memberAllocations.push({
       definition: member,
       pointer: {

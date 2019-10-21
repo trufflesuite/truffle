@@ -11,8 +11,8 @@
     "baseUrl": ".",
     "lib": ["es2017"],
     "paths": {
-      "@truffle/codec": ["./lib"],
-      "@truffle/codec/*": ["./lib/*"]
+      "lib": ["./lib"],
+      "lib/*": ["./lib/*"]
     },
     "plugins": [
       { "transform": "ts-transformer-imports" }

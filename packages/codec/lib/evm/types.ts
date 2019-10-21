@@ -1,9 +1,9 @@
-import * as Common from "@truffle/codec/common/types";
-import * as Storage from "@truffle/codec/storage/types";
-import * as Ast from "@truffle/codec/ast/types";
-import * as Allocation from "@truffle/codec/allocate/types";
-import * as Contexts from "@truffle/codec/contexts/types";
-import { Types } from "@truffle/codec/format";
+import * as Common from "lib/common/types";
+import * as Storage from "lib/storage/types";
+import * as Ast from "lib/ast/types";
+import * as Allocation from "lib/allocate/types";
+import * as Contexts from "lib/contexts/types";
+import { Types } from "lib/format";
 
 export interface EvmState {
   storage: WordMapping;
@@ -11,14 +11,14 @@ export interface EvmState {
   memory?: Uint8Array;
   calldata?: Uint8Array;
   specials?: {
-    [builtin: string]: Uint8Array //sorry
+    [builtin: string]: Uint8Array; //sorry
   };
   eventdata?: Uint8Array;
   eventtopics?: Uint8Array[];
 }
 
 export interface WordMapping {
-  [slotAddress: string]: Uint8Array
+  [slotAddress: string]: Uint8Array;
 }
 
 export interface EvmInfo {
@@ -40,7 +40,7 @@ export interface AllocationInfo {
 }
 
 export interface InternalFunctions {
-  [pc: number]: InternalFunction
+  [pc: number]: InternalFunction;
 }
 
 export interface InternalFunction {
