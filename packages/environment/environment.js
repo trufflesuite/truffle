@@ -85,7 +85,7 @@ const helpers = {
 
   detectAndSetNetworkId: async (config, web3, interfaceAdapter) => {
     const configNetworkId = config.networks[config.network].network_id;
-    const providerNetworkId = await web3.eth.net.getId();
+    const providerNetworkId = await interfaceAdapter.getNetworkId();
     if (configNetworkId !== "*") {
       // Ensure the network id matches the one in the config for safety
       if (providerNetworkId.toString() !== configNetworkId.toString()) {
