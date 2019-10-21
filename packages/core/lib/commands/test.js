@@ -63,8 +63,9 @@ const command = {
   },
   run: function(options, done) {
     const OS = require("os");
-    const dir = require("node-dir");
     const temp = require("temp").track();
+    const glob = require("glob");
+    const path = require("path");
     const Config = require("@truffle/config");
     const Artifactor = require("@truffle/artifactor");
     const Test = require("../test");
@@ -103,7 +104,11 @@ const command = {
 
     try {
       if (files.length === 0) {
-        files = dir.files(config.test_directory, { sync: true }) || [];
+        const directoryContents = glob.sync(
+          `${config.test_directory}${path.sep}*`
+        );
+        files =
+          directoryContents.filter(item => fs.statSync(item).isFile()) || [];
       }
     } catch (error) {
       return done(error);

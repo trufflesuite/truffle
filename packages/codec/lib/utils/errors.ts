@@ -1,8 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:errors");
 
-import { Errors } from "../format/errors";
-import { Values } from "../format/values";
+import { Values, Errors } from "../format";
 import { TypeUtils } from "./datatype";
 import { Definition as DefinitionUtils } from "./definition";
 import { Slot } from "../types/storage";
@@ -11,24 +10,37 @@ import { Slot } from "../types/storage";
 //for those errors that are meant to possibly
 //be wrapped in a DecodingError and thrown
 export function message(error: Errors.ErrorForThrowing) {
-  switch(error.kind) {
+  switch (error.kind) {
     case "UserDefinedTypeNotFoundError":
       let typeName = TypeUtils.isContractDefinedType(error.type)
         ? error.type.definingContractName + "." + error.type.typeName
         : error.type.typeName;
-      return `Unknown ${error.type.typeClass} type ${typeName} of id ${error.type.id}`;
+      return `Unknown ${error.type.typeClass} type ${typeName} of id ${
+        error.type.id
+      }`;
     case "UnsupportedConstantError":
-      return `Unsupported constant type ${DefinitionUtils.typeClass(error.definition)}`;
+      return `Unsupported constant type ${DefinitionUtils.typeClass(
+        error.definition
+      )}`;
     case "ReadErrorStack":
       return `Can't read stack from position ${error.from} to ${error.to}`;
     case "ReadErrorBytes":
-      return `Can't read ${error.length} bytes from input starting at ${error.start}`;
+      return `Can't read ${error.length} bytes from input starting at ${
+        error.start
+      }`;
     case "ReadErrorStorage":
-      if(error.range.length) {
-        return `Can't read ${error.range.length} bytes from storage starting at index ${error.range.from.index} in ${slotAddressPrintout(error.range.from.slot)}`;
-      }
-      else {
-        return `Can't read storage from index ${error.range.from.index} in ${slotAddressPrintout(error.range.from.slot)} to index ${error.range.to.index} in ${slotAddressPrintout(error.range.to.slot)}`;
+      if (error.range.length) {
+        return `Can't read ${
+          error.range.length
+        } bytes from storage starting at index ${
+          error.range.from.index
+        } in ${slotAddressPrintout(error.range.from.slot)}`;
+      } else {
+        return `Can't read storage from index ${
+          error.range.from.index
+        } in ${slotAddressPrintout(error.range.from.slot)} to index ${
+          error.range.to.index
+        } in ${slotAddressPrintout(error.range.to.slot)}`;
       }
   }
 }
@@ -36,16 +48,23 @@ export function message(error: Errors.ErrorForThrowing) {
 export function slotAddressPrintout(slot: Slot): string {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
-    let {type: keyEncoding, value: keyValue} = keyInfoForPrinting(slot.key);
-    return "keccak(" + keyValue + " as " + keyEncoding + ", " + slotAddressPrintout(slot.path) + ") + " + slot.offset.toString();
-  }
-  else if (slot.path !== undefined) {
+    let { type: keyEncoding, value: keyValue } = keyInfoForPrinting(slot.key);
+    return (
+      "keccak(" +
+      keyValue +
+      " as " +
+      keyEncoding +
+      ", " +
+      slotAddressPrintout(slot.path) +
+      ") + " +
+      slot.offset.toString()
+    );
+  } else if (slot.path !== undefined) {
     const pathAddressPrintout = slotAddressPrintout(slot.path);
     return slot.hashPath
       ? "keccak(" + pathAddressPrintout + ")" + slot.offset.toString()
       : pathAddressPrintout + slot.offset.toString();
-  }
-  else {
+  } else {
     return slot.offset.toString();
   }
 }
@@ -53,8 +72,10 @@ export function slotAddressPrintout(slot: Slot): string {
 //this is like the old toSoliditySha3Input, but for debugging purposes ONLY
 //it will NOT produce correct input to soliditySha3
 //please use mappingKeyAsHex instead if you wish to encode a mapping key.
-export function keyInfoForPrinting(input: Values.ElementaryValue): {type: string, value: string} {
-  switch(input.type.typeClass) {
+export function keyInfoForPrinting(
+  input: Values.ElementaryValue
+): { type: string; value: string } {
+  switch (input.type.typeClass) {
     case "uint":
       return {
         type: "uint",
@@ -82,7 +103,7 @@ export function keyInfoForPrinting(input: Values.ElementaryValue): {type: string
         value: (<Values.BoolValue>input).value.asBoolean.toString()
       };
     case "bytes":
-      switch(input.type.kind) {
+      switch (input.type.kind) {
         case "static":
           return {
             type: "bytes32",
@@ -100,8 +121,8 @@ export function keyInfoForPrinting(input: Values.ElementaryValue): {type: string
         value: (<Values.AddressValue>input).value.asAddress
       };
     case "string":
-      let coercedInput: Values.StringValue = <Values.StringValue> input;
-      switch(coercedInput.value.kind) {
+      let coercedInput: Values.StringValue = <Values.StringValue>input;
+      switch (coercedInput.value.kind) {
         case "valid":
           return {
             type: "string",
