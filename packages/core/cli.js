@@ -10,7 +10,7 @@ const version = require("./lib/version");
 const versionInfo = version.info();
 const XRegExp = require("xregexp");
 
-const { reformatArguments } = require("./utils");
+const { reformatArguments } = require("./utils"); // to reformat arguments of type --option=value
 
 // pre-flight check: Node version compatibility
 const minimumNodeVersion = "8.9.4";
