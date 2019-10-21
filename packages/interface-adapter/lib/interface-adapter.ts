@@ -3,6 +3,7 @@ import { Web3Shim, Web3ShimOptions } from "./web3-shim";
 export interface InterfaceAdapterOptions extends Web3ShimOptions {}
 
 
+const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
 
 
 export class InterfaceAdapter {
