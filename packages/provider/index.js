@@ -31,7 +31,7 @@ module.exports = {
   },
 
   test_connection: function(provider, callback) {
-    const interfaceAdapter = new InterfaceAdapter();
+    const interfaceAdapter = new InterfaceAdapter({ provider });
     var web3 = new Web3Shim({ provider });
     var fail = new Error(
       "Could not connect to your RPC client. Please check your RPC configuration."
