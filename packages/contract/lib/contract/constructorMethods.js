@@ -12,6 +12,7 @@ module.exports = Contract => ({
     }
 
     this.web3.setProvider(provider);
+    this.interfaceAdapter.setProvider(provider);
     this.currentProvider = provider;
   },
 
