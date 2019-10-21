@@ -13,14 +13,21 @@ const getNetworkTypeClass = ({
 };
 
 export class InterfaceAdapter {
-  /* ... */
-  constructor (networkType) {
-    switch(getNetworkTypeClass(networkType)) {
+  public adapter?: Web3Shim | InterfaceAdapter;
+  constructor(options?: InterfaceAdapterOptions) {
+    switch (getNetworkTypeClass(options)) {
       case "evm-like":
-        // use web3 shim
-      case "tezos":
-        // use taquito
+        this.adapter = new Web3Shim({
+          provider: options.provider,
+          networkType: options.networkType
+        });
+        break;
+      default:
+        throw Error(
+          `Sorry, "${options.networkType}" is not supported at this time.`
+        );
     }
+    return this.adapter;
   }
 
   getNetworkId() {
