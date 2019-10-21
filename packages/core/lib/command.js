@@ -105,8 +105,8 @@ class Command {
     try {
       // while in `console` & `develop`, input is passed as a string, not as an array
       if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ");
-      const inputOptions = extractFlags(inputStrings); // Method `extractFlags(args)` : Extracts the `--option` flags from
-      // arguments
+      // Method `extractFlags(args)` : Extracts the `--option` flags from arguments
+      const inputOptions = extractFlags(inputStrings);
       const validOptions = result.command.help.options
         .map(item => {
           let opt = item.option.split(" ")[0];
