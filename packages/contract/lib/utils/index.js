@@ -51,20 +51,21 @@ const Utils = {
       .map(log => {
         const logABI = constructor.events[log.topics[0]];
 
-        if (logABI == null) {
-          return null;
-        }
+        if (logABI == null) return null;
 
         const copy = Utils.merge({}, log);
 
         copy.event = logABI.name;
         copy.topics = logABI.anonymous ? copy.topics : copy.topics.slice(1);
 
-        if (copy.data === "0x") {
-          copy.data = "";
-        }
+        if (copy.data === "0x") copy.data = "";
 
-        const logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
+        let logArgs;
+        try {
+          logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
+        } catch (_) {
+          return null;
+        }
         copy.args = reformat.numbers.call(constructor, logArgs, logABI.inputs);
 
         delete copy.data;
