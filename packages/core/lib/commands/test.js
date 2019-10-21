@@ -105,7 +105,7 @@ const command = {
     try {
       if (files.length === 0) {
         const directoryContents = glob.sync(
-          `${config.test_directory}${path.sep}*`
+          `${config.test_directory}${path.sep}**${path.sep}*`
         );
         files =
           directoryContents.filter(item => fs.statSync(item).isFile()) || [];

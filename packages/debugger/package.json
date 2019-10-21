@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.0.31",
+  "version": "5.0.32",
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
@@ -20,7 +20,7 @@
     "test:debug": "NODE_ENV=testing node --inspect ./node_modules/.bin/mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive"
   },
   "dependencies": {
-    "@truffle/code-utils": "^1.2.9-alphaTez.0",
+    "@truffle/code-utils": "^1.2.9",
     "@truffle/codec": "^3.0.14-alphaTez.0",
     "@truffle/expect": "^0.0.13-alphaTez.0",
     "@truffle/solidity-utils": "^1.2.7-alphaTez.0",
@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@truffle/artifactor": "^4.0.35",
-    "@truffle/box": "^1.0.41",
+    "@truffle/box": "^1.0.42",
     "@truffle/debug-utils": "^1.0.21-alphaTez.0",
     "@truffle/migrate": "^3.1.0-alphaTez.0",
     "@truffle/resolver": "^5.1.0-alphaTez.0",

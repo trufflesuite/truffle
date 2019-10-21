@@ -2,7 +2,7 @@ const Mocha = require("mocha");
 const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
-const { Web3Shim } = require("@truffle/interface-adapter");
+const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 const Contracts = require("@truffle/workflow-compile/new");
 const Resolver = require("@truffle/resolver");
@@ -34,6 +34,8 @@ const Test = {
     config.test_files = config.test_files.map(testFile => {
       return path.resolve(testFile);
     });
+
+    const interfaceAdapter = new InterfaceAdapter();
 
     // `accounts` will be populated before each contract() invocation
     // and passed to it so tests don't have to call it themselves.
@@ -76,7 +78,7 @@ const Test = {
       mocha.addFile(file);
     });
 
-    const accounts = await this.getAccounts(web3);
+    const accounts = await this.getAccounts(web3, interfaceAdapter);
 
     if (!config.resolver) config.resolver = new Resolver(config);
 
@@ -112,6 +114,7 @@ const Test = {
     await this.setJSTestGlobals({
       config,
       web3,
+      interfaceAdapter,
       accounts,
       testResolver,
       runner,
@@ -151,7 +154,7 @@ const Test = {
     return mocha;
   },
 
-  getAccounts: function(web3) {
+  getAccounts: function(web3, interfaceAdapter) {
     return web3.eth.getAccounts();
   },
 
@@ -204,12 +207,14 @@ const Test = {
   setJSTestGlobals: function({
     config,
     web3,
+    interfaceAdapter,
     accounts,
     testResolver,
     runner,
     compilation
   }) {
     return new Promise(accept => {
+      global.interfaceAdapter = interfaceAdapter;
       global.web3 = web3;
       global.assert = chai.assert;
       global.expect = chai.expect;
