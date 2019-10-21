@@ -1051,6 +1051,22 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
+"@truffle/codec@^3.1.0-ens-events.0":
+  version "3.1.0-ens-events.0"
+  resolved "https://registry.yarnpkg.com/@truffle/codec/-/codec-3.1.0-ens-events.0.tgz#739c08edd11fb226b77398393f9b81aca7d9e789"
+  integrity sha512-/VABvfrkN5+HPS0PnB64ff/jKjTr/m+N3NGuyGqQfftgBRCHXfk5WQ/F8NESpvbWo0uzqBUpFRKjVqHP4OyLBw==
+  dependencies:
+    big.js "^5.2.2"
+    bn.js "^4.11.8"
+    debug "^4.1.0"
+    lodash.clonedeep "^4.5.0"
+    lodash.escaperegexp "^4.1.2"
+    lodash.partition "^4.6.0"
+    lodash.sum "^4.0.2"
+    semver "^6.1.1"
+    utf8 "^3.0.0"
+    web3 "^1.2.1"
+
 "@trufflesuite/chromafi@^2.1.2":
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.1.2.tgz#50715070093c5543a406a2cc85fa70fc8d1a36ab"
