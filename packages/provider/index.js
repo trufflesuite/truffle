@@ -1,6 +1,6 @@
 var debug = require("debug")("provider");
 var Web3 = require("web3");
-var { Web3Shim } = require("@truffle/interface-adapter");
+var { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 
 var wrapper = require("./wrapper");
 
@@ -31,6 +31,7 @@ module.exports = {
   },
 
   test_connection: function(provider, callback) {
+    const interfaceAdapter = new InterfaceAdapter();
     var web3 = new Web3Shim({ provider });
     var fail = new Error(
       "Could not connect to your RPC client. Please check your RPC configuration."

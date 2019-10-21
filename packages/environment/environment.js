@@ -1,5 +1,5 @@
 const Web3 = require("web3");
-const { Web3Shim } = require("@truffle/interface-adapter");
+const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
 const Resolver = require("@truffle/resolver");
@@ -14,20 +14,22 @@ const Environment = {
     helpers.setUpConfig(config);
     helpers.validateNetworkConfig(config);
 
+    const interfaceAdapter = new InterfaceAdapter();
     const web3 = new Web3Shim({
       config,
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
 
-    await helpers.detectAndSetNetworkId(config, web3);
-    await helpers.setFromOnConfig(config, web3);
+    await helpers.detectAndSetNetworkId(config, web3, interfaceAdapter);
+    await helpers.setFromOnConfig(config, web3, interfaceAdapter);
   },
 
   // Ensure you call Environment.detect() first.
   fork: async function(config) {
     expect.options(config, ["from", "provider", "networks", "network"]);
 
+    const interfaceAdapter = new InterfaceAdapter();
     const web3 = new Web3Shim({
       provider: config.provider,
       networkType: config.networks[config.network].type
@@ -75,7 +77,7 @@ const Environment = {
 };
 
 const helpers = {
-  setFromOnConfig: async (config, web3) => {
+  setFromOnConfig: async (config, web3, interfaceAdapter) => {
     if (config.from) return;
     let accounts;
 
@@ -86,7 +88,7 @@ const helpers = {
     config.networks[config.network].from = accounts[0];
   },
 
-  detectAndSetNetworkId: async (config, web3) => {
+  detectAndSetNetworkId: async (config, web3, interfaceAdapter) => {
     const configNetworkId = config.networks[config.network].network_id;
     const providerNetworkId = await web3.eth.net.getId();
     if (configNetworkId !== "*") {
