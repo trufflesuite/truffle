@@ -3,10 +3,10 @@ const debug = debugModule("codec:utils:wrap");
 
 import Web3 from "web3";
 import BN from "bn.js";
-import { CompilerVersion } from "../types/compiler";
-import { AstDefinition } from "../types/ast";
+import { CompilerVersion } from "@truffle/codec/types/compiler";
+import { AstDefinition } from "@truffle/codec/types/ast";
 import { MakeType } from "./maketype";
-import { Types, Values } from "../format";
+import { Types, Values } from "@truffle/codec/format";
 
 //Function for wrapping a value as an ElementaryValue
 //WARNING: this function does not check its inputs! Please check before using!

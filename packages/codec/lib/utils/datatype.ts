@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:datatype");
 
-import { Types } from "../format";
-import * as Ast from "../types/ast";
+import { Types } from "@truffle/codec/format";
+import * as Ast from "@truffle/codec/types/ast";
 
 export namespace TypeUtils {
 

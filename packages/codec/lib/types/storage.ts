@@ -1,4 +1,4 @@
-import * as Elementary from "../format/elementary";
+import * as Elementary from "@truffle/codec/format/elementary";
 //import directly from Elementary to avoid circularity!
 import BN from "bn.js";
 

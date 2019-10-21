@@ -1,12 +1,12 @@
 import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:contract");
 
-import * as CodecUtils from "../../utils";
-import { wrapElementaryViaDefinition, Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils } from "../../utils";
-import { DecoderContext, DecoderContexts } from "../../types/contexts";
-import * as Utils from "../../utils/interface";
-import { AstDefinition, AstReferences } from "../../types/ast";
-import { Types, Values } from "../../format";
+import * as CodecUtils from "@truffle/codec/utils";
+import { wrapElementaryViaDefinition, Definition as DefinitionUtils, AbiUtils, EVM, ContextUtils } from "@truffle/codec/utils";
+import { DecoderContext, DecoderContexts } from "@truffle/codec/types/contexts";
+import * as Utils from "@truffle/codec/utils/interface";
+import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import { Types, Values } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
@@ -14,16 +14,16 @@ import WireDecoder from "./wire";
 import { BlockType, Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
 import { Provider } from "web3/providers";
-import * as DecoderTypes from "../../types/interface";
-import { EvmInfo, AllocationInfo } from "../../types/evm";
-import { StorageMemberAllocation } from "../../types/allocation";
-import { getStorageAllocations, storageSize } from "../../allocate/storage";
-import { CalldataDecoding, LogDecoding } from "../../types/decoding";
-import { decodeVariable } from "../../core/decoding";
-import { Slot } from "../../types/storage";
-import { isWordsLength, equalSlots } from "../../utils/storage";
-import { StoragePointer } from "../../types/pointer";
-import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "../../interface/errors";
+import * as DecoderTypes from "@truffle/codec/types/interface";
+import { EvmInfo, AllocationInfo } from "@truffle/codec/types/evm";
+import { StorageMemberAllocation } from "@truffle/codec/types/allocation";
+import { getStorageAllocations, storageSize } from "@truffle/codec/allocate/storage";
+import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
+import { decodeVariable } from "@truffle/codec/core/decoding";
+import { Slot } from "@truffle/codec/types/storage";
+import { isWordsLength, equalSlots } from "@truffle/codec/utils/storage";
+import { StoragePointer } from "@truffle/codec/types/pointer";
+import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "@truffle/codec/interface/errors";
 
 export default class ContractDecoder {
 

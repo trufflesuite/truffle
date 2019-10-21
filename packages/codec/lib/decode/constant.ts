@@ -1,14 +1,14 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:constant");
 
-import * as CodecUtils from "../utils";
-import { Types, Values } from "../format";
-import read from "../read";
+import * as CodecUtils from "@truffle/codec/utils";
+import { Types, Values } from "@truffle/codec/format";
+import read from "@truffle/codec/read";
 import decodeValue from "./value";
-import { ConstantDefinitionPointer} from "../types/pointer";
-import { EvmInfo } from "../types/evm";
-import { DecoderRequest } from "../types/request";
-import { DecodingError } from "../decode/errors";
+import { ConstantDefinitionPointer} from "@truffle/codec/types/pointer";
+import { EvmInfo } from "@truffle/codec/types/evm";
+import { DecoderRequest } from "@truffle/codec/types/request";
+import { DecodingError } from "@truffle/codec/decode/errors";
 import BN from "bn.js";
 
 export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {

@@ -2,14 +2,14 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:event");
 
 import decodeValue from "./value";
-import read from "../read";
-import { Types, Values, Errors } from "../format";
-import { Conversion as ConversionUtils, TypeUtils } from "../utils";
-import { EventTopicPointer } from "../types/pointer";
-import { EvmInfo } from "../types/evm";
-import { DecoderOptions } from "../types/options";
-import { DecoderRequest } from "../types/request";
-import { StopDecodingError } from "../decode/errors";
+import read from "@truffle/codec/read";
+import { Types, Values, Errors } from "@truffle/codec/format";
+import { Conversion as ConversionUtils, TypeUtils } from "@truffle/codec/utils";
+import { EventTopicPointer } from "@truffle/codec/types/pointer";
+import { EvmInfo } from "@truffle/codec/types/evm";
+import { DecoderOptions } from "@truffle/codec/types/options";
+import { DecoderRequest } from "@truffle/codec/types/request";
+import { StopDecodingError } from "@truffle/codec/decode/errors";
 
 export default function* decodeTopic(dataType: Types.Type, pointer: EventTopicPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {

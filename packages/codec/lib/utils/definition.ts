@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:definition");
 
-import { AstDefinition, Scopes, Visibility, Mutability, Location, ContractKind } from "../types/ast";
-import { CompilerVersion } from "../types/compiler";
+import { AstDefinition, Scopes, Visibility, Mutability, Location, ContractKind } from "@truffle/codec/types/ast";
+import { CompilerVersion } from "@truffle/codec/types/compiler";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
 

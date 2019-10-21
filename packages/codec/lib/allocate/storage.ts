@@ -1,16 +1,16 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:storage");
 
-import { StoragePointer } from "../types/pointer";
-import { StorageAllocations, StorageAllocation, StorageMemberAllocation } from "../types/allocation";
-import { StorageLength, Range } from "../types/storage";
-import { isWordsLength } from "../utils/storage";
-import { UnknownUserDefinedTypeError } from "../types/errors";
-import { DecodingError } from "../decode/errors";
-import { AstDefinition, AstReferences } from "../types/ast";
-import * as CodecUtils from "../utils";
-import { TypeUtils } from "../utils";
-import * as Format from "../format";
+import { StoragePointer } from "@truffle/codec/types/pointer";
+import { StorageAllocations, StorageAllocation, StorageMemberAllocation } from "@truffle/codec/types/allocation";
+import { StorageLength, Range } from "@truffle/codec/types/storage";
+import { isWordsLength } from "@truffle/codec/utils/storage";
+import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
+import { DecodingError } from "@truffle/codec/decode/errors";
+import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import * as CodecUtils from "@truffle/codec/utils";
+import { TypeUtils } from "@truffle/codec/utils";
+import * as Format from "@truffle/codec/format";
 import BN from "bn.js";
 
 export class UnknownBaseContractIdError extends Error {

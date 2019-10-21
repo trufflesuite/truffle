@@ -1,12 +1,12 @@
 import debugModule from "debug";
 const debug = debugModule("codec:format:abify");
 
-import { Types, Values, Errors } from "../format";
+import { Types, Values, Errors } from "@truffle/codec/format";
 import { TypeUtils } from "./datatype";
-import { UnknownUserDefinedTypeError } from "../types/errors";
+import { UnknownUserDefinedTypeError } from "@truffle/codec/types/errors";
 import BN from "bn.js";
 import { Conversion as ConversionUtils } from "./conversion";
-import { CalldataDecoding, LogDecoding } from "../types/decoding";
+import { CalldataDecoding, LogDecoding } from "@truffle/codec/types/decoding";
 
 export function abifyType(dataType: Types.Type, userDefinedTypes?: Types.TypesById): Types.Type | undefined {
   switch(dataType.typeClass) {
