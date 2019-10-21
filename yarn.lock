@@ -1069,6 +1069,21 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
+"@truffle/hdwallet-provider@^1.0.22":
+  version "1.0.22"
+  resolved "https://registry.yarnpkg.com/@truffle/hdwallet-provider/-/hdwallet-provider-1.0.22.tgz#213f90527c4ad1e91b4d81c8966525c8e96e90c8"
+  integrity sha512-V07zTK4KrD273EGEBSrpvkGyZnI0c5ttvOhHKjThu2KPN1xHDGj73GfEHr6Gt/PI+8U2LWSG0xWZcwxQNyT8vA==
+  dependencies:
+    any-promise "^1.3.0"
+    bindings "^1.5.0"
+    bip39 "^2.4.2"
+    ethereum-protocol "^1.0.1"
+    ethereumjs-tx "^1.0.0"
+    ethereumjs-util "^6.1.0"
+    ethereumjs-wallet "^0.6.3"
+    web3 "1.2.1"
+    web3-provider-engine "https://github.com/trufflesuite/provider-engine#web3-one"
+
 "@trufflesuite/chromafi@^2.1.2":
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.1.2.tgz#50715070093c5543a406a2cc85fa70fc8d1a36ab"
@@ -15824,6 +15839,32 @@ web3-provider-engine@14.2.1:
   version "14.2.1"
   resolved "https://registry.yarnpkg.com/web3-provider-engine/-/web3-provider-engine-14.2.1.tgz#ef351578797bf170e08d529cb5b02f8751329b95"
   integrity sha512-iSv31h2qXkr9vrL6UZDm4leZMc32SjWJFGOp/D92JXfcEboCqraZyuExDkpxKw8ziTufXieNM7LSXNHzszYdJw==
+  dependencies:
+    async "^2.5.0"
+    backoff "^2.5.0"
+    clone "^2.0.0"
+    cross-fetch "^2.1.0"
+    eth-block-tracker "^3.0.0"
+    eth-json-rpc-infura "^3.1.0"
+    eth-sig-util "^1.4.2"
+    ethereumjs-block "^1.2.2"
+    ethereumjs-tx "^1.2.0"
+    ethereumjs-util "^5.1.5"
+    ethereumjs-vm "^2.3.4"
+    json-rpc-error "^2.0.0"
+    json-stable-stringify "^1.0.1"
+    promise-to-callback "^1.0.0"
+    readable-stream "^2.2.9"
+    request "^2.85.0"
+    semaphore "^1.0.3"
+    ws "^5.1.1"
+    xhr "^2.2.0"
+    xtend "^4.0.1"
+
+"web3-provider-engine@git+https://github.com/trufflesuite/provider-engine.git#web3-one":
+  version "14.0.6"
+  uid "3538c60bc4836b73ccae1ac3f64c8fed8ef19c1a"
+  resolved "git+https://github.com/trufflesuite/provider-engine.git#3538c60bc4836b73ccae1ac3f64c8fed8ef19c1a"
   dependencies:
     async "^2.5.0"
     backoff "^2.5.0"

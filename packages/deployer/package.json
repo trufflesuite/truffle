@@ -11,7 +11,7 @@
   "version": "3.0.37",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --no-warnings --timeout 10000 --exit"
+    "test": "mocha ./test/ens.js --no-warnings --timeout 10000 --exit"
   },
   "dependencies": {
     "@ensdomains/ens": "^0.3.11",
@@ -25,6 +25,7 @@
   "devDependencies": {
     "@truffle/reporters": "^1.0.15",
     "@truffle/workflow-compile": "^2.1.9",
+    "@truffle/hdwallet-provider": "^1.0.22",
     "ganache-core": "2.7.0",
     "mocha": "5.2.0",
     "web3": "1.2.1",
