@@ -240,7 +240,20 @@ query GetContractInstance($id: ID!) {
         constructor {
           createBytecode {
             bytes
+            linkReferences {
+              offsets
+              name
+              length
+            }
           }
+        }
+      }
+      callBytecode {
+        bytes
+        linkReferences {
+          offsets
+          name
+          length
         }
       }
     }
@@ -250,6 +263,7 @@ query GetContractInstance($id: ID!) {
 describe("Compilation", () => {
   let sourceIds= [];
   let bytecodeIds = [];
+  let callBytecodeIds = [];
   let compilationIds = [];
   let netIds = [];
   let migratedNetworks = [];
@@ -272,8 +286,11 @@ describe("Compilation", () => {
       sourceIds.push({id: sourceId});
 
       const shimBytecodeObject = shimBytecode(contract["bytecode"]);
+      const shimCallBytecodeObject = shimBytecode(contract["deployedBytecode"]);
       let bytecodeId = generateId(shimBytecodeObject);
       bytecodeIds.push({ id: bytecodeId });
+      let callBytecodeId = generateId(shimCallBytecodeObject);
+      callBytecodeIds.push({ id: callBytecodeId });
 
       const networksPath = fse.readFileSync(path.join(__dirname, "compilationSources", "build", "contracts", migrationFileNames[index])).toString();
       let networks = JSON.parse(networksPath.toString()).networks;
@@ -315,8 +332,11 @@ describe("Compilation", () => {
           creation: {
             transactionHash: networksArray[networksArray.length -1][1]["transactionHash"],
             constructor: {
-              createBytecode: contract["bytecode"]
+              createBytecode: shimBytecodeObject
             }
+          },
+          callBytecode: {
+            bytecode: shimCallBytecodeObject
           }
         })
       }
@@ -496,21 +516,26 @@ describe("Compilation", () => {
                 transactionHash,
                 constructor: {
                   createBytecode: {
-                    bytes
+                    bytes,
+                    linkReferences
                   }
                 }
+              },
+              callBytecode: {
+                bytecode
               }
             }
           }
         }
       } = await db.query(GetWorkspaceContractInstance, contractInstanceIds[index]);
 
-      let shimmedBytecode = shimBytecode(contractInstances[index].creation.constructor.createBytecode);
       expect(name).toEqual(contractInstances[index].contract.name);
       expect(networkId).toEqual(contractInstances[index].network.networkId);
       expect(address).toEqual(contractInstances[index].address);
       expect(transactionHash).toEqual(contractInstances[index].creation.transactionHash);
-      expect(bytes).toEqual(shimmedBytecode.bytes);
+      expect(bytes).toEqual(contractInstances[index].creation.constructor.createBytecode.bytes);
+      expect(linkReferences).toEqual(contractInstances[index].creation.constructor.createBytecode.linkReferences);
+      expect(bytecode).toEqual(contractInstances[index].deployedBytecode);
     }
   })
 });
