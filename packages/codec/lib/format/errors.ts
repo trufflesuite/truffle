@@ -16,25 +16,53 @@ import { Range } from "@truffle/codec/types/storage";
  * SECTION 1: Generic types for values in general (including errors).
  */
 
-export type ErrorResult = ElementaryErrorResult
-  | ArrayErrorResult | MappingErrorResult | StructErrorResult | MagicErrorResult | TupleErrorResult
+export type ErrorResult =
+  | ElementaryErrorResult
+  | ArrayErrorResult
+  | MappingErrorResult
+  | StructErrorResult
+  | MagicErrorResult
+  | TupleErrorResult
   | EnumErrorResult
-  | ContractErrorResult | FunctionExternalErrorResult | FunctionInternalErrorResult;
+  | ContractErrorResult
+  | FunctionExternalErrorResult
+  | FunctionInternalErrorResult;
 
-export type DecoderError = GenericError
-  | UintError | IntError | BoolError | BytesStaticError | BytesDynamicError | AddressError
-  | StringError | FixedError | UfixedError
-  | ArrayError | MappingError | StructError | MagicError | TupleError
-  | EnumError | ContractError | FunctionExternalError | FunctionInternalError
+export type DecoderError =
+  | GenericError
+  | UintError
+  | IntError
+  | BoolError
+  | BytesStaticError
+  | BytesDynamicError
+  | AddressError
+  | StringError
+  | FixedError
+  | UfixedError
+  | ArrayError
+  | MappingError
+  | StructError
+  | MagicError
+  | TupleError
+  | EnumError
+  | ContractError
+  | FunctionExternalError
+  | FunctionInternalError
   | InternalUseError;
 
 /*
  * SECTION 2: Elementary values
  */
 
-export type ElementaryErrorResult = UintErrorResult | IntErrorResult | BoolErrorResult
-  | BytesErrorResult | AddressErrorResult | StringErrorResult
-  | FixedErrorResult | UfixedErrorResult;
+export type ElementaryErrorResult =
+  | UintErrorResult
+  | IntErrorResult
+  | BoolErrorResult
+  | BytesErrorResult
+  | AddressErrorResult
+  | StringErrorResult
+  | FixedErrorResult
+  | UfixedErrorResult;
 export type BytesErrorResult = BytesStaticErrorResult | BytesDynamicErrorResult;
 
 //Uints
@@ -277,10 +305,12 @@ export interface FunctionExternalErrorResult {
   error: GenericError | FunctionExternalError;
 }
 
-export type FunctionExternalError = FunctionExternalNonStackPaddingError | FunctionExternalStackPaddingError;
+export type FunctionExternalError =
+  | FunctionExternalNonStackPaddingError
+  | FunctionExternalStackPaddingError;
 
 /**
- * padding error for external function pointer located anywhere other than the stack
+ * This error kind represents a padding error for an external function pointer located anywhere other than the stack.
  */
 export interface FunctionExternalNonStackPaddingError {
   /**
@@ -291,15 +321,15 @@ export interface FunctionExternalNonStackPaddingError {
 }
 
 /**
- * padding error for external function pointer located on the stack
+ * This error kind represents a padding error for external function pointer located on the stack.
  */
 export interface FunctionExternalStackPaddingError {
   /**
-   * hex string (no checksum; also longer than 20 bytes)
+   * hex string (no checksum; also a full word long)
    */
   rawAddress: string;
   /**
-   * hex string (but longer than 4 bytes)
+   * hex string (but a full word long)
    */
   rawSelector: string;
   kind: "FunctionExternalStackPaddingError";
@@ -316,8 +346,11 @@ export interface FunctionInternalErrorResult {
   error: GenericError | FunctionInternalError;
 }
 
-export type FunctionInternalError = FunctionInternalPaddingError | NoSuchInternalFunctionError
-  | DeployedFunctionInConstructorError | MalformedInternalFunctionError;
+export type FunctionInternalError =
+  | FunctionInternalPaddingError
+  | NoSuchInternalFunctionError
+  | DeployedFunctionInConstructorError
+  | MalformedInternalFunctionError;
 
 export interface FunctionInternalPaddingError {
   /**
@@ -365,9 +398,18 @@ export interface MalformedInternalFunctionError {
  * SECTION 8: GENERIC ERRORS
  */
 
-export type GenericError = UserDefinedTypeNotFoundError | IndexedReferenceTypeError | ReadError;
-export type ReadError = UnsupportedConstantError | ReadErrorStack | ReadErrorBytes | ReadErrorStorage;
-export type DynamicDataImplementationError = OverlongArraysAndStringsNotImplementedError | OverlargePointersNotImplementedError;
+export type GenericError =
+  | UserDefinedTypeNotFoundError
+  | IndexedReferenceTypeError
+  | ReadError;
+export type ReadError =
+  | UnsupportedConstantError
+  | ReadErrorStack
+  | ReadErrorBytes
+  | ReadErrorStorage;
+export type DynamicDataImplementationError =
+  | OverlongArraysAndStringsNotImplementedError
+  | OverlargePointersNotImplementedError;
 
 export type ErrorForThrowing = UserDefinedTypeNotFoundError | ReadError;
 
@@ -428,7 +470,9 @@ export interface OverlargePointersNotImplementedError {
 /* you should never see these returned.
  * they are only for internal use. */
 
-export type InternalUseError = OverlongArrayOrStringStrictModeError | InternalFunctionInABIError;
+export type InternalUseError =
+  | OverlongArrayOrStringStrictModeError
+  | InternalFunctionInABIError;
 
 export interface OverlongArrayOrStringStrictModeError {
   kind: "OverlongArrayOrStringStrictModeError";
@@ -440,4 +484,3 @@ export interface OverlongArrayOrStringStrictModeError {
 export interface InternalFunctionInABIError {
   kind: "InternalFunctionInABIError";
 }
-

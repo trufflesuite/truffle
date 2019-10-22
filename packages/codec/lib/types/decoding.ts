@@ -6,7 +6,11 @@ import { Types, Values } from "@truffle/codec/format";
  * A type representing a transaction (calldata) decoding.  As you can see, these come in four types,
  * each of which is documented separately.
  */
-export type CalldataDecoding = FunctionDecoding | ConstructorDecoding | MessageDecoding | UnknownDecoding;
+export type CalldataDecoding =
+  | FunctionDecoding
+  | ConstructorDecoding
+  | MessageDecoding
+  | UnknownDecoding;
 
 /**
  * A type representing a log (event) decoding.  As you can see, these come in two types, each of which
@@ -221,9 +225,9 @@ export interface AbiArgument {
    */
   indexed?: boolean; //included for event parameters
   /**
-   * The decoded value of the argument.  Note that this is a Values.Result, so it
+   * The decoded value of the argument.  Note that this is a [[Format.Values.Result|Values.Result]], so it
    * may contain errors (although event decodings should typically not contain errors;
-   * see the DecodedLog documentation for why).
+   * see the [[DecodedLog]] documentation for why).
    */
   value: Values.Result;
 }
