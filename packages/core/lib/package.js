@@ -131,7 +131,10 @@ const Package = {
     options.network = "ropsten";
 
     var provider = options.provider;
-    const interfaceAdapter = new InterfaceAdapter();
+    const interfaceAdapter = new InterfaceAdapter({
+      provider: options.provider,
+      networkType: "ethereum"
+    });
     var web3 = new Web3Shim({
       provider: options.provider,
       networkType: "ethereum"
