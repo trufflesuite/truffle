@@ -4,7 +4,7 @@ const OS = require("os");
 const BlockchainUtils = require("@truffle/blockchain-utils");
 const Provider = require("@truffle/provider");
 const async = require("async");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 
 const Networks = {
   deployed: async function(options) {
@@ -234,22 +234,19 @@ const Networks = {
       provider,
       networkType: network_options.type
     });
-    const web3 = new Web3Shim({
-      provider,
-      networkType: network_options.type
-    });
-    web3.eth.net
-      .getId(current_network_id => {
-        if (first === current_network_id) return callback(null, true);
 
-        if (isFirstANumber === false) {
-          BlockchainUtils.matches(first, provider, callback);
-        } else {
-          // Nothing else to compare.
-          return callback(null, false);
-        }
-      })
-      .catch(callback);
+    try {
+      const currentNetworkID = await interfaceAdapter.getNetworkId();
+      if (first === currentNetworkID) return callback(null, true);
+      if (isFirstANumber === false)
+        BlockchainUtils.matches(first, provider, callback);
+      else {
+        // Nothing else to compare.
+        return callback(null, false);
+      }
+    } catch (error) {
+      return callback(error);
+    }
   }
 };
 
