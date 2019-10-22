@@ -44,7 +44,7 @@
     "@types/lodash.sum": "^4.0.6",
     "@types/semver": "^6.0.0",
     "@types/utf8": "^2.1.6",
-    "ts-transformer-imports": "^0.4.3",
+    "@zerollup/ts-transform-paths": "^1.7.3",
     "ttypescript": "^1.5.7",
     "typedoc": "^0.15.0",
     "typedoc-plugin-external-module-name": "^2.1.0",

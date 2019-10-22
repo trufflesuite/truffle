@@ -15,7 +15,7 @@
       "@truffle/codec/*": ["./lib/*"]
     },
     "plugins": [
-      { "transform": "ts-transformer-imports" }
+      { "transform": "@zerollup/ts-transform-paths", "exclude": "*" }
     ],
     "rootDir": ".",
     "typeRoots": [
