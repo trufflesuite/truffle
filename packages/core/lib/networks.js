@@ -230,7 +230,10 @@ const Networks = {
     // If both network ids are numbers, then they don't match, and we should quit.
     if (isFirstANumber && isSecondANumber) return callback(null, false);
 
-    const interfaceAdapter = new InterfaceAdapter();
+    const interfaceAdapter = new InterfaceAdapter({
+      provider,
+      networkType: network_options.type
+    });
     const web3 = new Web3Shim({
       provider,
       networkType: network_options.type
