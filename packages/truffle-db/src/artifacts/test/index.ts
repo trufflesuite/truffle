@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 
 import { TruffleDB } from "truffle-db";
+import { shimBytecode } from "@truffle/workflow-compile/shims";
 
 const fixturesDirectory = path.join(
   __dirname, // truffle-db/src/test
@@ -64,6 +65,11 @@ const GetContractConstructor = `
         constructor {
           createBytecode {
             bytes
+            linkReferences {
+              offsets
+              name
+              length
+            }
           }
         }
         abi {
@@ -136,6 +142,10 @@ describe("Artifacts queries", () => {
     const { constructor: contractConstructor } = contract;
     expect(contractConstructor).toHaveProperty("createBytecode");
 
+    const { createBytecode } = contractConstructor;
+    expect(createBytecode.bytes).toEqual(shimBytecode(Migrations.bytecode).bytes)
+    expect(createBytecode.linkReferences).toEqual(shimBytecode(Migrations.bytecode).linkReferences)
+
     const { name, sourceContract, abi } = contract;
     expect(name).toEqual(Migrations.contractName);
     expect(sourceContract).toHaveProperty("name");
@@ -150,6 +160,14 @@ describe("Artifacts queries", () => {
     query GetContractFromInstance($name: String!, $networkId: String!) {
       artifacts {
         contractInstance(name: $name, networkId: $networkId) {
+          callBytecode {
+            bytes
+            linkReferences {
+              offsets
+              name
+              length
+            }
+          }
           contract {
             name
             sourceContract {
@@ -185,7 +203,7 @@ describe("Artifacts queries", () => {
     const { contractInstance } = artifacts;
     expect(contractInstance).toHaveProperty("contract");
 
-    const { contract } = contractInstance;
+    const { contract, callBytecode } = contractInstance;
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("abi");
     expect(contract).toHaveProperty("sourceContract");
@@ -203,5 +221,9 @@ describe("Artifacts queries", () => {
 
     const { json } = abi;
     expect(json).toEqual(JSON.stringify(Migrations.abi));
+
+    const { bytes, linkReferences } = callBytecode;
+    expect(bytes).toEqual(shimBytecode(Migrations.deployedBytecode).bytes)
+    expect(linkReferences).toEqual(shimBytecode(Migrations.deployedBytecode).linkReferences)
   });
 });
