@@ -364,5 +364,13 @@ module.exports = {
   },
   devdoc: function() {
     return this._json.devdoc;
+  },
+  networkType: {
+    get: function() {
+      return this._json.networkType || "ethereum";
+    },
+    set: function(_networkType) {
+      this._json.networkType = _networkType;
+    }
   }
 };
