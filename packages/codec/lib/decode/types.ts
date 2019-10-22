@@ -1,17 +1,13 @@
 import BN from "bn.js";
 
-import * as Abi from "lib/abi/types";
-import { Types, Values } from "lib/format";
+import * as Abi from "@truffle/codec/abi/types";
+import { Types, Values } from "@truffle/codec/format";
 
 /**
  * A type representing a transaction (calldata) decoding.  As you can see, these come in four types,
  * each of which is documented separately.
  */
-export type CalldataDecoding =
-  | FunctionDecoding
-  | ConstructorDecoding
-  | MessageDecoding
-  | UnknownDecoding;
+export type CalldataDecoding = FunctionDecoding | ConstructorDecoding | MessageDecoding | UnknownDecoding;
 
 /**
  * A type representing a log (event) decoding.  As you can see, these come in two types, each of which

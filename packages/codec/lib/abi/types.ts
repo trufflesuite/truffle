@@ -1,12 +1,8 @@
-import * as Common from "lib/common/types";
+import * as Common from "@truffle/codec/common/types";
 
 export type Abi = AbiEntry[];
 
-export type AbiEntry =
-  | FunctionAbiEntry
-  | ConstructorAbiEntry
-  | FallbackAbiEntry
-  | EventAbiEntry;
+export type AbiEntry = FunctionAbiEntry | ConstructorAbiEntry | FallbackAbiEntry | EventAbiEntry;
 
 export interface FunctionAbiEntry {
   type: "function";
@@ -47,5 +43,5 @@ export interface AbiParameter {
 }
 
 export interface FunctionAbiBySelectors {
-  [selector: string]: FunctionAbiEntry;
+  [selector: string]: FunctionAbiEntry
 }

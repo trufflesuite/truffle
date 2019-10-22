@@ -1,71 +1,64 @@
-import * as Ast from "lib/ast/types";
-import * as Storage from "lib/storage/types";
+import * as Ast from "@truffle/codec/ast/types";
+import * as Storage from "@truffle/codec/storage/types";
 
-export type DataPointer =
-  | StackPointer
-  | MemoryPointer
-  | StoragePointer
-  | CalldataPointer
-  | StackLiteralPointer
-  | ConstantDefinitionPointer
-  | SpecialPointer
-  | EventDataPointer
-  | EventTopicPointer;
+export type DataPointer = StackPointer | MemoryPointer | StoragePointer
+  | CalldataPointer | StackLiteralPointer | ConstantDefinitionPointer
+  | SpecialPointer | EventDataPointer | EventTopicPointer;
 
 export type AbiPointer = CalldataPointer | EventDataPointer | GenericAbiPointer;
 export type AbiDataPointer = CalldataPointer | EventDataPointer;
 
 export interface StackPointer {
-  location: "stack";
+  location: "stack",
   from: number;
   to: number;
 }
 
 export interface MemoryPointer {
-  location: "memory";
+  location: "memory",
   start: number;
   length: number;
 }
 
 export interface CalldataPointer {
-  location: "calldata";
+  location: "calldata",
   start: number;
   length: number;
 }
 
 export interface EventDataPointer {
-  location: "eventdata";
+  location: "eventdata",
   start: number;
   length: number;
 }
 
 export interface EventTopicPointer {
-  location: "eventtopic";
+  location: "eventtopic",
   topic: number;
 }
 
 export interface GenericAbiPointer {
-  location: "abi";
+  location: "abi",
   start: number;
   length: number;
 }
 
 export interface StoragePointer {
-  location: "storage";
+  location: "storage",
   range: Storage.Range;
 }
 
 export interface StackLiteralPointer {
-  location: "stackliteral";
+  location: "stackliteral",
   literal: Uint8Array;
 }
 
 export interface ConstantDefinitionPointer {
-  location: "definition";
+  location: "definition",
   definition: Ast.AstNode;
 }
 
 export interface SpecialPointer {
-  location: "special";
+  location: "special",
   special: string; //sorry
 }

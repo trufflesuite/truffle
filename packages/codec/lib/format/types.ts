@@ -16,25 +16,11 @@ const debug = debugModule("codec:format:types");
 
 import BN from "bn.js";
 
-import * as Common from "lib/common/types";
+import * as Common from "@truffle/codec/common/types";
 
-export type Type =
-  | UintType
-  | IntType
-  | BoolType
-  | BytesType
-  | AddressType
-  | FixedType
-  | UfixedType
-  | StringType
-  | ArrayType
-  | MappingType
-  | FunctionType
-  | StructType
-  | EnumType
-  | ContractType
-  | MagicType
-  | TupleType;
+export type Type = UintType | IntType | BoolType | BytesType | AddressType
+  | FixedType | UfixedType | StringType | ArrayType | MappingType | FunctionType
+  | StructType | EnumType | ContractType | MagicType | TupleType;
 
 export interface UintType {
   typeClass: "uint";
@@ -122,15 +108,8 @@ export interface ArrayTypeDynamic {
   typeHint?: string;
 }
 
-export type ElementaryType =
-  | UintType
-  | IntType
-  | BoolType
-  | BytesType
-  | FixedType
-  | UfixedType
-  | AddressType
-  | StringType;
+export type ElementaryType = UintType | IntType | BoolType | BytesType | FixedType
+  | UfixedType | AddressType | StringType;
 
 export interface MappingType {
   typeClass: "mapping";
@@ -150,9 +129,7 @@ export interface FunctionInternalType {
   //we do not presently support bound functions
 }
 
-export type FunctionExternalType =
-  | FunctionExternalTypeSpecific
-  | FunctionExternalTypeGeneral;
+export type FunctionExternalType = FunctionExternalTypeSpecific | FunctionExternalTypeGeneral;
 
 export interface FunctionExternalTypeSpecific {
   typeClass: "function";
@@ -173,11 +150,7 @@ export interface FunctionExternalTypeGeneral {
 }
 
 export type ContractDefinedType = StructTypeLocal | EnumTypeLocal;
-export type UserDefinedType =
-  | ContractDefinedType
-  | ContractTypeNative
-  | StructTypeGlobal
-  | EnumTypeGlobal;
+export type UserDefinedType = ContractDefinedType | ContractTypeNative | StructTypeGlobal | EnumTypeGlobal;
 
 /**
  * Structs may be local (defined in a contract) or global (defined outside of any contract);
@@ -313,18 +286,13 @@ export interface MagicType {
   //introduce such complexity here, especially as this type is basically just
   //for the debugger
   memberTypes?: {
-    [field: string]: Type;
+    [field: string]: Type
   };
   //may have more optional fields defined in the future
 }
 
-export type ReferenceType =
-  | ArrayType
-  | MappingType
-  | StructType
-  | StringType
-  | BytesTypeDynamic;
+export type ReferenceType = ArrayType | MappingType | StructType | StringType | BytesTypeDynamic;
 
 export interface TypesById {
   [id: string]: UserDefinedType;
-}
+};

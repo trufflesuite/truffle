@@ -6,11 +6,11 @@
  * ```
  *
  * @module @truffle/codec
- */ /** */
+ *//** */
 
-import * as Format from "lib/format";
+import * as Format from "@truffle/codec/format";
 export { Format };
 
-import * as Decoding from "lib/decode/types";
+import * as Decoding from "@truffle/codec/decode/types";
 export { Decoding };
 // export * from "./types/errors";

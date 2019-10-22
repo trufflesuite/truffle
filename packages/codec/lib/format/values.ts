@@ -25,8 +25,8 @@ import {
   FixedValue,
   UfixedValue
 } from "./elementary";
-import * as Common from "lib/common/types";
-import * as Abi from "lib/abi/types";
+import * as Common from "@truffle/codec/common/types";
+import * as Abi from "@truffle/codec/abi/types";
 
 export * from "./elementary";
 
@@ -35,29 +35,15 @@ export * from "./elementary";
  */
 
 //This is the overall Result type.  It may encode an actual value or an error.
-export type Result =
-  | ElementaryResult
-  | ArrayResult
-  | MappingResult
-  | StructResult
-  | TupleResult
-  | MagicResult
+export type Result = ElementaryResult
+  | ArrayResult | MappingResult | StructResult | TupleResult | MagicResult
   | EnumResult
-  | ContractResult
-  | FunctionExternalResult
-  | FunctionInternalResult;
+  | ContractResult | FunctionExternalResult | FunctionInternalResult;
 //for when you want an actual value
-export type Value =
-  | ElementaryValue
-  | ArrayValue
-  | MappingValue
-  | StructValue
-  | TupleValue
-  | MagicValue
+export type Value = ElementaryValue
+  | ArrayValue | MappingValue | StructValue | TupleValue | MagicValue
   | EnumValue
-  | ContractValue
-  | FunctionExternalValue
-  | FunctionInternalValue;
+  | ContractValue | FunctionExternalValue | FunctionInternalValue;
 
 /*
  * SECTION 2: Elementary values
@@ -68,15 +54,9 @@ export type Value =
 //those (and defines the Result types)
 
 //overall groupings
-export type ElementaryResult =
-  | UintResult
-  | IntResult
-  | BoolResult
-  | BytesResult
-  | AddressResult
-  | StringResult
-  | FixedResult
-  | UfixedResult;
+export type ElementaryResult = UintResult | IntResult | BoolResult
+  | BytesResult | AddressResult | StringResult
+  | FixedResult | UfixedResult;
 export type BytesResult = BytesStaticResult | BytesDynamicResult;
 
 //integers
@@ -88,13 +68,9 @@ export type IntResult = IntValue | Errors.IntErrorResult;
 export type BoolResult = BoolValue | Errors.BoolErrorResult;
 
 //bytes (static & dynaic)
-export type BytesStaticResult =
-  | BytesStaticValue
-  | Errors.BytesStaticErrorResult;
+export type BytesStaticResult = BytesStaticValue | Errors.BytesStaticErrorResult;
 
-export type BytesDynamicResult =
-  | BytesDynamicValue
-  | Errors.BytesDynamicErrorResult;
+export type BytesDynamicResult = BytesDynamicValue | Errors.BytesDynamicErrorResult;
 
 //addresses
 export type AddressResult = AddressValue | Errors.AddressErrorResult;
@@ -186,7 +162,7 @@ export interface MagicValue {
   kind: "value";
   //a magic variable can't be circular, duh!
   value: {
-    [field: string]: Result;
+    [field: string]: Result
   };
 }
 
@@ -208,7 +184,7 @@ export interface EnumValue {
      */
     numericAsBN: BN;
   };
-}
+};
 
 /*
  * SECTION 5: CONTRACTS
@@ -228,9 +204,7 @@ export interface ContractValue {
  * There are two types -- one for contracts whose class we can identify, and one
  * for when we can't identify the class.
  */
-export type ContractValueInfo =
-  | ContractValueInfoKnown
-  | ContractValueInfoUnknown;
+export type ContractValueInfo = ContractValueInfoKnown | ContractValueInfoUnknown;
 
 /**
  * This type of ContractValueInfo is used when we can identify the class.
@@ -271,9 +245,7 @@ export interface ContractValueInfoUnknown {
  */
 
 //external functions
-export type FunctionExternalResult =
-  | FunctionExternalValue
-  | Errors.FunctionExternalErrorResult;
+export type FunctionExternalResult = FunctionExternalValue | Errors.FunctionExternalErrorResult;
 
 export interface FunctionExternalValue {
   type: Types.FunctionExternalType;
@@ -288,7 +260,7 @@ export interface FunctionExternalValue {
  * 3. can't determine class
  */
 export type FunctionExternalValueInfo =
-  | FunctionExternalValueInfoKnown //known function of known class
+  FunctionExternalValueInfoKnown //known function of known class
   | FunctionExternalValueInfoInvalid //known class, but can't locate function
   | FunctionExternalValueInfoUnknown; //can't determine class
 
@@ -335,9 +307,7 @@ export interface FunctionExternalValueInfoUnknown {
  */
 
 //Internal functions
-export type FunctionInternalResult =
-  | FunctionInternalValue
-  | Errors.FunctionInternalErrorResult;
+export type FunctionInternalResult = FunctionInternalValue | Errors.FunctionInternalErrorResult;
 
 export interface FunctionInternalValue {
   type: Types.FunctionInternalType;
@@ -352,7 +322,7 @@ export interface FunctionInternalValue {
  * 3. A special value to indicate that decoding internal functions isn't supported in this context.
  */
 export type FunctionInternalValueInfo =
-  | FunctionInternalValueInfoKnown //actual function
+  FunctionInternalValueInfoKnown //actual function
   | FunctionInternalValueInfoException //default value
   | FunctionInternalValueInfoUnknown; //decoding not supported in this context
 
@@ -360,7 +330,7 @@ export type FunctionInternalValueInfo =
  * This type of FunctionInternalValueInfo is used for an actual internal function.
  */
 export interface FunctionInternalValueInfoKnown {
-  kind: "function";
+  kind: "function"
   context: Types.ContractType;
   deployedProgramCounter: number;
   constructorProgramCounter: number;
@@ -377,7 +347,7 @@ export interface FunctionInternalValueInfoKnown {
  * Elsewhere they're both nonzero.
  */
 export interface FunctionInternalValueInfoException {
-  kind: "exception";
+  kind: "exception"
   context: Types.ContractType;
   deployedProgramCounter: number;
   constructorProgramCounter: number;
@@ -393,7 +363,7 @@ export interface FunctionInternalValueInfoException {
  * doesn't have the information to determine that it's an error.
  */
 export interface FunctionInternalValueInfoUnknown {
-  kind: "unknown";
+  kind: "unknown"
   context: Types.ContractType;
   deployedProgramCounter: number;
   constructorProgramCounter: number;
