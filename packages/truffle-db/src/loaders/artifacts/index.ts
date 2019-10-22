@@ -209,6 +209,10 @@ const AddContractInstances = gql`
     id: ID!
   }
 
+  input ContractInstanceCallBytecodeInput {
+    id: ID!
+  }
+
   input ContractInstanceCreationConstructorInput {
     createBytecode: ContractInstanceCreationConstructorBytecodeInput!
   }
@@ -223,6 +227,7 @@ const AddContractInstances = gql`
     network: ContractInstanceNetworkInput!
     creation: ContractInstanceCreationInput
     contract: ContractInstanceContractInput
+    callBytecode: ContractInstanceCallBytecodeInput
   }
 
   mutation AddContractInstances($contractInstances: [ContractInstanceInput!]!) {
@@ -303,6 +308,11 @@ type IdObject = {
   id: string
 }
 
+type BytecodeIdsObject = {
+  bytecodes: Array<IdObject>,
+  callBytecodes: Array<IdObject>
+}
+
 type CompilationConfigObject = {
   contracts_directory?: string,
   contracts_build_directory?: string,
@@ -347,7 +357,7 @@ export class ArtifactsLoader {
         index: index
       },
       constructor: {
-        createBytecode: bytecodeIds[index]
+        createBytecode: bytecodeIds.bytecodes[index]
       }
     }));
 
@@ -362,17 +372,21 @@ export class ArtifactsLoader {
   async loadBytecodes (contracts: Array<ContractObject>) {
     // transform contract objects into data model bytecode inputs
     // and run mutation
-
-    const bytecodes = contracts.map(
+    let bytecodes = [];
+    let deployedBytecodes = [];
+    contracts.map(
     ({ deployedBytecode, bytecode }) => {
-      return bytecode;
+      bytecodes.push(bytecode);
+      deployedBytecodes.push(deployedBytecode);
     });
 
-    const result = await this.db.query(AddBytecodes, { bytecodes });
+    const bytecodeResult = await this.db.query(AddBytecodes, { bytecodes: bytecodes });
+    const callBytecodeResult = await this.db.query(AddBytecodes, { bytecodes: deployedBytecodes });
 
-    const bytecodeIds = result.data.workspace.bytecodesAdd.bytecodes
-
-    return bytecodeIds;
+    return {
+      bytecodes: bytecodeResult.data.workspace.bytecodesAdd.bytecodes,
+      callBytecodes: callBytecodeResult.data.workspace.bytecodesAdd.bytecodes
+    };
   }
 
   async loadCompilationSources (contracts: Array<ContractObject>) {
@@ -470,7 +484,7 @@ export class ArtifactsLoader {
     return networksByContract;
   }
 
-  async loadContractInstances (contracts: Array<ContractObject>, contractIds: Array<IdObject>, networksArray: Array<Array<LoaderNetworkObject>>, bytecodeIds: Array<IdObject>) {
+  async loadContractInstances (contracts: Array<ContractObject>, contractIds: Array<IdObject>, networksArray: Array<Array<LoaderNetworkObject>>, bytecodeIds: BytecodeIdsObject) {
     // networksArray is an array of arrays of networks for each contract;
     // this first mapping maps to each contract
     const instances = networksArray.map((networks, index) => {
@@ -485,10 +499,10 @@ export class ArtifactsLoader {
           creation: {
             transactionHash: network.transactionHash,
             constructor: {
-              createBytecode: bytecodeIds[index]
+              createBytecode: bytecodeIds.bytecodes[index]
             }
           },
-
+          callBytecode: bytecodeIds.callBytecodes[index]
         }
         return instance;
       });
