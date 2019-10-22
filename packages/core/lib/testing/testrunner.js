@@ -206,6 +206,10 @@ TestRunner.prototype.endTest = function(mocha, callback) {
         } catch (_) {
           //temporary HACK until we're using the new decoder
           self.logger.log(`    Warning: event decoding failed`);
+          self.logger.log(
+            `    (This may be due to multiple events with same signature`
+          );
+          self.logger.log(`    or due to unsupported data types)`);
           return;
         }
 
