@@ -156,7 +156,7 @@ const Networks = {
       const fileContents = fs.readFileSync(filePath, "utf8");
       const body = JSON.parse(fileContents);
 
-      for (let installedNetworkId of body.networks) {
+      for (let installedNetworkId in body.networks) {
         let found = false;
         for (let i = 0; i < configuredNetworks.length; i++) {
           const configuredNetwork = configuredNetworks[i];
