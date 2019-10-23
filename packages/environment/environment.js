@@ -41,7 +41,7 @@ const Environment = {
     });
 
     const accounts = await web3.eth.getAccounts();
-    const block = await web3.eth.getBlock("latest");
+    const block = await interfaceAdapter.getBlock("latest");
 
     const upstreamNetwork = config.network;
     const upstreamConfig = config.networks[upstreamNetwork];
