@@ -1,9 +1,6 @@
 import * as Conversion from "./conversion";
 export { Conversion };
 
-import * as EVM from "./evm";
-export { EVM };
-
 import * as Definition from "./definition";
 export { Definition };
 

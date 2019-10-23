@@ -56,7 +56,7 @@ export function* decode(definition, ref) {
   );
   let blockNumber = yield select(data.views.blockNumber);
 
-  let ZERO_WORD = new Uint8Array(CodecUtils.EVM.WORD_SIZE); //automatically filled with zeroes
+  let ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
   let NO_CODE = new Uint8Array(); //empty array
 
   let decoder = decodeVariable(definition, ref, {
@@ -85,7 +85,7 @@ export function* decode(definition, ref) {
         let address = request.address;
         if (address in instances) {
           response = instances[address];
-        } else if (address === CodecUtils.EVM.ZERO_ADDRESS) {
+        } else if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
           //HACK: to avoid displaying the zero address to the user as an
           //affected address just because they decoded a contract or external
           //function variable that hadn't been initialized yet, we give the

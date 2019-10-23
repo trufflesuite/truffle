@@ -1,10 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:contract");
 
+import { Evm, Format } from "@truffle/codec";
 import * as AbiUtils from "@truffle/codec/utils/abi";
 import * as ContextUtils from "@truffle/codec/utils/contexts";
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
-import * as EvmUtils from "@truffle/codec/utils/evm";
 import * as DefinitionUtils from "@truffle/codec/utils/definition";
 import { wrapElementaryViaDefinition } from "@truffle/codec/utils/wrap";
 import * as Utils from "../utils";
@@ -13,10 +13,8 @@ import * as Ast from "@truffle/codec/ast/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer/types";
 import * as Decoding from "@truffle/codec/decode/types";
-import * as Evm from "@truffle/codec/evm";
 import * as Allocation from "@truffle/codec/allocate/types";
 import * as DecoderTypes from "../types";
-import { Types, Values } from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
@@ -44,7 +42,7 @@ export default class ContractDecoder {
   private contractNetwork: string;
   private contextHash: string;
 
-  private allocations: Evm.Types.AllocationInfo;
+  private allocations: Codec.Evm.Types.AllocationInfo;
   private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
   private wireDecoder: WireDecoder;
@@ -237,8 +235,8 @@ export class ContractInstanceDecoder {
   private additionalContexts: Contexts.DecoderContexts = {}; //for passing to wire decoder when contract has no deployedBytecode
 
   private referenceDeclarations: Ast.AstNodes;
-  private userDefinedTypes: Types.TypesById;
-  private allocations: Evm.Types.AllocationInfo;
+  private userDefinedTypes: Format.Types.TypesById;
+  private allocations: Codec.Evm.Types.AllocationInfo;
 
   private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
@@ -334,7 +332,7 @@ export class ContractInstanceDecoder {
   }
 
   private async decodeVariable(variable: Allocation.StorageMemberAllocation, block: number): Promise<DecoderTypes.StateVariable> {
-    const info: Evm.Types.EvmInfo = {
+    const info: Codec.Evm.Types.EvmInfo = {
       state: {
         storage: {}
       },
@@ -369,8 +367,8 @@ export class ContractInstanceDecoder {
 
     return {
       name: variable.definition.name,
-      class: <Types.ContractType>this.userDefinedTypes[variable.definedIn.id],
-      value: result.value
+      class: <Format.Types.ContractType> this.userDefinedTypes[variable.definedIn.id],
+      value: result.value,
     };
   }
 
@@ -463,7 +461,7 @@ export class ContractInstanceDecoder {
   public async variable(
     nameOrId: string | number,
     block: BlockType = "latest"
-  ): Promise<Values.Result | undefined> {
+  ): Promise<Format.Values.Result | undefined> {
     this.checkAllocationSuccess();
 
     let blockNumber =
@@ -536,8 +534,7 @@ export class ContractInstanceDecoder {
         slot,
         block
       ),
-      EvmUtils.WORD_SIZE
->>>>>>> 3acb63721... Remove internal depends on utils index
+      Codec.Evm.Utils.WORD_SIZE
     );
     this.storageCache[block][address][slot.toString()] = word;
     return word;
@@ -749,7 +746,7 @@ export class ContractInstanceDecoder {
     }
     let rawIndex = indices[indices.length - 1];
     let index: any;
-    let key: Values.ElementaryValue;
+    let key: Format.Values.ElementaryValue;
     let slot: Storage.Types.Slot;
     let definition: Ast.AstNode;
     switch(DefinitionUtils.typeClass(parentDefinition)) {
