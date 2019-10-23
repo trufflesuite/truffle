@@ -3,7 +3,7 @@ const debug = debugModule("codec:format:abify");
 
 import * as Format from "@truffle/codec/format";
 import * as TypeUtils from "./datatype";
-import * as Common from "@truffle/codec/common/types";
+import * as Common from "@truffle/codec/common";
 import { CalldataDecoding, LogDecoding } from "@truffle/codec/types";
 import BN from "bn.js";
 import * as ConversionUtils from "./conversion";

@@ -1,4 +1,4 @@
-import * as Common from "@truffle/codec/common/types";
+import * as Common from "@truffle/codec/common";
 
 export type Abi = AbiEntry[];
 

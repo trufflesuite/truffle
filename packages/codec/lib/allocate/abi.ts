@@ -7,7 +7,7 @@ import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as MakeType from "@truffle/codec/utils/maketype";
 import * as EVM from "@truffle/codec/utils/evm";
 import { getterInputs } from "@truffle/codec/utils/definition2abi";
-import * as Common from "@truffle/codec/common/types";
+import * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
 import * as Ast from "@truffle/codec/ast";
 import * as Contexts from "@truffle/codec/contexts/types";

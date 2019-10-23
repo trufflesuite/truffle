@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:utils:datatype");
 
 import * as Format from "@truffle/codec/format";
-import * as Common from "@truffle/codec/common/types";
+import * as Common from "@truffle/codec/common";
 
 export function isContractDefinedType(anyType: Format.Types.Type): anyType is Format.Types.ContractDefinedType {
   const contractDefinedTypes = ["enum", "struct"];

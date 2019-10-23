@@ -1,4 +1,4 @@
-import * as Common from "@truffle/codec/common/types";
+import * as Common from "@truffle/codec/common";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Ast from "@truffle/codec/ast";
 import * as Allocation from "@truffle/codec/allocate/types";

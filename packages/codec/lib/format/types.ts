@@ -16,7 +16,7 @@ const debug = debugModule("codec:format:types");
 
 import BN from "bn.js";
 
-import * as Common from "@truffle/codec/common/types";
+import * as Common from "@truffle/codec/common";
 
 export type Type = UintType | IntType | BoolType | BytesType | AddressType
   | FixedType | UfixedType | StringType | ArrayType | MappingType | FunctionType

@@ -5,7 +5,7 @@ const debug = debugModule("codec:utils:abi");
 const Web3Utils = require("web3-utils");
 import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import * as EVMUtils from "@truffle/codec/utils/evm";
-import * as Common from "@truffle/codec/common/types";
+import * as Common from "@truffle/codec/common";
 import * as Ast from "@truffle/codec/ast";
 import * as AbiTypes from "./types";
 import { definitionToAbi } from "@truffle/codec/utils/definition2abi";
