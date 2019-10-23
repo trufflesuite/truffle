@@ -47,7 +47,7 @@ export function* decodeStorageReferenceByAddress(
     };
   }
   const startOffset = Conversion.toBN(rawValue);
-  let rawSize: Storage.Types.StorageLength;
+  let rawSize: Storage.StorageLength;
   try {
     rawSize = storageSizeForType(dataType, info.userDefinedTypes, allocations);
   } catch (error) {
@@ -136,7 +136,7 @@ export function* decodeStorageReference(
       debug("length %o", length);
 
       debug("about to determine baseSize");
-      let baseSize: Storage.Types.StorageLength;
+      let baseSize: Storage.StorageLength;
       try {
         baseSize = storageSizeForType(
           dataType.baseType,
@@ -156,18 +156,18 @@ export function* decodeStorageReference(
       //we are going to make a list of child ranges, pushing them one by one onto
       //this list, and then decode them; the first part will vary based on whether
       //we're in the words case or the bytes case, the second will not
-      let ranges: Storage.Types.Range[] = [];
+      let ranges: Storage.Range[] = [];
 
       if (Storage.Utils.isWordsLength(baseSize)) {
         //currentSlot will point to the start of the entry being decoded
-        let currentSlot: Storage.Types.Slot = {
+        let currentSlot: Storage.Slot = {
           path: pointer.range.from.slot,
           offset: new BN(0),
           hashPath: dataType.kind === "dynamic"
         };
 
         for (let i = 0; i < length; i++) {
-          let childRange: Storage.Types.Range = {
+          let childRange: Storage.Range = {
             from: {
               slot: {
                 path: currentSlot.path,
@@ -196,7 +196,7 @@ export function* decodeStorageReference(
 
         //currentPosition will point to the start of the entry being decoded
         //note we have baseSize.bytes <= Evm.Utils.WORD_SIZE
-        let currentPosition: Storage.Types.StoragePosition = {
+        let currentPosition: Storage.StoragePosition = {
           slot: {
             path: pointer.range.from.slot,
             offset: new BN(0),
@@ -206,7 +206,7 @@ export function* decodeStorageReference(
         };
 
         for (let i = 0; i < length; i++) {
-          let childRange: Storage.Types.Range = {
+          let childRange: Storage.Range = {
             from: {
               slot: {
                 path: currentPosition.slot.path,
@@ -346,7 +346,7 @@ export function* decodeStorageReference(
         //definition pointer.  However, structs can't contain constants,
         //so *we* know it's not, and can safely coerce it.
         debug("pointer %O", pointer);
-        const childRange: Storage.Types.Range = {
+        const childRange: Storage.Range = {
           from: {
             slot: {
               path: pointer.range.from.slot,
@@ -404,7 +404,7 @@ export function* decodeStorageReference(
       debug("decoding mapping");
 
       const valueType = dataType.valueType;
-      let valueSize: Storage.Types.StorageLength;
+      let valueSize: Storage.StorageLength;
       try {
         valueSize = storageSizeForType(
           valueType,
@@ -422,7 +422,7 @@ export function* decodeStorageReference(
 
       let decodedEntries: Format.Values.KeyValuePair[] = [];
 
-      const baseSlot: Storage.Types.Slot = pointer.range.from.slot;
+      const baseSlot: Storage.Slot = pointer.range.from.slot;
       debug("baseSlot %o", baseSlot);
       debug("base slot address %o", Storage.Utils.slotAddress(baseSlot));
 

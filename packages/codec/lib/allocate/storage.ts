@@ -3,7 +3,8 @@ const debug = debugModule("codec:allocate:storage");
 
 import { DecodingError } from "@truffle/codec/decode/errors";
 import * as Common from "@truffle/codec/common";
-import * as Storage from "@truffle/codec/storage";
+import * as Storage from "@truffle/codec/storage/types";
+import * as Utils from "@truffle/codec/storage/utils";
 import * as Ast from "@truffle/codec/ast";
 import * as Allocation from "./types";
 import * as Evm from "@truffle/codec/evm";
@@ -32,7 +33,7 @@ export class UnknownBaseContractIdError extends Error {
 }
 
 interface StorageAllocationInfo {
-  size: Storage.Types.StorageLength;
+  size: Storage.StorageLength;
   allocations: Allocation.StorageAllocations;
 }
 
@@ -125,7 +126,7 @@ function allocateMembers(
       continue;
     }
 
-    let size: Storage.Types.StorageLength;
+    let size: Storage.StorageLength;
     ({ size, allocations } = storageSizeAndAllocate(
       node,
       referenceDeclarations,
@@ -135,7 +136,7 @@ function allocateMembers(
     //if it's sized in words (and we're not at the start of slot) we need to start on a new slot
     //if it's sized in bytes but there's not enough room, we also need a new slot
     if (
-      Storage.Utils.isWordsLength(size)
+      Utils.isWordsLength(size)
         ? index < Evm.Utils.WORD_SIZE - 1
         : size.bytes > index + 1
     ) {
@@ -144,9 +145,9 @@ function allocateMembers(
     }
     //otherwise, we remain in place
 
-    let range: Storage.Types.Range;
+    let range: Storage.Range;
 
-    if (Storage.Utils.isWordsLength(size)) {
+    if (Utils.isWordsLength(size)) {
       //words case
       range = {
         from: {
@@ -189,7 +190,7 @@ function allocateMembers(
     });
     //finally, adjust the current position.
     //if it was sized in words, move down that many slots and reset position w/in slot
-    if (Storage.Utils.isWordsLength(size)) {
+    if (Utils.isWordsLength(size)) {
       offset += size.words;
       index = Evm.Utils.WORD_SIZE - 1;
     }
@@ -285,7 +286,7 @@ export function storageSize(
   definition: Ast.AstNode,
   referenceDeclarations?: Ast.AstNodes,
   allocations?: Allocation.StorageAllocations
-): Storage.Types.StorageLength {
+): Storage.StorageLength {
   return storageSizeAndAllocate(definition, referenceDeclarations, allocations)
     .size;
 }
@@ -410,7 +411,7 @@ function storageSizeAndAllocate(
           referenceDeclarations,
           existingAllocations
         );
-        if (!Storage.Utils.isWordsLength(baseSize)) {
+        if (!Utils.isWordsLength(baseSize)) {
           //bytes case
           const perWord: number = Math.floor(
             Evm.Utils.WORD_SIZE / baseSize.bytes
@@ -469,7 +470,7 @@ export function storageSizeForType(
   dataType: Format.Types.Type,
   userDefinedTypes?: Format.Types.TypesById,
   allocations?: Allocation.StorageAllocations
-): Storage.Types.StorageLength {
+): Storage.StorageLength {
   switch (dataType.typeClass) {
     case "bool":
       return { bytes: 1 };
@@ -525,7 +526,7 @@ export function storageSizeForType(
             userDefinedTypes,
             allocations
           );
-          if (!Storage.Utils.isWordsLength(baseSize)) {
+          if (!Utils.isWordsLength(baseSize)) {
             //bytes case
             const perWord: number = Math.floor(
               Evm.Utils.WORD_SIZE / baseSize.bytes

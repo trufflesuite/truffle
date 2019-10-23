@@ -16,7 +16,7 @@ import BN from "bn.js";
  */
 export function* read(
   storage: Evm.WordMapping,
-  slot: Storage.Types.Slot
+  slot: Storage.Slot
 ): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   const address: BN = Storage.Utils.slotAddress(slot);
 
@@ -56,7 +56,7 @@ export function* read(
  */
 export function* readRange(
   storage: Evm.WordMapping,
-  range: Storage.Types.Range
+  range: Storage.Range
 ): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   debug("readRange %o", range);
 

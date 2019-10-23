@@ -150,7 +150,7 @@ function createStepSelectors(step, state = null) {
           }
 
           let address = stack[stack.length - 2];
-          return Codec.Conversion.toAddress(address);
+          return Codec.Evm.Utils.toAddress(address);
         }
       ),
 
@@ -446,7 +446,7 @@ const evm = createSelectorTree({
             return null;
           }
           let address = stack[stack.length - 1];
-          return Codec.Conversion.toAddress(address);
+          return Codec.Evm.Utils.toAddress(address);
         }
       ),
 

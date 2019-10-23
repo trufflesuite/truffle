@@ -245,7 +245,7 @@ export class ContractInstanceDecoder {
 
   private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
-  private mappingKeys: Storage.Types.Slot[] = [];
+  private mappingKeys: Storage.Slot[] = [];
 
   private storageCache: DecoderTypes.StorageCache = {};
 
@@ -610,7 +610,7 @@ export class ContractInstanceDecoder {
    */
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Storage.Types.Slot | undefined = this.constructSlot(
+    let slot: Storage.Slot | undefined = this.constructSlot(
       variable,
       ...indices
     )[0];
@@ -647,7 +647,7 @@ export class ContractInstanceDecoder {
    */
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Storage.Types.Slot | undefined = this.constructSlot(
+    let slot: Storage.Slot | undefined = this.constructSlot(
       variable,
       ...indices
     )[0];
@@ -738,7 +738,7 @@ export class ContractInstanceDecoder {
   private constructSlot(
     variable: number | string,
     ...indices: any[]
-  ): [Storage.Types.Slot | undefined, Ast.AstNode | undefined] {
+  ): [Storage.Slot | undefined, Ast.AstNode | undefined] {
     //base case: we need to locate the variable and its definition
     if (indices.length === 0) {
       let allocation = this.findVariableByNameOrId(variable);
@@ -764,7 +764,7 @@ export class ContractInstanceDecoder {
     let rawIndex = indices[indices.length - 1];
     let index: any;
     let key: Format.Values.ElementaryValue;
-    let slot: Storage.Types.Slot;
+    let slot: Storage.Slot;
     let definition: Ast.AstNode;
     switch (Ast.Utils.typeClass(parentDefinition)) {
       case "array":

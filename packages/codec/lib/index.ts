@@ -56,6 +56,9 @@ export { Contexts };
 import * as Conversion from "./conversion";
 export { Conversion };
 
+import * as Memory from "./memory";
+export { Memory };
+
 import * as Pointer from "./pointer";
 export { Pointer };
 

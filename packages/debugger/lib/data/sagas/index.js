@@ -16,15 +16,6 @@ import data from "../selectors";
 import sum from "lodash.sum";
 
 import * as Codec from "@truffle/codec";
-import {
-  Conversion,
-  getStorageAllocations,
-  getMemoryAllocations,
-  getAbiAllocations,
-  readStack,
-  storageSize,
-  decodeVariable
-} from "@truffle/codec";
 import BN from "bn.js";
 
 export function* scope(nodeId, pointer, parentId, sourceId) {
@@ -60,7 +51,7 @@ export function* decode(definition, ref) {
   let ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
   let NO_CODE = new Uint8Array(); //empty array
 
-  let decoder = decodeVariable(definition, ref, {
+  let decoder = Codec.decodeVariable(definition, ref, {
     userDefinedTypes,
     state,
     mappingKeys,
@@ -99,7 +90,7 @@ export function* decode(definition, ref) {
           let binary = (yield* web3.obtainBinaries([address], blockNumber))[0];
           debug("adding instance");
           yield* evm.addInstance(address, binary);
-          response = Conversion.toBytes(binary);
+          response = Codec.Conversion.toBytes(binary);
         }
         break;
       default:
@@ -379,7 +370,11 @@ function* variablesAndMappingsSaga() {
             slot.offset = indexValue.value.asBN.muln(
               //HACK: the allocation format here is wrong (object rather than
               //array), but it doesn't matter because we're not using that here
-              storageSize(node, referenceDeclarations, allocations).words
+              Codec.Storage.Allocate.storageSize(
+                node,
+                referenceDeclarations,
+                allocations
+              ).words
             );
             break;
           case "mapping":
@@ -488,7 +483,7 @@ function* decodeMappingKeySaga(indexDefinition, keyDefinition) {
   //something of a HACK -- cleans any out-of-range booleans
   //resulting from the main mapping key decoding loop
   let indexValue = yield* decodeMappingKeyCore(indexDefinition, keyDefinition);
-  return indexValue ? Conversion.cleanBool(indexValue) : indexValue;
+  return indexValue ? Codec.Conversion.cleanBool(indexValue) : indexValue;
 }
 
 function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
@@ -612,13 +607,17 @@ export function* recordAllocations() {
   const referenceDeclarations = yield select(data.views.referenceDeclarations);
   const userDefinedTypes = yield select(data.views.userDefinedTypes);
   debug("referenceDeclarations %O", referenceDeclarations);
-  const storageAllocations = getStorageAllocations(
+  const storageAllocations = Codec.Storage.Allocate.getStorageAllocations(
     referenceDeclarations,
     contracts
   );
   debug("storageAllocations %O", storageAllocations);
-  const memoryAllocations = getMemoryAllocations(referenceDeclarations);
-  const calldataAllocations = getAbiAllocations(userDefinedTypes);
+  const memoryAllocations = Codec.Memory.Allocate.getMemoryAllocations(
+    referenceDeclarations
+  );
+  const calldataAllocations = Codec.Abi.Allocate.getAbiAllocations(
+    userDefinedTypes
+  );
   yield put(
     actions.allocate(storageAllocations, memoryAllocations, calldataAllocations)
   );
@@ -629,7 +628,11 @@ function literalAssignments(node, stack, currentDepth) {
 
   let literal;
   try {
-    literal = readStack(stack, top - Codec.Ast.Utils.stackSize(node) + 1, top);
+    literal = Codec.readStack(
+      stack,
+      top - Codec.Ast.Utils.stackSize(node) + 1,
+      top
+    );
   } catch (error) {
     literal = undefined; //not sure if this is right, but this is what would
     //happen before, so I figure it's safe?
@@ -685,7 +688,9 @@ function fetchBasePath(
   debug("currentAssignments: %O", currentAssignments);
   //base expression is an expression, and so has a literal assigned to
   //it
-  let offset = Conversion.toBN(currentAssignments.byId[fullId].ref.literal);
+  let offset = Codec.Conversion.toBN(
+    currentAssignments.byId[fullId].ref.literal
+  );
   return { offset };
 }
 
