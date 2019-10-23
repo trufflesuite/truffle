@@ -59,6 +59,7 @@
     "lodash.partition": "^4.6.0",
     "lodash.sum": "^4.0.2",
     "semver": "^6.1.1",
+    "source-map-support": "^0.5.13",
     "utf8": "^3.0.0",
     "web3-utils": "1.2.1"
   },
