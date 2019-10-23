@@ -9,7 +9,7 @@ import { stableKeccak256 } from "lib/helpers";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import { Conversion, Utils as CodecUtils } from "@truffle/codec";
+import { Conversion, Format, Utils as CodecUtils } from "@truffle/codec";
 
 /**
  * @private
@@ -157,7 +157,7 @@ const data = createSelectorTree({
           return Object.assign(
             {},
             ...Object.entries(referenceDeclarations).map(([id, node]) => ({
-              [id]: CodecUtils.MakeType.definitionToStoredType(
+              [id]: Format.Utils.MakeType.definitionToStoredType(
                 node,
                 sources[scopes[node.id].sourceId].compiler,
                 referenceDeclarations

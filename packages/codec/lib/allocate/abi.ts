@@ -4,7 +4,6 @@ const debug = debugModule("codec:allocate:abi");
 import * as Abi from "@truffle/codec/abi/types";
 import * as AbiUtils from "@truffle/codec/abi/utils";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
-import * as MakeType from "@truffle/codec/utils/maketype";
 import * as Evm from "@truffle/codec/evm";
 import { getterInputs } from "@truffle/codec/utils/definition2abi";
 import * as Common from "@truffle/codec/common";
@@ -382,7 +381,7 @@ function allocateCalldata(
     id = node.id.toString();
     parameterTypes = parameters.map(parameter => ({
       name: parameter.name,
-      type: MakeType.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
+      type: Format.Utils.MakeType.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
     }));
     //now: perform the allocation!
     try {
@@ -406,7 +405,7 @@ function allocateCalldata(
     id = "-1"; //fake irrelevant ID
     parameterTypes = abiEntry.inputs.map(parameter => ({
       name: parameter.name,
-      type: MakeType.abiParameterToType(parameter)
+      type: Format.Utils.MakeType.abiParameterToType(parameter)
     }));
     abiAllocation = allocateMembers(
       id,
@@ -497,7 +496,7 @@ function allocateEvent(
     let parameters = node.parameters.parameters;
     parameterTypes = parameters.map(definition => ({
       //note: if node is defined, compiler had better be defined, too!
-      type: MakeType.definitionToType(definition, compiler),
+      type: Format.Utils.MakeType.definitionToType(definition, compiler),
       name: definition.name,
       indexed: definition.indexed
     }));
@@ -522,7 +521,7 @@ function allocateEvent(
     //THIS IS DELIBERATELY NOT AN ELSE
     id = "-1"; //fake irrelevant ID
     parameterTypes = abiEntry.inputs.map(abiParameter => ({
-      type: MakeType.abiParameterToType(abiParameter),
+      type: Format.Utils.MakeType.abiParameterToType(abiParameter),
       name: abiParameter.name,
       indexed: abiParameter.indexed
     }));

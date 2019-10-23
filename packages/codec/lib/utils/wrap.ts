@@ -6,7 +6,6 @@ const Web3Utils = require("web3-utils");
 import BN from "bn.js";
 import * as Compiler from "@truffle/codec/compiler";
 import * as Ast from "@truffle/codec/ast";
-import * as MakeType from "./maketype";
 import * as Format from "@truffle/codec/format";
 
 //Function for wrapping a value as an ElementaryValue
@@ -21,13 +20,24 @@ import * as Format from "@truffle/codec/format";
 //1. check its inputs,
 //2. take a slightly different input format,
 //3. also be named differently and... it'll be different :P ]
-export function wrapElementaryViaDefinition(value: any, definition: Ast.AstNode, compiler: Compiler.CompilerVersion): Format.Values.ElementaryValue {
-  let dataType = MakeType.definitionToType(definition, compiler, null); //force location to undefined
+export function wrapElementaryViaDefinition(
+  value: any,
+  definition: Ast.AstNode,
+  compiler: Compiler.CompilerVersion
+): Format.Values.ElementaryValue {
+  let dataType = Format.Utils.MakeType.definitionToType(
+    definition,
+    compiler,
+    null
+  ); //force location to undefined
   return wrapElementaryValue(value, dataType);
 }
 
-export function wrapElementaryValue(value: any, dataType: Format.Types.Type): Format.Values.ElementaryValue {
-  switch(dataType.typeClass) {
+export function wrapElementaryValue(
+  value: any,
+  dataType: Format.Types.Type
+): Format.Values.ElementaryValue {
+  switch (dataType.typeClass) {
     case "string":
       return {
         type: dataType,
@@ -39,7 +49,8 @@ export function wrapElementaryValue(value: any, dataType: Format.Types.Type): Fo
       };
     case "bytes":
       //NOTE: in the future should add padding for static case
-      return <Format.Values.BytesValue> { //TS is so bad at unions
+      return <Format.Values.BytesValue>{
+        //TS is so bad at unions
         type: dataType,
         kind: "value",
         value: {
@@ -57,13 +68,13 @@ export function wrapElementaryValue(value: any, dataType: Format.Types.Type): Fo
       };
     case "uint":
     case "int":
-      if(value instanceof BN) {
+      if (value instanceof BN) {
         value = value.clone();
-      }
-      else {
+      } else {
         value = new BN(value);
       }
-      return <Format.Values.UintValue|Format.Values.IntValue> { //TS remains bad at unions
+      return <Format.Values.UintValue | Format.Values.IntValue>{
+        //TS remains bad at unions
         type: dataType,
         kind: "value",
         value: {
@@ -71,7 +82,7 @@ export function wrapElementaryValue(value: any, dataType: Format.Types.Type): Fo
         }
       };
     case "bool":
-      if(typeof value === "string") {
+      if (typeof value === "string") {
         value = value !== "false";
       }
       return {

@@ -16,7 +16,6 @@ import * as Evm from "@truffle/codec/evm";
 import * as Contexts from "@truffle/codec/contexts";
 import { abifyType, abifyResult } from "@truffle/codec/utils/abify";
 import * as Conversion from "@truffle/codec/conversion";
-import * as MakeType from "@truffle/codec/utils/maketype";
 import * as Format from "@truffle/codec/format";
 import { StopDecodingError } from "@truffle/codec/decode/errors";
 import { encodeAbi, encodeTupleAbi } from "@truffle/codec/encode/abi";
@@ -29,7 +28,7 @@ export function* decodeVariable(
   info: Evm.EvmInfo
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
-  let dataType = MakeType.definitionToType(definition, compiler);
+  let dataType = Format.Utils.MakeType.definitionToType(definition, compiler);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 

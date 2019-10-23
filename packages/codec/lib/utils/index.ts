@@ -10,7 +10,4 @@ export { Wrap };
 import * as TypeUtils from "./datatype";
 export { TypeUtils };
 
-import * as MakeType from "./maketype";
-export { MakeType };
-
 export * from "./abify";

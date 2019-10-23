@@ -3,7 +3,6 @@ const debug = debugModule("codec:interface:decoders:wire");
 
 import * as Conversion from "@truffle/codec/conversion";
 import * as AbiUtils from "@truffle/codec/utils/abi";
-import * as MakeType from "@truffle/codec/utils/maketype";
 import {
   abifyCalldataDecoding,
   abifyLogDecoding
@@ -15,7 +14,7 @@ import * as Allocation from "@truffle/codec/allocate/types";
 import * as Decoding from "@truffle/codec/decode/types";
 import * as Evm from "@truffle/codec/evm";
 import * as DecoderTypes from "../types";
-import { Types } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { Transaction } from "web3/eth/types";
@@ -43,7 +42,7 @@ export default class WireDecoder {
   private deployedContexts: Contexts.DecoderContexts = {};
 
   private referenceDeclarations: Ast.AstNodes;
-  private userDefinedTypes: Types.TypesById;
+  private userDefinedTypes: Format.Types.TypesById;
   private allocations: Evm.AllocationInfo;
 
   private codeCache: DecoderTypes.CodeCache = {};
@@ -150,16 +149,19 @@ export default class WireDecoder {
 
   private collectUserDefinedTypes(): {
     definitions: Ast.AstNodes;
-    types: Types.TypesById;
+    types: Format.Types.TypesById;
   } {
     let references: Ast.AstNodes = {};
-    let types: Types.TypesById = {};
+    let types: Format.Types.TypesById = {};
     for (const id in this.contracts) {
       const compiler = this.contracts[id].compiler;
       //first, add the contract itself
       const contractNode = this.contractNodes[id];
       references[id] = contractNode;
-      types[id] = MakeType.definitionToStoredType(contractNode, compiler);
+      types[id] = Format.Utils.MakeType.definitionToStoredType(
+        contractNode,
+        compiler
+      );
       //now, add its struct and enum definitions
       for (const node of contractNode.nodes) {
         if (
@@ -169,7 +171,7 @@ export default class WireDecoder {
           references[node.id] = node;
           //HACK even though we don't have all the references, we only need one:
           //the reference to the contract itself, which we just added, so we're good
-          types[node.id] = MakeType.definitionToStoredType(
+          types[node.id] = Format.Utils.MakeType.definitionToStoredType(
             node,
             compiler,
             references
@@ -424,7 +426,7 @@ export default class WireDecoder {
   /**
    * @hidden
    */
-  public getUserDefinedTypes(): Types.TypesById {
+  public getUserDefinedTypes(): Format.Types.TypesById {
     return this.userDefinedTypes;
   }
 
