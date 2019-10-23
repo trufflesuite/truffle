@@ -41,6 +41,9 @@ export * from "./types"; //all the decoding result types
 export { UnknownUserDefinedTypeError } from "./common/types"; //the various errors we might throw
 
 //for those who want more low-level stuff...
+import * as Abi from "./abi";
+export { Abi };
+
 import * as Ast from "./ast";
 export { Ast };
 

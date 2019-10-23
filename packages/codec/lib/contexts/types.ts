@@ -1,4 +1,4 @@
-import * as AbiTypes from "@truffle/codec/abi/types";
+import * as Abi from "@truffle/codec/abi/types";
 import * as Common from "@truffle/codec/common/types";
 import * as Compiler from "@truffle/codec/compiler";
 
@@ -23,7 +23,7 @@ export interface DecoderContext {
   contractName?: string;
   contractId?: number;
   contractKind?: Common.ContractKind; //note: should never be "interface"
-  abi?: AbiTypes.FunctionAbiBySelectors;
+  abi?: Abi.FunctionAbiBySelectors;
   payable?: boolean;
   hasFallback?: boolean; //used just by the calldata decoder...
   compiler?: Compiler.CompilerVersion;
@@ -38,7 +38,7 @@ export interface DebuggerContext {
   contractName?: string;
   contractId?: number;
   contractKind?: Common.ContractKind; //note: should never be "interface"
-  abi?: AbiTypes.Abi;
+  abi?: Abi.Abi;
   sourceMap?: string;
   primarySource?: number;
   compiler?: Compiler.CompilerVersion;

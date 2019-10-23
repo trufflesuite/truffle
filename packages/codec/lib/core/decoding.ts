@@ -2,13 +2,12 @@ import debugModule from "debug";
 const debug = debugModule("codec:core:decoding");
 
 import * as Ast from "@truffle/codec/ast";
-import * as AbiTypes from "@truffle/codec/abi/types";
+import * as Abi from "@truffle/codec/abi";
 import * as Pointer from "@truffle/codec/pointer";
 import * as Allocation from "@truffle/codec/allocate/types";
 import { DecoderRequest, CalldataDecoding, DecodingMode, AbiArgument, LogDecoding } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { abifyType, abifyResult } from "@truffle/codec/utils/abify";
-import * as AbiUtils from "@truffle/codec/utils/abi";
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as ContextUtils from "@truffle/codec/utils/contexts";
 import * as EvmUtils from "@truffle/codec/utils/evm";
@@ -62,7 +61,7 @@ export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<DecoderReque
     return {
       kind: "message" as const,
       class: contractType,
-      abi: context.hasFallback ? AbiUtils.fallbackAbiForPayability(context.payable) : null,
+      abi: context.hasFallback ? Abi.Utils.fallbackAbiForPayability(context.payable) : null,
       data: ConversionUtils.toHexString(info.state.calldata),
       decodingMode: "full" as const,
     };
@@ -127,7 +126,7 @@ export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<DecoderReque
       kind: "constructor" as const,
       class: contractType,
       arguments: decodedArguments,
-      abi: <AbiTypes.ConstructorAbiEntry> allocation.abi, //we know it's a constructor, but typescript doesn't
+      abi: <Abi.ConstructorAbiEntry> allocation.abi, //we know it's a constructor, but typescript doesn't
       bytecode: ConversionUtils.toHexString(info.state.calldata.slice(0, allocation.offset)),
       decodingMode
     };
@@ -136,7 +135,7 @@ export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<DecoderReque
     return {
       kind: "function" as const,
       class: contractType,
-      abi: <AbiTypes.FunctionAbiEntry> allocation.abi, //we know it's a function, but typescript doesn't
+      abi: <Abi.FunctionAbiEntry> allocation.abi, //we know it's a function, but typescript doesn't
       arguments: decodedArguments,
       selector,
       decodingMode

@@ -9,8 +9,6 @@ export { ContextUtils };
 
 export * from "./definition2abi";
 
-import * as AbiUtils from "./abi";
-export { AbiUtils };
 
 export * from "./wrap";
 export * from "./interface";
