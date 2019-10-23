@@ -1,8 +1,11 @@
 import { Web3Shim, Web3ShimOptions } from "./web3-shim";
+import { Block as EvmBlock } from "web3/eth/types";
+import { BlockType as EvmBlockType } from "web3/eth/types";
 
 export interface InterfaceAdapterOptions extends Web3ShimOptions {}
 export type NetworkId = Number | String;
-export type Block = Object;
+export type Block = EvmBlock | any;
+export type BlockType = EvmBlockType | any;
 
 const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
 
@@ -35,7 +38,7 @@ export class InterfaceAdapter {
     return this.adapter.getNetworkId();
   }
 
-  public getBlock(block: any): Promise<Block> {
+  public getBlock(block: BlockType): Promise<Block> {
     return this.adapter.getBlock(block);
   }
 }
