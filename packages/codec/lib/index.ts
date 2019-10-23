@@ -26,10 +26,6 @@ export { Utils };
 export { decodeVariable, decodeEvent, decodeCalldata } from "./core/decoding";
 export { DecodingError, StopDecodingError } from "./decode/errors";
 
-//the debugger needs to get its allocations, and deal with storage sizes
-export { UnknownBaseContractIdError, getStorageAllocations, storageSize } from "./allocate/storage";
-export { getAbiAllocations } from "./allocate/abi";
-export { getMemoryAllocations } from "./allocate/memory";
 //and to read the stack
 export { readStack } from "./read/stack";
 
@@ -45,8 +41,17 @@ export * from "./decode/types"; //all the decoding result types
 export { UnknownUserDefinedTypeError } from "./common/types"; //the various errors we might throw
 
 //for those who want more low-level stuff...
-export { AstNode, AstNodes } from "./ast/types";
-export { DataPointer } from "./pointer/types";
-export { EvmInfo } from "./evm/types";
-export { StorageAllocations, AbiAllocations, MemoryAllocations } from "./allocate/types";
-export { StorageLength } from "./storage/types";
+import * as Ast from "./ast";
+export { Ast };
+
+import * as Pointer from "./pointer";
+export { Pointer };
+
+import * as Evm from "./evm";
+export { Evm };
+
+import * as Allocate from "./allocate";
+export { Allocate };
+
+import * as Storage from "./storage";
+export { Storage };
