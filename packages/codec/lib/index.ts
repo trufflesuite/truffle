@@ -1,3 +1,13 @@
+/**
+ * Usage:
+ *
+ * ```
+ * import { ... } from "@truffle/codec";
+ * ```
+ *
+ * @module @truffle/codec
+ */ /** */
+
 //So, what shall codec export...?
 
 //First: export the data format
