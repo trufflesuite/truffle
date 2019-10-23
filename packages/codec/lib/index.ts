@@ -21,7 +21,7 @@ export {
 
 //now... various low-level stuff we want to export!
 //the actual decoding functions and related errors
-export { decodeVariable, decodeEvent, decodeCalldata } from "./core/decoding";
+export { decodeVariable, decodeEvent, decodeCalldata } from "./core";
 export { DecodingError, StopDecodingError } from "./decode/errors";
 
 //and to read the stack

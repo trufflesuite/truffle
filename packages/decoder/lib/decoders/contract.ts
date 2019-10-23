@@ -27,7 +27,6 @@ import {
   getStorageAllocations,
   storageSize
 } from "@truffle/codec/allocate/storage";
-import { decodeVariable } from "@truffle/codec/core/decoding";
 import {
   ContractBeingDecodedHasNoNodeError,
   ContractAllocationFailedError
@@ -354,7 +353,11 @@ export class ContractInstanceDecoder {
       currentContext: this.context
     };
 
-    const decoder = decodeVariable(variable.definition, variable.pointer, info);
+    const decoder = Codec.decodeVariable(
+      variable.definition,
+      variable.pointer,
+      info
+    );
 
     let result = decoder.next();
     while (result.done === false) {
