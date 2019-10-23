@@ -1,12 +1,12 @@
 {
   "name": "@truffle/codec",
-  "version": "3.0.12",
-  "description": "A decoder and encoder for Solidity variables of all sorts",
+  "version": "0.1.0",
+  "description": "Library for encoding and decoding smart contract data",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
-  "directories": {
-    "lib": "lib"
-  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "docs": "rm -rf dist/docs && ../../node_modules/@gnd/typedoc/bin/typedoc lib/index.ts",
     "prepare": "yarn build",
@@ -23,7 +23,7 @@
     "encoder",
     "abi"
   ],
-  "author": "Mike Seese and Harry Altman",
+  "author": "Harry Altman <harry@trufflesuite.com>, g. nicholas d'andrea <gnidan@trufflesuite.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
