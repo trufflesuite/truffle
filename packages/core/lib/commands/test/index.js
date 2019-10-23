@@ -88,7 +88,13 @@ const command = {
 
     let ipcDisconnect, files;
     try {
-      files = determineTestFilesToRun(options, config);
+      const { file } = options;
+      const inputArgs = options._;
+      files = determineTestFilesToRun({
+        config,
+        inputArgs,
+        inputFile: file
+      });
     } catch (error) {
       return done(error);
     }

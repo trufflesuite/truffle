@@ -19,22 +19,24 @@ const copyArtifactsToTempDir = async config => {
   return { config, temporaryDirectory };
 };
 
-const determineTestFilesToRun = (options, config) => {
+const determineTestFilesToRun = ({ inputFile, inputArgs = [], config }) => {
   const path = require("path");
   const fs = require("fs");
   const glob = require("glob");
-  let files = [];
-  if (options.file) {
-    files = [options.file];
-  } else if (options._.length > 0) {
-    Array.prototype.push.apply(files, options._);
+  let filesToRun = [];
+
+  if (inputFile) {
+    filesToRun.push(inputFile);
+  } else if (inputArgs.length > 0) {
+    inputArgs.forEach(inputArg => filesToRun.push(inputArg));
   }
 
-  if (files.length === 0) {
+  if (filesToRun.length === 0) {
     const directoryContents = glob.sync(`${config.test_directory}${path.sep}*`);
-    files = directoryContents.filter(item => fs.statSync(item).isFile()) || [];
+    filesToRun =
+      directoryContents.filter(item => fs.statSync(item).isFile()) || [];
   }
-  return files.filter(file => {
+  return filesToRun.filter(file => {
     return file.match(config.test_file_extension_regexp) !== null;
   });
 };
