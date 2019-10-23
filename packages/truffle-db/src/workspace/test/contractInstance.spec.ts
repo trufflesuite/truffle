@@ -1,7 +1,7 @@
 import { generateId, Migrations, WorkspaceClient } from './utils';
 
 import { AddNetworks } from './network.graphql';
-import { AddContractInstances, GetContractInstance, GetAllContractInstances } from './contractInstances.graphql';
+import { AddContractInstances, GetContractInstance, GetAllContractInstances } from './contractInstance.graphql';
 
 describe("Contract Instance", () => {
   const wsClient = new WorkspaceClient();
