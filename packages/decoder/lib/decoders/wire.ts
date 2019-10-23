@@ -2,16 +2,15 @@ import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:wire");
 
 import * as Conversion from "@truffle/codec/conversion";
-import * as AbiUtils from "@truffle/codec/utils/abi";
 import {
   abifyCalldataDecoding,
   abifyLogDecoding
 } from "@truffle/codec/utils/abify";
 import * as Utils from "../utils";
+import * as Abi from "@truffle/codec/abi";
 import * as Ast from "@truffle/codec/ast";
 import * as Contexts from "@truffle/codec/contexts";
 import * as Allocation from "@truffle/codec/allocate/types";
-import * as Decoding from "@truffle/codec/decode/types";
 import * as Evm from "@truffle/codec/evm";
 import * as DecoderTypes from "../types";
 import * as Format from "@truffle/codec/format";
@@ -26,7 +25,12 @@ import {
   getEventAllocations
 } from "@truffle/codec/allocate/abi";
 import { getStorageAllocations } from "@truffle/codec/allocate/storage";
-import { decodeCalldata, decodeEvent } from "@truffle/codec";
+import {
+  decodeCalldata,
+  decodeEvent,
+  CalldataDecoding,
+  LogDecoding
+} from "@truffle/codec";
 
 /**
  * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.
@@ -117,7 +121,7 @@ export default class WireDecoder {
         deployedContext,
         constructorContext
       }) => ({
-        abi: AbiUtils.schemaAbiToAbi(abi),
+        abi: Abi.Utils.schemaAbiToAbi(abi),
         compiler,
         contractNode: node,
         deployedContext,
@@ -371,9 +375,7 @@ export default class WireDecoder {
    * on decodings produced by other instances may not work consistently.
    * @param decoding The decoding to abify
    */
-  public abifyCalldataDecoding(
-    decoding: Decoding.CalldataDecoding
-  ): Decoding.CalldataDecoding {
+  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
     return abifyCalldataDecoding(decoding, this.userDefinedTypes);
   }
 
@@ -385,9 +387,7 @@ export default class WireDecoder {
    * on decodings produced by other instances may not work consistently.
    * @param decoding The decoding to abify
    */
-  public abifyLogDecoding(
-    decoding: Decoding.LogDecoding
-  ): Decoding.LogDecoding {
+  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return abifyLogDecoding(decoding, this.userDefinedTypes);
   }
 

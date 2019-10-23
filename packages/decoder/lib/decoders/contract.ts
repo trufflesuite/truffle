@@ -2,14 +2,19 @@ import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:contract");
 
 import * as Codec from "@truffle/codec";
-import { Ast, Evm, Format, Conversion } from "@truffle/codec";
-import * as AbiUtils from "@truffle/codec/utils/abi";
-import { wrapElementaryViaDefinition } from "@truffle/codec/utils/wrap";
+import {
+  Abi,
+  Ast,
+  Evm,
+  Format,
+  Conversion,
+  CalldataDecoding,
+  LogDecoding
+} from "@truffle/codec";
 import * as Utils from "../utils";
 import * as Storage from "@truffle/codec/storage";
 import * as Contexts from "@truffle/codec/contexts";
 import * as Pointer from "@truffle/codec/pointer";
-import * as Decoding from "@truffle/codec/decode/types";
 import * as Allocation from "@truffle/codec/allocate/types";
 import * as DecoderTypes from "../types";
 import Web3 from "web3";
@@ -152,18 +157,14 @@ export default class ContractDecoder {
   /**
    * See [[WireDecoder.abifyCalldataDecoding]].
    */
-  public abifyCalldataDecoding(
-    decoding: Decoding.CalldataDecoding
-  ): Decoding.CalldataDecoding {
+  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
 
   /**
    * See [[WireDecoder.abifyLogDecoding]].
    */
-  public abifyLogDecoding(
-    decoding: Decoding.LogDecoding
-  ): Decoding.LogDecoding {
+  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
@@ -697,18 +698,14 @@ export class ContractInstanceDecoder {
   /**
    * See [[WireDecoder.abifyCalldataDecoding]].
    */
-  public abifyCalldataDecoding(
-    decoding: Decoding.CalldataDecoding
-  ): Decoding.CalldataDecoding {
+  public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
 
   /**
    * See [[WireDecoder.abifyLogDecoding]].
    */
-  public abifyLogDecoding(
-    decoding: Decoding.LogDecoding
-  ): Decoding.LogDecoding {
+  public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
@@ -795,7 +792,7 @@ export class ContractInstanceDecoder {
       case "mapping":
         let keyDefinition =
           parentDefinition.keyType || parentDefinition.typeName.keyType;
-        key = wrapElementaryViaDefinition(
+        key = Utils.wrapElementaryViaDefinition(
           rawIndex,
           keyDefinition,
           this.contract.compiler
