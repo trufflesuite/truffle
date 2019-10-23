@@ -133,7 +133,6 @@ class Migration {
    */
   async run(options) {
     const {
-      web3,
       interfaceAdapter,
       resolver,
       context,
@@ -150,7 +149,7 @@ class Migration {
 
     // Get file path and emit pre-migration event
     const file = path.relative(options.migrations_directory, this.file);
-    const block = await web3.eth.getBlock("latest");
+    const block = await interfaceAdapter.getBlock("latest");
 
     const preMigrationsData = {
       file: file,
@@ -192,7 +191,7 @@ class Migration {
       basePath: path.dirname(this.file)
     });
 
-    return { logger, web3, interfaceAdapter, resolver, context, deployer };
+    return { interfaceAdapter, resolver, context, deployer };
   }
 
   /**
