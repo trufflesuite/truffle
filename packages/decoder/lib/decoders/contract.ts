@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:contract");
 
+import * as Codec from "@truffle/codec";
 import { Ast, Evm, Format, Conversion } from "@truffle/codec";
 import * as AbiUtils from "@truffle/codec/utils/abi";
 import * as DefinitionUtils from "@truffle/codec/utils/definition";

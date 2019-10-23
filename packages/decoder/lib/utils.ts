@@ -1,5 +1,5 @@
 import { ContractObject } from "@truffle/contract-schema/spec";
-import Codec from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 import * as Types from "./types";
 
@@ -35,7 +35,7 @@ export function makeContext(
   node: Codec.Ast.AstNode | undefined,
   isConstructor = false
 ): Codec.Contexts.DecoderContext {
-  const abi = Codec.Utils.Abi.schemaAbiToAbi(contract.abi);
+  const abi = Codec.Abi.Utils.schemaAbiToAbi(contract.abi);
   const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
   const hash = Codec.Conversion.toHexString(
     Codec.Evm.Utils.keccak256({
@@ -50,9 +50,9 @@ export function makeContext(
     contractId: node ? node.id : undefined,
     contractKind: contractKind(contract, node),
     isConstructor,
-    abi: Codec.Utils.Abi.computeSelectors(abi),
-    payable: Codec.Utils.Abi.abiHasPayableFallback(abi),
-    hasFallback: Codec.Utils.Abi.abiHasFallback(abi),
+    abi: Codec.Abi.Utils.computeSelectors(abi),
+    payable: Codec.Abi.Utils.abiHasPayableFallback(abi),
+    hasFallback: Codec.Abi.Utils.abiHasFallback(abi),
     compiler: contract.compiler
   };
 }
@@ -61,7 +61,7 @@ export function makeContext(
 function contractKind(
   contract: ContractObject,
   node?: Codec.Ast.AstNode
-): Codec.Common.Types.ContractKind {
+): Codec.ContractKind {
   //first: if we have a node, use its listed contract kind
   if (node) {
     return node.contractKind;

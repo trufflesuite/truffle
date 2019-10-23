@@ -27,7 +27,7 @@ import {
   getEventAllocations
 } from "@truffle/codec/allocate/abi";
 import { getStorageAllocations } from "@truffle/codec/allocate/storage";
-import { decodeCalldata, decodeEvent } from "@truffle/codec/core/decoding";
+import { decodeCalldata, decodeEvent } from "@truffle/codec";
 
 /**
  * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.

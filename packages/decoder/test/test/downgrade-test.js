@@ -315,7 +315,7 @@ contract("DowngradeTest", function(accounts) {
 });
 
 async function runEnumTestBody(DowngradeTest) {
-  let decoder = await Decooder.forProject(
+  let decoder = await Decoder.forProject(
     [DowngradeTest._json, DecoyLibrary], //HACK: see clonedeep comment above
     web3.currentProvider
   );
