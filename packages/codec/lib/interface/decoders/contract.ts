@@ -446,11 +446,22 @@ export class ContractInstanceDecoder {
   }
 
   /**
-   * Decodes an individual contract variable; returns its value as a [[Format.Values.Result|Result]].
-   * See the documentation for [[variables|variables()]] for various caveats that also apply here.
-   * If the variable can't be located, returns undefined.  In the future this will probably throw an exception instead.
-   * @param nameOrId The name (or numeric ID, if you know that) of the variable.  Can be given as a qualified name, allowing one to get at shadowed variables from base contracts.  If given by ID, can be given as a number or numeric string.
-   * @param block The block to inspect the contract's variables at.  Defaults to latest.
+   * Decodes an individual contract variable; returns its value as a
+   * [[Format.Values.Result|Result]].  See the documentation for
+   * [[variables|variables()]] for various caveats that also apply here.  If
+   * the variable can't be located, returns undefined.  In the future this will
+   * probably throw an exception instead.
+   * @param nameOrId The name (or numeric ID, if you know that) of the
+   *   variable.  Can be given as a qualified name, allowing one to get at
+   *   shadowed variables from base contracts.  If given by ID, can be given as a
+   *   number or numeric string.
+   * @param block The block to inspect the contract's variables at.  Defaults
+   *   to latest.
+   * @example Consider a contract `Derived` inheriting from a contract `Base`.
+   *   Suppose `Derived` has a variable `x` and `Base` has variables `x` and
+   *   `y`.  One can access `Derived.x` as `variable("x")` or
+   *   `variable("Derived.x")`, can access `Base.x` as `variable("Base.x")`,
+   *   and can access `Base.y` as `variable("y")` or `variable("Base.y")`.
    */
   public async variable(
     nameOrId: string | number,
@@ -537,19 +548,47 @@ export class ContractInstanceDecoder {
   }
 
   /**
-   * Watches a mapping key; adds it to the decoder's list of watched mapping keys.
-   * This affects the results of both [[variables|variables()]] and [[variable|variable()]].
-   * When a mapping is decoded, only the values at its watched keys will be included in its value.
-   * Note that it is possible to watch mappings that are inside structs, arrays, other mappings, etc;
-   * see below for more on how to do this.
-   * Note that watching mapping keys is only possible in full mode; if the decoder wasn't able to
-   * start up in full mode, this method will throw an exception.
-   * Warning: At the moment, this function does very little to check its input.  Bad input may have
-   * unpredictable results.  This will be remedied in the future (by having it throw exceptions on
-   * bad input), but right now essentially no checking is implemented.
-   * Also, there may be slight changes to the format of indices in the future.
-   * @param variable The variable that the mapping lives under; this works like the nameOrId argument to [[variable|variable()]].  If the mapping is a top-level state variable, put the mapping itself here.  Otherwise, put the top-level state variable it lives under.
-   * @param indices Further arguments to watchMappingKey, if given, will be interpreted as indices into or members of the variable identified by the variable argument.  Thus, if we have a struct type MapStruct with a mapping(string => string) called "map", and we have a variable arr of type MapStruct[], then one could watch arr[3].map["hello"] by calling watchMappingKey("arr", 3, "map", "hello").  Array indices and mapping keys are specified by value; struct members are specified by name or (if you know it) numeric ID.  Numeric values can be given as number, BN, or numeric string.  Bytestring values are given as hex strings.  Boolean values are given as booleans, or as the strings "true" or "false".  Address values are given as hex strings; they are currently not required to be in checksum case, but this will likely change in the future, so don't rely on that.  Note that if the path to a given mapping key includes mapping keys above it, any ancestors will also be watched automatically.  E.g., if m is of type mapping(uint => mapping(uint => uint)), then watching m[3][5] will also automatically watch m[3]; otherwise, watching m[3][5] wouldn't do much of anything.
+   * Watches a mapping key; adds it to the decoder's list of watched mapping
+   * keys.  This affects the results of both [[variables|variables()]] and
+   * [[variable|variable()]].  When a mapping is decoded, only the values at
+   * its watched keys will be included in its value.  Note that it is possible
+   * to watch mappings that are inside structs, arrays, other mappings, etc;
+   * see below for more on how to do this.  Note that watching mapping keys is
+   * only possible in full mode; if the decoder wasn't able to start up in full
+   * mode, this method will throw an exception.  Warning: At the moment, this
+   * function does very little to check its input.  Bad input may have
+   * unpredictable results.  This will be remedied in the future (by having it
+   * throw exceptions on bad input), but right now essentially no checking is
+   * implemented.  Also, there may be slight changes to the format of indices
+   * in the future.
+   * @param variable The variable that the mapping lives under; this works like
+   *   the nameOrId argument to [[variable|variable()]].  If the mapping is a
+   *   top-level state variable, put the mapping itself here.  Otherwise, put the
+   *   top-level state variable it lives under.
+   * @param indices Further arguments to watchMappingKey, if given, will be
+   *   interpreted as indices into or members of the variable identified by the
+   *   variable argument; see the example.  Array indices and mapping
+   *   keys are specified by value; struct members are specified by name or (if
+   *   you know it) numeric ID.  Numeric values can be given as number, BN, or
+   *   numeric string.  Bytestring values are given as hex strings.  Boolean
+   *   values are given as booleans, or as the strings "true" or "false".
+   *   Address values are given as hex strings; they are currently not required
+   *   to be in checksum case, but this will likely change in the future, so
+   *   don't rely on that.  Note that if the path to a given mapping key
+   *   includes mapping keys above it, any ancestors will also be watched
+   *   automatically.
+   * @example First, a simple example.  Say we have a mapping `m` of type
+   *   `mapping(uint => uint)`.  You could call `watchMappingKey("m", 0)` to
+   *   watch `m[0]`.
+   * @example Now for a slightly more complicated example.  Say `m` is of type
+   *   `mapping(uint => mapping(uint => uint))`, then to watch `m[3][5]`, you
+   *   can call `watchMappingKey("m", 3, 5)`.  This will also automatically
+   *   watch `m[3]`; otherwise, watching `m[3][5]` wouldn't do much of
+   *   anything.
+   * @example Now for a well more complicated example.  Say we have a struct
+   *   type `MapStruct` with a member called `map` which is a `mapping(string => string)`,
+   *   and say we have a variable `arr` of type `MapStruct[]`, then one could
+   *   watch `arr[3].map["hello"]` by calling `watchMappingKey("arr", 3, "map", "hello")`.
    */
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
@@ -574,12 +613,13 @@ export class ContractInstanceDecoder {
   }
 
   /**
-   * Opposite of [[watchMappingKey]]; unwatches the specified mapping key.  See watchMappingKey
-   * for more on how watching mapping keys works, and on how the parameters work.
-   * Note that unwatching a mapping key will also unwatch all its descendants.
-   * E.g., if m is of type mapping(uint => mapping(uint => uint)), then unwatching
-   * m[0] will also unwatch m[0][0], m[0][1], etc, if these are currently watched.
-   * This function has the same caveats as watchMappingKey.
+   * Opposite of [[watchMappingKey]]; unwatches the specified mapping key.  See
+   * watchMappingKey for more on how watching mapping keys works, and on how
+   * the parameters work.  Note that unwatching a mapping key will also unwatch
+   * all its descendants.  E.g., if `m` is of type `mapping(uint =>
+   * mapping(uint => uint))`, then unwatching `m[0]` will also unwatch
+   * `m[0][0]`, `m[0][1]`, etc, if these are currently watched.  This function
+   * has the same caveats as watchMappingKey.
    */
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
@@ -645,7 +685,7 @@ export class ContractInstanceDecoder {
   /**
    * This mostly behaves as [[WireDecoder.events]].
    * However, unlike other variants of this function, this one, by default, restricts to events originating from this instance's address.
-   * If you don't want to restrict like that, you can explicitly set address = undefined in the options to disable this.
+   * If you don't want to restrict like that, you can explicitly use `address: undefined` in the options to disable this.
    * (You can also of course set a different address to restrict to that.)
    * @param options Used to determine what events to fetch; see the documentation on the [[EventOptions]] type for more.
    */

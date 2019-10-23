@@ -175,6 +175,49 @@ in an ABI-encoded array or tuple are arranged in a nonstandard way, or if
 strings or bytestrings are incorrectly padded, because it is not worth the
 trouble to detect these conditions.
 
-### Usage examples
+### Basic usage examples
 
+#### Decoding a log with the wire decoder
 
+This usage example is for a project with two contracts, `Contract1` and
+`Contract2`.
+
+```typescript
+import { forProject } from "@truffle/codec";
+const contract1 = artifacts.require("Contract1");
+const contract2 = artifacts.require("Contract2");
+const provider = web3.currentProvider;
+const decoder = await Decoder.forProject([contract1, contract2], provider);
+const decodedLog = await decoder.decodeLog(log);
+```
+
+The usage of [[WireDecoder.decodeTransaction|decodeTransaction]] is similar.
+
+For getting already-decoded logs meeting appropriate conditions, see
+[[WireDecoder.events]].
+
+#### Decoding state variables with the contract instance decoder
+
+This usage example is for decoding the state variables of a contract `Contract`
+in a project that also contains a contract `OtherContract`.
+
+```typescript
+import { forContract } from "@truffle/codec";
+const contract = artifacts.require("Contract");
+const otherContract = artifacts.require("OtherContract");
+const provider = web3.currentProvider;
+const decoder = await Decoder.forContract(contract, [otherContract], provider);
+const instanceDecoder = await decoder.forInstance();
+const variables = await instanceDecoder.variables();
+```
+
+In this example, we use the deployed version of `Contract`.  If we wanted an
+instance at a different address, we could pass the address to `forInstance`.
+
+In addition, rather than using `forContract` and then `forInstance`, we could
+also use [[forContractInstance|`forContractInstance`]] to perform both of these
+in one step.
+
+See the API documentation for more advanced decoding examples with
+[[ContractInstanceDecoder.variable|`variable`]] or
+[[ContractInstanceDecoder.watchMappingKey|`watchMappingKey`]].

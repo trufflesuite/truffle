@@ -337,8 +337,11 @@ export default class WireDecoder {
    * Gets all events meeting certain conditions and decodes them.
    * This function is fairly rudimentary at the moment but more functionality
    * will be added in the future.
-   * @param options Used to determine what events to fetch; see the documentation on the [[EventOptions]] type for more.
+   * @param options Used to determine what events to fetch; see the documentation
+   *   on the [[EventOptions]] type for more.
    * @param additionalContexts For internal use only; please don't use this.
+   * @example `events({name: "TestEvent"})` -- get events named "TestEvent"
+   *   from the most recent block
    */
   public async events(
     options: DecoderTypes.EventOptions = {},
