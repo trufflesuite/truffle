@@ -5,7 +5,7 @@ import * as Ast from "@truffle/codec/ast/types";
 import * as AbiTypes from "@truffle/codec/abi/types";
 import * as Pointer from "@truffle/codec/pointer/types";
 import * as Allocation from "@truffle/codec/allocate/types";
-import * as Decoding from "@truffle/codec/decode/types";
+import { DecoderRequest, CalldataDecoding, DecodingMode, AbiArgument, LogDecoding } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { abifyType, abifyResult } from "@truffle/codec/utils/abify";
 import * as AbiUtils from "@truffle/codec/utils/abi";
@@ -19,13 +19,13 @@ import { encodeAbi, encodeTupleAbi } from "@truffle/codec/encode/abi";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
 
-export function* decodeVariable(definition: Ast.AstNode, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeVariable(definition: Ast.AstNode, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
   let dataType = MakeType.definitionToType(definition, compiler);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
-export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Decoding.CalldataDecoding, Uint8Array> {
+export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<DecoderRequest, CalldataDecoding, Uint8Array> {
   const context = info.currentContext;
   if(context === null) {
     //if we don't know the contract ID, we can't decode
@@ -67,9 +67,9 @@ export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<Decoding.Dec
       decodingMode: "full" as const,
     };
   }
-  let decodingMode: Decoding.DecodingMode = allocation.allocationMode; //starts out this way, degrades to ABI if necessary
+  let decodingMode: DecodingMode = allocation.allocationMode; //starts out this way, degrades to ABI if necessary
   //you can't map with a generator, so we have to do this map manually
-  let decodedArguments: Decoding.AbiArgument[] = [];
+  let decodedArguments: AbiArgument[] = [];
   for(const argumentAllocation of allocation.arguments) {
     let value: Values.Result;
     let dataType = decodingMode === "full" ? argumentAllocation.type : abifyType(argumentAllocation.type);
@@ -148,7 +148,7 @@ export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<Decoding.Dec
 //leaving it alone for now, as I'm not sure what form those options will take
 //(and this is something we're a bit more OK with breaking since it's primarily
 //for internal use :) )
-export function* decodeEvent(info: Evm.Types.EvmInfo, address: string, targetName?: string): Generator<Decoding.DecoderRequest, Decoding.LogDecoding[], Uint8Array> {
+export function* decodeEvent(info: Evm.Types.EvmInfo, address: string, targetName?: string): Generator<DecoderRequest, LogDecoding[], Uint8Array> {
   const allocations = info.allocations.event;
   let rawSelector: Uint8Array;
   let selector: string;
@@ -205,19 +205,19 @@ export function* decodeEvent(info: Evm.Types.EvmInfo, address: string, targetNam
   const possibleAllocations = possibleContractAllocations.concat(possibleLibraryAllocations);
   const possibleAnonymousAllocations = possibleContractAnonymousAllocations.concat(possibleLibraryAnonymousAllocations);
   const possibleAllocationsTotal = possibleAllocations.concat(possibleAnonymousAllocations);
-  let decodings: Decoding.LogDecoding[] = [];
+  let decodings: LogDecoding[] = [];
   allocationAttempts: for(const allocation of possibleAllocationsTotal) {
     //first: do a name check so we can skip decoding if name is wrong
     debug("trying allocation: %O", allocation);
     if(targetName !== undefined && allocation.abi.name !== targetName) {
       continue;
     }
-    let decodingMode: Decoding.DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
+    let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     const contextHash = allocation.contextHash;
     const attemptContext = info.contexts[contextHash];
     const contractType = ContextUtils.contextToType(attemptContext);
     //you can't map with a generator, so we have to do this map manually
-    let decodedArguments: Decoding.AbiArgument[] = [];
+    let decodedArguments: AbiArgument[] = [];
     for(const argumentAllocation of allocation.arguments) {
       let value: Values.Result;
       //if in full mode, use the allocation's listed data type.

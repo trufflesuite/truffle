@@ -4,7 +4,7 @@ const debug = debugModule("codec:format:abify");
 import * as Format from "@truffle/codec/format";
 import * as TypeUtils from "./datatype";
 import * as Common from "@truffle/codec/common/types";
-import * as Decoding from "@truffle/codec/decode/types";
+import { CalldataDecoding, LogDecoding } from "@truffle/codec/types";
 import BN from "bn.js";
 import * as ConversionUtils from "./conversion";
 
@@ -250,7 +250,7 @@ export function abifyResult(result: Format.Values.Result, userDefinedTypes?: For
  * but you can, uh, throw an exception if you don't, I guess.)
  */
 
-export function abifyCalldataDecoding(decoding: Decoding.CalldataDecoding, userDefinedTypes: Format.Types.TypesById): Decoding.CalldataDecoding {
+export function abifyCalldataDecoding(decoding: CalldataDecoding, userDefinedTypes: Format.Types.TypesById): CalldataDecoding {
   if(decoding.decodingMode === "abi") {
     return decoding;
   }
@@ -272,7 +272,7 @@ export function abifyCalldataDecoding(decoding: Decoding.CalldataDecoding, userD
   }
 }
 
-export function abifyLogDecoding(decoding: Decoding.LogDecoding, userDefinedTypes: Format.Types.TypesById): Decoding.LogDecoding {
+export function abifyLogDecoding(decoding: LogDecoding, userDefinedTypes: Format.Types.TypesById): LogDecoding {
   if(decoding.decodingMode === "abi") {
     return decoding;
   }

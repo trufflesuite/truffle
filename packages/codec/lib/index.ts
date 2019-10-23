@@ -37,7 +37,7 @@ export { encodeMappingKey } from "./encode/key";
 
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface
-export * from "./decode/types"; //all the decoding result types
+export * from "./types"; //all the decoding result types
 export { UnknownUserDefinedTypeError } from "./common/types"; //the various errors we might throw
 
 //for those who want more low-level stuff...

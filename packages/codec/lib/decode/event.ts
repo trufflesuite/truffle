@@ -7,10 +7,10 @@ import { Types, Values, Errors } from "@truffle/codec/format";
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Pointer from "@truffle/codec/pointer/types";
-import * as Decoding from "./types";
+import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 
-export default function* decodeTopic(dataType: Types.Type, pointer: Pointer.EventTopicPointer, info: Evm.Types.EvmInfo, options: Decoding.DecoderOptions = {}): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeTopic(dataType: Types.Type, pointer: Pointer.EventTopicPointer, info: Evm.Types.EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {
     //we cannot decode reference types "stored" in topics; we have to just return an error
     let bytes: Uint8Array = yield* read(pointer, info.state);

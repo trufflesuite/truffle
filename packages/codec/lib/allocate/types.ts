@@ -4,7 +4,7 @@ import * as Ast from "@truffle/codec/ast/types";
 import * as AbiTypes from "@truffle/codec/abi/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer/types";
-import * as Decoding from "@truffle/codec/decode/types";
+import { DecodingMode } from "@truffle/codec/types";
 import { Types } from "@truffle/codec/format";
 
 //for passing to calldata/event allocation functions
@@ -114,7 +114,7 @@ export interface CalldataAllocation {
   abi: AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry;
   offset: number; //measured in bytes
   arguments: CalldataArgumentAllocation[];
-  allocationMode: Decoding.DecodingMode;
+  allocationMode: DecodingMode;
 }
 
 export interface CalldataArgumentAllocation {
@@ -155,7 +155,7 @@ export interface EventAllocation {
   contextHash: string;
   anonymous: boolean;
   arguments: EventArgumentAllocation[];
-  allocationMode: Decoding.DecodingMode;
+  allocationMode: DecodingMode;
 }
 
 export interface EventArgumentAllocation {

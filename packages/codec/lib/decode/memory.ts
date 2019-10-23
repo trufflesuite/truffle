@@ -9,11 +9,11 @@ import * as TypeUtils from "@truffle/codec/utils/datatype";
 import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
 import * as Pointer from "@truffle/codec/pointer/types";
-import * as Decoding from "./types";
+import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeMemory(dataType: Types.Type, pointer: Pointer.MemoryPointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeMemory(dataType: Types.Type, pointer: Pointer.MemoryPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {
     return yield* decodeMemoryReferenceByAddress(dataType, pointer, info);
   }
@@ -22,7 +22,7 @@ export default function* decodeMemory(dataType: Types.Type, pointer: Pointer.Mem
   }
 }
 
-export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<Decoding.DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
   const { state } = info;
   // debug("pointer %o", pointer);
   let rawValue: Uint8Array;
