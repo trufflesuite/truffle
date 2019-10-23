@@ -7,6 +7,7 @@ import { CalldataDecoding, LogDecoding } from "@truffle/codec/types";
 import BN from "bn.js";
 import * as Conversion from "@truffle/codec/conversion";
 
+/** @category ABIfication */
 export function abifyType(
   dataType: Format.Types.Type,
   userDefinedTypes?: Format.Types.TypesById
@@ -97,6 +98,7 @@ export function abifyType(
   }
 }
 
+/** @category ABIfication */
 export function abifyResult(
   result: Format.Values.Result,
   userDefinedTypes?: Format.Types.TypesById
@@ -285,6 +287,7 @@ export function abifyResult(
  * but you can, uh, throw an exception if you don't, I guess.)
  */
 
+/** @category ABIfication */
 export function abifyCalldataDecoding(
   decoding: CalldataDecoding,
   userDefinedTypes: Format.Types.TypesById
@@ -311,6 +314,7 @@ export function abifyCalldataDecoding(
   }
 }
 
+/** @category ABIfication */
 export function abifyLogDecoding(
   decoding: LogDecoding,
   userDefinedTypes: Format.Types.TypesById

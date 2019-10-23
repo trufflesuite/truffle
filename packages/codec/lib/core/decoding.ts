@@ -14,7 +14,7 @@ import {
 } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import * as Contexts from "@truffle/codec/contexts";
-import { abifyType, abifyResult } from "@truffle/codec/utils/abify";
+import { abifyType, abifyResult } from "@truffle/codec/abify";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import { StopDecodingError } from "@truffle/codec/decode/errors";

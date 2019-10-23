@@ -2,10 +2,6 @@ import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:wire");
 
 import * as Conversion from "@truffle/codec/conversion";
-import {
-  abifyCalldataDecoding,
-  abifyLogDecoding
-} from "@truffle/codec/utils/abify";
 import * as Utils from "../utils";
 import * as Abi from "@truffle/codec/abi";
 import * as Ast from "@truffle/codec/ast";
@@ -376,7 +372,7 @@ export default class WireDecoder {
    * @param decoding The decoding to abify
    */
   public abifyCalldataDecoding(decoding: CalldataDecoding): CalldataDecoding {
-    return abifyCalldataDecoding(decoding, this.userDefinedTypes);
+    return Codec.abifyCalldataDecoding(decoding, this.userDefinedTypes);
   }
 
   /**
@@ -388,7 +384,7 @@ export default class WireDecoder {
    * @param decoding The decoding to abify
    */
   public abifyLogDecoding(decoding: LogDecoding): LogDecoding {
-    return abifyLogDecoding(decoding, this.userDefinedTypes);
+    return Codec.abifyLogDecoding(decoding, this.userDefinedTypes);
   }
 
   //normally, this function gets the code of the given address at the given block,

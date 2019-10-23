@@ -16,11 +16,6 @@ require("source-map-support/register");
 import * as Format from "@truffle/codec/format";
 export { Format };
 
-//next: export all the utils!
-//you can't do "export * as Name" for whatever reason so...
-import * as Utils from "./utils";
-export { Utils };
-
 //now... various low-level stuff we want to export!
 //the actual decoding functions and related errors
 export { decodeVariable, decodeEvent, decodeCalldata } from "./core/decoding";
@@ -39,6 +34,8 @@ export { encodeMappingKey } from "./encode/key";
 //public-facing types for the interface
 export * from "./types";
 export * from "./common";
+
+export * from "./abify";
 
 //for those who want more low-level stuff...
 import * as Abi from "./abi";
