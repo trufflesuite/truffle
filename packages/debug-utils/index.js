@@ -365,7 +365,7 @@ var DebugUtils = {
     };
     let valueToInspect = nativized
       ? value
-      : new Codec.Inspect.ResultInspector(value);
+      : new Codec.Format.Utils.Inspect.ResultInspector(value);
     return util
       .inspect(valueToInspect, inspectOptions)
       .split(/\r?\n/g)

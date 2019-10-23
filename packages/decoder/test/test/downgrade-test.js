@@ -20,26 +20,29 @@ function verifyAbiDecoding(decoding, address) {
 
   //first argument: {{x: 7, y: 5}, z: 3}
   assert.strictEqual(decoding.arguments[0].value.type.typeClass, "tuple");
-  assert.deepEqual(Codec.Inspect.nativize(decoding.arguments[0].value), [
-    [7, 5],
-    3
-  ]);
+  assert.deepEqual(
+    Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+    [[7, 5], 3]
+  );
   //second argument: No (i.e. 1)
   assert.strictEqual(decoding.arguments[1].value.type.typeClass, "uint");
   assert.strictEqual(decoding.arguments[1].value.type.bits, 8);
-  assert.deepEqual(Codec.Inspect.nativize(decoding.arguments[1].value), 1);
+  assert.deepEqual(
+    Codec.Format.Utils.Inspect.nativize(decoding.arguments[1].value),
+    1
+  );
   //third argument: the contract (i.e. its address)
   assert.strictEqual(decoding.arguments[2].value.type.typeClass, "address");
   assert.strictEqual(decoding.arguments[2].value.type.kind, "general");
   assert.deepEqual(
-    Codec.Inspect.nativize(decoding.arguments[2].value),
+    Codec.Format.Utils.Inspect.nativize(decoding.arguments[2].value),
     address
   );
   //fourth argument: the same thing
   assert.strictEqual(decoding.arguments[3].value.type.typeClass, "address");
   assert.strictEqual(decoding.arguments[3].value.type.kind, "general");
   assert.deepEqual(
-    Codec.Inspect.nativize(decoding.arguments[3].value),
+    Codec.Format.Utils.Inspect.nativize(decoding.arguments[3].value),
     address
   );
 }
@@ -342,7 +345,7 @@ async function runEnumTestBody(DowngradeTest) {
   assert.strictEqual(decoyDecoding1.abi.name, "EnumSilliness1"); //also let's verify this is the right event
   assert.strictEqual(decoyDecoding1.decodingMode, "abi");
   let nativizedArguments1 = decoyDecoding1.arguments.map(({ value }) =>
-    Codec.Inspect.nativize(value)
+    Codec.Format.Utils.Inspect.nativize(value)
   );
   assert.deepStrictEqual(nativizedArguments1, swappedTxArguments);
 
@@ -352,7 +355,7 @@ async function runEnumTestBody(DowngradeTest) {
   assert.strictEqual(decoyDecoding2.abi.name, "EnumSilliness2"); //also let's verify this is the right event
   assert.strictEqual(decoyDecoding2.decodingMode, "abi");
   let nativizedArguments2 = decoyDecoding2.arguments.map(({ value }) =>
-    Codec.Inspect.nativize(value)
+    Codec.Format.Utils.Inspect.nativize(value)
   );
   assert.deepStrictEqual(nativizedArguments2, swappedTxArguments);
 }

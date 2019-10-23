@@ -293,7 +293,7 @@ class DebugPrinter {
     //if we're not in the single-variable case, we'll need to do some
     //things to Javascriptify our variables so that the JS syntax for
     //using them is closer to the Solidity syntax
-    variables = Codec.Inspect.nativizeVariables(variables);
+    variables = Codec.Format.Utils.Inspect.nativizeVariables(variables);
 
     let context = Object.assign(
       { $: this.select },
