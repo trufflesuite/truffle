@@ -14,7 +14,10 @@ require("source-map-support/register");
 
 //First: export the data format
 import * as Format from "@truffle/codec/format";
-export { Format };
+export {
+  /** @category Data */
+  Format
+};
 
 //now... various low-level stuff we want to export!
 //the actual decoding functions and related errors
