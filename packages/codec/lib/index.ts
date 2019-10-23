@@ -44,6 +44,9 @@ export { UnknownUserDefinedTypeError } from "./common/types"; //the various erro
 import * as Ast from "./ast";
 export { Ast };
 
+import * as Compiler from "./compiler";
+export { Compiler };
+
 import * as Pointer from "./pointer";
 export { Pointer };
 

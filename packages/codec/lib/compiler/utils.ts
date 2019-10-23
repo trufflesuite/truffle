@@ -2,9 +2,9 @@ import debugModule from "debug";
 const debug = debugModule("codec:utils:compiler");
 
 import semver from "semver";
-import * as Compiler from "@truffle/codec/compiler/types";
+import { CompilerVersion, SolidityFamily } from "./types";
 
-export function solidityFamily(compiler: Compiler.CompilerVersion): Compiler.SolidityFamily {
+export function solidityFamily(compiler: CompilerVersion): SolidityFamily {
   if(semver.satisfies(compiler.version, "~0.5 || >=0.5.0", {includePrerelease: true})) {
     return "0.5.x";
   }

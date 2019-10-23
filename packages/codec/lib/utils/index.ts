@@ -16,7 +16,6 @@ export * from "./wrap";
 export * from "./interface";
 import * as TypeUtils from "./datatype";
 export { TypeUtils };
-export * from "./compiler";
 
 import * as MakeType from "./maketype";
 export { MakeType };

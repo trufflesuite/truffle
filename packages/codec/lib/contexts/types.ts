@@ -1,6 +1,6 @@
 import * as AbiTypes from "@truffle/codec/abi/types";
 import * as Common from "@truffle/codec/common/types";
-import * as Compiler from "@truffle/codec/compiler/types";
+import * as Compiler from "@truffle/codec/compiler";
 
 export type Contexts = DecoderContexts | DebuggerContexts;
 

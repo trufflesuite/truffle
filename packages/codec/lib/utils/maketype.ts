@@ -3,11 +3,10 @@ const debug = debugModule("codec:format:maketype");
 
 import BN from "bn.js";
 import * as Common from "@truffle/codec/common/types";
-import * as Compiler from "@truffle/codec/compiler/types";
+import * as Compiler from "@truffle/codec/compiler";
 import * as Abi from "@truffle/codec/abi/types";
 import * as Ast from "@truffle/codec/ast";
 import * as DefinitionUtils from "./definition";
-import { solidityFamily } from "./compiler";
 import * as Format from "@truffle/codec/format";
 
 //NOTE: the following function will *not* work for arbitrary nodes! It will,
@@ -26,7 +25,7 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
         typeHint
       };
     case "address": {
-      switch(solidityFamily(compiler)) {
+      switch(Compiler.Utils.solidityFamily(compiler)) {
         case "pre-0.5.0":
           return {
             typeClass,

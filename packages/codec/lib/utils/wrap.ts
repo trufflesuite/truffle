@@ -4,7 +4,7 @@ const debug = debugModule("codec:utils:wrap");
 // untyped import since no @types/web3-utils exists
 const Web3Utils = require("web3-utils");
 import BN from "bn.js";
-import * as Compiler from "@truffle/codec/compiler/types";
+import * as Compiler from "@truffle/codec/compiler";
 import * as Ast from "@truffle/codec/ast";
 import * as MakeType from "./maketype";
 import * as Format from "@truffle/codec/format";
