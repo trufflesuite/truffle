@@ -25,7 +25,10 @@ import {
   storageSize
 } from "@truffle/codec/allocate/storage";
 import { decodeVariable } from "@truffle/codec/core/decoding";
-import { ContractBeingDecodedHasNoNodeError, ContractAllocationFailedError } from "../errors";
+import {
+  ContractBeingDecodedHasNoNodeError,
+  ContractAllocationFailedError
+} from "../errors";
 
 /**
  * The ContractDecoder class.  Spawns the [[ContractInstanceDecoder]] class.
@@ -41,7 +44,7 @@ export default class ContractDecoder {
   private contractNetwork: string;
   private contextHash: string;
 
-  private allocations: Codec.Evm.Types.AllocationInfo;
+  private allocations: Codec.Evm.AllocationInfo;
   private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
   private wireDecoder: WireDecoder;
@@ -151,14 +154,18 @@ export default class ContractDecoder {
   /**
    * See [[WireDecoder.abifyCalldataDecoding]].
    */
-  public abifyCalldataDecoding(decoding: Decoding.CalldataDecoding): Decoding.CalldataDecoding {
+  public abifyCalldataDecoding(
+    decoding: Decoding.CalldataDecoding
+  ): Decoding.CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
 
   /**
    * See [[WireDecoder.abifyLogDecoding]].
    */
-  public abifyLogDecoding(decoding: Decoding.LogDecoding): Decoding.LogDecoding {
+  public abifyLogDecoding(
+    decoding: Decoding.LogDecoding
+  ): Decoding.LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
@@ -235,7 +242,7 @@ export class ContractInstanceDecoder {
 
   private referenceDeclarations: Ast.AstNodes;
   private userDefinedTypes: Format.Types.TypesById;
-  private allocations: Codec.Evm.Types.AllocationInfo;
+  private allocations: Codec.Evm.AllocationInfo;
 
   private stateVariableReferences: Allocation.StorageMemberAllocation[];
 
@@ -282,7 +289,10 @@ export class ContractInstanceDecoder {
    */
   public async init(): Promise<void> {
     this.contractCode = ConversionUtils.toHexString(
-      await this.getCode(this.contractAddress, await this.web3.eth.getBlockNumber())
+      await this.getCode(
+        this.contractAddress,
+        await this.web3.eth.getBlockNumber()
+      )
     );
 
     if (
@@ -330,8 +340,11 @@ export class ContractInstanceDecoder {
     }
   }
 
-  private async decodeVariable(variable: Allocation.StorageMemberAllocation, block: number): Promise<DecoderTypes.StateVariable> {
-    const info: Codec.Evm.Types.EvmInfo = {
+  private async decodeVariable(
+    variable: Allocation.StorageMemberAllocation,
+    block: number
+  ): Promise<DecoderTypes.StateVariable> {
+    const info: Codec.Evm.EvmInfo = {
       state: {
         storage: {}
       },
@@ -366,8 +379,10 @@ export class ContractInstanceDecoder {
 
     return {
       name: variable.definition.name,
-      class: <Format.Types.ContractType> this.userDefinedTypes[variable.definedIn.id],
-      value: result.value,
+      class: <Format.Types.ContractType>(
+        this.userDefinedTypes[variable.definedIn.id]
+      ),
+      value: result.value
     };
   }
 
@@ -478,7 +493,9 @@ export class ContractInstanceDecoder {
     return (await this.decodeVariable(variable, blockNumber)).value;
   }
 
-  private findVariableByNameOrId(nameOrId: string | number): Allocation.StorageMemberAllocation | undefined {
+  private findVariableByNameOrId(
+    nameOrId: string | number
+  ): Allocation.StorageMemberAllocation | undefined {
     //case 1: an ID was input
     if (typeof nameOrId === "number" || nameOrId.match(/[0-9]+/)) {
       let id: number = Number(nameOrId);
@@ -528,11 +545,7 @@ export class ContractInstanceDecoder {
     }
     //otherwise, get it, cache it, and return it
     let word = ConversionUtils.toBytes(
-      await this.web3.eth.getStorageAt(
-        address,
-        slot,
-        block
-      ),
+      await this.web3.eth.getStorageAt(address, slot, block),
       Codec.Evm.Utils.WORD_SIZE
     );
     this.storageCache[block][address][slot.toString()] = word;
@@ -598,7 +611,10 @@ export class ContractInstanceDecoder {
    */
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Storage.Types.Slot | undefined = this.constructSlot(variable, ...indices)[0];
+    let slot: Storage.Types.Slot | undefined = this.constructSlot(
+      variable,
+      ...indices
+    )[0];
     //add mapping key and all ancestors
     debug("slot: %O", slot);
     while (
@@ -632,8 +648,11 @@ export class ContractInstanceDecoder {
    */
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();
-    let slot: Storage.Types.Slot | undefined = this.constructSlot(variable, ...indices)[0];
-    if(slot === undefined) {
+    let slot: Storage.Types.Slot | undefined = this.constructSlot(
+      variable,
+      ...indices
+    )[0];
+    if (slot === undefined) {
       return; //not strictly necessary, but may as well
     }
     //remove mapping key and all descendants
@@ -680,14 +699,18 @@ export class ContractInstanceDecoder {
   /**
    * See [[WireDecoder.abifyCalldataDecoding]].
    */
-  public abifyCalldataDecoding(decoding: Decoding.CalldataDecoding): Decoding.CalldataDecoding {
+  public abifyCalldataDecoding(
+    decoding: Decoding.CalldataDecoding
+  ): Decoding.CalldataDecoding {
     return this.wireDecoder.abifyCalldataDecoding(decoding);
   }
 
   /**
    * See [[WireDecoder.abifyLogDecoding]].
    */
-  public abifyLogDecoding(decoding: Decoding.LogDecoding): Decoding.LogDecoding {
+  public abifyLogDecoding(
+    decoding: Decoding.LogDecoding
+  ): Decoding.LogDecoding {
     return this.wireDecoder.abifyLogDecoding(decoding);
   }
 
@@ -748,7 +771,7 @@ export class ContractInstanceDecoder {
     let key: Format.Values.ElementaryValue;
     let slot: Storage.Types.Slot;
     let definition: Ast.AstNode;
-    switch(DefinitionUtils.typeClass(parentDefinition)) {
+    switch (DefinitionUtils.typeClass(parentDefinition)) {
       case "array":
         if (rawIndex instanceof BN) {
           index = rawIndex.clone();
@@ -790,7 +813,7 @@ export class ContractInstanceDecoder {
       case "struct":
         let parentId = DefinitionUtils.typeId(parentDefinition);
         let allocation: Allocation.StorageMemberAllocation;
-        if(typeof rawIndex === "number") {
+        if (typeof rawIndex === "number") {
           index = rawIndex;
           allocation = this.allocations.storage[parentId].members[index];
           definition = allocation.definition;
@@ -804,8 +827,10 @@ export class ContractInstanceDecoder {
         slot = {
           path: parentSlot,
           //need type coercion here -- we know structs don't contain constants but the compiler doesn't
-          offset: (<Pointer.StoragePointer>allocation.pointer).range.from.slot.offset.clone()
-        }
+          offset: (<Pointer.StoragePointer>(
+            allocation.pointer
+          )).range.from.slot.offset.clone()
+        };
         break;
       default:
         return [undefined, undefined];

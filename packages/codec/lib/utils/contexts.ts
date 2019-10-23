@@ -1,13 +1,16 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:contexts");
 
-import * as EVM from "./evm";
+import * as Evm from "@truffle/codec/evm";
 import * as Format from "@truffle/codec/format";
 import * as Contexts from "@truffle/codec/contexts/types";
 import escapeRegExp from "lodash.escaperegexp";
 
 //I split these next two apart because the type system was giving me trouble
-export function findDecoderContext(contexts: Contexts.DecoderContexts, binary: string): Contexts.DecoderContext | null {
+export function findDecoderContext(
+  contexts: Contexts.DecoderContexts,
+  binary: string
+): Contexts.DecoderContext | null {
   debug("binary %s", binary);
   let context = Object.values(contexts).find(context =>
     matchContext(context, binary)
@@ -16,7 +19,10 @@ export function findDecoderContext(contexts: Contexts.DecoderContexts, binary: s
   return context !== undefined ? context : null;
 }
 
-export function findDebuggerContext(contexts: Contexts.DebuggerContexts, binary: string): string | null {
+export function findDebuggerContext(
+  contexts: Contexts.DebuggerContexts,
+  binary: string
+): string | null {
   debug("binary %s", binary);
   let context = Object.values(contexts).find(context =>
     matchContext(context, binary)
@@ -25,7 +31,10 @@ export function findDebuggerContext(contexts: Contexts.DebuggerContexts, binary:
   return context !== undefined ? context.context : null;
 }
 
-export function matchContext(context: Contexts.Context, givenBinary: string): boolean {
+export function matchContext(
+  context: Contexts.Context,
+  givenBinary: string
+): boolean {
   let { binary, isConstructor } = context;
   let lengthDifference = givenBinary.length - binary.length;
   //first: if it's not a constructor, they'd better be equal in length.
@@ -34,7 +43,7 @@ export function matchContext(context: Contexts.Context, givenBinary: string): bo
   if (
     (!isConstructor && lengthDifference !== 0) ||
     lengthDifference < 0 ||
-    lengthDifference % (2 * EVM.WORD_SIZE) !== 0
+    lengthDifference % (2 * Evm.Utils.WORD_SIZE) !== 0
   ) {
     return false;
   }
@@ -54,7 +63,9 @@ export function matchContext(context: Contexts.Context, givenBinary: string): bo
   return true;
 }
 
-export function normalizeContexts(contexts: Contexts.Contexts): Contexts.Contexts {
+export function normalizeContexts(
+  contexts: Contexts.Contexts
+): Contexts.Contexts {
   //unfortunately, due to our current link references format, we can't
   //really use the binary from the artifact directly -- neither for purposes
   //of matching, nor for purposes of decoding internal functions.  So, we
@@ -64,7 +75,7 @@ export function normalizeContexts(contexts: Contexts.Contexts): Contexts.Context
   debug("normalizing contexts");
 
   //first, let's clone the input
-  let newContexts: Contexts.Contexts = {...contexts};
+  let newContexts: Contexts.Contexts = { ...contexts };
 
   debug("contexts cloned");
   debug("cloned contexts: %O", newContexts);
@@ -74,7 +85,7 @@ export function normalizeContexts(contexts: Contexts.Contexts): Contexts.Context
   //don't run into problems when one name is a substring of another.
   //For simplicity, we'll exclude names of length <38, because we can
   //handle these with our more general check for link references at the end
-  const fillerLength = 2 * EVM.ADDRESS_SIZE;
+  const fillerLength = 2 * Evm.Utils.ADDRESS_SIZE;
   let names = Object.values(newContexts)
     .filter(context => context.contractKind === "library")
     .map(context => context.contractName)
@@ -88,9 +99,7 @@ export function normalizeContexts(contexts: Contexts.Contexts): Contexts.Context
   //unfortunately, str.replace() will only replace all if you use a /g regexp;
   //note that because names may contain '$', we need to escape them
   //(also we prepend "__" because that's the placeholder format)
-  let regexps = names.map(
-    name => new RegExp(escapeRegExp("__" + name), "g")
-  );
+  let regexps = names.map(name => new RegExp(escapeRegExp("__" + name), "g"));
 
   debug("regexps prepared");
 
@@ -118,17 +127,13 @@ export function normalizeContexts(contexts: Contexts.Contexts): Contexts.Context
   //but there's one more step -- libraries' deployedBytecode will include
   //0s in place of their own address instead of a link reference at the
   //beginning, so we need to account for that too
-  const pushAddressInstruction = (
-    0x60 +
-    EVM.ADDRESS_SIZE -
-    1
-  ).toString(16); //"73"
+  const pushAddressInstruction = (0x60 + Evm.Utils.ADDRESS_SIZE - 1).toString(
+    16
+  ); //"73"
   for (let context of Object.values(newContexts)) {
     if (context.contractKind === "library" && !context.isConstructor) {
       context.binary = context.binary.replace(
-        "0x" +
-          pushAddressInstruction +
-          "00".repeat(EVM.ADDRESS_SIZE),
+        "0x" + pushAddressInstruction + "00".repeat(Evm.Utils.ADDRESS_SIZE),
         "0x" + pushAddressInstruction + replacement
       );
     }
@@ -140,8 +145,10 @@ export function normalizeContexts(contexts: Contexts.Contexts): Contexts.Context
   return newContexts;
 }
 
-export function contextToType(context: Contexts.Context): Format.Types.ContractType {
-  if(context.contractId !== undefined) {
+export function contextToType(
+  context: Contexts.Context
+): Format.Types.ContractType {
+  if (context.contractId !== undefined) {
     return {
       typeClass: "contract",
       kind: "native",
@@ -150,8 +157,7 @@ export function contextToType(context: Contexts.Context): Format.Types.ContractT
       contractKind: context.contractKind,
       payable: context.payable
     };
-  }
-  else {
+  } else {
     return {
       typeClass: "contract",
       kind: "foreign",

@@ -2,7 +2,6 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:stack");
 
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
-import * as EvmUtils from "@truffle/codec/utils/evm";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
@@ -16,29 +15,39 @@ import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeStack(dataType: Format.Types.Type, pointer: Pointer.StackPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+export default function* decodeStack(
+  dataType: Format.Types.Type,
+  pointer: Pointer.StackPointer,
+  info: Evm.EvmInfo
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   let rawValue: Uint8Array;
   try {
-   rawValue = yield* read(pointer, info.state);
-  }
-  catch(error) {
-    return <Format.Errors.ErrorResult> { //no idea why TS is failing here
+    rawValue = yield* read(pointer, info.state);
+  } catch (error) {
+    return <Format.Errors.ErrorResult>{
+      //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
       error: (<DecodingError>error).error
     };
   }
-  const literalPointer: Pointer.StackLiteralPointer = { location: "stackliteral" as const, literal: rawValue };
+  const literalPointer: Pointer.StackLiteralPointer = {
+    location: "stackliteral" as const,
+    literal: rawValue
+  };
   return yield* decodeLiteral(dataType, literalPointer, info);
 }
 
-export function* decodeLiteral(dataType: Format.Types.Type, pointer: Pointer.StackLiteralPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
-
+export function* decodeLiteral(
+  dataType: Format.Types.Type,
+  pointer: Pointer.StackLiteralPointer,
+  info: Evm.EvmInfo
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   debug("type %O", dataType);
   debug("pointer %o", pointer);
 
-  if(TypeUtils.isReferenceType(dataType)) {
-    switch(dataType.location) {
+  if (TypeUtils.isReferenceType(dataType)) {
+    switch (dataType.location) {
       case "memory":
         //first: do we have a memory pointer? if so we can just dispatch to
         //decodeMemoryReference
@@ -55,16 +64,23 @@ export function* decodeLiteral(dataType: Format.Types.Type, pointer: Pointer.Sta
         //if it's a string or bytes, we will interpret the pointer ourself and skip
         //straight to decodeValue.  this is to allow us to correctly handle the
         //case of msg.data used as a mapping key.
-        if(dataType.typeClass === "bytes" || dataType.typeClass === "string") {
-          let startAsBN = ConversionUtils.toBN(pointer.literal.slice(0, EvmUtils.WORD_SIZE));
-          let lengthAsBN = ConversionUtils.toBN(pointer.literal.slice(EvmUtils.WORD_SIZE));
+        if (dataType.typeClass === "bytes" || dataType.typeClass === "string") {
+          let startAsBN = ConversionUtils.toBN(
+            pointer.literal.slice(0, Evm.Utils.WORD_SIZE)
+          );
+          let lengthAsBN = ConversionUtils.toBN(
+            pointer.literal.slice(Evm.Utils.WORD_SIZE)
+          );
           let start: number;
           let length: number;
           try {
             start = startAsBN.toNumber();
-          }
-          catch(_) {
-            return <Format.Errors.BytesDynamicErrorResult|Format.Errors.StringErrorResult> { //again with the TS failures...
+          } catch (_) {
+            return <
+              | Format.Errors.BytesDynamicErrorResult
+              | Format.Errors.StringErrorResult
+            >{
+              //again with the TS failures...
               type: dataType,
               kind: "error" as const,
               error: {
@@ -75,9 +91,12 @@ export function* decodeLiteral(dataType: Format.Types.Type, pointer: Pointer.Sta
           }
           try {
             length = lengthAsBN.toNumber();
-          }
-          catch(_) {
-            return <Format.Errors.BytesDynamicErrorResult|Format.Errors.StringErrorResult> { //again with the TS failures...
+          } catch (_) {
+            return <
+              | Format.Errors.BytesDynamicErrorResult
+              | Format.Errors.StringErrorResult
+            >{
+              //again with the TS failures...
               type: dataType,
               kind: "error" as const,
               error: {
@@ -86,42 +105,49 @@ export function* decodeLiteral(dataType: Format.Types.Type, pointer: Pointer.Sta
               }
             };
           }
-          let newPointer = { location: "calldata" as "calldata", start, length };
+          let newPointer = {
+            location: "calldata" as "calldata",
+            start,
+            length
+          };
           return yield* decodeValue(dataType, newPointer, info);
         }
 
         //otherwise, is it a dynamic array?
-        if(dataType.typeClass === "array" && dataType.kind === "dynamic") {
+        if (dataType.typeClass === "array" && dataType.kind === "dynamic") {
           //in this case, we're actually going to *throw away* the length info,
           //because it makes the logic simpler -- we'll get the length info back
           //from calldata
-          let locationOnly = pointer.literal.slice(0, EvmUtils.WORD_SIZE);
+          let locationOnly = pointer.literal.slice(0, Evm.Utils.WORD_SIZE);
           //HACK -- in order to read the correct location, we need to add an offset
           //of -32 (since, again, we're throwing away the length info), so we pass
           //that in as the "base" value
           return yield* decodeAbiReferenceByAddress(
             dataType,
-            {location: "stackliteral" as const, literal: locationOnly},
+            { location: "stackliteral" as const, literal: locationOnly },
             info,
-            { abiPointerBase: -EvmUtils.WORD_SIZE}
+            { abiPointerBase: -Evm.Utils.WORD_SIZE }
           );
-        }
-        else {
+        } else {
           //multivalue case -- this case is straightforward
           //pass in 0 as the base since this is an absolute pointer
           //(yeah we don't need to but let's be explicit)
-          return yield* decodeAbiReferenceByAddress(dataType, pointer, info, { abiPointerBase: 0 });
+          return yield* decodeAbiReferenceByAddress(dataType, pointer, info, {
+            abiPointerBase: 0
+          });
         }
     }
   }
 
   //next: do we have an external function?  these work differently on the stack
   //than elsewhere, so we can't just pass it on to decodeValue.
-  if(dataType.typeClass === "function" && dataType.visibility === "external") {
-    let address = pointer.literal.slice(0, EvmUtils.WORD_SIZE);
-    let selectorWord = pointer.literal.slice(-EvmUtils.WORD_SIZE);
-    if(!checkPaddingLeft(address, EvmUtils.ADDRESS_SIZE)
-      ||!checkPaddingLeft(selectorWord, EvmUtils.SELECTOR_SIZE)) {
+  if (dataType.typeClass === "function" && dataType.visibility === "external") {
+    let address = pointer.literal.slice(0, Evm.Utils.WORD_SIZE);
+    let selectorWord = pointer.literal.slice(-Evm.Utils.WORD_SIZE);
+    if (
+      !checkPaddingLeft(address, Evm.Utils.ADDRESS_SIZE) ||
+      !checkPaddingLeft(selectorWord, Evm.Utils.SELECTOR_SIZE)
+    ) {
       return {
         type: dataType,
         kind: "error" as const,
@@ -132,7 +158,7 @@ export function* decodeLiteral(dataType: Format.Types.Type, pointer: Pointer.Sta
         }
       };
     }
-    let selector = selectorWord.slice(-EvmUtils.SELECTOR_SIZE);
+    let selector = selectorWord.slice(-Evm.Utils.SELECTOR_SIZE);
     return {
       type: dataType,
       kind: "value" as const,
@@ -144,5 +170,7 @@ export function* decodeLiteral(dataType: Format.Types.Type, pointer: Pointer.Sta
   //however, note that because we're on the stack, we use the permissive padding
   //option so that errors won't result due to values with bad padding
   //(of numeric or bytesN type, anyway)
-  return yield* decodeValue(dataType, pointer, info, { permissivePadding: true });
+  return yield* decodeValue(dataType, pointer, info, {
+    permissivePadding: true
+  });
 }

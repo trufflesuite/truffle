@@ -38,7 +38,7 @@ export function makeContext(
   const abi = Codec.Utils.Abi.schemaAbiToAbi(contract.abi);
   const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
   const hash = Codec.Utils.Conversion.toHexString(
-    Codec.Utils.Evm.keccak256({
+    Codec.Evm.Utils.keccak256({
       type: "string",
       value: binary
     })
@@ -76,11 +76,11 @@ function contractKind(
   if (contract.deployedBytecode) {
     const pushAddressInstruction = (
       0x60 +
-      Codec.Utils.Evm.ADDRESS_SIZE -
+      Codec.Evm.Utils.ADDRESS_SIZE -
       1
     ).toString(16); //"73"
     const libraryString =
-      "0x" + pushAddressInstruction + "00".repeat(Codec.Utils.Evm.ADDRESS_SIZE);
+      "0x" + pushAddressInstruction + "00".repeat(Codec.Evm.Utils.ADDRESS_SIZE);
     return contract.deployedBytecode.startsWith(libraryString)
       ? "library"
       : "contract";

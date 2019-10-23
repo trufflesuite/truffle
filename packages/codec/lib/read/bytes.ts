@@ -1,4 +1,4 @@
-import { WORD_SIZE } from "@truffle/codec/utils/evm";
+import * as Evm from "@truffle/codec/evm";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
 /**
@@ -11,7 +11,7 @@ import { DecodingError } from "@truffle/codec/decode/errors";
  * @return {BN}
  */
 export function read(memory: Uint8Array, offset: number) {
-  return readBytes(memory, offset, WORD_SIZE);
+  return readBytes(memory, offset, Evm.Utils.WORD_SIZE);
 }
 
 /**
@@ -22,8 +22,7 @@ export function read(memory: Uint8Array, offset: number) {
  * @param length - number
  */
 export function readBytes(memory: Uint8Array, offset: number, length: number) {
-
-  if(!Number.isSafeInteger(offset + length)) {
+  if (!Number.isSafeInteger(offset + length)) {
     throw new DecodingError({
       kind: "ReadErrorBytes" as const,
       start: offset,
@@ -45,8 +44,7 @@ export function readBytes(memory: Uint8Array, offset: number, length: number) {
   let readLength;
   if (excess > 0) {
     readLength = memory.length - offset;
-  }
-  else {
+  } else {
     readLength = length;
   }
 

@@ -2,7 +2,6 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:constant");
 
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
-import * as EvmUtils from "@truffle/codec/utils/evm";
 import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import decodeValue from "./value";
@@ -11,8 +10,11 @@ import * as Evm from "@truffle/codec/evm";
 import { DecoderRequest } from "@truffle/codec/types";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeConstant(dataType: Format.Types.Type, pointer: Pointer.ConstantDefinitionPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
-
+export default function* decodeConstant(
+  dataType: Format.Types.Type,
+  pointer: Pointer.ConstantDefinitionPointer,
+  info: Evm.EvmInfo
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   debug("pointer %o", pointer);
 
   //normally, we just dispatch to decodeValue.
@@ -21,13 +23,12 @@ export default function* decodeConstant(dataType: Format.Types.Type, pointer: Po
   //of the word, but readDefinition will put them at the *end* of the
   //word.  So we'll have to adjust things ourselves.
 
-  if(dataType.typeClass === "bytes" && dataType.kind === "static") {
+  if (dataType.typeClass === "bytes" && dataType.kind === "static") {
     let size = dataType.length;
     let word: Uint8Array;
     try {
       word = yield* read(pointer, info.state);
-    }
-    catch(error) {
+    } catch (error) {
       return {
         type: dataType,
         kind: "error" as const,
@@ -35,7 +36,7 @@ export default function* decodeConstant(dataType: Format.Types.Type, pointer: Po
       };
     }
     //not bothering to check padding; shouldn't be necessary
-    let bytes = word.slice(EvmUtils.WORD_SIZE - size);
+    let bytes = word.slice(Evm.Utils.WORD_SIZE - size);
     return {
       type: dataType,
       kind: "value" as const,

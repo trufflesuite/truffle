@@ -1,5 +1,4 @@
-import * as Types from "./types";
-export { Types };
+export * from "./types";
 
-import * as Utils from "@truffle/codec/utils/evm";
+import * as Utils from "./utils";
 export { Utils };

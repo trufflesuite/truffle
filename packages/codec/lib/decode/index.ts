@@ -14,14 +14,18 @@ import decodeConstant from "./constant";
 import decodeSpecial from "./special";
 import decodeTopic from "./event";
 
-export default function* decode(dataType: Format.Types.Type, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+export default function* decode(
+  dataType: Format.Types.Type,
+  pointer: Pointer.DataPointer,
+  info: Evm.EvmInfo,
+  options: DecoderOptions = {}
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 
-  switch(pointer.location) {
-
+  switch (pointer.location) {
     case "storage":
-      return yield* decodeStorage(dataType, pointer, info)
+      return yield* decodeStorage(dataType, pointer, info);
 
     case "stack":
       return yield* decodeStack(dataType, pointer, info);

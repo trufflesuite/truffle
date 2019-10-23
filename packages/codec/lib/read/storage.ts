@@ -1,7 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("codec:read:storage");
 
-import * as EvmUtils from "@truffle/codec/utils/evm";
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as Storage from "@truffle/codec/storage";
 import { DecoderRequest } from "@truffle/codec/types";
@@ -15,18 +14,21 @@ import BN from "bn.js";
  * @param slot - see slotAddress() code to understand how these work
  * @param offset - for array, offset from the keccak determined location
  */
-export function* read(storage: Evm.Types.WordMapping, slot: Storage.Types.Slot): Generator<DecoderRequest, Uint8Array, Uint8Array> {
+export function* read(
+  storage: Evm.WordMapping,
+  slot: Storage.Types.Slot
+): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   const address: BN = Storage.Utils.slotAddress(slot);
 
   // debug("reading slot: %o", ConversionUtils.toHexString(address));
 
-  const hexAddress = ConversionUtils.toHexString(address, EvmUtils.WORD_SIZE);
+  const hexAddress = ConversionUtils.toHexString(address, Evm.Utils.WORD_SIZE);
   let word: Uint8Array = storage[hexAddress];
 
   //if we can't find the word in the map, we place a request to the invoker to supply it
   //(contract-decoder will look it up from the blockchain, while the debugger will just
   //say 0)
-  if(word === undefined) {
+  if (word === undefined) {
     word = yield {
       type: "storage",
       slot: address
@@ -52,7 +54,10 @@ export function* read(storage: Evm.Types.WordMapping, slot: Storage.Types.Slot):
  * @param to - location (see ^). inclusive.
  * @param length - instead of `to`, number of bytes after `from`
  */
-export function* readRange(storage: Evm.Types.WordMapping, range: Storage.Types.Range): Generator<DecoderRequest, Uint8Array, Uint8Array> {
+export function* readRange(
+  storage: Evm.WordMapping,
+  range: Storage.Types.Range
+): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   debug("readRange %o", range);
 
   let { from, to, length } = range;
@@ -67,42 +72,43 @@ export function* readRange(storage: Evm.Types.WordMapping, range: Storage.Types.
       slot: {
         path: from.slot.path || undefined,
         offset: from.slot.offset.addn(
-          Math.floor((from.index + length - 1) / EvmUtils.WORD_SIZE)
+          Math.floor((from.index + length - 1) / Evm.Utils.WORD_SIZE)
         )
       },
-      index: (from.index + length - 1) % EvmUtils.WORD_SIZE
+      index: (from.index + length - 1) % Evm.Utils.WORD_SIZE
     };
   }
 
-  debug("normalized readRange %o", {from,to});
+  debug("normalized readRange %o", { from, to });
 
   let totalWordsAsBN: BN = to.slot.offset.sub(from.slot.offset).addn(1);
   let totalWords: number;
   try {
     totalWords = totalWordsAsBN.toNumber();
-  }
-  catch(_) {
+  } catch (_) {
     throw new DecodingError({
       kind: "ReadErrorStorage" as const,
       range
     });
   }
 
-  let data = new Uint8Array(totalWords * EvmUtils.WORD_SIZE);
+  let data = new Uint8Array(totalWords * Evm.Utils.WORD_SIZE);
 
   for (let i = 0; i < totalWords; i++) {
     let offset = from.slot.offset.addn(i);
     const word = yield* read(storage, { ...from.slot, offset });
     if (typeof word !== "undefined") {
-      data.set(word, i * EvmUtils.WORD_SIZE);
+      data.set(word, i * Evm.Utils.WORD_SIZE);
     }
   }
   debug("words %o", data);
 
-  data = data.slice(from.index, (totalWords - 1) * EvmUtils.WORD_SIZE + to.index + 1);
+  data = data.slice(
+    from.index,
+    (totalWords - 1) * Evm.Utils.WORD_SIZE + to.index + 1
+  );
 
   debug("data: %o", data);
 
   return data;
 }
-
