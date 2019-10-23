@@ -34,4 +34,8 @@ export class InterfaceAdapter {
   public getNetworkId(): Promise<NetworkId> {
     return this.adapter.getNetworkId();
   }
+
+  public getBlock(block: any): Promise<Block> {
+    return this.adapter.getBlock(block);
+  }
 }
