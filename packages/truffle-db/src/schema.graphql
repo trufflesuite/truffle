@@ -70,6 +70,11 @@ type LinkValue {
   value: Bytes
 }
 
+type LinkedBytecode {
+  bytecode: Bytecode!
+  linkValues: [LinkValue]
+}
+
 type LinkReference {
   offsets: [ByteOffset!]!
   name: String

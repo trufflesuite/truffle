@@ -105,8 +105,13 @@ export const schema = mergeSchemas({
       id: ID!
     }
 
+    input ContractConstructorLinkedBytecodeInput {
+      bytecode: ContractConstructorBytecodeInput!
+      linkValues: [LinkValueInput]
+    }
+
     input ContractConstructorInput {
-      createBytecode: ContractConstructorBytecodeInput!
+      createBytecode: ContractConstructorLinkedBytecodeInput!
     }
 
     input ContractInput {
@@ -203,12 +208,17 @@ export const schema = mergeSchemas({
       constructor: ContractInstanceCreationConstructorInput!
     }
 
+    input ContractInstanceLinkedBytecodeInput {
+      bytecode: ContractInstanceBytecodeInput!
+      linkValues: [LinkValueInput]
+    }
+
     input ContractInstanceInput {
       address: Address!
       network: ContractInstanceNetworkInput
       creation: ContractInstanceCreationInput
       contract: ContractInstanceContractInput
-      callBytecode: ContractInstanceBytecodeInput
+      callBytecode: ContractInstanceLinkedBytecodeInput
     }
 
     input ContractInstancesAddInput {
