@@ -411,11 +411,14 @@ export class ContractInstanceDecoder {
   /**
    * Decodes the contract's variables; returns an array of these decoded variables.
    * See the documentation of the [[DecodedVariable]] type for more.
+   *
    * Note that variable decoding can only operate in full mode; if the decoder wasn't able to
    * start up in full mode, this method will throw an exception.
+   *
    * Note that decoding mappings requires first watching mapping keys in order to get any results;
    * see the documentation for [[watchMappingKey]].
    * Additional methods to make mapping decoding a less manual affair are planned for the future.
+   *
    * Also, due to a technical limitation, it is not currently possible to
    * usefully decode internal function pointers.  See the
    * [[Format.Values.FunctionInternalValue|FunctionInternalValue]]
@@ -448,9 +451,10 @@ export class ContractInstanceDecoder {
   /**
    * Decodes an individual contract variable; returns its value as a
    * [[Format.Values.Result|Result]].  See the documentation for
-   * [[variables|variables()]] for various caveats that also apply here.  If
-   * the variable can't be located, returns undefined.  In the future this will
-   * probably throw an exception instead.
+   * [[variables|variables()]] for various caveats that also apply here.
+   *
+   * If the variable can't be located, returns undefined.  In the future this
+   * will probably throw an exception instead.
    * @param nameOrId The name (or numeric ID, if you know that) of the
    *   variable.  Can be given as a qualified name, allowing one to get at
    *   shadowed variables from base contracts.  If given by ID, can be given as a
@@ -551,11 +555,17 @@ export class ContractInstanceDecoder {
    * Watches a mapping key; adds it to the decoder's list of watched mapping
    * keys.  This affects the results of both [[variables|variables()]] and
    * [[variable|variable()]].  When a mapping is decoded, only the values at
-   * its watched keys will be included in its value.  Note that it is possible
+   * its watched keys will be included in its value.
+   *
+   * Note that it is possible
    * to watch mappings that are inside structs, arrays, other mappings, etc;
-   * see below for more on how to do this.  Note that watching mapping keys is
+   * see below for more on how to do this.
+   *
+   * Note that watching mapping keys is
    * only possible in full mode; if the decoder wasn't able to start up in full
-   * mode, this method will throw an exception.  Warning: At the moment, this
+   * mode, this method will throw an exception.
+   *
+   * Warning: At the moment, this
    * function does very little to check its input.  Bad input may have
    * unpredictable results.  This will be remedied in the future (by having it
    * throw exceptions on bad input), but right now essentially no checking is
@@ -569,12 +579,16 @@ export class ContractInstanceDecoder {
    *   interpreted as indices into or members of the variable identified by the
    *   variable argument; see the example.  Array indices and mapping
    *   keys are specified by value; struct members are specified by name or (if
-   *   you know it) numeric ID.  Numeric values can be given as number, BN, or
+   *   you know it) numeric ID.
+   *
+   *   Numeric values can be given as number, BN, or
    *   numeric string.  Bytestring values are given as hex strings.  Boolean
    *   values are given as booleans, or as the strings "true" or "false".
    *   Address values are given as hex strings; they are currently not required
    *   to be in checksum case, but this will likely change in the future, so
-   *   don't rely on that.  Note that if the path to a given mapping key
+   *   don't rely on that.
+   *
+   *   Note that if the path to a given mapping key
    *   includes mapping keys above it, any ancestors will also be watched
    *   automatically.
    * @example First, a simple example.  Say we have a mapping `m` of type
@@ -615,11 +629,14 @@ export class ContractInstanceDecoder {
   /**
    * Opposite of [[watchMappingKey]]; unwatches the specified mapping key.  See
    * watchMappingKey for more on how watching mapping keys works, and on how
-   * the parameters work.  Note that unwatching a mapping key will also unwatch
-   * all its descendants.  E.g., if `m` is of type `mapping(uint =>
-   * mapping(uint => uint))`, then unwatching `m[0]` will also unwatch
-   * `m[0][0]`, `m[0][1]`, etc, if these are currently watched.  This function
-   * has the same caveats as watchMappingKey.
+   * the parameters work.
+   *
+   * Note that unwatching a mapping key will also unwatch all its descendants.
+   * E.g., if `m` is of type `mapping(uint => mapping(uint => uint))`, then
+   * unwatching `m[0]` will also unwatch `m[0][0]`, `m[0][1]`, etc, if these
+   * are currently watched.
+   *
+   * This function has the same caveats as watchMappingKey.
    */
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
     this.checkAllocationSuccess();

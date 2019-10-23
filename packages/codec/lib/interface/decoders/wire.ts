@@ -213,9 +213,11 @@ export default class WireDecoder {
    * [Transaction](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-gettransaction-return)
    * object and returns a copy of that object but with an additional decoding
    * field.  This field holds a [[CalldataDecoding]]; see the documentation on
-   * [[DecodedTransaction]] for more.  Note that decoding of transactions sent
-   * to libraries is presently not supported and may have unreliable results.
-   * Limited support for this is planned for future versions.
+   * [[DecodedTransaction]] for more.
+   *
+   * Note that decoding of transactions sent to libraries is presently not
+   * supported and may have unreliable results.  Limited support for this is
+   * planned for future versions.
    * @param transaction The transaction to be decoded.
    * @param additionalContexts For internal use only; please don't use this.
    */
@@ -371,6 +373,7 @@ export default class WireDecoder {
   /**
    * Takes a [[CalldataDecoding]], which may have been produced in full mode or ABI mode,
    * and converts it to its ABI mode equivalent.  See the README for more information.
+   *
    * Please only use on decodings produced by this same decoder instance; use
    * on decodings produced by other instances may not work consistently.
    * @param decoding The decoding to abify
@@ -382,6 +385,7 @@ export default class WireDecoder {
   /**
    * Takes a [[LogDecoding]], which may have been produced in full mode or ABI mode,
    * and converts it to its ABI mode equivalent.  See the README for more information.
+   *
    * Please only use on decodings produced by this same decoder instance; use
    * on decodings produced by other instances may not work consistently.
    * @param decoding The decoding to abify

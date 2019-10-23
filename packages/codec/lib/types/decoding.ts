@@ -100,9 +100,6 @@ export interface ConstructorDecoding {
  * This type represents a decoding for a call to a known class that does not appear
  * to be a function call, i.e., one that will result in the fallback function being invoked
  * if there is one.
- *
- * NOTE: Because libraries do not expose their functions in their ABI, all
- * calls to known libraries will decode to this.
  */
 export interface MessageDecoding {
   /**
