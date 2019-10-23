@@ -1,5 +1,6 @@
 import Web3 from "web3";
 import { Provider } from "web3/providers";
+import { BlockType } from "web3/eth/types";
 
 import { EthereumDefinition } from "./ethereum-overloads";
 import { QuorumDefinition } from "./quorum-overloads";
@@ -81,5 +82,9 @@ export class Web3Shim extends Web3 {
 
   public getNetworkId() {
     return this.eth.net.getId();
+  }
+
+  public getBlock(block: BlockType) {
+    return this.eth.getBlock(block);
   }
 }
