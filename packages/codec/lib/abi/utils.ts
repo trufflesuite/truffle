@@ -7,7 +7,7 @@ import { Abi as SchemaAbi } from "truffle-contract-schema/spec";
 import * as Evm from "@truffle/codec/evm";
 import * as Common from "@truffle/codec/common";
 import * as Ast from "@truffle/codec/ast";
-import * as AbiTypes from "./types";
+import * as Abi from "./types";
 import { definitionToAbi } from "@truffle/codec/utils/definition2abi";
 
 //NOTE: SchemaAbi is kind of loose and a pain to use.
@@ -15,40 +15,40 @@ import { definitionToAbi } from "@truffle/codec/utils/definition2abi";
 //(we combine this with adding a "function" tag for
 //entries that lack it)
 
-export const DEFAULT_CONSTRUCTOR_ABI: AbiTypes.ConstructorAbiEntry = {
+export const DEFAULT_CONSTRUCTOR_ABI: Abi.ConstructorAbiEntry = {
   type: "constructor",
   inputs: [],
   stateMutability: "nonpayable",
   payable: false
 };
 
-export const DEFAULT_FALLBACK_ABI: AbiTypes.FallbackAbiEntry = {
+export const DEFAULT_FALLBACK_ABI: Abi.FallbackAbiEntry = {
   type: "fallback",
   stateMutability: "nonpayable",
   payable: false
 };
 
-export function schemaAbiToAbi(abiLoose: SchemaAbi): AbiTypes.Abi {
+export function schemaAbiToAbi(abiLoose: SchemaAbi): Abi.Abi {
   return abiLoose.map(
     entry =>
       entry.type
-        ? <AbiTypes.AbiEntry>entry
-        : <AbiTypes.AbiEntry>{ type: "function", ...entry }
+        ? <Abi.AbiEntry>entry
+        : <Abi.AbiEntry>{ type: "function", ...entry }
   );
 }
 
 //note the return value only includes functions!
 export function computeSelectors(
-  abi: AbiTypes.Abi | undefined
-): AbiTypes.FunctionAbiBySelectors | undefined {
+  abi: Abi.Abi | undefined
+): Abi.FunctionAbiBySelectors | undefined {
   if (abi === undefined) {
     return undefined;
   }
   return Object.assign(
     {},
     ...abi
-      .filter((abiEntry: AbiTypes.AbiEntry) => abiEntry.type === "function")
-      .map((abiEntry: AbiTypes.FunctionAbiEntry) => ({
+      .filter((abiEntry: Abi.AbiEntry) => abiEntry.type === "function")
+      .map((abiEntry: Abi.FunctionAbiEntry) => ({
         [abiSelector(abiEntry)]: abiEntry
       }))
   );
@@ -56,7 +56,7 @@ export function computeSelectors(
 
 //does this ABI have a payable fallback function?
 export function abiHasPayableFallback(
-  abi: AbiTypes.Abi | undefined
+  abi: Abi.Abi | undefined
 ): boolean | undefined {
   if (abi === undefined) {
     return undefined;
@@ -64,25 +64,22 @@ export function abiHasPayableFallback(
   return abiMutability(getFallbackEntry(abi)) === "payable";
 }
 
-export function abiHasFallback(abi: AbiTypes.Abi) {
-  return abi.some(
-    (abiEntry: AbiTypes.AbiEntry) => abiEntry.type === "fallback"
-  );
+export function abiHasFallback(abi: Abi.Abi) {
+  return abi.some((abiEntry: Abi.AbiEntry) => abiEntry.type === "fallback");
 }
 
 //gets the fallback entry; if there isn't one, returns a default one
-export function getFallbackEntry(abi: AbiTypes.Abi): AbiTypes.FallbackAbiEntry {
+export function getFallbackEntry(abi: Abi.Abi): Abi.FallbackAbiEntry {
   //no idea why TS's type inference is failing on this one...
   return (
-    <AbiTypes.FallbackAbiEntry>(
-      abi.find(abiEntry => abiEntry.type === "fallback")
-    ) || DEFAULT_FALLBACK_ABI
+    <Abi.FallbackAbiEntry>abi.find(abiEntry => abiEntry.type === "fallback") ||
+    DEFAULT_FALLBACK_ABI
   );
 }
 
 export function fallbackAbiForPayability(
   payable: boolean
-): AbiTypes.FallbackAbiEntry {
+): Abi.FallbackAbiEntry {
   return {
     type: "fallback",
     stateMutability: payable ? "payable" : "nonpayable",
@@ -93,9 +90,9 @@ export function fallbackAbiForPayability(
 //shim for old abi versions
 function abiMutability(
   abiEntry:
-    | AbiTypes.FunctionAbiEntry
-    | AbiTypes.ConstructorAbiEntry
-    | AbiTypes.FallbackAbiEntry
+    | Abi.FunctionAbiEntry
+    | Abi.ConstructorAbiEntry
+    | Abi.FallbackAbiEntry
 ): Common.Mutability {
   if (abiEntry.stateMutability !== undefined) {
     return abiEntry.stateMutability;
@@ -111,17 +108,17 @@ function abiMutability(
 
 //NOTE: this function returns the written out SIGNATURE, not the SELECTOR
 export function abiSignature(
-  abiEntry: AbiTypes.FunctionAbiEntry | AbiTypes.EventAbiEntry
+  abiEntry: Abi.FunctionAbiEntry | Abi.EventAbiEntry
 ): string {
   return abiEntry.name + abiTupleSignature(abiEntry.inputs);
 }
 
-export function abiTupleSignature(parameters: AbiTypes.AbiParameter[]): string {
+export function abiTupleSignature(parameters: Abi.AbiParameter[]): string {
   let components = parameters.map(abiTypeSignature);
   return "(" + components.join(",") + ")";
 }
 
-function abiTypeSignature(parameter: AbiTypes.AbiParameter): string {
+function abiTypeSignature(parameter: Abi.AbiParameter): string {
   let tupleMatch = parameter.type.match(/tuple(.*)/);
   if (tupleMatch === null) {
     //does not start with "tuple"
@@ -134,7 +131,7 @@ function abiTypeSignature(parameter: AbiTypes.AbiParameter): string {
 }
 
 export function abiSelector(
-  abiEntry: AbiTypes.FunctionAbiEntry | AbiTypes.EventAbiEntry
+  abiEntry: Abi.FunctionAbiEntry | Abi.EventAbiEntry
 ): string {
   let signature = abiSignature(abiEntry);
   //NOTE: web3's soliditySha3 has a problem if the empty
@@ -150,8 +147,8 @@ export function abiSelector(
 
 //note: undefined does not match itself :P
 export function abisMatch(
-  entry1: AbiTypes.AbiEntry | undefined,
-  entry2: AbiTypes.AbiEntry | undefined
+  entry1: Abi.AbiEntry | undefined,
+  entry2: Abi.AbiEntry | undefined
 ): boolean {
   //we'll consider two abi entries to match if they have the same
   //type, name (if applicable), and inputs (if applicable).
@@ -167,12 +164,12 @@ export function abisMatch(
     case "event":
       return (
         abiSignature(entry1) ===
-        abiSignature(<AbiTypes.FunctionAbiEntry | AbiTypes.EventAbiEntry>entry2)
+        abiSignature(<Abi.FunctionAbiEntry | Abi.EventAbiEntry>entry2)
       );
     case "constructor":
       return (
         abiTupleSignature(entry1.inputs) ===
-        abiTupleSignature((<AbiTypes.ConstructorAbiEntry>entry2).inputs)
+        abiTupleSignature((<Abi.ConstructorAbiEntry>entry2).inputs)
       );
     case "fallback":
       return true;
@@ -180,7 +177,7 @@ export function abisMatch(
 }
 
 export function definitionMatchesAbi(
-  abiEntry: AbiTypes.AbiEntry,
+  abiEntry: Abi.AbiEntry,
   definition: Ast.AstNode,
   referenceDeclarations: Ast.AstNodes
 ): boolean {
@@ -194,7 +191,7 @@ export function definitionMatchesAbi(
   }
 }
 
-export function topicsCount(abiEntry: AbiTypes.EventAbiEntry): number {
+export function topicsCount(abiEntry: Abi.EventAbiEntry): number {
   let selectorCount = abiEntry.anonymous ? 0 : 1; //if the event is not anonymous, we must account for the selector
   return (
     abiEntry.inputs.filter(({ indexed }) => indexed).length + selectorCount

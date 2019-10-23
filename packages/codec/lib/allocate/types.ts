@@ -1,7 +1,7 @@
 import * as Compiler from "@truffle/codec/compiler";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Ast from "@truffle/codec/ast";
-import * as AbiTypes from "@truffle/codec/abi/types";
+import * as Abi from "@truffle/codec/abi/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecodingMode } from "@truffle/codec/types";
@@ -9,7 +9,7 @@ import * as Format from "@truffle/codec/format";
 
 //for passing to calldata/event allocation functions
 export interface ContractAllocationInfo {
-  abi: AbiTypes.Abi;
+  abi: Abi.Abi;
   contractNode: Ast.AstNode;
   deployedContext?: Contexts.DecoderContext;
   constructorContext?: Contexts.DecoderContext;
@@ -26,7 +26,7 @@ export interface AbiSizeInfo {
 //holds a collection of storage allocations for structs and contracts, indexed
 //by the ID of the struct or contract
 export interface StorageAllocations {
-  [id: number]: StorageAllocation
+  [id: number]: StorageAllocation;
 }
 
 //an individual storage allocation for (the members of) a struct or (the state
@@ -53,7 +53,7 @@ export interface StorageMemberAllocation {
 //in the abi
 
 export interface AbiAllocations {
-  [id: string]: AbiAllocation | null
+  [id: string]: AbiAllocation | null;
 }
 
 export interface AbiAllocation {
@@ -73,7 +73,7 @@ export interface AbiMemberAllocation {
 //Note: for mappings we use a pointer of length 0
 
 export interface MemoryAllocations {
-  [id: number]: MemoryAllocation
+  [id: number]: MemoryAllocation;
 }
 
 export interface MemoryAllocation {
@@ -111,7 +111,7 @@ export interface CalldataFunctionAllocations {
 }
 
 export interface CalldataAllocation {
-  abi: AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry;
+  abi: Abi.FunctionAbiEntry | Abi.ConstructorAbiEntry;
   offset: number; //measured in bytes
   arguments: CalldataArgumentAllocation[];
   allocationMode: DecodingMode;
@@ -139,19 +139,19 @@ export interface EventAllocations {
       [selector: string]: {
         [contractKind: string]: {
           [contextHash: string]: EventAllocation;
-        }
-      }
+        };
+      };
     };
     anonymous: {
       [contractKind: string]: {
         [contextHash: string]: EventAllocation[];
-      }
-    }
-  }
+      };
+    };
+  };
 }
 
 export interface EventAllocation {
-  abi: AbiTypes.EventAbiEntry;
+  abi: Abi.EventAbiEntry;
   contextHash: string;
   anonymous: boolean;
   arguments: EventArgumentAllocation[];
@@ -175,5 +175,5 @@ export interface CalldataAllocationTemporary {
   constructorAllocation?: CalldataAllocation;
   functionAllocations: {
     [selector: string]: CalldataAllocation;
-  }
+  };
 }
