@@ -1,14 +1,5 @@
 import gql from "graphql-tag";
 
-export const GetBytecode = gql`
-  query GetBytecode($id: ID!) {
-    bytecode(id: $id) {
-      id
-      bytes
-    }
-  }
-`;
-
 export const GetAllBytecodes = gql`
   query GetAllBytecodes {
     bytecodes {
@@ -28,15 +19,42 @@ export const GetAllBytecodes = gql`
   }
 `;
 
+export const GetBytecode = gql`
+  query GetBytecode($id: ID!) {
+    bytecode(id: $id) {
+      id
+      bytes
+      linkReferences {
+        offsets
+        name
+        length
+      }
+    }
+  }
+`;
+
 export const AddBytecode = gql`
-  mutation AddBytecode($bytes: Bytes!) {
+  type linkReferenceInput {
+    offsets:[Int]
+    name: String
+    length: Int
+  }
+
+  mutation AddBytecode($bytes: Bytes!, $linkReferences: [LinkReferenceInput]) {
     bytecodesAdd(input: {
       bytecodes: [{
         bytes: $bytes
+        linkReferences: $linkReferences
       }]
     }) {
       bytecodes {
         id
+        bytes
+        linkReferences {
+          offsets
+          name
+          length
+        }
       }
     }
   }

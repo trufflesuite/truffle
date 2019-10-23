@@ -1,21 +1,21 @@
 import { generateId, Migrations, WorkspaceClient } from './utils';
 import { AddBytecode, GetAllBytecodes, GetBytecode } from './bytecode.graphql';
+import { shimBytecode } from "@truffle/workflow-compile/shims";
 
 describe("Bytecode", () => {
   let wsClient;
   let expectedId;
-  let variables, addBytecodeResult;
+  let variables, addBytecodeResult, shimmedBytecode;
 
   beforeEach(async () => {
     wsClient = new WorkspaceClient();
-    expectedId = generateId({ bytes: Migrations.bytecode });
-    variables = { bytes: Migrations.bytecode };
-    addBytecodeResult = await wsClient.execute(AddBytecode, { bytes: variables.bytes });
+    shimmedBytecode = shimBytecode(Migrations.bytecode);
+    expectedId = generateId(shimmedBytecode);
+    addBytecodeResult = await wsClient.execute(AddBytecode, shimmedBytecode);
   });
 
   test ("can be added", async () => {
     expect(addBytecodeResult).toHaveProperty("bytecodesAdd");
-
     const { bytecodesAdd } = addBytecodeResult;
     expect(bytecodesAdd).toHaveProperty("bytecodes");
 
@@ -37,10 +37,12 @@ describe("Bytecode", () => {
     expect(bytecode).toHaveProperty("id");
     expect(bytecode).toHaveProperty("bytes");
 
-    const { id, bytes } = bytecode;
+    const { id, bytes, linkReferences } = bytecode;
     expect(id).toEqual(expectedId);
-    expect(bytes).toEqual(variables.bytes);
+    expect(bytes).toEqual(shimmedBytecode.bytes);
+    expect(linkReferences).toEqual(shimmedBytecode.linkReferences);
   });
+
 
   test("can retrieve all bytecodes", async() => {
     const executionResult = await wsClient.execute(GetAllBytecodes);
@@ -54,7 +56,6 @@ describe("Bytecode", () => {
       expect(bc).toHaveProperty("id");
       expect(bc).toHaveProperty("bytes");
       expect(bc).toHaveProperty("linkReferences");
-      expect(bc).toHaveProperty("sourceMap");
       expect(bc).toHaveProperty("instructions");
     })
 
