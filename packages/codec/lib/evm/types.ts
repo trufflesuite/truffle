@@ -3,7 +3,7 @@ import * as Storage from "@truffle/codec/storage/types";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Allocation from "@truffle/codec/allocate/types";
 import * as Contexts from "@truffle/codec/contexts/types";
-import { Types } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 
 export interface EvmState {
   storage: WordMapping;
@@ -24,7 +24,7 @@ export interface WordMapping {
 export interface EvmInfo {
   state: EvmState;
   mappingKeys?: Storage.Slot[];
-  userDefinedTypes?: Types.TypesById;
+  userDefinedTypes?: Format.Types.TypesById;
   allocations: AllocationInfo;
   contexts?: Contexts.DecoderContexts;
   currentContext?: Contexts.DecoderContext;

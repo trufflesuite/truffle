@@ -6,7 +6,7 @@ import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as ContextUtils from "@truffle/codec/utils/contexts";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as EvmUtils from "@truffle/codec/utils/evm";
-import { Types, Values, Errors } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import utf8 from "utf8";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer/types";
@@ -14,7 +14,7 @@ import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeValue(dataType: Types.Type, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeValue(dataType: Format.Types.Type, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   const { state } = info;
   const { permissivePadding, strictAbiMode: strict } = options; //if these are undefined they'll still be falsy so OK
 
@@ -28,7 +28,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
     if(strict) {
       throw new StopDecodingError((<DecodingError>error).error);
     }
-    return <Errors.ErrorResult> { //no idea why TS is failing here
+    return <Format.Errors.ErrorResult> { //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
       error: (<DecodingError>error).error
@@ -165,7 +165,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
           error
         };
       }
-      const fullType = <Types.ContractType>TypeUtils.fullType(dataType, info.userDefinedTypes);
+      const fullType = <Format.Types.ContractType>TypeUtils.fullType(dataType, info.userDefinedTypes);
       const contractValueInfo = yield* decodeContract(bytes, info);
       return {
         type: fullType,
@@ -270,7 +270,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
 
     case "enum": {
       const numeric = ConversionUtils.toBN(bytes);
-      const fullType = <Types.EnumType>TypeUtils.fullType(dataType, info.userDefinedTypes);
+      const fullType = <Format.Types.EnumType>TypeUtils.fullType(dataType, info.userDefinedTypes);
       if(!fullType.options) {
         let error = {
           kind: "EnumNotFoundDecodingError" as const,
@@ -395,7 +395,7 @@ export default function* decodeValue(dataType: Types.Type, pointer: Pointer.Data
   }
 }
 
-export function decodeString(bytes: Uint8Array): Values.StringValueInfo {
+export function decodeString(bytes: Uint8Array): Format.Values.StringValueInfo {
   //the following line takes our UTF-8 string... and interprets each byte
   //as a UTF-16 bytepair.  Yikes!  Fortunately, we have a library to repair that.
   let badlyEncodedString = String.fromCharCode.apply(undefined, bytes);
@@ -423,7 +423,7 @@ export function decodeString(bytes: Uint8Array): Values.StringValueInfo {
 }
 
 //NOTE that this function returns a ContractValueInfo, not a ContractResult
-export function* decodeContract(addressBytes: Uint8Array, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.ContractValueInfo, Uint8Array> {
+export function* decodeContract(addressBytes: Uint8Array, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.ContractValueInfo, Uint8Array> {
   return (yield* decodeContractAndContext(addressBytes, info)).contractInfo;
 }
 
@@ -461,7 +461,7 @@ function* decodeContractAndContext(addressBytes: Uint8Array, info: Evm.Types.Evm
 
 //note: address can have extra zeroes on the left like elsewhere, but selector should be exactly 4 bytes
 //NOTE this again returns a FunctionExternalValueInfo, not a FunctionExternalResult
-export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.FunctionExternalValueInfo, Uint8Array> {
+export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes: Uint8Array, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.FunctionExternalValueInfo, Uint8Array> {
   let {contractInfo: contract, context} = yield* decodeContractAndContext(addressBytes, info);
   let selector = ConversionUtils.toHexString(selectorBytes);
   if(contract.kind === "unknown") {
@@ -491,10 +491,10 @@ export function* decodeExternalFunction(addressBytes: Uint8Array, selectorBytes:
 
 //this one works a bit differently -- in order to handle errors, it *does* return a FunctionInternalResult
 //also note, I haven't put the same sort of error-handling in this one since it's only intended to run with full info (for now, anyway)
-export function decodeInternalFunction(dataType: Types.FunctionInternalType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: Evm.Types.EvmInfo): Values.FunctionInternalResult {
+export function decodeInternalFunction(dataType: Format.Types.FunctionInternalType, deployedPcBytes: Uint8Array, constructorPcBytes: Uint8Array, info: Evm.Types.EvmInfo): Format.Values.FunctionInternalResult {
   let deployedPc: number = ConversionUtils.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = ConversionUtils.toBN(constructorPcBytes).toNumber();
-  let context: Types.ContractType = ContextUtils.contextToType(info.currentContext);
+  let context: Format.Types.ContractType = ContextUtils.contextToType(info.currentContext);
   //before anything else: do we even have an internal functions table?
   //if not, we'll just return the info we have without really attemting to decode
   if(!info.internalFunctionsTable) {
@@ -580,7 +580,7 @@ export function decodeInternalFunction(dataType: Types.FunctionInternalType, dep
   }
   let name = functionEntry.name;
   let mutability = functionEntry.mutability;
-  let definedIn: Types.ContractType = {
+  let definedIn: Format.Types.ContractType = {
     typeClass: "contract" as const,
     kind: "native" as const,
     id: functionEntry.contractId.toString(),
@@ -626,6 +626,6 @@ function checkPaddingSigned(bytes: Uint8Array, length: number): boolean {
  * @hidden
  */
 export interface ContractInfoAndContext {
-  contractInfo: Values.ContractValueInfo;
+  contractInfo: Format.Values.ContractValueInfo;
   context?: Contexts.DecoderContext;
 }

@@ -1,7 +1,7 @@
 import BN from "bn.js";
 
 import * as Abi from "@truffle/codec/abi/types";
-import { Types, Values } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 
 /**
  * A type representing a transaction (calldata) decoding.  As you can see, these come in four types,
@@ -33,9 +33,9 @@ export interface FunctionDecoding {
    */
   kind: "function";
   /**
-   * The class of contract that was called, as a Types.ContractType.
+   * The class of contract that was called, as a Format.Types.ContractType.
    */
-  class: Types.ContractType;
+  class: Format.Types.ContractType;
   /**
    * The list of decoded arguments to the function.
    */
@@ -69,9 +69,9 @@ export interface ConstructorDecoding {
    */
   kind: "constructor";
   /**
-   * The class of contract being constructed, as a Types.ContractType.
+   * The class of contract being constructed, as a Format.Types.ContractType.
    */
-  class: Types.ContractType;
+  class: Format.Types.ContractType;
   /**
    * The list of decoded arguments to the constructor.  This will be empty for a
    * default constructor.
@@ -104,9 +104,9 @@ export interface MessageDecoding {
    */
   kind: "message";
   /**
-   * The class of contract that was called, as a Types.ContractType.
+   * The class of contract that was called, as a Format.Types.ContractType.
    */
-  class: Types.ContractType;
+  class: Format.Types.ContractType;
   /**
    * The ABI entry for the contract's fallback function; will be null if
    * there is none.
@@ -151,12 +151,12 @@ export interface EventDecoding {
    */
   kind: "event";
   /**
-   * The class of the contract that (according to this decoding) emitted the event, as a Types.ContractType.
+   * The class of the contract that (according to this decoding) emitted the event, as a Format.Types.ContractType.
    * This may be a library!  When a library emits an event, the EVM records it as the calling contract
    * having emitted the event, but we decode it as if the library emitted the event, for clarity.
    * (The address of the contract the EVM thinks emitted the event can of course be found in the original log.)
    */
-  class: Types.ContractType;
+  class: Format.Types.ContractType;
   /**
    * The list of decoded arguments to the event.
    */
@@ -185,12 +185,12 @@ export interface AnonymousDecoding {
    */
   kind: "anonymous";
   /**
-   * The class of the contract that (according to this decoding) emitted the event, as a Types.ContractType.
+   * The class of the contract that (according to this decoding) emitted the event, as a Format.Types.ContractType.
    * This may be a library!  When a library emits an event, the EVM records it as the calling contract
    * having emitted the event, but we decode it as if the library emitted the event, for clarity.
    * (The address of the contract the EVM thinks emitted the event can of course be found in the original log.)
    */
-  class: Types.ContractType;
+  class: Format.Types.ContractType;
   /**
    * The list of decoded arguments to the event.
    */
@@ -219,11 +219,11 @@ export interface AbiArgument {
    */
   indexed?: boolean; //included for event parameters
   /**
-   * The decoded value of the argument.  Note that this is a [[Format.Values.Result|Values.Result]], so it
+   * The decoded value of the argument.  Note that this is a [[Format.Values.Result|Format.Values.Result]], so it
    * may contain errors (although event decodings should typically not contain errors;
    * see the [[DecodedLog]] documentation for why).
    */
-  value: Values.Result;
+  value: Format.Values.Result;
 }
 
 export type DecoderRequest = StorageRequest | CodeRequest;

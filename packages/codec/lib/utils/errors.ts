@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:errors");
 
-import { Values, Errors } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import * as TypeUtils from "./datatype";
 import * as DefinitionUtils from "./definition";
 import * as Storage from "@truffle/codec/storage/types";
@@ -9,7 +9,7 @@ import * as Storage from "@truffle/codec/storage/types";
 //this function gives an error message
 //for those errors that are meant to possibly
 //be wrapped in a DecodingError and thrown
-export function message(error: Errors.ErrorForThrowing) {
+export function message(error: Format.Errors.ErrorForThrowing) {
   switch(error.kind) {
     case "UserDefinedTypeNotFoundError":
       let typeName = TypeUtils.isContractDefinedType(error.type)
@@ -52,54 +52,54 @@ export function slotAddressPrintout(slot: Storage.Slot): string {
 //this is like the old toSoliditySha3Input, but for debugging purposes ONLY
 //it will NOT produce correct input to soliditySha3
 //please use mappingKeyAsHex instead if you wish to encode a mapping key.
-export function keyInfoForPrinting(input: Values.ElementaryValue): {type: string, value: string} {
+export function keyInfoForPrinting(input: Format.Values.ElementaryValue): {type: string, value: string} {
   switch(input.type.typeClass) {
     case "uint":
       return {
         type: "uint",
-        value: (<Values.UintValue>input).value.asBN.toString()
+        value: (<Format.Values.UintValue>input).value.asBN.toString()
       };
     case "int":
       return {
         type: "int",
-        value: (<Values.IntValue>input).value.asBN.toString()
+        value: (<Format.Values.IntValue>input).value.asBN.toString()
       };
     case "fixed":
       return {
         type: `fixed256x${input.type.places}`,
-        value: (<Values.FixedValue>input).value.asBig.toString()
+        value: (<Format.Values.FixedValue>input).value.asBig.toString()
       };
     case "ufixed":
       return {
         type: `ufixed256x${input.type.places}`,
-        value: (<Values.UfixedValue>input).value.asBig.toString()
+        value: (<Format.Values.UfixedValue>input).value.asBig.toString()
       };
     case "bool":
       //this is the case that won't work as valid input to soliditySha3 :)
       return {
         type: "uint",
-        value: (<Values.BoolValue>input).value.asBoolean.toString()
+        value: (<Format.Values.BoolValue>input).value.asBoolean.toString()
       };
     case "bytes":
       switch(input.type.kind) {
         case "static":
           return {
             type: "bytes32",
-            value: (<Values.BytesValue>input).value.asHex
+            value: (<Format.Values.BytesValue>input).value.asHex
           };
         case "dynamic":
           return {
             type: "bytes",
-            value: (<Values.BytesValue>input).value.asHex
+            value: (<Format.Values.BytesValue>input).value.asHex
           };
       }
     case "address":
       return {
         type: "address",
-        value: (<Values.AddressValue>input).value.asAddress
+        value: (<Format.Values.AddressValue>input).value.asAddress
       };
     case "string":
-      let coercedInput: Values.StringValue = <Values.StringValue> input;
+      let coercedInput: Format.Values.StringValue = <Format.Values.StringValue> input;
       switch(coercedInput.value.kind) {
         case "valid":
           return {

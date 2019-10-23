@@ -8,14 +8,14 @@ import * as Abi from "@truffle/codec/abi/types";
 import * as Ast from "@truffle/codec/ast/types";
 import * as DefinitionUtils from "./definition";
 import { solidityFamily } from "./compiler";
-import { Types } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 
 //NOTE: the following function will *not* work for arbitrary nodes! It will,
 //however, work for the ones we need (i.e., variable definitions, and arbitrary
 //things of elementary type)
 //NOTE: set forceLocation to *null* to force no location. leave it undefined
 //to not force a location.
-export function definitionToType(definition: Ast.AstNode, compiler: Compiler.CompilerVersion, forceLocation?: Common.Location | null): Types.Type {
+export function definitionToType(definition: Ast.AstNode, compiler: Compiler.CompilerVersion, forceLocation?: Common.Location | null): Format.Types.Type {
   debug("definition %O", definition);
   let typeClass = DefinitionUtils.typeClass(definition);
   let typeHint = DefinitionUtils.typeStringWithoutLocation(definition);
@@ -167,7 +167,7 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
       let keyDefinition = DefinitionUtils.keyDefinition(definition);
       //note that we can skip the scopes argument here! that's only needed when
       //a general node, rather than a declaration, is being passed in
-      let keyType = <Types.ElementaryType>definitionToType(keyDefinition, compiler, null);
+      let keyType = <Format.Types.ElementaryType>definitionToType(keyDefinition, compiler, null);
       //suppress the location on the key type (it'll be given as memory but
       //this is meaningless)
       //also, we have to tell TypeScript ourselves that this will be an elementary
@@ -267,7 +267,7 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
     }
     case "magic": {
       let typeIdentifier = DefinitionUtils.typeIdentifier(definition);
-      let variable = <Types.MagicVariableName> typeIdentifier.match(/^t_magic_(.*)$/)[1];
+      let variable = <Format.Types.MagicVariableName> typeIdentifier.match(/^t_magic_(.*)$/)[1];
       return {
         typeClass,
         variable
@@ -278,12 +278,12 @@ export function definitionToType(definition: Ast.AstNode, compiler: Compiler.Com
 
 //whereas the above takes variable definitions, this takes the actual type
 //definition
-export function definitionToStoredType(definition: Ast.AstNode, compiler: Compiler.CompilerVersion, referenceDeclarations?: Ast.AstNodes): Types.UserDefinedType {
+export function definitionToStoredType(definition: Ast.AstNode, compiler: Compiler.CompilerVersion, referenceDeclarations?: Ast.AstNodes): Format.Types.UserDefinedType {
   switch(definition.nodeType) {
     case "StructDefinition": {
       let id = definition.id.toString();
       let [definingContractName, typeName] = definition.canonicalName.split(".");
-      let memberTypes: {name: string, type: Types.Type}[] = definition.members.map(
+      let memberTypes: {name: string, type: Format.Types.Type}[] = definition.members.map(
         member => ({name: member.name, type: definitionToType(member, compiler, null)})
       );
       let definingContract;
@@ -294,7 +294,7 @@ export function definitionToStoredType(definition: Ast.AstNode, compiler: Compil
             (subNode: Ast.AstNode) => subNode.id.toString() === id
           )
         );
-        definingContract = <Types.ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
+        definingContract = <Format.Types.ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
       }
       return {
         typeClass: "struct",
@@ -318,7 +318,7 @@ export function definitionToStoredType(definition: Ast.AstNode, compiler: Compil
             (subNode: Ast.AstNode) => subNode.id.toString() === id
           )
         );
-        definingContract = <Types.ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
+        definingContract = <Format.Types.ContractTypeNative> definitionToStoredType(contractDefinition, compiler); //can skip reference declarations
       }
       return {
         typeClass: "enum",
@@ -347,7 +347,7 @@ export function definitionToStoredType(definition: Ast.AstNode, compiler: Compil
   }
 }
 
-export function abiParameterToType(abi: Abi.AbiParameter): Types.Type {
+export function abiParameterToType(abi: Abi.AbiParameter): Format.Types.Type {
   let typeName = abi.type;
   let typeHint = abi.internalType;
   //first: is it an array?

@@ -4,7 +4,7 @@ const debug = debugModule("codec:decode:stack");
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as EvmUtils from "@truffle/codec/utils/evm";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
-import { Types, Values, Errors } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import decodeValue from "./value";
 import { decodeExternalFunction, checkPaddingLeft } from "./value";
@@ -16,13 +16,13 @@ import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeStack(dataType: Types.Type, pointer: Pointer.StackPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeStack(dataType: Format.Types.Type, pointer: Pointer.StackPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   let rawValue: Uint8Array;
   try {
    rawValue = yield* read(pointer, info.state);
   }
   catch(error) {
-    return <Errors.ErrorResult> { //no idea why TS is failing here
+    return <Format.Errors.ErrorResult> { //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
       error: (<DecodingError>error).error
@@ -32,7 +32,7 @@ export default function* decodeStack(dataType: Types.Type, pointer: Pointer.Stac
   return yield* decodeLiteral(dataType, literalPointer, info);
 }
 
-export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiteralPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeLiteral(dataType: Format.Types.Type, pointer: Pointer.StackLiteralPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
 
   debug("type %O", dataType);
   debug("pointer %o", pointer);
@@ -64,7 +64,7 @@ export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiter
             start = startAsBN.toNumber();
           }
           catch(_) {
-            return <Errors.BytesDynamicErrorResult|Errors.StringErrorResult> { //again with the TS failures...
+            return <Format.Errors.BytesDynamicErrorResult|Format.Errors.StringErrorResult> { //again with the TS failures...
               type: dataType,
               kind: "error" as const,
               error: {
@@ -77,7 +77,7 @@ export function* decodeLiteral(dataType: Types.Type, pointer: Pointer.StackLiter
             length = lengthAsBN.toNumber();
           }
           catch(_) {
-            return <Errors.BytesDynamicErrorResult|Errors.StringErrorResult> { //again with the TS failures...
+            return <Format.Errors.BytesDynamicErrorResult|Format.Errors.StringErrorResult> { //again with the TS failures...
               type: dataType,
               kind: "error" as const,
               error: {

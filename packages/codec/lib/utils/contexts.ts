@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:utils:contexts");
 
 import * as EVM from "./evm";
-import { Types } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import * as Contexts from "@truffle/codec/contexts/types";
 import escapeRegExp from "lodash.escaperegexp";
 
@@ -140,7 +140,7 @@ export function normalizeContexts(contexts: Contexts.Contexts): Contexts.Context
   return newContexts;
 }
 
-export function contextToType(context: Contexts.Context): Types.ContractType {
+export function contextToType(context: Contexts.Context): Format.Types.ContractType {
   if(context.contractId !== undefined) {
     return {
       typeClass: "contract",

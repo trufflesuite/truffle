@@ -13,13 +13,13 @@ import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as ContextUtils from "@truffle/codec/utils/contexts";
 import * as EvmUtils from "@truffle/codec/utils/evm";
 import * as MakeType from "@truffle/codec/utils/maketype";
-import { Values } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import { StopDecodingError } from "@truffle/codec/decode/errors";
 import { encodeAbi, encodeTupleAbi } from "@truffle/codec/encode/abi";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
 
-export function* decodeVariable(definition: Ast.AstNode, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeVariable(definition: Ast.AstNode, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
   let dataType = MakeType.definitionToType(definition, compiler);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
@@ -71,7 +71,7 @@ export function* decodeCalldata(info: Evm.Types.EvmInfo): Generator<DecoderReque
   //you can't map with a generator, so we have to do this map manually
   let decodedArguments: AbiArgument[] = [];
   for(const argumentAllocation of allocation.arguments) {
-    let value: Values.Result;
+    let value: Format.Values.Result;
     let dataType = decodingMode === "full" ? argumentAllocation.type : abifyType(argumentAllocation.type);
     try {
       value = yield* decode(
@@ -219,7 +219,7 @@ export function* decodeEvent(info: Evm.Types.EvmInfo, address: string, targetNam
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];
     for(const argumentAllocation of allocation.arguments) {
-      let value: Values.Result;
+      let value: Format.Values.Result;
       //if in full mode, use the allocation's listed data type.
       //if in ABI mode, abify it before use.
       let dataType = decodingMode === "full" ? argumentAllocation.type : abifyType(argumentAllocation.type);

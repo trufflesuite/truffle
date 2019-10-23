@@ -1,20 +1,20 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:datatype");
 
-import { Types } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import * as Common from "@truffle/codec/common/types";
 
-export function isContractDefinedType(anyType: Types.Type): anyType is Types.ContractDefinedType {
+export function isContractDefinedType(anyType: Format.Types.Type): anyType is Format.Types.ContractDefinedType {
   const contractDefinedTypes = ["enum", "struct"];
   return contractDefinedTypes.includes(anyType.typeClass);
 }
 
-export function isUserDefinedType(anyType: Types.Type): anyType is Types.UserDefinedType {
+export function isUserDefinedType(anyType: Format.Types.Type): anyType is Format.Types.UserDefinedType {
   const userDefinedTypes = ["contract", "enum", "struct"];
   return userDefinedTypes.includes(anyType.typeClass);
 }
 
-export function isReferenceType(anyType: Types.Type): anyType is Types.ReferenceType {
+export function isReferenceType(anyType: Format.Types.Type): anyType is Format.Types.ReferenceType {
   const alwaysReferenceTypes = ["array", "mapping", "struct", "string"];
   if(alwaysReferenceTypes.includes(anyType.typeClass)) {
     return true;
@@ -29,7 +29,7 @@ export function isReferenceType(anyType: Types.Type): anyType is Types.Reference
 
 //one could define a counterpart function that stripped all unnecessary information
 //from the type object, but at the moment I see no need for that
-export function fullType(basicType: Types.Type, userDefinedTypes: Types.TypesById): Types.Type {
+export function fullType(basicType: Format.Types.Type, userDefinedTypes: Format.Types.TypesById): Format.Types.Type {
   if(!isUserDefinedType(basicType)) {
     return basicType;
   }
@@ -38,7 +38,7 @@ export function fullType(basicType: Types.Type, userDefinedTypes: Types.TypesByI
   if(!storedType) {
     return basicType;
   }
-  let returnType: Types.Type = { ...basicType, ...storedType };
+  let returnType: Format.Types.Type = { ...basicType, ...storedType };
   if(isReferenceType(basicType) && basicType.location !== undefined) {
     returnType = specifyLocation(returnType, basicType.location);
   }
@@ -46,7 +46,7 @@ export function fullType(basicType: Types.Type, userDefinedTypes: Types.TypesByI
 }
 
 //the location argument here always forces, so passing undefined *will* force undefined
-export function specifyLocation(dataType: Types.Type, location: Common.Location | undefined): Types.Type {
+export function specifyLocation(dataType: Format.Types.Type, location: Common.Location | undefined): Format.Types.Type {
   if(isReferenceType(dataType)) {
     switch(dataType.typeClass) {
       case "string":
@@ -86,7 +86,7 @@ export function specifyLocation(dataType: Types.Type, location: Common.Location 
 //are pointers or not??  we don't track that so we can't recreate that)
 //But what can you do.
 
-export function typeString(dataType: Types.Type): string {
+export function typeString(dataType: Format.Types.Type): string {
   let baseString = typeStringWithoutLocation(dataType);
   if(isReferenceType(dataType) && dataType.location) {
     return baseString + " " + dataType.location;
@@ -96,7 +96,7 @@ export function typeString(dataType: Types.Type): string {
   }
 }
 
-export function typeStringWithoutLocation(dataType: Types.Type): string {
+export function typeStringWithoutLocation(dataType: Format.Types.Type): string {
   switch(dataType.typeClass) {
     case "uint":
       return dataType.typeHint || `uint${dataType.bits}`;

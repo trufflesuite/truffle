@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:special");
 
 import * as EvmUtils from "@truffle/codec/utils/evm";
-import { Types, Values } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import decodeValue from "./value";
 import * as Compiler from "@truffle/codec/compiler/types";
 import * as Pointer from "@truffle/codec/pointer/types";
@@ -10,7 +10,7 @@ import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { solidityFamily } from "@truffle/codec/utils/compiler";
 
-export default function* decodeSpecial(dataType: Types.Type, pointer: Pointer.SpecialPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeSpecial(dataType: Format.Types.Type, pointer: Pointer.SpecialPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   if(dataType.typeClass === "magic") {
     return yield* decodeMagic(dataType, pointer, info);
   }
@@ -19,7 +19,7 @@ export default function* decodeSpecial(dataType: Types.Type, pointer: Pointer.Sp
   }
 }
 
-export function* decodeMagic(dataType: Types.MagicType, pointer: Pointer.SpecialPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.MagicResult, Uint8Array> {
+export function* decodeMagic(dataType: Format.Types.MagicType, pointer: Pointer.SpecialPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.MagicResult, Uint8Array> {
 
   let {state} = info;
 
@@ -91,7 +91,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: Pointer.Special
         }
       };
     case "block":
-      let block: {[field: string]: Values.Result} = {
+      let block: {[field: string]: Format.Values.Result} = {
         coinbase: yield* decodeValue(
 	  externalAddressType(info.currentContext.compiler),
           {location: "special" as const, special: "coinbase"},
@@ -120,7 +120,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: Pointer.Special
 }
 
 //NOTE: this is going to change again in 0.6.x!  be ready!
-function senderType(compiler: Compiler.CompilerVersion): Types.AddressType {
+function senderType(compiler: Compiler.CompilerVersion): Format.Types.AddressType {
   switch(solidityFamily(compiler)) {
     case "pre-0.5.0":
       return {
@@ -136,7 +136,7 @@ function senderType(compiler: Compiler.CompilerVersion): Types.AddressType {
   }
 }
 
-function externalAddressType(compiler: Compiler.CompilerVersion): Types.AddressType {
+function externalAddressType(compiler: Compiler.CompilerVersion): Format.Types.AddressType {
   switch(solidityFamily(compiler)) {
     case "pre-0.5.0":
       return {

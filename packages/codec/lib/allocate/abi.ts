@@ -14,7 +14,7 @@ import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer/types";
 import * as Allocation from "./types";
 import { DecodingMode } from "@truffle/codec/types";
-import { Types } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import partition from "lodash.partition";
 
 interface AbiAllocationInfo {
@@ -24,12 +24,12 @@ interface AbiAllocationInfo {
 }
 
 interface EventParameterInfo {
-  type: Types.Type;
+  type: Format.Types.Type;
   name: string;
   indexed: boolean;
 }
 
-export function getAbiAllocations(userDefinedTypes: Types.TypesById): Allocation.AbiAllocations {
+export function getAbiAllocations(userDefinedTypes: Format.Types.TypesById): Allocation.AbiAllocations {
   let allocations: Allocation.AbiAllocations = {};
   for(const dataType of Object.values(userDefinedTypes)) {
     if(dataType.typeClass === "struct") {
@@ -48,7 +48,7 @@ export function getAbiAllocations(userDefinedTypes: Types.TypesById): Allocation
   return allocations;
 }
 
-function allocateStruct(dataType: Types.StructType, userDefinedTypes: Types.TypesById, existingAllocations: Allocation.AbiAllocations): Allocation.AbiAllocations {
+function allocateStruct(dataType: Format.Types.StructType, userDefinedTypes: Format.Types.TypesById, existingAllocations: Allocation.AbiAllocations): Allocation.AbiAllocations {
   debug("allocating struct: %O", dataType);
   //NOTE: dataType here should be a *stored* type!
   //it is up to the caller to take care of this
@@ -57,7 +57,7 @@ function allocateStruct(dataType: Types.StructType, userDefinedTypes: Types.Type
 
 //note: we will still allocate circular structs, even though they're not allowed in the abi, because it's
 //not worth the effort to detect them.  However on mappings or internal functions, we'll vomit (allocate null)
-function allocateMembers(parentId: string, members: Types.NameTypePair[], userDefinedTypes: Types.TypesById, existingAllocations: Allocation.AbiAllocations, start: number = 0): Allocation.AbiAllocations {
+function allocateMembers(parentId: string, members: Format.Types.NameTypePair[], userDefinedTypes: Format.Types.TypesById, existingAllocations: Allocation.AbiAllocations, start: number = 0): Allocation.AbiAllocations {
   let dynamic: boolean = false;
   //note that we will mutate the start argument also!
 
@@ -111,7 +111,7 @@ function allocateMembers(parentId: string, members: Types.NameTypePair[], userDe
 //second return value is whether the type is dynamic
 //both will be undefined if type is a mapping or internal function
 //third return value is resulting allocations, INCLUDING the ones passed in
-function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesById, existingAllocations?: Allocation.AbiAllocations): AbiAllocationInfo {
+function abiSizeAndAllocate(dataType: Format.Types.Type, userDefinedTypes: Format.Types.TypesById, existingAllocations?: Allocation.AbiAllocations): AbiAllocationInfo {
   switch (dataType.typeClass) {
     case "bool":
     case "address":
@@ -193,7 +193,7 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
       let allocation: Allocation.AbiAllocation | null | undefined = allocations[dataType.id];
       if(allocation === undefined) {
         //if we don't find an allocation, we'll have to do the allocation ourselves
-        const storedType = <Types.StructType> userDefinedTypes[dataType.id];
+        const storedType = <Format.Types.StructType> userDefinedTypes[dataType.id];
         if(!storedType) {
           throw new Common.UnknownUserDefinedTypeError(dataType.id, TypeUtils.typeString(dataType));
         }
@@ -239,7 +239,7 @@ function abiSizeAndAllocate(dataType: Types.Type, userDefinedTypes: Types.TypesB
 }
 
 //assumes you've already done allocation! don't use if you haven't!
-export function abiSizeInfo(dataType: Types.Type, allocations?: Allocation.AbiAllocations): Allocation.AbiSizeInfo {
+export function abiSizeInfo(dataType: Format.Types.Type, allocations?: Allocation.AbiAllocations): Allocation.AbiSizeInfo {
   let { size, dynamic } = abiSizeAndAllocate(dataType, null, allocations);
   //the above line should work fine... as long as allocation is already done!
   //the middle argument, userDefinedTypes, is only needed during allocation
@@ -255,7 +255,7 @@ function allocateCalldata(
   abiEntry: AbiTypes.FunctionAbiEntry | AbiTypes.ConstructorAbiEntry,
   contractNode: Ast.AstNode | undefined,
   referenceDeclarations: Ast.AstNodes,
-  userDefinedTypes: Types.TypesById,
+  userDefinedTypes: Format.Types.TypesById,
   abiAllocations: Allocation.AbiAllocations,
   compiler: Compiler.CompilerVersion | undefined,
   constructorContext?: Contexts.DecoderContext
@@ -266,7 +266,7 @@ function allocateCalldata(
   let offset: number;
   let id: string;
   let abiAllocation: Allocation.AbiAllocation;
-  let parameterTypes: Types.NameTypePair[];
+  let parameterTypes: Format.Types.NameTypePair[];
   let allocationMode: DecodingMode = "full"; //degrade to ABI if needed
   switch(abiEntry.type) {
     case "constructor":
@@ -378,7 +378,7 @@ function allocateCalldata(
 
 interface EventParameterInfo {
   name: string;
-  type: Types.Type;
+  type: Format.Types.Type;
   indexed: boolean;
 }
 
@@ -389,7 +389,7 @@ function allocateEvent(
   contractNode: Ast.AstNode | undefined,
   contextHash: string,
   referenceDeclarations: Ast.AstNodes,
-  userDefinedTypes: Types.TypesById,
+  userDefinedTypes: Format.Types.TypesById,
   abiAllocations: Allocation.AbiAllocations,
   compiler: Compiler.CompilerVersion | undefined
 ): Allocation.EventAllocation {
@@ -510,7 +510,7 @@ function getCalldataAllocationsForContract(
   contractNode: Ast.AstNode,
   constructorContext: Contexts.DecoderContext,
   referenceDeclarations: Ast.AstNodes,
-  userDefinedTypes: Types.TypesById,
+  userDefinedTypes: Format.Types.TypesById,
   abiAllocations: Allocation.AbiAllocations,
   compiler: Compiler.CompilerVersion
 ): Allocation.CalldataAllocationTemporary {
@@ -570,7 +570,7 @@ function defaultConstructorAllocation(constructorContext: Contexts.DecoderContex
 export function getCalldataAllocations(
   contracts: Allocation.ContractAllocationInfo[],
   referenceDeclarations: Ast.AstNodes,
-  userDefinedTypes: Types.TypesById,
+  userDefinedTypes: Format.Types.TypesById,
   abiAllocations: Allocation.AbiAllocations
 ): Allocation.CalldataAllocations {
   let allocations: Allocation.CalldataAllocations = {constructorAllocations: {}, functionAllocations: {}};
@@ -599,7 +599,7 @@ function getEventAllocationsForContract(
   contractNode: Ast.AstNode | undefined,
   contextHash: string,
   referenceDeclarations: Ast.AstNodes,
-  userDefinedTypes: Types.TypesById,
+  userDefinedTypes: Format.Types.TypesById,
   abiAllocations: Allocation.AbiAllocations,
   compiler: Compiler.CompilerVersion | undefined
 ): Allocation.EventAllocationTemporary[] {
@@ -621,7 +621,7 @@ function getEventAllocationsForContract(
 }
 
 //note: constructor context is ignored by this function; no need to pass it in
-export function getEventAllocations(contracts: Allocation.ContractAllocationInfo[], referenceDeclarations: Ast.AstNodes, userDefinedTypes: Types.TypesById, abiAllocations: Allocation.AbiAllocations): Allocation.EventAllocations {
+export function getEventAllocations(contracts: Allocation.ContractAllocationInfo[], referenceDeclarations: Ast.AstNodes, userDefinedTypes: Format.Types.TypesById, abiAllocations: Allocation.AbiAllocations): Allocation.EventAllocations {
   let allocations: Allocation.EventAllocations = {};
   for(let {abi, deployedContext, contractNode, compiler} of contracts) {
     if(!deployedContext) {

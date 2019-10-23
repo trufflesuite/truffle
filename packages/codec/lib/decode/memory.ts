@@ -6,14 +6,14 @@ import read from "@truffle/codec/read";
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as EvmUtils from "@truffle/codec/utils/evm";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
-import { Types, Values, Errors } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import decodeValue from "./value";
 import * as Pointer from "@truffle/codec/pointer/types";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeMemory(dataType: Types.Type, pointer: Pointer.MemoryPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeMemory(dataType: Format.Types.Type, pointer: Pointer.MemoryPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   if(TypeUtils.isReferenceType(dataType)) {
     return yield* decodeMemoryReferenceByAddress(dataType, pointer, info);
   }
@@ -22,7 +22,7 @@ export default function* decodeMemory(dataType: Types.Type, pointer: Pointer.Mem
   }
 }
 
-export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export function* decodeMemoryReferenceByAddress(dataType: Format.Types.ReferenceType, pointer: Pointer.DataPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   const { state } = info;
   // debug("pointer %o", pointer);
   let rawValue: Uint8Array;
@@ -30,7 +30,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
     rawValue = yield* read(pointer, state);
   }
   catch(error) {
-    return <Errors.ErrorResult> { //dunno why TS is failing here
+    return <Format.Errors.ErrorResult> { //dunno why TS is failing here
       type: dataType,
       kind: "error" as const,
       error: (<DecodingError>error).error
@@ -43,7 +43,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
     startPosition = startPositionAsBN.toNumber();
   }
   catch(_) {
-    return <Errors.ErrorResult> { //again with the TS failures...
+    return <Format.Errors.ErrorResult> { //again with the TS failures...
       type: dataType,
       kind: "error" as const,
       error: {
@@ -69,7 +69,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         }, state);
       }
       catch(error) {
-        return <Errors.ErrorResult> { //dunno why TS is failing here
+        return <Format.Errors.ErrorResult> { //dunno why TS is failing here
           type: dataType,
           kind: "error" as const,
           error: (<DecodingError>error).error
@@ -80,7 +80,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         length = lengthAsBN.toNumber();
       }
       catch(_) {
-        return <Errors.BytesDynamicErrorResult|Errors.StringErrorResult> { //again with the TS failures...
+        return <Format.Errors.BytesDynamicErrorResult|Format.Errors.StringErrorResult> { //again with the TS failures...
           type: dataType,
           kind: "error" as const,
           error: {
@@ -139,7 +139,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
 
       let baseType = dataType.baseType;
 
-      let decodedChildren: Values.Result[] = [];
+      let decodedChildren: Format.Values.Result[] = [];
       for(let index = 0; index < length; index++) {
         decodedChildren.push(
           yield* decodeMemory(
@@ -178,7 +178,7 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
 
       debug("structAllocation %O", structAllocation);
 
-      let decodedMembers: Values.NameValuePair[] = [];
+      let decodedMembers: Format.Values.NameValuePair[] = [];
       for(let index = 0; index < structAllocation.members.length; index++) {
         const memberAllocation = structAllocation.members[index];
         const memberPointer = memberAllocation.pointer;
@@ -189,9 +189,9 @@ export function* decodeMemoryReferenceByAddress(dataType: Types.ReferenceType, p
         };
 
         let memberName = memberAllocation.definition.name;
-        let storedType = <Types.StructType>userDefinedTypes[typeId];
+        let storedType = <Format.Types.StructType>userDefinedTypes[typeId];
         if(!storedType) {
-          return <Errors.ErrorResult> { //dunno why TS is failing here
+          return <Format.Errors.ErrorResult> { //dunno why TS is failing here
             type: dataType,
             kind: "error" as const,
             error: {

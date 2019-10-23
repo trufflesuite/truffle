@@ -3,7 +3,7 @@ const debug = debugModule("codec:decode:constant");
 
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as EvmUtils from "@truffle/codec/utils/evm";
-import { Types, Values } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import decodeValue from "./value";
 import * as Pointer from "@truffle/codec/pointer/types";
@@ -11,7 +11,7 @@ import * as Evm from "@truffle/codec/evm";
 import { DecoderRequest } from "@truffle/codec/types";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeConstant(dataType: Types.Type, pointer: Pointer.ConstantDefinitionPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decodeConstant(dataType: Format.Types.Type, pointer: Pointer.ConstantDefinitionPointer, info: Evm.Types.EvmInfo): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
 
   debug("pointer %o", pointer);
 

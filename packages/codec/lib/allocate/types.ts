@@ -5,7 +5,7 @@ import * as AbiTypes from "@truffle/codec/abi/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer/types";
 import { DecodingMode } from "@truffle/codec/types";
-import { Types } from "@truffle/codec/format";
+import * as Format from "@truffle/codec/format";
 
 //for passing to calldata/event allocation functions
 export interface ContractAllocationInfo {
@@ -64,7 +64,7 @@ export interface AbiAllocation {
 
 export interface AbiMemberAllocation {
   name: string;
-  type: Types.Type;
+  type: Format.Types.Type;
   pointer: Pointer.GenericAbiPointer;
 }
 
@@ -119,7 +119,7 @@ export interface CalldataAllocation {
 
 export interface CalldataArgumentAllocation {
   name: string;
-  type: Types.Type;
+  type: Format.Types.Type;
   pointer: Pointer.CalldataPointer;
 }
 
@@ -160,7 +160,7 @@ export interface EventAllocation {
 
 export interface EventArgumentAllocation {
   name: string;
-  type: Types.Type;
+  type: Format.Types.Type;
   pointer: Pointer.EventDataPointer | Pointer.EventTopicPointer;
 }
 
