@@ -6,7 +6,7 @@ import read from "@truffle/codec/read";
 import * as Format from "@truffle/codec/format";
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
-import * as Pointer from "@truffle/codec/pointer/types";
+import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 

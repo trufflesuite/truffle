@@ -3,7 +3,7 @@ import * as Storage from "@truffle/codec/storage/types";
 import * as Ast from "@truffle/codec/ast";
 import * as AbiTypes from "@truffle/codec/abi/types";
 import * as Contexts from "@truffle/codec/contexts/types";
-import * as Pointer from "@truffle/codec/pointer/types";
+import * as Pointer from "@truffle/codec/pointer";
 import { DecodingMode } from "@truffle/codec/types";
 import * as Format from "@truffle/codec/format";
 

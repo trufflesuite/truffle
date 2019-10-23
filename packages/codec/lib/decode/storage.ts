@@ -8,7 +8,7 @@ import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as Format from "@truffle/codec/format";
 import decodeValue from "./value";
 import * as Storage from "@truffle/codec/storage";
-import * as Pointer from "@truffle/codec/pointer/types";
+import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { storageSizeForType } from "@truffle/codec/allocate/storage";

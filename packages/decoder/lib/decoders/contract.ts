@@ -10,7 +10,7 @@ import { wrapElementaryViaDefinition } from "@truffle/codec/utils/wrap";
 import * as Utils from "../utils";
 import * as Storage from "@truffle/codec/storage";
 import * as Contexts from "@truffle/codec/contexts/types";
-import * as Pointer from "@truffle/codec/pointer/types";
+import * as Pointer from "@truffle/codec/pointer";
 import * as Decoding from "@truffle/codec/decode/types";
 import * as Allocation from "@truffle/codec/allocate/types";
 import * as DecoderTypes from "../types";

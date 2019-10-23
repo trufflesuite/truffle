@@ -3,7 +3,7 @@ const debug = debugModule("codec:core:decoding");
 
 import * as Ast from "@truffle/codec/ast";
 import * as AbiTypes from "@truffle/codec/abi/types";
-import * as Pointer from "@truffle/codec/pointer/types";
+import * as Pointer from "@truffle/codec/pointer";
 import * as Allocation from "@truffle/codec/allocate/types";
 import { DecoderRequest, CalldataDecoding, DecodingMode, AbiArgument, LogDecoding } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
