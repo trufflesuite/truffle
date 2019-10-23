@@ -93,7 +93,7 @@ export interface DecodedLog extends Log {
 
 export interface ContractMapping {
   [nodeId: number]: ContractObject;
-};
+}
 
 export interface StorageCache {
   [block: number]: {
@@ -127,10 +127,14 @@ export interface EventOptions {
   name?: string;
   /**
    * The earliest block to include events from.  Defaults to "latest".
+   * See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
+   * for legal values.
    */
   fromBlock?: BlockType;
   /**
    * The latest block to include events from.  Defaults to "latest".
+   * See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
+   * for legal values.
    */
   toBlock?: BlockType;
   /**

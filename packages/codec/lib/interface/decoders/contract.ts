@@ -392,6 +392,8 @@ export class ContractInstanceDecoder {
    * information about the storage or decoded variables.  See the documentation
    * for the [[ContractState]] type for more.
    * @param block The block to inspect the contract's state at.  Defaults to latest.
+   *   See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
+   *   for legal values.
    */
   public async state(
     block: BlockType = "latest"
@@ -424,6 +426,8 @@ export class ContractInstanceDecoder {
    * [[Format.Values.FunctionInternalValue|FunctionInternalValue]]
    * documentation and the README for more on how these are handled.
    * @param block The block to inspect the contract's variables at.  Defaults to latest.
+   *   See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
+   *   for legal values.
    */
   public async variables(
     block: BlockType = "latest"
@@ -461,6 +465,8 @@ export class ContractInstanceDecoder {
    *   number or numeric string.
    * @param block The block to inspect the contract's variables at.  Defaults
    *   to latest.
+   *   See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
+   *   for legal values.
    * @example Consider a contract `Derived` inheriting from a contract `Base`.
    *   Suppose `Derived` has a variable `x` and `Base` has variables `x` and
    *   `y`.  One can access `Derived.x` as `variable("x")` or
