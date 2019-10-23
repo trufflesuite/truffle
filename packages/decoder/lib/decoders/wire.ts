@@ -6,7 +6,7 @@ import * as AbiUtils from "@truffle/codec/utils/abi";
 import * as ContextUtils from "@truffle/codec/utils/contexts";
 import * as MakeType from "@truffle/codec/utils/maketype";
 import { abifyCalldataDecoding, abifyLogDecoding } from "@truffle/codec/utils/abify";;
-import * as Utils from "@truffle/codec/utils/interface";
+import * as Utils from "../utils";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Allocation from "@truffle/codec/allocate/types";

@@ -7,7 +7,7 @@ import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as EvmUtils from "@truffle/codec/utils/evm";
 import * as DefinitionUtils from "@truffle/codec/utils/definition";
 import { wrapElementaryViaDefinition } from "@truffle/codec/utils/wrap";
-import * as Utils from "@truffle/codec/utils/interface";
+import * as Utils from "../utils";
 import * as Storage from "@truffle/codec/storage";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Contexts from "@truffle/codec/contexts/types";
