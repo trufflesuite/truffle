@@ -84,6 +84,70 @@ function debuggerContextToDecoderContext(context) {
   };
 }
 
+//spoofed definitions we'll need
+//we'll give them id -1 to indicate that they're spoofed
+
+export const NOW_DEFINITION = {
+  id: -1,
+  src: "0:0:-1",
+  name: "now",
+  nodeType: "VariableDeclaration",
+  typeDescriptions: {
+    typeIdentifier: "t_uint256",
+    typeString: "uint256"
+  }
+};
+
+export const MSG_DEFINITION = {
+  id: -1,
+  src: "0:0:-1",
+  name: "msg",
+  nodeType: "VariableDeclaration",
+  typeDescriptions: {
+    typeIdentifier: "t_magic_message",
+    typeString: "msg"
+  }
+};
+
+export const TX_DEFINITION = {
+  id: -1,
+  src: "0:0:-1",
+  name: "tx",
+  nodeType: "VariableDeclaration",
+  typeDescriptions: {
+    typeIdentifier: "t_magic_transaction",
+    typeString: "tx"
+  }
+};
+
+export const BLOCK_DEFINITION = {
+  id: -1,
+  src: "0:0:-1",
+  name: "block",
+  nodeType: "VariableDeclaration",
+  typeDescriptions: {
+    typeIdentifier: "t_magic_block",
+    typeString: "block"
+  }
+};
+
+function spoofThisDefinition(contractName, contractId, contractKind) {
+  let formattedName = contractName.replace(/\$/g, "$$".repeat(3));
+  //note that string.replace treats $'s specially in the replacement string;
+  //we want 3 $'s for each $ in the input, so we need to put *6* $'s in the
+  //replacement string
+  return {
+    id: -1,
+    src: "0:0:-1",
+    name: "this",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_contract$_" + formattedName + "_$" + contractId,
+      typeString: contractKind + " " + contractName
+    }
+  };
+}
+
 const data = createSelectorTree({
   state: state => state.data,
 
@@ -757,10 +821,10 @@ const data = createSelectorTree({
               })
             );
             let builtins = {
-              msg: Codec.Ast.Utils.MSG_DEFINITION,
-              tx: Codec.Ast.Utils.TX_DEFINITION,
-              block: Codec.Ast.Utils.BLOCK_DEFINITION,
-              now: Codec.Ast.Utils.NOW_DEFINITION
+              msg: MSG_DEFINITION,
+              tx: TX_DEFINITION,
+              block: BLOCK_DEFINITION,
+              now: NOW_DEFINITION
             };
             //only include this when it has a proper definition
             if (thisDefinition) {
@@ -779,7 +843,7 @@ const data = createSelectorTree({
           ["/current/contract"],
           contractNode =>
             contractNode && contractNode.nodeType === "ContractDefinition"
-              ? Codec.Ast.Utils.spoofThisDefinition(
+              ? spoofThisDefinition(
                   contractNode.name,
                   contractNode.id,
                   contractNode.contractKind

@@ -2,19 +2,26 @@ import debugModule from "debug";
 const debug = debugModule("codec:ast:utils");
 
 import * as Common from "@truffle/codec/common";
-import { AstNode, Scopes } from "./types";
+import * as Abi from "@truffle/codec/abi/types";
+
+import { AstNode, AstNodes, Scopes } from "./types";
 import BN from "bn.js";
 import cloneDeep from "lodash.clonedeep";
 
+/** @category Definition Reading */
 export function typeIdentifier(definition: AstNode): string {
   return definition.typeDescriptions.typeIdentifier;
 }
 
+/** @category Definition Reading */
 export function typeString(definition: AstNode): string {
   return definition.typeDescriptions.typeString;
 }
 
-//returns the type string, but with location (if any) stripped off the end
+/**
+ * Returns the type string, but with location (if any) stripped off the end
+ * @category Definition Reading
+ */
 export function typeStringWithoutLocation(definition: AstNode): string {
   return typeString(definition).replace(/ (storage|memory|calldata)$/, "");
 }
@@ -24,6 +31,7 @@ export function typeStringWithoutLocation(definition: AstNode): string {
  * e.g.:
  *  `t_uint256` becomes `uint`
  *  `t_struct$_Thing_$20_memory_ptr` becomes `struct`
+ * @category Definition Reading
  */
 export function typeClass(definition: AstNode): string {
   return typeIdentifier(definition).match(/t_([^$_0-9]+)/)[1];
@@ -33,14 +41,18 @@ export function typeClass(definition: AstNode): string {
  * similar to typeClass, but includes any numeric qualifiers
  * e.g.:
  * `t_uint256` becomes `uint256`
+ * @category Definition Reading
  */
 export function typeClassLongForm(definition: AstNode): string {
   return typeIdentifier(definition).match(/t_([^$_]+)/)[1];
 }
 
-//for user-defined types -- structs, enums, contracts
-//often you can get these from referencedDeclaration, but not
-//always
+/**
+ * for user-defined types -- structs, enums, contracts
+ * often you can get these from referencedDeclaration, but not
+ * always
+ * @category Definition Reading
+ */
 export function typeId(definition: AstNode): number {
   debug("definition %O", definition);
   return parseInt(
@@ -54,6 +66,7 @@ export function typeId(definition: AstNode): number {
  * For function types; returns internal or external
  * (not for use on other types! will cause an error!)
  * should only return "internal" or "external"
+ * @category Definition Reading
  */
 export function visibility(definition: AstNode): Common.Visibility {
   return <Common.Visibility>(
@@ -66,6 +79,7 @@ export function visibility(definition: AstNode): Common.Visibility {
 /**
  * e.g. uint48 -> 6
  * @return size in bytes for explicit type size, or `null` if not stated
+ * @category Definition Reading
  */
 export function specifiedSize(definition: AstNode): number {
   let specified = typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/);
@@ -96,6 +110,7 @@ export function specifiedSize(definition: AstNode): number {
 
 /**
  * for fixed-point types, obviously
+ * @category Definition Reading
  */
 export function decimalPlaces(definition: AstNode): number {
   return parseInt(
@@ -103,10 +118,12 @@ export function decimalPlaces(definition: AstNode): number {
   );
 }
 
+/** @category Definition Reading */
 export function isArray(definition: AstNode): boolean {
   return typeIdentifier(definition).match(/^t_array/) != null;
 }
 
+/** @category Definition Reading */
 export function isDynamicArray(definition: AstNode): boolean {
   return (
     isArray(definition) &&
@@ -119,8 +136,11 @@ export function isDynamicArray(definition: AstNode): boolean {
   );
 }
 
-//length of a statically sized array -- please only use for arrays
-//already verified to be static!
+/**
+ * length of a statically sized array -- please only use for arrays
+ * already verified to be static!
+ * @category Definition Reading
+ */
 export function staticLength(definition: AstNode): number {
   //NOTE: we do this by parsing the type identifier, rather than by just
   //checking the length field, because we might be using this on a faked-up
@@ -128,25 +148,32 @@ export function staticLength(definition: AstNode): number {
   return parseInt(staticLengthAsString(definition));
 }
 
-//see staticLength for explanation
+/**
+ * see staticLength for explanation
+ * @category Definition Reading
+ */
 export function staticLengthAsString(definition: AstNode): string {
   return typeIdentifier(definition).match(
     /\$(\d+)_(storage|memory|calldata)(_ptr)?$/
   )[1];
 }
 
+/** @category Definition Reading */
 export function isStruct(definition: AstNode): boolean {
   return typeIdentifier(definition).match(/^t_struct/) != null;
 }
 
+/** @category Definition Reading */
 export function isMapping(definition: AstNode): boolean {
   return typeIdentifier(definition).match(/^t_mapping/) != null;
 }
 
+/** @category Definition Reading */
 export function isEnum(definition: AstNode): boolean {
   return typeIdentifier(definition).match(/^t_enum/) != null;
 }
 
+/** @category Definition Reading */
 export function isReference(definition: AstNode): boolean {
   return (
     typeIdentifier(definition).match(/_(memory|storage|calldata)(_ptr)?$/) !=
@@ -154,19 +181,28 @@ export function isReference(definition: AstNode): boolean {
   );
 }
 
-//note: only use this on things already verified to be references
+/**
+ * note: only use this on things already verified to be references
+ * @category Definition Reading
+ */
 export function referenceType(definition: AstNode): Common.Location {
   return typeIdentifier(definition).match(
     /_([^_]+)(_ptr)?$/
   )[1] as Common.Location;
 }
 
-//only for contract types, obviously! will yield nonsense otherwise!
+/**
+ * only for contract types, obviously! will yield nonsense otherwise!
+ * @category Definition Reading
+ */
 export function contractKind(definition: AstNode): Common.ContractKind {
   return typeString(definition).split(" ")[0] as Common.ContractKind;
 }
 
-//stack size, in words, of a given type
+/**
+ * stack size, in words, of a given type
+ * @category Definition Reading
+ */
 export function stackSize(definition: AstNode): number {
   if (
     typeClass(definition) === "function" &&
@@ -188,13 +224,17 @@ export function stackSize(definition: AstNode): number {
   return 1;
 }
 
+/** @category Definition Reading */
 export function isSimpleConstant(definition: AstNode): boolean {
   const types = ["stringliteral", "rational"];
   return types.includes(typeClass(definition));
 }
 
-//definition: a storage reference definition
-//location: the location you want it to refer to instead
+/**
+ * definition: a storage reference definition
+ * location: the location you want it to refer to instead
+ * @category Definition Reading
+ */
 export function spliceLocation(
   definition: AstNode,
   location: Common.Location
@@ -214,14 +254,20 @@ export function spliceLocation(
   };
 }
 
-//adds "_ptr" on to the end of type identifiers that might need it; note that
-//this operats on identifiers, not definitions
+/**
+ * adds "_ptr" on to the end of type identifiers that might need it; note that
+ * this operats on identifiers, not definitions
+ * @category Definition Reading
+ */
 export function restorePtr(identifier: string): string {
   return identifier.replace(/(?<=_(storage|memory|calldata))$/, "_ptr");
 }
 
-//extract the actual numerical value from a node of type rational.
-//currently assumes result will be integer (currently returns BN)
+/**
+ * extract the actual numerical value from a node of type rational.
+ * currently assumes result will be integer (currently returns BN)
+ * @category Definition Reading
+ */
 export function rationalValue(definition: AstNode): BN {
   let identifier = typeIdentifier(definition);
   let absoluteValue: string = identifier.match(/_(\d+)_by_1$/)[1];
@@ -229,6 +275,7 @@ export function rationalValue(definition: AstNode): BN {
   return isNegative ? new BN(absoluteValue).neg() : new BN(absoluteValue);
 }
 
+/** @category Definition Reading */
 export function baseDefinition(definition: AstNode): AstNode {
   if (definition.typeName && definition.typeName.baseType) {
     return definition.typeName.baseType;
@@ -258,8 +305,11 @@ export function baseDefinition(definition: AstNode): AstNode {
   //they do, however, handle the cases we currently need.
 }
 
-//for use for mappings and arrays only!
-//for arrays, fakes up a uint definition
+/**
+ * for use for mappings and arrays only!
+ * for arrays, fakes up a uint definition
+ * @category Definition Reading
+ */
 export function keyDefinition(definition: AstNode, scopes?: Scopes): AstNode {
   let result: AstNode;
   switch (typeClass(definition)) {
@@ -324,9 +374,12 @@ export function keyDefinition(definition: AstNode, scopes?: Scopes): AstNode {
   }
 }
 
-//returns input parameters, then output parameters
-//NOTE: ONLY FOR VARIABLE DECLARATIONS OF FUNCTION TYPE
-//NOT FOR FUNCTION DEFINITIONS
+/**
+ * returns input parameters, then output parameters
+ * NOTE: ONLY FOR VARIABLE DECLARATIONS OF FUNCTION TYPE
+ * NOT FOR FUNCTION DEFINITIONS
+ * @category Definition Reading
+ */
 export function parameters(definition: AstNode): [AstNode[], AstNode[]] {
   let typeObject = definition.typeName || definition;
   return [
@@ -335,8 +388,11 @@ export function parameters(definition: AstNode): [AstNode[], AstNode[]] {
   ];
 }
 
-//compatibility function, since pre-0.5.0 functions don't have node.kind
-//returns undefined if you don't put in a function node
+/**
+ * compatibility function, since pre-0.5.0 functions don't have node.kind
+ * returns undefined if you don't put in a function node
+ * @category Definition Reading
+ */
 export function functionKind(node: AstNode): string | undefined {
   if (node.nodeType !== "FunctionDefinition") {
     return undefined;
@@ -352,9 +408,12 @@ export function functionKind(node: AstNode): string | undefined {
   return node.name === "" ? "fallback" : "function";
 }
 
-//similar compatibility function for mutability for pre-0.4.16 versions
-//returns undefined if you don't give it a FunctionDefinition or
-//VariableDeclaration
+/**
+ * similar compatibility function for mutability for pre-0.4.16 versions
+ * returns undefined if you don't give it a FunctionDefinition or
+ * VariableDeclaration
+ * @category Definition Reading
+ */
 export function mutability(node: AstNode): Common.Mutability | undefined {
   node = node.typeName || node;
   if (
@@ -379,7 +438,11 @@ export function mutability(node: AstNode): Common.Mutability | undefined {
   return "nonpayable";
 }
 
-//takes a contract definition and asks, does it have a payable fallback function?
+/**
+ * takes a contract definition and asks, does it have a payable fallback
+ * function?
+ * @category Definition Reading
+ */
 export function isContractPayable(definition: AstNode): boolean {
   let fallback = definition.nodes.find(
     node =>
@@ -392,70 +455,297 @@ export function isContractPayable(definition: AstNode): boolean {
   return mutability(fallback) === "payable";
 }
 
-//spoofed definitions we'll need
-//we'll give them id -1 to indicate that they're spoofed
-
-export const NOW_DEFINITION: AstNode = {
-  id: -1,
-  src: "0:0:-1",
-  name: "now",
-  nodeType: "VariableDeclaration",
-  typeDescriptions: {
-    typeIdentifier: "t_uint256",
-    typeString: "uint256"
+/**
+ * the main function. just does some dispatch.
+ * returns undefined on bad input
+ */
+export function definitionToAbi(
+  node: AstNode,
+  referenceDeclarations: AstNodes
+): Abi.AbiEntry | undefined {
+  switch (node.nodeType) {
+    case "FunctionDefinition":
+      if (node.visibility === "public" || node.visibility === "external") {
+        return functionDefinitionToAbi(node, referenceDeclarations);
+      } else {
+        return undefined;
+      }
+    case "EventDefinition":
+      return eventDefinitionToAbi(node, referenceDeclarations);
+    case "VariableDeclaration":
+      if (node.visibility === "public") {
+        return getterDefinitionToAbi(node, referenceDeclarations);
+      } else {
+        return undefined;
+      }
+    default:
+      return undefined;
   }
-};
+}
 
-export const MSG_DEFINITION: AstNode = {
-  id: -1,
-  src: "0:0:-1",
-  name: "msg",
-  nodeType: "VariableDeclaration",
-  typeDescriptions: {
-    typeIdentifier: "t_magic_message",
-    typeString: "msg"
+//note: not for FunctionTypeNames or VariableDeclarations
+function functionDefinitionToAbi(
+  node: AstNode,
+  referenceDeclarations: AstNodes
+): Abi.FunctionAbiEntry | Abi.ConstructorAbiEntry | Abi.FallbackAbiEntry {
+  let kind = functionKind(node);
+  let stateMutability = mutability(node);
+  let payable = stateMutability === "payable";
+  let constant = stateMutability === "view" || stateMutability == "pure";
+  let inputs;
+  switch (kind) {
+    case "function":
+      let name = node.name;
+      let outputs = parametersToAbi(
+        node.returnParameters.parameters,
+        referenceDeclarations
+      );
+      inputs = parametersToAbi(
+        node.parameters.parameters,
+        referenceDeclarations
+      );
+      return {
+        type: "function",
+        name,
+        inputs,
+        outputs,
+        stateMutability,
+        constant,
+        payable
+      };
+    case "constructor":
+      inputs = parametersToAbi(
+        node.parameters.parameters,
+        referenceDeclarations
+      );
+      //note: need to coerce because of mutability restrictions
+      return <Abi.ConstructorAbiEntry>{
+        type: "constructor",
+        inputs,
+        stateMutability,
+        payable
+      };
+    case "fallback":
+      //note: need to coerce because of mutability restrictions
+      return <Abi.FallbackAbiEntry>{
+        type: "fallback",
+        stateMutability,
+        payable
+      };
   }
-};
+}
 
-export const TX_DEFINITION: AstNode = {
-  id: -1,
-  src: "0:0:-1",
-  name: "tx",
-  nodeType: "VariableDeclaration",
-  typeDescriptions: {
-    typeIdentifier: "t_magic_transaction",
-    typeString: "tx"
-  }
-};
-
-export const BLOCK_DEFINITION: AstNode = {
-  id: -1,
-  src: "0:0:-1",
-  name: "block",
-  nodeType: "VariableDeclaration",
-  typeDescriptions: {
-    typeIdentifier: "t_magic_block",
-    typeString: "block"
-  }
-};
-
-export function spoofThisDefinition(
-  contractName: string,
-  contractId: number,
-  contractKind: Common.ContractKind
-): AstNode {
-  let formattedName = contractName.replace(/\$/g, "$$".repeat(3));
-  //note that string.replace treats $'s specially in the replacement string;
-  //we want 3 $'s for each $ in the input, so we need to put *6* $'s in the
-  //replacement string
+function eventDefinitionToAbi(
+  node: AstNode,
+  referenceDeclarations: AstNodes
+): Abi.EventAbiEntry {
+  let inputs = parametersToAbi(
+    node.parameters.parameters,
+    referenceDeclarations,
+    true
+  );
+  let name = node.name;
+  let anonymous = node.anonymous;
   return {
-    id: -1,
-    src: "0:0:-1",
-    name: "this",
-    nodeType: "VariableDeclaration",
-    typeDescriptions: {
-      typeIdentifier: "t_contract$_" + formattedName + "_$" + contractId,
-      typeString: contractKind + " " + contractName
-    }
+    type: "event",
+    inputs,
+    name,
+    anonymous
   };
+}
+
+function parametersToAbi(
+  nodes: AstNode[],
+  referenceDeclarations: AstNodes,
+  checkIndexed: boolean = false
+): Abi.AbiParameter[] {
+  return nodes.map(node =>
+    parameterToAbi(node, referenceDeclarations, checkIndexed)
+  );
+}
+
+function parameterToAbi(
+  node: AstNode,
+  referenceDeclarations: AstNodes,
+  checkIndexed: boolean = false
+): Abi.AbiParameter {
+  let name = node.name; //may be the empty string... or even undefined for a base type
+  let components: Abi.AbiParameter[];
+  let indexed: boolean;
+  if (checkIndexed) {
+    indexed = node.indexed; //note: may be undefined for a base type
+  }
+  let internalType: string = typeStringWithoutLocation(node);
+  //is this an array? if so use separate logic
+  if (typeClass(node) === "array") {
+    let baseType = node.typeName ? node.typeName.baseType : node.baseType;
+    let baseAbi = parameterToAbi(baseType, referenceDeclarations, checkIndexed);
+    let arraySuffix = isDynamicArray(node) ? `[]` : `[${staticLength(node)}]`;
+    return {
+      name,
+      type: baseAbi.type + arraySuffix,
+      indexed,
+      components: baseAbi.components,
+      internalType
+    };
+  }
+  let abiTypeString = toAbiType(node, referenceDeclarations);
+  //otherwise... is it a struct? if so we need to populate components
+  if (typeClass(node) === "struct") {
+    let id = typeId(node);
+    let referenceDeclaration = referenceDeclarations[id];
+    if (referenceDeclaration === undefined) {
+      let typeToDisplay = typeString(node);
+      throw new Common.UnknownUserDefinedTypeError(
+        id.toString(),
+        typeToDisplay
+      );
+    }
+    components = parametersToAbi(
+      referenceDeclaration.members,
+      referenceDeclarations,
+      checkIndexed
+    );
+  }
+  return {
+    name, //may be empty string but should only be undefined in recursive calls
+    type: abiTypeString,
+    indexed, //undefined if !checkedIndex
+    components, //undefined if not a struct or (multidim) array of structs
+    internalType
+  };
+}
+
+//note: this is only meant for non-array types that can go in the ABI
+//it returns how that type is notated in the ABI -- just the string,
+//to be clear, not components of tuples
+//again, NOT FOR ARRAYS
+function toAbiType(node: AstNode, referenceDeclarations: AstNodes): string {
+  let basicType = typeClassLongForm(node); //get that whole first segment!
+  switch (basicType) {
+    case "contract":
+      return "address";
+    case "struct":
+      return "tuple"; //the more detailed checking will be handled elsewhere
+    case "enum":
+      let referenceId = typeId(node);
+      let referenceDeclaration = referenceDeclarations[referenceId];
+      if (referenceDeclaration === undefined) {
+        let typeToDisplay = typeString(node);
+        throw new Common.UnknownUserDefinedTypeError(
+          referenceId.toString(),
+          typeToDisplay
+        );
+      }
+      let numOptions = referenceDeclaration.members.length;
+      let bits = 8 * Math.ceil(Math.log2(numOptions) / 8);
+      return `uint${bits}`;
+    default:
+      return basicType;
+    //note that: int/uint/fixed/ufixed/bytes will have their size and such left on;
+    //address will have "payable" left off;
+    //external functions will be reduced to "function" (and internal functions shouldn't
+    //be passed in!)
+    //(mappings shouldn't be passed in either obviously)
+    //(nor arrays :P )
+  }
+}
+
+function getterDefinitionToAbi(
+  node: AstNode,
+  referenceDeclarations: AstNodes
+): Abi.FunctionAbiEntry {
+  debug("getter node: %O", node);
+  let name = node.name;
+  let { inputs, outputs } = getterParameters(node, referenceDeclarations);
+  let inputsAbi = parametersToAbi(inputs, referenceDeclarations);
+  let outputsAbi = parametersToAbi(outputs, referenceDeclarations);
+  return {
+    type: "function",
+    name,
+    inputs: inputsAbi,
+    outputs: outputsAbi,
+    stateMutability: "view",
+    constant: true,
+    payable: false
+  };
+}
+
+//how getter parameters work:
+//INPUT:
+//types other than arrays and mappings take no input.
+//array getters take uint256 input. mapping getters take input of their key type.
+//if arrays, mappings, stacked, then takes multiple inputs, in order from outside
+//to in.
+//These parameters are unnamed.
+//OUTPUT:
+//if base type (beneath mappings & arrays) is not a struct, returns that.
+//(This return parameter has no name -- it is *not* named for the variable!)
+//if it is a struct, returns multiple outputs, one for each member of the struct,
+//*except* arrays and mappings.  (And they have names, the names of the members.)
+//important note: inner structs within a struct are just returned, not
+//partially destructured like the outermost struct!  Yes, this is confusing.
+
+//here's a simplified function that just does the inputs. it's for use by the
+//allocator. I'm keeping it separate because it doesn't require a
+//referenceDeclarations argument.
+export function getterInputs(node: AstNode): AstNode[] {
+  node = node.typeName || node;
+  let inputs: AstNode[] = [];
+  while (typeClass(node) === "array" || typeClass(node) === "mapping") {
+    let keyNode = keyDefinition(node); //note: if node is an array, this spoofs up a uint256 definition
+    inputs.push({ ...keyNode, name: "" }); //getter input params have no name
+    switch (typeClass(node)) {
+      case "array":
+        node = node.baseType;
+        break;
+      case "mapping":
+        node = node.valueType;
+        break;
+    }
+  }
+  return inputs;
+}
+
+//again, despite the duplication, this function is kept separate from the
+//more straightforward getterInputs function because, since it has to handle
+//outputs too, it requires referenceDeclarations
+function getterParameters(
+  node: AstNode,
+  referenceDeclarations: AstNodes
+): { inputs: AstNode[]; outputs: AstNode[] } {
+  let baseNode: AstNode = node.typeName || node;
+  let inputs: AstNode[] = [];
+  while (typeClass(baseNode) === "array" || typeClass(baseNode) === "mapping") {
+    let keyNode = keyDefinition(baseNode); //note: if baseNode is an array, this spoofs up a uint256 definition
+    inputs.push({ ...keyNode, name: "" }); //again, getter input params have no name
+    switch (typeClass(baseNode)) {
+      case "array":
+        baseNode = baseNode.baseType;
+        break;
+      case "mapping":
+        baseNode = baseNode.valueType;
+        break;
+    }
+  }
+  //at this point, baseNode should hold the base type
+  //now we face the question: is it a struct?
+  if (typeClass(baseNode) === "struct") {
+    let id = typeId(baseNode);
+    let referenceDeclaration = referenceDeclarations[id];
+    if (referenceDeclaration === undefined) {
+      let typeToDisplay = typeString(baseNode);
+      throw new Common.UnknownUserDefinedTypeError(
+        id.toString(),
+        typeToDisplay
+      );
+    }
+    let outputs = referenceDeclaration.members.filter(
+      member => typeClass(member) !== "array" && typeClass(member) !== "mapping"
+    );
+    return { inputs, outputs }; //no need to wash name!
+  } else {
+    //only one output; it's just the base node, with its name washed
+    return { inputs, outputs: [{ ...baseNode, name: "" }] };
+  }
 }

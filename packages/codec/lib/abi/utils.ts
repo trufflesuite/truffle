@@ -8,7 +8,6 @@ import * as Evm from "@truffle/codec/evm";
 import * as Common from "@truffle/codec/common";
 import * as Ast from "@truffle/codec/ast";
 import * as Abi from "./types";
-import { definitionToAbi } from "@truffle/codec/utils/definition2abi";
 
 //NOTE: SchemaAbi is kind of loose and a pain to use.
 //So we'll generally coerce things to Abi before use.
@@ -184,7 +183,7 @@ export function definitionMatchesAbi(
   try {
     return abisMatch(
       abiEntry,
-      definitionToAbi(definition, referenceDeclarations)
+      Ast.Utils.definitionToAbi(definition, referenceDeclarations)
     );
   } catch (_) {
     return false; //if an exception occurs, well, that's not a match!

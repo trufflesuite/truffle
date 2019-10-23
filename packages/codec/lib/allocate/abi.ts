@@ -4,7 +4,6 @@ const debug = debugModule("codec:allocate:abi");
 import * as Abi from "@truffle/codec/abi/types";
 import * as AbiUtils from "@truffle/codec/abi/utils";
 import * as Evm from "@truffle/codec/evm";
-import { getterInputs } from "@truffle/codec/utils/definition2abi";
 import * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
 import * as Ast from "@truffle/codec/ast";
@@ -374,7 +373,7 @@ function allocateCalldata(
         break;
       case "VariableDeclaration":
         //getter case
-        parameters = getterInputs(node);
+        parameters = Ast.Utils.getterInputs(node);
         break;
     }
     id = node.id.toString();
