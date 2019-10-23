@@ -2,18 +2,16 @@
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es5",
-    "downlevelIteration": true,
+    "target": "es6",
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
-    "baseUrl": ".",
+    "baseUrl": "..",
     "lib": ["es2017"],
     "paths": {
-      "@truffle/codec": ["../codec/dist/lib"],
-      "@truffle/codec/*": ["../codec/dist/lib/*"],
-      "@truffle/codec/allocate/types": ["../codec/dist/lib/allocate/types.d"],
+      "@truffle/codec": ["../codec/lib"],
+      "@truffle/codec/*": ["../codec/lib/*"],
       "web3": ["../../node_modules/@types/web3/index", "node_modules/web3/index"],
       "web3/types": ["../../node_modules/@types/web3/types", "node_modules/web3/types"],
       "web3/eth/types": ["../../node_modules/@types/web3/eth/types", "node_modules/web3/eth/types"]
@@ -21,7 +19,7 @@
     "plugins": [
       { "transform": "@zerollup/ts-transform-paths", "exclude": "*" }
     ],
-    "rootDir": "lib",
+    "rootDir": "../..",
     "typeRoots": [
       "./typings",
       "../../**/node_modules/@types/bn.js",

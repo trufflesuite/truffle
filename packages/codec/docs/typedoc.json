@@ -1,12 +1,10 @@
 {
-  "name": "@truffle/codec",
+  "name": "@truffle/codec and @truffle/decoder",
   "mode": "modules",
   "module": "commonjs",
-  "tsconfig": "tsconfig.json",
-  "out": "dist/docs",
-  "json": "dist/apidocs.json",
   "theme": "default",
-  "ignoreCompilerErrors": false,
+  "includeDeclarations": false,
+  "ignoreCompilerErrors": true,
   "preserveConstEnums": true,
   "excludeExternals": true,
   "exclude": [

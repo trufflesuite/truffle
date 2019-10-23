@@ -1051,22 +1051,6 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@truffle/codec@^3.1.0-ens-events.0":
-  version "3.1.0-ens-events.0"
-  resolved "https://registry.yarnpkg.com/@truffle/codec/-/codec-3.1.0-ens-events.0.tgz#739c08edd11fb226b77398393f9b81aca7d9e789"
-  integrity sha512-/VABvfrkN5+HPS0PnB64ff/jKjTr/m+N3NGuyGqQfftgBRCHXfk5WQ/F8NESpvbWo0uzqBUpFRKjVqHP4OyLBw==
-  dependencies:
-    big.js "^5.2.2"
-    bn.js "^4.11.8"
-    debug "^4.1.0"
-    lodash.clonedeep "^4.5.0"
-    lodash.escaperegexp "^4.1.2"
-    lodash.partition "^4.6.0"
-    lodash.sum "^4.0.2"
-    semver "^6.1.1"
-    utf8 "^3.0.0"
-    web3 "^1.2.1"
-
 "@trufflesuite/chromafi@^2.1.2":
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.1.2.tgz#50715070093c5543a406a2cc85fa70fc8d1a36ab"
@@ -1189,15 +1173,10 @@
     "@types/through" "*"
     rxjs "^6.4.0"
 
-"@types/json-schema@^7.0.0", "@types/json-schema@^7.0.3":
+"@types/json-schema@^7.0.0":
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.3.tgz#bdfd69d61e464dcc81b25159c270d75a73c1a636"
   integrity sha512-Il2DtDVRGDcqjDtE+rF8iqg1CArehSK84HZJCT7AMITlyXRBpuPhqGLDQMowraqqu1coEaimg4ZOqggt6L6L+A==
-
-"@types/json5@^0.0.29":
-  version "0.0.29"
-  resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
-  integrity sha1-7ihweulOEdK4J7y+UnC86n8+ce4=
 
 "@types/lodash.clonedeep@^4.5.4":
   version "4.5.6"
@@ -1232,11 +1211,6 @@
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.144.tgz#12e57fc99064bce45e5ab3c8bc4783feb75eab8e"
   integrity sha512-ogI4g9W5qIQQUhXAclq6zhqgqNUr7UlFaqDHbch7WLSLeeM/7d3CRaw7GLajxvyFvhJqw4Rpcz5bhoaYtIx6Tg==
 
-"@types/lodash@^4.14.121":
-  version "4.14.132"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.132.tgz#8ce45ca8745ff2e004fac0de0ab46f61e390ffa0"
-  integrity sha512-RNUU1rrh85NgUJcjOOr96YXr+RHwInGbaQCZmlitqOaCKXffj8bh+Zxwuq5rjDy5OgzFldDVoqk4pyLEDiwxIw==
-
 "@types/minimatch@*", "@types/minimatch@3.0.3":
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.3.tgz#3dca0e3f33b200fc7d1139c0cd96c1268cadfd9d"
@@ -1269,20 +1243,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.14.21.tgz#4a9db7ef1d1671c0015e632c5fa3d46c86c58c1e"
   integrity sha512-nuFlRdBiqbF+PJIEVxm2jLFcQWN7q7iWEJGsBV4n7v1dbI9qXB8im2pMMKMCUZe092sQb5SQft2DHfuQGK5hqQ==
 
-"@types/node@^11.10.4":
-  version "11.13.12"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-11.13.12.tgz#4caaf874d5eaf26e5723d30c95f6d40cac2c49bb"
-  integrity sha512-HMD9cEGP+k2Y1Lk8LL6Cux9UlxkWst1wJdoMHnvH3XlVecHdjffW829/YzWd/ptFkIWtcbqQDrTkz5PY6pN+0w==
-
 "@types/prettier@^1.13.2":
   version "1.18.3"
   resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-1.18.3.tgz#64ff53329ce16139f17c3db9d3e0487199972cd8"
   integrity sha512-48rnerQdcZ26odp+HOvDGX8IcUkYOCuMc2BodWYTe956MqkHlOGAG4oFQ83cjZ0a4GAgj7mb4GUClxYd2Hlodg==
-
-"@types/prettier@^1.16.1":
-  version "1.16.4"
-  resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-1.16.4.tgz#5e5e97702cb68498aaba7349b941648daaf2385c"
-  integrity sha512-MG7ExKBo7AQ5UrL1awyYLNinNM/kyXgE4iP4Ul9fB+T7n768Z5Xem8IZeP6Bna0xze8gkDly49Rgge2HOEw4xA==
 
 "@types/request-promise-native@^1.0.16":
   version "1.0.17"
@@ -3643,7 +3607,7 @@ clean-webpack-plugin@^0.1.16:
   dependencies:
     rimraf "^2.6.1"
 
-cli-color@^1.3.0, cli-color@^1.4.0:
+cli-color@^1.3.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/cli-color/-/cli-color-1.4.0.tgz#7d10738f48526824f8fe7da51857cb0f572fe01f"
   integrity sha512-xu6RvQqqrWEo6MPR1eixqGPywhYBHRs653F9jfXB2Hx4jdM/3WxiNE1vppRmxtMIfl16SFYTpYlrnqH/HsK/2w==
@@ -8776,7 +8740,7 @@ js-tokens@^3.0.2:
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-3.0.2.tgz#9866df395102130e38f7f996bceb65443209c25b"
   integrity sha1-mGbfOVECEw449/mWvOtlRDIJwls=
 
-js-yaml@3.13.1, js-yaml@^3.12.0, js-yaml@^3.12.1, js-yaml@^3.13.0, js-yaml@^3.13.1, js-yaml@^3.9.1:
+js-yaml@3.13.1, js-yaml@^3.12.0, js-yaml@^3.13.0, js-yaml@^3.13.1, js-yaml@^3.9.1:
   version "3.13.1"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.13.1.tgz#aff151b30bfdfa8e49e05da22e7415e9dfa37847"
   integrity sha512-YfbcO7jXDdyj0DGxYVSlSeQNHbD7XPWvrVWeVUujrQEoZzWJIRrCPoyk6kL6IAjAG2IolMK4T0hNUe0HOUs5Jw==
@@ -8886,15 +8850,6 @@ json-schema-ref-parser@^5.1.3:
     js-yaml "^3.12.0"
     ono "^4.0.6"
 
-json-schema-ref-parser@^6.1.0:
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/json-schema-ref-parser/-/json-schema-ref-parser-6.1.0.tgz#30af34aeab5bee0431da805dac0eb21b574bf63d"
-  integrity sha512-pXe9H1m6IgIpXmE5JSb8epilNTGsmTb2iPohAXpOdhqGFbQjNeHHsZxU+C8w6T81GZxSPFLeUoqDJmzxx5IGuw==
-  dependencies:
-    call-me-maybe "^1.0.1"
-    js-yaml "^3.12.1"
-    ono "^4.0.11"
-
 json-schema-to-markdown@^1.0.3:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/json-schema-to-markdown/-/json-schema-to-markdown-1.1.1.tgz#bd9ac9ff5ecbc5fa09031dd054dca8d121e0ece8"
@@ -8919,27 +8874,6 @@ json-schema-to-typescript@^5.5.0:
     minimist "^1.2.0"
     mz "^2.7.0"
     prettier "^1.14.2"
-    stdin "0.0.1"
-
-json-schema-to-typescript@^6.1.3:
-  version "6.1.3"
-  resolved "https://registry.yarnpkg.com/json-schema-to-typescript/-/json-schema-to-typescript-6.1.3.tgz#245364e8564263e53738320b46227f304491cc77"
-  integrity sha512-6nG2EPSyu3Po0FYsMEw/RpJDd6dqBr8DYIbqPZsxrRFE8g0Mxzbt6L6vlKJYrcPe9707INivn4NPJfemlXSLKw==
-  dependencies:
-    "@types/cli-color" "^0.3.29"
-    "@types/json-schema" "^7.0.3"
-    "@types/lodash" "^4.14.121"
-    "@types/minimist" "^1.2.0"
-    "@types/mz" "0.0.32"
-    "@types/node" "^11.10.4"
-    "@types/prettier" "^1.16.1"
-    cli-color "^1.4.0"
-    json-schema-ref-parser "^6.1.0"
-    json-stringify-safe "^5.0.1"
-    lodash "^4.17.11"
-    minimist "^1.2.0"
-    mz "^2.7.0"
-    prettier "^1.16.4"
     stdin "0.0.1"
 
 json-schema-traverse@^0.3.0:
@@ -11333,7 +11267,7 @@ onetime@^5.1.0:
   dependencies:
     mimic-fn "^2.1.0"
 
-ono@^4.0.11, ono@^4.0.6:
+ono@^4.0.6:
   version "4.0.11"
   resolved "https://registry.yarnpkg.com/ono/-/ono-4.0.11.tgz#c7f4209b3e396e8a44ef43b9cedc7f5d791d221d"
   integrity sha512-jQ31cORBFE6td25deYeD80wxKBMj+zBmHTrVxnc6CKhx8gho6ipmWM5zj/oeoqioZ99yqBls9Z/9Nss7J26G2g==
@@ -12001,11 +11935,6 @@ prettier@^1.14.2:
   version "1.18.2"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.18.2.tgz#6823e7c5900017b4bd3acf46fe9ac4b4d7bda9ea"
   integrity sha512-OeHeMc0JhFE9idD4ZdtNibzY0+TPHSpSSb9h8FqtP+YnoZZ1sl8Vc9b1sasjfymH3SonAF4QcA2+mzHPhMvIiw==
-
-prettier@^1.16.4:
-  version "1.17.1"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.17.1.tgz#ed64b4e93e370cb8a25b9ef7fef3e4fd1c0995db"
-  integrity sha512-TzGRNvuUSmPgwivDqkZ9tM/qTGW9hqDKWOE9YHiyQdixlKbv7kvEqsmDPrcHJTKwthU774TQwZXVtaQ/mMsvjg==
 
 pretty-format@^23.6.0:
   version "23.6.0"
@@ -14855,23 +14784,6 @@ ts-node@^8.0.3, ts-node@^8.3.0, ts-node@^8.4.1:
     make-error "^1.1.1"
     source-map-support "^0.5.6"
     yn "^3.0.0"
-
-ts-transformer-imports@^0.4.3:
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/ts-transformer-imports/-/ts-transformer-imports-0.4.3.tgz#d1527978cae552af9f821b06cc2233cdf2e09e42"
-  integrity sha512-Dy9f42DwDucTu1HhkyTTyd+LcVmhHTNN9n0Q9yMYwT40qpUESl/MCn7Q4rj6uIgSrC3y1MWVlWR9k5ba6EaG7w==
-  dependencies:
-    tsconfig-paths "^3.6.0"
-
-tsconfig-paths@^3.6.0:
-  version "3.9.0"
-  resolved "https://registry.yarnpkg.com/tsconfig-paths/-/tsconfig-paths-3.9.0.tgz#098547a6c4448807e8fcb8eae081064ee9a3c90b"
-  integrity sha512-dRcuzokWhajtZWkQsDVKbWyY+jgcLC5sqJhg2PSgf4ZkH2aHPvaOY8YWGhmjb68b5qqTfasSsDO9k7RUiEmZAw==
-  dependencies:
-    "@types/json5" "^0.0.29"
-    json5 "^1.0.1"
-    minimist "^1.2.0"
-    strip-bom "^3.0.0"
 
 tslib@^1.9.0, tslib@^1.9.3:
   version "1.10.0"

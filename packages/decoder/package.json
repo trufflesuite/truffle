@@ -8,7 +8,6 @@
     "lib": "lib"
   },
   "scripts": {
-    "docs": "rm -rf dist/docs && ../../node_modules/@gnd/typedoc/bin/typedoc --rootDir .. lib/index.ts ../codec/lib/index.ts",
     "prepare": "yarn build",
     "build": "node_modules/.bin/ttsc",
     "start": "node_modules/.bin/ttsc --watch",
@@ -34,7 +33,6 @@
     "access": "public"
   },
   "devDependencies": {
-    "@gnd/typedoc": "^0.15.0-0",
     "@truffle/contract-schema": "^3.0.11",
     "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",
@@ -46,12 +44,9 @@
     "@types/semver": "^6.0.0",
     "@types/utf8": "^2.1.6",
     "@types/web3": "^1.0.19",
+    "@zerollup/ts-transform-paths": "^1.7.3",
     "chai": "^4.2.0",
-    "json-schema-to-typescript": "^6.1.3",
-    "ts-transformer-imports": "^0.4.3",
     "ttypescript": "^1.5.7",
-    "typedoc": "^0.15.0",
-    "typedoc-plugin-external-module-name": "^2.1.0",
     "typescript": "^3.6.2",
     "web3-core": "1.2.1"
   },
