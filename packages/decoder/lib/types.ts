@@ -1,9 +1,12 @@
 import BN from "bn.js";
 import { ContractObject } from "@truffle/contract-schema/spec";
-import { Types, Values } from "@truffle/codec/format";
-import * as Ast from "@truffle/codec/ast/types";
-import * as Contexts from "@truffle/codec/contexts/types";
-import * as Decoding from "@truffle/codec/decode/types";
+import {
+  Format,
+  Ast,
+  Contexts,
+  CalldataDecoding,
+  LogDecoding
+} from "@truffle/codec";
 import { Transaction, BlockType } from "web3/eth/types";
 import { Log } from "web3/types";
 
@@ -38,15 +41,15 @@ export interface StateVariable {
    */
   name: string;
   /**
-   * The class of the contract that defined the variable, as a Types.ContractType.
+   * The class of the contract that defined the variable, as a Format.Types.ContractType.
    * Note that this class may differ from that of the contract being decoded, due
    * to inheritance.
    */
-  class: Types.ContractType;
+  class: Format.Types.ContractType;
   /**
-   * The decoded value of the variable.  Note this is a Values.Result, so it may be an error.
+   * The decoded value of the variable.  Note this is a Format.Values.Result, so it may be an error.
    */
-  value: Values.Result;
+  value: Format.Values.Result;
 }
 
 /**
@@ -59,7 +62,7 @@ export interface DecodedTransaction extends Transaction {
    * The decoding of the transaction.  Note that transactions are not decoded in strict mode,
    * so there will always be a decoding, although it may contain errors.
    */
-  decoding: Decoding.CalldataDecoding;
+  decoding: CalldataDecoding;
 }
 
 /**
@@ -88,7 +91,7 @@ export interface DecodedLog extends Log {
    *
    * Note that different decodings may use different decoding modes.
    */
-  decodings: Decoding.LogDecoding[];
+  decodings: LogDecoding[];
 }
 
 export interface ContractMapping {

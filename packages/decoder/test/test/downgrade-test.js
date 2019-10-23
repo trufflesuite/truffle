@@ -214,7 +214,7 @@ contract("DowngradeTest", function(accounts) {
       }
     };
     const encodedTau = encodeTupleAbi([wrappedTau]);
-    const hexTau = Codec.Utils.Conversion.toHexString(encodedTau);
+    const hexTau = Codec.Conversion.toHexString(encodedTau);
     const selector = web3.eth.abi.encodeFunctionSignature(
       "shhImADecimal(fixed168x10)"
     );

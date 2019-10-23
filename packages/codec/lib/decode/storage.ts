@@ -3,7 +3,7 @@ const debug = debugModule("codec:decode:storage");
 
 import read from "@truffle/codec/read";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import decodeValue from "./value";
 import * as Storage from "@truffle/codec/storage";
@@ -47,7 +47,7 @@ export function* decodeStorageReferenceByAddress(
       error: (<DecodingError>error).error
     };
   }
-  const startOffset = ConversionUtils.toBN(rawValue);
+  const startOffset = Conversion.toBN(rawValue);
   let rawSize: Storage.Types.StorageLength;
   try {
     rawSize = storageSizeForType(dataType, info.userDefinedTypes, allocations);
@@ -115,7 +115,7 @@ export function* decodeStorageReference(
               error: (<DecodingError>error).error
             };
           }
-          lengthAsBN = ConversionUtils.toBN(data);
+          lengthAsBN = Conversion.toBN(data);
           break;
         case "static":
           debug("static array");
@@ -281,7 +281,7 @@ export function* decodeStorageReference(
           info
         );
       } else {
-        let lengthAsBN: BN = ConversionUtils.toBN(data)
+        let lengthAsBN: BN = Conversion.toBN(data)
           .subn(1)
           .divn(2);
         try {

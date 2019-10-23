@@ -9,7 +9,7 @@ import { stableKeccak256 } from "lib/helpers";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import { Utils as CodecUtils } from "@truffle/codec";
+import { Conversion, Utils as CodecUtils } from "@truffle/codec";
 
 /**
  * @private
@@ -224,7 +224,7 @@ const data = createSelectorTree({
       Object.assign(
         {},
         ...Object.entries(instances).map(([address, { binary }]) => ({
-          [address]: CodecUtils.Conversion.toBytes(binary)
+          [address]: Conversion.toBytes(binary)
         }))
       )
     ),
@@ -428,7 +428,7 @@ const data = createSelectorTree({
       stack: createLeaf(
         [evm.current.state.stack],
 
-        words => (words || []).map(word => CodecUtils.Conversion.toBytes(word))
+        words => (words || []).map(word => Conversion.toBytes(word))
       ),
 
       /**
@@ -437,7 +437,7 @@ const data = createSelectorTree({
       memory: createLeaf(
         [evm.current.state.memory],
 
-        words => CodecUtils.Conversion.toBytes(words.join(""))
+        words => Conversion.toBytes(words.join(""))
       ),
 
       /**
@@ -446,7 +446,7 @@ const data = createSelectorTree({
       calldata: createLeaf(
         [evm.current.call],
 
-        ({ data }) => CodecUtils.Conversion.toBytes(data)
+        ({ data }) => Conversion.toBytes(data)
       ),
 
       /**
@@ -459,7 +459,7 @@ const data = createSelectorTree({
           Object.assign(
             {},
             ...Object.entries(mapping).map(([address, word]) => ({
-              [`0x${address}`]: CodecUtils.Conversion.toBytes(word)
+              [`0x${address}`]: Conversion.toBytes(word)
             }))
           )
       ),
@@ -473,24 +473,24 @@ const data = createSelectorTree({
       specials: createLeaf(
         ["/current/address", evm.current.call, evm.transaction.globals],
         (address, { sender, value }, { tx, block }) => ({
-          this: CodecUtils.Conversion.toBytes(address),
+          this: Conversion.toBytes(address),
 
-          sender: CodecUtils.Conversion.toBytes(sender),
+          sender: Conversion.toBytes(sender),
 
-          value: CodecUtils.Conversion.toBytes(value),
+          value: Conversion.toBytes(value),
 
           //let's crack open that tx and block!
           ...Object.assign(
             {},
             ...Object.entries(tx).map(([variable, value]) => ({
-              [variable]: CodecUtils.Conversion.toBytes(value)
+              [variable]: Conversion.toBytes(value)
             }))
           ),
 
           ...Object.assign(
             {},
             ...Object.entries(block).map(([variable, value]) => ({
-              [variable]: CodecUtils.Conversion.toBytes(value)
+              [variable]: Conversion.toBytes(value)
             }))
           )
         })
@@ -875,7 +875,7 @@ const data = createSelectorTree({
       stack: createLeaf(
         [evm.next.state.stack],
 
-        words => (words || []).map(word => CodecUtils.Conversion.toBytes(word))
+        words => (words || []).map(word => Conversion.toBytes(word))
       )
     },
 
@@ -950,10 +950,7 @@ const data = createSelectorTree({
       stack: createLeaf(
         [solidity.current.nextMapped],
 
-        step =>
-          ((step || {}).stack || []).map(word =>
-            CodecUtils.Conversion.toBytes(word)
-          )
+        step => ((step || {}).stack || []).map(word => Conversion.toBytes(word))
       )
     }
   }

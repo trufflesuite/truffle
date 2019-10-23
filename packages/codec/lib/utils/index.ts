@@ -1,15 +1,12 @@
-import * as Conversion from "./conversion";
-export { Conversion };
-
 import * as Definition from "./definition";
 export { Definition };
 
+import * as DefinitionToAbi from "./definition2abi";
+export { DefinitionToAbi };
 
-export * from "./definition2abi";
+import * as Wrap from "./wrap";
+export { Wrap };
 
-
-export * from "./wrap";
-export * from "./interface";
 import * as TypeUtils from "./datatype";
 export { TypeUtils };
 

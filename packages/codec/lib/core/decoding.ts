@@ -15,7 +15,7 @@ import {
 import * as Evm from "@truffle/codec/evm";
 import * as Contexts from "@truffle/codec/contexts";
 import { abifyType, abifyResult } from "@truffle/codec/utils/abify";
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as Conversion from "@truffle/codec/conversion";
 import * as MakeType from "@truffle/codec/utils/maketype";
 import * as Format from "@truffle/codec/format";
 import { StopDecodingError } from "@truffle/codec/decode/errors";
@@ -42,7 +42,7 @@ export function* decodeCalldata(
     return {
       kind: "unknown" as const,
       decodingMode: "full" as const,
-      data: ConversionUtils.toHexString(info.state.calldata)
+      data: Conversion.toHexString(info.state.calldata)
     };
   }
   const compiler = context.compiler;
@@ -65,7 +65,7 @@ export function* decodeCalldata(
       },
       info.state
     );
-    selector = ConversionUtils.toHexString(rawSelector);
+    selector = Conversion.toHexString(rawSelector);
     allocation = allocations.functionAllocations[contextHash][selector];
   }
   if (allocation === undefined) {
@@ -75,7 +75,7 @@ export function* decodeCalldata(
       abi: context.hasFallback
         ? Abi.Utils.fallbackAbiForPayability(context.payable)
         : null,
-      data: ConversionUtils.toHexString(info.state.calldata),
+      data: Conversion.toHexString(info.state.calldata),
       decodingMode: "full" as const
     };
   }
@@ -139,7 +139,7 @@ export function* decodeCalldata(
       class: contractType,
       arguments: decodedArguments,
       abi: <Abi.ConstructorAbiEntry>allocation.abi, //we know it's a constructor, but typescript doesn't
-      bytecode: ConversionUtils.toHexString(
+      bytecode: Conversion.toHexString(
         info.state.calldata.slice(0, allocation.offset)
       ),
       decodingMode
@@ -182,7 +182,7 @@ export function* decodeEvent(
       },
       info.state
     );
-    selector = ConversionUtils.toHexString(rawSelector);
+    selector = Conversion.toHexString(rawSelector);
     ({
       contract: contractAllocations,
       library: libraryAllocations
@@ -206,7 +206,7 @@ export function* decodeEvent(
     type: "code",
     address
   };
-  const codeAsHex = ConversionUtils.toHexString(codeBytes);
+  const codeAsHex = Conversion.toHexString(codeBytes);
   const contractContext = Contexts.Utils.findDecoderContext(
     info.contexts,
     codeAsHex

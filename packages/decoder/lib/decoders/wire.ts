@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:wire");
 
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as Conversion from "@truffle/codec/conversion";
 import * as AbiUtils from "@truffle/codec/utils/abi";
 import * as MakeType from "@truffle/codec/utils/maketype";
 import {
@@ -194,9 +194,7 @@ export default class WireDecoder {
       return this.codeCache[block][address];
     }
     //otherwise, get it, cache it, and return it
-    let code = ConversionUtils.toBytes(
-      await this.web3.eth.getCode(address, block)
-    );
+    let code = Conversion.toBytes(await this.web3.eth.getCode(address, block));
     this.codeCache[block][address] = code;
     return code;
   }
@@ -227,7 +225,7 @@ export default class WireDecoder {
       additionalContexts
     );
 
-    const data = ConversionUtils.toBytes(transaction.input);
+    const data = Conversion.toBytes(transaction.input);
     const info: Evm.EvmInfo = {
       state: {
         storage: {},
@@ -277,8 +275,8 @@ export default class WireDecoder {
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<DecoderTypes.DecodedLog> {
     const block = log.blockNumber;
-    const data = ConversionUtils.toBytes(log.data);
-    const topics = log.topics.map(ConversionUtils.toBytes);
+    const data = Conversion.toBytes(log.data);
+    const topics = log.topics.map(Conversion.toBytes);
     const info: Evm.EvmInfo = {
       state: {
         storage: {},
@@ -403,7 +401,7 @@ export default class WireDecoder {
   ): Promise<Contexts.DecoderContext | null> {
     let code: string;
     if(address !== null) {
-      code = ConversionUtils.toHexString(
+      code = Conversion.toHexString(
         await this.getCode(address, block)
       );
     } else if (constructorBinary) {

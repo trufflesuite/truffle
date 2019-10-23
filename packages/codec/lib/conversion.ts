@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:utils:conversion");
+const debug = debugModule("codec:conversion");
 
 import BN from "bn.js";
 import Big from "big.js";
@@ -9,7 +9,9 @@ import * as Format from "@truffle/codec/format";
  * @param bytes - undefined | string | number | BN | Uint8Array | Big
  * @return {BN}
  */
-export function toBN(bytes: undefined | string | number | BN | Uint8Array | Big): BN {
+export function toBN(
+  bytes: undefined | string | number | BN | Uint8Array | Big
+): BN {
   if (bytes === undefined) {
     return undefined;
   } else if (typeof bytes == "string") {
@@ -34,10 +36,13 @@ export function toBN(bytes: undefined | string | number | BN | Uint8Array | Big)
  * @return {BN}
  */
 export function toSignedBN(bytes: Uint8Array): BN {
-  if (bytes[0] < 0x80) {  // if first bit is 0
+  if (bytes[0] < 0x80) {
+    // if first bit is 0
     return toBN(bytes);
   } else {
-    return toBN(bytes.map( (b) => 0xff - b )).addn(1).neg();
+    return toBN(bytes.map(b => 0xff - b))
+      .addn(1)
+      .neg();
   }
 }
 
@@ -52,8 +57,10 @@ export function toBig(value: BN | number): Big {
  * @param padLength - number - minimum desired byte length (left-pad with zeroes)
  * @return {string}
  */
-export function toHexString(bytes: Uint8Array | BN, padLength: number = 0): string {
-
+export function toHexString(
+  bytes: Uint8Array | BN,
+  padLength: number = 0
+): string {
   if (BN.isBN(bytes)) {
     bytes = toBytes(bytes);
   }
@@ -76,14 +83,17 @@ export function toHexString(bytes: Uint8Array | BN, padLength: number = 0): stri
   debug("bytes: %o", bytes);
 
   let string = bytes.reduce(
-    (str, byte) => `${str}${pad(byte.toString(16))}`, ""
+    (str, byte) => `${str}${pad(byte.toString(16))}`,
+    ""
   );
 
   return `0x${string}`;
 }
 
-
-export function toBytes(data: BN | string | number | Big, length: number = 0): Uint8Array {
+export function toBytes(
+  data: BN | string | number | Big,
+  length: number = 0
+): Uint8Array {
   //note that length is a minimum output length
   //strings will be 0-padded on left
   //numbers/BNs will be sign-padded on left
@@ -93,14 +103,13 @@ export function toBytes(data: BN | string | number | Big, length: number = 0): U
   //generic strings to hex)
 
   if (typeof data === "string") {
-
     let hex = data; //renaming for clarity
 
     if (hex.startsWith("0x")) {
       hex = hex.slice(2);
     }
 
-    if(hex === "") {
+    if (hex === "") {
       //this special case is necessary because the match below will return null,
       //not an empty array, when given an empty string
       return new Uint8Array(0);
@@ -111,8 +120,7 @@ export function toBytes(data: BN | string | number | Big, length: number = 0): U
     }
 
     let bytes = new Uint8Array(
-      hex.match(/.{2}/g)
-        .map( (byte) => parseInt(byte, 16) )
+      hex.match(/.{2}/g).map(byte => parseInt(byte, 16))
     );
 
     if (bytes.length < length) {
@@ -122,13 +130,11 @@ export function toBytes(data: BN | string | number | Big, length: number = 0): U
     }
 
     return bytes;
-  }
-  else {
+  } else {
     // BN/Big/number case
-    if(typeof data === "number") {
+    if (typeof data === "number") {
       data = new BN(data);
-    }
-    else if(data instanceof Big) {
+    } else if (data instanceof Big) {
       //note: going through string may seem silly but it's actually not terrible here,
       //since BN is binary-based and Big is decimal-based
       data = new BN(data.toFixed());
@@ -136,7 +142,9 @@ export function toBytes(data: BN | string | number | Big, length: number = 0): U
     }
 
     //note that the argument for toTwos is given in bits
-    return new Uint8Array(data.toTwos(length * 8).toArrayLike(Buffer, "be", length)); //big-endian
+    return new Uint8Array(
+      data.toTwos(length * 8).toArrayLike(Buffer, "be", length)
+    ); //big-endian
   }
 }
 
@@ -163,16 +171,18 @@ export function countDecimalPlaces(value: Big): number {
 //NOTE: does NOT do this recursively inside structs, arrays, etc!
 //I mean, those aren't elementary and therefore aren't in the domain
 //anyway, but still
-export function cleanBool(result: Format.Values.ElementaryResult): Format.Values.ElementaryResult {
-  switch(result.kind) {
+export function cleanBool(
+  result: Format.Values.ElementaryResult
+): Format.Values.ElementaryResult {
+  switch (result.kind) {
     case "value":
       return result;
     case "error":
-      switch(result.error.kind) {
+      switch (result.error.kind) {
         case "BoolOutOfRangeError":
           //return true
           return {
-            type: <Format.Types.BoolType> result.type,
+            type: <Format.Types.BoolType>result.type,
             kind: "value",
             value: {
               asBoolean: true

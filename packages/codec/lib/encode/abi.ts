@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:encode:abi");
 
 import * as Format from "@truffle/codec/format";
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as Conversion from "@truffle/codec/conversion";
 import * as Evm from "@truffle/codec/evm";
 import * as Allocation from "@truffle/codec/allocate/types";
 import { abiSizeInfo } from "@truffle/codec/allocate/abi";
@@ -26,7 +26,7 @@ export function encodeAbi(
       //HACK: errors can't be encoded, *except* for indexed reference parameter errors.
       //really this should go in a different encoding function, not encodeAbi, but I haven't
       //written that function yet.  I'll move this case when I do.
-      return ConversionUtils.toBytes(input.error.raw, Evm.Utils.WORD_SIZE);
+      return Conversion.toBytes(input.error.raw, Evm.Utils.WORD_SIZE);
     } else {
       return undefined;
     }
@@ -41,12 +41,12 @@ export function encodeAbi(
       return undefined;
     case "uint":
     case "int":
-      return ConversionUtils.toBytes(
+      return Conversion.toBytes(
         (<Format.Values.UintValue | Format.Values.IntValue>input).value.asBN,
         Evm.Utils.WORD_SIZE
       );
     case "enum":
-      return ConversionUtils.toBytes(
+      return Conversion.toBytes(
         (<Format.Values.EnumValue>input).value.numericAsBN,
         Evm.Utils.WORD_SIZE
       );
@@ -58,9 +58,7 @@ export function encodeAbi(
       return bytes;
     }
     case "bytes":
-      bytes = ConversionUtils.toBytes(
-        (<Format.Values.BytesValue>input).value.asHex
-      );
+      bytes = Conversion.toBytes((<Format.Values.BytesValue>input).value.asHex);
       switch (input.type.kind) {
         case "static":
           let padded = new Uint8Array(Evm.Utils.WORD_SIZE); //initialized to zeroes
@@ -70,12 +68,12 @@ export function encodeAbi(
           return padAndPrependLength(bytes);
       }
     case "address":
-      return ConversionUtils.toBytes(
+      return Conversion.toBytes(
         (<Format.Values.AddressValue>input).value.asAddress,
         Evm.Utils.WORD_SIZE
       );
     case "contract":
-      return ConversionUtils.toBytes(
+      return Conversion.toBytes(
         (<Format.Values.ContractValue>input).value.address,
         Evm.Utils.WORD_SIZE
       );
@@ -88,7 +86,7 @@ export function encodeAbi(
           bytes = stringToBytes(coercedInput.value.asString);
           break;
         case "malformed":
-          bytes = ConversionUtils.toBytes(coercedInput.value.asHex);
+          bytes = Conversion.toBytes(coercedInput.value.asHex);
           break;
       }
       return padAndPrependLength(bytes);
@@ -102,12 +100,10 @@ export function encodeAbi(
             Format.Values.FunctionExternalValue
           >input;
           let encoded = new Uint8Array(Evm.Utils.WORD_SIZE); //starts filled w/0s
-          let addressBytes = ConversionUtils.toBytes(
+          let addressBytes = Conversion.toBytes(
             coercedInput.value.contract.address
           ); //should already be correct length
-          let selectorBytes = ConversionUtils.toBytes(
-            coercedInput.value.selector
-          ); //should already be correct length
+          let selectorBytes = Conversion.toBytes(coercedInput.value.selector); //should already be correct length
           encoded.set(addressBytes);
           encoded.set(selectorBytes, Evm.Utils.ADDRESS_SIZE); //set it after the address
           return encoded;
@@ -118,11 +114,8 @@ export function encodeAbi(
       let bigValue = (<Format.Values.FixedValue | Format.Values.UfixedValue>(
         input
       )).value.asBig;
-      let shiftedValue = ConversionUtils.shiftBigUp(
-        bigValue,
-        input.type.places
-      );
-      return ConversionUtils.toBytes(shiftedValue, Evm.Utils.WORD_SIZE);
+      let shiftedValue = Conversion.shiftBigUp(bigValue, input.type.places);
+      return Conversion.toBytes(shiftedValue, Evm.Utils.WORD_SIZE);
     case "array": {
       let coercedInput: Format.Values.ArrayValue = <Format.Values.ArrayValue>(
         input
@@ -139,7 +132,7 @@ export function encodeAbi(
             Evm.Utils.WORD_SIZE + staticEncoding.length
           ); //leave room for length
           encoded.set(staticEncoding, Evm.Utils.WORD_SIZE); //again, leave room for length beforehand
-          let lengthBytes = ConversionUtils.toBytes(
+          let lengthBytes = Conversion.toBytes(
             coercedInput.value.length,
             Evm.Utils.WORD_SIZE
           );
@@ -189,7 +182,7 @@ function padAndPrependLength(bytes: Uint8Array): Uint8Array {
     Evm.Utils.WORD_SIZE * Math.ceil(length / Evm.Utils.WORD_SIZE);
   let encoded = new Uint8Array(Evm.Utils.WORD_SIZE + paddedLength);
   encoded.set(bytes, Evm.Utils.WORD_SIZE); //start 32 in to leave room for the length beforehand
-  let lengthBytes = ConversionUtils.toBytes(length, Evm.Utils.WORD_SIZE);
+  let lengthBytes = Conversion.toBytes(length, Evm.Utils.WORD_SIZE);
   encoded.set(lengthBytes); //and now we set the length
   return encoded;
 }
@@ -226,7 +219,7 @@ export function encodeTupleAbi(
       tail = new Uint8Array(); //empty array
     } else {
       //dynamic case
-      head = ConversionUtils.toBytes(startOfNextTail, Evm.Utils.WORD_SIZE);
+      head = Conversion.toBytes(startOfNextTail, Evm.Utils.WORD_SIZE);
       tail = elementEncodings[i];
     }
     heads.push(head);

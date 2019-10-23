@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:constant");
 
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import decodeValue from "./value";
@@ -41,7 +41,7 @@ export default function* decodeConstant(
       type: dataType,
       kind: "value" as const,
       value: {
-        asHex: ConversionUtils.toHexString(bytes)
+        asHex: Conversion.toHexString(bytes)
       }
     }; //we'll skip including a raw value, as that would be meaningless
   }

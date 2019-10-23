@@ -70,15 +70,14 @@ export function* processTrace(steps) {
           ({ op, stack }) =>
             isCallMnemonic(op)
               ? //if it's a call, just fetch the address off the stack
-                Codec.Utils.Conversion.toAddress(stack[stack.length - 2])
+                Codec.Conversion.toAddress(stack[stack.length - 2])
               : //if it's not a call, just return undefined (we've gone back to
                 //skipping creates)
                 undefined
         )
         //filter out zero addresses from failed creates (as well as undefineds)
         .filter(
-          address =>
-            address !== undefined && address !== Codec.Evm.ZERO_ADDRESS
+          address => address !== undefined && address !== Codec.Evm.ZERO_ADDRESS
         )
     )
   ];

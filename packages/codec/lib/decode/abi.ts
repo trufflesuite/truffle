@@ -3,7 +3,7 @@ const debug = debugModule("codec:decode:abi");
 
 import BN from "bn.js";
 import read from "@truffle/codec/read";
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as Conversion from "@truffle/codec/conversion";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
 import decodeValue from "./value";
@@ -86,7 +86,7 @@ export function* decodeAbiReferenceByAddress(
     };
   }
 
-  let rawValueAsBN = ConversionUtils.toBN(rawValue);
+  let rawValueAsBN = Conversion.toBN(rawValue);
   let rawValueAsNumber: number;
   try {
     rawValueAsNumber = rawValueAsBN.toNumber();
@@ -164,7 +164,7 @@ export function* decodeAbiReferenceByAddress(
           error: (<DecodingError>error).error
         };
       }
-      lengthAsBN = ConversionUtils.toBN(rawLength);
+      lengthAsBN = Conversion.toBN(rawLength);
       if (strict && lengthAsBN.gtn(state[location].length)) {
         //you may notice that the comparison is a bit crude; that's OK, this is
         //just to prevent huge numbers from DOSing us, other errors will still
@@ -226,7 +226,7 @@ export function* decodeAbiReferenceByAddress(
               error: (<DecodingError>error).error
             };
           }
-          lengthAsBN = ConversionUtils.toBN(rawLength);
+          lengthAsBN = Conversion.toBN(rawLength);
           startPosition += Evm.Utils.WORD_SIZE; //increment startPosition
           //to next word, as first word was used for length
           break;

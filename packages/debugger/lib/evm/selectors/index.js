@@ -150,7 +150,7 @@ function createStepSelectors(step, state = null) {
           }
 
           let address = stack[stack.length - 2];
-          return Codec.Utils.Conversion.toAddress(address);
+          return Codec.Conversion.toAddress(address);
         }
       ),
 
@@ -220,7 +220,7 @@ function createStepSelectors(step, state = null) {
 
           //otherwise, for CALL and CALLCODE, it's the 3rd argument
           let value = stack[stack.length - 3];
-          return Codec.Utils.Conversion.toBN(value);
+          return Codec.Conversion.toBN(value);
         }
       ),
 
@@ -236,7 +236,7 @@ function createStepSelectors(step, state = null) {
 
         //creates have the value as the first argument
         let value = stack[stack.length - 1];
-        return Codec.Utils.Conversion.toBN(value);
+        return Codec.Conversion.toBN(value);
       }),
 
       /**
@@ -446,7 +446,7 @@ const evm = createSelectorTree({
             return null;
           }
           let address = stack[stack.length - 1];
-          return Codec.Utils.Conversion.toAddress(address);
+          return Codec.Conversion.toAddress(address);
         }
       ),
 

@@ -3,6 +3,7 @@ import { assert } from "chai";
 import BN from "bn.js";
 
 import { Utils as TruffleCodecUtils } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 describe("Utils", function() {
   describe("typeClass()", function() {
@@ -25,7 +26,7 @@ describe("Utils", function() {
       let bytes = [0xf5, 0xe2, 0xc5, 0x17];
       let expectedValue = new BN("f5e2c517", 16);
 
-      let result = TruffleCodecUtils.Conversion.toBN(bytes);
+      let result = Codec.Conversion.toBN(bytes);
 
       assert.equal(result.toString(), expectedValue.toString());
     });
@@ -46,7 +47,7 @@ describe("Utils", function() {
 
       let expectedValue = bitflipped.addn(1).neg();
 
-      let result = TruffleCodecUtils.Conversion.toSignedBN(bytes);
+      let result = Codec.Conversion.toSignedBN(bytes);
 
       assert.equal(result.toString(), expectedValue.toString());
     });
@@ -56,7 +57,7 @@ describe("Utils", function() {
       let raw = new BN("05e2c517", 16);
       let expectedValue = raw;
 
-      let result = TruffleCodecUtils.Conversion.toSignedBN(bytes);
+      let result = Codec.Conversion.toSignedBN(bytes);
 
       assert.equal(result.toString(), expectedValue.toString());
     });
@@ -65,12 +66,9 @@ describe("Utils", function() {
   describe("toHexString()", function() {
     it("returns correct representation with full bytes", function() {
       // ie, 0x00 instead of 0x0
+      assert.equal(Codec.Conversion.toHexString([0x05, 0x11]), "0x0511");
       assert.equal(
-        TruffleCodecUtils.Conversion.toHexString([0x05, 0x11]),
-        "0x0511"
-      );
-      assert.equal(
-        TruffleCodecUtils.Conversion.toHexString([0xff, 0x00, 0xff]),
+        Codec.Conversion.toHexString([0xff, 0x00, 0xff]),
         "0xff00ff"
       );
     });

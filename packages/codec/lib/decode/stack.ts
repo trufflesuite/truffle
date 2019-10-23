@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:stack");
 
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as Conversion from "@truffle/codec/conversion";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
@@ -65,10 +65,10 @@ export function* decodeLiteral(
         //straight to decodeValue.  this is to allow us to correctly handle the
         //case of msg.data used as a mapping key.
         if (dataType.typeClass === "bytes" || dataType.typeClass === "string") {
-          let startAsBN = ConversionUtils.toBN(
+          let startAsBN = Conversion.toBN(
             pointer.literal.slice(0, Evm.Utils.WORD_SIZE)
           );
-          let lengthAsBN = ConversionUtils.toBN(
+          let lengthAsBN = Conversion.toBN(
             pointer.literal.slice(Evm.Utils.WORD_SIZE)
           );
           let start: number;
@@ -153,8 +153,8 @@ export function* decodeLiteral(
         kind: "error" as const,
         error: {
           kind: "FunctionExternalStackPaddingError" as const,
-          rawAddress: ConversionUtils.toHexString(address),
-          rawSelector: ConversionUtils.toHexString(selectorWord)
+          rawAddress: Conversion.toHexString(address),
+          rawSelector: Conversion.toHexString(selectorWord)
         }
       };
     }

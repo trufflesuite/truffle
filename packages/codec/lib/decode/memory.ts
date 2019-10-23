@@ -3,7 +3,7 @@ const debug = debugModule("codec:decode:memory");
 
 import BN from "bn.js";
 import read from "@truffle/codec/read";
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as Conversion from "@truffle/codec/conversion";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
 import decodeValue from "./value";
@@ -43,7 +43,7 @@ export function* decodeMemoryReferenceByAddress(
     };
   }
 
-  let startPositionAsBN = ConversionUtils.toBN(rawValue);
+  let startPositionAsBN = Conversion.toBN(rawValue);
   let startPosition: number;
   try {
     startPosition = startPositionAsBN.toNumber();
@@ -83,7 +83,7 @@ export function* decodeMemoryReferenceByAddress(
           error: (<DecodingError>error).error
         };
       }
-      lengthAsBN = ConversionUtils.toBN(rawLength);
+      lengthAsBN = Conversion.toBN(rawLength);
       try {
         length = lengthAsBN.toNumber();
       } catch (_) {
@@ -128,7 +128,7 @@ export function* decodeMemoryReferenceByAddress(
             error: (<DecodingError>error).error
           };
         }
-        lengthAsBN = ConversionUtils.toBN(rawLength);
+        lengthAsBN = Conversion.toBN(rawLength);
         startPosition += Evm.Utils.WORD_SIZE; //increment startPosition
         //to next word, as first word was used for length
       } else {

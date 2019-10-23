@@ -37,7 +37,7 @@ export function makeContext(
 ): Codec.Contexts.DecoderContext {
   const abi = Codec.Utils.Abi.schemaAbiToAbi(contract.abi);
   const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
-  const hash = Codec.Utils.Conversion.toHexString(
+  const hash = Codec.Conversion.toHexString(
     Codec.Evm.Utils.keccak256({
       type: "string",
       value: binary

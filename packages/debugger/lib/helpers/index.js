@@ -46,7 +46,7 @@ export function extractPrimarySource(sourceMap) {
  * @return 0x-prefix string of keccak256 hash
  */
 export function keccak256(...args) {
-  return Codec.Utils.Conversion.toHexString(Codec.Evm.Utils.keccak256(...args));
+  return Codec.Conversion.toHexString(Codec.Evm.Utils.keccak256(...args));
 }
 
 /**

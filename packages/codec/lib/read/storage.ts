@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:read:storage");
 
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as Conversion from "@truffle/codec/conversion";
 import * as Storage from "@truffle/codec/storage";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
@@ -20,9 +20,9 @@ export function* read(
 ): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   const address: BN = Storage.Utils.slotAddress(slot);
 
-  // debug("reading slot: %o", ConversionUtils.toHexString(address));
+  // debug("reading slot: %o", Conversion.toHexString(address));
 
-  const hexAddress = ConversionUtils.toHexString(address, Evm.Utils.WORD_SIZE);
+  const hexAddress = Conversion.toHexString(address, Evm.Utils.WORD_SIZE);
   let word: Uint8Array = storage[hexAddress];
 
   //if we can't find the word in the map, we place a request to the invoker to supply it

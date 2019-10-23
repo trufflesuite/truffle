@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:encode:key");
 
 import * as Format from "@truffle/codec/format";
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as Conversion from "@truffle/codec/conversion";
 import * as Evm from "@truffle/codec/evm";
 import { stringToBytes } from "./abi";
 
@@ -19,7 +19,7 @@ export function encodeMappingKey(
   switch (input.type.typeClass) {
     case "uint":
     case "int":
-      return ConversionUtils.toBytes(
+      return Conversion.toBytes(
         (<Format.Values.UintValue | Format.Values.IntValue>input).value.asBN,
         Evm.Utils.WORD_SIZE
       );
@@ -31,9 +31,7 @@ export function encodeMappingKey(
       return bytes;
     }
     case "bytes":
-      bytes = ConversionUtils.toBytes(
-        (<Format.Values.BytesValue>input).value.asHex
-      );
+      bytes = Conversion.toBytes((<Format.Values.BytesValue>input).value.asHex);
       switch (input.type.kind) {
         case "static":
           let padded = new Uint8Array(Evm.Utils.WORD_SIZE); //initialized to zeroes
@@ -43,7 +41,7 @@ export function encodeMappingKey(
           return bytes; //NO PADDING IS USED
       }
     case "address":
-      return ConversionUtils.toBytes(
+      return Conversion.toBytes(
         (<Format.Values.AddressValue>input).value.asAddress,
         Evm.Utils.WORD_SIZE
       );
@@ -57,7 +55,7 @@ export function encodeMappingKey(
         case "valid":
           return stringToBytes(coercedInput.value.asString);
         case "malformed":
-          return ConversionUtils.toBytes(coercedInput.value.asHex);
+          return Conversion.toBytes(coercedInput.value.asHex);
       }
       break; //to satisfy TypeScript
     }
@@ -66,14 +64,11 @@ export function encodeMappingKey(
       let bigValue = (<Format.Values.FixedValue | Format.Values.UfixedValue>(
         input
       )).value.asBig;
-      let shiftedValue = ConversionUtils.shiftBigUp(
-        bigValue,
-        input.type.places
-      );
-      return ConversionUtils.toBytes(shiftedValue, Evm.Utils.WORD_SIZE);
+      let shiftedValue = Conversion.shiftBigUp(bigValue, input.type.places);
+      return Conversion.toBytes(shiftedValue, Evm.Utils.WORD_SIZE);
   }
 }
 
 export function mappingKeyAsHex(input: Format.Values.ElementaryValue): string {
-  return ConversionUtils.toHexString(encodeMappingKey(input));
+  return Conversion.toHexString(encodeMappingKey(input));
 }

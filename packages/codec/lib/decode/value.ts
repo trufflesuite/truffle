@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:value");
 
 import read from "@truffle/codec/read";
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as Conversion from "@truffle/codec/conversion";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
 import utf8 from "utf8";
@@ -45,7 +45,7 @@ export default function* decodeValue(
 
   switch (dataType.typeClass) {
     case "bool": {
-      const numeric = ConversionUtils.toBN(bytes);
+      const numeric = Conversion.toBN(bytes);
       if (numeric.eqn(0)) {
         return {
           type: dataType,
@@ -79,7 +79,7 @@ export default function* decodeValue(
       if (!permissivePadding && !checkPaddingLeft(bytes, dataType.bits / 8)) {
         let error = {
           kind: "UintPaddingError" as const,
-          raw: ConversionUtils.toHexString(bytes)
+          raw: Conversion.toHexString(bytes)
         };
         if (strict) {
           throw new StopDecodingError(error);
@@ -96,8 +96,8 @@ export default function* decodeValue(
         type: dataType,
         kind: "value" as const,
         value: {
-          asBN: ConversionUtils.toBN(bytes),
-          rawAsBN: ConversionUtils.toBN(rawBytes)
+          asBN: Conversion.toBN(bytes),
+          rawAsBN: Conversion.toBN(rawBytes)
         }
       };
     case "int":
@@ -105,7 +105,7 @@ export default function* decodeValue(
       if (!permissivePadding && !checkPaddingSigned(bytes, dataType.bits / 8)) {
         let error = {
           kind: "IntPaddingError" as const,
-          raw: ConversionUtils.toHexString(bytes)
+          raw: Conversion.toHexString(bytes)
         };
         if (strict) {
           throw new StopDecodingError(error);
@@ -122,8 +122,8 @@ export default function* decodeValue(
         type: dataType,
         kind: "value" as const,
         value: {
-          asBN: ConversionUtils.toSignedBN(bytes),
-          rawAsBN: ConversionUtils.toSignedBN(rawBytes)
+          asBN: Conversion.toSignedBN(bytes),
+          rawAsBN: Conversion.toSignedBN(rawBytes)
         }
       };
 
@@ -134,7 +134,7 @@ export default function* decodeValue(
       ) {
         let error = {
           kind: "AddressPaddingError" as const,
-          raw: ConversionUtils.toHexString(bytes)
+          raw: Conversion.toHexString(bytes)
         };
         if (strict) {
           throw new StopDecodingError(error);
@@ -150,7 +150,7 @@ export default function* decodeValue(
         kind: "value" as const,
         value: {
           asAddress: Evm.Utils.toAddress(bytes),
-          rawAsHex: ConversionUtils.toHexString(rawBytes)
+          rawAsHex: Conversion.toHexString(rawBytes)
         }
       };
 
@@ -161,7 +161,7 @@ export default function* decodeValue(
       ) {
         let error = {
           kind: "ContractPaddingError" as const,
-          raw: ConversionUtils.toHexString(bytes)
+          raw: Conversion.toHexString(bytes)
         };
         if (strict) {
           throw new StopDecodingError(error);
@@ -192,7 +192,7 @@ export default function* decodeValue(
           ) {
             let error = {
               kind: "BytesPaddingError" as const,
-              raw: ConversionUtils.toHexString(bytes)
+              raw: Conversion.toHexString(bytes)
             };
             if (strict) {
               throw new StopDecodingError(error);
@@ -209,8 +209,8 @@ export default function* decodeValue(
             type: dataType,
             kind: "value" as const,
             value: {
-              asHex: ConversionUtils.toHexString(bytes),
-              rawAsHex: ConversionUtils.toHexString(rawBytes)
+              asHex: Conversion.toHexString(bytes),
+              rawAsHex: Conversion.toHexString(rawBytes)
             }
           };
         case "dynamic":
@@ -219,7 +219,7 @@ export default function* decodeValue(
             type: dataType,
             kind: "value" as const,
             value: {
-              asHex: ConversionUtils.toHexString(bytes)
+              asHex: Conversion.toHexString(bytes)
             }
           };
       }
@@ -243,7 +243,7 @@ export default function* decodeValue(
           ) {
             let error = {
               kind: "FunctionExternalNonStackPaddingError" as const,
-              raw: ConversionUtils.toHexString(bytes)
+              raw: Conversion.toHexString(bytes)
             };
             if (strict) {
               throw new StopDecodingError(error);
@@ -278,7 +278,7 @@ export default function* decodeValue(
               kind: "error" as const,
               error: {
                 kind: "FunctionInternalPaddingError" as const,
-                raw: ConversionUtils.toHexString(bytes)
+                raw: Conversion.toHexString(bytes)
               }
             };
           }
@@ -297,7 +297,7 @@ export default function* decodeValue(
       break; //to satisfy TypeScript
 
     case "enum": {
-      const numeric = ConversionUtils.toBN(bytes);
+      const numeric = Conversion.toBN(bytes);
       const fullType = <Format.Types.EnumType>(
         TypeUtils.fullType(dataType, info.userDefinedTypes)
       );
@@ -364,7 +364,7 @@ export default function* decodeValue(
       if (!permissivePadding && !checkPaddingSigned(bytes, dataType.bits / 8)) {
         let error = {
           kind: "FixedPaddingError" as const,
-          raw: ConversionUtils.toHexString(bytes)
+          raw: Conversion.toHexString(bytes)
         };
         if (strict) {
           throw new StopDecodingError(error);
@@ -377,14 +377,14 @@ export default function* decodeValue(
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
       bytes = bytes.slice(-dataType.bits / 8);
-      let asBN = ConversionUtils.toSignedBN(bytes);
-      let rawAsBN = ConversionUtils.toSignedBN(rawBytes);
-      let asBig = ConversionUtils.shiftBigDown(
-        ConversionUtils.toBig(asBN),
+      let asBN = Conversion.toSignedBN(bytes);
+      let rawAsBN = Conversion.toSignedBN(rawBytes);
+      let asBig = Conversion.shiftBigDown(
+        Conversion.toBig(asBN),
         dataType.places
       );
-      let rawAsBig = ConversionUtils.shiftBigDown(
-        ConversionUtils.toBig(rawAsBN),
+      let rawAsBig = Conversion.shiftBigDown(
+        Conversion.toBig(rawAsBN),
         dataType.places
       );
       return {
@@ -401,7 +401,7 @@ export default function* decodeValue(
       if (!permissivePadding && !checkPaddingLeft(bytes, dataType.bits / 8)) {
         let error = {
           kind: "UfixedPaddingError" as const,
-          raw: ConversionUtils.toHexString(bytes)
+          raw: Conversion.toHexString(bytes)
         };
         if (strict) {
           throw new StopDecodingError(error);
@@ -414,14 +414,14 @@ export default function* decodeValue(
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
       bytes = bytes.slice(-dataType.bits / 8);
-      let asBN = ConversionUtils.toBN(bytes);
-      let rawAsBN = ConversionUtils.toBN(rawBytes);
-      let asBig = ConversionUtils.shiftBigDown(
-        ConversionUtils.toBig(asBN),
+      let asBN = Conversion.toBN(bytes);
+      let rawAsBN = Conversion.toBN(rawBytes);
+      let asBig = Conversion.shiftBigDown(
+        Conversion.toBig(asBN),
         dataType.places
       );
-      let rawAsBig = ConversionUtils.shiftBigDown(
-        ConversionUtils.toBig(rawAsBN),
+      let rawAsBig = Conversion.shiftBigDown(
+        Conversion.toBig(rawAsBN),
         dataType.places
       );
       return {
@@ -454,7 +454,7 @@ export function decodeString(bytes: Uint8Array): Format.Values.StringValueInfo {
   } catch (_) {
     //we're going to ignore the precise error and just assume it's because
     //the string was malformed (what else could it be?)
-    let hexString = ConversionUtils.toHexString(bytes);
+    let hexString = Conversion.toHexString(bytes);
     return {
       kind: "malformed" as const,
       asHex: hexString
@@ -475,12 +475,12 @@ function* decodeContractAndContext(
   info: Evm.EvmInfo
 ): Generator<DecoderRequest, ContractInfoAndContext, Uint8Array> {
   let address = Evm.Utils.toAddress(addressBytes);
-  let rawAddress = ConversionUtils.toHexString(addressBytes);
+  let rawAddress = Conversion.toHexString(addressBytes);
   let codeBytes: Uint8Array = yield {
     type: "code" as const,
     address
   };
-  let code = ConversionUtils.toHexString(codeBytes);
+  let code = Conversion.toHexString(codeBytes);
   let context = Contexts.Utils.findDecoderContext(info.contexts, code);
   if (context !== null) {
     return {
@@ -519,7 +519,7 @@ export function* decodeExternalFunction(
     addressBytes,
     info
   );
-  let selector = ConversionUtils.toHexString(selectorBytes);
+  let selector = Conversion.toHexString(selectorBytes);
   if (contract.kind === "unknown") {
     return {
       kind: "unknown" as const,
@@ -551,10 +551,8 @@ export function decodeInternalFunction(
   constructorPcBytes: Uint8Array,
   info: Evm.EvmInfo
 ): Format.Values.FunctionInternalResult {
-  let deployedPc: number = ConversionUtils.toBN(deployedPcBytes).toNumber();
-  let constructorPc: number = ConversionUtils.toBN(
-    constructorPcBytes
-  ).toNumber();
+  let deployedPc: number = Conversion.toBN(deployedPcBytes).toNumber();
+  let constructorPc: number = Conversion.toBN(constructorPcBytes).toNumber();
   let context: Format.Types.ContractType = Contexts.Utils.contextToType(
     info.currentContext
   );

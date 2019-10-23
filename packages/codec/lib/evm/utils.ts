@@ -4,7 +4,7 @@ const debug = debugModule("codec:utils:evm");
 import BN from "bn.js";
 // untyped import since no @types/web3-utils exists
 const Web3Utils = require("web3-utils");
-import * as ConversionUtils from "@truffle/codec/utils/conversion";
+import * as Conversion from "@truffle/codec/conversion";
 
 export const WORD_SIZE = 0x20;
 export const ADDRESS_SIZE = 20;
@@ -30,7 +30,7 @@ export function keccak256(...args: any[]): BN {
   } else {
     sha = rawSha.replace(/0x/, "");
   }
-  return ConversionUtils.toBN(sha);
+  return Conversion.toBN(sha);
 }
 
 //checks if two bytearrays (which may be undefined) are equal.
@@ -80,6 +80,6 @@ export function toAddress(bytes: Uint8Array | string): string {
   //(which ensures it's padded to 20 bytes) shouldn't actually ever be
   //needed, but I'll be safe and include it
   return Web3Utils.toChecksumAddress(
-    ConversionUtils.toHexString(bytes, ADDRESS_SIZE)
+    Conversion.toHexString(bytes, ADDRESS_SIZE)
   );
 }

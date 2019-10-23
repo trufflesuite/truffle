@@ -16,6 +16,7 @@ import data from "../selectors";
 import sum from "lodash.sum";
 
 import {
+  Conversion,
   Utils as CodecUtils,
   getStorageAllocations,
   getMemoryAllocations,
@@ -98,7 +99,7 @@ export function* decode(definition, ref) {
           let binary = (yield* web3.obtainBinaries([address], blockNumber))[0];
           debug("adding instance");
           yield* evm.addInstance(address, binary);
-          response = CodecUtils.Conversion.toBytes(binary);
+          response = Conversion.toBytes(binary);
         }
         break;
       default:
@@ -492,7 +493,7 @@ function* decodeMappingKeySaga(indexDefinition, keyDefinition) {
   //something of a HACK -- cleans any out-of-range booleans
   //resulting from the main mapping key decoding loop
   let indexValue = yield* decodeMappingKeyCore(indexDefinition, keyDefinition);
-  return indexValue ? CodecUtils.Conversion.cleanBool(indexValue) : indexValue;
+  return indexValue ? Conversion.cleanBool(indexValue) : indexValue;
 }
 
 function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
@@ -693,9 +694,7 @@ function fetchBasePath(
   debug("currentAssignments: %O", currentAssignments);
   //base expression is an expression, and so has a literal assigned to
   //it
-  let offset = CodecUtils.Conversion.toBN(
-    currentAssignments.byId[fullId].ref.literal
-  );
+  let offset = Conversion.toBN(currentAssignments.byId[fullId].ref.literal);
   return { offset };
 }
 

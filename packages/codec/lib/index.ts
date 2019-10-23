@@ -53,6 +53,9 @@ export { Compiler };
 import * as Contexts from "./contexts";
 export { Contexts };
 
+import * as Conversion from "./conversion";
+export { Conversion };
+
 import * as Pointer from "./pointer";
 export { Pointer };
 
