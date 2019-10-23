@@ -2,6 +2,7 @@ import { Web3Shim, Web3ShimOptions } from "./web3-shim";
 
 export interface InterfaceAdapterOptions extends Web3ShimOptions {}
 export type NetworkId = Number | String;
+export type Block = Object;
 
 const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
 
