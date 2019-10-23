@@ -1,2 +1,1 @@
-import * as Types from "./types";
-export { Types };
+export * from "./types";

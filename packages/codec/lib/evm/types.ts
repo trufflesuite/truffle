@@ -1,6 +1,6 @@
 import * as Common from "@truffle/codec/common/types";
 import * as Storage from "@truffle/codec/storage/types";
-import * as Ast from "@truffle/codec/ast/types";
+import * as Ast from "@truffle/codec/ast";
 import * as Allocation from "@truffle/codec/allocate/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Format from "@truffle/codec/format";

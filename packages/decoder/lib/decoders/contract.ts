@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:contract");
 
-import { Evm, Format } from "@truffle/codec";
+import { Ast, Evm, Format } from "@truffle/codec";
 import * as AbiUtils from "@truffle/codec/utils/abi";
 import * as ContextUtils from "@truffle/codec/utils/contexts";
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
@@ -9,7 +9,6 @@ import * as DefinitionUtils from "@truffle/codec/utils/definition";
 import { wrapElementaryViaDefinition } from "@truffle/codec/utils/wrap";
 import * as Utils from "../utils";
 import * as Storage from "@truffle/codec/storage";
-import * as Ast from "@truffle/codec/ast/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer/types";
 import * as Decoding from "@truffle/codec/decode/types";

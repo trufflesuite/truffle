@@ -5,7 +5,7 @@ import BN from "bn.js";
 import * as Common from "@truffle/codec/common/types";
 import * as Compiler from "@truffle/codec/compiler/types";
 import * as Abi from "@truffle/codec/abi/types";
-import * as Ast from "@truffle/codec/ast/types";
+import * as Ast from "@truffle/codec/ast";
 import * as DefinitionUtils from "./definition";
 import { solidityFamily } from "./compiler";
 import * as Format from "@truffle/codec/format";
