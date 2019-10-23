@@ -775,7 +775,7 @@ export class ContractInstanceDecoder {
         }
         definition =
           parentDefinition.baseType || parentDefinition.typeName.baseType;
-        let size = Storage.Utils.storageSize(
+        let size = storageSize(
           definition,
           this.referenceDeclarations,
           this.allocations.storage

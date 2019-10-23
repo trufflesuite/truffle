@@ -27,6 +27,7 @@ import {
   CalldataDecoding,
   LogDecoding
 } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 /**
  * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.
@@ -398,10 +399,8 @@ export default class WireDecoder {
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<Contexts.DecoderContext | null> {
     let code: string;
-    if(address !== null) {
-      code = Conversion.toHexString(
-        await this.getCode(address, block)
-      );
+    if (address !== null) {
+      code = Conversion.toHexString(await this.getCode(address, block));
     } else if (constructorBinary) {
       code = constructorBinary;
     }
