@@ -1,5 +1,4 @@
 import * as Format from "@truffle/codec/format";
-import { message } from "@truffle/codec/utils/errors";
 
 //For when we need to throw an error, here's a wrapper class that extends Error.
 //Apologies about the confusing name, but I wanted something that would make
@@ -10,7 +9,7 @@ import { message } from "@truffle/codec/utils/errors";
 export class DecodingError extends Error {
   public error: Format.Errors.ErrorForThrowing;
   constructor(error: Format.Errors.ErrorForThrowing) {
-    super(message(error));
+    super(Format.Utils.Exception.message(error));
     this.error = error;
     this.name = "DecodingError";
   }

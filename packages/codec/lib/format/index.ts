@@ -1,7 +1,3 @@
-import * as Types from "./types";
-import * as Values from "./values";
-import * as Errors from "./errors";
-
 /**
  * Here's the decoder output format.
  * Most of this doesn't have explanatory documentation
@@ -14,4 +10,7 @@ import * as Errors from "./errors";
  * for technical reasons we can't guarantee we can determine.
  */
 
-export { Types, Values, Errors };
+export * from "./common";
+
+import * as Utils from "./utils";
+export { Utils };

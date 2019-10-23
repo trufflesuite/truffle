@@ -1,18 +1,22 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:errors");
 
-import * as Format from "@truffle/codec/format";
-import * as TypeUtils from "./datatype";
-import * as DefinitionUtils from "./definition";
+import * as Format from "@truffle/codec/format/common";
+import * as DefinitionUtils from "@truffle/codec/utils/definition";
 import * as Storage from "@truffle/codec/storage/types";
+
+function isContractDefinedType(anyType: Format.Types.Type): anyType is Format.Types.ContractDefinedType {
+  const contractDefinedTypes = ["enum", "struct"];
+  return contractDefinedTypes.includes(anyType.typeClass);
+}
 
 //this function gives an error message
 //for those errors that are meant to possibly
 //be wrapped in a DecodingError and thrown
-export function message(error: Format.Errors.ErrorForThrowing) {
+export function message(error: Format.Errors.ErrorForThrowing): string {
   switch(error.kind) {
     case "UserDefinedTypeNotFoundError":
-      let typeName = TypeUtils.isContractDefinedType(error.type)
+      let typeName = isContractDefinedType(error.type)
         ? error.type.definingContractName + "." + error.type.typeName
         : error.type.typeName;
       return `Unknown ${error.type.typeClass} type ${typeName} of id ${error.type.id}`;
@@ -32,7 +36,7 @@ export function message(error: Format.Errors.ErrorForThrowing) {
   }
 }
 
-export function slotAddressPrintout(slot: Storage.Slot): string {
+function slotAddressPrintout(slot: Storage.Slot): string {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
     let {type: keyEncoding, value: keyValue} = keyInfoForPrinting(slot.key);
@@ -52,7 +56,7 @@ export function slotAddressPrintout(slot: Storage.Slot): string {
 //this is like the old toSoliditySha3Input, but for debugging purposes ONLY
 //it will NOT produce correct input to soliditySha3
 //please use mappingKeyAsHex instead if you wish to encode a mapping key.
-export function keyInfoForPrinting(input: Format.Values.ElementaryValue): {type: string, value: string} {
+function keyInfoForPrinting(input: Format.Values.ElementaryValue): {type: string, value: string} {
   switch(input.type.typeClass) {
     case "uint":
       return {

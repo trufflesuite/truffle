@@ -3,7 +3,6 @@ const debug = debugModule("codec:format:inspect");
 
 import util from "util";
 import * as Format from "@truffle/codec/format";
-import { message } from "@truffle/codec/utils/errors";
 
 //we'll need to write a typing for the options type ourself, it seems; just
 //going to include the relevant properties here
@@ -208,7 +207,7 @@ export class ResultInspector {
           case "ReadErrorStack":
           case "ReadErrorStorage":
           case "ReadErrorBytes":
-            return message(errorResult.error); //yay, these five are already defined!
+            return Format.Utils.Exception.message(errorResult.error); //yay, these five are already defined!
         }
       }
     }

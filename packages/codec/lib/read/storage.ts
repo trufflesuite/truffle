@@ -3,7 +3,6 @@ const debug = debugModule("codec:read:storage");
 
 import * as EvmUtils from "@truffle/codec/utils/evm";
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
-import { slotAddressPrintout } from "@truffle/codec/utils/errors";
 import * as Storage from "@truffle/codec/storage";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
@@ -17,7 +16,6 @@ import BN from "bn.js";
  * @param offset - for array, offset from the keccak determined location
  */
 export function* read(storage: Evm.Types.WordMapping, slot: Storage.Types.Slot): Generator<DecoderRequest, Uint8Array, Uint8Array> {
-  debug("Slot printout: %s", slotAddressPrintout(slot));
   const address: BN = Storage.Utils.slotAddress(slot);
 
   // debug("reading slot: %o", ConversionUtils.toHexString(address));

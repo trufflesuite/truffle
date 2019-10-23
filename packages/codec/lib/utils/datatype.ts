@@ -4,11 +4,6 @@ const debug = debugModule("codec:utils:datatype");
 import * as Format from "@truffle/codec/format";
 import * as Common from "@truffle/codec/common";
 
-export function isContractDefinedType(anyType: Format.Types.Type): anyType is Format.Types.ContractDefinedType {
-  const contractDefinedTypes = ["enum", "struct"];
-  return contractDefinedTypes.includes(anyType.typeClass);
-}
-
 export function isUserDefinedType(anyType: Format.Types.Type): anyType is Format.Types.UserDefinedType {
   const userDefinedTypes = ["contract", "enum", "struct"];
   return userDefinedTypes.includes(anyType.typeClass);
