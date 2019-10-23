@@ -50,6 +50,9 @@ export { Ast };
 import * as Compiler from "./compiler";
 export { Compiler };
 
+import * as Contexts from "./contexts";
+export { Contexts };
+
 import * as Pointer from "./pointer";
 export { Pointer };
 

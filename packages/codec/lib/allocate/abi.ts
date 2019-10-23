@@ -10,7 +10,7 @@ import { getterInputs } from "@truffle/codec/utils/definition2abi";
 import * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
 import * as Ast from "@truffle/codec/ast";
-import * as Contexts from "@truffle/codec/contexts/types";
+import * as Contexts from "@truffle/codec/contexts";
 import * as Pointer from "@truffle/codec/pointer";
 import * as Allocation from "./types";
 import { DecodingMode } from "@truffle/codec/types";

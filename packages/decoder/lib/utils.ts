@@ -34,7 +34,7 @@ export function makeContext(
   contract: ContractObject,
   node: Codec.Ast.AstNode | undefined,
   isConstructor = false
-): Codec.Contexts.Types.DecoderContext {
+): Codec.Contexts.DecoderContext {
   const abi = Codec.Utils.Abi.schemaAbiToAbi(contract.abi);
   const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
   const hash = Codec.Utils.Conversion.toHexString(

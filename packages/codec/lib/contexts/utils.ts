@@ -3,14 +3,14 @@ const debug = debugModule("codec:utils:contexts");
 
 import * as Evm from "@truffle/codec/evm";
 import * as Format from "@truffle/codec/format";
-import * as Contexts from "@truffle/codec/contexts/types";
+import { DecoderContexts, DecoderContext, Context, Contexts, DebuggerContexts } from "./types";
 import escapeRegExp from "lodash.escaperegexp";
 
 //I split these next two apart because the type system was giving me trouble
 export function findDecoderContext(
-  contexts: Contexts.DecoderContexts,
+  contexts: DecoderContexts,
   binary: string
-): Contexts.DecoderContext | null {
+): DecoderContext | null {
   debug("binary %s", binary);
   let context = Object.values(contexts).find(context =>
     matchContext(context, binary)
@@ -20,7 +20,7 @@ export function findDecoderContext(
 }
 
 export function findDebuggerContext(
-  contexts: Contexts.DebuggerContexts,
+  contexts: DebuggerContexts,
   binary: string
 ): string | null {
   debug("binary %s", binary);
@@ -32,7 +32,7 @@ export function findDebuggerContext(
 }
 
 export function matchContext(
-  context: Contexts.Context,
+  context: Context,
   givenBinary: string
 ): boolean {
   let { binary, isConstructor } = context;
@@ -64,8 +64,8 @@ export function matchContext(
 }
 
 export function normalizeContexts(
-  contexts: Contexts.Contexts
-): Contexts.Contexts {
+  contexts: Contexts
+): Contexts {
   //unfortunately, due to our current link references format, we can't
   //really use the binary from the artifact directly -- neither for purposes
   //of matching, nor for purposes of decoding internal functions.  So, we
@@ -75,7 +75,7 @@ export function normalizeContexts(
   debug("normalizing contexts");
 
   //first, let's clone the input
-  let newContexts: Contexts.Contexts = { ...contexts };
+  let newContexts: Contexts = { ...contexts };
 
   debug("contexts cloned");
   debug("cloned contexts: %O", newContexts);
@@ -146,7 +146,7 @@ export function normalizeContexts(
 }
 
 export function contextToType(
-  context: Contexts.Context
+  context: Context
 ): Format.Types.ContractType {
   if (context.contractId !== undefined) {
     return {

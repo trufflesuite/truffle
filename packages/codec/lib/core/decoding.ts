@@ -13,9 +13,9 @@ import {
   LogDecoding
 } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
+import * as Contexts from "@truffle/codec/contexts";
 import { abifyType, abifyResult } from "@truffle/codec/utils/abify";
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
-import * as ContextUtils from "@truffle/codec/utils/contexts";
 import * as MakeType from "@truffle/codec/utils/maketype";
 import * as Format from "@truffle/codec/format";
 import { StopDecodingError } from "@truffle/codec/decode/errors";
@@ -47,7 +47,7 @@ export function* decodeCalldata(
   }
   const compiler = context.compiler;
   const contextHash = context.context;
-  const contractType = ContextUtils.contextToType(context);
+  const contractType = Contexts.Utils.contextToType(context);
   const isConstructor: boolean = context.isConstructor;
   const allocations = info.allocations.calldata;
   let allocation: Allocation.CalldataAllocation;
@@ -207,7 +207,7 @@ export function* decodeEvent(
     address
   };
   const codeAsHex = ConversionUtils.toHexString(codeBytes);
-  const contractContext = ContextUtils.findDecoderContext(
+  const contractContext = Contexts.Utils.findDecoderContext(
     info.contexts,
     codeAsHex
   );
@@ -253,7 +253,7 @@ export function* decodeEvent(
     let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     const contextHash = allocation.contextHash;
     const attemptContext = info.contexts[contextHash];
-    const contractType = ContextUtils.contextToType(attemptContext);
+    const contractType = Contexts.Utils.contextToType(attemptContext);
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];
     for (const argumentAllocation of allocation.arguments) {

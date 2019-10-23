@@ -3,13 +3,12 @@ const debug = debugModule("codec:interface:decoders:contract");
 
 import { Ast, Evm, Format } from "@truffle/codec";
 import * as AbiUtils from "@truffle/codec/utils/abi";
-import * as ContextUtils from "@truffle/codec/utils/contexts";
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as DefinitionUtils from "@truffle/codec/utils/definition";
 import { wrapElementaryViaDefinition } from "@truffle/codec/utils/wrap";
 import * as Utils from "../utils";
 import * as Storage from "@truffle/codec/storage";
-import * as Contexts from "@truffle/codec/contexts/types";
+import * as Contexts from "@truffle/codec/contexts";
 import * as Pointer from "@truffle/codec/pointer";
 import * as Decoding from "@truffle/codec/decode/types";
 import * as Allocation from "@truffle/codec/allocate/types";
@@ -316,7 +315,7 @@ export class ContractInstanceDecoder {
       //since the code we pulled from the blockchain obviously does not have unresolved link references!
       //(it's not strictly necessary even then, but, hey, why not?)
       this.additionalContexts = <Contexts.DecoderContexts>(
-        ContextUtils.normalizeContexts(this.additionalContexts)
+        Contexts.Utils.normalizeContexts(this.additionalContexts)
       );
       //again, since the code did not have unresolved link references, it is safe to just
       //mash these together like I'm about to

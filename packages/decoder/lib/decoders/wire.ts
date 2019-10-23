@@ -3,7 +3,6 @@ const debug = debugModule("codec:interface:decoders:wire");
 
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
 import * as AbiUtils from "@truffle/codec/utils/abi";
-import * as ContextUtils from "@truffle/codec/utils/contexts";
 import * as MakeType from "@truffle/codec/utils/maketype";
 import {
   abifyCalldataDecoding,
@@ -11,7 +10,7 @@ import {
 } from "@truffle/codec/utils/abify";
 import * as Utils from "../utils";
 import * as Ast from "@truffle/codec/ast";
-import * as Contexts from "@truffle/codec/contexts/types";
+import * as Contexts from "@truffle/codec/contexts";
 import * as Allocation from "@truffle/codec/allocate/types";
 import * as Decoding from "@truffle/codec/decode/types";
 import * as Evm from "@truffle/codec/evm";
@@ -83,7 +82,7 @@ export default class WireDecoder {
     }
 
     this.contexts = <Contexts.DecoderContexts>(
-      ContextUtils.normalizeContexts(this.contexts)
+      Contexts.Utils.normalizeContexts(this.contexts)
     );
     this.deployedContexts = Object.assign(
       {},
@@ -412,7 +411,7 @@ export default class WireDecoder {
     }
     //if neither of these hold... we have a problem
     let contexts = { ...this.contexts, ...additionalContexts };
-    return ContextUtils.findDecoderContext(contexts, code);
+    return Contexts.Utils.findDecoderContext(contexts, code);
   }
 
   //the following functions are intended for internal use only

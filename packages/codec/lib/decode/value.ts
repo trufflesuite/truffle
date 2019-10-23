@@ -3,11 +3,10 @@ const debug = debugModule("codec:decode:value");
 
 import read from "@truffle/codec/read";
 import * as ConversionUtils from "@truffle/codec/utils/conversion";
-import * as ContextUtils from "@truffle/codec/utils/contexts";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
 import utf8 from "utf8";
-import * as Contexts from "@truffle/codec/contexts/types";
+import * as Contexts from "@truffle/codec/contexts";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
@@ -482,7 +481,7 @@ function* decodeContractAndContext(
     address
   };
   let code = ConversionUtils.toHexString(codeBytes);
-  let context = ContextUtils.findDecoderContext(info.contexts, code);
+  let context = Contexts.Utils.findDecoderContext(info.contexts, code);
   if (context !== null) {
     return {
       context,
@@ -490,7 +489,7 @@ function* decodeContractAndContext(
         kind: "known" as const,
         address,
         rawAddress,
-        class: ContextUtils.contextToType(context)
+        class: Contexts.Utils.contextToType(context)
       }
     };
   } else {
@@ -556,7 +555,7 @@ export function decodeInternalFunction(
   let constructorPc: number = ConversionUtils.toBN(
     constructorPcBytes
   ).toNumber();
-  let context: Format.Types.ContractType = ContextUtils.contextToType(
+  let context: Format.Types.ContractType = Contexts.Utils.contextToType(
     info.currentContext
   );
   //before anything else: do we even have an internal functions table?

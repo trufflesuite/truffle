@@ -4,8 +4,6 @@ export { Conversion };
 import * as Definition from "./definition";
 export { Definition };
 
-import * as ContextUtils from "./contexts";
-export { ContextUtils };
 
 export * from "./definition2abi";
 

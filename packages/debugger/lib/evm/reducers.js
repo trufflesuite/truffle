@@ -61,7 +61,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
 
     case actions.NORMALIZE_CONTEXTS:
       return {
-        byContext: Codec.Utils.ContextUtils.normalizeContexts(state.byContext)
+        byContext: Codec.Contexts.Utils.normalizeContexts(state.byContext)
       };
 
     /*
