@@ -3,7 +3,6 @@ const debug = debugModule("codec:allocate:memory");
 
 import * as Ast from "@truffle/codec/ast";
 import * as Allocation from "./types";
-import * as DefinitionUtils from "@truffle/codec/utils/definition";
 import * as Evm from "@truffle/codec/evm";
 
 export function getMemoryAllocations(
@@ -24,7 +23,7 @@ function allocateStruct(definition: Ast.AstNode): Allocation.MemoryAllocation {
   let memberAllocations: Allocation.MemoryMemberAllocation[] = [];
   let position = 0;
   for (const member of definition.members) {
-    const length = DefinitionUtils.isMapping(member) ? 0 : Evm.Utils.WORD_SIZE;
+    const length = Ast.Utils.isMapping(member) ? 0 : Evm.Utils.WORD_SIZE;
     memberAllocations.push({
       definition: member,
       pointer: {

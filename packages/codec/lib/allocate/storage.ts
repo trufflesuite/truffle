@@ -6,7 +6,6 @@ import * as Common from "@truffle/codec/common";
 import * as Storage from "@truffle/codec/storage";
 import * as Ast from "@truffle/codec/ast";
 import * as Allocation from "./types";
-import * as DefinitionUtils from "@truffle/codec/utils/definition";
 import * as Evm from "@truffle/codec/evm";
 import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
@@ -120,7 +119,7 @@ function allocateMembers(
         definition: node.value
       };
       //HACK restrict ourselves to the types of constants we know how to handle
-      if (DefinitionUtils.isSimpleConstant(node.value)) {
+      if (Ast.Utils.isSimpleConstant(node.value)) {
         memberAllocations.push({ definition: node, pointer });
       }
       //if we don't know how to handle it, we just ignore it
@@ -297,7 +296,7 @@ function storageSizeAndAllocate(
   referenceDeclarations?: Ast.AstNodes,
   existingAllocations?: Allocation.StorageAllocations
 ): StorageAllocationInfo {
-  switch (DefinitionUtils.typeClass(definition)) {
+  switch (Ast.Utils.typeClass(definition)) {
     case "bool":
       return {
         size: { bytes: 1 },
@@ -314,7 +313,7 @@ function storageSizeAndAllocate(
     case "int":
     case "uint":
       return {
-        size: { bytes: DefinitionUtils.specifiedSize(definition) || 32 }, // default of 256 bits
+        size: { bytes: Ast.Utils.specifiedSize(definition) || 32 }, // default of 256 bits
         //(should 32 here be WORD_SIZE?  I thought so, but comparing with case
         //of fixed/ufixed makes the appropriate generalization less clear)
         allocations: existingAllocations
@@ -323,20 +322,20 @@ function storageSizeAndAllocate(
     case "fixed":
     case "ufixed":
       return {
-        size: { bytes: DefinitionUtils.specifiedSize(definition) || 16 }, // default of 128 bits
+        size: { bytes: Ast.Utils.specifiedSize(definition) || 16 }, // default of 128 bits
         allocations: existingAllocations
       };
 
     case "enum": {
       debug("enum definition %O", definition);
-      const referenceId: number = DefinitionUtils.typeId(definition);
+      const referenceId: number = Ast.Utils.typeId(definition);
       //note: we use the preexisting function here for convenience, but we
       //should never need to worry about faked-up enum definitions, so just
       //checking the referencedDeclaration field would also work
       const referenceDeclaration: Ast.AstNode =
         referenceDeclarations[referenceId];
       if (referenceDeclaration === undefined) {
-        let typeString = DefinitionUtils.typeString(definition);
+        let typeString = Ast.Utils.typeString(definition);
         throw new Common.UnknownUserDefinedTypeError(
           referenceId.toString(),
           typeString
@@ -351,7 +350,7 @@ function storageSizeAndAllocate(
 
     case "bytes": {
       //this case is really two different cases!
-      const staticSize: number = DefinitionUtils.specifiedSize(definition);
+      const staticSize: number = Ast.Utils.specifiedSize(definition);
       if (staticSize) {
         return {
           size: { bytes: staticSize },
@@ -374,7 +373,7 @@ function storageSizeAndAllocate(
 
     case "function": {
       //this case is also really two different cases
-      switch (DefinitionUtils.visibility(definition)) {
+      switch (Ast.Utils.visibility(definition)) {
         case "internal":
           return {
             size: { bytes: Evm.Utils.PC_SIZE * 2 },
@@ -389,14 +388,14 @@ function storageSizeAndAllocate(
     }
 
     case "array": {
-      if (DefinitionUtils.isDynamicArray(definition)) {
+      if (Ast.Utils.isDynamicArray(definition)) {
         return {
           size: { words: 1 },
           allocations: existingAllocations
         };
       } else {
         //static array case
-        const length: number = DefinitionUtils.staticLength(definition);
+        const length: number = Ast.Utils.staticLength(definition);
         if (length === 0) {
           //in versions of Solidity where it's legal, arrays of length 0 still take up 1 word
           return {
@@ -404,7 +403,7 @@ function storageSizeAndAllocate(
             allocations: existingAllocations
           };
         }
-        const baseDefinition: Ast.AstNode = DefinitionUtils.baseDefinition(
+        const baseDefinition: Ast.AstNode = Ast.Utils.baseDefinition(
           definition
         );
         const { size: baseSize, allocations } = storageSizeAndAllocate(
@@ -434,7 +433,7 @@ function storageSizeAndAllocate(
     }
 
     case "struct": {
-      const referenceId: number = DefinitionUtils.typeId(definition);
+      const referenceId: number = Ast.Utils.typeId(definition);
       let allocations: Allocation.StorageAllocations = existingAllocations;
       let allocation: Allocation.StorageAllocation | undefined =
         allocations[referenceId]; //may be undefined!
@@ -443,7 +442,7 @@ function storageSizeAndAllocate(
         const referenceDeclaration: Ast.AstNode =
           referenceDeclarations[referenceId];
         if (referenceDeclaration === undefined) {
-          let typeString = DefinitionUtils.typeString(definition);
+          let typeString = Ast.Utils.typeString(definition);
           throw new Common.UnknownUserDefinedTypeError(
             referenceId.toString(),
             typeString

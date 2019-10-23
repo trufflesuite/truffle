@@ -4,7 +4,6 @@ const debug = debugModule("codec:interface:decoders:contract");
 import * as Codec from "@truffle/codec";
 import { Ast, Evm, Format, Conversion } from "@truffle/codec";
 import * as AbiUtils from "@truffle/codec/utils/abi";
-import * as DefinitionUtils from "@truffle/codec/utils/definition";
 import { wrapElementaryViaDefinition } from "@truffle/codec/utils/wrap";
 import * as Utils from "../utils";
 import * as Storage from "@truffle/codec/storage";
@@ -770,7 +769,7 @@ export class ContractInstanceDecoder {
     let key: Format.Values.ElementaryValue;
     let slot: Storage.Types.Slot;
     let definition: Ast.AstNode;
-    switch (DefinitionUtils.typeClass(parentDefinition)) {
+    switch (Ast.Utils.typeClass(parentDefinition)) {
       case "array":
         if (rawIndex instanceof BN) {
           index = rawIndex.clone();
@@ -790,7 +789,7 @@ export class ContractInstanceDecoder {
         slot = {
           path: parentSlot,
           offset: index.muln(size.words),
-          hashPath: DefinitionUtils.isDynamicArray(parentDefinition)
+          hashPath: Ast.Utils.isDynamicArray(parentDefinition)
         };
         break;
       case "mapping":
@@ -810,7 +809,7 @@ export class ContractInstanceDecoder {
         };
         break;
       case "struct":
-        let parentId = DefinitionUtils.typeId(parentDefinition);
+        let parentId = Ast.Utils.typeId(parentDefinition);
         let allocation: Allocation.StorageMemberAllocation;
         if (typeof rawIndex === "number") {
           index = rawIndex;

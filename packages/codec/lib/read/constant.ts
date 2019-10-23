@@ -1,7 +1,6 @@
 import debugModule from "debug";
 const debug = debugModule("codec:read:constant");
 
-import * as DefinitionUtils from "@truffle/codec/utils/definition";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Evm from "@truffle/codec/evm";
 import * as Ast from "@truffle/codec/ast";
@@ -11,9 +10,9 @@ import { DecodingError } from "@truffle/codec/decode/errors";
 export function readDefinition(definition: Ast.AstNode): Uint8Array {
   debug("definition %o", definition);
 
-  switch (DefinitionUtils.typeClass(definition)) {
+  switch (Ast.Utils.typeClass(definition)) {
     case "rational":
-      let numericalValue: BN = DefinitionUtils.rationalValue(definition);
+      let numericalValue: BN = Ast.Utils.rationalValue(definition);
       return Conversion.toBytes(numericalValue, Evm.Utils.WORD_SIZE);
     //you may be wondering, why do we not just use definition.value here,
     //like we do below? answer: because if this isn't a literal, that may not

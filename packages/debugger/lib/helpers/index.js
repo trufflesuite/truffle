@@ -19,7 +19,7 @@ export function isSkippedNodeType(node) {
     node.nodeType.includes("TypeName") || //HACK
     //skip string literals too -- we'll handle that manually
     (node.typeDescriptions !== undefined && //seems this sometimes happens?
-      Codec.Utils.Definition.typeClass(node) === "stringliteral")
+      Codec.Ast.Utils.typeClass(node) === "stringliteral")
   );
 }
 

@@ -2,7 +2,6 @@ import { assert } from "chai";
 
 import BN from "bn.js";
 
-import { Utils as TruffleCodecUtils } from "@truffle/codec";
 import * as Codec from "@truffle/codec";
 
 describe("Utils", function() {
@@ -14,10 +13,7 @@ describe("Utils", function() {
         }
       };
 
-      assert.equal(
-        TruffleCodecUtils.Definition.typeClass(definition),
-        "mapping"
-      );
+      assert.equal(Codec.Ast.Utils.typeClass(definition), "mapping");
     });
   });
 

@@ -1,6 +1,3 @@
-import * as Definition from "./definition";
-export { Definition };
-
 import * as DefinitionToAbi from "./definition2abi";
 export { DefinitionToAbi };
 

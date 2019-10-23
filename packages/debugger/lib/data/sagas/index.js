@@ -15,9 +15,9 @@ import data from "../selectors";
 
 import sum from "lodash.sum";
 
+import * as Codec from "@truffle/codec";
 import {
   Conversion,
-  Utils as CodecUtils,
   getStorageAllocations,
   getMemoryAllocations,
   getAbiAllocations,
@@ -178,7 +178,7 @@ function* variablesAndMappingsSaga() {
     //now: look at the parameters *after* the current index.  we'll need to
     //adjust for those.
     let parametersLeft = parameters.slice(currentIndex + 1);
-    let adjustment = sum(parametersLeft.map(CodecUtils.Definition.stackSize));
+    let adjustment = sum(parametersLeft.map(Codec.Ast.Utils.stackSize));
     debug("adjustment %d", adjustment);
     preambleAssignments = assignParameters(
       parameters,
@@ -289,7 +289,7 @@ function* variablesAndMappingsSaga() {
         { astId: varId, stackframe: currentDepth },
         {
           location: "stack",
-          from: top - CodecUtils.Definition.stackSize(node) + 1,
+          from: top - Codec.Ast.Utils.stackSize(node) + 1,
           to: top
         }
       );
@@ -325,27 +325,24 @@ function* variablesAndMappingsSaga() {
       //(note: we write it this way because mappings aren't caught by
       //isReference)
       if (
-        CodecUtils.Definition.typeClass(baseExpression) === "bytes" ||
-        (CodecUtils.Definition.typeClass(baseExpression) === "array" &&
-          (CodecUtils.Definition.isReference(node)
-            ? CodecUtils.Definition.referenceType(baseExpression) !== "storage"
-            : !CodecUtils.Definition.isMapping(node)))
+        Codec.Ast.Utils.typeClass(baseExpression) === "bytes" ||
+        (Codec.Ast.Utils.typeClass(baseExpression) === "array" &&
+          (Codec.Ast.Utils.isReference(node)
+            ? Codec.Ast.Utils.referenceType(baseExpression) !== "storage"
+            : !Codec.Ast.Utils.isMapping(node)))
       ) {
         debug("Index case bailed out early");
-        debug("typeClass %s", CodecUtils.Definition.typeClass(baseExpression));
+        debug("typeClass %s", Codec.Ast.Utils.typeClass(baseExpression));
         debug(
           "referenceType %s",
-          CodecUtils.Definition.referenceType(baseExpression)
+          Codec.Ast.Utils.referenceType(baseExpression)
         );
-        debug("isReference(node) %o", CodecUtils.Definition.isReference(node));
+        debug("isReference(node) %o", Codec.Ast.Utils.isReference(node));
         yield put(actions.assign(assignments));
         break;
       }
 
-      let keyDefinition = CodecUtils.Definition.keyDefinition(
-        baseExpression,
-        scopes
-      );
+      let keyDefinition = Codec.Ast.Utils.keyDefinition(baseExpression, scopes);
       //if we're dealing with an array, this will just spoof up a uint
       //definition :)
 
@@ -376,11 +373,9 @@ function* variablesAndMappingsSaga() {
 
         //we need to do things differently depending on whether we're dealing
         //with an array or mapping
-        switch (CodecUtils.Definition.typeClass(baseExpression)) {
+        switch (Codec.Ast.Utils.typeClass(baseExpression)) {
           case "array":
-            slot.hashPath = CodecUtils.Definition.isDynamicArray(
-              baseExpression
-            );
+            slot.hashPath = Codec.Ast.Utils.isDynamicArray(baseExpression);
             slot.offset = indexValue.value.asBN.muln(
               //HACK: the allocation format here is wrong (object rather than
               //array), but it doesn't matter because we're not using that here
@@ -402,8 +397,8 @@ function* variablesAndMappingsSaga() {
             address,
             slot,
             assignments,
-            CodecUtils.Definition.typeIdentifier(node),
-            CodecUtils.Definition.typeIdentifier(baseExpression)
+            Codec.Ast.Utils.typeIdentifier(node),
+            Codec.Ast.Utils.typeIdentifier(baseExpression)
           )
         );
       } else {
@@ -434,10 +429,10 @@ function* variablesAndMappingsSaga() {
       //we'll just do the assignment and quit out (again, note that mappings
       //aren't caught by isReference)
       if (
-        CodecUtils.Definition.typeClass(baseExpression) !== "struct" ||
-        (CodecUtils.Definition.isReference(node)
-          ? CodecUtils.Definition.referenceType(baseExpression) !== "storage"
-          : !CodecUtils.Definition.isMapping(node))
+        Codec.Ast.Utils.typeClass(baseExpression) !== "struct" ||
+        (Codec.Ast.Utils.isReference(node)
+          ? Codec.Ast.Utils.referenceType(baseExpression) !== "storage"
+          : !Codec.Ast.Utils.isMapping(node))
       ) {
         debug("Member case bailed out early");
         yield put(actions.assign(assignments));
@@ -454,7 +449,7 @@ function* variablesAndMappingsSaga() {
 
       slot = { path };
 
-      let structId = CodecUtils.Definition.typeId(baseExpression);
+      let structId = Codec.Ast.Utils.typeId(baseExpression);
       let memberAllocation =
         allocations[structId].members[node.referencedDeclaration];
 
@@ -466,8 +461,8 @@ function* variablesAndMappingsSaga() {
           address,
           slot,
           assignments,
-          CodecUtils.Definition.typeIdentifier(node),
-          CodecUtils.Definition.typeIdentifier(baseExpression)
+          Codec.Ast.Utils.typeIdentifier(node),
+          Codec.Ast.Utils.typeIdentifier(baseExpression)
         )
       );
 
@@ -511,7 +506,7 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
 
     const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
 
-    if (CodecUtils.Definition.isSimpleConstant(indexDefinition)) {
+    if (Codec.Ast.Utils.isSimpleConstant(indexDefinition)) {
       //while the main case is the next one, where we look for a prior
       //assignment, we need this case (and need it first) for two reasons:
       //1. some constant expressions (specifically, string and hex literals)
@@ -532,10 +527,10 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
       //definition. however, the key definition may have the wrong location
       //on it.  so, when applicable, we splice the index definition location
       //onto the key definition location.
-      if (CodecUtils.Definition.isReference(indexDefinition)) {
-        splicedDefinition = CodecUtils.Definition.spliceLocation(
+      if (Codec.Ast.Utils.isReference(indexDefinition)) {
+        splicedDefinition = Codec.Ast.Utils.spliceLocation(
           keyDefinition,
-          CodecUtils.Definition.referenceType(indexDefinition)
+          Codec.Ast.Utils.referenceType(indexDefinition)
         );
         //we could put code here to add on the "_ptr" ending when absent,
         //but we presently ignore that ending, so we'll skip that
@@ -559,7 +554,7 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
       if (indexConstantDeclaration.constant) {
         let indexConstantDefinition = indexConstantDeclaration.value;
         //next line filters out constants we don't know how to handle
-        if (CodecUtils.Definition.isSimpleConstant(indexConstantDefinition)) {
+        if (Codec.Ast.Utils.isSimpleConstant(indexConstantDefinition)) {
           debug("about to decode simple constant");
           return yield* decode(keyDefinition, {
             location: "definition",
@@ -634,11 +629,7 @@ function literalAssignments(node, stack, currentDepth) {
 
   let literal;
   try {
-    literal = readStack(
-      stack,
-      top - CodecUtils.Definition.stackSize(node) + 1,
-      top
-    );
+    literal = readStack(stack, top - Codec.Ast.Utils.stackSize(node) + 1, top);
   } catch (error) {
     literal = undefined; //not sure if this is right, but this is what would
     //happen before, so I figure it's safe?
@@ -662,7 +653,7 @@ function assignParameters(parameters, top, functionDepth) {
   let assignments = {};
 
   for (let parameter of reverseParameters) {
-    let words = CodecUtils.Definition.stackSize(parameter);
+    let words = Codec.Ast.Utils.stackSize(parameter);
     let pointer = {
       location: "stack",
       from: currentPosition - words + 1,

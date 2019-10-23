@@ -9,7 +9,7 @@ import { stableKeccak256 } from "lib/helpers";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import { Conversion, Format, Utils as CodecUtils } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 /**
  * @private
@@ -50,7 +50,7 @@ function modifierForInvocation(invocation, scopes) {
       return rawNode.nodes.find(
         node =>
           node.nodeType === "FunctionDefinition" &&
-          CodecUtils.Definition.functionKind(node) === "constructor"
+          Codec.Ast.Utils.functionKind(node) === "constructor"
       );
     default:
       //we should never hit this case
@@ -78,7 +78,7 @@ function debuggerContextToDecoderContext(context) {
     contractId,
     contractKind,
     isConstructor,
-    abi: CodecUtils.AbiUtils.computeSelectors(abi),
+    abi: Codec.Abi.Utils.computeSelectors(abi),
     payable,
     compiler
   };
@@ -157,7 +157,7 @@ const data = createSelectorTree({
           return Object.assign(
             {},
             ...Object.entries(referenceDeclarations).map(([id, node]) => ({
-              [id]: Format.Utils.MakeType.definitionToStoredType(
+              [id]: Codec.Format.Utils.MakeType.definitionToStoredType(
                 node,
                 sources[scopes[node.id].sourceId].compiler,
                 referenceDeclarations
@@ -224,7 +224,7 @@ const data = createSelectorTree({
       Object.assign(
         {},
         ...Object.entries(instances).map(([address, { binary }]) => ({
-          [address]: Conversion.toBytes(binary)
+          [address]: Codec.Conversion.toBytes(binary)
         }))
       )
     ),
@@ -311,7 +311,7 @@ const data = createSelectorTree({
                 let definition = inlined[variable.id].definition;
                 return (
                   !definition.constant ||
-                  CodecUtils.Definition.isSimpleConstant(definition.value)
+                  Codec.Ast.Utils.isSimpleConstant(definition.value)
                 );
               });
 
@@ -428,7 +428,7 @@ const data = createSelectorTree({
       stack: createLeaf(
         [evm.current.state.stack],
 
-        words => (words || []).map(word => Conversion.toBytes(word))
+        words => (words || []).map(word => Codec.Conversion.toBytes(word))
       ),
 
       /**
@@ -437,7 +437,7 @@ const data = createSelectorTree({
       memory: createLeaf(
         [evm.current.state.memory],
 
-        words => Conversion.toBytes(words.join(""))
+        words => Codec.Conversion.toBytes(words.join(""))
       ),
 
       /**
@@ -446,7 +446,7 @@ const data = createSelectorTree({
       calldata: createLeaf(
         [evm.current.call],
 
-        ({ data }) => Conversion.toBytes(data)
+        ({ data }) => Codec.Conversion.toBytes(data)
       ),
 
       /**
@@ -459,7 +459,7 @@ const data = createSelectorTree({
           Object.assign(
             {},
             ...Object.entries(mapping).map(([address, word]) => ({
-              [`0x${address}`]: Conversion.toBytes(word)
+              [`0x${address}`]: Codec.Conversion.toBytes(word)
             }))
           )
       ),
@@ -473,24 +473,24 @@ const data = createSelectorTree({
       specials: createLeaf(
         ["/current/address", evm.current.call, evm.transaction.globals],
         (address, { sender, value }, { tx, block }) => ({
-          this: Conversion.toBytes(address),
+          this: Codec.Conversion.toBytes(address),
 
-          sender: Conversion.toBytes(sender),
+          sender: Codec.Conversion.toBytes(sender),
 
-          value: Conversion.toBytes(value),
+          value: Codec.Conversion.toBytes(value),
 
           //let's crack open that tx and block!
           ...Object.assign(
             {},
             ...Object.entries(tx).map(([variable, value]) => ({
-              [variable]: Conversion.toBytes(value)
+              [variable]: Codec.Conversion.toBytes(value)
             }))
           ),
 
           ...Object.assign(
             {},
             ...Object.entries(block).map(([variable, value]) => ({
-              [variable]: Conversion.toBytes(value)
+              [variable]: Codec.Conversion.toBytes(value)
             }))
           )
         })
@@ -757,10 +757,10 @@ const data = createSelectorTree({
               })
             );
             let builtins = {
-              msg: CodecUtils.Definition.MSG_DEFINITION,
-              tx: CodecUtils.Definition.TX_DEFINITION,
-              block: CodecUtils.Definition.BLOCK_DEFINITION,
-              now: CodecUtils.Definition.NOW_DEFINITION
+              msg: Codec.Ast.Utils.MSG_DEFINITION,
+              tx: Codec.Ast.Utils.TX_DEFINITION,
+              block: Codec.Ast.Utils.BLOCK_DEFINITION,
+              now: Codec.Ast.Utils.NOW_DEFINITION
             };
             //only include this when it has a proper definition
             if (thisDefinition) {
@@ -779,7 +779,7 @@ const data = createSelectorTree({
           ["/current/contract"],
           contractNode =>
             contractNode && contractNode.nodeType === "ContractDefinition"
-              ? CodecUtils.Definition.spoofThisDefinition(
+              ? Codec.Ast.Utils.spoofThisDefinition(
                   contractNode.name,
                   contractNode.id,
                   contractNode.contractKind
@@ -875,7 +875,7 @@ const data = createSelectorTree({
       stack: createLeaf(
         [evm.next.state.stack],
 
-        words => (words || []).map(word => Conversion.toBytes(word))
+        words => (words || []).map(word => Codec.Conversion.toBytes(word))
       )
     },
 
@@ -950,7 +950,8 @@ const data = createSelectorTree({
       stack: createLeaf(
         [solidity.current.nextMapped],
 
-        step => ((step || {}).stack || []).map(word => Conversion.toBytes(word))
+        step =>
+          ((step || {}).stack || []).map(word => Codec.Conversion.toBytes(word))
       )
     }
   }
