@@ -4,13 +4,16 @@ const debug = debugModule("decoder:decode:constant");
 import * as DecodeUtils from "@truffle/decode-utils";
 import read from "../read";
 import decodeValue from "./value";
-import { ConstantDefinitionPointer} from "../types/pointer";
+import { ConstantDefinitionPointer } from "../types/pointer";
 import { EvmInfo } from "../types/evm";
 import { DecoderRequest } from "../types/request";
 import BN from "bn.js";
 
-export default function* decodeConstant(definition: DecodeUtils.AstDefinition, pointer: ConstantDefinitionPointer, info: EvmInfo): IterableIterator<any | DecoderRequest> {
-
+export default function* decodeConstant(
+  definition: DecodeUtils.AstDefinition,
+  pointer: ConstantDefinitionPointer,
+  info: EvmInfo
+): Generator<DecoderRequest, any, Uint8Array> {
   debug("definition %O", definition);
   debug("pointer %o", pointer);
 
@@ -20,9 +23,9 @@ export default function* decodeConstant(definition: DecodeUtils.AstDefinition, p
   //of the word, but readDefinition will put them at the *end* of the
   //word.  So we'll have to adjust things ourselves.
 
-  if(DecodeUtils.Definition.typeClass(definition) === "bytes") {
+  if (DecodeUtils.Definition.typeClass(definition) === "bytes") {
     let size = DecodeUtils.Definition.specifiedSize(definition);
-    if(size !== null) {
+    if (size !== null) {
       let word = yield* read(pointer, info.state);
       let bytes = word.slice(DecodeUtils.EVM.WORD_SIZE - size);
       return DecodeUtils.Conversion.toHexString(bytes);

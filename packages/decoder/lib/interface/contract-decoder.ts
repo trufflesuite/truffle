@@ -10,12 +10,25 @@ import { EvmInfo } from "../types/evm";
 import * as general from "../allocate/general";
 import * as storage from "../allocate/storage";
 import { StoragePointer, isStoragePointer } from "../types/pointer";
-import { StorageAllocations, StorageMemberAllocations, StorageMemberAllocation } from "../types/allocation";
+import {
+  StorageAllocations,
+  StorageMemberAllocations,
+  StorageMemberAllocation
+} from "../types/allocation";
 import { Slot, isWordsLength } from "../types/storage";
-import { DecoderRequest, isStorageRequest, isCodeRequest } from "../types/request";
+import {
+  DecoderRequest,
+  isStorageRequest,
+  isCodeRequest
+} from "../types/request";
 import { ContractBeingDecodedHasNoNodeError } from "../types/errors";
 import decode from "../decode";
-import { Definition as DefinitionUtils, EVM, AstDefinition, AstReferences } from "@truffle/decode-utils";
+import {
+  Definition as DefinitionUtils,
+  EVM,
+  AstDefinition,
+  AstReferences
+} from "@truffle/decode-utils";
 import { BlockType, Transaction } from "web3/eth/types";
 import { EventLog, Log } from "web3/types";
 import { Provider } from "web3/providers";
@@ -31,7 +44,7 @@ export interface EvmMapping {
   members: {
     [key: string]: EvmVariable;
   };
-};
+}
 
 export interface EvmStruct {
   name: string;
@@ -39,12 +52,12 @@ export interface EvmStruct {
   members: {
     [name: string]: DecodedVariable;
   };
-};
+}
 
 export interface EvmEnum {
   type: string;
   value: string;
-};
+}
 
 type EvmVariable = BN | string | boolean | EvmMapping | EvmStruct | EvmEnum;
 
@@ -52,7 +65,7 @@ interface DecodedVariable {
   name: string;
   type: string;
   value: EvmVariable;
-};
+}
 
 interface ContractState {
   name: string;
@@ -60,9 +73,9 @@ interface ContractState {
   nonce: BN;
   code: string;
   variables: {
-    [name: string]: DecodedVariable
+    [name: string]: DecodedVariable;
   };
-};
+}
 
 interface ContractEvent {
   logIndex: number;
@@ -72,13 +85,13 @@ interface ContractEvent {
   transactionHash: string;
   transactionIndex: number;
   variables: {
-    [name: string]: DecodedVariable
-  }
-};
+    [name: string]: DecodedVariable;
+  };
+}
 
 export interface ContractMapping {
   [nodeId: number]: ContractObject;
-};
+}
 
 export interface StorageCache {
   [block: number]: {
@@ -96,11 +109,11 @@ export interface CodeCache {
 
 //note: may return undefined
 function getContractNode(contract: ContractObject): AstDefinition {
-  return (contract.ast || {nodes: []}).nodes.find(
+  return (contract.ast || { nodes: [] }).nodes.find(
     (contractNode: AstDefinition) =>
-    contractNode.nodeType === "ContractDefinition"
-    && (contractNode.name === contract.contractName
-      || contractNode.name === contract.contract_name)
+      contractNode.nodeType === "ContractDefinition" &&
+      (contractNode.name === contract.contractName ||
+        contractNode.name === contract.contract_name)
   );
 }
 
@@ -124,7 +137,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private eventDefinitions: AstReferences;
   private eventDefinitionIdsByName: {
-    [name: string]: number
+    [name: string]: number;
   };
 
   private stateVariableReferences: StorageMemberAllocations;
@@ -134,7 +147,12 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   private storageCache: StorageCache = {};
   private codeCache: CodeCache = {};
 
-  constructor(contract: ContractObject, relevantContracts: ContractObject[], provider: Provider, address: string) {
+  constructor(
+    contract: ContractObject,
+    relevantContracts: ContractObject[],
+    provider: Provider,
+    address: string
+  ) {
     super();
 
     this.web3 = new Web3(provider);
@@ -142,35 +160,38 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     this.contract = contract;
     this.relevantContracts = relevantContracts;
 
-    if(address !== undefined) {
+    if (address !== undefined) {
       this.contractAddress = address;
     }
     this.contractNode = getContractNode(this.contract);
-    if(this.contractNode === undefined) {
+    if (this.contractNode === undefined) {
       throw new ContractBeingDecodedHasNoNodeError();
     }
 
     this.contracts[this.contractNode.id] = this.contract;
     this.contractNodes[this.contractNode.id] = this.contractNode;
-    if(this.contract.deployedBinary) { //just to be safe
+    if (this.contract.deployedBinary) {
+      //just to be safe
       this.context = this.makeContext(this.contract, this.contractNode);
       this.contexts[this.contractNode.id] = this.context;
     }
     abiDecoder.addABI(this.contract.abi);
 
-    for(let relevantContract of this.relevantContracts) {
+    for (let relevantContract of this.relevantContracts) {
       abiDecoder.addABI(relevantContract.abi);
       let node: AstDefinition = getContractNode(relevantContract);
-      if(node !== undefined) {
+      if (node !== undefined) {
         this.contracts[node.id] = relevantContract;
         this.contractNodes[node.id] = node;
-        if(relevantContract.deployedBinary) {
+        if (relevantContract.deployedBinary) {
           this.contexts[node.id] = this.makeContext(relevantContract, node);
         }
       }
     }
 
-    this.contexts = <DecodeUtils.Contexts.DecoderContexts>DecodeUtils.Contexts.normalizeContexts(this.contexts);
+    this.contexts = <DecodeUtils.Contexts.DecoderContexts>(
+      DecodeUtils.Contexts.normalizeContexts(this.contexts)
+    );
   }
 
   private makeContext(contract: ContractObject, node: AstDefinition) {
@@ -187,32 +208,48 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   public async init(): Promise<void> {
     this.contractNetwork = (await this.web3.eth.net.getId()).toString();
-    if(this.contractAddress === undefined) {
-      this.contractAddress = this.contract.networks[this.contractNetwork].address;
+    if (this.contractAddress === undefined) {
+      this.contractAddress = this.contract.networks[
+        this.contractNetwork
+      ].address;
     }
 
     debug("init called");
-    this.referenceDeclarations = general.getReferenceDeclarations(Object.values(this.contractNodes));
+    this.referenceDeclarations = general.getReferenceDeclarations(
+      Object.values(this.contractNodes)
+    );
 
-    this.eventDefinitions = general.getEventDefinitions(Object.values(this.contractNodes));
+    this.eventDefinitions = general.getEventDefinitions(
+      Object.values(this.contractNodes)
+    );
     this.eventDefinitionIdsByName = {};
     for (let id in this.eventDefinitions) {
-      this.eventDefinitionIdsByName[this.eventDefinitions[id].name] = parseInt(id);
-        //this parseInt shouldn't be necessary, but TypeScript refuses to believe
-        //that id must be a number even though the definition of AstReferences
-        //says so
+      this.eventDefinitionIdsByName[this.eventDefinitions[id].name] = parseInt(
+        id
+      );
+      //this parseInt shouldn't be necessary, but TypeScript refuses to believe
+      //that id must be a number even though the definition of AstReferences
+      //says so
     }
     debug("done with event definitions");
 
-    this.storageAllocations = storage.getStorageAllocations(this.referenceDeclarations, {[this.contractNode.id]: this.contractNode});
+    this.storageAllocations = storage.getStorageAllocations(
+      this.referenceDeclarations,
+      { [this.contractNode.id]: this.contractNode }
+    );
     debug("done with allocation");
-    this.stateVariableReferences = this.storageAllocations[this.contractNode.id].members;
+    this.stateVariableReferences = this.storageAllocations[
+      this.contractNode.id
+    ].members;
     debug("stateVariableReferences %O", this.stateVariableReferences);
 
     this.contractCode = await this.web3.eth.getCode(this.contractAddress);
   }
 
-  private async decodeVariable(variable: StorageMemberAllocation, block: number): Promise<DecodedVariable> {
+  private async decodeVariable(
+    variable: StorageMemberAllocation,
+    block: number
+  ): Promise<DecodedVariable> {
     const info: EvmInfo = {
       state: {
         stack: [],
@@ -226,16 +263,19 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       currentContext: this.context
     };
 
-    const decoder: IterableIterator<any> = decode(variable.definition, variable.pointer, info);
+    const decoder = decode(variable.definition, variable.pointer, info);
 
-    let result: IteratorResult<any> = decoder.next();
-    while(!result.done) {
-      let request = <DecoderRequest>(result.value);
+    let result = decoder.next();
+    while (result.done === false) {
+      let request = result.value;
       let response: Uint8Array;
-      if(isStorageRequest(request)) {
-        response = await this.getStorage(this.contractAddress, request.slot, block);
-      }
-      else if(isCodeRequest(request)) {
+      if (isStorageRequest(request)) {
+        response = await this.getStorage(
+          this.contractAddress,
+          request.slot,
+          block
+        );
+      } else if (isCodeRequest(request)) {
         response = await this.getCode(request.address, block);
       }
       //note: one of the above conditionals *must* be true by the type system.
@@ -250,23 +290,32 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     };
   }
 
-  public async state(block: BlockType = "latest"): Promise<ContractState | undefined> {
-    let blockNumber = typeof block === "number"
-      ? block
-      : (await this.web3.eth.getBlock(block)).number;
+  public async state(
+    block: BlockType = "latest"
+  ): Promise<ContractState | undefined> {
+    let blockNumber =
+      typeof block === "number"
+        ? block
+        : (await this.web3.eth.getBlock(block)).number;
 
     let result: ContractState = {
       name: this.contract.contractName,
       code: this.contractCode,
-      balance: new BN(await this.web3.eth.getBalance(this.contractAddress, blockNumber)),
-      nonce: new BN(await this.web3.eth.getTransactionCount(this.contractAddress, blockNumber)),
+      balance: new BN(
+        await this.web3.eth.getBalance(this.contractAddress, blockNumber)
+      ),
+      nonce: new BN(
+        await this.web3.eth.getTransactionCount(
+          this.contractAddress,
+          blockNumber
+        )
+      ),
       variables: {}
     };
 
     debug("state called");
 
-    for(const variable of Object.values(this.stateVariableReferences)) {
-
+    for (const variable of Object.values(this.stateVariableReferences)) {
       debug("about to decode %s", variable.definition.name);
       const decodedVariable = await this.decodeVariable(variable, blockNumber);
       debug("decoded");
@@ -279,47 +328,52 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return result;
   }
 
-  public async variable(nameOrId: string | number, block: BlockType = "latest"): Promise<DecodedVariable | undefined> {
-    let blockNumber = typeof block === "number"
-      ? block
-      : (await this.web3.eth.getBlock(block)).number;
+  public async variable(
+    nameOrId: string | number,
+    block: BlockType = "latest"
+  ): Promise<DecodedVariable | undefined> {
+    let blockNumber =
+      typeof block === "number"
+        ? block
+        : (await this.web3.eth.getBlock(block)).number;
 
     let variable: StorageMemberAllocation;
-    if(typeof nameOrId === "number")
-    {
+    if (typeof nameOrId === "number") {
       variable = this.stateVariableReferences[nameOrId];
-    }
-    else { //search by name
-      variable = Object.values(this.stateVariableReferences)
-      .find(({definition}) => definition.name === nameOrId); //there should be exactly one
+    } else {
+      //search by name
+      variable = Object.values(this.stateVariableReferences).find(
+        ({ definition }) => definition.name === nameOrId
+      ); //there should be exactly one
     }
 
-    if(variable === undefined) { //if user put in a bad name
+    if (variable === undefined) {
+      //if user put in a bad name
       return undefined;
     }
 
     return await this.decodeVariable(variable, blockNumber);
   }
 
-  private async getStorage(address: string, slot: BN, block: number): Promise<Uint8Array> {
+  private async getStorage(
+    address: string,
+    slot: BN,
+    block: number
+  ): Promise<Uint8Array> {
     //first, set up any preliminary layers as needed
-    if(this.storageCache[block] === undefined) {
+    if (this.storageCache[block] === undefined) {
       this.storageCache[block] = {};
     }
-    if(this.storageCache[block][address] === undefined) {
+    if (this.storageCache[block][address] === undefined) {
       this.storageCache[block][address] = {};
     }
     //now, if we have it cached, just return it
-    if(this.storageCache[block][address][slot.toString()] !== undefined) {
+    if (this.storageCache[block][address][slot.toString()] !== undefined) {
       return this.storageCache[block][address][slot.toString()];
     }
     //otherwise, get it, cache it, and return it
     let word = DecodeUtils.Conversion.toBytes(
-      await this.web3.eth.getStorageAt(
-        address,
-        slot,
-        block
-      ),
+      await this.web3.eth.getStorageAt(address, slot, block),
       DecodeUtils.EVM.WORD_SIZE
     );
     this.storageCache[block][address][slot.toString()] = word;
@@ -328,19 +382,16 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
   private async getCode(address: string, block: number): Promise<Uint8Array> {
     //first, set up any preliminary layers as needed
-    if(this.codeCache[block] === undefined) {
+    if (this.codeCache[block] === undefined) {
       this.codeCache[block] = {};
     }
     //now, if we have it cached, just return it
-    if(this.codeCache[block][address] !== undefined) {
+    if (this.codeCache[block][address] !== undefined) {
       return this.codeCache[block][address];
     }
     //otherwise, get it, cache it, and return it
     let code = DecodeUtils.Conversion.toBytes(
-      await this.web3.eth.getCode(
-        address,
-        block
-      )
+      await this.web3.eth.getCode(address, block)
     );
     this.codeCache[block][address] = code;
     return code;
@@ -353,15 +404,18 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   public watchMappingKey(variable: number | string, ...indices: any[]): void {
     let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
     //add mapping key and all ancestors
-    while(slot !== undefined &&
-      this.mappingKeys.every(existingSlot =>
-      !isEqual(existingSlot,slot)
+    while (
+      slot !== undefined &&
+      this.mappingKeys.every(
+        existingSlot => !isEqual(existingSlot, slot)
         //we put the newness requirement in the while condition rather than a
         //separate if because if we hit one ancestor that's not new, the futher
         //ones won't be either
-    )) {
-      if(slot.key !== undefined) { //only add mapping keys
-          this.mappingKeys = [...this.mappingKeys, slot];
+      )
+    ) {
+      if (slot.key !== undefined) {
+        //only add mapping keys
+        this.mappingKeys = [...this.mappingKeys, slot];
       }
       slot = slot.path;
     }
@@ -370,13 +424,13 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   //input is similar to watchMappingKey; will unwatch all descendants too
   public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
     let slot: Slot | undefined = this.constructSlot(variable, ...indices)[0];
-    if(slot === undefined) {
+    if (slot === undefined) {
       return; //not strictly necessary, but may as well
     }
     //remove mapping key and all descendants
-    this.mappingKeys = this.mappingKeys.filter( existingSlot => {
-      while(existingSlot !== undefined) {
-        if(isEqual(existingSlot, slot)) {
+    this.mappingKeys = this.mappingKeys.filter(existingSlot => {
+      while (existingSlot !== undefined) {
+        if (isEqual(existingSlot, slot)) {
           return false; //if it matches, remove it
         }
         existingSlot = existingSlot.path;
@@ -417,9 +471,14 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
       variables: {}
     };
 
-    const eventDefinition = this.eventDefinitions[this.eventDefinitionIdsByName[contractEvent.name]];
+    const eventDefinition = this.eventDefinitions[
+      this.eventDefinitionIdsByName[contractEvent.name]
+    ];
 
-    if (typeof eventDefinition.parameters !== "undefined" && typeof eventDefinition.parameters.parameters !== "undefined") {
+    if (
+      typeof eventDefinition.parameters !== "undefined" &&
+      typeof eventDefinition.parameters.parameters !== "undefined"
+    ) {
       const argumentDefinitions = eventDefinition.parameters.parameters;
 
       for (let i = 0; i < argumentDefinitions.length; i++) {
@@ -438,8 +497,14 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     return contractEvent;
   }
 
-  public async events(name: string | null = null, block: BlockType = "latest"): Promise<ContractEvent[]> {
-    const web3Contract = new this.web3.eth.Contract(this.contract.abi, this.contractAddress);
+  public async events(
+    name: string | null = null,
+    block: BlockType = "latest"
+  ): Promise<ContractEvent[]> {
+    const web3Contract = new this.web3.eth.Contract(
+      this.contract.abi,
+      this.contractAddress
+    );
     const events = await web3Contract.getPastEvents(name, {
       fromBlock: block,
       toBlock: block
@@ -458,8 +523,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     //this.web3.eth.subscribe(name);
   }
 
-  public removeEventListener(name: string): void {
-  }
+  public removeEventListener(name: string): void {}
 
   //in addition to returning the slot we want, it also returns a definition
   //used in the recursive call
@@ -471,21 +535,25 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
   //bytes mapping keys should be given as hex strings beginning with "0x"
   //address mapping keys are like bytes; checksum case is not required
   //boolean mapping keys may be given either as booleans, or as string "true" or "false"
-  private constructSlot(variable: number | string, ...indices: any[]): [Slot | undefined , AstDefinition | undefined] {
+  private constructSlot(
+    variable: number | string,
+    ...indices: any[]
+  ): [Slot | undefined, AstDefinition | undefined] {
     //base case: we need to locate the variable and its definition
-    if(indices.length === 0) {
+    if (indices.length === 0) {
       let allocation: StorageMemberAllocation;
-      if(typeof variable === "number") {
+      if (typeof variable === "number") {
         allocation = this.stateVariableReferences[variable];
-      }
-      else {
-        allocation = Object.values(this.stateVariableReferences)
-        .find(({definition}) => definition.name === variable);
+      } else {
+        allocation = Object.values(this.stateVariableReferences).find(
+          ({ definition }) => definition.name === variable
+        );
       }
 
       let definition = allocation.definition;
       let pointer = allocation.pointer;
-      if(!isStoragePointer(pointer)) { //if it's a constant
+      if (!isStoragePointer(pointer)) {
+        //if it's a constant
         return [undefined, undefined];
       }
       return [pointer.storage.from.slot, definition];
@@ -493,36 +561,44 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
 
     //main case
     let parentIndices = indices.slice(0, -1); //remove last index
-    let [parentSlot, parentDefinition] = this.constructSlot(variable, ...parentIndices);
-    if(parentSlot === undefined) {
+    let [parentSlot, parentDefinition] = this.constructSlot(
+      variable,
+      ...parentIndices
+    );
+    if (parentSlot === undefined) {
       return [undefined, undefined];
     }
     let rawIndex = indices[indices.length - 1];
     let index: any;
     let slot: Slot;
     let definition: AstDefinition;
-    switch(DefinitionUtils.typeClass(parentDefinition)) {
+    switch (DefinitionUtils.typeClass(parentDefinition)) {
       case "array":
-        if(rawIndex instanceof BN) {
+        if (rawIndex instanceof BN) {
           index = rawIndex.clone();
-        }
-        else {
+        } else {
           index = new BN(rawIndex);
         }
-        definition = parentDefinition.baseType || parentDefinition.typeName.baseType;
-        let size = storage.storageSize(definition, this.referenceDeclarations, this.storageAllocations);
-        if(!isWordsLength(size)) {
+        definition =
+          parentDefinition.baseType || parentDefinition.typeName.baseType;
+        let size = storage.storageSize(
+          definition,
+          this.referenceDeclarations,
+          this.storageAllocations
+        );
+        if (!isWordsLength(size)) {
           return [undefined, undefined];
         }
         slot = {
           path: parentSlot,
           offset: index.muln(size.words),
           hashPath: DefinitionUtils.isDynamicArray(parentDefinition)
-        }
+        };
         break;
       case "mapping":
-        let keyDefinition = parentDefinition.keyType || parentDefinition.typeName.keyType;
-        switch(DefinitionUtils.typeClass(keyDefinition)) {
+        let keyDefinition =
+          parentDefinition.keyType || parentDefinition.typeName.keyType;
+        switch (DefinitionUtils.typeClass(keyDefinition)) {
           case "string":
           case "bytes":
             index = rawIndex;
@@ -532,56 +608,57 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
             break;
           case "int":
           case "uint":
-            if(rawIndex instanceof BN) {
+            if (rawIndex instanceof BN) {
               index = rawIndex.clone();
-            }
-            else {
+            } else {
               index = new BN(rawIndex);
             }
             break;
           case "bool":
-            if(typeof rawIndex === "string") {
+            if (typeof rawIndex === "string") {
               index = rawIndex !== "false";
-            }
-            else {
+            } else {
               index = rawIndex;
             }
             break;
-          default: //there is no other case, except fixed and ufixed, but
+          default:
+            //there is no other case, except fixed and ufixed, but
             return [undefined, undefined];
         }
-        definition = parentDefinition.valueType || parentDefinition.typeName.valueType;
+        definition =
+          parentDefinition.valueType || parentDefinition.typeName.valueType;
         slot = {
           path: parentSlot,
           key: index,
           keyEncoding: DefinitionUtils.keyEncoding(keyDefinition),
           offset: new BN(0)
-        }
+        };
         break;
       case "struct":
         let parentId = DefinitionUtils.typeId(parentDefinition);
         let allocation: StorageMemberAllocation;
-        if(typeof rawIndex === "number") {
+        if (typeof rawIndex === "number") {
           index = rawIndex;
           allocation = this.storageAllocations[parentId].members[index];
           definition = allocation.definition;
-        }
-        else {
-          allocation = Object.values(this.storageAllocations[parentId].members)
-          .find(({definition}) => definition.name === rawIndex); //there should be exactly one
+        } else {
+          allocation = Object.values(
+            this.storageAllocations[parentId].members
+          ).find(({ definition }) => definition.name === rawIndex); //there should be exactly one
           definition = allocation.definition;
           index = definition.id; //not really necessary, but may as well
         }
         slot = {
           path: parentSlot,
           //need type coercion here -- we know structs don't contain constants but the compiler doesn't
-          offset: (<StoragePointer>allocation.pointer).storage.from.slot.offset.clone()
-        }
+          offset: (<StoragePointer>(
+            allocation.pointer
+          )).storage.from.slot.offset.clone()
+        };
         break;
       default:
         return [undefined, undefined];
     }
     return [slot, definition];
   }
-
 }

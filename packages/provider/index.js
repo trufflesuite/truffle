@@ -1,6 +1,6 @@
 const debug = require("debug")("provider");
 const Web3 = require("web3");
-const { Web3Shim } = require("@truffle/interface-adapter");
+const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const ora = require("ora");
 

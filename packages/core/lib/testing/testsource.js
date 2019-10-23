@@ -24,8 +24,11 @@ TestSource.prototype.resolve = function(importPath, callback) {
 
       let abstractionFiles;
       try {
-        abstractionFiles = fse.readdirSync(
+        const buildDirFiles = (abstractionFiles = fse.readdirSync(
           self.config.contracts_build_directory
+        ));
+        abstractionFiles = buildDirFiles.filter(file =>
+          file.match(/^.*.json$/)
         );
       } catch (error) {
         return callback(error);
