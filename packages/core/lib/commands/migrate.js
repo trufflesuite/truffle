@@ -190,8 +190,8 @@ const command = {
 
     Contracts.compile(conf)
       .then(async () => {
-        await Environment.detect(conf);
         await Provider.testConnection(conf);
+        await Environment.detect(conf);
 
         const {
           dryRunOnly,

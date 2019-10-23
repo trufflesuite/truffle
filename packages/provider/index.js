@@ -2,6 +2,7 @@ const debug = require("debug")("provider");
 const Web3 = require("web3");
 const { Web3Shim } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
+const ora = require("ora");
 
 module.exports = {
   wrap: function(provider, options) {
@@ -32,10 +33,32 @@ module.exports = {
     return provider;
   },
 
-  testConnection: async function(options) {
+  testConnection: function(options) {
     const provider = this.getProvider(options);
     const web3 = new Web3Shim({ provider });
-    await web3.eth.getBlockNumber();
-    return true;
+    return new Promise((resolve, reject) => {
+      const spinner = ora("Testing the provider.").start();
+      const noResponseFromNetworkCall = setTimeout(() => {
+        spinner.fail();
+        const errorMessage =
+          "Failed to connect to the network using the " +
+          "supplied provider.\n       Check to see that your provider is valid.";
+        throw new Error(errorMessage);
+      }, 20000);
+      web3.eth
+        .getBlockNumber()
+        .then(() => {
+          spinner.succeed();
+          // Cancel the setTimeout check above
+          clearTimeout(noResponseFromNetworkCall);
+          resolve(true);
+        })
+        .catch(error => {
+          spinner.fail();
+          // Cancel the setTimeout check above
+          clearTimeout(noResponseFromNetworkCall);
+          reject(error);
+        });
+    });
   }
 };
