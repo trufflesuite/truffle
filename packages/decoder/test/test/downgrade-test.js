@@ -3,8 +3,9 @@ const assert = require("chai").assert;
 const Big = require("big.js");
 const clonedeep = require("lodash.clonedeep");
 
-const TruffleCodec = require("../..");
-const ConversionUtils = require("../../../codec/dist/lib/utils/conversion");
+const Decoder = require("../..");
+const Codec = require("../../../codec");
+
 const { encodeTupleAbi } = require("../../../codec");
 
 const DowngradeTestUnmodified = artifacts.require("DowngradeTest");
@@ -19,26 +20,26 @@ function verifyAbiDecoding(decoding, address) {
 
   //first argument: {{x: 7, y: 5}, z: 3}
   assert.strictEqual(decoding.arguments[0].value.type.typeClass, "tuple");
-  assert.deepEqual(ConversionUtils.nativize(decoding.arguments[0].value), [
+  assert.deepEqual(Codec.Inspect.nativize(decoding.arguments[0].value), [
     [7, 5],
     3
   ]);
   //second argument: No (i.e. 1)
   assert.strictEqual(decoding.arguments[1].value.type.typeClass, "uint");
   assert.strictEqual(decoding.arguments[1].value.type.bits, 8);
-  assert.deepEqual(ConversionUtils.nativize(decoding.arguments[1].value), 1);
+  assert.deepEqual(Codec.Inspect.nativize(decoding.arguments[1].value), 1);
   //third argument: the contract (i.e. its address)
   assert.strictEqual(decoding.arguments[2].value.type.typeClass, "address");
   assert.strictEqual(decoding.arguments[2].value.type.kind, "general");
   assert.deepEqual(
-    ConversionUtils.nativize(decoding.arguments[2].value),
+    Codec.Inspect.nativize(decoding.arguments[2].value),
     address
   );
   //fourth argument: the same thing
   assert.strictEqual(decoding.arguments[3].value.type.typeClass, "address");
   assert.strictEqual(decoding.arguments[3].value.type.kind, "general");
   assert.deepEqual(
-    ConversionUtils.nativize(decoding.arguments[3].value),
+    Codec.Inspect.nativize(decoding.arguments[3].value),
     address
   );
 }
@@ -74,7 +75,7 @@ async function runTestBody(
   skipFunctionTests = false,
   fullMode = false
 ) {
-  let decoder = await TruffleCodec.forProject(
+  let decoder = await Decoder.forProject(
     [DowngradeTest._json, DecoyLibrary], //HACK: because we've clonedeep'd DowngradeTest,
     //we need to pass in its _json rather than it itself (its getters have been stripped off)
     web3.currentProvider
@@ -188,7 +189,7 @@ contract("DowngradeTest", function(accounts) {
     ).inputs[0].type = "fixed168x10";
 
     //...and now let's set up a decoder for our hacked-up contract artifact.
-    let decoder = await TruffleCodec.forProject(
+    let decoder = await Decoder.forProject(
       [DowngradeTest._json, DecoyLibrary], //HACK: see clonedeep note above
       web3.currentProvider
     );
@@ -210,7 +211,7 @@ contract("DowngradeTest", function(accounts) {
       }
     };
     const encodedTau = encodeTupleAbi([wrappedTau]);
-    const hexTau = ConversionUtils.toHexString(encodedTau);
+    const hexTau = Codec.Utils.Conversion.toHexString(encodedTau);
     const selector = web3.eth.abi.encodeFunctionSignature(
       "shhImADecimal(fixed168x10)"
     );
@@ -249,7 +250,7 @@ contract("DowngradeTest", function(accounts) {
   describe("Out-of-range enums", function() {
     it("Doesn't include out-of-range enums in full mode", async function() {
       let DowngradeTest = DowngradeTestUnmodified;
-      let decoder = await TruffleCodec.forProject(
+      let decoder = await Decoder.forProject(
         [DowngradeTest._json, DecoyLibrary], //not strictly necessary here, but see clonedeep comment above
         web3.currentProvider
       );
@@ -311,7 +312,7 @@ contract("DowngradeTest", function(accounts) {
 });
 
 async function runEnumTestBody(DowngradeTest) {
-  let decoder = await TruffleCodec.forProject(
+  let decoder = await Decooder.forProject(
     [DowngradeTest._json, DecoyLibrary], //HACK: see clonedeep comment above
     web3.currentProvider
   );
@@ -341,7 +342,7 @@ async function runEnumTestBody(DowngradeTest) {
   assert.strictEqual(decoyDecoding1.abi.name, "EnumSilliness1"); //also let's verify this is the right event
   assert.strictEqual(decoyDecoding1.decodingMode, "abi");
   let nativizedArguments1 = decoyDecoding1.arguments.map(({ value }) =>
-    ConversionUtils.nativize(value)
+    Codec.Inspect.nativize(value)
   );
   assert.deepStrictEqual(nativizedArguments1, swappedTxArguments);
 
@@ -351,7 +352,7 @@ async function runEnumTestBody(DowngradeTest) {
   assert.strictEqual(decoyDecoding2.abi.name, "EnumSilliness2"); //also let's verify this is the right event
   assert.strictEqual(decoyDecoding2.decodingMode, "abi");
   let nativizedArguments2 = decoyDecoding2.arguments.map(({ value }) =>
-    ConversionUtils.nativize(value)
+    Codec.Inspect.nativize(value)
   );
   assert.deepStrictEqual(nativizedArguments2, swappedTxArguments);
 }

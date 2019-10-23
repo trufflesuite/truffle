@@ -4,7 +4,6 @@ const debug = debugModule("codec:utils:conversion");
 import BN from "bn.js";
 import Big from "big.js";
 import * as Format from "@truffle/codec/format";
-import { enumFullName } from "./inspect";
 
 /**
  * @param bytes - undefined | string | number | BN | Uint8Array | Big
@@ -160,14 +159,6 @@ export function countDecimalPlaces(value: Big): number {
   return Math.max(0, value.c.length - value.e - 1);
 }
 
-//NOTE: Definitely do not use this in real code!  For tests only!
-//for convenience: invokes the nativize method on all the given variables
-export function nativizeVariables(variables: {[name: string]: Format.Values.Result}): {[name: string]: any} {
-  return Object.assign({}, ...Object.entries(variables).map(
-    ([name, value]) => ({[name]: nativize(value)})
-  ));
-}
-
 //converts out of range booleans to true; something of a HACK
 //NOTE: does NOT do this recursively inside structs, arrays, etc!
 //I mean, those aren't elementary and therefore aren't in the domain
@@ -189,100 +180,6 @@ export function cleanBool(result: Format.Values.ElementaryResult): Format.Values
           };
         default:
           return result;
-      }
-  }
-}
-
-//HACK! Avoid using! Only use this if:
-//1. you absolutely have to, or
-//2. it's just testing, not real code
-export function nativize(result: Format.Values.Result): any {
-  if(result.kind === "error") {
-    return undefined;
-  }
-  switch(result.type.typeClass) {
-    case "uint":
-    case "int":
-      return (<Format.Values.UintValue|Format.Values.IntValue>result).value.asBN.toNumber(); //WARNING
-    case "bool":
-      return (<Format.Values.BoolValue>result).value.asBoolean;
-    case "bytes":
-      return (<Format.Values.BytesValue>result).value.asHex;
-    case "address":
-      return (<Format.Values.AddressValue>result).value.asAddress;
-    case "string": {
-      let coercedResult = <Format.Values.StringValue> result;
-      switch(coercedResult.value.kind) {
-        case "valid":
-          return coercedResult.value.asString;
-        case "malformed":
-          // this will turn malformed utf-8 into replacement characters (U+FFFD) (WARNING)
-          // note we need to cut off the 0x prefix
-          return Buffer.from(coercedResult.value.asHex.slice(2), 'hex').toString();
-      }
-    }
-    case "fixed":
-    case "ufixed":
-      //HACK: Big doesn't have a toNumber() method, so we convert to string and then parse with Number
-      //NOTE: we don't bother setting the magic variables Big.NE or Big.PE first, as the choice of
-      //notation shouldn't affect the result (can you believe I have to write this? @_@)
-      return Number((<Format.Values.FixedValue|Format.Values.UfixedValue>result).value.asBig.toString()); //WARNING
-    case "array": //WARNING: circular case not handled; will loop infinitely
-      return (<Format.Values.ArrayValue>result).value.map(nativize);
-    case "mapping":
-      return Object.assign({}, ...(<Format.Values.MappingValue>result).value.map(
-        ({key, value}) => ({[nativize(key).toString()]: nativize(value)})
-      ));
-    case "struct": //WARNING: circular case not handled; will loop infinitely
-      return Object.assign({}, ...(<Format.Values.StructValue>result).value.map(
-        ({name, value}) => ({[name]: nativize(value)})
-      ));
-    case "tuple":
-      return (<Format.Values.TupleValue>result).value.map(
-        ({value}) => nativize(value)
-      );
-    case "magic":
-      return Object.assign({}, ...Object.entries((<Format.Values.MagicValue>result).value).map(
-          ([key, value]) => ({[key]: nativize(value)})
-      ));
-    case "enum":
-      return enumFullName(<Format.Values.EnumValue>result);
-    case "contract": {
-      let coercedResult = <Format.Values.ContractValue> result;
-      switch(coercedResult.value.kind) {
-        case "known":
-          return `${coercedResult.value.class.typeName}(${coercedResult.value.address})`;
-        case "unknown":
-          return coercedResult.value.address;
-      }
-      break; //to satisfy typescript
-    }
-    case "function":
-      switch(result.type.visibility) {
-        case "external": {
-          let coercedResult = <Format.Values.FunctionExternalValue> result;
-          switch(coercedResult.value.kind) {
-            case "known":
-              return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).${coercedResult.value.abi.name}`
-            case "invalid":
-              return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).call(${coercedResult.value.selector}...)`
-            case "unknown":
-              return `${coercedResult.value.contract.address}.call(${coercedResult.value.selector}...)`
-          }
-        }
-        case "internal": {
-          let coercedResult = <Format.Values.FunctionInternalValue> result;
-          switch(coercedResult.value.kind) {
-            case "function":
-              return `${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}`;
-            case "exception":
-              return coercedResult.value.deployedProgramCounter === 0
-                ? `<zero>`
-                : `assert(false)`;
-            case "unknown":
-              return `<decoding not supported>`;
-          }
-        }
       }
   }
 }

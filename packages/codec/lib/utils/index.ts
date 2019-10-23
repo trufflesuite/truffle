@@ -25,4 +25,3 @@ import * as MakeType from "./maketype";
 export { MakeType };
 
 export * from "./abify";
-export * from "./inspect";

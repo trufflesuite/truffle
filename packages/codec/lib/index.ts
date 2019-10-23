@@ -50,6 +50,9 @@ export { Pointer };
 import * as Evm from "./evm";
 export { Evm };
 
+import * as Inspect from "./inspect";
+export { Inspect };
+
 import * as Allocate from "./allocate";
 export { Allocate };
 
