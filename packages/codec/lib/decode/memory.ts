@@ -4,7 +4,6 @@ const debug = debugModule("codec:decode:memory");
 import BN from "bn.js";
 import read from "@truffle/codec/read";
 import * as Conversion from "@truffle/codec/conversion";
-import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
 import decodeValue from "./value";
 import * as Pointer from "@truffle/codec/pointer";
@@ -17,7 +16,7 @@ export default function* decodeMemory(
   pointer: Pointer.MemoryPointer,
   info: Evm.EvmInfo
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
-  if (TypeUtils.isReferenceType(dataType)) {
+  if (Format.Types.isReferenceType(dataType)) {
     return yield* decodeMemoryReferenceByAddress(dataType, pointer, info);
   } else {
     return yield* decodeValue(dataType, pointer, info);
@@ -215,7 +214,10 @@ export function* decodeMemoryReferenceByAddress(
           };
         }
         let storedMemberType = storedType.memberTypes[index].type;
-        let memberType = TypeUtils.specifyLocation(storedMemberType, "memory");
+        let memberType = Format.Types.specifyLocation(
+          storedMemberType,
+          "memory"
+        );
 
         decodedMembers.push({
           name: memberName,

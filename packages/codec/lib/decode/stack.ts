@@ -2,7 +2,6 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:stack");
 
 import * as Conversion from "@truffle/codec/conversion";
-import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import decodeValue from "./value";
@@ -46,7 +45,7 @@ export function* decodeLiteral(
   debug("type %O", dataType);
   debug("pointer %o", pointer);
 
-  if (TypeUtils.isReferenceType(dataType)) {
+  if (Format.Types.isReferenceType(dataType)) {
     switch (dataType.location) {
       case "memory":
         //first: do we have a memory pointer? if so we can just dispatch to

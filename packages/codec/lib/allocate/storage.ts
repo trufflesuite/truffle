@@ -7,7 +7,6 @@ import * as Storage from "@truffle/codec/storage";
 import * as Ast from "@truffle/codec/ast";
 import * as Allocation from "./types";
 import * as Evm from "@truffle/codec/evm";
-import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
 import BN from "bn.js";
 
@@ -484,7 +483,7 @@ export function storageSizeForType(
       return { bytes: dataType.bits / 8 };
     case "enum": {
       let fullType = <Format.Types.EnumType>(
-        TypeUtils.fullType(dataType, userDefinedTypes)
+        Format.Types.fullType(dataType, userDefinedTypes)
       );
       if (!fullType.options) {
         throw new DecodingError({

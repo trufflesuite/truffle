@@ -2,7 +2,6 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:storage");
 
 import read from "@truffle/codec/read";
-import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import decodeValue from "./value";
@@ -19,7 +18,7 @@ export default function* decodeStorage(
   pointer: Pointer.StoragePointer,
   info: Evm.EvmInfo
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
-  if (TypeUtils.isReferenceType(dataType)) {
+  if (Format.Types.isReferenceType(dataType)) {
     return yield* decodeStorageReference(dataType, pointer, info);
   } else {
     return yield* decodeValue(dataType, pointer, info);
@@ -379,7 +378,7 @@ export function* decodeStorageReference(
           };
         }
         let storedMemberType = storedType.memberTypes[index].type;
-        let memberType = TypeUtils.specifyLocation(
+        let memberType = Format.Types.specifyLocation(
           storedMemberType,
           "storage" as const
         );

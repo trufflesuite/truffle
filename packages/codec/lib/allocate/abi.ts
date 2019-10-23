@@ -3,7 +3,6 @@ const debug = debugModule("codec:allocate:abi");
 
 import * as Abi from "@truffle/codec/abi/types";
 import * as AbiUtils from "@truffle/codec/abi/utils";
-import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Evm from "@truffle/codec/evm";
 import { getterInputs } from "@truffle/codec/utils/definition2abi";
 import * as Common from "@truffle/codec/common";
@@ -226,7 +225,7 @@ function abiSizeAndAllocate(
         if (!storedType) {
           throw new Common.UnknownUserDefinedTypeError(
             dataType.id,
-            TypeUtils.typeString(dataType)
+            Format.Types.typeString(dataType)
           );
         }
         debug("storedType: %O", storedType);

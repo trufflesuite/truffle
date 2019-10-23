@@ -16,11 +16,25 @@ const debug = debugModule("codec:format:types");
 
 import BN from "bn.js";
 
-import * as Common from "@truffle/codec/common";
+import { ContractKind, Location, Mutability } from "@truffle/codec/common";
 
-export type Type = UintType | IntType | BoolType | BytesType | AddressType
-  | FixedType | UfixedType | StringType | ArrayType | MappingType | FunctionType
-  | StructType | EnumType | ContractType | MagicType | TupleType;
+export type Type =
+  | UintType
+  | IntType
+  | BoolType
+  | BytesType
+  | AddressType
+  | FixedType
+  | UfixedType
+  | StringType
+  | ArrayType
+  | MappingType
+  | FunctionType
+  | StructType
+  | EnumType
+  | ContractType
+  | MagicType
+  | TupleType;
 
 export interface UintType {
   typeClass: "uint";
@@ -51,7 +65,7 @@ export interface BytesTypeStatic {
 export interface BytesTypeDynamic {
   typeClass: "bytes";
   kind: "dynamic";
-  location?: Common.Location;
+  location?: Location;
   typeHint?: string;
 }
 
@@ -71,7 +85,7 @@ export interface AddressTypeGeneral {
 
 export interface StringType {
   typeClass: "string";
-  location?: Common.Location;
+  location?: Location;
   typeHint?: string;
 }
 
@@ -96,7 +110,7 @@ export interface ArrayTypeStatic {
   kind: "static";
   baseType: Type;
   length: BN;
-  location?: Common.Location;
+  location?: Location;
   typeHint?: string;
 }
 
@@ -104,12 +118,19 @@ export interface ArrayTypeDynamic {
   typeClass: "array";
   kind: "dynamic";
   baseType: Type;
-  location?: Common.Location;
+  location?: Location;
   typeHint?: string;
 }
 
-export type ElementaryType = UintType | IntType | BoolType | BytesType | FixedType
-  | UfixedType | AddressType | StringType;
+export type ElementaryType =
+  | UintType
+  | IntType
+  | BoolType
+  | BytesType
+  | FixedType
+  | UfixedType
+  | AddressType
+  | StringType;
 
 export interface MappingType {
   typeClass: "mapping";
@@ -123,19 +144,21 @@ export type FunctionType = FunctionInternalType | FunctionExternalType;
 export interface FunctionInternalType {
   typeClass: "function";
   visibility: "internal";
-  mutability: Common.Mutability;
+  mutability: Mutability;
   inputParameterTypes: Type[];
   outputParameterTypes: Type[];
   //we do not presently support bound functions
 }
 
-export type FunctionExternalType = FunctionExternalTypeSpecific | FunctionExternalTypeGeneral;
+export type FunctionExternalType =
+  | FunctionExternalTypeSpecific
+  | FunctionExternalTypeGeneral;
 
 export interface FunctionExternalTypeSpecific {
   typeClass: "function";
   visibility: "external";
   kind: "specific";
-  mutability: Common.Mutability;
+  mutability: Mutability;
   inputParameterTypes: Type[];
   outputParameterTypes: Type[];
   //we do not presently support bound functions
@@ -150,7 +173,11 @@ export interface FunctionExternalTypeGeneral {
 }
 
 export type ContractDefinedType = StructTypeLocal | EnumTypeLocal;
-export type UserDefinedType = ContractDefinedType | ContractTypeNative | StructTypeGlobal | EnumTypeGlobal;
+export type UserDefinedType =
+  | ContractDefinedType
+  | ContractTypeNative
+  | StructTypeGlobal
+  | EnumTypeGlobal;
 
 /**
  * Structs may be local (defined in a contract) or global (defined outside of any contract);
@@ -177,7 +204,7 @@ export interface StructTypeLocal {
    * these should be in order
    */
   memberTypes?: NameTypePair[];
-  location?: Common.Location;
+  location?: Location;
 }
 
 export interface StructTypeGlobal {
@@ -192,7 +219,7 @@ export interface StructTypeGlobal {
    * these should be in order
    */
   memberTypes?: NameTypePair[];
-  location?: Common.Location;
+  location?: Location;
 }
 
 export interface OptionallyNamedType {
@@ -255,7 +282,7 @@ export interface ContractTypeNative {
    */
   id: string;
   typeName: string;
-  contractKind?: Common.ContractKind;
+  contractKind?: ContractKind;
   /**
    * Indicates whether contract has payable fallback function
    */
@@ -268,7 +295,7 @@ export interface ContractTypeForeign {
   typeClass: "contract";
   kind: "foreign";
   typeName: string;
-  contractKind?: Common.ContractKind;
+  contractKind?: ContractKind;
   /**
    * Indicates whether contract has payable fallback function
    */
@@ -286,13 +313,211 @@ export interface MagicType {
   //introduce such complexity here, especially as this type is basically just
   //for the debugger
   memberTypes?: {
-    [field: string]: Type
+    [field: string]: Type;
   };
   //may have more optional fields defined in the future
 }
 
-export type ReferenceType = ArrayType | MappingType | StructType | StringType | BytesTypeDynamic;
+export type ReferenceType =
+  | ArrayType
+  | MappingType
+  | StructType
+  | StringType
+  | BytesTypeDynamic;
 
 export interface TypesById {
   [id: string]: UserDefinedType;
-};
+}
+
+function isUserDefinedType(anyType: Type): anyType is UserDefinedType {
+  const userDefinedTypes = ["contract", "enum", "struct"];
+  return userDefinedTypes.includes(anyType.typeClass);
+}
+
+export function isReferenceType(anyType: Type): anyType is ReferenceType {
+  const alwaysReferenceTypes = ["array", "mapping", "struct", "string"];
+  if (alwaysReferenceTypes.includes(anyType.typeClass)) {
+    return true;
+  } else if (anyType.typeClass === "bytes") {
+    return anyType.kind === "dynamic";
+  } else {
+    return false;
+  }
+}
+
+//one could define a counterpart function that stripped all unnecessary information
+//from the type object, but at the moment I see no need for that
+export function fullType(basicType: Type, userDefinedTypes: TypesById): Type {
+  if (!isUserDefinedType(basicType)) {
+    return basicType;
+  }
+  let id = basicType.id;
+  let storedType = userDefinedTypes[id];
+  if (!storedType) {
+    return basicType;
+  }
+  let returnType: Type = { ...basicType, ...storedType };
+  if (isReferenceType(basicType) && basicType.location !== undefined) {
+    returnType = specifyLocation(returnType, basicType.location);
+  }
+  return returnType;
+}
+
+//the location argument here always forces, so passing undefined *will* force undefined
+export function specifyLocation(
+  dataType: Type,
+  location: Location | undefined
+): Type {
+  if (isReferenceType(dataType)) {
+    switch (dataType.typeClass) {
+      case "string":
+      case "bytes":
+        return { ...dataType, location };
+      case "array":
+        return {
+          ...dataType,
+          location,
+          baseType: specifyLocation(dataType.baseType, location)
+        };
+      case "mapping":
+        let newLocation =
+          location === "storage" ? ("storage" as "storage") : undefined;
+        return {
+          ...dataType,
+          location: newLocation,
+          valueType: specifyLocation(dataType.valueType, newLocation)
+        };
+      case "struct":
+        let returnType = { ...dataType, location };
+        if (returnType.memberTypes) {
+          returnType.memberTypes = returnType.memberTypes.map(
+            ({ name: memberName, type: memberType }) => ({
+              name: memberName,
+              type: specifyLocation(memberType, location)
+            })
+          );
+        }
+        return returnType;
+    }
+  } else {
+    return dataType;
+  }
+}
+
+//NOTE: the following two functions might not be exactly right for weird internal stuff,
+//or for ABI-only stuff.  (E.g. for internal stuff sometimes it records whether things
+//are pointers or not??  we don't track that so we can't recreate that)
+//But what can you do.
+
+export function typeString(dataType: Type): string {
+  let baseString = typeStringWithoutLocation(dataType);
+  if (isReferenceType(dataType) && dataType.location) {
+    return baseString + " " + dataType.location;
+  } else {
+    return baseString;
+  }
+}
+
+export function typeStringWithoutLocation(dataType: Type): string {
+  switch (dataType.typeClass) {
+    case "uint":
+      return dataType.typeHint || `uint${dataType.bits}`;
+    case "int":
+      return dataType.typeHint || `int${dataType.bits}`;
+    case "bool":
+      return dataType.typeHint || "bool";
+    case "bytes":
+      if (dataType.typeHint) {
+        return dataType.typeHint;
+      }
+      switch (dataType.kind) {
+        case "dynamic":
+          return "bytes";
+        case "static":
+          return `bytes${dataType.length}`;
+      }
+    case "address":
+      switch (dataType.kind) {
+        case "general":
+          return dataType.typeHint || "address"; //I guess?
+        case "specific":
+          return dataType.payable ? "address payable" : "address";
+      }
+    case "string":
+      return dataType.typeHint || "string";
+    case "fixed":
+      return dataType.typeHint || `fixed${dataType.bits}x${dataType.places}`;
+    case "ufixed":
+      return dataType.typeHint || `ufixed${dataType.bits}x${dataType.places}`;
+    case "array":
+      if (dataType.typeHint) {
+        return dataType.typeHint;
+      }
+      switch (dataType.kind) {
+        case "dynamic":
+          return `${typeStringWithoutLocation(dataType.baseType)}[]`;
+        case "static":
+          return `${typeStringWithoutLocation(dataType.baseType)}[${
+            dataType.length
+          }]`;
+      }
+    case "mapping":
+      return `mapping(${typeStringWithoutLocation(
+        dataType.keyType
+      )} => ${typeStringWithoutLocation(dataType.valueType)})`;
+    case "struct":
+    case "enum":
+      //combining these cases for simplicity
+      switch (dataType.kind) {
+        case "local":
+          return `${dataType.typeClass} ${dataType.definingContractName}.${
+            dataType.typeName
+          }`;
+        case "global": //WARNING, SPECULATIVE
+          return `${dataType.typeClass} ${dataType.typeName}`;
+      }
+    case "tuple":
+      return (
+        dataType.typeHint ||
+        "tuple(" +
+          dataType.memberTypes
+            .map(memberType => typeString(memberType.type))
+            .join(",") +
+          ")"
+      ); //note that we do include location and do not put spaces
+    case "contract":
+      return dataType.contractKind + " " + dataType.typeName;
+    case "magic":
+      //no, this is not transposed!
+      const variableNames = {
+        message: "msg",
+        transaction: "tx",
+        block: "block"
+      };
+      return variableNames[dataType.variable];
+    case "function":
+      let visibilityString: string;
+      switch (dataType.visibility) {
+        case "external":
+          if (dataType.kind === "general") {
+            if (dataType.typeHint) {
+              return dataType.typeHint;
+            } else {
+              return "function external"; //I guess???
+            }
+          }
+          visibilityString = " external"; //note the deliberate space!
+          break;
+        case "internal":
+          visibilityString = "";
+          break;
+      }
+      let mutabilityString =
+        dataType.mutability === "nonpayable" ? " " + dataType.mutability : ""; //again, note the deliberate space
+      let inputList = dataType.inputParameterTypes.map(typeString).join(","); //note that we do include location, and do not put spaces
+      let outputList = dataType.outputParameterTypes.map(typeString).join(",");
+      let inputString = `function(${inputList})`;
+      let outputString = outputList === "" ? "" : ` returns (${outputList})`; //again, note the deliberate space
+      return inputString + mutabilityString + visibilityString + outputString;
+  }
+}

@@ -4,7 +4,4 @@ export { DefinitionToAbi };
 import * as Wrap from "./wrap";
 export { Wrap };
 
-import * as TypeUtils from "./datatype";
-export { TypeUtils };
-
 export * from "./abify";

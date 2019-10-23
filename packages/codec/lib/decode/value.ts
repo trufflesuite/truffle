@@ -3,7 +3,6 @@ const debug = debugModule("codec:decode:value");
 
 import read from "@truffle/codec/read";
 import * as Conversion from "@truffle/codec/conversion";
-import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
 import utf8 from "utf8";
 import * as Contexts from "@truffle/codec/contexts";
@@ -173,7 +172,7 @@ export default function* decodeValue(
         };
       }
       const fullType = <Format.Types.ContractType>(
-        TypeUtils.fullType(dataType, info.userDefinedTypes)
+        Format.Types.fullType(dataType, info.userDefinedTypes)
       );
       const contractValueInfo = yield* decodeContract(bytes, info);
       return {
@@ -299,7 +298,7 @@ export default function* decodeValue(
     case "enum": {
       const numeric = Conversion.toBN(bytes);
       const fullType = <Format.Types.EnumType>(
-        TypeUtils.fullType(dataType, info.userDefinedTypes)
+        Format.Types.fullType(dataType, info.userDefinedTypes)
       );
       if (!fullType.options) {
         let error = {

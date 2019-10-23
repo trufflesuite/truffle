@@ -4,7 +4,6 @@ const debug = debugModule("codec:decode:abi");
 import BN from "bn.js";
 import read from "@truffle/codec/read";
 import * as Conversion from "@truffle/codec/conversion";
-import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Format from "@truffle/codec/format";
 import decodeValue from "./value";
 import * as Pointer from "@truffle/codec/pointer";
@@ -21,7 +20,10 @@ export default function* decodeAbi(
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
-  if (TypeUtils.isReferenceType(dataType) || dataType.typeClass === "tuple") {
+  if (
+    Format.Types.isReferenceType(dataType) ||
+    dataType.typeClass === "tuple"
+  ) {
     //I don't want tuples to be considered a reference type, but it makes sense
     //to group them for this purpose
     let dynamic: boolean;
@@ -470,7 +472,10 @@ function* decodeAbiStructByPosition(
       };
     }
     let storedMemberType = storedType.memberTypes[index].type;
-    let memberType = TypeUtils.specifyLocation(storedMemberType, typeLocation);
+    let memberType = Format.Types.specifyLocation(
+      storedMemberType,
+      typeLocation
+    );
 
     decodedMembers.push({
       name: memberName,

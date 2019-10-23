@@ -5,7 +5,6 @@ import decodeValue from "./value";
 import read from "@truffle/codec/read";
 import * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
-import * as TypeUtils from "@truffle/codec/utils/datatype";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
@@ -16,7 +15,7 @@ export default function* decodeTopic(
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
-  if (TypeUtils.isReferenceType(dataType)) {
+  if (Format.Types.isReferenceType(dataType)) {
     //we cannot decode reference types "stored" in topics; we have to just return an error
     let bytes: Uint8Array = yield* read(pointer, info.state);
     let raw: string = Conversion.toHexString(bytes);

@@ -2,7 +2,6 @@ import debugModule from "debug";
 const debug = debugModule("codec:format:abify");
 
 import * as Format from "@truffle/codec/format";
-import * as TypeUtils from "./datatype";
 import * as Common from "@truffle/codec/common";
 import { CalldataDecoding, LogDecoding } from "@truffle/codec/types";
 import BN from "bn.js";
@@ -27,7 +26,7 @@ export function abifyType(
       return {
         typeClass: "address",
         kind: "general",
-        typeHint: TypeUtils.typeString(dataType)
+        typeHint: Format.Types.typeString(dataType)
       };
     case "function":
       switch (dataType.visibility) {
@@ -36,7 +35,7 @@ export function abifyType(
             typeClass: "function",
             visibility: "external",
             kind: "general",
-            typeHint: TypeUtils.typeString(dataType)
+            typeHint: Format.Types.typeString(dataType)
           };
         case "internal": //these don't go in the ABI
           return undefined;
@@ -45,10 +44,10 @@ export function abifyType(
     //the complex cases: struct & enum
     case "struct": {
       const fullType = <Format.Types.StructType>(
-        TypeUtils.fullType(dataType, userDefinedTypes)
+        Format.Types.fullType(dataType, userDefinedTypes)
       );
       if (!fullType) {
-        let typeToDisplay = TypeUtils.typeString(dataType);
+        let typeToDisplay = Format.Types.typeString(dataType);
         throw new Common.UnknownUserDefinedTypeError(
           dataType.id,
           typeToDisplay
@@ -62,16 +61,16 @@ export function abifyType(
       );
       return {
         typeClass: "tuple",
-        typeHint: TypeUtils.typeString(fullType),
+        typeHint: Format.Types.typeString(fullType),
         memberTypes
       };
     }
     case "enum": {
       const fullType = <Format.Types.EnumType>(
-        TypeUtils.fullType(dataType, userDefinedTypes)
+        Format.Types.fullType(dataType, userDefinedTypes)
       );
       if (!fullType) {
-        let typeToDisplay = TypeUtils.typeString(dataType);
+        let typeToDisplay = Format.Types.typeString(dataType);
         throw new Common.UnknownUserDefinedTypeError(
           dataType.id,
           typeToDisplay
@@ -82,14 +81,14 @@ export function abifyType(
       return {
         typeClass: "uint",
         bits,
-        typeHint: TypeUtils.typeString(fullType)
+        typeHint: Format.Types.typeString(fullType)
       };
     }
     //finally: arrays
     case "array":
       return {
         ...dataType,
-        typeHint: TypeUtils.typeString(dataType),
+        typeHint: Format.Types.typeString(dataType),
         baseType: abifyType(dataType.baseType, userDefinedTypes)
       };
     //default case: just leave as-is
@@ -217,7 +216,7 @@ export function abifyResult(
               numericValue = coercedResult.error.rawAsBN.clone();
               break;
             default:
-              let typeToDisplay = TypeUtils.typeString(result.type);
+              let typeToDisplay = Format.Types.typeString(result.type);
               throw new Common.UnknownUserDefinedTypeError(
                 coercedResult.type.id,
                 typeToDisplay
