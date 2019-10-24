@@ -23,7 +23,7 @@
     "async": "2.6.1",
     "emittery": "^0.4.0",
     "node-dir": "0.1.17",
-    "web3": "1.2.1"
+    "web3": "1.2.2"
   },
   "devDependencies": {
     "mocha": "5.2.0",

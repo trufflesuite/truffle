@@ -30,7 +30,7 @@
     "lodash.isequal": "^4.5.0",
     "lodash.merge": "^4.6.1",
     "utf8": "^3.0.0",
-    "web3": "1.2.1"
+    "web3": "1.2.2"
   },
   "peerDependencies": {
     "truffle": "^5.0.14"
