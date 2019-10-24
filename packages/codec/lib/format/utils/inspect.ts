@@ -297,7 +297,7 @@ function formatCircular(loopLength: number, options: InspectOptions): string {
   return options.stylize(`[Circular (=up ${this.loopLength})]`, "special");
 }
 
-export function enumFullName(value: Format.Values.EnumValue): string {
+function enumFullName(value: Format.Values.EnumValue): string {
   switch (value.type.kind) {
     case "local":
       return `${value.type.definingContractName}.${value.type.typeName}.${value.value.name}`;
