@@ -52,7 +52,6 @@ module.exports = {
         .getBlockNumber()
         .then(() => {
           console.log("> The test was successful!");
-          // Cancel the setTimeout check above
           clearTimeout(noResponseFromNetworkCall);
           resolve(true);
         })
@@ -61,7 +60,6 @@ module.exports = {
             "> Something went wrong while attempting to connect " +
               "to the network."
           );
-          // Cancel the setTimeout check above
           clearTimeout(noResponseFromNetworkCall);
           reject(error);
         });
