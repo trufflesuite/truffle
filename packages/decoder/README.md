@@ -107,7 +107,7 @@ Even if the `Result` for the array (mapping, struct) as a whole has kind
 
 3. `value`: As mentioned, this is included when `kind` is equal to `"value"`.
 It contains information about the actual decoded value.  See
-[[Format.Values|`FOrmat.Values`]] for more information.
+[[Format.Values|`Format.Values`]] for more information.
 
 4. `error`: The alternative to `value`.  Generally includes information about
 the raw data that led to the error.  See [[Format.Errors|`Format.Errors`]] for
