@@ -31,6 +31,7 @@ import {
 /**
  * The ContractDecoder class.  Spawns the [[ContractInstanceDecoder]] class.
  * Also, decodes transactions and logs.  See below for a method listing.
+ * @category Decoder
  */
 export default class ContractDecoder {
   private web3: Web3;
@@ -220,6 +221,7 @@ interface ContractInfo {
  * ContractInstanceDecoder has that information and will make use of it, making
  * it possible for it to decode transactions sent to this instance, or logs
  * originating from it, even if the deployedBytecode field is misssing.
+ * @category Decoder
  */
 export class ContractInstanceDecoder {
   private web3: Web3;

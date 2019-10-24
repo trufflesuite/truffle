@@ -8,14 +8,25 @@
  * @module @truffle/decoder
  */ /** */
 
-import * as Decoders from "./decoders";
-export { Decoders };
+import {
+  ContractDecoder,
+  ContractInstanceDecoder,
+  WireDecoder
+} from "./decoders";
+export { ContractDecoder, ContractInstanceDecoder, WireDecoder };
 
-import * as Errors from "./errors";
-export { Errors };
+export {
+  ContractBeingDecodedHasNoNodeError,
+  ContractAllocationFailedError
+} from "./errors";
 
-import * as Types from "./types";
-export { Types };
+export {
+  ContractState,
+  StateVariable,
+  DecodedTransaction,
+  DecodedLog,
+  EventOptions
+} from "./types";
 
 import { Provider } from "web3/providers";
 import { ContractObject } from "@truffle/contract-schema/spec";
@@ -34,7 +45,7 @@ export async function forContractInstance(
   relevantContracts: ContractObject[],
   provider: Provider,
   address?: string
-): Promise<Decoders.ContractInstanceDecoder> {
+): Promise<ContractInstanceDecoder> {
   let contractDecoder = await forContract(
     contract,
     relevantContracts,
@@ -56,12 +67,12 @@ export async function forContract(
   contract: ContractObject,
   relevantContracts: ContractObject[],
   provider: Provider
-): Promise<Decoders.ContractDecoder> {
+): Promise<ContractDecoder> {
   let contracts = relevantContracts.includes(contract)
     ? relevantContracts
     : [contract, ...relevantContracts];
   let wireDecoder = await forProject(contracts, provider);
-  let contractDecoder = new Decoders.ContractDecoder(contract, wireDecoder);
+  let contractDecoder = new ContractDecoder(contract, wireDecoder);
   await contractDecoder.init();
   return contractDecoder;
 }
@@ -74,8 +85,8 @@ export async function forContract(
 export async function forProject(
   contracts: ContractObject[],
   provider: Provider
-): Promise<Decoders.WireDecoder> {
-  return new Decoders.WireDecoder(contracts, provider);
+): Promise<WireDecoder> {
+  return new WireDecoder(contracts, provider);
 }
 
 /**
@@ -85,9 +96,9 @@ export async function forProject(
  */
 export async function forContractWithDecoder(
   contract: ContractObject,
-  decoder: Decoders.WireDecoder
-): Promise<Decoders.ContractDecoder> {
-  let contractDecoder = new Decoders.ContractDecoder(contract, decoder);
+  decoder: WireDecoder
+): Promise<ContractDecoder> {
+  let contractDecoder = new ContractDecoder(contract, decoder);
   await contractDecoder.init();
   return contractDecoder;
 }

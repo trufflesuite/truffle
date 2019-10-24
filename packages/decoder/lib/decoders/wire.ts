@@ -26,6 +26,7 @@ import { Provider } from "web3/providers";
 
 /**
  * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.
+ * @category Decoder
  */
 export default class WireDecoder {
   private web3: Web3;

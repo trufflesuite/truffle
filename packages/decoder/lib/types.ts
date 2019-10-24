@@ -12,6 +12,7 @@ import { Log } from "web3/types";
 
 /**
  * This type represents the state of a contract aside from its storage.
+ * @category Results
  */
 export interface ContractState {
   /**
@@ -34,6 +35,7 @@ export interface ContractState {
 
 /**
  * This type represents one of the decoded contract's state variables.
+ * @category Results
  */
 export interface StateVariable {
   /**
@@ -56,6 +58,7 @@ export interface StateVariable {
  * This type represents a web3 Transaction object that has been decoded.
  * Note that it extends the Transaction type and just adds an additional field
  * with the decoding.
+ * @category Results
  */
 export interface DecodedTransaction extends Transaction {
   /**
@@ -69,6 +72,7 @@ export interface DecodedTransaction extends Transaction {
  * This type represents a web3 Log object that has been decoded.
  * Note that it extends the Log type and just adds an additional field
  * with the decoding.
+ * @category Results
  */
 export interface DecodedLog extends Log {
   /**
@@ -122,6 +126,7 @@ export interface ContractAndContexts {
 /**
  * The type of the options parameter to events().  This type will be expanded in the future
  * as more filtering options are added.
+ * @category Configurations
  */
 export interface EventOptions {
   /**
