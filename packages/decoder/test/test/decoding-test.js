@@ -54,7 +54,7 @@ contract("DecodingSample", _accounts => {
     //   })
     // );
 
-    assert.equal(initialState.name, "DecodingSample");
+    assert.equal(initialState.class.typeName, "DecodingSample");
     //before we move on to the main section, we'll test the defining classes
     //of the first two variables
     assert.equal(initialVariables[0].class.typeName, "DecodingSampleParent");

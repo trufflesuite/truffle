@@ -9,6 +9,7 @@ export class ContractBeingDecodedHasNoNodeError extends Error {
   constructor(contractName: string) {
     const message = `Contract ${contractName} does not appear to have been compiled with Solidity (cannot locate contract node)`;
     super(message);
+    this.contractName = contractName;
     this.name = "ContractBeingDecodedHasNoNodeError";
   }
 }
@@ -27,6 +28,25 @@ export class ContractAllocationFailedError extends Error {
   public contractName: string;
   constructor(id: number, contractName: string) {
     super(`No allocation found for contract ID ${id} (${contractName})`);
+    this.id = id;
+    this.contractName = contractName;
     this.name = "ContractAllocationFailedError";
+  }
+}
+
+/**
+ * This error indicates that an invalid address was passed to
+ * [[ContractDecoder.forInstance]] or [[forContractInstance]].  Valid addresses
+ * are those that web3 accepts; i.e., either those with correct checksums, or
+ * those that are all-lowercase or all-uppercase to deliberately circumvent the
+ * checksum.
+ * @category Exception
+ */
+export class InvalidAddressError extends Error {
+  public address: string;
+  constructor(address: string) {
+    super(`Invalid address ${address}`);
+    this.address = address;
+    this.name = "InvalidAddressError";
   }
 }

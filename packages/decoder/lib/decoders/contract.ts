@@ -25,7 +25,8 @@ import { BlockType, Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
 import {
   ContractBeingDecodedHasNoNodeError,
-  ContractAllocationFailedError
+  ContractAllocationFailedError,
+  InvalidAddressError
 } from "../errors";
 
 /**
@@ -254,11 +255,14 @@ export class ContractInstanceDecoder {
    */
   constructor(contractDecoder: ContractDecoder, address?: string) {
     this.contractDecoder = contractDecoder;
-    if (address !== undefined) {
-      this.contractAddress = address;
-    }
     this.wireDecoder = this.contractDecoder.getWireDecoder();
     this.web3 = this.wireDecoder.getWeb3();
+    if (address !== undefined) {
+      if (!this.web3.utils.isAddress(address)) {
+        throw new InvalidAddressError(address);
+      }
+      this.contractAddress = this.web3.utils.toChecksumAddress(address);
+    }
 
     this.referenceDeclarations = this.wireDecoder.getReferenceDeclarations();
     this.userDefinedTypes = this.wireDecoder.getUserDefinedTypes();
@@ -398,7 +402,8 @@ export class ContractInstanceDecoder {
     block: BlockType = "latest"
   ): Promise<DecoderTypes.ContractState> {
     return {
-      name: this.contract.contractName,
+      class: Contexts.Utils.contextToType(this.context),
+      address: this.contractAddress,
       code: this.contractCode,
       balanceAsBN: new BN(
         await this.web3.eth.getBalance(this.contractAddress, block)
