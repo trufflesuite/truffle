@@ -1,9 +1,9 @@
-import gql from "graphql-tag";
 import { generateId, Migrations, WorkspaceClient } from './utils';
 
-import { AddSource } from './source.spec';
-import { AddBytecode } from './bytecode.spec';
-import { AddCompilation } from './compilation.spec';
+import { AddSource } from './source.graphql';
+import { AddBytecode } from './bytecode.graphql';
+import { AddCompilation } from './compilation.graphql';
+import { AddContracts, GetContract, GetAllContracts } from './contract.graphql';
 
 describe("Contract", () => {
   let wsClient;
@@ -93,69 +93,23 @@ describe("Contract", () => {
 
   });
 
+  test("can retrieve all contracts", async() => {
+    const getAllContractsResult = await wsClient.execute(GetAllContracts);
+
+    expect(getAllContractsResult).toHaveProperty("contracts");
+
+    const { contracts } = getAllContractsResult;
+    expect(contracts).toHaveProperty("length");
+
+    const firstContract = contracts[0];
+
+    expect(firstContract).toHaveProperty("name");
+    expect(firstContract).toHaveProperty("sourceContract");
+    expect(firstContract).toHaveProperty("abi");
+    expect(firstContract).toHaveProperty("abi.json");
+    expect(firstContract).toHaveProperty("compilation");
+    expect(firstContract).toHaveProperty("compilation.compiler.version");
+    expect(firstContract).toHaveProperty("sourceContract.source.sourcePath");
+  });
+
 });
-
-export const GetContract = gql`
-  query getContract($id:ID!){
-      contract(id:$id) {
-        name
-        abi {
-          json
-        }
-        sourceContract {
-          source {
-            contents
-          }
-          ast {
-            json
-          }
-        }
-      }
-  }
-`;
-
-
-export const AddContracts = gql`
-  mutation addContracts($contractName: String, $compilationId: ID!, $bytecodeId:ID!, $abi:String!) {
-    contractsAdd(input: {
-      contracts: [{
-        name: $contractName
-        abi: {
-          json: $abi
-        }
-        compilation: {
-          id: $compilationId
-        }
-        sourceContract: {
-          index: 0
-        }
-        constructor: {
-          createBytecode: {
-            id: $bytecodeId
-          }
-        }
-      }]
-    }) {
-      contracts {
-        id
-        name
-        sourceContract {
-          name
-          source {
-            contents
-          }
-          ast {
-            json
-          }
-        }
-        constructor {
-          createBytecode {
-            bytes
-          }
-        }
-      }
-    }
-  }
-`;
-
-

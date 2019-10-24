@@ -28,6 +28,11 @@
     "prepare": "yarn build",
     "build": "./bin/build",
     "start": "ts-node-dev -r tsconfig-paths/register ./bin/server",
+    "start:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server",
+
+    "start:drizzle": "ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/drizzle-box",
+    "start:drizzle:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/drizzle-box",
+
     "test": "jest --verbose --detectOpenHandles"
   },
   "bugs": {
@@ -58,8 +63,9 @@
     "leveldown": "^5.2.0",
     "module-alias": "^2.1.0",
     "pascal-case": "^2.0.1",
-    "pouchdb-adapter-memory": "^7.1.1",
     "pouchdb": "7.1.1",
+    "pouchdb-adapter-memory": "^7.1.1",
+    "pouchdb-debug": "^7.1.1",
     "pouchdb-find": "^7.0.0",
     "source-map-support": "^0.5.9",
     "truffle-workflow-compile": "^2.0.12",

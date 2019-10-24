@@ -13,7 +13,6 @@ describe("ContractNames", () => {
   });
 });
 
-
 export const GetContractNames = gql`
   query GetContractNames {
     contractNames

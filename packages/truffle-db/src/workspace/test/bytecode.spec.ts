@@ -1,5 +1,5 @@
-import gql from "graphql-tag";
 import { generateId, Migrations, WorkspaceClient } from './utils';
+import { AddBytecode, GetAllBytecodes, GetBytecode } from './bytecode.graphql';
 
 describe("Bytecode", () => {
   let wsClient;
@@ -41,27 +41,23 @@ describe("Bytecode", () => {
     expect(id).toEqual(expectedId);
     expect(bytes).toEqual(variables.bytes);
   });
+
+  test("can retrieve all bytecodes", async() => {
+    const executionResult = await wsClient.execute(GetAllBytecodes);
+    expect(executionResult).toHaveProperty("bytecodes");
+
+    const { bytecodes } = executionResult;
+
+    expect(bytecodes).toHaveProperty("length")
+
+    bytecodes.forEach(bc => {
+      expect(bc).toHaveProperty("id");
+      expect(bc).toHaveProperty("bytes");
+      expect(bc).toHaveProperty("linkReferences");
+      expect(bc).toHaveProperty("sourceMap");
+      expect(bc).toHaveProperty("instructions");
+    })
+
+  })
+
 });
-
-export const GetBytecode = gql`
-  query GetBytecode($id: ID!) {
-    bytecode(id: $id) {
-      id
-      bytes
-    }
-  }
-`
-
-export const AddBytecode = gql`
-  mutation AddBytecode($bytes: Bytes!) {
-    bytecodesAdd(input: {
-      bytecodes: [{
-        bytes: $bytes
-      }]
-    }) {
-      bytecodes {
-        id
-      }
-    }
-  }
-`

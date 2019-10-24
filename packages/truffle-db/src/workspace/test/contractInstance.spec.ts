@@ -1,7 +1,7 @@
-import gql from "graphql-tag";
 import { generateId, Migrations, WorkspaceClient } from './utils';
 
-import { AddNetworks } from './network.spec';
+import { AddNetworks } from './network.graphql';
+import { AddContractInstances, GetContractInstance, GetAllContractInstances } from './contractInstance.graphql';
 
 describe("Contract Instance", () => {
   const wsClient = new WorkspaceClient();
@@ -77,81 +77,24 @@ describe("Contract Instance", () => {
     const { networkId } = network;
     expect(networkId).toEqual(addNetworkResult.networksAdd.networks[0].networkId);
   });
+
+  test("can retrieve all contractInstances", async() => {
+    const getAllContractInstancesResult = await wsClient.execute(GetAllContractInstances);
+    expect(getAllContractInstancesResult).toHaveProperty("contractInstances");
+
+    const { contractInstances } = getAllContractInstancesResult;
+
+    expect(contractInstances).toHaveProperty("length");
+
+    const firstContractInstance = contractInstances[0];
+
+    expect(firstContractInstance).toHaveProperty("id");
+    expect(firstContractInstance).toHaveProperty("address");
+
+    expect(firstContractInstance).toHaveProperty("network");
+    expect(firstContractInstance).toHaveProperty("network.name");
+    expect(firstContractInstance).toHaveProperty("network.networkId");
+
+    expect(firstContractInstance).toHaveProperty("contract");
+  });
 });
-
-export const GetContractInstance = gql`
-  query GetContractInstance($id: ID!) {
-    contractInstance(id: $id) {
-      address
-      network {
-        networkId
-      }
-      contract {
-        name
-      }
-      creation {
-        transactionHash
-        constructor {
-          createBytecode {
-            bytes
-          }
-        }
-      }
-    }
-  }
-`;
-
-export const AddContractInstances = gql`
-  input ContractInstanceNetworkInput {
-      id: ID!
-    }
-
-    input ContractInstanceContractInput {
-      id: ID!
-    }
-
-    input ContractInstanceCreationConstructorBytecodeInput {
-      id: ID!
-    }
-
-    input ContractInstanceCreationConstructorInput {
-      createBytecode: ContractInstanceCreationConstructorBytecodeInput!
-    }
-
-    input ContractInstanceCreationInput {
-      transactionHash: TransactionHash!
-      constructor: ContractInstanceCreationConstructorInput!
-    }
-
-    input ContractInstanceInput {
-      address: Address!
-      network: ContractInstanceNetworkInput!
-      creation: ContractInstanceCreationInput
-      contract: ContractInstanceContractInput
-    }
-  mutation AddContractInstances($contractInstances: [ContractInstanceInput!]!) {
-    contractInstancesAdd(input: {
-      contractInstances: $contractInstances
-    }) {
-      contractInstances {
-        address
-        network {
-          networkId
-        }
-        contract {
-          name
-        }
-        creation {
-          transactionHash
-          constructor {
-            createBytecode {
-              bytes
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-

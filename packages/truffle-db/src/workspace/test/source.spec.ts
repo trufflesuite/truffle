@@ -1,5 +1,5 @@
-import gql from "graphql-tag";
 import { generateId, Migrations, WorkspaceClient } from './utils';
+import { AddSource, GetSource, GetAllSources } from './source.graphql'
 
 describe("Source", () => {
   let wsClient, addSourceResult
@@ -52,32 +52,19 @@ describe("Source", () => {
 
   });
 
+  test("can retrieve all sources", async() => {
+    const getAllSourcesResult = await wsClient.execute(GetAllSources);
+    expect(getAllSourcesResult).toHaveProperty("sources");
+
+    const { sources } = getAllSourcesResult;
+    expect(sources).toHaveProperty("length");
+
+    const firstSource = sources[0];
+
+    expect(firstSource).toHaveProperty("id");
+    expect(firstSource).toHaveProperty("ast");
+    expect(firstSource).toHaveProperty("contents");
+    expect(firstSource).toHaveProperty("sourcePath");
+  });
+
 });
-
-export const GetSource = gql`
-  query GetSource($id: ID!) {
-    source(id: $id) {
-      id
-      contents
-      sourcePath
-    }
-  }
-`
-
-export const AddSource = gql`
-  mutation AddSource($contents: String!, $sourcePath: String) {
-    sourcesAdd(input: {
-      sources: [
-         {
-           contents: $contents,
-           sourcePath: $sourcePath,
-         }
-      ]
-    }) {
-      sources {
-        id
-      }
-    }
-  }
-`
-
