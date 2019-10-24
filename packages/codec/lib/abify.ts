@@ -278,15 +278,6 @@ export function abifyResult(
   }
 }
 
-/* the following functions are not used anywhere in our code at present.
- * they are intended for external use -- the idea is that if you don't
- * like having to deal with the possibility of having the decoder return
- * either a full-mode or an abi-mode decoding, well, you can always
- * abify to ensure you get an abi-mode decoding.
- * (if you want to ensure you get a full-mode decoding... well, you can't,
- * but you can, uh, throw an exception if you don't, I guess.)
- */
-
 /** @category ABIfication */
 export function abifyCalldataDecoding(
   decoding: CalldataDecoding,

@@ -24,7 +24,6 @@ export default function* read(
       return bytes.readBytes(state.calldata, pointer.start, pointer.length);
 
     case "eventdata":
-      //similarly with eventdata
       return bytes.readBytes(state.eventdata, pointer.start, pointer.length);
 
     case "stackliteral":
