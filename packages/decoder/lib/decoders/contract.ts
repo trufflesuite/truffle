@@ -9,12 +9,12 @@ import {
   Format,
   Conversion,
   CalldataDecoding,
+  Storage,
+  Contexts,
+  Pointer,
   LogDecoding
 } from "@truffle/codec";
 import * as Utils from "../utils";
-import * as Storage from "@truffle/codec/storage";
-import * as Contexts from "@truffle/codec/contexts";
-import * as Pointer from "@truffle/codec/pointer";
 import * as Allocation from "@truffle/codec/allocate/types";
 import * as DecoderTypes from "../types";
 import Web3 from "web3";
@@ -23,10 +23,6 @@ import BN from "bn.js";
 import WireDecoder from "./wire";
 import { BlockType, Transaction } from "web3/eth/types";
 import { Log } from "web3/types";
-import {
-  getStorageAllocations,
-  storageSize
-} from "@truffle/codec/allocate/storage";
 import {
   ContractBeingDecodedHasNoNodeError,
   ContractAllocationFailedError
@@ -82,7 +78,7 @@ export default class ContractDecoder {
 
     this.allocations = this.wireDecoder.getAllocations();
     if (this.contractNode) {
-      this.allocations.storage = getStorageAllocations(
+      this.allocations.storage = Storage.Allocate.getStorageAllocations(
         this.wireDecoder.getReferenceDeclarations(), //redundant stuff will be skipped so this is fine
         { [this.contractNode.id]: this.contractNode },
         this.allocations.storage //existing allocations from wire decoder
@@ -778,7 +774,7 @@ export class ContractInstanceDecoder {
         }
         definition =
           parentDefinition.baseType || parentDefinition.typeName.baseType;
-        let size = storageSize(
+        let size = Storage.Allocate.storageSize(
           definition,
           this.referenceDeclarations,
           this.allocations.storage

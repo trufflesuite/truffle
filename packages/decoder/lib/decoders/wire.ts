@@ -1,33 +1,28 @@
 import debugModule from "debug";
 const debug = debugModule("codec:interface:decoders:wire");
 
-import * as Conversion from "@truffle/codec/conversion";
-import * as Utils from "../utils";
-import * as Abi from "@truffle/codec/abi";
-import * as Ast from "@truffle/codec/ast";
-import * as Contexts from "@truffle/codec/contexts";
-import * as Allocation from "@truffle/codec/allocate/types";
-import * as Evm from "@truffle/codec/evm";
-import * as DecoderTypes from "../types";
-import * as Format from "@truffle/codec/format";
-import Web3 from "web3";
-import { ContractObject } from "@truffle/contract-schema/spec";
-import { Transaction } from "web3/eth/types";
-import { Log } from "web3/types";
-import { Provider } from "web3/providers";
+import * as Codec from "@truffle/codec";
 import {
-  getAbiAllocations,
-  getCalldataAllocations,
-  getEventAllocations
-} from "@truffle/codec/allocate/abi";
-import { getStorageAllocations } from "@truffle/codec/allocate/storage";
-import {
+  Abi,
+  Ast,
+  Evm,
+  Format,
+  Conversion,
+  Contexts,
+  Storage,
   decodeCalldata,
   decodeEvent,
   CalldataDecoding,
   LogDecoding
 } from "@truffle/codec";
-import * as Codec from "@truffle/codec";
+import * as Utils from "../utils";
+import * as Allocation from "@truffle/codec/allocate/types";
+import * as DecoderTypes from "../types";
+import Web3 from "web3";
+import { ContractObject } from "@truffle/contract-schema/spec";
+import { Transaction } from "web3/eth/types";
+import { Log } from "web3/types";
+import { Provider } from "web3/providers";
 
 /**
  * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.
@@ -86,9 +81,8 @@ export default class WireDecoder {
     );
     this.deployedContexts = Object.assign(
       {},
-      ...Object.values(this.contexts).map(
-        context =>
-          !context.isConstructor ? { [context.context]: context } : {}
+      ...Object.values(this.contexts).map(context =>
+        !context.isConstructor ? { [context.context]: context } : {}
       )
     );
 
@@ -128,18 +122,20 @@ export default class WireDecoder {
     debug("allocationInfo: %O", allocationInfo);
 
     this.allocations = {};
-    this.allocations.abi = getAbiAllocations(this.userDefinedTypes);
-    this.allocations.storage = getStorageAllocations(
+    this.allocations.abi = Abi.Allocate.getAbiAllocations(
+      this.userDefinedTypes
+    );
+    this.allocations.storage = Storage.Allocate.getStorageAllocations(
       this.referenceDeclarations,
       {}
     ); //not used by wire decoder itself, but used by contract decoder
-    this.allocations.calldata = getCalldataAllocations(
+    this.allocations.calldata = Abi.Allocate.getCalldataAllocations(
       allocationInfo,
       this.referenceDeclarations,
       this.userDefinedTypes,
       this.allocations.abi
     );
-    this.allocations.event = getEventAllocations(
+    this.allocations.event = Abi.Allocate.getEventAllocations(
       allocationInfo,
       this.referenceDeclarations,
       this.userDefinedTypes,
