@@ -6,12 +6,12 @@ import { soliditySha3 } from "web3-utils";
 import jsonStableStringify from 'json-stable-stringify';
 
 type PouchApi = {
-  bytecodes?: PouchDB.Database,
-  compilations?: PouchDB.Database,
-  contractInstances?: PouchDB.Database,
-  contracts?: PouchDB.Database,
-  networks?: PouchDB.Database
-  sources?: PouchDB.Database
+  bytecodes: PouchDB.Database,
+  compilations: PouchDB.Database,
+  contractInstances: PouchDB.Database,
+  contracts: PouchDB.Database,
+  networks: PouchDB.Database,
+  sources: PouchDB.Database
 };
 
 type IWorkspaceQueryResource = keyof PouchApi
@@ -54,12 +54,11 @@ export class Workspace {
   private ready: Promise<void>;
 
   constructor () {
-    this.dbApi = {}
     PouchDB.plugin(pouchdbDebug);
-
     PouchDB.plugin(PouchDBMemoryAdapter);
     PouchDB.plugin(PouchDBFind);
 
+    this.dbApi = {} as PouchApi;
     for (let resource of Object.keys(resources)) {
       this.dbApi[resource] = new PouchDB(resource, { adapter: "memory" });
     }
