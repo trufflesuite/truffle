@@ -24,7 +24,7 @@ describe("truffle migrate", () => {
 
   describe("when run on the most basic truffle project", () => {
     it("doesn't throw", done => {
-      CommandRunner.run("migrate --network development", config, error => {
+      CommandRunner.run("migrate", config, error => {
         assert(error === undefined, "error should be undefined here");
         done();
       });
