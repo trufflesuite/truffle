@@ -8,7 +8,8 @@
  * have optional fields.  These contain helpful
  * but non-essential information, or information which
  * for technical reasons we can't guarantee we can determine.
- */
+ * @module @truffle/codec
+ */ /** */
 
 import { Types, Values, Errors } from "./common";
 import * as Utils from "./utils";
