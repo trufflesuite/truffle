@@ -33,21 +33,30 @@ export function* decodeVariable(
 }
 
 export function* decodeCalldata(
-  info: Evm.EvmInfo
+  info: Evm.EvmInfo,
+  isConstructor?: boolean //ignored if context! trust context instead if have
 ): Generator<DecoderRequest, CalldataDecoding, Uint8Array> {
   const context = info.currentContext;
   if (context === null) {
     //if we don't know the contract ID, we can't decode
-    return {
-      kind: "unknown" as const,
-      decodingMode: "full" as const,
-      data: Conversion.toHexString(info.state.calldata)
-    };
+    if (isConstructor) {
+      return {
+        kind: "create" as const,
+        decodingMode: "full" as const,
+        bytecode: Conversion.toHexString(info.state.calldata)
+      };
+    } else {
+      return {
+        kind: "unknown" as const,
+        decodingMode: "full" as const,
+        data: Conversion.toHexString(info.state.calldata)
+      };
+    }
   }
   const compiler = context.compiler;
   const contextHash = context.context;
   const contractType = Contexts.Utils.contextToType(context);
-  const isConstructor: boolean = context.isConstructor;
+  isConstructor = context.isConstructor;
   const allocations = info.allocations.calldata;
   let allocation: Allocation.CalldataAllocation;
   let selector: string;
