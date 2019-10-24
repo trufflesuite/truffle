@@ -16,9 +16,13 @@ import { Log } from "web3/types";
  */
 export interface ContractState {
   /**
-   * The name of the contract.
+   * The contract's class, as a Format.Types.ContractType.
    */
-  name: string;
+  class: Format.Types.ContractType;
+  /**
+   * The contract's address, as a checksummed hex string.
+   */
+  address: string;
   /**
    * The contract's balance, in Wei, as a BN.
    */
