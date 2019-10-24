@@ -609,7 +609,10 @@ export class ContractInstanceDecoder {
    *   and say we have a variable `arr` of type `MapStruct[]`, then one could
    *   watch `arr[3].map["hello"]` by calling `watchMappingKey("arr", 3, "map", "hello")`.
    */
-  public watchMappingKey(variable: number | string, ...indices: any[]): void {
+  public async watchMappingKey(
+    variable: number | string,
+    ...indices: any[]
+  ): Promise<void> {
     this.checkAllocationSuccess();
     let slot: Storage.Slot | undefined = this.constructSlot(
       variable,
@@ -646,7 +649,10 @@ export class ContractInstanceDecoder {
    *
    * This function has the same caveats as watchMappingKey.
    */
-  public unwatchMappingKey(variable: number | string, ...indices: any[]): void {
+  public async unwatchMappingKey(
+    variable: number | string,
+    ...indices: any[]
+  ): Promise<void> {
     this.checkAllocationSuccess();
     let slot: Storage.Slot | undefined = this.constructSlot(
       variable,

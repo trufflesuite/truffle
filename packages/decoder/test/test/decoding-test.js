@@ -38,9 +38,9 @@ contract("DecodingSample", _accounts => {
       web3.currentProvider
     );
 
-    decoder.watchMappingKey("varMapping", 2);
-    decoder.watchMappingKey("varMapping", 3);
-    decoder.watchMappingKey("varAddressMapping", address);
+    await decoder.watchMappingKey("varMapping", 2);
+    await decoder.watchMappingKey("varMapping", 3);
+    await decoder.watchMappingKey("varAddressMapping", address);
 
     const initialState = await decoder.state();
     const initialVariables = await decoder.variables();
