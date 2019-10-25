@@ -30,8 +30,13 @@
     "start": "ts-node-dev -r tsconfig-paths/register ./bin/server",
     "start:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server",
 
+    "seed:fixtures": "./scripts/deploy-truffle-fixtures.sh",
+
     "start:drizzle": "ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/drizzle-box",
     "start:drizzle:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/drizzle-box",
+
+    "start:magicsquare": "ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/solidity-magic-square",
+    "start:magicsquare:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/solidity-magic-square",
 
     "test": "jest --verbose --detectOpenHandles"
   },
