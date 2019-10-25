@@ -38,7 +38,7 @@ describe("truffle networks", () => {
         workingDirectory,
         "build",
         "contracts",
-        "Metacoin.json"
+        "MetaCoin.json"
       );
       CommandRunner.run("networks --clean", config, _error => {
         const artifact = require(pathToArtifact);
