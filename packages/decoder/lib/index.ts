@@ -39,6 +39,7 @@ import { ContractObject } from "@truffle/contract-schema/spec";
  * Including the contract itself here is fine; so is excluding it.
  * @param provider The Web3 provider object to use.
  * @param address The address of the contract instance to decode.  If left out, it will be autodetected on startup.
+ *   If an invalid address is provided, this function will throw an exception.
  */
 export async function forContractInstance(
   contract: ContractObject,

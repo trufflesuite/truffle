@@ -155,6 +155,8 @@ export interface StructValue {
   reference?: number;
   /**
    * these must be stored in order!
+   * moreover, any mappings *must* be included, even
+   * if this is a memory struct (such mappings will be empty)
    */
   value: NameValuePair[];
 }
