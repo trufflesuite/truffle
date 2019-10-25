@@ -27,6 +27,16 @@ contract WireTest is WireTestParent {
     bytes z;
   }
 
+  //the point of including this is to test that it doesn't send
+  //the allocator into an infinite loop
+  struct RedHerring {
+    RedHerring[] redHerring;
+  }
+
+  //similarly
+  function redHerring(RedHerring memory) internal pure {
+  }
+
   enum Ternary {
     Yes, No, MaybeSo
   }
