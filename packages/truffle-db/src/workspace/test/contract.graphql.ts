@@ -62,7 +62,9 @@ export const AddContracts = gql`
         }
         constructor: {
           createBytecode: {
-            id: $bytecodeId
+            bytecode: {
+              id: $bytecodeId
+            }
           }
         }
       }]
@@ -81,7 +83,9 @@ export const AddContracts = gql`
         }
         constructor {
           createBytecode {
-            bytes
+            bytecode {
+              bytes
+            }
           }
         }
       }

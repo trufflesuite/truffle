@@ -125,18 +125,27 @@ const AddContracts = gql`
     json: String!
     items: [String]
   }
+
   input ContractCompilationInput {
     id: ID!
   }
+
   input ContractSourceContractInput {
     index: FileIndex
   }
+
   input ContractConstructorBytecodeInput {
     id: ID!
   }
-  input ContractConstructorInput {
-    createBytecode: ContractConstructorBytecodeInput!
+
+  input ContractConstructorLinkedBytecodeInput {
+    bytecode: ContractConstructorBytecodeInput!
   }
+
+  input ContractConstructorInput {
+    createBytecode: ContractConstructorLinkedBytecodeInput!
+  }
+
   input ContractInput {
     name: String
     abi: AbiInput
@@ -144,6 +153,7 @@ const AddContracts = gql`
     sourceContract: ContractSourceContractInput
     constructor: ContractConstructorInput
   }
+
   mutation AddContracts($contracts: [ContractInput!]!) {
     workspace {
       contractsAdd(input: {
@@ -187,7 +197,14 @@ const AddContracts = gql`
           }
           constructor {
             createBytecode {
-              bytes
+              bytecode {
+                bytes
+                linkReferences {
+                  offsets
+                  name
+                  length
+                }
+              }
             }
           }
         }
@@ -209,12 +226,16 @@ const AddContractInstances = gql`
     id: ID!
   }
 
+  input ContractInstanceCreationConstructorLinkedBytecodeInput {
+    bytecode: ContractInstanceCreationConstructorBytecodeInput!
+  }
+
   input ContractInstanceCallBytecodeInput {
     id: ID!
   }
 
   input ContractInstanceCreationConstructorInput {
-    createBytecode: ContractInstanceCreationConstructorBytecodeInput!
+    createBytecode: ContractInstanceCreationConstructorLinkedBytecodeInput!
   }
 
   input ContractInstanceCreationInput {
@@ -252,7 +273,14 @@ const AddContractInstances = gql`
             transactionHash
             constructor {
               createBytecode {
-                bytes
+                bytecode {
+                  bytes
+                  linkReferences {
+                    offsets
+                    name
+                    length
+                  }
+                }
               }
             }
           }
@@ -346,7 +374,7 @@ export class ArtifactsLoader {
   async loadCompilationContracts (contracts: Array<ContractObject>, compilationId: string, compilerName: string) {
     const bytecodeIds = await this.loadBytecodes(contracts);
     const contractObjects = contracts.map((contract, index) => ({
-      name: contract["contract_name"],
+      name: contract["contractName"],
       abi: {
         json: JSON.stringify(contract["abi"])
       },
@@ -357,7 +385,9 @@ export class ArtifactsLoader {
         index: index
       },
       constructor: {
-        createBytecode: bytecodeIds.bytecodes[index]
+        createBytecode: {
+          bytecode: bytecodeIds.bytecodes[index]
+        }
       }
     }));
 
@@ -499,10 +529,14 @@ export class ArtifactsLoader {
           creation: {
             transactionHash: network.transactionHash,
             constructor: {
-              createBytecode: bytecodeIds.bytecodes[index]
+              createBytecode: {
+                bytecode: bytecodeIds.bytecodes[index]
+              }
             }
           },
-          callBytecode: bytecodeIds.callBytecodes[index]
+          callBytecode: {
+            bytecode: bytecodeIds.callBytecodes[index]
+          }
         }
         return instance;
       });

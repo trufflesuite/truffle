@@ -38,7 +38,9 @@ describe("Contract Instance", () => {
         transactionHash: Migrations.networks['5777'].transactionHash,
         constructor: {
           createBytecode: {
-            id: generateId(shimmedBytecode)
+            bytecode: {
+              id: generateId(shimmedBytecode)
+            }
           }
         }
       }

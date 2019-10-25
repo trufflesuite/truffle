@@ -108,9 +108,12 @@ export const schema = mergeSchemas({
         resolve: (obj) => {
           const { deployedBytecode } = obj;
           const callBytecode = {
-            bytes: deployedBytecode.bytes,
-            linkReferences: deployedBytecode.linkReferences
-          }
+            bytecode:
+              {
+                bytes: deployedBytecode.bytes,
+                linkReferences: deployedBytecode.linkReferences
+              }
+            }
           return callBytecode;
         }
       },
@@ -143,8 +146,10 @@ export const schema = mergeSchemas({
             const { bytecode } = obj;
             const contractConstructor = {
               createBytecode: {
-                bytes: bytecode.bytes,
-                linkReferences: bytecode.linkReferences
+                bytecode: {
+                  bytes: bytecode.bytes,
+                  linkReferences: bytecode.linkReferences
+                }
               }
             }
             return contractConstructor;

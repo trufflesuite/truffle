@@ -11,7 +11,7 @@ type ContractInstance {
   address: Address!
   network: Network!
   creation: ContractInstanceCreation
-  callBytecode: Bytecode
+  callBytecode: LinkedBytecode
   contract: Contract
 }
 
@@ -22,7 +22,7 @@ type ContractInstanceCreation {
 }
 
 type Constructor {
-  createBytecode: Bytecode
+  createBytecode: LinkedBytecode
 }
 
 type Contract {

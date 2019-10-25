@@ -64,11 +64,13 @@ const GetContractConstructor = `
         }
         constructor {
           createBytecode {
-            bytes
-            linkReferences {
-              offsets
-              name
-              length
+            bytecode {
+              bytes
+              linkReferences {
+                offsets
+                name
+                length
+              }
             }
           }
         }
@@ -143,8 +145,8 @@ describe("Artifacts queries", () => {
     expect(contractConstructor).toHaveProperty("createBytecode");
 
     const { createBytecode } = contractConstructor;
-    expect(createBytecode.bytes).toEqual(shimBytecode(Migrations.bytecode).bytes)
-    expect(createBytecode.linkReferences).toEqual(shimBytecode(Migrations.bytecode).linkReferences)
+    expect(createBytecode.bytecode.bytes).toEqual(shimBytecode(Migrations.bytecode).bytes)
+    expect(createBytecode.bytecode.linkReferences).toEqual(shimBytecode(Migrations.bytecode).linkReferences)
 
     const { name, sourceContract, abi } = contract;
     expect(name).toEqual(Migrations.contractName);
@@ -161,11 +163,13 @@ describe("Artifacts queries", () => {
       artifacts {
         contractInstance(name: $name, networkId: $networkId) {
           callBytecode {
-            bytes
-            linkReferences {
-              offsets
-              name
-              length
+            bytecode {
+              bytes
+              linkReferences {
+                offsets
+                name
+                length
+              }
             }
           }
           contract {
@@ -222,7 +226,8 @@ describe("Artifacts queries", () => {
     const { json } = abi;
     expect(json).toEqual(JSON.stringify(Migrations.abi));
 
-    const { bytes, linkReferences } = callBytecode;
+    const { bytecode } = callBytecode;
+    const { bytes, linkReferences } = bytecode;
     expect(bytes).toEqual(shimBytecode(Migrations.deployedBytecode).bytes)
     expect(linkReferences).toEqual(shimBytecode(Migrations.deployedBytecode).linkReferences)
   });

@@ -145,7 +145,9 @@ query GetWorkspaceContract($id:ID!){
       }
       constructor {
         createBytecode {
-          bytes
+          bytecode {
+            bytes
+          }
         }
       }
       sourceContract {
@@ -239,21 +241,25 @@ query GetContractInstance($id: ID!) {
         transactionHash
         constructor {
           createBytecode {
-            bytes
-            linkReferences {
-              offsets
-              name
-              length
+            bytecode {
+              bytes
+              linkReferences {
+                offsets
+                name
+                length
+              }
             }
           }
         }
       }
       callBytecode {
-        bytes
-        linkReferences {
-          offsets
-          name
-          length
+        bytecode {
+          bytes
+          linkReferences {
+            offsets
+            name
+            length
+          }
         }
       }
     }
@@ -332,7 +338,9 @@ describe("Compilation", () => {
           creation: {
             transactionHash: networksArray[networksArray.length -1][1]["transactionHash"],
             constructor: {
-              createBytecode: shimBytecodeObject
+              createBytecode: {
+                bytecode: shimBytecodeObject
+              }
             }
           },
           callBytecode: {
@@ -444,6 +452,7 @@ describe("Compilation", () => {
       });
 
       contractIds.push({ id: expectedId });
+
       let {
         data: {
           workspace: {
@@ -452,7 +461,9 @@ describe("Compilation", () => {
               name,
               constructor: {
                 createBytecode: {
-                  bytes
+                  bytecode: {
+                    bytes
+                  }
                 }
               },
               sourceContract: {
@@ -500,6 +511,8 @@ describe("Compilation", () => {
   });
 
   it("loads contract instances", async() => {
+    let query = await db.query(GetWorkspaceContractInstance, contractInstanceIds[0]);
+
     for(let index in migratedArtifacts) {
       let {
         data: {
@@ -516,8 +529,10 @@ describe("Compilation", () => {
                 transactionHash,
                 constructor: {
                   createBytecode: {
-                    bytes,
-                    linkReferences
+                    bytecode: {
+                      bytes,
+                      linkReferences
+                    }
                   }
                 }
               },
@@ -533,9 +548,9 @@ describe("Compilation", () => {
       expect(networkId).toEqual(contractInstances[index].network.networkId);
       expect(address).toEqual(contractInstances[index].address);
       expect(transactionHash).toEqual(contractInstances[index].creation.transactionHash);
-      expect(bytes).toEqual(contractInstances[index].creation.constructor.createBytecode.bytes);
-      expect(linkReferences).toEqual(contractInstances[index].creation.constructor.createBytecode.linkReferences);
-      expect(bytecode).toEqual(contractInstances[index].deployedBytecode);
+      expect(bytes).toEqual(contractInstances[index].creation.constructor.createBytecode.bytecode.bytes);
+      expect(linkReferences).toEqual(contractInstances[index].creation.constructor.createBytecode.bytecode.linkReferences);
+      expect(bytecode.bytes).toEqual(contractInstances[index].callBytecode.bytecode.bytes);
     }
   })
 });
