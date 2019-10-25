@@ -66,10 +66,14 @@ const Utils = {
         let logArgs;
         try {
           logArgs = abi.decodeLog(logABI.inputs, copy.data, copy.topics);
+          copy.args = reformat.numbers.call(
+            constructor,
+            logArgs,
+            logABI.inputs
+          );
         } catch (_) {
           return null;
         }
-        copy.args = reformat.numbers.call(constructor, logArgs, logABI.inputs);
 
         delete copy.data;
         delete copy.topics;

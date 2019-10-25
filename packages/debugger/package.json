@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.0.31",
+  "version": "5.0.33",
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
@@ -20,11 +20,11 @@
     "test:debug": "NODE_ENV=testing node --inspect ./node_modules/.bin/mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive"
   },
   "dependencies": {
-    "@truffle/code-utils": "^1.2.8",
+    "@truffle/code-utils": "^1.2.9",
     "@truffle/decode-utils": "^1.0.18",
-    "@truffle/decoder": "^3.0.13",
-    "@truffle/expect": "^0.0.11",
-    "@truffle/solidity-utils": "^1.2.5",
+    "@truffle/decoder": "^3.0.14",
+    "@truffle/expect": "^0.0.12",
+    "@truffle/solidity-utils": "^1.2.6",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
     "json-pointer": "^0.6.0",
@@ -38,12 +38,12 @@
     "web3-eth-abi": "1.2.1"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.35",
-    "@truffle/box": "^1.0.41",
+    "@truffle/artifactor": "^4.0.36",
+    "@truffle/box": "^1.0.43",
     "@truffle/debug-utils": "^1.0.19",
-    "@truffle/migrate": "^3.0.37",
-    "@truffle/resolver": "^5.0.17",
-    "@truffle/workflow-compile": "^2.1.9",
+    "@truffle/migrate": "^3.0.38",
+    "@truffle/resolver": "^5.0.18",
+    "@truffle/workflow-compile": "^2.1.10",
     "async": "2.6.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
