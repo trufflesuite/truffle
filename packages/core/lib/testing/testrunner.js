@@ -204,11 +204,22 @@ TestRunner.prototype.endTest = function(mocha, callback) {
           return input.type;
         });
 
-        var values = abi.decodeLog(
-          event.abi_entry.inputs,
-          log.data,
-          log.topics.slice(1) // skip topic[0] for non-anonymous event
-        );
+        var values;
+        try {
+          values = abi.decodeLog(
+            event.abi_entry.inputs,
+            log.data,
+            log.topics.slice(1) // skip topic[0] for non-anonymous event
+          );
+        } catch (_) {
+          //temporary HACK until we're using the new decoder
+          self.logger.log(`    Warning: event decoding failed`);
+          self.logger.log(
+            `    (This may be due to multiple events with same signature`
+          );
+          self.logger.log(`    or due to unsupported data types)`);
+          return;
+        }
 
         var eventName = event.abi_entry.name;
         var eventArgs = event.abi_entry.inputs
