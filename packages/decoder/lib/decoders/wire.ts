@@ -82,8 +82,9 @@ export default class WireDecoder {
     );
     this.deployedContexts = Object.assign(
       {},
-      ...Object.values(this.contexts).map(context =>
-        !context.isConstructor ? { [context.context]: context } : {}
+      ...Object.values(this.contexts).map(
+        context =>
+          !context.isConstructor ? { [context.context]: context } : {}
       )
     );
 
@@ -218,6 +219,7 @@ export default class WireDecoder {
   ): Promise<DecoderTypes.DecodedTransaction> {
     debug("transaction: %O", transaction);
     const block = transaction.blockNumber;
+    const isConstructor = transaction.to === null;
     const context = await this.getContextByAddress(
       transaction.to,
       block,
@@ -236,7 +238,7 @@ export default class WireDecoder {
       contexts: { ...this.deployedContexts, ...additionalContexts },
       currentContext: context
     };
-    const decoder = decodeCalldata(info);
+    const decoder = decodeCalldata(info, isConstructor);
 
     let result = decoder.next();
     while (result.done === false) {

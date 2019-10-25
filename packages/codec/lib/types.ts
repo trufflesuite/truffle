@@ -4,10 +4,15 @@ import * as Abi from "@truffle/codec/abi/types";
 import * as Format from "@truffle/codec/format";
 
 /**
- * A type representing a transaction (calldata) decoding.  As you can see, these come in four types,
+ * A type representing a transaction (calldata) decoding.  As you can see, these come in five types,
  * each of which is documented separately.
  */
-export type CalldataDecoding = FunctionDecoding | ConstructorDecoding | MessageDecoding | UnknownDecoding;
+export type CalldataDecoding =
+  | FunctionDecoding
+  | ConstructorDecoding
+  | MessageDecoding
+  | UnknownCallDecoding
+  | UnknownCreationDecoding;
 
 /**
  * A type representing a log (event) decoding.  As you can see, these come in two types, each of which
@@ -123,11 +128,10 @@ export interface MessageDecoding {
 }
 
 /**
- * This type represents a function call to an unknown class, or a constructor
- * call constructing an unknown class.  In this case, it's simply not possible
- * to return much information.
+ * This type represents a function call to an unknown class.  In this case,
+ * it's simply not possible to return much information.
  */
-export interface UnknownDecoding {
+export interface UnknownCallDecoding {
   /**
    * The kind of decoding; indicates that this is an UnknownDecoding.
    */
@@ -137,9 +141,28 @@ export interface UnknownDecoding {
    */
   decodingMode: DecodingMode;
   /**
-   * The data that was sent to the contract, or the bytecode of the constructor.
+   * The data that was sent to the contract
    */
   data: string;
+}
+
+/**
+ * This type represents a contract creation for an unknown class. In this case,
+ * it's simply not possible to return much information.
+ */
+export interface UnknownCreationDecoding {
+  /**
+   * The kind of decoding; indicates that this is an UnknownCreationDecoding.
+   */
+  kind: "create";
+  /**
+   * The decoding mode that was used; see the README for more on these.
+   */
+  decodingMode: DecodingMode;
+  /**
+   * The bytecode of the contract creation
+   */
+  bytecode: string;
 }
 
 /**
