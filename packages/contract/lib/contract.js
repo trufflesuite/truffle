@@ -27,7 +27,10 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
         constructor.abi
       );
       contractInstance.options.address = contract;
-      if (constructor._json.networks[constructor.network_id])
+      if (
+        constructor._json.networks[constructor.network_id] &&
+        constructor._json.networks[constructor.network_id].address === contract
+      )
         contractInstance.transactionHash = constructor.transactionHash;
       contract = contractInstance;
     }
