@@ -564,6 +564,13 @@ function parametersToAbi(
   );
 }
 
+//NOTE: This function is only for types that could potentially go in the ABI!
+//(otherwise it could, say, loop infinitely)
+//currently it will only ever be called on those because it's only called from
+//definitionToAbi, which filters out any definitions that are not for
+//this that *actually* go in the ABI
+//if you want to expand it to handle those (by throwing an exception, say),
+//you'll need to give it a way to detect circularities
 function parameterToAbi(
   node: AstNode,
   referenceDeclarations: AstNodes,
