@@ -108,6 +108,7 @@ export default class ContractDecoder {
   /**
    * Constructs a contract instance decoder for a given instance of this contract.
    * @param address The address of the contract instance decode.  If left out, it will be autodetected.
+   *   If an invalid address is provided, this method will throw an exception.
    */
   public async forInstance(address?: string): Promise<ContractInstanceDecoder> {
     let instanceDecoder = new ContractInstanceDecoder(this, address);
