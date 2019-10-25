@@ -15,7 +15,10 @@ export default function* decodeTopic(
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
-  if (Format.Types.isReferenceType(dataType)) {
+  if (
+    Format.Types.isReferenceType(dataType) ||
+    dataType.typeClass === "tuple"
+  ) {
     //we cannot decode reference types "stored" in topics; we have to just return an error
     let bytes: Uint8Array = yield* read(pointer, info.state);
     let raw: string = Conversion.toHexString(bytes);
