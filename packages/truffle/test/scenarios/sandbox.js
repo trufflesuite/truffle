@@ -1,6 +1,6 @@
 const tmp = require("tmp");
 const fs = require("fs-extra");
-const config = require("@truffle/config");
+const Config = require("@truffle/config");
 const path = require("path");
 
 module.exports = {
@@ -24,11 +24,11 @@ module.exports = {
         self
           .copyDirectory(source, tempDir.name)
           .then(() => {
-            const conf = config.load(
+            const config = Config.load(
               path.join(tempDir.name, subPath, "truffle-config.js"),
               {}
             );
-            resolve(conf);
+            resolve(config);
           })
           .catch(reject);
       } catch (error) {
@@ -42,8 +42,8 @@ module.exports = {
       if (!fs.existsSync(source))
         return reject(`Sandbox failed: source: ${source} does not exist`);
 
-      const conf = config.load(path.join(source, "truffle-config.js"), {});
-      resolve(conf);
+      const config = Config.load(path.join(source, "truffle-config.js"), {});
+      resolve(config);
     });
   }
 };
