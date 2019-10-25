@@ -1,0 +1,25 @@
+{
+  "name": "solidity-magic-square",
+  "version": "1.0.0",
+  "description": "Generate a magic square in Solidity",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/solidity-magic-square.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/solidity-magic-square/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/solidity-magic-square#readme",
+  "devDependencies": {
+    "truffle": "^5.0.13"
+  }
+}
