@@ -1,5 +1,5 @@
 {
-  "name": "@truffle/codec and @truffle/decoder",
+  "name": "Truffle Decoding and Encoding",
   "mode": "modules",
   "module": "commonjs",
   "theme": "default",
