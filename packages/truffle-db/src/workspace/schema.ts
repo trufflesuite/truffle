@@ -195,8 +195,12 @@ export const schema = mergeSchemas({
       id: ID!
     }
 
-    input ContractInstanceCreationConstructorBytecodeInput {
+    input ContractInstanceCreationConstructorBytecodeIdInput {
       id: ID!
+    }
+
+    input ContractInstanceCreationConstructorBytecodeInput {
+      bytecode: ContractInstanceCreationConstructorBytecodeIdInput
     }
 
     input ContractInstanceCreationConstructorInput {
@@ -364,14 +368,17 @@ export const schema = mergeSchemas({
           workspace.contract(contract)
       },
       callBytecode: {
-        resolve: ({ callBytecode }, _, { workspace }) =>
-          workspace.bytecode(callBytecode)
+        resolve: ({ callBytecode }, _, { workspace }) => {
+          let bytecode = workspace.bytecode(callBytecode.bytecode);
+          return { bytecode: bytecode }
+        }
       },
       creation: {
         resolve: async (input, _, { workspace }) => {
-          let bytecode = await workspace.bytecode(input.creation.constructor.createBytecode);
+          let bytecode = await workspace.bytecode(input.creation.constructor.createBytecode.bytecode);
           let transactionHash = input.creation.transactionHash;
-          return { transactionHash: transactionHash, constructor: { createBytecode: bytecode } };
+
+          return { transactionHash: transactionHash, constructor: { createBytecode: { bytecode: bytecode }}}
         }
       }
     },
@@ -383,8 +390,10 @@ export const schema = mergeSchemas({
     },
     Constructor: {
       createBytecode: {
-        resolve: ({ createBytecode }, _, { workspace }) =>
-          workspace.bytecode(createBytecode)
+        resolve: async ({ createBytecode }, _, { workspace }) => {
+          let bytecode = await workspace.bytecode(createBytecode.bytecode)
+          return { bytecode: bytecode }
+        }
       }
     }
   }
