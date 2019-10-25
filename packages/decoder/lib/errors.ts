@@ -50,3 +50,16 @@ export class InvalidAddressError extends Error {
     this.name = "InvalidAddressError";
   }
 }
+
+/**
+ * This error indicates that the user requested a variable that does not exist.
+ * @category Exception
+ */
+export class VariableNotFoundError extends Error {
+  public nameOrId: string | number;
+  constructor(nameOrId: string | number) {
+    super(`No such variable ${nameOrId}`);
+    this.nameOrId = nameOrId;
+    this.name = "VariableNotFoundError";
+  }
+}

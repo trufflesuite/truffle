@@ -26,7 +26,8 @@ import { Log } from "web3/types";
 import {
   ContractBeingDecodedHasNoNodeError,
   ContractAllocationFailedError,
-  InvalidAddressError
+  InvalidAddressError,
+  VariableNotFoundError
 } from "../errors";
 
 /**
@@ -462,8 +463,7 @@ export class ContractInstanceDecoder {
    * [[Format.Values.Result|Result]].  See the documentation for
    * [[variables|variables()]] for various caveats that also apply here.
    *
-   * If the variable can't be located, returns undefined.  In the future this
-   * will probably throw an exception instead.
+   * If the variable can't be located, throws an exception.
    * @param nameOrId The name (or numeric ID, if you know that) of the
    *   variable.  Can be given as a qualified name, allowing one to get at
    *   shadowed variables from base contracts.  If given by ID, can be given as a
@@ -493,7 +493,7 @@ export class ContractInstanceDecoder {
 
     if (variable === undefined) {
       //if user put in a bad name
-      return undefined;
+      throw new VariableNotFoundError(nameOrId);
     }
 
     return (await this.decodeVariable(variable, blockNumber)).value;
@@ -576,12 +576,13 @@ export class ContractInstanceDecoder {
    * only possible in full mode; if the decoder wasn't able to start up in full
    * mode, this method will throw an exception.
    *
-   * Warning: At the moment, this
-   * function does very little to check its input.  Bad input may have
-   * unpredictable results.  This will be remedied in the future (by having it
-   * throw exceptions on bad input), but right now essentially no checking is
-   * implemented.  Also, there may be slight changes to the format of indices
-   * in the future.
+   * **Warning**: At the moment, this function does very little to check its
+   * input.  Bad input may have unpredictable results.  This will be remedied
+   * in the future (by having it throw exceptions on bad input), but right now
+   * essentially no checking is implemented.  Also, there may be slight changes
+   * to the format of indices in the future.
+   *
+   * (A bad variable name will cause an exception though; that input is checked.)
    * @param variable The variable that the mapping lives under; this works like
    *   the nameOrId argument to [[variable|variable()]].  If the mapping is a
    *   top-level state variable, put the mapping itself here.  Otherwise, put the
@@ -755,6 +756,9 @@ export class ContractInstanceDecoder {
     //base case: we need to locate the variable and its definition
     if (indices.length === 0) {
       let allocation = this.findVariableByNameOrId(variable);
+      if (!allocation) {
+        throw new VariableNotFoundError(variable);
+      }
 
       let definition = allocation.definition;
       let pointer = allocation.pointer;
