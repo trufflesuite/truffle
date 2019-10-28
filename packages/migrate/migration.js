@@ -2,7 +2,7 @@ const path = require("path");
 const Deployer = require("@truffle/deployer");
 const Require = require("@truffle/require");
 const Emittery = require("emittery");
-const { Web3Shim } = require("@truffle/interface-adapter");
+const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 
 const ResolverIntercept = require("./resolverintercept");
 
@@ -132,9 +132,13 @@ class Migration {
    * @param  {Object}   options  config and command-line
    */
   async run(options) {
-    const { web3, resolver, context, deployer } = this.prepareForMigrations(
-      options
-    );
+    const {
+      web3,
+      interfaceAdapter,
+      resolver,
+      context,
+      deployer
+    } = this.prepareForMigrations(options);
 
     // Connect reporter to this migration
     if (this.reporter) {
@@ -163,6 +167,7 @@ class Migration {
 
   prepareForMigrations(options) {
     const logger = options.logger;
+    const interfaceAdapter = new InterfaceAdapter();
     const web3 = new Web3Shim({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -171,7 +176,7 @@ class Migration {
     const resolver = new ResolverIntercept(options.resolver);
 
     // Initial context.
-    const context = { web3 };
+    const context = { web3, interfaceAdapter };
 
     const deployer = new Deployer({
       logger,
@@ -184,7 +189,7 @@ class Migration {
       basePath: path.dirname(this.file)
     });
 
-    return { logger, web3, resolver, context, deployer };
+    return { logger, web3, interfaceAdapter, resolver, context, deployer };
   }
 
   /**

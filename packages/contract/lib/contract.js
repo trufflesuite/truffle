@@ -20,13 +20,21 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
     var instance = this;
     var constructor = instance.constructor;
 
-    // Disambiguate between .at() and .new()
+    // Disambiguate between .at()/.deployed() & .new()
+    // in this case contract is a contract address string
     if (typeof contract === "string") {
-      var web3Instance = new constructor.web3.eth.Contract(constructor.abi);
-      web3Instance.options.address = contract;
-      contract = web3Instance;
+      const contractInstance = new constructor.web3.eth.Contract(
+        constructor.abi
+      );
+      contractInstance.options.address = contract;
+      if (
+        constructor._json.networks[constructor.network_id] &&
+        constructor._json.networks[constructor.network_id].address === contract
+      ) {
+        contractInstance.transactionHash = constructor.transactionHash;
+      }
+      contract = contractInstance;
     }
-
     // Core:
     instance.methods = {};
     instance.abi = constructor.abi;
