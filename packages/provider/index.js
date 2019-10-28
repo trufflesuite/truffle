@@ -34,6 +34,7 @@ module.exports = {
 
   testConnection: function(options) {
     const provider = this.getProvider(options);
+    const interfaceAdapter = new InterfaceAdapter();
     const web3 = new Web3Shim({ provider });
     return new Promise((resolve, reject) => {
       console.log("Testing the provider...");
