@@ -5,25 +5,16 @@ import * as Format from "@truffle/codec/format/common";
 import * as Ast from "@truffle/codec/ast";
 import * as Storage from "@truffle/codec/storage/types";
 
-function isContractDefinedType(
-  anyType: Format.Types.Type
-): anyType is Format.Types.ContractDefinedType {
-  const contractDefinedTypes = ["enum", "struct"];
-  return contractDefinedTypes.includes(anyType.typeClass);
-}
-
 //this function gives an error message
 //for those errors that are meant to possibly
 //be wrapped in a DecodingError and thrown
 export function message(error: Format.Errors.ErrorForThrowing): string {
   switch (error.kind) {
     case "UserDefinedTypeNotFoundError":
-      let typeName = isContractDefinedType(error.type)
+      let typeName = Format.Types.isContractDefinedType(error.type)
         ? error.type.definingContractName + "." + error.type.typeName
         : error.type.typeName;
-      return `Unknown ${error.type.typeClass} type ${typeName} of id ${
-        error.type.id
-      }`;
+      return `Unknown ${error.type.typeClass} type ${typeName} of id ${error.type.id}`;
     case "UnsupportedConstantError":
       return `Unsupported constant type ${Ast.Utils.typeClass(
         error.definition
@@ -31,9 +22,7 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
     case "ReadErrorStack":
       return `Can't read stack from position ${error.from} to ${error.to}`;
     case "ReadErrorBytes":
-      return `Can't read ${error.length} bytes from input starting at ${
-        error.start
-      }`;
+      return `Can't read ${error.length} bytes from input starting at ${error.start}`;
     case "ReadErrorStorage":
       if (error.range.length) {
         return `Can't read ${

@@ -470,9 +470,7 @@ export function typeStringWithoutLocation(dataType: Type): string {
       //combining these cases for simplicity
       switch (dataType.kind) {
         case "local":
-          return `${dataType.typeClass} ${dataType.definingContractName}.${
-            dataType.typeName
-          }`;
+          return `${dataType.typeClass} ${dataType.definingContractName}.${dataType.typeName}`;
         case "global": //WARNING, SPECULATIVE
           return `${dataType.typeClass} ${dataType.typeName}`;
       }
@@ -520,4 +518,11 @@ export function typeStringWithoutLocation(dataType: Type): string {
       let outputString = outputList === "" ? "" : ` returns (${outputList})`; //again, note the deliberate space
       return inputString + mutabilityString + visibilityString + outputString;
   }
+}
+
+export function isContractDefinedType(
+  anyType: Type
+): anyType is ContractDefinedType {
+  const contractDefinedTypes = ["enum", "struct"];
+  return contractDefinedTypes.includes(anyType.typeClass);
 }
