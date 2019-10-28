@@ -1,15 +1,21 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:memory");
 
-import { MemoryPointer } from "../types/pointer";
-import { MemoryAllocations, MemoryAllocation, MemoryMemberAllocation } from "../types/allocation";
-import { AstDefinition, AstReferences } from "../types/ast";
-import * as CodecUtils from "../utils";
+import { MemoryPointer } from "@truffle/codec/types/pointer";
+import {
+  MemoryAllocations,
+  MemoryAllocation,
+  MemoryMemberAllocation
+} from "@truffle/codec/types/allocation";
+import { AstDefinition, AstReferences } from "@truffle/codec/types/ast";
+import * as CodecUtils from "@truffle/codec/utils";
 
-export function getMemoryAllocations(referenceDeclarations: AstReferences): MemoryAllocations {
+export function getMemoryAllocations(
+  referenceDeclarations: AstReferences
+): MemoryAllocations {
   let allocations: MemoryAllocations = {};
-  for(const node of Object.values(referenceDeclarations)) {
-    if(node.nodeType === "StructDefinition") {
+  for (const node of Object.values(referenceDeclarations)) {
+    if (node.nodeType === "StructDefinition") {
       allocations[node.id] = allocateStruct(node);
     }
   }
@@ -21,7 +27,7 @@ export function getMemoryAllocations(referenceDeclarations: AstReferences): Memo
 function allocateStruct(definition: AstDefinition): MemoryAllocation {
   let memberAllocations: MemoryMemberAllocation[] = [];
   let position = 0;
-  for(const member of definition.members) {
+  for (const member of definition.members) {
     const length = CodecUtils.Definition.isMapping(member)
       ? 0
       : CodecUtils.EVM.WORD_SIZE;

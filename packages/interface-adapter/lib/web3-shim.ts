@@ -7,10 +7,12 @@ import { TezosDefinition } from "./tezos-overloads";
 import { EthereumDefinition } from "./ethereum-overloads";
 import { QuorumDefinition } from "./quorum-overloads";
 import { FabricEvmDefinition } from "./fabric-evm-overloads";
+import { Web3JsDefinition } from "./web3-js-definition";
 
 const initInterface = async (web3Shim: Web3Shim, options?: Web3ShimOptions) => {
   const networkTypes: NetworkTypesConfig = new Map(
     Object.entries({
+      web3js: Web3JsDefinition,
       tezos: TezosDefinition,
       ethereum: EthereumDefinition,
       quorum: QuorumDefinition,

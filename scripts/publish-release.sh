@@ -12,7 +12,8 @@ fi
 node ./scripts/npm-access.js
 
 ## Publish packages to npm
-lerna publish -- --access=public
+lerna version
+lerna publish from-package 
 
 ## Update git branches
 git checkout master

@@ -1,10 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("codec:utils:errors");
 
-import { Values, Errors } from "../format";
+import { Values, Errors } from "@truffle/codec/format";
 import { TypeUtils } from "./datatype";
 import { Definition as DefinitionUtils } from "./definition";
-import { Slot } from "../types/storage";
+import { Slot } from "@truffle/codec/types/storage";
 
 //this function gives an error message
 //for those errors that are meant to possibly
