@@ -1,6 +1,5 @@
 const debug = require("debug")("provider");
 const Web3 = require("web3");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 
 module.exports = {
@@ -32,10 +31,7 @@ module.exports = {
     return provider;
   },
 
-  testConnection: function(options) {
-    const provider = this.getProvider(options);
-    const interfaceAdapter = new InterfaceAdapter();
-    const web3 = new Web3Shim({ provider });
+  testConnection: function(web3, interfaceAdapter) {
     return new Promise((resolve, reject) => {
       console.log("Testing the provider...");
       console.log("=======================");
