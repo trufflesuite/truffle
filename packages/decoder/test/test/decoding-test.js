@@ -32,11 +32,9 @@ contract("DecodingSample", _accounts => {
   it("should get the initial state properly", async function() {
     let deployedContract = await DecodingSample.deployed();
     let address = deployedContract.address;
-    const decoder = await Decoder.forContractInstance(
-      DecodingSample,
-      [DecodingSampleParent],
-      web3.currentProvider
-    );
+    const decoder = await Decoder.forContractAbstraction(deployedContract, [
+      DecodingSampleParent
+    ]);
 
     await decoder.watchMappingKey("varMapping", 2);
     await decoder.watchMappingKey("varMapping", 3);

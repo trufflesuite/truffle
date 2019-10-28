@@ -15,10 +15,11 @@ contract("WireTest", _accounts => {
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
 
-    const decoder = await Decoder.forProject(
-      [WireTest, WireTestParent, WireTestLibrary],
-      web3.currentProvider
-    );
+    const decoder = await Decoder.forProject(web3.currentProvider, [
+      WireTest,
+      WireTestParent,
+      WireTestLibrary
+    ]);
 
     let deployedContractNoConstructor = await WireTestParent.new();
     let defaultConstructorHash = deployedContractNoConstructor.transactionHash;
@@ -423,10 +424,11 @@ contract("WireTest", _accounts => {
   it("disambiguates events when possible and not when impossible", async function() {
     let deployedContract = await WireTest.deployed();
 
-    const decoder = await Decoder.forProject(
-      [WireTest, WireTestParent, WireTestLibrary],
-      web3.currentProvider
-    );
+    const decoder = await Decoder.forProject(web3.currentProvider, [
+      WireTest,
+      WireTestParent,
+      WireTestLibrary
+    ]);
 
     //HACK HACK -- we're going to repeatedly apply the hack from above
     //because ethers also can't handle ambiguous events
@@ -566,10 +568,11 @@ contract("WireTest", _accounts => {
   it("Handles anonymous events", async function() {
     let deployedContract = await WireTest.deployed();
 
-    const decoder = await Decoder.forProject(
-      [WireTest, WireTestParent, WireTestLibrary],
-      web3.currentProvider
-    );
+    const decoder = await Decoder.forProject(web3.currentProvider, [
+      WireTest,
+      WireTestParent,
+      WireTestLibrary
+    ]);
 
     //thankfully, ethers ignores anonymous events,
     //so we don't need to use that hack here

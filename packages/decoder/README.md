@@ -30,14 +30,26 @@ this README describes the overall approach.
 
 ### Initialization
 
-Create a decoder with one of the following functions:
-* [[forProject|`forProject`]]
-* [[forContract|`forContract`]]
-* [[forContractWithDecoder|`forContractWithDecoder`]]
-* [[forContractInstance|`forContractInstance`]]
+Create a decoder with one of the various constructor functions.
+
+For a wire decoder, use the [[forProject|`forProject`]] function.
+
+For a contract decoder, use the [[forArtifact|`forArtifact`]] or
+[[forContract|`forContract`]] function.
+
+For a contract instance decoder, use one of the following:
+* [[forDeployedArtifact|`forDeployedArtifact`]]
+* [[forDeployedContract|`forDeployedContract`]]
+* [[forArtifactAt|`forArtifactAt`]]
+* [[forContractAt|`forContractAt`]]
+* [[forContractAbstraction|`forContractAbstraction`]]
 
 See the API documentation of these functions for details, or below for usage
 examples.
+
+All of these functions presently require a final argument containing all
+artifacts that could potentially be relevant.  It's intended that this argument
+will be optional in the future.
 
 ### Methods
 
@@ -183,11 +195,11 @@ This usage example is for a project with two contracts, `Contract1` and
 `Contract2`.
 
 ```typescript
-import { forProject } from "@truffle/codec";
+import { forProject } from "@truffle/decoder";
 const contract1 = artifacts.require("Contract1");
 const contract2 = artifacts.require("Contract2");
 const provider = web3.currentProvider;
-const decoder = await Decoder.forProject([contract1, contract2], provider);
+const decoder = await Decoder.forProject(provider, [contract1, contract2]);
 const decodedLog = await decoder.decodeLog(log);
 ```
 
@@ -202,11 +214,10 @@ This usage example is for decoding the state variables of a contract `Contract`
 in a project that also contains a contract `OtherContract`.
 
 ```typescript
-import { forContract } from "@truffle/codec";
+import { forContract } from "@truffle/decoder";
 const contract = artifacts.require("Contract");
 const otherContract = artifacts.require("OtherContract");
-const provider = web3.currentProvider;
-const decoder = await Decoder.forContract(contract, [otherContract], provider);
+const decoder = await Decoder.forContract(contract, [otherContract]);
 const instanceDecoder = await decoder.forInstance();
 const variables = await instanceDecoder.variables();
 ```
@@ -215,8 +226,21 @@ In this example, we use the deployed version of `Contract`.  If we wanted an
 instance at a different address, we could pass the address to `forInstance`.
 
 In addition, rather than using `forContract` and then `forInstance`, we could
-also use [[forContractInstance|`forContractInstance`]] to perform both of these
-in one step.
+also use [[forDeployedContract|`forContractInstance`]] to perform both of these
+in one step.  If we wanted to do this with a specified address, we could use
+[[forContractAt|`forContractAt`]].
+
+Yet another way would be:
+```typescript
+import { forContractAbstraction } from "@truffle/decoder";
+const contract = artifacts.require("Contract");
+const otherContract = artifacts.require("OtherContract");
+const deployedContract = await contract.deployed();
+const instanceDecoder = await Decoder.forContractAbstraction(deployedContract, [otherContract]);
+const variables = await instanceDecoder.variables();
+```
+
+These examples are not exhaustive.
 
 See the API documentation for more advanced decoding examples with
 [[ContractInstanceDecoder.variable|`variable`]] or
