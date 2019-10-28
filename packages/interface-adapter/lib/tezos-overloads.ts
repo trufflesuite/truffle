@@ -26,9 +26,8 @@ const overrides = {
       const parsedHost = currentHost.match(/(^https?:\/\/)(.*?)\:\d.*/)[2];
       // sets the provider for subsequent Tezos provider calls
       await web3.tez.setProvider({ rpc: parsedHost });
-      // @ts-ignore (typings incomplete)
-      const { chainId } = await web3.tez.rpc.getBlockHeader();
-      return chainId;
+      const { chain_id } = await web3.tez.rpc.getBlockHeader();
+      return chain_id;
     };
   },
 
@@ -67,7 +66,7 @@ const overrides = {
         block: `${blockNumber}`
       });
       // @ts-ignore
-      block.gasLimit = hardGasLimitPerBlock;
+      block.gasLimit = hard_gas_limit_per_block;
       return block;
     };
   },
