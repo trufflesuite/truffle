@@ -79,9 +79,9 @@ async function runTestBody(
   fullMode = false
 ) {
   let decoder = await Decoder.forProject(
-    [DowngradeTest._json, DecoyLibrary], //HACK: because we've clonedeep'd DowngradeTest,
+    web3.currentProvider,
+    [DowngradeTest._json, DecoyLibrary] //HACK: because we've clonedeep'd DowngradeTest,
     //we need to pass in its _json rather than it itself (its getters have been stripped off)
-    web3.currentProvider
   );
   let deployedContract = await DowngradeTest.new();
   let address = deployedContract.address;
@@ -193,8 +193,8 @@ contract("DowngradeTest", function(accounts) {
 
     //...and now let's set up a decoder for our hacked-up contract artifact.
     let decoder = await Decoder.forProject(
-      [DowngradeTest._json, DecoyLibrary], //HACK: see clonedeep note above
-      web3.currentProvider
+      web3.currentProvider,
+      [DowngradeTest._json, DecoyLibrary] //HACK: see clonedeep note above
     );
 
     //the ethers encoder can't yet handle fixed-point
@@ -254,8 +254,8 @@ contract("DowngradeTest", function(accounts) {
     it("Doesn't include out-of-range enums in full mode", async function() {
       let DowngradeTest = DowngradeTestUnmodified;
       let decoder = await Decoder.forProject(
-        [DowngradeTest._json, DecoyLibrary], //not strictly necessary here, but see clonedeep comment above
-        web3.currentProvider
+        web3.currentProvider,
+        [DowngradeTest._json, DecoyLibrary] //not strictly necessary here, but see clonedeep comment above
       );
       let deployedContract = await DowngradeTest.new();
 
@@ -316,8 +316,8 @@ contract("DowngradeTest", function(accounts) {
 
 async function runEnumTestBody(DowngradeTest) {
   let decoder = await Decoder.forProject(
-    [DowngradeTest._json, DecoyLibrary], //HACK: see clonedeep comment above
-    web3.currentProvider
+    web3.currentProvider,
+    [DowngradeTest._json, DecoyLibrary] //HACK: see clonedeep comment above
   );
   let deployedContract = await DowngradeTest.new();
 

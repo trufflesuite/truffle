@@ -9,6 +9,7 @@ import {
 } from "@truffle/codec";
 import { Transaction, BlockType } from "web3/eth/types";
 import { Log } from "web3/types";
+import Web3 from "web3";
 
 /**
  * This type represents the state of a contract aside from its storage.
@@ -158,4 +159,16 @@ export interface EventOptions {
    * address as undefined.
    */
   address?: string;
+}
+
+//HACK
+export interface ContractConstructorObject extends ContractObject {
+  _json: ContractObject;
+  web3: Web3;
+}
+
+//HACK
+export interface ContractInstanceObject {
+  constructor: ContractConstructorObject;
+  address: string;
 }
