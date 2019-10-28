@@ -15,10 +15,10 @@
   },
   "dependencies": {
     "@truffle/error": "^0.0.7",
-    "@truffle/interface-adapter": "^0.3.0",
     "web3": "1.2.1"
   },
   "devDependencies": {
+    "@truffle/interface-adapter": "^0.3.0",
     "ganache-core": "2.7.0",
     "mocha": "5.2.0"
   },
