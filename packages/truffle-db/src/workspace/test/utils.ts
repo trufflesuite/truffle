@@ -8,7 +8,6 @@ export { generateId } from "truffle-db/helpers";
 
 import tmp from "tmp";
 
-
 export const fixturesDirectory = path.join(
   __dirname, // truffle-db/src/db/test
   "..", // truffle-db/src/db

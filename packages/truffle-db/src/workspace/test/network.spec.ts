@@ -48,6 +48,7 @@ describe ('Network', () => {
 
   test('can be queried', async () => {
     const getNetworkResult = await wsClient.executePersisted(GetNetwork, { id: expectedId });
+
     expect(getNetworkResult).toHaveProperty("network");
 
     const { network } = getNetworkResult;
@@ -61,6 +62,7 @@ describe ('Network', () => {
 
   test('can retrieve all networks', async () => {
     const getAllNetworksResult = await wsClient.executePersisted(GetAllNetworks, {});
+
     expect(getAllNetworksResult).toHaveProperty("networks");
 
     const { networks } = getAllNetworksResult;

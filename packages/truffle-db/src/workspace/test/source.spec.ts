@@ -38,6 +38,7 @@ describe("Source", () => {
 
   test("can be queried", async() => {
     const getSourceResult = await wsClient.executePersisted(GetSource, { id: expectedId });
+
     expect(getSourceResult).toHaveProperty("source");
 
     const { source } = getSourceResult;
@@ -54,6 +55,7 @@ describe("Source", () => {
 
   test("can retrieve all sources", async() => {
     const getAllSourcesResult = await wsClient.executePersisted(GetAllSources);
+
     expect(getAllSourcesResult).toHaveProperty("sources");
 
     const { sources } = getAllSourcesResult;

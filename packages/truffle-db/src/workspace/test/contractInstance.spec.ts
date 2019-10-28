@@ -65,6 +65,7 @@ describe("Contract Instance", () => {
 
   test("can be queried", async() => {
     const getContractInstanceResult = await wsClient.executePersisted(GetContractInstance, { id: expectedId });
+
     expect(getContractInstanceResult).toHaveProperty("contractInstance");
 
     const { contractInstance } = getContractInstanceResult;
@@ -80,6 +81,7 @@ describe("Contract Instance", () => {
 
   test("can retrieve all contractInstances", async() => {
     const getAllContractInstancesResult = await wsClient.executePersisted(GetAllContractInstances);
+
     expect(getAllContractInstancesResult).toHaveProperty("contractInstances");
 
     const { contractInstances } = getAllContractInstancesResult;
