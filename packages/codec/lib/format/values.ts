@@ -29,8 +29,8 @@ import {
   FixedValue,
   UfixedValue
 } from "./elementary";
-import { Mutability } from "../types/ast";
-import { FunctionAbiEntry } from "../types/abi";
+import { Mutability } from "@truffle/codec/types/ast";
+import { FunctionAbiEntry } from "@truffle/codec/types/abi";
 
 export * from "./elementary";
 

@@ -1,11 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("codec:encode:abi");
 
-import { Values } from "../format";
-import { Conversion as ConversionUtils } from "../utils/conversion";
-import { EVM as EVMUtils } from "../utils/evm";
-import { AbiAllocations, AbiSizeInfo } from "../types/allocation";
-import { abiSizeInfo } from "../allocate/abi";
+import { Values } from "@truffle/codec/format";
+import { Conversion as ConversionUtils } from "@truffle/codec/utils/conversion";
+import { EVM as EVMUtils } from "@truffle/codec/utils/evm";
+import { AbiAllocations, AbiSizeInfo } from "@truffle/codec/types/allocation";
+import { abiSizeInfo } from "@truffle/codec/allocate/abi";
 import sum from "lodash.sum";
 import utf8 from "utf8";
 import BN from "bn.js";

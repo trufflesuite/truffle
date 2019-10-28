@@ -43,6 +43,8 @@ const Test = {
       config,
       provider: config.provider,
       networkType: config.networks[config.network].type
+        ? config.networks[config.network].type
+        : "web3js"
     });
 
     // Override console.warn() because web3 outputs gross errors to it.

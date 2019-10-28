@@ -1,29 +1,35 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:special");
 
-import * as CodecUtils from "../utils";
-import { Types, Values, Errors } from "../format";
+import * as CodecUtils from "@truffle/codec/utils";
+import { Types, Values, Errors } from "@truffle/codec/format";
 import decodeValue from "./value";
-import { EvmInfo } from "../types/evm";
-import { SpecialPointer } from "../types/pointer";
-import { DecoderRequest } from "../types/request";
-import { CompilerVersion } from "../types/compiler";
-import { solidityFamily } from "../utils/compiler";
+import { EvmInfo } from "@truffle/codec/types/evm";
+import { SpecialPointer } from "@truffle/codec/types/pointer";
+import { DecoderRequest } from "@truffle/codec/types/request";
+import { CompilerVersion } from "@truffle/codec/types/compiler";
+import { solidityFamily } from "@truffle/codec/utils/compiler";
 
-export default function* decodeSpecial(dataType: Types.Type, pointer: SpecialPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
-  if(dataType.typeClass === "magic") {
+export default function* decodeSpecial(
+  dataType: Types.Type,
+  pointer: SpecialPointer,
+  info: EvmInfo
+): Generator<DecoderRequest, Values.Result, Uint8Array> {
+  if (dataType.typeClass === "magic") {
     return yield* decodeMagic(dataType, pointer, info);
-  }
-  else {
+  } else {
     return yield* decodeValue(dataType, pointer, info);
   }
 }
 
-export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer, info: EvmInfo): Generator<DecoderRequest, Values.MagicResult, Uint8Array> {
+export function* decodeMagic(
+  dataType: Types.MagicType,
+  pointer: SpecialPointer,
+  info: EvmInfo
+): Generator<DecoderRequest, Values.MagicResult, Uint8Array> {
+  let { state } = info;
 
-  let {state} = info;
-
-  switch(pointer.special) {
+  switch (pointer.special) {
     case "msg":
       return {
         type: dataType,
@@ -51,13 +57,13 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             {
               location: "calldata" as const,
               start: 0,
-              length: CodecUtils.EVM.SELECTOR_SIZE,
+              length: CodecUtils.EVM.SELECTOR_SIZE
             },
             info
           ),
           sender: yield* decodeValue(
-	    senderType(info.currentContext.compiler),
-            {location: "special" as const, special: "sender" },
+            senderType(info.currentContext.compiler),
+            { location: "special" as const, special: "sender" },
             info
           ),
           value: yield* decodeValue(
@@ -65,7 +71,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
               typeClass: "uint",
               bits: 256
             },
-            {location: "special" as const, special: "value" },
+            { location: "special" as const, special: "value" },
             info
           )
         }
@@ -76,8 +82,8 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
         kind: "value" as const,
         value: {
           origin: yield* decodeValue(
-	    externalAddressType(info.currentContext.compiler),
-            {location: "special" as const, special: "origin"},
+            externalAddressType(info.currentContext.compiler),
+            { location: "special" as const, special: "origin" },
             info
           ),
           gasprice: yield* decodeValue(
@@ -85,16 +91,16 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
               typeClass: "uint" as const,
               bits: 256
             },
-            {location: "special" as const, special: "gasprice"},
+            { location: "special" as const, special: "gasprice" },
             info
           )
         }
       };
     case "block":
-      let block: {[field: string]: Values.Result} = {
+      let block: { [field: string]: Values.Result } = {
         coinbase: yield* decodeValue(
-	  externalAddressType(info.currentContext.compiler),
-          {location: "special" as const, special: "coinbase"},
+          externalAddressType(info.currentContext.compiler),
+          { location: "special" as const, special: "coinbase" },
           info
         )
       };
@@ -107,7 +113,7 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
             typeClass: "uint" as const,
             bits: 256
           },
-          {location: "special" as const, special: variable},
+          { location: "special" as const, special: variable },
           info
         );
       }
@@ -121,33 +127,33 @@ export function* decodeMagic(dataType: Types.MagicType, pointer: SpecialPointer,
 
 //NOTE: this is going to change again in 0.6.x!  be ready!
 function senderType(compiler: CompilerVersion): Types.AddressType {
-  switch(solidityFamily(compiler)) {
+  switch (solidityFamily(compiler)) {
     case "pre-0.5.0":
       return {
-	typeClass: "address",
-	kind: "general"
-      }
+        typeClass: "address",
+        kind: "general"
+      };
     case "0.5.x":
       return {
-	typeClass: "address",
-	kind: "specific",
-	payable: true
-      }
+        typeClass: "address",
+        kind: "specific",
+        payable: true
+      };
   }
 }
 
 function externalAddressType(compiler: CompilerVersion): Types.AddressType {
-  switch(solidityFamily(compiler)) {
+  switch (solidityFamily(compiler)) {
     case "pre-0.5.0":
       return {
-	typeClass: "address",
-	kind: "general"
-      }
+        typeClass: "address",
+        kind: "general"
+      };
     case "0.5.x":
       return {
-	typeClass: "address",
-	kind: "specific",
-	payable: true
-      }
+        typeClass: "address",
+        kind: "specific",
+        payable: true
+      };
   }
 }

@@ -1,24 +1,33 @@
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { AbiUtils } from "./abi";
-import { DecoderContext } from "../types/contexts";
+import { DecoderContext } from "@truffle/codec/types/contexts";
 import { Conversion as ConversionUtils } from "./conversion";
 import { EVM as EVMUtils } from "./evm";
-import { AstDefinition, AstReferences, ContractKind } from "../types/ast";
+import {
+  AstDefinition,
+  AstReferences,
+  ContractKind
+} from "@truffle/codec/types/ast";
 
 export function getContractNode(contract: ContractObject): AstDefinition {
-  return (contract.ast || {nodes: []}).nodes.find(
+  return (contract.ast || { nodes: [] }).nodes.find(
     (contractNode: AstDefinition) =>
-    contractNode.nodeType === "ContractDefinition"
-    && (contractNode.name === contract.contractName
-      || contractNode.name === contract.contract_name)
+      contractNode.nodeType === "ContractDefinition" &&
+      (contractNode.name === contract.contractName ||
+        contractNode.name === contract.contract_name)
   );
 }
 
-export function makeContext(contract: ContractObject, node: AstDefinition | undefined, isConstructor = false): DecoderContext {
+export function makeContext(
+  contract: ContractObject,
+  node: AstDefinition | undefined,
+  isConstructor = false
+): DecoderContext {
   const abi = AbiUtils.schemaAbiToAbi(contract.abi);
   const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
   const hash = ConversionUtils.toHexString(
-    EVMUtils.keccak256({type: "string",
+    EVMUtils.keccak256({
+      type: "string",
       value: binary
     })
   );
@@ -37,9 +46,12 @@ export function makeContext(contract: ContractObject, node: AstDefinition | unde
 }
 
 //attempts to determine if the given contract is a library or not
-function contractKind(contract: ContractObject, node?: AstDefinition): ContractKind {
+function contractKind(
+  contract: ContractObject,
+  node?: AstDefinition
+): ContractKind {
   //first: if we have a node, use its listed contract kind
-  if(node) {
+  if (node) {
     return node.contractKind;
   }
   //next: check the contract kind field on the contract object itself, if it exists.
@@ -49,14 +61,15 @@ function contractKind(contract: ContractObject, node?: AstDefinition): ContractK
   //we'll assume it's an ordinary contract, UNLESS its deployed bytecode begins with
   //PUSH20 followed by 20 0s, in which case we'll assume it's a library
   //(note: this will fail to detect libraries from before Solidity 0.4.20)
-  if(contract.deployedBytecode) {
-    const pushAddressInstruction = (
-      0x60 +
-      EVMUtils.ADDRESS_SIZE -
-      1
-    ).toString(16); //"73"
-    const libraryString = "0x" + pushAddressInstruction + "00".repeat(EVMUtils.ADDRESS_SIZE);
-    return contract.deployedBytecode.startsWith(libraryString) ? "library" : "contract";
+  if (contract.deployedBytecode) {
+    const pushAddressInstruction = (0x60 + EVMUtils.ADDRESS_SIZE - 1).toString(
+      16
+    ); //"73"
+    const libraryString =
+      "0x" + pushAddressInstruction + "00".repeat(EVMUtils.ADDRESS_SIZE);
+    return contract.deployedBytecode.startsWith(libraryString)
+      ? "library"
+      : "contract";
   }
   //finally, in the absence of anything to go on, we'll assume it's an ordinary contract
   return "contract";

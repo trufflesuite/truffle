@@ -1,29 +1,29 @@
 import debugModule from "debug";
 const debug = debugModule("codec:core:decoding");
 
-import { AstDefinition } from "../types/ast";
-import * as CodecUtils from "../utils";
-import { MakeType, abifyType, abifyResult } from "../utils";
-import { Types, Values } from "../format";
-import * as AbiTypes from "../types/abi";
-import * as Pointer from "../types/pointer";
-import { EvmInfo } from "../types/evm";
-import { StopDecodingError } from "../decode/errors";
-import { DecoderRequest } from "../types/request";
+import { AstDefinition } from "@truffle/codec/types/ast";
+import * as CodecUtils from "@truffle/codec/utils";
+import { MakeType, abifyType, abifyResult } from "@truffle/codec/utils";
+import { Types, Values } from "@truffle/codec/format";
+import * as AbiTypes from "@truffle/codec/types/abi";
+import * as Pointer from "@truffle/codec/types/pointer";
+import { EvmInfo } from "@truffle/codec/types/evm";
+import { StopDecodingError } from "@truffle/codec/decode/errors";
+import { DecoderRequest } from "@truffle/codec/types/request";
 import {
   CalldataAllocation,
   EventAllocation,
   EventArgumentAllocation
-} from "../types/allocation";
+} from "@truffle/codec/types/allocation";
 import {
   CalldataDecoding,
   LogDecoding,
   AbiArgument,
   DecodingMode
-} from "../types/decoding";
-import { encodeAbi, encodeTupleAbi } from "../encode/abi";
-import read from "../read";
-import decode from "../decode";
+} from "@truffle/codec/types/decoding";
+import { encodeAbi, encodeTupleAbi } from "@truffle/codec/encode/abi";
+import read from "@truffle/codec/read";
+import decode from "@truffle/codec/decode";
 
 export function* decodeVariable(
   definition: AstDefinition,

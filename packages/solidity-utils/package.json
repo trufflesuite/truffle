@@ -11,7 +11,7 @@
     "solidity",
     "contracts"
   ],
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
