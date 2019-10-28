@@ -22,7 +22,7 @@ const Environment = {
       networkType: config.networks[config.network].type
     });
 
-    await Provider.testConnection(config, web3, interfaceAdapter);
+    await Provider.testConnection(web3, interfaceAdapter);
     await helpers.detectAndSetNetworkId(config, web3, interfaceAdapter);
     await helpers.setFromOnConfig(config, web3, interfaceAdapter);
   },

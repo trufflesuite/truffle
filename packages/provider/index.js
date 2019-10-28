@@ -31,7 +31,7 @@ module.exports = {
     return provider;
   },
 
-  testConnection: function(options, web3, interfaceAdapter) {
+  testConnection: function(web3, interfaceAdapter) {
     return new Promise((resolve, reject) => {
       console.log("Testing the provider...");
       console.log("=======================");
