@@ -1123,14 +1123,6 @@
   resolved "https://registry.yarnpkg.com/@truffle/blockchain-utils/-/blockchain-utils-0.0.13.tgz#2b6302586248fe2068ba160be53855c3c923a4e2"
   integrity sha512-58PNluLrJ967BjoBymWmfa+j9tfDa2GpAjEOiKkQav94aVbrBecDwmd3jOTl3gAhJA21AB3UZxri50mKVHopKw==
 
-"@truffle/compile-common@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@truffle/compile-common/-/compile-common-0.1.0.tgz#0a41f7c428a833b1a773d290adef78333162db03"
-  integrity sha512-Tp0xk/wRfDQAlh7TviIyzapIhQfRGf97Z3+t8UhMH2EngjYKr7fV0Dou6ZGl3cYvc8iV8cSFrYrfox6cV0mPVg==
-  dependencies:
-    "@truffle/compile-solidity" "^4.2.8"
-    "@truffle/contract-sources" "^0.1.6"
-
 "@truffle/contract-schema@^3.0.16":
   version "3.0.16"
   resolved "https://registry.yarnpkg.com/@truffle/contract-schema/-/contract-schema-3.0.16.tgz#0de8670b2b0dacba57b43b65911c5376dd00bbdf"
