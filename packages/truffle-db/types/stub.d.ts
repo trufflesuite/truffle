@@ -6,6 +6,10 @@ declare namespace DataModel {
   type ISource = any;
   type ISourceRange = any;
 
+  interface IWorkspaceQuery {
+    [key: string]: any;
+  }
+
   // interface IGraphQLResponseErrorLocation {
   //   line: number;
   //   column: number;

@@ -29,15 +29,23 @@ export const schema = mergeSchemas({
         extend type Network {
           id: ID!
         }
-        `,
+        `
       ]
     }),
 
     // define entrypoints
-    `type Query {
+   `type Query {
       contractNames: [String]!
       contract(id: ID!): Contract
       compilation(id: ID!): Compilation
+
+      bytecodes: [Bytecode]
+      compilations: [Compilation]
+      contracts: [Contract]
+      contractInstances: [ContractInstance]
+      networks: [Network]
+      sources: [Source]
+
       source(id: ID!): Source
       bytecode(id: ID!): Bytecode
       contractInstance(id: ID!): ContractInstance
@@ -229,31 +237,52 @@ export const schema = mergeSchemas({
       networksAdd(input: NetworksAddInput!): NetworksAddPayload
     } `
   ],
+
   resolvers: {
     Query: {
       contractNames: {
         resolve: (_, {}, { workspace }) =>
           workspace.contractNames()
       },
+      contracts: {
+        resolve: (_, {}, { workspace }) => workspace.contracts()
+      },
       contract: {
         resolve: (_, { id }, { workspace }) =>
           workspace.contract({ id })
+      },
+      sources: {
+        resolve: (_, {}, { workspace }) => workspace.sources()
       },
       source: {
         resolve: (_, { id }, { workspace }) =>
           workspace.source({ id })
       },
+      bytecodes: {
+        resolve: (_, {}, { workspace }) => workspace.bytecodes()
+      },
       bytecode: {
         resolve: (_, { id }, { workspace }) =>
           workspace.bytecode({ id })
+      },
+      compilations: {
+        resolve: (_, {}, { workspace }) =>
+          workspace.compilations()
       },
       compilation: {
         resolve: (_, { id }, { workspace }) =>
           workspace.compilation({ id })
       },
+      contractInstances: {
+        resolve: (_, {}, { workspace }) =>
+          workspace.contractInstances()
+      },
       contractInstance: {
         resolve: (_, { id }, { workspace }) =>
           workspace.contractInstance({ id })
+      },
+      networks: {
+        resolve: (_, {}, { workspace }) => workspace.networks()
       },
       network: {
         resolve: (_, { id }, { workspace }) =>
@@ -270,8 +299,8 @@ export const schema = mergeSchemas({
           workspace.bytecodesAdd({ input })
       },
       contractsAdd: {
-        resolve: (_, {input}, {workspace}) =>
-        workspace.contractsAdd({ input })
+        resolve: (_, { input }, { workspace }) =>
+          workspace.contractsAdd({ input })
       },
       compilationsAdd: {
         resolve: (_, { input }, { workspace }) =>
@@ -284,7 +313,7 @@ export const schema = mergeSchemas({
       networksAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.networksAdd({ input })
-      },
+      }
     },
     Compilation: {
       sources: {
@@ -326,20 +355,20 @@ export const schema = mergeSchemas({
         resolve: async (input, _, { workspace }) => {
           let bytecode = await workspace.bytecode(input.creation.constructor.createBytecode);
           let transactionHash = input.creation.transactionHash;
-          return { transactionHash: transactionHash, constructor: { createBytecode: bytecode } }
+          return { transactionHash: transactionHash, constructor: { createBytecode: bytecode } };
         }
       }
     },
     SourceContract: {
       source: {
         resolve: ({ source }, _, { workspace }) =>
-            workspace.source(source)
-      },
+          workspace.source(source)
+      }
     },
     Constructor: {
       createBytecode: {
         resolve: ({ createBytecode }, _, { workspace }) =>
-            workspace.bytecode(createBytecode)
+          workspace.bytecode(createBytecode)
       }
     }
   }

@@ -28,6 +28,9 @@
     "prepare": "yarn build",
     "build": "./bin/build",
     "start": "ts-node-dev -r tsconfig-paths/register ./bin/server",
+    "start:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server",
+    "start:drizzle": "ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/drizzle-box",
+    "start:drizzle:debug": "DEBUG=pouchdb:api ts-node-dev -r tsconfig-paths/register ./bin/server ./test/truffle-projects/drizzle-box",
     "test": "jest --verbose --detectOpenHandles"
   },
   "bugs": {
@@ -63,6 +66,7 @@
     "pascal-case": "^2.0.1",
     "pouchdb": "7.1.1",
     "pouchdb-adapter-memory": "^7.1.1",
+    "pouchdb-debug": "^7.1.1",
     "pouchdb-find": "^7.0.0",
     "source-map-support": "^0.5.9",
     "truffle-workflow-compile": "^2.0.12",
@@ -92,8 +96,10 @@
       "^test/(.*)": "<rootDir>/test/$1"
     },
     "testMatch": [
-      "<rootDir>/src/**/test/*.+(ts|js)",
-      "<rootDir>/test/**/test/*.+(ts|js)"
+      "<rootDir>/src/**/test/index.(ts|js)",
+      "<rootDir>/test/**/test/index.(ts|js)",
+      "<rootDir>/src/**/test/*\\.(spec|test)\\.(ts|js)",
+      "<rootDir>/test/**/test/*\\.(spec|test)\\.(ts|js)"
     ]
   },
   "_moduleAliases": {
