@@ -35,7 +35,7 @@ import { ContractConstructorObject, ContractInstanceObject } from "./types";
 /**
  * Constructs a wire decoder for the project.
  * @param provider The Web3 provider object to use.
- * @param contracts A list of contract artifacts for contracts in the project.
+ * @param artifacts A list of contract artifacts for contracts in the project.
  *
  *   Contract constructor objects may be substituted for artifacts, so if
  *   you're not sure which you're dealing with, it's OK.
@@ -44,19 +44,19 @@ import { ContractConstructorObject, ContractInstanceObject } from "./types";
  */
 export async function forProject(
   provider: Provider,
-  contracts: ContractObject[]
+  artifacts: ContractObject[]
 ): Promise<WireDecoder> {
-  return new WireDecoder(contracts, provider);
+  return new WireDecoder(artifacts, provider);
 }
 
 /**
- * Constructs a contract instance decoder for a given contract instance.
- * @param contract The artifact for the contract.
+ * Constructs a contract decoder for a given contract artifact.
+ * @param artifact The artifact for the contract.
  *
  *   A contract constructor object may be substituted for the artifact, so if
  *   you're not sure which you're dealing with, it's OK.
  * @param provider The Web3 provider object to use.
- * @param relevantContracts A list of artifacts for other contracts in the project that may be relevant
+ * @param artifacts A list of artifacts for other contracts in the project that may be relevant
  *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
  *
  *   Contract constructor objects may be substituted for artifacts, so if
@@ -67,82 +67,73 @@ export async function forProject(
  *   This parameter is intended to be made optional in the future.
  */
 export async function forArtifact(
-  contract: ContractObject,
+  artifact: ContractObject,
   provider: Provider,
-  relevantContracts: ContractObject[]
+  artifacts: ContractObject[]
 ): Promise<ContractDecoder> {
-  let contracts = relevantContracts.includes(contract)
-    ? relevantContracts
-    : [contract, ...relevantContracts];
-  let wireDecoder = await forProject(provider, contracts);
-  let contractDecoder = new ContractDecoder(contract, wireDecoder);
+  artifacts = artifacts.includes(artifact)
+    ? artifacts
+    : [artifact, ...artifacts];
+  let wireDecoder = await forProject(provider, artifacts);
+  let contractDecoder = new ContractDecoder(artifact, wireDecoder);
   await contractDecoder.init();
   return contractDecoder;
 }
 
 /**
- * Constructs a contract instance decoder for a given contract instance.
+ * Constructs a contract decoder for a given contract.
  * @param contract The contract constructor object corresponding to the type of the contract.
- * @param provider The Web3 provider object to use.
- * @param relevantContracts A list of artifacts for other contracts in the project that may be relevant
+ * @param artifacts A list of artifacts for other contracts in the project that may be relevant
  *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
  *
- *   See the relevantContracts parameter documentation on [[forArtifact]] for more detail.
+ *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
  */
 export async function forContract(
   contract: ContractConstructorObject,
-  relevantContracts: ContractObject[]
+  artifacts: ContractObject[]
 ): Promise<ContractDecoder> {
-  return await forArtifact(
-    contract,
-    contract.web3.currentProvider,
-    relevantContracts
-  );
+  return await forArtifact(contract, contract.web3.currentProvider, artifacts);
 }
 
 /**
  * Constructs a contract decoder given an existing wire decoder for the project.
- * @param contract The artifact corresponding to the type of the contract.
+ * @param artifact The artifact corresponding to the type of the contract.
  *
  *   A contract constructor object may be substituted for the artifact, so if
  *   you're not sure which you're dealing with, it's OK.
  * @param decoder An existing wire decoder for the project.
  */
 export async function forArtifactWithDecoder(
-  contract: ContractObject,
+  artifact: ContractObject,
   decoder: WireDecoder
 ): Promise<ContractDecoder> {
-  let contractDecoder = new ContractDecoder(contract, decoder);
+  let contractDecoder = new ContractDecoder(artifact, decoder);
   await contractDecoder.init();
   return contractDecoder;
 }
 
 /**
  * Constructs a contract instance decoder for a deployed contract instance.
- * @param contract The artifact corresponding to the type of the contract.
+ * @param artifact The artifact corresponding to the type of the contract.
  *
  *   A contract constructor object may be substituted for the artifact, so if
  *   you're not sure which you're dealing with, it's OK.
  * @param provider The Web3 provider object to use.
- * @param relevantContracts A list of artifacts for other contracts in the project that may be relevant
+ * @param artifacts A list of artifacts for other contracts in the project that may be relevant
  *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
  *
- *   See the relevantContracts parameter documentation on [[forArtifact]] for more detail.
+ *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
  */
 export async function forDeployedArtifact(
-  contract: ContractObject,
+  artifact: ContractObject,
   provider: Provider,
-  relevantContracts: ContractObject[]
+  artifacts: ContractObject[]
 ): Promise<ContractInstanceDecoder> {
-  let contractDecoder = await forArtifact(
-    contract,
-    provider,
-    relevantContracts
-  );
+  let contractDecoder = await forArtifact(artifact, provider, artifacts);
   let instanceDecoder = await contractDecoder.forInstance();
   return instanceDecoder;
 }
@@ -150,25 +141,25 @@ export async function forDeployedArtifact(
 /**
  * Constructs a contract instance decoder for a deployed contract instance.
  * @param contract The contract constructor object corresponding to the type of the contract.
- * @param relevantContracts A list of artifacts for other contracts in the project that may be relevant
+ * @param artifacts A list of artifacts for other contracts in the project that may be relevant
  *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
  *
- *   See the relevantContracts parameter documentation on [[forArtifact]] for more detail.
+ *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
  */
 export async function forDeployedContract(
   contract: ContractConstructorObject,
-  relevantContracts: ContractObject[]
+  artifacts: ContractObject[]
 ): Promise<ContractInstanceDecoder> {
-  let contractDecoder = await forContract(contract, relevantContracts);
+  let contractDecoder = await forContract(contract, artifacts);
   let instanceDecoder = await contractDecoder.forInstance();
   return instanceDecoder;
 }
 
 /**
  * Constructs a contract instance decoder for a contract instance at a given address.
- * @param contract The artifact corresponding to the type of the contract.
+ * @param artifact The artifact corresponding to the type of the contract.
  *
  *   A contract constructor object may be substituted for the artifact, so if
  *   you're not sure which you're dealing with, it's OK.
@@ -177,24 +168,20 @@ export async function forDeployedContract(
  *
  *   Address must either be checksummed, or in all one case to circumvent the checksum.
  *   Mixed-case with bad checksum will cause this function to throw an exception.
- * @param relevantContracts A list of artifacts for other contracts in the project that may be relevant
+ * @param artifacts A list of artifacts for other contracts in the project that may be relevant
  *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
  *
- *   See the relevantContracts parameter documentation on [[forArtifact]] for more detail.
+ *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
  */
 export async function forArtifactAt(
-  contract: ContractObject,
+  artifact: ContractObject,
   provider: Provider,
   address: string,
-  relevantContracts: ContractObject[]
+  artifacts: ContractObject[]
 ): Promise<ContractInstanceDecoder> {
-  let contractDecoder = await forArtifact(
-    contract,
-    provider,
-    relevantContracts
-  );
+  let contractDecoder = await forArtifact(artifact, provider, artifacts);
   let instanceDecoder = await contractDecoder.forInstance(address);
   return instanceDecoder;
 }
@@ -206,19 +193,19 @@ export async function forArtifactAt(
  *
  *   Address must either be checksummed, or in all one case to circumvent the checksum.
  *   Mixed-case with bad checksum will cause this function to throw an exception.
- * @param relevantContracts A list of artifacts for other contracts in the project that may be relevant
+ * @param artifacts A list of artifacts for other contracts in the project that may be relevant
  *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
  *
- *   See the relevantContracts parameter documentation on [[forArtifact]] for more detail.
+ *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
  */
 export async function forContractAt(
   contract: ContractConstructorObject,
   address: string,
-  relevantContracts: ContractObject[]
+  artifacts: ContractObject[]
 ): Promise<ContractInstanceDecoder> {
-  let contractDecoder = await forContract(contract, relevantContracts);
+  let contractDecoder = await forContract(contract, artifacts);
   let instanceDecoder = await contractDecoder.forInstance(address);
   return instanceDecoder;
 }
@@ -226,20 +213,16 @@ export async function forContractAt(
 /**
  * Constructs a contract instance decoder for a given contract instance.
  * @param contract The contract abstraction object corresponding to the contract instance.
- * @param relevantContracts A list of artifacts for other contracts in the project that may be relevant
+ * @param artifacts A list of artifacts for other contracts in the project that may be relevant
  *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
  *
- *   See the relevantContracts parameter documentation on [[forArtifact]] for more detail.
+ *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
  */
 export async function forContractAbstraction(
   contract: ContractInstanceObject,
-  relevantContracts: ContractObject[]
+  artifacts: ContractObject[]
 ): Promise<ContractInstanceDecoder> {
-  return await forContractAt(
-    contract.constructor,
-    contract.address,
-    relevantContracts
-  );
+  return await forContractAt(contract.constructor, contract.address, artifacts);
 }
