@@ -51,7 +51,7 @@ export default class ContractDecoder {
   private wireDecoder: WireDecoder;
 
   /**
-   * @private
+   * @protected
    */
   constructor(
     contract: ContractObject,
@@ -100,7 +100,7 @@ export default class ContractDecoder {
   }
 
   /**
-   * @hidden
+   * @protected
    */
   public async init(): Promise<void> {
     this.contractNetwork = (await this.web3.eth.net.getId()).toString();
@@ -170,28 +170,28 @@ export default class ContractDecoder {
   //the following functions are for internal use
 
   /**
-   * @hidden
+   * @protected
    */
   public getAllocations() {
     return this.allocations;
   }
 
   /**
-   * @hidden
+   * @protected
    */
   public getStateVariableReferences() {
     return this.stateVariableReferences;
   }
 
   /**
-   * @hidden
+   * @protected
    */
   public getWireDecoder() {
     return this.wireDecoder;
   }
 
   /**
-   * @hidden
+   * @protected
    */
   public getContractInfo(): ContractInfo {
     return {
@@ -253,7 +253,7 @@ export class ContractInstanceDecoder {
   private wireDecoder: WireDecoder;
 
   /**
-   * @private
+   * @protected
    */
   constructor(contractDecoder: ContractDecoder, address?: string) {
     this.contractDecoder = contractDecoder;
@@ -287,7 +287,7 @@ export class ContractInstanceDecoder {
   }
 
   /**
-   * @hidden
+   * @protected
    */
   public async init(): Promise<void> {
     this.contractCode = Conversion.toHexString(
