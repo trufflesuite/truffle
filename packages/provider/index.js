@@ -37,7 +37,8 @@ module.exports = {
     const { networks, network } = options;
     let networkCheckTimeout;
     if (networks[network]) {
-      networkCheckTimeout = networks[network].networkCheckTimeout || DEFAULT_NETWORK_CHECK_TIMEOUT;
+      networkCheckTimeout =
+        networks[network].networkCheckTimeout || DEFAULT_NETWORK_CHECK_TIMEOUT;
     } else {
       networkCheckTimeout = DEFAULT_NETWORK_CHECK_TIMEOUT;
     }
