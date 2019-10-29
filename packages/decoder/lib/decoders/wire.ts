@@ -45,7 +45,7 @@ export default class WireDecoder {
   private codeCache: DecoderTypes.CodeCache = {};
 
   /**
-   * @private
+   * @protected
    */
   constructor(contracts: ContractObject[], provider: Provider) {
     this.web3 = new Web3(provider);
@@ -182,7 +182,7 @@ export default class WireDecoder {
   }
 
   /**
-   * @hidden
+   * @protected
    * for internal use
    */
   public async getCode(address: string, block: number): Promise<Uint8Array> {
@@ -411,21 +411,21 @@ export default class WireDecoder {
   //the following functions are intended for internal use only
 
   /**
-   * @hidden
+   * @protected
    */
   public getReferenceDeclarations(): Ast.AstNodes {
     return this.referenceDeclarations;
   }
 
   /**
-   * @hidden
+   * @protected
    */
   public getUserDefinedTypes(): Format.Types.TypesById {
     return this.userDefinedTypes;
   }
 
   /**
-   * @hidden
+   * @protected
    */
   public getAllocations(): Evm.AllocationInfo {
     return {
@@ -435,14 +435,14 @@ export default class WireDecoder {
   }
 
   /**
-   * @hidden
+   * @protected
    */
   public getWeb3(): Web3 {
     return this.web3;
   }
 
   /**
-   * @hidden
+   * @protected
    */
   public getDeployedContexts(): Contexts.DecoderContexts {
     return this.deployedContexts;
