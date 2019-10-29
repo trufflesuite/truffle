@@ -375,14 +375,20 @@ export function nativizeVariables(variables: {
  * ever written to support our hacked-together watch expression system, and
  * later repurposed to make testing easier.
  *
- * If you are not doing something as horrible as our hacked-together watch
- * expression system, then you probably have a better option than using this in
- * real code!
+ * If you are not doing something as horrible as evaluating user-inputted
+ * Javascript expressions meant to operate upon Solidity variables, then you
+ * probably have a better option than using this in real code!
+ *
+ * (For instance, if you just want to nicely print individual values, without
+ * attempting to first operate them via Javascript expressions, we have the
+ * [[ResultInspector]] class, which can be used with Node's
+ * [util.inspect()](https://nodejs.org/api/util.html#util_util_inspect_object_options)
+ * to do exactly that.)
  *
  * Remember, the decoder output format was made to be machine-readable.  It
  * shouldn't be too hard for you to process.  If it comes to it, copy-paste
- * this code and dehackify it for your use case, which hopefully is saner than
- * the one that caused us to write this.
+ * this code and dehackify it for your use case, which hopefully is more
+ * manageable than the one that caused us to write this.
  */
 export function nativize(result: Format.Values.Result): any {
   if (result.kind === "error") {
