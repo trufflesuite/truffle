@@ -2,6 +2,7 @@ const debug = require("debug")("provider");
 const Web3 = require("web3");
 const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
+const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
 
 module.exports = {
   wrap: function(provider, options) {
@@ -33,7 +34,13 @@ module.exports = {
   },
 
   testConnection: function(options) {
-    const { networkCheckTimeout } = options;
+    const { networks, network } = options;
+    let networkCheckTimeout;
+    if (networks[network]) {
+      networkCheckTimeout = networks[network].networkCheckTimeout || DEFAULT_NETWORK_CHECK_TIMEOUT;
+    } else {
+      networkCheckTimeout = DEFAULT_NETWORK_CHECK_TIMEOUT;
+    }
     const provider = this.getProvider(options);
     const interfaceAdapter = new InterfaceAdapter();
     const web3 = new Web3Shim({ provider });
