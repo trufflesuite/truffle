@@ -35,11 +35,11 @@ export class ContractAllocationFailedError extends Error {
 }
 
 /**
- * This error indicates that an invalid address was passed to
- * [[ContractDecoder.forInstance]] or [[forContractInstance]].  Valid addresses
- * are those that web3 accepts; i.e., either those with correct checksums, or
- * those that are all-lowercase or all-uppercase to deliberately circumvent the
- * checksum.
+ * This error indicates that an invalid address was passed to one of the
+ * contract instance decoder spawners ([[forContractInstance]], etc).  Valid
+ * addresses are those that Web3 accepts; i.e., either those with correct
+ * checksums, or those that are all-lowercase or all-uppercase to deliberately
+ * circumvent the checksum.
  * @category Exception
  */
 export class InvalidAddressError extends Error {
