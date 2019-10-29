@@ -4,12 +4,16 @@ import * as Types from "./types";
 
 //note that we often want an elementary *value*, and not an error!
 //so let's define those types too
-export type ElementaryValue = UintValue | IntValue | BoolValue
-  | BytesValue | AddressValue | StringValue | FixedValue | UfixedValue;
-//we don't include FixedValue or UfixedValue because those
-//aren't implemented yet
+export type ElementaryValue =
+  | UintValue
+  | IntValue
+  | BoolValue
+  | BytesValue
+  | AddressValue
+  | StringValue
+  | FixedValue
+  | UfixedValue;
 export type BytesValue = BytesStaticValue | BytesDynamicValue;
-
 
 //Uints
 export interface UintValue {
@@ -45,7 +49,10 @@ export interface BytesStaticValue {
   type: Types.BytesTypeStatic;
   kind: "value";
   value: {
-    asHex: string; //should be hex-formatted, with leading "0x"
+    /**
+     * hex-formatted, with leading "0x"
+     */
+    asHex: string;
     rawAsHex?: string;
   };
 }
@@ -55,7 +62,10 @@ export interface BytesDynamicValue {
   type: Types.BytesTypeDynamic;
   kind: "value";
   value: {
-    asHex: string; //should be hex-formatted, with leading "0x"
+    /**
+     * hex-formatted, with leading "0x"
+     */
+    asHex: string;
   };
 }
 
@@ -64,9 +74,15 @@ export interface AddressValue {
   type: Types.AddressType;
   kind: "value";
   value: {
-    asAddress: string; //should have 0x and be checksum-cased
+    /**
+     * has leading "0x" and is checksum-cased
+     */
+    asAddress: string;
+    /**
+     * just a hex string, so no checksum
+     */
     rawAsHex?: string;
-  }
+  };
 }
 
 //strings
@@ -77,18 +93,27 @@ export interface StringValue {
   value: StringValueInfo;
 }
 
-//these come in two types: valid strings and malformed strings
+/**
+ * These come in two types: valid strings and malformed strings.
+ */
 export type StringValueInfo = StringValueInfoValid | StringValueInfoMalformed;
 
-//valid strings
+/**
+ * This type of StringValueInfo represents a valid UTF-8 string.
+ */
 export interface StringValueInfoValid {
   kind: "valid";
   asString: string;
 }
 
-//malformed strings
+/**
+ * This type of StringValueInfo represents a malformed string.
+ */
 export interface StringValueInfoMalformed {
   kind: "malformed";
+  /**
+   * hex-formatted, with leading "0x"
+   */
   asHex: string;
 }
 

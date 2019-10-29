@@ -16,25 +16,53 @@ import { Range } from "@truffle/codec/types/storage";
  * SECTION 1: Generic types for values in general (including errors).
  */
 
-export type ErrorResult = ElementaryErrorResult
-  | ArrayErrorResult | MappingErrorResult | StructErrorResult | MagicErrorResult | TupleErrorResult
+export type ErrorResult =
+  | ElementaryErrorResult
+  | ArrayErrorResult
+  | MappingErrorResult
+  | StructErrorResult
+  | MagicErrorResult
+  | TupleErrorResult
   | EnumErrorResult
-  | ContractErrorResult | FunctionExternalErrorResult | FunctionInternalErrorResult;
+  | ContractErrorResult
+  | FunctionExternalErrorResult
+  | FunctionInternalErrorResult;
 
-export type DecoderError = GenericError
-  | UintError | IntError | BoolError | BytesStaticError | BytesDynamicError | AddressError
-  | StringError | FixedError | UfixedError
-  | ArrayError | MappingError | StructError | MagicError | TupleError
-  | EnumError | ContractError | FunctionExternalError | FunctionInternalError
+export type DecoderError =
+  | GenericError
+  | UintError
+  | IntError
+  | BoolError
+  | BytesStaticError
+  | BytesDynamicError
+  | AddressError
+  | StringError
+  | FixedError
+  | UfixedError
+  | ArrayError
+  | MappingError
+  | StructError
+  | MagicError
+  | TupleError
+  | EnumError
+  | ContractError
+  | FunctionExternalError
+  | FunctionInternalError
   | InternalUseError;
 
 /*
  * SECTION 2: Elementary values
  */
 
-export type ElementaryErrorResult = UintErrorResult | IntErrorResult | BoolErrorResult
-  | BytesErrorResult | AddressErrorResult | StringErrorResult
-  | FixedErrorResult | UfixedErrorResult;
+export type ElementaryErrorResult =
+  | UintErrorResult
+  | IntErrorResult
+  | BoolErrorResult
+  | BytesErrorResult
+  | AddressErrorResult
+  | StringErrorResult
+  | FixedErrorResult
+  | UfixedErrorResult;
 export type BytesErrorResult = BytesStaticErrorResult | BytesDynamicErrorResult;
 
 //Uints
@@ -47,7 +75,10 @@ export interface UintErrorResult {
 export type UintError = UintPaddingError;
 
 export interface UintPaddingError {
-  raw: string; //hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "UintPaddingError";
 }
 
@@ -61,7 +92,10 @@ export interface IntErrorResult {
 export type IntError = IntPaddingError;
 
 export interface IntPaddingError {
-  raw: string; //hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "IntPaddingError";
 }
 
@@ -89,7 +123,10 @@ export interface BytesStaticErrorResult {
 export type BytesStaticError = BytesPaddingError;
 
 export interface BytesPaddingError {
-  raw: string; //should be hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "BytesPaddingError";
 }
 
@@ -112,7 +149,10 @@ export interface AddressErrorResult {
 export type AddressError = AddressPaddingError;
 
 export interface AddressPaddingError {
-  raw: string; //should be hex string
+  /**
+   * hex string; no checksum
+   */
+  raw: string;
   kind: "AddressPaddingError";
 }
 
@@ -140,14 +180,20 @@ export interface UfixedErrorResult {
 export type FixedError = FixedPaddingError;
 
 export interface FixedPaddingError {
-  raw: string; //hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "FixedPaddingError";
 }
 
 export type UfixedError = UfixedPaddingError;
 
 export interface UfixedPaddingError {
-  raw: string; //hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "UfixedPaddingError";
 }
 
@@ -241,7 +287,10 @@ export interface ContractErrorResult {
 export type ContractError = ContractPaddingError;
 
 export interface ContractPaddingError {
-  raw: string; //should be hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "ContractPaddingError";
 }
 
@@ -256,15 +305,32 @@ export interface FunctionExternalErrorResult {
   error: GenericError | FunctionExternalError;
 }
 
-export type FunctionExternalError = FunctionExternalNonStackPaddingError | FunctionExternalStackPaddingError;
+export type FunctionExternalError =
+  | FunctionExternalNonStackPaddingError
+  | FunctionExternalStackPaddingError;
 
+/**
+ * This error kind represents a padding error for an external function pointer located anywhere other than the stack.
+ */
 export interface FunctionExternalNonStackPaddingError {
-  raw: string; //should be hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "FunctionExternalNonStackPaddingError";
 }
 
+/**
+ * This error kind represents a padding error for external function pointer located on the stack.
+ */
 export interface FunctionExternalStackPaddingError {
+  /**
+   * hex string (no checksum; also a full word long)
+   */
   rawAddress: string;
+  /**
+   * hex string (but a full word long)
+   */
   rawSelector: string;
   kind: "FunctionExternalStackPaddingError";
 }
@@ -280,14 +346,25 @@ export interface FunctionInternalErrorResult {
   error: GenericError | FunctionInternalError;
 }
 
-export type FunctionInternalError = FunctionInternalPaddingError | NoSuchInternalFunctionError
-  | DeployedFunctionInConstructorError | MalformedInternalFunctionError;
+export type FunctionInternalError =
+  | FunctionInternalPaddingError
+  | NoSuchInternalFunctionError
+  | DeployedFunctionInConstructorError
+  | MalformedInternalFunctionError;
 
 export interface FunctionInternalPaddingError {
-  raw: string; //should be hex string
+  /**
+   * hex string
+   */
+  raw: string;
   kind: "FunctionInternalPaddingError";
 }
 
+/**
+ * Indicates that the function pointer being decoded
+ * fails to point to a valid function, and also is not one of the
+ * default values
+ */
 export interface NoSuchInternalFunctionError {
   kind: "NoSuchInternalFunctionError";
   context: Types.ContractType;
@@ -295,6 +372,10 @@ export interface NoSuchInternalFunctionError {
   constructorProgramCounter: number;
 }
 
+/**
+ * Indicates that this is a deployed-style pointer,
+ * despite the fact that you're in a constructor
+ */
 export interface DeployedFunctionInConstructorError {
   kind: "DeployedFunctionInConstructorError";
   context: Types.ContractType;
@@ -302,6 +383,10 @@ export interface DeployedFunctionInConstructorError {
   constructorProgramCounter: number;
 }
 
+/**
+ * Used when the deployed PC is zero but the constructor PC
+ * is nonzero
+ */
 export interface MalformedInternalFunctionError {
   kind: "MalformedInternalFunctionError";
   context: Types.ContractType;
@@ -313,17 +398,32 @@ export interface MalformedInternalFunctionError {
  * SECTION 8: GENERIC ERRORS
  */
 
-export type GenericError = UserDefinedTypeNotFoundError | IndexedReferenceTypeError | ReadError;
-export type ReadError = UnsupportedConstantError | ReadErrorStack | ReadErrorBytes | ReadErrorStorage;
-export type DynamicDataImplementationError = OverlongArraysAndStringsNotImplementedError | OverlargePointersNotImplementedError;
+export type GenericError =
+  | UserDefinedTypeNotFoundError
+  | IndexedReferenceTypeError
+  | ReadError;
+export type ReadError =
+  | UnsupportedConstantError
+  | ReadErrorStack
+  | ReadErrorBytes
+  | ReadErrorStorage;
+export type DynamicDataImplementationError =
+  | OverlongArraysAndStringsNotImplementedError
+  | OverlargePointersNotImplementedError;
 
 export type ErrorForThrowing = UserDefinedTypeNotFoundError | ReadError;
 
-//attempted to decode an indexed parameter of reference type error
+/**
+ * Used when decoding an indexed parameter of reference type.  These can't meaningfully
+ * be decoded, so instead they decode to an error, sorry.
+ */
 export interface IndexedReferenceTypeError {
   kind: "IndexedReferenceTypeError";
   type: Types.ReferenceType;
-  raw: string; //should be hex string
+  /**
+   * hex string
+   */
+  raw: string;
 }
 
 //type-location error
@@ -370,7 +470,9 @@ export interface OverlargePointersNotImplementedError {
 /* you should never see these returned.
  * they are only for internal use. */
 
-export type InternalUseError = OverlongArrayOrStringStrictModeError | InternalFunctionInABIError;
+export type InternalUseError =
+  | OverlongArrayOrStringStrictModeError
+  | InternalFunctionInABIError;
 
 export interface OverlongArrayOrStringStrictModeError {
   kind: "OverlongArrayOrStringStrictModeError";
@@ -382,4 +484,3 @@ export interface OverlongArrayOrStringStrictModeError {
 export interface InternalFunctionInABIError {
   kind: "InternalFunctionInABIError";
 }
-

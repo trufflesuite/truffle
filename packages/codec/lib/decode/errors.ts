@@ -4,6 +4,9 @@ import { message } from "@truffle/codec/utils/errors";
 //For when we need to throw an error, here's a wrapper class that extends Error.
 //Apologies about the confusing name, but I wanted something that would make
 //sense should it not be caught and thus accidentally exposed to the outside.
+/**
+ * @hidden
+ */
 export class DecodingError extends Error {
   public error: Errors.ErrorForThrowing;
   constructor(error: Errors.ErrorForThrowing) {
@@ -18,6 +21,9 @@ export class DecodingError extends Error {
 //NOTE: currently we don't actually check the type of a thrown error,
 //we just rely on context.  still, I think it makes sense to be a separate
 //type.
+/**
+ * @hidden
+ */
 export class StopDecodingError extends Error {
   public error: Errors.DecoderError;
   public allowRetry: boolean; //setting this to true means that, if the error occurs
