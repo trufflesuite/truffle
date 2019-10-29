@@ -41,6 +41,7 @@ import { ContractConstructorObject, ContractInstanceObject } from "./types";
  *   you're not sure which you're dealing with, it's OK.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Provider-based Constructor
  */
 export async function forProject(
   provider: Provider,
@@ -65,6 +66,7 @@ export async function forProject(
  *   Including the contract itself here is fine; so is excluding it.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Provider-based Constructor
  */
 export async function forArtifact(
   artifact: ContractObject,
@@ -89,6 +91,7 @@ export async function forArtifact(
  *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Truffle Contract-based Constructor
  */
 export async function forContract(
   contract: ContractConstructorObject,
@@ -127,6 +130,7 @@ export async function forArtifactWithDecoder(
  *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Provider-based Constructor
  */
 export async function forDeployedArtifact(
   artifact: ContractObject,
@@ -147,6 +151,7 @@ export async function forDeployedArtifact(
  *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Truffle Contract-based Constructor
  */
 export async function forDeployedContract(
   contract: ContractConstructorObject,
@@ -174,6 +179,7 @@ export async function forDeployedContract(
  *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Provider-based Constructor
  */
 export async function forArtifactAt(
   artifact: ContractObject,
@@ -199,6 +205,7 @@ export async function forArtifactAt(
  *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Truffle Contract-based Constructor
  */
 export async function forContractAt(
   contract: ContractConstructorObject,
@@ -219,6 +226,7 @@ export async function forContractAt(
  *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Truffle Contract-based Constructor
  */
 export async function forContractAbstraction(
   contract: ContractInstanceObject,
