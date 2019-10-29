@@ -32,7 +32,7 @@ contract("DecodingSample", _accounts => {
   it("should get the initial state properly", async function() {
     let deployedContract = await DecodingSample.deployed();
     let address = deployedContract.address;
-    const decoder = await Decoder.forContractAbstraction(deployedContract, [
+    const decoder = await Decoder.forContractInstace(deployedContract, [
       DecodingSampleParent
     ]);
 
