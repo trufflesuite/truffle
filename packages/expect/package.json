@@ -1,6 +1,6 @@
 {
   "name": "@truffle/expect",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Simple module for ensuring specific options are passed to a function",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "ethereum",
     "expect"
   ],
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"

@@ -331,6 +331,7 @@ function processContracts({
   originalSourcePaths,
   solcVersion
 }) {
+  if (!compilerOutput.contracts) return [];
   return (
     Object.entries(compilerOutput.contracts)
       // map to [[{ source, contractName, contract }]]
