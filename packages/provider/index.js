@@ -1,8 +1,7 @@
-var debug = require("debug")("provider");
-var Web3 = require("web3");
-var { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
-
-var wrapper = require("./wrapper");
+const debug = require("debug")("provider");
+const Web3 = require("web3");
+const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const wrapper = require("./wrapper");
 
 module.exports = {
   wrap: function(provider, options) {
@@ -10,8 +9,12 @@ module.exports = {
   },
 
   create: function(options) {
-    var provider;
+    const provider = this.getProvider(options);
+    return this.wrap(provider, options);
+  },
 
+  getProvider: function(options) {
+    let provider;
     if (options.provider && typeof options.provider === "function") {
       provider = options.provider();
     } else if (options.provider) {
@@ -26,20 +29,41 @@ module.exports = {
         { keepAlive: false }
       );
     }
-
-    return this.wrap(provider, options);
+    return provider;
   },
 
-  test_connection: function(provider, callback) {
+  testConnection: function(options) {
+    const provider = this.getProvider(options);
     const interfaceAdapter = new InterfaceAdapter();
-    var web3 = new Web3Shim({ provider });
-    var fail = new Error(
-      "Could not connect to your RPC client. Please check your RPC configuration."
-    );
-
-    web3.eth
-      .getCoinbase()
-      .then(coinbase => callback(null, coinbase))
-      .catch(() => callback(fail, null));
+    const web3 = new Web3Shim({ provider });
+    return new Promise((resolve, reject) => {
+      console.log("Testing the provider...");
+      console.log("=======================");
+      const noResponseFromNetworkCall = setTimeout(() => {
+        console.log(
+          "> There was a timeout while attempting to connect " +
+            "to the network."
+        );
+        const errorMessage =
+          "Failed to connect to the network using the " +
+          "supplied provider.\n       Check to see that your provider is valid.";
+        throw new Error(errorMessage);
+      }, 20000);
+      web3.eth
+        .getBlockNumber()
+        .then(() => {
+          console.log("> The test was successful!");
+          clearTimeout(noResponseFromNetworkCall);
+          resolve(true);
+        })
+        .catch(error => {
+          console.log(
+            "> Something went wrong while attempting to connect " +
+              "to the network."
+          );
+          clearTimeout(noResponseFromNetworkCall);
+          reject(error);
+        });
+    });
   }
 };
