@@ -9,8 +9,8 @@ const debug = debugModule("codec:format:errors");
 
 import BN from "bn.js";
 import * as Types from "./types";
-import { AstDefinition } from "@truffle/codec/types/ast";
-import { Range } from "@truffle/codec/types/storage";
+import * as Ast from "@truffle/codec/ast";
+import * as Storage from "@truffle/codec/storage/types";
 
 /*
  * SECTION 1: Generic types for values in general (including errors).
@@ -414,12 +414,12 @@ export type DynamicDataImplementationError =
 export type ErrorForThrowing = UserDefinedTypeNotFoundError | ReadError;
 
 /**
- * Used when decoding an indexed parameter of reference type.  These can't meaningfully
- * be decoded, so instead they decode to an error, sorry.
+ * Used when decoding an indexed parameter of reference (or tuple) type.  These
+ * can't meaningfully be decoded, so instead they decode to an error, sorry.
  */
 export interface IndexedReferenceTypeError {
   kind: "IndexedReferenceTypeError";
-  type: Types.ReferenceType;
+  type: Types.ReferenceType | Types.TupleType;
   /**
    * hex string
    */
@@ -435,7 +435,7 @@ export interface UserDefinedTypeNotFoundError {
 //Read errors
 export interface UnsupportedConstantError {
   kind: "UnsupportedConstantError";
-  definition: AstDefinition;
+  definition: Ast.AstNode;
 }
 
 export interface ReadErrorStack {
@@ -452,7 +452,7 @@ export interface ReadErrorBytes {
 
 export interface ReadErrorStorage {
   kind: "ReadErrorStorage";
-  range: Range;
+  range: Storage.Range;
 }
 
 export interface OverlongArraysAndStringsNotImplementedError {

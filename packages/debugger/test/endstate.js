@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import evm from "lib/evm/selectors";
 import data from "lib/data/selectors";
 
-import { Utils as TruffleCodecUtils } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 const __FAILURE = `
 pragma solidity ~0.5;
@@ -102,7 +102,7 @@ describe("End State", function() {
     debug("proc.assignments %O", session.view(data.proc.assignments));
 
     assert.ok(session.view(evm.transaction.status));
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
     assert.include(variables, { x: 107 });

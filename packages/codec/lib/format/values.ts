@@ -15,7 +15,6 @@ import * as Types from "./types";
 import * as Errors from "./errors";
 import {
   ElementaryValue,
-  BytesValue,
   UintValue,
   IntValue,
   BoolValue,
@@ -23,14 +22,11 @@ import {
   BytesDynamicValue,
   AddressValue,
   StringValue,
-  StringValueInfo,
-  StringValueInfoValid,
-  StringValueInfoMalformed,
   FixedValue,
   UfixedValue
 } from "./elementary";
-import { Mutability } from "@truffle/codec/types/ast";
-import { FunctionAbiEntry } from "@truffle/codec/types/abi";
+import * as Common from "@truffle/codec/common";
+import * as Abi from "@truffle/codec/abi/types";
 
 export * from "./elementary";
 
@@ -159,6 +155,8 @@ export interface StructValue {
   reference?: number;
   /**
    * these must be stored in order!
+   * moreover, any mappings *must* be included, even
+   * if this is a memory struct (such mappings will be empty)
    */
   value: NameValuePair[];
 }
@@ -247,7 +245,7 @@ export interface ContractValueInfoKnown {
    */
   address: string;
   /**
-   * this is just a hexstring; no checksum (also may have padding on end)
+   * this is just a hexstring; no checksum (also may have padding beforehand)
    */
   rawAddress?: string;
   class: Types.ContractType;
@@ -265,7 +263,7 @@ export interface ContractValueInfoUnknown {
    */
   address: string;
   /**
-   * this is just a hexstring; no checksum (also may have padding on end)
+   * this is just a hexstring; no checksum (also may have padding beforehand)
    */
   rawAddress?: string;
 }
@@ -306,7 +304,7 @@ export interface FunctionExternalValueInfoKnown {
    * formatted as a hex string
    */
   selector: string;
-  abi: FunctionAbiEntry;
+  abi: Abi.FunctionAbiEntry;
   //may have more optional fields added later, I'll leave these out for now
 }
 
@@ -370,7 +368,7 @@ export interface FunctionInternalValueInfoKnown {
   constructorProgramCounter: number;
   name: string;
   definedIn: Types.ContractType;
-  mutability?: Mutability;
+  mutability?: Common.Mutability;
   //may have more optional fields added later
 }
 

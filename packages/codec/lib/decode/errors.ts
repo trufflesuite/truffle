@@ -1,5 +1,4 @@
-import { Errors } from "@truffle/codec/format";
-import { message } from "@truffle/codec/utils/errors";
+import * as Format from "@truffle/codec/format";
 
 //For when we need to throw an error, here's a wrapper class that extends Error.
 //Apologies about the confusing name, but I wanted something that would make
@@ -8,9 +7,9 @@ import { message } from "@truffle/codec/utils/errors";
  * @hidden
  */
 export class DecodingError extends Error {
-  public error: Errors.ErrorForThrowing;
-  constructor(error: Errors.ErrorForThrowing) {
-    super(message(error));
+  public error: Format.Errors.ErrorForThrowing;
+  constructor(error: Format.Errors.ErrorForThrowing) {
+    super(Format.Utils.Exception.message(error));
     this.error = error;
     this.name = "DecodingError";
   }
@@ -25,11 +24,11 @@ export class DecodingError extends Error {
  * @hidden
  */
 export class StopDecodingError extends Error {
-  public error: Errors.DecoderError;
+  public error: Format.Errors.DecoderError;
   public allowRetry: boolean; //setting this to true means that, if the error occurs
   //when decoding in full mode, we allow an ABI-mode retry.  (if we were already in
   //ABI mode, we give up.)
-  constructor(error: Errors.DecoderError, allowRetry?: boolean) {
+  constructor(error: Format.Errors.DecoderError, allowRetry?: boolean) {
     const message = `Stopping decoding: ${error.kind}`; //sorry about the bare-bones message,
     //but again, users shouldn't actually see this, so I think this should suffice for now
     super(message);

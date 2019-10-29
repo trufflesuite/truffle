@@ -2,7 +2,9 @@
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es6",
+    "declaration": true,
+    "target": "es2015",
+    "downlevelIteration": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
@@ -11,13 +13,10 @@
     "lib": ["es2017"],
     "paths": {
       "@truffle/codec": ["./lib"],
-      "@truffle/codec/*": ["./lib/*"],
-      "web3": ["../../node_modules/@types/web3/index", "node_modules/web3/index"],
-      "web3/types": ["../../node_modules/@types/web3/types", "node_modules/web3/types"],
-      "web3/eth/types": ["../../node_modules/@types/web3/eth/types", "node_modules/web3/eth/types"]
+      "@truffle/codec/*": ["./lib/*"]
     },
     "plugins": [
-      { "transform": "ts-transformer-imports" }
+      { "transform": "@zerollup/ts-transform-paths", "exclude": "*" }
     ],
     "rootDir": ".",
     "typeRoots": [

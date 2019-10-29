@@ -1,18 +1,20 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:constant");
 
-import * as CodecUtils from "@truffle/codec/utils";
-import { Types, Values } from "@truffle/codec/format";
+import * as Conversion from "@truffle/codec/conversion";
+import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import decodeValue from "./value";
-import { ConstantDefinitionPointer} from "@truffle/codec/types/pointer";
-import { EvmInfo } from "@truffle/codec/types/evm";
-import { DecoderRequest } from "@truffle/codec/types/request";
+import * as Pointer from "@truffle/codec/pointer";
+import * as Evm from "@truffle/codec/evm";
+import { DecoderRequest } from "@truffle/codec/types";
 import { DecodingError } from "@truffle/codec/decode/errors";
-import BN from "bn.js";
 
-export default function* decodeConstant(dataType: Types.Type, pointer: ConstantDefinitionPointer, info: EvmInfo): Generator<DecoderRequest, Values.Result, Uint8Array> {
-
+export default function* decodeConstant(
+  dataType: Format.Types.Type,
+  pointer: Pointer.ConstantDefinitionPointer,
+  info: Evm.EvmInfo
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   debug("pointer %o", pointer);
 
   //normally, we just dispatch to decodeValue.
@@ -21,13 +23,12 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
   //of the word, but readDefinition will put them at the *end* of the
   //word.  So we'll have to adjust things ourselves.
 
-  if(dataType.typeClass === "bytes" && dataType.kind === "static") {
+  if (dataType.typeClass === "bytes" && dataType.kind === "static") {
     let size = dataType.length;
     let word: Uint8Array;
     try {
       word = yield* read(pointer, info.state);
-    }
-    catch(error) {
+    } catch (error) {
       return {
         type: dataType,
         kind: "error" as const,
@@ -35,12 +36,12 @@ export default function* decodeConstant(dataType: Types.Type, pointer: ConstantD
       };
     }
     //not bothering to check padding; shouldn't be necessary
-    let bytes = word.slice(CodecUtils.EVM.WORD_SIZE - size);
+    let bytes = word.slice(Evm.Utils.WORD_SIZE - size);
     return {
       type: dataType,
       kind: "value" as const,
       value: {
-        asHex: CodecUtils.Conversion.toHexString(bytes)
+        asHex: Conversion.toHexString(bytes)
       }
     }; //we'll skip including a raw value, as that would be meaningless
   }

@@ -1,0 +1,14 @@
+{
+  "name": "Truffle Decoding and Encoding",
+  "mode": "modules",
+  "module": "commonjs",
+  "theme": "default",
+  "includeDeclarations": false,
+  "ignoreCompilerErrors": true,
+  "preserveConstEnums": true,
+  "excludeExternals": true,
+  "exclude": [
+    "**/test/*"
+  ],
+  "target": "ES6"
+}
