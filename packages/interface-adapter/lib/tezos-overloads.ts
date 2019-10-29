@@ -20,12 +20,6 @@ const overrides = {
 
     // @ts-ignore
     web3.eth.net.getId = async () => {
-      // @ts-ignore (typings incomplete)
-      const currentHost = web3.currentProvider.host;
-      // web3 has some neat quirks
-      const parsedHost = currentHost.match(/(^https?:\/\/)(.*?)\:\d.*/)[2];
-      // sets the provider for subsequent Tezos provider calls
-      await web3.tez.setProvider({ rpc: parsedHost });
       const { chain_id } = await web3.tez.rpc.getBlockHeader();
       return chain_id;
     };
@@ -75,6 +69,12 @@ const overrides = {
     const _oldGetBlockNumber = web3.eth.getBlockNumber;
 
     web3.eth.getBlockNumber = async () => {
+      // @ts-ignore (typings incomplete)
+      const currentHost = web3.currentProvider.host;
+      // web3 has some neat quirks
+      const parsedHost = currentHost.match(/(^https?:\/\/)(.*?)\:\d.*/)[2];
+      // sets the provider for subsequent Tezos provider calls
+      await web3.tez.setProvider({ rpc: parsedHost });
       const { level } = await web3.tez.rpc.getBlockHeader();
       return level;
     };
