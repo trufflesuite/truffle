@@ -97,7 +97,7 @@ export class WireDecoder {
     );
 
     for (let contractAndContexts of contractsAndContexts) {
-      //change everythign to normalized version
+      //change everything to normalized version
       if (contractAndContexts.deployedContext) {
         contractAndContexts.deployedContext = this.contexts[
           contractAndContexts.deployedContext.context
