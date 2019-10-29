@@ -98,23 +98,6 @@ export async function forContract(
 }
 
 /**
- * Constructs a contract decoder given an existing wire decoder for the project.
- * @param artifact The artifact corresponding to the type of the contract.
- *
- *   A contract constructor object may be substituted for the artifact, so if
- *   you're not sure which you're dealing with, it's OK.
- * @param decoder An existing wire decoder for the project.
- */
-export async function forArtifactWithDecoder(
-  artifact: ContractObject,
-  decoder: WireDecoder
-): Promise<ContractDecoder> {
-  let contractDecoder = new ContractDecoder(artifact, decoder);
-  await contractDecoder.init();
-  return contractDecoder;
-}
-
-/**
  * Constructs a contract instance decoder for a deployed contract instance.
  * @param artifact The artifact corresponding to the type of the contract.
  *
@@ -220,7 +203,7 @@ export async function forContractAt(
  *
  *   This parameter is intended to be made optional in the future.
  */
-export async function forContractAbstraction(
+export async function forContractInstance(
   contract: ContractInstanceObject,
   artifacts: ContractObject[]
 ): Promise<ContractInstanceDecoder> {

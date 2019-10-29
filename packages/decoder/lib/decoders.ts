@@ -438,6 +438,45 @@ export class WireDecoder {
     return Contexts.Utils.findDecoderContext(contexts, code);
   }
 
+  //finally: the spawners!
+
+  /**
+   * Constructs a contract decoder for a given contract artifact.
+   * @param artifact The artifact for the contract.
+   *
+   *   A contract constructor object may be substituted for the artifact, so if
+   *   you're not sure which you're dealing with, it's OK.
+   *
+   *   Note: The artifact must be one of the ones used to initialize the wire
+   *   decoder; otherwise you will have problems.
+   */
+  public async forArtifact(artifact: ContractObject): Promise<ContractDecoder> {
+    let contractDecoder = new ContractDecoder(artifact, this);
+    await contractDecoder.init();
+    return contractDecoder;
+  }
+
+  /**
+   * Constructs a contract instance decoder for a given instance of a contract in this
+   * project.
+   * @param artifact The artifact for the contract.
+   *
+   *   A contract constructor object may be substituted for the artifact, so if
+   *   you're not sure which you're dealing with, it's OK.
+   *
+   *   Note: The artifact must be one of the ones used to initialize the wire
+   *   decoder; otherwise you will have problems.
+   * @param address The address of the contract instance decode.  If left out, it will be autodetected.
+   *   If an invalid address is provided, this method will throw an exception.
+   */
+  public async forInstance(
+    artifact: ContractObject,
+    address?: string
+  ): Promise<ContractInstanceDecoder> {
+    let contractDecoder = await this.forArtifact(artifact);
+    return await contractDecoder.forInstance(address);
+  }
+
   //the following functions are intended for internal use only
 
   /**
