@@ -380,7 +380,7 @@ export function nativizeVariables(variables: {
  * probably have a better option than using this in real code!
  *
  * (For instance, if you just want to nicely print individual values, without
- * attempting to first operate them via Javascript expressions, we have the
+ * attempting to first operate on them via Javascript expressions, we have the
  * [[ResultInspector]] class, which can be used with Node's
  * [util.inspect()](https://nodejs.org/api/util.html#util_util_inspect_object_options)
  * to do exactly that.)
