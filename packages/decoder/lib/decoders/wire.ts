@@ -268,10 +268,15 @@ export default class WireDecoder {
    * field.  This field holds an array of [[LogDecoding|LogDecodings]]; see the
    * documentation on [[DecodedLog]] for more.
    * @param log The log to be decoded.
-   * @param options Meant for internal use; please don't use this.
-   * @param additionalContexts For internal use only; please don't use this.
    */
-  public async decodeLog(
+  public async decodeLog(log: Log) {
+    return await this.decodeLogWithAdditionalOptions(log);
+  }
+
+  /**
+   * @protected
+   */
+  public async decodeLogWithAdditionalOptions(
     log: Log,
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
@@ -315,16 +320,23 @@ export default class WireDecoder {
   /**
    * Similar to [[decodeLog]], but operates on an array of logs and decodes them all.
    * @param logs The logs to be decoded.
-   * @param options Meant for internal use; please don't use this.
-   * @param additionalContexts For internal use only; please don't use this.
    */
-  public async decodeLogs(
+  public async decodeLogs(logs: Log[]) {
+    return await this.decodeLogsWithAdditionalOptions(logs);
+  }
+
+  /**
+   * @protected
+   */
+  public async decodeLogsWithAdditionalOptions(
     logs: Log[],
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
     return await Promise.all(
-      logs.map(log => this.decodeLog(log, options, additionalContexts))
+      logs.map(log =>
+        this.decodeLogWithAdditionalOptions(log, options, additionalContexts)
+      )
     );
   }
 
@@ -334,11 +346,17 @@ export default class WireDecoder {
    * will be added in the future.
    * @param options Used to determine what events to fetch; see the documentation
    *   on the [[EventOptions]] type for more.
-   * @param additionalContexts For internal use only; please don't use this.
    * @example `events({name: "TestEvent"})` -- get events named "TestEvent"
    *   from the most recent block
    */
-  public async events(
+  public async events(options: DecoderTypes.EventOptions = {}) {
+    return await this.eventsWithAdditionalContexts(options);
+  }
+
+  /**
+   * @protected
+   */
+  public async eventsWithAdditionalContexts(
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
@@ -350,7 +368,11 @@ export default class WireDecoder {
       toBlock
     });
 
-    let events = await this.decodeLogs(logs, options, additionalContexts);
+    let events = await this.decodeLogsWithAdditionalOptions(
+      logs,
+      options,
+      additionalContexts
+    );
     debug("events: %o", events);
 
     //if a target name was specified, we'll restrict to events that decoded

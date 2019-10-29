@@ -699,14 +699,22 @@ export class ContractInstanceDecoder {
    * See [[WireDecoder.decodeLog]].
    */
   public async decodeLog(log: Log): Promise<DecoderTypes.DecodedLog> {
-    return await this.wireDecoder.decodeLog(log, {}, this.additionalContexts);
+    return await this.wireDecoder.decodeLogWithAdditionalOptions(
+      log,
+      {},
+      this.additionalContexts
+    );
   }
 
   /**
    * See [[WireDecoder.decodeLogs]].
    */
   public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.decodeLogs(logs, {}, this.additionalContexts);
+    return await this.wireDecoder.decodeLogsWithAdditionalOptions(
+      logs,
+      {},
+      this.additionalContexts
+    );
   }
 
   /**
@@ -733,7 +741,7 @@ export class ContractInstanceDecoder {
   public async events(
     options: DecoderTypes.EventOptions = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.events(
+    return await this.wireDecoder.eventsWithAdditionalContexts(
       { address: this.contractAddress, ...options },
       this.additionalContexts
     );
