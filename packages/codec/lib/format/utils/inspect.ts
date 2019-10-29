@@ -17,8 +17,8 @@ export interface InspectOptions {
 function cleanStylize(options: InspectOptions) {
   return Object.assign(
     {},
-    ...Object.entries(options).map(([key, value]) =>
-      key === "stylize" ? {} : { [key]: value }
+    ...Object.entries(options).map(
+      ([key, value]) => (key === "stylize" ? {} : { [key]: value })
     )
   );
 }
@@ -159,7 +159,9 @@ export class ResultInspector {
                     break;
                   case "invalid":
                   case "unknown":
-                    firstLine = `[Function: Unknown selector ${coercedResult.value.selector} of`;
+                    firstLine = `[Function: Unknown selector ${
+                      coercedResult.value.selector
+                    } of`;
                     break;
                 }
                 let secondLine = `${contractString}]`;
@@ -178,7 +180,9 @@ export class ResultInspector {
                 switch (coercedResult.value.kind) {
                   case "function":
                     return options.stylize(
-                      `[Function: ${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}]`,
+                      `[Function: ${coercedResult.value.definedIn.typeName}.${
+                        coercedResult.value.name
+                      }]`,
                       "special"
                     );
                   case "exception":
@@ -187,7 +191,11 @@ export class ResultInspector {
                       : options.stylize(`[Function: assert(false)]`, "special");
                   case "unknown":
                     let firstLine = `[Function: decoding not supported (raw info:`;
-                    let secondLine = `deployed PC=${coercedResult.value.deployedProgramCounter}, constructor PC=${coercedResult.value.constructorProgramCounter})]`;
+                    let secondLine = `deployed PC=${
+                      coercedResult.value.deployedProgramCounter
+                    }, constructor PC=${
+                      coercedResult.value.constructorProgramCounter
+                    })]`;
                     let breakingSpace =
                       firstLine.length >= options.breakLength ? "\n" : " ";
                     //now, put it together
@@ -204,19 +212,31 @@ export class ResultInspector {
         let errorResult = <Format.Errors.ErrorResult>this.result; //the hell?? why couldn't it make this inference??
         switch (errorResult.error.kind) {
           case "UintPaddingError":
-            return `Uint has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
+            return `Uint has extra leading bytes (padding error) (raw value ${
+              errorResult.error.raw
+            })`;
           case "IntPaddingError":
-            return `Int out of range (padding error) (raw value ${errorResult.error.raw})`;
+            return `Int out of range (padding error) (raw value ${
+              errorResult.error.raw
+            })`;
           case "UintPaddingError":
-            return `Ufixed has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
+            return `Ufixed has extra leading bytes (padding error) (raw value ${
+              errorResult.error.raw
+            })`;
           case "FixedPaddingError":
-            return `Fixed out of range (padding error) (raw value ${errorResult.error.raw})`;
+            return `Fixed out of range (padding error) (raw value ${
+              errorResult.error.raw
+            })`;
           case "BoolOutOfRangeError":
             return `Invalid boolean (numeric value ${errorResult.error.rawAsBN.toString()})`;
           case "BytesPaddingError":
-            return `Bytestring has extra trailing bytes (padding error) (raw value ${errorResult.error.raw})`;
+            return `Bytestring has extra trailing bytes (padding error) (raw value ${
+              errorResult.error.raw
+            })`;
           case "AddressPaddingError":
-            return `Address has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
+            return `Address has extra leading bytes (padding error) (raw value ${
+              errorResult.error.raw
+            })`;
           case "EnumOutOfRangeError":
             return `Invalid ${enumTypeName(
               errorResult.error.type
@@ -228,21 +248,39 @@ export class ResultInspector {
               errorResult.error.type.id
             } (numeric value ${errorResult.error.rawAsBN.toString()})`;
           case "ContractPaddingError":
-            return `Contract address has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
+            return `Contract address has extra leading bytes (padding error) (raw value ${
+              errorResult.error.raw
+            })`;
           case "FunctionExternalNonStackPaddingError":
-            return `External function has extra trailing bytes (padding error) (raw value ${errorResult.error.raw})`;
+            return `External function has extra trailing bytes (padding error) (raw value ${
+              errorResult.error.raw
+            })`;
           case "FunctionExternalStackPaddingError":
-            return `External function address or selector has extra leading bytes (padding error) (raw address ${errorResult.error.rawAddress}, raw selector ${errorResult.error.rawSelector})`;
+            return `External function address or selector has extra leading bytes (padding error) (raw address ${
+              errorResult.error.rawAddress
+            }, raw selector ${errorResult.error.rawSelector})`;
           case "FunctionInternalPaddingError":
-            return `Internal function has extra leading bytes (padding error) (raw value ${errorResult.error.raw})`;
+            return `Internal function has extra leading bytes (padding error) (raw value ${
+              errorResult.error.raw
+            })`;
           case "NoSuchInternalFunctionError":
-            return `Invalid function (Deployed PC=${errorResult.error.deployedProgramCounter}, constructor PC=${errorResult.error.constructorProgramCounter}) of contract ${errorResult.error.context.typeName}`;
+            return `Invalid function (Deployed PC=${
+              errorResult.error.deployedProgramCounter
+            }, constructor PC=${
+              errorResult.error.constructorProgramCounter
+            }) of contract ${errorResult.error.context.typeName}`;
           case "DeployedFunctionInConstructorError":
-            return `Deployed-style function (PC=${errorResult.error.deployedProgramCounter}) in constructor`;
+            return `Deployed-style function (PC=${
+              errorResult.error.deployedProgramCounter
+            }) in constructor`;
           case "MalformedInternalFunctionError":
-            return `Malformed internal function w/constructor PC only (value: ${errorResult.error.constructorProgramCounter})`;
+            return `Malformed internal function w/constructor PC only (value: ${
+              errorResult.error.constructorProgramCounter
+            })`;
           case "IndexedReferenceTypeError":
-            return `Cannot decode indexed parameter of reference type ${errorResult.error.type.typeClass} (raw value ${errorResult.error.raw})`;
+            return `Cannot decode indexed parameter of reference type ${
+              errorResult.error.type.typeClass
+            } (raw value ${errorResult.error.raw})`;
           case "OverlongArraysAndStringsNotImplementedError":
             return `Array or string is too long (length ${errorResult.error.lengthAsBN.toString()}); decoding is not supported`;
           case "OverlargePointersNotImplementedError":
@@ -300,14 +338,20 @@ function formatCircular(loopLength: number, options: InspectOptions): string {
 function enumFullName(value: Format.Values.EnumValue): string {
   switch (value.type.kind) {
     case "local":
-      return `${value.type.definingContractName}.${value.type.typeName}.${value.value.name}`;
+      return `${value.type.definingContractName}.${value.type.typeName}.${
+        value.value.name
+      }`;
     case "global":
       return `${value.type.typeName}.${value.value.name}`;
   }
 }
 
-//NOTE: Definitely do not use this in real code!  For tests only!
-//for convenience: invokes the nativize method on all the given variables
+/**
+ * WARNING! Do NOT use this function in real code unless you
+ * absolutely have to!  Using it in controlled tests is fine,
+ * but do NOT use it in real code if you have any better option!
+ * See [[nativize]] for why!
+ */
 export function nativizeVariables(variables: {
   [name: string]: Format.Values.Result;
 }): { [name: string]: any } {
@@ -319,9 +363,27 @@ export function nativizeVariables(variables: {
   );
 }
 
-//HACK! Avoid using! Only use this if:
-//1. you absolutely have to, or
-//2. it's just testing, not real code
+//HACK! Avoid using!
+/**
+ * WARNING! Do NOT use this function in real code unless you absolutely have
+ * to!  Using it in controlled tests is fine, but do NOT use it in real code if
+ * you have any better option!
+ *
+ * This function is a giant hack.  It will throw exceptions on numbers that
+ * don't fit in a Javascript number.  It will go into an infinite loop on
+ * circular structures (although that might be fixed eventually).  It was only
+ * ever written to support our hacked-together watch expression system, and
+ * later repurposed to make testing easier.
+ *
+ * If you are not doing something as horrible as our hacked-together watch
+ * expression system, then you probably have a better option than using this in
+ * real code!
+ *
+ * Remember, the decoder output format was made to be machine-readable.  It
+ * shouldn't be too hard for you to process.  If it comes to it, copy-paste
+ * this code and dehackify it for your use case, which hopefully is saner than
+ * the one that caused us to write this.
+ */
 export function nativize(result: Format.Values.Result): any {
   if (result.kind === "error") {
     return undefined;
@@ -395,7 +457,9 @@ export function nativize(result: Format.Values.Result): any {
       let coercedResult = <Format.Values.ContractValue>result;
       switch (coercedResult.value.kind) {
         case "known":
-          return `${coercedResult.value.class.typeName}(${coercedResult.value.address})`;
+          return `${coercedResult.value.class.typeName}(${
+            coercedResult.value.address
+          })`;
         case "unknown":
           return coercedResult.value.address;
       }
@@ -407,18 +471,26 @@ export function nativize(result: Format.Values.Result): any {
           let coercedResult = <Format.Values.FunctionExternalValue>result;
           switch (coercedResult.value.kind) {
             case "known":
-              return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).${coercedResult.value.abi.name}`;
+              return `${coercedResult.value.contract.class.typeName}(${
+                coercedResult.value.contract.address
+              }).${coercedResult.value.abi.name}`;
             case "invalid":
-              return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).call(${coercedResult.value.selector}...)`;
+              return `${coercedResult.value.contract.class.typeName}(${
+                coercedResult.value.contract.address
+              }).call(${coercedResult.value.selector}...)`;
             case "unknown":
-              return `${coercedResult.value.contract.address}.call(${coercedResult.value.selector}...)`;
+              return `${coercedResult.value.contract.address}.call(${
+                coercedResult.value.selector
+              }...)`;
           }
         }
         case "internal": {
           let coercedResult = <Format.Values.FunctionInternalValue>result;
           switch (coercedResult.value.kind) {
             case "function":
-              return `${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}`;
+              return `${coercedResult.value.definedIn.typeName}.${
+                coercedResult.value.name
+              }`;
             case "exception":
               return coercedResult.value.deployedProgramCounter === 0
                 ? `<zero>`
