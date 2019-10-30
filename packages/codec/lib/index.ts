@@ -39,6 +39,7 @@ export {
    * import { Format } from "@truffle/codec";
    * ```
    *
+   * ![Example struct decoding](media://example-struct-decoding.png)
    *
    * ## Format information
    *
