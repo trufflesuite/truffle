@@ -131,16 +131,16 @@ export {
    * There are three special cases here that are likely worthy of note.
    *
    * Firstly, internal function pointers currently can't be meaningfully decoded via
-   * this interface.  However, they decode to a bare-bones value, not an error, as it
+   * @truffle/decoder.  However, they decode to a bare-bones value, not an error, as it
    * is (in a sense) our own fault that we can't decode these, so it doesn't make
    * sense to report an error, which would mean that something is wrong with the
    * encoded data itself.  This value that it decodes to will give the program
    * counter values it corresponds to, but will not include the function name or
-   * defining class, as this interface is not presently capable of that.  For now,
+   * defining class, as @truffle/decoder is not presently capable of that.  For now,
    * full decoding of internal function pointers remains a debugger-only feature.
    *
    * (When using the debugger, an invalid internal function pointer will decode to an
-   * error.  However, when using this interface, we have no way of discerning whether
+   * error.  However, when using @truffle/decoder, we have no way of discerning whether
    * the pointer is valid or not, so internal function pointers will always decode to
    * a value, if an uninformative one.)
    *
