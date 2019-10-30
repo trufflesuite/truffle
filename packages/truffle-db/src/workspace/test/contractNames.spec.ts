@@ -5,7 +5,7 @@ describe("ContractNames", () => {
   test("can be queried", async () => {
     const wsClient = new WorkspaceClient();
 
-    const result = await wsClient.execute(GetContractNames);
+    const result = await wsClient.execute(GetContractNames, {}, true);
     expect(result).toHaveProperty("contractNames");
 
     const { contractNames } = result;

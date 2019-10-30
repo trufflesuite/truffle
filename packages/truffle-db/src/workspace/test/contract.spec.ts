@@ -82,7 +82,7 @@ describe("Contract", () => {
       compilation: { id: compilationId }
     });
 
-    const getContractResult = await wsClient.executePersisted(GetContract, { id: expectedId });
+    const getContractResult = await wsClient.execute(GetContract, { id: expectedId }, true);
 
     expect(getContractResult).toHaveProperty("contract");
 
@@ -94,7 +94,7 @@ describe("Contract", () => {
   });
 
   test("can retrieve all contracts", async() => {
-    const getAllContractsResult = await wsClient.executePersisted(GetAllContracts);
+    const getAllContractsResult = await wsClient.execute(GetAllContracts, {}, true);
 
     expect(getAllContractsResult).toHaveProperty("contracts");
 

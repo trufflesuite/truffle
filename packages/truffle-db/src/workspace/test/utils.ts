@@ -21,6 +21,8 @@ const tempDir = tmp.dirSync({ unsafeCleanup: true });
 tmp.setGracefulCleanup();
 
 export class WorkspaceClient {
+  // two workspaces are generated here, one is empty for adding data, and one is queried using
+  // the data that should have been persisted in the .db directory when data was added
   private workspace: Workspace;
   private persistedWorkspace: Workspace;
 
@@ -29,26 +31,14 @@ export class WorkspaceClient {
     this.persistedWorkspace = new Workspace(tempDir.name);
   }
 
-  async execute (request, variables = {}) {
+  async execute (request, variables = {}, persisted = false) {
     const result = await graphql.execute(
       schema,
       request,
       null, // root object, managed by workspace
-      { workspace: this.workspace }, // context vars
+      { workspace: persisted ? this.persistedWorkspace : this.workspace }, // context vars
       variables
     );
-    return result.data;
-  }
-
-  async executePersisted (request, variables = {}) {
-    const result = await graphql.execute(
-      schema,
-      request,
-      null, // root object, managed by workspace
-      { workspace: this.persistedWorkspace }, // context vars
-      variables
-    );
-
     return result.data;
   }
 }
