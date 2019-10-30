@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:utils:errors");
+const debug = debugModule("codec:format:utils:exception");
 
 import * as Format from "@truffle/codec/format/common";
 import * as Ast from "@truffle/codec/ast";
@@ -14,7 +14,9 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
       let typeName = Format.Types.isContractDefinedType(error.type)
         ? error.type.definingContractName + "." + error.type.typeName
         : error.type.typeName;
-      return `Unknown ${error.type.typeClass} type ${typeName} of id ${error.type.id}`;
+      return `Unknown ${error.type.typeClass} type ${typeName} of id ${
+        error.type.id
+      }`;
     case "UnsupportedConstantError":
       return `Unsupported constant type ${Ast.Utils.typeClass(
         error.definition
@@ -22,7 +24,9 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
     case "ReadErrorStack":
       return `Can't read stack from position ${error.from} to ${error.to}`;
     case "ReadErrorBytes":
-      return `Can't read ${error.length} bytes from input starting at ${error.start}`;
+      return `Can't read ${error.length} bytes from input starting at ${
+        error.start
+      }`;
     case "ReadErrorStorage":
       if (error.range.length) {
         return `Can't read ${

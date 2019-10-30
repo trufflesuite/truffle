@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:format:inspect");
+const debug = debugModule("codec:format:utils:inspect");
 
 import util from "util";
 import * as Format from "@truffle/codec/format/common";

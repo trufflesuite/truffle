@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:core:decoding");
+const debug = debugModule("codec:core");
 
 import * as Ast from "@truffle/codec/ast";
 import * as Abi from "@truffle/codec/abi";

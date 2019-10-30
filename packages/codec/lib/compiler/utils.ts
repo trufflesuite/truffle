@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:utils:compiler");
+const debug = debugModule("codec:compiler:utils");
 
 import semver from "semver";
 import { CompilerVersion, SolidityFamily } from "./types";

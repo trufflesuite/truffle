@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:utils:abi");
+const debug = debugModule("codec:abi:utils");
 
 // untyped import since no @types/web3-utils exists
 const Web3Utils = require("web3-utils");
