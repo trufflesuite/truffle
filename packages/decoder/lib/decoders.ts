@@ -209,6 +209,8 @@ export class WireDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * Takes a Web3
    * [Transaction](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-gettransaction-return)
    * object and returns a copy of that object but with an additional decoding
@@ -278,6 +280,8 @@ export class WireDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * Takes a Web3
    * [Log](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-getpastlogs-return)
    * object and returns a copy of that object but with an additional decodings
@@ -334,6 +338,8 @@ export class WireDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * Similar to [[decodeLog]], but operates on an array of logs and decodes them all.
    * @param logs The logs to be decoded.
    */
@@ -357,6 +363,8 @@ export class WireDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * Gets all events meeting certain conditions and decodes them.
    * This function is fairly rudimentary at the moment but more functionality
    * will be added in the future.
@@ -449,6 +457,8 @@ export class WireDecoder {
   //finally: the spawners!
 
   /**
+   * **This method is asynchronous.**
+   *
    * Constructs a contract decoder for a given contract artifact.
    * @param artifact The artifact for the contract.
    *
@@ -465,6 +475,8 @@ export class WireDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * Constructs a contract instance decoder for a given instance of a contract in this
    * project.
    * @param artifact The artifact for the contract.
@@ -603,6 +615,8 @@ export class ContractDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * Constructs a contract instance decoder for a given instance of this contract.
    * @param address The address of the contract instance decode.  If left out, it will be autodetected.
    *   If an invalid address is provided, this method will throw an exception.
@@ -614,6 +628,8 @@ export class ContractDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * See [[WireDecoder.decodeTransaction]].
    * @param transaction The transaction to be decoded.
    */
@@ -624,6 +640,8 @@ export class ContractDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * See [[WireDecoder.decodeLog]].
    * @param log The log to be decoded.
    */
@@ -632,6 +650,8 @@ export class ContractDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * See [[WireDecoder.decodeLogs]].
    * @param logs The logs to be decoded.
    */
@@ -640,6 +660,8 @@ export class ContractDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * See [[WireDecoder.events]].
    * @param options Used to determine what events to fetch; see the documentation on the EventOptions type for more.
    */
@@ -889,6 +911,8 @@ export class ContractInstanceDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * Returns information about the state of the contract, but does not include
    * information about the storage or decoded variables.  See the documentation
    * for the [[ContractState]] type for more.
@@ -913,6 +937,8 @@ export class ContractInstanceDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * Decodes the contract's variables; returns an array of these decoded variables.
    * See the documentation of the [[DecodedVariable]] type for more.
    *
@@ -955,6 +981,8 @@ export class ContractInstanceDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * Decodes an individual contract variable; returns its value as a
    * [[Format.Values.Result|Result]].  See the documentation for
    * [[variables|variables()]] for various caveats that also apply here.
@@ -1059,6 +1087,8 @@ export class ContractInstanceDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * Watches a mapping key; adds it to the decoder's list of watched mapping
    * keys.  This affects the results of both [[variables|variables()]] and
    * [[variable|variable()]].  When a mapping is decoded, only the values at
@@ -1141,6 +1171,8 @@ export class ContractInstanceDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * Opposite of [[watchMappingKey]]; unwatches the specified mapping key.  See
    * watchMappingKey for more on how watching mapping keys works, and on how
    * the parameters work.
@@ -1180,6 +1212,8 @@ export class ContractInstanceDecoder {
   //than a while
 
   /**
+   * **This method is asynchronous.**
+   *
    * See [[WireDecoder.decodeTransaction]].
    */
   public async decodeTransaction(
@@ -1192,6 +1226,8 @@ export class ContractInstanceDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * See [[WireDecoder.decodeLog]].
    */
   public async decodeLog(log: Log): Promise<DecoderTypes.DecodedLog> {
@@ -1203,6 +1239,8 @@ export class ContractInstanceDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * See [[WireDecoder.decodeLogs]].
    */
   public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
@@ -1228,6 +1266,8 @@ export class ContractInstanceDecoder {
   }
 
   /**
+   * **This method is asynchronous.**
+   *
    * This mostly behaves as [[WireDecoder.events]].
    * However, unlike other variants of this function, this one, by default, restricts to events originating from this instance's address.
    * If you don't want to restrict like that, you can explicitly use `address: undefined` in the options to disable this.
