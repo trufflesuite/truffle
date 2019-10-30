@@ -109,24 +109,17 @@ export {
    * alone (i.e. no assembly), with correctly-encoded inputs, and without making use
    * of compiler bugs, is a value, not an error.  That means that, for instance, the
    * following things are values, not errors:
-   *
    *   - A variable of contract type whose address does not actually hold a
    *     contract of that type;
-   *
    *   - An external function pointer that does not correspond to a valid
    *     function;
-   *
    *   - A string containing invalid UTF-8;
-   *
-   * etc.
+   *   - ..., etc.
    *
    * By contrast, the following *are* errors:
-   *
    *   - A `bool` which is neither `false` (0) nor `true` (1);
-   *
    *   - An `enum` which is out of range;
-   *
-   * etc.
+   *   - ..., etc.
    *
    * (You may be wondering about the enum case here, because if you go sufficiently
    * far back, to Solidity 0.4.4 or earlier, it *was* possible to generate
@@ -134,9 +127,9 @@ export {
    * enums are only supported in full mode, which only supports 0.4.9 and later, so
    * we consider out-of-range enums an error.  There are also additional technical
    * reasons why supporting out-of-range enums as a value would be difficult.)
-
+   *
    * There are three special cases here that are likely worthy of note.
-
+   *
    * Firstly, internal function pointers currently can't be meaningfully decoded via
    * this interface.  However, they decode to a bare-bones value, not an error, as it
    * is (in a sense) our own fault that we can't decode these, so it doesn't make
@@ -145,21 +138,21 @@ export {
    * counter values it corresponds to, but will not include the function name or
    * defining class, as this interface is not presently capable of that.  For now,
    * full decoding of internal function pointers remains a debugger-only feature.
-
+   *
    * (When using the debugger, an invalid internal function pointer will decode to an
    * error.  However, when using this interface, we have no way of discerning whether
    * the pointer is valid or not, so internal function pointers will always decode to
    * a value, if an uninformative one.)
-
+   *
    * Secondly, when decoding events, it is impossible to decode indexed parameters
    * of reference type.  Thus, these decode to an error
    * (`IndexedReferenceTypeError`, which see) rather than to a value.
-
+   *
    * Finally, except when decoding events, we do not return an error if the pointers
    * in an ABI-encoded array or tuple are arranged in a nonstandard way, or if
    * strings or bytestrings are incorrectly padded, because it is not worth the
    * trouble to detect these conditions.
-
+   *
    *
    * ## Notes on this documentation
    *
