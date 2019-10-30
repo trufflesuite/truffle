@@ -10,6 +10,9 @@ import { stringToBytes } from "./abi";
 //see: https://github.com/microsoft/TypeScript/issues/18758
 //so, I'm just going to have to throw in a bunch of type coercions >_>
 
+/**
+ * @Category Encoding (low-level)
+ */
 export function encodeMappingKey(
   input: Format.Values.ElementaryValue
 ): Uint8Array {
