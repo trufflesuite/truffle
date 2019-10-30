@@ -41,6 +41,7 @@ import { ContractConstructorObject, ContractInstanceObject } from "./types";
  *   you're not sure which you're dealing with, it's OK.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Provider-based Constructor
  */
 export async function forProject(
   provider: Provider,
@@ -65,6 +66,7 @@ export async function forProject(
  *   Including the contract itself here is fine; so is excluding it.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Provider-based Constructor
  */
 export async function forArtifact(
   artifact: ContractObject,
@@ -89,29 +91,13 @@ export async function forArtifact(
  *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Truffle Contract-based Constructor
  */
 export async function forContract(
   contract: ContractConstructorObject,
   artifacts: ContractObject[]
 ): Promise<ContractDecoder> {
   return await forArtifact(contract, contract.web3.currentProvider, artifacts);
-}
-
-/**
- * Constructs a contract decoder given an existing wire decoder for the project.
- * @param artifact The artifact corresponding to the type of the contract.
- *
- *   A contract constructor object may be substituted for the artifact, so if
- *   you're not sure which you're dealing with, it's OK.
- * @param decoder An existing wire decoder for the project.
- */
-export async function forArtifactWithDecoder(
-  artifact: ContractObject,
-  decoder: WireDecoder
-): Promise<ContractDecoder> {
-  let contractDecoder = new ContractDecoder(artifact, decoder);
-  await contractDecoder.init();
-  return contractDecoder;
 }
 
 /**
@@ -127,6 +113,7 @@ export async function forArtifactWithDecoder(
  *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Provider-based Constructor
  */
 export async function forDeployedArtifact(
   artifact: ContractObject,
@@ -147,6 +134,7 @@ export async function forDeployedArtifact(
  *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Truffle Contract-based Constructor
  */
 export async function forDeployedContract(
   contract: ContractConstructorObject,
@@ -174,6 +162,7 @@ export async function forDeployedContract(
  *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Provider-based Constructor
  */
 export async function forArtifactAt(
   artifact: ContractObject,
@@ -199,6 +188,7 @@ export async function forArtifactAt(
  *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Truffle Contract-based Constructor
  */
 export async function forContractAt(
   contract: ContractConstructorObject,
@@ -219,8 +209,9 @@ export async function forContractAt(
  *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
  *
  *   This parameter is intended to be made optional in the future.
+ * @category Truffle Contract-based Constructor
  */
-export async function forContractAbstraction(
+export async function forContractInstance(
   contract: ContractInstanceObject,
   artifacts: ContractObject[]
 ): Promise<ContractInstanceDecoder> {
