@@ -33,6 +33,8 @@ import { ContractObject } from "@truffle/contract-schema/spec";
 import { ContractConstructorObject, ContractInstanceObject } from "./types";
 
 /**
+ * **This function is asynchronous.**
+ *
  * Constructs a wire decoder for the project.
  * @param provider The Web3 provider object to use.
  * @param artifacts A list of contract artifacts for contracts in the project.
@@ -51,6 +53,8 @@ export async function forProject(
 }
 
 /**
+ * **This function is asynchronous.**
+ *
  * Constructs a contract decoder for a given contract artifact.
  * @param artifact The artifact for the contract.
  *
@@ -83,6 +87,8 @@ export async function forArtifact(
 }
 
 /**
+ * **This function is asynchronous.**
+ *
  * Constructs a contract decoder for a given contract.
  * @param contract The contract constructor object corresponding to the type of the contract.
  * @param artifacts A list of artifacts for other contracts in the project that may be relevant
@@ -101,6 +107,8 @@ export async function forContract(
 }
 
 /**
+ * **This function is asynchronous.**
+ *
  * Constructs a contract instance decoder for a deployed contract instance.
  * @param artifact The artifact corresponding to the type of the contract.
  *
@@ -126,6 +134,8 @@ export async function forDeployedArtifact(
 }
 
 /**
+ * **This function is asynchronous.**
+ *
  * Constructs a contract instance decoder for a deployed contract instance.
  * @param contract The contract constructor object corresponding to the type of the contract.
  * @param artifacts A list of artifacts for other contracts in the project that may be relevant
@@ -146,6 +156,8 @@ export async function forDeployedContract(
 }
 
 /**
+ * **This function is asynchronous.**
+ *
  * Constructs a contract instance decoder for a contract instance at a given address.
  * @param artifact The artifact corresponding to the type of the contract.
  *
@@ -176,6 +188,8 @@ export async function forArtifactAt(
 }
 
 /**
+ * **This function is asynchronous.**
+ *
  * Constructs a contract instance decoder for a contract instance at a given address.
  * @param contract The contract constructor object corresponding to the type of the contract.
  * @param address The address of the contract instance to decode.
@@ -201,6 +215,8 @@ export async function forContractAt(
 }
 
 /**
+ * **This function is asynchronous.**
+ *
  * Constructs a contract instance decoder for a given contract instance.
  * @param contract The contract abstraction object corresponding to the contract instance.
  * @param artifacts A list of artifacts for other contracts in the project that may be relevant
