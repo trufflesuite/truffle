@@ -6,6 +6,7 @@ import * as Format from "@truffle/codec/format";
 /**
  * A type representing a transaction (calldata) decoding.  As you can see, these come in five types,
  * each of which is documented separately.
+ * @Category Output
  */
 export type CalldataDecoding =
   | FunctionDecoding
@@ -17,6 +18,7 @@ export type CalldataDecoding =
 /**
  * A type representing a log (event) decoding.  As you can see, these come in two types, each of which
  * is documented separately.
+ * @Category Output
  */
 export type LogDecoding = EventDecoding | AnonymousDecoding;
 
@@ -25,12 +27,14 @@ export type LogDecoding = EventDecoding | AnonymousDecoding;
  * decoding modes, full mode and ABI mode.  In ABI mode, decoding is done purely based on the ABI JSON.
  * Full mode, by contrast, additionally uses AST information to produce a more informative decoding.
  * For more on full mode and ABI mode, see the README.
+ * @Category Output
  */
 export type DecodingMode = "full" | "abi";
 
 /**
  * This type represents a transaction decoding for an ordinary function call to a known class;
  * not a constructor call, not a fallback call.
+ * @Category Output
  */
 export interface FunctionDecoding {
   /**
@@ -67,6 +71,8 @@ export interface FunctionDecoding {
  * NOTE: In the future, this type will also contain information about
  * any linked libraries the contract being constructed uses.  However,
  * this is not implemented at present.
+ *
+ * @Category Output
  */
 export interface ConstructorDecoding {
   /**
@@ -102,6 +108,8 @@ export interface ConstructorDecoding {
  * This type represents a decoding for a call to a known class that does not appear
  * to be a function call, i.e., one that will result in the fallback function being invoked
  * if there is one.
+ *
+ * @Category Output
  */
 export interface MessageDecoding {
   /**
@@ -130,6 +138,8 @@ export interface MessageDecoding {
 /**
  * This type represents a function call to an unknown class.  In this case,
  * it's simply not possible to return much information.
+ *
+ * @Category Output
  */
 export interface UnknownCallDecoding {
   /**
@@ -149,6 +159,8 @@ export interface UnknownCallDecoding {
 /**
  * This type represents a contract creation for an unknown class. In this case,
  * it's simply not possible to return much information.
+ *
+ * @Category Output
  */
 export interface UnknownCreationDecoding {
   /**
@@ -167,6 +179,8 @@ export interface UnknownCreationDecoding {
 
 /**
  * This type represents a decoding of a log as a non-anonymous event.
+ *
+ * @Category Output
  */
 export interface EventDecoding {
   /**
@@ -201,6 +215,8 @@ export interface EventDecoding {
 
 /**
  * This type represents a decoding of a log as an anonymous event.
+ *
+ * @Category Output
  */
 export interface AnonymousDecoding {
   /**
@@ -231,6 +247,8 @@ export interface AnonymousDecoding {
 
 /**
  * This type represents a decoded argument passed to a transaction or event.
+ *
+ * @Category Output
  */
 export interface AbiArgument {
   /**
@@ -249,13 +267,26 @@ export interface AbiArgument {
   value: Format.Values.Result;
 }
 
+/**
+ * @Category Requests
+ */
 export type DecoderRequest = StorageRequest | CodeRequest;
 
+/**
+ * A request for storage
+ *
+ * @Category Requests
+ */
 export interface StorageRequest {
   type: "storage";
   slot: BN; //will add more fields as needed
 }
 
+/**
+ * A request for code
+ *
+ * @Category Requests
+ */
 export interface CodeRequest {
   type: "code";
   address: string;

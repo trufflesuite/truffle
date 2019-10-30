@@ -22,6 +22,9 @@ import { encodeAbi, encodeTupleAbi } from "@truffle/codec/encode/abi";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
 
+/**
+ * @Category Decoding
+ */
 export function* decodeVariable(
   definition: Ast.AstNode,
   pointer: Pointer.DataPointer,
@@ -32,6 +35,9 @@ export function* decodeVariable(
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
+/**
+ * @Category Decoding
+ */
 export function* decodeCalldata(
   info: Evm.EvmInfo,
   isConstructor?: boolean //ignored if context! trust context instead if have
@@ -168,6 +174,9 @@ export function* decodeCalldata(
 //leaving it alone for now, as I'm not sure what form those options will take
 //(and this is something we're a bit more OK with breaking since it's primarily
 //for internal use :) )
+/**
+ * @Category Decoding
+ */
 export function* decodeEvent(
   info: Evm.EvmInfo,
   address: string,

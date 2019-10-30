@@ -31,10 +31,14 @@ import * as Abi from "@truffle/codec/abi/types";
 export * from "./elementary";
 
 /*
- * SECTION 1: Generic types for values in general (including errors).
+ * SECTION 1: Generic types for values in neneral (including errors).
  */
 
-//This is the overall Result type.  It may encode an actual value or an error.
+/**
+ * This is the overall Result type.  It may encode an actual value or an error.
+ *
+ * @Category General categories
+ */
 export type Result =
   | ElementaryResult
   | ArrayResult
@@ -46,7 +50,11 @@ export type Result =
   | ContractResult
   | FunctionExternalResult
   | FunctionInternalResult;
-//for when you want an actual value
+/**
+ * An actual value, not an error (although if a container type it may contain errors!)
+ *
+ * @Category General categories
+ */
 export type Value =
   | ElementaryValue
   | ArrayValue
@@ -67,7 +75,11 @@ export type Value =
 //to elementary.ts, sorry!  see there for elementary Values; this part just re-exports
 //those (and defines the Result types)
 
-//overall groupings
+/**
+ * An elementary value or error
+ *
+ * @Category General categories
+ */
 export type ElementaryResult =
   | UintResult
   | IntResult
@@ -77,43 +89,96 @@ export type ElementaryResult =
   | StringResult
   | FixedResult
   | UfixedResult;
+/**
+ * A bytestring value or error (static or dynamic)
+ *
+ * @Category Elementary types
+ */
 export type BytesResult = BytesStaticResult | BytesDynamicResult;
 
-//integers
+/**
+ * An unsigned integer value or error
+ *
+ * @Category Elementary types
+ */
 export type UintResult = UintValue | Errors.UintErrorResult;
 
+/**
+ * A signed integer value or error
+ *
+ * @Category Elementary types
+ */
 export type IntResult = IntValue | Errors.IntErrorResult;
 
-//bools
+/**
+ * A boolean value or error
+ *
+ * @Category Elementary types
+ */
 export type BoolResult = BoolValue | Errors.BoolErrorResult;
 
-//bytes (static & dynaic)
+/**
+ * A bytestring value or error (static-length)
+ *
+ * @Category Elementary types
+ */
 export type BytesStaticResult =
   | BytesStaticValue
   | Errors.BytesStaticErrorResult;
 
+/**
+ * A bytestring value or error (dynamic-length)
+ *
+ * @Category Elementary types
+ */
 export type BytesDynamicResult =
   | BytesDynamicValue
   | Errors.BytesDynamicErrorResult;
 
-//addresses
+/**
+ * An address value or error
+ *
+ * @Category Elementary types
+ */
 export type AddressResult = AddressValue | Errors.AddressErrorResult;
 
-//strings & their info
+/**
+ * A string value or error
+ *
+ * @Category Elementary types
+ */
 export type StringResult = StringValue | Errors.StringErrorResult;
 
-//fixed & ufixed
+/**
+ * A signed fixed-point value or error
+ *
+ * @Category Elementary types
+ */
 export type FixedResult = FixedValue | Errors.FixedErrorResult;
 
+/**
+ * An unsigned fixed-point value or error
+ *
+ * @Category Elementary types
+ */
 export type UfixedResult = UfixedValue | Errors.UfixedErrorResult;
 
 /*
  * SECTION 3: CONTAINER TYPES (including magic)
  */
 
-//Arrays
+/**
+ * An array value or error
+ *
+ * @Category Container types
+ */
 export type ArrayResult = ArrayValue | Errors.ArrayErrorResult;
 
+/**
+ * An array value (may contain errors!)
+ *
+ * @Category Container types
+ */
 export interface ArrayValue {
   type: Types.ArrayType;
   kind: "value";
@@ -124,9 +189,18 @@ export interface ArrayValue {
   value: Result[];
 }
 
-//Mappings
+/**
+ * A mapping value or error
+ *
+ * @Category Container types
+ */
 export type MappingResult = MappingValue | Errors.MappingErrorResult;
 
+/**
+ * A mapping value (may contain errors!)
+ *
+ * @Category Container types
+ */
 export interface MappingValue {
   type: Types.MappingType;
   kind: "value";
@@ -143,9 +217,18 @@ export interface KeyValuePair {
   value: Result;
 }
 
-//Structs
+/**
+ * A struct value or error
+ *
+ * @Category Container types
+ */
 export type StructResult = StructValue | Errors.StructErrorResult;
 
+/**
+ * A struct value (may contain errors!)
+ *
+ * @Category Container types
+ */
 export interface StructValue {
   type: Types.StructType;
   kind: "value";
@@ -166,9 +249,18 @@ export interface NameValuePair {
   value: Result;
 }
 
-//Tuples
+/**
+ * A tuple value or error
+ *
+ * @Category Container types
+ */
 export type TupleResult = TupleValue | Errors.TupleErrorResult;
 
+/**
+ * A tuple value (may contain errors!)
+ *
+ * @Category Container types
+ */
 export interface TupleValue {
   type: Types.TupleType;
   kind: "value";
@@ -180,9 +272,18 @@ export interface OptionallyNamedValue {
   value: Result;
 }
 
-//Magic variables
+/**
+ * A magic variable's value (or error)
+ *
+ * @Category Special container types
+ */
 export type MagicResult = MagicValue | Errors.MagicErrorResult;
 
+/**
+ * A magic variable's value (may contain errors?)
+ *
+ * @Category Special container types
+ */
 export interface MagicValue {
   type: Types.MagicType;
   kind: "value";
@@ -197,9 +298,18 @@ export interface MagicValue {
  * (they didn't fit anywhere else :P )
  */
 
-//Enums
+/**
+ * An enum value or error
+ *
+ * @Category Other user-defined types
+ */
 export type EnumResult = EnumValue | Errors.EnumErrorResult;
 
+/**
+ * An enum value
+ *
+ * @Category Other user-defined types
+ */
 export interface EnumValue {
   type: Types.EnumType;
   kind: "value";
@@ -216,10 +326,18 @@ export interface EnumValue {
  * SECTION 5: CONTRACTS
  */
 
-//Contracts
+/**
+ * A contract value or error
+ *
+ * @Category Other user-defined types
+ */
 export type ContractResult = ContractValue | Errors.ContractErrorResult;
 
-//Contract values have a special new type as their value: ContractValueInfo.
+/**
+ * A contract value; see [[ContractValueInfo]] for more detail
+ *
+ * @Category Other user-defined types
+ */
 export interface ContractValue {
   type: Types.ContractType;
   kind: "value";
@@ -229,6 +347,8 @@ export interface ContractValue {
 /**
  * There are two types -- one for contracts whose class we can identify, and one
  * for when we can't identify the class.
+ *
+ * @Category Other user-defined types
  */
 export type ContractValueInfo =
   | ContractValueInfoKnown
@@ -236,6 +356,8 @@ export type ContractValueInfo =
 
 /**
  * This type of ContractValueInfo is used when we can identify the class.
+ *
+ * @Category Other user-defined types
  */
 export interface ContractValueInfoKnown {
   kind: "known";
@@ -254,6 +376,8 @@ export interface ContractValueInfoKnown {
 
 /**
  * This type of ContractValueInfo is used when we can't identify the class.
+ *
+ * @Category Other user-defined types
  */
 export interface ContractValueInfoUnknown {
   kind: "unknown";
@@ -272,11 +396,20 @@ export interface ContractValueInfoUnknown {
  * SECTION 6: External functions
  */
 
-//external functions
+/**
+ * An external function pointer value or error
+ *
+ * @Category Function types
+ */
 export type FunctionExternalResult =
   | FunctionExternalValue
   | Errors.FunctionExternalErrorResult;
 
+/**
+ * An external function pointer value; see [[FunctionExternalValueInfo]] for more detail
+ *
+ * @Category Function types
+ */
 export interface FunctionExternalValue {
   type: Types.FunctionExternalType;
   kind: "value";
@@ -288,6 +421,8 @@ export interface FunctionExternalValue {
  * 1. known function of known class
  * 2. known class, but can't locate function
  * 3. can't determine class
+ *
+ * @Category Function types
  */
 export type FunctionExternalValueInfo =
   | FunctionExternalValueInfoKnown //known function of known class
@@ -296,6 +431,8 @@ export type FunctionExternalValueInfo =
 
 /**
  * This type of FunctionExternalValueInfo is used for a known function of a known class.
+ *
+ * @Category Function types
  */
 export interface FunctionExternalValueInfoKnown {
   kind: "known";
@@ -310,6 +447,8 @@ export interface FunctionExternalValueInfoKnown {
 
 /**
  * This type of FunctionExternalValueInfo is used when we can identify the class but can't locate the function.
+ *
+ * @Category Function types
  */
 export interface FunctionExternalValueInfoInvalid {
   kind: "invalid";
@@ -322,6 +461,8 @@ export interface FunctionExternalValueInfoInvalid {
 
 /**
  * This type of FunctionExternalValueInfo is used when we can't even locate the class.
+ *
+ * @Category Function types
  */
 export interface FunctionExternalValueInfoUnknown {
   kind: "unknown";
@@ -336,11 +477,20 @@ export interface FunctionExternalValueInfoUnknown {
  * SECTION 7: INTERNAL FUNCTIONS
  */
 
-//Internal functions
+/**
+ * An internal function pointer value or error
+ *
+ * @Category Function types
+ */
 export type FunctionInternalResult =
   | FunctionInternalValue
   | Errors.FunctionInternalErrorResult;
 
+/**
+ * An internal function pointer value; see [[FunctionInternalValueInfo]] for more detail
+ *
+ * @Category Function types
+ */
 export interface FunctionInternalValue {
   type: Types.FunctionInternalType;
   kind: "value";
@@ -352,6 +502,8 @@ export interface FunctionInternalValue {
  * 1. An actual function,
  * 2. A default value,
  * 3. A special value to indicate that decoding internal functions isn't supported in this context.
+ *
+ * @Category Function types
  */
 export type FunctionInternalValueInfo =
   | FunctionInternalValueInfoKnown //actual function
@@ -360,6 +512,8 @@ export type FunctionInternalValueInfo =
 
 /**
  * This type of FunctionInternalValueInfo is used for an actual internal function.
+ *
+ * @Category Function types
  */
 export interface FunctionInternalValueInfoKnown {
   kind: "function";
@@ -377,6 +531,8 @@ export interface FunctionInternalValueInfoKnown {
  * depending on whether they live in storage or elsewhere.
  * In storage the default value is 0 for both program counters.
  * Elsewhere they're both nonzero.
+ *
+ * @Category Function types
  */
 export interface FunctionInternalValueInfoException {
   kind: "exception";
@@ -393,6 +549,8 @@ export interface FunctionInternalValueInfoException {
  * values, but further information will be absent.  Note you'll get this even
  * if really it should decode to an error, because the decoding interface
  * doesn't have the information to determine that it's an error.
+ *
+ * @Category Function types
  */
 export interface FunctionInternalValueInfoUnknown {
   kind: "unknown";
