@@ -22,7 +22,7 @@ export {
    *
    * This module primarily defines TypeScript types for the output format
    * used in results provided by packages
-   * `@truffle/decoder@^5.0.0` and `@truffle/codec@^0.1.0`.
+   * `@truffle/decoder@^4.0.0` and `@truffle/codec@^0.1.0`.
    *
    * See below for complete listing or continue reading
    * [Format information](#format-information) to learn about this format.
