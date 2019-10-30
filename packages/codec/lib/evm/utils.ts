@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:utils:evm");
+const debug = debugModule("codec:evm:utils");
 
 import BN from "bn.js";
 // untyped import since no @types/web3-utils exists

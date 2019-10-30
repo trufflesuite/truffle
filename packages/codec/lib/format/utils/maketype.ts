@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:format:maketype");
+const debug = debugModule("codec:format:utils:maketype");
 
 import BN from "bn.js";
 import * as Common from "@truffle/codec/common";

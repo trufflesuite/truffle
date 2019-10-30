@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:format:abify");
+const debug = debugModule("codec:abify");
 
 import * as Format from "@truffle/codec/format";
 import * as Common from "@truffle/codec/common";

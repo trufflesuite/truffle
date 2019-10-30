@@ -1,9 +1,15 @@
 import debugModule from "debug";
-const debug = debugModule("codec:utils:contexts");
+const debug = debugModule("codec:contexts:utils");
 
 import * as Evm from "@truffle/codec/evm";
 import * as Format from "@truffle/codec/format";
-import { DecoderContexts, DecoderContext, Context, Contexts, DebuggerContexts } from "./types";
+import {
+  DecoderContexts,
+  DecoderContext,
+  Context,
+  Contexts,
+  DebuggerContexts
+} from "./types";
 import escapeRegExp from "lodash.escaperegexp";
 
 //I split these next two apart because the type system was giving me trouble
@@ -31,10 +37,7 @@ export function findDebuggerContext(
   return context !== undefined ? context.context : null;
 }
 
-export function matchContext(
-  context: Context,
-  givenBinary: string
-): boolean {
+export function matchContext(context: Context, givenBinary: string): boolean {
   let { binary, isConstructor } = context;
   let lengthDifference = givenBinary.length - binary.length;
   //first: if it's not a constructor, they'd better be equal in length.
@@ -63,9 +66,7 @@ export function matchContext(
   return true;
 }
 
-export function normalizeContexts(
-  contexts: Contexts
-): Contexts {
+export function normalizeContexts(contexts: Contexts): Contexts {
   //unfortunately, due to our current link references format, we can't
   //really use the binary from the artifact directly -- neither for purposes
   //of matching, nor for purposes of decoding internal functions.  So, we
@@ -145,9 +146,7 @@ export function normalizeContexts(
   return newContexts;
 }
 
-export function contextToType(
-  context: Context
-): Format.Types.ContractType {
+export function contextToType(context: Context): Format.Types.ContractType {
   if (context.contractId !== undefined) {
     return {
       typeClass: "contract",
