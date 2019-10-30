@@ -276,6 +276,9 @@ function abiSizeAndAllocate(
 }
 
 //assumes you've already done allocation! don't use if you haven't!
+/**
+ * @protected
+ */
 export function abiSizeInfo(
   dataType: Format.Types.Type,
   allocations?: Allocation.AbiAllocations

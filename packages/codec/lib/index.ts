@@ -47,10 +47,25 @@ export { encodeMappingKey } from "./encode/key";
 
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface
-export * from "./types";
+export {
+  DecodingMode,
+  CalldataDecoding,
+  LogDecoding,
+  FunctionDecoding,
+  ConstructorDecoding,
+  MessageDecoding,
+  UnknownCallDecoding,
+  UnknownCreationDecoding,
+  EventDecoding,
+  AnonymousDecoding,
+  AbiArgument,
+  DecoderRequest,
+  StorageRequest,
+  CodeRequest
+} from "./types";
 export * from "./common";
 
-export * from "./abify";
+export { abifyCalldataDecoding, abifyLogDecoding } from "./abify";
 
 //for those who want more low-level stuff...
 import * as Abi from "./abi";
