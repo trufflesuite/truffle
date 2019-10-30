@@ -219,9 +219,17 @@ export class WireDecoder {
    * supported and may have unreliable results.  Limited support for this is
    * planned for future versions.
    * @param transaction The transaction to be decoded.
-   * @param additionalContexts For internal use only; please don't use this.
    */
   public async decodeTransaction(
+    transaction: Transaction
+  ): Promise<DecoderTypes.DecodedTransaction> {
+    return await this.decodeTransactionWithAdditionalContexts(transaction);
+  }
+
+  /**
+   * @protected
+   */
+  public async decodeTransactionWithAdditionalContexts(
     transaction: Transaction,
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<DecoderTypes.DecodedTransaction> {
@@ -1177,7 +1185,7 @@ export class ContractInstanceDecoder {
   public async decodeTransaction(
     transaction: Transaction
   ): Promise<DecoderTypes.DecodedTransaction> {
-    return await this.wireDecoder.decodeTransaction(
+    return await this.wireDecoder.decodeTransactionWithAdditionalContexts(
       transaction,
       this.additionalContexts
     );
