@@ -18,6 +18,11 @@ import BN from "bn.js";
 
 import { ContractKind, Location, Mutability } from "@truffle/codec/common";
 
+/**
+ * Object representing a type
+ *
+ * @Category General categories
+ */
 export type Type =
   | UintType
   | IntType
@@ -36,25 +41,50 @@ export type Type =
   | MagicType
   | TupleType;
 
+/**
+ * Type of an unsigned integer
+ *
+ * @Category Elementary types
+ */
 export interface UintType {
   typeClass: "uint";
   bits: number;
   typeHint?: string;
 }
 
+/**
+ * Type of a signed integer
+ *
+ * @Category Elementary types
+ */
 export interface IntType {
   typeClass: "int";
   bits: number;
   typeHint?: string;
 }
 
+/**
+ * Type of a boolean
+ *
+ * @Category Elementary types
+ */
 export interface BoolType {
   typeClass: "bool";
   typeHint?: string;
 }
 
+/**
+ * Type of a bytestring (static or dynamic)
+ *
+ * @Category Elementary types
+ */
 export type BytesType = BytesTypeStatic | BytesTypeDynamic;
 
+/**
+ * Type of a static-length bytestring
+ *
+ * @Category Elementary types
+ */
 export interface BytesTypeStatic {
   typeClass: "bytes";
   kind: "static";
@@ -62,6 +92,11 @@ export interface BytesTypeStatic {
   typeHint?: string;
 }
 
+/**
+ * Type of a dynamic-length bytestring
+ *
+ * @Category Elementary types
+ */
 export interface BytesTypeDynamic {
   typeClass: "bytes";
   kind: "dynamic";
@@ -69,26 +104,51 @@ export interface BytesTypeDynamic {
   typeHint?: string;
 }
 
+/**
+ * Type of an address
+ *
+ * @Category Elementary types
+ */
 export type AddressType = AddressTypeSpecific | AddressTypeGeneral;
 
+/**
+ * Type of an address (with payability specified)
+ *
+ * @Category Elementary types
+ */
 export interface AddressTypeSpecific {
   typeClass: "address";
   kind: "specific";
   payable: boolean;
 }
 
+/**
+ * Type of an address (with payability unspecified)
+ *
+ * @Category Elementary types
+ */
 export interface AddressTypeGeneral {
   typeClass: "address";
   kind: "general";
   typeHint?: string;
 }
 
+/**
+ * Type of a string
+ *
+ * @Category Elementary types
+ */
 export interface StringType {
   typeClass: "string";
   location?: Location;
   typeHint?: string;
 }
 
+/**
+ * Type of a signed fixed-point number
+ *
+ * @Category Elementary types
+ */
 export interface FixedType {
   typeClass: "fixed";
   bits: number;
@@ -96,6 +156,11 @@ export interface FixedType {
   typeHint?: string;
 }
 
+/**
+ * Type of an unsigned fixed-point number
+ *
+ * @Category Elementary types
+ */
 export interface UfixedType {
   typeClass: "ufixed";
   bits: number;
@@ -103,8 +168,18 @@ export interface UfixedType {
   typeHint?: string;
 }
 
+/**
+ * Type of an array
+ *
+ * @Category Container types
+ */
 export type ArrayType = ArrayTypeStatic | ArrayTypeDynamic;
 
+/**
+ * Type of a static-length array
+ *
+ * @Category Container types
+ */
 export interface ArrayTypeStatic {
   typeClass: "array";
   kind: "static";
@@ -114,6 +189,11 @@ export interface ArrayTypeStatic {
   typeHint?: string;
 }
 
+/**
+ * Type of a dynamic-length array
+ *
+ * @Category Container types
+ */
 export interface ArrayTypeDynamic {
   typeClass: "array";
   kind: "dynamic";
@@ -122,6 +202,11 @@ export interface ArrayTypeDynamic {
   typeHint?: string;
 }
 
+/**
+ * Type of an elementary value
+ *
+ * @Category General categories
+ */
 export type ElementaryType =
   | UintType
   | IntType
@@ -132,6 +217,11 @@ export type ElementaryType =
   | AddressType
   | StringType;
 
+/**
+ * Type of a mapping
+ *
+ * @Category Container types
+ */
 export interface MappingType {
   typeClass: "mapping";
   keyType: ElementaryType;
@@ -139,8 +229,18 @@ export interface MappingType {
   location?: "storage";
 }
 
+/**
+ * Type of a function pointer (internal or external)
+ *
+ * @Category Function types
+ */
 export type FunctionType = FunctionInternalType | FunctionExternalType;
 
+/**
+ * Type of an internal function pointer
+ *
+ * @Category Function types
+ */
 export interface FunctionInternalType {
   typeClass: "function";
   visibility: "internal";
@@ -150,10 +250,20 @@ export interface FunctionInternalType {
   //we do not presently support bound functions
 }
 
+/**
+ * Type of an external function pointer
+ *
+ * @Category Function types
+ */
 export type FunctionExternalType =
   | FunctionExternalTypeSpecific
   | FunctionExternalTypeGeneral;
 
+/**
+ * Type of an external function pointer (full Solidity type)
+ *
+ * @Category Function types
+ */
 export interface FunctionExternalTypeSpecific {
   typeClass: "function";
   visibility: "external";
@@ -164,6 +274,11 @@ export interface FunctionExternalTypeSpecific {
   //we do not presently support bound functions
 }
 
+/**
+ * Type of an external function pointer (general ABI type)
+ *
+ * @Category Function types
+ */
 export interface FunctionExternalTypeGeneral {
   typeClass: "function";
   visibility: "external";
@@ -172,7 +287,17 @@ export interface FunctionExternalTypeGeneral {
   typeHint?: string;
 }
 
+/**
+ * Types defined inside contracts
+ *
+ * @Category General categories
+ */
 export type ContractDefinedType = StructTypeLocal | EnumTypeLocal;
+/**
+ * User-defined types
+ *
+ * @Category General categories
+ */
 export type UserDefinedType =
   | ContractDefinedType
   | ContractTypeNative
@@ -180,8 +305,12 @@ export type UserDefinedType =
   | EnumTypeGlobal;
 
 /**
+ * Type of a struct
+ *
  * Structs may be local (defined in a contract) or global (defined outside of any contract);
  * the latter will be introduced in Solidity 0.6.x
+ *
+ * @Category Container types
  */
 export type StructType = StructTypeLocal | StructTypeGlobal;
 
@@ -190,6 +319,11 @@ export interface NameTypePair {
   type: Type;
 }
 
+/**
+ * Local structs (defined in contracts)
+ *
+ * @Category Container types
+ */
 export interface StructTypeLocal {
   typeClass: "struct";
   kind: "local";
@@ -207,6 +341,11 @@ export interface StructTypeLocal {
   location?: Location;
 }
 
+/**
+ * Global structs (coming in 0.6.x)
+ *
+ * @Category Container types
+ */
 export interface StructTypeGlobal {
   typeClass: "struct";
   kind: "global";
@@ -227,6 +366,11 @@ export interface OptionallyNamedType {
   type: Type;
 }
 
+/**
+ * Type of a tuple (for use in ABI)
+ *
+ * @Category Container types
+ */
 export interface TupleType {
   typeClass: "tuple";
   memberTypes: OptionallyNamedType[];
@@ -234,11 +378,20 @@ export interface TupleType {
 }
 
 /**
+ * Type of an enum
+ *
  * Enums may be local (defined in a contract) or global (defined outside of any contract);
  * the latter will be introduced in Solidity 0.6.x
+ *
+ * @Category Other user-defined types
  */
 export type EnumType = EnumTypeLocal | EnumTypeGlobal;
 
+/**
+ * Local enum (defined in a contract)
+ *
+ * @Category Other user-defined types
+ */
 export interface EnumTypeLocal {
   typeClass: "enum";
   kind: "local";
@@ -255,6 +408,11 @@ export interface EnumTypeLocal {
   options?: string[];
 }
 
+/**
+ * Global enum (coming in 0.6.x)
+ *
+ * @Category Other user-defined types
+ */
 export interface EnumTypeGlobal {
   typeClass: "enum";
   kind: "global";
@@ -270,10 +428,20 @@ export interface EnumTypeGlobal {
 }
 
 /**
+ * Type of a contract; used not just for actual values but wherever a contract type
+ * is needed
+ *
  * Contract types may be native (has Solidity info) or foreign (lacking Solidity info).
+ *
+ * @Category Other user-defined types
  */
 export type ContractType = ContractTypeNative | ContractTypeForeign;
 
+/**
+ * Type of a contract with full Solidity info -- may be used for actual variables
+ *
+ * @Category Other user-defined types
+ */
 export interface ContractTypeNative {
   typeClass: "contract";
   kind: "native";
@@ -291,6 +459,11 @@ export interface ContractTypeNative {
   //now
 }
 
+/**
+ * Type of a contract w/o full Solidity info -- not used for actual variables
+ *
+ * @Category Other user-defined types
+ */
 export interface ContractTypeForeign {
   typeClass: "contract";
   kind: "foreign";
@@ -306,6 +479,11 @@ export interface ContractTypeForeign {
 
 export type MagicVariableName = "message" | "block" | "transaction";
 
+/**
+ * Type of a magic variable
+ *
+ * @Category Special container types
+ */
 export interface MagicType {
   typeClass: "magic";
   variable: MagicVariableName;
@@ -318,6 +496,11 @@ export interface MagicType {
   //may have more optional fields defined in the future
 }
 
+/**
+ * Reference types
+ *
+ * @Category General categories
+ */
 export type ReferenceType =
   | ArrayType
   | MappingType
@@ -470,7 +653,9 @@ export function typeStringWithoutLocation(dataType: Type): string {
       //combining these cases for simplicity
       switch (dataType.kind) {
         case "local":
-          return `${dataType.typeClass} ${dataType.definingContractName}.${dataType.typeName}`;
+          return `${dataType.typeClass} ${dataType.definingContractName}.${
+            dataType.typeName
+          }`;
         case "global": //WARNING, SPECULATIVE
           return `${dataType.typeClass} ${dataType.typeName}`;
       }

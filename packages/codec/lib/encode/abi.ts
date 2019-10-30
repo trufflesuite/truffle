@@ -13,6 +13,9 @@ import utf8 from "utf8";
 //see: https://github.com/microsoft/TypeScript/issues/18758
 //so, I'm just going to have to throw in a bunch of type coercions >_>
 
+/**
+ * @Category Encoding (low-level)
+ */
 export function encodeAbi(
   input: Format.Values.Result,
   allocations?: Allocation.AbiAllocations
@@ -185,6 +188,9 @@ function padAndPrependLength(bytes: Uint8Array): Uint8Array {
   return encoded;
 }
 
+/**
+ * @Category Encoding (low-level)
+ */
 export function encodeTupleAbi(
   tuple: Format.Values.Result[],
   allocations?: Allocation.AbiAllocations

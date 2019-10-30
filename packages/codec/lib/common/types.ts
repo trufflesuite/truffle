@@ -1,6 +1,18 @@
+/**
+ * @Category Enumerations
+ */
 export type Location = "storage" | "memory" | "calldata";
+/**
+ * @Category Enumerations
+ */
 export type Visibility = "internal" | "external";
+/**
+ * @Category Enumerations
+ */
 export type Mutability = "pure" | "view" | "nonpayable" | "payable";
+/**
+ * @Category Enumerations
+ */
 export type ContractKind = "contract" | "library" | "interface";
 
 /**
@@ -10,6 +22,8 @@ export type ContractKind = "contract" | "library" | "interface";
  * the future with Truffle DB.  In the meantime, it is at least worth noting that
  * you should not encounter this error if your entire project was written in
  * Solidity and all compiled at once.  Sorry.
+ *
+ * @Category Errors
  */
 export class UnknownUserDefinedTypeError extends Error {
   public typeString: string;
