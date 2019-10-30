@@ -9,7 +9,8 @@
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
     "geth": "./scripts/geth.sh",
-    "solc-bump": "node ./scripts/solc-bump.js"
+    "solc-bump": "node ./scripts/solc-bump.js",
+    "update": "lernaupdate"
   },
   "devDependencies": {
     "coveralls": "^3.0.2",
