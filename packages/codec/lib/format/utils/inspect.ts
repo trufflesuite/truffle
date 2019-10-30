@@ -7,7 +7,7 @@ import * as Exception from "./exception";
 
 //we'll need to write a typing for the options type ourself, it seems; just
 //going to include the relevant properties here
-export interface InspectOptions {
+interface InspectOptions {
   stylize?: (toMaybeColor: string, style?: string) => string;
   colors: boolean;
   breakLength: number;

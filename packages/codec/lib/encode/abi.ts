@@ -166,6 +166,10 @@ export function encodeAbi(
   }
 }
 
+/**
+ * @protected
+ * @Category Encoding (low-level)
+ */
 export function stringToBytes(input: string): Uint8Array {
   input = utf8.encode(input);
   let bytes = new Uint8Array(input.length);
@@ -177,6 +181,9 @@ export function stringToBytes(input: string): Uint8Array {
   //but, well, it shouldn't contain that...
 }
 
+/**
+ * @Category Encoding (low-level)
+ */
 function padAndPrependLength(bytes: Uint8Array): Uint8Array {
   let length = bytes.length;
   let paddedLength =
