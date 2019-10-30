@@ -223,6 +223,8 @@ describe("Methods", function() {
 
       value = await example.returnsNamedStaticNestedArray();
       assert(Array.isArray(value));
+      assert(Array.isArray(value[0]));
+      assert(Array.isArray(value[1]));
       assert(web3.utils.isBN(value[0][0]));
       assert(web3.utils.isBN(value[0][1]));
       assert(web3.utils.isBN(value[1][0]));
@@ -231,6 +233,8 @@ describe("Methods", function() {
       value = await example.returnsUnnamedStaticNestedArray();
 
       assert(Array.isArray(value));
+      assert(Array.isArray(value[0]));
+      assert(Array.isArray(value[1]));
       assert(web3.utils.isBN(value[0][0]));
       assert(web3.utils.isBN(value[0][1]));
       assert(web3.utils.isBN(value[1][0]));
