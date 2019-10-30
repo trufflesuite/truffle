@@ -51,9 +51,15 @@ All of these functions presently require a final argument containing all
 artifacts that could potentially be relevant.  It's intended that this argument
 will be optional in the future.
 
-### Methods
+### Decoder methods
 
 See the documentation for the individual decoder classes for a method listing.
+
+### Output format information
+
+The decoder outputs lossless, machine-readable [[Format.Values.Result]] objects
+containing individual decoded values. See the [[Format|Format documentation]]
+for an overview and complete module listing.
 
 ### Decoding modes and abification
 
