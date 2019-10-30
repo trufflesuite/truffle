@@ -806,9 +806,14 @@ export class ContractInstanceDecoder {
       //This way the decoder core can recognize the address as the class, without us having
       //to make serious modifications to contract decoding.  And while sure this requires
       //a little more work, I mean, it's all cached, so, no big deal.
-      let extraContext = Utils.makeContext(this.contract, this.contractNode);
-      //now override the binary
-      extraContext.binary = this.contractCode;
+      const contractWithCode = {
+        ...this.contract,
+        deployedBytecode: this.contractCode
+      };
+      const extraContext = Utils.makeContext(
+        contractWithCode,
+        this.contractNode
+      );
       this.additionalContexts = { [extraContext.context]: extraContext };
       //the following line only has any effect if we're dealing with a library,
       //since the code we pulled from the blockchain obviously does not have unresolved link references!
