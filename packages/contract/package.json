@@ -10,7 +10,6 @@
   },
   "version": "4.0.37",
   "main": "index.js",
-  "typings": "./typings/index.d.ts",
   "scripts": {
     "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
     "prepare": "yarn compile",
@@ -19,6 +18,7 @@
     "test:debug": "$(yarn bin)/mocha --inspect-brk",
     "test:trace": "$(yarn bin)/mocha --trace-warnings"
   },
+  "typings": "./typings/index.d.ts",
   "dependencies": {
     "@truffle/blockchain-utils": "^0.0.13",
     "@truffle/contract-schema": "^3.0.16",
@@ -37,7 +37,7 @@
     "browserify": "^14.0.0",
     "chai": "4.2.0",
     "debug": "^4.1.0",
-    "ganache-core": "2.7.0",
+    "ganache-core": "2.8.0",
     "mocha": "5.2.0",
     "temp": "^0.8.3",
     "uglify-es": "^3.3.9"
