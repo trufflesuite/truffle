@@ -23,7 +23,6 @@ export {
 export {
   ContractState,
   StateVariable,
-  DecodedTransaction,
   DecodedLog,
   EventOptions
 } from "./types";

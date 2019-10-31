@@ -213,9 +213,8 @@ export class WireDecoder {
    *
    * Takes a Web3
    * [Transaction](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-gettransaction-return)
-   * object and returns a copy of that object but with an additional decoding
-   * field.  This field holds a [[CalldataDecoding]]; see the documentation on
-   * [[DecodedTransaction]] for more.
+   * object and decodes it.  The result is a [[CalldataDecoding]]; see the documentation on
+   * that interface for more.
    *
    * Note that decoding of transactions sent to libraries is presently not
    * supported and may have unreliable results.  Limited support for this is
@@ -224,7 +223,7 @@ export class WireDecoder {
    */
   public async decodeTransaction(
     transaction: Transaction
-  ): Promise<DecoderTypes.DecodedTransaction> {
+  ): Promise<CalldataDecoding> {
     return await this.decodeTransactionWithAdditionalContexts(transaction);
   }
 
@@ -234,7 +233,7 @@ export class WireDecoder {
   public async decodeTransactionWithAdditionalContexts(
     transaction: Transaction,
     additionalContexts: Contexts.DecoderContexts = {}
-  ): Promise<DecoderTypes.DecodedTransaction> {
+  ): Promise<CalldataDecoding> {
     debug("transaction: %O", transaction);
     const block = transaction.blockNumber;
     const isConstructor = transaction.to === null;
@@ -271,12 +270,7 @@ export class WireDecoder {
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decoding = result.value;
-
-    return {
-      ...transaction,
-      decoding
-    };
+    return result.value;
   }
 
   /**
@@ -284,12 +278,30 @@ export class WireDecoder {
    *
    * Takes a Web3
    * [Log](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-getpastlogs-return)
-   * object and returns a copy of that object but with an additional decodings
-   * field.  This field holds an array of [[LogDecoding|LogDecodings]]; see the
-   * documentation on [[DecodedLog]] for more.
+   * object and decodes it.  Logs can be ambiguous, so this so this function
+   * returns an array of [[LogDecoding|LogDecodings]].
+   *
+   * Note that logs are decoded in strict mode, so (with one exception) none of the decodings should
+   * contain errors; if a decoding would contain an error, instead it is simply excluded from the
+   * list of possible decodings.  The one exception to this is that indexed parameters of reference
+   * type cannot meaningfully be decoded, so those will decode to an error.
+   *
+   * If there are multiple possible decodings, they will always be listed in the following order:
+   *
+   * 1. A non-anonymous event coming from the contract itself (there can be at most one of these)
+   * 2. Non-anonymous events coming from libraries
+   * 3. Anonymous events coming from the contract itself
+   * 4. Anonymous events coming from libraries
+   *
+   * You can check the kind and class.contractKind fields to distinguish between these.
+   *
+   * If no possible decodings are found, the returned array of decodings will be empty.
+   *
+   * Note that different decodings may use different decoding modes.
+   *
    * @param log The log to be decoded.
    */
-  public async decodeLog(log: Log) {
+  public async decodeLog(log: Log): Promise<LogDecoding[]> {
     return await this.decodeLogWithAdditionalOptions(log);
   }
 
@@ -300,7 +312,7 @@ export class WireDecoder {
     log: Log,
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
-  ): Promise<DecoderTypes.DecodedLog> {
+  ): Promise<LogDecoding[]> {
     const block = log.blockNumber;
     const data = Conversion.toBytes(log.data);
     const topics = log.topics.map(Conversion.toBytes);
@@ -329,37 +341,7 @@ export class WireDecoder {
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decodings = result.value;
-
-    return {
-      ...log,
-      decodings
-    };
-  }
-
-  /**
-   * **This method is asynchronous.**
-   *
-   * Similar to [[decodeLog]], but operates on an array of logs and decodes them all.
-   * @param logs The logs to be decoded.
-   */
-  public async decodeLogs(logs: Log[]) {
-    return await this.decodeLogsWithAdditionalOptions(logs);
-  }
-
-  /**
-   * @protected
-   */
-  public async decodeLogsWithAdditionalOptions(
-    logs: Log[],
-    options: DecoderTypes.EventOptions = {},
-    additionalContexts: Contexts.DecoderContexts = {}
-  ): Promise<DecoderTypes.DecodedLog[]> {
-    return await Promise.all(
-      logs.map(log =>
-        this.decodeLogWithAdditionalOptions(log, options, additionalContexts)
-      )
-    );
+    return result.value;
   }
 
   /**
@@ -370,10 +352,16 @@ export class WireDecoder {
    * will be added in the future.
    * @param options Used to determine what events to fetch; see the documentation
    *   on the [[EventOptions]] type for more.
+   * @return An array of [[DecodedLog|DecodedLogs]].
+   *   These consist of a log together with its possible decodings; see that
+   *   type for more info.  And see [[decodeLog]] for more info on how log
+   *   decoding works in general.
    * @example `events({name: "TestEvent"})` -- get events named "TestEvent"
    *   from the most recent block
    */
-  public async events(options: DecoderTypes.EventOptions = {}) {
+  public async events(
+    options: DecoderTypes.EventOptions = {}
+  ): Promise<DecoderTypes.DecodedLog[]> {
     return await this.eventsWithAdditionalContexts(options);
   }
 
@@ -392,10 +380,15 @@ export class WireDecoder {
       toBlock
     });
 
-    let events = await this.decodeLogsWithAdditionalOptions(
-      logs,
-      options,
-      additionalContexts
+    let events = await Promise.all(
+      logs.map(async log => ({
+        ...log,
+        decodings: await this.decodeLogWithAdditionalOptions(
+          log,
+          options,
+          additionalContexts
+        )
+      }))
     );
     debug("events: %o", events);
 
@@ -635,7 +628,7 @@ export class ContractDecoder {
    */
   public async decodeTransaction(
     transaction: Transaction
-  ): Promise<DecoderTypes.DecodedTransaction> {
+  ): Promise<CalldataDecoding> {
     return await this.wireDecoder.decodeTransaction(transaction);
   }
 
@@ -645,18 +638,8 @@ export class ContractDecoder {
    * See [[WireDecoder.decodeLog]].
    * @param log The log to be decoded.
    */
-  public async decodeLog(log: Log): Promise<DecoderTypes.DecodedLog> {
+  public async decodeLog(log: Log): Promise<LogDecoding[]> {
     return await this.wireDecoder.decodeLog(log);
-  }
-
-  /**
-   * **This method is asynchronous.**
-   *
-   * See [[WireDecoder.decodeLogs]].
-   * @param logs The logs to be decoded.
-   */
-  public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.decodeLogs(logs);
   }
 
   /**
@@ -1223,7 +1206,7 @@ export class ContractInstanceDecoder {
    */
   public async decodeTransaction(
     transaction: Transaction
-  ): Promise<DecoderTypes.DecodedTransaction> {
+  ): Promise<CalldataDecoding> {
     return await this.wireDecoder.decodeTransactionWithAdditionalContexts(
       transaction,
       this.additionalContexts
@@ -1235,22 +1218,9 @@ export class ContractInstanceDecoder {
    *
    * See [[WireDecoder.decodeLog]].
    */
-  public async decodeLog(log: Log): Promise<DecoderTypes.DecodedLog> {
+  public async decodeLog(log: Log): Promise<LogDecoding[]> {
     return await this.wireDecoder.decodeLogWithAdditionalOptions(
       log,
-      {},
-      this.additionalContexts
-    );
-  }
-
-  /**
-   * **This method is asynchronous.**
-   *
-   * See [[WireDecoder.decodeLogs]].
-   */
-  public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.decodeLogsWithAdditionalOptions(
-      logs,
       {},
       this.additionalContexts
     );
