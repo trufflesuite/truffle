@@ -1,4 +1,5 @@
 import { Web3Shim, Web3ShimOptions } from "./web3-shim";
+import { BlockType } from "web3/eth/types";
 
 export interface Web3InterfaceAdapterOptions extends Web3ShimOptions {}
 

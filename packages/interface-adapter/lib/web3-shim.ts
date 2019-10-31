@@ -1,6 +1,5 @@
 import Web3 from "web3";
 import { Provider } from "web3/providers";
-import { BlockType } from "web3/eth/types";
 
 import { EthereumDefinition } from "./ethereum-overloads";
 import { QuorumDefinition } from "./quorum-overloads";
