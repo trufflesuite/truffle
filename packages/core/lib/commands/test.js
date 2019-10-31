@@ -38,6 +38,10 @@ const command = {
       {
         option: "--show-events",
         description: "Log all contract events."
+      },
+      {
+        option: "--quiet",
+        description: "Suppress all output except for the test report."
       }
     ]
   },
@@ -132,7 +136,9 @@ const command = {
 
       promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
         .then(() => {
-          config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+          if (config.quiet !== true) {
+            config.logger.log(`Using network '${config.network}'.${OS.EOL}`);
+          }
 
           run();
         })
