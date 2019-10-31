@@ -64,42 +64,10 @@ for an overview and complete module listing.
 
 ### Decoding modes and abification
 
-The decoder can operate in either of two modes: Full mode or ABI mode.  In ABI
-mode, it decodes purely based on the information in the ABI.  In full mode, it
-uses Solidity AST information to provide a more detailed decoding.  Due to
-various technical reasons, full mode is not always reliably available.  The only
-way to guarantee the use of full mode is if all your contracts are written in
-Solidity (version 0.4.9 or later) and they were all compiled simultaneously.
-
-The decoder will always run in full mode when possible, but sometimes the
-necessary information may be missing or, for technical reasons, unusable.  In
-this case, it will fall back into ABI mode.  Decodings are always marked with
-which mode produced them so you can distinguish, as the format of a result may
-differ substantially due to which mode was used.  Full mode is only available
-for Solidity contracts and only for Solidity versions 0.4.9 or later; ABI mode
-works with anything using the Solidity ABI.
-
-If you want to simplify matters and to not have to deal with this distinction,
-the decoder provides methods for converting a given decoding to ABI mode.  So
-you can run the decoder in whatever mode it runs in, then run the result through
-these methods to ensure you get an ABI mode result.  As noted above, there's
-no way to ensure you get a full mode result.
-
-(There are two slight differences between running the decoder in full mode and
-abifying afterward, versus simply running the decoder in ABI mode.  Firstly,
-full mode will reject certain invalid decodings that ABI mode cannot recognize
-as invalid.  Secondly, the abified version of a full-mode decoding does contain
-slightly more information than an actual ABI-mode decoding, just in an
-ABI-mode-compatible format.)
-
-Note that modes are always applied at the level of the whole decoding; different
-variables in the same decoding will always be decoded with the same mode.
-However, if an object (such as a log) admits *multiple* decodings, these
-different decodings may occur in different modes.
-
-Note that decoding of state variables is only available in full mode; attempting
-to decode state variables will result in an exception if full mode is not
-possible.
+The decoder runs in either of two modes: full mode or ABI mdoe. Full mode
+requires some additional constraints but returns substantially more detailed
+information. Please see the notes on [Decoding modes](../#decoding-modes) for
+more about this distinction.
 
 ### Basic usage examples
 
