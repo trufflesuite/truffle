@@ -7,7 +7,12 @@ export class Web3InterfaceAdapter extends Web3Shim {
   constructor(options?: Web3InterfaceAdapterOptions) {
     super(options);
   }
+
   public getNetworkId() {
     return this.eth.net.getId();
+  }
+
+  public getBlock(block: BlockType) {
+    return this.eth.getBlock(block);
   }
 }
