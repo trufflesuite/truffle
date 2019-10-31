@@ -35,16 +35,17 @@ module.exports = {
 
   testConnection: function(options) {
     const { networks, network } = options;
-    let networkCheckTimeout;
-    if (networks && networks[network]) {
+    let networkCheckTimeout, networkType;
+    if (networks[network]) {
       networkCheckTimeout =
         networks[network].networkCheckTimeout || DEFAULT_NETWORK_CHECK_TIMEOUT;
+      networkType = networks[network].type;
     } else {
       networkCheckTimeout = DEFAULT_NETWORK_CHECK_TIMEOUT;
     }
     const provider = this.getProvider(options);
     const interfaceAdapter = new InterfaceAdapter();
-    const web3 = new Web3Shim({ provider });
+    const web3 = new Web3Shim({ provider, networkType });
     return new Promise((resolve, reject) => {
       const noResponseFromNetworkCall = setTimeout(() => {
         const errorMessage =
