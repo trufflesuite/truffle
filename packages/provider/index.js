@@ -45,6 +45,7 @@ module.exports = {
     }
     const provider = this.getProvider(options);
     const interfaceAdapter = new InterfaceAdapter();
+    const interfaceAdapter = new InterfaceAdapter({ provider, networkType });
     const web3 = new Web3Shim({ provider, networkType });
     return new Promise((resolve, reject) => {
       const noResponseFromNetworkCall = setTimeout(() => {
