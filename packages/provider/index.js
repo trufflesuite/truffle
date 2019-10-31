@@ -36,7 +36,7 @@ module.exports = {
   testConnection: function(options) {
     const { networks, network } = options;
     let networkCheckTimeout;
-    if (networks[network]) {
+    if (networks && networks[network]) {
       networkCheckTimeout =
         networks[network].networkCheckTimeout || DEFAULT_NETWORK_CHECK_TIMEOUT;
     } else {
