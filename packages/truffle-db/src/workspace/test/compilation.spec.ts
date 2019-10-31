@@ -21,7 +21,8 @@ describe("Compilation", () => {
       compilerName: Migrations.compiler.name,
       compilerVersion: Migrations.compiler.version,
       sourceId: sourceId,
-      abi: JSON.stringify(Migrations.abi)
+      abi: JSON.stringify(Migrations.abi),
+      sourceMap: JSON.stringify(Migrations.sourceMap)
     };
     addCompilationResult = await wsClient.execute(AddCompilation, variables);
 
@@ -39,7 +40,7 @@ describe("Compilation", () => {
     for (let compilation of compilations) {
       expect(compilation).toHaveProperty("compiler");
       expect(compilation).toHaveProperty("sources");
-      const { compiler, sources, contracts } = compilation;
+      const { compiler, sources, contracts, sourceMaps } = compilation;
 
       expect(compiler).toHaveProperty("name");
 

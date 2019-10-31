@@ -231,6 +231,31 @@ const translations = [
     }
   }),
 
+  // override sourceMap field to be object with json property
+  ({ contractObject, ...schemas }) => ({
+    ...schemas,
+
+    contractObject: {
+      ...contractObject,
+
+      properties: {
+        ...contractObject.properties,
+
+        sourceMap: {
+          type: "object",
+          properties: {
+            json: {
+              type: "string",
+              description: "JSON-encoded sourceMap"
+            },
+          },
+
+          required: ["json"]
+        }
+      }
+    }
+  }),
+
   // find all refs and remove leading `#/definitions/`
   searchReplace(
     (key) => key === "$ref",

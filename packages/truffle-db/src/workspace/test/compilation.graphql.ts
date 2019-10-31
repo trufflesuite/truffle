@@ -1,13 +1,16 @@
 import gql from "graphql-tag";
 
 export const AddCompilation = gql`
-  mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sourceId: ID!, $abi:String!) {
+  mutation AddCompilation($compilerName: String!, $compilerVersion: String!, $sourceId: ID!, $abi:String!, $sourceMap:String!) {
     compilationsAdd(input: {
       compilations: [{
         compiler: {
           name: $compilerName
           version: $compilerVersion
         }
+        sourceMaps: [{
+          json: $sourceMap
+        }]
         contracts: [
         {
           name:"testing",
@@ -32,6 +35,9 @@ export const AddCompilation = gql`
         }
         sources {
           contents
+        }
+        sourceMaps {
+          json
         }
         contracts {
           source {

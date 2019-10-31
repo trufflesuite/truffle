@@ -198,7 +198,7 @@ export class Workspace {
     return {
       compilations: Promise.all(compilations.map(
         async (compilationInput) => {
-         const { compiler, contracts, sources } = compilationInput;
+         const { compiler, contracts, sources, sourceMaps } = compilationInput;
 
          const sourceIds = sources.map(source => source.id);
          const sourcesObject = Object.assign({}, sourceIds);

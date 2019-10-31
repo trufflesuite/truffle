@@ -54,7 +54,6 @@ describe("Bytecode", () => {
       expect(bc).toHaveProperty("id");
       expect(bc).toHaveProperty("bytes");
       expect(bc).toHaveProperty("linkReferences");
-      expect(bc).toHaveProperty("sourceMap");
       expect(bc).toHaveProperty("instructions");
     })
 

@@ -36,7 +36,8 @@ describe("Contract", () => {
       compilerName: Migrations.compiler.name,
       compilerVersion: Migrations.compiler.version,
       sourceId: sourceId,
-      abi: JSON.stringify(Migrations.abi)
+      abi: JSON.stringify(Migrations.abi),
+      sourceMap: JSON.stringify(Migrations.sourceMap)
     };
     const compilationResult = await wsClient.execute(AddCompilation, compilationVariables);
     compilationId = compilationResult.compilationsAdd.compilations[0].id;

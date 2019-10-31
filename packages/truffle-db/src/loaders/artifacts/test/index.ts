@@ -193,6 +193,9 @@ query getWorkspaceCompilation($id: ID!) {
         contents
         sourcePath
       }
+      sourceMaps {
+        json
+      }
     }
   }
 }`;
@@ -347,12 +350,14 @@ describe("Compilation", () => {
     }));
 
     const solcCompilation = compilationsQuery[0].data.workspace.compilation;
+
     expect(solcCompilation.compiler.version).toEqual(artifacts[0].compiler.version);
     expect(solcCompilation.sources.length).toEqual(3);
     solcCompilation.sources.map((source, index)=> {
       expect(source.id).toEqual(sourceIds[index].id);
       expect(source["contents"]).toEqual(artifacts[index].source);
       expect(solcCompilation.contracts[index].name).toEqual(artifacts[index].contractName);
+      expect(solcCompilation.sourceMaps[index].json).toEqual(artifacts[index].sourceMap);
     });
 
     const vyperCompilation =  compilationsQuery[1].data.workspace.compilation
