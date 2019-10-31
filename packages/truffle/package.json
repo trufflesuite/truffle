@@ -35,6 +35,7 @@
     "@truffle/contract": "^4.0.37",
     "@truffle/core": "^5.0.42",
     "@truffle/debugger": "^5.0.33",
+    "@truffle/interface-adapter": "^0.3.0",
     "clean-webpack-plugin": "^0.1.16",
     "copy-webpack-plugin": "^4.0.1",
     "eslint": "^5.7.0",

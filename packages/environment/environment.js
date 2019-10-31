@@ -15,7 +15,10 @@ const Environment = {
     helpers.setUpConfig(config);
     helpers.validateNetworkConfig(config);
 
-    const interfaceAdapter = new InterfaceAdapter();
+    const interfaceAdapter = new InterfaceAdapter({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+    });
     const web3 = new Web3Shim({
       provider: config.provider,
       networkType: config.networks[config.network].type
@@ -30,7 +33,10 @@ const Environment = {
   fork: async function(config) {
     expect.options(config, ["from", "provider", "networks", "network"]);
 
-    const interfaceAdapter = new InterfaceAdapter();
+    const interfaceAdapter = new InterfaceAdapter({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+    });
     const web3 = new Web3Shim({
       provider: config.provider,
       networkType: config.networks[config.network].type
@@ -87,7 +93,7 @@ const helpers = {
 
   detectAndSetNetworkId: async (config, web3, interfaceAdapter) => {
     const configNetworkId = config.networks[config.network].network_id;
-    const providerNetworkId = await web3.eth.net.getId();
+    const providerNetworkId = await interfaceAdapter.getNetworkId();
     if (configNetworkId !== "*") {
       // Ensure the network id matches the one in the config for safety
       if (providerNetworkId.toString() !== configNetworkId.toString()) {
