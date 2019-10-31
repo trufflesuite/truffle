@@ -79,12 +79,4 @@ export class Web3Shim extends Web3 {
     this.networkType = networkType;
     initInterface(this);
   }
-
-  public getNetworkId() {
-    return this.eth.net.getId();
-  }
-
-  public getBlock(block: BlockType) {
-    return this.eth.getBlock(block);
-  }
 }

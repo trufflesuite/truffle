@@ -1,8 +1,11 @@
-import { Web3Shim, Web3ShimOptions } from "./web3-shim";
+import {
+  Web3InterfaceAdapter,
+  Web3InterfaceAdapterOptions
+} from "./web3-interface-adapter";
 import { Block as EvmBlock } from "web3/eth/types";
 import { BlockType as EvmBlockType } from "web3/eth/types";
 
-export interface InterfaceAdapterOptions extends Web3ShimOptions {}
+export interface InterfaceAdapterOptions extends Web3InterfaceAdapterOptions {}
 export type NetworkId = Number | String;
 export type Block = EvmBlock | any;
 export type BlockType = EvmBlockType | any;
@@ -17,11 +20,11 @@ const getNetworkTypeClass = ({
 };
 
 export class InterfaceAdapter {
-  public adapter?: Web3Shim | InterfaceAdapter;
+  public adapter?: Web3InterfaceAdapter;
   constructor(options?: InterfaceAdapterOptions) {
     switch (getNetworkTypeClass(options)) {
       case "evm-like":
-        this.adapter = new Web3Shim({
+        this.adapter = new Web3InterfaceAdapter({
           provider: options.provider,
           networkType: options.networkType
         });

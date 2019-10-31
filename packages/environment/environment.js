@@ -5,6 +5,7 @@ const TruffleError = require("@truffle/error");
 const Resolver = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 const Ganache = require("ganache-core/public-exports");
+const Provider = require("@truffle/provider");
 
 const Environment = {
   // It's important config is a Config object and not a vanilla object
@@ -23,6 +24,7 @@ const Environment = {
       networkType: config.networks[config.network].type
     });
 
+    await Provider.testConnection(config);
     await helpers.detectAndSetNetworkId(config, web3, interfaceAdapter);
     await helpers.setFromOnConfig(config, web3, interfaceAdapter);
   },

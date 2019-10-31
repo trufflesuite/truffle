@@ -9,13 +9,15 @@
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
     "geth": "./scripts/geth.sh",
-    "solc-bump": "node ./scripts/solc-bump.js"
+    "solc-bump": "node ./scripts/solc-bump.js",
+    "update": "lernaupdate"
   },
   "devDependencies": {
     "coveralls": "^3.0.2",
     "eslint": "^5.7.0",
     "husky": "^1.2.0",
     "lerna": "^3.16.4",
+    "lerna-update-wizard": "^0.16.0",
     "lint-staged": "^7.3.0",
     "nyc": "^13.0.1",
     "prettier": "1.14.3",
