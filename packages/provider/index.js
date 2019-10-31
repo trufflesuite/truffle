@@ -53,7 +53,7 @@ module.exports = {
           "\n       Check to see that your provider is valid.\n       If you " +
           "have a slow internet connection, try configuring a longer " +
           "timeout in your Truffle config. Use the " +
-          "networks.<networkName>.networkCheckTimeout property to do this.";
+          "networks[networkName].networkCheckTimeout property to do this.";
         throw new Error(errorMessage);
       }, networkCheckTimeout);
       web3.eth
