@@ -28,7 +28,10 @@ function TestRunner(options = {}) {
   this.first_snapshot = true;
   this.initial_snapshot = null;
   this.known_events = {};
-  this.interfaceAdapter = new InterfaceAdapter();
+  this.interfaceAdapter = new InterfaceAdapter({
+    provider: options.provider,
+    networkType: options.networks[options.network].type
+  });
   this.web3 = new Web3Shim({
     provider: options.provider,
     networkType: options.networks[options.network].type
@@ -74,7 +77,11 @@ TestRunner.prototype.initialize = function(callback) {
         function(err, data) {
           if (err) return callback(err);
 
-          var contracts = data.map(JSON.parse).map(contract);
+          var contracts = data
+            .map(JSON.parse)
+            .map(json =>
+              contract(json, self.config.networks[self.config.network].type)
+            );
           var abis = _.flatMap(contracts, "abi");
 
           abis.map(function(abi) {

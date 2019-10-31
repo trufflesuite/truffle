@@ -34,13 +34,18 @@ const Test = {
       return path.resolve(testFile);
     });
 
-    const interfaceAdapter = new InterfaceAdapter();
+    const interfaceAdapter = new InterfaceAdapter({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+    });
 
     // `accounts` will be populated before each contract() invocation
     // and passed to it so tests don't have to call it themselves.
     const web3 = new Web3Shim({
       provider: config.provider,
       networkType: config.networks[config.network].type
+        ? config.networks[config.network].type
+        : "web3js"
     });
 
     // Override console.warn() because web3 outputs gross errors to it.
