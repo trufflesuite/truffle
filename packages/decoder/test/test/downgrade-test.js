@@ -312,6 +312,38 @@ contract("DowngradeTest", function(accounts) {
       await runEnumTestBody(DowngradeTest);
     });
   });
+
+  it("Decodes external functions via additionalContexts", async function() {
+    //HACK
+    let DowngradeTest = clonedeep(DowngradeTestUnmodified);
+    DowngradeTest._json.deployedBytecode = undefined;
+
+    let deployedContract = await DowngradeTest.new();
+    let address = deployedContract.address;
+    let decoder = await Decoder.forContractInstance(
+      deployedContract,
+      [DowngradeTest._json, DecoyLibrary] //HACK: because we've clonedeep'd DowngradeTest,
+      //we need to pass in its _json rather than it itself (its getters have been stripped off)
+    );
+
+    let decodedFunction = await decoder.variable("doYouSeeMe");
+    assert.strictEqual(decodedFunction.type.typeClass, "function");
+    assert.strictEqual(decodedFunction.type.visibility, "external");
+    assert.strictEqual(decodedFunction.type.kind, "specific");
+    assert.strictEqual(decodedFunction.type.mutability, "nonpayable");
+    assert.isEmpty(decodedFunction.type.inputParameterTypes);
+    assert.isEmpty(decodedFunction.type.outputParameterTypes);
+    assert.strictEqual(decodedFunction.kind, "value");
+    assert.strictEqual(decodedFunction.value.kind, "known");
+    assert.strictEqual(decodedFunction.value.contract.kind, "known");
+    assert.strictEqual(
+      decodedFunction.value.contract.class.typeName,
+      "DowngradeTest"
+    );
+    assert.strictEqual(decodedFunction.value.contract.address, address);
+    let selector = web3.eth.abi.encodeFunctionSignature("causeTrouble()");
+    assert.strictEqual(decodedFunction.value.selector, selector);
+  });
 });
 
 async function runEnumTestBody(DowngradeTest) {
