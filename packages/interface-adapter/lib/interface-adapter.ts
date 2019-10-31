@@ -20,7 +20,7 @@ const getNetworkTypeClass = ({
 };
 
 export class InterfaceAdapter {
-  public adapter?: Web3InterfaceAdapter;
+  public adapter: Web3InterfaceAdapter | any;
   constructor(options?: InterfaceAdapterOptions) {
     switch (getNetworkTypeClass(options)) {
       case "evm-like":
