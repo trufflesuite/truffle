@@ -177,6 +177,28 @@ contract Example {
     return arr;
   }
 
+  function returnsNamedStaticNestedArray()
+    public
+    view
+    returns (uint[2][] memory named)
+  {
+    uint[2][] memory arr = new uint[2][](2);
+    arr[0] = [uint(5), 5];
+    arr[1] = [uint(7), 7];
+    return arr;
+  }
+
+  function returnsUnnamedStaticNestedArray()
+    public
+    view
+    returns (uint[2][] memory)
+  {
+    uint[2][] memory arr = new uint[2][](2);
+    arr[0] = [uint(5), 5];
+    arr[1] = [uint(7), 7];
+    return arr;
+  }
+
   function() external payable {
     fallbackTriggered = true;
   }
