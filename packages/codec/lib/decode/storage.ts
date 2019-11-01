@@ -9,7 +9,7 @@ import * as Storage from "@truffle/codec/storage";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
-import { storageSizeForType } from "@truffle/codec/allocate/storage";
+import { storageSizeForType } from "@truffle/codec/storage/allocate";
 import BN from "bn.js";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
