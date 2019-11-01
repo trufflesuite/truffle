@@ -4,7 +4,7 @@ const debug = debugModule("codec:storage:utils");
 import BN from "bn.js";
 
 import * as Evm from "@truffle/codec/evm";
-import { encodeMappingKey, mappingKeyAsHex } from "@truffle/codec/encode/key";
+import * as MappingKeys from "@truffle/codec/keys";
 
 import { StorageLength, Slot } from "./types";
 
@@ -33,7 +33,7 @@ export function slotAddress(slot: Slot): BN {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
     return Evm.Utils.keccak256(
-      mappingKeyAsHex(slot.key),
+      MappingKeys.Encode.mappingKeyAsHex(slot.key),
       slotAddress(slot.path)
     ).add(slot.offset);
   } else if (slot.path !== undefined) {
@@ -75,7 +75,7 @@ export function equalSlots(
   }
   //if they do have keys, though...
   return Evm.Utils.equalData(
-    encodeMappingKey(slot1.key),
-    encodeMappingKey(slot2.key)
+    MappingKeys.Encode.encodeMappingKey(slot1.key),
+    MappingKeys.Encode.encodeMappingKey(slot2.key)
   );
 }

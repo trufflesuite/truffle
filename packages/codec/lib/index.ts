@@ -190,8 +190,6 @@ export { readStack } from "./read/stack";
 //finally, let's export the low-level encoding functions, because why not, someone
 //might want them :P
 export { encodeAbi, encodeTupleAbi } from "./encode/abi";
-export { encodeMappingKey } from "./encode/key";
-//(actually we use at least one of these in tests atm so we'd better export!)
 
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface
@@ -230,6 +228,9 @@ export { Contexts };
 
 import * as Conversion from "./conversion";
 export { Conversion };
+
+import * as MappingKeys from "./keys";
+export { MappingKeys };
 
 import * as Memory from "./memory";
 export { Memory };
