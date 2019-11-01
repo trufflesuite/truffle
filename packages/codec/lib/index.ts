@@ -211,7 +211,58 @@ export { abifyCalldataDecoding, abifyLogDecoding } from "./abify";
 
 //for those who want more low-level stuff...
 import * as Abi from "./abi";
-export { Abi };
+import * as Elementary from "./elementary";
+import * as MappingKeys from "./keys";
+import * as Memory from "./memory";
+import * as Special from "./special";
+import * as Stack from "./stack";
+import * as Storage from "./storage";
+
+export {
+  /**
+   * For allocation, encoding, and decoding of locations related to the ABI
+   * (calldata in Solidity, events, etc.)
+   *
+   * @category Data location
+   */
+  Abi,
+  /**
+   * For decoding of primitives and constants
+   *
+   * @category Data location
+   */
+  Elementary,
+  /**
+   * For encoding mapping keys
+   *
+   * @category Data location
+   */
+  MappingKeys,
+  /**
+   * For allocation and decoding of memory data
+   *
+   * @category Data location
+   */
+  Memory,
+  /**
+   * For decoding of special/magic variables
+   *
+   * @category Data location
+   */
+  Special,
+  /**
+   * For decoding stack variables
+   *
+   * @category Data location
+   */
+  Stack,
+  /**
+   * For allocation and decoding of storage variables
+   *
+   * @category Data location
+   */
+  Storage
+};
 
 import * as Ast from "./ast";
 export { Ast };
@@ -225,26 +276,8 @@ export { Contexts };
 import * as Conversion from "./conversion";
 export { Conversion };
 
-import * as Elementary from "./elementary";
-export { Elementary };
-
-import * as MappingKeys from "./keys";
-export { MappingKeys };
-
-import * as Memory from "./memory";
-export { Memory };
-
 import * as Pointer from "./pointer";
 export { Pointer };
 
 import * as Evm from "./evm";
 export { Evm };
-
-import * as Special from "./special";
-export { Special };
-
-import * as Stack from "./stack";
-export { Stack };
-
-import * as Storage from "./storage";
-export { Storage };
