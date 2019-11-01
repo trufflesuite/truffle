@@ -6,7 +6,7 @@ import * as Pointer from "@truffle/codec/pointer";
 import * as Elementary from "@truffle/codec/elementary";
 import * as Evm from "@truffle/codec/evm";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
-import decodeMemory from "./memory";
+import * as Memory from "@truffle/codec/memory";
 import * as Special from "@truffle/codec/special";
 import * as Stack from "@truffle/codec/stack";
 import * as Storage from "@truffle/codec/storage";
@@ -48,6 +48,6 @@ export default function* decode(
     case "memory":
       //NOTE: this case should never actually occur, but I'm including it
       //anyway as a fallback
-      return yield* decodeMemory(dataType, pointer, info);
+      return yield* Memory.Decode.decodeMemory(dataType, pointer, info);
   }
 }

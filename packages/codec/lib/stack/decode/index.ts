@@ -5,7 +5,7 @@ import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import * as Elementary from "@truffle/codec/elementary";
-import { decodeMemoryReferenceByAddress } from "@truffle/codec/decode/memory";
+import * as Memory from "@truffle/codec/memory";
 import * as Storage from "@truffle/codec/storage";
 import { decodeAbiReferenceByAddress } from "@truffle/codec/decode/abi";
 import * as Pointer from "@truffle/codec/pointer";
@@ -49,7 +49,11 @@ export function* decodeLiteral(
       case "memory":
         //first: do we have a memory pointer? if so we can just dispatch to
         //decodeMemoryReference
-        return yield* decodeMemoryReferenceByAddress(dataType, pointer, info);
+        return yield* Memory.Decode.decodeMemoryReferenceByAddress(
+          dataType,
+          pointer,
+          info
+        );
 
       case "storage":
         //next: do we have a storage pointer (which may be a mapping)? if so, we can

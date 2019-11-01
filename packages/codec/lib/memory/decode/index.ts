@@ -11,7 +11,7 @@ import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeMemory(
+export function* decodeMemory(
   dataType: Format.Types.Type,
   pointer: Pointer.MemoryPointer,
   info: Evm.EvmInfo
