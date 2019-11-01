@@ -6,11 +6,11 @@ const assert = require("assert");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 
 describe("migrate with [ @quorum ] interface", () => {
   if (!process.env.QUORUM) return;
   let config;
-  let web3;
   let networkId;
   const project = path.join(__dirname, "../../sources/migrations/quorum");
   const logger = new MemoryLogger();
@@ -26,8 +26,11 @@ describe("migrate with [ @quorum ] interface", () => {
     const provider = new Web3.providers.HttpProvider("http://localhost:22000", {
       keepAlive: false
     });
-    web3 = new Web3(provider);
-    networkId = await web3.eth.net.getId();
+    const interfaceAdapter = new InterfaceAdapter({
+      provider,
+      networkType: "quorum"
+    });
+    networkId = await interfaceAdapter.getNetworkId();
   });
 
   it("runs migrations (sync & async/await)", async () => {
