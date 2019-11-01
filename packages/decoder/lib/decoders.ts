@@ -113,7 +113,7 @@ export class WireDecoder {
       types: this.userDefinedTypes
     } = this.collectUserDefinedTypes());
 
-    let allocationInfo: Allocation.ContractAllocationInfo[] = contractsAndContexts.map(
+    let allocationInfo: Abi.Allocate.ContractAllocationInfo[] = contractsAndContexts.map(
       ({
         contract: { abi, compiler },
         node,
