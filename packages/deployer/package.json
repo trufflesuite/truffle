@@ -19,11 +19,11 @@
     "emittery": "^0.4.0"
   },
   "devDependencies": {
+    "@truffle/interface-adapter": "^0.3.1",
     "@truffle/reporters": "^1.0.15",
     "@truffle/workflow-compile": "^2.1.11",
     "ganache-core": "2.7.0",
-    "mocha": "5.2.0",
-    "web3": "1.2.1"
+    "mocha": "5.2.0"
   },
   "keywords": [
     "contracts",
