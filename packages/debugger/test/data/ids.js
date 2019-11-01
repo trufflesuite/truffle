@@ -10,7 +10,7 @@ import Debugger from "lib/debugger";
 
 import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
-import { Utils as CodecUtils } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 const __FACTORIAL = `
 pragma solidity ^0.5.0;
@@ -216,7 +216,7 @@ describe("Variable IDs", function() {
     await session.continueUntilBreakpoint();
     while (!session.view(trace.finished)) {
       values.push(
-        CodecUtils.Conversion.nativize(await session.variable("nbang"))
+        Codec.Format.Utils.Inspect.nativize(await session.variable("nbang"))
       );
       await session.continueUntilBreakpoint();
     }

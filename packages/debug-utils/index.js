@@ -5,7 +5,7 @@ var async = require("async");
 var debug = require("debug")("debug-utils");
 var BN = require("bn.js");
 var util = require("util");
-var CodecUtils = require("@truffle/codec").Utils;
+var Codec = require("@truffle/codec");
 
 var chromafi = require("@trufflesuite/chromafi");
 var hljsDefineSolidity = require("highlightjs-solidity");
@@ -365,7 +365,7 @@ var DebugUtils = {
     };
     let valueToInspect = nativized
       ? value
-      : new CodecUtils.ResultInspector(value);
+      : new Codec.Format.Utils.Inspect.ResultInspector(value);
     return util
       .inspect(valueToInspect, inspectOptions)
       .split(/\r?\n/g)

@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.0.36",
+  "version": "4.0.37",
   "main": "index.js",
   "typings": "./typings/index.d.ts",
   "scripts": {
@@ -23,7 +23,7 @@
     "@truffle/blockchain-utils": "^0.0.13",
     "@truffle/contract-schema": "^3.0.16",
     "@truffle/error": "^0.0.7",
-    "@truffle/interface-adapter": "^0.2.7",
+    "@truffle/interface-adapter": "^0.3.0",
     "bignumber.js": "^7.2.1",
     "ethereum-ens": "^0.7.7",
     "ethers": "^4.0.0-beta.1",
@@ -33,7 +33,7 @@
     "web3-utils": "1.2.1"
   },
   "devDependencies": {
-    "@truffle/compile-solidity": "^4.2.8",
+    "@truffle/compile-solidity": "^4.2.9",
     "async": "2.6.1",
     "browserify": "^14.0.0",
     "chai": "4.2.0",

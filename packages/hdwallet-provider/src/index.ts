@@ -177,14 +177,14 @@ class HDWalletProvider {
     payload: JSONRPCRequestPayload,
     callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
   ): void {
-    return this.engine.send.apply(this.engine, [payload, callback]);
+    return this.engine.send.call(this.engine, payload, callback);
   }
 
   public sendAsync(
     payload: JSONRPCRequestPayload,
     callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
   ): void {
-    this.engine.sendAsync.apply(this.engine, [payload, callback]);
+    this.engine.sendAsync.call(this.engine, payload, callback);
   }
 
   public getAddress(idx?: number): string {

@@ -1,13 +1,11 @@
 import debugModule from "debug";
 const debug = debugModule("codec:read:storage");
 
-import * as CodecUtils from "../utils";
-import { slotAddress } from "../utils/storage";
-import { slotAddressPrintout } from "../utils/errors";
-import { Slot, Range } from "../types/storage";
-import { WordMapping } from "../types/evm";
-import { DecoderRequest } from "../types/request";
-import { DecodingError } from "../decode/errors";
+import * as Conversion from "@truffle/codec/conversion";
+import * as Storage from "@truffle/codec/storage";
+import { DecoderRequest } from "@truffle/codec/types";
+import * as Evm from "@truffle/codec/evm";
+import { DecodingError } from "@truffle/codec/decode/errors";
 import BN from "bn.js";
 
 /**
@@ -17,18 +15,14 @@ import BN from "bn.js";
  * @param offset - for array, offset from the keccak determined location
  */
 export function* read(
-  storage: WordMapping,
-  slot: Slot
+  storage: Evm.WordMapping,
+  slot: Storage.Slot
 ): Generator<DecoderRequest, Uint8Array, Uint8Array> {
-  debug("Slot printout: %s", slotAddressPrintout(slot));
-  const address: BN = slotAddress(slot);
+  const address: BN = Storage.Utils.slotAddress(slot);
 
-  // debug("reading slot: %o", CodecUtils.toHexString(address));
+  // debug("reading slot: %o", Conversion.toHexString(address));
 
-  const hexAddress = CodecUtils.Conversion.toHexString(
-    address,
-    CodecUtils.EVM.WORD_SIZE
-  );
+  const hexAddress = Conversion.toHexString(address, Evm.Utils.WORD_SIZE);
   let word: Uint8Array = storage[hexAddress];
 
   //if we can't find the word in the map, we place a request to the invoker to supply it
@@ -61,8 +55,8 @@ export function* read(
  * @param length - instead of `to`, number of bytes after `from`
  */
 export function* readRange(
-  storage: WordMapping,
-  range: Range
+  storage: Evm.WordMapping,
+  range: Storage.Range
 ): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   debug("readRange %o", range);
 
@@ -78,10 +72,10 @@ export function* readRange(
       slot: {
         path: from.slot.path || undefined,
         offset: from.slot.offset.addn(
-          Math.floor((from.index + length - 1) / CodecUtils.EVM.WORD_SIZE)
+          Math.floor((from.index + length - 1) / Evm.Utils.WORD_SIZE)
         )
       },
-      index: (from.index + length - 1) % CodecUtils.EVM.WORD_SIZE
+      index: (from.index + length - 1) % Evm.Utils.WORD_SIZE
     };
   }
 
@@ -98,20 +92,20 @@ export function* readRange(
     });
   }
 
-  let data = new Uint8Array(totalWords * CodecUtils.EVM.WORD_SIZE);
+  let data = new Uint8Array(totalWords * Evm.Utils.WORD_SIZE);
 
   for (let i = 0; i < totalWords; i++) {
     let offset = from.slot.offset.addn(i);
     const word = yield* read(storage, { ...from.slot, offset });
     if (typeof word !== "undefined") {
-      data.set(word, i * CodecUtils.EVM.WORD_SIZE);
+      data.set(word, i * Evm.Utils.WORD_SIZE);
     }
   }
   debug("words %o", data);
 
   data = data.slice(
     from.index,
-    (totalWords - 1) * CodecUtils.EVM.WORD_SIZE + to.index + 1
+    (totalWords - 1) * Evm.Utils.WORD_SIZE + to.index + 1
   );
 
   debug("data: %o", data);
