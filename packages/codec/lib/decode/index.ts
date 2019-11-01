@@ -6,7 +6,7 @@ import * as Pointer from "@truffle/codec/pointer";
 import * as Evm from "@truffle/codec/evm";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import decodeMemory from "./memory";
-import decodeStorage from "./storage";
+import * as Storage from "@truffle/codec/storage";
 import decodeStack from "./stack";
 import { decodeLiteral } from "./stack";
 import decodeAbi from "./abi";
@@ -25,7 +25,7 @@ export default function* decode(
 
   switch (pointer.location) {
     case "storage":
-      return yield* decodeStorage(dataType, pointer, info);
+      return yield* Storage.Decode.decodeStorage(dataType, pointer, info);
 
     case "stack":
       return yield* decodeStack(dataType, pointer, info);

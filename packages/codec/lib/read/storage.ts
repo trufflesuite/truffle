@@ -2,7 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("codec:read:storage");
 
 import * as Conversion from "@truffle/codec/conversion";
-import * as Storage from "@truffle/codec/storage";
+import * as Storage from "@truffle/codec/storage/types";
+import * as Utils from "@truffle/codec/storage/utils";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError } from "@truffle/codec/decode/errors";
@@ -18,7 +19,7 @@ export function* read(
   storage: Evm.WordMapping,
   slot: Storage.Slot
 ): Generator<DecoderRequest, Uint8Array, Uint8Array> {
-  const address: BN = Storage.Utils.slotAddress(slot);
+  const address: BN = Utils.slotAddress(slot);
 
   // debug("reading slot: %o", Conversion.toHexString(address));
 

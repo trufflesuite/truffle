@@ -5,7 +5,8 @@ import read from "@truffle/codec/read";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import * as Elementary from "@truffle/codec/elementary";
-import * as Storage from "@truffle/codec/storage";
+import * as Storage from "@truffle/codec/storage/types";
+import * as Utils from "@truffle/codec/storage/utils";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
@@ -13,7 +14,7 @@ import { storageSizeForType } from "@truffle/codec/storage/allocate";
 import BN from "bn.js";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeStorage(
+export function* decodeStorage(
   dataType: Format.Types.Type,
   pointer: Pointer.StoragePointer,
   info: Evm.EvmInfo
@@ -158,7 +159,7 @@ export function* decodeStorageReference(
       //we're in the words case or the bytes case, the second will not
       let ranges: Storage.Range[] = [];
 
-      if (Storage.Utils.isWordsLength(baseSize)) {
+      if (Utils.isWordsLength(baseSize)) {
         //currentSlot will point to the start of the entry being decoded
         let currentSlot: Storage.Slot = {
           path: pointer.range.from.slot,
@@ -424,16 +425,16 @@ export function* decodeStorageReference(
 
       const baseSlot: Storage.Slot = pointer.range.from.slot;
       debug("baseSlot %o", baseSlot);
-      debug("base slot address %o", Storage.Utils.slotAddress(baseSlot));
+      debug("base slot address %o", Utils.slotAddress(baseSlot));
 
       const keySlots = info.mappingKeys.filter(({ path }) =>
-        Storage.Utils.slotAddress(baseSlot).eq(Storage.Utils.slotAddress(path))
+        Utils.slotAddress(baseSlot).eq(Utils.slotAddress(path))
       );
 
       for (const { key } of keySlots) {
         let valuePointer: Pointer.StoragePointer;
 
-        if (Storage.Utils.isWordsLength(valueSize)) {
+        if (Utils.isWordsLength(valueSize)) {
           valuePointer = {
             location: "storage",
             range: {
