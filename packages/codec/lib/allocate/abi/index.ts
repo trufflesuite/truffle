@@ -9,7 +9,7 @@ import * as Compiler from "@truffle/codec/compiler";
 import * as Ast from "@truffle/codec/ast";
 import * as Contexts from "@truffle/codec/contexts";
 import * as Pointer from "@truffle/codec/pointer";
-import * as Allocation from "./types";
+import * as Allocation from "../types";
 import { DecodingMode } from "@truffle/codec/types";
 import * as Format from "@truffle/codec/format";
 import partition from "lodash.partition";
