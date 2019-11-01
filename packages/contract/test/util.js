@@ -2,6 +2,7 @@ var debug = require("debug")("test:util"); // eslint-disable-line no-unused-vars
 var fs = require("fs");
 var ganache = require("ganache-core");
 var Web3 = require("web3");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 var Web3PromiEvent = require("web3-core-promievent");
 var Compile = require("@truffle/compile-solidity/legacy");
 var contract = require("../");
@@ -14,7 +15,7 @@ var log = {
 
 var util = {
   // Persistent state
-  web3: null,
+  interfaceAdapter: null,
   fakePromiEvent: null,
   fakeReceipt: null,
   realHash: null,
@@ -76,7 +77,6 @@ var util = {
     Object.assign(options, { logger: log, ws: true });
 
     var provider;
-    var web3 = new Web3();
 
     process.env.GETH
       ? (provider = new Web3.providers.HttpProvider("http://localhost:8545", {
@@ -84,18 +84,18 @@ var util = {
         }))
       : (provider = ganache.provider(options));
 
-    web3.setProvider(provider);
+    const interfaceAdapter = new InterfaceAdapter({ provider });
     instance.setProvider(provider);
-    util.web3 = web3;
+    util.interfaceAdapter = interfaceAdapter;
 
-    const accs = await web3.eth.getAccounts();
+    const accs = await interfaceAdapter.eth.getAccounts();
 
     instance.defaults({
       from: accs[0]
     });
 
     return {
-      web3: web3,
+      web3: interfaceAdapter,
       accounts: accs
     };
   },
@@ -103,7 +103,7 @@ var util = {
   // RPC Methods
   evm_mine: function() {
     return new Promise(function(accept, reject) {
-      util.web3.currentProvider.send(
+      util.interfaceAdapter.currentProvider.send(
         {
           jsonrpc: "2.0",
           method: "evm_mine",
@@ -119,7 +119,7 @@ var util = {
   // Mocks for delayed tx resolution to simulate real clients
   fakeSendTransaction: function(params) {
     util.fakePromiEvent = new Web3PromiEvent();
-    var real = util.web3.eth.sendTransaction(params);
+    var real = util.interfaceAdapter.eth.sendTransaction(params);
 
     real.on("transactionHash", hash => {
       util.realHash = hash;
