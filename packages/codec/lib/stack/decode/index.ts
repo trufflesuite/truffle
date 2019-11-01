@@ -11,7 +11,7 @@ import * as Storage from "@truffle/codec/storage";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
-import { DecodingError } from "@truffle/codec/decode/errors";
+import { DecodingError } from "@truffle/codec/errors";
 
 export function* decodeStack(
   dataType: Format.Types.Type,

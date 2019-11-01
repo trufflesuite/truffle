@@ -5,7 +5,7 @@ import * as Conversion from "@truffle/codec/conversion";
 import * as Evm from "@truffle/codec/evm";
 import * as Ast from "@truffle/codec/ast";
 import BN from "bn.js";
-import { DecodingError } from "@truffle/codec/decode/errors";
+import { DecodingError } from "@truffle/codec/errors";
 
 export function readDefinition(definition: Ast.AstNode): Uint8Array {
   debug("definition %o", definition);

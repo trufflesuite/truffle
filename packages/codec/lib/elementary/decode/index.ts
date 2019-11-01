@@ -9,7 +9,7 @@ import * as Contexts from "@truffle/codec/contexts";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
-import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
+import { DecodingError, StopDecodingError } from "@truffle/codec/errors";
 
 export function* decodeElementary(
   dataType: Format.Types.Type,

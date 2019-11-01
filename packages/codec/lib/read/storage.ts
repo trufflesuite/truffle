@@ -6,7 +6,7 @@ import * as Storage from "@truffle/codec/storage/types";
 import * as Utils from "@truffle/codec/storage/utils";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
-import { DecodingError } from "@truffle/codec/decode/errors";
+import { DecodingError } from "@truffle/codec/errors";
 import BN from "bn.js";
 
 /**

@@ -16,7 +16,7 @@ import * as Contexts from "@truffle/codec/contexts";
 import { abifyType, abifyResult } from "@truffle/codec/abify";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
-import { StopDecodingError } from "@truffle/codec/decode/errors";
+import { StopDecodingError } from "@truffle/codec/errors";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
 

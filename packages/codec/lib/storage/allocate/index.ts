@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:storage");
 
-import { DecodingError } from "@truffle/codec/decode/errors";
+import { DecodingError } from "@truffle/codec/errors";
 import * as Common from "@truffle/codec/common";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Utils from "@truffle/codec/storage/utils";

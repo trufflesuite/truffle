@@ -12,7 +12,7 @@ import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { storageSizeForType } from "@truffle/codec/storage/allocate";
 import BN from "bn.js";
-import { DecodingError } from "@truffle/codec/decode/errors";
+import { DecodingError } from "@truffle/codec/errors";
 
 export function* decodeStorage(
   dataType: Format.Types.Type,

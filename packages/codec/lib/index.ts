@@ -182,7 +182,7 @@ for technical reasons we can't guarantee we can determine.
 //now... various low-level stuff we want to export!
 //the actual decoding functions and related errors
 export { decodeVariable, decodeEvent, decodeCalldata } from "./core";
-export { DecodingError, StopDecodingError } from "./decode/errors";
+export { DecodingError, StopDecodingError } from "./errors";
 
 //and to read the stack
 export { readStack } from "./read/stack";
