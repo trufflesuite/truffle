@@ -24,9 +24,9 @@ const utils = {
     });
   },
 
-  evm_mine: function(web3) {
+  evm_mine: function(interfaceAdapter) {
     return new Promise(function(accept, reject) {
-      web3.currentProvider.send(
+      interfaceAdapter.currentProvider.send(
         {
           jsonrpc: "2.0",
           method: "evm_mine",
@@ -39,9 +39,9 @@ const utils = {
     });
   },
 
-  startAutoMine: function(web3, interval) {
+  startAutoMine: function(interfaceAdapter, interval) {
     utils.miningId = setInterval(async () => {
-      await utils.evm_mine(web3);
+      await utils.evm_mine(interfaceAdapter);
     }, interval);
   },
 
