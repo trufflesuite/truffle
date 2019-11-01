@@ -8,7 +8,7 @@ const fs = require("fs");
 const requireNoCache = require("require-nocache")(module);
 const Compile = require("@truffle/compile-solidity/legacy");
 const Ganache = require("ganache-core");
-const Web3 = require("web3");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 const { promisify } = require("util");
 
 describe("artifactor + require", () => {
@@ -19,10 +19,9 @@ describe("artifactor + require", () => {
   let networkID;
   let artifactor;
   const provider = Ganache.provider();
-  const web3 = new Web3();
-  web3.setProvider(provider);
+  const interfaceAdapter = new InterfaceAdapter({ provider });
 
-  before(() => web3.eth.net.getId().then(id => (networkID = id)));
+  before(() => interfaceAdapter.getNetworkId().then(id => (networkID = id)));
 
   before(async function() {
     this.timeout(20000);
@@ -96,7 +95,7 @@ describe("artifactor + require", () => {
   });
 
   before(() =>
-    web3.eth.getAccounts().then(_accounts => {
+    interfaceAdapter.eth.getAccounts().then(_accounts => {
       accounts = _accounts;
 
       Example.defaults({
@@ -230,20 +229,20 @@ describe("artifactor + require", () => {
           "Fallback should not have been triggered yet"
         );
         return example.sendTransaction({
-          value: web3.utils.toWei("1", "ether")
+          value: interfaceAdapter.utils.toWei("1", "ether")
         });
       })
       .then(
         () =>
           new Promise((accept, reject) =>
-            web3.eth.getBalance(example.address, (err, balance) => {
+            interfaceAdapter.eth.getBalance(example.address, (err, balance) => {
               if (err) return reject(err);
               accept(balance);
             })
           )
       )
       .then(balance => {
-        assert(balance === web3.utils.toWei("1", "ether"));
+        assert(balance === interfaceAdapter.utils.toWei("1", "ether"));
       });
   });
 
@@ -259,19 +258,19 @@ describe("artifactor + require", () => {
           triggered === false,
           "Fallback should not have been triggered yet"
         );
-        return example.send(web3.utils.toWei("1", "ether"));
+        return example.send(interfaceAdapter.utils.toWei("1", "ether"));
       })
       .then(
         () =>
           new Promise((accept, reject) =>
-            web3.eth.getBalance(example.address, (err, balance) => {
+            interfaceAdapter.eth.getBalance(example.address, (err, balance) => {
               if (err) return reject(err);
               accept(balance);
             })
           )
       )
       .then(balance => {
-        assert(balance === web3.utils.toWei("1", "ether"));
+        assert(balance === interfaceAdapter.utils.toWei("1", "ether"));
       });
   });
 
@@ -341,7 +340,7 @@ describe("artifactor + require", () => {
 
     MyContract.setNetwork(5);
 
-    const expectedEventTopic = web3.utils.sha3(
+    const expectedEventTopic = interfaceAdapter.utils.sha3(
       "PackageRelease(bytes32,bytes32)"
     );
 
