@@ -1,2 +1,2 @@
-import * as Allocate from "@truffle/codec/allocate/memory";
+import * as Allocate from "./allocate";
 export { Allocate };

@@ -2,7 +2,7 @@ import * as Common from "@truffle/codec/common";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Ast from "@truffle/codec/ast";
 import { StorageAllocations } from "@truffle/codec/allocate/storage/types";
-import { MemoryAllocations } from "@truffle/codec/allocate/memory/types";
+import { MemoryAllocations } from "@truffle/codec/memory/allocate/types";
 import {
   AbiAllocations,
   CalldataAllocations,
