@@ -189,10 +189,17 @@ export class WireDecoder {
 
   /**
    * @protected
-   * for internal use
    */
-  public async getCode(address: string, block: number): Promise<Uint8Array> {
-    //first, set up any preliminary layers as needed
+  public async getCode(
+    address: string,
+    block: DecoderTypes.RegularizedBlockSpecifier
+  ): Promise<Uint8Array> {
+    //if pending, ignore the cache
+    if (block === "pending") {
+      return Conversion.toBytes(await this.web3.eth.getCode(address, block));
+    }
+
+    //otherwise, start by setting up any preliminary layers as needed
     if (this.codeCache[block] === undefined) {
       this.codeCache[block] = {};
     }
@@ -204,6 +211,22 @@ export class WireDecoder {
     let code = Conversion.toBytes(await this.web3.eth.getCode(address, block));
     this.codeCache[block][address] = code;
     return code;
+  }
+
+  /**
+   * @protected
+   */
+  public async regularizeBlock(
+    block: DecoderTypes.BlockSpecifier | null
+  ): Promise<DecoderTypes.RegularizedBlockSpecifier> {
+    if (typeof block === "number" || block === "pending") {
+      return block;
+    }
+    if (block === null) {
+      return "pending";
+    }
+
+    return (await this.web3.eth.getBlock(block)).number;
   }
 
   /**
@@ -232,10 +255,11 @@ export class WireDecoder {
   ): Promise<CalldataDecoding> {
     debug("transaction: %O", transaction);
     const block = transaction.blockNumber;
+    const blockNumber = await this.regularizeBlock(block);
     const isConstructor = transaction.to === null;
     const context = await this.getContextByAddress(
       transaction.to,
-      block,
+      blockNumber,
       transaction.input,
       additionalContexts
     );
@@ -259,7 +283,7 @@ export class WireDecoder {
       let response: Uint8Array;
       switch (request.type) {
         case "code":
-          response = await this.getCode(request.address, block);
+          response = await this.getCode(request.address, blockNumber);
           break;
         //not writing a storage case as it shouldn't occur here!
       }
@@ -308,6 +332,7 @@ export class WireDecoder {
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<LogDecoding[]> {
     const block = log.blockNumber;
+    const blockNumber = await this.regularizeBlock(block);
     const data = Conversion.toBytes(log.data);
     const topics = log.topics.map(Conversion.toBytes);
     const info: Evm.EvmInfo = {
@@ -328,7 +353,7 @@ export class WireDecoder {
       let response: Uint8Array;
       switch (request.type) {
         case "code":
-          response = await this.getCode(request.address, block);
+          response = await this.getCode(request.address, blockNumber);
           break;
         //not writing a storage case as it shouldn't occur here!
       }
@@ -366,12 +391,14 @@ export class WireDecoder {
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
-    let { address, name, fromBlock, toBlock } = options;
+    const { address, name, fromBlock, toBlock } = options;
+    const fromBlockNumber = await this.regularizeBlock(fromBlock);
+    const toBlockNumber = await this.regularizeBlock(toBlock);
 
     const logs = await this.web3.eth.getPastLogs({
       address,
-      fromBlock,
-      toBlock
+      fromBlock: fromBlockNumber,
+      toBlock: toBlockNumber
     });
 
     let events = await Promise.all(
@@ -426,7 +453,7 @@ export class WireDecoder {
   //attempt to determine it from that
   private async getContextByAddress(
     address: string,
-    block: number,
+    block: DecoderTypes.RegularizedBlockSpecifier,
     constructorBinary?: string,
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<Contexts.DecoderContext | null> {
@@ -788,7 +815,7 @@ export class ContractInstanceDecoder {
     this.contractCode = Conversion.toHexString(
       await this.getCode(
         this.contractAddress,
-        await this.web3.eth.getBlockNumber()
+        await this.web3.eth.getBlockNumber() //not "latest" because regularized
       )
     );
 
@@ -844,7 +871,7 @@ export class ContractInstanceDecoder {
 
   private async decodeVariable(
     variable: Allocation.StorageMemberAllocation,
-    block: number
+    block: DecoderTypes.RegularizedBlockSpecifier
   ): Promise<DecoderTypes.StateVariable> {
     const info: Codec.Evm.EvmInfo = {
       state: {
@@ -904,15 +931,19 @@ export class ContractInstanceDecoder {
   public async state(
     block: DecoderTypes.BlockSpecifier = "latest"
   ): Promise<DecoderTypes.ContractState> {
+    let blockNumber = await this.regularizeBlock(block);
     return {
       class: Contexts.Utils.contextToType(this.context),
       address: this.contractAddress,
       code: this.contractCode,
       balanceAsBN: new BN(
-        await this.web3.eth.getBalance(this.contractAddress, block)
+        await this.web3.eth.getBalance(this.contractAddress, blockNumber)
       ),
       nonceAsBN: new BN(
-        await this.web3.eth.getTransactionCount(this.contractAddress, block)
+        await this.web3.eth.getTransactionCount(
+          this.contractAddress,
+          blockNumber
+        )
       )
     };
   }
@@ -942,10 +973,7 @@ export class ContractInstanceDecoder {
   ): Promise<DecoderTypes.StateVariable[]> {
     this.checkAllocationSuccess();
 
-    let blockNumber =
-      typeof block === "number"
-        ? block
-        : (await this.web3.eth.getBlock(block)).number;
+    let blockNumber = await this.regularizeBlock(block);
 
     let result: DecoderTypes.StateVariable[] = [];
 
@@ -986,10 +1014,7 @@ export class ContractInstanceDecoder {
   ): Promise<Format.Values.Result | undefined> {
     this.checkAllocationSuccess();
 
-    let blockNumber =
-      typeof block === "number"
-        ? block
-        : (await this.web3.eth.getBlock(block)).number;
+    let blockNumber = await this.regularizeBlock(block);
 
     let variable = this.findVariableByNameOrId(nameOrId);
 
@@ -1038,9 +1063,17 @@ export class ContractInstanceDecoder {
   private async getStorage(
     address: string,
     slot: BN,
-    block: number
+    block: DecoderTypes.RegularizedBlockSpecifier
   ): Promise<Uint8Array> {
-    //first, set up any preliminary layers as needed
+    //if pending, bypass the cache
+    if (block === "pending") {
+      return Conversion.toBytes(
+        await this.web3.eth.getStorageAt(address, slot, block),
+        Codec.Evm.Utils.WORD_SIZE
+      );
+    }
+
+    //otherwise, start by setting up any preliminary layers as needed
     if (this.storageCache[block] === undefined) {
       this.storageCache[block] = {};
     }
@@ -1060,8 +1093,17 @@ export class ContractInstanceDecoder {
     return word;
   }
 
-  private async getCode(address: string, block: number): Promise<Uint8Array> {
+  private async getCode(
+    address: string,
+    block: DecoderTypes.RegularizedBlockSpecifier
+  ): Promise<Uint8Array> {
     return await this.wireDecoder.getCode(address, block);
+  }
+
+  private async regularizeBlock(
+    block: DecoderTypes.BlockSpecifier
+  ): Promise<DecoderTypes.RegularizedBlockSpecifier> {
+    return await this.wireDecoder.regularizeBlock(block);
   }
 
   /**
