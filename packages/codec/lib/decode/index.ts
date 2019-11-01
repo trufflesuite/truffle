@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode");
 
+import * as Abi from "@truffle/codec/abi";
 import * as Format from "@truffle/codec/format";
 import * as Pointer from "@truffle/codec/pointer";
 import * as Elementary from "@truffle/codec/elementary";
@@ -10,8 +11,6 @@ import * as Memory from "@truffle/codec/memory";
 import * as Special from "@truffle/codec/special";
 import * as Stack from "@truffle/codec/stack";
 import * as Storage from "@truffle/codec/storage";
-import decodeAbi from "./abi";
-import decodeTopic from "./event";
 
 export default function* decode(
   dataType: Format.Types.Type,
@@ -40,10 +39,10 @@ export default function* decode(
 
     case "calldata":
     case "eventdata":
-      return yield* decodeAbi(dataType, pointer, info, options);
+      return yield* Abi.Decode.decodeAbi(dataType, pointer, info, options);
 
     case "eventtopic":
-      return yield* decodeTopic(dataType, pointer, info, options);
+      return yield* Abi.Decode.decodeTopic(dataType, pointer, info, options);
 
     case "memory":
       //NOTE: this case should never actually occur, but I'm including it

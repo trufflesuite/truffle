@@ -9,7 +9,7 @@ import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 
-export default function* decodeTopic(
+export function* decodeTopic(
   dataType: Format.Types.Type,
   pointer: Pointer.EventTopicPointer,
   info: Evm.EvmInfo,

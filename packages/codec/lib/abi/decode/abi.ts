@@ -14,7 +14,7 @@ import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
 
 type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
 
-export default function* decodeAbi(
+export function* decodeAbi(
   dataType: Format.Types.Type,
   pointer: Pointer.AbiDataPointer,
   info: Evm.EvmInfo,

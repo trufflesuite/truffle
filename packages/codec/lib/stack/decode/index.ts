@@ -1,13 +1,13 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:stack");
 
+import * as Abi from "@truffle/codec/abi";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import * as Elementary from "@truffle/codec/elementary";
 import * as Memory from "@truffle/codec/memory";
 import * as Storage from "@truffle/codec/storage";
-import { decodeAbiReferenceByAddress } from "@truffle/codec/decode/abi";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
@@ -132,7 +132,7 @@ export function* decodeLiteral(
           //HACK -- in order to read the correct location, we need to add an offset
           //of -32 (since, again, we're throwing away the length info), so we pass
           //that in as the "base" value
-          return yield* decodeAbiReferenceByAddress(
+          return yield* Abi.Decode.decodeAbiReferenceByAddress(
             dataType,
             { location: "stackliteral" as const, literal: locationOnly },
             info,
@@ -142,9 +142,14 @@ export function* decodeLiteral(
           //multivalue case -- this case is straightforward
           //pass in 0 as the base since this is an absolute pointer
           //(yeah we don't need to but let's be explicit)
-          return yield* decodeAbiReferenceByAddress(dataType, pointer, info, {
-            abiPointerBase: 0
-          });
+          return yield* Abi.Decode.decodeAbiReferenceByAddress(
+            dataType,
+            pointer,
+            info,
+            {
+              abiPointerBase: 0
+            }
+          );
         }
     }
   }
