@@ -2,14 +2,15 @@ import * as storage from "./storage";
 import * as bytes from "./bytes";
 import * as stack from "./stack";
 import * as constant from "./constant";
-import * as Pointer from "../types/pointer";
-import { EvmState } from "../types/evm";
-import { DecoderRequest } from "../types/request";
-import { Errors } from "../format";
+import * as Pointer from "@truffle/codec/pointer";
+import { DecoderRequest } from "@truffle/codec/types";
+import * as Evm from "@truffle/codec/evm";
 
-export default function* read(pointer: Pointer.DataPointer, state: EvmState): Generator<DecoderRequest, Uint8Array, Uint8Array> {
-  switch(pointer.location) {
-
+export default function* read(
+  pointer: Pointer.DataPointer,
+  state: Evm.EvmState
+): Generator<DecoderRequest, Uint8Array, Uint8Array> {
+  switch (pointer.location) {
     case "stack":
       return stack.readStack(state.stack, pointer.from, pointer.to);
 
@@ -23,7 +24,6 @@ export default function* read(pointer: Pointer.DataPointer, state: EvmState): Ge
       return bytes.readBytes(state.calldata, pointer.start, pointer.length);
 
     case "eventdata":
-      //similarly with eventdata
       return bytes.readBytes(state.eventdata, pointer.start, pointer.length);
 
     case "stackliteral":

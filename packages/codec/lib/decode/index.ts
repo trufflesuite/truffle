@@ -1,7 +1,10 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode");
 
-import decodeValue from "./value";
+import * as Format from "@truffle/codec/format";
+import * as Pointer from "@truffle/codec/pointer";
+import * as Evm from "@truffle/codec/evm";
+import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import decodeMemory from "./memory";
 import decodeStorage from "./storage";
 import decodeStack from "./stack";
@@ -10,20 +13,19 @@ import decodeAbi from "./abi";
 import decodeConstant from "./constant";
 import decodeSpecial from "./special";
 import decodeTopic from "./event";
-import { Types, Values } from "../format";
-import * as Pointer from "../types/pointer";
-import { EvmInfo } from "../types/evm";
-import { DecoderOptions } from "../types/options";
-import { DecoderRequest } from "../types/request";
 
-export default function* decode(dataType: Types.Type, pointer: Pointer.DataPointer, info: EvmInfo, options: DecoderOptions = {}): Generator<DecoderRequest, Values.Result, Uint8Array> {
+export default function* decode(
+  dataType: Format.Types.Type,
+  pointer: Pointer.DataPointer,
+  info: Evm.EvmInfo,
+  options: DecoderOptions = {}
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 
-  switch(pointer.location) {
-
+  switch (pointer.location) {
     case "storage":
-      return yield* decodeStorage(dataType, pointer, info)
+      return yield* decodeStorage(dataType, pointer, info);
 
     case "stack":
       return yield* decodeStack(dataType, pointer, info);

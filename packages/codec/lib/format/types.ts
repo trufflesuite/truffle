@@ -15,243 +15,699 @@ const debug = debugModule("codec:format:types");
 //that might change in the future.
 
 import BN from "bn.js";
-import * as Ast from "../types/ast";
 
-export namespace Types {
+import { ContractKind, Location, Mutability } from "@truffle/codec/common";
 
-  export type Type = UintType | IntType | BoolType | BytesType | AddressType
-    | FixedType | UfixedType | StringType | ArrayType | MappingType | FunctionType
-    | StructType | EnumType | ContractType | MagicType | TupleType;
+/**
+ * Object representing a type
+ *
+ * @Category General categories
+ */
+export type Type =
+  | UintType
+  | IntType
+  | BoolType
+  | BytesType
+  | AddressType
+  | FixedType
+  | UfixedType
+  | StringType
+  | ArrayType
+  | MappingType
+  | FunctionType
+  | StructType
+  | EnumType
+  | ContractType
+  | MagicType
+  | TupleType;
 
-  export interface UintType {
-    typeClass: "uint";
-    bits: number;
-    typeHint?: string;
-  }
+/**
+ * Type of an unsigned integer
+ *
+ * @Category Elementary types
+ */
+export interface UintType {
+  typeClass: "uint";
+  bits: number;
+  typeHint?: string;
+}
 
-  export interface IntType {
-    typeClass: "int";
-    bits: number;
-    typeHint?: string;
-  }
+/**
+ * Type of a signed integer
+ *
+ * @Category Elementary types
+ */
+export interface IntType {
+  typeClass: "int";
+  bits: number;
+  typeHint?: string;
+}
 
-  export interface BoolType {
-    typeClass: "bool";
-    typeHint?: string;
-  }
+/**
+ * Type of a boolean
+ *
+ * @Category Elementary types
+ */
+export interface BoolType {
+  typeClass: "bool";
+  typeHint?: string;
+}
 
-  export type BytesType = BytesTypeStatic | BytesTypeDynamic;
+/**
+ * Type of a bytestring (static or dynamic)
+ *
+ * @Category Elementary types
+ */
+export type BytesType = BytesTypeStatic | BytesTypeDynamic;
 
-  export interface BytesTypeStatic {
-    typeClass: "bytes";
-    kind: "static";
-    length: number;
-    typeHint?: string;
-  }
+/**
+ * Type of a static-length bytestring
+ *
+ * @Category Elementary types
+ */
+export interface BytesTypeStatic {
+  typeClass: "bytes";
+  kind: "static";
+  length: number;
+  typeHint?: string;
+}
 
-  export interface BytesTypeDynamic {
-    typeClass: "bytes";
-    kind: "dynamic";
-    location?: Ast.Location;
-    typeHint?: string;
-  }
+/**
+ * Type of a dynamic-length bytestring
+ *
+ * @Category Elementary types
+ */
+export interface BytesTypeDynamic {
+  typeClass: "bytes";
+  kind: "dynamic";
+  location?: Location;
+  typeHint?: string;
+}
 
-  export type AddressType = AddressTypeSpecific | AddressTypeGeneral;
+/**
+ * Type of an address
+ *
+ * @Category Elementary types
+ */
+export type AddressType = AddressTypeSpecific | AddressTypeGeneral;
 
-  export interface AddressTypeSpecific {
-    typeClass: "address";
-    kind: "specific";
-    payable: boolean;
-  }
+/**
+ * Type of an address (with payability specified)
+ *
+ * @Category Elementary types
+ */
+export interface AddressTypeSpecific {
+  typeClass: "address";
+  kind: "specific";
+  payable: boolean;
+}
 
-  export interface AddressTypeGeneral {
-    typeClass: "address";
-    kind: "general";
-    typeHint?: string;
-  }
+/**
+ * Type of an address (with payability unspecified)
+ *
+ * @Category Elementary types
+ */
+export interface AddressTypeGeneral {
+  typeClass: "address";
+  kind: "general";
+  typeHint?: string;
+}
 
-  export interface StringType {
-    typeClass: "string";
-    location?: Ast.Location;
-    typeHint?: string;
-  }
+/**
+ * Type of a string
+ *
+ * @Category Elementary types
+ */
+export interface StringType {
+  typeClass: "string";
+  location?: Location;
+  typeHint?: string;
+}
 
-  export interface FixedType {
-    typeClass: "fixed";
-    bits: number;
-    places: number;
-    typeHint?: string;
-  }
+/**
+ * Type of a signed fixed-point number
+ *
+ * @Category Elementary types
+ */
+export interface FixedType {
+  typeClass: "fixed";
+  bits: number;
+  places: number;
+  typeHint?: string;
+}
 
-  export interface UfixedType {
-    typeClass: "ufixed";
-    bits: number;
-    places: number;
-    typeHint?: string;
-  }
+/**
+ * Type of an unsigned fixed-point number
+ *
+ * @Category Elementary types
+ */
+export interface UfixedType {
+  typeClass: "ufixed";
+  bits: number;
+  places: number;
+  typeHint?: string;
+}
 
-  export type ArrayType = ArrayTypeStatic | ArrayTypeDynamic;
+/**
+ * Type of an array
+ *
+ * @Category Container types
+ */
+export type ArrayType = ArrayTypeStatic | ArrayTypeDynamic;
 
-  export interface ArrayTypeStatic {
-    typeClass: "array";
-    kind: "static";
-    baseType: Type;
-    length: BN;
-    location?: Ast.Location;
-    typeHint?: string;
-  }
+/**
+ * Type of a static-length array
+ *
+ * @Category Container types
+ */
+export interface ArrayTypeStatic {
+  typeClass: "array";
+  kind: "static";
+  baseType: Type;
+  length: BN;
+  location?: Location;
+  typeHint?: string;
+}
 
-  export interface ArrayTypeDynamic {
-    typeClass: "array";
-    kind: "dynamic";
-    baseType: Type;
-    location?: Ast.Location;
-    typeHint?: string;
-  }
+/**
+ * Type of a dynamic-length array
+ *
+ * @Category Container types
+ */
+export interface ArrayTypeDynamic {
+  typeClass: "array";
+  kind: "dynamic";
+  baseType: Type;
+  location?: Location;
+  typeHint?: string;
+}
 
-  export type ElementaryType = UintType | IntType | BoolType | BytesType | FixedType
-    | UfixedType | AddressType | StringType;
+/**
+ * Type of an elementary value
+ *
+ * @Category General categories
+ */
+export type ElementaryType =
+  | UintType
+  | IntType
+  | BoolType
+  | BytesType
+  | FixedType
+  | UfixedType
+  | AddressType
+  | StringType;
 
-  export interface MappingType {
-    typeClass: "mapping";
-    keyType: ElementaryType;
-    valueType: Type;
-    location?: "storage";
-  }
+/**
+ * Type of a mapping
+ *
+ * @Category Container types
+ */
+export interface MappingType {
+  typeClass: "mapping";
+  keyType: ElementaryType;
+  valueType: Type;
+  location?: "storage";
+}
 
-  export type FunctionType = FunctionInternalType | FunctionExternalType;
+/**
+ * Type of a function pointer (internal or external)
+ *
+ * @Category Function types
+ */
+export type FunctionType = FunctionInternalType | FunctionExternalType;
 
-  export interface FunctionInternalType {
-    typeClass: "function";
-    visibility: "internal";
-    mutability: Ast.Mutability;
-    inputParameterTypes: Type[];
-    outputParameterTypes: Type[];
-    //we do not presently support bound functions
-  }
+/**
+ * Type of an internal function pointer
+ *
+ * @Category Function types
+ */
+export interface FunctionInternalType {
+  typeClass: "function";
+  visibility: "internal";
+  mutability: Mutability;
+  inputParameterTypes: Type[];
+  outputParameterTypes: Type[];
+  //we do not presently support bound functions
+}
 
-  export type FunctionExternalType = FunctionExternalTypeSpecific | FunctionExternalTypeGeneral;
+/**
+ * Type of an external function pointer
+ *
+ * @Category Function types
+ */
+export type FunctionExternalType =
+  | FunctionExternalTypeSpecific
+  | FunctionExternalTypeGeneral;
 
-  export interface FunctionExternalTypeSpecific {
-    typeClass: "function";
-    visibility: "external";
-    kind: "specific";
-    mutability: Ast.Mutability;
-    inputParameterTypes: Type[];
-    outputParameterTypes: Type[];
-    //we do not presently support bound functions
-  }
+/**
+ * Type of an external function pointer (full Solidity type)
+ *
+ * @Category Function types
+ */
+export interface FunctionExternalTypeSpecific {
+  typeClass: "function";
+  visibility: "external";
+  kind: "specific";
+  mutability: Mutability;
+  inputParameterTypes: Type[];
+  outputParameterTypes: Type[];
+  //we do not presently support bound functions
+}
 
-  export interface FunctionExternalTypeGeneral {
-    typeClass: "function";
-    visibility: "external";
-    kind: "general";
-    //we do not presently support bound functions
-    typeHint?: string;
-  }
+/**
+ * Type of an external function pointer (general ABI type)
+ *
+ * @Category Function types
+ */
+export interface FunctionExternalTypeGeneral {
+  typeClass: "function";
+  visibility: "external";
+  kind: "general";
+  //we do not presently support bound functions
+  typeHint?: string;
+}
 
-  export type ContractDefinedType = StructTypeLocal | EnumTypeLocal;
-  export type UserDefinedType = ContractDefinedType | ContractTypeNative | StructTypeGlobal | EnumTypeGlobal;
+/**
+ * Types defined inside contracts
+ *
+ * @Category General categories
+ */
+export type ContractDefinedType = StructTypeLocal | EnumTypeLocal;
+/**
+ * User-defined types
+ *
+ * @Category General categories
+ */
+export type UserDefinedType =
+  | ContractDefinedType
+  | ContractTypeNative
+  | StructTypeGlobal
+  | EnumTypeGlobal;
 
-  export type StructType = StructTypeLocal | StructTypeGlobal;
+/**
+ * Type of a struct
+ *
+ * Structs may be local (defined in a contract) or global (defined outside of any contract);
+ * the latter will be introduced in Solidity 0.6.x
+ *
+ * @Category Container types
+ */
+export type StructType = StructTypeLocal | StructTypeGlobal;
 
-  export interface NameTypePair {
-    name: string;
-    type: Type;
-  }
+export interface NameTypePair {
+  name: string;
+  type: Type;
+}
 
-  export interface StructTypeLocal {
-    typeClass: "struct";
-    kind: "local";
-    id: string;
-    typeName: string;
-    definingContractName: string;
-    definingContract?: ContractTypeNative;
-    memberTypes?: NameTypePair[]; //these should be in order
-    location?: Ast.Location;
-  }
+/**
+ * Local structs (defined in contracts)
+ *
+ * @Category Container types
+ */
+export interface StructTypeLocal {
+  typeClass: "struct";
+  kind: "local";
+  /**
+   * Internal ID.  Format may change in future.
+   */
+  id: string;
+  typeName: string;
+  definingContractName: string;
+  definingContract?: ContractTypeNative;
+  /**
+   * these should be in order
+   */
+  memberTypes?: NameTypePair[];
+  location?: Location;
+}
 
-  export interface StructTypeGlobal {
-    typeClass: "struct";
-    kind: "global";
-    id: string;
-    typeName: string;
-    memberTypes?: NameTypePair[]; //these should be in order
-    location?: Ast.Location;
-  }
+/**
+ * Global structs (coming in 0.6.x)
+ *
+ * @Category Container types
+ */
+export interface StructTypeGlobal {
+  typeClass: "struct";
+  kind: "global";
+  /**
+   * Internal ID.  Format may change in future.
+   */
+  id: string;
+  typeName: string;
+  /**
+   * these should be in order
+   */
+  memberTypes?: NameTypePair[];
+  location?: Location;
+}
 
-  export interface OptionallyNamedType {
-    name?: string;
-    type: Type;
-  }
+export interface OptionallyNamedType {
+  name?: string;
+  type: Type;
+}
 
-  export interface TupleType {
-    typeClass: "tuple";
-    memberTypes: OptionallyNamedType[];
-    typeHint?: string;
-  }
+/**
+ * Type of a tuple (for use in ABI)
+ *
+ * @Category Container types
+ */
+export interface TupleType {
+  typeClass: "tuple";
+  memberTypes: OptionallyNamedType[];
+  typeHint?: string;
+}
 
-  export type EnumType = EnumTypeLocal | EnumTypeGlobal;
+/**
+ * Type of an enum
+ *
+ * Enums may be local (defined in a contract) or global (defined outside of any contract);
+ * the latter will be introduced in Solidity 0.6.x
+ *
+ * @Category Other user-defined types
+ */
+export type EnumType = EnumTypeLocal | EnumTypeGlobal;
 
-  export interface EnumTypeLocal {
-    typeClass: "enum";
-    kind: "local";
-    id: string;
-    typeName: string;
-    definingContractName: string;
-    definingContract?: ContractTypeNative;
-    options?: string[]; //these should be in order
-  }
+/**
+ * Local enum (defined in a contract)
+ *
+ * @Category Other user-defined types
+ */
+export interface EnumTypeLocal {
+  typeClass: "enum";
+  kind: "local";
+  /**
+   * Internal ID.  Format may change in future.
+   */
+  id: string;
+  typeName: string;
+  definingContractName: string;
+  definingContract?: ContractTypeNative;
+  /**
+   * these should be in order
+   */
+  options?: string[];
+}
 
-  export interface EnumTypeGlobal {
-    typeClass: "enum";
-    kind: "global";
-    id: string;
-    typeName: string;
-    options?: string[]; //these should be in order
-  }
+/**
+ * Global enum (coming in 0.6.x)
+ *
+ * @Category Other user-defined types
+ */
+export interface EnumTypeGlobal {
+  typeClass: "enum";
+  kind: "global";
+  /**
+   * Internal ID.  Format may change in future.
+   */
+  id: string;
+  typeName: string;
+  /**
+   * these should be in order
+   */
+  options?: string[];
+}
 
-  export type ContractType = ContractTypeNative | ContractTypeForeign;
+/**
+ * Type of a contract; used not just for actual values but wherever a contract type
+ * is needed
+ *
+ * Contract types may be native (has Solidity info) or foreign (lacking Solidity info).
+ *
+ * @Category Other user-defined types
+ */
+export type ContractType = ContractTypeNative | ContractTypeForeign;
 
-  export interface ContractTypeNative {
-    typeClass: "contract";
-    kind: "native";
-    id: string;
-    typeName: string;
-    contractKind?: Ast.ContractKind;
-    payable?: boolean; //will be useful in the future
-    //may have more optional members defined later, but I'll leave these out for
-    //now
-  }
+/**
+ * Type of a contract with full Solidity info -- may be used for actual variables
+ *
+ * @Category Other user-defined types
+ */
+export interface ContractTypeNative {
+  typeClass: "contract";
+  kind: "native";
+  /**
+   * Internal ID.  Format may change in future.
+   */
+  id: string;
+  typeName: string;
+  contractKind?: ContractKind;
+  /**
+   * Indicates whether contract has payable fallback function
+   */
+  payable?: boolean; //will be useful in the future
+  //may have more optional members defined later, but I'll leave these out for
+  //now
+}
 
-  export interface ContractTypeForeign {
-    typeClass: "contract";
-    kind: "foreign";
-    typeName: string;
-    contractKind?: Ast.ContractKind;
-    payable?: boolean; //will be useful in the future
-    //may have more optional members defined later, but I'll leave these out for
-    //now
-  }
+/**
+ * Type of a contract w/o full Solidity info -- not used for actual variables
+ *
+ * @Category Other user-defined types
+ */
+export interface ContractTypeForeign {
+  typeClass: "contract";
+  kind: "foreign";
+  typeName: string;
+  contractKind?: ContractKind;
+  /**
+   * Indicates whether contract has payable fallback function
+   */
+  payable?: boolean; //will be useful in the future
+  //may have more optional members defined later, but I'll leave these out for
+  //now
+}
 
-  export type MagicVariableName = "message" | "block" | "transaction";
+export type MagicVariableName = "message" | "block" | "transaction";
 
-  export interface MagicType {
-    typeClass: "magic";
-    variable: MagicVariableName;
-    //really, I could do this as a tagged union, but I don't see a reason to
-    //introduce such complexity here, especially as this type is basically just
-    //for the debugger
-    memberTypes?: {
-      [field: string]: Type
-    };
-    //may have more optional fields defined in the future
-  }
-
-  export type ReferenceType = ArrayType | MappingType | StructType | StringType | BytesTypeDynamic;
-
-  export interface TypesById {
-    [id: string]: UserDefinedType;
+/**
+ * Type of a magic variable
+ *
+ * @Category Special container types
+ */
+export interface MagicType {
+  typeClass: "magic";
+  variable: MagicVariableName;
+  //really, I could do this as a tagged union, but I don't see a reason to
+  //introduce such complexity here, especially as this type is basically just
+  //for the debugger
+  memberTypes?: {
+    [field: string]: Type;
   };
+  //may have more optional fields defined in the future
+}
 
+/**
+ * Reference types
+ *
+ * @Category General categories
+ */
+export type ReferenceType =
+  | ArrayType
+  | MappingType
+  | StructType
+  | StringType
+  | BytesTypeDynamic;
+
+export interface TypesById {
+  [id: string]: UserDefinedType;
+}
+
+function isUserDefinedType(anyType: Type): anyType is UserDefinedType {
+  const userDefinedTypes = ["contract", "enum", "struct"];
+  return userDefinedTypes.includes(anyType.typeClass);
+}
+
+export function isReferenceType(anyType: Type): anyType is ReferenceType {
+  const alwaysReferenceTypes = ["array", "mapping", "struct", "string"];
+  if (alwaysReferenceTypes.includes(anyType.typeClass)) {
+    return true;
+  } else if (anyType.typeClass === "bytes") {
+    return anyType.kind === "dynamic";
+  } else {
+    return false;
+  }
+}
+
+//one could define a counterpart function that stripped all unnecessary information
+//from the type object, but at the moment I see no need for that
+export function fullType(basicType: Type, userDefinedTypes: TypesById): Type {
+  if (!isUserDefinedType(basicType)) {
+    return basicType;
+  }
+  let id = basicType.id;
+  let storedType = userDefinedTypes[id];
+  if (!storedType) {
+    return basicType;
+  }
+  let returnType: Type = { ...basicType, ...storedType };
+  if (isReferenceType(basicType) && basicType.location !== undefined) {
+    returnType = specifyLocation(returnType, basicType.location);
+  }
+  return returnType;
+}
+
+//the location argument here always forces, so passing undefined *will* force undefined
+export function specifyLocation(
+  dataType: Type,
+  location: Location | undefined
+): Type {
+  if (isReferenceType(dataType)) {
+    switch (dataType.typeClass) {
+      case "string":
+      case "bytes":
+        return { ...dataType, location };
+      case "array":
+        return {
+          ...dataType,
+          location,
+          baseType: specifyLocation(dataType.baseType, location)
+        };
+      case "mapping":
+        let newLocation =
+          location === "storage" ? ("storage" as "storage") : undefined;
+        return {
+          ...dataType,
+          location: newLocation,
+          valueType: specifyLocation(dataType.valueType, newLocation)
+        };
+      case "struct":
+        let returnType = { ...dataType, location };
+        if (returnType.memberTypes) {
+          returnType.memberTypes = returnType.memberTypes.map(
+            ({ name: memberName, type: memberType }) => ({
+              name: memberName,
+              type: specifyLocation(memberType, location)
+            })
+          );
+        }
+        return returnType;
+    }
+  } else {
+    return dataType;
+  }
+}
+
+//NOTE: the following two functions might not be exactly right for weird internal stuff,
+//or for ABI-only stuff.  (E.g. for internal stuff sometimes it records whether things
+//are pointers or not??  we don't track that so we can't recreate that)
+//But what can you do.
+
+export function typeString(dataType: Type): string {
+  let baseString = typeStringWithoutLocation(dataType);
+  if (isReferenceType(dataType) && dataType.location) {
+    return baseString + " " + dataType.location;
+  } else {
+    return baseString;
+  }
+}
+
+export function typeStringWithoutLocation(dataType: Type): string {
+  switch (dataType.typeClass) {
+    case "uint":
+      return dataType.typeHint || `uint${dataType.bits}`;
+    case "int":
+      return dataType.typeHint || `int${dataType.bits}`;
+    case "bool":
+      return dataType.typeHint || "bool";
+    case "bytes":
+      if (dataType.typeHint) {
+        return dataType.typeHint;
+      }
+      switch (dataType.kind) {
+        case "dynamic":
+          return "bytes";
+        case "static":
+          return `bytes${dataType.length}`;
+      }
+    case "address":
+      switch (dataType.kind) {
+        case "general":
+          return dataType.typeHint || "address"; //I guess?
+        case "specific":
+          return dataType.payable ? "address payable" : "address";
+      }
+    case "string":
+      return dataType.typeHint || "string";
+    case "fixed":
+      return dataType.typeHint || `fixed${dataType.bits}x${dataType.places}`;
+    case "ufixed":
+      return dataType.typeHint || `ufixed${dataType.bits}x${dataType.places}`;
+    case "array":
+      if (dataType.typeHint) {
+        return dataType.typeHint;
+      }
+      switch (dataType.kind) {
+        case "dynamic":
+          return `${typeStringWithoutLocation(dataType.baseType)}[]`;
+        case "static":
+          return `${typeStringWithoutLocation(dataType.baseType)}[${
+            dataType.length
+          }]`;
+      }
+    case "mapping":
+      return `mapping(${typeStringWithoutLocation(
+        dataType.keyType
+      )} => ${typeStringWithoutLocation(dataType.valueType)})`;
+    case "struct":
+    case "enum":
+      //combining these cases for simplicity
+      switch (dataType.kind) {
+        case "local":
+          return `${dataType.typeClass} ${dataType.definingContractName}.${
+            dataType.typeName
+          }`;
+        case "global": //WARNING, SPECULATIVE
+          return `${dataType.typeClass} ${dataType.typeName}`;
+      }
+    case "tuple":
+      return (
+        dataType.typeHint ||
+        "tuple(" +
+          dataType.memberTypes
+            .map(memberType => typeString(memberType.type))
+            .join(",") +
+          ")"
+      ); //note that we do include location and do not put spaces
+    case "contract":
+      return dataType.contractKind + " " + dataType.typeName;
+    case "magic":
+      //no, this is not transposed!
+      const variableNames = {
+        message: "msg",
+        transaction: "tx",
+        block: "block"
+      };
+      return variableNames[dataType.variable];
+    case "function":
+      let visibilityString: string;
+      switch (dataType.visibility) {
+        case "external":
+          if (dataType.kind === "general") {
+            if (dataType.typeHint) {
+              return dataType.typeHint;
+            } else {
+              return "function external"; //I guess???
+            }
+          }
+          visibilityString = " external"; //note the deliberate space!
+          break;
+        case "internal":
+          visibilityString = "";
+          break;
+      }
+      let mutabilityString =
+        dataType.mutability === "nonpayable" ? " " + dataType.mutability : ""; //again, note the deliberate space
+      let inputList = dataType.inputParameterTypes.map(typeString).join(","); //note that we do include location, and do not put spaces
+      let outputList = dataType.outputParameterTypes.map(typeString).join(",");
+      let inputString = `function(${inputList})`;
+      let outputString = outputList === "" ? "" : ` returns (${outputList})`; //again, note the deliberate space
+      return inputString + mutabilityString + visibilityString + outputString;
+  }
+}
+
+export function isContractDefinedType(
+  anyType: Type
+): anyType is ContractDefinedType {
+  const contractDefinedTypes = ["enum", "struct"];
+  return contractDefinedTypes.includes(anyType.typeClass);
 }

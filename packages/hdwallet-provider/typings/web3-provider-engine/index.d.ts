@@ -1,8 +1,9 @@
 import {
   Provider,
   JSONRPCRequestPayload,
-  JSONRPCResponsePayload
+  JSONRPCErrorCallback
 } from "ethereum-protocol";
+import { Callback, JsonRPCResponse } from "web3/providers";
 
 interface Web3ProviderEngineOptions {
   pollingInterval?: number;
@@ -12,10 +13,13 @@ interface Web3ProviderEngineOptions {
 declare class Web3ProviderEngine implements Provider {
   constructor(options?: Web3ProviderEngineOptions);
   on(event: string, handler: () => void): void;
-  send(payload: JSONRPCRequestPayload): void;
+  send(
+    payload: JSONRPCRequestPayload,
+    callback?: JSONRPCErrorCallback | Callback<JsonRPCResponse>
+  ): void;
   sendAsync(
     payload: JSONRPCRequestPayload,
-    callback: (error: null | Error, response: JSONRPCResponsePayload) => void
+    callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
   ): void;
   addProvider(provider: any): void;
   // start block polling

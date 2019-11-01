@@ -2,28 +2,28 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:abi");
 
 import BN from "bn.js";
-import read from "../read";
-import * as CodecUtils from "../utils";
-import { TypeUtils } from "../utils";
-import { Types, Values, Errors } from "../format";
+import read from "@truffle/codec/read";
+import * as Conversion from "@truffle/codec/conversion";
+import * as Format from "@truffle/codec/format";
 import decodeValue from "./value";
-import { AbiDataPointer, DataPointer } from "../types/pointer";
-import { AbiMemberAllocation } from "../types/allocation";
-import { abiSizeInfo } from "../allocate/abi";
-import { EvmInfo } from "../types/evm";
-import { DecoderOptions } from "../types/options";
-import { DecoderRequest } from "../types/request";
-import { DecodingError, StopDecodingError } from "../types/errors";
+import * as Pointer from "@truffle/codec/pointer";
+import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
+import * as Evm from "@truffle/codec/evm";
+import { abiSizeInfo } from "@truffle/codec/allocate/abi";
+import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
 
 type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
 
 export default function* decodeAbi(
-  dataType: Types.Type,
-  pointer: AbiDataPointer,
-  info: EvmInfo,
+  dataType: Format.Types.Type,
+  pointer: Pointer.AbiDataPointer,
+  info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Values.Result, Uint8Array> {
-  if (TypeUtils.isReferenceType(dataType) || dataType.typeClass === "tuple") {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+  if (
+    Format.Types.isReferenceType(dataType) ||
+    dataType.typeClass === "tuple"
+  ) {
     //I don't want tuples to be considered a reference type, but it makes sense
     //to group them for this purpose
     let dynamic: boolean;
@@ -33,7 +33,7 @@ export default function* decodeAbi(
       if (options.strictAbiMode) {
         throw new StopDecodingError((<DecodingError>error).error);
       }
-      return <Errors.ErrorResult>{
+      return <Format.Errors.ErrorResult>{
         //dunno why TS is failing at this inference
         type: dataType,
         kind: "error" as const,
@@ -57,11 +57,11 @@ export default function* decodeAbi(
 }
 
 export function* decodeAbiReferenceByAddress(
-  dataType: Types.ReferenceType | Types.TupleType,
-  pointer: DataPointer,
-  info: EvmInfo,
+  dataType: Format.Types.ReferenceType | Format.Types.TupleType,
+  pointer: Pointer.DataPointer,
+  info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   let { strictAbiMode: strict, abiPointerBase: base } = options;
   base = base || 0; //in case base was undefined
   const {
@@ -80,7 +80,7 @@ export function* decodeAbiReferenceByAddress(
     if (strict) {
       throw new StopDecodingError((<DecodingError>error).error);
     }
-    return <Errors.ErrorResult>{
+    return <Format.Errors.ErrorResult>{
       //dunno why TS is failing here
       type: dataType,
       kind: "error" as const,
@@ -88,7 +88,7 @@ export function* decodeAbiReferenceByAddress(
     };
   }
 
-  let rawValueAsBN = CodecUtils.Conversion.toBN(rawValue);
+  let rawValueAsBN = Conversion.toBN(rawValue);
   let rawValueAsNumber: number;
   try {
     rawValueAsNumber = rawValueAsBN.toNumber();
@@ -100,7 +100,7 @@ export function* decodeAbiReferenceByAddress(
     if (strict) {
       throw new StopDecodingError(error);
     }
-    return <Errors.ErrorResult>{
+    return <Format.Errors.ErrorResult>{
       //again with the TS failures...
       type: dataType,
       kind: "error" as const,
@@ -118,7 +118,7 @@ export function* decodeAbiReferenceByAddress(
     if (strict) {
       throw new StopDecodingError((<DecodingError>error).error);
     }
-    return <Errors.ErrorResult>{
+    return <Format.Errors.ErrorResult>{
       //dunno why TS is failing here
       type: dataType,
       kind: "error" as const,
@@ -151,7 +151,7 @@ export function* decodeAbiReferenceByAddress(
           {
             location,
             start: startPosition,
-            length: CodecUtils.EVM.WORD_SIZE
+            length: Evm.Utils.WORD_SIZE
           },
           state
         );
@@ -159,14 +159,14 @@ export function* decodeAbiReferenceByAddress(
         if (strict) {
           throw new StopDecodingError((<DecodingError>error).error);
         }
-        return <Errors.ErrorResult>{
+        return <Format.Errors.ErrorResult>{
           //dunno why TS is failing here
           type: dataType,
           kind: "error" as const,
           error: (<DecodingError>error).error
         };
       }
-      lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
+      lengthAsBN = Conversion.toBN(rawLength);
       if (strict && lengthAsBN.gtn(state[location].length)) {
         //you may notice that the comparison is a bit crude; that's OK, this is
         //just to prevent huge numbers from DOSing us, other errors will still
@@ -182,7 +182,10 @@ export function* decodeAbiReferenceByAddress(
       } catch (_) {
         //note: if we're in this situation, we can assume we're not in strict mode,
         //as the strict case was handled above
-        return <Errors.BytesDynamicErrorResult | Errors.StringErrorResult>{
+        return <
+          | Format.Errors.BytesDynamicErrorResult
+          | Format.Errors.StringErrorResult
+        >{
           //again with the TS failures...
           type: dataType,
           kind: "error" as const,
@@ -193,9 +196,9 @@ export function* decodeAbiReferenceByAddress(
         };
       }
 
-      let childPointer: AbiDataPointer = {
+      let childPointer: Pointer.AbiDataPointer = {
         location,
-        start: startPosition + CodecUtils.EVM.WORD_SIZE,
+        start: startPosition + Evm.Utils.WORD_SIZE,
         length
       };
 
@@ -210,7 +213,7 @@ export function* decodeAbiReferenceByAddress(
               {
                 location,
                 start: startPosition,
-                length: CodecUtils.EVM.WORD_SIZE
+                length: Evm.Utils.WORD_SIZE
               },
               state
             );
@@ -225,8 +228,8 @@ export function* decodeAbiReferenceByAddress(
               error: (<DecodingError>error).error
             };
           }
-          lengthAsBN = CodecUtils.Conversion.toBN(rawLength);
-          startPosition += CodecUtils.EVM.WORD_SIZE; //increment startPosition
+          lengthAsBN = Conversion.toBN(rawLength);
+          startPosition += Evm.Utils.WORD_SIZE; //increment startPosition
           //to next word, as first word was used for length
           break;
         case "static":
@@ -275,7 +278,7 @@ export function* decodeAbiReferenceByAddress(
         };
       }
 
-      let decodedChildren: Values.Result[] = [];
+      let decodedChildren: Format.Values.Result[] = [];
       for (let index = 0; index < length; index++) {
         decodedChildren.push(
           yield* decodeAbi(
@@ -316,11 +319,11 @@ export function* decodeAbiReferenceByAddress(
 }
 
 export function* decodeAbiReferenceStatic(
-  dataType: Types.ReferenceType | Types.TupleType,
-  pointer: AbiDataPointer,
-  info: EvmInfo,
+  dataType: Format.Types.ReferenceType | Format.Types.TupleType,
+  pointer: Pointer.AbiDataPointer,
+  info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Values.Result, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   debug("static");
   debug("pointer %o", pointer);
   const location = pointer.location;
@@ -328,7 +331,7 @@ export function* decodeAbiReferenceStatic(
   switch (dataType.typeClass) {
     case "array":
       //we're in the static case, so we know the array must be statically sized
-      const lengthAsBN = (<Types.ArrayTypeStatic>dataType).length;
+      const lengthAsBN = (<Format.Types.ArrayTypeStatic>dataType).length;
       let length: number;
       try {
         length = lengthAsBN.toNumber();
@@ -365,7 +368,7 @@ export function* decodeAbiReferenceStatic(
         };
       }
 
-      let decodedChildren: Values.Result[] = [];
+      let decodedChildren: Format.Values.Result[] = [];
       for (let index = 0; index < length; index++) {
         decodedChildren.push(
           yield* decodeAbi(
@@ -407,12 +410,12 @@ export function* decodeAbiReferenceStatic(
 
 //note that this function takes the start position as a *number*; it does not take a pointer
 function* decodeAbiStructByPosition(
-  dataType: Types.StructType,
+  dataType: Format.Types.StructType,
   location: AbiLocation,
   startPosition: number,
-  info: EvmInfo,
+  info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Values.StructResult, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.StructResult, Uint8Array> {
   const {
     userDefinedTypes,
     allocations: { abi: allocations }
@@ -441,18 +444,18 @@ function* decodeAbiStructByPosition(
     };
   }
 
-  let decodedMembers: Values.NameValuePair[] = [];
+  let decodedMembers: Format.Values.NameValuePair[] = [];
   for (let index = 0; index < structAllocation.members.length; index++) {
     const memberAllocation = structAllocation.members[index];
     const memberPointer = memberAllocation.pointer;
-    const childPointer: AbiDataPointer = {
+    const childPointer: Pointer.AbiDataPointer = {
       location,
       start: startPosition + memberPointer.start,
       length: memberPointer.length
     };
 
     let memberName = memberAllocation.name;
-    let storedType = <Types.StructType>userDefinedTypes[typeId];
+    let storedType = <Format.Types.StructType>userDefinedTypes[typeId];
     if (!storedType) {
       let error = {
         kind: "UserDefinedTypeNotFoundError" as const,
@@ -469,7 +472,10 @@ function* decodeAbiStructByPosition(
       };
     }
     let storedMemberType = storedType.memberTypes[index].type;
-    let memberType = TypeUtils.specifyLocation(storedMemberType, typeLocation);
+    let memberType = Format.Types.specifyLocation(
+      storedMemberType,
+      typeLocation
+    );
 
     decodedMembers.push({
       name: memberName,
@@ -489,22 +495,22 @@ function* decodeAbiStructByPosition(
 
 //note that this function takes the start position as a *number*; it does not take a pointer
 function* decodeAbiTupleByPosition(
-  dataType: Types.TupleType,
+  dataType: Format.Types.TupleType,
   location: AbiLocation,
   startPosition: number,
-  info: EvmInfo,
+  info: Evm.EvmInfo,
   options: DecoderOptions = {}
-): Generator<DecoderRequest, Values.TupleResult, Uint8Array> {
+): Generator<DecoderRequest, Format.Values.TupleResult, Uint8Array> {
   //WARNING: This case is written in a way that involves a bunch of unnecessary recomputation!
   //I'm writing it this way anyway for simplicity, to avoid rewriting the decoder
   //However it may be worth revisiting this in the future if performance turns out to be a problem
   //(changing this may be pretty hard though)
 
-  let decodedMembers: Values.NameValuePair[] = [];
+  let decodedMembers: Format.Values.NameValuePair[] = [];
   let position = startPosition;
   for (const { name, type: memberType } of dataType.memberTypes) {
     const memberSize = abiSizeInfo(memberType, info.allocations.abi).size;
-    const childPointer: AbiDataPointer = {
+    const childPointer: Pointer.AbiDataPointer = {
       location,
       start: position,
       length: memberSize

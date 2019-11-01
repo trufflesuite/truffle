@@ -8,425 +8,796 @@ const debug = debugModule("codec:format:errors");
 //wrap it in a DecodingError.
 
 import BN from "bn.js";
-import { Types } from "./types";
-import { AstDefinition } from "../types/ast";
-import { Range } from "../types/storage";
+import * as Types from "./types";
+import * as Ast from "@truffle/codec/ast";
+import * as Storage from "@truffle/codec/storage/types";
 
-export namespace Errors {
-  /*
-   * SECTION 1: Generic types for values in general (including errors).
+/*
+ * SECTION 1: Generic types for values in general (including errors).
+ */
+
+/**
+ * A result which is an error rather than a value
+ *
+ * @Category General categories
+ */
+export type ErrorResult =
+  | ElementaryErrorResult
+  | ArrayErrorResult
+  | MappingErrorResult
+  | StructErrorResult
+  | MagicErrorResult
+  | TupleErrorResult
+  | EnumErrorResult
+  | ContractErrorResult
+  | FunctionExternalErrorResult
+  | FunctionInternalErrorResult;
+
+/**
+ * One of the underlying errors contained in an [[ErrorResult]]
+ *
+ * @Category General categories
+ */
+export type DecoderError =
+  | GenericError
+  | UintError
+  | IntError
+  | BoolError
+  | BytesStaticError
+  | BytesDynamicError
+  | AddressError
+  | StringError
+  | FixedError
+  | UfixedError
+  | ArrayError
+  | MappingError
+  | StructError
+  | MagicError
+  | TupleError
+  | EnumError
+  | ContractError
+  | FunctionExternalError
+  | FunctionInternalError
+  | InternalUseError;
+
+/*
+ * SECTION 2: Elementary values
+ */
+
+/**
+ * An error result for an elementary value
+ *
+ * @Category Elementary types
+ */
+export type ElementaryErrorResult =
+  | UintErrorResult
+  | IntErrorResult
+  | BoolErrorResult
+  | BytesErrorResult
+  | AddressErrorResult
+  | StringErrorResult
+  | FixedErrorResult
+  | UfixedErrorResult;
+/**
+ * An error result for a bytestring
+ *
+ * @Category Elementary types
+ */
+export type BytesErrorResult = BytesStaticErrorResult | BytesDynamicErrorResult;
+
+/**
+ * An error result for an unsigned integer
+ *
+ * @Category Elementary types
+ */
+export interface UintErrorResult {
+  type: Types.UintType;
+  kind: "error";
+  error: GenericError | UintError;
+}
+
+/**
+ * A uint-specific error
+ *
+ * @Category Elementary types
+ */
+export type UintError = UintPaddingError;
+
+/**
+ * A padding error for an unsigned integer (note padding is not always checked)
+ *
+ * @Category Elementary types
+ */
+export interface UintPaddingError {
+  /**
+   * hex string
    */
+  raw: string;
+  kind: "UintPaddingError";
+}
 
-  export type ErrorResult =
-    | ElementaryErrorResult
-    | ArrayErrorResult
-    | MappingErrorResult
-    | StructErrorResult
-    | MagicErrorResult
-    | TupleErrorResult
-    | EnumErrorResult
-    | ContractErrorResult
-    | FunctionExternalErrorResult
-    | FunctionInternalErrorResult;
+/**
+ * An error result for a signed integer
+ *
+ * @Category Elementary types
+ */
+export interface IntErrorResult {
+  type: Types.IntType;
+  kind: "error";
+  error: GenericError | IntError;
+}
 
-  export type DecoderError =
-    | GenericError
-    | UintError
-    | IntError
-    | BoolError
-    | BytesStaticError
-    | BytesDynamicError
-    | AddressError
-    | StringError
-    | FixedError
-    | UfixedError
-    | ArrayError
-    | MappingError
-    | StructError
-    | MagicError
-    | TupleError
-    | EnumError
-    | ContractError
-    | FunctionExternalError
-    | FunctionInternalError
-    | InternalUseError;
+/**
+ * An int-specific error
+ *
+ * @Category Elementary types
+ */
+export type IntError = IntPaddingError;
 
-  /*
-   * SECTION 2: Elementary values
+/**
+ * A padding error for a signed integer (note padding is not always checked)
+ *
+ * @Category Elementary types
+ */
+export interface IntPaddingError {
+  /**
+   * hex string
    */
+  raw: string;
+  kind: "IntPaddingError";
+}
 
-  export type ElementaryErrorResult =
-    | UintErrorResult
-    | IntErrorResult
-    | BoolErrorResult
-    | BytesErrorResult
-    | AddressErrorResult
-    | StringErrorResult
-    | FixedErrorResult
-    | UfixedErrorResult;
-  export type BytesErrorResult =
-    | BytesStaticErrorResult
-    | BytesDynamicErrorResult;
+/**
+ * An error result for a boolean
+ *
+ * @Category Elementary types
+ */
+export interface BoolErrorResult {
+  type: Types.BoolType;
+  kind: "error";
+  error: GenericError | BoolError;
+}
 
-  //Uints
-  export interface UintErrorResult {
-    type: Types.UintType;
-    kind: "error";
-    error: GenericError | UintError;
-  }
+/**
+ * A bool-specific error
+ *
+ * @Category Elementary types
+ */
+export type BoolError = BoolOutOfRangeError;
 
-  export type UintError = UintPaddingError;
+/**
+ * The bool is neither 0 nor 1
+ *
+ * @Category Elementary types
+ */
+export interface BoolOutOfRangeError {
+  rawAsBN: BN;
+  kind: "BoolOutOfRangeError";
+}
 
-  export interface UintPaddingError {
-    raw: string; //hex string
-    kind: "UintPaddingError";
-  }
+/**
+ * An error result for a static-length bytestring
+ *
+ * @Category Elementary types
+ */
+export interface BytesStaticErrorResult {
+  type: Types.BytesTypeStatic;
+  kind: "error";
+  error: GenericError | BytesStaticError;
+}
 
-  //Ints
-  export interface IntErrorResult {
-    type: Types.IntType;
-    kind: "error";
-    error: GenericError | IntError;
-  }
+/**
+ * A static-bytestring-specific error
+ *
+ * @Category Elementary types
+ */
+export type BytesStaticError = BytesPaddingError;
 
-  export type IntError = IntPaddingError;
-
-  export interface IntPaddingError {
-    raw: string; //hex string
-    kind: "IntPaddingError";
-  }
-
-  //Bools
-  export interface BoolErrorResult {
-    type: Types.BoolType;
-    kind: "error";
-    error: GenericError | BoolError;
-  }
-
-  export type BoolError = BoolOutOfRangeError;
-
-  export interface BoolOutOfRangeError {
-    rawAsBN: BN;
-    kind: "BoolOutOfRangeError";
-  }
-
-  //bytes (static)
-  export interface BytesStaticErrorResult {
-    type: Types.BytesTypeStatic;
-    kind: "error";
-    error: GenericError | BytesStaticError;
-  }
-
-  export type BytesStaticError = BytesPaddingError;
-
-  export interface BytesPaddingError {
-    raw: string; //should be hex string
-    kind: "BytesPaddingError";
-  }
-
-  //bytes (dynamic)
-  export interface BytesDynamicErrorResult {
-    type: Types.BytesTypeDynamic;
-    kind: "error";
-    error: GenericError | BytesDynamicError;
-  }
-
-  export type BytesDynamicError = DynamicDataImplementationError;
-
-  //addresses
-  export interface AddressErrorResult {
-    type: Types.AddressType;
-    kind: "error";
-    error: GenericError | AddressError;
-  }
-
-  export type AddressError = AddressPaddingError;
-
-  export interface AddressPaddingError {
-    raw: string; //should be hex string
-    kind: "AddressPaddingError";
-  }
-
-  //strings
-  export interface StringErrorResult {
-    type: Types.StringType;
-    kind: "error";
-    error: GenericError | StringError;
-  }
-
-  export type StringError = DynamicDataImplementationError;
-
-  //Fixed & Ufixed
-  export interface FixedErrorResult {
-    type: Types.FixedType;
-    kind: "error";
-    error: GenericError | FixedError;
-  }
-  export interface UfixedErrorResult {
-    type: Types.UfixedType;
-    kind: "error";
-    error: GenericError | UfixedError;
-  }
-
-  export type FixedError = FixedPaddingError;
-
-  export interface FixedPaddingError {
-    raw: string; //hex string
-    kind: "FixedPaddingError";
-  }
-
-  export type UfixedError = UfixedPaddingError;
-
-  export interface UfixedPaddingError {
-    raw: string; //hex string
-    kind: "UfixedPaddingError";
-  }
-
-  /*
-   * SECTION 3: CONTAINER TYPES (including magic)
-   * none of these have type-specific errors
+/**
+ * A padding error for a static-length bytestring (note padding is not always checked)
+ *
+ * @Category Elementary types
+ */
+export interface BytesPaddingError {
+  /**
+   * hex string
    */
+  raw: string;
+  kind: "BytesPaddingError";
+}
 
-  //Arrays
-  export interface ArrayErrorResult {
-    type: Types.ArrayType;
-    kind: "error";
-    error: GenericError | ArrayError;
-  }
+/**
+ * An error result for a dynamic-length bytestring
+ *
+ * @Category Elementary types
+ */
+export interface BytesDynamicErrorResult {
+  type: Types.BytesTypeDynamic;
+  kind: "error";
+  error: GenericError | BytesDynamicError;
+}
 
-  export type ArrayError = DynamicDataImplementationError;
+/**
+ * A dynamic-bytestring-specific error
+ *
+ * @Category Elementary types
+ */
+export type BytesDynamicError = DynamicDataImplementationError;
 
-  //Mappings
-  export interface MappingErrorResult {
-    type: Types.MappingType;
-    kind: "error";
-    error: GenericError | MappingError;
-  }
+/**
+ * An error result for an address
+ *
+ * @Category Elementary types
+ */
+export interface AddressErrorResult {
+  type: Types.AddressType;
+  kind: "error";
+  error: GenericError | AddressError;
+}
 
-  export type MappingError = never; //mappings have no type-specific errors
+/**
+ * A address-specific error
+ *
+ * @Category Elementary types
+ */
+export type AddressError = AddressPaddingError;
 
-  //Structs
-  export interface StructErrorResult {
-    type: Types.StructType;
-    kind: "error";
-    error: GenericError | StructError;
-  }
-
-  export type StructError = DynamicDataImplementationError;
-
-  //Tuples
-  export interface TupleErrorResult {
-    type: Types.TupleType;
-    kind: "error";
-    error: GenericError | TupleError;
-  }
-
-  export type TupleError = DynamicDataImplementationError;
-
-  //Magic variables
-  export interface MagicErrorResult {
-    type: Types.MagicType;
-    kind: "error";
-    error: GenericError | MagicError;
-  }
-
-  export type MagicError = never; //neither do magic variables
-
-  /*
-   * SECTION 4: ENUMS
-   * (they didn't fit anywhere else :P )
+/**
+ * A padding error for an address (note padding is not always checked)
+ *
+ * @Category Elementary types
+ */
+export interface AddressPaddingError {
+  /**
+   * hex string; no checksum
    */
+  raw: string;
+  kind: "AddressPaddingError";
+}
 
-  //Enums
-  export interface EnumErrorResult {
-    type: Types.EnumType;
-    kind: "error";
-    error: GenericError | EnumError;
-  }
+/**
+ * An error result for a string
+ *
+ * @Category Elementary types
+ */
+export interface StringErrorResult {
+  type: Types.StringType;
+  kind: "error";
+  error: GenericError | StringError;
+}
 
-  export type EnumError = EnumOutOfRangeError | EnumNotFoundDecodingError;
+/**
+ * A string-specific error
+ *
+ * @Category Elementary types
+ */
+export type StringError = DynamicDataImplementationError;
 
-  export interface EnumOutOfRangeError {
-    kind: "EnumOutOfRangeError";
-    type: Types.EnumType;
-    rawAsBN: BN;
-  }
+/**
+ * An error result for a signed fixed-point number
+ *
+ * @Category Elementary types
+ */
+export interface FixedErrorResult {
+  type: Types.FixedType;
+  kind: "error";
+  error: GenericError | FixedError;
+}
+/**
+ * An error result for an unsigned fixed-point number
+ *
+ * @Category Elementary types
+ */
+export interface UfixedErrorResult {
+  type: Types.UfixedType;
+  kind: "error";
+  error: GenericError | UfixedError;
+}
 
-  export interface EnumNotFoundDecodingError {
-    kind: "EnumNotFoundDecodingError";
-    type: Types.EnumType;
-    rawAsBN: BN;
-  }
+/**
+ * A fixed-specific error
+ *
+ * @Category Elementary types
+ */
+export type FixedError = FixedPaddingError;
 
-  /*
-   * SECTION 5: CONTRACTS
+/**
+ * A padding error for a signed fixed-point number (note padding is not always checked)
+ *
+ * @Category Elementary types
+ */
+export interface FixedPaddingError {
+  /**
+   * hex string
    */
+  raw: string;
+  kind: "FixedPaddingError";
+}
 
-  //Contracts
-  export interface ContractErrorResult {
-    type: Types.ContractType;
-    kind: "error";
-    error: GenericError | ContractError;
-  }
+/**
+ * A ufixed-specific error
+ *
+ * @Category Elementary types
+ */
+export type UfixedError = UfixedPaddingError;
 
-  export type ContractError = ContractPaddingError;
-
-  export interface ContractPaddingError {
-    raw: string; //should be hex string
-    kind: "ContractPaddingError";
-  }
-
-  /*
-   * SECTION 6: External functions
+/**
+ * A padding error for an unsigned fixed-point number (note padding is not always checked)
+ *
+ * @Category Elementary types
+ */
+export interface UfixedPaddingError {
+  /**
+   * hex string
    */
+  raw: string;
+  kind: "UfixedPaddingError";
+}
 
-  //external functions
-  export interface FunctionExternalErrorResult {
-    type: Types.FunctionExternalType;
-    kind: "error";
-    error: GenericError | FunctionExternalError;
-  }
+/*
+ * SECTION 3: CONTAINER TYPES (including magic)
+ */
 
-  export type FunctionExternalError =
-    | FunctionExternalNonStackPaddingError
-    | FunctionExternalStackPaddingError;
+/**
+ * An error result for an array
+ *
+ * @Category Container types
+ */
+export interface ArrayErrorResult {
+  type: Types.ArrayType;
+  kind: "error";
+  error: GenericError | ArrayError;
+}
 
-  export interface FunctionExternalNonStackPaddingError {
-    raw: string; //should be hex string
-    kind: "FunctionExternalNonStackPaddingError";
-  }
+/**
+ * An arrray-specific error
+ *
+ * @Category Container types
+ */
+export type ArrayError = DynamicDataImplementationError;
 
-  export interface FunctionExternalStackPaddingError {
-    rawAddress: string;
-    rawSelector: string;
-    kind: "FunctionExternalStackPaddingError";
-  }
+/**
+ * An error result for a mapping
+ *
+ * @Category Container types
+ */
+export interface MappingErrorResult {
+  type: Types.MappingType;
+  kind: "error";
+  error: GenericError | MappingError;
+}
 
-  /*
-   * SECTION 7: INTERNAL FUNCTIONS
+/**
+ * A mapping-specific error (there are none)
+ *
+ * @Category Container types
+ */
+export type MappingError = never;
+
+/**
+ * An error result for a struct
+ *
+ * @Category Container types
+ */
+export interface StructErrorResult {
+  type: Types.StructType;
+  kind: "error";
+  error: GenericError | StructError;
+}
+
+/**
+ * A struct-specific error
+ *
+ * @Category Container types
+ */
+export type StructError = DynamicDataImplementationError;
+
+/**
+ * An error result for a tuple
+ *
+ * @Category Container types
+ */
+export interface TupleErrorResult {
+  type: Types.TupleType;
+  kind: "error";
+  error: GenericError | TupleError;
+}
+
+/**
+ * A tuple-specific error
+ *
+ * @Category Container types
+ */
+export type TupleError = DynamicDataImplementationError;
+
+/**
+ * An error result for a magic variable
+ *
+ * @Category Special container types
+ */
+export interface MagicErrorResult {
+  type: Types.MagicType;
+  kind: "error";
+  error: GenericError | MagicError;
+}
+
+/**
+ * A magic-specific error (there are none)
+ *
+ * @Category Special container types
+ */
+export type MagicError = never;
+
+/*
+ * SECTION 4: ENUMS
+ * (they didn't fit anywhere else :P )
+ */
+
+/**
+ * An error result for an enum
+ *
+ * @Category Other user-defined types
+ */
+export interface EnumErrorResult {
+  type: Types.EnumType;
+  kind: "error";
+  error: GenericError | EnumError;
+}
+
+/**
+ * An enum-specific error
+ *
+ * @Category Other user-defined types
+ */
+export type EnumError = EnumOutOfRangeError | EnumNotFoundDecodingError;
+
+/**
+ * The enum is out of range
+ *
+ * @Category Other user-defined types
+ */
+export interface EnumOutOfRangeError {
+  kind: "EnumOutOfRangeError";
+  type: Types.EnumType;
+  rawAsBN: BN;
+}
+
+/**
+ * The enum type definition could not be located
+ *
+ * @Category Other user-defined types
+ */
+export interface EnumNotFoundDecodingError {
+  kind: "EnumNotFoundDecodingError";
+  type: Types.EnumType;
+  rawAsBN: BN;
+}
+
+/*
+ * SECTION 5: CONTRACTS
+ */
+
+/**
+ * An error result for a contract
+ *
+ * @Category Other user-defined types
+ */
+export interface ContractErrorResult {
+  type: Types.ContractType;
+  kind: "error";
+  error: GenericError | ContractError;
+}
+
+/**
+ * A contract-specific error
+ *
+ * @Category Other user-defined types
+ */
+export type ContractError = ContractPaddingError;
+
+/**
+ * A padding error for contract (note padding is not always checked)
+ *
+ * @Category Other user-defined types
+ */
+export interface ContractPaddingError {
+  /**
+   * hex string
    */
+  raw: string;
+  kind: "ContractPaddingError";
+}
 
-  //Internal functions
-  export interface FunctionInternalErrorResult {
-    type: Types.FunctionInternalType;
-    kind: "error";
-    error: GenericError | FunctionInternalError;
-  }
+/*
+ * SECTION 6: External functions
+ */
 
-  export type FunctionInternalError =
-    | FunctionInternalPaddingError
-    | NoSuchInternalFunctionError
-    | DeployedFunctionInConstructorError
-    | MalformedInternalFunctionError;
+/**
+ * An error result for an external function
+ *
+ * @Category Function types
+ */
+export interface FunctionExternalErrorResult {
+  type: Types.FunctionExternalType;
+  kind: "error";
+  error: GenericError | FunctionExternalError;
+}
 
-  export interface FunctionInternalPaddingError {
-    raw: string; //should be hex string
-    kind: "FunctionInternalPaddingError";
-  }
+/**
+ * An external-function specific error
+ *
+ * @Category Function types
+ */
+export type FunctionExternalError =
+  | FunctionExternalNonStackPaddingError
+  | FunctionExternalStackPaddingError;
 
-  export interface NoSuchInternalFunctionError {
-    kind: "NoSuchInternalFunctionError";
-    context: Types.ContractType;
-    deployedProgramCounter: number;
-    constructorProgramCounter: number;
-  }
-
-  export interface DeployedFunctionInConstructorError {
-    kind: "DeployedFunctionInConstructorError";
-    context: Types.ContractType;
-    deployedProgramCounter: number;
-    constructorProgramCounter: number;
-  }
-
-  export interface MalformedInternalFunctionError {
-    kind: "MalformedInternalFunctionError";
-    context: Types.ContractType;
-    deployedProgramCounter: number;
-    constructorProgramCounter: number;
-  }
-
-  /*
-   * SECTION 8: GENERIC ERRORS
+/**
+ * This error kind represents a padding error for an external function pointer located anywhere other than the stack.
+ *
+ * @Category Function types
+ */
+export interface FunctionExternalNonStackPaddingError {
+  /**
+   * hex string
    */
+  raw: string;
+  kind: "FunctionExternalNonStackPaddingError";
+}
 
-  export type GenericError =
-    | UserDefinedTypeNotFoundError
-    | IndexedReferenceTypeError
-    | ReadError;
-  export type ReadError =
-    | UnsupportedConstantError
-    | ReadErrorStack
-    | ReadErrorBytes
-    | ReadErrorStorage;
-  export type DynamicDataImplementationError =
-    | OverlongArraysAndStringsNotImplementedError
-    | OverlargePointersNotImplementedError;
+/**
+ * This error kind represents a padding error for external function pointer located on the stack.
+ *
+ * @Category Function types
+ */
+export interface FunctionExternalStackPaddingError {
+  /**
+   * hex string (no checksum; also a full word long)
+   */
+  rawAddress: string;
+  /**
+   * hex string (but a full word long)
+   */
+  rawSelector: string;
+  kind: "FunctionExternalStackPaddingError";
+}
 
-  export type ErrorForThrowing = UserDefinedTypeNotFoundError | ReadError;
+/*
+ * SECTION 7: INTERNAL FUNCTIONS
+ */
 
-  //attempted to decode an indexed parameter of reference type error
-  export interface IndexedReferenceTypeError {
-    kind: "IndexedReferenceTypeError";
-    type: Types.ReferenceType;
-    raw: string; //should be hex string
-  }
+/**
+ * An error result for an internal function
+ *
+ * @Category Function types
+ */
+export interface FunctionInternalErrorResult {
+  type: Types.FunctionInternalType;
+  kind: "error";
+  error: GenericError | FunctionInternalError;
+}
 
-  //type-location error
-  export interface UserDefinedTypeNotFoundError {
-    kind: "UserDefinedTypeNotFoundError";
-    type: Types.UserDefinedType;
-  }
+/**
+ * An internal-function specific error
+ *
+ * @Category Function types
+ */
+export type FunctionInternalError =
+  | FunctionInternalPaddingError
+  | NoSuchInternalFunctionError
+  | DeployedFunctionInConstructorError
+  | MalformedInternalFunctionError;
 
-  //Read errors
-  export interface UnsupportedConstantError {
-    kind: "UnsupportedConstantError";
-    definition: AstDefinition;
-  }
+/**
+ * A padding error for an internal function
+ *
+ * @Category Function types
+ */
+export interface FunctionInternalPaddingError {
+  /**
+   * hex string
+   */
+  raw: string;
+  kind: "FunctionInternalPaddingError";
+}
 
-  export interface ReadErrorStack {
-    kind: "ReadErrorStack";
-    from: number;
-    to: number;
-  }
+/**
+ * Indicates that the function pointer being decoded
+ * fails to point to a valid function, and also is not one of the
+ * default values
+ *
+ * @Category Function types
+ */
+export interface NoSuchInternalFunctionError {
+  kind: "NoSuchInternalFunctionError";
+  context: Types.ContractType;
+  deployedProgramCounter: number;
+  constructorProgramCounter: number;
+}
 
-  export interface ReadErrorBytes {
-    kind: "ReadErrorBytes";
-    start: number;
-    length: number;
-  }
+/**
+ * Indicates that this is a deployed-style pointer,
+ * despite the fact that you're in a constructor
+ *
+ * @Category Function types
+ */
+export interface DeployedFunctionInConstructorError {
+  kind: "DeployedFunctionInConstructorError";
+  context: Types.ContractType;
+  deployedProgramCounter: number;
+  constructorProgramCounter: number;
+}
 
-  export interface ReadErrorStorage {
-    kind: "ReadErrorStorage";
-    range: Range;
-  }
+/**
+ * Used when the deployed PC is zero but the constructor PC
+ * is nonzero
+ *
+ * @Category Function types
+ */
+export interface MalformedInternalFunctionError {
+  kind: "MalformedInternalFunctionError";
+  context: Types.ContractType;
+  deployedProgramCounter: number;
+  constructorProgramCounter: number;
+}
 
-  export interface OverlongArraysAndStringsNotImplementedError {
-    kind: "OverlongArraysAndStringsNotImplementedError";
-    lengthAsBN: BN;
-    dataLength?: number; //only included when the special strict mode check fails
-  }
+/*
+ * SECTION 8: GENERIC ERRORS
+ */
 
-  export interface OverlargePointersNotImplementedError {
-    kind: "OverlargePointersNotImplementedError";
-    pointerAsBN: BN;
-  }
+/**
+ * A type-non-specific error
+ *
+ * @Category Generic errors
+ */
+export type GenericError =
+  | UserDefinedTypeNotFoundError
+  | IndexedReferenceTypeError
+  | ReadError;
+/**
+ * A read error
+ *
+ * @Category Generic errors
+ */
+export type ReadError =
+  | UnsupportedConstantError
+  | ReadErrorStack
+  | ReadErrorBytes
+  | ReadErrorStorage;
+/**
+ * An error resulting from overlarge length or pointer values
+ *
+ * @Category Generic errors
+ */
+export type DynamicDataImplementationError =
+  | OverlongArraysAndStringsNotImplementedError
+  | OverlargePointersNotImplementedError;
 
-  /* SECTION 9: Internal use errors */
-  /* you should never see these returned.
-   * they are only for internal use. */
+/**
+ * An error that may occur in a component other than the main
+ * core of the decoder itself and thus may need to get thrown to it
+ *
+ * @Category Generic errors
+ */
+export type ErrorForThrowing = UserDefinedTypeNotFoundError | ReadError;
 
-  export type InternalUseError =
-    | OverlongArrayOrStringStrictModeError
-    | InternalFunctionInABIError;
+/**
+ * Used when decoding an indexed parameter of reference (or tuple) type.  These
+ * can't meaningfully be decoded, so instead they decode to an error, sorry.
+ *
+ * @Category Generic errors
+ */
+export interface IndexedReferenceTypeError {
+  kind: "IndexedReferenceTypeError";
+  type: Types.ReferenceType | Types.TupleType;
+  /**
+   * hex string
+   */
+  raw: string;
+}
 
-  export interface OverlongArrayOrStringStrictModeError {
-    kind: "OverlongArrayOrStringStrictModeError";
-    lengthAsBN: BN;
-    dataLength: number;
-  }
+/**
+ * An error for when can't find the definition info for a user-defined type
+ *
+ * @Category Generic errors
+ */
+export interface UserDefinedTypeNotFoundError {
+  kind: "UserDefinedTypeNotFoundError";
+  type: Types.UserDefinedType;
+}
 
-  //this one should never come up at all, but just to be sure...
-  export interface InternalFunctionInABIError {
-    kind: "InternalFunctionInABIError";
-  }
+/**
+ * An error for an unsupported type of constant (this counts as a read error)
+ *
+ * @Category Generic errors
+ */
+export interface UnsupportedConstantError {
+  kind: "UnsupportedConstantError";
+  definition: Ast.AstNode;
+}
+
+/**
+ * Read error on the stack
+ *
+ * @Category Generic errors
+ */
+export interface ReadErrorStack {
+  kind: "ReadErrorStack";
+  from: number;
+  to: number;
+}
+
+/**
+ * Read error in a byte-based location (memory, calldata, etc)
+ *
+ * @Category Generic errors
+ */
+export interface ReadErrorBytes {
+  kind: "ReadErrorBytes";
+  start: number;
+  length: number;
+}
+
+/**
+ * Read error in storage
+ *
+ * @Category Generic errors
+ */
+export interface ReadErrorStorage {
+  kind: "ReadErrorStorage";
+  range: Storage.Range;
+}
+
+/**
+ * Error for array/string/bytestring having length bigger than a JS number
+ *
+ * @Category Generic errors
+ */
+export interface OverlongArraysAndStringsNotImplementedError {
+  kind: "OverlongArraysAndStringsNotImplementedError";
+  lengthAsBN: BN;
+  dataLength?: number; //only included when the special strict mode check fails
+}
+
+/**
+ * Error for dynamic type being represented by pointer bigger than a JS number
+ *
+ * @Category Generic errors
+ */
+export interface OverlargePointersNotImplementedError {
+  kind: "OverlargePointersNotImplementedError";
+  pointerAsBN: BN;
+}
+
+/* SECTION 9: Internal use errors */
+/* you should never see these returned.
+ * they are only for internal use. */
+
+/**
+ * Internal-use error
+ *
+ * @Category Internal-use errors
+ */
+export type InternalUseError =
+  | OverlongArrayOrStringStrictModeError
+  | InternalFunctionInABIError;
+
+/**
+ * Error for the stricter length check in strict mode
+ *
+ * @Category Internal-use errors
+ */
+export interface OverlongArrayOrStringStrictModeError {
+  kind: "OverlongArrayOrStringStrictModeError";
+  lengthAsBN: BN;
+  dataLength: number;
+}
+
+/**
+ * This should never come up, but just to be sure...
+ *
+ * @Category Internal-use errors
+ */
+export interface InternalFunctionInABIError {
+  kind: "InternalFunctionInABIError";
 }
