@@ -43,7 +43,10 @@ class Console extends EventEmitter {
     this.repl = options.repl || new ReplManager(options);
     this.command = new Command(tasks);
 
-    this.interfaceAdapter = new InterfaceAdapter();
+    this.interfaceAdapter = new InterfaceAdapter({
+      provider: options.provider,
+      networkType: options.networks[options.network].type
+    });
     this.web3 = new Web3Shim({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -116,7 +119,10 @@ class Console extends EventEmitter {
     });
 
     const abstractions = jsonBlobs.map(json => {
-      const abstraction = contract(json);
+      const abstraction = contract(
+        json,
+        this.options.networks[this.options.network].type
+      );
       provision(abstraction, this.options);
       return abstraction;
     });

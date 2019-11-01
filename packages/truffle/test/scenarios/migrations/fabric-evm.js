@@ -6,11 +6,12 @@ const assert = require("assert");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 
 describe("migrate with [ @fabric-evm ] interface", () => {
   if (!process.env.FABRICEVM) return;
   let config;
-  let web3;
+  let interfaceAdapter;
   let networkId;
   const project = path.join(__dirname, "../../sources/migrations/fabric-evm");
   const logger = new MemoryLogger();
@@ -26,9 +27,12 @@ describe("migrate with [ @fabric-evm ] interface", () => {
     const provider = new Web3.providers.HttpProvider("http://localhost:5000", {
       keepAlive: false
     });
-    web3 = new Web3(provider);
-    networkId = await web3.eth.net.getId();
-    networkId = web3.utils.numberToHex(networkId).replace("0x", "");
+
+    interfaceAdapter = new InterfaceAdapter({
+      provider,
+      networkType: "fabric-evm"
+    });
+    networkId = await interfaceAdapter.getNetworkId();
   });
 
   it("runs migrations (sync & async/await)", async () => {

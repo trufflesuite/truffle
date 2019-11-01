@@ -133,7 +133,6 @@ class Migration {
    */
   async run(options) {
     const {
-      web3,
       interfaceAdapter,
       resolver,
       context,
@@ -150,7 +149,7 @@ class Migration {
 
     // Get file path and emit pre-migration event
     const file = path.relative(options.migrations_directory, this.file);
-    const block = await web3.eth.getBlock("latest");
+    const block = await interfaceAdapter.getBlock("latest");
 
     const preMigrationsData = {
       file: file,
@@ -167,7 +166,10 @@ class Migration {
 
   prepareForMigrations(options) {
     const logger = options.logger;
-    const interfaceAdapter = new InterfaceAdapter();
+    const interfaceAdapter = new InterfaceAdapter({
+      provider: options.provider,
+      networkType: options.networks[options.network].type
+    });
     const web3 = new Web3Shim({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -189,7 +191,7 @@ class Migration {
       basePath: path.dirname(this.file)
     });
 
-    return { logger, web3, interfaceAdapter, resolver, context, deployer };
+    return { interfaceAdapter, resolver, context, deployer };
   }
 
   /**
