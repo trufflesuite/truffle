@@ -9,7 +9,7 @@ var glob = require("glob");
 var Ganache = require("ganache-core");
 var Resolver = require("@truffle/resolver");
 var Artifactor = require("@truffle/artifactor");
-var Web3 = require("web3");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 
 describe("migrate", function() {
   var config;
@@ -23,9 +23,9 @@ describe("migrate", function() {
 
   function createProviderAndSetNetworkConfig(network) {
     var provider = Ganache.provider({ seed: network, gasLimit: config.gas });
-    var web3 = new Web3(provider);
-    return web3.eth.getAccounts().then(accs => {
-      return web3.eth.net.getId().then(network_id => {
+    const interfaceAdapter = new InterfaceAdapter({ provider });
+    return interfaceAdapter.eth.getAccounts().then(accs => {
+      return interfaceAdapter.getNetworkId().then(network_id => {
         config.networks[network] = {
           provider: provider,
           network_id: network_id + "",
