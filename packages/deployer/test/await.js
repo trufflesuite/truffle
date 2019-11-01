@@ -1,5 +1,5 @@
 const ganache = require("ganache-core");
-const Web3 = require("web3");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 const assert = require("assert");
 
 const Deployer = require("../index");
@@ -10,12 +10,12 @@ describe("Deployer (async / await)", function() {
   let options;
   let networkId;
   const provider = ganache.provider();
-  const web3 = new Web3(provider);
+  const interfaceAdapter = new InterfaceAdapter({ provider });
 
   beforeEach(async function() {
     this.timeout(20000);
-    networkId = await web3.eth.net.getId();
-    const accounts = await web3.eth.getAccounts();
+    networkId = await interfaceAdapter.getNetworkId();
+    const accounts = await interfaceAdapter.eth.getAccounts();
 
     owner = accounts[0];
     options = {
