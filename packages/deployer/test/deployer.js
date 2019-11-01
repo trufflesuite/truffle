@@ -1,5 +1,5 @@
 const ganache = require("ganache-core");
-const Web3 = require("web3");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 const assert = require("assert");
 const Reporter = require("@truffle/reporters").migrationsV5;
 const EventEmitter = require("events");
@@ -27,11 +27,11 @@ describe("Deployer (sync)", function() {
     emitter: new EventEmitter()
   };
 
-  const web3 = new Web3(provider);
+  const interfaceAdapter = new InterfaceAdapter({ provider });
 
   beforeEach(async function() {
-    networkId = await web3.eth.net.getId();
-    const accounts = await web3.eth.getAccounts();
+    networkId = await interfaceAdapter.getNetworkId();
+    const accounts = await interfaceAdapter.eth.getAccounts();
 
     owner = accounts[0];
     await utils.compile();
@@ -225,9 +225,9 @@ describe("Deployer (sync)", function() {
 
   it("waits for confirmations", async function() {
     this.timeout(15000);
-    const startBlock = await web3.eth.getBlockNumber();
+    const startBlock = await interfaceAdapter.eth.getBlockNumber();
 
-    utils.startAutoMine(web3, 1500);
+    utils.startAutoMine(interfaceAdapter, 1500);
 
     const migrate = function() {
       deployer.deploy(IsLibrary);
@@ -241,10 +241,10 @@ describe("Deployer (sync)", function() {
 
     utils.stopAutoMine();
 
-    const libReceipt = await web3.eth.getTransactionReceipt(
+    const libReceipt = await interfaceAdapter.eth.getTransactionReceipt(
       IsLibrary.transactionHash
     );
-    const exampleReceipt = await web3.eth.getTransactionReceipt(
+    const exampleReceipt = await interfaceAdapter.eth.getTransactionReceipt(
       Example.transactionHash
     );
 
@@ -259,13 +259,13 @@ describe("Deployer (sync)", function() {
   it("emits block events while waiting for a tx to mine", async function() {
     this.timeout(15000);
 
-    utils.startAutoMine(web3, 4000);
+    utils.startAutoMine(interfaceAdapter, 4000);
 
     const migrate = function() {
       deployer.then(async function() {
-        await deployer._startBlockPolling(web3);
+        await deployer._startBlockPolling(interfaceAdapter);
         await utils.waitMS(9000);
-        await deployer._startBlockPolling(web3);
+        await deployer._startBlockPolling(interfaceAdapter);
       });
     };
 
