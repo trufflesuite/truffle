@@ -5,16 +5,15 @@ import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import * as Elementary from "@truffle/codec/elementary";
-import { decodeMemoryReferenceByAddress } from "./memory";
+import { decodeMemoryReferenceByAddress } from "@truffle/codec/decode/memory";
 import * as Storage from "@truffle/codec/storage";
-// import { decodeStorageReferenceByAddress } from "@truffle/codec/storage";
-import { decodeAbiReferenceByAddress } from "./abi";
+import { decodeAbiReferenceByAddress } from "@truffle/codec/decode/abi";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
-export default function* decodeStack(
+export function* decodeStack(
   dataType: Format.Types.Type,
   pointer: Pointer.StackPointer,
   info: Evm.EvmInfo

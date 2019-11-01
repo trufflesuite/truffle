@@ -243,5 +243,8 @@ export { Evm };
 import * as Special from "./special";
 export { Special };
 
+import * as Stack from "./stack";
+export { Stack };
+
 import * as Storage from "./storage";
 export { Storage };

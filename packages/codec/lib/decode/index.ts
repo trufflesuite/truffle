@@ -7,10 +7,9 @@ import * as Elementary from "@truffle/codec/elementary";
 import * as Evm from "@truffle/codec/evm";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import decodeMemory from "./memory";
-import * as Storage from "@truffle/codec/storage";
 import * as Special from "@truffle/codec/special";
-import decodeStack from "./stack";
-import { decodeLiteral } from "./stack";
+import * as Stack from "@truffle/codec/stack";
+import * as Storage from "@truffle/codec/storage";
 import decodeAbi from "./abi";
 import decodeTopic from "./event";
 
@@ -28,10 +27,10 @@ export default function* decode(
       return yield* Storage.Decode.decodeStorage(dataType, pointer, info);
 
     case "stack":
-      return yield* decodeStack(dataType, pointer, info);
+      return yield* Stack.Decode.decodeStack(dataType, pointer, info);
 
     case "stackliteral":
-      return yield* decodeLiteral(dataType, pointer, info);
+      return yield* Stack.Decode.decodeLiteral(dataType, pointer, info);
 
     case "definition":
       return yield* Elementary.Decode.decodeConstant(dataType, pointer, info);
