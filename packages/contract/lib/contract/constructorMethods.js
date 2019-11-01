@@ -105,7 +105,7 @@ module.exports = Contract => ({
     // use that network and use latest block gasLimit
     if (this.network_id && this.networks[this.network_id] != null) {
       try {
-        const { gasLimit } = await this.web3.eth.getBlock("latest");
+        const { gasLimit } = await this.interfaceAdapter.getBlock("latest");
         return { id: this.network_id, blockLimit: gasLimit };
       } catch (error) {
         throw error;
@@ -115,7 +115,7 @@ module.exports = Contract => ({
     // poll chain for network_id and sync artifacts
     try {
       const chainNetworkID = await this.interfaceAdapter.getNetworkId();
-      const { gasLimit } = await this.web3.eth.getBlock("latest");
+      const { gasLimit } = await this.interfaceAdapter.getBlock("latest");
       return await utils.setInstanceNetworkID(this, chainNetworkID, gasLimit);
     } catch (error) {
       throw error;
