@@ -6,10 +6,16 @@ import * as Common from "@truffle/codec/common";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Utils from "@truffle/codec/storage/utils";
 import * as Ast from "@truffle/codec/ast";
-import * as Allocation from "../types";
+import {
+  StorageAllocation,
+  StorageAllocations,
+  StorageMemberAllocation
+} from "./types";
 import * as Evm from "@truffle/codec/evm";
 import * as Format from "@truffle/codec/format";
 import BN from "bn.js";
+
+export { StorageAllocation, StorageAllocations, StorageMemberAllocation };
 
 export class UnknownBaseContractIdError extends Error {
   public derivedId: number;
@@ -34,7 +40,7 @@ export class UnknownBaseContractIdError extends Error {
 
 interface StorageAllocationInfo {
   size: Storage.StorageLength;
-  allocations: Allocation.StorageAllocations;
+  allocations: StorageAllocations;
 }
 
 interface DefinitionPair {
@@ -47,8 +53,8 @@ interface DefinitionPair {
 export function getStorageAllocations(
   referenceDeclarations: Ast.AstNodes,
   contracts: Ast.AstNodes,
-  existingAllocations: Allocation.StorageAllocations = {}
-): Allocation.StorageAllocations {
+  existingAllocations: StorageAllocations = {}
+): StorageAllocations {
   let allocations = existingAllocations;
   for (const node of Object.values(referenceDeclarations)) {
     if (node.nodeType === "StructDefinition") {
@@ -80,8 +86,8 @@ export function getStorageAllocations(
 function allocateStruct(
   structDefinition: Ast.AstNode,
   referenceDeclarations: Ast.AstNodes,
-  existingAllocations: Allocation.StorageAllocations
-): Allocation.StorageAllocations {
+  existingAllocations: StorageAllocations
+): StorageAllocations {
   let members = structDefinition.members.map(definition => ({ definition }));
   return allocateMembers(
     structDefinition,
@@ -95,9 +101,9 @@ function allocateMembers(
   parentNode: Ast.AstNode,
   definitions: DefinitionPair[],
   referenceDeclarations: Ast.AstNodes,
-  existingAllocations: Allocation.StorageAllocations,
+  existingAllocations: StorageAllocations,
   suppressSize: boolean = false
-): Allocation.StorageAllocations {
+): StorageAllocations {
   let offset: number = 0; //will convert to BN when placing in slot
   let index: number = Evm.Utils.WORD_SIZE - 1;
 
@@ -109,7 +115,7 @@ function allocateMembers(
   let allocations = { ...existingAllocations }; //otherwise, we'll be adding to this, so we better clone
 
   //otherwise, we need to allocate
-  let memberAllocations: Allocation.StorageMemberAllocation[] = [];
+  let memberAllocations: StorageMemberAllocation[] = [];
 
   for (const { definition: node, definedIn } of definitions) {
     //first off: is this a constant? if so we use a different, simpler process
@@ -240,9 +246,9 @@ function getStateVariables(contractNode: Ast.AstNode): Ast.AstNode[] {
 function allocateContract(
   contract: Ast.AstNode,
   referenceDeclarations: Ast.AstNodes,
-  existingAllocations: Allocation.StorageAllocations
-): Allocation.StorageAllocations {
-  let allocations: Allocation.StorageAllocations = { ...existingAllocations };
+  existingAllocations: StorageAllocations
+): StorageAllocations {
+  let allocations: StorageAllocations = { ...existingAllocations };
 
   //base contracts are listed from most derived to most base, so we
   //have to reverse before processing, but reverse() is in place, so we
@@ -285,7 +291,7 @@ function allocateContract(
 export function storageSize(
   definition: Ast.AstNode,
   referenceDeclarations?: Ast.AstNodes,
-  allocations?: Allocation.StorageAllocations
+  allocations?: StorageAllocations
 ): Storage.StorageLength {
   return storageSizeAndAllocate(definition, referenceDeclarations, allocations)
     .size;
@@ -294,7 +300,7 @@ export function storageSize(
 function storageSizeAndAllocate(
   definition: Ast.AstNode,
   referenceDeclarations?: Ast.AstNodes,
-  existingAllocations?: Allocation.StorageAllocations
+  existingAllocations?: StorageAllocations
 ): StorageAllocationInfo {
   switch (Ast.Utils.typeClass(definition)) {
     case "bool":
@@ -434,9 +440,8 @@ function storageSizeAndAllocate(
 
     case "struct": {
       const referenceId: number = Ast.Utils.typeId(definition);
-      let allocations: Allocation.StorageAllocations = existingAllocations;
-      let allocation: Allocation.StorageAllocation | undefined =
-        allocations[referenceId]; //may be undefined!
+      let allocations: StorageAllocations = existingAllocations;
+      let allocation: StorageAllocation | undefined = allocations[referenceId]; //may be undefined!
       if (allocation === undefined) {
         //if we don't find an allocation, we'll have to do the allocation ourselves
         const referenceDeclaration: Ast.AstNode =
@@ -469,7 +474,7 @@ function storageSizeAndAllocate(
 export function storageSizeForType(
   dataType: Format.Types.Type,
   userDefinedTypes?: Format.Types.TypesById,
-  allocations?: Allocation.StorageAllocations
+  allocations?: StorageAllocations
 ): Storage.StorageLength {
   switch (dataType.typeClass) {
     case "bool":
