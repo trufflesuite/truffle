@@ -3,6 +3,7 @@ const debug = debugModule("codec:decode");
 
 import * as Format from "@truffle/codec/format";
 import * as Pointer from "@truffle/codec/pointer";
+import * as Elementary from "@truffle/codec/elementary";
 import * as Evm from "@truffle/codec/evm";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import decodeMemory from "./memory";
@@ -10,7 +11,6 @@ import * as Storage from "@truffle/codec/storage";
 import decodeStack from "./stack";
 import { decodeLiteral } from "./stack";
 import decodeAbi from "./abi";
-import decodeConstant from "./constant";
 import decodeSpecial from "./special";
 import decodeTopic from "./event";
 
@@ -34,7 +34,7 @@ export default function* decode(
       return yield* decodeLiteral(dataType, pointer, info);
 
     case "definition":
-      return yield* decodeConstant(dataType, pointer, info);
+      return yield* Elementary.Decode.decodeConstant(dataType, pointer, info);
 
     case "special":
       return yield* decodeSpecial(dataType, pointer, info);
