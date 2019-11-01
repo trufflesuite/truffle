@@ -5,6 +5,7 @@ const assert = require("assert");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 
 const log = console.log;
 
@@ -20,7 +21,6 @@ describe("production", function() {
     if (!process.env.GETH) return;
 
     let config;
-    let web3;
     let networkId;
     const project = path.join(__dirname, "../../sources/migrations/production");
     const logger = new MemoryLogger();
@@ -38,8 +38,8 @@ describe("production", function() {
         "http://localhost:8545",
         { keepAlive: false }
       );
-      web3 = new Web3(provider);
-      networkId = await web3.eth.net.getId();
+      const interfaceAdapter = new InterfaceAdapter({ provider });
+      networkId = await interfaceAdapter.getNetworkId();
     });
 
     it("auto dry-runs and honors confirmations option", function(done) {
@@ -82,7 +82,6 @@ describe("production", function() {
     if (!process.env.GETH) return;
 
     let config;
-    let web3;
     let networkId;
     const project = path.join(__dirname, "../../sources/migrations/production");
     const logger = new MemoryLogger();
@@ -100,8 +99,8 @@ describe("production", function() {
         "http://localhost:8545",
         { keepAlive: false }
       );
-      web3 = new Web3(provider);
-      networkId = await web3.eth.net.getId();
+      const interfaceAdapter = new InterfaceAdapter({ provider });
+      networkId = await interfaceAdapter.getNetworkId();
     });
 
     it("migrates without dry-run", function(done) {
