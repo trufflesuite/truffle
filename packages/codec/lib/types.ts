@@ -26,7 +26,7 @@ export type LogDecoding = EventDecoding | AnonymousDecoding;
  * This is a type for recording what decoding mode a given decoding was produced in.  There are two
  * decoding modes, full mode and ABI mode.  In ABI mode, decoding is done purely based on the ABI JSON.
  * Full mode, by contrast, additionally uses AST information to produce a more informative decoding.
- * For more on full mode and ABI mode, see the README.
+ * For more on full mode and ABI mode, see the notes on [Decoding modes](../#decoding-modes).
  * @Category Output
  */
 export type DecodingMode = "full" | "abi";
