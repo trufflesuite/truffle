@@ -22,8 +22,6 @@ import * as DecoderTypes from "./types";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
-import { BlockType, Transaction } from "web3/eth/types";
-import { Log } from "web3/types";
 import { Provider } from "web3/providers";
 import {
   ContractBeingDecodedHasNoNodeError,
@@ -211,10 +209,8 @@ export class WireDecoder {
   /**
    * **This method is asynchronous.**
    *
-   * Takes a Web3
-   * [Transaction](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-gettransaction-return)
-   * object and decodes it.  The result is a [[CalldataDecoding]]; see the documentation on
-   * that interface for more.
+   * Takes a [[Transaction]] object and decodes it.  The result is a
+   * [[CalldataDecoding]]; see the documentation on that interface for more.
    *
    * Note that decoding of transactions sent to libraries is presently not
    * supported and may have unreliable results.  Limited support for this is
@@ -222,7 +218,7 @@ export class WireDecoder {
    * @param transaction The transaction to be decoded.
    */
   public async decodeTransaction(
-    transaction: Transaction
+    transaction: DecoderTypes.Transaction
   ): Promise<CalldataDecoding> {
     return await this.decodeTransactionWithAdditionalContexts(transaction);
   }
@@ -231,7 +227,7 @@ export class WireDecoder {
    * @protected
    */
   public async decodeTransactionWithAdditionalContexts(
-    transaction: Transaction,
+    transaction: DecoderTypes.Transaction,
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<CalldataDecoding> {
     debug("transaction: %O", transaction);
@@ -276,10 +272,8 @@ export class WireDecoder {
   /**
    * **This method is asynchronous.**
    *
-   * Takes a Web3
-   * [Log](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-getpastlogs-return)
-   * object and decodes it.  Logs can be ambiguous, so this so this function
-   * returns an array of [[LogDecoding|LogDecodings]].
+   * Takes a [[Log]] object and decodes it.  Logs can be ambiguous, so this so
+   * this function returns an array of [[LogDecoding|LogDecodings]].
    *
    * Note that logs are decoded in strict mode, so (with one exception) none of the decodings should
    * contain errors; if a decoding would contain an error, instead it is simply excluded from the
@@ -301,7 +295,7 @@ export class WireDecoder {
    *
    * @param log The log to be decoded.
    */
-  public async decodeLog(log: Log): Promise<LogDecoding[]> {
+  public async decodeLog(log: DecoderTypes.Log): Promise<LogDecoding[]> {
     return await this.decodeLogWithAdditionalOptions(log);
   }
 
@@ -309,7 +303,7 @@ export class WireDecoder {
    * @protected
    */
   public async decodeLogWithAdditionalOptions(
-    log: Log,
+    log: DecoderTypes.Log,
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<LogDecoding[]> {
@@ -627,7 +621,7 @@ export class ContractDecoder {
    * @param transaction The transaction to be decoded.
    */
   public async decodeTransaction(
-    transaction: Transaction
+    transaction: DecoderTypes.Transaction
   ): Promise<CalldataDecoding> {
     return await this.wireDecoder.decodeTransaction(transaction);
   }
@@ -638,7 +632,7 @@ export class ContractDecoder {
    * See [[WireDecoder.decodeLog]].
    * @param log The log to be decoded.
    */
-  public async decodeLog(log: Log): Promise<LogDecoding[]> {
+  public async decodeLog(log: DecoderTypes.Log): Promise<LogDecoding[]> {
     return await this.wireDecoder.decodeLog(log);
   }
 
@@ -905,11 +899,10 @@ export class ContractInstanceDecoder {
    * information about the storage or decoded variables.  See the documentation
    * for the [[ContractState]] type for more.
    * @param block The block to inspect the contract's state at.  Defaults to latest.
-   *   See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
-   *   for legal values.
+   *   See [[BlockSpecifier]] for legal values.
    */
   public async state(
-    block: BlockType = "latest"
+    block: DecoderTypes.BlockSpecifier = "latest"
   ): Promise<DecoderTypes.ContractState> {
     return {
       class: Contexts.Utils.contextToType(this.context),
@@ -941,12 +934,11 @@ export class ContractInstanceDecoder {
    * usefully decode internal function pointers.  See the
    * [[Format.Values.FunctionInternalValue|FunctionInternalValue]]
    * documentation and the README for more on how these are handled.
-   * @param block The block to inspect the contract's variables at.  Defaults to latest.
-   *   See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
-   *   for legal values.
+   * @param block The block to inspect the contract's state at.  Defaults to latest.
+   *   See [[BlockSpecifier]] for legal values.
    */
   public async variables(
-    block: BlockType = "latest"
+    block: DecoderTypes.BlockSpecifier = "latest"
   ): Promise<DecoderTypes.StateVariable[]> {
     this.checkAllocationSuccess();
 
@@ -980,10 +972,8 @@ export class ContractInstanceDecoder {
    *   variable.  Can be given as a qualified name, allowing one to get at
    *   shadowed variables from base contracts.  If given by ID, can be given as a
    *   number or numeric string.
-   * @param block The block to inspect the contract's variables at.  Defaults
-   *   to latest.
-   *   See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
-   *   for legal values.
+   * @param block The block to inspect the contract's state at.  Defaults to latest.
+   *   See [[BlockSpecifier]] for legal values.
    * @example Consider a contract `Derived` inheriting from a contract `Base`.
    *   Suppose `Derived` has a variable `x` and `Base` has variables `x` and
    *   `y`.  One can access `Derived.x` as `variable("x")` or
@@ -992,7 +982,7 @@ export class ContractInstanceDecoder {
    */
   public async variable(
     nameOrId: string | number,
-    block: BlockType = "latest"
+    block: DecoderTypes.BlockSpecifier = "latest"
   ): Promise<Format.Values.Result | undefined> {
     this.checkAllocationSuccess();
 
@@ -1205,7 +1195,7 @@ export class ContractInstanceDecoder {
    * See [[WireDecoder.decodeTransaction]].
    */
   public async decodeTransaction(
-    transaction: Transaction
+    transaction: DecoderTypes.Transaction
   ): Promise<CalldataDecoding> {
     return await this.wireDecoder.decodeTransactionWithAdditionalContexts(
       transaction,
@@ -1218,7 +1208,7 @@ export class ContractInstanceDecoder {
    *
    * See [[WireDecoder.decodeLog]].
    */
-  public async decodeLog(log: Log): Promise<LogDecoding[]> {
+  public async decodeLog(log: DecoderTypes.Log): Promise<LogDecoding[]> {
     return await this.wireDecoder.decodeLogWithAdditionalOptions(
       log,
       {},

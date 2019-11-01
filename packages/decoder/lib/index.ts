@@ -24,7 +24,10 @@ export {
   ContractState,
   StateVariable,
   DecodedLog,
-  EventOptions
+  EventOptions,
+  Transaction,
+  Log,
+  BlockSpecifier
 } from "./types";
 
 import { Provider } from "web3/providers";

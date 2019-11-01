@@ -7,8 +7,6 @@ import {
   CalldataDecoding,
   LogDecoding
 } from "@truffle/codec";
-import { Transaction, BlockType } from "web3/eth/types";
-import { Log } from "web3/types";
 import Web3 from "web3";
 
 /**
@@ -103,7 +101,7 @@ export interface ContractAndContexts {
 /**
  * The type of the options parameter to events().  This type will be expanded in the future
  * as more filtering options are added.
- * @category Configurations
+ * @category Inputs
  */
 export interface EventOptions {
   /**
@@ -115,13 +113,13 @@ export interface EventOptions {
    * See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
    * for legal values.
    */
-  fromBlock?: BlockType;
+  fromBlock?: BlockSpecifier;
   /**
    * The latest block to include events from.  Defaults to "latest".
    * See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
    * for legal values.
    */
-  toBlock?: BlockType;
+  toBlock?: BlockSpecifier;
   /**
    * If included, will restrict to events emitted by the given address.
    *
@@ -132,6 +130,120 @@ export interface EventOptions {
    */
   address?: string;
 }
+
+/**
+ * Contains information about a transaction.  Most of the fields have
+ * been made optional; only those needed by the decoder have been made
+ * mandatory.
+ *
+ * Intended to be identical to Web3's
+ * [Transaction](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-gettransaction-return)
+ * type.
+ * @category Inputs
+ */
+export interface Transaction {
+  /**
+   * The transaction hash as hex string.
+   */
+  hash?: string;
+  /**
+   * The nonce of the sender before this transaction was sent.
+   */
+  nonce?: number;
+  /**
+   * Hash of this transaction's block as hex string; null if pending.
+   */
+  blockHash?: string | null;
+  /**
+   * This transaction's block number; null if pending.
+   */
+  blockNumber: number | null;
+  /**
+   * Index of transaction in block; null if block is pending.
+   */
+  transactionIndex?: number | null;
+  /**
+   * Address of the sender (as checksummed hex string).
+   */
+  from?: string;
+  /**
+   * Address of the recipient (as checksummed hex string), or null for a
+   * contract creation.
+   */
+  to: string | null;
+  /**
+   * Wei sent with this transaction, as numeric string.
+   */
+  value?: string;
+  /**
+   * Gas price for this transaction, as numeric string.
+   */
+  gasPrice?: string;
+  /**
+   * Gas provided by the sender, as numeric string.
+   */
+  gas?: string;
+  /**
+   * Data sent with the transaction, as hex string.
+   */
+  input: string;
+}
+
+/**
+ * Contains information about a transaction.  Most of the fields have
+ * been made optional; only those needed by the decoder have been made
+ * mandatory.
+ *
+ * Intended to be identical to Web3's
+ * [Log](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-getpastlogs-return)
+ * type.
+ * @category Inputs
+ */
+export interface Log {
+  /**
+   * Address of the emitter (as checksummed hex string).
+   */
+  address: string;
+  /**
+   * The log's data section (as hex string).
+   */
+  data: string;
+  /**
+   * The log's topics; each is a hex string representing 32 bytes.
+   */
+  topics: string[];
+  /**
+   * Index of the log within the block.
+   */
+  logIndex?: number;
+  /**
+   * Index within the block of the emitting transaction; null if
+   * block is pending.
+   */
+  transactionIndex?: number | null;
+  /**
+   * The emitting transaction's hash (as hex string).
+   */
+  transactionHash?: string;
+  /**
+   * The block hash (as hex string).  Null if pending.
+   */
+  blockHash?: string | null;
+  /**
+   * The block number.  Null if pending.
+   */
+  blockNumber: number | null;
+}
+
+/**
+ * Specifies a block.  Can be given by number, or can be given via the
+ * special strings "genesis", "latest", or "pending".
+ *
+ * Intended to work the same as Web3's
+ * [BlockType](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14).
+ * @category Inputs
+ */
+export type BlockSpecifier = number | "genesis" | "latest" | "pending";
 
 //HACK
 export interface ContractConstructorObject extends ContractObject {
