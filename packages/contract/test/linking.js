@@ -2,7 +2,7 @@
 var assert = require("chai").assert;
 var temp = require("temp").track();
 var contract = require("../");
-var Web3 = require("web3");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 var debug = require("debug")("ganache-core");
 var Ganache = require("ganache-core");
 var path = require("path");
@@ -25,13 +25,10 @@ describe("Library linking", function() {
   var LibraryExample;
   var provider = Ganache.provider({ logger: log });
   var network_id;
-  var web3 = new Web3();
-  web3.setProvider(provider);
+  const interfaceAdapter = new InterfaceAdapter({ provider });
 
   before(function() {
-    return web3.eth.net.getId().then(function(id) {
-      network_id = id;
-    });
+    return interfaceAdapter.getNetworkId().then(id => (network_id = id));
   });
 
   before(function() {
@@ -107,14 +104,12 @@ describe("Library linking with contract objects", function() {
   var ExampleLibrary;
   var ExampleLibraryConsumer;
   var accounts;
-  var web3;
   var network_id;
   var provider = Ganache.provider({ logger: log });
-  web3 = new Web3();
-  web3.setProvider(provider);
+  const interfaceAdapter = new InterfaceAdapter({ provider });
 
   before(function() {
-    return web3.eth.net.getId().then(function(id) {
+    return interfaceAdapter.getNetworkId().then(function(id) {
       network_id = id;
     });
   });
@@ -186,7 +181,7 @@ describe("Library linking with contract objects", function() {
   });
 
   before(function(done) {
-    web3.eth.getAccounts(function(err, accs) {
+    interfaceAdapter.eth.getAccounts(function(err, accs) {
       accounts = accs;
 
       ExampleLibrary.defaults({
