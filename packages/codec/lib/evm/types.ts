@@ -1,8 +1,8 @@
 import * as Common from "@truffle/codec/common";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Ast from "@truffle/codec/ast";
-import * as Allocation from "@truffle/codec/allocate/types";
 import { StorageAllocations } from "@truffle/codec/allocate/storage/types";
+import { MemoryAllocations } from "@truffle/codec/allocate/memory/types";
 import {
   AbiAllocations,
   CalldataAllocations,
@@ -39,7 +39,7 @@ export interface EvmInfo {
 
 export interface AllocationInfo {
   storage?: StorageAllocations;
-  memory?: Allocation.MemoryAllocations;
+  memory?: MemoryAllocations;
   abi?: AbiAllocations;
   calldata?: CalldataAllocations;
   event?: EventAllocations;
