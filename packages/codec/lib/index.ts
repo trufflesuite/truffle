@@ -151,6 +151,12 @@ Secondly, when decoding events, it is impossible to decode indexed parameters
 of reference type.  Thus, these decode to an error
 (`IndexedReferenceTypeError`, which see) rather than to a value.
 
+Thirdly, objects with encoded length fields larger than what fits in a
+JavaScript safe integer, or pointed to by pointers with values larger than
+what fits in a JavaScript safe integer, will decode to errors, even if they
+may technically be legal.  Such cases are impractical to handle and should
+never come up in real use so we decode them to errors.
+
 Finally, except when decoding events, we do not return an error if the pointers
 in an ABI-encoded array or tuple are arranged in a nonstandard way, or if
 strings or bytestrings are incorrectly padded, because it is not worth the

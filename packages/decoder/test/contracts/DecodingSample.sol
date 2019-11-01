@@ -63,7 +63,7 @@ contract DecodingSample is DecodingSampleParent {
   //S[2]       fixedArrayStructS;
   // S[]       dynamicArrayStructS;
 
-  function() external functionExternal;
+  function() external functionExternal = this.example;
 
   function example() public {
     functionExternal = this.example;
@@ -155,7 +155,5 @@ contract DecodingSample is DecodingSampleParent {
     varMapping[2] = 41;
     varMapping[3] = 107;
     varAddressMapping[address(this)] = 683;
-
-    functionExternal = this.example;
   }
 }
