@@ -187,10 +187,6 @@ export { DecodingError, StopDecodingError } from "./decode/errors";
 //and to read the stack
 export { readStack } from "./read/stack";
 
-//finally, let's export the low-level encoding functions, because why not, someone
-//might want them :P
-export { encodeAbi, encodeTupleAbi } from "./encode/abi";
-
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface
 export {

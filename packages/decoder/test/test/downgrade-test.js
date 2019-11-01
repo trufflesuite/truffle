@@ -6,8 +6,6 @@ const clonedeep = require("lodash.clonedeep");
 const Decoder = require("../..");
 const Codec = require("../../../codec");
 
-const { encodeTupleAbi } = require("../../../codec");
-
 const DowngradeTestUnmodified = artifacts.require("DowngradeTest");
 const DecoyLibrary = artifacts.require("DecoyLibrary");
 
@@ -213,7 +211,7 @@ contract("DowngradeTest", function(accounts) {
         asBig: tau
       }
     };
-    const encodedTau = encodeTupleAbi([wrappedTau]);
+    const encodedTau = Codec.Abi.Encode.encodeTupleAbi([wrappedTau]);
     const hexTau = Codec.Conversion.toHexString(encodedTau);
     const selector = web3.eth.abi.encodeFunctionSignature(
       "shhImADecimal(fixed168x10)"

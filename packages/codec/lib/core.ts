@@ -17,7 +17,6 @@ import { abifyType, abifyResult } from "@truffle/codec/abify";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import { StopDecodingError } from "@truffle/codec/decode/errors";
-import { encodeAbi, encodeTupleAbi } from "@truffle/codec/encode/abi";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
 
@@ -339,7 +338,7 @@ export function* decodeEvent(
       .filter(argument => !argument.indexed)
       .map(argument => argument.value);
     //now, we can encode!
-    const reEncodedData = encodeTupleAbi(
+    const reEncodedData = Abi.Encode.encodeTupleAbi(
       nonIndexedValues,
       info.allocations.abi
     );
@@ -356,7 +355,7 @@ export function* decodeEvent(
       .map(argument => argument.value);
     debug("indexedValues: %O", indexedValues);
     const reEncodedTopics = indexedValues.map(
-      value => encodeAbi(value, info.allocations.abi) //NOTE: I should really use a different encoding function here,
+      value => Abi.Encode.encodeAbi(value, info.allocations.abi) //NOTE: I should really use a different encoding function here,
       //but I haven't written that function yet
     );
     const encodedTopics = info.state.eventtopics;
