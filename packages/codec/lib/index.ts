@@ -4,20 +4,19 @@
  * This module provides low-level decoding and encoding functionality for
  * Solidity and the Solidity ABI.  Many parts of this module are intended
  * primarily for internal use by Truffle and so remain largely undocumented,
- * but some of its types are also output by `@truffle/decoder`, which provides
+ * but some of its types are also output by @truffle/decoder, which provides
  * a higher-level interface to much of this module's functionality.
  *
  * ## If you're here from Truffle Decoder
  *
- * If you're coming here from `@truffle/decoder`, you probably just want to
+ * If you're coming here from [[@truffle/decoder]], you probably just want to
  * know about the parts that are relevant to you.  These are:
  *
- * * The "data" category, specifically the "main format" category within it
- * * The "output" category
- * * The "enumerations" category
- * * The "errors" category
+ * * The "data" category (specifically [[Format]])
+ * * The "output" and "enumerations" categories ([[CalldataDecoding]], [[LogDecoding]], et al., see below)
+ * * The "errors" category (specifically [[UnknownUserDefinedTypeError]])
  *
- * Note that the data category (i.e. [[Format]]) is largely scarce in
+ * Note that the data category is largely scarce in
  * documentation, although that's because it's largely self-explanatory.
  *
  * If you're not just here from Truffle Decoder, but are actually
@@ -31,8 +30,8 @@
  * generator.  This generator's `next()` function may return a finished
  * result, or it may return a request for more information.  It is up to
  * the caller to fulfill these requests -- say, by making a network
- * connection of its own.  This is how `@truffle/decoder` works;
- * `@truffle/codec` makes requests, and `@truffle/decoder` fulfills them by
+ * connection of its own.  This is how @truffle/decoder works; @truffle/codec
+ * makes requests, and @truffle/decoder fulfills them by
  * looking up the necessary information on the blockchain.
  *
  * This library also provides additional functionality beyond what's used
@@ -52,7 +51,7 @@
  *
  * ## How to use
  *
- * You should probably use `@truffle/decoder` instead, if your use case doesn't
+ * You should probably use [[@truffle/decoder]] instead, if your use case doesn't
  * preclude it.  This module has little documentation, where it has any at all,
  * and it's likely that parts of its interface may change (particularly
  * regarding allocation).  That said, if you truly need the functionality here,
