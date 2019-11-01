@@ -9,7 +9,7 @@ import decodeValue from "./value";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
-import { abiSizeInfo } from "@truffle/codec/allocate/abi";
+import { abiSizeInfo } from "@truffle/codec/abi/allocate";
 import { DecodingError, StopDecodingError } from "@truffle/codec/decode/errors";
 
 type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here

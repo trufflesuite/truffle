@@ -5,10 +5,6 @@ import * as Ast from "@truffle/codec/ast";
 import * as Abi from "@truffle/codec/abi";
 import * as Pointer from "@truffle/codec/pointer";
 import {
-  EventAllocation,
-  CalldataAllocation
-} from "@truffle/codec/allocate/abi/types";
-import {
   DecoderRequest,
   CalldataDecoding,
   DecodingMode,
@@ -67,7 +63,7 @@ export function* decodeCalldata(
   const contractType = Contexts.Utils.contextToType(context);
   isConstructor = context.isConstructor;
   const allocations = info.allocations.calldata;
-  let allocation: CalldataAllocation;
+  let allocation: Abi.Allocate.CalldataAllocation;
   let selector: string;
   //first: is this a creation call?
   if (isConstructor) {
@@ -189,9 +185,11 @@ export function* decodeEvent(
   let rawSelector: Uint8Array;
   let selector: string;
   let contractAllocations: {
-    [contextHash: string]: EventAllocation;
+    [contextHash: string]: Abi.Allocate.EventAllocation;
   }; //for non-anonymous events
-  let libraryAllocations: { [contextHash: string]: EventAllocation }; //similar
+  let libraryAllocations: {
+    [contextHash: string]: Abi.Allocate.EventAllocation;
+  }; //similar
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
   if (topicsCount > 0) {
@@ -231,8 +229,8 @@ export function* decodeEvent(
     info.contexts,
     codeAsHex
   );
-  let possibleContractAllocations: EventAllocation[]; //excludes anonymous events
-  let possibleContractAnonymousAllocations: EventAllocation[];
+  let possibleContractAllocations: Abi.Allocate.EventAllocation[]; //excludes anonymous events
+  let possibleContractAnonymousAllocations: Abi.Allocate.EventAllocation[];
   if (contractContext) {
     //if we found the contract, maybe it's from that contract
     const contextHash = contractContext.context;

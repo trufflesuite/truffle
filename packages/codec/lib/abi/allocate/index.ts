@@ -28,7 +28,13 @@ import { DecodingMode } from "@truffle/codec/types";
 import * as Format from "@truffle/codec/format";
 import partition from "lodash.partition";
 
-export { ContractAllocationInfo };
+export {
+  AbiAllocations,
+  AbiSizeInfo,
+  CalldataAllocation,
+  ContractAllocationInfo,
+  EventAllocation
+};
 
 interface AbiAllocationInfo {
   size?: number; //left out for types that don't go in the abi
