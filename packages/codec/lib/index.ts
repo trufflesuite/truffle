@@ -240,5 +240,8 @@ export { Pointer };
 import * as Evm from "./evm";
 export { Evm };
 
+import * as Special from "./special";
+export { Special };
+
 import * as Storage from "./storage";
 export { Storage };

@@ -8,7 +8,7 @@ import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 
-export default function* decodeSpecial(
+export function* decodeSpecial(
   dataType: Format.Types.Type,
   pointer: Pointer.SpecialPointer,
   info: Evm.EvmInfo

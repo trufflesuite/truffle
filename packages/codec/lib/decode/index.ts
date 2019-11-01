@@ -8,10 +8,10 @@ import * as Evm from "@truffle/codec/evm";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import decodeMemory from "./memory";
 import * as Storage from "@truffle/codec/storage";
+import * as Special from "@truffle/codec/special";
 import decodeStack from "./stack";
 import { decodeLiteral } from "./stack";
 import decodeAbi from "./abi";
-import decodeSpecial from "./special";
 import decodeTopic from "./event";
 
 export default function* decode(
@@ -37,7 +37,7 @@ export default function* decode(
       return yield* Elementary.Decode.decodeConstant(dataType, pointer, info);
 
     case "special":
-      return yield* decodeSpecial(dataType, pointer, info);
+      return yield* Special.Decode.decodeSpecial(dataType, pointer, info);
 
     case "calldata":
     case "eventdata":
