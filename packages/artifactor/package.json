@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@truffle/contract": "^4.0.38",
+    "@truffle/interface-adapter": "^0.3.1",
     "@types/fs-extra": "^8.0.0",
     "@types/node": "^12.6.2",
     "chai": "4.2.0",
@@ -28,8 +29,7 @@
     "require-nocache": "^1.0.0",
     "temp": "^0.8.3",
     "ts-node": "^8.3.0",
-    "typescript": "^3.6.3",
-    "web3": "1.2.1"
+    "typescript": "^3.6.3"
   },
   "publishConfig": {
     "access": "public"
