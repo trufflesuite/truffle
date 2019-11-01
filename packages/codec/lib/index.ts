@@ -225,6 +225,9 @@ export { Contexts };
 import * as Conversion from "./conversion";
 export { Conversion };
 
+import * as Elementary from "./elementary";
+export { Elementary };
+
 import * as MappingKeys from "./keys";
 export { MappingKeys };
 

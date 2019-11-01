@@ -5,7 +5,7 @@ import BN from "bn.js";
 import read from "@truffle/codec/read";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
-import decodeValue from "./value";
+import * as Elementary from "@truffle/codec/elementary";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
@@ -19,7 +19,7 @@ export default function* decodeMemory(
   if (Format.Types.isReferenceType(dataType)) {
     return yield* decodeMemoryReferenceByAddress(dataType, pointer, info);
   } else {
-    return yield* decodeValue(dataType, pointer, info);
+    return yield* Elementary.Decode.decodeElementary(dataType, pointer, info);
   }
 }
 
@@ -106,7 +106,11 @@ export function* decodeMemoryReferenceByAddress(
         length
       };
 
-      return yield* decodeValue(dataType, childPointer, info);
+      return yield* Elementary.Decode.decodeElementary(
+        dataType,
+        childPointer,
+        info
+      );
 
     case "array":
       if (dataType.kind === "dynamic") {

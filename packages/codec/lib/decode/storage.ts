@@ -4,7 +4,7 @@ const debug = debugModule("codec:decode:storage");
 import read from "@truffle/codec/read";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
-import decodeValue from "./value";
+import * as Elementary from "@truffle/codec/elementary";
 import * as Storage from "@truffle/codec/storage";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
@@ -21,7 +21,7 @@ export default function* decodeStorage(
   if (Format.Types.isReferenceType(dataType)) {
     return yield* decodeStorageReference(dataType, pointer, info);
   } else {
-    return yield* decodeValue(dataType, pointer, info);
+    return yield* Elementary.Decode.decodeElementary(dataType, pointer, info);
   }
 }
 
@@ -268,7 +268,7 @@ export function* decodeStorageReference(
         length = lengthByte / 2;
         debug("in-word; length %o", length);
 
-        return yield* decodeValue(
+        return yield* Elementary.Decode.decodeElementary(
           dataType,
           {
             location: "storage",
@@ -301,7 +301,7 @@ export function* decodeStorageReference(
         }
         debug("new-word, length %o", length);
 
-        return yield* decodeValue(
+        return yield* Elementary.Decode.decodeElementary(
           dataType,
           {
             location: "storage" as const,

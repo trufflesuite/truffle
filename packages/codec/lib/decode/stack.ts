@@ -4,8 +4,7 @@ const debug = debugModule("codec:decode:stack");
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
-import decodeValue from "./value";
-import { decodeExternalFunction, checkPaddingLeft } from "./value";
+import * as Elementary from "@truffle/codec/elementary";
 import { decodeMemoryReferenceByAddress } from "./memory";
 import { decodeStorageReferenceByAddress } from "./storage";
 import { decodeAbiReferenceByAddress } from "./abi";
@@ -61,7 +60,7 @@ export function* decodeLiteral(
         //next: do we have a calldata pointer?
 
         //if it's a string or bytes, we will interpret the pointer ourself and skip
-        //straight to decodeValue.  this is to allow us to correctly handle the
+        //straight to decodeElementary.  this is to allow us to correctly handle the
         //case of msg.data used as a mapping key.
         if (dataType.typeClass === "bytes" || dataType.typeClass === "string") {
           let startAsBN = Conversion.toBN(
@@ -109,7 +108,11 @@ export function* decodeLiteral(
             start,
             length
           };
-          return yield* decodeValue(dataType, newPointer, info);
+          return yield* Elementary.Decode.decodeElementary(
+            dataType,
+            newPointer,
+            info
+          );
         }
 
         //otherwise, is it a dynamic array?
@@ -139,13 +142,13 @@ export function* decodeLiteral(
   }
 
   //next: do we have an external function?  these work differently on the stack
-  //than elsewhere, so we can't just pass it on to decodeValue.
+  //than elsewhere, so we can't just pass it on to decodeElementary.
   if (dataType.typeClass === "function" && dataType.visibility === "external") {
     let address = pointer.literal.slice(0, Evm.Utils.WORD_SIZE);
     let selectorWord = pointer.literal.slice(-Evm.Utils.WORD_SIZE);
     if (
-      !checkPaddingLeft(address, Evm.Utils.ADDRESS_SIZE) ||
-      !checkPaddingLeft(selectorWord, Evm.Utils.SELECTOR_SIZE)
+      !Elementary.Decode.checkPaddingLeft(address, Evm.Utils.ADDRESS_SIZE) ||
+      !Elementary.Decode.checkPaddingLeft(selectorWord, Evm.Utils.SELECTOR_SIZE)
     ) {
       return {
         type: dataType,
@@ -161,15 +164,19 @@ export function* decodeLiteral(
     return {
       type: dataType,
       kind: "value" as const,
-      value: yield* decodeExternalFunction(address, selector, info)
+      value: yield* Elementary.Decode.decodeExternalFunction(
+        address,
+        selector,
+        info
+      )
     };
   }
 
-  //finally, if none of the above hold, we can just dispatch to decodeValue.
+  //finally, if none of the above hold, we can just dispatch to decodeElementary.
   //however, note that because we're on the stack, we use the permissive padding
   //option so that errors won't result due to values with bad padding
   //(of numeric or bytesN type, anyway)
-  return yield* decodeValue(dataType, pointer, info, {
+  return yield* Elementary.Decode.decodeElementary(dataType, pointer, info, {
     permissivePadding: true
   });
 }

@@ -4,9 +4,9 @@ const debug = debugModule("codec:decode:constant");
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
-import decodeValue from "./value";
 import * as Pointer from "@truffle/codec/pointer";
 import * as Evm from "@truffle/codec/evm";
+import * as Elementary from "@truffle/codec/elementary";
 import { DecoderRequest } from "@truffle/codec/types";
 import { DecodingError } from "@truffle/codec/decode/errors";
 
@@ -17,9 +17,9 @@ export default function* decodeConstant(
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   debug("pointer %o", pointer);
 
-  //normally, we just dispatch to decodeValue.
+  //normally, we just dispatch to decodeElementary.
   //for statically-sized bytes, however, we need to make a special case.
-  //you see, decodeValue expects to find the bytes at the *beginning*
+  //you see, decodeElementary expects to find the bytes at the *beginning*
   //of the word, but readDefinition will put them at the *end* of the
   //word.  So we'll have to adjust things ourselves.
 
@@ -46,7 +46,7 @@ export default function* decodeConstant(
     }; //we'll skip including a raw value, as that would be meaningless
   }
 
-  //otherwise, as mentioned, just dispatch to decodeValue
+  //otherwise, as mentioned, just dispatch to decodeElementary
   debug("not a static bytes");
-  return yield* decodeValue(dataType, pointer, info);
+  return yield* Elementary.Decode.decodeElementary(dataType, pointer, info);
 }
