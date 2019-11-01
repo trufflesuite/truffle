@@ -110,14 +110,10 @@ export interface EventOptions {
   name?: string;
   /**
    * The earliest block to include events from.  Defaults to "latest".
-   * See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
-   * for legal values.
    */
   fromBlock?: BlockSpecifier;
   /**
    * The latest block to include events from.  Defaults to "latest".
-   * See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
-   * for legal values.
    */
   toBlock?: BlockSpecifier;
   /**
@@ -136,7 +132,7 @@ export interface EventOptions {
  * been made optional; only those needed by the decoder have been made
  * mandatory.
  *
- * Intended to be identical to Web3's
+ * Intended to work like Web3's
  * [Transaction](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-gettransaction-return)
  * type.
  * @category Inputs
@@ -194,7 +190,7 @@ export interface Transaction {
  * been made optional; only those needed by the decoder have been made
  * mandatory.
  *
- * Intended to be identical to Web3's
+ * Intended to work like Web3's
  * [Log](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-getpastlogs-return)
  * type.
  * @category Inputs
@@ -239,7 +235,7 @@ export interface Log {
  * Specifies a block.  Can be given by number, or can be given via the
  * special strings "genesis", "latest", or "pending".
  *
- * Intended to work the same as Web3's
+ * Intended to work like Web3's
  * [BlockType](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14).
  * @category Inputs
  */
