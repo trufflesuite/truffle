@@ -237,9 +237,17 @@ export interface Log {
  *
  * Intended to work like Web3's
  * [BlockType](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14).
+ *
+ * *Warning*: Using "pending", while allowed, is not advised, as it may lead
+ * to internally inconsistent results.  Use of "latest" is safe and will not
+ * lead to inconsistent results from a single decoder call due to the decoder's
+ * caching system, but pending blocks cannot be cached under this system, which
+ * may cause inconsistencies.
  * @category Inputs
  */
 export type BlockSpecifier = number | "genesis" | "latest" | "pending";
+
+export type RegularizedBlockSpecifier = number | "pending";
 
 //HACK
 export interface ContractConstructorObject extends ContractObject {
