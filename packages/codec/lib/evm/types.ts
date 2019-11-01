@@ -1,7 +1,13 @@
 import * as Common from "@truffle/codec/common";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Ast from "@truffle/codec/ast";
-import * as Allocation from "@truffle/codec/allocate/types";
+import { StorageAllocations } from "@truffle/codec/allocate/storage/types";
+import { MemoryAllocations } from "@truffle/codec/allocate/memory/types";
+import {
+  AbiAllocations,
+  CalldataAllocations,
+  EventAllocations
+} from "@truffle/codec/allocate/abi/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Format from "@truffle/codec/format";
 
@@ -11,14 +17,14 @@ export interface EvmState {
   memory?: Uint8Array;
   calldata?: Uint8Array;
   specials?: {
-    [builtin: string]: Uint8Array //sorry
+    [builtin: string]: Uint8Array; //sorry
   };
   eventdata?: Uint8Array;
   eventtopics?: Uint8Array[];
 }
 
 export interface WordMapping {
-  [slotAddress: string]: Uint8Array
+  [slotAddress: string]: Uint8Array;
 }
 
 export interface EvmInfo {
@@ -32,15 +38,15 @@ export interface EvmInfo {
 }
 
 export interface AllocationInfo {
-  storage?: Allocation.StorageAllocations;
-  memory?: Allocation.MemoryAllocations;
-  abi?: Allocation.AbiAllocations;
-  calldata?: Allocation.CalldataAllocations;
-  event?: Allocation.EventAllocations;
+  storage?: StorageAllocations;
+  memory?: MemoryAllocations;
+  abi?: AbiAllocations;
+  calldata?: CalldataAllocations;
+  event?: EventAllocations;
 }
 
 export interface InternalFunctions {
-  [pc: number]: InternalFunction
+  [pc: number]: InternalFunction;
 }
 
 export interface InternalFunction {

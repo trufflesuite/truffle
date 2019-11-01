@@ -17,7 +17,6 @@ import {
   decodeEvent
 } from "@truffle/codec";
 import * as Utils from "./utils";
-import * as Allocation from "@truffle/codec/allocate/types";
 import * as DecoderTypes from "./types";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
@@ -113,7 +112,7 @@ export class WireDecoder {
       types: this.userDefinedTypes
     } = this.collectUserDefinedTypes());
 
-    let allocationInfo: Allocation.ContractAllocationInfo[] = contractsAndContexts.map(
+    let allocationInfo: Abi.Allocate.ContractAllocationInfo[] = contractsAndContexts.map(
       ({
         contract: { abi, compiler },
         node,
@@ -568,7 +567,7 @@ export class ContractDecoder {
   private contextHash: string;
 
   private allocations: Codec.Evm.AllocationInfo;
-  private stateVariableReferences: Allocation.StorageMemberAllocation[];
+  private stateVariableReferences: Storage.Allocate.StorageMemberAllocation[];
 
   private wireDecoder: WireDecoder;
 
@@ -765,7 +764,7 @@ export class ContractInstanceDecoder {
   private userDefinedTypes: Format.Types.TypesById;
   private allocations: Codec.Evm.AllocationInfo;
 
-  private stateVariableReferences: Allocation.StorageMemberAllocation[];
+  private stateVariableReferences: Storage.Allocate.StorageMemberAllocation[];
 
   private mappingKeys: Storage.Slot[] = [];
 
@@ -870,7 +869,7 @@ export class ContractInstanceDecoder {
   }
 
   private async decodeVariable(
-    variable: Allocation.StorageMemberAllocation,
+    variable: Storage.Allocate.StorageMemberAllocation,
     block: DecoderTypes.RegularizedBlockSpecifier
   ): Promise<DecoderTypes.StateVariable> {
     const info: Codec.Evm.EvmInfo = {
@@ -1028,7 +1027,7 @@ export class ContractInstanceDecoder {
 
   private findVariableByNameOrId(
     nameOrId: string | number
-  ): Allocation.StorageMemberAllocation | undefined {
+  ): Storage.Allocate.StorageMemberAllocation | undefined {
     //case 1: an ID was input
     if (typeof nameOrId === "number" || nameOrId.match(/[0-9]+/)) {
       let id: number = Number(nameOrId);
@@ -1375,7 +1374,7 @@ export class ContractInstanceDecoder {
         break;
       case "struct":
         let parentId = Ast.Utils.typeId(parentDefinition);
-        let allocation: Allocation.StorageMemberAllocation;
+        let allocation: Storage.Allocate.StorageMemberAllocation;
         if (typeof rawIndex === "number") {
           index = rawIndex;
           allocation = this.allocations.storage[parentId].members[index];

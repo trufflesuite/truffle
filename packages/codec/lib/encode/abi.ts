@@ -4,7 +4,7 @@ const debug = debugModule("codec:encode:abi");
 import * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Evm from "@truffle/codec/evm";
-import * as Allocation from "@truffle/codec/allocate/types";
+import { AbiAllocations, AbiSizeInfo } from "@truffle/codec/allocate/abi/types";
 import { abiSizeInfo } from "@truffle/codec/allocate/abi";
 import sum from "lodash.sum";
 import utf8 from "utf8";
@@ -18,7 +18,7 @@ import utf8 from "utf8";
  */
 export function encodeAbi(
   input: Format.Values.Result,
-  allocations?: Allocation.AbiAllocations
+  allocations?: AbiAllocations
 ): Uint8Array | undefined {
   //errors can't be encoded
   if (input.kind === "error") {
@@ -200,13 +200,13 @@ function padAndPrependLength(bytes: Uint8Array): Uint8Array {
  */
 export function encodeTupleAbi(
   tuple: Format.Values.Result[],
-  allocations?: Allocation.AbiAllocations
+  allocations?: AbiAllocations
 ): Uint8Array | undefined {
   let elementEncodings = tuple.map(element => encodeAbi(element, allocations));
   if (elementEncodings.some(element => element === undefined)) {
     return undefined;
   }
-  let elementSizeInfo: Allocation.AbiSizeInfo[] = tuple.map(element =>
+  let elementSizeInfo: AbiSizeInfo[] = tuple.map(element =>
     abiSizeInfo(element.type, allocations)
   );
   //heads and tails here are as discussed in the ABI docs;
