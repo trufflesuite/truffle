@@ -6,6 +6,7 @@ const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 
 const log = console.log;
 
@@ -18,7 +19,6 @@ function processErr(err, output) {
 
 describe("solo migration", function() {
   let config;
-  let web3;
   let networkId;
   const project = path.join(__dirname, "../../sources/migrations/init");
   const logger = new MemoryLogger();
@@ -38,8 +38,8 @@ describe("solo migration", function() {
     const provider = new Web3.providers.HttpProvider("http://localhost:8545", {
       keepAlive: false
     });
-    web3 = new Web3(provider);
-    networkId = await web3.eth.net.getId();
+    const interfaceAdapter = new InterfaceAdapter({ provider });
+    networkId = await interfaceAdapter.getNetworkId();
   });
 
   it("runs a migration with just Migrations.sol ", function(done) {
