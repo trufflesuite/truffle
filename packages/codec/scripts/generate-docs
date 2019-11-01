@@ -10,7 +10,7 @@ TSCONFIG=./docs/tsconfig.json
 OPTIONS=./docs/typedoc.json
 CODEC=../codec/lib/index.ts
 DECODER=../decoder/lib/index.ts
-README=../decoder/README.md
+README=./docs/README.md
 MEDIA=./docs/media
 
 rm -rf $DIST_HTML $DIST_JSON
