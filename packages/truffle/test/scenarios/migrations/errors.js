@@ -6,10 +6,10 @@ const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 
 describe("migration errors", function() {
   let config;
-  let web3;
   let networkId;
   const project = path.join(__dirname, "../../sources/migrations/error");
   const logger = new MemoryLogger();
@@ -29,8 +29,8 @@ describe("migration errors", function() {
     const provider = new Web3.providers.HttpProvider("http://localhost:8545", {
       keepAlive: false
     });
-    web3 = new Web3(provider);
-    networkId = await web3.eth.net.getId();
+    const interfaceAdapter = new InterfaceAdapter({ provider });
+    networkId = await interfaceAdapter.getNetworkId();
   });
 
   it("should error and stop", function(done) {
