@@ -1,5 +1,6 @@
 import { Web3Shim, Web3ShimOptions } from "./web3-shim";
 import { BlockType } from "web3/eth/types";
+import { Provider } from "web3/providers";
 
 export interface Web3InterfaceAdapterOptions extends Web3ShimOptions {}
 
@@ -16,5 +17,8 @@ export class Web3InterfaceAdapter {
   public getBlock(block: BlockType) {
     return this.web3.eth.getBlock(block);
   }
+
+  public setProvider(provider: Provider) {
+    return this.web3.setProvider(provider);
   }
 }
