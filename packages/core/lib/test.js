@@ -1,4 +1,3 @@
-const Mocha = require("mocha");
 const chai = require("chai");
 const path = require("path");
 const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
@@ -13,6 +12,8 @@ const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
+
+var Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
 chai.use(require("./assertions"));
 
@@ -150,6 +151,7 @@ const Test = {
       mochaConfig.useColors = true;
     }
 
+    Mocha = require(mochaConfig.package || "mocha");
     var mocha = new Mocha(mochaConfig);
 
     return mocha;
