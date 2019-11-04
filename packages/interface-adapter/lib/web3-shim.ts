@@ -74,7 +74,7 @@ export class Web3Shim extends Web3 {
     initInterface(this);
   }
 
-  setNetworkType(networkType: NetworkType) {
+  public setNetworkType(networkType: NetworkType) {
     this.networkType = networkType;
     initInterface(this);
   }

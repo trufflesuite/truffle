@@ -7,7 +7,7 @@ const { Docker, Local, Native, VersionRange } = require("./loadingStrategies");
 class CompilerSupplier {
   constructor({ events, solcConfig }) {
     const { version, docker, compilerRoots, parser } = solcConfig;
-    const defaultSolcVersion = "0.5.8";
+    const defaultSolcVersion = "0.5.12";
     this.events = events;
     this.parser = parser;
     this.version = version ? version : defaultSolcVersion;

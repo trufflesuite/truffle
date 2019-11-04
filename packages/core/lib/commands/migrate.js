@@ -190,6 +190,7 @@ const command = {
     Contracts.compile(conf)
       .then(async () => {
         await Environment.detect(conf);
+
         const {
           dryRunOnly,
           dryRunAndMigrations
@@ -217,9 +218,7 @@ const command = {
         }
         done();
       })
-      .catch(error => {
-        done(error);
-      });
+      .catch(done);
 
     async function setupDryRunEnvironmentThenRunMigrations(config) {
       await Environment.fork(config);

@@ -6,6 +6,3 @@ export { Memory };
 
 import * as Storage from "./storage";
 export { Storage };
-
-import * as Types from "./types";
-export { Types };

@@ -31,8 +31,10 @@ const _convertNumber = function(val, format) {
  * @param  {String}   format    name of format to convert to
  * @return {Object[]|String[]}  array of converted values
  */
-const _convertNumberArray = function(arr, format) {
-  return arr.map(item => _convertNumber(item, format));
+const _convertNumberArray = function(arr, format, depth = 0) {
+  if (depth == 0) return arr.map(item => _convertNumber(item, format));
+  // arr is nested
+  return arr.map(item => _convertNumberArray(item, format, depth - 1));
 };
 
 /**
@@ -53,9 +55,12 @@ const numbers = function(result, abiSegment) {
     if (output.type.includes("int")) {
       // output is an array type
       if (output.type.includes("[")) {
+        // larger than zero if nested array
+        let depth = output.type.split("[").length - 2;
+
         // result is array
         if (Array.isArray(result)) {
-          result = _convertNumberArray(result, format);
+          result = _convertNumberArray(result, format, depth);
 
           // result is object
         } else {
@@ -63,11 +68,12 @@ const numbers = function(result, abiSegment) {
           if (output.name.length) {
             result[output.name] = _convertNumberArray(
               result[output.name],
-              format
+              format,
+              depth
             );
           }
           // output will always have an index key
-          result[i] = _convertNumberArray(result[i], format);
+          result[i] = _convertNumberArray(result[i], format, depth);
         }
         //
       } else if (typeof result === "object") {
