@@ -49,7 +49,7 @@ export class InterfaceAdapter {
     return this.adapter.getBlock(block);
   }
 
-  public setProvider(provider: Provider) {
+  public setProvider(provider: Provider): void {
     return this.adapter.setProvider(provider);
   }
 
