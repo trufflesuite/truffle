@@ -22,6 +22,7 @@
   "dependencies": {
     "@truffle/expect": "^0.0.12",
     "@truffle/provisioner": "^0.1.6",
+    "@truffle/contract": "^4.0.38",
     "async": "2.6.1",
     "detect-installed": "^2.0.4",
     "get-installed-path": "^4.0.8"
