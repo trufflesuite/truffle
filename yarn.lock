@@ -1266,7 +1266,7 @@
   dependencies:
     "@types/ethereum-protocol" "*"
 
-"@types/web3@^1.0.18", "@types/web3@^1.0.5":
+"@types/web3@^1.0.18":
   version "1.0.20"
   resolved "https://registry.yarnpkg.com/@types/web3/-/web3-1.0.20.tgz#234dd1f976702c0daaff147c80f24a5582e09d0e"
   integrity sha512-KTDlFuYjzCUlBDGt35Ir5QRtyV9klF84MMKUsEJK10sTWga/71V+8VYLT7yysjuBjaOx2uFYtIWNGoz3yrNDlg==
