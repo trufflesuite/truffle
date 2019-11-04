@@ -9,12 +9,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "lib": ["es2017"],
-    "paths": {
-      "web3": [
-        "../../node_modules/@types/web3/index",
-        "node_modules/web3/index"
-      ]
-    },
+    "paths": {},
     "rootDir": ".",
     "typeRoots": [
       "./typings",
