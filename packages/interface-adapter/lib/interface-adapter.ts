@@ -52,4 +52,8 @@ export class InterfaceAdapter {
   public setProvider(provider: Provider) {
     return this.adapter.setProvider(provider);
   }
+
+  public getTransaction(tx: TxHash): Promise<Transaction> {
+    return this.adapter.getTransaction(tx);
+  }
 }
