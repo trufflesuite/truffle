@@ -217,6 +217,7 @@ import * as Memory from "./memory";
 import * as Special from "./special";
 import * as Stack from "./stack";
 import * as Storage from "./storage";
+import * as Topic from "./topic";
 
 export {
   /**
@@ -261,7 +262,13 @@ export {
    *
    * @category Data location
    */
-  Storage
+  Storage,
+  /**
+   * For decoding of event topics
+   *
+   * @category Data location
+   */
+  Topic
 };
 
 import * as Ast from "./ast";

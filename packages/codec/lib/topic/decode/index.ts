@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:decode:event");
+const debug = debugModule("codec:topic:decode");
 
 import read from "@truffle/codec/read";
 import * as Basic from "@truffle/codec/basic";
