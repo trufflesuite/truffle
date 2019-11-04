@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:decode:abi");
+const debug = debugModule("codec:abi-data:decode");
 
 import BN from "bn.js";
 import read from "@truffle/codec/read";

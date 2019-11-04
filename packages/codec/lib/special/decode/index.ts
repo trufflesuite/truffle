@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:decode:special");
+const debug = debugModule("codec:special:decode");
 
 import * as Format from "@truffle/codec/format";
 import * as Basic from "@truffle/codec/basic";

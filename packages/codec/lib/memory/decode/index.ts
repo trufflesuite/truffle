@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:decode:memory");
+const debug = debugModule("codec:memory:decode");
 
 import BN from "bn.js";
 import read from "@truffle/codec/read";

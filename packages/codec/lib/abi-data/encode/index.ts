@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:encode:abi");
+const debug = debugModule("codec:abi-data:encode");
 
 import * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";

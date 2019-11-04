@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:allocate:storage");
+const debug = debugModule("codec:storage:allocate");
 
 import { DecodingError } from "@truffle/codec/errors";
 import * as Common from "@truffle/codec/common";
