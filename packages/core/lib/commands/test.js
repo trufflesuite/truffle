@@ -6,6 +6,11 @@ const command = {
       describe: "Show all test logs",
       type: "boolean",
       default: false
+    },
+    "mocha-output-only": {
+      describe: "Suppress all logging except for mocha output.",
+      type: "boolean",
+      default: false
     }
   },
   help: {
@@ -40,8 +45,8 @@ const command = {
         description: "Log all contract events."
       },
       {
-        option: "--quiet",
-        description: "Suppress all output except for the test report."
+        option: "--mocha-output-only",
+        description: "Suppress all output except for mocha output."
       }
     ]
   },
@@ -136,10 +141,9 @@ const command = {
 
       promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
         .then(() => {
-          if (config.quiet !== true) {
+          if (config.mochaOutputOnly !== true) {
             config.logger.log(`Using network '${config.network}'.${OS.EOL}`);
           }
-
           run();
         })
         .catch(done);
