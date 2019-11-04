@@ -209,66 +209,74 @@ export * from "./common";
 
 export { abifyCalldataDecoding, abifyLogDecoding } from "./abify";
 
-//for those who want more low-level stuff...
-import * as Abi from "./abi";
+// data locations - common
 import * as Basic from "./basic";
-import * as MappingKey from "./mapping-key";
-import * as Memory from "./memory";
-import * as Special from "./special";
-import * as Stack from "./stack";
-import * as Storage from "./storage";
-import * as Topic from "./topic";
+export {
+  /**
+   * For decoding of primitives and constants
+   *
+   * @category Data location (Common)
+   */
+  Basic
+};
 
+// data locations - abi
+import * as Abi from "./abi";
+import * as Topic from "./topic";
 export {
   /**
    * For allocation, encoding, and decoding of locations related to the ABI
    * (calldata in Solidity, events, etc.)
    *
-   * @category Data location
+   * @category Data location (ABI)
    */
   Abi,
   /**
-   * For decoding of primitives and constants
+   * For decoding of event topics
    *
-   * @category Data location
+   * @category Data location (ABI)
    */
-  Basic,
+  Topic
+};
+
+// data locations - solidity
+import * as MappingKey from "./mapping-key";
+import * as Memory from "./memory";
+import * as Special from "./special";
+import * as Stack from "./stack";
+import * as Storage from "./storage";
+
+export {
   /**
    * For encoding mapping keys
    *
-   * @category Data location
+   * @category Data location (Solidity)
    */
   MappingKey,
   /**
    * For allocation and decoding of memory data
    *
-   * @category Data location
+   * @category Data location (Solidity)
    */
   Memory,
   /**
    * For decoding of special/magic variables
    *
-   * @category Data location
+   * @category Data location (Solidity)
    */
   Special,
   /**
    * For decoding stack variables
    *
-   * @category Data location
+   * @category Data location (Solidity)
    */
   Stack,
   /**
    * For allocation and decoding of storage variables
    *
-   * @category Data location
+   * @category Data location (Solidity)
    */
-  Storage,
-  /**
-   * For decoding of event topics
-   *
-   * @category Data location
-   */
-  Topic
+  Storage
 };
 
 import * as Ast from "./ast";
