@@ -4,6 +4,7 @@ import {
 } from "./web3-interface-adapter";
 import { Block as EvmBlock } from "web3/eth/types";
 import { BlockType as EvmBlockType } from "web3/eth/types";
+import { Provider } from "web3/providers";
 
 export interface InterfaceAdapterOptions extends Web3InterfaceAdapterOptions {}
 export type NetworkId = Number | String;
@@ -43,5 +44,9 @@ export class InterfaceAdapter {
 
   public getBlock(block: BlockType): Promise<Block> {
     return this.adapter.getBlock(block);
+  }
+
+  public setProvider(provider: Provider) {
+    return this.adapter.setProvider(provider);
   }
 }
