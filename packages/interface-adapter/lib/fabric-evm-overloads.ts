@@ -1,4 +1,5 @@
 import { Web3Shim } from "./web3-shim";
+import { NetworkId } from "./interface-adapter";
 
 export const FabricEvmDefinition = {
   async initNetworkType(web3: Web3Shim) {
@@ -16,11 +17,11 @@ const overrides = {
     // @ts-ignore
     const _oldGetIdFormatter = web3.eth.net.getId.method.outputFormatter;
     // @ts-ignore
-    web3.eth.net.getId.method.outputFormatter = (hexId: Number | String) => {
+    web3.eth.net.getId.method.outputFormatter = (networkId: NetworkId) => {
       // chaincode-fabric-evm currently returns a "fabric-evm" string
       // instead of a hex networkID. Instead of trying to decode the hexToNumber,
       // let's just accept `fabric-evm` as a valid networkID for now.
-      return hexId;
+      return networkId;
     };
   }
 };
