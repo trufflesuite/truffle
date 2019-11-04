@@ -365,7 +365,7 @@ class Reporter {
   async postDeploy(data) {
     let message;
     if (data.deployed) {
-      const tx = await data.contract.web3.eth.getTransaction(
+      const tx = await data.contract.interfaceAdapter.getTransaction(
         data.receipt.transactionHash
       );
 
