@@ -7,7 +7,7 @@ import {
   AbiAllocations,
   CalldataAllocations,
   EventAllocations
-} from "@truffle/codec/abi/allocate/types";
+} from "@truffle/codec/abi-data/allocate/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Format from "@truffle/codec/format";
 

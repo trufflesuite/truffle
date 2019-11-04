@@ -221,7 +221,7 @@ export {
 };
 
 // data locations - abi
-import * as Abi from "./abi";
+import * as AbiData from "./abi-data";
 import * as Topic from "./topic";
 export {
   /**
@@ -230,7 +230,7 @@ export {
    *
    * @category Data location (ABI)
    */
-  Abi,
+  AbiData,
   /**
    * For decoding of event topics
    *

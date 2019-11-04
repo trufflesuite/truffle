@@ -4,7 +4,7 @@ const debug = debugModule("codec:encode:key");
 import * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Evm from "@truffle/codec/evm";
-import * as AbiEncode from "@truffle/codec/abi/encode";
+import * as AbiDataEncode from "@truffle/codec/abi-data/encode";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
 //see: https://github.com/microsoft/TypeScript/issues/18758
@@ -56,7 +56,7 @@ export function encodeMappingKey(
         coercedInput.value.kind //NO PADDING IS USED
       ) {
         case "valid":
-          return AbiEncode.stringToBytes(coercedInput.value.asString);
+          return AbiDataEncode.stringToBytes(coercedInput.value.asString);
         case "malformed":
           return Conversion.toBytes(coercedInput.value.asHex);
       }

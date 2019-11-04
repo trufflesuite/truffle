@@ -8,7 +8,7 @@ import {
   AbiAllocations,
   AbiSizeInfo,
   abiSizeInfo
-} from "@truffle/codec/abi/allocate";
+} from "@truffle/codec/abi-data/allocate";
 import sum from "lodash.sum";
 import utf8 from "utf8";
 

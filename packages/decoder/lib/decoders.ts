@@ -3,7 +3,7 @@ const debug = debugModule("decoder:decoders");
 
 import * as Codec from "@truffle/codec";
 import {
-  Abi,
+  AbiData,
   Ast,
   Evm,
   Format,
@@ -112,14 +112,14 @@ export class WireDecoder {
       types: this.userDefinedTypes
     } = this.collectUserDefinedTypes());
 
-    let allocationInfo: Abi.Allocate.ContractAllocationInfo[] = contractsAndContexts.map(
+    let allocationInfo: AbiData.Allocate.ContractAllocationInfo[] = contractsAndContexts.map(
       ({
         contract: { abi, compiler },
         node,
         deployedContext,
         constructorContext
       }) => ({
-        abi: Abi.Utils.schemaAbiToAbi(abi),
+        abi: AbiData.Utils.schemaAbiToAbi(abi),
         compiler,
         contractNode: node,
         deployedContext,
@@ -129,20 +129,20 @@ export class WireDecoder {
     debug("allocationInfo: %O", allocationInfo);
 
     this.allocations = {};
-    this.allocations.abi = Abi.Allocate.getAbiAllocations(
+    this.allocations.abi = AbiData.Allocate.getAbiAllocations(
       this.userDefinedTypes
     );
     this.allocations.storage = Storage.Allocate.getStorageAllocations(
       this.referenceDeclarations,
       {}
     ); //not used by wire decoder itself, but used by contract decoder
-    this.allocations.calldata = Abi.Allocate.getCalldataAllocations(
+    this.allocations.calldata = AbiData.Allocate.getCalldataAllocations(
       allocationInfo,
       this.referenceDeclarations,
       this.userDefinedTypes,
       this.allocations.abi
     );
-    this.allocations.event = Abi.Allocate.getEventAllocations(
+    this.allocations.event = AbiData.Allocate.getEventAllocations(
       allocationInfo,
       this.referenceDeclarations,
       this.userDefinedTypes,

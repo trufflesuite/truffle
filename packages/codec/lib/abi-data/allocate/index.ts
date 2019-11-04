@@ -1,8 +1,8 @@
 import debugModule from "debug";
 const debug = debugModule("codec:allocate:abi");
 
-import * as Abi from "@truffle/codec/abi/types";
-import * as AbiUtils from "@truffle/codec/abi/utils";
+import * as AbiData from "@truffle/codec/abi-data/types";
+import * as AbiDataUtils from "@truffle/codec/abi-data/utils";
 import * as Evm from "@truffle/codec/evm";
 import * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
@@ -317,7 +317,7 @@ export function abiSizeInfo(
 //NOTE: returns undefined if attempting to allocate a constructor but we don't have the
 //bytecode for the constructor
 function allocateCalldata(
-  abiEntry: Abi.FunctionAbiEntry | Abi.ConstructorAbiEntry,
+  abiEntry: AbiData.FunctionAbiEntry | AbiData.ConstructorAbiEntry,
   contractNode: Ast.AstNode | undefined,
   referenceDeclarations: Ast.AstNodes,
   userDefinedTypes: Format.Types.TypesById,
@@ -343,7 +343,7 @@ function allocateCalldata(
       //for a constructor, we only want to search the particular contract
       if (contractNode) {
         node = contractNode.nodes.find(functionNode =>
-          AbiUtils.definitionMatchesAbi(
+          AbiDataUtils.definitionMatchesAbi(
             //note this needn't actually be a function node, but then it will
             //return false (well, unless it's a getter node!)
             abiEntry,
@@ -373,7 +373,7 @@ function allocateCalldata(
             return baseContractNode.nodes.find(
               //may be undefined! that's OK!
               functionNode =>
-                AbiUtils.definitionMatchesAbi(
+                AbiDataUtils.definitionMatchesAbi(
                   abiEntry,
                   functionNode,
                   referenceDeclarations
@@ -464,7 +464,7 @@ interface EventParameterInfo {
 //allocates an event
 //NOTE: returns just a single allocation; assumes primary allocation is already complete!
 function allocateEvent(
-  abiEntry: Abi.EventAbiEntry,
+  abiEntry: AbiData.EventAbiEntry,
   contractNode: Ast.AstNode | undefined,
   contextHash: string,
   referenceDeclarations: Ast.AstNodes,
@@ -494,7 +494,7 @@ function allocateEvent(
         return baseContractNode.nodes.find(
           //may be undefined! that's OK!
           eventNode =>
-            AbiUtils.definitionMatchesAbi(
+            AbiDataUtils.definitionMatchesAbi(
               //note this needn't actually be a event node, but then it will return false
               abiEntry,
               eventNode,
@@ -601,7 +601,7 @@ function allocateEvent(
 }
 
 function getCalldataAllocationsForContract(
-  abi: Abi.Abi,
+  abi: AbiData.Abi,
   contractNode: Ast.AstNode,
   constructorContext: Contexts.DecoderContext,
   referenceDeclarations: Ast.AstNodes,
@@ -629,7 +629,7 @@ function getCalldataAllocationsForContract(
         break;
       case "function":
         allocations.functionAllocations[
-          AbiUtils.abiSelector(abiEntry)
+          AbiDataUtils.abiSelector(abiEntry)
         ] = allocateCalldata(
           abiEntry,
           contractNode,
@@ -659,7 +659,7 @@ function defaultConstructorAllocation(
   let offset = (rawLength - 2) / 2; //number of bytes in 0x-prefixed bytestring
   return {
     offset,
-    abi: AbiUtils.DEFAULT_CONSTRUCTOR_ABI,
+    abi: AbiDataUtils.DEFAULT_CONSTRUCTOR_ABI,
     arguments: [] as CalldataArgumentAllocation[],
     allocationMode: "full"
   };
@@ -698,7 +698,7 @@ export function getCalldataAllocations(
 }
 
 function getEventAllocationsForContract(
-  abi: Abi.Abi,
+  abi: AbiData.Abi,
   contractNode: Ast.AstNode | undefined,
   contextHash: string,
   referenceDeclarations: Ast.AstNodes,
@@ -706,35 +706,37 @@ function getEventAllocationsForContract(
   abiAllocations: AbiAllocations,
   compiler: Compiler.CompilerVersion | undefined
 ): EventAllocationTemporary[] {
-  return abi.filter((abiEntry: Abi.AbiEntry) => abiEntry.type === "event").map(
-    (abiEntry: Abi.EventAbiEntry) =>
-      abiEntry.anonymous
-        ? {
-            topics: AbiUtils.topicsCount(abiEntry),
-            allocation: allocateEvent(
-              abiEntry,
-              contractNode,
-              contextHash,
-              referenceDeclarations,
-              userDefinedTypes,
-              abiAllocations,
-              compiler
-            )
-          }
-        : {
-            selector: AbiUtils.abiSelector(abiEntry),
-            topics: AbiUtils.topicsCount(abiEntry),
-            allocation: allocateEvent(
-              abiEntry,
-              contractNode,
-              contextHash,
-              referenceDeclarations,
-              userDefinedTypes,
-              abiAllocations,
-              compiler
-            )
-          }
-  );
+  return abi
+    .filter((abiEntry: AbiData.AbiEntry) => abiEntry.type === "event")
+    .map(
+      (abiEntry: AbiData.EventAbiEntry) =>
+        abiEntry.anonymous
+          ? {
+              topics: AbiDataUtils.topicsCount(abiEntry),
+              allocation: allocateEvent(
+                abiEntry,
+                contractNode,
+                contextHash,
+                referenceDeclarations,
+                userDefinedTypes,
+                abiAllocations,
+                compiler
+              )
+            }
+          : {
+              selector: AbiDataUtils.abiSelector(abiEntry),
+              topics: AbiDataUtils.topicsCount(abiEntry),
+              allocation: allocateEvent(
+                abiEntry,
+                contractNode,
+                contextHash,
+                referenceDeclarations,
+                userDefinedTypes,
+                abiAllocations,
+                compiler
+              )
+            }
+    );
 }
 
 //note: constructor context is ignored by this function; no need to pass it in

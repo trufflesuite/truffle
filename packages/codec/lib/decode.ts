@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode");
 
-import * as Abi from "@truffle/codec/abi";
+import * as AbiData from "@truffle/codec/abi-data";
 import * as Format from "@truffle/codec/format";
 import * as Pointer from "@truffle/codec/pointer";
 import * as Basic from "@truffle/codec/basic";
@@ -40,7 +40,7 @@ export default function* decode(
 
     case "calldata":
     case "eventdata":
-      return yield* Abi.Decode.decodeAbi(dataType, pointer, info, options);
+      return yield* AbiData.Decode.decodeAbi(dataType, pointer, info, options);
 
     case "eventtopic":
       return yield* Topic.Decode.decodeTopic(dataType, pointer, info, options);

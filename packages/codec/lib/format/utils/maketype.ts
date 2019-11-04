@@ -4,7 +4,7 @@ const debug = debugModule("codec:format:utils:maketype");
 import BN from "bn.js";
 import * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
-import * as Abi from "@truffle/codec/abi/types";
+import * as AbiData from "@truffle/codec/abi-data/types";
 import * as Ast from "@truffle/codec/ast";
 import * as Format from "@truffle/codec/format/common";
 
@@ -387,7 +387,9 @@ export function definitionToStoredType(
   }
 }
 
-export function abiParameterToType(abi: Abi.AbiParameter): Format.Types.Type {
+export function abiParameterToType(
+  abi: AbiData.AbiParameter
+): Format.Types.Type {
   let typeName = abi.type;
   let typeHint = abi.internalType;
   //first: is it an array?

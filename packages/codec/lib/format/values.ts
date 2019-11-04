@@ -26,7 +26,7 @@ import {
   UfixedValue
 } from "./elementary";
 import * as Common from "@truffle/codec/common";
-import * as Abi from "@truffle/codec/abi/types";
+import * as AbiData from "@truffle/codec/abi-data/types";
 
 export * from "./elementary";
 
@@ -441,7 +441,7 @@ export interface FunctionExternalValueInfoKnown {
    * formatted as a hex string
    */
   selector: string;
-  abi: Abi.FunctionAbiEntry;
+  abi: AbiData.FunctionAbiEntry;
   //may have more optional fields added later, I'll leave these out for now
 }
 
