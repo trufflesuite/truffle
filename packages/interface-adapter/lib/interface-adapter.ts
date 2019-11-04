@@ -11,6 +11,7 @@ export interface InterfaceAdapterOptions extends Web3InterfaceAdapterOptions {}
 export type NetworkId = Number | String;
 export type Block = EvmBlock | any;
 export type BlockType = EvmBlockType | any;
+export type Transaction = EvmTransaction | any;
 
 const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
 
