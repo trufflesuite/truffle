@@ -6,7 +6,7 @@ import { assert } from "chai";
 import Ganache from "ganache-core";
 
 import { prepareContracts, lineOf } from "./helpers";
-import { Utils as TruffleCodecUtils } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
@@ -74,31 +74,31 @@ describe("Reset Button", function() {
     await session.addBreakpoint({ sourceId, line: lineOf("BREAK", source) });
 
     variables[0].push(
-      TruffleCodecUtils.Conversion.nativizeVariables(await session.variables())
+      Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
     );
     await session.continueUntilBreakpoint(); //advance to line 10
     variables[0].push(
-      TruffleCodecUtils.Conversion.nativizeVariables(await session.variables())
+      Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
     );
     await session.continueUntilBreakpoint(); //advance to the end
     variables[0].push(
-      TruffleCodecUtils.Conversion.nativizeVariables(await session.variables())
+      Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
     );
 
     //now, reset and do it again
     await session.reset();
 
     variables[1].push(
-      TruffleCodecUtils.Conversion.nativizeVariables(await session.variables())
+      Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
     );
     await session.addBreakpoint({ sourceId, line: lineOf("BREAK", source) });
     await session.continueUntilBreakpoint(); //advance to line 10
     variables[1].push(
-      TruffleCodecUtils.Conversion.nativizeVariables(await session.variables())
+      Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
     );
     await session.continueUntilBreakpoint(); //advance to the end
     variables[1].push(
-      TruffleCodecUtils.Conversion.nativizeVariables(await session.variables())
+      Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
     );
 
     assert.deepEqual(variables[1], variables[0]);

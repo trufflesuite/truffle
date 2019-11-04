@@ -1,26 +1,24 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:storage");
 
-import read from "../read";
-import * as CodecUtils from "../utils";
-import { TypeUtils } from "../utils";
-import { Types, Values, Errors } from "../format";
+import read from "@truffle/codec/read";
+import * as Conversion from "@truffle/codec/conversion";
+import * as Format from "@truffle/codec/format";
 import decodeValue from "./value";
-import { StoragePointer, DataPointer } from "../types/pointer";
-import { EvmInfo } from "../types/evm";
-import { storageSizeForType } from "../allocate/storage";
-import * as StorageTypes from "../types/storage";
-import { isWordsLength, slotAddress } from "../utils/storage";
+import * as Storage from "@truffle/codec/storage";
+import * as Pointer from "@truffle/codec/pointer";
+import { DecoderRequest } from "@truffle/codec/types";
+import * as Evm from "@truffle/codec/evm";
+import { storageSizeForType } from "@truffle/codec/allocate/storage";
 import BN from "bn.js";
-import { DecoderRequest } from "../types/request";
-import { DecodingError } from "../decode/errors";
+import { DecodingError } from "@truffle/codec/decode/errors";
 
 export default function* decodeStorage(
-  dataType: Types.Type,
-  pointer: StoragePointer,
-  info: EvmInfo
-): Generator<DecoderRequest, Values.Result, Uint8Array> {
-  if (TypeUtils.isReferenceType(dataType)) {
+  dataType: Format.Types.Type,
+  pointer: Pointer.StoragePointer,
+  info: Evm.EvmInfo
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+  if (Format.Types.isReferenceType(dataType)) {
     return yield* decodeStorageReference(dataType, pointer, info);
   } else {
     return yield* decodeValue(dataType, pointer, info);
@@ -31,30 +29,30 @@ export default function* decodeStorage(
 //NOTE: ONLY for use with pointers to reference types!
 //Of course, pointers to value types don't exist in Solidity, so that warning is redundant, but...
 export function* decodeStorageReferenceByAddress(
-  dataType: Types.ReferenceType,
-  pointer: DataPointer,
-  info: EvmInfo
-): Generator<DecoderRequest, Values.Result, Uint8Array> {
+  dataType: Format.Types.ReferenceType,
+  pointer: Pointer.DataPointer,
+  info: Evm.EvmInfo
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   const allocations = info.allocations.storage;
 
   let rawValue: Uint8Array;
   try {
     rawValue = yield* read(pointer, info.state);
   } catch (error) {
-    return <Errors.ErrorResult>{
+    return <Format.Errors.ErrorResult>{
       //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
       error: (<DecodingError>error).error
     };
   }
-  const startOffset = CodecUtils.Conversion.toBN(rawValue);
-  let rawSize: StorageTypes.StorageLength;
+  const startOffset = Conversion.toBN(rawValue);
+  let rawSize: Storage.StorageLength;
   try {
     rawSize = storageSizeForType(dataType, info.userDefinedTypes, allocations);
   } catch (error) {
     //error: DecodingError
-    return <Errors.ErrorResult>{
+    return <Format.Errors.ErrorResult>{
       //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
@@ -79,7 +77,7 @@ export function* decodeStorageReferenceByAddress(
         slot: {
           offset: startOffset.addn(size - 1)
         },
-        index: CodecUtils.EVM.WORD_SIZE - 1
+        index: Evm.Utils.WORD_SIZE - 1
       }
     }
   };
@@ -88,10 +86,10 @@ export function* decodeStorageReferenceByAddress(
 }
 
 export function* decodeStorageReference(
-  dataType: Types.ReferenceType,
-  pointer: StoragePointer,
-  info: EvmInfo
-): Generator<DecoderRequest, Values.Result, Uint8Array> {
+  dataType: Format.Types.ReferenceType,
+  pointer: Pointer.StoragePointer,
+  info: Evm.EvmInfo
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   var data;
   var length;
 
@@ -109,14 +107,14 @@ export function* decodeStorageReference(
           try {
             data = yield* read(pointer, state);
           } catch (error) {
-            return <Errors.ErrorResult>{
+            return <Format.Errors.ErrorResult>{
               //no idea why TS is failing here
               type: dataType,
               kind: "error" as const,
               error: (<DecodingError>error).error
             };
           }
-          lengthAsBN = CodecUtils.Conversion.toBN(data);
+          lengthAsBN = Conversion.toBN(data);
           break;
         case "static":
           debug("static array");
@@ -138,7 +136,7 @@ export function* decodeStorageReference(
       debug("length %o", length);
 
       debug("about to determine baseSize");
-      let baseSize: StorageTypes.StorageLength;
+      let baseSize: Storage.StorageLength;
       try {
         baseSize = storageSizeForType(
           dataType.baseType,
@@ -158,18 +156,18 @@ export function* decodeStorageReference(
       //we are going to make a list of child ranges, pushing them one by one onto
       //this list, and then decode them; the first part will vary based on whether
       //we're in the words case or the bytes case, the second will not
-      let ranges: StorageTypes.Range[] = [];
+      let ranges: Storage.Range[] = [];
 
-      if (isWordsLength(baseSize)) {
+      if (Storage.Utils.isWordsLength(baseSize)) {
         //currentSlot will point to the start of the entry being decoded
-        let currentSlot: StorageTypes.Slot = {
+        let currentSlot: Storage.Slot = {
           path: pointer.range.from.slot,
           offset: new BN(0),
           hashPath: dataType.kind === "dynamic"
         };
 
         for (let i = 0; i < length; i++) {
-          let childRange: StorageTypes.Range = {
+          let childRange: Storage.Range = {
             from: {
               slot: {
                 path: currentSlot.path,
@@ -184,7 +182,7 @@ export function* decodeStorageReference(
                 offset: currentSlot.offset.addn(baseSize.words - 1),
                 hashPath: currentSlot.hashPath
               },
-              index: CodecUtils.EVM.WORD_SIZE - 1
+              index: Evm.Utils.WORD_SIZE - 1
             }
           };
 
@@ -193,22 +191,22 @@ export function* decodeStorageReference(
           currentSlot.offset.iaddn(baseSize.words);
         }
       } else {
-        const perWord = Math.floor(CodecUtils.EVM.WORD_SIZE / baseSize.bytes);
+        const perWord = Math.floor(Evm.Utils.WORD_SIZE / baseSize.bytes);
         debug("perWord %d", perWord);
 
         //currentPosition will point to the start of the entry being decoded
-        //note we have baseSize.bytes <= CodecUtils.EVM.WORD_SIZE
-        let currentPosition: StorageTypes.StoragePosition = {
+        //note we have baseSize.bytes <= Evm.Utils.WORD_SIZE
+        let currentPosition: Storage.StoragePosition = {
           slot: {
             path: pointer.range.from.slot,
             offset: new BN(0),
             hashPath: dataType.kind === "dynamic"
           },
-          index: CodecUtils.EVM.WORD_SIZE - baseSize.bytes //note the starting index!
+          index: Evm.Utils.WORD_SIZE - baseSize.bytes //note the starting index!
         };
 
         for (let i = 0; i < length; i++) {
-          let childRange: StorageTypes.Range = {
+          let childRange: Storage.Range = {
             from: {
               slot: {
                 path: currentPosition.slot.path,
@@ -225,12 +223,12 @@ export function* decodeStorageReference(
           currentPosition.index -= baseSize.bytes;
           if (currentPosition.index < 0) {
             currentPosition.slot.offset.iaddn(1);
-            currentPosition.index = CodecUtils.EVM.WORD_SIZE - baseSize.bytes;
+            currentPosition.index = Evm.Utils.WORD_SIZE - baseSize.bytes;
           }
         }
       }
 
-      let decodedChildren: Values.Result[] = [];
+      let decodedChildren: Format.Values.Result[] = [];
 
       for (let childRange of ranges) {
         decodedChildren.push(
@@ -254,7 +252,7 @@ export function* decodeStorageReference(
       try {
         data = yield* read(pointer, state);
       } catch (error) {
-        return <Errors.ErrorResult>{
+        return <Format.Errors.ErrorResult>{
           //no idea why TS is failing here
           type: dataType,
           kind: "error" as const,
@@ -263,7 +261,7 @@ export function* decodeStorageReference(
       }
 
       debug("data %O", data);
-      let lengthByte = data[CodecUtils.EVM.WORD_SIZE - 1];
+      let lengthByte = data[Evm.Utils.WORD_SIZE - 1];
 
       if (lengthByte % 2 == 0) {
         // string lives in word, length is last byte / 2
@@ -282,13 +280,16 @@ export function* decodeStorageReference(
           info
         );
       } else {
-        let lengthAsBN: BN = CodecUtils.Conversion.toBN(data)
+        let lengthAsBN: BN = Conversion.toBN(data)
           .subn(1)
           .divn(2);
         try {
           length = lengthAsBN.toNumber();
         } catch (_) {
-          return <Errors.BytesDynamicErrorResult | Errors.StringErrorResult>{
+          return <
+            | Format.Errors.BytesDynamicErrorResult
+            | Format.Errors.StringErrorResult
+          >{
             //again with the TS failures...
             type: dataType,
             kind: "error" as const,
@@ -335,17 +336,17 @@ export function* decodeStorageReference(
         };
       }
 
-      let decodedMembers: Values.NameValuePair[] = [];
+      let decodedMembers: Format.Values.NameValuePair[] = [];
       const members = structAllocation.members;
 
       for (let index = 0; index < members.length; index++) {
         const memberAllocation = members[index];
-        const memberPointer = <StoragePointer>memberAllocation.pointer;
+        const memberPointer = <Pointer.StoragePointer>memberAllocation.pointer;
         //the type system thinks memberPointer might also be a constant
         //definition pointer.  However, structs can't contain constants,
         //so *we* know it's not, and can safely coerce it.
         debug("pointer %O", pointer);
-        const childRange: StorageTypes.Range = {
+        const childRange: Storage.Range = {
           from: {
             slot: {
               path: pointer.range.from.slot,
@@ -365,7 +366,7 @@ export function* decodeStorageReference(
         };
 
         let memberName = memberAllocation.definition.name;
-        let storedType = <Types.StructType>info.userDefinedTypes[typeId];
+        let storedType = <Format.Types.StructType>info.userDefinedTypes[typeId];
         if (!storedType) {
           return {
             type: dataType,
@@ -377,7 +378,7 @@ export function* decodeStorageReference(
           };
         }
         let storedMemberType = storedType.memberTypes[index].type;
-        let memberType = TypeUtils.specifyLocation(
+        let memberType = Format.Types.specifyLocation(
           storedMemberType,
           "storage" as const
         );
@@ -403,7 +404,7 @@ export function* decodeStorageReference(
       debug("decoding mapping");
 
       const valueType = dataType.valueType;
-      let valueSize: StorageTypes.StorageLength;
+      let valueSize: Storage.StorageLength;
       try {
         valueSize = storageSizeForType(
           valueType,
@@ -419,20 +420,20 @@ export function* decodeStorageReference(
         };
       }
 
-      let decodedEntries: Values.KeyValuePair[] = [];
+      let decodedEntries: Format.Values.KeyValuePair[] = [];
 
-      const baseSlot: StorageTypes.Slot = pointer.range.from.slot;
+      const baseSlot: Storage.Slot = pointer.range.from.slot;
       debug("baseSlot %o", baseSlot);
-      debug("base slot address %o", slotAddress(baseSlot));
+      debug("base slot address %o", Storage.Utils.slotAddress(baseSlot));
 
       const keySlots = info.mappingKeys.filter(({ path }) =>
-        slotAddress(baseSlot).eq(slotAddress(path))
+        Storage.Utils.slotAddress(baseSlot).eq(Storage.Utils.slotAddress(path))
       );
 
       for (const { key } of keySlots) {
-        let valuePointer: StoragePointer;
+        let valuePointer: Pointer.StoragePointer;
 
-        if (isWordsLength(valueSize)) {
+        if (Storage.Utils.isWordsLength(valueSize)) {
           valuePointer = {
             location: "storage",
             range: {
@@ -450,7 +451,7 @@ export function* decodeStorageReference(
                   path: baseSlot,
                   offset: new BN(valueSize.words - 1)
                 },
-                index: CodecUtils.EVM.WORD_SIZE - 1
+                index: Evm.Utils.WORD_SIZE - 1
               }
             }
           };
@@ -464,7 +465,7 @@ export function* decodeStorageReference(
                   path: baseSlot,
                   offset: new BN(0)
                 },
-                index: CodecUtils.EVM.WORD_SIZE - valueSize.bytes
+                index: Evm.Utils.WORD_SIZE - valueSize.bytes
               },
               to: {
                 slot: {
@@ -472,7 +473,7 @@ export function* decodeStorageReference(
                   path: baseSlot,
                   offset: new BN(0)
                 },
-                index: CodecUtils.EVM.WORD_SIZE - 1
+                index: Evm.Utils.WORD_SIZE - 1
               }
             }
           };

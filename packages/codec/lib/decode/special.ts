@@ -1,20 +1,18 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:special");
 
-import * as CodecUtils from "../utils";
-import { Types, Values, Errors } from "../format";
+import * as Format from "@truffle/codec/format";
 import decodeValue from "./value";
-import { EvmInfo } from "../types/evm";
-import { SpecialPointer } from "../types/pointer";
-import { DecoderRequest } from "../types/request";
-import { CompilerVersion } from "../types/compiler";
-import { solidityFamily } from "../utils/compiler";
+import * as Compiler from "@truffle/codec/compiler";
+import * as Pointer from "@truffle/codec/pointer";
+import { DecoderRequest } from "@truffle/codec/types";
+import * as Evm from "@truffle/codec/evm";
 
 export default function* decodeSpecial(
-  dataType: Types.Type,
-  pointer: SpecialPointer,
-  info: EvmInfo
-): Generator<DecoderRequest, Values.Result, Uint8Array> {
+  dataType: Format.Types.Type,
+  pointer: Pointer.SpecialPointer,
+  info: Evm.EvmInfo
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   if (dataType.typeClass === "magic") {
     return yield* decodeMagic(dataType, pointer, info);
   } else {
@@ -23,10 +21,10 @@ export default function* decodeSpecial(
 }
 
 export function* decodeMagic(
-  dataType: Types.MagicType,
-  pointer: SpecialPointer,
-  info: EvmInfo
-): Generator<DecoderRequest, Values.MagicResult, Uint8Array> {
+  dataType: Format.Types.MagicType,
+  pointer: Pointer.SpecialPointer,
+  info: Evm.EvmInfo
+): Generator<DecoderRequest, Format.Values.MagicResult, Uint8Array> {
   let { state } = info;
 
   switch (pointer.special) {
@@ -52,12 +50,12 @@ export function* decodeMagic(
             {
               typeClass: "bytes" as const,
               kind: "static" as const,
-              length: CodecUtils.EVM.SELECTOR_SIZE
+              length: Evm.Utils.SELECTOR_SIZE
             },
             {
               location: "calldata" as const,
               start: 0,
-              length: CodecUtils.EVM.SELECTOR_SIZE
+              length: Evm.Utils.SELECTOR_SIZE
             },
             info
           ),
@@ -97,7 +95,7 @@ export function* decodeMagic(
         }
       };
     case "block":
-      let block: { [field: string]: Values.Result } = {
+      let block: { [field: string]: Format.Values.Result } = {
         coinbase: yield* decodeValue(
           externalAddressType(info.currentContext.compiler),
           { location: "special" as const, special: "coinbase" },
@@ -126,8 +124,10 @@ export function* decodeMagic(
 }
 
 //NOTE: this is going to change again in 0.6.x!  be ready!
-function senderType(compiler: CompilerVersion): Types.AddressType {
-  switch (solidityFamily(compiler)) {
+function senderType(
+  compiler: Compiler.CompilerVersion
+): Format.Types.AddressType {
+  switch (Compiler.Utils.solidityFamily(compiler)) {
     case "pre-0.5.0":
       return {
         typeClass: "address",
@@ -142,8 +142,10 @@ function senderType(compiler: CompilerVersion): Types.AddressType {
   }
 }
 
-function externalAddressType(compiler: CompilerVersion): Types.AddressType {
-  switch (solidityFamily(compiler)) {
+function externalAddressType(
+  compiler: Compiler.CompilerVersion
+): Format.Types.AddressType {
+  switch (Compiler.Utils.solidityFamily(compiler)) {
     case "pre-0.5.0":
       return {
         typeClass: "address",

@@ -4,7 +4,7 @@ const Networks = require("./networks");
 const EthPM = require("ethpm");
 const EthPMRegistry = require("ethpm-registry");
 const Web3 = require("web3");
-const { Web3Shim } = require("@truffle/interface-adapter");
+const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const async = require("async");
 const path = require("path");
 const fs = require("fs");
@@ -131,6 +131,10 @@ const Package = {
     options.network = "ropsten";
 
     var provider = options.provider;
+    const interfaceAdapter = new InterfaceAdapter({
+      provider: options.provider,
+      networkType: "ethereum"
+    });
     var web3 = new Web3Shim({
       provider: options.provider,
       networkType: "ethereum"

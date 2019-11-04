@@ -1,37 +1,36 @@
 import debugModule from "debug";
 const debug = debugModule("codec:decode:stack");
 
-import * as CodecUtils from "../utils";
-import { TypeUtils } from "../utils";
-import { Types, Values, Errors } from "../format";
-import read from "../read";
+import * as Conversion from "@truffle/codec/conversion";
+import * as Format from "@truffle/codec/format";
+import read from "@truffle/codec/read";
 import decodeValue from "./value";
 import { decodeExternalFunction, checkPaddingLeft } from "./value";
 import { decodeMemoryReferenceByAddress } from "./memory";
 import { decodeStorageReferenceByAddress } from "./storage";
 import { decodeAbiReferenceByAddress } from "./abi";
-import { StackPointer, StackLiteralPointer } from "../types/pointer";
-import { EvmInfo } from "../types/evm";
-import { DecoderRequest } from "../types/request";
-import { DecodingError } from "../decode/errors";
+import * as Pointer from "@truffle/codec/pointer";
+import { DecoderRequest } from "@truffle/codec/types";
+import * as Evm from "@truffle/codec/evm";
+import { DecodingError } from "@truffle/codec/decode/errors";
 
 export default function* decodeStack(
-  dataType: Types.Type,
-  pointer: StackPointer,
-  info: EvmInfo
-): Generator<DecoderRequest, Values.Result, Uint8Array> {
+  dataType: Format.Types.Type,
+  pointer: Pointer.StackPointer,
+  info: Evm.EvmInfo
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   let rawValue: Uint8Array;
   try {
     rawValue = yield* read(pointer, info.state);
   } catch (error) {
-    return <Errors.ErrorResult>{
+    return <Format.Errors.ErrorResult>{
       //no idea why TS is failing here
       type: dataType,
       kind: "error" as const,
       error: (<DecodingError>error).error
     };
   }
-  const literalPointer: StackLiteralPointer = {
+  const literalPointer: Pointer.StackLiteralPointer = {
     location: "stackliteral" as const,
     literal: rawValue
   };
@@ -39,14 +38,14 @@ export default function* decodeStack(
 }
 
 export function* decodeLiteral(
-  dataType: Types.Type,
-  pointer: StackLiteralPointer,
-  info: EvmInfo
-): Generator<DecoderRequest, Values.Result, Uint8Array> {
+  dataType: Format.Types.Type,
+  pointer: Pointer.StackLiteralPointer,
+  info: Evm.EvmInfo
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   debug("type %O", dataType);
   debug("pointer %o", pointer);
 
-  if (TypeUtils.isReferenceType(dataType)) {
+  if (Format.Types.isReferenceType(dataType)) {
     switch (dataType.location) {
       case "memory":
         //first: do we have a memory pointer? if so we can just dispatch to
@@ -65,18 +64,21 @@ export function* decodeLiteral(
         //straight to decodeValue.  this is to allow us to correctly handle the
         //case of msg.data used as a mapping key.
         if (dataType.typeClass === "bytes" || dataType.typeClass === "string") {
-          let startAsBN = CodecUtils.Conversion.toBN(
-            pointer.literal.slice(0, CodecUtils.EVM.WORD_SIZE)
+          let startAsBN = Conversion.toBN(
+            pointer.literal.slice(0, Evm.Utils.WORD_SIZE)
           );
-          let lengthAsBN = CodecUtils.Conversion.toBN(
-            pointer.literal.slice(CodecUtils.EVM.WORD_SIZE)
+          let lengthAsBN = Conversion.toBN(
+            pointer.literal.slice(Evm.Utils.WORD_SIZE)
           );
           let start: number;
           let length: number;
           try {
             start = startAsBN.toNumber();
           } catch (_) {
-            return <Errors.BytesDynamicErrorResult | Errors.StringErrorResult>{
+            return <
+              | Format.Errors.BytesDynamicErrorResult
+              | Format.Errors.StringErrorResult
+            >{
               //again with the TS failures...
               type: dataType,
               kind: "error" as const,
@@ -89,7 +91,10 @@ export function* decodeLiteral(
           try {
             length = lengthAsBN.toNumber();
           } catch (_) {
-            return <Errors.BytesDynamicErrorResult | Errors.StringErrorResult>{
+            return <
+              | Format.Errors.BytesDynamicErrorResult
+              | Format.Errors.StringErrorResult
+            >{
               //again with the TS failures...
               type: dataType,
               kind: "error" as const,
@@ -112,7 +117,7 @@ export function* decodeLiteral(
           //in this case, we're actually going to *throw away* the length info,
           //because it makes the logic simpler -- we'll get the length info back
           //from calldata
-          let locationOnly = pointer.literal.slice(0, CodecUtils.EVM.WORD_SIZE);
+          let locationOnly = pointer.literal.slice(0, Evm.Utils.WORD_SIZE);
           //HACK -- in order to read the correct location, we need to add an offset
           //of -32 (since, again, we're throwing away the length info), so we pass
           //that in as the "base" value
@@ -120,7 +125,7 @@ export function* decodeLiteral(
             dataType,
             { location: "stackliteral" as const, literal: locationOnly },
             info,
-            { abiPointerBase: -CodecUtils.EVM.WORD_SIZE }
+            { abiPointerBase: -Evm.Utils.WORD_SIZE }
           );
         } else {
           //multivalue case -- this case is straightforward
@@ -136,23 +141,23 @@ export function* decodeLiteral(
   //next: do we have an external function?  these work differently on the stack
   //than elsewhere, so we can't just pass it on to decodeValue.
   if (dataType.typeClass === "function" && dataType.visibility === "external") {
-    let address = pointer.literal.slice(0, CodecUtils.EVM.WORD_SIZE);
-    let selectorWord = pointer.literal.slice(-CodecUtils.EVM.WORD_SIZE);
+    let address = pointer.literal.slice(0, Evm.Utils.WORD_SIZE);
+    let selectorWord = pointer.literal.slice(-Evm.Utils.WORD_SIZE);
     if (
-      !checkPaddingLeft(address, CodecUtils.EVM.ADDRESS_SIZE) ||
-      !checkPaddingLeft(selectorWord, CodecUtils.EVM.SELECTOR_SIZE)
+      !checkPaddingLeft(address, Evm.Utils.ADDRESS_SIZE) ||
+      !checkPaddingLeft(selectorWord, Evm.Utils.SELECTOR_SIZE)
     ) {
       return {
         type: dataType,
         kind: "error" as const,
         error: {
           kind: "FunctionExternalStackPaddingError" as const,
-          rawAddress: CodecUtils.Conversion.toHexString(address),
-          rawSelector: CodecUtils.Conversion.toHexString(selectorWord)
+          rawAddress: Conversion.toHexString(address),
+          rawSelector: Conversion.toHexString(selectorWord)
         }
       };
     }
-    let selector = selectorWord.slice(-CodecUtils.EVM.SELECTOR_SIZE);
+    let selector = selectorWord.slice(-Evm.Utils.SELECTOR_SIZE);
     return {
       type: dataType,
       kind: "value" as const,

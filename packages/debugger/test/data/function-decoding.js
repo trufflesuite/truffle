@@ -7,7 +7,7 @@ import Ganache from "ganache-core";
 
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
-import { Utils as TruffleCodecUtils } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 import solidity from "lib/solidity/selectors";
 
@@ -29,7 +29,7 @@ contract ExternalsTester {
   function run() public {
     function() external[1] memory memoryFns;
     function() external stackFn;
-    
+
     storageFn = base.doThing;
     memoryFns[0] = base.doThing;
     stackFn = base.doThing;
@@ -66,7 +66,7 @@ contract InternalsBase {
 library InternalsLib {
 
   event Done();
-  
+
   function libraryFn() internal {
     emit Done();
   }
@@ -207,7 +207,7 @@ describe("Function Pointer Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -246,7 +246,7 @@ describe("Function Pointer Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 

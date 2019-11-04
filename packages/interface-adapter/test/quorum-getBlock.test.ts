@@ -7,12 +7,14 @@ import BN from "bn.js";
 import Web3 from "web3";
 import Ganache from "ganache-core";
 
-import { Web3Shim } from "../lib";
+import { InterfaceAdapter } from "../lib";
 
 const genesisBlockTime = new Date();
 const port = 12345;
 
-async function prepareGanache(quorumEnabled: boolean): Promise<{ server: Server, web3Shim: Web3Shim }> {
+async function prepareGanache(
+  quorumEnabled: boolean
+): Promise<{ server: Server; interfaceAdapter: InterfaceAdapter }> {
   return new Promise((resolve, reject) => {
     const server = Ganache.server({
       time: genesisBlockTime
@@ -20,13 +22,13 @@ async function prepareGanache(quorumEnabled: boolean): Promise<{ server: Server,
     server.listen(port, (err: Error) => {
       if (err) reject(err);
 
-      const web3Shim = new Web3Shim({
+      const interfaceAdapter = new InterfaceAdapter({
         provider: new Web3.providers.HttpProvider(`http://127.0.0.1:${port}`),
         networkType: quorumEnabled ? "quorum" : "ethereum"
       });
       resolve({
         server,
-        web3Shim
+        interfaceAdapter
       });
     });
   });
@@ -38,7 +40,7 @@ describe("Quorum getBlock Overload", function() {
       let preparedGanache;
       try {
         preparedGanache = await prepareGanache(true);
-        const block = await preparedGanache.web3Shim.eth.getBlock(0);
+        const block = await preparedGanache.interfaceAdapter.getBlock(0);
         const expectedBlockTime = new BN(genesisBlockTime.getTime()).divn(1000);
         assert.strictEqual(
           block.timestamp,
@@ -58,7 +60,7 @@ describe("Quorum getBlock Overload", function() {
       let preparedGanache;
       try {
         preparedGanache = await prepareGanache(false);
-        const block = await preparedGanache.web3Shim.eth.getBlock(0);
+        const block = await preparedGanache.interfaceAdapter.getBlock(0);
         const expectedBlockTime = new BN(genesisBlockTime.getTime()).divn(1000);
         assert.strictEqual(block.timestamp, expectedBlockTime.toNumber());
         preparedGanache.server.close(resolve);

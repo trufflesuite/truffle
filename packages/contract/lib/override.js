@@ -56,7 +56,11 @@ var override = {
 
       // This will run if there's a reason and no status field
       // e.g: revert with reason ganache-cli --vmErrorsOnRPCResponse=true
-      var reason = await Reason.get(context.params, constructor.web3);
+      var reason = await Reason.get(
+        context.params,
+        constructor.web3,
+        constructor.interfaceAdapter
+      );
       if (reason) {
         web3Error.reason = reason;
         web3Error.message += ` -- Reason given: ${reason}.`;

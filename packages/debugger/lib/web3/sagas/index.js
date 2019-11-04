@@ -17,7 +17,7 @@ import * as session from "lib/session/actions";
 
 import BN from "bn.js";
 import Web3 from "web3"; //just for utils!
-import { Utils as CodecUtils } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 import Web3Adapter from "../adapter";
 
@@ -71,7 +71,7 @@ function* fetchTransactionInfo(adapter, { txHash }) {
   } else {
     let storageAddress = Web3.utils.isAddress(receipt.contractAddress)
       ? receipt.contractAddress
-      : CodecUtils.EVM.ZERO_ADDRESS;
+      : Codec.Evm.Utils.ZERO_ADDRESS;
     yield put(
       actions.receiveCall({
         binary: tx.input,

@@ -12,7 +12,7 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 import data from "lib/data/selectors";
 
-import { Utils as TruffleCodecUtils } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 const __CONTAINERS = `
 pragma solidity ^0.5.0;
@@ -294,7 +294,7 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -338,7 +338,7 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
     debug("variables %O", variables);
@@ -382,7 +382,7 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -417,7 +417,7 @@ describe("Further Decoding", function() {
     //we're only testing storage so run till end
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -480,7 +480,7 @@ describe("Further Decoding", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
     debug("variables %O", variables);
@@ -515,7 +515,7 @@ describe("Further Decoding", function() {
 
       await session.continueUntilBreakpoint();
 
-      const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+      const variables = Codec.Format.Utils.Inspect.nativizeVariables(
         await session.variables()
       );
       debug("variables %O", variables);
@@ -551,7 +551,7 @@ describe("Further Decoding", function() {
 
       await session.continueUntilBreakpoint();
 
-      const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+      const variables = Codec.Format.Utils.Inspect.nativizeVariables(
         await session.variables()
       );
       debug("variables %O", variables);
@@ -587,7 +587,7 @@ describe("Further Decoding", function() {
 
       await session.continueUntilBreakpoint();
 
-      const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+      const variables = Codec.Format.Utils.Inspect.nativizeVariables(
         await session.variables()
       );
       debug("variables %O", variables);
