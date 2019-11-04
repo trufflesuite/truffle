@@ -33,9 +33,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "@truffle/contract-schema": "^3.0.11",
     "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",
+    "@truffle/contract-schema": "^3.0.17",
     "@types/debug": "^0.0.31",
     "@types/lodash.clonedeep": "^4.5.4",
     "@types/lodash.escaperegexp": "^4.1.6",

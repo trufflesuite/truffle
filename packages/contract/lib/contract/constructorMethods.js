@@ -12,6 +12,7 @@ module.exports = Contract => ({
     }
 
     this.web3.setProvider(provider);
+    this.interfaceAdapter.setProvider(provider);
     this.currentProvider = provider;
   },
 
@@ -104,7 +105,7 @@ module.exports = Contract => ({
     // use that network and use latest block gasLimit
     if (this.network_id && this.networks[this.network_id] != null) {
       try {
-        const { gasLimit } = await this.web3.eth.getBlock("latest");
+        const { gasLimit } = await this.interfaceAdapter.getBlock("latest");
         return { id: this.network_id, blockLimit: gasLimit };
       } catch (error) {
         throw error;
@@ -113,8 +114,8 @@ module.exports = Contract => ({
     // since artifacts don't have a network_id synced with a network configuration,
     // poll chain for network_id and sync artifacts
     try {
-      const chainNetworkID = await this.web3.eth.net.getId();
-      const { gasLimit } = await this.web3.eth.getBlock("latest");
+      const chainNetworkID = await this.interfaceAdapter.getNetworkId();
+      const { gasLimit } = await this.interfaceAdapter.getBlock("latest");
       return await utils.setInstanceNetworkID(this, chainNetworkID, gasLimit);
     } catch (error) {
       throw error;
@@ -215,7 +216,9 @@ module.exports = Contract => ({
 
     bootstrap(temp);
 
-    temp.interfaceAdapter = new InterfaceAdapter();
+    temp.interfaceAdapter = new InterfaceAdapter({
+      networkType: temp.networkType
+    });
     temp.web3 = new Web3Shim({
       networkType: temp.networkType
     });

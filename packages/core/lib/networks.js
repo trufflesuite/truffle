@@ -4,7 +4,7 @@ const OS = require("os");
 const BlockchainUtils = require("@truffle/blockchain-utils");
 const Provider = require("@truffle/provider");
 const async = require("async");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const { InterfaceAdapter } = require("@truffle/interface-adapter");
 
 const Networks = {
   deployed: async function(options) {
@@ -152,28 +152,34 @@ const Networks = {
 
     files.forEach(file => {
       const filePath = path.join(config.contracts_build_directory, file);
-
       const fileContents = fs.readFileSync(filePath, "utf8");
       const body = JSON.parse(fileContents);
 
-      for (let installedNetworkId of body.networks) {
+      for (let installedNetworkId of Object.keys(body.networks)) {
         let found = false;
         for (let i = 0; i < configuredNetworks.length; i++) {
           const configuredNetwork = configuredNetworks[i];
 
           // If an installed network id matches a configured id, then we can ignore this one.
+          let parsedNetworkId;
+          try {
+            // Account for an integer or string in the config
+            parsedNetworkId = parseInt(installedNetworkId);
+          } catch (_error) {
+            // If it can't be parsed into an int like * then don't worry about it
+          }
           if (
-            installedNetworkId === config.networks[configuredNetwork].network_id
+            installedNetworkId ===
+              config.networks[configuredNetwork].network_id ||
+            parsedNetworkId === config.networks[configuredNetwork].network_id
           ) {
             found = true;
             break;
           }
         }
-
         // If we didn't find a suitable configuration, delete this network.
         if (found === false) delete body.networks[installedNetworkId];
       }
-
       // Our work is done here. Save the file.
       fs.writeFileSync(filePath, JSON.stringify(body, null, 2), "utf8");
       results.push(body);
@@ -230,23 +236,23 @@ const Networks = {
     // If both network ids are numbers, then they don't match, and we should quit.
     if (isFirstANumber && isSecondANumber) return callback(null, false);
 
-    const interfaceAdapter = new InterfaceAdapter();
-    const web3 = new Web3Shim({
+    const interfaceAdapter = new InterfaceAdapter({
       provider,
       networkType: network_options.type
     });
-    web3.eth.net
-      .getId(current_network_id => {
-        if (first === current_network_id) return callback(null, true);
 
-        if (isFirstANumber === false) {
-          BlockchainUtils.matches(first, provider, callback);
-        } else {
-          // Nothing else to compare.
-          return callback(null, false);
-        }
-      })
-      .catch(callback);
+    try {
+      const currentNetworkID = await interfaceAdapter.getNetworkId();
+      if (first === currentNetworkID) return callback(null, true);
+      if (isFirstANumber === false)
+        BlockchainUtils.matches(first, provider, callback);
+      else {
+        // Nothing else to compare.
+        return callback(null, false);
+      }
+    } catch (error) {
+      return callback(error);
+    }
   }
 };
 

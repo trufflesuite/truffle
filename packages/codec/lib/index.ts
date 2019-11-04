@@ -1,9 +1,63 @@
 /**
- * Usage:
+ * # Truffle Codec
  *
- * ```
- * import { ... } from "@truffle/codec";
- * ```
+ * This module provides low-level decoding and encoding functionality for
+ * Solidity and the Solidity ABI.  Many parts of this module are intended
+ * primarily for internal use by Truffle and so remain largely undocumented,
+ * but some of its types are also output by @truffle/decoder, which provides
+ * a higher-level interface to much of this module's functionality.
+ *
+ * ## If you're here from Truffle Decoder
+ *
+ * If you're coming here from [[@truffle/decoder]], you probably just want to
+ * know about the parts that are relevant to you.  These are:
+ *
+ * * The "data" category (specifically [[Format]])
+ * * The "output" and "enumerations" categories ([[CalldataDecoding]], [[LogDecoding]], et al., see below)
+ * * The "errors" category (specifically [[UnknownUserDefinedTypeError]])
+ *
+ * Note that the data category is largely scarce in
+ * documentation, although that's because it's largely self-explanatory.
+ *
+ * If you're not just here from Truffle Decoder, but are actually
+ * interested in the lower-level workings, read on.
+ *
+ * ## How this module differs from Truffle Decoder
+ *
+ * Unlike Truffle Decoder, this library makes no network connections
+ * and avoids dependencies that do.  Instead, its decoding functionality
+ * is generator-based; calling one of the decoding functions returns a
+ * generator.  This generator's `next()` function may return a finished
+ * result, or it may return a request for more information.  It is up to
+ * the caller to fulfill these requests -- say, by making a network
+ * connection of its own.  This is how @truffle/decoder works; @truffle/codec
+ * makes requests, and @truffle/decoder fulfills them by
+ * looking up the necessary information on the blockchain.
+ *
+ * This library also provides additional functionality beyond what's used
+ * by Truffle Decoder.  In particular, this library also exists to
+ * support Truffle Debugger, and so it provides encoding functionality not
+ * just for transactions, logs, and state variables, but also for Solidity
+ * variables during transaction execution.  It provides functionality for
+ * decoding Solidity's internal function pointers, which the debugger uses,
+ * even though Truffle Decoder does not.
+ *
+ * (Note that circularity detection for memory structures has yet to be
+ * implemented, but is coming soon.)
+ *
+ * There is also some rudimentary encoding functionality, although currently
+ * that's just used internally.  A better interface for the encoding
+ * functionality is intended for the future.
+ *
+ * ## How to use
+ *
+ * You should probably use [[@truffle/decoder]] instead, if your use case doesn't
+ * preclude it.  This module has little documentation, where it has any at all,
+ * and it's likely that parts of its interface may change (particularly
+ * regarding allocation).  That said, if you truly need the functionality here,
+ * Truffle Decoder can perhaps serve as something of a reference implementation
+ * (and perhaps Truffle Debugger as well, though that code is much harder to
+ * read or copy).
  *
  * @module @truffle/codec
  */ /** */
