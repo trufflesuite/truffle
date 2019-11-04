@@ -11,7 +11,7 @@ import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError, StopDecodingError } from "@truffle/codec/errors";
 
-export function* decodeElementary(
+export function* decodeBasic(
   dataType: Format.Types.Type,
   pointer: Pointer.DataPointer,
   info: Evm.EvmInfo,
@@ -668,9 +668,9 @@ export function* decodeConstant(
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   debug("pointer %o", pointer);
 
-  //normally, we just dispatch to decodeElementary.
+  //normally, we just dispatch to decodeBasic.
   //for statically-sized bytes, however, we need to make a special case.
-  //you see, decodeElementary expects to find the bytes at the *beginning*
+  //you see, decodeBasic expects to find the bytes at the *beginning*
   //of the word, but readDefinition will put them at the *end* of the
   //word.  So we'll have to adjust things ourselves.
 
@@ -697,9 +697,9 @@ export function* decodeConstant(
     }; //we'll skip including a raw value, as that would be meaningless
   }
 
-  //otherwise, as mentioned, just dispatch to decodeElementary
+  //otherwise, as mentioned, just dispatch to decodeBasic
   debug("not a static bytes");
-  return yield* decodeElementary(dataType, pointer, info);
+  return yield* decodeBasic(dataType, pointer, info);
 }
 
 function checkPaddingRight(bytes: Uint8Array, length: number): boolean {

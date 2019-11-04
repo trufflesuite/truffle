@@ -4,7 +4,7 @@ const debug = debugModule("codec:decode:abi");
 import BN from "bn.js";
 import read from "@truffle/codec/read";
 import * as Conversion from "@truffle/codec/conversion";
-import * as Elementary from "@truffle/codec/elementary";
+import * as Basic from "@truffle/codec/basic";
 import * as Format from "@truffle/codec/format";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
@@ -52,12 +52,7 @@ export function* decodeAbi(
     }
   } else {
     debug("pointer %o", pointer);
-    return yield* Elementary.Decode.decodeElementary(
-      dataType,
-      pointer,
-      info,
-      options
-    );
+    return yield* Basic.Decode.decodeBasic(dataType, pointer, info, options);
   }
 }
 
@@ -207,7 +202,7 @@ export function* decodeAbiReferenceByAddress(
         length
       };
 
-      return yield* Elementary.Decode.decodeElementary(
+      return yield* Basic.Decode.decodeBasic(
         dataType,
         childPointer,
         info,

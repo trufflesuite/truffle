@@ -211,7 +211,7 @@ export { abifyCalldataDecoding, abifyLogDecoding } from "./abify";
 
 //for those who want more low-level stuff...
 import * as Abi from "./abi";
-import * as Elementary from "./elementary";
+import * as Basic from "./basic";
 import * as MappingKeys from "./keys";
 import * as Memory from "./memory";
 import * as Special from "./special";
@@ -231,7 +231,7 @@ export {
    *
    * @category Data location
    */
-  Elementary,
+  Basic,
   /**
    * For encoding mapping keys
    *

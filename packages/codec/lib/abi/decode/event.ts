@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:event");
 
 import read from "@truffle/codec/read";
-import * as Elementary from "@truffle/codec/elementary";
+import * as Basic from "@truffle/codec/basic";
 import * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Pointer from "@truffle/codec/pointer";
@@ -34,11 +34,6 @@ export function* decodeTopic(
       }
     };
   }
-  //otherwise, dispatch to decodeElementary
-  return yield* Elementary.Decode.decodeElementary(
-    dataType,
-    pointer,
-    info,
-    options
-  );
+  //otherwise, dispatch to decodeBasic
+  return yield* Basic.Decode.decodeBasic(dataType, pointer, info, options);
 }

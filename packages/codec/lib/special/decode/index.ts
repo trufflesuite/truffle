@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:decode:special");
 
 import * as Format from "@truffle/codec/format";
-import * as Elementary from "@truffle/codec/elementary";
+import * as Basic from "@truffle/codec/basic";
 import * as Compiler from "@truffle/codec/compiler";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
@@ -16,7 +16,7 @@ export function* decodeSpecial(
   if (dataType.typeClass === "magic") {
     return yield* decodeMagic(dataType, pointer, info);
   } else {
-    return yield* Elementary.Decode.decodeElementary(dataType, pointer, info);
+    return yield* Basic.Decode.decodeBasic(dataType, pointer, info);
   }
 }
 
@@ -33,7 +33,7 @@ export function* decodeMagic(
         type: dataType,
         kind: "value" as const,
         value: {
-          data: yield* Elementary.Decode.decodeElementary(
+          data: yield* Basic.Decode.decodeBasic(
             {
               typeClass: "bytes" as const,
               kind: "dynamic" as const,
@@ -46,7 +46,7 @@ export function* decodeMagic(
             },
             info
           ),
-          sig: yield* Elementary.Decode.decodeElementary(
+          sig: yield* Basic.Decode.decodeBasic(
             {
               typeClass: "bytes" as const,
               kind: "static" as const,
@@ -59,12 +59,12 @@ export function* decodeMagic(
             },
             info
           ),
-          sender: yield* Elementary.Decode.decodeElementary(
+          sender: yield* Basic.Decode.decodeBasic(
             senderType(info.currentContext.compiler),
             { location: "special" as const, special: "sender" },
             info
           ),
-          value: yield* Elementary.Decode.decodeElementary(
+          value: yield* Basic.Decode.decodeBasic(
             {
               typeClass: "uint",
               bits: 256
@@ -79,12 +79,12 @@ export function* decodeMagic(
         type: dataType,
         kind: "value" as const,
         value: {
-          origin: yield* Elementary.Decode.decodeElementary(
+          origin: yield* Basic.Decode.decodeBasic(
             externalAddressType(info.currentContext.compiler),
             { location: "special" as const, special: "origin" },
             info
           ),
-          gasprice: yield* Elementary.Decode.decodeElementary(
+          gasprice: yield* Basic.Decode.decodeBasic(
             {
               typeClass: "uint" as const,
               bits: 256
@@ -96,7 +96,7 @@ export function* decodeMagic(
       };
     case "block":
       let block: { [field: string]: Format.Values.Result } = {
-        coinbase: yield* Elementary.Decode.decodeElementary(
+        coinbase: yield* Basic.Decode.decodeBasic(
           externalAddressType(info.currentContext.compiler),
           { location: "special" as const, special: "coinbase" },
           info
@@ -106,7 +106,7 @@ export function* decodeMagic(
       //the lack of generator arrow functions, we do it by mutating block
       const variables = ["difficulty", "gaslimit", "number", "timestamp"];
       for (let variable of variables) {
-        block[variable] = yield* Elementary.Decode.decodeElementary(
+        block[variable] = yield* Basic.Decode.decodeBasic(
           {
             typeClass: "uint" as const,
             bits: 256
