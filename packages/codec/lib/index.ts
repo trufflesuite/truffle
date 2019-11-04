@@ -269,7 +269,7 @@ export {
   /**
    * For decoding of primitives and constants
    *
-   * @category Data location (Common)
+   * @category Common data location
    */
   Basic
 };
@@ -282,13 +282,13 @@ export {
    * For allocation, encoding, and decoding of locations related to the ABI
    * (calldata in Solidity, events, etc.)
    *
-   * @category Data location (ABI)
+   * @category ABI data location
    */
   AbiData,
   /**
    * For decoding of event topics
    *
-   * @category Data location (ABI)
+   * @category ABI data location
    */
   Topic
 };
@@ -304,31 +304,31 @@ export {
   /**
    * For encoding mapping keys
    *
-   * @category Data location (Solidity)
+   * @category Solidity data location
    */
   MappingKey,
   /**
    * For allocation and decoding of memory data
    *
-   * @category Data location (Solidity)
+   * @category Solidity data location
    */
   Memory,
   /**
    * For decoding of special/magic variables
    *
-   * @category Data location (Solidity)
+   * @category Solidity data location
    */
   Special,
   /**
    * For decoding stack variables
    *
-   * @category Data location (Solidity)
+   * @category Solidity data location
    */
   Stack,
   /**
    * For allocation and decoding of storage variables
    *
-   * @category Data location (Solidity)
+   * @category Solidity data location
    */
   Storage
 };
