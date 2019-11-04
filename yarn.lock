@@ -1274,13 +1274,6 @@
     "@types/bn.js" "*"
     "@types/underscore" "*"
 
-"@types/web3@^1.0.19":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@types/web3/-/web3-1.2.2.tgz#d95a101547ce625c5ebd0470baa5dbd4b9f3c015"
-  integrity sha512-eFiYJKggNrOl0nsD+9cMh2MLk4zVBfXfGnVeRFbpiZzBE20eet4KLA3fXcjSuHaBn0RnQzwLAGdgzgzdet4C0A==
-  dependencies:
-    web3 "*"
-
 "@wry/equality@^0.1.2":
   version "0.1.9"
   resolved "https://registry.yarnpkg.com/@wry/equality/-/equality-0.1.9.tgz#b13e18b7a8053c6858aa6c85b54911fb31e3a909"
@@ -15877,20 +15870,6 @@ web3-utils@1.2.2:
     underscore "1.9.1"
     utf8 "3.0.0"
 
-web3@*, web3@1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/web3/-/web3-1.2.2.tgz#b1b8b69aafdf94cbaeadbb68a8aa1df2ef266aec"
-  integrity sha512-/ChbmB6qZpfGx6eNpczt5YSUBHEA5V2+iUCbn85EVb3Zv6FVxrOo5Tv7Lw0gE2tW7EEjASbCyp3mZeiZaCCngg==
-  dependencies:
-    "@types/node" "^12.6.1"
-    web3-bzz "1.2.2"
-    web3-core "1.2.2"
-    web3-eth "1.2.2"
-    web3-eth-personal "1.2.2"
-    web3-net "1.2.2"
-    web3-shh "1.2.2"
-    web3-utils "1.2.2"
-
 web3@1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/web3/-/web3-1.2.1.tgz#5d8158bcca47838ab8c2b784a2dee4c3ceb4179b"
@@ -15903,6 +15882,20 @@ web3@1.2.1:
     web3-net "1.2.1"
     web3-shh "1.2.1"
     web3-utils "1.2.1"
+
+web3@1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/web3/-/web3-1.2.2.tgz#b1b8b69aafdf94cbaeadbb68a8aa1df2ef266aec"
+  integrity sha512-/ChbmB6qZpfGx6eNpczt5YSUBHEA5V2+iUCbn85EVb3Zv6FVxrOo5Tv7Lw0gE2tW7EEjASbCyp3mZeiZaCCngg==
+  dependencies:
+    "@types/node" "^12.6.1"
+    web3-bzz "1.2.2"
+    web3-core "1.2.2"
+    web3-eth "1.2.2"
+    web3-eth-personal "1.2.2"
+    web3-net "1.2.2"
+    web3-shh "1.2.2"
+    web3-utils "1.2.2"
 
 web3@^0.18.4:
   version "0.18.4"
