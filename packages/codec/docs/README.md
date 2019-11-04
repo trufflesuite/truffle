@@ -2,7 +2,7 @@
 
 This documentation provides information and complete interface listings for
 two packages: **@truffle/decoder**, a high-level library for decoding, and
-**@truffle/codec**, a low-level pacakge for encoding, decoding, and data
+**@truffle/codec**, a low-level package for encoding, decoding, and data
 representation.
 
 
