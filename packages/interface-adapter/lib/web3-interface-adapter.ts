@@ -21,4 +21,8 @@ export class Web3InterfaceAdapter {
   public setProvider(provider: Provider) {
     return this.web3.setProvider(provider);
   }
+
+  public getTransaction(tx: string) {
+    return this.web3.eth.getTransaction(tx);
+  }
 }
