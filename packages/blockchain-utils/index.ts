@@ -6,6 +6,13 @@ import { parsedUriObject } from "typings"
 
 type Provider = HttpProviderBase | IpcProviderBase | WebsocketProviderBase;
 
+interface JsonRpcResponse {
+    jsonrpc: string;
+    id: number;
+    result?: any;
+    error?: string;
+}
+
 
 const Blockchain = {
   getBlockByNumber(blockNumber: string, provider: Provider, callback: Callback<JsonRPCResponse>) {
