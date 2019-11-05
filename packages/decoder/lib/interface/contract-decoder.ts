@@ -374,6 +374,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
     //otherwise, get it, cache it, and return it
     let word = DecodeUtils.Conversion.toBytes(
+      // @ts-ignore
       await this.web3.eth.getStorageAt(address, slot, block),
       DecodeUtils.EVM.WORD_SIZE
     );
@@ -503,6 +504,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     block: BlockType = "latest"
   ): Promise<ContractEvent[]> {
     const web3Contract = new this.web3.eth.Contract(
+      // @ts-ignore
       this.contract.abi,
       this.contractAddress
     );
