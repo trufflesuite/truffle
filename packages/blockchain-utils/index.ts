@@ -1,11 +1,4 @@
-import {
-  HttpProviderBase,
-  IpcProviderBase,
-  WebsocketProviderBase
-} from "web3-core-helpers";
-import { parsedUriObject, Callback, JsonRpcResponse } from "typings";
-
-type Provider = HttpProviderBase | IpcProviderBase | WebsocketProviderBase;
+import { parsedUriObject, Callback, JsonRpcResponse, Provider } from "typings";
 
 const Blockchain = {
   getBlockByNumber(

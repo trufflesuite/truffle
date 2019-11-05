@@ -1,3 +1,14 @@
+import {
+  HttpProviderBase,
+  IpcProviderBase,
+  WebsocketProviderBase
+} from "web3-core-helpers";
+
+export type Provider =
+  | HttpProviderBase
+  | IpcProviderBase
+  | WebsocketProviderBase;
+
 export interface JsonRpcResponse {
   jsonrpc: string;
   id: number;
