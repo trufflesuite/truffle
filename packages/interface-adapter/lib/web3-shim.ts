@@ -1,5 +1,5 @@
 import Web3 from "web3";
-import { Provider } from "web3/providers";
+import { Provider } from "@truffle/blockchain-utils";
 
 import { EthereumDefinition } from "./ethereum-overloads";
 import { QuorumDefinition } from "./quorum-overloads";
