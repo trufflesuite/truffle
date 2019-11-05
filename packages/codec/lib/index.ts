@@ -205,11 +205,18 @@ Secondly, when decoding events, it is impossible to decode indexed parameters
 of reference type.  Thus, these decode to an error
 (`IndexedReferenceTypeError`, which see) rather than to a value.
 
-Thirdly, objects with encoded length fields larger than what fits in a
-JavaScript safe integer, or pointed to by pointers with values larger than
-what fits in a JavaScript safe integer, will decode to errors, even if they
-may technically be legal.  Such cases are impractical to handle and should
-never come up in real use so we decode them to errors.
+Thirdly, the decoder is currently limited when it comes to decoding state
+variables that are declared constant, and not all such variables are yet
+supported in decoding; attempting to decode one of these that is not currently
+supported will yield an error.
+
+Similarly, there are various things that decode to errors for technical reasons.
+Objects with encoded length fields larger than what fits in a JavaScript safe
+integer, or pointed to by pointers with values larger than what fits in a
+JavaScript safe integer, will decode to errors, even if they may technically be
+legal.  Such cases are impractical to handle and should never come up in real
+use so we decode them to errors.  Errors may also be returned in case of an
+error in attempting to read the data to be decoded.
 
 Finally, except when decoding events, we do not return an error if the pointers
 in an ABI-encoded array or tuple are arranged in a nonstandard way, or if
