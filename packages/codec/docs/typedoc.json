@@ -7,6 +7,13 @@
   "ignoreCompilerErrors": true,
   "preserveConstEnums": true,
   "excludeExternals": true,
+  "categoryOrder": [
+    "Data",
+    "ABI data location",
+    "Solidity data location",
+    "Common data location",
+    "*"
+  ],
   "exclude": [
     "**/test/*"
   ],

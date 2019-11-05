@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:read:stack");
 
 import * as Evm from "@truffle/codec/evm";
-import { DecodingError } from "@truffle/codec/decode/errors";
+import { DecodingError } from "@truffle/codec/errors";
 
 export function readStack(
   stack: Uint8Array[],

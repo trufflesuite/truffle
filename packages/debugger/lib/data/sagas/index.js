@@ -615,7 +615,7 @@ export function* recordAllocations() {
   const memoryAllocations = Codec.Memory.Allocate.getMemoryAllocations(
     referenceDeclarations
   );
-  const calldataAllocations = Codec.Abi.Allocate.getAbiAllocations(
+  const calldataAllocations = Codec.AbiData.Allocate.getAbiAllocations(
     userDefinedTypes
   );
   yield put(

@@ -38,7 +38,7 @@ export function makeContext(
   node: Codec.Ast.AstNode | undefined,
   isConstructor = false
 ): Codec.Contexts.DecoderContext {
-  const abi = Codec.Abi.Utils.schemaAbiToAbi(contract.abi);
+  const abi = Codec.AbiData.Utils.schemaAbiToAbi(contract.abi);
   const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
   const hash = Codec.Conversion.toHexString(
     Codec.Evm.Utils.keccak256({
@@ -53,9 +53,9 @@ export function makeContext(
     contractId: node ? node.id : undefined,
     contractKind: contractKind(contract, node),
     isConstructor,
-    abi: Codec.Abi.Utils.computeSelectors(abi),
-    payable: Codec.Abi.Utils.abiHasPayableFallback(abi),
-    hasFallback: Codec.Abi.Utils.abiHasFallback(abi),
+    abi: Codec.AbiData.Utils.computeSelectors(abi),
+    payable: Codec.AbiData.Utils.abiHasPayableFallback(abi),
+    hasFallback: Codec.AbiData.Utils.abiHasFallback(abi),
     compiler: contract.compiler
   };
 }

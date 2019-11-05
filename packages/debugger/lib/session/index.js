@@ -131,7 +131,7 @@ export default class Session {
 
       let contractId = contractNode.id;
       let contractKind = contractNode.contractKind;
-      abi = Codec.Abi.Utils.schemaAbiToAbi(abi); //let's handle this up front
+      abi = Codec.AbiData.Utils.schemaAbiToAbi(abi); //let's handle this up front
 
       debug("contractName %s", contractName);
       debug("sourceMap %o", sourceMap);

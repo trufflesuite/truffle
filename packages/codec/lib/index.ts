@@ -236,16 +236,10 @@ for technical reasons we can't guarantee we can determine.
 //now... various low-level stuff we want to export!
 //the actual decoding functions and related errors
 export { decodeVariable, decodeEvent, decodeCalldata } from "./core";
-export { DecodingError, StopDecodingError } from "./decode/errors";
+export { DecodingError, StopDecodingError } from "./errors";
 
 //and to read the stack
 export { readStack } from "./read/stack";
-
-//finally, let's export the low-level encoding functions, because why not, someone
-//might want them :P
-export { encodeAbi, encodeTupleAbi } from "./encode/abi";
-export { encodeMappingKey } from "./encode/key";
-//(actually we use at least one of these in tests atm so we'd better export!)
 
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface
@@ -269,9 +263,75 @@ export * from "./common";
 
 export { abifyCalldataDecoding, abifyLogDecoding } from "./abify";
 
-//for those who want more low-level stuff...
-import * as Abi from "./abi";
-export { Abi };
+// data locations - common
+import * as Basic from "./basic";
+export {
+  /**
+   * For decoding of primitives and constants
+   *
+   * @category Common data location
+   */
+  Basic
+};
+
+// data locations - abi
+import * as AbiData from "./abi-data";
+import * as Topic from "./topic";
+export {
+  /**
+   * For allocation, encoding, and decoding of locations related to the ABI
+   * (calldata in Solidity, events, etc.)
+   *
+   * @category ABI data location
+   */
+  AbiData,
+  /**
+   * For decoding of event topics
+   *
+   * @category ABI data location
+   */
+  Topic
+};
+
+// data locations - solidity
+import * as MappingKey from "./mapping-key";
+import * as Memory from "./memory";
+import * as Special from "./special";
+import * as Stack from "./stack";
+import * as Storage from "./storage";
+
+export {
+  /**
+   * For encoding mapping keys
+   *
+   * @category Solidity data location
+   */
+  MappingKey,
+  /**
+   * For allocation and decoding of memory data
+   *
+   * @category Solidity data location
+   */
+  Memory,
+  /**
+   * For decoding of special/magic variables
+   *
+   * @category Solidity data location
+   */
+  Special,
+  /**
+   * For decoding stack variables
+   *
+   * @category Solidity data location
+   */
+  Stack,
+  /**
+   * For allocation and decoding of storage variables
+   *
+   * @category Solidity data location
+   */
+  Storage
+};
 
 import * as Ast from "./ast";
 export { Ast };
@@ -285,14 +345,8 @@ export { Contexts };
 import * as Conversion from "./conversion";
 export { Conversion };
 
-import * as Memory from "./memory";
-export { Memory };
-
 import * as Pointer from "./pointer";
 export { Pointer };
 
 import * as Evm from "./evm";
 export { Evm };
-
-import * as Storage from "./storage";
-export { Storage };

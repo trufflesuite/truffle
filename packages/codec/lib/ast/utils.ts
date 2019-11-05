@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:ast:utils");
 
 import * as Common from "@truffle/codec/common";
-import * as Abi from "@truffle/codec/abi/types";
+import * as AbiData from "@truffle/codec/abi-data/types";
 
 import { AstNode, AstNodes, Scopes } from "./types";
 import BN from "bn.js";
@@ -462,7 +462,7 @@ export function isContractPayable(definition: AstNode): boolean {
 export function definitionToAbi(
   node: AstNode,
   referenceDeclarations: AstNodes
-): Abi.AbiEntry | undefined {
+): AbiData.AbiEntry | undefined {
   switch (node.nodeType) {
     case "FunctionDefinition":
       if (node.visibility === "public" || node.visibility === "external") {
@@ -487,7 +487,10 @@ export function definitionToAbi(
 function functionDefinitionToAbi(
   node: AstNode,
   referenceDeclarations: AstNodes
-): Abi.FunctionAbiEntry | Abi.ConstructorAbiEntry | Abi.FallbackAbiEntry {
+):
+  | AbiData.FunctionAbiEntry
+  | AbiData.ConstructorAbiEntry
+  | AbiData.FallbackAbiEntry {
   let kind = functionKind(node);
   let stateMutability = mutability(node);
   let payable = stateMutability === "payable";
@@ -519,7 +522,7 @@ function functionDefinitionToAbi(
         referenceDeclarations
       );
       //note: need to coerce because of mutability restrictions
-      return <Abi.ConstructorAbiEntry>{
+      return <AbiData.ConstructorAbiEntry>{
         type: "constructor",
         inputs,
         stateMutability,
@@ -527,7 +530,7 @@ function functionDefinitionToAbi(
       };
     case "fallback":
       //note: need to coerce because of mutability restrictions
-      return <Abi.FallbackAbiEntry>{
+      return <AbiData.FallbackAbiEntry>{
         type: "fallback",
         stateMutability,
         payable
@@ -538,7 +541,7 @@ function functionDefinitionToAbi(
 function eventDefinitionToAbi(
   node: AstNode,
   referenceDeclarations: AstNodes
-): Abi.EventAbiEntry {
+): AbiData.EventAbiEntry {
   let inputs = parametersToAbi(
     node.parameters.parameters,
     referenceDeclarations,
@@ -558,7 +561,7 @@ function parametersToAbi(
   nodes: AstNode[],
   referenceDeclarations: AstNodes,
   checkIndexed: boolean = false
-): Abi.AbiParameter[] {
+): AbiData.AbiParameter[] {
   return nodes.map(node =>
     parameterToAbi(node, referenceDeclarations, checkIndexed)
   );
@@ -575,9 +578,9 @@ function parameterToAbi(
   node: AstNode,
   referenceDeclarations: AstNodes,
   checkIndexed: boolean = false
-): Abi.AbiParameter {
+): AbiData.AbiParameter {
   let name = node.name; //may be the empty string... or even undefined for a base type
-  let components: Abi.AbiParameter[];
+  let components: AbiData.AbiParameter[];
   let indexed: boolean;
   if (checkIndexed) {
     indexed = node.indexed; //note: may be undefined for a base type
@@ -661,7 +664,7 @@ function toAbiType(node: AstNode, referenceDeclarations: AstNodes): string {
 function getterDefinitionToAbi(
   node: AstNode,
   referenceDeclarations: AstNodes
-): Abi.FunctionAbiEntry {
+): AbiData.FunctionAbiEntry {
   debug("getter node: %O", node);
   let name = node.name;
   let { inputs, outputs } = getterParameters(node, referenceDeclarations);
