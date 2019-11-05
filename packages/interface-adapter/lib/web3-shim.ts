@@ -59,6 +59,7 @@ export class Web3Shim extends Web3 {
   public networkType: NetworkType;
 
   constructor(options?: Web3ShimOptions) {
+    // @ts-ignore
     super();
 
     if (options) {
