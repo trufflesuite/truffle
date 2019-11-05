@@ -2,9 +2,8 @@ import {
   Web3InterfaceAdapter,
   Web3InterfaceAdapterOptions
 } from "./web3-interface-adapter";
-import { Block as EvmBlock } from "web3/eth/types";
-import { BlockType as EvmBlockType } from "web3/eth/types";
-import { Provider } from "web3/providers";
+import { Block as EvmBlock } from "web3-eth";
+import { Provider } from "@truffle/blockchain-utils";
 
 export interface InterfaceAdapterOptions extends Web3InterfaceAdapterOptions {}
 export type NetworkId = Number | String;
