@@ -6,6 +6,7 @@ import WalletProvider from '../dist';
 import { describe, it } from 'mocha';
 
 describe("HD Wallet Provider", function () {
+  // @ts-ignore
   const web3 = new Web3();
   const port = 8545;
   let server: any;
