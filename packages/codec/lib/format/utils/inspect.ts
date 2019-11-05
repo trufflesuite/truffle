@@ -23,6 +23,35 @@ function cleanStylize(options: InspectOptions) {
   );
 }
 
+/**
+ * This class is meant to be used with Node's
+ * [util.inspect()](https://nodejs.org/api/util.html#util_util_inspect_object_options)
+ * function.  Given a [[Format.Values.Result]] `value`, one can use
+ * `new ResultInspector(value)` to create a ResultInspector for that value,
+ * which can be used with util.inspect() to create a human-readable string
+ * representing the value.
+ *
+ * @example
+ * Suppose `value` is a Result.  In Node, the following would print to the
+ * console a human-readable representation of `value`, with colors enabled,
+ * no maximum depth, and no maximum array length, and lines (usually) no
+ * longer than 80 characters:
+ * ```javascript
+ * console.log(
+ *   util.inspect(
+ *     new ResultInspector(value),
+ *     {
+ *       colors: true,
+ *       depth: null,
+ *       maxArrayLength: null,
+ *       breakLength: 80
+ *     }
+ *   )
+ * );
+ * ```
+ * Of course, there are many other ways to use util.inspect; see Node's
+ * documentation of it, linked above, for more.
+ */
 export class ResultInspector {
   result: Format.Values.Result;
   constructor(result: Format.Values.Result) {

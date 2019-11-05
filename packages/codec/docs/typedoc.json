@@ -12,7 +12,19 @@
     "ABI data location",
     "Solidity data location",
     "Common data location",
-    "*"
+    "Output",
+    "Enumerations",
+    "Requests",
+    "Decoding",
+    "ABIfication",
+    "General categories",
+    "Elementary types",
+    "Container types",
+    "Other user-defined types",
+    "Function types",
+    "Special container types (debugger-only)",
+    "*",
+    "Other"
   ],
   "exclude": [
     "**/test/*"
