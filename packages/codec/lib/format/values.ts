@@ -275,14 +275,14 @@ export interface OptionallyNamedValue {
 /**
  * A magic variable's value (or error)
  *
- * @Category Special container types
+ * @Category Special container types (debugger-only)
  */
 export type MagicResult = MagicValue | Errors.MagicErrorResult;
 
 /**
  * A magic variable's value (may contain errors?)
  *
- * @Category Special container types
+ * @Category Special container types (debugger-only)
  */
 export interface MagicValue {
   type: Types.MagicType;
