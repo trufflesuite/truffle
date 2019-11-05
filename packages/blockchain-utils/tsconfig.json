@@ -9,7 +9,12 @@
     "outDir": "dist",
     "baseUrl": ".",
     "lib": ["es2017"],
-    "paths": {},
+    "paths": {
+      "net": [
+        "../../node_modules/@types/node",
+        "node_modules/@types/node"
+      ]
+    },
     "rootDir": ".",
     "typeRoots": [
       "./typings",
