@@ -7,8 +7,8 @@ const command = {
       type: "boolean",
       default: false
     },
-    "mocha-output-only": {
-      describe: "Suppress all logging except for mocha output.",
+    "runner-output-only": {
+      describe: "Suppress all output except for test runner output.",
       type: "boolean",
       default: false
     }
@@ -45,8 +45,8 @@ const command = {
         description: "Log all contract events."
       },
       {
-        option: "--mocha-output-only",
-        description: "Suppress all output except for mocha output."
+        option: "--runner-output-only",
+        description: "Suppress all output except for test runner output."
       }
     ]
   },
@@ -141,7 +141,7 @@ const command = {
 
       promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
         .then(() => {
-          if (config.mochaOutputOnly !== true) {
+          if (config.runnerOutputOnly !== true) {
             config.logger.log(`Using network '${config.network}'.${OS.EOL}`);
           }
           run();
