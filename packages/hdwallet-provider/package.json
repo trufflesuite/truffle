@@ -25,7 +25,6 @@
     "ethereumjs-tx": "^1.0.0",
     "ethereumjs-util": "^6.1.0",
     "ethereumjs-wallet": "^0.6.3",
-    "web3": "1.2.2",
     "web3-provider-engine": "https://github.com/trufflesuite/provider-engine#web3-one"
   },
   "devDependencies": {
@@ -38,7 +37,8 @@
     "ganache-core": "^2.8.0",
     "mocha": "6.2.0",
     "ts-node": "^8.4.1",
-    "typescript": "^3.6.3"
+    "typescript": "^3.6.3",
+    "web3": "1.2.2"
   },
   "publishConfig": {
     "access": "public"
