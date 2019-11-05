@@ -3,21 +3,9 @@ import {
   IpcProviderBase,
   WebsocketProviderBase
 } from "web3-core-helpers";
-import { parsedUriObject } from "typings";
+import { parsedUriObject, Callback, JsonRpcResponse } from "typings";
 
 type Provider = HttpProviderBase | IpcProviderBase | WebsocketProviderBase;
-
-interface JsonRpcResponse {
-  jsonrpc: string;
-  id: number;
-  result?: any;
-  error?: string;
-}
-
-interface Callback<ResultType> {
-  (error: Error): void;
-  (error: null, val: ResultType): void;
-}
 
 const Blockchain = {
   getBlockByNumber(
