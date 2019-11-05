@@ -488,7 +488,7 @@ function* decodeContractAndContext(
         kind: "known" as const,
         address,
         rawAddress,
-        class: Contexts.Utils.contextToType(context)
+        class: Format.Utils.MakeType.contextToType(context)
       }
     };
   } else {
@@ -552,7 +552,7 @@ export function decodeInternalFunction(
 ): Format.Values.FunctionInternalResult {
   let deployedPc: number = Conversion.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = Conversion.toBN(constructorPcBytes).toNumber();
-  let context: Format.Types.ContractType = Contexts.Utils.contextToType(
+  let context: Format.Types.ContractType = Format.Utils.MakeType.contextToType(
     info.currentContext
   );
   //before anything else: do we even have an internal functions table?
