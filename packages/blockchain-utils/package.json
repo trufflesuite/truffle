@@ -22,7 +22,9 @@
     "mocha": "5.2.0",
     "ts-node": "^8.3.0",
     "typescript": "^3.6.3",
-    "web3-core-helpers": "1.2.2"
+    "web3-providers-http": "1.2.2",
+    "web3-providers-ipc": "1.2.2",
+    "web3-providers-ws": "1.2.2"
   },
   "keywords": [
     "blockchain",
