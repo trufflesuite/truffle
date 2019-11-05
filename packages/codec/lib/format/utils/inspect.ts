@@ -50,7 +50,7 @@ function cleanStylize(options: InspectOptions) {
  * );
  * ```
  * Of course, there are many other ways to use util.inspect; see Node's
- * documentation of it, linked above, for more.
+ * documentation, linked above, for more.
  */
 export class ResultInspector {
   result: Format.Values.Result;
