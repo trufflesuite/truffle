@@ -1,4 +1,7 @@
-import { Provider, Callback, JsonRPCResponse } from "web3/providers"
+import { HttpProviderBase,
+    IpcProviderBase,
+    WebsocketProviderBase,
+} from "web3-core-helpers";
 import { parsedUriObject } from "typings"
 
 const Blockchain = {
