@@ -1,5 +1,5 @@
 import { Web3Shim } from "./web3-shim";
-import { NetworkId } from "./interface-adapter";
+import { NetworkId } from "./interface-adapter/types";
 
 export const FabricEvmDefinition = {
   async initNetworkType(web3: Web3Shim) {
