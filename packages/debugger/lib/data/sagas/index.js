@@ -628,7 +628,7 @@ function literalAssignments(node, stack, currentDepth) {
 
   let literal;
   try {
-    literal = Codec.readStack(
+    literal = Codec.Stack.Read.readStack(
       stack,
       top - Codec.Ast.Utils.stackSize(node) + 1,
       top

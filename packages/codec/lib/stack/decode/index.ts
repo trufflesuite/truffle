@@ -6,6 +6,7 @@ import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import read from "@truffle/codec/read";
 import * as Basic from "@truffle/codec/basic";
+import * as Bytes from "@truffle/codec/bytes";
 import * as Memory from "@truffle/codec/memory";
 import * as Storage from "@truffle/codec/storage";
 import * as Pointer from "@truffle/codec/pointer";
@@ -68,7 +69,7 @@ export function* decodeLiteral(
         //next: do we have a calldata pointer?
 
         //if it's a string or bytes, we will interpret the pointer ourself and skip
-        //straight to decodeBasic.  this is to allow us to correctly handle the
+        //straight to decodeBytes.  this is to allow us to correctly handle the
         //case of msg.data used as a mapping key.
         if (dataType.typeClass === "bytes" || dataType.typeClass === "string") {
           let startAsBN = Conversion.toBN(
@@ -116,7 +117,7 @@ export function* decodeLiteral(
             start,
             length
           };
-          return yield* Basic.Decode.decodeBasic(dataType, newPointer, info);
+          return yield* Bytes.Decode.decodeBytes(dataType, newPointer, info);
         }
 
         //otherwise, is it a dynamic array?

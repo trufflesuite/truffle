@@ -5,3 +5,6 @@ export {
    */
   Decode
 };
+
+import * as Read from "./read";
+export { Read };

@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:read:storage");
+const debug = debugModule("codec:storage:read");
 
 import * as Conversion from "@truffle/codec/conversion";
 import * as Storage from "@truffle/codec/storage/types";

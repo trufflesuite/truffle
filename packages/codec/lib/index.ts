@@ -245,9 +245,6 @@ for technical reasons we can't guarantee we can determine.
 export { decodeVariable, decodeEvent, decodeCalldata } from "./core";
 export { DecodingError, StopDecodingError } from "./errors";
 
-//and to read the stack
-export { readStack } from "./read/stack";
-
 //now: what types should we export? (other than the ones from ./format)
 //public-facing types for the interface
 export {
@@ -310,6 +307,7 @@ import * as Memory from "./memory";
 import * as Special from "./special";
 import * as Stack from "./stack";
 import * as Storage from "./storage";
+import * as Bytes from "./bytes";
 
 export {
   /**
@@ -342,7 +340,15 @@ export {
    *
    * @category Solidity data location
    */
-  Storage
+  Storage,
+  /**
+   * Contains functions for dealing with raw bytestrings
+   * @protected
+   */
+  Bytes
+  //Category: Common data location
+  //[NOT making this an actual category for now
+  //since there's nothing public in it]
 };
 
 import * as Ast from "./ast";

@@ -5,6 +5,7 @@ import BN from "bn.js";
 import read from "@truffle/codec/read";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Basic from "@truffle/codec/basic";
+import * as Bytes from "@truffle/codec/bytes";
 import * as Format from "@truffle/codec/format";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
@@ -202,7 +203,7 @@ export function* decodeAbiReferenceByAddress(
         length
       };
 
-      return yield* Basic.Decode.decodeBasic(
+      return yield* Bytes.Decode.decodeBytes(
         dataType,
         childPointer,
         info,

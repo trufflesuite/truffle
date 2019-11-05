@@ -1,7 +1,7 @@
-import * as storage from "./storage";
-import * as bytes from "./bytes";
-import * as stack from "./stack";
-import * as constant from "./constant";
+import * as Storage from "@truffle/codec/storage";
+import * as Stack from "@truffle/codec/stack";
+import * as Bytes from "@truffle/codec/bytes";
+import * as Ast from "@truffle/codec/ast";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
@@ -12,26 +12,34 @@ export default function* read(
 ): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   switch (pointer.location) {
     case "stack":
-      return stack.readStack(state.stack, pointer.from, pointer.to);
+      return Stack.Read.readStack(state.stack, pointer.from, pointer.to);
 
     case "storage":
-      return yield* storage.readRange(state.storage, pointer.range);
+      return yield* Storage.Read.readRange(state.storage, pointer.range);
 
     case "memory":
-      return bytes.readBytes(state.memory, pointer.start, pointer.length);
+      return Bytes.Read.readBytes(state.memory, pointer.start, pointer.length);
 
     case "calldata":
-      return bytes.readBytes(state.calldata, pointer.start, pointer.length);
+      return Bytes.Read.readBytes(
+        state.calldata,
+        pointer.start,
+        pointer.length
+      );
 
     case "eventdata":
-      return bytes.readBytes(state.eventdata, pointer.start, pointer.length);
+      return Bytes.Read.readBytes(
+        state.eventdata,
+        pointer.start,
+        pointer.length
+      );
 
     case "stackliteral":
       //nothing to do, just return it
       return pointer.literal;
 
     case "definition":
-      return constant.readDefinition(pointer.definition);
+      return Ast.Read.readDefinition(pointer.definition);
 
     case "special":
       //this one is simple enough to inline

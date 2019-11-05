@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:read:stack");
+const debug = debugModule("codec:stack:read");
 
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError } from "@truffle/codec/errors";
