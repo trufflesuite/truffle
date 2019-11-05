@@ -4,6 +4,9 @@ import { HttpProviderBase,
 } from "web3-core-helpers";
 import { parsedUriObject } from "typings"
 
+type Provider = HttpProviderBase | IpcProviderBase | WebsocketProviderBase;
+
+
 const Blockchain = {
   getBlockByNumber(blockNumber: string, provider: Provider, callback: Callback<JsonRPCResponse>) {
     const params = [blockNumber, true];
