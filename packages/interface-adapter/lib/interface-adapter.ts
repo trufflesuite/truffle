@@ -2,17 +2,16 @@ import {
   Web3InterfaceAdapter,
   Web3InterfaceAdapterOptions
 } from "./web3-interface-adapter";
-import { Block as EvmBlock } from "web3/eth/types";
-import { BlockType as EvmBlockType } from "web3/eth/types";
-import { Transaction as EvmTransaction } from "web3/eth/types";
 import { Provider } from "web3/providers";
+import {
+  NetworkId,
+  Block,
+  BlockType,
+  Transaction,
+  TxHash
+} from "./interface-adapter/types";
 
 export interface InterfaceAdapterOptions extends Web3InterfaceAdapterOptions {}
-export type NetworkId = Number | String;
-export type Block = EvmBlock | any;
-export type BlockType = EvmBlockType | any;
-export type Transaction = EvmTransaction | any;
-export type TxHash = string;
 
 const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
 
