@@ -26,7 +26,7 @@ import {
   UfixedValue
 } from "./elementary";
 import * as Common from "@truffle/codec/common";
-import * as Abi from "@truffle/codec/abi/types";
+import * as AbiData from "@truffle/codec/abi-data/types";
 
 export * from "./elementary";
 
@@ -275,14 +275,14 @@ export interface OptionallyNamedValue {
 /**
  * A magic variable's value (or error)
  *
- * @Category Special container types
+ * @Category Special container types (debugger-only)
  */
 export type MagicResult = MagicValue | Errors.MagicErrorResult;
 
 /**
  * A magic variable's value (may contain errors?)
  *
- * @Category Special container types
+ * @Category Special container types (debugger-only)
  */
 export interface MagicValue {
   type: Types.MagicType;
@@ -441,7 +441,7 @@ export interface FunctionExternalValueInfoKnown {
    * formatted as a hex string
    */
   selector: string;
-  abi: Abi.FunctionAbiEntry;
+  abi: AbiData.FunctionAbiEntry;
   //may have more optional fields added later, I'll leave these out for now
 }
 

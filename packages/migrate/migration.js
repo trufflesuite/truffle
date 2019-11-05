@@ -7,16 +7,16 @@ const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const ResolverIntercept = require("./resolverintercept");
 
 class Migration {
-  constructor(file, reporter, options) {
+  constructor(file, reporter, config) {
     this.file = path.resolve(file);
     this.reporter = reporter;
     this.number = parseInt(path.basename(file));
     this.emitter = new Emittery();
     this.isFirst = false;
     this.isLast = false;
-    this.dryRun = options.dryRun;
-    this.interactive = options.interactive;
-    this.options = options || {};
+    this.dryRun = config.dryRun;
+    this.interactive = config.interactive;
+    this.config = config || {};
   }
 
   // ------------------------------------- Private -------------------------------------------------
@@ -109,8 +109,8 @@ class Migration {
         // Exiting w provider-engine appears to be hopeless. This hack on
         // our fork just swallows errors from eth-block-tracking
         // as we unwind the handlers downstream from here.
-        if (this.options.provider && this.options.provider.engine) {
-          this.options.provider.engine.silent = true;
+        if (this.config.provider && this.config.provider.engine) {
+          this.config.provider.engine.silent = true;
         }
       }
     } catch (error) {
@@ -133,7 +133,6 @@ class Migration {
    */
   async run(options) {
     const {
-      web3,
       interfaceAdapter,
       resolver,
       context,
@@ -150,7 +149,7 @@ class Migration {
 
     // Get file path and emit pre-migration event
     const file = path.relative(options.migrations_directory, this.file);
-    const block = await web3.eth.getBlock("latest");
+    const block = await interfaceAdapter.getBlock("latest");
 
     const preMigrationsData = {
       file: file,
@@ -167,7 +166,10 @@ class Migration {
 
   prepareForMigrations(options) {
     const logger = options.logger;
-    const interfaceAdapter = new InterfaceAdapter();
+    const interfaceAdapter = new InterfaceAdapter({
+      provider: options.provider,
+      networkType: options.networks[options.network].type
+    });
     const web3 = new Web3Shim({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -176,7 +178,7 @@ class Migration {
     const resolver = new ResolverIntercept(options.resolver);
 
     // Initial context.
-    const context = { web3, interfaceAdapter };
+    const context = { web3, interfaceAdapter, config: this.config };
 
     const deployer = new Deployer({
       logger,
@@ -190,7 +192,7 @@ class Migration {
       ens: options.ens
     });
 
-    return { logger, web3, interfaceAdapter, resolver, context, deployer };
+    return { interfaceAdapter, resolver, context, deployer };
   }
 
   /**

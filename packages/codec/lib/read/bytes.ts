@@ -1,5 +1,5 @@
 import * as Evm from "@truffle/codec/evm";
-import { DecodingError } from "@truffle/codec/decode/errors";
+import { DecodingError } from "@truffle/codec/errors";
 
 /**
  * read word from memory

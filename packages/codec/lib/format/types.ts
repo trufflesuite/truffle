@@ -482,7 +482,7 @@ export type MagicVariableName = "message" | "block" | "transaction";
 /**
  * Type of a magic variable
  *
- * @Category Special container types
+ * @Category Special container types (debugger-only)
  */
 export interface MagicType {
   typeClass: "magic";

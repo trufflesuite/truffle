@@ -7,8 +7,6 @@ import {
   CalldataDecoding,
   LogDecoding
 } from "@truffle/codec";
-import { Transaction, BlockType } from "web3/eth/types";
-import { Log } from "web3/types";
 import Web3 from "web3";
 
 /**
@@ -60,20 +58,6 @@ export interface StateVariable {
 }
 
 /**
- * This type represents a web3 Transaction object that has been decoded.
- * Note that it extends the Transaction type and just adds an additional field
- * with the decoding.
- * @category Results
- */
-export interface DecodedTransaction extends Transaction {
-  /**
-   * The decoding of the transaction.  Note that transactions are not decoded in strict mode,
-   * so there will always be a decoding, although it may contain errors.
-   */
-  decoding: CalldataDecoding;
-}
-
-/**
  * This type represents a web3 Log object that has been decoded.
  * Note that it extends the Log type and just adds an additional field
  * with the decoding.
@@ -82,23 +66,9 @@ export interface DecodedTransaction extends Transaction {
 export interface DecodedLog extends Log {
   /**
    * An array of possible decodings of the given log -- it's an array because logs can be ambiguous.
-   * Note that logs are decoded in strict mode, so (with one exception) none of the decodings should
-   * contain errors; if a decoding would contain an error, instead it is simply excluded from the
-   * list of possible decodings.  The one exception to this is that indexed parameters of reference
-   * type cannot meaningfully be decoded, so those will decode to an error.
    *
-   * If there are multiple possible decodings, they will always be listed in the following order:
-   *
-   * 1. A non-anonymous event coming from the contract itself (there can be at most one of these)
-   * 2. Non-anonymous events coming from libraries
-   * 3. Anonymous events coming from the contract itself
-   * 4. Anonymous events coming from libraries
-   *
-   * You can check the kind and class.contractKind fields to distinguish between these.
-   *
-   * If no possible decodings are found, the list of decodings will be empty.
-   *
-   * Note that different decodings may use different decoding modes.
+   * This field works just like the output of [[WireDecoder.decodeLog]], so see that for more
+   * information.
    */
   decodings: LogDecoding[];
 }
@@ -131,7 +101,7 @@ export interface ContractAndContexts {
 /**
  * The type of the options parameter to events().  This type will be expanded in the future
  * as more filtering options are added.
- * @category Configurations
+ * @category Inputs
  */
 export interface EventOptions {
   /**
@@ -140,16 +110,12 @@ export interface EventOptions {
   name?: string;
   /**
    * The earliest block to include events from.  Defaults to "latest".
-   * See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
-   * for legal values.
    */
-  fromBlock?: BlockType;
+  fromBlock?: BlockSpecifier;
   /**
    * The latest block to include events from.  Defaults to "latest".
-   * See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
-   * for legal values.
    */
-  toBlock?: BlockType;
+  toBlock?: BlockSpecifier;
   /**
    * If included, will restrict to events emitted by the given address.
    *
@@ -160,6 +126,128 @@ export interface EventOptions {
    */
   address?: string;
 }
+
+/**
+ * Contains information about a transaction.  Most of the fields have
+ * been made optional; only those needed by the decoder have been made
+ * mandatory.
+ *
+ * Intended to work like Web3's
+ * [Transaction](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-gettransaction-return)
+ * type.
+ * @category Inputs
+ */
+export interface Transaction {
+  /**
+   * The transaction hash as hex string.
+   */
+  hash?: string;
+  /**
+   * The nonce of the sender before this transaction was sent.
+   */
+  nonce?: number;
+  /**
+   * Hash of this transaction's block as hex string; null if pending.
+   */
+  blockHash?: string | null;
+  /**
+   * This transaction's block number; null if pending.
+   */
+  blockNumber: number | null;
+  /**
+   * Index of transaction in block; null if block is pending.
+   */
+  transactionIndex?: number | null;
+  /**
+   * Address of the sender (as checksummed hex string).
+   */
+  from?: string;
+  /**
+   * Address of the recipient (as checksummed hex string), or null for a
+   * contract creation.
+   */
+  to: string | null;
+  /**
+   * Wei sent with this transaction, as numeric string.
+   */
+  value?: string;
+  /**
+   * Gas price for this transaction, as numeric string.
+   */
+  gasPrice?: string;
+  /**
+   * Gas provided by the sender, as numeric string.
+   */
+  gas?: string;
+  /**
+   * Data sent with the transaction, as hex string.
+   */
+  input: string;
+}
+
+/**
+ * Contains information about a transaction.  Most of the fields have
+ * been made optional; only those needed by the decoder have been made
+ * mandatory.
+ *
+ * Intended to work like Web3's
+ * [Log](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-getpastlogs-return)
+ * type.
+ * @category Inputs
+ */
+export interface Log {
+  /**
+   * Address of the emitter (as checksummed hex string).
+   */
+  address: string;
+  /**
+   * The log's data section (as hex string).
+   */
+  data: string;
+  /**
+   * The log's topics; each is a hex string representing 32 bytes.
+   */
+  topics: string[];
+  /**
+   * Index of the log within the block.
+   */
+  logIndex?: number;
+  /**
+   * Index within the block of the emitting transaction; null if
+   * block is pending.
+   */
+  transactionIndex?: number | null;
+  /**
+   * The emitting transaction's hash (as hex string).
+   */
+  transactionHash?: string;
+  /**
+   * The block hash (as hex string).  Null if pending.
+   */
+  blockHash?: string | null;
+  /**
+   * The block number.  Null if pending.
+   */
+  blockNumber: number | null;
+}
+
+/**
+ * Specifies a block.  Can be given by number, or can be given via the
+ * special strings "genesis", "latest", or "pending".
+ *
+ * Intended to work like Web3's
+ * [BlockType](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14).
+ *
+ * *Warning*: Using "pending", while allowed, is not advised, as it may lead
+ * to internally inconsistent results.  Use of "latest" is safe and will not
+ * lead to inconsistent results from a single decoder call due to the decoder's
+ * caching system, but pending blocks cannot be cached under this system, which
+ * may cause inconsistencies.
+ * @category Inputs
+ */
+export type BlockSpecifier = number | "genesis" | "latest" | "pending";
+
+export type RegularizedBlockSpecifier = number | "pending";
 
 //HACK
 export interface ContractConstructorObject extends ContractObject {

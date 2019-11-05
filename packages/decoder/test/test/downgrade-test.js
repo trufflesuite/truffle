@@ -6,8 +6,6 @@ const clonedeep = require("lodash.clonedeep");
 const Decoder = require("../..");
 const Codec = require("../../../codec");
 
-const { encodeTupleAbi } = require("../../../codec");
-
 const DowngradeTestUnmodified = artifacts.require("DowngradeTest");
 const DecoyLibrary = artifacts.require("DecoyLibrary");
 
@@ -91,8 +89,8 @@ async function runTestBody(
   let resultTx = await web3.eth.getTransaction(resultHash);
   let resultLog = result.receipt.rawLogs[0];
 
-  let txDecoding = (await decoder.decodeTransaction(resultTx)).decoding;
-  let logDecodings = (await decoder.decodeLog(resultLog)).decodings;
+  let txDecoding = await decoder.decodeTransaction(resultTx);
+  let logDecodings = await decoder.decodeLog(resultLog);
 
   if (fullMode) {
     assert.strictEqual(txDecoding.decodingMode, "full");
@@ -213,7 +211,7 @@ contract("DowngradeTest", function(accounts) {
         asBig: tau
       }
     };
-    const encodedTau = encodeTupleAbi([wrappedTau]);
+    const encodedTau = Codec.AbiData.Encode.encodeTupleAbi([wrappedTau]);
     const hexTau = Codec.Conversion.toHexString(encodedTau);
     const selector = web3.eth.abi.encodeFunctionSignature(
       "shhImADecimal(fixed168x10)"
@@ -233,7 +231,7 @@ contract("DowngradeTest", function(accounts) {
     let decimalTx = await web3.eth.getTransaction(decimalHash);
 
     //now, let's do the decoding
-    let txDecoding = (await decoder.decodeTransaction(decimalTx)).decoding;
+    let txDecoding = await decoder.decodeTransaction(decimalTx);
 
     //now let's check the results!
     debug("txDecoding: %O", txDecoding);
@@ -266,9 +264,8 @@ contract("DowngradeTest", function(accounts) {
       let indexedLog = result.receipt.rawLogs[1];
       //(these are the order they went in)
 
-      let nonIndexedLogDecodings = (await decoder.decodeLog(nonIndexedLog))
-        .decodings;
-      let indexedLogDecodings = (await decoder.decodeLog(indexedLog)).decodings;
+      let nonIndexedLogDecodings = await decoder.decodeLog(nonIndexedLog);
+      let indexedLogDecodings = await decoder.decodeLog(indexedLog);
 
       assert.lengthOf(nonIndexedLogDecodings, 1); //because we're in full mode, the decoy decoding should be filtered out
       assert.strictEqual(nonIndexedLogDecodings[0].decodingMode, "full");
@@ -367,9 +364,8 @@ async function runEnumTestBody(DowngradeTest) {
   let indexedLog = result.receipt.rawLogs[1];
   //(these are the order they went in)
 
-  let nonIndexedLogDecodings = (await decoder.decodeLog(nonIndexedLog))
-    .decodings;
-  let indexedLogDecodings = (await decoder.decodeLog(indexedLog)).decodings;
+  let nonIndexedLogDecodings = await decoder.decodeLog(nonIndexedLog);
+  let indexedLogDecodings = await decoder.decodeLog(indexedLog);
 
   assert.lengthOf(nonIndexedLogDecodings, 2); //we're in ABI mode, so should have correct decoding and decoy decoding
   let decoyDecoding1 = nonIndexedLogDecodings[1]; //decoy decoding should be second (library)

@@ -413,7 +413,7 @@ export type TupleError = DynamicDataImplementationError;
 /**
  * An error result for a magic variable
  *
- * @Category Special container types
+ * @Category Special container types (debugger-only)
  */
 export interface MagicErrorResult {
   type: Types.MagicType;
@@ -424,7 +424,7 @@ export interface MagicErrorResult {
 /**
  * A magic-specific error (there are none)
  *
- * @Category Special container types
+ * @Category Special container types (debugger-only)
  */
 export type MagicError = never;
 

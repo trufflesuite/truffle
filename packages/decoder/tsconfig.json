@@ -10,9 +10,6 @@
     "outDir": "dist",
     "baseUrl": ".",
     "lib": ["es2017"],
-    "paths": {
-      "@truffle/codec/allocate/types": ["../codec/dist/lib/allocate/types.d"]
-    },
     "plugins": [
       { "transform": "@zerollup/ts-transform-paths", "exclude": "*" }
     ],

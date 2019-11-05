@@ -79,19 +79,15 @@ contract("WireTest", _accounts => {
       defaultConstructorHash
     );
 
-    let constructorDecoding = (await decoder.decodeTransaction(constructorTx))
-      .decoding;
-    let emitStuffDecoding = (await decoder.decodeTransaction(emitStuffTx))
-      .decoding;
-    let moreStuffDecoding = (await decoder.decodeTransaction(moreStuffTx))
-      .decoding;
-    let inheritedDecoding = (await decoder.decodeTransaction(inheritedTx))
-      .decoding;
-    let getterDecoding1 = (await decoder.decodeTransaction(getterTx1)).decoding;
-    let getterDecoding2 = (await decoder.decodeTransaction(getterTx2)).decoding;
-    let defaultConstructorDecoding = (await decoder.decodeTransaction(
+    let constructorDecoding = await decoder.decodeTransaction(constructorTx);
+    let emitStuffDecoding = await decoder.decodeTransaction(emitStuffTx);
+    let moreStuffDecoding = await decoder.decodeTransaction(moreStuffTx);
+    let inheritedDecoding = await decoder.decodeTransaction(inheritedTx);
+    let getterDecoding1 = await decoder.decodeTransaction(getterTx1);
+    let getterDecoding2 = await decoder.decodeTransaction(getterTx2);
+    let defaultConstructorDecoding = await decoder.decodeTransaction(
       defaultConstructorTx
-    )).decoding;
+    );
 
     assert.strictEqual(constructorDecoding.kind, "constructor");
     assert.strictEqual(constructorDecoding.class.typeName, "WireTest");

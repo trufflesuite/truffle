@@ -1,6 +1,6 @@
 {
   "name": "@truffle/contract-schema",
-  "version": "3.0.16",
+  "version": "3.0.18-next.1",
   "description": "JSON schema for contract artifacts",
   "main": "index.js",
   "typings": "./typings/index.d.ts",
@@ -31,7 +31,7 @@
   "devDependencies": {
     "json-schema-to-typescript": "^5.5.0",
     "mocha": "5.2.0",
-    "solc": "0.5.0"
+    "solc": "0.5.12"
   },
   "directories": {
     "spec": "./spec"

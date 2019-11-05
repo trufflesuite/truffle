@@ -3,7 +3,7 @@ const debug = debugModule("decoder:decoders");
 
 import * as Codec from "@truffle/codec";
 import {
-  Abi,
+  AbiData,
   Ast,
   Evm,
   Format,
@@ -17,13 +17,10 @@ import {
   decodeEvent
 } from "@truffle/codec";
 import * as Utils from "./utils";
-import * as Allocation from "@truffle/codec/allocate/types";
 import * as DecoderTypes from "./types";
 import Web3 from "web3";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
-import { BlockType, Transaction } from "web3/eth/types";
-import { Log } from "web3/types";
 import { Provider } from "web3/providers";
 import {
   ContractBeingDecodedHasNoNodeError,
@@ -115,14 +112,14 @@ export class WireDecoder {
       types: this.userDefinedTypes
     } = this.collectUserDefinedTypes());
 
-    let allocationInfo: Allocation.ContractAllocationInfo[] = contractsAndContexts.map(
+    let allocationInfo: AbiData.Allocate.ContractAllocationInfo[] = contractsAndContexts.map(
       ({
         contract: { abi, compiler },
         node,
         deployedContext,
         constructorContext
       }) => ({
-        abi: Abi.Utils.schemaAbiToAbi(abi),
+        abi: AbiData.Utils.schemaAbiToAbi(abi),
         compiler,
         contractNode: node,
         deployedContext,
@@ -132,20 +129,20 @@ export class WireDecoder {
     debug("allocationInfo: %O", allocationInfo);
 
     this.allocations = {};
-    this.allocations.abi = Abi.Allocate.getAbiAllocations(
+    this.allocations.abi = AbiData.Allocate.getAbiAllocations(
       this.userDefinedTypes
     );
     this.allocations.storage = Storage.Allocate.getStorageAllocations(
       this.referenceDeclarations,
       {}
     ); //not used by wire decoder itself, but used by contract decoder
-    this.allocations.calldata = Abi.Allocate.getCalldataAllocations(
+    this.allocations.calldata = AbiData.Allocate.getCalldataAllocations(
       allocationInfo,
       this.referenceDeclarations,
       this.userDefinedTypes,
       this.allocations.abi
     );
-    this.allocations.event = Abi.Allocate.getEventAllocations(
+    this.allocations.event = AbiData.Allocate.getEventAllocations(
       allocationInfo,
       this.referenceDeclarations,
       this.userDefinedTypes,
@@ -191,10 +188,17 @@ export class WireDecoder {
 
   /**
    * @protected
-   * for internal use
    */
-  public async getCode(address: string, block: number): Promise<Uint8Array> {
-    //first, set up any preliminary layers as needed
+  public async getCode(
+    address: string,
+    block: DecoderTypes.RegularizedBlockSpecifier
+  ): Promise<Uint8Array> {
+    //if pending, ignore the cache
+    if (block === "pending") {
+      return Conversion.toBytes(await this.web3.eth.getCode(address, block));
+    }
+
+    //otherwise, start by setting up any preliminary layers as needed
     if (this.codeCache[block] === undefined) {
       this.codeCache[block] = {};
     }
@@ -209,13 +213,26 @@ export class WireDecoder {
   }
 
   /**
+   * @protected
+   */
+  public async regularizeBlock(
+    block: DecoderTypes.BlockSpecifier | null
+  ): Promise<DecoderTypes.RegularizedBlockSpecifier> {
+    if (typeof block === "number" || block === "pending") {
+      return block;
+    }
+    if (block === null) {
+      return "pending";
+    }
+
+    return (await this.web3.eth.getBlock(block)).number;
+  }
+
+  /**
    * **This method is asynchronous.**
    *
-   * Takes a Web3
-   * [Transaction](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-gettransaction-return)
-   * object and returns a copy of that object but with an additional decoding
-   * field.  This field holds a [[CalldataDecoding]]; see the documentation on
-   * [[DecodedTransaction]] for more.
+   * Takes a [[Transaction]] object and decodes it.  The result is a
+   * [[CalldataDecoding]]; see the documentation on that interface for more.
    *
    * Note that decoding of transactions sent to libraries is presently not
    * supported and may have unreliable results.  Limited support for this is
@@ -223,8 +240,8 @@ export class WireDecoder {
    * @param transaction The transaction to be decoded.
    */
   public async decodeTransaction(
-    transaction: Transaction
-  ): Promise<DecoderTypes.DecodedTransaction> {
+    transaction: DecoderTypes.Transaction
+  ): Promise<CalldataDecoding> {
     return await this.decodeTransactionWithAdditionalContexts(transaction);
   }
 
@@ -232,15 +249,16 @@ export class WireDecoder {
    * @protected
    */
   public async decodeTransactionWithAdditionalContexts(
-    transaction: Transaction,
+    transaction: DecoderTypes.Transaction,
     additionalContexts: Contexts.DecoderContexts = {}
-  ): Promise<DecoderTypes.DecodedTransaction> {
+  ): Promise<CalldataDecoding> {
     debug("transaction: %O", transaction);
     const block = transaction.blockNumber;
+    const blockNumber = await this.regularizeBlock(block);
     const isConstructor = transaction.to === null;
     const context = await this.getContextByAddress(
       transaction.to,
-      block,
+      blockNumber,
       transaction.input,
       additionalContexts
     );
@@ -264,32 +282,43 @@ export class WireDecoder {
       let response: Uint8Array;
       switch (request.type) {
         case "code":
-          response = await this.getCode(request.address, block);
+          response = await this.getCode(request.address, blockNumber);
           break;
         //not writing a storage case as it shouldn't occur here!
       }
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decoding = result.value;
-
-    return {
-      ...transaction,
-      decoding
-    };
+    return result.value;
   }
 
   /**
    * **This method is asynchronous.**
    *
-   * Takes a Web3
-   * [Log](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#eth-getpastlogs-return)
-   * object and returns a copy of that object but with an additional decodings
-   * field.  This field holds an array of [[LogDecoding|LogDecodings]]; see the
-   * documentation on [[DecodedLog]] for more.
+   * Takes a [[Log]] object and decodes it.  Logs can be ambiguous, so this so
+   * this function returns an array of [[LogDecoding|LogDecodings]].
+   *
+   * Note that logs are decoded in strict mode, so (with one exception) none of the decodings should
+   * contain errors; if a decoding would contain an error, instead it is simply excluded from the
+   * list of possible decodings.  The one exception to this is that indexed parameters of reference
+   * type cannot meaningfully be decoded, so those will decode to an error.
+   *
+   * If there are multiple possible decodings, they will always be listed in the following order:
+   *
+   * 1. A non-anonymous event coming from the contract itself (there can be at most one of these)
+   * 2. Non-anonymous events coming from libraries
+   * 3. Anonymous events coming from the contract itself
+   * 4. Anonymous events coming from libraries
+   *
+   * You can check the kind and class.contractKind fields to distinguish between these.
+   *
+   * If no possible decodings are found, the returned array of decodings will be empty.
+   *
+   * Note that different decodings may use different decoding modes.
+   *
    * @param log The log to be decoded.
    */
-  public async decodeLog(log: Log) {
+  public async decodeLog(log: DecoderTypes.Log): Promise<LogDecoding[]> {
     return await this.decodeLogWithAdditionalOptions(log);
   }
 
@@ -297,11 +326,12 @@ export class WireDecoder {
    * @protected
    */
   public async decodeLogWithAdditionalOptions(
-    log: Log,
+    log: DecoderTypes.Log,
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
-  ): Promise<DecoderTypes.DecodedLog> {
+  ): Promise<LogDecoding[]> {
     const block = log.blockNumber;
+    const blockNumber = await this.regularizeBlock(block);
     const data = Conversion.toBytes(log.data);
     const topics = log.topics.map(Conversion.toBytes);
     const info: Evm.EvmInfo = {
@@ -322,44 +352,14 @@ export class WireDecoder {
       let response: Uint8Array;
       switch (request.type) {
         case "code":
-          response = await this.getCode(request.address, block);
+          response = await this.getCode(request.address, blockNumber);
           break;
         //not writing a storage case as it shouldn't occur here!
       }
       result = decoder.next(response);
     }
     //at this point, result.value holds the final value
-    const decodings = result.value;
-
-    return {
-      ...log,
-      decodings
-    };
-  }
-
-  /**
-   * **This method is asynchronous.**
-   *
-   * Similar to [[decodeLog]], but operates on an array of logs and decodes them all.
-   * @param logs The logs to be decoded.
-   */
-  public async decodeLogs(logs: Log[]) {
-    return await this.decodeLogsWithAdditionalOptions(logs);
-  }
-
-  /**
-   * @protected
-   */
-  public async decodeLogsWithAdditionalOptions(
-    logs: Log[],
-    options: DecoderTypes.EventOptions = {},
-    additionalContexts: Contexts.DecoderContexts = {}
-  ): Promise<DecoderTypes.DecodedLog[]> {
-    return await Promise.all(
-      logs.map(log =>
-        this.decodeLogWithAdditionalOptions(log, options, additionalContexts)
-      )
-    );
+    return result.value;
   }
 
   /**
@@ -370,10 +370,16 @@ export class WireDecoder {
    * will be added in the future.
    * @param options Used to determine what events to fetch; see the documentation
    *   on the [[EventOptions]] type for more.
+   * @return An array of [[DecodedLog|DecodedLogs]].
+   *   These consist of a log together with its possible decodings; see that
+   *   type for more info.  And see [[decodeLog]] for more info on how log
+   *   decoding works in general.
    * @example `events({name: "TestEvent"})` -- get events named "TestEvent"
    *   from the most recent block
    */
-  public async events(options: DecoderTypes.EventOptions = {}) {
+  public async events(
+    options: DecoderTypes.EventOptions = {}
+  ): Promise<DecoderTypes.DecodedLog[]> {
     return await this.eventsWithAdditionalContexts(options);
   }
 
@@ -384,18 +390,25 @@ export class WireDecoder {
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
-    let { address, name, fromBlock, toBlock } = options;
+    const { address, name, fromBlock, toBlock } = options;
+    const fromBlockNumber = await this.regularizeBlock(fromBlock);
+    const toBlockNumber = await this.regularizeBlock(toBlock);
 
     const logs = await this.web3.eth.getPastLogs({
       address,
-      fromBlock,
-      toBlock
+      fromBlock: fromBlockNumber,
+      toBlock: toBlockNumber
     });
 
-    let events = await this.decodeLogsWithAdditionalOptions(
-      logs,
-      options,
-      additionalContexts
+    let events = await Promise.all(
+      logs.map(async log => ({
+        ...log,
+        decodings: await this.decodeLogWithAdditionalOptions(
+          log,
+          options,
+          additionalContexts
+        )
+      }))
     );
     debug("events: %o", events);
 
@@ -439,7 +452,7 @@ export class WireDecoder {
   //attempt to determine it from that
   private async getContextByAddress(
     address: string,
-    block: number,
+    block: DecoderTypes.RegularizedBlockSpecifier,
     constructorBinary?: string,
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<Contexts.DecoderContext | null> {
@@ -554,7 +567,7 @@ export class ContractDecoder {
   private contextHash: string;
 
   private allocations: Codec.Evm.AllocationInfo;
-  private stateVariableReferences: Allocation.StorageMemberAllocation[];
+  private stateVariableReferences: Storage.Allocate.StorageMemberAllocation[];
 
   private wireDecoder: WireDecoder;
 
@@ -634,8 +647,8 @@ export class ContractDecoder {
    * @param transaction The transaction to be decoded.
    */
   public async decodeTransaction(
-    transaction: Transaction
-  ): Promise<DecoderTypes.DecodedTransaction> {
+    transaction: DecoderTypes.Transaction
+  ): Promise<CalldataDecoding> {
     return await this.wireDecoder.decodeTransaction(transaction);
   }
 
@@ -645,18 +658,8 @@ export class ContractDecoder {
    * See [[WireDecoder.decodeLog]].
    * @param log The log to be decoded.
    */
-  public async decodeLog(log: Log): Promise<DecoderTypes.DecodedLog> {
+  public async decodeLog(log: DecoderTypes.Log): Promise<LogDecoding[]> {
     return await this.wireDecoder.decodeLog(log);
-  }
-
-  /**
-   * **This method is asynchronous.**
-   *
-   * See [[WireDecoder.decodeLogs]].
-   * @param logs The logs to be decoded.
-   */
-  public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.decodeLogs(logs);
   }
 
   /**
@@ -761,7 +764,7 @@ export class ContractInstanceDecoder {
   private userDefinedTypes: Format.Types.TypesById;
   private allocations: Codec.Evm.AllocationInfo;
 
-  private stateVariableReferences: Allocation.StorageMemberAllocation[];
+  private stateVariableReferences: Storage.Allocate.StorageMemberAllocation[];
 
   private mappingKeys: Storage.Slot[] = [];
 
@@ -811,7 +814,7 @@ export class ContractInstanceDecoder {
     this.contractCode = Conversion.toHexString(
       await this.getCode(
         this.contractAddress,
-        await this.web3.eth.getBlockNumber()
+        await this.web3.eth.getBlockNumber() //not "latest" because regularized
       )
     );
 
@@ -866,8 +869,8 @@ export class ContractInstanceDecoder {
   }
 
   private async decodeVariable(
-    variable: Allocation.StorageMemberAllocation,
-    block: number
+    variable: Storage.Allocate.StorageMemberAllocation,
+    block: DecoderTypes.RegularizedBlockSpecifier
   ): Promise<DecoderTypes.StateVariable> {
     const info: Codec.Evm.EvmInfo = {
       state: {
@@ -922,21 +925,24 @@ export class ContractInstanceDecoder {
    * information about the storage or decoded variables.  See the documentation
    * for the [[ContractState]] type for more.
    * @param block The block to inspect the contract's state at.  Defaults to latest.
-   *   See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
-   *   for legal values.
+   *   See [[BlockSpecifier]] for legal values.
    */
   public async state(
-    block: BlockType = "latest"
+    block: DecoderTypes.BlockSpecifier = "latest"
   ): Promise<DecoderTypes.ContractState> {
+    let blockNumber = await this.regularizeBlock(block);
     return {
-      class: Contexts.Utils.contextToType(this.context),
+      class: Format.Utils.MakeType.contextToType(this.context),
       address: this.contractAddress,
       code: this.contractCode,
       balanceAsBN: new BN(
-        await this.web3.eth.getBalance(this.contractAddress, block)
+        await this.web3.eth.getBalance(this.contractAddress, blockNumber)
       ),
       nonceAsBN: new BN(
-        await this.web3.eth.getTransactionCount(this.contractAddress, block)
+        await this.web3.eth.getTransactionCount(
+          this.contractAddress,
+          blockNumber
+        )
       )
     };
   }
@@ -958,19 +964,15 @@ export class ContractInstanceDecoder {
    * usefully decode internal function pointers.  See the
    * [[Format.Values.FunctionInternalValue|FunctionInternalValue]]
    * documentation and the README for more on how these are handled.
-   * @param block The block to inspect the contract's variables at.  Defaults to latest.
-   *   See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
-   *   for legal values.
+   * @param block The block to inspect the contract's state at.  Defaults to latest.
+   *   See [[BlockSpecifier]] for legal values.
    */
   public async variables(
-    block: BlockType = "latest"
+    block: DecoderTypes.BlockSpecifier = "latest"
   ): Promise<DecoderTypes.StateVariable[]> {
     this.checkAllocationSuccess();
 
-    let blockNumber =
-      typeof block === "number"
-        ? block
-        : (await this.web3.eth.getBlock(block)).number;
+    let blockNumber = await this.regularizeBlock(block);
 
     let result: DecoderTypes.StateVariable[] = [];
 
@@ -997,10 +999,8 @@ export class ContractInstanceDecoder {
    *   variable.  Can be given as a qualified name, allowing one to get at
    *   shadowed variables from base contracts.  If given by ID, can be given as a
    *   number or numeric string.
-   * @param block The block to inspect the contract's variables at.  Defaults
-   *   to latest.
-   *   See [the web3 docs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#id14)
-   *   for legal values.
+   * @param block The block to inspect the contract's state at.  Defaults to latest.
+   *   See [[BlockSpecifier]] for legal values.
    * @example Consider a contract `Derived` inheriting from a contract `Base`.
    *   Suppose `Derived` has a variable `x` and `Base` has variables `x` and
    *   `y`.  One can access `Derived.x` as `variable("x")` or
@@ -1009,14 +1009,11 @@ export class ContractInstanceDecoder {
    */
   public async variable(
     nameOrId: string | number,
-    block: BlockType = "latest"
+    block: DecoderTypes.BlockSpecifier = "latest"
   ): Promise<Format.Values.Result | undefined> {
     this.checkAllocationSuccess();
 
-    let blockNumber =
-      typeof block === "number"
-        ? block
-        : (await this.web3.eth.getBlock(block)).number;
+    let blockNumber = await this.regularizeBlock(block);
 
     let variable = this.findVariableByNameOrId(nameOrId);
 
@@ -1030,7 +1027,7 @@ export class ContractInstanceDecoder {
 
   private findVariableByNameOrId(
     nameOrId: string | number
-  ): Allocation.StorageMemberAllocation | undefined {
+  ): Storage.Allocate.StorageMemberAllocation | undefined {
     //case 1: an ID was input
     if (typeof nameOrId === "number" || nameOrId.match(/[0-9]+/)) {
       let id: number = Number(nameOrId);
@@ -1065,9 +1062,17 @@ export class ContractInstanceDecoder {
   private async getStorage(
     address: string,
     slot: BN,
-    block: number
+    block: DecoderTypes.RegularizedBlockSpecifier
   ): Promise<Uint8Array> {
-    //first, set up any preliminary layers as needed
+    //if pending, bypass the cache
+    if (block === "pending") {
+      return Conversion.toBytes(
+        await this.web3.eth.getStorageAt(address, slot, block),
+        Codec.Evm.Utils.WORD_SIZE
+      );
+    }
+
+    //otherwise, start by setting up any preliminary layers as needed
     if (this.storageCache[block] === undefined) {
       this.storageCache[block] = {};
     }
@@ -1087,8 +1092,17 @@ export class ContractInstanceDecoder {
     return word;
   }
 
-  private async getCode(address: string, block: number): Promise<Uint8Array> {
+  private async getCode(
+    address: string,
+    block: DecoderTypes.RegularizedBlockSpecifier
+  ): Promise<Uint8Array> {
     return await this.wireDecoder.getCode(address, block);
+  }
+
+  private async regularizeBlock(
+    block: DecoderTypes.BlockSpecifier
+  ): Promise<DecoderTypes.RegularizedBlockSpecifier> {
+    return await this.wireDecoder.regularizeBlock(block);
   }
 
   /**
@@ -1222,8 +1236,8 @@ export class ContractInstanceDecoder {
    * See [[WireDecoder.decodeTransaction]].
    */
   public async decodeTransaction(
-    transaction: Transaction
-  ): Promise<DecoderTypes.DecodedTransaction> {
+    transaction: DecoderTypes.Transaction
+  ): Promise<CalldataDecoding> {
     return await this.wireDecoder.decodeTransactionWithAdditionalContexts(
       transaction,
       this.additionalContexts
@@ -1235,22 +1249,9 @@ export class ContractInstanceDecoder {
    *
    * See [[WireDecoder.decodeLog]].
    */
-  public async decodeLog(log: Log): Promise<DecoderTypes.DecodedLog> {
+  public async decodeLog(log: DecoderTypes.Log): Promise<LogDecoding[]> {
     return await this.wireDecoder.decodeLogWithAdditionalOptions(
       log,
-      {},
-      this.additionalContexts
-    );
-  }
-
-  /**
-   * **This method is asynchronous.**
-   *
-   * See [[WireDecoder.decodeLogs]].
-   */
-  public async decodeLogs(logs: Log[]): Promise<DecoderTypes.DecodedLog[]> {
-    return await this.wireDecoder.decodeLogsWithAdditionalOptions(
-      logs,
       {},
       this.additionalContexts
     );
@@ -1373,7 +1374,7 @@ export class ContractInstanceDecoder {
         break;
       case "struct":
         let parentId = Ast.Utils.typeId(parentDefinition);
-        let allocation: Allocation.StorageMemberAllocation;
+        let allocation: Storage.Allocate.StorageMemberAllocation;
         if (typeof rawIndex === "number") {
           index = rawIndex;
           allocation = this.allocations.storage[parentId].members[index];

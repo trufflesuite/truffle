@@ -78,7 +78,7 @@ function debuggerContextToDecoderContext(context) {
     contractId,
     contractKind,
     isConstructor,
-    abi: Codec.Abi.Utils.computeSelectors(abi),
+    abi: Codec.AbiData.Utils.computeSelectors(abi),
     payable,
     compiler
   };

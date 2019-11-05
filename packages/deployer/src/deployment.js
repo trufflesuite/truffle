@@ -291,7 +291,7 @@ class Deployment {
 
       const isDeployed = contract.isDeployed();
       const newArgs = await Promise.all(args);
-      const currentBlock = await contract.web3.eth.getBlock("latest");
+      const currentBlock = await contract.interfaceAdapter.getBlock("latest");
 
       // Last arg can be an object that tells us not to overwrite.
       if (newArgs.length > 0) {

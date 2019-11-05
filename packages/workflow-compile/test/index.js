@@ -56,6 +56,6 @@ describe("Contracts.compile", () => {
             `${process.cwd()}/${config.contracts_directory}/${contractName}.sol`
           )
       );
-    }).timeout(3000);
+    }).timeout(4000);
   });
 });
