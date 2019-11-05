@@ -269,9 +269,12 @@ export {
   /**
    * For decoding of primitives and constants
    *
-   * @category Common data location
+   * @protected
    */
   Basic
+  //Category: Common data location
+  //[NOT making this an actual category for now
+  //since there's nothing public in it]
 };
 
 // data locations - abi
@@ -288,6 +291,7 @@ export {
   /**
    * For decoding of event topics
    *
+   * @protected
    * @category ABI data location
    */
   Topic
@@ -316,6 +320,7 @@ export {
   /**
    * For decoding of special/magic variables
    *
+   * @protected
    * @category Solidity data location
    */
   Special,

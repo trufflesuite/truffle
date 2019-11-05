@@ -5,7 +5,12 @@ import * as Encode from "./encode";
 export { Encode };
 
 import * as Decode from "./decode";
-export { Decode };
+export {
+  /**
+   * @protected
+   */
+  Decode
+};
 
 export * from "./types";
 
