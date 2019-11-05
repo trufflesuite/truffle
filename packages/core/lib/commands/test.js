@@ -6,6 +6,11 @@ const command = {
       describe: "Show all test logs",
       type: "boolean",
       default: false
+    },
+    "runner-output-only": {
+      describe: "Suppress all output except for test runner output.",
+      type: "boolean",
+      default: false
     }
   },
   help: {
@@ -38,6 +43,10 @@ const command = {
       {
         option: "--show-events",
         description: "Log all contract events."
+      },
+      {
+        option: "--runner-output-only",
+        description: "Suppress all output except for test runner output."
       }
     ]
   },
@@ -132,8 +141,9 @@ const command = {
 
       promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
         .then(() => {
-          config.logger.log("Using network '" + config.network + "'." + OS.EOL);
-
+          if (config.runnerOutputOnly !== true) {
+            config.logger.log(`Using network '${config.network}'.${OS.EOL}`);
+          }
           run();
         })
         .catch(done);
