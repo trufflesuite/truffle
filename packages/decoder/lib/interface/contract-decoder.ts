@@ -34,6 +34,8 @@ import { Provider } from "@truffle/blockchain-utils";
 import abiDecoder from "abi-decoder";
 import isEqual from "lodash.isequal"; //util.isDeepStrictEqual doesn't exist in Node 8
 
+type BlockType = number | string;
+
 export interface EvmMapping {
   name: string;
   type: string;
