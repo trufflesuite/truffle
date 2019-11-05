@@ -13,6 +13,10 @@ interface JsonRpcResponse {
     error?: string;
 }
 
+interface Callback<ResultType> {
+  (error: Error): void;
+  (error: null, val: ResultType): void;
+}
 
 const Blockchain = {
   getBlockByNumber(blockNumber: string, provider: Provider, callback: Callback<JsonRPCResponse>) {
