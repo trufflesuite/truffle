@@ -12,7 +12,8 @@
     "ABI data location",
     "Solidity data location",
     "Common data location",
-    "*"
+    "*",
+    "Other"
   ],
   "exclude": [
     "**/test/*"
