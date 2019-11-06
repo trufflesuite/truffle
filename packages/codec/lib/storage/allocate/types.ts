@@ -1,5 +1,5 @@
 import * as Storage from "@truffle/codec/storage/types";
-import * as Ast from "@truffle/codec/ast";
+import * as Ast from "@truffle/codec/ast/types";
 import * as Pointer from "@truffle/codec/pointer";
 
 //holds a collection of storage allocations for structs and contracts, indexed

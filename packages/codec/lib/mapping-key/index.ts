@@ -1,2 +1,7 @@
 import * as Encode from "./encode";
-export { Encode };
+export {
+  /**
+   * @protected
+   */
+  Encode
+};

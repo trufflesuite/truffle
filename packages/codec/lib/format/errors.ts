@@ -9,7 +9,7 @@ const debug = debugModule("codec:format:errors");
 
 import BN from "bn.js";
 import * as Types from "./types";
-import * as Ast from "@truffle/codec/ast";
+import * as Ast from "@truffle/codec/ast/types";
 import * as Storage from "@truffle/codec/storage/types";
 
 /*
@@ -728,12 +728,18 @@ export interface ReadErrorStack {
 }
 
 /**
+ * A byte-based location
+ */
+export type BytesLocation = "memory" | "calldata" | "eventdata";
+
+/**
  * Read error in a byte-based location (memory, calldata, etc)
  *
  * @Category Generic errors
  */
 export interface ReadErrorBytes {
   kind: "ReadErrorBytes";
+  location: BytesLocation;
   start: number;
   length: number;
 }

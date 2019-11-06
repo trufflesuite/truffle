@@ -6,6 +6,7 @@ import read from "@truffle/codec/read";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import * as Basic from "@truffle/codec/basic";
+import * as Bytes from "@truffle/codec/bytes";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
@@ -106,7 +107,7 @@ export function* decodeMemoryReferenceByAddress(
         length
       };
 
-      return yield* Basic.Decode.decodeBasic(dataType, childPointer, info);
+      return yield* Bytes.Decode.decodeBytes(dataType, childPointer, info);
 
     case "array":
       if (dataType.kind === "dynamic") {

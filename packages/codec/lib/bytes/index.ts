@@ -1,8 +1,3 @@
-export * from "./types";
-
-import * as Utils from "./utils";
-export { Utils };
-
 import * as Read from "./read";
 export {
   /**
@@ -17,4 +12,12 @@ export {
    * @protected
    */
   Decode
+};
+
+import * as Encode from "./encode";
+export {
+  /**
+   * @protected
+   */
+  Encode
 };
