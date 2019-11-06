@@ -60,7 +60,7 @@ export function* decodeCalldata(
   }
   const compiler = context.compiler;
   const contextHash = context.context;
-  const contractType = Format.Utils.MakeType.contextToType(context);
+  const contractType = Contexts.Utils.contextToType(context);
   isConstructor = context.isConstructor;
   const allocations = info.allocations.calldata;
   let allocation: AbiData.Allocate.CalldataAllocation;
@@ -271,7 +271,7 @@ export function* decodeEvent(
     let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     const contextHash = allocation.contextHash;
     const attemptContext = info.contexts[contextHash];
-    const contractType = Format.Utils.MakeType.contextToType(attemptContext);
+    const contractType = Contexts.Utils.contextToType(attemptContext);
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];
     for (const argumentAllocation of allocation.arguments) {

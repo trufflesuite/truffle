@@ -4,8 +4,8 @@ const debug = debugModule("codec:mapping-key:encode");
 import * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Evm from "@truffle/codec/evm";
-import * as Basic from "@truffle/codec/basic";
-import * as Bytes from "@truffle/codec/bytes";
+import * as BasicEncode from "@truffle/codec/basic/encode";
+import * as BytesEncode from "@truffle/codec/bytes/encode";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
 //see: https://github.com/microsoft/TypeScript/issues/18758
@@ -21,11 +21,11 @@ export function encodeMappingKey(
     input.type.typeClass === "string" ||
     (input.type.typeClass === "bytes" && input.type.kind === "dynamic")
   ) {
-    return Bytes.Encode.encodeBytes(<
+    return BytesEncode.encodeBytes(<
       Format.Values.StringValue | Format.Values.BytesDynamicValue
     >input);
   } else {
-    return Basic.Encode.encodeBasic(input);
+    return BasicEncode.encodeBasic(input);
   }
 }
 

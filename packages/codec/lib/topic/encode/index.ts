@@ -4,7 +4,7 @@ const debug = debugModule("codec:topic:encode");
 import * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Evm from "@truffle/codec/evm";
-import * as Basic from "@truffle/codec/basic";
+import * as BasicEncode from "@truffle/codec/basic/encode";
 
 /**
  * Encodes for event topics (indexed parameters).
@@ -26,7 +26,7 @@ export function encodeTopic(
     }
   }
   //otherwise, just dispath to encodeBasic
-  return Basic.Encode.encodeBasic(input);
+  return BasicEncode.encodeBasic(input);
   //...of course, really here we should be checking
   //whether the input *is* a basic type, and if not, handling
   //that appropriately!  But so far we don't need this, so this
