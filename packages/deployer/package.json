@@ -18,7 +18,7 @@
     "@ensdomains/resolver": "^0.1.9",
     "eth-ens-namehash": "^2.0.8",
     "ethereum-ens": "^0.7.7",
-    "@truffle/contract": "^4.0.37",
+    "@truffle/contract": "^4.0.39-next.1",
     "@truffle/expect": "^0.0.12",
     "emittery": "^0.4.0"
   },

@@ -1069,55 +1069,10 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@truffle/blockchain-utils@^0.0.13":
-  version "0.0.13"
-  resolved "https://registry.yarnpkg.com/@truffle/blockchain-utils/-/blockchain-utils-0.0.13.tgz#2b6302586248fe2068ba160be53855c3c923a4e2"
-  integrity sha512-58PNluLrJ967BjoBymWmfa+j9tfDa2GpAjEOiKkQav94aVbrBecDwmd3jOTl3gAhJA21AB3UZxri50mKVHopKw==
-
-"@truffle/contract-schema@^3.0.17":
-  version "3.0.17"
-  resolved "https://registry.yarnpkg.com/@truffle/contract-schema/-/contract-schema-3.0.17.tgz#7b980c8a4b131a13883c497dda05530634398eed"
-  integrity sha512-1SWxbn73F6NOpeIBmjXHSf/UOF2MmpMjM98yKUQYbJkxr0xIL0Ungx3SlbUeDKm/xLXFgrHUPLR1GbPBJ1HGgQ==
-  dependencies:
-    ajv "^6.10.0"
-    crypto-js "^3.1.9-1"
-    debug "^4.1.0"
-
-"@truffle/contract@^4.0.37":
-  version "4.0.38"
-  resolved "https://registry.yarnpkg.com/@truffle/contract/-/contract-4.0.38.tgz#1c17168d916278ef8fd9cd61d815326ac9043530"
-  integrity sha512-amytkcquQvqm4T67Or70sb9bey38yNrRmkoIgzOrA4ISAgasZI21vIWcJinGwNp/Pd2xXnA1X6H/D0gPAhB9aQ==
-  dependencies:
-    "@truffle/blockchain-utils" "^0.0.13"
-    "@truffle/contract-schema" "^3.0.17"
-    "@truffle/error" "^0.0.7"
-    "@truffle/interface-adapter" "^0.3.1"
-    bignumber.js "^7.2.1"
-    ethers "^4.0.0-beta.1"
-    web3 "1.2.1"
-    web3-core-promievent "1.2.1"
-    web3-eth-abi "1.2.1"
-    web3-utils "1.2.1"
-
-"@truffle/error@^0.0.7":
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/@truffle/error/-/error-0.0.7.tgz#e9db39885575647ef08bf624b0c13fe46d41a209"
-  integrity sha512-UIfVKsXSXocKnn5+RNklUXNoGd/JVj7V8KmC48TQzmjU33HQI86PX0JDS7SpHMHasI3w9X//1q7Lu7nZtj3Zzg==
-
 "@truffle/expect@^0.0.12":
   version "0.0.12"
   resolved "https://registry.yarnpkg.com/@truffle/expect/-/expect-0.0.12.tgz#ed609cc538753e79438eb5a9bda7c2fda8ec2535"
   integrity sha512-5Hyhrf42wvxCdzv6r8q94lDEQa1onMj6A+/lHTTmirfzqIpk4V32yV22DeFL5QuDFfPaParIT5oHOcQGVAg6XQ==
-
-"@truffle/interface-adapter@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@truffle/interface-adapter/-/interface-adapter-0.3.1.tgz#ab33c167d1f7fc7c1e553204ac6c6c5feef9bb1e"
-  integrity sha512-i4+wUtyS7un+wWwjDlkcX19PRTefIaOajzg/60H+Bc4cWWrQIuLzzY8VrWm1tCYagJQY/9KOJiHb+CRn3Qzt2A==
-  dependencies:
-    bn.js "^4.11.8"
-    ethers "^4.0.32"
-    lodash "^4.17.13"
-    web3 "1.2.1"
 
 "@trufflesuite/chromafi@^2.1.2":
   version "2.1.2"
