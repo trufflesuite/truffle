@@ -728,12 +728,18 @@ export interface ReadErrorStack {
 }
 
 /**
+ * A byte-based location
+ */
+export type BytesLocation = "memory" | "calldata" | "eventdata";
+
+/**
  * Read error in a byte-based location (memory, calldata, etc)
  *
  * @Category Generic errors
  */
 export interface ReadErrorBytes {
   kind: "ReadErrorBytes";
+  location: BytesLocation;
   start: number;
   length: number;
 }

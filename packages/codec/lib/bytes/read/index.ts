@@ -1,30 +1,14 @@
 import * as Evm from "@truffle/codec/evm";
+import * as Pointer from "@truffle/codec/pointer";
 import { DecodingError } from "@truffle/codec/errors";
 
-/**
- * read word from memory
- *
- * requires `byte` to be a multiple of WORD_SIZE (32)
- *
- * @param memory - Uint8Array
- * @param offset - number
- * @return {BN}
- */
-export function read(memory: Uint8Array, offset: number) {
-  return readBytes(memory, offset, Evm.Utils.WORD_SIZE);
-}
-
-/**
- * read <length> amount of bytes from memory, starting at <offset>
- *
- * @param memory - Uint8Array
- * @param offset - number
- * @param length - number
- */
-export function readBytes(memory: Uint8Array, offset: number, length: number) {
+export function readBytes(pointer: Pointer.BytesPointer, state: Evm.EvmState) {
+  const sourceBytes = state[pointer.location];
+  const { start: offset, length } = pointer;
   if (!Number.isSafeInteger(offset + length)) {
     throw new DecodingError({
       kind: "ReadErrorBytes" as const,
+      location: pointer.location,
       start: offset,
       length
     });
@@ -34,22 +18,22 @@ export function readBytes(memory: Uint8Array, offset: number, length: number) {
   var bytes = new Uint8Array(length);
   bytes.fill(0); //fill it wil zeroes to start
 
-  //if the start is beyond the end of memory, just return those 0s
-  if (offset >= memory.length) {
+  //if the start is beyond the end of the source, just return those 0s
+  if (offset >= sourceBytes.length) {
     return bytes;
   }
 
-  // if we're reading past the end of memory, truncate the length to read
-  let excess = offset + length - memory.length;
+  // if we're reading past the end of the source, truncate the length to read
+  let excess = offset + length - sourceBytes.length;
   let readLength;
   if (excess > 0) {
-    readLength = memory.length - offset;
+    readLength = sourceBytes.length - offset;
   } else {
     readLength = length;
   }
 
-  //get the (truncated) memory
-  let existing = new Uint8Array(memory.buffer, offset, readLength);
+  //get the (truncated) bytes
+  let existing = new Uint8Array(sourceBytes.buffer, offset, readLength);
 
   //copy it into our buffer
   bytes.set(existing);

@@ -13,3 +13,11 @@ export {
    */
   Encode
 };
+
+import * as Read from "./read";
+export {
+  /**
+   * @protected
+   */
+  Read
+};

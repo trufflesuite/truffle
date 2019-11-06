@@ -2,13 +2,15 @@ import debugModule from "debug";
 const debug = debugModule("codec:stack:read");
 
 import * as Evm from "@truffle/codec/evm";
+import * as Pointer from "@truffle/codec/pointer";
 import { DecodingError } from "@truffle/codec/errors";
 
 export function readStack(
-  stack: Uint8Array[],
-  from: number,
-  to: number
+  pointer: Pointer.StackPointer,
+  state: Evm.EvmState
 ): Uint8Array {
+  let { from, to } = pointer;
+  let { stack } = state;
   if (from < 0 || to >= stack.length) {
     throw new DecodingError({
       kind: "ReadErrorStack",
@@ -28,4 +30,10 @@ export function readStack(
     result.set(words[index], index * Evm.Utils.WORD_SIZE);
   }
   return result;
+}
+
+export function readStackLiteral(
+  pointer: Pointer.StackLiteralPointer
+): Uint8Array {
+  return pointer.literal;
 }
