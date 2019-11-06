@@ -3,6 +3,7 @@ const debug = debugModule("codec:core");
 
 import * as Ast from "@truffle/codec/ast";
 import * as AbiData from "@truffle/codec/abi-data";
+import * as Topic from "@truffle/codec/topic";
 import * as Pointer from "@truffle/codec/pointer";
 import {
   DecoderRequest,
@@ -354,10 +355,7 @@ export function* decodeEvent(
       .filter(argument => argument.indexed)
       .map(argument => argument.value);
     debug("indexedValues: %O", indexedValues);
-    const reEncodedTopics = indexedValues.map(
-      value => AbiData.Encode.encodeAbi(value, info.allocations.abi) //NOTE: I should really use a different encoding function here,
-      //but I haven't written that function yet
-    );
+    const reEncodedTopics = indexedValues.map(Topic.Encode.encodeTopic);
     const encodedTopics = info.state.eventtopics;
     //now: do *these* match?
     const selectorAdjustment = allocation.anonymous ? 0 : 1;

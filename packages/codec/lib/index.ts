@@ -313,6 +313,7 @@ export {
   /**
    * For encoding mapping keys
    *
+   * @protected
    * @category Solidity data location
    */
   MappingKey,
