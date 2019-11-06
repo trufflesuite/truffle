@@ -1,6 +1,6 @@
 const debug = require("debug")("contract:utils"); // eslint-disable-line no-unused-vars
 const web3Utils = require("web3-utils");
-const bigNumberify = require("ethers/utils/bignumber").bigNumberify;
+const { bigNumberify } = require("ethers/utils");
 const abi = require("web3-eth-abi");
 const BlockchainUtils = require("@truffle/blockchain-utils");
 const reformat = require("./reformat");
@@ -255,10 +255,10 @@ const Utils = {
     );
 
     const denominator = bigNumberify(10).pow(significantFigures);
-    const numerator = Math.round(decimal * denominator);
-    const secondOperand = bigNumberify(numerator).div(denominator);
+    const multiplier = Math.round(decimal * denominator);
+    const numerator = bigNumberify(multiplier).mul(bignum);
 
-    return bignum.mul(secondOperand);
+    return numerator.div(denominator);
   },
 
   // checks if given contract instance has a set provider
