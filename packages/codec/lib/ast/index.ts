@@ -18,3 +18,11 @@ export {
    */
   Decode
 };
+
+import * as Import from "./import";
+export {
+  /**
+   * @protected
+   */
+  Import
+};

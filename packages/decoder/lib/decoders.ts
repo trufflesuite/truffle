@@ -162,10 +162,7 @@ export class WireDecoder {
       //first, add the contract itself
       const contractNode = this.contractNodes[id];
       references[id] = contractNode;
-      types[id] = Format.Utils.MakeType.definitionToStoredType(
-        contractNode,
-        compiler
-      );
+      types[id] = Ast.Import.definitionToStoredType(contractNode, compiler);
       //now, add its struct and enum definitions
       for (const node of contractNode.nodes) {
         if (
@@ -175,7 +172,7 @@ export class WireDecoder {
           references[node.id] = node;
           //HACK even though we don't have all the references, we only need one:
           //the reference to the contract itself, which we just added, so we're good
-          types[node.id] = Format.Utils.MakeType.definitionToStoredType(
+          types[node.id] = Ast.Import.definitionToStoredType(
             node,
             compiler,
             references
@@ -932,7 +929,7 @@ export class ContractInstanceDecoder {
   ): Promise<DecoderTypes.ContractState> {
     let blockNumber = await this.regularizeBlock(block);
     return {
-      class: Contexts.Utils.contextToType(this.context),
+      class: Contexts.Import.contextToType(this.context),
       address: this.contractAddress,
       code: this.contractCode,
       balanceAsBN: new BN(

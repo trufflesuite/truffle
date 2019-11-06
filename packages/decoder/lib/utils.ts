@@ -109,11 +109,7 @@ export function wrapElementaryViaDefinition(
   definition: Codec.Ast.AstNode,
   compiler: Codec.Compiler.CompilerVersion
 ): Codec.Format.Values.ElementaryValue {
-  let dataType = Codec.Format.Utils.MakeType.definitionToType(
-    definition,
-    compiler,
-    null
-  ); //force location to undefined
+  let dataType = Codec.Ast.Import.definitionToType(definition, compiler, null); //force location to undefined
   return wrapElementaryValue(value, dataType);
 }
 
