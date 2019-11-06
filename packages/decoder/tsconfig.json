@@ -9,7 +9,12 @@
     "outDir": "dist",
     "baseUrl": ".",
     "lib": ["es2017"],
-    "paths": {},
+    "paths": {
+      "web3-core": [
+        "../../node_modules/web3/node_modules/web3-core/types",
+        "node_modules/web3/node_modules/web3-core/types"
+      ]
+    },
     "rootDir": "lib",
     "typeRoots": [
       "./typings",
@@ -19,8 +24,7 @@
       "../../**/node_modules/@types/lodash.clonedeep",
       "../../**/node_modules/@types/lodash.isequal",
       "../../**/node_modules/@types/lodash.merge",
-      "../../node_modules/@truffle/blockchain-utils/typings",
-      "../../node_modules/web3-core/types"
+      "../../node_modules/@truffle/blockchain-utils/typings"
     ]
 
   },
