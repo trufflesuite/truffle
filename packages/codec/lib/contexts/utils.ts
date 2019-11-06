@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:contexts:utils");
 
 import * as Evm from "@truffle/codec/evm";
+import * as Format from "@truffle/codec/format";
 import {
   DecoderContexts,
   DecoderContext,
@@ -143,4 +144,25 @@ export function normalizeContexts(contexts: Contexts): Contexts {
 
   //finally, return this mess!
   return newContexts;
+}
+
+export function contextToType(context: Context): Format.Types.ContractType {
+  if (context.contractId !== undefined) {
+    return {
+      typeClass: "contract",
+      kind: "native",
+      id: context.contractId.toString(),
+      typeName: context.contractName,
+      contractKind: context.contractKind,
+      payable: context.payable
+    };
+  } else {
+    return {
+      typeClass: "contract",
+      kind: "foreign",
+      typeName: context.contractName,
+      contractKind: context.contractKind,
+      payable: context.payable
+    };
+  }
 }

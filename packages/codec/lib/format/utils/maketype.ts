@@ -4,7 +4,6 @@ const debug = debugModule("codec:format:utils:maketype");
 import BN from "bn.js";
 import * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
-import * as Contexts from "@truffle/codec/contexts";
 import * as AbiData from "@truffle/codec/abi-data/types";
 import * as AstUtils from "@truffle/codec/ast/utils";
 import * as Ast from "@truffle/codec/ast/types";
@@ -483,28 +482,5 @@ export function abiParameterToType(
         memberTypes,
         typeHint
       };
-  }
-}
-
-export function contextToType(
-  context: Contexts.Context
-): Format.Types.ContractType {
-  if (context.contractId !== undefined) {
-    return {
-      typeClass: "contract",
-      kind: "native",
-      id: context.contractId.toString(),
-      typeName: context.contractName,
-      contractKind: context.contractKind,
-      payable: context.payable
-    };
-  } else {
-    return {
-      typeClass: "contract",
-      kind: "foreign",
-      typeName: context.contractName,
-      contractKind: context.contractKind,
-      payable: context.payable
-    };
   }
 }
