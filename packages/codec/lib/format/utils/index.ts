@@ -8,6 +8,3 @@ export {
 
 import * as Inspect from "./inspect";
 export { Inspect };
-
-import * as MakeType from "./maketype";
-export { MakeType };

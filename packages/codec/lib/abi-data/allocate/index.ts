@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:abi:allocate");
 
 import * as AbiData from "@truffle/codec/abi-data/types";
+import * as Import from "@truffle/codec/abi-data/import";
 import * as AbiDataUtils from "@truffle/codec/abi-data/utils";
 import * as Evm from "@truffle/codec/evm";
 import * as Common from "@truffle/codec/common";
@@ -428,7 +429,7 @@ function allocateCalldata(
     id = "-1"; //fake irrelevant ID
     parameterTypes = abiEntry.inputs.map(parameter => ({
       name: parameter.name,
-      type: Format.Utils.MakeType.abiParameterToType(parameter)
+      type: Import.abiParameterToType(parameter)
     }));
     abiAllocation = allocateMembers(
       id,
@@ -544,7 +545,7 @@ function allocateEvent(
     //THIS IS DELIBERATELY NOT AN ELSE
     id = "-1"; //fake irrelevant ID
     parameterTypes = abiEntry.inputs.map(abiParameter => ({
-      type: Format.Utils.MakeType.abiParameterToType(abiParameter),
+      type: Import.abiParameterToType(abiParameter),
       name: abiParameter.name,
       indexed: abiParameter.indexed
     }));

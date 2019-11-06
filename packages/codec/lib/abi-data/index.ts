@@ -12,6 +12,14 @@ export {
   Decode
 };
 
+import * as Import from "./import";
+export {
+  /**
+   * @protected
+   */
+  Import
+};
+
 export * from "./types";
 
 import * as Utils from "./utils";
