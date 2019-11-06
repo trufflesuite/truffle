@@ -30,7 +30,7 @@ export function* decodeVariable(
   info: Evm.EvmInfo
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
-  let dataType = Format.Utils.MakeType.definitionToType(definition, compiler);
+  let dataType = Ast.Import.definitionToType(definition, compiler);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 

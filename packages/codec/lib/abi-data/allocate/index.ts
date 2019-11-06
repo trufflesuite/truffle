@@ -404,7 +404,7 @@ function allocateCalldata(
     id = node.id.toString();
     parameterTypes = parameters.map(parameter => ({
       name: parameter.name,
-      type: Format.Utils.MakeType.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
+      type: Ast.Import.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
     }));
     //now: perform the allocation!
     try {
@@ -519,7 +519,7 @@ function allocateEvent(
     let parameters = node.parameters.parameters;
     parameterTypes = parameters.map(definition => ({
       //note: if node is defined, compiler had better be defined, too!
-      type: Format.Utils.MakeType.definitionToType(definition, compiler),
+      type: Ast.Import.definitionToType(definition, compiler),
       name: definition.name,
       indexed: definition.indexed
     }));
