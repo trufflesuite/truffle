@@ -64,7 +64,7 @@ describe("Compilation", () => {
       sourceIds: [{ id: sourceId }]
     });
 
-    const getCompilationResult = await wsClient.execute(GetCompilation, { id: expectedId }, true);
+    const getCompilationResult = await wsClient.execute(GetCompilation, { id: expectedId });
 
     expect(getCompilationResult).toHaveProperty("compilation");
 
@@ -86,7 +86,7 @@ describe("Compilation", () => {
   });
 
   test("can retrieve all compilations", async () => {
-    const allCompilationsResult = await wsClient.execute(GetAllCompilations, {}, true);
+    const allCompilationsResult = await wsClient.execute(GetAllCompilations, {});
 
     expect(allCompilationsResult).toHaveProperty("compilations");
 

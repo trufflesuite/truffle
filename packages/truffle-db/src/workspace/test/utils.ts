@@ -7,6 +7,7 @@ import { Workspace, schema } from "truffle-db/workspace";
 export { generateId } from "truffle-db/helpers";
 
 import tmp from "tmp";
+import * as fse from "fs-extra";
 
 export const fixturesDirectory = path.join(
   __dirname, // truffle-db/src/db/test
@@ -28,18 +29,27 @@ export class WorkspaceClient {
 
   constructor () {
     this.workspace = new Workspace(tempDir.name);
-    this.persistedWorkspace = new Workspace(tempDir.name);
+  }
+
+  async destroy(resource) {
+    await this.workspace.dbApi.bytecodes.destroy();
   }
 
   async execute (request, variables = {}, persisted = false) {
-    const result = await graphql.execute(
-      schema,
-      request,
-      null, // root object, managed by workspace
-      { workspace: persisted ? this.persistedWorkspace : this.workspace }, // context vars
-      variables
-    );
-    return result.data;
+      if(persisted) {
+        this.persistedWorkspace = new Workspace(tempDir.name);
+      }
+
+      const result = await graphql.execute(
+        schema,
+        request,
+        null, // root object, managed by workspace
+        { workspace: persisted ? this.persistedWorkspace : this.workspace }, // context vars
+        variables
+      );
+
+      return result.data;
+
   }
 }
 

@@ -52,7 +52,7 @@ const resources = {
 }
 
 export class Workspace {
-  private dbApi: PouchApi;
+  public dbApi: PouchApi;
 
   getSavePath(workingDirectory:string, resource:string):string {
     const savePath = path.join(workingDirectory, ".db", resource);

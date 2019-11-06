@@ -30,7 +30,7 @@ describe("Bytecode", () => {
   });
 
   test("can be queried", async() =>{
-    const executionResult = await wsClient.execute(GetBytecode, { id: expectedId }, true);
+    const executionResult = await wsClient.execute(GetBytecode, { id: expectedId });
 
     expect(executionResult).toHaveProperty("bytecode");
 
@@ -44,7 +44,7 @@ describe("Bytecode", () => {
   });
 
   test("can retrieve all bytecodes", async() => {
-    const executionResult = await wsClient.execute(GetAllBytecodes, {}, true);
+    const executionResult = await wsClient.execute(GetAllBytecodes, {});
 
     expect(executionResult).toHaveProperty("bytecodes");
 
