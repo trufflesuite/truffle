@@ -7,13 +7,12 @@ import * as Evm from "@truffle/codec/evm";
 //so, I'm just going to have to throw in a bunch of type coercions >_>
 
 /**
- * Handles encoding of basic types; returns undefined if the input is bad for
- * some reason -- please don't call it in such situations!
+ * Handles encoding of basic types; yes the input type is broader than
+ * it should be but it's hard to fix this without causing other problems,
+ * sorry!
  * @Category Encoding (low-level)
  */
-export function encodeBasic(
-  input: Format.Values.Value
-): Uint8Array | undefined {
+export function encodeBasic(input: Format.Values.Value): Uint8Array {
   let bytes: Uint8Array;
   switch (input.type.typeClass) {
     case "uint":
@@ -36,6 +35,7 @@ export function encodeBasic(
     }
     case "bytes":
       switch (input.type.kind) {
+        //deliberately not handling dynamic case!
         case "static":
           bytes = Conversion.toBytes(
             (<Format.Values.BytesValue>input).value.asHex
@@ -43,9 +43,6 @@ export function encodeBasic(
           let padded = new Uint8Array(Evm.Utils.WORD_SIZE); //initialized to zeroes
           padded.set(bytes);
           return padded;
-        case "dynamic":
-          //not a basic type!
-          return undefined;
       }
     case "address":
       return Conversion.toBytes(
@@ -59,10 +56,8 @@ export function encodeBasic(
       );
     case "function": {
       switch (input.type.visibility) {
-        case "internal":
-          //for our purposes here, we will NOT count internal functions as a
-          //basic type!
-          return undefined;
+        //for our purposes here, we will NOT count internal functions as a
+        //basic type!  so no handling of internal case
         case "external":
           let coercedInput: Format.Values.FunctionExternalValue = <
             Format.Values.FunctionExternalValue
@@ -76,6 +71,7 @@ export function encodeBasic(
           encoded.set(selectorBytes, Evm.Utils.ADDRESS_SIZE); //set it after the address
           return encoded;
       }
+      break; //to satisfy TS
     }
     case "fixed":
     case "ufixed":
@@ -84,7 +80,5 @@ export function encodeBasic(
       )).value.asBig;
       let shiftedValue = Conversion.shiftBigUp(bigValue, input.type.places);
       return Conversion.toBytes(shiftedValue, Evm.Utils.WORD_SIZE);
-    default:
-      return undefined;
   }
 }

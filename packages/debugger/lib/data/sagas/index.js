@@ -634,9 +634,10 @@ function literalAssignments(node, stack, currentDepth) {
         from: top - Codec.Ast.Utils.stackSize(node) + 1,
         to: top
       },
-      { stack } //HACK; this isn't a full EVM state but it's all we need
-      //(and using a proper EVM state here would be more trouble than it's
-      //worth)
+      {
+        stack,
+        storage: {} //irrelevant, but let's respect the type signature :)
+      }
     );
   } catch (error) {
     literal = undefined; //not sure if this is right, but this is what would
