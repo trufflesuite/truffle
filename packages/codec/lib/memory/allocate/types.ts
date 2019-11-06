@@ -1,4 +1,4 @@
-import * as Ast from "@truffle/codec/ast";
+import * as Ast from "@truffle/codec/ast/types";
 import * as Pointer from "@truffle/codec/pointer";
 
 //memory works the same as abi except we don't bother keeping track of size

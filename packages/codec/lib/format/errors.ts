@@ -9,7 +9,7 @@ const debug = debugModule("codec:format:errors");
 
 import BN from "bn.js";
 import * as Types from "./types";
-import * as Ast from "@truffle/codec/ast";
+import * as Ast from "@truffle/codec/ast/types";
 import * as Storage from "@truffle/codec/storage/types";
 
 /*

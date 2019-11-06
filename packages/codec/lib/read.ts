@@ -1,9 +1,9 @@
-import * as Storage from "@truffle/codec/storage";
-import * as Stack from "@truffle/codec/stack";
-import * as Bytes from "@truffle/codec/bytes";
-import * as Ast from "@truffle/codec/ast";
-import * as Topic from "@truffle/codec/topic";
-import * as Special from "@truffle/codec/special";
+import * as StorageRead from "@truffle/codec/storage/read";
+import * as StackRead from "@truffle/codec/stack/read";
+import * as BytesRead from "@truffle/codec/bytes/read";
+import * as AstRead from "@truffle/codec/ast/read";
+import * as TopicRead from "@truffle/codec/topic/read";
+import * as SpecialRead from "@truffle/codec/special/read";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
@@ -14,26 +14,26 @@ export default function* read(
 ): Generator<DecoderRequest, Uint8Array, Uint8Array> {
   switch (pointer.location) {
     case "stack":
-      return Stack.Read.readStack(pointer, state);
+      return StackRead.readStack(pointer, state);
 
     case "storage":
-      return yield* Storage.Read.readStorage(pointer, state);
+      return yield* StorageRead.readStorage(pointer, state);
 
     case "memory":
     case "calldata":
     case "eventdata":
-      return Bytes.Read.readBytes(pointer, state);
+      return BytesRead.readBytes(pointer, state);
 
     case "stackliteral":
-      return Stack.Read.readStackLiteral(pointer);
+      return StackRead.readStackLiteral(pointer);
 
     case "definition":
-      return Ast.Read.readDefinition(pointer);
+      return AstRead.readDefinition(pointer);
 
     case "special":
-      return Special.Read.readSpecial(pointer, state);
+      return SpecialRead.readSpecial(pointer, state);
 
     case "eventtopic":
-      return Topic.Read.readTopic(pointer, state);
+      return TopicRead.readTopic(pointer, state);
   }
 }
