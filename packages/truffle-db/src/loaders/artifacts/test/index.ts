@@ -119,6 +119,11 @@ query GetWorkspaceBytecode($id: ID!) {
     bytecode(id: $id) {
       id
       bytes
+      linkReferences {
+        offsets
+        name
+        length
+      }
     }
   }
 }`;
@@ -511,8 +516,6 @@ describe("Compilation", () => {
   });
 
   it("loads contract instances", async() => {
-    let query = await db.query(GetWorkspaceContractInstance, contractInstanceIds[0]);
-
     for(let index in migratedArtifacts) {
       let {
         data: {

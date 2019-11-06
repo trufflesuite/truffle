@@ -66,7 +66,7 @@ export const schema = mergeSchemas({
     }
 
     input BytecodeLinkReferenceInput {
-      offsets: [ByteOffset!]!
+      offsets: [Int!]!
       name: String
       length: Int!
     }
@@ -107,7 +107,7 @@ export const schema = mergeSchemas({
 
     input ContractConstructorLinkedBytecodeInput {
       bytecode: ContractConstructorBytecodeInput!
-      linkValues: [LinkValueInput]
+      linkValues: [ContractConstructorLinkValueInput]
     }
 
     input ContractConstructorInput {
@@ -168,13 +168,25 @@ export const schema = mergeSchemas({
 
     input LinkReferenceInput {
       offsets: [ByteOffset!]
+      name: String
       length: Int!
     }
 
-    input LinkValueInput {
+    input ContractInstanceLinkValueInput {
+      value: Address!
       linkReference: LinkReferenceInput!
-      value: Bytes!
     }
+
+    input ContractInstanceCreationConstructorLinkValueInput {
+      value: Address!
+      linkReference: LinkReferenceInput!
+    }
+
+    input ContractConstructorLinkValueInput {
+      value: Address!
+      linkReference: LinkReferenceInput!
+    }
+
     type ContractInstancesAddPayload {
       contractInstances: [ContractInstance!]!
     }
@@ -201,6 +213,7 @@ export const schema = mergeSchemas({
 
     input ContractInstanceCreationConstructorBytecodeInput {
       bytecode: ContractInstanceCreationConstructorBytecodeIdInput
+      linkValues: [ContractInstanceCreationConstructorLinkValueInput]
     }
 
     input ContractInstanceCreationConstructorInput {
@@ -214,7 +227,7 @@ export const schema = mergeSchemas({
 
     input ContractInstanceLinkedBytecodeInput {
       bytecode: ContractInstanceBytecodeInput!
-      linkValues: [LinkValueInput]
+      linkValues: [ContractInstanceLinkValueInput]
     }
 
     input ContractInstanceInput {

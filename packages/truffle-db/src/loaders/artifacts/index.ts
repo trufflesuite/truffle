@@ -29,6 +29,11 @@ mutation AddBytecodes($bytecodes: [BytecodeInput!]!) {
     }) {
       bytecodes {
         id
+        linkReferences {
+          offsets
+          name
+          length
+        }
       }
     }
   }
@@ -226,12 +231,34 @@ const AddContractInstances = gql`
     id: ID!
   }
 
+  input LinkReferenceInput {
+    offsets: [Int]
+    name: String
+    length: Int
+  }
+
+  input LinkValueLinkReferenceInput {
+    bytecode: ID!
+    index: FileIndex
+  }
+
+  input LinkValueInput {
+    value: String!
+    linkReference: LinkValueLinkReferenceInput!
+  }
+
   input ContractInstanceCreationConstructorLinkedBytecodeInput {
     bytecode: ContractInstanceCreationConstructorBytecodeInput!
+    linkValues: [LinkValueInput]
   }
 
   input ContractInstanceCallBytecodeInput {
     id: ID!
+  }
+
+  input ContractInstanceLinkedCallBytecodeInput {
+    bytecode: ContractInstanceBytecodeInput
+    linkValues: [LinkValueInput]
   }
 
   input ContractInstanceCreationConstructorInput {
@@ -248,7 +275,7 @@ const AddContractInstances = gql`
     network: ContractInstanceNetworkInput!
     creation: ContractInstanceCreationInput
     contract: ContractInstanceContractInput
-    callBytecode: ContractInstanceCallBytecodeInput
+    callBytecode: ContractInstanceLinkedCallBytecodeInput
   }
 
   mutation AddContractInstances($contractInstances: [ContractInstanceInput!]!) {
@@ -276,6 +303,14 @@ const AddContractInstances = gql`
                 bytecode {
                   bytes
                   linkReferences {
+                    offsets
+                    name
+                    length
+                  }
+                }
+                linkValues {
+                  value
+                  linkReference {
                     offsets
                     name
                     length
@@ -325,20 +360,37 @@ type WorkflowCompileResult = {
   contracts: { [contractName: string]: ContractObject }
 };
 
+type networkLinkObject = {
+  [name: string]: string;
+}
+
 type LoaderNetworkObject = {
   contract: string,
   id: string,
   address: string,
-  transactionHash: string
+  transactionHash: string,
+  links?: networkLinkObject
+}
+
+type LinkReferenceObject = {
+  offsets: Array<number>,
+  name: string,
+  length: number
+}
+
+type BytecodeInfo = {
+  id: string,
+  linkReferences: Array<LinkReferenceObject>,
+  bytes?: string
+}
+
+type BytecodesObject = {
+  bytecodes: Array<BytecodeInfo>,
+  callBytecodes: Array<BytecodeInfo>
 }
 
 type IdObject = {
   id: string
-}
-
-type BytecodeIdsObject = {
-  bytecodes: Array<IdObject>,
-  callBytecodes: Array<IdObject>
 }
 
 type CompilationConfigObject = {
@@ -366,13 +418,13 @@ export class ArtifactsLoader {
       const contractIds = await this.loadCompilationContracts(contracts[compiler.name].contracts, id, compiler.name);
       const networks = await this.loadNetworks(contracts[compiler.name].contracts, this.config["artifacts_directory"], this.config["contracts_directory"]);
       if(networks[0].length) {
-        this.loadContractInstances(contracts[compiler.name].contracts, contractIds.contractIds, networks, contractIds.bytecodeIds);
+        this.loadContractInstances(contracts[compiler.name].contracts, contractIds.contractIds, networks, contractIds.bytecodes);
       }
     }))
   }
 
   async loadCompilationContracts (contracts: Array<ContractObject>, compilationId: string, compilerName: string) {
-    const bytecodeIds = await this.loadBytecodes(contracts);
+    const bytecodes = await this.loadBytecodes(contracts);
     const contractObjects = contracts.map((contract, index) => ({
       name: contract["contractName"],
       abi: {
@@ -386,7 +438,7 @@ export class ArtifactsLoader {
       },
       constructor: {
         createBytecode: {
-          bytecode: bytecodeIds.bytecodes[index]
+          bytecode: { id: bytecodes.bytecodes[index].id }
         }
       }
     }));
@@ -395,11 +447,11 @@ export class ArtifactsLoader {
 
     const contractIds = contractsLoaded.data.workspace.contractsAdd.contracts.map( ({ id }) => ({ id }) );
 
-    return { compilerName: contracts[0].compiler.name, contractIds: contractIds, bytecodeIds: bytecodeIds };
+    return { compilerName: contracts[0].compiler.name, contractIds: contractIds, bytecodes: bytecodes };
 
   }
 
-  async loadBytecodes (contracts: Array<ContractObject>) {
+  async loadBytecodes (contracts: Array<ContractObject>): Promise<BytecodesObject> {
     // transform contract objects into data model bytecode inputs
     // and run mutation
     let bytecodes = [];
@@ -503,7 +555,8 @@ export class ArtifactsLoader {
                 id: id,
                 address: filteredNetwork[0][1]["address"],
                 transactionHash: filteredNetwork[0][1]["transactionHash"],
-                bytecode: bytecode
+                bytecode: bytecode,
+                links: filteredNetwork[0][1]["links"]
               });
             }
           }
@@ -514,12 +567,32 @@ export class ArtifactsLoader {
     return networksByContract;
   }
 
-  async loadContractInstances (contracts: Array<ContractObject>, contractIds: Array<IdObject>, networksArray: Array<Array<LoaderNetworkObject>>, bytecodeIds: BytecodeIdsObject) {
+  getNetworkLinks(network: LoaderNetworkObject, bytecode: BytecodeInfo) {
+    let networkLink = {}
+    if(network.links) {
+      networkLink = Object.entries(network.links).map((link) => {
+        let linkReferenceByName = bytecode.linkReferences.filter(({ name }, index) => name === link[0]);
+
+        let linkValue = {
+          value: link[1],
+          linkReference: linkReferenceByName[0]
+        }
+        return linkValue;
+      })
+    }
+
+    return networkLink;
+  }
+
+  async loadContractInstances (contracts: Array<ContractObject>, contractIds: Array<IdObject>, networksArray: Array<Array<LoaderNetworkObject>>, bytecodes: BytecodesObject) {
     // networksArray is an array of arrays of networks for each contract;
     // this first mapping maps to each contract
     const instances = networksArray.map((networks, index) => {
       // this second mapping maps each network in a contract
       const contractInstancesByNetwork = networks.map((network) => {
+        let createBytecodeLinkValues = this.getNetworkLinks(network, bytecodes.bytecodes[index]);
+        let callBytecodeLinkValues = this.getNetworkLinks(network, bytecodes.callBytecodes[index]);
+
         let instance = {
           address: network.address,
           contract: contractIds[index],
@@ -530,12 +603,14 @@ export class ArtifactsLoader {
             transactionHash: network.transactionHash,
             constructor: {
               createBytecode: {
-                bytecode: bytecodeIds.bytecodes[index]
+                bytecode: { id: bytecodes.bytecodes[index].id },
+                linkValues: createBytecodeLinkValues
               }
             }
           },
           callBytecode: {
-            bytecode: bytecodeIds.callBytecodes[index]
+            bytecode: { id: bytecodes.callBytecodes[index].id },
+            linkValues: callBytecodeLinkValues
           }
         }
         return instance;
