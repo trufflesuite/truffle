@@ -929,7 +929,7 @@ export class ContractInstanceDecoder {
   ): Promise<DecoderTypes.ContractState> {
     let blockNumber = await this.regularizeBlock(block);
     return {
-      class: Contexts.Utils.contextToType(this.context),
+      class: Contexts.Import.contextToType(this.context),
       address: this.contractAddress,
       code: this.contractCode,
       balanceAsBN: new BN(
