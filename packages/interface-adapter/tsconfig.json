@@ -9,7 +9,12 @@
     "outDir": "dist",
     "baseUrl": ".",
     "lib": ["es2017"],
-    "paths": {},
+    "paths": {
+      "web3-eth": [
+        "../../node_modules/web3/node_modules/web3-eth/types",
+        "node_modules/web3/node_modules/web3-eth/types"
+      ]
+    },
     "rootDir": "lib",
     "typeRoots": [
       "../../node_modules/@types/bn.js",
