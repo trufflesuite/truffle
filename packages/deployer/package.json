@@ -19,7 +19,7 @@
     "eth-ens-namehash": "^2.0.8",
     "ethereum-ens": "^0.7.7",
     "@truffle/contract": "^4.0.39-next.1",
-    "@truffle/expect": "^0.0.12",
+    "@truffle/expect": "^0.0.13-next.1",
     "emittery": "^0.4.0"
   },
   "devDependencies": {
