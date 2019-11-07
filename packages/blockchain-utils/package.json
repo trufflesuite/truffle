@@ -21,10 +21,7 @@
     "@types/node": "^12.12.5",
     "mocha": "5.2.0",
     "ts-node": "^8.3.0",
-    "typescript": "^3.6.3",
-    "web3-providers-http": "1.2.2",
-    "web3-providers-ipc": "1.2.2",
-    "web3-providers-ws": "1.2.2"
+    "typescript": "^3.6.3"
   },
   "keywords": [
     "blockchain",
@@ -33,5 +30,8 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@truffle/provider": "^0.2.0"
   }
 }

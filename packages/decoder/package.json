@@ -21,8 +21,8 @@
   },
   "types": "lib/interface/index.ts",
   "dependencies": {
-    "@truffle/blockchain-utils": "^0.0.13",
     "@truffle/decode-utils": "^1.0.18",
+    "@truffle/provider": "^0.2.0",
     "abi-decoder": "^1.2.0",
     "async-eventemitter": "^0.2.4",
     "bn.js": "^4.11.8",

@@ -19,7 +19,6 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@truffle/blockchain-utils": "^0.0.13",
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
     "lodash": "^4.17.13",
