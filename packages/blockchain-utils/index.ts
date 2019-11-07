@@ -1,4 +1,5 @@
-import { parsedUriObject, Callback, JsonRpcResponse, Provider } from "typings";
+import { parsedUriObject } from "typings";
+import { Callback, JsonRpcResponse, Provider } from "@truffle/provider";
 
 const Blockchain = {
   getBlockByNumber(

@@ -4,7 +4,7 @@ import { EvmInfo } from "../types/evm";
 import decode from "../decode";
 import TruffleDecoder from "./contract-decoder";
 import { ContractObject } from "@truffle/contract-schema/spec";
-import { Provider } from "@truffle/blockchain-utils";
+import { Provider } from "@truffle/provider";
 import { DecoderRequest } from "../types/request";
 
 export { getStorageAllocations, storageSize } from "../allocate/storage";

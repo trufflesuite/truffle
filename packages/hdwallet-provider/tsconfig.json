@@ -19,7 +19,7 @@
     },
     "typeRoots": [
       "../../node_modules/@types/mocha",
-      "../../node_modules/@truffle/blockchain-utils/typings"
+      "../../node_modules/@truffle/provider/typings"
     ]
   },
   "include": [

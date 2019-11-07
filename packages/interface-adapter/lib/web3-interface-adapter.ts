@@ -1,6 +1,6 @@
 import { Web3Shim, Web3ShimOptions } from "./web3-shim";
 import { EvmBlockType } from "./interface-adapter";
-import { Provider } from "@truffle/blockchain-utils";
+import { Provider } from "@truffle/provider";
 
 export interface Web3InterfaceAdapterOptions extends Web3ShimOptions {}
 

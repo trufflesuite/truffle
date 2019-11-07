@@ -30,7 +30,7 @@ import {
   AstReferences
 } from "@truffle/decode-utils";
 import { Transaction, EventLog, Log } from "web3-core";
-import { Provider } from "@truffle/blockchain-utils";
+import { Provider } from "@truffle/provider";
 import abiDecoder from "abi-decoder";
 import isEqual from "lodash.isequal"; //util.isDeepStrictEqual doesn't exist in Node 8
 

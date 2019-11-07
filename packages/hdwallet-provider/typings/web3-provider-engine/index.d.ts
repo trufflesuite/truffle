@@ -3,7 +3,7 @@ import {
   JSONRPCRequestPayload,
   JSONRPCErrorCallback
 } from "ethereum-protocol";
-import { Callback, JsonRpcResponse } from "@truffle/blockchain-utils";
+import { Callback, JsonRpcResponse } from "@truffle/provider";
 
 interface Web3ProviderEngineOptions {
   pollingInterval?: number;

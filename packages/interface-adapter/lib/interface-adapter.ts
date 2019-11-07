@@ -3,7 +3,7 @@ import {
   Web3InterfaceAdapterOptions
 } from "./web3-interface-adapter";
 import { Block as EvmBlock } from "web3-eth";
-import { Provider } from "@truffle/blockchain-utils";
+import { Provider } from "@truffle/provider";
 
 export interface InterfaceAdapterOptions extends Web3InterfaceAdapterOptions {}
 export type EvmBlockType = number | string;
