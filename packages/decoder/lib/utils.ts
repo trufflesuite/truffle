@@ -1,4 +1,4 @@
-import { ContractObject } from "@truffle/contract-schema/spec";
+import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import Web3 from "web3";
 import BN from "bn.js";
 
@@ -24,7 +24,7 @@ export function nativizeDecoderVariables(
   //Again, don't use this in real code!
 }
 
-export function getContractNode(contract: ContractObject): Codec.Ast.AstNode {
+export function getContractNode(contract: Artifact): Codec.Ast.AstNode {
   return (contract.ast || { nodes: [] }).nodes.find(
     (contractNode: Codec.Ast.AstNode) =>
       contractNode.nodeType === "ContractDefinition" &&
@@ -34,7 +34,7 @@ export function getContractNode(contract: ContractObject): Codec.Ast.AstNode {
 }
 
 export function makeContext(
-  contract: ContractObject,
+  contract: Artifact,
   node: Codec.Ast.AstNode | undefined,
   isConstructor = false
 ): Codec.Contexts.DecoderContext {
@@ -62,7 +62,7 @@ export function makeContext(
 
 //attempts to determine if the given contract is a library or not
 function contractKind(
-  contract: ContractObject,
+  contract: Artifact,
   node?: Codec.Ast.AstNode
 ): Codec.ContractKind {
   //first: if we have a node, use its listed contract kind
