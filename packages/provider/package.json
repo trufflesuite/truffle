@@ -10,6 +10,7 @@
   },
   "version": "0.2.0",
   "main": "index.js",
+  "types": "./typings/index.d.ts",
   "scripts": {
     "test": "mocha"
   },
