@@ -43,7 +43,7 @@ For a contract instance decoder, use one of the following:
 * [[forDeployedContract|`forDeployedContract`]]
 * [[forArtifactAt|`forArtifactAt`]]
 * [[forContractAt|`forContractAt`]]
-* [[forContractAbstraction|`forContractAbstraction`]]
+* [[forContractInstance|`forContractInstance`]]
 
 See the API documentation of these functions for details, or below for usage
 examples.
@@ -114,11 +114,11 @@ in one step.  If we wanted to do this with a specified address, we could use
 
 Yet another way would be:
 ```typescript
-import { forContractAbstraction } from "@truffle/decoder";
+import { forContractInstance } from "@truffle/decoder";
 const contract = artifacts.require("Contract");
 const otherContract = artifacts.require("OtherContract");
 const deployedContract = await contract.deployed();
-const instanceDecoder = await Decoder.forContractAbstraction(deployedContract, [otherContract]);
+const instanceDecoder = await Decoder.forContractInstance(deployedContract, [otherContract]);
 const variables = await instanceDecoder.variables();
 ```
 
