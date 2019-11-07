@@ -1,5 +1,5 @@
 import { Web3Shim, Web3ShimOptions } from "./web3-shim";
-import { EvmBlockType } from "./interface-adapter";
+import { EvmBlockType } from "./interface-adapter/types";
 import { Provider } from "@truffle/provider";
 
 export interface Web3InterfaceAdapterOptions extends Web3ShimOptions {}
@@ -20,5 +20,9 @@ export class Web3InterfaceAdapter {
 
   public setProvider(provider: Provider) {
     return this.web3.setProvider(provider);
+  }
+
+  public getTransaction(tx: string) {
+    return this.web3.eth.getTransaction(tx);
   }
 }

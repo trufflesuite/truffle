@@ -13,6 +13,10 @@
       "web3-eth": [
         "../../node_modules/web3/node_modules/web3-eth/types",
         "node_modules/web3/node_modules/web3-eth/types"
+      ],
+      "web3-core": [
+        "../../node_modules/web3/node_modules/web3-core/types",
+        "node_modules/web3/node_modules/web3-core/types"
       ]
     },
     "rootDir": "lib",

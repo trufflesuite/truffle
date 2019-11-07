@@ -2,14 +2,16 @@ import {
   Web3InterfaceAdapter,
   Web3InterfaceAdapterOptions
 } from "./web3-interface-adapter";
-import { Block as EvmBlock } from "web3-eth";
+import {
+  NetworkId,
+  Block,
+  BlockType,
+  Transaction,
+  TxHash
+} from "./interface-adapter/types";
 import { Provider } from "@truffle/provider";
 
 export interface InterfaceAdapterOptions extends Web3InterfaceAdapterOptions {}
-export type EvmBlockType = number | string;
-export type NetworkId = Number | String;
-export type Block = EvmBlock | any;
-export type BlockType = EvmBlockType | any;
 
 const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
 
@@ -46,7 +48,11 @@ export class InterfaceAdapter {
     return this.adapter.getBlock(block);
   }
 
-  public setProvider(provider: Provider) {
+  public setProvider(provider: Provider): void {
     return this.adapter.setProvider(provider);
+  }
+
+  public getTransaction(tx: TxHash): Promise<Transaction> {
+    return this.adapter.getTransaction(tx);
   }
 }
