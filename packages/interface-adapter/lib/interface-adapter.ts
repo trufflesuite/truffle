@@ -2,7 +2,6 @@ import {
   Web3InterfaceAdapter,
   Web3InterfaceAdapterOptions
 } from "./web3-interface-adapter";
-import { Provider } from "web3/providers";
 import {
   NetworkId,
   Block,
@@ -10,6 +9,7 @@ import {
   Transaction,
   TxHash
 } from "./interface-adapter/types";
+import { Provider } from "@truffle/provider";
 
 export interface InterfaceAdapterOptions extends Web3InterfaceAdapterOptions {}
 

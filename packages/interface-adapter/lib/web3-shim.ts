@@ -1,5 +1,5 @@
 import Web3 from "web3";
-import { Provider } from "web3/providers";
+import { Provider } from "@truffle/provider";
 
 import { EthereumDefinition } from "./ethereum-overloads";
 import { QuorumDefinition } from "./quorum-overloads";
@@ -59,6 +59,7 @@ export class Web3Shim extends Web3 {
   public networkType: NetworkType;
 
   constructor(options?: Web3ShimOptions) {
+    // @ts-ignore
     super();
 
     if (options) {
