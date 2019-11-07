@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.0.43",
+  "version": "5.0.44",
   "bin": {
     "truffle": "./cli.js",
     "truffle-exec": "./exec.js"
@@ -16,24 +16,24 @@
     "test": "mocha ./test/** ./test/**/*"
   },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.37",
-    "@truffle/box": "^1.0.44",
-    "@truffle/compile-solidity": "^4.2.10",
-    "@truffle/config": "^1.2.4",
-    "@truffle/contract": "^4.0.38",
+    "@truffle/artifactor": "^4.0.38",
+    "@truffle/box": "^1.0.45",
+    "@truffle/compile-solidity": "^4.2.11",
+    "@truffle/config": "^1.2.5",
+    "@truffle/contract": "^4.0.39",
     "@truffle/contract-sources": "^0.1.6",
     "@truffle/debug-utils": "^1.0.19",
-    "@truffle/debugger": "^5.0.34",
-    "@truffle/deployer": "^3.0.39",
+    "@truffle/debugger": "^5.0.35",
+    "@truffle/deployer": "^3.0.40",
     "@truffle/error": "^0.0.7",
     "@truffle/expect": "^0.0.12",
-    "@truffle/interface-adapter": "^0.3.1",
-    "@truffle/migrate": "^3.0.39",
-    "@truffle/provider": "^0.2.0",
+    "@truffle/interface-adapter": "^0.3.2",
+    "@truffle/migrate": "^3.0.40",
+    "@truffle/provider": "^0.2.1",
     "@truffle/provisioner": "^0.1.6",
-    "@truffle/require": "^2.0.26",
-    "@truffle/resolver": "^5.0.19",
-    "@truffle/workflow-compile": "^2.1.11",
+    "@truffle/require": "^2.0.27",
+    "@truffle/resolver": "^5.0.20",
+    "@truffle/workflow-compile": "^2.1.12",
     "app-module-path": "^2.2.0",
     "async": "2.6.1",
     "bip39": "^2.2.0",
@@ -67,7 +67,7 @@
     "yargs": "^8.0.2"
   },
   "devDependencies": {
-    "@truffle/blockchain-utils": "^0.0.13",
+    "@truffle/blockchain-utils": "^0.0.14",
     "glob": "^7.1.2",
     "memorystream": "^0.3.1"
   },
