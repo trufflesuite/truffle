@@ -13,7 +13,7 @@ const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
 
-var Mocha; // Late init with "mocha" or "mocha-parallel-tests"
+let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
 chai.use(require("./assertions"));
 
@@ -151,7 +151,8 @@ const Test = {
       mochaConfig.useColors = true;
     }
 
-    Mocha = require(mochaConfig.package || "mocha");
+    Mocha = mochaConfig.package || require("mocha");
+    delete mochaConfig.package;
     var mocha = new Mocha(mochaConfig);
 
     return mocha;
