@@ -180,7 +180,7 @@ far back, to Solidity 0.4.4 or earlier, it *was* possible to generate
 out-of-range enums without resorting to assembly or compiler bugs.  However,
 enums are only supported in full mode (see
 [Notes on decoding modes](../#decoding-modes)),
-which only supports 0.4.9 and later, so
+which only supports 0.4.12 and later, so
 we consider out-of-range enums an error.  There are also additional technical
 reasons why supporting out-of-range enums as a value would be difficult.)
 
