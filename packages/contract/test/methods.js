@@ -521,8 +521,8 @@ describe("Methods", function() {
     });
   });
 
-  describe("error with reason (ganache only)", function() {
-    it("errors with receipt and revert reason", async function() {
+  describe("revert with reason (ganache only)", function() {
+    it("errors with receipt and revert message", async function() {
       const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError();
@@ -572,10 +572,7 @@ describe("Methods", function() {
       const example = await Example.new(1);
       const triggered = await example.fallbackTriggered();
 
-      assert(
-        triggered === false,
-        "Fallback should not have been triggered yet"
-      );
+      assert(triggered === false, "Fallback should not have been triggered yet");
 
       await example.sendTransaction({
         value: web3.utils.toWei("1", "ether")
@@ -592,10 +589,7 @@ describe("Methods", function() {
       const example = await Example.new(1);
       const triggered = await example.fallbackTriggered();
 
-      assert(
-        triggered === false,
-        "Fallback should not have been triggered yet"
-      );
+      assert(triggered === false, "Fallback should not have been triggered yet");
 
       await example.send(web3.utils.toWei("1", "ether"));
 
