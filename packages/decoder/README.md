@@ -11,7 +11,7 @@ documentation](https://www.trufflesuite.com/docs/truffle/codec/index.html).
 ## Install
 
 ```
-$ npm install @truffle/decoder
+$ npm install --save @truffle/decoder
 ```
 
 This module does not provide a CLI; it is entirely meant to be used as part

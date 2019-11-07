@@ -8,15 +8,14 @@ functionality, that will be expanded in the future.  This module is also
 what Truffle Debugger uses for its decoding.
 
 This is a low-level module, and it's probable that you should use the
-higher-level interface [Truffle
-Decoder](https://github.com/trufflesuite/truffle/tree/master/packages/decoder)
-instead.  That said, if for whatever reason Truffle Decoder will not suffice
-for your use case, it's possible that you may need to use this.
+higher-level interface [Truffle Decoder](../decoder/) instead.  That said, if
+for whatever reason Truffle Decoder will not suffice for your use case, it's
+possible that you may need to use this.
 
 ## Install
 
 ```
-$ npm install @truffle/codec
+$ npm install --save @truffle/codec
 ```
 
 This module does not provide a CLI; it is entirely meant to be used as part
