@@ -6,7 +6,7 @@ calldata, and events.  It's an interface to the same low-level decoding
 functionality that Truffle Debugger uses.  However, it has additional
 functionality that the debugger does not need, and the debugger has additional
 functionality that this interface either does not need or cannot currently
-replicated.  In the future, this interface will also decode return values and
+replicate.  In the future, this interface will also decode return values and
 revert strings.
 
 The interface is split into three classes: The wire decoder, the contract
