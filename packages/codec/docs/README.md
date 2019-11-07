@@ -59,7 +59,7 @@ not be reliable. If decoding fails in full mode, it **falls back to ABI mode.**
 Returned decodings (i.e. [[CalldataDecoding]] and [[LogDecoding]]) indicate
 which mode was used via the `"decodingMode"` field.
 
-To ensure full mode works, use Solidity v0.4.9 or higher and compile all your
+To ensure full mode works, use Solidity v0.4.12 or higher and compile all your
 contracts at the same time.
 
 If you can't use full mode or don't want to deal with the distinction,
