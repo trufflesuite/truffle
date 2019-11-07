@@ -40,7 +40,9 @@ const Migrate = {
       let migrations = files
         .filter(file => isNaN(parseInt(path.basename(file))) === false)
         .filter(
-          file => path.extname(file).match(config.migrations_file_extension_regexp) != null
+          file =>
+            path.extname(file).match(config.migrations_file_extension_regexp) !=
+            null
         )
         .map(file => new Migration(file, Migrate.reporter, config));
 

@@ -1,6 +1,6 @@
 import { Web3Shim, Web3ShimOptions } from "./web3-shim";
-import { BlockType } from "web3/eth/types";
-import { Provider } from "web3/providers";
+import { EvmBlockType } from "./interface-adapter";
+import { Provider } from "@truffle/provider";
 
 export interface Web3InterfaceAdapterOptions extends Web3ShimOptions {}
 
@@ -14,7 +14,7 @@ export class Web3InterfaceAdapter {
     return this.web3.eth.net.getId();
   }
 
-  public getBlock(block: BlockType) {
+  public getBlock(block: EvmBlockType) {
     return this.web3.eth.getBlock(block);
   }
 

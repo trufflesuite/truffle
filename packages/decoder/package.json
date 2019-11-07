@@ -22,6 +22,7 @@
   "types": "lib/interface/index.ts",
   "dependencies": {
     "@truffle/decode-utils": "^1.0.18",
+    "@truffle/provider": "^0.2.0",
     "abi-decoder": "^1.2.0",
     "async-eventemitter": "^0.2.4",
     "bn.js": "^4.11.8",
@@ -30,7 +31,7 @@
     "lodash.isequal": "^4.5.0",
     "lodash.merge": "^4.6.1",
     "utf8": "^3.0.0",
-    "web3": "1.2.1"
+    "web3": "1.2.2"
   },
   "peerDependencies": {
     "truffle": "^5.0.14"
@@ -47,7 +48,6 @@
     "@types/lodash.isequal": "^4.5.4",
     "@types/lodash.merge": "^4.6.4",
     "@types/utf8": "^2.1.6",
-    "@types/web3": "^1.0.5",
     "json-schema-to-typescript": "^5.5.0",
     "typescript": "^3.6.3"
   },

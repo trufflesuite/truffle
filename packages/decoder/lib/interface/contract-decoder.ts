@@ -29,11 +29,12 @@ import {
   AstDefinition,
   AstReferences
 } from "@truffle/decode-utils";
-import { BlockType, Transaction } from "web3/eth/types";
-import { EventLog, Log } from "web3/types";
-import { Provider } from "web3/providers";
+import { Transaction, EventLog, Log } from "web3-core";
+import { Provider } from "@truffle/provider";
 import abiDecoder from "abi-decoder";
 import isEqual from "lodash.isequal"; //util.isDeepStrictEqual doesn't exist in Node 8
+
+type BlockType = number | string;
 
 export interface EvmMapping {
   name: string;
@@ -373,6 +374,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     }
     //otherwise, get it, cache it, and return it
     let word = DecodeUtils.Conversion.toBytes(
+      // @ts-ignore
       await this.web3.eth.getStorageAt(address, slot, block),
       DecodeUtils.EVM.WORD_SIZE
     );
@@ -502,6 +504,7 @@ export default class TruffleContractDecoder extends AsyncEventEmitter {
     block: BlockType = "latest"
   ): Promise<ContractEvent[]> {
     const web3Contract = new this.web3.eth.Contract(
+      // @ts-ignore
       this.contract.abi,
       this.contractAddress
     );
