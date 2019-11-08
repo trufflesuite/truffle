@@ -4,15 +4,15 @@ const sha3 = require("web3").utils.sha3;
 const { hash } = require("eth-ens-namehash");
 
 class ENS {
-  constructor({ provider, registryAddress }) {
-    this.registryAddress = registryAddress;
+  constructor({ provider, ensSettings }) {
+    this.ensSettings = ensSettings;
     this.provider = provider;
     this.devRegistry = null;
   }
 
   determineENSRegistryAddress() {
-    if (this.registryAddress) {
-      return this.registryAddress;
+    if (this.ensSettings.registryAddress) {
+      return this.ensSettings.registryAddress;
     } else if (
       this.ensjs &&
       this.ensjs.registryPromise._rejectionHandler0._address
@@ -32,7 +32,7 @@ class ENS {
     const ENSRegistry = contract(ENSRegistryArtifact);
     ENSRegistry.setProvider(this.provider);
     const ensRegistry = await ENSRegistry.new({ from });
-    this.registryAddress = ensRegistry.address;
+    this.ensSettings.registryAddress = ensRegistry.address;
     this.devRegistry = ensRegistry;
     this.setENSJS();
     return ensRegistry;
@@ -166,7 +166,7 @@ class ENS {
   }
 
   setENSJS() {
-    this.ensjs = new ENSJS(this.provider, this.registryAddress);
+    this.ensjs = new ENSJS(this.provider, this.ensSettings.registryAddress);
   }
 }
 

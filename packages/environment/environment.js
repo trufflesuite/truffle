@@ -152,6 +152,15 @@ const helpers = {
         };
       }
     }
+
+    const currentNetworkSettings = config.networks[config.network];
+    if (
+      currentNetworkSettings &&
+      currentNetworkSettings.ens &&
+      currentNetworkSettings.ens.registry
+    ) {
+      config.ens.registryAddress = currentNetworkSettings.ens.registry.address;
+    }
   }
 };
 

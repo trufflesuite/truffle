@@ -1069,11 +1069,6 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@truffle/expect@^0.0.12":
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/@truffle/expect/-/expect-0.0.12.tgz#ed609cc538753e79438eb5a9bda7c2fda8ec2535"
-  integrity sha512-5Hyhrf42wvxCdzv6r8q94lDEQa1onMj6A+/lHTTmirfzqIpk4V32yV22DeFL5QuDFfPaParIT5oHOcQGVAg6XQ==
-
 "@trufflesuite/chromafi@^2.1.2":
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.1.2.tgz#50715070093c5543a406a2cc85fa70fc8d1a36ab"

@@ -24,18 +24,9 @@ class Deployer extends Deployment {
     this.basePath = options.basePath || process.cwd();
     this.known_contracts = {};
     if (options.ens && options.ens.enabled) {
-      let registryAddress;
-      const currentNetworkSettings = options.networks[options.network];
-      if (
-        currentNetworkSettings &&
-        currentNetworkSettings.ens &&
-        currentNetworkSettings.ens.registry
-      ) {
-        registryAddress = currentNetworkSettings.ens.registry.address;
-      }
       this.ens = new ENS({
         provider: options.provider,
-        registryAddress
+        ensSettings: options.ens
       });
     }
 
