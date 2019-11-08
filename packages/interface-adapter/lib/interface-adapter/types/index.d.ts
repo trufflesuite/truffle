@@ -1,5 +1,5 @@
 import { Block as EvmBlock } from "web3-eth";
-import { Transaction as EvmTransaction } from "web3-core";
+import { Transaction as EvmTransaction, TransactionReceipt as EvmTransactionReceipt } from "web3-core";
 
 export type EvmBlockType = number | string;
 export type NetworkId = Number | String;
