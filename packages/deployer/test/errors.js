@@ -194,8 +194,8 @@ describe("Error cases", function() {
       assert.fail();
     } catch (err) {
       assert(err.message.includes("Loops"));
-      assert(err.message.includes("out of gas"));
-      assert(err.message.includes("constructor"));
+      assert(err.message.includes("code couldn't be stored"));
+      assert(err.message.includes("check your gas limit"));
     }
   });
 
@@ -213,9 +213,8 @@ describe("Error cases", function() {
       assert.fail();
     } catch (err) {
       assert(err.message.includes("Loops"));
-      assert(err.message.includes("out of gas"));
-      assert(err.message.includes("Gas sent"));
-      assert(err.message.includes("Block limit"));
+      assert(err.message.includes("code couldn't be stored"));
+      assert(err.message.includes("check your gas limit"));
     }
   });
 
