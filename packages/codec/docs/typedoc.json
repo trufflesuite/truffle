@@ -2,7 +2,7 @@
   "name": "Truffle Decoding and Encoding",
   "mode": "modules",
   "module": "commonjs",
-  "theme": "default",
+  "theme": "../../../node_modules/@trufflesuite/typedoc-default-themes/bin/default/",
   "includeDeclarations": false,
   "ignoreCompilerErrors": true,
   "preserveConstEnums": true,
