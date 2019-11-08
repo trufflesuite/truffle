@@ -38,29 +38,18 @@
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",
     "@types/lodash.clonedeep": "^4.5.4",
-    "@types/lodash.escaperegexp": "^4.1.6",
-    "@types/lodash.partition": "^4.6.6",
-    "@types/lodash.sum": "^4.0.6",
-    "@types/semver": "^6.0.0",
-    "@types/utf8": "^2.1.6",
     "@types/web3": "^1.0.19",
     "@zerollup/ts-transform-paths": "^1.7.3",
+    "big.js": "^5.2.2",
     "chai": "^4.2.0",
+    "lodash.clonedeep": "^4.5.0",
     "ttypescript": "^1.5.7",
-    "typescript": "^3.6.2",
-    "web3-core": "1.2.1"
+    "typescript": "^3.6.2"
   },
   "dependencies": {
     "@truffle/codec": "^0.1.0-next.1",
-    "big.js": "^5.2.2",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
-    "lodash.clonedeep": "^4.5.0",
-    "lodash.escaperegexp": "^4.1.2",
-    "lodash.partition": "^4.6.0",
-    "lodash.sum": "^4.0.2",
-    "semver": "^6.1.1",
-    "utf8": "^3.0.0",
     "web3": "^1.2.1"
   },
   "peerDependencies": {
