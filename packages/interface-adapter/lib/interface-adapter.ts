@@ -7,6 +7,7 @@ import {
   Block,
   BlockType,
   Transaction,
+  TransactionReceipt,
   TxHash
 } from "./interface-adapter/types";
 import { Provider } from "@truffle/provider";
@@ -54,5 +55,9 @@ export class InterfaceAdapter {
 
   public getTransaction(tx: TxHash): Promise<Transaction> {
     return this.adapter.getTransaction(tx);
+  }
+
+  public getTransactionReceipt(tx: TxHash): Promise<TransactionReceipt> {
+    return this.adapter.getTransactionReceipt(tx);
   }
 }

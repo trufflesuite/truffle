@@ -78,7 +78,7 @@ const override = {
         return;
       }
 
-      constructor.web3.eth
+      constructor.interfaceAdapter
         .getTransactionReceipt(context.transactionHash)
         .then(result => {
           if (!result) return;
