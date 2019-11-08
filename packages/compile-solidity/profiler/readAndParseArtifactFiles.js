@@ -35,7 +35,7 @@ const readAndParseArtifactFiles = (sourceFiles, contracts_build_directory) => {
       const data = JSON.parse(jsonData[i].body);
 
       // In case there are artifacts from other source locations.
-      const sourcePath = const sourcePath = data.sourcePath
+      const sourcePath = data.sourcePath
         ? path.normalize(data.sourcePath).replace(/\//g, '\\').replace(/^([a-z]):\\/, x => x.toUpperCase())
         : data.sourcePath;
       if (sourceFilesArtifacts[sourcePath] == null) {
