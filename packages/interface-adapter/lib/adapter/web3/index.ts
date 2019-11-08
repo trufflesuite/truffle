@@ -33,4 +33,8 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
   public getBalance(address: string) {
     return this.web3.eth.getBalance(address);
   }
+
+  public getCode(address: string) {
+    return this.web3.eth.getCode(address);
+  }
 }
