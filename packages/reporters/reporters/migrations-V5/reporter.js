@@ -234,7 +234,9 @@ class Reporter {
 
       // `Insufficient funds`
       case "ETH":
-        const balance = await data.contract.web3.eth.getBalance(data.from);
+        const balance = await data.contract.interfaceAdapter.getBalance(
+          data.from
+        );
         data.balance = balance.toString();
         return this.messages.errors("noMoney", data);
 
@@ -378,7 +380,7 @@ class Reporter {
 
       data.timestamp = block.timestamp;
 
-      const balance = await data.contract.web3.eth.getBalance(tx.from);
+      const balance = await data.contract.interfaceAdapter.getBalance(tx.from);
 
       const gasPrice = new web3Utils.BN(tx.gasPrice);
       const gas = new web3Utils.BN(data.receipt.gasUsed);

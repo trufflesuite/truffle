@@ -60,4 +60,8 @@ export class InterfaceAdapter {
   public getTransactionReceipt(tx: TxHash): Promise<TransactionReceipt> {
     return this.adapter.getTransactionReceipt(tx);
   }
+
+  public getBalance(address: string): Promise<string> {
+    return this.adapter.getBalance(address);
+  }
 }

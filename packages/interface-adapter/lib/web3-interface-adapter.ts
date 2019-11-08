@@ -29,4 +29,8 @@ export class Web3InterfaceAdapter {
   public getTransactionReceipt(tx: string) {
     return this.web3.eth.getTransactionReceipt(tx);
   }
+
+  public getBalance(address: string) {
+    return this.web3.eth.getBalance(address);
+  }
 }
