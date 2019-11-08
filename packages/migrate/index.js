@@ -183,10 +183,9 @@ const Migrate = {
 
     if (Migrations.isDeployed() === false) return 0;
 
-    const migrationsOnChain = async (migrationsAddress, callback) => {
+    const migrationsOnChain = async migrationsAddress => {
       return (
-        (await Migrations.web3.eth.getCode(migrationsAddress, callback)) !==
-        "0x"
+        (await Migrations.interfaceAdapter.getCode(migrationsAddress)) !== "0x"
       );
     };
 
