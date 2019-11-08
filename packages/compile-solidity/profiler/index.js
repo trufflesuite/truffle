@@ -34,7 +34,9 @@ module.exports = {
     let sourceFilesArtifactsUpdatedTimes = {};
 
     try {
-      const sourceFiles = await getFiles();
+      const sourceFiles = (await getFiles())
+        .map(x => x.replace(/\//g, '\\'))
+        .map(x => /^[a-zA-Z]:\\.*/.test(x) ? `${x.slice(0,1).toUpperCase()}${x.slice(1)}` : x);
       sourceFilesArtifacts = readAndParseArtifactFiles(
         sourceFiles,
         contracts_build_directory
