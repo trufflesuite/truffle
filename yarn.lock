@@ -1072,6 +1072,16 @@
     strip-indent "^2.0.0"
     super-split "^1.1.0"
 
+"@trufflesuite/typedoc-default-themes@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@trufflesuite/typedoc-default-themes/-/typedoc-default-themes-0.6.1.tgz#6b733ee896519476f6721d0db3effa2ca3bff7ce"
+  integrity sha512-/wt3Jp+fD/DsxArEMixt94hDjHlB6R82Xa2ffjoCzlXrF8OSidzmzYkMvuxi53t1PaQvobNY5wMTXUqGnt/HXA==
+  dependencies:
+    backbone "^1.4.0"
+    jquery "^3.4.1"
+    lunr "^2.3.6"
+    underscore "^1.9.1"
+
 "@types/assert@^1.4.2":
   version "1.4.3"
   resolved "https://registry.yarnpkg.com/@types/assert/-/assert-1.4.3.tgz#c3b68c062a2375647d1b9efc41e57f8286bb30fe"
