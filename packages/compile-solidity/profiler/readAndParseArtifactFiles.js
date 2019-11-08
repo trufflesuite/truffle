@@ -35,11 +35,14 @@ const readAndParseArtifactFiles = (sourceFiles, contracts_build_directory) => {
       const data = JSON.parse(jsonData[i].body);
 
       // In case there are artifacts from other source locations.
-      if (sourceFilesArtifacts[data.sourcePath] == null) {
-        sourceFilesArtifacts[data.sourcePath] = [];
+      const sourcePath = const sourcePath = data.sourcePath
+        ? path.normalize(data.sourcePath).replace(/\//g, '\\').replace(/^([a-z]):\\/, x => x.toUpperCase())
+        : data.sourcePath;
+      if (sourceFilesArtifacts[sourcePath] == null) {
+        sourceFilesArtifacts[sourcePath] = [];
       }
 
-      sourceFilesArtifacts[data.sourcePath].push(data);
+      sourceFilesArtifacts[sourcePath].push(data);
     } catch (error) {
       // JSON.parse throws SyntaxError objects
       if (e instanceof SyntaxError) {
