@@ -1,6 +1,9 @@
 import BN from "bn.js";
 import { Web3Shim } from "./web3-shim";
-import { Transaction as EvmTransaction } from "web3-core";
+import {
+  Transaction as EvmTransaction,
+  TransactionReceipt as EvmTransactionReceipt
+} from "web3-core";
 import { EvmBlockType } from "./interface-adapter/types";
 
 export const EthereumDefinition = {
@@ -62,7 +65,9 @@ const overrides = {
       web3.eth.getTransactionReceipt.method.outputFormatter;
 
     // @ts-ignore
-    web3.eth.getTransactionReceipt.method.outputFormatter = receipt => {
+    web3.eth.getTransactionReceipt.method.outputFormatter = (
+      receipt: EvmTransactionReceipt
+    ) => {
       let result = _oldTransactionReceiptFormatter.call(
         // @ts-ignore
         web3.eth.getTransactionReceipt.method,
