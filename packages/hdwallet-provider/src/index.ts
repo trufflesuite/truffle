@@ -163,7 +163,6 @@ class HDWalletProvider {
       // Web3.providers.HttpProvider.prototype.send;
       this.engine.addProvider(
         new ProviderSubprovider(
-          // @ts-ignore
           new Web3.providers.HttpProvider(provider, { keepAlive: false })
         )
       );
