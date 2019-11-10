@@ -1,36 +1,42 @@
 import { Web3Shim, Web3ShimOptions } from "./web3-shim";
-import { EvmBlockType } from "./interface-adapter/types";
 import { Provider } from "@truffle/provider";
+import {
+  EvmBlockType,
+  Transaction,
+  TransactionReceipt,
+  Block
+} from "./interface-adapter/types";
 
 export interface Web3InterfaceAdapterOptions extends Web3ShimOptions {}
 
 export class Web3InterfaceAdapter {
   public web3: Web3Shim;
+
   constructor(options?: Web3InterfaceAdapterOptions) {
     this.web3 = new Web3Shim(options);
   }
 
-  public getNetworkId() {
+  public async getNetworkId(): Promise<number> {
     return this.web3.eth.net.getId();
   }
 
-  public getBlock(block: EvmBlockType) {
+  public async getBlock(block: EvmBlockType): Promise<Block> {
     return this.web3.eth.getBlock(block);
   }
 
-  public setProvider(provider: Provider) {
+  public setProvider(provider: Provider): boolean {
     return this.web3.setProvider(provider);
   }
 
-  public getTransaction(tx: string) {
+  public async getTransaction(tx: string): Promise<Transaction> {
     return this.web3.eth.getTransaction(tx);
   }
 
-  public getTransactionReceipt(tx: string) {
+  public async getTransactionReceipt(tx: string): Promise<TransactionReceipt> {
     return this.web3.eth.getTransactionReceipt(tx);
   }
 
-  public getBalance(address: string) {
+  public async getBalance(address: string): Promise<string> {
     return this.web3.eth.getBalance(address);
   }
 }

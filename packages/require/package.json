@@ -11,17 +11,22 @@
   "version": "2.0.27",
   "main": "require.js",
   "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
     "test": "mocha"
   },
   "dependencies": {
     "@truffle/config": "^1.2.5",
     "@truffle/expect": "^0.0.12",
     "@truffle/interface-adapter": "^0.3.2",
+    "@truffle/provider": "^0.2.1",
+    "expect": "^24.9.0",
     "original-require": "1.0.1",
     "web3": "1.2.2"
   },
   "devDependencies": {
-    "mocha": "5.2.0"
+    "mocha": "^6.2.2",
+    "typescript": "^3.7.2"
   },
   "keywords": [
     "ethereum",

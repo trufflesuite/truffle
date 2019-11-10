@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "outDir": "dist",
+    "declaration": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "*": [
+        "typings/*"
+      ]
+    },
+    "typeRoots": [
+      "../../node_modules/@types/node",
+      "../../node_modules/@truffle/provider/typings"
+    ]
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./types/**/*.d.ts"
+  ]
+}
