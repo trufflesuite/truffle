@@ -8,9 +8,8 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.0.39-next.1",
+  "version": "4.0.39",
   "main": "index.js",
-  "typings": "./typings/index.d.ts",
   "scripts": {
     "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
     "prepare": "yarn compile",
@@ -19,25 +18,26 @@
     "test:debug": "$(yarn bin)/mocha --inspect-brk",
     "test:trace": "$(yarn bin)/mocha --trace-warnings"
   },
+  "typings": "./typings/index.d.ts",
   "dependencies": {
-    "@truffle/blockchain-utils": "^0.0.14-next.1",
-    "@truffle/contract-schema": "^3.0.18-next.1",
+    "@truffle/blockchain-utils": "^0.0.14",
+    "@truffle/contract-schema": "^3.0.18",
     "@truffle/error": "^0.0.8-next.1",
-    "@truffle/interface-adapter": "^0.3.2-next.1",
+    "@truffle/interface-adapter": "^0.3.2",
     "bignumber.js": "^7.2.1",
     "ethers": "^4.0.0-beta.1",
-    "web3": "1.2.1",
-    "web3-core-promievent": "1.2.1",
-    "web3-eth-abi": "1.2.1",
-    "web3-utils": "1.2.1"
+    "web3": "1.2.2",
+    "web3-core-promievent": "1.2.2",
+    "web3-eth-abi": "1.2.2",
+    "web3-utils": "1.2.2"
   },
   "devDependencies": {
-    "@truffle/compile-solidity": "^4.2.11-next.1",
+    "@truffle/compile-solidity": "^4.2.11",
     "async": "2.6.1",
     "browserify": "^14.0.0",
     "chai": "4.2.0",
     "debug": "^4.1.0",
-    "ganache-core": "2.7.0",
+    "ganache-core": "2.8.0",
     "mocha": "5.2.0",
     "temp": "^0.8.3",
     "uglify-es": "^3.3.9"
