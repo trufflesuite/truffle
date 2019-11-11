@@ -1,5 +1,6 @@
 const ganache = require("ganache-core");
 const Web3 = require("web3");
+const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const assert = require("assert");
 const Reporter = require("@truffle/reporters").migrationsV5;
 const EventEmitter = require("events");
@@ -261,11 +262,13 @@ describe("Deployer (sync)", function() {
 
     utils.startAutoMine(web3, 4000);
 
+    const interfaceAdapter = createInterfaceAdapter({ provider });
+
     const migrate = function() {
       deployer.then(async function() {
-        await deployer._startBlockPolling(web3);
+        await deployer._startBlockPolling(interfaceAdapter);
         await utils.waitMS(9000);
-        await deployer._startBlockPolling(web3);
+        await deployer._startBlockPolling(interfaceAdapter);
       });
     };
 
