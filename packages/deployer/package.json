@@ -14,6 +14,10 @@
     "test": "mocha --no-warnings --timeout 10000 --exit"
   },
   "dependencies": {
+    "@ensdomains/ens": "^0.3.11",
+    "@ensdomains/resolver": "^0.1.9",
+    "eth-ens-namehash": "^2.0.8",
+    "ethereum-ens": "^0.7.7",
     "@truffle/contract": "^4.0.39",
     "@truffle/expect": "^0.0.13-next.1",
     "emittery": "^0.4.0"
@@ -23,6 +27,7 @@
     "@truffle/workflow-compile": "^2.1.12",
     "ganache-core": "2.8.0",
     "mocha": "5.2.0",
+    "sinon": "^7.3.2",
     "web3": "1.2.2"
   },
   "keywords": [

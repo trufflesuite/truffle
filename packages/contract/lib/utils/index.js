@@ -1,9 +1,10 @@
-const debug = require("debug")("contract:utils"); // eslint-disable-line no-unused-vars
+const debug = require("debug")("contract:utils");
 const web3Utils = require("web3-utils");
 const { bigNumberify } = require("ethers/utils");
 const abi = require("web3-eth-abi");
 const BlockchainUtils = require("@truffle/blockchain-utils");
-const reformat = require("./reformat");
+const reformat = require("../reformat");
+const ens = require("./ens");
 
 const Utils = {
   is_object(val) {
@@ -50,18 +51,14 @@ const Utils = {
       .map(log => {
         const logABI = constructor.events[log.topics[0]];
 
-        if (logABI == null) {
-          return null;
-        }
+        if (logABI == null) return null;
 
         const copy = Utils.merge({}, log);
 
         copy.event = logABI.name;
         copy.topics = logABI.anonymous ? copy.topics : copy.topics.slice(1);
 
-        if (copy.data === "0x") {
-          copy.data = "";
-        }
+        if (copy.data === "0x") copy.data = "";
 
         let logArgs;
         try {
@@ -123,6 +120,7 @@ const Utils = {
 
     return merged;
   },
+
   parallel(arr, callback = () => {}) {
     if (!arr.length) {
       return callback(null, []);
@@ -231,8 +229,6 @@ const Utils = {
     });
     return converted;
   },
-
-  bigNumberify,
 
   /**
    * Multiplies an ethers.js BigNumber and a number with decimal places using
@@ -355,5 +351,8 @@ const Utils = {
     return { id: TruffleContractInstance.network_id, blockLimit: gasLimit };
   }
 };
+
+Utils.ens = ens;
+Utils.bigNumberify = bigNumberify;
 
 module.exports = Utils;

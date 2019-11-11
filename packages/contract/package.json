@@ -25,6 +25,7 @@
     "@truffle/error": "^0.0.8-next.1",
     "@truffle/interface-adapter": "^0.3.2",
     "bignumber.js": "^7.2.1",
+    "ethereum-ens": "^0.7.7",
     "ethers": "^4.0.0-beta.1",
     "web3": "1.2.2",
     "web3-core-promievent": "1.2.2",
@@ -39,6 +40,7 @@
     "debug": "^4.1.0",
     "ganache-core": "2.8.0",
     "mocha": "5.2.0",
+    "sinon": "^7.3.2",
     "temp": "^0.8.3",
     "uglify-es": "^3.3.9"
   },
