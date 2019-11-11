@@ -82,10 +82,10 @@ class Deployment {
 
     let secondsWaited = 0;
     let blocksWaited = 0;
-    let currentBlock = await web3.eth.getBlockNumber();
+    let currentBlock = await interfaceAdapter.getBlockNumber();
 
     self.blockPoll = setInterval(async () => {
-      const newBlock = await web3.eth.getBlockNumber();
+      const newBlock = await interfaceAdapter.getBlockNumber();
 
       blocksWaited = newBlock - currentBlock + blocksWaited;
       currentBlock = newBlock;
@@ -121,13 +121,13 @@ class Deployment {
    */
   async _waitBlocks(blocksToWait, state, web3, interfaceAdapter) {
     const self = this;
-    let currentBlock = await web3.eth.getBlockNumber();
+    let currentBlock = await interfaceAdapter.getBlockNumber();
 
     return new Promise(accept => {
       let blocksHeard = 0;
 
       const poll = setInterval(async () => {
-        const newBlock = await web3.eth.getBlockNumber();
+        const newBlock = await interfaceAdapter.getBlockNumber();
 
         if (newBlock > currentBlock) {
           blocksHeard = newBlock - currentBlock + blocksHeard;
