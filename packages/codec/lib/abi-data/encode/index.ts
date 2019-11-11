@@ -3,6 +3,8 @@ const debug = debugModule("codec:abi-data:encode");
 
 import * as Format from "@truffle/codec/format";
 import * as Conversion from "@truffle/codec/conversion";
+import * as Basic from "@truffle/codec/basic";
+import * as Bytes from "@truffle/codec/bytes";
 import * as Evm from "@truffle/codec/evm";
 import {
   AbiAllocations,
@@ -10,7 +12,6 @@ import {
   abiSizeInfo
 } from "@truffle/codec/abi-data/allocate";
 import sum from "lodash.sum";
-import utf8 from "utf8";
 
 //UGH -- it turns out TypeScript can't handle nested tagged unions
 //see: https://github.com/microsoft/TypeScript/issues/18758
@@ -25,15 +26,7 @@ export function encodeAbi(
 ): Uint8Array | undefined {
   //errors can't be encoded
   if (input.kind === "error") {
-    debug("input: %O", input);
-    if (input.error.kind === "IndexedReferenceTypeError") {
-      //HACK: errors can't be encoded, *except* for indexed reference parameter errors.
-      //really this should go in a different encoding function, not encodeAbi, but I haven't
-      //written that function yet.  I'll move this case when I do.
-      return Conversion.toBytes(input.error.raw, Evm.Utils.WORD_SIZE);
-    } else {
-      return undefined;
-    }
+    return undefined;
   }
   let bytes: Uint8Array;
   //TypeScript can at least infer in the rest of this that we're looking
@@ -43,83 +36,30 @@ export function encodeAbi(
     case "magic":
       //neither of these can go in the ABI
       return undefined;
-    case "uint":
-    case "int":
-      return Conversion.toBytes(
-        (<Format.Values.UintValue | Format.Values.IntValue>input).value.asBN,
-        Evm.Utils.WORD_SIZE
-      );
-    case "enum":
-      return Conversion.toBytes(
-        (<Format.Values.EnumValue>input).value.numericAsBN,
-        Evm.Utils.WORD_SIZE
-      );
-    case "bool": {
-      bytes = new Uint8Array(Evm.Utils.WORD_SIZE); //is initialized to zeroes
-      if ((<Format.Values.BoolValue>input).value.asBoolean) {
-        bytes[Evm.Utils.WORD_SIZE - 1] = 1;
-      }
-      return bytes;
-    }
     case "bytes":
-      bytes = Conversion.toBytes((<Format.Values.BytesValue>input).value.asHex);
       switch (input.type.kind) {
         case "static":
-          let padded = new Uint8Array(Evm.Utils.WORD_SIZE); //initialized to zeroes
-          padded.set(bytes);
-          return padded;
+          return Basic.Encode.encodeBasic(input);
         case "dynamic":
+          bytes = Bytes.Encode.encodeBytes(<Format.Values.BytesDynamicValue>(
+            input
+          ));
           return padAndPrependLength(bytes);
       }
-    case "address":
-      return Conversion.toBytes(
-        (<Format.Values.AddressValue>input).value.asAddress,
-        Evm.Utils.WORD_SIZE
-      );
-    case "contract":
-      return Conversion.toBytes(
-        (<Format.Values.ContractValue>input).value.address,
-        Evm.Utils.WORD_SIZE
-      );
-    case "string": {
-      let coercedInput: Format.Values.StringValue = <Format.Values.StringValue>(
-        input
-      );
-      switch (coercedInput.value.kind) {
-        case "valid":
-          bytes = stringToBytes(coercedInput.value.asString);
-          break;
-        case "malformed":
-          bytes = Conversion.toBytes(coercedInput.value.asHex);
-          break;
-      }
+    case "string":
+      bytes = Bytes.Encode.encodeBytes(<Format.Values.BytesDynamicValue>input);
       return padAndPrependLength(bytes);
-    }
     case "function": {
       switch (input.type.visibility) {
         case "internal":
           return undefined; //internal functions can't go in the ABI!
+        //Yes, technically we could defer to encodeBasic here, but,
+        //c'mon, that's not how the function's supposed to be used
         case "external":
-          let coercedInput: Format.Values.FunctionExternalValue = <
-            Format.Values.FunctionExternalValue
-          >input;
-          let encoded = new Uint8Array(Evm.Utils.WORD_SIZE); //starts filled w/0s
-          let addressBytes = Conversion.toBytes(
-            coercedInput.value.contract.address
-          ); //should already be correct length
-          let selectorBytes = Conversion.toBytes(coercedInput.value.selector); //should already be correct length
-          encoded.set(addressBytes);
-          encoded.set(selectorBytes, Evm.Utils.ADDRESS_SIZE); //set it after the address
-          return encoded;
+          return Basic.Encode.encodeBasic(input);
       }
     }
-    case "fixed":
-    case "ufixed":
-      let bigValue = (<Format.Values.FixedValue | Format.Values.UfixedValue>(
-        input
-      )).value.asBig;
-      let shiftedValue = Conversion.shiftBigUp(bigValue, input.type.places);
-      return Conversion.toBytes(shiftedValue, Evm.Utils.WORD_SIZE);
+    //now for the serious cases
     case "array": {
       let coercedInput: Format.Values.ArrayValue = <Format.Values.ArrayValue>(
         input
@@ -156,7 +96,7 @@ export function encodeAbi(
         allocations
       );
     }
-    case "tuple": {
+    case "tuple":
       //WARNING: This case is written in a way that involves a bunch of unnecessary recomputation!
       //(That may not be apparent from this one line, but it's true)
       //I'm writing it this way anyway for simplicity, to avoid rewriting the encoder
@@ -165,23 +105,9 @@ export function encodeAbi(
         (<Format.Values.TupleValue>input).value.map(({ value }) => value),
         allocations
       );
-    }
+    default:
+      return Basic.Encode.encodeBasic(input);
   }
-}
-
-/**
- * @protected
- * @Category Encoding (low-level)
- */
-export function stringToBytes(input: string): Uint8Array {
-  input = utf8.encode(input);
-  let bytes = new Uint8Array(input.length);
-  for (let i = 0; i < input.length; i++) {
-    bytes[i] = input.charCodeAt(i);
-  }
-  return bytes;
-  //NOTE: this will throw an error if the string contained malformed UTF-16!
-  //but, well, it shouldn't contain that...
 }
 
 /**

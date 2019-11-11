@@ -6,7 +6,7 @@ calldata, and events.  It's an interface to the same low-level decoding
 functionality that Truffle Debugger uses.  However, it has additional
 functionality that the debugger does not need, and the debugger has additional
 functionality that this interface either does not need or cannot currently
-replicated.  In the future, this interface will also decode return values and
+replicate.  In the future, this interface will also decode return values and
 revert strings.
 
 The interface is split into three classes: The wire decoder, the contract
@@ -43,7 +43,7 @@ For a contract instance decoder, use one of the following:
 * [[forDeployedContract|`forDeployedContract`]]
 * [[forArtifactAt|`forArtifactAt`]]
 * [[forContractAt|`forContractAt`]]
-* [[forContractAbstraction|`forContractAbstraction`]]
+* [[forContractInstance|`forContractInstance`]]
 
 See the API documentation of these functions for details, or below for usage
 examples.
@@ -114,11 +114,11 @@ in one step.  If we wanted to do this with a specified address, we could use
 
 Yet another way would be:
 ```typescript
-import { forContractAbstraction } from "@truffle/decoder";
+import { forContractInstance } from "@truffle/decoder";
 const contract = artifacts.require("Contract");
 const otherContract = artifacts.require("OtherContract");
 const deployedContract = await contract.deployed();
-const instanceDecoder = await Decoder.forContractAbstraction(deployedContract, [otherContract]);
+const instanceDecoder = await Decoder.forContractInstance(deployedContract, [otherContract]);
 const variables = await instanceDecoder.variables();
 ```
 
@@ -154,7 +154,7 @@ export {
 } from "./types";
 
 import { Provider } from "web3/providers";
-import { ContractObject } from "@truffle/contract-schema/spec";
+import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import { ContractConstructorObject, ContractInstanceObject } from "./types";
 
 /**
@@ -172,7 +172,7 @@ import { ContractConstructorObject, ContractInstanceObject } from "./types";
  */
 export async function forProject(
   provider: Provider,
-  artifacts: ContractObject[]
+  artifacts: Artifact[]
 ): Promise<WireDecoder> {
   return new WireDecoder(artifacts, provider);
 }
@@ -198,9 +198,9 @@ export async function forProject(
  * @category Provider-based Constructor
  */
 export async function forArtifact(
-  artifact: ContractObject,
+  artifact: Artifact,
   provider: Provider,
-  artifacts: ContractObject[]
+  artifacts: Artifact[]
 ): Promise<ContractDecoder> {
   artifacts = artifacts.includes(artifact)
     ? artifacts
@@ -226,7 +226,7 @@ export async function forArtifact(
  */
 export async function forContract(
   contract: ContractConstructorObject,
-  artifacts: ContractObject[]
+  artifacts: Artifact[]
 ): Promise<ContractDecoder> {
   return await forArtifact(contract, contract.web3.currentProvider, artifacts);
 }
@@ -249,9 +249,9 @@ export async function forContract(
  * @category Provider-based Constructor
  */
 export async function forDeployedArtifact(
-  artifact: ContractObject,
+  artifact: Artifact,
   provider: Provider,
-  artifacts: ContractObject[]
+  artifacts: Artifact[]
 ): Promise<ContractInstanceDecoder> {
   let contractDecoder = await forArtifact(artifact, provider, artifacts);
   let instanceDecoder = await contractDecoder.forInstance();
@@ -273,7 +273,7 @@ export async function forDeployedArtifact(
  */
 export async function forDeployedContract(
   contract: ContractConstructorObject,
-  artifacts: ContractObject[]
+  artifacts: Artifact[]
 ): Promise<ContractInstanceDecoder> {
   let contractDecoder = await forContract(contract, artifacts);
   let instanceDecoder = await contractDecoder.forInstance();
@@ -302,10 +302,10 @@ export async function forDeployedContract(
  * @category Provider-based Constructor
  */
 export async function forArtifactAt(
-  artifact: ContractObject,
+  artifact: Artifact,
   provider: Provider,
   address: string,
-  artifacts: ContractObject[]
+  artifacts: Artifact[]
 ): Promise<ContractInstanceDecoder> {
   let contractDecoder = await forArtifact(artifact, provider, artifacts);
   let instanceDecoder = await contractDecoder.forInstance(address);
@@ -332,7 +332,7 @@ export async function forArtifactAt(
 export async function forContractAt(
   contract: ContractConstructorObject,
   address: string,
-  artifacts: ContractObject[]
+  artifacts: Artifact[]
 ): Promise<ContractInstanceDecoder> {
   let contractDecoder = await forContract(contract, artifacts);
   let instanceDecoder = await contractDecoder.forInstance(address);
@@ -354,7 +354,7 @@ export async function forContractAt(
  */
 export async function forContractInstance(
   contract: ContractInstanceObject,
-  artifacts: ContractObject[]
+  artifacts: Artifact[]
 ): Promise<ContractInstanceDecoder> {
   return await forContractAt(contract.constructor, contract.address, artifacts);
 }

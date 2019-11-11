@@ -10,10 +10,13 @@
     "outDir": "dist",
     "baseUrl": ".",
     "lib": ["es2017"],
-    "plugins": [
-      { "transform": "@zerollup/ts-transform-paths", "exclude": "*" }
-    ],
     "rootDir": "lib",
+    "paths": {
+      "web3": [
+        "node_modules/web3/index",
+        "../../node_modules/@types/web3/index"
+      ]
+    },
     "typeRoots": [
       "./typings",
       "../../**/node_modules/@types/bn.js",
@@ -21,7 +24,8 @@
       "../../**/node_modules/@types/lodash",
       "../../**/node_modules/@types/lodash.clonedeep",
       "../../**/node_modules/@types/lodash.isequal",
-      "../../**/node_modules/@types/lodash.merge"
+      "../../**/node_modules/@types/lodash.merge",
+      "../../**/node_modules/@types/web3"
     ]
 
   },
@@ -29,4 +33,5 @@
     "./lib/**/*.ts",
     "./typings/**/*.d.ts"
   ]
+
 }

@@ -1,18 +1,22 @@
 import debugModule from "debug";
-const debug = debugModule("codec:read:constant");
+const debug = debugModule("codec:ast:read");
 
 import * as Conversion from "@truffle/codec/conversion";
 import * as Evm from "@truffle/codec/evm";
-import * as Ast from "@truffle/codec/ast";
+import * as Utils from "@truffle/codec/ast/utils";
+import * as Pointer from "@truffle/codec/pointer";
 import BN from "bn.js";
 import { DecodingError } from "@truffle/codec/errors";
 
-export function readDefinition(definition: Ast.AstNode): Uint8Array {
+export function readDefinition(
+  pointer: Pointer.ConstantDefinitionPointer
+): Uint8Array {
+  const definition = pointer.definition;
   debug("definition %o", definition);
 
-  switch (Ast.Utils.typeClass(definition)) {
+  switch (Utils.typeClass(definition)) {
     case "rational":
-      let numericalValue: BN = Ast.Utils.rationalValue(definition);
+      let numericalValue: BN = Utils.rationalValue(definition);
       return Conversion.toBytes(numericalValue, Evm.Utils.WORD_SIZE);
     //you may be wondering, why do we not just use definition.value here,
     //like we do below? answer: because if this isn't a literal, that may not

@@ -1,5 +1,5 @@
 import BN from "bn.js";
-import { ContractObject } from "@truffle/contract-schema/spec";
+import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import {
   Format,
   Ast,
@@ -74,7 +74,7 @@ export interface DecodedLog extends Log {
 }
 
 export interface ContractMapping {
-  [nodeId: number]: ContractObject;
+  [nodeId: number]: Artifact;
 }
 
 export interface StorageCache {
@@ -92,7 +92,7 @@ export interface CodeCache {
 }
 
 export interface ContractAndContexts {
-  contract: ContractObject;
+  contract: Artifact;
   node: Ast.AstNode;
   deployedContext?: Contexts.DecoderContext;
   constructorContext?: Contexts.DecoderContext;
@@ -250,8 +250,8 @@ export type BlockSpecifier = number | "genesis" | "latest" | "pending";
 export type RegularizedBlockSpecifier = number | "pending";
 
 //HACK
-export interface ContractConstructorObject extends ContractObject {
-  _json: ContractObject;
+export interface ContractConstructorObject extends Artifact {
+  _json: Artifact;
   web3: Web3;
 }
 

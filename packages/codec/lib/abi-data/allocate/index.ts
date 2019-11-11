@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:abi:allocate");
 
 import * as AbiData from "@truffle/codec/abi-data/types";
+import * as Import from "@truffle/codec/abi-data/import";
 import * as AbiDataUtils from "@truffle/codec/abi-data/utils";
 import * as Evm from "@truffle/codec/evm";
 import * as Common from "@truffle/codec/common";
@@ -404,7 +405,7 @@ function allocateCalldata(
     id = node.id.toString();
     parameterTypes = parameters.map(parameter => ({
       name: parameter.name,
-      type: Format.Utils.MakeType.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
+      type: Ast.Import.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
     }));
     //now: perform the allocation!
     try {
@@ -428,7 +429,7 @@ function allocateCalldata(
     id = "-1"; //fake irrelevant ID
     parameterTypes = abiEntry.inputs.map(parameter => ({
       name: parameter.name,
-      type: Format.Utils.MakeType.abiParameterToType(parameter)
+      type: Import.abiParameterToType(parameter)
     }));
     abiAllocation = allocateMembers(
       id,
@@ -519,7 +520,7 @@ function allocateEvent(
     let parameters = node.parameters.parameters;
     parameterTypes = parameters.map(definition => ({
       //note: if node is defined, compiler had better be defined, too!
-      type: Format.Utils.MakeType.definitionToType(definition, compiler),
+      type: Ast.Import.definitionToType(definition, compiler),
       name: definition.name,
       indexed: definition.indexed
     }));
@@ -544,7 +545,7 @@ function allocateEvent(
     //THIS IS DELIBERATELY NOT AN ELSE
     id = "-1"; //fake irrelevant ID
     parameterTypes = abiEntry.inputs.map(abiParameter => ({
-      type: Format.Utils.MakeType.abiParameterToType(abiParameter),
+      type: Import.abiParameterToType(abiParameter),
       name: abiParameter.name,
       indexed: abiParameter.indexed
     }));

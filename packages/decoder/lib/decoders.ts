@@ -19,7 +19,7 @@ import {
 import * as Utils from "./utils";
 import * as DecoderTypes from "./types";
 import Web3 from "web3";
-import { ContractObject } from "@truffle/contract-schema/spec";
+import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
 import { Provider } from "web3/providers";
 import {
@@ -52,7 +52,7 @@ export class WireDecoder {
   /**
    * @protected
    */
-  constructor(contracts: ContractObject[], provider: Provider) {
+  constructor(contracts: Artifact[], provider: Provider) {
     this.web3 = new Web3(provider);
 
     let contractsAndContexts: DecoderTypes.ContractAndContexts[] = [];
@@ -162,10 +162,7 @@ export class WireDecoder {
       //first, add the contract itself
       const contractNode = this.contractNodes[id];
       references[id] = contractNode;
-      types[id] = Format.Utils.MakeType.definitionToStoredType(
-        contractNode,
-        compiler
-      );
+      types[id] = Ast.Import.definitionToStoredType(contractNode, compiler);
       //now, add its struct and enum definitions
       for (const node of contractNode.nodes) {
         if (
@@ -175,7 +172,7 @@ export class WireDecoder {
           references[node.id] = node;
           //HACK even though we don't have all the references, we only need one:
           //the reference to the contract itself, which we just added, so we're good
-          types[node.id] = Format.Utils.MakeType.definitionToStoredType(
+          types[node.id] = Ast.Import.definitionToStoredType(
             node,
             compiler,
             references
@@ -481,7 +478,7 @@ export class WireDecoder {
    *   Note: The artifact must be one of the ones used to initialize the wire
    *   decoder; otherwise you will have problems.
    */
-  public async forArtifact(artifact: ContractObject): Promise<ContractDecoder> {
+  public async forArtifact(artifact: Artifact): Promise<ContractDecoder> {
     let contractDecoder = new ContractDecoder(artifact, this);
     await contractDecoder.init();
     return contractDecoder;
@@ -503,7 +500,7 @@ export class WireDecoder {
    *   If an invalid address is provided, this method will throw an exception.
    */
   public async forInstance(
-    artifact: ContractObject,
+    artifact: Artifact,
     address?: string
   ): Promise<ContractInstanceDecoder> {
     let contractDecoder = await this.forArtifact(artifact);
@@ -561,7 +558,7 @@ export class ContractDecoder {
 
   private contexts: Contexts.DecoderContexts; //note: this is deployed contexts only!
 
-  private contract: ContractObject;
+  private contract: Artifact;
   private contractNode: Ast.AstNode;
   private contractNetwork: string;
   private contextHash: string;
@@ -574,11 +571,7 @@ export class ContractDecoder {
   /**
    * @protected
    */
-  constructor(
-    contract: ContractObject,
-    wireDecoder: WireDecoder,
-    address?: string
-  ) {
+  constructor(contract: Artifact, wireDecoder: WireDecoder, address?: string) {
     this.contract = contract;
     this.wireDecoder = wireDecoder;
     this.web3 = wireDecoder.getWeb3();
@@ -725,7 +718,7 @@ export class ContractDecoder {
 }
 
 interface ContractInfo {
-  contract: ContractObject;
+  contract: Artifact;
   contractNode: Ast.AstNode;
   contractNetwork: string;
   contextHash: string;
@@ -750,7 +743,7 @@ interface ContractInfo {
 export class ContractInstanceDecoder {
   private web3: Web3;
 
-  private contract: ContractObject;
+  private contract: Artifact;
   private contractNode: Ast.AstNode;
   private contractNetwork: string;
   private contractAddress: string;
@@ -932,7 +925,7 @@ export class ContractInstanceDecoder {
   ): Promise<DecoderTypes.ContractState> {
     let blockNumber = await this.regularizeBlock(block);
     return {
-      class: Format.Utils.MakeType.contextToType(this.context),
+      class: Contexts.Import.contextToType(this.context),
       address: this.contractAddress,
       code: this.contractCode,
       balanceAsBN: new BN(

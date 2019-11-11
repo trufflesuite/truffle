@@ -3,6 +3,7 @@ const debug = debugModule("codec:special:decode");
 
 import * as Format from "@truffle/codec/format";
 import * as Basic from "@truffle/codec/basic";
+import * as Bytes from "@truffle/codec/bytes";
 import * as Compiler from "@truffle/codec/compiler";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
@@ -33,7 +34,7 @@ export function* decodeMagic(
         type: dataType,
         kind: "value" as const,
         value: {
-          data: yield* Basic.Decode.decodeBasic(
+          data: yield* Bytes.Decode.decodeBytes(
             {
               typeClass: "bytes" as const,
               kind: "dynamic" as const,

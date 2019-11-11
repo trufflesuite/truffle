@@ -1,15 +1,15 @@
-var TruffleError = require("@truffle/error");
-var inherits = require("util").inherits;
-var utils = require("./utils");
+const TruffleError = require("@truffle/error");
+const inherits = require("util").inherits;
+const utils = require("./utils");
 
 inherits(StatusError, TruffleError);
 
-var defaultGas = 90000;
+const defaultGas = 90000;
 
 function StatusError(args, tx, receipt, reason) {
-  var message;
-  var gasLimit = args.gas || defaultGas;
-  var reasonString = "";
+  let message;
+  const gasLimit = args.gas || defaultGas;
+  let reasonString = "";
 
   if (reason) reasonString = `Reason given: ${reason}.`;
 

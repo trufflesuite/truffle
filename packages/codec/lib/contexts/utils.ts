@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:contexts:utils");
 
 import * as Evm from "@truffle/codec/evm";
+import * as Format from "@truffle/codec/format";
 import {
   DecoderContexts,
   DecoderContext,

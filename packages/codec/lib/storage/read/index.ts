@@ -1,21 +1,16 @@
 import debugModule from "debug";
-const debug = debugModule("codec:read:storage");
+const debug = debugModule("codec:storage:read");
 
 import * as Conversion from "@truffle/codec/conversion";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Utils from "@truffle/codec/storage/utils";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
+import * as Pointer from "@truffle/codec/pointer";
 import { DecodingError } from "@truffle/codec/errors";
 import BN from "bn.js";
 
-/**
- * read slot from storage
- *
- * @param slot - see slotAddress() code to understand how these work
- * @param offset - for array, offset from the keccak determined location
- */
-export function* read(
+export function* readSlot(
   storage: Evm.WordMapping,
   slot: Storage.Slot
 ): Generator<DecoderRequest, Uint8Array, Uint8Array> {
@@ -39,26 +34,12 @@ export function* read(
   return word;
 }
 
-/**
- * read all bytes in some range.
- *
- * parameters `from` and `to` are objects with the following properties:
- *
- *   slot - see the slotAddress() code to understand how these work
- *
- *     ref: https://solidity.readthedocs.io/en/v0.4.23/miscellaneous.html#layout-of-state-variables-in-storage
- *     (search "concatenation")
- *
- *  index - (default: 0) byte index in word
- *
- * @param from - location (see ^)
- * @param to - location (see ^). inclusive.
- * @param length - instead of `to`, number of bytes after `from`
- */
-export function* readRange(
-  storage: Evm.WordMapping,
-  range: Storage.Range
+export function* readStorage(
+  pointer: Pointer.StoragePointer,
+  state: Evm.EvmState
 ): Generator<DecoderRequest, Uint8Array, Uint8Array> {
+  const { storage } = state;
+  const { range } = pointer;
   debug("readRange %o", range);
 
   let { from, to, length } = range;
@@ -97,7 +78,7 @@ export function* readRange(
 
   for (let i = 0; i < totalWords; i++) {
     let offset = from.slot.offset.addn(i);
-    const word = yield* read(storage, { ...from.slot, offset });
+    const word = yield* readSlot(storage, { ...from.slot, offset });
     if (typeof word !== "undefined") {
       data.set(word, i * Evm.Utils.WORD_SIZE);
     }

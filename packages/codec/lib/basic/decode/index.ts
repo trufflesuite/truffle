@@ -4,7 +4,6 @@ const debug = debugModule("codec:basic:decode");
 import read from "@truffle/codec/read";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
-import utf8 from "utf8";
 import * as Contexts from "@truffle/codec/contexts";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
@@ -182,53 +181,38 @@ export function* decodeBasic(
       };
 
     case "bytes":
-      switch (dataType.kind) {
-        case "static":
-          //first, check padding (if needed)
-          if (
-            !permissivePadding &&
-            !checkPaddingRight(bytes, dataType.length)
-          ) {
-            let error = {
-              kind: "BytesPaddingError" as const,
-              raw: Conversion.toHexString(bytes)
-            };
-            if (strict) {
-              throw new StopDecodingError(error);
-            }
-            return {
-              type: dataType,
-              kind: "error" as const,
-              error
-            };
-          }
-          //now, truncate to appropriate length
-          bytes = bytes.slice(0, dataType.length);
-          return {
-            type: dataType,
-            kind: "value" as const,
-            value: {
-              asHex: Conversion.toHexString(bytes),
-              rawAsHex: Conversion.toHexString(rawBytes)
-            }
-          };
-        case "dynamic":
-          //no need to check padding here
-          return {
-            type: dataType,
-            kind: "value" as const,
-            value: {
-              asHex: Conversion.toHexString(bytes)
-            }
-          };
-      }
+      //NOTE: we assume this is a *static* bytestring,
+      //because this is decodeBasic! dynamic ones should
+      //go to decodeBytes!
+      let coercedDataType = <Format.Types.BytesTypeStatic>dataType;
 
-    case "string":
-      //there is no padding check for strings
+      //first, check padding (if needed)
+      if (
+        !permissivePadding &&
+        !checkPaddingRight(bytes, coercedDataType.length)
+      ) {
+        let error = {
+          kind: "BytesPaddingError" as const,
+          raw: Conversion.toHexString(bytes)
+        };
+        if (strict) {
+          throw new StopDecodingError(error);
+        }
+        return {
+          type: coercedDataType,
+          kind: "error" as const,
+          error
+        };
+      }
+      //now, truncate to appropriate length
+      bytes = bytes.slice(0, coercedDataType.length);
       return {
-        type: dataType,
+        type: coercedDataType,
         kind: "value" as const,
-        value: decodeString(bytes)
+        value: {
+          asHex: Conversion.toHexString(bytes),
+          rawAsHex: Conversion.toHexString(rawBytes)
+        }
       };
 
     case "function":
@@ -435,32 +419,6 @@ export function* decodeBasic(
   }
 }
 
-export function decodeString(bytes: Uint8Array): Format.Values.StringValueInfo {
-  //the following line takes our UTF-8 string... and interprets each byte
-  //as a UTF-16 bytepair.  Yikes!  Fortunately, we have a library to repair that.
-  let badlyEncodedString = String.fromCharCode.apply(undefined, bytes);
-  try {
-    //this will throw an error if we have malformed UTF-8
-    let correctlyEncodedString = utf8.decode(badlyEncodedString);
-    //NOTE: we don't use node's builtin Buffer class to do the UTF-8 decoding
-    //here, because that handles malformed UTF-8 by means of replacement characters
-    //(U+FFFD).  That loses information.  So we use the utf8 package instead,
-    //and... well, see the catch block below.
-    return {
-      kind: "valid" as const,
-      asString: correctlyEncodedString
-    };
-  } catch (_) {
-    //we're going to ignore the precise error and just assume it's because
-    //the string was malformed (what else could it be?)
-    let hexString = Conversion.toHexString(bytes);
-    return {
-      kind: "malformed" as const,
-      asHex: hexString
-    };
-  }
-}
-
 //NOTE that this function returns a ContractValueInfo, not a ContractResult
 export function* decodeContract(
   addressBytes: Uint8Array,
@@ -488,7 +446,7 @@ function* decodeContractAndContext(
         kind: "known" as const,
         address,
         rawAddress,
-        class: Format.Utils.MakeType.contextToType(context)
+        class: Contexts.Import.contextToType(context)
       }
     };
   } else {
@@ -552,7 +510,7 @@ export function decodeInternalFunction(
 ): Format.Values.FunctionInternalResult {
   let deployedPc: number = Conversion.toBN(deployedPcBytes).toNumber();
   let constructorPc: number = Conversion.toBN(constructorPcBytes).toNumber();
-  let context: Format.Types.ContractType = Format.Utils.MakeType.contextToType(
+  let context: Format.Types.ContractType = Contexts.Import.contextToType(
     info.currentContext
   );
   //before anything else: do we even have an internal functions table?
@@ -659,47 +617,6 @@ export function decodeInternalFunction(
       mutability
     }
   };
-}
-
-export function* decodeConstant(
-  dataType: Format.Types.Type,
-  pointer: Pointer.ConstantDefinitionPointer,
-  info: Evm.EvmInfo
-): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
-  debug("pointer %o", pointer);
-
-  //normally, we just dispatch to decodeBasic.
-  //for statically-sized bytes, however, we need to make a special case.
-  //you see, decodeBasic expects to find the bytes at the *beginning*
-  //of the word, but readDefinition will put them at the *end* of the
-  //word.  So we'll have to adjust things ourselves.
-
-  if (dataType.typeClass === "bytes" && dataType.kind === "static") {
-    let size = dataType.length;
-    let word: Uint8Array;
-    try {
-      word = yield* read(pointer, info.state);
-    } catch (error) {
-      return {
-        type: dataType,
-        kind: "error" as const,
-        error: (<DecodingError>error).error
-      };
-    }
-    //not bothering to check padding; shouldn't be necessary
-    let bytes = word.slice(Evm.Utils.WORD_SIZE - size);
-    return {
-      type: dataType,
-      kind: "value" as const,
-      value: {
-        asHex: Conversion.toHexString(bytes)
-      }
-    }; //we'll skip including a raw value, as that would be meaningless
-  }
-
-  //otherwise, as mentioned, just dispatch to decodeBasic
-  debug("not a static bytes");
-  return yield* decodeBasic(dataType, pointer, info);
 }
 
 function checkPaddingRight(bytes: Uint8Array, length: number): boolean {

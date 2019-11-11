@@ -174,7 +174,7 @@ const Test = {
       all: config.compileAll === true,
       files: updated.concat(solidityTestFiles),
       resolver: testResolver,
-      quiet: config.quiet,
+      quiet: config.runnerOutputOnly || config.quiet,
       quietWrite: true
     });
 

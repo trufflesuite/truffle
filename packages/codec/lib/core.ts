@@ -3,6 +3,7 @@ const debug = debugModule("codec:core");
 
 import * as Ast from "@truffle/codec/ast";
 import * as AbiData from "@truffle/codec/abi-data";
+import * as Topic from "@truffle/codec/topic";
 import * as Pointer from "@truffle/codec/pointer";
 import {
   DecoderRequest,
@@ -29,7 +30,7 @@ export function* decodeVariable(
   info: Evm.EvmInfo
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
-  let dataType = Format.Utils.MakeType.definitionToType(definition, compiler);
+  let dataType = Ast.Import.definitionToType(definition, compiler);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
@@ -59,7 +60,7 @@ export function* decodeCalldata(
   }
   const compiler = context.compiler;
   const contextHash = context.context;
-  const contractType = Format.Utils.MakeType.contextToType(context);
+  const contractType = Contexts.Import.contextToType(context);
   isConstructor = context.isConstructor;
   const allocations = info.allocations.calldata;
   let allocation: AbiData.Allocate.CalldataAllocation;
@@ -270,7 +271,7 @@ export function* decodeEvent(
     let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     const contextHash = allocation.contextHash;
     const attemptContext = info.contexts[contextHash];
-    const contractType = Format.Utils.MakeType.contextToType(attemptContext);
+    const contractType = Contexts.Import.contextToType(attemptContext);
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];
     for (const argumentAllocation of allocation.arguments) {
@@ -354,10 +355,7 @@ export function* decodeEvent(
       .filter(argument => argument.indexed)
       .map(argument => argument.value);
     debug("indexedValues: %O", indexedValues);
-    const reEncodedTopics = indexedValues.map(
-      value => AbiData.Encode.encodeAbi(value, info.allocations.abi) //NOTE: I should really use a different encoding function here,
-      //but I haven't written that function yet
-    );
+    const reEncodedTopics = indexedValues.map(Topic.Encode.encodeTopic);
     const encodedTopics = info.state.eventtopics;
     //now: do *these* match?
     const selectorAdjustment = allocation.anonymous ? 0 : 1;
