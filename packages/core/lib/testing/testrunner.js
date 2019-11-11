@@ -148,7 +148,7 @@ TestRunner.prototype.resetState = function(callback) {
 
 TestRunner.prototype.startTest = function(mocha, callback) {
   var self = this;
-  this.web3.eth
+  this.interfaceAdapter
     .getBlockNumber()
     .then(result => {
       var one = self.web3.utils.toBN(1);
