@@ -13,7 +13,9 @@
     },
     "typeRoots": [
       "../../node_modules/@types/node",
-      "../../node_modules/@truffle/provider/typings"
+      "../../node_modules/@truffle/provider/typings",
+      "../../node_modules/@truffle/config/dist",
+      "../../node_modules/@truffle/interface-adapter/dist",
     ]
   },
   "include": [
