@@ -76,7 +76,7 @@ class Deployment {
    * @param  {Object}    web3
    * @param  {Object}    interfaceAdapter
    */
-  async _startBlockPolling(web3, interfaceAdapter) {
+  async _startBlockPolling(interfaceAdapter) {
     const self = this;
     const startTime = new Date().getTime();
 
@@ -119,7 +119,7 @@ class Deployment {
    * @param  {Object} interfaceAdapter
    * @return {Promise}             Resolves after `blockToWait` blocks
    */
-  async _waitBlocks(blocksToWait, state, web3, interfaceAdapter) {
+  async _waitBlocks(blocksToWait, state, interfaceAdapter) {
     const self = this;
     let currentBlock = await interfaceAdapter.getBlockNumber();
 
@@ -343,7 +343,7 @@ class Deployment {
           .on("transactionHash", self._hashCb.bind(promiEvent, self, state))
           .on("receipt", self._receiptCb.bind(promiEvent, self, state));
 
-        await self._startBlockPolling(contract.web3, contract.interfaceAdapter);
+        await self._startBlockPolling(contract.interfaceAdapter);
 
         // Get instance (or error)
         try {
@@ -386,7 +386,6 @@ class Deployment {
         await self._waitBlocks(
           self.confirmations,
           state,
-          contract.web3,
           contract.interfaceAdapter
         );
       }
