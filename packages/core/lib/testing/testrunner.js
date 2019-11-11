@@ -147,15 +147,14 @@ TestRunner.prototype.resetState = function(callback) {
 };
 
 TestRunner.prototype.startTest = function(mocha, callback) {
-  var self = this;
   this.interfaceAdapter
     .getBlockNumber()
     .then(result => {
-      var one = self.web3.utils.toBN(1);
-      result = self.web3.utils.toBN(result);
+      const one = this.web3.utils.toBN(1);
+      const resultBN = this.web3.utils.toBN(result);
 
       // Add one in base 10
-      self.currentTestStartBlock = result.add(one);
+      this.currentTestStartBlock = resultBN.add(one);
 
       callback();
     })
