@@ -46,4 +46,8 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
   public estimateGas(transactionConfig: EvmTransactionConfig) {
     return this.web3.eth.estimateGas(transactionConfig);
   }
+
+  public getBlockNumber() {
+    return this.web3.eth.getBlockNumber();
+  }
 }
