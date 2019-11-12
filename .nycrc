@@ -12,7 +12,6 @@
     "**/*webpack.config*",
     "packages/truffle/nil.js",
     "packages/debugger",
-    "packages/solidity-loader",
     "notes/"
   ]
 }
