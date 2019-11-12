@@ -23,9 +23,7 @@ instance decoder can sometimes work around this where the other decoders
 cannot.)
 
 This documentation describes the current state of the decoder, but you should
-expect to see improvements soon.  Note that most of the documentation is not
-found in this README, but rather in this package's API documentation.  However,
-this README describes the overall approach.
+expect to see improvements soon.
 
 ## Usage
 
@@ -45,7 +43,7 @@ For a contract instance decoder, use one of the following:
 * [[forContractAt|`forContractAt`]]
 * [[forContractInstance|`forContractInstance`]]
 
-See the API documentation of these functions for details, or below for usage
+See the documentation of these functions for details, or below for usage
 examples.
 
 All of these functions presently require a final argument containing all
@@ -59,14 +57,14 @@ See the documentation for the individual decoder classes for a method listing.
 ### Output format information
 
 The decoder outputs lossless, machine-readable [[Format.Values.Result]] objects
-containing individual decoded values. See the [[Format|Format documentation]]
+containing individual decoded values. See the [[Format|format documentation]]
 for an overview and complete module listing.
 
 ### Decoding modes and abification
 
 The decoder runs in either of two modes: full mode or ABI mdoe. Full mode
 requires some additional constraints but returns substantially more detailed
-information. Please see the notes on [Decoding modes](../#decoding-modes) for
+information. Please see the notes on [decoding modes](../#decoding-modes) for
 more about this distinction.
 
 ### Basic usage examples
@@ -82,7 +80,7 @@ const contract1 = artifacts.require("Contract1");
 const contract2 = artifacts.require("Contract2");
 const provider = web3.currentProvider;
 const decoder = await Decoder.forProject(provider, [contract1, contract2]);
-const decodedLog = await decoder.decodeLog(log);
+const decodings = await decoder.decodeLog(log);
 ```
 
 The usage of [[WireDecoder.decodeTransaction|decodeTransaction]] is similar.
@@ -124,9 +122,10 @@ const variables = await instanceDecoder.variables();
 
 These examples are not exhaustive.
 
-See the API documentation for more advanced decoding examples with
-[[ContractInstanceDecoder.variable|`variable`]] or
-[[ContractInstanceDecoder.watchMappingKey|`watchMappingKey`]].
+One can find more advanced decoding examples with
+[[ContractInstanceDecoder.variable|`variable`]] and
+[[ContractInstanceDecoder.watchMappingKey|`watchMappingKey`]] at the
+documentation for these individual functions.
  *
  * @module @truffle/decoder
  */ /** */
