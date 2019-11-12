@@ -447,7 +447,7 @@ export interface TypeErrorResult {
  *
  * @Category Special container types (debugger-only)
  */
-export type TypeErrorResult = never;
+export type TypeErrorUnion = never;
 
 /*
  * SECTION 4: ENUMS
