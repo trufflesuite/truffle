@@ -1,60 +1,57 @@
 {
   "name": "@truffle/decoder",
-  "description": "A library that provides both high and low level decoding of Ethereum contract variables",
-  "license": "MIT",
-  "author": "Mike Seese",
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/decoder#readme",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/decoder",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
-  "version": "3.0.16",
-  "main": "dist/interface/index.js",
+  "version": "4.0.0-next.1",
+  "description": "A decoder and encoder for Solidity variables of all sorts",
+  "main": "dist/index.js",
+  "types": "lib/index.ts",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
-    "build": "node_modules/.bin/tsc",
     "prepare": "yarn build",
+    "build": "node_modules/.bin/tsc",
     "start": "node_modules/.bin/tsc --watch",
-    "test": "cd test && truffle test"
+    "test": "cd test && npx truffle test"
   },
-  "types": "lib/interface/index.ts",
-  "dependencies": {
-    "@truffle/decode-utils": "^1.0.19",
-    "@truffle/provider": "^0.2.1",
-    "abi-decoder": "^1.2.0",
-    "async-eventemitter": "^0.2.4",
-    "bn.js": "^4.11.8",
-    "debug": "^4.1.0",
-    "lodash.clonedeep": "^4.5.0",
-    "lodash.isequal": "^4.5.0",
-    "lodash.merge": "^4.6.1",
-    "utf8": "^3.0.0",
-    "web3": "1.2.2"
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
+  "keywords": [
+    "ethereum",
+    "solidity",
+    "contract",
+    "state",
+    "decoder",
+    "encoder",
+    "abi"
+  ],
+  "author": "Mike Seese and Harry Altman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "peerDependencies": {
-    "truffle": "^5.0.14"
-  },
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
     "@truffle/contract-schema": "^3.0.18",
+    "@truffle/provider": "^0.2.1",
+    "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",
-    "@types/lodash": "^4.14.116",
     "@types/lodash.clonedeep": "^4.5.4",
     "@types/lodash.isequal": "^4.5.4",
     "@types/lodash.merge": "^4.6.4",
     "@types/utf8": "^2.1.6",
-    "json-schema-to-typescript": "^5.5.0",
     "typescript": "^3.6.3"
   },
-  "keywords": [
-    "contract",
-    "decoder",
-    "ethereum",
-    "state"
-  ]
+  "dependencies": {
+    "@truffle/codec": "^0.1.0-next.1",
+    "bn.js": "^4.11.8",
+    "debug": "^4.1.0",
+    "web3": "1.2.2"
+  },
+  "peerDependencies": {
+    "truffle": "^5.0.14"
+  },
+  "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }

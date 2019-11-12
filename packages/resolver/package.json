@@ -21,8 +21,8 @@
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver#readme",
   "dependencies": {
     "@truffle/contract": "^4.0.39",
-    "@truffle/expect": "^0.0.12",
-    "@truffle/provisioner": "^0.1.6",
+    "@truffle/expect": "^0.0.13-next.1",
+    "@truffle/provisioner": "^0.1.7-next.1",
     "async": "2.6.1",
     "detect-installed": "^2.0.4",
     "get-installed-path": "^4.0.8"

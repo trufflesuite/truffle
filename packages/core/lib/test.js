@@ -1,4 +1,5 @@
 const Mocha = require("mocha");
+const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
 const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
@@ -114,13 +115,15 @@ const Test = {
       runner
     );
 
-    await this.setJSTestGlobals(
+    await this.setJSTestGlobals({
+      config,
       web3,
       interfaceAdapter,
       accounts,
       testResolver,
-      runner
-    );
+      runner,
+      compilation: compilations.solc
+    });
 
     // Finally, run mocha.
     process.on("unhandledRejection", reason => {
@@ -128,7 +131,7 @@ const Test = {
     });
 
     return new Promise(resolve => {
-      mocha.run(failures => {
+      this.mochaRunner = mocha.run(failures => {
         config.logger.warn = warn;
 
         resolve(failures);
@@ -205,20 +208,43 @@ const Test = {
     });
   },
 
-  setJSTestGlobals: function(
+  setJSTestGlobals: function({
+    config,
     web3,
     interfaceAdapter,
     accounts,
     testResolver,
-    runner
-  ) {
-    return new Promise(function(accept) {
+    runner,
+    compilation
+  }) {
+    return new Promise(accept => {
       global.interfaceAdapter = interfaceAdapter;
       global.web3 = web3;
       global.assert = chai.assert;
       global.expect = chai.expect;
       global.artifacts = {
         require: import_path => testResolver.require(import_path)
+      };
+
+      global[config.debugGlobal] = async operation => {
+        if (!config.debug) {
+          config.logger.log(
+            `${colors.bold(
+              "Warning:"
+            )} Invoked in-test debugger without --debug flag. ` +
+              `Try: \`truffle test --debug\``
+          );
+          return operation;
+        }
+
+        // wrapped inside function so as not to load debugger on every test
+        const { CLIDebugHook } = require("./debug/mocha");
+
+        // note: this.mochaRunner will be available by the time debug()
+        // is invoked
+        const hook = new CLIDebugHook(config, compilation, this.mochaRunner);
+
+        return await hook.debug(operation);
       };
 
       const template = function(tests) {

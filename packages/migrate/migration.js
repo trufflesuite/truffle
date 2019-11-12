@@ -188,7 +188,8 @@ class Migration {
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,
-      basePath: path.dirname(this.file)
+      basePath: path.dirname(this.file),
+      ens: options.ens
     });
 
     return { interfaceAdapter, resolver, context, deployer };

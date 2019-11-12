@@ -15,7 +15,7 @@
   },
   "types": "./typings/index.d.ts",
   "dependencies": {
-    "@truffle/error": "^0.0.7",
+    "@truffle/error": "^0.0.8-next.1",
     "@truffle/interface-adapter": "^0.3.2",
     "web3": "1.2.2"
   },

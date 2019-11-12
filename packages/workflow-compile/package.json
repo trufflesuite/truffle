@@ -7,7 +7,7 @@
     "@truffle/compile-solidity": "^4.2.11",
     "@truffle/compile-vyper": "^1.0.35",
     "@truffle/config": "^1.2.5",
-    "@truffle/expect": "^0.0.12",
+    "@truffle/expect": "^0.0.13-next.1",
     "@truffle/external-compile": "^1.0.21",
     "@truffle/resolver": "^5.0.20",
     "fs-extra": "^7.0.1",

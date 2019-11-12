@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.0.35",
+  "version": "6.0.0-next.1",
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
@@ -21,10 +21,9 @@
   },
   "dependencies": {
     "@truffle/code-utils": "^1.2.10",
-    "@truffle/decode-utils": "^1.0.19",
-    "@truffle/decoder": "^3.0.16",
-    "@truffle/expect": "^0.0.12",
-    "@truffle/solidity-utils": "^1.2.6",
+    "@truffle/codec": "^0.1.0-next.1",
+    "@truffle/expect": "^0.0.13-next.1",
+    "@truffle/solidity-utils": "^1.2.7-next.1",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
     "json-pointer": "^0.6.0",
@@ -40,7 +39,7 @@
   "devDependencies": {
     "@truffle/artifactor": "^4.0.38",
     "@truffle/box": "^1.0.45",
-    "@truffle/debug-utils": "^1.0.19",
+    "@truffle/debug-utils": "^1.0.20-next.1",
     "@truffle/migrate": "^3.0.40",
     "@truffle/resolver": "^5.0.20",
     "@truffle/workflow-compile": "^2.1.12",

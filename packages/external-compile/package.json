@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@truffle/contract-schema": "^3.0.18",
-    "@truffle/expect": "^0.0.12",
+    "@truffle/expect": "^0.0.13-next.1",
     "debug": "^4.1.0",
     "glob": "^7.1.2",
     "web3-utils": "1.2.2"
