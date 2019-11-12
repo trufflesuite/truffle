@@ -389,7 +389,15 @@ export class WireDecoder {
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
-    const { address, name, fromBlock, toBlock } = options;
+    const defaultOptions: DecoderTypes.EventOptions = {
+      fromBlock: "latest",
+      toBlock: "latest"
+      //we can leave address and name blank
+    };
+    const { address, name, fromBlock, toBlock } = {
+      ...defaultOptions,
+      ...options
+    }; //passed options override defaults
     const fromBlockNumber = await this.regularizeBlock(fromBlock);
     const toBlockNumber = await this.regularizeBlock(toBlock);
 
