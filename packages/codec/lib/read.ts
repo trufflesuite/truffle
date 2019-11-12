@@ -1,7 +1,7 @@
 import * as StorageRead from "@truffle/codec/storage/read";
 import * as StackRead from "@truffle/codec/stack/read";
 import * as BytesRead from "@truffle/codec/bytes/read";
-import * as AstRead from "@truffle/codec/ast/read";
+import * as AstConstantRead from "@truffle/codec/ast-constant/read";
 import * as TopicRead from "@truffle/codec/topic/read";
 import * as SpecialRead from "@truffle/codec/special/read";
 import * as Pointer from "@truffle/codec/pointer";
@@ -28,7 +28,7 @@ export default function* read(
       return StackRead.readStackLiteral(pointer);
 
     case "definition":
-      return AstRead.readDefinition(pointer);
+      return AstConstantRead.readDefinition(pointer);
 
     case "special":
       return SpecialRead.readSpecial(pointer, state);

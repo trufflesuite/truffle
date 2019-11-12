@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("codec:format:utils:exception");
 
 import * as Format from "@truffle/codec/format/common";
-import * as AstUtils from "@truffle/codec/ast/utils";
+import * as Ast from "@truffle/codec/ast";
 import * as Storage from "@truffle/codec/storage/types";
 
 //this function gives an error message
@@ -18,7 +18,7 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
         error.type.id
       }`;
     case "UnsupportedConstantError":
-      return `Unsupported constant type ${AstUtils.typeClass(
+      return `Unsupported constant type ${Ast.Utils.typeClass(
         error.definition
       )}`;
     case "ReadErrorStack":
