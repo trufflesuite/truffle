@@ -269,13 +269,22 @@ export { abifyCalldataDecoding, abifyLogDecoding } from "./abify";
 
 // data locations - common
 import * as Basic from "./basic";
+import * as Bytes from "./bytes";
 export {
   /**
    * For decoding of primitives and constants
    *
    * @protected
    */
-  Basic
+  Basic,
+  //Category: Common data location
+  //[NOT making this an actual category for now
+  //since there's nothing public in it]
+  /**
+   * Contains functions for dealing with raw bytestrings
+   * @protected
+   */
+  Bytes
   //Category: Common data location
   //[NOT making this an actual category for now
   //since there's nothing public in it]
@@ -307,7 +316,7 @@ import * as Memory from "./memory";
 import * as Special from "./special";
 import * as Stack from "./stack";
 import * as Storage from "./storage";
-import * as Bytes from "./bytes";
+import * as AstConstant from "./ast-constant";
 
 export {
   /**
@@ -343,13 +352,11 @@ export {
    */
   Storage,
   /**
-   * Contains functions for dealing with raw bytestrings
-   * @protected
+   * For reading/decoding constants expressed as AST nodes
+   *
+   * @category Solidity data location
    */
-  Bytes
-  //Category: Common data location
-  //[NOT making this an actual category for now
-  //since there's nothing public in it]
+  AstConstant
 };
 
 import * as Ast from "./ast";

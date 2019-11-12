@@ -1,4 +1,4 @@
-import * as Ast from "@truffle/codec/ast/types";
+import * as Ast from "@truffle/codec/ast";
 import * as Storage from "@truffle/codec/storage/types";
 
 export type DataPointer =
