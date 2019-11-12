@@ -39,6 +39,7 @@ export type Type =
   | EnumType
   | ContractType
   | MagicType
+  | TypeType
   | TupleType;
 
 /**
@@ -335,7 +336,7 @@ export interface StructTypeLocal {
   definingContractName: string;
   definingContract?: ContractTypeNative;
   /**
-   * these should be in order
+   * these must be in order
    */
   memberTypes?: NameTypePair[];
   location?: Location;
@@ -355,7 +356,7 @@ export interface StructTypeGlobal {
   id: string;
   typeName: string;
   /**
-   * these should be in order
+   * these must be in order
    */
   memberTypes?: NameTypePair[];
   location?: Location;
@@ -403,7 +404,7 @@ export interface EnumTypeLocal {
   definingContractName: string;
   definingContract?: ContractTypeNative;
   /**
-   * these should be in order
+   * these must be in order
    */
   options?: string[];
 }
@@ -422,7 +423,7 @@ export interface EnumTypeGlobal {
   id: string;
   typeName: string;
   /**
-   * these should be in order
+   * these must be in order
    */
   options?: string[];
 }
@@ -494,6 +495,21 @@ export interface MagicType {
     [field: string]: Type;
   };
   //may have more optional fields defined in the future
+}
+
+/**
+ * Type of a type!  This is currently only used for contract types, but
+ * may expand in the future.
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeType {
+  typeClass: "type";
+  type: ContractTypeNative;
+  /**
+   * these must be in order, and must only include
+   * **non-inherited** state variables
+   */
+  stateVariableTypes?: NameTypePair[];
 }
 
 /**
