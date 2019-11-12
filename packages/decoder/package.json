@@ -1,6 +1,6 @@
 {
   "name": "@truffle/decoder",
-  "version": "4.0.0-next.1",
+  "version": "4.0.0",
   "description": "A decoder and encoder for Solidity variables of all sorts",
   "main": "dist/index.js",
   "types": "lib/index.ts",
@@ -33,8 +33,8 @@
     "access": "public"
   },
   "devDependencies": {
-    "@truffle/contract-schema": "^3.0.18",
-    "@truffle/provider": "^0.2.1",
+    "@truffle/contract-schema": "^3.0.19",
+    "@truffle/provider": "^0.2.2",
     "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",
@@ -45,7 +45,7 @@
     "typescript": "^3.6.3"
   },
   "dependencies": {
-    "@truffle/codec": "^0.1.0-next.1",
+    "@truffle/codec": "^0.1.0",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
     "web3": "1.2.2"

@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.0.14",
+  "version": "0.0.15",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -32,6 +32,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@truffle/provider": "^0.2.1"
+    "@truffle/provider": "^0.2.2"
   }
 }
