@@ -65,6 +65,13 @@ export interface StateVariable {
  */
 export interface DecodedLog extends Log {
   /**
+   * The log's topics; each is a hex string representing 32 bytes.
+   *
+   * NOTE: Since we only output this type, we can at least guarantee
+   * here that topics is correctly a string[].
+   */
+  topics: string[];
+  /**
    * An array of possible decodings of the given log -- it's an array because logs can be ambiguous.
    *
    * This field works just like the output of [[WireDecoder.decodeLog]], so see that for more
@@ -206,8 +213,12 @@ export interface Log {
   data: string;
   /**
    * The log's topics; each is a hex string representing 32 bytes.
+   *
+   * NOTE: For compatibility with web3's typing, which I'm pretty sure is
+   * mistaken, this has type (string | string[])[], but it should really
+   * just be string[].
    */
-  topics: string[];
+  topics: (string | string[])[];
   /**
    * Index of the log within the block.
    */

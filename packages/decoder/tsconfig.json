@@ -11,12 +11,6 @@
     "baseUrl": ".",
     "lib": ["es2017"],
     "rootDir": "lib",
-    "paths": {
-      "web3": [
-        "node_modules/web3/index",
-        "../../node_modules/@types/web3/index"
-      ]
-    },
     "typeRoots": [
       "./typings",
       "../../**/node_modules/@types/bn.js",

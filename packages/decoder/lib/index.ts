@@ -153,7 +153,7 @@ export {
   BlockSpecifier
 } from "./types";
 
-import { Provider } from "web3/providers";
+import { Provider } from "@truffle/provider";
 import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import { ContractConstructorObject, ContractInstanceObject } from "./types";
 
@@ -228,7 +228,14 @@ export async function forContract(
   contract: ContractConstructorObject,
   artifacts: Artifact[]
 ): Promise<ContractDecoder> {
-  return await forArtifact(contract, contract.web3.currentProvider, artifacts);
+  //HACK: again we have to work around web3's messed-up typing;
+  //it for some reason is convinced that currentProvider is a string
+  //rather than a Provider.
+  return await forArtifact(
+    contract,
+    <Provider>contract.web3.currentProvider,
+    artifacts
+  );
 }
 
 /**
