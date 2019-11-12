@@ -150,6 +150,19 @@ export class ResultInspector {
               options
             );
           }
+          case "type": {
+            //same as struct case but w/o circularity check
+            let coercedResult = <Format.Values.TypeValue>this.result;
+            return util.inspect(
+              Object.assign(
+                {},
+                ...coercedResult.value.map(({ name, value }) => ({
+                  [name]: new ResultInspector(value)
+                }))
+              ),
+              options
+            );
+          }
           case "magic":
             return util.inspect(
               Object.assign(
@@ -472,6 +485,14 @@ export function nativize(result: Format.Values.Result): any {
       return Object.assign(
         {},
         ...(<Format.Values.StructValue>result).value.map(({ name, value }) => ({
+          [name]: nativize(value)
+        }))
+      );
+    case "type": //keeping this separate from struct as struct will likely get
+      //some modifications later
+      return Object.assign(
+        {},
+        ...(<Format.Values.TypeValue>result).value.map(({ name, value }) => ({
           [name]: nativize(value)
         }))
       );

@@ -34,7 +34,8 @@ export function encodeAbi(
   switch (input.type.typeClass) {
     case "mapping":
     case "magic":
-      //neither of these can go in the ABI
+    case "type":
+      //none of these can go in the ABI
       return undefined;
     case "bytes":
       switch (input.type.kind) {

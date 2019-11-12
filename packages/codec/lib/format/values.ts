@@ -46,6 +46,7 @@ export type Result =
   | StructResult
   | TupleResult
   | MagicResult
+  | TypeResult
   | EnumResult
   | ContractResult
   | FunctionExternalResult
@@ -62,6 +63,7 @@ export type Value =
   | StructValue
   | TupleValue
   | MagicValue
+  | TypeValue
   | EnumValue
   | ContractValue
   | FunctionExternalValue
@@ -291,6 +293,29 @@ export interface MagicValue {
   value: {
     [field: string]: Result;
   };
+}
+
+/**
+ * A type's value (or error)
+ *
+ * @Category Special container types (debugger-only)
+ */
+export type TypeResult = TypeValue | Errors.TypeErrorResult;
+
+/**
+ * A type's value -- for now, we consider the value of a contract type to
+ * consist of the values of its non-inherited state variables in the current
+ * context.  May contain errors.
+ *
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeValue {
+  type: Types.TypeType;
+  kind: "value";
+  /**
+   * these must be stored in order!
+   */
+  value: NameValuePair[];
 }
 
 /*

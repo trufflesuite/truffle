@@ -27,6 +27,7 @@ export type ErrorResult =
   | MappingErrorResult
   | StructErrorResult
   | MagicErrorResult
+  | TypeErrorResult
   | TupleErrorResult
   | EnumErrorResult
   | ContractErrorResult
@@ -53,6 +54,7 @@ export type DecoderError =
   | MappingError
   | StructError
   | MagicError
+  | TypeErrorUnion
   | TupleError
   | EnumError
   | ContractError
@@ -427,6 +429,25 @@ export interface MagicErrorResult {
  * @Category Special container types (debugger-only)
  */
 export type MagicError = never;
+
+/**
+ * An error result for a type
+ *
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeErrorResult {
+  type: Types.TypeType;
+  kind: "error";
+  error: GenericError | TypeErrorUnion;
+}
+
+/**
+ * An error specific to type values (there are none);
+ * this isn't called TypeError because that's not legal
+ *
+ * @Category Special container types (debugger-only)
+ */
+export type TypeErrorUnion = never;
 
 /*
  * SECTION 4: ENUMS
