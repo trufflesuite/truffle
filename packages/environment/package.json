@@ -12,6 +12,7 @@
   "version": "0.1.20",
   "main": "index.js",
   "dependencies": {
+    "@truffle/artifactor": "^4.0.39",
     "@truffle/error": "^0.0.8",
     "@truffle/expect": "^0.0.13",
     "@truffle/interface-adapter": "^0.3.3",
