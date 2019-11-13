@@ -4,6 +4,30 @@ const execute = require("../execute");
 const bootstrap = require("./bootstrap");
 
 module.exports = Contract => ({
+  configureNetwork({ networkType, provider } = {}) {
+    // otherwise use existing value as default (at most one of these)
+    networkType = networkType || this.networkType;
+    provider = provider || this.currentProvider;
+
+    if (this.interfaceAdapter) {
+      // implies this.web3 also
+      // update existing
+      this.interfaceAdapter.setNetworkType(networkType);
+      this.interfaceAdapter.setProvider(provider);
+
+      this.web3.setNetworkType(networkType);
+      this.web3.setProvider(provider);
+    } else {
+      // create new
+      this.interfaceAdapter = new InterfaceAdapter({ networkType, provider });
+      this.web3 = new Web3Shim({ networkType, provider });
+    }
+
+    // save properties
+    this.currentProvider = provider;
+    this.networkType = networkType;
+  },
+
   setProvider(provider) {
     if (!provider) {
       throw new Error(
@@ -11,9 +35,7 @@ module.exports = Contract => ({
       );
     }
 
-    this.web3.setProvider(provider);
-    this.interfaceAdapter.setProvider(provider);
-    this.currentProvider = provider;
+    this.configureNetwork({ provider });
   },
 
   new() {
@@ -128,14 +150,12 @@ module.exports = Contract => ({
   },
 
   setNetworkType(networkType = "ethereum") {
-    if (this.web3) {
-      this.web3.setNetworkType(networkType);
-    }
-
-    this.networkType = networkType;
+    this.configureNetwork({ networkType });
   },
 
   setWallet(wallet) {
+    this.configureNetwork();
+
     this.web3.eth.accounts.wallet = wallet;
   },
 
@@ -216,16 +236,17 @@ module.exports = Contract => ({
 
     bootstrap(temp);
 
-    temp.interfaceAdapter = new InterfaceAdapter({
-      networkType: temp.networkType
-    });
-    temp.web3 = new Web3Shim({
-      networkType: temp.networkType
-    });
     temp.class_defaults = temp.prototype.defaults || {};
 
     if (network_id) {
       temp.setNetwork(network_id);
+    }
+
+    if (this.currentProvider) {
+      temp.configureNetwork({
+        provider: this.currentProvider,
+        networkType: this.networkType
+      });
     }
 
     // Copy over custom key/values to the contract class
