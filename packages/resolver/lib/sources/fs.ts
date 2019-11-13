@@ -65,6 +65,20 @@ export class FS implements ResolverSource {
     ];
 
     let body, filePath;
+
+    if (importPath === "truffle/TruffleLogger.sol") {
+      const resolvedSource = fs.readFileSync(
+        path.resolve(__dirname, path.basename(importPath)),
+        {
+          encoding: "utf8"
+        }
+      );
+      body = resolvedSource;
+      filePath = importPath;
+
+      return { body, filePath };
+    }
+
     for (const possiblePath of possiblePaths) {
       try {
         const resolvedSource = fs.readFileSync(possiblePath, {
