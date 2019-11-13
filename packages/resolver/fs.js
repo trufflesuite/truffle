@@ -56,6 +56,16 @@ class FS {
       path.join(path.dirname(importedFrom), importPath)
     ];
 
+    if (importPath === "truffle/TruffleLogger.sol") {
+      const resolvedSource = fs.readFileSync(
+        path.resolve(__dirname, path.basename(importPath)),
+        {
+          encoding: "utf8"
+        }
+      );
+      callback(null, resolvedSource, importPath);
+    }
+
     possiblePaths.forEach(possiblePath => {
       try {
         const resolvedSource = fs.readFileSync(possiblePath, {
