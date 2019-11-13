@@ -274,6 +274,17 @@ module.exports = {
         ),
         to: "templates",
         flatten: true
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "@truffle/core",
+          "lib",
+          "logging",
+          "TruffleLogger.sol"
+        )
       }
     ]),
 
