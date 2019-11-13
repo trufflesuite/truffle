@@ -14,31 +14,44 @@ import { Provider } from "@truffle/provider";
 
 export interface InterfaceAdapterOptions extends Web3InterfaceAdapterOptions {}
 
-const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
+const getNetworkTypeClass = (networkType = "ethereum") => {
+  const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
 
-const getNetworkTypeClass = ({
-  networkType = "ethereum"
-}: InterfaceAdapterOptions) => {
   if (supportedEvmNetworks.includes(networkType)) return "evm-like";
   return networkType;
 };
 
+const createAdapterForNetworkType = ({
+  provider,
+  networkType = "ethereum"
+}: InterfaceAdapterOptions) => {
+  switch (getNetworkTypeClass()) {
+    case "evm-like":
+      return new Web3InterfaceAdapter({
+        provider: provider,
+        networkType: networkType
+      });
+    default:
+      throw Error(`Sorry, "${networkType}" is not supported at this time.`);
+  }
+};
+
 export class InterfaceAdapter {
   public adapter: Web3InterfaceAdapter | any;
+
+  private provider?: Provider;
+
   constructor(options?: InterfaceAdapterOptions) {
-    switch (getNetworkTypeClass(options)) {
-      case "evm-like":
-        this.adapter = new Web3InterfaceAdapter({
-          provider: options.provider,
-          networkType: options.networkType
-        });
-        break;
-      default:
-        throw Error(
-          `Sorry, "${options.networkType}" is not supported at this time.`
-        );
-    }
-    return this.adapter;
+    this.provider = options.provider;
+
+    this.setNetworkType(options.networkType);
+  }
+
+  public setNetworkType(networkType: InterfaceAdapterOptions["networkType"]) {
+    this.adapter = createAdapterForNetworkType({
+      networkType,
+      provider: this.provider
+    });
   }
 
   public getNetworkId(): Promise<NetworkId> {
