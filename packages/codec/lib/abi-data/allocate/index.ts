@@ -17,6 +17,7 @@ import {
   AbiSizeInfo,
   CalldataAndReturndataAllocation,
   CalldataAllocation,
+  ReturndataAllocation,
   CalldataAllocations,
   CalldataAllocationTemporary,
   CalldataArgumentAllocation,
@@ -34,6 +35,7 @@ export {
   AbiAllocations,
   AbiSizeInfo,
   CalldataAllocation,
+  ReturndataAllocation,
   CalldataAndReturndataAllocation,
   ContractAllocationInfo,
   EventAllocation
@@ -506,35 +508,16 @@ function allocateCalldata(
   switch (abiEntry.type) {
     case "function":
       outputsAllocation = {
-        abi: abiEntry,
-        offset: 0,
+        selector: new Uint8Array(), //empty by default
         arguments: outputArgumentsAllocation,
         allocationMode,
-        status: true,
         kind: "return" as const
       };
       break;
     case "constructor":
       let rawLength = deployedContext.binary.length;
       let length = (rawLength - 2) / 2; //number of bytes in 0x-prefixed bytestring
-      outputsAllocation = {
-        abi: abiEntry,
-        offset: 0,
-        allocationMode,
-        status: true,
-        kind: "bytecode" as const,
-        arguments: [
-          {
-            kind: "raw" as const,
-            name: "",
-            pointer: {
-              location: "returndata" as const,
-              start: 0,
-              length
-            }
-          }
-        ]
-      };
+      outputsAllocation = constructorOutputAllocation(length);
       break;
   }
   return { input: inputsAllocation, output: outputsAllocation };
@@ -763,25 +746,32 @@ function defaultConstructorAllocation(
     let outputLength = (rawOutputLength - 2) / 2; //number of bytes in 0x-prefixed bytestring
   }
   //HAAAAAAAACK: otherwise leave outputLength undefined
-  let output = {
-    offset: 0,
-    abi: AbiDataUtils.DEFAULT_CONSTRUCTOR_ABI,
+  let output = constructorOutputAllocation(outputLength);
+  return { input, output };
+}
+
+function constructorOutputAllocation(length: number): ReturndataAllocation {
+  return {
+    selector: new Uint8Array(), //empty by default
     allocationMode: "full" as const,
-    status: true,
     kind: "bytecode" as const,
     arguments: [
       {
         kind: "raw" as const,
         name: "",
+        type: {
+          typeClass: "bytes" as const,
+          kind: "dynamic" as const,
+          typeHint: "bytes"
+        },
         pointer: {
           location: "returndata" as const,
           start: 0,
-          length: outputLength
+          length
         }
       }
     ]
   };
-  return { input, output };
 }
 
 export function getCalldataAllocations(

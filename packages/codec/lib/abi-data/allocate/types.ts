@@ -126,19 +126,12 @@ export interface EventArgumentAllocation {
 }
 
 //now let's go back ands fill in returndata
-type ReturndataKind =
-  | "return"
-  | "revert"
-  | "empty"
-  | "selfdestruct"
-  | "bytecode";
+type ReturndataKind = "return" | "revert" | "failure" | "empty" | "bytecode";
 
 export interface ReturndataAllocation {
-  abi: AbiData.FunctionAbiEntry | AbiData.ConstructorAbiEntry;
-  offset: number; //measured in bytes
+  selector: Uint8Array;
   arguments: ReturndataArgumentAllocation[];
   allocationMode: DecodingMode;
-  status: boolean;
   kind: ReturndataKind;
 }
 
@@ -156,6 +149,7 @@ export interface ReturndataArgumentAllocationAbi {
 export interface ReturndataArgumentAllocationRaw {
   kind: "raw";
   name: string;
+  type: Format.Types.BytesTypeDynamic; //only allowed type for raw!
   pointer: Pointer.ReturndataPointer;
 }
 

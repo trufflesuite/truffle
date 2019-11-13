@@ -23,6 +23,19 @@ export type CalldataDecoding =
 export type LogDecoding = EventDecoding | AnonymousDecoding;
 
 /**
+ * A type representing a returndata (return value or revert message) decoding.
+ * As you can see, these come in five types, each of which is documented
+ * separately.
+ * @Category Output
+ */
+export type ReturndataDecoding =
+  | ReturnDecoding
+  | BytecodeDecoding
+  | EmptySuccessDecoding
+  | RevertMessageDecoding
+  | EmptyFailureDecoding;
+
+/**
  * This is a type for recording what decoding mode a given decoding was produced in.  There are two
  * decoding modes, full mode and ABI mode.  In ABI mode, decoding is done purely based on the ABI JSON.
  * Full mode, by contrast, additionally uses AST information to produce a more informative decoding.
@@ -246,7 +259,132 @@ export interface AnonymousDecoding {
 }
 
 /**
- * This type represents a decoded argument passed to a transaction or event.
+ * This type represents a decoding of the return data as a collection of
+ * return values from a successful call.
+ * @Category Output
+ */
+export interface ReturnDecoding {
+  /**
+   * The kind of decoding; indicates that this is a ReturnDecoding.
+   */
+  kind: "return";
+  /**
+   * Indicates that this kind of decoding indicates a successful return.
+   */
+  status: true;
+  /**
+   * The list of decoded return values from the function.
+   */
+  arguments: AbiArgument[];
+  /**
+   * The decoding mode that was used; see the README for more on these.
+   */
+  decodingMode: DecodingMode;
+}
+
+/**
+ * This type represents a decoding of empty return data from a successful
+ * call.  This can occur even when the call is supposed to return a value if,
+ * say, the contract self-destructs instead.
+ * @Category Output
+ */
+export interface EmptySuccessDecoding {
+  /**
+   * The kind of decoding; indicates that this is an EmptySuccessDecoding.
+   */
+  kind: "empty";
+  /**
+   * Indicates that this kind of decoding indicates a successful return.
+   */
+  status: true;
+  /**
+   * The decoding mode that was used; see the README for more on these.
+   */
+  decodingMode: DecodingMode;
+}
+
+/**
+ * This type represents a decoding of empty return data from an unsuccessful
+ * call, a reversion with no message.
+ * @Category Output
+ */
+export interface EmptyFailureDecoding {
+  /**
+   * The kind of decoding; indicates that this is an EmptyFailureDecoding.
+   */
+  kind: "failure";
+  /**
+   * Indicates that this kind of decoding indicates an unsuccessful return.
+   */
+  status: false;
+  /**
+   * The decoding mode that was used; see the README for more on these.
+   */
+  decodingMode: DecodingMode;
+}
+
+/**
+ * This type represents a decoding of the return data as a revert message.
+ * For forward-compatibility, we do not assume that the revert message is
+ * a string.
+ * @Category Output
+ */
+export interface RevertMessageDecoding {
+  /**
+   * The kind of decoding; indicates that this is a RevertMessageDecoding.
+   */
+  kind: "revert";
+  /**
+   * Indicates that this kind of decoding indicates an unsuccessful return.
+   */
+  status: false;
+  /**
+   * The list of decoded arguments passed to revert(); currently, this will
+   * always contain just a single string.
+   */
+  arguments: AbiArgument[];
+  /**
+   * The decoding mode that was used; see the README for more on these.
+   */
+  decodingMode: DecodingMode;
+}
+
+/**
+ * This type represents a decoding of the return data as bytecode
+ * returned from a constructor.
+ *
+ * NOTE: In the future, this type will also contain information about
+ * any linked libraries the contract being constructed uses.  However,
+ * this is not implemented at present.
+ *
+ * @Category Output
+ */
+export interface BytecodeDecoding {
+  /**
+   * The kind of decoding; indicates that this is a BytecodeDecoding.
+   */
+  kind: "bytecode";
+  /**
+   * Indicates that this kind of decoding indicates a successful return.
+   */
+  status: true;
+  /**
+   * The decoding mode that was used; see the README for more on these.
+   */
+  decodingMode: DecodingMode;
+  /**
+   * The class of contract being constructed, as a Format.Types.ContractType.
+   */
+  class: Format.Types.ContractType;
+  /**
+   * The bytecode of the contract that was created.
+   */
+  bytecode: string;
+}
+
+/**
+ * This type represents a decoded argument passed to a transaction or event,
+ * or returned from a call.
  *
  * @Category Output
  */

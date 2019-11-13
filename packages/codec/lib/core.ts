@@ -4,13 +4,16 @@ const debug = debugModule("codec:core");
 import * as Ast from "@truffle/codec/ast";
 import * as AbiData from "@truffle/codec/abi-data";
 import * as Topic from "@truffle/codec/topic";
+import * as Bytes from "@truffle/codec/bytes";
 import * as Pointer from "@truffle/codec/pointer";
 import {
   DecoderRequest,
   CalldataDecoding,
+  ReturndataDecoding,
   DecodingMode,
   AbiArgument,
-  LogDecoding
+  LogDecoding,
+  DecoderOptions
 } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import * as Contexts from "@truffle/codec/contexts";
@@ -20,6 +23,7 @@ import * as Format from "@truffle/codec/format";
 import { StopDecodingError } from "@truffle/codec/errors";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
+import Web3Utils from "web3-utils";
 
 /**
  * @Category Decoding
@@ -395,6 +399,280 @@ export function* decodeEvent(
   return decodings;
 }
 
+const ERROR_SELECTOR: Uint8Array = Conversion.toBytes(
+  Web3Utils.soliditySha3({
+    type: "string",
+    value: "Error(string)"
+  })
+);
+
+const DEFAULT_RETURN_ALLOCATIONS: AbiData.Allocate.ReturndataAllocation[] = [
+  {
+    kind: "empty" as const,
+    allocationMode: "full" as const,
+    selector: new Uint8Array(), //empty by default
+    arguments: []
+  },
+  {
+    kind: "revert" as const,
+    allocationMode: "full" as const,
+    selector: ERROR_SELECTOR,
+    arguments: [
+      {
+        kind: "abi" as const,
+        name: "",
+        pointer: {
+          location: "returndata" as const,
+          start: 0,
+          length: Evm.Utils.WORD_SIZE
+        },
+        type: {
+          typeClass: "string" as const,
+          typeHint: "string"
+        }
+      }
+    ]
+  },
+  {
+    kind: "failure" as const,
+    allocationMode: "full" as const,
+    selector: new Uint8Array(), //empty by default
+    arguments: []
+  }
+];
+
 /**
  * @Category Decoding
  */
+export function* decodeReturndata(
+  info: Evm.EvmInfo,
+  successAllocation: AbiData.Allocate.ReturndataAllocation | null, //null here must be explicit
+  status?: boolean //you can pass this to indicate that you know the status
+): Generator<DecoderRequest, ReturndataDecoding[], Uint8Array> {
+  const givenAllocations: AbiData.Allocate.ReturndataAllocation[] = successAllocation
+    ? [successAllocation]
+    : [];
+  const possibleAllocations = [
+    ...givenAllocations,
+    ...DEFAULT_RETURN_ALLOCATIONS
+  ];
+  let decodings: ReturndataDecoding[] = [];
+  allocationAttempts: for (const allocation of possibleAllocations) {
+    debug("trying allocation: %O", allocation);
+    //before we attempt to use this allocation, we check: does the selector match?
+    let encodedData = info.state.returndata; //again, not great to read this directly, but oh well
+    const encodedPrefix = encodedData.subarray(0, allocation.selector.length);
+    if (!Evm.Utils.equalData(encodedPrefix, allocation.selector)) {
+      continue;
+    }
+    encodedData = encodedData.subarray(allocation.selector.length); //slice off the selector for later
+    //also we check, does the status match?
+    if (status !== undefined) {
+      const successKinds = ["return", "empty", "bytecode"];
+      const failKinds = ["failure", "revert"];
+      if (status) {
+        if (!successKinds.includes(allocation.kind)) {
+          continue;
+        }
+      } else {
+        if (!failKinds.includes(allocation.kind)) {
+          continue;
+        }
+      }
+    }
+    let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
+    //you can't map with a generator, so we have to do this map manually
+    let decodedArguments: AbiArgument[] = [];
+    for (const argumentAllocation of allocation.arguments) {
+      let value: Format.Values.Result;
+      //if in full mode, use the allocation's listed data type.
+      //if in ABI mode, abify it before use.
+      //HAAAAACK: handle pointer with undefined length
+      let pointer = { ...argumentAllocation.pointer };
+      if (pointer.length === undefined) {
+        pointer.length = info.state.returndata.length;
+      }
+      let options: DecoderOptions = {
+        strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
+        allowRetry: decodingMode === "full" //this option is unnecessary but including for clarity
+      };
+      //now, let's decode!
+      try {
+        switch (argumentAllocation.kind) {
+          case "abi":
+            let dataType =
+              decodingMode === "full"
+                ? argumentAllocation.type
+                : abifyType(argumentAllocation.type);
+            value = yield* decode(dataType, pointer, info, options);
+            break;
+          case "raw":
+            value = yield* Bytes.Decode.decodeBytes(
+              argumentAllocation.type,
+              pointer,
+              info,
+              options
+            );
+            break;
+        }
+      } catch (error) {
+        if (
+          error instanceof StopDecodingError &&
+          error.allowRetry &&
+          decodingMode === "full"
+        ) {
+          //if a retry happens, we've got to do several things in order to switch to ABI mode:
+          //1. mark that we're switching to ABI mode;
+          decodingMode = "abi";
+          //2. abify all previously decoded values;
+          decodedArguments = decodedArguments.map(argumentDecoding => ({
+            ...argumentDecoding,
+            value: abifyResult(argumentDecoding.value, info.userDefinedTypes)
+          }));
+          //3. retry this particular decode in ABI mode.
+          options = {
+            strictAbiMode: true //turns on STRICT MODE to cause more errors to be thrown
+            //retries no longer allowed, not that this has an effect
+          };
+          try {
+            switch (argumentAllocation.kind) {
+              case "abi":
+                value = yield* decode(
+                  abifyType(argumentAllocation.type), //type is now abified!
+                  pointer,
+                  info,
+                  options
+                );
+                break;
+              case "raw":
+                //note: we should never end up in this case!
+                //it's just for consistency
+                value = yield* Bytes.Decode.decodeBytes(
+                  argumentAllocation.type, //silly to abify this type!
+                  pointer,
+                  info,
+                  options
+                );
+            }
+          } catch (_) {
+            //if an error occurred on the retry, this isn't a valid decoding!
+            debug("rejected due to exception on retry");
+            continue allocationAttempts;
+          }
+          //4. the remaining parameters will then automatically be decoded in ABI mode due to (1),
+          //so we don't need to do anything special there.
+        } else {
+          //if any other sort of error occurred, this isn't a valid decoding!
+          debug("rejected due to exception on first try: %O", error);
+          continue allocationAttempts;
+        }
+      }
+      const name = argumentAllocation.name;
+      decodedArguments.push(
+        name //deliberate general falsiness test
+          ? { name, value }
+          : { value }
+      );
+    }
+    //OK, so, having decoded the result, the question is: does it reencode to the original?
+    //first, we have to filter out the indexed arguments, and also get rid of the name information
+    const decodedArgumentValues = decodedArguments.map(
+      argument => argument.value
+    );
+    const reEncodedData = AbiData.Encode.encodeTupleAbi(
+      decodedArgumentValues,
+      info.allocations.abi
+    );
+    //are they equal?
+    if (!Evm.Utils.equalData(reEncodedData, encodedData)) {
+      //if not, this allocation doesn't work
+      debug("rejected due to mismatch");
+      continue;
+    }
+    //if we've made it here, the allocation works!  hooray!
+    debug("allocation accepted!");
+    let decoding: ReturndataDecoding;
+    let kind = allocation.kind;
+    switch (kind) {
+      case "return":
+        decoding = {
+          kind,
+          status: true as const,
+          arguments: decodedArguments,
+          decodingMode
+        };
+        break;
+      case "revert":
+        decoding = {
+          kind,
+          status: false as const,
+          arguments: decodedArguments,
+          decodingMode
+        };
+        break;
+      case "empty":
+        decoding = {
+          kind,
+          status: true as const,
+          decodingMode
+        };
+        break;
+      case "failure":
+        decoding = {
+          kind,
+          status: false as const,
+          decodingMode
+        };
+        break;
+      case "bytecode":
+        //OK, in this case we have some last few checks
+        //note: the following checks should never actually trip;
+        //they're just to prevent crazy errors that shouldn't happen
+        if (decodedArguments.length !== 1) {
+          continue;
+        }
+        const initialArgument = decodedArguments[0].value;
+        if (initialArgument.kind === "error") {
+          continue;
+        }
+        if (
+          initialArgument.type.typeClass !== "bytes" ||
+          initialArgument.type.kind !== "dynamic"
+        ) {
+          continue;
+        }
+        const bytecode = (<Format.Values.BytesDynamicValue>initialArgument)
+          .value.asHex;
+        const context = Contexts.Utils.findDecoderContext(
+          info.contexts,
+          bytecode
+        );
+        const contractType = Contexts.Import.contextToType(context);
+        decoding = {
+          kind,
+          status: true as const,
+          decodingMode,
+          bytecode,
+          class: contractType
+        };
+        break;
+    }
+    decodings.push(decoding);
+  }
+  return decodings;
+}
+
+export function decodeRevert(returndata: Uint8Array): ReturndataDecoding[] {
+  //coercing because TS doesn't know it'll finish in one go
+  return <ReturndataDecoding[]>decodeReturndata(
+    {
+      allocations: {},
+      state: {
+        storage: {},
+        returndata
+      }
+    },
+    null,
+    false
+  ).next().value;
+}
