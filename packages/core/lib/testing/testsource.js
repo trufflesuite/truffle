@@ -98,6 +98,19 @@ TestSource.prototype.resolve = async function(importPath) {
       return { body, resolvedPath: importPath };
     }
   }
+
+  const loggingLibraries = ["TruffleLogger"];
+
+  for (const lib of loggingLibraries) {
+    if (importPath === `truffle/${lib}.sol`)
+      return fse.readFile(
+        path.join(path.resolve(__dirname, `${lib}.sol`)),
+        { encoding: "utf8" },
+        (err, body) => callback(err, body, importPath)
+      );
+  }
+
+  return callback();
 };
 
 TestSource.prototype.resolve_dependency_path = (importPath, dependencyPath) => {
