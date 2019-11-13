@@ -67,7 +67,7 @@ export function* decodeCalldata(
   let selector: string;
   //first: is this a creation call?
   if (isConstructor) {
-    allocation = allocations.constructorAllocations[contextHash];
+    allocation = allocations.constructorAllocations[contextHash].input;
   } else {
     //skipping any error-handling on this read, as a calldata read can't throw anyway
     let rawSelector = yield* read(
@@ -79,7 +79,7 @@ export function* decodeCalldata(
       info.state
     );
     selector = Conversion.toHexString(rawSelector);
-    allocation = allocations.functionAllocations[contextHash][selector];
+    allocation = allocations.functionAllocations[contextHash][selector].input;
   }
   if (allocation === undefined) {
     return {
@@ -394,3 +394,7 @@ export function* decodeEvent(
   }
   return decodings;
 }
+
+/**
+ * @Category Decoding
+ */

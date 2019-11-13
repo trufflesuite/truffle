@@ -10,10 +10,15 @@ export type DataPointer =
   | ConstantDefinitionPointer
   | SpecialPointer
   | EventDataPointer
-  | EventTopicPointer;
+  | EventTopicPointer
+  | ReturndataPointer;
 
-export type AbiPointer = CalldataPointer | EventDataPointer | GenericAbiPointer;
-export type AbiDataPointer = CalldataPointer | EventDataPointer;
+export type StackFormPointer = StackPointer | StackLiteralPointer;
+export type AbiPointer = AbiDataPointer | GenericAbiPointer;
+export type AbiDataPointer =
+  | CalldataPointer
+  | ReturndataPointer
+  | EventDataPointer;
 export type BytesPointer = MemoryPointer | CalldataPointer | EventDataPointer;
 
 export interface StackPointer {
@@ -30,6 +35,12 @@ export interface MemoryPointer {
 
 export interface CalldataPointer {
   location: "calldata";
+  start: number;
+  length: number;
+}
+
+export interface ReturndataPointer {
+  location: "returndata";
   start: number;
   length: number;
 }

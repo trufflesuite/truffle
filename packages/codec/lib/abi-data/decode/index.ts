@@ -13,7 +13,7 @@ import * as Evm from "@truffle/codec/evm";
 import { abiSizeInfo } from "@truffle/codec/abi-data/allocate";
 import { DecodingError, StopDecodingError } from "@truffle/codec/errors";
 
-type AbiLocation = "calldata" | "eventdata"; //leaving out "abi" as it shouldn't occur here
+type AbiLocation = "calldata" | "eventdata" | "returndata"; //leaving out "abi" as it shouldn't occur here
 
 export function* decodeAbi(
   dataType: Format.Types.Type,
@@ -59,7 +59,7 @@ export function* decodeAbi(
 
 export function* decodeAbiReferenceByAddress(
   dataType: Format.Types.ReferenceType | Format.Types.TupleType,
-  pointer: Pointer.DataPointer,
+  pointer: Pointer.AbiDataPointer | Pointer.StackFormPointer,
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
@@ -71,8 +71,11 @@ export function* decodeAbiReferenceByAddress(
   } = info;
   debug("pointer %o", pointer);
   //this variable holds the location we should look to *next*
+  //stack pointers point to calldata; other pointers point to same location
   const location: AbiLocation =
-    pointer.location === "eventdata" ? "eventdata" : "calldata"; //stack pointers (& stack literal pointers) point to calldata, not the stack
+    pointer.location === "stack" || pointer.location === "stackliteral"
+      ? "calldata"
+      : pointer.location;
 
   let rawValue: Uint8Array;
   try {
@@ -427,10 +430,7 @@ function* decodeAbiStructByPosition(
     allocations: { abi: allocations }
   } = info;
 
-  const typeLocation =
-    location === "eventdata"
-      ? null //eventdata is not a valid location for a type
-      : location;
+  const typeLocation = location === "calldata" ? "calldata" : null; //other abi locations are not valid type locations
 
   const typeId = dataType.id;
   const structAllocation = allocations[parseInt(typeId)];
