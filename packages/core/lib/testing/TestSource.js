@@ -97,6 +97,17 @@ module.exports = class TestSource {
         return { body, filePath: importPath };
       }
     }
+
+    const loggingLibraries = ["TruffleLogger"];
+
+    for (const lib of loggingLibraries) {
+      if (importPath === `truffle/${lib}.sol`)
+        return fse.readFile(
+          path.join(path.resolve(__dirname, `${lib}.sol`)),
+          { encoding: "utf8" },
+          (err, body) => callback(err, body, importPath)
+        );
+    }
   }
 
   resolveDependencyPath(importPath, dependencyPath) {
