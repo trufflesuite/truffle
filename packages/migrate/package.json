@@ -20,7 +20,6 @@
     "@truffle/interface-adapter": "^0.3.3",
     "@truffle/reporters": "^1.0.17",
     "@truffle/require": "^2.0.28",
-    "async": "2.6.1",
     "emittery": "^0.4.0",
     "node-dir": "0.1.17",
     "web3": "1.2.2"
