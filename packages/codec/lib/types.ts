@@ -72,7 +72,8 @@ export interface FunctionDecoding {
    */
   selector: string;
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -112,7 +113,8 @@ export interface ConstructorDecoding {
    */
   bytecode: string;
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -143,7 +145,8 @@ export interface MessageDecoding {
    */
   data: string;
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -160,11 +163,12 @@ export interface UnknownCallDecoding {
    */
   kind: "unknown";
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
   /**
-   * The data that was sent to the contract
+   * The data that was sent to the contract.
    */
   data: string;
 }
@@ -181,11 +185,12 @@ export interface UnknownCreationDecoding {
    */
   kind: "create";
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
   /**
-   * The bytecode of the contract creation
+   * The bytecode of the contract creation.
    */
   bytecode: string;
 }
@@ -221,7 +226,8 @@ export interface EventDecoding {
    */
   selector: string;
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -253,7 +259,8 @@ export interface AnonymousDecoding {
    */
   abi: AbiData.EventAbiEntry; //should be anonymous
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -277,7 +284,8 @@ export interface ReturnDecoding {
    */
   arguments: AbiArgument[];
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -297,7 +305,8 @@ export interface UnexpectedEmptyDecoding {
    */
   status: true;
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -317,7 +326,8 @@ export interface EmptyFailureDecoding {
    */
   status: false;
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -343,7 +353,8 @@ export interface RevertMessageDecoding {
    */
   arguments: AbiArgument[];
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -368,7 +379,8 @@ export interface BytecodeDecoding {
    */
   status: true;
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
   /**
