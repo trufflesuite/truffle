@@ -438,8 +438,8 @@ function allocateCalldata(
         id,
         outputTypes,
         userDefinedTypes,
-        abiAllocations,
-        offset
+        abiAllocations
+        //note the lack of an offset!
       )[id];
     } catch {
       //if something goes wrong, switch to ABI mdoe
@@ -477,8 +477,8 @@ function allocateCalldata(
       id,
       outputTypes,
       userDefinedTypes,
-      abiAllocations,
-      offset
+      abiAllocations
+      //note the lack of an offset!
     )[id];
   }
   //finally: transform the allocation appropriately

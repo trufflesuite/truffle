@@ -526,7 +526,7 @@ export function* decodeReturndata(
           "0x" + pushAddressInstruction + "..".repeat(Evm.Utils.ADDRESS_SIZE);
         if (context.binary.startsWith(delegateCallGuardString)) {
           decoding.address = Web3Utils.toChecksumAddress(
-            bytecode.slice(2, 2 + 2 * Evm.Utils.ADDRESS_SIZE)
+            bytecode.slice(4, 4 + 2 * Evm.Utils.ADDRESS_SIZE) //4 = "0x73".length
           );
         }
       }
