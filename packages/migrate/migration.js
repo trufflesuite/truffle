@@ -121,7 +121,7 @@ class Migration {
 
       await this.emitter.emit("error", payload);
       deployer.finish();
-      throw new Error(error);
+      throw error;
     }
   }
 
