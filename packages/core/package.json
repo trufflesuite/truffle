@@ -64,7 +64,7 @@
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
     "universal-analytics": "^0.4.17",
-    "web3": "1.2.2",
+    "web3": "1.2.3",
     "xregexp": "^4.2.4",
     "yargs": "^8.0.2"
   },

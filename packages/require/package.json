@@ -18,7 +18,7 @@
     "@truffle/expect": "^0.0.13",
     "@truffle/interface-adapter": "^0.3.3",
     "original-require": "1.0.1",
-    "web3": "1.2.2"
+    "web3": "1.2.3"
   },
   "devDependencies": {
     "mocha": "5.2.0"
