@@ -65,4 +65,9 @@ export class Resolver {
       source
     };
   }
+
+  isBundled() {
+    // @ts-ignore
+    return BUNDLE_VERSION !== "undefined";
+  }
 }
