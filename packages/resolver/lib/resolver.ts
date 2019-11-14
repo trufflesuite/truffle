@@ -4,6 +4,7 @@ const provision = require("@truffle/provisioner");
 
 import { ResolverSource } from "./source";
 import { constructSources } from "./sources";
+import { isBundled } from "./utils";
 
 export class Resolver {
   options: any;
@@ -64,5 +65,9 @@ export class Resolver {
       filePath,
       source
     };
+  }
+
+  isBundled() {
+    return isBundled();
   }
 }

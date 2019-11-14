@@ -101,9 +101,12 @@ module.exports = class TestSource {
     const loggingLibraries = ["TruffleLogger"];
 
     for (const lib of loggingLibraries) {
+      const actualImportPath = isBundled
+        ? path.resolve(__dirname, path.basename(importPath))
+        : path.resolve(__dirname, "../logging", path.basename(importPath));
       if (importPath === `truffle/${lib}.sol`)
         return fse.readFile(
-          path.join(path.resolve(__dirname, `${lib}.sol`)),
+          actualImportPath,
           { encoding: "utf8" },
           (err, body) => callback(err, body, importPath)
         );
