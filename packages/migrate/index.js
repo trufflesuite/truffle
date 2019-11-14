@@ -28,33 +28,31 @@ const Migrate = {
 
   assemble: function(options) {
     const config = Config.detect(options);
-
     if (
-      fs.existsSync(config.migrations_directory) &&
-      fs.readdirSync(config.migrations_directory).length > 0
-    ) {
-      const files = dir.files(config.migrations_directory, { sync: true });
-      if (!files) return [];
-
-      let migrations = files
-        .filter(file => isNaN(parseInt(path.basename(file))) === false)
-        .filter(
-          file =>
-            path.extname(file).match(config.migrations_file_extension_regexp) !=
-            null
-        )
-        .map(file => new Migration(file, Migrate.reporter, config));
-
-      // Make sure to sort the prefixes as numbers and not strings.
-      migrations = migrations.sort((a, b) => {
-        if (a.number > b.number) return 1;
-        if (a.number < b.number) return -1;
-        return 0;
-      });
-      return migrations;
-    } else {
+      !fs.existsSync(config.migrations_directory) ||
+      !fs.readdirSync(config.migrations_directory).length > 0
+    )
       return [];
-    }
+
+    const files = dir.files(config.migrations_directory, { sync: true });
+    if (!files) return [];
+
+    let migrations = files
+      .filter(file => isNaN(parseInt(path.basename(file))) === false)
+      .filter(
+        file =>
+          path.extname(file).match(config.migrations_file_extension_regexp) !=
+          null
+      )
+      .map(file => new Migration(file, Migrate.reporter, config));
+
+    // Make sure to sort the prefixes as numbers and not strings.
+    migrations = migrations.sort((a, b) => {
+      if (a.number > b.number) return 1;
+      if (a.number < b.number) return -1;
+      return 0;
+    });
+    return migrations;
   },
 
   run: async function(options, callback) {
