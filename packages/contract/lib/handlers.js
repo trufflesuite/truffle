@@ -101,6 +101,9 @@ const handlers = {
       return context.promiEvent.reject(error);
     }
 
+    // Check logs for TruffleLogger usage & log if necessary
+    Utils.consoleLog(receipt.logs);
+
     // Emit receipt
     context.promiEvent.eventEmitter.emit("receipt", receipt);
 
