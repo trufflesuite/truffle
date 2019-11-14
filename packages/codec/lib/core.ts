@@ -10,6 +10,7 @@ import {
   DecoderRequest,
   CalldataDecoding,
   ReturndataDecoding,
+  BytecodeDecoding,
   DecodingMode,
   AbiArgument,
   LogDecoding,
@@ -404,26 +405,19 @@ const ERROR_SELECTOR: Uint8Array = Conversion.toBytes(
     type: "string",
     value: "Error(string)"
   })
-);
+).subarray(0, Evm.Utils.SELECTOR_SIZE);
 
 const DEFAULT_RETURN_ALLOCATIONS: AbiData.Allocate.ReturndataAllocation[] = [
-  {
-    kind: "empty" as const,
-    allocationMode: "full" as const,
-    selector: new Uint8Array(), //empty by default
-    arguments: []
-  },
   {
     kind: "revert" as const,
     allocationMode: "full" as const,
     selector: ERROR_SELECTOR,
     arguments: [
       {
-        kind: "abi" as const,
         name: "",
         pointer: {
           location: "returndata" as const,
-          start: 0,
+          start: ERROR_SELECTOR.length,
           length: Evm.Utils.WORD_SIZE
         },
         type: {
@@ -438,10 +432,18 @@ const DEFAULT_RETURN_ALLOCATIONS: AbiData.Allocate.ReturndataAllocation[] = [
     allocationMode: "full" as const,
     selector: new Uint8Array(), //empty by default
     arguments: []
+  },
+  {
+    kind: "empty" as const,
+    allocationMode: "full" as const,
+    selector: new Uint8Array(), //empty by default
+    arguments: []
   }
 ];
 
 /**
+ * If there are multiple possibilities, they're always returned in
+ * the order: return, revert, failure, empty, bytecode.
  * @Category Decoding
  */
 export function* decodeReturndata(
@@ -449,13 +451,28 @@ export function* decodeReturndata(
   successAllocation: AbiData.Allocate.ReturndataAllocation | null, //null here must be explicit
   status?: boolean //you can pass this to indicate that you know the status
 ): Generator<DecoderRequest, ReturndataDecoding[], Uint8Array> {
-  const givenAllocations: AbiData.Allocate.ReturndataAllocation[] = successAllocation
-    ? [successAllocation]
-    : [];
-  const possibleAllocations = [
-    ...givenAllocations,
-    ...DEFAULT_RETURN_ALLOCATIONS
-  ];
+  let possibleAllocations: AbiData.Allocate.ReturndataAllocation[];
+  if (successAllocation === null) {
+    possibleAllocations = DEFAULT_RETURN_ALLOCATIONS;
+  } else {
+    switch (successAllocation.kind) {
+      case "return":
+        possibleAllocations = [
+          successAllocation,
+          ...DEFAULT_RETURN_ALLOCATIONS
+        ];
+        break;
+      case "bytecode":
+        possibleAllocations = [
+          ...DEFAULT_RETURN_ALLOCATIONS,
+          successAllocation
+        ];
+        break;
+      default:
+        //this shouldn't happen
+        possibleAllocations = DEFAULT_RETURN_ALLOCATIONS; //I guess??
+    }
+  }
   let decodings: ReturndataDecoding[] = [];
   allocationAttempts: for (const allocation of possibleAllocations) {
     debug("trying allocation: %O", allocation);
@@ -481,46 +498,66 @@ export function* decodeReturndata(
       }
     }
     let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
+    if (allocation.kind === "bytecode") {
+      //bytecode is special and can't really be integrated with the other cases.
+      //so it gets its own code here.
+      const bytecode = Conversion.toHexString(info.state.returndata);
+      const context = Contexts.Utils.findDecoderContext(
+        info.contexts,
+        bytecode
+      );
+      const contractType = Contexts.Import.contextToType(context);
+      let decoding: BytecodeDecoding = {
+        kind: "bytecode" as const,
+        status: true as const,
+        decodingMode,
+        bytecode,
+        class: contractType
+      };
+      if (contractType.contractKind === "library") {
+        //note: I am relying on this being present!
+        //(also this part is a bit HACKy)
+        const pushAddressInstruction = (
+          0x60 +
+          Evm.Utils.ADDRESS_SIZE -
+          1
+        ).toString(16); //"73"
+        const delegateCallGuardString =
+          "0x" + pushAddressInstruction + "..".repeat(Evm.Utils.ADDRESS_SIZE);
+        if (context.binary.startsWith(delegateCallGuardString)) {
+          decoding.address = Web3Utils.toChecksumAddress(
+            bytecode.slice(2, 2 + 2 * Evm.Utils.ADDRESS_SIZE)
+          );
+        }
+      }
+      decodings.push(decoding);
+      continue; //skip the rest of the code in the allocation loop!
+    }
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];
     for (const argumentAllocation of allocation.arguments) {
       let value: Format.Values.Result;
       //if in full mode, use the allocation's listed data type.
       //if in ABI mode, abify it before use.
-      //HAAAAACK: handle pointer with undefined length
-      let pointer = { ...argumentAllocation.pointer };
-      if (pointer.length === undefined) {
-        pointer.length = info.state.returndata.length;
-      }
-      let options: DecoderOptions = {
-        strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
-        allowRetry: decodingMode === "full" //this option is unnecessary but including for clarity
-      };
+      let dataType =
+        decodingMode === "full"
+          ? argumentAllocation.type
+          : abifyType(argumentAllocation.type);
       //now, let's decode!
       try {
-        switch (argumentAllocation.kind) {
-          case "abi":
-            let dataType =
-              decodingMode === "full"
-                ? argumentAllocation.type
-                : abifyType(argumentAllocation.type);
-            value = yield* decode(dataType, pointer, info, options);
-            break;
-          case "raw":
-            value = yield* Bytes.Decode.decodeBytes(
-              argumentAllocation.type,
-              pointer,
-              info,
-              options
-            );
-            break;
-        }
+        value = yield* decode(dataType, argumentAllocation.pointer, info, {
+          abiPointerBase: allocation.selector.length,
+          strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
+          allowRetry: decodingMode === "full" //this option is unnecessary but including for clarity
+        });
+        debug("value on first try: %O", value);
       } catch (error) {
         if (
           error instanceof StopDecodingError &&
           error.allowRetry &&
           decodingMode === "full"
         ) {
+          debug("retry!");
           //if a retry happens, we've got to do several things in order to switch to ABI mode:
           //1. mark that we're switching to ABI mode;
           decodingMode = "abi";
@@ -530,30 +567,18 @@ export function* decodeReturndata(
             value: abifyResult(argumentDecoding.value, info.userDefinedTypes)
           }));
           //3. retry this particular decode in ABI mode.
-          options = {
-            strictAbiMode: true //turns on STRICT MODE to cause more errors to be thrown
-            //retries no longer allowed, not that this has an effect
-          };
           try {
-            switch (argumentAllocation.kind) {
-              case "abi":
-                value = yield* decode(
-                  abifyType(argumentAllocation.type), //type is now abified!
-                  pointer,
-                  info,
-                  options
-                );
-                break;
-              case "raw":
-                //note: we should never end up in this case!
-                //it's just for consistency
-                value = yield* Bytes.Decode.decodeBytes(
-                  argumentAllocation.type, //silly to abify this type!
-                  pointer,
-                  info,
-                  options
-                );
-            }
+            value = yield* decode(
+              abifyType(argumentAllocation.type), //type is now abified!
+              argumentAllocation.pointer,
+              info,
+              {
+                abiPointerBase: allocation.selector.length,
+                strictAbiMode: true //turns on STRICT MODE to cause more errors to be thrown
+                //retries no longer allowed, not that this has an effect
+              }
+            );
+            debug("value on retry: %O", value);
           } catch (_) {
             //if an error occurred on the retry, this isn't a valid decoding!
             debug("rejected due to exception on retry");
@@ -576,6 +601,7 @@ export function* decodeReturndata(
     }
     //OK, so, having decoded the result, the question is: does it reencode to the original?
     //first, we have to filter out the indexed arguments, and also get rid of the name information
+    debug("decodedArguments: %O", decodedArguments);
     const decodedArgumentValues = decodedArguments.map(
       argument => argument.value
     );
@@ -583,7 +609,7 @@ export function* decodeReturndata(
       decodedArgumentValues,
       info.allocations.abi
     );
-    //are they equal?
+    //are they equal? note the selector has been stripped off encodedData!
     if (!Evm.Utils.equalData(reEncodedData, encodedData)) {
       //if not, this allocation doesn't work
       debug("rejected due to mismatch");
@@ -622,38 +648,6 @@ export function* decodeReturndata(
           kind,
           status: false as const,
           decodingMode
-        };
-        break;
-      case "bytecode":
-        //OK, in this case we have some last few checks
-        //note: the following checks should never actually trip;
-        //they're just to prevent crazy errors that shouldn't happen
-        if (decodedArguments.length !== 1) {
-          continue;
-        }
-        const initialArgument = decodedArguments[0].value;
-        if (initialArgument.kind === "error") {
-          continue;
-        }
-        if (
-          initialArgument.type.typeClass !== "bytes" ||
-          initialArgument.type.kind !== "dynamic"
-        ) {
-          continue;
-        }
-        const bytecode = (<Format.Values.BytesDynamicValue>initialArgument)
-          .value.asHex;
-        const context = Contexts.Utils.findDecoderContext(
-          info.contexts,
-          bytecode
-        );
-        const contractType = Contexts.Import.contextToType(context);
-        decoding = {
-          kind,
-          status: true as const,
-          decodingMode,
-          bytecode,
-          class: contractType
         };
         break;
     }

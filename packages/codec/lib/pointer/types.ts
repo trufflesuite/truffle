@@ -2,16 +2,13 @@ import * as Ast from "@truffle/codec/ast";
 import * as Storage from "@truffle/codec/storage/types";
 
 export type DataPointer =
-  | StackPointer
+  | StackFormPointer
   | MemoryPointer
   | StoragePointer
-  | CalldataPointer
-  | StackLiteralPointer
+  | AbiDataPointer
   | ConstantDefinitionPointer
   | SpecialPointer
-  | EventDataPointer
-  | EventTopicPointer
-  | ReturndataPointer;
+  | EventTopicPointer;
 
 export type StackFormPointer = StackPointer | StackLiteralPointer;
 export type AbiPointer = AbiDataPointer | GenericAbiPointer;
@@ -19,7 +16,7 @@ export type AbiDataPointer =
   | CalldataPointer
   | ReturndataPointer
   | EventDataPointer;
-export type BytesPointer = MemoryPointer | CalldataPointer | EventDataPointer;
+export type BytesPointer = MemoryPointer | AbiDataPointer;
 
 export interface StackPointer {
   location: "stack";

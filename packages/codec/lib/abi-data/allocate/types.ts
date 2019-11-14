@@ -130,26 +130,14 @@ type ReturndataKind = "return" | "revert" | "failure" | "empty" | "bytecode";
 
 export interface ReturndataAllocation {
   selector: Uint8Array;
-  arguments: ReturndataArgumentAllocation[];
+  arguments: ReturndataArgumentAllocation[]; //ignored if kind="bytecode"
   allocationMode: DecodingMode;
   kind: ReturndataKind;
 }
 
-export type ReturndataArgumentAllocation =
-  | ReturndataArgumentAllocationAbi
-  | ReturndataArgumentAllocationRaw;
-
-export interface ReturndataArgumentAllocationAbi {
-  kind: "abi";
+export interface ReturndataArgumentAllocation {
   name: string;
   type: Format.Types.Type;
-  pointer: Pointer.ReturndataPointer;
-}
-
-export interface ReturndataArgumentAllocationRaw {
-  kind: "raw";
-  name: string;
-  type: Format.Types.BytesTypeDynamic; //only allowed type for raw!
   pointer: Pointer.ReturndataPointer;
 }
 

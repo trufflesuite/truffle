@@ -380,6 +380,13 @@ export interface BytecodeDecoding {
    * The bytecode of the contract that was created.
    */
   bytecode: string;
+  /**
+   * If the contract created was a library, and was compiled with Solidity
+   * 0.4.20 or later, this field will be included, which gives the address of
+   * the created contract (checksummed).  This field will not be included
+   * otherwise!
+   */
+  address?: string;
 }
 
 /**

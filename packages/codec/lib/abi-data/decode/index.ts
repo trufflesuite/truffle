@@ -80,6 +80,7 @@ export function* decodeAbiReferenceByAddress(
   let rawValue: Uint8Array;
   try {
     rawValue = yield* read(pointer, state);
+    debug("state: %O", state);
   } catch (error) {
     if (strict) {
       throw new StopDecodingError((<DecodingError>error).error);
@@ -93,6 +94,8 @@ export function* decodeAbiReferenceByAddress(
   }
 
   let rawValueAsBN = Conversion.toBN(rawValue);
+  debug("rawValue: %O", rawValue);
+  debug("rawValueAsBN: %O", rawValueAsBN);
   let rawValueAsNumber: number;
   try {
     rawValueAsNumber = rawValueAsBN.toNumber();

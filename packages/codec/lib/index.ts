@@ -242,7 +242,13 @@ for technical reasons we can't guarantee we can determine.
 
 //now... various low-level stuff we want to export!
 //the actual decoding functions and related errors
-export { decodeVariable, decodeEvent, decodeCalldata } from "./core";
+export {
+  decodeVariable,
+  decodeEvent,
+  decodeCalldata,
+  decodeReturndata,
+  decodeRevert
+} from "./core";
 export { DecodingError, StopDecodingError } from "./errors";
 
 //now: what types should we export? (other than the ones from ./format)
