@@ -45,9 +45,10 @@
  * (Note that circularity detection for memory structures has yet to be
  * implemented, but is coming soon.)
  *
- * There is also some rudimentary encoding functionality, although currently
- * that's just used internally.  A better interface for the encoding
- * functionality is intended for the future.
+ * There is also functionality for decoding return values and revert messages
+ * (currently mostly unused, intended to be hooked up later) as well as some
+ * rudimentary encoding functionality, although currently that's just used
+ * internally.  A better interface for these things is intended for the future.
  *
  * ## How to use
  *

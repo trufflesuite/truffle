@@ -31,7 +31,7 @@ export type LogDecoding = EventDecoding | AnonymousDecoding;
 export type ReturndataDecoding =
   | ReturnDecoding
   | BytecodeDecoding
-  | EmptySuccessDecoding
+  | UnexpectedEmptyDecoding
   | RevertMessageDecoding
   | EmptyFailureDecoding;
 
@@ -283,14 +283,13 @@ export interface ReturnDecoding {
 }
 
 /**
- * This type represents a decoding of empty return data from a successful
- * call.  This can occur even when the call is supposed to return a value if,
- * say, the contract self-destructs instead.
+ * This type represents a decoding of unexpectedly empty return data from a
+ * successful call.  This can occur if, say, the contract self-destructs.
  * @Category Output
  */
-export interface EmptySuccessDecoding {
+export interface UnexpectedEmptyDecoding {
   /**
-   * The kind of decoding; indicates that this is an EmptySuccessDecoding.
+   * The kind of decoding; indicates that this is an UnexpectedEmptyDecoding.
    */
   kind: "empty";
   /**
