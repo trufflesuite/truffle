@@ -80,6 +80,32 @@ const Utils = {
       .filter(log => log != null);
   },
 
+  consoleLog(receiptLogs) {
+    const TruffleLogEvents = receiptLogs.filter(x => x.event === "__Log");
+    TruffleLogEvents.forEach(event => {
+      const result = event.args;
+
+      // A mapping to show how to output into our console
+      const outputMap = {
+        num: result[0].toString(),
+        boolean: result[0],
+        str: result[0],
+        b32: result[0],
+        addr: result[0]
+      };
+
+      // A list of all "supported" types: ["num", "boolean", "str", ...]
+      const types = Object.keys(outputMap);
+
+      // Find out what type our result is, and log it out if it matches
+      types.forEach(type => {
+        if (result.hasOwnProperty(type)) {
+          console.log(outputMap[type]);
+        }
+      });
+    });
+  },
+
   toTruffleLog(events, isSingle) {
     // Transform singletons (from event listeners) to the kind of
     // object we find on the receipt
