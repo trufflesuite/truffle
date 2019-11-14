@@ -24,13 +24,14 @@ export type LogDecoding = EventDecoding | AnonymousDecoding;
 
 /**
  * A type representing a returndata (return value or revert message) decoding.
- * As you can see, these come in five types, each of which is documented
+ * As you can see, these come in six types, each of which is documented
  * separately.
  * @Category Output
  */
 export type ReturndataDecoding =
   | ReturnDecoding
   | BytecodeDecoding
+  | UnknownBytecodeDecoding
   | UnexpectedEmptyDecoding
   | RevertMessageDecoding
   | EmptyFailureDecoding;
@@ -360,8 +361,8 @@ export interface RevertMessageDecoding {
 }
 
 /**
- * This type represents a decoding of the return data as bytecode
- * returned from a constructor.
+ * This type represents a decoding of the return data as bytecode for a known
+ * class returned from a constructor.
  *
  * NOTE: In the future, this type will also contain information about
  * any linked libraries the contract being constructed uses.  However,
@@ -398,6 +399,36 @@ export interface BytecodeDecoding {
    * otherwise!
    */
   address?: string;
+}
+
+/**
+ * This type represents a decoding of the return data as bytecode for an
+ * unknown class returned from a constructor.
+ *
+ * NOTE: In the future, this type will also contain information about
+ * any linked libraries the contract being constructed uses.  However,
+ * this is not implemented at present.
+ *
+ * @Category Output
+ */
+export interface UnknownBytecodeDecoding {
+  /**
+   * The kind of decoding; indicates that this is an UnknownBytecodeDecoding.
+   */
+  kind: "unknownbytecode";
+  /**
+   * Indicates that this kind of decoding indicates a successful return.
+   */
+  status: true;
+  /**
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
+   */
+  decodingMode: DecodingMode;
+  /**
+   * The bytecode of the contract that was created.
+   */
+  bytecode: string;
 }
 
 /**

@@ -443,7 +443,7 @@ const DEFAULT_RETURN_ALLOCATIONS: AbiData.Allocate.ReturndataAllocation[] = [
 
 /**
  * If there are multiple possibilities, they're always returned in
- * the order: return, revert, failure, empty, bytecode.
+ * the order: return, revert, failure, empty, bytecode, unknownbytecode
  * @Category Decoding
  */
 export function* decodeReturndata(
@@ -506,6 +506,15 @@ export function* decodeReturndata(
         info.contexts,
         bytecode
       );
+      if (!context) {
+        decodings.push({
+          kind: "unknownbytecode" as const,
+          status: true as const,
+          decodingMode,
+          bytecode
+        });
+        continue; //skip the rest of the code in the allocation loop!
+      }
       const contractType = Contexts.Import.contextToType(context);
       let decoding: BytecodeDecoding = {
         kind: "bytecode" as const,
