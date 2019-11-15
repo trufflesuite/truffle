@@ -20,6 +20,7 @@
   "devDependencies": {
     "@truffle/contract": "^4.1.0",
     "@types/fs-extra": "^8.0.0",
+    "@types/lodash": "^4.14.148",
     "@types/node": "^12.6.2",
     "chai": "4.2.0",
     "debug": "^4.1.1",
