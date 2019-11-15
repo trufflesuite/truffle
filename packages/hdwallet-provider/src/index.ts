@@ -34,7 +34,7 @@ class HDWalletProvider {
     mnemonic: string | string[],
     provider: string | any,
     addressIndex: number = 0,
-    numAddresses: number = 1,
+    numAddresses: number = 10,
     shareNonce: boolean = true,
     walletHdpath: string = `m/44'/60'/0'/0/`
   ) {
@@ -87,7 +87,7 @@ class HDWalletProvider {
     // private helper leveraging ethUtils to populate wallets/addresses
     const ethUtilValidation = (privateKeys: string[]) => {
       // crank the addresses out
-      for (let i = addressIndex; i < addressIndex + numAddresses; i++) {
+      for (let i = addressIndex; i < privateKeys.length; i++) {
         const privateKey = Buffer.from(privateKeys[i].replace("0x", ""), "hex");
         if (EthUtil.isValidPrivate(privateKey)) {
           const wallet = ethJSWallet.fromPrivateKey(privateKey);
