@@ -1,7 +1,6 @@
 const fs = require("fs");
 const dir = require("node-dir");
 const path = require("path");
-const async = require("async");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
 const Reporter = require("@truffle/reporters").migrationsV5;
@@ -32,8 +31,9 @@ const Migrate = {
     if (
       !fs.existsSync(config.migrations_directory) ||
       !fs.readdirSync(config.migrations_directory).length > 0
-    )
+    ) {
       return [];
+    }
 
     const files = dir.files(config.migrations_directory, { sync: true });
     if (!files) return [];
@@ -119,9 +119,7 @@ const Migrate = {
 
     Object.keys(options).forEach(key => (clone[key] = options[key]));
 
-    if (options.quiet) {
-      clone.logger = { log: function() {} };
-    }
+    if (options.quiet) clone.logger = { log: function() {} };
 
     clone.resolver = this.wrapResolver(options.resolver, clone.provider);
 
@@ -142,30 +140,22 @@ const Migrate = {
       migrations
     });
 
-    return new Promise((resolve, reject) => {
-      return async.eachSeries(
-        migrations,
-        (migration, finished) => {
-          migration
-            .run(clone)
-            .then(() => {
-              finished();
-            })
-            .catch(error => {
-              finished(error);
-            });
-        },
-        async error => {
-          await this.emitter.emit("postAllMigrations", {
-            dryRun: options.dryRun,
-            error: error ? error.toString() : null
-          });
-
-          if (error) return reject(error);
-          return resolve();
-        }
-      );
-    });
+    try {
+      for (let migration of migrations) {
+        await migration.run(clone);
+      }
+      await this.emitter.emit("postAllMigrations", {
+        dryRun: options.dryRun,
+        error: null
+      });
+      return;
+    } catch (error) {
+      await this.emitter.emit("postAllMigrations", {
+        dryRun: options.dryRun,
+        error: error.toString()
+      });
+      throw error;
+    }
   },
 
   wrapResolver: function(resolver, provider) {
