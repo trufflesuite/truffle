@@ -8,29 +8,41 @@ import * as Format from "@truffle/codec/format";
 import * as Basic from "@truffle/codec/basic";
 import * as Bytes from "@truffle/codec/bytes";
 import * as Pointer from "@truffle/codec/pointer";
-import { DecoderRequest } from "@truffle/codec/types";
+import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError } from "@truffle/codec/errors";
 
 export function* decodeMemory(
   dataType: Format.Types.Type,
   pointer: Pointer.MemoryPointer,
-  info: Evm.EvmInfo
+  info: Evm.EvmInfo,
+  options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   if (Format.Types.isReferenceType(dataType)) {
-    return yield* decodeMemoryReferenceByAddress(dataType, pointer, info);
+    return yield* decodeMemoryReferenceByAddress(
+      dataType,
+      pointer,
+      info,
+      options
+    );
   } else {
-    return yield* Basic.Decode.decodeBasic(dataType, pointer, info);
+    return yield* Basic.Decode.decodeBasic(dataType, pointer, info, options);
   }
 }
 
 export function* decodeMemoryReferenceByAddress(
   dataType: Format.Types.ReferenceType,
   pointer: Pointer.DataPointer,
-  info: Evm.EvmInfo
+  info: Evm.EvmInfo,
+  options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   const { state } = info;
-  // debug("pointer %o", pointer);
+  let memoryVisited = (options.memoryVisited || []).slice(); //we'll be modifying this, so let's clone first
+  debug("pointer %o", pointer);
+  //note: for mappings, the following operations are pretty
+  //meaningless, but I'm leaving them in anyway rather than
+  //making mappings a totally separate case because it works
+  //anyway and I may as well keep things parallel
   let rawValue: Uint8Array;
   try {
     rawValue = yield* read(pointer, state);
@@ -58,9 +70,13 @@ export function* decodeMemoryReferenceByAddress(
       }
     };
   }
+  //startPosition may get modified later, so let's save the current
+  //value for circularity detection purposes
+  const objectPosition = startPosition;
   let rawLength: Uint8Array;
   let lengthAsBN: BN;
   let length: number;
+  let seenPreviously: number;
 
   switch (dataType.typeClass) {
     case "bytes":
@@ -110,6 +126,17 @@ export function* decodeMemoryReferenceByAddress(
       return yield* Bytes.Decode.decodeBytes(dataType, childPointer, info);
 
     case "array":
+      //first: circularity check!
+      seenPreviously = memoryVisited.indexOf(objectPosition);
+      if (seenPreviously !== -1) {
+        return {
+          type: dataType,
+          kind: "value" as const,
+          reference: seenPreviously + 1,
+          value: [] //will be fixed later by the tie function
+        };
+      }
+      //otherwise, decode as normal
       if (dataType.kind === "dynamic") {
         //initial word contains array length
         try {
@@ -147,6 +174,8 @@ export function* decodeMemoryReferenceByAddress(
         };
       }
 
+      memoryVisited.unshift(objectPosition);
+
       let baseType = dataType.baseType;
 
       let decodedChildren: Format.Values.Result[] = [];
@@ -159,7 +188,8 @@ export function* decodeMemoryReferenceByAddress(
               start: startPosition + index * Evm.Utils.WORD_SIZE,
               length: Evm.Utils.WORD_SIZE
             },
-            info
+            info,
+            { memoryVisited } //note this has been modified
           )
         );
       }
@@ -171,6 +201,17 @@ export function* decodeMemoryReferenceByAddress(
       };
 
     case "struct":
+      //first: circularity check!
+      seenPreviously = memoryVisited.indexOf(objectPosition);
+      if (seenPreviously !== -1) {
+        return {
+          type: dataType,
+          kind: "value" as const,
+          reference: seenPreviously + 1,
+          value: [] //will be fixed later by the tie function
+        };
+      }
+      //otherwise, decode as normal
       const {
         allocations: { memory: allocations },
         userDefinedTypes
@@ -191,6 +232,7 @@ export function* decodeMemoryReferenceByAddress(
 
       debug("structAllocation %O", structAllocation);
 
+      memoryVisited.unshift(objectPosition);
       let decodedMembers: Format.Values.NameValuePair[] = [];
       for (let index = 0; index < structAllocation.members.length; index++) {
         const memberAllocation = structAllocation.members[index];
@@ -222,7 +264,10 @@ export function* decodeMemoryReferenceByAddress(
 
         decodedMembers.push({
           name: memberName,
-          value: yield* decodeMemory(memberType, childPointer, info)
+          value: yield* decodeMemory(memberType, childPointer, info, {
+            memoryVisited
+          })
+          //note that memoryVisited has been modified
         });
       }
       return {

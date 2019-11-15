@@ -8,3 +8,6 @@ export {
 
 import * as Inspect from "./inspect";
 export { Inspect };
+
+import * as Circularity from "./circularity";
+export { Circularity };
