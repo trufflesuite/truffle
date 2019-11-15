@@ -615,7 +615,7 @@ export function* recordAllocations() {
   const memoryAllocations = Codec.Memory.Allocate.getMemoryAllocations(
     referenceDeclarations
   );
-  const calldataAllocations = Codec.Abi.Allocate.getAbiAllocations(
+  const calldataAllocations = Codec.AbiData.Allocate.getAbiAllocations(
     userDefinedTypes
   );
   yield put(
@@ -628,10 +628,16 @@ function literalAssignments(node, stack, currentDepth) {
 
   let literal;
   try {
-    literal = Codec.readStack(
-      stack,
-      top - Codec.Ast.Utils.stackSize(node) + 1,
-      top
+    literal = Codec.Stack.Read.readStack(
+      {
+        location: "stack",
+        from: top - Codec.Ast.Utils.stackSize(node) + 1,
+        to: top
+      },
+      {
+        stack,
+        storage: {} //irrelevant, but let's respect the type signature :)
+      }
     );
   } catch (error) {
     literal = undefined; //not sure if this is right, but this is what would

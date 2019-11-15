@@ -7,16 +7,16 @@ const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const ResolverIntercept = require("./resolverintercept");
 
 class Migration {
-  constructor(file, reporter, options) {
+  constructor(file, reporter, config) {
     this.file = path.resolve(file);
     this.reporter = reporter;
     this.number = parseInt(path.basename(file));
     this.emitter = new Emittery();
     this.isFirst = false;
     this.isLast = false;
-    this.dryRun = options.dryRun;
-    this.interactive = options.interactive;
-    this.options = options || {};
+    this.dryRun = config.dryRun;
+    this.interactive = config.interactive;
+    this.config = config || {};
   }
 
   // ------------------------------------- Private -------------------------------------------------
@@ -109,8 +109,8 @@ class Migration {
         // Exiting w provider-engine appears to be hopeless. This hack on
         // our fork just swallows errors from eth-block-tracking
         // as we unwind the handlers downstream from here.
-        if (this.options.provider && this.options.provider.engine) {
-          this.options.provider.engine.silent = true;
+        if (this.config.provider && this.config.provider.engine) {
+          this.config.provider.engine.silent = true;
         }
       }
     } catch (error) {
@@ -121,7 +121,7 @@ class Migration {
 
       await this.emitter.emit("error", payload);
       deployer.finish();
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -178,7 +178,7 @@ class Migration {
     const resolver = new ResolverIntercept(options.resolver);
 
     // Initial context.
-    const context = { web3, interfaceAdapter };
+    const context = { web3, interfaceAdapter, config: this.config };
 
     const deployer = new Deployer({
       logger,
@@ -188,7 +188,8 @@ class Migration {
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,
-      basePath: path.dirname(this.file)
+      basePath: path.dirname(this.file),
+      ens: options.ens
     });
 
     return { interfaceAdapter, resolver, context, deployer };

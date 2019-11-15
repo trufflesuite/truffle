@@ -14,6 +14,7 @@ export type DataPointer =
 
 export type AbiPointer = CalldataPointer | EventDataPointer | GenericAbiPointer;
 export type AbiDataPointer = CalldataPointer | EventDataPointer;
+export type BytesPointer = MemoryPointer | CalldataPointer | EventDataPointer;
 
 export interface StackPointer {
   location: "stack";

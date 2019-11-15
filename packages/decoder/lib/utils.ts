@@ -1,4 +1,4 @@
-import { ContractObject } from "@truffle/contract-schema/spec";
+import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import Web3 from "web3";
 import BN from "bn.js";
 
@@ -24,7 +24,7 @@ export function nativizeDecoderVariables(
   //Again, don't use this in real code!
 }
 
-export function getContractNode(contract: ContractObject): Codec.Ast.AstNode {
+export function getContractNode(contract: Artifact): Codec.Ast.AstNode {
   return (contract.ast || { nodes: [] }).nodes.find(
     (contractNode: Codec.Ast.AstNode) =>
       contractNode.nodeType === "ContractDefinition" &&
@@ -34,11 +34,11 @@ export function getContractNode(contract: ContractObject): Codec.Ast.AstNode {
 }
 
 export function makeContext(
-  contract: ContractObject,
+  contract: Artifact,
   node: Codec.Ast.AstNode | undefined,
   isConstructor = false
 ): Codec.Contexts.DecoderContext {
-  const abi = Codec.Abi.Utils.schemaAbiToAbi(contract.abi);
+  const abi = Codec.AbiData.Utils.schemaAbiToAbi(contract.abi);
   const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
   const hash = Codec.Conversion.toHexString(
     Codec.Evm.Utils.keccak256({
@@ -53,16 +53,16 @@ export function makeContext(
     contractId: node ? node.id : undefined,
     contractKind: contractKind(contract, node),
     isConstructor,
-    abi: Codec.Abi.Utils.computeSelectors(abi),
-    payable: Codec.Abi.Utils.abiHasPayableFallback(abi),
-    hasFallback: Codec.Abi.Utils.abiHasFallback(abi),
+    abi: Codec.AbiData.Utils.computeSelectors(abi),
+    payable: Codec.AbiData.Utils.abiHasPayableFallback(abi),
+    hasFallback: Codec.AbiData.Utils.abiHasFallback(abi),
     compiler: contract.compiler
   };
 }
 
 //attempts to determine if the given contract is a library or not
 function contractKind(
-  contract: ContractObject,
+  contract: Artifact,
   node?: Codec.Ast.AstNode
 ): Codec.ContractKind {
   //first: if we have a node, use its listed contract kind
@@ -109,11 +109,7 @@ export function wrapElementaryViaDefinition(
   definition: Codec.Ast.AstNode,
   compiler: Codec.Compiler.CompilerVersion
 ): Codec.Format.Values.ElementaryValue {
-  let dataType = Codec.Format.Utils.MakeType.definitionToType(
-    definition,
-    compiler,
-    null
-  ); //force location to undefined
+  let dataType = Codec.Ast.Import.definitionToType(definition, compiler, null); //force location to undefined
   return wrapElementaryValue(value, dataType);
 }
 

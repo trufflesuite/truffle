@@ -10,9 +10,6 @@
     "outDir": "dist",
     "baseUrl": ".",
     "lib": ["es2017"],
-    "plugins": [
-      { "transform": "@zerollup/ts-transform-paths", "exclude": "*" }
-    ],
     "rootDir": "lib",
     "typeRoots": [
       "./typings",
@@ -29,4 +26,5 @@
     "./lib/**/*.ts",
     "./typings/**/*.d.ts"
   ]
+
 }

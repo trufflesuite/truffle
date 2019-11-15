@@ -156,7 +156,7 @@ describe("Deployments", function() {
         await Example.new(2001); // Triggers error with a normal reason string
         assert.fail();
       } catch (error) {
-        assert(error.message.includes("check your gas limit"));
+        assert(error.message.includes("exceeds gas limit"));
         assert(error.message.includes("reasonstring"));
         assert(error.receipt === undefined, "Expected no receipt");
         assert(error.reason === "reasonstring");
@@ -168,7 +168,7 @@ describe("Deployments", function() {
         await Example.new(20001); // Triggers error with a long reason string
         assert.fail();
       } catch (error) {
-        assert(error.message.includes("check your gas limit"));
+        assert(error.message.includes("exceeds gas limit"));
         assert(
           error.message.includes(
             "solidity storage is a fun lesson in endianness"

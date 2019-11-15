@@ -2,12 +2,9 @@ import debugModule from "debug";
 const debug = debugModule("codec:core");
 
 import * as Ast from "@truffle/codec/ast";
-import * as Abi from "@truffle/codec/abi";
+import * as AbiData from "@truffle/codec/abi-data";
+import * as Topic from "@truffle/codec/topic";
 import * as Pointer from "@truffle/codec/pointer";
-import {
-  EventAllocation,
-  CalldataAllocation
-} from "@truffle/codec/allocate/abi/types";
 import {
   DecoderRequest,
   CalldataDecoding,
@@ -20,8 +17,7 @@ import * as Contexts from "@truffle/codec/contexts";
 import { abifyType, abifyResult } from "@truffle/codec/abify";
 import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
-import { StopDecodingError } from "@truffle/codec/decode/errors";
-import { encodeAbi, encodeTupleAbi } from "@truffle/codec/encode/abi";
+import { StopDecodingError } from "@truffle/codec/errors";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
 
@@ -34,7 +30,7 @@ export function* decodeVariable(
   info: Evm.EvmInfo
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
-  let dataType = Format.Utils.MakeType.definitionToType(definition, compiler);
+  let dataType = Ast.Import.definitionToType(definition, compiler);
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
@@ -64,10 +60,10 @@ export function* decodeCalldata(
   }
   const compiler = context.compiler;
   const contextHash = context.context;
-  const contractType = Contexts.Utils.contextToType(context);
+  const contractType = Contexts.Import.contextToType(context);
   isConstructor = context.isConstructor;
   const allocations = info.allocations.calldata;
-  let allocation: CalldataAllocation;
+  let allocation: AbiData.Allocate.CalldataAllocation;
   let selector: string;
   //first: is this a creation call?
   if (isConstructor) {
@@ -90,7 +86,7 @@ export function* decodeCalldata(
       kind: "message" as const,
       class: contractType,
       abi: context.hasFallback
-        ? Abi.Utils.fallbackAbiForPayability(context.payable)
+        ? AbiData.Utils.fallbackAbiForPayability(context.payable)
         : null,
       data: Conversion.toHexString(info.state.calldata),
       decodingMode: "full" as const
@@ -155,7 +151,7 @@ export function* decodeCalldata(
       kind: "constructor" as const,
       class: contractType,
       arguments: decodedArguments,
-      abi: <Abi.ConstructorAbiEntry>allocation.abi, //we know it's a constructor, but typescript doesn't
+      abi: <AbiData.ConstructorAbiEntry>allocation.abi, //we know it's a constructor, but typescript doesn't
       bytecode: Conversion.toHexString(
         info.state.calldata.slice(0, allocation.offset)
       ),
@@ -165,7 +161,7 @@ export function* decodeCalldata(
     return {
       kind: "function" as const,
       class: contractType,
-      abi: <Abi.FunctionAbiEntry>allocation.abi, //we know it's a function, but typescript doesn't
+      abi: <AbiData.FunctionAbiEntry>allocation.abi, //we know it's a function, but typescript doesn't
       arguments: decodedArguments,
       selector,
       decodingMode
@@ -189,9 +185,11 @@ export function* decodeEvent(
   let rawSelector: Uint8Array;
   let selector: string;
   let contractAllocations: {
-    [contextHash: string]: EventAllocation;
+    [contextHash: string]: AbiData.Allocate.EventAllocation;
   }; //for non-anonymous events
-  let libraryAllocations: { [contextHash: string]: EventAllocation }; //similar
+  let libraryAllocations: {
+    [contextHash: string]: AbiData.Allocate.EventAllocation;
+  }; //similar
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
   if (topicsCount > 0) {
@@ -231,8 +229,8 @@ export function* decodeEvent(
     info.contexts,
     codeAsHex
   );
-  let possibleContractAllocations: EventAllocation[]; //excludes anonymous events
-  let possibleContractAnonymousAllocations: EventAllocation[];
+  let possibleContractAllocations: AbiData.Allocate.EventAllocation[]; //excludes anonymous events
+  let possibleContractAnonymousAllocations: AbiData.Allocate.EventAllocation[];
   if (contractContext) {
     //if we found the contract, maybe it's from that contract
     const contextHash = contractContext.context;
@@ -273,7 +271,7 @@ export function* decodeEvent(
     let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     const contextHash = allocation.contextHash;
     const attemptContext = info.contexts[contextHash];
-    const contractType = Contexts.Utils.contextToType(attemptContext);
+    const contractType = Contexts.Import.contextToType(attemptContext);
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];
     for (const argumentAllocation of allocation.arguments) {
@@ -341,7 +339,7 @@ export function* decodeEvent(
       .filter(argument => !argument.indexed)
       .map(argument => argument.value);
     //now, we can encode!
-    const reEncodedData = encodeTupleAbi(
+    const reEncodedData = AbiData.Encode.encodeTupleAbi(
       nonIndexedValues,
       info.allocations.abi
     );
@@ -357,10 +355,7 @@ export function* decodeEvent(
       .filter(argument => argument.indexed)
       .map(argument => argument.value);
     debug("indexedValues: %O", indexedValues);
-    const reEncodedTopics = indexedValues.map(
-      value => encodeAbi(value, info.allocations.abi) //NOTE: I should really use a different encoding function here,
-      //but I haven't written that function yet
-    );
+    const reEncodedTopics = indexedValues.map(Topic.Encode.encodeTopic);
     const encodedTopics = info.state.eventtopics;
     //now: do *these* match?
     const selectorAdjustment = allocation.anonymous ? 0 : 1;

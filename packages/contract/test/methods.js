@@ -521,18 +521,16 @@ describe("Methods", function() {
     });
   });
 
-  describe("error with reason (ganache only)", function() {
-    it("errors with receipt and revert reason", async function() {
+  describe("revert with reason (ganache only)", function() {
+    it("errors with receipt and revert message", async function() {
       const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError();
         assert.fail();
       } catch (e) {
         assert(e.reason === "reasonstring");
-        assert(
-          e.message.includes("consuming all gas"),
-          "Triggered require should consume all gas"
-        );
+        assert(e.message.includes("reasonstring"));
+        assert(e.message.includes("revert"));
         assert(e.receipt.status === false);
       }
     });

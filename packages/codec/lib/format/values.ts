@@ -26,7 +26,7 @@ import {
   UfixedValue
 } from "./elementary";
 import * as Common from "@truffle/codec/common";
-import * as Abi from "@truffle/codec/abi/types";
+import * as AbiData from "@truffle/codec/abi-data/types";
 
 export * from "./elementary";
 
@@ -46,6 +46,7 @@ export type Result =
   | StructResult
   | TupleResult
   | MagicResult
+  | TypeResult
   | EnumResult
   | ContractResult
   | FunctionExternalResult
@@ -62,6 +63,7 @@ export type Value =
   | StructValue
   | TupleValue
   | MagicValue
+  | TypeValue
   | EnumValue
   | ContractValue
   | FunctionExternalValue
@@ -275,14 +277,14 @@ export interface OptionallyNamedValue {
 /**
  * A magic variable's value (or error)
  *
- * @Category Special container types
+ * @Category Special container types (debugger-only)
  */
 export type MagicResult = MagicValue | Errors.MagicErrorResult;
 
 /**
  * A magic variable's value (may contain errors?)
  *
- * @Category Special container types
+ * @Category Special container types (debugger-only)
  */
 export interface MagicValue {
   type: Types.MagicType;
@@ -291,6 +293,29 @@ export interface MagicValue {
   value: {
     [field: string]: Result;
   };
+}
+
+/**
+ * A type's value (or error)
+ *
+ * @Category Special container types (debugger-only)
+ */
+export type TypeResult = TypeValue | Errors.TypeErrorResult;
+
+/**
+ * A type's value -- for now, we consider the value of a contract type to
+ * consist of the values of its non-inherited state variables in the current
+ * context.  May contain errors.
+ *
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeValue {
+  type: Types.TypeType;
+  kind: "value";
+  /**
+   * these must be stored in order!
+   */
+  value: NameValuePair[];
 }
 
 /*
@@ -441,7 +466,7 @@ export interface FunctionExternalValueInfoKnown {
    * formatted as a hex string
    */
   selector: string;
-  abi: Abi.FunctionAbiEntry;
+  abi: AbiData.FunctionAbiEntry;
   //may have more optional fields added later, I'll leave these out for now
 }
 

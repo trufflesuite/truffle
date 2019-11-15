@@ -77,11 +77,7 @@ TestRunner.prototype.initialize = function(callback) {
         function(err, data) {
           if (err) return callback(err);
 
-          var contracts = data
-            .map(JSON.parse)
-            .map(json =>
-              contract(json, self.config.networks[self.config.network].type)
-            );
+          var contracts = data.map(JSON.parse).map(json => contract(json));
           var abis = _.flatMap(contracts, "abi");
 
           abis.map(function(abi) {

@@ -1,7 +1,7 @@
-var Reason = require("./reason");
-var handlers = require("./handlers");
+const Reason = require("./reason");
+const handlers = require("./handlers");
 
-var override = {
+const override = {
   timeoutMessage: "not mined within", // Substring of timeout err fired by web3
   defaultMaxBlocks: 50, // Max # of blocks web3 will wait for a tx
   pollingInterval: 1000,
@@ -35,20 +35,20 @@ var override = {
    * @param  {Object} err     error
    */
   start: async function(context, web3Error) {
-    var constructor = this;
-    var currentBlock = override.defaultMaxBlocks;
-    var maxBlocks = constructor.timeoutBlocks;
+    const constructor = this;
+    let currentBlock = override.defaultMaxBlocks;
+    const maxBlocks = constructor.timeoutBlocks;
 
-    var timedOut =
+    const timedOut =
       web3Error.message && web3Error.message.includes(override.timeoutMessage);
-    var shouldWait = maxBlocks > currentBlock;
+    const shouldWait = maxBlocks > currentBlock;
 
     // Reject after attempting to get reason string if we shouldn't be waiting.
     if (!timedOut || !shouldWait) {
       // We might have been routed here in web3 >= beta.34 by their own status check
       // error. We want to extract the receipt, emit a receipt event
       // and reject it ourselves.
-      var receipt = override.extractReceipt(web3Error.message);
+      const receipt = override.extractReceipt(web3Error.message);
       if (receipt) {
         await handlers.receipt(context, receipt);
         return;
@@ -56,7 +56,7 @@ var override = {
 
       // This will run if there's a reason and no status field
       // e.g: revert with reason ganache-cli --vmErrorsOnRPCResponse=true
-      var reason = await Reason.get(
+      const reason = await Reason.get(
         context.params,
         constructor.web3,
         constructor.interfaceAdapter
@@ -70,7 +70,7 @@ var override = {
     }
 
     // This will run every block from now until contract.timeoutBlocks
-    var listener = function(pollID) {
+    const listener = function(pollID) {
       currentBlock++;
 
       if (currentBlock > constructor.timeoutBlocks) {
@@ -78,7 +78,7 @@ var override = {
         return;
       }
 
-      constructor.web3.eth
+      constructor.interfaceAdapter
         .getTransactionReceipt(context.transactionHash)
         .then(result => {
           if (!result) return;

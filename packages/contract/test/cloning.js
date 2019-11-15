@@ -17,6 +17,8 @@ describe("Cloning", function() {
     this.timeout(10000);
 
     ExampleOne = await util.createExample();
+    await util.setUpProvider(ExampleOne);
+
     debug("ExampleOne %o", ExampleOne);
     ExampleTwo = ExampleOne.clone();
   });
@@ -26,5 +28,9 @@ describe("Cloning", function() {
     assert(Object.keys(ExampleTwo._json).length > 0);
     assert.notEqual(ExampleTwo._json, ExampleOne._json);
     assert.deepEqual(ExampleTwo._json, ExampleOne._json);
+  });
+
+  it("reuses the provider", function() {
+    assert.equal(ExampleTwo.currentProvider, ExampleOne.currentProvider);
   });
 });

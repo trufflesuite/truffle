@@ -6,6 +6,7 @@ import WalletProvider from "../dist";
 import { describe, it } from "mocha";
 
 describe("HD Wallet Provider", function() {
+  // @ts-ignore
   const web3 = new Web3();
   const port = 8545;
   let server: any;
@@ -46,7 +47,7 @@ describe("HD Wallet Provider", function() {
     assert.deepEqual(provider.getAddresses(), truffleDevAccounts);
     web3.setProvider(provider);
 
-    web3.eth.getBlockNumber((err, number) => {
+    web3.eth.getBlockNumber((err: Error, number: number) => {
       assert(number === 0);
       done();
     });
@@ -79,7 +80,7 @@ describe("HD Wallet Provider", function() {
       assert(EthUtil.isValidAddress(address), "invalid address");
     });
 
-    web3.eth.getBlockNumber((err, number) => {
+    web3.eth.getBlockNumber((err: Error, number: number) => {
       assert(number === 0);
       done();
     });
@@ -125,7 +126,7 @@ describe("HD Wallet Provider", function() {
       );
     });
 
-    web3.eth.getBlockNumber((err, number) => {
+    web3.eth.getBlockNumber((err: Error, number: number) => {
       assert(number === 0);
       done();
     });

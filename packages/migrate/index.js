@@ -31,20 +31,20 @@ const Migrate = {
     const config = Config.detect(options);
 
     if (
-      fs.existsSync(options.migrations_directory) &&
-      fs.readdirSync(options.migrations_directory).length > 0
+      fs.existsSync(config.migrations_directory) &&
+      fs.readdirSync(config.migrations_directory).length > 0
     ) {
-      const files = dir.files(options.migrations_directory, { sync: true });
+      const files = dir.files(config.migrations_directory, { sync: true });
       if (!files) return [];
-
-      options.allowed_extensions = config.migrations_file_extension_regexp;
 
       let migrations = files
         .filter(file => isNaN(parseInt(path.basename(file))) === false)
         .filter(
-          file => path.extname(file).match(options.allowed_extensions) != null
+          file =>
+            path.extname(file).match(config.migrations_file_extension_regexp) !=
+            null
         )
-        .map(file => new Migration(file, Migrate.reporter, options));
+        .map(file => new Migration(file, Migrate.reporter, config));
 
       // Make sure to sort the prefixes as numbers and not strings.
       migrations = migrations.sort((a, b) => {
@@ -76,24 +76,20 @@ const Migrate = {
 
       if (options.reset === true) {
         await this.runAll(options);
-        if (callbackPassed) {
-          return callback();
-        }
+        if (callbackPassed) return callback();
         return;
       }
 
       const lastMigration = await this.lastCompletedMigration(options);
+
       // Don't rerun the last completed migration.
       await this.runFrom(lastMigration + 1, options);
-      if (callbackPassed) {
-        return callback();
-      }
+
+      if (callbackPassed) return callback();
       return;
     } catch (error) {
-      if (callbackPassed) {
-        return callback(error);
-      }
-      throw new Error(error);
+      if (callbackPassed) return callback(error);
+      throw error;
     }
   },
 
@@ -110,7 +106,6 @@ const Migrate = {
         migration => migration.number <= options.to
       );
     }
-
     return await this.runMigrations(migrations, options);
   },
 

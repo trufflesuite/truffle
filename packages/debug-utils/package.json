@@ -1,6 +1,6 @@
 {
   "name": "@truffle/debug-utils",
-  "version": "1.0.19",
+  "version": "2.0.0",
   "description": "Integration utils for truffle/debugger",
   "dependencies": {
     "@truffle/codec": "^0.1.0",
@@ -9,7 +9,7 @@
     "chalk": "^2.4.2",
     "debug": "^4.1.0",
     "highlight.js": "^9.15.8",
-    "highlightjs-solidity": "^1.0.7",
+    "highlightjs-solidity": "^1.0.8",
     "node-dir": "0.1.17"
   },
   "main": "index.js",
