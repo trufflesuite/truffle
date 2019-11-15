@@ -177,7 +177,7 @@ class HDWalletProvider {
     payload: JSONRPCRequestPayload,
     callback: JSONRPCErrorCallback | Callback<JsonRpcResponse>
   ): void {
-    return this.engine.send.call(this.engine, payload, callback);
+    return this.engine.sendAsync.call(this.engine, payload, callback);
   }
 
   public sendAsync(
