@@ -141,7 +141,7 @@ const Migrate = {
     });
 
     try {
-      for (let migration of migrations) {
+      for (const migration of migrations) {
         await migration.run(clone);
       }
       await this.emitter.emit("postAllMigrations", {
