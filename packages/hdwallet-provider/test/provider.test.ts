@@ -42,7 +42,7 @@ describe("HD Wallet Provider", function() {
 
     const mnemonic =
       "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
-    provider = new WalletProvider(mnemonic, `http://localhost:${port}`, 0, 10);
+    provider = new WalletProvider(mnemonic, `http://localhost:${port}`);
 
     assert.deepEqual(provider.getAddresses(), truffleDevAccounts);
     web3.setProvider(provider);
@@ -57,9 +57,7 @@ describe("HD Wallet Provider", function() {
     try {
       provider = new WalletProvider(
         "takoyaki is delicious",
-        "http://localhost:8545",
-        0,
-        1
+        "http://localhost:8545"
       );
       assert.fail("Should throw on invalid mnemonic");
     } catch (e) {
@@ -99,12 +97,7 @@ describe("HD Wallet Provider", function() {
         "9549f39decea7b7504e15572b2c6a72766df0281cea22bd1a3bc87166b1ca290"
     };
 
-    provider = new WalletProvider(
-      privateKeys,
-      `http://localhost:${port}`,
-      0,
-      privateKeys.length
-    ); //pass in num_addresses to load full array
+    provider = new WalletProvider(privateKeys, `http://localhost:${port}`);
     web3.setProvider(provider);
 
     const addresses = provider.getAddresses();
