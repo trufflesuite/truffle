@@ -3,7 +3,11 @@ const debug = debugModule("codec:abify");
 
 import * as Format from "@truffle/codec/format";
 import * as Common from "@truffle/codec/common";
-import { CalldataDecoding, LogDecoding } from "@truffle/codec/types";
+import {
+  CalldataDecoding,
+  LogDecoding,
+  ReturndataDecoding
+} from "@truffle/codec/types";
 import BN from "bn.js";
 import * as Conversion from "@truffle/codec/conversion";
 
@@ -292,9 +296,9 @@ export function abifyCalldataDecoding(
       return {
         ...decoding,
         decodingMode: "abi",
-        arguments: decoding.arguments.map(({ name, value }) => ({
-          name,
-          value: abifyResult(value, userDefinedTypes)
+        arguments: decoding.arguments.map(argument => ({
+          ...argument,
+          value: abifyResult(argument.value, userDefinedTypes)
         }))
       };
     default:
@@ -316,9 +320,36 @@ export function abifyLogDecoding(
   return {
     ...decoding,
     decodingMode: "abi",
-    arguments: decoding.arguments.map(({ name, value }) => ({
-      name,
-      value: abifyResult(value, userDefinedTypes)
+    arguments: decoding.arguments.map(argument => ({
+      ...argument,
+      value: abifyResult(argument.value, userDefinedTypes)
     }))
   };
+}
+
+/** @category ABIfication */
+export function abifyReturndataDecoding(
+  decoding: ReturndataDecoding,
+  userDefinedTypes: Format.Types.TypesById
+): ReturndataDecoding {
+  if (decoding.decodingMode === "abi") {
+    return decoding;
+  }
+  switch (decoding.kind) {
+    case "return":
+    case "revert":
+      return {
+        ...decoding,
+        decodingMode: "abi",
+        arguments: decoding.arguments.map(argument => ({
+          ...argument,
+          value: abifyResult(argument.value, userDefinedTypes)
+        }))
+      };
+    default:
+      return {
+        ...decoding,
+        decodingMode: "abi"
+      };
+  }
 }
