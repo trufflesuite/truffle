@@ -26,7 +26,7 @@
     "test:raw": "NO_BUILD=true mocha"
   },
   "dependencies": {
-    "app-module-path": "^2.2.0",
+    "app-module-path": "2.2.0",
     "mocha": "5.2.0",
     "original-require": "1.0.1"
   },
