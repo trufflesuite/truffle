@@ -1,13 +1,17 @@
-import { Web3Shim, Web3ShimOptions } from "../../shim";
-import { EvmBlockType } from "../types";
+import { Web3Shim } from "../../shim";
+import { InterfaceAdapter, EvmBlockType } from "../types";
 import { Provider } from "@truffle/provider";
 
-export interface Web3InterfaceAdapterOptions extends Web3ShimOptions {}
+export interface Web3InterfaceAdapterOptions {
+  provider?: Provider;
+  networkType?: string;
+}
 
-export class Web3InterfaceAdapter {
+export class Web3InterfaceAdapter implements InterfaceAdapter {
   public web3: Web3Shim;
-  constructor(options?: Web3InterfaceAdapterOptions) {
-    this.web3 = new Web3Shim(options);
+
+  constructor({ provider, networkType }: Web3InterfaceAdapterOptions = {}) {
+    this.web3 = new Web3Shim({ provider, networkType });
   }
 
   public getNetworkId() {
@@ -16,10 +20,6 @@ export class Web3InterfaceAdapter {
 
   public getBlock(block: EvmBlockType) {
     return this.web3.eth.getBlock(block);
-  }
-
-  public setProvider(provider: Provider) {
-    return this.web3.setProvider(provider);
   }
 
   public getTransaction(tx: string) {

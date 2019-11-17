@@ -1,15 +1,9 @@
 import { Web3InterfaceAdapter, Web3InterfaceAdapterOptions } from "./web3";
-import {
-  NetworkId,
-  Block,
-  BlockType,
-  Transaction,
-  TransactionReceipt,
-  TxHash
-} from "./types";
+
+import { InterfaceAdapter } from "./types";
 
 // type union of supported network types
-type InterfaceAdapterOptions = Web3InterfaceAdapterOptions;
+export type InterfaceAdapterOptions = Web3InterfaceAdapterOptions;
 
 const getNetworkTypeClass = (networkType = "ethereum") => {
   const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
@@ -17,14 +11,6 @@ const getNetworkTypeClass = (networkType = "ethereum") => {
   if (supportedEvmNetworks.includes(networkType)) return "evm-like";
   return networkType;
 };
-
-export interface InterfaceAdapter {
-  getNetworkId(): Promise<NetworkId>;
-  getBlock(block: BlockType): Promise<Block>;
-  getTransaction(tx: TxHash): Promise<Transaction>;
-  getTransactionReceipt(tx: TxHash): Promise<TransactionReceipt>;
-  getBalance(address: string): Promise<string>;
-}
 
 export const createInterfaceAdapter = (
   options: InterfaceAdapterOptions
