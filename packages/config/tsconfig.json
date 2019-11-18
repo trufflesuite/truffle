@@ -14,6 +14,7 @@
     "rootDir": "./src",
     "typeRoots": [
       "./typings",
+      "node_modules/@types/node",
       "../../node_modules/@types/mocha",
       "../../node_modules/@types/node"
     ]
