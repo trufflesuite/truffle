@@ -1,7 +1,6 @@
 const fs = require("fs");
 const dir = require("node-dir");
 const path = require("path");
-const async = require("async");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
 const Reporter = require("@truffle/reporters").migrationsV5;
@@ -29,33 +28,32 @@ const Migrate = {
 
   assemble: function(options) {
     const config = Config.detect(options);
-
     if (
-      fs.existsSync(config.migrations_directory) &&
-      fs.readdirSync(config.migrations_directory).length > 0
+      !fs.existsSync(config.migrations_directory) ||
+      !fs.readdirSync(config.migrations_directory).length > 0
     ) {
-      const files = dir.files(config.migrations_directory, { sync: true });
-      if (!files) return [];
-
-      let migrations = files
-        .filter(file => isNaN(parseInt(path.basename(file))) === false)
-        .filter(
-          file =>
-            path.extname(file).match(config.migrations_file_extension_regexp) !=
-            null
-        )
-        .map(file => new Migration(file, Migrate.reporter, config));
-
-      // Make sure to sort the prefixes as numbers and not strings.
-      migrations = migrations.sort((a, b) => {
-        if (a.number > b.number) return 1;
-        if (a.number < b.number) return -1;
-        return 0;
-      });
-      return migrations;
-    } else {
       return [];
     }
+
+    const files = dir.files(config.migrations_directory, { sync: true });
+    if (!files) return [];
+
+    let migrations = files
+      .filter(file => isNaN(parseInt(path.basename(file))) === false)
+      .filter(
+        file =>
+          path.extname(file).match(config.migrations_file_extension_regexp) !=
+          null
+      )
+      .map(file => new Migration(file, Migrate.reporter, config));
+
+    // Make sure to sort the prefixes as numbers and not strings.
+    migrations = migrations.sort((a, b) => {
+      if (a.number > b.number) return 1;
+      if (a.number < b.number) return -1;
+      return 0;
+    });
+    return migrations;
   },
 
   run: async function(options, callback) {
@@ -121,9 +119,7 @@ const Migrate = {
 
     Object.keys(options).forEach(key => (clone[key] = options[key]));
 
-    if (options.quiet) {
-      clone.logger = { log: function() {} };
-    }
+    if (options.quiet) clone.logger = { log: function() {} };
 
     clone.resolver = this.wrapResolver(options.resolver, clone.provider);
 
@@ -144,30 +140,22 @@ const Migrate = {
       migrations
     });
 
-    return new Promise((resolve, reject) => {
-      return async.eachSeries(
-        migrations,
-        (migration, finished) => {
-          migration
-            .run(clone)
-            .then(() => {
-              finished();
-            })
-            .catch(error => {
-              finished(error);
-            });
-        },
-        async error => {
-          await this.emitter.emit("postAllMigrations", {
-            dryRun: options.dryRun,
-            error: error ? error.toString() : null
-          });
-
-          if (error) return reject(error);
-          return resolve();
-        }
-      );
-    });
+    try {
+      for (const migration of migrations) {
+        await migration.run(clone);
+      }
+      await this.emitter.emit("postAllMigrations", {
+        dryRun: options.dryRun,
+        error: null
+      });
+      return;
+    } catch (error) {
+      await this.emitter.emit("postAllMigrations", {
+        dryRun: options.dryRun,
+        error: error.toString()
+      });
+      throw error;
+    }
   },
 
   wrapResolver: function(resolver, provider) {
