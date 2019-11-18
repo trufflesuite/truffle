@@ -1,10 +1,10 @@
 import Web3 from "web3";
 import { Provider } from "@truffle/provider";
 
-import { EthereumDefinition } from "./ethereum-overloads";
-import { QuorumDefinition } from "./quorum-overloads";
-import { FabricEvmDefinition } from "./fabric-evm-overloads";
-import { Web3JsDefinition } from "./web3-js-definition";
+import { EthereumDefinition } from "./overloads/ethereum";
+import { QuorumDefinition } from "./overloads/quorum";
+import { FabricEvmDefinition } from "./overloads/fabric-evm";
+import { Web3JsDefinition } from "./overloads/web3js";
 
 const initInterface = async (web3Shim: Web3Shim) => {
   const networkTypes: NetworkTypesConfig = new Map(
