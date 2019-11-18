@@ -65,6 +65,10 @@ input CompilationSourceContractAstInput {
   json: String!
 }
 
+input CompilationSourceMapInput {
+  json: String!
+}
+
 input CompilationSourceContractInput {
   name: String
   source: CompilationSourceContractSourceInput
@@ -72,9 +76,10 @@ input CompilationSourceContractInput {
 }
 
 input CompilationInput {
-    compiler: CompilerInput!
-    contracts: [CompilationSourceContractInput!]
-    sources: [CompilationSourceInput!]!
+  compiler: CompilerInput!
+  contracts: [CompilationSourceContractInput!]
+  sources: [CompilationSourceInput!]!
+  sourceMaps: [CompilationSourceMapInput]
 }
 input CompilationsAddInput {
   compilations: [CompilationInput!]!
@@ -105,6 +110,9 @@ mutation AddCompilation($compilations: [CompilationInput!]!) {
         sources {
           contents
           sourcePath
+        }
+        sourceMaps {
+          json
         }
       }
     }
@@ -345,6 +353,7 @@ export class ArtifactsLoader {
     }));
 
     const contractsLoaded = await this.db.query(AddContracts, { contracts: contractObjects});
+
     const contractIds = contractsLoaded.data.workspace.contractsAdd.contracts.map( ({ id }) => ({ id }) );
 
     return { compilerName: contracts[0].compiler.name, contractIds: contractIds, bytecodeIds: bytecodeIds };
@@ -405,13 +414,20 @@ export class ArtifactsLoader {
   async setCompilation (organizedCompilation: Array<ContractObject>) {
     const sourceIds = await this.loadCompilationSources(organizedCompilation);
     const sourceContracts = await this.compilationSourceContracts(organizedCompilation, sourceIds);
+
     const compilationObject = {
       compiler: {
         name: organizedCompilation[0]["compiler"]["name"],
         version: organizedCompilation[0]["compiler"]["version"]
       },
       contracts: sourceContracts,
-      sources: sourceIds
+      sources: sourceIds,
+    }
+
+    if(organizedCompilation[0]["compiler"]["name"] == "solc") {
+      compilationObject["sourceMaps"] =  organizedCompilation.map(({ sourceMap }) => {
+        return { json: sourceMap }
+      });
     }
 
     return compilationObject;

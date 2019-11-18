@@ -143,10 +143,15 @@ export const schema = mergeSchemas({
       ast: CompilationSourceContractAstInput
     }
 
+    input CompilationSourceMapInput {
+      json: String!
+    }
+
     input CompilationInput {
       compiler: CompilerInput!
       contracts: [CompilationSourceContractInput!]
       sources: [CompilationSourceInput!]!
+      sourceMaps: [CompilationSourceMapInput]
     }
     input CompilationsAddInput {
       compilations: [CompilationInput!]!

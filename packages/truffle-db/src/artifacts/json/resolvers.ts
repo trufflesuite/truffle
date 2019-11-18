@@ -32,6 +32,9 @@ export const resolvers = {
             json: JSON.stringify(artifact.ast)
           },
           source: { contents: artifact.source, sourcePath: artifact.sourcePath },
+          sourceMap: {
+            json: JSON.stringify(artifact.sourceMap)
+          }
         };
 
         if (networkId) {
