@@ -1,5 +1,8 @@
 const Web3 = require("web3");
-const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
 const Resolver = require("@truffle/resolver");

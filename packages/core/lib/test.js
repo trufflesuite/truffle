@@ -2,7 +2,10 @@ const Mocha = require("mocha");
 const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
-const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 const Contracts = require("@truffle/workflow-compile/new");
 const Resolver = require("@truffle/resolver");

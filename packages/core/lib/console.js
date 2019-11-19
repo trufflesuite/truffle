@@ -1,7 +1,10 @@
 const ReplManager = require("./repl");
 const Command = require("./command");
 const provision = require("@truffle/provisioner");
-const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const contract = require("@truffle/contract");
 const vm = require("vm");
 const expect = require("@truffle/expect");
