@@ -400,24 +400,24 @@ export function* decodeEvent(
   return decodings;
 }
 
-const ERROR_SELECTOR: Uint8Array = Conversion.toBytes(
+const errorSelector: Uint8Array = Conversion.toBytes(
   Web3Utils.soliditySha3({
     type: "string",
     value: "Error(string)"
   })
 ).subarray(0, Evm.Utils.SELECTOR_SIZE);
 
-const DEFAULT_RETURN_ALLOCATIONS: AbiData.Allocate.ReturndataAllocation[] = [
+const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
   {
     kind: "revert" as const,
     allocationMode: "full" as const,
-    selector: ERROR_SELECTOR,
+    selector: errorSelector,
     arguments: [
       {
         name: "",
         pointer: {
           location: "returndata" as const,
-          start: ERROR_SELECTOR.length,
+          start: errorSelector.length,
           length: Evm.Utils.WORD_SIZE
         },
         type: {
@@ -453,24 +453,16 @@ export function* decodeReturndata(
 ): Generator<DecoderRequest, ReturndataDecoding[], Uint8Array> {
   let possibleAllocations: AbiData.Allocate.ReturndataAllocation[];
   if (successAllocation === null) {
-    possibleAllocations = DEFAULT_RETURN_ALLOCATIONS;
+    possibleAllocations = defaultReturnAllocations;
   } else {
     switch (successAllocation.kind) {
       case "return":
-        possibleAllocations = [
-          successAllocation,
-          ...DEFAULT_RETURN_ALLOCATIONS
-        ];
+        possibleAllocations = [successAllocation, ...defaultReturnAllocations];
         break;
       case "bytecode":
-        possibleAllocations = [
-          ...DEFAULT_RETURN_ALLOCATIONS,
-          successAllocation
-        ];
+        possibleAllocations = [...defaultReturnAllocations, successAllocation];
         break;
-      default:
-        //this shouldn't happen
-        possibleAllocations = DEFAULT_RETURN_ALLOCATIONS; //I guess??
+      //Other cases shouldn't happen so I'm leaving them to cause errors!
     }
   }
   let decodings: ReturndataDecoding[] = [];
