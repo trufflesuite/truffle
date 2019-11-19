@@ -56,8 +56,15 @@ module.exports = {
   devtool: "source-map",
   module: {
     rules: [
-      { test: /\.js$/, use: "shebang-loader" },
-      { test: /rx\.lite\.aggregates\.js/, use: "imports-loader?define=>false" }
+      // ignores "#!/bin..." lines inside files
+      {
+        test: /\.js$/,
+        include: [
+          path.resolve(__dirname, "../core"),
+          path.resolve(__dirname, "../environment")
+        ],
+        use: "shebang-loader"
+      }
     ]
   },
   externals: [
