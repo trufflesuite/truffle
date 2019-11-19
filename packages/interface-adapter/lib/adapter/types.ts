@@ -18,4 +18,5 @@ export interface InterfaceAdapter {
   getTransaction(tx: TxHash): Promise<Transaction>;
   getTransactionReceipt(tx: TxHash): Promise<TransactionReceipt>;
   getBalance(address: string): Promise<string>;
+  getCode(address: string): Promise<string>;
 }
