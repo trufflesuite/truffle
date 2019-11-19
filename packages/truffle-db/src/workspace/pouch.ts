@@ -1,6 +1,10 @@
 import PouchDB from "pouchdb";
 import PouchDBMemoryAdapter from "pouchdb-adapter-memory";
 import PouchDBFind from "pouchdb-find";
+import path from "path";
+import * as jsondown from "jsondown";
+import * as pouchdbUtils from 'pouchdb-utils';
+import CoreLevelPouch from 'pouchdb-adapter-leveldb-core';
 import pouchdbDebug from "pouchdb-debug"
 import { soliditySha3 } from "web3-utils";
 import jsonStableStringify from 'json-stable-stringify';
@@ -48,19 +52,40 @@ const resources = {
 }
 
 export class Workspace {
+  public dbApi: PouchApi;
 
-  private dbApi: PouchApi;
+  getSavePath(workingDirectory:string, resource:string):string {
+    const savePath = path.join(workingDirectory, ".db", resource);
+    return savePath;
+  }
+
+  jsondownpouch(opts:any, callback:any):any {
+    const _opts = pouchdbUtils.assign({
+      db: jsondown.default
+    }, opts);
+
+    CoreLevelPouch.call(this, _opts, callback);
+  }
+
+  adapter(PouchDB:any):any {
+    PouchDB.adapter('jsondown', this.jsondownpouch, true);
+  }
 
   private ready: Promise<void>;
 
-  constructor () {
+  constructor (workingDirectory:string) {
     PouchDB.plugin(pouchdbDebug);
-    PouchDB.plugin(PouchDBMemoryAdapter);
     PouchDB.plugin(PouchDBFind);
+
+    this.jsondownpouch["valid"] = () => true;
+    this.jsondownpouch["use_prefix"] = false;
+
+    this.adapter(PouchDB);
 
     this.dbApi = {} as PouchApi;
     for (let resource of Object.keys(resources)) {
-      this.dbApi[resource] = new PouchDB(resource, { adapter: "memory" });
+      let savePath = this.getSavePath(workingDirectory, resource);
+      this.dbApi[resource] = new PouchDB(savePath, { adapter: "jsondown" });
     }
     this.ready = this.initialize();
   }

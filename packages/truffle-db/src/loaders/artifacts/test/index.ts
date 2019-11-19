@@ -11,6 +11,7 @@ import Config from "@truffle/config";
 import Ganache from "ganache-core"
 import Web3 from "web3";
 import * as fse from "fs-extra";
+import * as tmp from "tmp";
 
 let server;
 const port = 8545;
@@ -21,6 +22,7 @@ beforeAll(async (done)=> {
 });
 
 afterAll(async (done) => {
+  tempDir.removeCallback();
   setTimeout(() => server.close(done), 500);
 });
 
@@ -66,10 +68,13 @@ jest.mock("@truffle/workflow-compile", () => ({
 }));
 
 const fixturesDirectory = path.join(__dirname, "sources");
+const tempDir = tmp.dirSync({ unsafeCleanup: true });
+tmp.setGracefulCleanup();
 
 // minimal config
 const config = {
-  contracts_build_directory: fixturesDirectory
+  contracts_build_directory: fixturesDirectory,
+  working_directory: tempDir.name
 };
 
 const compilationConfig =  {

@@ -1,5 +1,4 @@
 import { generateId, Migrations, WorkspaceClient } from './utils';
-
 import { AddNetworks } from './network.graphql';
 import { AddContractInstances, GetContractInstance, GetAllContractInstances } from './contractInstance.graphql';
 
@@ -65,6 +64,7 @@ describe("Contract Instance", () => {
 
   test("can be queried", async() => {
     const getContractInstanceResult = await wsClient.execute(GetContractInstance, { id: expectedId });
+
     expect(getContractInstanceResult).toHaveProperty("contractInstance");
 
     const { contractInstance } = getContractInstanceResult;
@@ -79,7 +79,8 @@ describe("Contract Instance", () => {
   });
 
   test("can retrieve all contractInstances", async() => {
-    const getAllContractInstancesResult = await wsClient.execute(GetAllContractInstances);
+    const getAllContractInstancesResult = await wsClient.execute(GetAllContractInstances, {});
+
     expect(getAllContractInstancesResult).toHaveProperty("contractInstances");
 
     const { contractInstances } = getAllContractInstancesResult;
@@ -97,4 +98,5 @@ describe("Contract Instance", () => {
 
     expect(firstContractInstance).toHaveProperty("contract");
   });
+
 });

@@ -95,7 +95,7 @@ describe("Contract", () => {
   });
 
   test("can retrieve all contracts", async() => {
-    const getAllContractsResult = await wsClient.execute(GetAllContracts);
+    const getAllContractsResult = await wsClient.execute(GetAllContracts, {});
 
     expect(getAllContractsResult).toHaveProperty("contracts");
 

@@ -2,7 +2,10 @@ import fs from "fs";
 import path from "path";
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
+import Ganache from "ganache-core";
+import tmp from "tmp";
 import * as Contracts from "@truffle/workflow-compile";
+
 
 jest.mock("@truffle/workflow-compile", () => ({
  compile: function(config, callback) {
@@ -45,11 +48,14 @@ jest.mock("@truffle/workflow-compile", () => ({
 
 const fixturesDirectory = path.join(__dirname, "..", "artifacts", "test");
 
+const tempDir = tmp.dirSync({ unsafeCleanup: true });
+tmp.setGracefulCleanup();
 // minimal config
 const config = {
   contracts_build_directory: path.join(fixturesDirectory, "sources"),
   contracts_directory: path.join(fixturesDirectory, "compilationSources"),
   artifacts_directory: path.join(fixturesDirectory, "compilationSources", "build", "contracts"),
+  working_directory: tempDir.name,
   all: true
 };
 
@@ -64,6 +70,10 @@ const Load = gql `
     }
   }
 `
+
+afterAll(() => {
+  tempDir.removeCallback();
+});
 
 it("loads artifacts and returns true ", async () => {
   const {

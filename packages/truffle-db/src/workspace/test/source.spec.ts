@@ -1,5 +1,6 @@
 import { generateId, Migrations, WorkspaceClient } from './utils';
-import { AddSource, GetSource, GetAllSources } from './source.graphql'
+import { AddSource, GetSource, GetAllSources } from './source.graphql';
+
 
 describe("Source", () => {
   let wsClient, addSourceResult
@@ -38,6 +39,7 @@ describe("Source", () => {
 
   test("can be queried", async() => {
     const getSourceResult = await wsClient.execute(GetSource, { id: expectedId });
+
     expect(getSourceResult).toHaveProperty("source");
 
     const { source } = getSourceResult;
@@ -53,7 +55,8 @@ describe("Source", () => {
   });
 
   test("can retrieve all sources", async() => {
-    const getAllSourcesResult = await wsClient.execute(GetAllSources);
+    const getAllSourcesResult = await wsClient.execute(GetAllSources, {});
+
     expect(getAllSourcesResult).toHaveProperty("sources");
 
     const { sources } = getAllSourcesResult;
