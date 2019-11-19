@@ -514,7 +514,7 @@ function allocateCalldata(
       };
       break;
     case "constructor":
-      outputsAllocation = CONSTRUCTOR_OUTPUT_ALLOCATION;
+      outputsAllocation = constructorOutputAllocation;
       break;
   }
   return { input: inputsAllocation, output: outputsAllocation };
@@ -729,11 +729,11 @@ function defaultConstructorAllocation(
     arguments: [] as CalldataArgumentAllocation[],
     allocationMode: "full" as const
   };
-  let output = CONSTRUCTOR_OUTPUT_ALLOCATION;
+  let output = constructorOutputAllocation;
   return { input, output };
 }
 
-const CONSTRUCTOR_OUTPUT_ALLOCATION: ReturndataAllocation = {
+const constructorOutputAllocation: ReturndataAllocation = {
   selector: new Uint8Array(), //empty by default
   allocationMode: "full" as const,
   kind: "bytecode" as const,
