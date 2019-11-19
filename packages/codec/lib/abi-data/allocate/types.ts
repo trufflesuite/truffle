@@ -126,7 +126,12 @@ export interface EventArgumentAllocation {
 }
 
 //now let's go back ands fill in returndata
-type ReturndataKind = "return" | "revert" | "failure" | "empty" | "bytecode";
+type ReturndataKind =
+  | "return"
+  | "revert"
+  | "failure"
+  | "selfdestruct"
+  | "bytecode";
 
 export interface ReturndataAllocation {
   selector: Uint8Array;

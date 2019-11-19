@@ -32,7 +32,7 @@ export type ReturndataDecoding =
   | ReturnDecoding
   | BytecodeDecoding
   | UnknownBytecodeDecoding
-  | UnexpectedEmptyDecoding
+  | SelfDestructDecoding
   | RevertMessageDecoding
   | EmptyFailureDecoding;
 
@@ -293,14 +293,14 @@ export interface ReturnDecoding {
 
 /**
  * This type represents a decoding of unexpectedly empty return data from a
- * successful call.  This can occur if, say, the contract self-destructs.
+ * successful call, indicating that the contract self-destructed.
  * @Category Output
  */
-export interface UnexpectedEmptyDecoding {
+export interface SelfDestructDecoding {
   /**
-   * The kind of decoding; indicates that this is an UnexpectedEmptyDecoding.
+   * The kind of decoding; indicates that this is an SelfDestructDecoding.
    */
-  kind: "empty";
+  kind: "selfdestruct";
   /**
    * Indicates that this kind of decoding indicates a successful return.
    */

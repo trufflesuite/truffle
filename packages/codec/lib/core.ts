@@ -434,7 +434,7 @@ const DEFAULT_RETURN_ALLOCATIONS: AbiData.Allocate.ReturndataAllocation[] = [
     arguments: []
   },
   {
-    kind: "empty" as const,
+    kind: "selfdestruct" as const,
     allocationMode: "full" as const,
     selector: new Uint8Array(), //empty by default
     arguments: []
@@ -485,7 +485,7 @@ export function* decodeReturndata(
     encodedData = encodedData.subarray(allocation.selector.length); //slice off the selector for later
     //also we check, does the status match?
     if (status !== undefined) {
-      const successKinds = ["return", "empty", "bytecode"];
+      const successKinds = ["return", "selfdestruct", "bytecode"];
       const failKinds = ["failure", "revert"];
       if (status) {
         if (!successKinds.includes(allocation.kind)) {
@@ -645,7 +645,7 @@ export function* decodeReturndata(
           decodingMode
         };
         break;
-      case "empty":
+      case "selfdestruct":
         decoding = {
           kind,
           status: true as const,
