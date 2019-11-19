@@ -32,7 +32,7 @@ export class WorkspaceClient {
   }
 
   async destroy(resource) {
-    await this.workspace.dbApi.bytecodes.destroy();
+    await this.workspace.dbApi[resource].destroy();
   }
 
   async execute (request, variables = {}, persisted = false) {
