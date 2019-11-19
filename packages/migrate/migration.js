@@ -2,7 +2,7 @@ const path = require("path");
 const Deployer = require("@truffle/deployer");
 const Require = require("@truffle/require");
 const Emittery = require("emittery");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
 
 const ResolverIntercept = require("./resolverintercept");
 
@@ -166,7 +166,7 @@ class Migration {
 
   prepareForMigrations(options) {
     const logger = options.logger;
-    const interfaceAdapter = new InterfaceAdapter({
+    const interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
       networkType: options.networks[options.network].type
     });

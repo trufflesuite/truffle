@@ -11,3 +11,12 @@ export type BlockType = EvmBlockType | any;
 export type Transaction = EvmTransaction | any;
 export type TransactionReceipt = EvmTransactionReceipt | any;
 export type TxHash = string;
+
+export interface InterfaceAdapter {
+  getNetworkId(): Promise<NetworkId>;
+  getBlock(block: BlockType): Promise<Block>;
+  getTransaction(tx: TxHash): Promise<Transaction>;
+  getTransactionReceipt(tx: TxHash): Promise<TransactionReceipt>;
+  getBalance(address: string): Promise<string>;
+  getCode(address: string): Promise<string>;
+}

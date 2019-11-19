@@ -1,4 +1,4 @@
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
 var Config = require("@truffle/config");
 var Migrate = require("@truffle/migrate");
 var TestResolver = require("./testresolver");
@@ -28,7 +28,7 @@ function TestRunner(options = {}) {
   this.first_snapshot = true;
   this.initial_snapshot = null;
   this.known_events = {};
-  this.interfaceAdapter = new InterfaceAdapter({
+  this.interfaceAdapter = createInterfaceAdapter({
     provider: options.provider,
     networkType: options.networks[options.network].type
   });

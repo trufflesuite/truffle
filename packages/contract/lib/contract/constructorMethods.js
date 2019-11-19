@@ -1,4 +1,4 @@
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
@@ -9,17 +9,15 @@ module.exports = Contract => ({
     networkType = networkType || this.networkType;
     provider = provider || this.currentProvider;
 
-    if (this.interfaceAdapter) {
-      // implies this.web3 also
-      // update existing
-      this.interfaceAdapter.setNetworkType(networkType);
-      this.interfaceAdapter.setProvider(provider);
+    // recreate interfaceadapter
+    this.interfaceAdapter = createInterfaceAdapter({ networkType, provider });
 
+    if (this.web3) {
+      // update existing
       this.web3.setNetworkType(networkType);
       this.web3.setProvider(provider);
     } else {
       // create new
-      this.interfaceAdapter = new InterfaceAdapter({ networkType, provider });
       this.web3 = new Web3Shim({ networkType, provider });
     }
 
@@ -69,7 +67,7 @@ module.exports = Contract => ({
 
     try {
       await this.detectNetwork();
-      const onChainCode = await this.web3.eth.getCode(address);
+      const onChainCode = await this.interfaceAdapter.getCode(address);
       await utils.checkCode(onChainCode, this.contractName, address);
       return new this(address);
     } catch (error) {

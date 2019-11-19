@@ -43,7 +43,6 @@
     "ganache-core": "2.8.0",
     "glob": "^7.1.2",
     "husky": "^1.1.2",
-    "imports-loader": "^0.8.0",
     "js-scrypt": "^0.2.0",
     "meta-npm": "^0.0.22",
     "meta-pkgs": "^0.2.0",
@@ -54,7 +53,7 @@
     "stream-buffers": "^3.0.1",
     "tmp": "0.0.33",
     "web3": "1.2.2",
-    "webpack": "^2.5.1",
+    "webpack": "^3.12.0",
     "webpack-bundle-analyzer": "^3.0.3",
     "yargs": "^8.0.2"
   },
