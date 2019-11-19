@@ -329,8 +329,7 @@ function allocateCalldata(
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations,
   compiler: Compiler.CompilerVersion | undefined,
-  constructorContext?: Contexts.DecoderContext,
-  deployedContext?: Contexts.DecoderContext
+  constructorContext?: Contexts.DecoderContext
 ): CalldataAndReturndataAllocation | undefined {
   //first: determine the corresponding function node
   //(simultaneously: determine the offset)
@@ -456,15 +455,15 @@ function allocateCalldata(
       name: parameter.name,
       type: Import.abiParameterToType(parameter)
     }));
-    if (abiEntry.type === "function") {
-      outputTypes = abiEntry.outputs.map(parameter => ({
-        name: parameter.name,
-        type: Import.abiParameterToType(parameter)
-      }));
-    } else {
-      //let's just set it empty for now, we can set
-      //the bytecode thingy later
-      outputTypes = [];
+    switch (abiEntry.type) {
+      case "function":
+        outputTypes = abiEntry.outputs.map(parameter => ({
+          name: parameter.name,
+          type: Import.abiParameterToType(parameter)
+        }));
+      case "constructor":
+        //we just leave this empty for constructors
+        outputTypes = [];
     }
     abiAllocationInput = allocateMembers(
       id,
@@ -670,17 +669,13 @@ function getCalldataAllocationsForContract(
   abi: AbiData.Abi,
   contractNode: Ast.AstNode,
   constructorContext: Contexts.DecoderContext,
-  deployedContext: Contexts.DecoderContext,
   referenceDeclarations: Ast.AstNodes,
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations,
   compiler: Compiler.CompilerVersion
 ): CalldataAllocationTemporary {
   let allocations: CalldataAllocationTemporary = {
-    constructorAllocation: defaultConstructorAllocation(
-      constructorContext,
-      deployedContext
-    ), //will be overridden if abi has a constructor
+    constructorAllocation: defaultConstructorAllocation(constructorContext), //will be overridden if abi has a constructor
     //(if it doesn't then it will remain as default)
     functionAllocations: {}
   };
@@ -694,8 +689,7 @@ function getCalldataAllocationsForContract(
           userDefinedTypes,
           abiAllocations,
           compiler,
-          constructorContext,
-          deployedContext
+          constructorContext
         );
         break;
       case "function":
@@ -708,8 +702,7 @@ function getCalldataAllocationsForContract(
           userDefinedTypes,
           abiAllocations,
           compiler,
-          constructorContext,
-          deployedContext
+          constructorContext
         );
         break;
       default:
@@ -723,8 +716,7 @@ function getCalldataAllocationsForContract(
 //note: returns undefined if undefined is passed in
 //for first argument
 function defaultConstructorAllocation(
-  constructorContext: Contexts.DecoderContext,
-  deployedContext: Contexts.DecoderContext
+  constructorContext: Contexts.DecoderContext
 ): CalldataAndReturndataAllocation | undefined {
   if (!constructorContext) {
     return undefined;
@@ -763,7 +755,6 @@ export function getCalldataAllocations(
       contract.abi,
       contract.contractNode,
       contract.constructorContext,
-      contract.deployedContext,
       referenceDeclarations,
       userDefinedTypes,
       abiAllocations,
