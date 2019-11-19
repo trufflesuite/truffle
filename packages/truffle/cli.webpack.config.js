@@ -56,6 +56,7 @@ module.exports = {
   devtool: "source-map",
   module: {
     rules: [
+      // ignores "#!/bin..." lines inside files
       {
         test: /\.js$/,
         include: [
