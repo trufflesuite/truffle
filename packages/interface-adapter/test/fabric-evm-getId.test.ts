@@ -6,7 +6,7 @@ import { Server } from "http";
 import Web3 from "web3";
 import Ganache from "ganache-core";
 
-import { InterfaceAdapter } from "../lib";
+import { createInterfaceAdapter, InterfaceAdapter } from "../lib";
 
 const port = 12345;
 
@@ -18,7 +18,7 @@ async function prepareGanache(
     server.listen(port, (err: Error) => {
       if (err) reject(err);
 
-      const interfaceAdapter = new InterfaceAdapter({
+      const interfaceAdapter = createInterfaceAdapter({
         provider: new Web3.providers.HttpProvider(`http://127.0.0.1:${port}`),
         networkType: fabricEvmEnabled ? "fabric-evm" : "ethereum"
       });

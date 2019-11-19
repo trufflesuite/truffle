@@ -15,7 +15,9 @@ const copyArtifactsToTempDir = async config => {
   }
 
   await promisify(copy)(config.contracts_build_directory, temporaryDirectory);
-  config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+  if (config.runnerOutputOnly !== true) {
+    config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+  }
   return { config, temporaryDirectory };
 };
 

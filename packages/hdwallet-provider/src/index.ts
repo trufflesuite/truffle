@@ -11,7 +11,7 @@ import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
 import Url from "url";
 import Web3 from "web3";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
-import { Callback, JsonRPCResponse } from "web3/providers";
+import { Callback, JsonRpcResponse } from "@truffle/provider";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 
@@ -34,7 +34,7 @@ class HDWalletProvider {
     mnemonic: string | string[],
     provider: string | any,
     addressIndex: number = 0,
-    numAddresses: number = 1,
+    numAddresses: number = 10,
     shareNonce: boolean = true,
     walletHdpath: string = `m/44'/60'/0'/0/`
   ) {
@@ -87,7 +87,7 @@ class HDWalletProvider {
     // private helper leveraging ethUtils to populate wallets/addresses
     const ethUtilValidation = (privateKeys: string[]) => {
       // crank the addresses out
-      for (let i = addressIndex; i < addressIndex + numAddresses; i++) {
+      for (let i = addressIndex; i < privateKeys.length; i++) {
         const privateKey = Buffer.from(privateKeys[i].replace("0x", ""), "hex");
         if (EthUtil.isValidPrivate(privateKey)) {
           const wallet = ethJSWallet.fromPrivateKey(privateKey);
@@ -175,14 +175,14 @@ class HDWalletProvider {
 
   public send(
     payload: JSONRPCRequestPayload,
-    callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
+    callback: JSONRPCErrorCallback | Callback<JsonRpcResponse>
   ): void {
     return this.engine.send.call(this.engine, payload, callback);
   }
 
   public sendAsync(
     payload: JSONRPCRequestPayload,
-    callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
+    callback: JSONRPCErrorCallback | Callback<JsonRpcResponse>
   ): void {
     this.engine.sendAsync.call(this.engine, payload, callback);
   }

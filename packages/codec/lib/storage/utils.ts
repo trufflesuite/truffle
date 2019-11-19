@@ -2,7 +2,8 @@ import debugModule from "debug";
 const debug = debugModule("codec:storage:utils");
 import BN from "bn.js";
 import * as Evm from "@truffle/codec/evm";
-import { encodeMappingKey, mappingKeyAsHex } from "@truffle/codec/encode/key";
+import * as MappingKey from "@truffle/codec/mapping-key";
+
 import { StorageLength, Slot } from "./types";
 
 export function isWordsLength(size: StorageLength): size is { words: number } {
@@ -30,7 +31,7 @@ export function slotAddress(slot: Slot): BN {
   if (slot.key !== undefined && slot.path !== undefined) {
     // mapping reference
     return Evm.Utils.keccak256(
-      mappingKeyAsHex(slot.key),
+      MappingKey.Encode.mappingKeyAsHex(slot.key),
       slotAddress(slot.path)
     ).add(slot.offset);
   } else if (slot.path !== undefined) {
@@ -72,7 +73,7 @@ export function equalSlots(
   }
   //if they do have keys, though...
   return Evm.Utils.equalData(
-    encodeMappingKey(slot1.key),
-    encodeMappingKey(slot2.key)
+    MappingKey.Encode.encodeMappingKey(slot1.key),
+    MappingKey.Encode.encodeMappingKey(slot2.key)
   );
 }

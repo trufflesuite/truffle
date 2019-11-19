@@ -34,7 +34,8 @@
   },
   "devDependencies": {
     "@gnd/typedoc": "^0.15.0-0",
-    "@truffle/contract-schema": "^3.0.11",
+    "@truffle/contract-schema": "^3.0.19",
+    "@trufflesuite/typedoc-default-themes": "^0.6.1",
     "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",
@@ -61,7 +62,7 @@
     "semver": "^6.1.1",
     "source-map-support": "^0.5.13",
     "utf8": "^3.0.0",
-    "web3-utils": "1.2.1"
+    "web3-utils": "1.2.2"
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }

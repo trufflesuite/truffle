@@ -1,5 +1,5 @@
 const Web3 = require("web3");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
 const Resolver = require("@truffle/resolver");
@@ -15,7 +15,7 @@ const Environment = {
     helpers.setUpConfig(config);
     helpers.validateNetworkConfig(config);
 
-    const interfaceAdapter = new InterfaceAdapter({
+    const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
@@ -33,7 +33,7 @@ const Environment = {
   fork: async function(config) {
     expect.options(config, ["from", "provider", "networks", "network"]);
 
-    const interfaceAdapter = new InterfaceAdapter({
+    const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
@@ -151,6 +151,15 @@ const helpers = {
           network_id: 5777
         };
       }
+    }
+
+    const currentNetworkSettings = config.networks[config.network];
+    if (
+      currentNetworkSettings &&
+      currentNetworkSettings.ens &&
+      currentNetworkSettings.ens.registry
+    ) {
+      config.ens.registryAddress = currentNetworkSettings.ens.registry.address;
     }
   }
 };

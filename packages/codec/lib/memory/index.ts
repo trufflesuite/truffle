@@ -1,2 +1,10 @@
-import * as Allocate from "@truffle/codec/allocate/memory";
+import * as Allocate from "./allocate";
 export { Allocate };
+
+import * as Decode from "./decode";
+export {
+  /**
+   * @protected
+   */
+  Decode
+};

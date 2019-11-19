@@ -1,6 +1,6 @@
 const debug = require("debug")("provider");
 const Web3 = require("web3");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
 
@@ -45,7 +45,7 @@ module.exports = {
     }
     const provider = this.getProvider(options);
     const web3 = new Web3Shim({ provider, networkType });
-    const interfaceAdapter = new InterfaceAdapter({ provider, networkType });
+    const interfaceAdapter = createInterfaceAdapter({ provider, networkType });
     return new Promise((resolve, reject) => {
       const noResponseFromNetworkCall = setTimeout(() => {
         const errorMessage =

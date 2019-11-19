@@ -2,7 +2,7 @@ const Mocha = require("mocha");
 const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 const Contracts = require("@truffle/workflow-compile/new");
 const Resolver = require("@truffle/resolver");
@@ -35,7 +35,7 @@ const Test = {
       return path.resolve(testFile);
     });
 
-    const interfaceAdapter = new InterfaceAdapter({
+    const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
@@ -167,7 +167,7 @@ const Test = {
       all: config.compileAll === true,
       files: updated.concat(solidityTestFiles),
       resolver: testResolver,
-      quiet: config.quiet,
+      quiet: config.runnerOutputOnly || config.quiet,
       quietWrite: true
     });
 

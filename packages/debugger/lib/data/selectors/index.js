@@ -78,7 +78,7 @@ function debuggerContextToDecoderContext(context) {
     contractId,
     contractKind,
     isConstructor,
-    abi: Codec.Abi.Utils.computeSelectors(abi),
+    abi: Codec.AbiData.Utils.computeSelectors(abi),
     payable,
     compiler
   };
@@ -221,7 +221,7 @@ const data = createSelectorTree({
           return Object.assign(
             {},
             ...Object.entries(referenceDeclarations).map(([id, node]) => ({
-              [id]: Codec.Format.Utils.MakeType.definitionToStoredType(
+              [id]: Codec.Ast.Import.definitionToStoredType(
                 node,
                 sources[scopes[node.id].sourceId].compiler,
                 referenceDeclarations

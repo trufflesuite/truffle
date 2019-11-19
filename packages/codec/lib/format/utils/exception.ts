@@ -24,9 +24,9 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
     case "ReadErrorStack":
       return `Can't read stack from position ${error.from} to ${error.to}`;
     case "ReadErrorBytes":
-      return `Can't read ${error.length} bytes from input starting at ${
-        error.start
-      }`;
+      return `Can't read ${error.length} bytes from ${
+        error.location
+      } starting at ${error.start}`;
     case "ReadErrorStorage":
       if (error.range.length) {
         return `Can't read ${
