@@ -2,7 +2,10 @@ const Mocha = require("mocha");
 const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
-const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 const Contracts = require("@truffle/workflow-compile/new");
 const Resolver = require("@truffle/resolver");
@@ -82,7 +85,7 @@ const Test = {
       mocha.addFile(file);
     });
 
-    const accounts = await this.getAccounts(web3, interfaceAdapter);
+    const accounts = await this.getAccounts(interfaceAdapter);
 
     if (!config.resolver) config.resolver = new Resolver(config);
 
@@ -158,8 +161,8 @@ const Test = {
     return mocha;
   },
 
-  getAccounts: function(web3, interfaceAdapter) {
-    return web3.eth.getAccounts();
+  getAccounts: function(interfaceAdapter) {
+    return interfaceAdapter.getAccounts();
   },
 
   compileContractsWithTestFilesIfNeeded: async function(
