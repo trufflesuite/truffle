@@ -13,7 +13,9 @@ var provision = function(abstraction, options) {
     abstraction.setNetworkType(options.networks[options.network].type);
   }
 
-  abstraction.ens = options.ens;
+  if (options.ens) {
+    abstraction.ens = options.ens;
+  }
 
   ["from", "gas", "gasPrice"].forEach(function(key) {
     if (options[key]) {
