@@ -24,7 +24,6 @@
   "devDependencies": {
     "@types/configstore": "^4.0.0",
     "@types/find-up": "^2.1.0",
-    "@types/node": "^12.7.7",
     "@types/sinon": "^7.0.13",
     "mocha": "6.2.0",
     "sinon": "^7.5.0",
@@ -34,6 +33,8 @@
   "dependencies": {
     "@truffle/error": "^0.0.8",
     "@truffle/provider": "^0.2.2",
+    "@types/lodash": "^4.14.149",
+    "@types/node": "^12.12.9",
     "configstore": "^4.0.0",
     "find-up": "^2.1.0",
     "lodash": "^4.17.13",

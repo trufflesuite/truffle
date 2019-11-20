@@ -26,13 +26,13 @@ class Migration {
   /**
    * Loads & validates migration, then runs it.
    * @param  {Object}   options  config and command-line
-   * @param  {Object}   context  web3
+   * @param  {Object}   context  web3 & interfaceAdapter
    * @param  {Object}   deployer truffle module
    * @param  {Object}   resolver truffle module
    */
   async _load(options, context, deployer, resolver) {
     // Load assets and run `execute`
-    const accounts = await context.web3.eth.getAccounts();
+    const accounts = await context.interfaceAdapter.getAccounts();
     const requireOptions = {
       file: this.file,
       context: context,

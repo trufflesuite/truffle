@@ -85,7 +85,7 @@ const Test = {
       mocha.addFile(file);
     });
 
-    const accounts = await this.getAccounts(web3, interfaceAdapter);
+    const accounts = await this.getAccounts(interfaceAdapter);
 
     if (!config.resolver) config.resolver = new Resolver(config);
 
@@ -154,8 +154,8 @@ const Test = {
     return new Mocha(mochaConfig);
   },
 
-  getAccounts: function(web3, interfaceAdapter) {
-    return web3.eth.getAccounts();
+  getAccounts: function(interfaceAdapter) {
+    return interfaceAdapter.getAccounts();
   },
 
   compileContractsWithTestFilesIfNeeded: async function(
