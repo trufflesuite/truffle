@@ -1,7 +1,8 @@
 import { Block as EvmBlock } from "web3-eth";
 import {
   Transaction as EvmTransaction,
-  TransactionReceipt as EvmTransactionReceipt
+  TransactionReceipt as EvmTransactionReceipt,
+  TransactionConfig as EvmTransactionConfig
 } from "web3-core";
 
 export type EvmBlockType = number | string;
@@ -10,6 +11,7 @@ export type Block = EvmBlock | any;
 export type BlockType = EvmBlockType | any;
 export type Transaction = EvmTransaction | any;
 export type TransactionReceipt = EvmTransactionReceipt | any;
+export type TransactionConfig = EvmTransactionConfig | any;
 export type TxHash = string;
 
 export interface InterfaceAdapter {
