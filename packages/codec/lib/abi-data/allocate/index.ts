@@ -322,7 +322,7 @@ export function abiSizeInfo(
 //NOTE: returns just a single allocation; assumes primary allocation is already complete!
 //NOTE: returns undefined if attempting to allocate a constructor but we don't have the
 //bytecode for the constructor
-function allocateCalldata(
+function allocateCalldataAndReturndata(
   abiEntry: AbiData.FunctionAbiEntry | AbiData.ConstructorAbiEntry,
   contractNode: Ast.AstNode | undefined,
   referenceDeclarations: Ast.AstNodes,
@@ -334,13 +334,11 @@ function allocateCalldata(
   //first: determine the corresponding function node
   //(simultaneously: determine the offset)
   let node: Ast.AstNode | undefined = undefined;
+  let inputParametersFull: Ast.AstNode[];
+  let outputParametersFull: Ast.AstNode[];
+  let inputParametersAbi: AbiData.AbiParameter[];
+  let outputParametersAbi: AbiData.AbiParameter[];
   let offset: number; //refers to INPUT offset; output offset is always 0
-  let id: string;
-  let abiAllocationInput: AbiAllocation;
-  let abiAllocationOutput: AbiAllocation;
-  let inputTypes: Format.Types.NameTypePair[];
-  let outputTypes: Format.Types.NameTypePair[];
-  let allocationMode: DecodingMode = "full"; //degrade to ABI if needed
   switch (abiEntry.type) {
     case "constructor":
       if (!constructorContext) {
@@ -393,93 +391,57 @@ function allocateCalldata(
       }
       break;
   }
-  if (!node) {
-    allocationMode = "abi";
-  }
-  if (allocationMode === "full") {
-    //get the parameters; how this works depends on whether we're looking at
-    //a normal function or a getter
-    let inputs: Ast.AstNode[];
-    let outputs: Ast.AstNode[];
+  //now: get the parameters (both full-mode & ABI)
+  if (node) {
     switch (node.nodeType) {
       case "FunctionDefinition":
         //normal case
-        inputs = node.parameters.parameters;
-        outputs = node.returnParameters.parameters; //this exists even for constructors!
+        inputParametersFull = node.parameters.parameters;
+        outputParametersFull = node.returnParameters.parameters; //this exists even for constructors!
         break;
       case "VariableDeclaration":
         //getter case
-        ({ inputs, outputs } = Ast.Utils.getterParameters(
-          node,
-          referenceDeclarations
-        ));
+        ({
+          inputs: inputParametersFull,
+          outputs: outputParametersFull
+        } = Ast.Utils.getterParameters(node, referenceDeclarations));
         break;
     }
-    id = node.id.toString();
-    inputTypes = inputs.map(parameter => ({
-      name: parameter.name,
-      type: Ast.Import.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
-    }));
-    outputTypes = outputs.map(parameter => ({
-      name: parameter.name,
-      type: Ast.Import.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
-    }));
-    //now: perform the allocation!
-    try {
-      abiAllocationInput = allocateMembers(
-        id,
-        inputTypes,
-        userDefinedTypes,
-        abiAllocations,
-        offset
-      )[id];
-      abiAllocationOutput = allocateMembers(
-        id,
-        outputTypes,
-        userDefinedTypes,
-        abiAllocations
-        //note the lack of an offset!
-      )[id];
-    } catch {
-      //if something goes wrong, switch to ABI mdoe
-      allocationMode = "abi";
-    }
+  } else {
+    inputParametersFull = undefined;
+    outputParametersFull = undefined;
   }
-  if (allocationMode === "abi") {
-    //THIS IS DELIBERATELY NOT AN ELSE
-    //this is the ABI case.  we end up here EITHER
-    //if node doesn't exist, OR if something went wrong
-    //during allocation
-    id = "-1"; //fake irrelevant ID
-    inputTypes = abiEntry.inputs.map(parameter => ({
-      name: parameter.name,
-      type: Import.abiParameterToType(parameter)
-    }));
-    switch (abiEntry.type) {
-      case "function":
-        outputTypes = abiEntry.outputs.map(parameter => ({
-          name: parameter.name,
-          type: Import.abiParameterToType(parameter)
-        }));
-      case "constructor":
-        //we just leave this empty for constructors
-        outputTypes = [];
-    }
-    abiAllocationInput = allocateMembers(
-      id,
-      inputTypes,
-      userDefinedTypes,
-      abiAllocations,
-      offset
-    )[id];
-    abiAllocationOutput = allocateMembers(
-      id,
-      outputTypes,
-      userDefinedTypes,
-      abiAllocations
-      //note the lack of an offset!
-    )[id];
+  inputParametersAbi = abiEntry.inputs;
+  switch (abiEntry.type) {
+    case "function":
+      outputParametersAbi = abiEntry.outputs;
+    case "constructor":
+      //we just leave this empty for constructors
+      outputParametersAbi = [];
   }
+  //now: do the allocation!
+  let {
+    allocation: abiAllocationInput,
+    mode: inputMode
+  } = allocateDataArguments(
+    inputParametersFull,
+    inputParametersAbi,
+    userDefinedTypes,
+    abiAllocations,
+    compiler,
+    offset
+  );
+  let {
+    allocation: abiAllocationOutput,
+    mode: outputMode
+  } = allocateDataArguments(
+    outputParametersFull,
+    outputParametersAbi,
+    userDefinedTypes,
+    abiAllocations,
+    compiler
+    //note no offset
+  );
   //finally: transform the allocation appropriately
   let inputArgumentsAllocation = abiAllocationInput.members.map(member => ({
     ...member,
@@ -497,19 +459,19 @@ function allocateCalldata(
       length: member.pointer.length
     }
   }));
-  let inputsAllocation = {
+  let inputsAllocation: CalldataAllocation = {
     abi: abiEntry,
     offset,
     arguments: inputArgumentsAllocation,
-    allocationMode
+    allocationMode: inputMode
   };
-  let outputsAllocation;
+  let outputsAllocation: ReturndataAllocation;
   switch (abiEntry.type) {
     case "function":
       outputsAllocation = {
         selector: new Uint8Array(), //empty by default
         arguments: outputArgumentsAllocation,
-        allocationMode,
+        allocationMode: outputMode,
         kind: "return" as const
       };
       break;
@@ -518,6 +480,66 @@ function allocateCalldata(
       break;
   }
   return { input: inputsAllocation, output: outputsAllocation };
+}
+
+interface AbiAllocationAndMode {
+  allocation: AbiAllocation;
+  mode: DecodingMode;
+}
+
+//note: allocateEvent doesn't use this because it needs additional
+//handling for indexed parameters (maybe these can be unified in
+//the future though?)
+function allocateDataArguments(
+  fullModeParameters: Ast.AstNode[] | undefined,
+  abiParameters: AbiData.AbiParameter[],
+  userDefinedTypes: Format.Types.TypesById,
+  abiAllocations: AbiAllocations,
+  compiler: Compiler.CompilerVersion | undefined,
+  offset: number = 0
+): AbiAllocationAndMode {
+  let allocationMode: DecodingMode = fullModeParameters ? "full" : "abi"; //can degrade
+  let parameterTypes: Format.Types.NameTypePair[];
+  let abiAllocation: AbiAllocation;
+  if (allocationMode === "full") {
+    let id = "-1"; //fake ID that doesn't matter
+    parameterTypes = fullModeParameters.map(parameter => ({
+      name: parameter.name,
+      type: Ast.Import.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
+    }));
+    //now: perform the allocation!
+    try {
+      abiAllocation = allocateMembers(
+        id,
+        parameterTypes,
+        userDefinedTypes,
+        abiAllocations,
+        offset
+      )[id];
+    } catch {
+      //if something goes wrong, switch to ABI mdoe
+      allocationMode = "abi";
+    }
+  }
+  if (allocationMode === "abi") {
+    //THIS IS DELIBERATELY NOT AN ELSE
+    //this is the ABI case.  we end up here EITHER
+    //if node doesn't exist, OR if something went wrong
+    //during allocation
+    let id = "-1"; //fake irrelevant ID
+    parameterTypes = abiParameters.map(parameter => ({
+      name: parameter.name,
+      type: Import.abiParameterToType(parameter)
+    }));
+    abiAllocation = allocateMembers(
+      id,
+      parameterTypes,
+      userDefinedTypes,
+      abiAllocations,
+      offset
+    )[id];
+  }
+  return { allocation: abiAllocation, mode: allocationMode };
 }
 
 interface EventParameterInfo {
@@ -682,7 +704,7 @@ function getCalldataAllocationsForContract(
   for (let abiEntry of abi) {
     switch (abiEntry.type) {
       case "constructor":
-        allocations.constructorAllocation = allocateCalldata(
+        allocations.constructorAllocation = allocateCalldataAndReturndata(
           abiEntry,
           contractNode,
           referenceDeclarations,
@@ -695,7 +717,7 @@ function getCalldataAllocationsForContract(
       case "function":
         allocations.functionAllocations[
           AbiDataUtils.abiSelector(abiEntry)
-        ] = allocateCalldata(
+        ] = allocateCalldataAndReturndata(
           abiEntry,
           contractNode,
           referenceDeclarations,
