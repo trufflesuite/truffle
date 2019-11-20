@@ -6,7 +6,7 @@ import BN from "bn.js";
 
 import trace from "lib/trace/selectors";
 
-import * as CodecUtils from "truffle-codec-utils";
+import * as Codec from "@truffle/codec";
 import {
   isCallMnemonic,
   isCreateMnemonic,
@@ -150,7 +150,7 @@ function createStepSelectors(step, state = null) {
           }
 
           let address = stack[stack.length - 2];
-          return CodecUtils.Conversion.toAddress(address);
+          return Codec.Evm.Utils.toAddress(address);
         }
       ),
 
@@ -220,7 +220,7 @@ function createStepSelectors(step, state = null) {
 
           //otherwise, for CALL and CALLCODE, it's the 3rd argument
           let value = stack[stack.length - 3];
-          return CodecUtils.Conversion.toBN(value);
+          return Codec.Conversion.toBN(value);
         }
       ),
 
@@ -236,7 +236,7 @@ function createStepSelectors(step, state = null) {
 
         //creates have the value as the first argument
         let value = stack[stack.length - 1];
-        return CodecUtils.Conversion.toBN(value);
+        return Codec.Conversion.toBN(value);
       }),
 
       /**
@@ -316,7 +316,7 @@ const evm = createSelectorTree({
        * (returns null on no match)
        */
       search: createLeaf(["/info/contexts"], contexts => binary =>
-        CodecUtils.Contexts.findDebuggerContext(contexts, binary)
+        Codec.Contexts.Utils.findDebuggerContext(contexts, binary)
       )
     }
   },
@@ -446,19 +446,24 @@ const evm = createSelectorTree({
             return null;
           }
           let address = stack[stack.length - 1];
-          return CodecUtils.Conversion.toAddress(address);
+          return Codec.Evm.Utils.toAddress(address);
         }
       ),
 
       /**
-       * evm.current.step.callsPrecompileOrExternal
+       * evm.current.step.isInstantCallOrReturn
        *
-       * are we calling a precompiled contract or an externally-owned account,
-       * rather than a contract account that isn't precompiled?
+       * are we doing a call or create for which there are no trace steps?
+       * This can happen if:
+       * 1. we call a precompile
+       * 2. we call an externally-owned account
+       * 3. we do a call or create but the call stack is exhausted
+       * 4. we attempt to transfer more ether than we have
        */
-      callsPrecompileOrExternal: createLeaf(
-        ["./isCall", "/current/state/depth", "/next/state/depth"],
-        (calls, currentDepth, nextDepth) => calls && currentDepth === nextDepth
+      isInstantCallOrCreate: createLeaf(
+        ["./isCall", "./isCreate", "/current/state/depth", "/next/state/depth"],
+        (calls, creates, currentDepth, nextDepth) =>
+          (calls || creates) && currentDepth === nextDepth
       ),
 
       /**
@@ -508,7 +513,7 @@ const evm = createSelectorTree({
           if (remaining <= 1) {
             return finalStatus;
           } else {
-            const ZERO_WORD = "00".repeat(CodecUtils.EVM.WORD_SIZE);
+            const ZERO_WORD = "00".repeat(Codec.Evm.Utils.WORD_SIZE);
             return stack[stack.length - 1] !== ZERO_WORD;
           }
         }
@@ -535,7 +540,7 @@ const evm = createSelectorTree({
       storage: createLeaf(
         ["./_", "../state/storage", "../call"],
         (codex, rawStorage, { storageAddress }) =>
-          storageAddress === CodecUtils.EVM.ZERO_ADDRESS
+          storageAddress === Codec.Evm.Utils.ZERO_ADDRESS
             ? rawStorage //HACK -- if zero address ignore the codex
             : codex[codex.length - 1].accounts[storageAddress].storage
       ),

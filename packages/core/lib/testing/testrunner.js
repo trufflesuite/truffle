@@ -1,4 +1,7 @@
-var { Web3Shim } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 var Config = require("@truffle/config");
 var Migrate = require("@truffle/migrate");
 var TestResolver = require("./testresolver");
@@ -28,6 +31,10 @@ function TestRunner(options = {}) {
   this.first_snapshot = true;
   this.initial_snapshot = null;
   this.known_events = {};
+  this.interfaceAdapter = createInterfaceAdapter({
+    provider: options.provider,
+    networkType: options.networks[options.network].type
+  });
   this.web3 = new Web3Shim({
     provider: options.provider,
     networkType: options.networks[options.network].type
@@ -73,7 +80,7 @@ TestRunner.prototype.initialize = function(callback) {
         function(err, data) {
           if (err) return callback(err);
 
-          var contracts = data.map(JSON.parse).map(contract);
+          var contracts = data.map(JSON.parse).map(json => contract(json));
           var abis = _.flatMap(contracts, "abi");
 
           abis.map(function(abi) {
@@ -196,11 +203,22 @@ TestRunner.prototype.endTest = function(mocha, callback) {
           return input.type;
         });
 
-        var values = abi.decodeLog(
-          event.abi_entry.inputs,
-          log.data,
-          log.topics.slice(1) // skip topic[0] for non-anonymous event
-        );
+        var values;
+        try {
+          values = abi.decodeLog(
+            event.abi_entry.inputs,
+            log.data,
+            log.topics.slice(1) // skip topic[0] for non-anonymous event
+          );
+        } catch (_) {
+          //temporary HACK until we're using the new decoder
+          self.logger.log(`    Warning: event decoding failed`);
+          self.logger.log(
+            `    (This may be due to multiple events with same signature`
+          );
+          self.logger.log(`    or due to unsupported data types)`);
+          return;
+        }
 
         var eventName = event.abi_entry.name;
         var eventArgs = event.abi_entry.inputs

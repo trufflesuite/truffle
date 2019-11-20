@@ -74,8 +74,9 @@ class Deployment {
    * contract instance or on error. (See stopBlockPolling)
    * @private
    * @param  {Object}    web3
+   * @param  {Object}    interfaceAdapter
    */
-  async _startBlockPolling(web3) {
+  async _startBlockPolling(web3, interfaceAdapter) {
     const self = this;
     const startTime = new Date().getTime();
 
@@ -115,9 +116,10 @@ class Deployment {
    * @param  {Number} blocksToWait
    * @param  {Object} receipt
    * @param  {Object} web3
+   * @param  {Object} interfaceAdapter
    * @return {Promise}             Resolves after `blockToWait` blocks
    */
-  async _waitBlocks(blocksToWait, state, web3) {
+  async _waitBlocks(blocksToWait, state, web3, interfaceAdapter) {
     const self = this;
     let currentBlock = await web3.eth.getBlockNumber();
 
@@ -289,7 +291,7 @@ class Deployment {
 
       const isDeployed = contract.isDeployed();
       const newArgs = await Promise.all(args);
-      const currentBlock = await contract.web3.eth.getBlock("latest");
+      const currentBlock = await contract.interfaceAdapter.getBlock("latest");
 
       // Last arg can be an object that tells us not to overwrite.
       if (newArgs.length > 0) {
@@ -341,7 +343,7 @@ class Deployment {
           .on("transactionHash", self._hashCb.bind(promiEvent, self, state))
           .on("receipt", self._receiptCb.bind(promiEvent, self, state));
 
-        await self._startBlockPolling(contract.web3);
+        await self._startBlockPolling(contract.web3, contract.interfaceAdapter);
 
         // Get instance (or error)
         try {
@@ -381,7 +383,12 @@ class Deployment {
 
       // Wait for `n` blocks
       if (self.confirmations !== 0 && shouldDeploy) {
-        await self._waitBlocks(self.confirmations, state, contract.web3);
+        await self._waitBlocks(
+          self.confirmations,
+          state,
+          contract.web3,
+          contract.interfaceAdapter
+        );
       }
       // Finish: Ensure the address and tx-hash are set on the contract.
       contract.address = instance.address;

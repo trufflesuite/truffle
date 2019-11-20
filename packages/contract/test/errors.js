@@ -32,7 +32,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         .catch(() => null);
     });
 
-    it("should error w/ revert error if constructor reverts", async function() {
+    it("should error w/gas limit error if constructor reverts", async function() {
       try {
         await Example.new(13); // 13 fails a constructor require gate
         assert.fail();
@@ -42,7 +42,10 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
           !e.message.includes("Reason"),
           "Should not include reason message"
         );
-        assert(e.message.includes("revert"), "Should include revert message");
+        assert(
+          e.message.includes("exceeds gas limit"),
+          "Error should be gas limit err"
+        );
       }
     });
 
@@ -60,8 +63,8 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
           "Error message should include reason"
         );
         assert(
-          e.message.includes("revert reasonstring"),
-          "Error should be revert w/ reason"
+          e.message.includes("exceeds gas limit"),
+          "Error should be gas limit err"
         );
       }
     });
@@ -228,7 +231,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
     // NB: this error is different than the `invalid` opcode error
     // produced when the vmErrors flag is on.
     it("errors with OOG on internal OOG", async function() {
-      this.timeout(5000);
+      this.timeout(10000);
 
       const example = await Example.new(1);
       try {

@@ -15,6 +15,11 @@ const command = {
     "debug-global": {
       describe: "Specify debug global function name",
       default: "debug"
+    },
+    "runner-output-only": {
+      describe: "Suppress all output except for test runner output.",
+      type: "boolean",
+      default: false
     }
   },
   help: {
@@ -58,13 +63,18 @@ const command = {
         option: "--debug-global <identifier>",
         description:
           'Specify global identifier for debug function. Default: "debug"'
+      },
+      {
+        option: "--runner-output-only",
+        description: "Suppress all output except for test runner output."
       }
     ]
   },
   run: function(options, done) {
     const OS = require("os");
-    const dir = require("node-dir");
     const temp = require("temp").track();
+    const glob = require("glob");
+    const path = require("path");
     const Config = require("@truffle/config");
     const Artifactor = require("@truffle/artifactor");
     const Test = require("../test");
@@ -103,7 +113,11 @@ const command = {
 
     try {
       if (files.length === 0) {
-        files = dir.files(config.test_directory, { sync: true }) || [];
+        const directoryContents = glob.sync(
+          `${config.test_directory}${path.sep}**${path.sep}*`
+        );
+        files =
+          directoryContents.filter(item => fs.statSync(item).isFile()) || [];
       }
     } catch (error) {
       return done(error);
@@ -153,8 +167,9 @@ const command = {
 
       promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
         .then(() => {
-          config.logger.log("Using network '" + config.network + "'." + OS.EOL);
-
+          if (config.runnerOutputOnly !== true) {
+            config.logger.log(`Using network '${config.network}'.${OS.EOL}`);
+          }
           run();
         })
         .catch(done);

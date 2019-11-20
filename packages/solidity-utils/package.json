@@ -1,6 +1,6 @@
 {
   "name": "@truffle/solidity-utils",
-  "version": "1.2.5",
+  "version": "1.2.7",
   "description": "Utilities for Solidity contracts",
   "main": "index.js",
   "scripts": {},
@@ -11,7 +11,7 @@
     "solidity",
     "contracts"
   ],
-  "author": "Tim Coulter <tim.coulter@consensys.net>",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"

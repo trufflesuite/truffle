@@ -5,7 +5,7 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 import { keccak256, extractPrimarySource } from "lib/helpers";
-import * as CodecUtils from "truffle-codec-utils";
+import * as Codec from "@truffle/codec";
 
 import BN from "bn.js";
 
@@ -54,14 +54,14 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
             contractId,
             contractKind,
             isConstructor,
-            payable: CodecUtils.AbiUtils.abiHasPayableFallback(abi)
+            payable: Codec.AbiData.Utils.abiHasPayableFallback(abi)
           }
         }
       };
 
     case actions.NORMALIZE_CONTEXTS:
       return {
-        byContext: CodecUtils.Contexts.normalizeContexts(state.byContext)
+        byContext: Codec.Contexts.Utils.normalizeContexts(state.byContext)
       };
 
     /*
@@ -78,7 +78,7 @@ const info = combineReducers({
 
 const DEFAULT_TX = {
   gasprice: new BN(0),
-  origin: CodecUtils.EVM.ZERO_ADDRESS
+  origin: Codec.Evm.Utils.ZERO_ADDRESS
 };
 
 function tx(state = DEFAULT_TX, action) {
@@ -94,7 +94,7 @@ function tx(state = DEFAULT_TX, action) {
 }
 
 const DEFAULT_BLOCK = {
-  coinbase: CodecUtils.EVM.ZERO_ADDRESS,
+  coinbase: Codec.Evm.Utils.ZERO_ADDRESS,
   difficulty: new BN(0),
   gaslimit: new BN(0),
   number: new BN(0),
@@ -199,14 +199,17 @@ function codex(state = DEFAULT_CODEX, action) {
     accounts: {
       ...frame.accounts,
       [address]: {
-        ...frame.accounts[address],
+        code: "0x", //this will get overridden if it already exists!
+        context: null, //similarly!
+        ...frame.accounts[address], //may be undefined
         storage: {
-          ...frame.accounts[address].storage,
+          ...(frame.accounts[address] || {}).storage, //may be undefined
           [slot]: value
         }
       }
     }
   });
+  //(note that {...undefined} just expands to {} and is OK)
 
   const updateFrameCode = (frame, address, code, context) => {
     let existingPage = frame.accounts[address] || { storage: {} };
@@ -242,6 +245,7 @@ function codex(state = DEFAULT_CODEX, action) {
       return [...state, state[state.length - 1]];
 
     case actions.CREATE:
+      debug("create action");
       //on a create, make a new stackframe, then add a new pages to the
       //codex if necessary; don't add a zero page though (or pages that already
       //exist)
@@ -252,7 +256,7 @@ function codex(state = DEFAULT_CODEX, action) {
       //now, do we need to add a new address to this stackframe?
       if (
         topCodex.accounts[action.storageAddress] !== undefined ||
-        action.storageAddress === CodecUtils.EVM.ZERO_ADDRESS
+        action.storageAddress === Codec.Evm.Utils.ZERO_ADDRESS
       ) {
         //if we don't
         return newState;
@@ -273,10 +277,11 @@ function codex(state = DEFAULT_CODEX, action) {
       return newState;
 
     case actions.STORE: {
+      debug("store action");
       //on a store, the relevant page should already exist, so we can just
       //add or update the needed slot
       const { address, slot, value } = action;
-      if (address === CodecUtils.EVM.ZERO_ADDRESS) {
+      if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
         //as always, we do not maintain a zero page
         return state;
       }
@@ -292,11 +297,12 @@ function codex(state = DEFAULT_CODEX, action) {
     }
 
     case actions.LOAD: {
+      debug("load action");
       //loads are a little more complicated -- usually we do nothing, but if
       //it's an external load (there was nothing already there), then we want
       //to update *every* stackframe
       const { address, slot, value } = action;
-      if (address === CodecUtils.EVM.ZERO_ADDRESS) {
+      if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
         //as always, we do not maintain a zero page
         return state;
       }
@@ -319,12 +325,14 @@ function codex(state = DEFAULT_CODEX, action) {
     }
 
     case actions.RETURN_CALL:
+      debug("return from call");
       //we want to pop the top while making the new top a copy of the old top;
       //that is to say, we want to drop just the element *second* from the top
       //NOTE: we don't ever go down to 1 element!
       return safeSave(state);
 
     case actions.RETURN_CREATE: {
+      debug("return from create");
       //we're going to do the same things in this case as in the usual return
       //case, but first we need to record the code that was returned
       const { address, code, context } = action;
@@ -342,14 +350,17 @@ function codex(state = DEFAULT_CODEX, action) {
     }
 
     case actions.FAIL:
+      debug("fail action");
       //pop the stack
       //NOTE: we don't ever go down to 1 element!
       return safePop(state);
 
     case actions.RESET:
+      debug("reset action");
       return [state[0]]; //leave the -1 frame on the stack
 
     case actions.UNLOAD_TRANSACTION:
+      debug("unload action");
       return DEFAULT_CODEX;
 
     case actions.ADD_INSTANCE: {

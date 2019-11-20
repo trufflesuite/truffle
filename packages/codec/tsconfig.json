@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "declaration": true,
+    "target": "es2015",
+    "downlevelIteration": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": ["es2017"],
+    "paths": {
+      "@truffle/codec": ["./lib"],
+      "@truffle/codec/*": ["./lib/*"]
+    },
+    "plugins": [
+      { "transform": "@zerollup/ts-transform-paths", "exclude": "*" }
+    ],
+    "rootDir": ".",
+    "typeRoots": [
+      "./typings",
+      "../../**/node_modules/@types/bn.js",
+      "../../**/node_modules/@types/debug",
+      "../../**/node_modules/@types/lodash",
+      "../../**/node_modules/@types/lodash.clonedeep",
+      "../../**/node_modules/@types/lodash.isequal",
+      "../../**/node_modules/@types/lodash.merge"
+    ]
+
+  },
+  "include": [
+    "./lib/**/*.ts",
+    "./typings/**/*.d.ts"
+  ]
+}

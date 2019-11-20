@@ -4,7 +4,7 @@ const debug = debugModule("debugger:solidity:selectors");
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "@truffle/solidity-utils";
 import CodeUtils from "@truffle/code-utils";
-import { Definition as DefinitionUtils } from "truffle-codec-utils";
+import * as Codec from "@truffle/codec";
 
 import { findRange } from "lib/ast/map";
 import jsonpointer from "json-pointer";
@@ -324,7 +324,7 @@ let solidity = createSelectorTree({
                   node,
                   name: node.name,
                   id: node.id,
-                  mutability: DefinitionUtils.mutability(node),
+                  mutability: Codec.Ast.Utils.mutability(node),
                   contractPointer,
                   contractNode,
                   contractName: contractNode.name,
@@ -367,10 +367,10 @@ let solidity = createSelectorTree({
     willCreate: createLeaf([evm.current.step.isCreate], x => x),
 
     /**
-     * solidity.current.callsPrecompileOrExternal
+     * solidity.current.willCallOrCreateButInstantlyReturn
      */
-    callsPrecompileOrExternal: createLeaf(
-      [evm.current.step.callsPrecompileOrExternal],
+    willCallOrCreateButInstantlyReturn: createLeaf(
+      [evm.current.step.isInstantCallOrCreate],
       x => x
     ),
 

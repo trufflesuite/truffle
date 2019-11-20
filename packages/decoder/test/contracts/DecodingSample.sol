@@ -1,6 +1,10 @@
 pragma solidity ^0.5.10;
 
-contract DecodingSample {
+contract DecodingSampleParent {
+  uint definedInParent;
+}
+
+contract DecodingSample is DecodingSampleParent {
   enum E {
     EnumValZero,
     EnumValOne,
@@ -38,6 +42,7 @@ contract DecodingSample {
   S       varStructS;
 
   mapping(uint => uint) varMapping;
+  mapping(address => uint) varAddressMapping;
 
   uint[2]    fixedArrayUint;
   string[2]  fixedArrayString;
@@ -58,7 +63,7 @@ contract DecodingSample {
   //S[2]       fixedArrayStructS;
   // S[]       dynamicArrayStructS;
 
-  function() external functionExternal;
+  function() external functionExternal = this.example;
 
   function example() public {
     functionExternal = this.example;
@@ -149,7 +154,6 @@ contract DecodingSample {
 
     varMapping[2] = 41;
     varMapping[3] = 107;
-
-    functionExternal = this.example;
+    varAddressMapping[address(this)] = 683;
   }
 }

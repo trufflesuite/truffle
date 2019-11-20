@@ -127,6 +127,14 @@ describe("truffle run [ @standalone ]", () => {
             done();
           });
         }).timeout(20000);
+
+        it("does not warn about unsupported options", done => {
+          CommandRunner.run("run mock --option value", config, () => {
+            const output = logger.contents();
+            assert(!output.includes("Warning:"));
+            done();
+          });
+        }).timeout(20000);
       });
     });
   }).timeout(10000);

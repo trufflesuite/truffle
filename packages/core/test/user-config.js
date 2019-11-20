@@ -25,7 +25,7 @@ describe("config", function() {
       sinon.assert.calledOnce(analytics.setAnalytics);
     });
     it("calls analytics.setuserConfigViaPrompt() if not provided with options", function() {
-      configCommand.run({});
+      configCommand.run({ _: [] });
       sinon.assert.calledOnce(analytics.setUserConfigViaPrompt);
     });
   });
