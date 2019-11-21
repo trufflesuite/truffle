@@ -1,5 +1,5 @@
 const Web3 = require("web3");
-const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
+const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
 const Resolver = require("@truffle/resolver");
@@ -19,14 +19,10 @@ const Environment = {
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
-    const web3 = new Web3Shim({
-      provider: config.provider,
-      networkType: config.networks[config.network].type
-    });
 
     await Provider.testConnection(config);
-    await helpers.detectAndSetNetworkId(config, web3, interfaceAdapter);
-    await helpers.setFromOnConfig(config, web3, interfaceAdapter);
+    await helpers.detectAndSetNetworkId(config, interfaceAdapter);
+    await helpers.setFromOnConfig(config, interfaceAdapter);
   },
 
   // Ensure you call Environment.detect() first.
@@ -37,12 +33,8 @@ const Environment = {
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
-    const web3 = new Web3Shim({
-      provider: config.provider,
-      networkType: config.networks[config.network].type
-    });
 
-    const accounts = await web3.eth.getAccounts();
+    const accounts = await interfaceAdapter.getAccounts();
     const block = await interfaceAdapter.getBlock("latest");
 
     const upstreamNetwork = config.network;
@@ -84,14 +76,14 @@ const Environment = {
 };
 
 const helpers = {
-  setFromOnConfig: async (config, web3, interfaceAdapter) => {
+  setFromOnConfig: async (config, interfaceAdapter) => {
     if (config.from) return;
 
-    const accounts = await web3.eth.getAccounts();
+    const accounts = await interfaceAdapter.getAccounts();
     config.networks[config.network].from = accounts[0];
   },
 
-  detectAndSetNetworkId: async (config, web3, interfaceAdapter) => {
+  detectAndSetNetworkId: async (config, interfaceAdapter) => {
     const configNetworkId = config.networks[config.network].network_id;
     const providerNetworkId = await interfaceAdapter.getNetworkId();
     if (configNetworkId !== "*") {

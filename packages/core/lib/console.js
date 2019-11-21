@@ -1,7 +1,10 @@
 const ReplManager = require("./repl");
 const Command = require("./command");
 const provision = require("@truffle/provisioner");
-const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const contract = require("@truffle/contract");
 const vm = require("vm");
 const expect = require("@truffle/expect");
@@ -65,7 +68,7 @@ class Console extends EventEmitter {
     this.options.repl = this.repl;
 
     try {
-      this.web3.eth.getAccounts().then(fetchedAccounts => {
+      this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
         const abstractions = this.provision();
 
         this.repl.start({
