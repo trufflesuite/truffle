@@ -59,6 +59,9 @@ elif [ "$FABRICEVM" = true ]; then
   sudo add-apt-repository -y ppa:rmescandon/yq
   sudo apt update
   sudo apt install -y yq
+  git clone https://github.com/udhos/update-golang
+  cd update-golang
+  sudo RELEASE=1.12 ./update-golang.sh
   cd $GOPATH
   mkdir -p src/github.com/hyperledger
   cd src/github.com/hyperledger
