@@ -1,7 +1,6 @@
 dist: xenial
 sudo: required
 language: node_js
-go: "1.12"
 
 # configure Travis to run on-push builds only on PR-recipient branches
 branches:
