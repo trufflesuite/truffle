@@ -6,11 +6,25 @@ const command = {
       describe: "Show all test logs",
       type: "boolean",
       default: false
+    },
+    "debug": {
+      describe: "Enable in-test debugging",
+      type: "boolean",
+      default: false
+    },
+    "debug-global": {
+      describe: "Specify debug global function name",
+      default: "debug"
+    },
+    "runner-output-only": {
+      describe: "Suppress all output except for test runner output.",
+      type: "boolean",
+      default: false
     }
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events]",
+      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>]",
     options: [
       {
         option: "<test_file>",
@@ -38,6 +52,21 @@ const command = {
       {
         option: "--show-events",
         description: "Log all contract events."
+      },
+      {
+        option: "--debug",
+        description:
+          "Provides global debug() function for in-test debugging. " +
+          "JS tests only; implies --compile-all."
+      },
+      {
+        option: "--debug-global <identifier>",
+        description:
+          'Specify global identifier for debug function. Default: "debug"'
+      },
+      {
+        option: "--runner-output-only",
+        description: "Suppress all output except for test runner output."
       }
     ]
   },
@@ -67,7 +96,13 @@ const command = {
       Environment.detect(config).catch(done);
     }
 
+    // enables in-test debug() interrupt, forcing compileAll
+    if (config.debug) {
+      config.compileAll = true;
+    }
+
     let ipcDisconnect;
+
     let files = [];
 
     if (options.file) {
@@ -132,8 +167,9 @@ const command = {
 
       promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
         .then(() => {
-          config.logger.log("Using network '" + config.network + "'." + OS.EOL);
-
+          if (config.runnerOutputOnly !== true) {
+            config.logger.log(`Using network '${config.network}'.${OS.EOL}`);
+          }
           run();
         })
         .catch(done);

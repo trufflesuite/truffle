@@ -1,7 +1,10 @@
 const ReplManager = require("./repl");
 const Command = require("./command");
 const provision = require("@truffle/provisioner");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const contract = require("@truffle/contract");
 const vm = require("vm");
 const expect = require("@truffle/expect");
@@ -43,7 +46,7 @@ class Console extends EventEmitter {
     this.repl = options.repl || new ReplManager(options);
     this.command = new Command(tasks);
 
-    this.interfaceAdapter = new InterfaceAdapter({
+    this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
       networkType: options.networks[options.network].type
     });
@@ -65,7 +68,7 @@ class Console extends EventEmitter {
     this.options.repl = this.repl;
 
     try {
-      this.web3.eth.getAccounts().then(fetchedAccounts => {
+      this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
         const abstractions = this.provision();
 
         this.repl.start({
@@ -119,10 +122,7 @@ class Console extends EventEmitter {
     });
 
     const abstractions = jsonBlobs.map(json => {
-      const abstraction = contract(
-        json,
-        this.options.networks[this.options.network].type
-      );
+      const abstraction = contract(json);
       provision(abstraction, this.options);
       return abstraction;
     });

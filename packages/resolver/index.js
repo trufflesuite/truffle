@@ -26,10 +26,7 @@ Resolver.prototype.require = function(import_path, search_path) {
   this.sources.forEach(source => {
     const result = source.require(import_path, search_path);
     if (result) {
-      abstraction = contract(
-        result,
-        this.options.networks[this.options.network].type
-      );
+      abstraction = contract(result);
       provision(abstraction, this.options);
     }
   });

@@ -42,7 +42,7 @@ const readAndParseArtifactFiles = (sourceFiles, contracts_build_directory) => {
       sourceFilesArtifacts[data.sourcePath].push(data);
     } catch (error) {
       // JSON.parse throws SyntaxError objects
-      if (e instanceof SyntaxError) {
+      if (error instanceof SyntaxError) {
         throw new Error("Problem parsing artifact: " + jsonData[i].file);
       } else {
         throw error;

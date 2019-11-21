@@ -1,37 +1,29 @@
-# Truffle Contract Decoder
-This module provides interfaces for decoding contract state and events.
+# Truffle Decoder
 
-## Usage
+This module, `@truffle/decoder`, provides an interface for decoding Solidity
+smart contract state as well as information sent to or from smart contracts
+using the Solidity ABI.  It produces output in a machine-readable form that
+avoids losing any information.
+
+For detailed instructions on how to use this module, please see the [API
+documentation](https://www.trufflesuite.com/docs/truffle/codec/index.html).
+
+## Install
+
 ```
-import decoder from 'truffle-contract-decoder';
-
-const contractDecoder = await decoder.for(instance: TruffleContract);
+$ npm install --save @truffle/decoder
 ```
 
-## Types
+This module does not provide a CLI; it is entirely meant to be used as part
+of a larger JavaScript or TypeScript program.
 
-### BlockNumber
-`number | "latest"`
+## Usage and Documentation
 
-### ContractDecoder
-An instance of this `class` represents a decoder for a `TruffleContract` deployed instance.
+Please see the [API
+documentation](https://www.trufflesuite.com/docs/truffle/codec/index.html) for
+detailed usage instructions.
 
-#### Methods
+## License
 
-##### state
-`contractDecoder.state(block: BlockNumber = "latest"): Promise<Interface ContractState>`
-
-##### variable
-`contractDecoder.variable(variable: string, block: BlockNumber = "latest"): Promise<Interface DecodedVariable>`
-
-##### events
-`contractDecoder.events(name: string | null = null, block: BlockNumber = "latest"): Promise<Interface ContractEvent[]>`
-
-##### onEvent
-`contractDecoder.onEvent(name: string, callback: Function(event: ContractEvent, callback: Function(err: Error | falsy = null)))`
-
-### ContractState
-
-### DecodedVariable
-
-### ContractEvent
+As part of the larger [Truffle Suite](https://github.com/trufflesuite/truffle/),
+this module is MIT-licensed.

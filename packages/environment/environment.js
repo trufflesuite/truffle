@@ -1,5 +1,5 @@
 const Web3 = require("web3");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
 const Resolver = require("@truffle/resolver");
@@ -15,34 +15,26 @@ const Environment = {
     helpers.setUpConfig(config);
     helpers.validateNetworkConfig(config);
 
-    const interfaceAdapter = new InterfaceAdapter({
-      provider: config.provider,
-      networkType: config.networks[config.network].type
-    });
-    const web3 = new Web3Shim({
+    const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
 
     await Provider.testConnection(config);
-    await helpers.detectAndSetNetworkId(config, web3, interfaceAdapter);
-    await helpers.setFromOnConfig(config, web3, interfaceAdapter);
+    await helpers.detectAndSetNetworkId(config, interfaceAdapter);
+    await helpers.setFromOnConfig(config, interfaceAdapter);
   },
 
   // Ensure you call Environment.detect() first.
   fork: async function(config) {
     expect.options(config, ["from", "provider", "networks", "network"]);
 
-    const interfaceAdapter = new InterfaceAdapter({
-      provider: config.provider,
-      networkType: config.networks[config.network].type
-    });
-    const web3 = new Web3Shim({
+    const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
 
-    const accounts = await web3.eth.getAccounts();
+    const accounts = await interfaceAdapter.getAccounts();
     const block = await interfaceAdapter.getBlock("latest");
 
     const upstreamNetwork = config.network;
@@ -84,14 +76,14 @@ const Environment = {
 };
 
 const helpers = {
-  setFromOnConfig: async (config, web3, interfaceAdapter) => {
+  setFromOnConfig: async (config, interfaceAdapter) => {
     if (config.from) return;
 
-    const accounts = await web3.eth.getAccounts();
+    const accounts = await interfaceAdapter.getAccounts();
     config.networks[config.network].from = accounts[0];
   },
 
-  detectAndSetNetworkId: async (config, web3, interfaceAdapter) => {
+  detectAndSetNetworkId: async (config, interfaceAdapter) => {
     const configNetworkId = config.networks[config.network].network_id;
     const providerNetworkId = await interfaceAdapter.getNetworkId();
     if (configNetworkId !== "*") {
@@ -151,6 +143,15 @@ const helpers = {
           network_id: 5777
         };
       }
+    }
+
+    const currentNetworkSettings = config.networks[config.network];
+    if (
+      currentNetworkSettings &&
+      currentNetworkSettings.ens &&
+      currentNetworkSettings.ens.registry
+    ) {
+      config.ens.registryAddress = currentNetworkSettings.ens.registry.address;
     }
   }
 };

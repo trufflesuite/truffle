@@ -6,7 +6,7 @@ const assert = require("assert");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
-const { InterfaceAdapter } = require("@truffle/interface-adapter");
+const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 
 describe("migrate with [ @fabric-evm ] interface", () => {
   if (!process.env.FABRICEVM) return;
@@ -28,7 +28,7 @@ describe("migrate with [ @fabric-evm ] interface", () => {
       keepAlive: false
     });
 
-    interfaceAdapter = new InterfaceAdapter({
+    interfaceAdapter = createInterfaceAdapter({
       provider,
       networkType: "fabric-evm"
     });
