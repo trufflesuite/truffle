@@ -23,7 +23,6 @@
     "@truffle/contract": "^4.1.0",
     "@truffle/expect": "^0.0.13",
     "@truffle/provisioner": "^0.2.0",
-    "async": "2.6.1",
     "detect-installed": "^2.0.4",
     "get-installed-path": "^4.0.8"
   },

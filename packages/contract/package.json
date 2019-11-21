@@ -34,7 +34,6 @@
   },
   "devDependencies": {
     "@truffle/compile-solidity": "^4.2.12",
-    "async": "2.6.1",
     "browserify": "^14.0.0",
     "chai": "4.2.0",
     "debug": "^4.1.0",
