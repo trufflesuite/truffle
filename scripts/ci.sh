@@ -59,9 +59,7 @@ elif [ "$FABRICEVM" = true ]; then
   sudo add-apt-repository -y ppa:rmescandon/yq
   sudo apt update
   sudo apt install -y yq
-  curl -sL -o ~/bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
-  chmod +x ~/bin/gimme
-  gimme 1.21
+  eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.12 bash)"
   cd $GOPATH
   mkdir -p src/github.com/hyperledger
   cd src/github.com/hyperledger
