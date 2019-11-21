@@ -148,7 +148,6 @@ export function* decodeMemoryReferenceByAddress(
       }
 
       let baseType = dataType.baseType;
-
       let decodedChildren: Format.Values.Result[] = [];
       for (let index = 0; index < length; index++) {
         decodedChildren.push(
