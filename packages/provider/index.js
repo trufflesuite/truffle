@@ -1,6 +1,9 @@
 const debug = require("debug")("provider");
 const Web3 = require("web3");
-const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
 

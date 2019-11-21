@@ -1,4 +1,7 @@
-const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 var Config = require("@truffle/config");
 var Migrate = require("@truffle/migrate");
 var TestResolver = require("./testresolver");

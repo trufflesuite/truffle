@@ -4,7 +4,10 @@ const Module = require("module");
 const vm = require("vm");
 const originalrequire = require("original-require");
 const expect = require("@truffle/expect");
-const { Web3Shim, createInterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 
 // options.file: path to file to execute. Must be a module that exports a function.
