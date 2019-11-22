@@ -44,7 +44,6 @@
     "@truffle/migrate": "^3.1.0",
     "@truffle/resolver": "^5.0.21",
     "@truffle/workflow-compile": "^2.1.13",
-    "async": "2.6.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",

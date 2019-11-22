@@ -21,6 +21,7 @@ export interface EvmState {
   };
   eventdata?: Uint8Array;
   eventtopics?: Uint8Array[];
+  returndata?: Uint8Array;
 }
 
 export interface WordMapping {

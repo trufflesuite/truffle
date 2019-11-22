@@ -751,7 +751,7 @@ export interface ReadErrorStack {
 /**
  * A byte-based location
  */
-export type BytesLocation = "memory" | "calldata" | "eventdata";
+export type BytesLocation = "memory" | "calldata" | "eventdata" | "returndata";
 
 /**
  * Read error in a byte-based location (memory, calldata, etc)

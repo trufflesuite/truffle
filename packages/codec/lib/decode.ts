@@ -42,6 +42,7 @@ export default function* decode(
 
     case "calldata":
     case "eventdata":
+    case "returndata":
       return yield* AbiData.Decode.decodeAbi(dataType, pointer, info, options);
 
     case "eventtopic":

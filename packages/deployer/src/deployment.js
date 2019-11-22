@@ -73,7 +73,6 @@ class Deployment {
    * meant to be cancelled immediately on resolution of the
    * contract instance or on error. (See stopBlockPolling)
    * @private
-   * @param  {Object}    web3
    * @param  {Object}    interfaceAdapter
    */
   async _startBlockPolling(interfaceAdapter) {
@@ -115,7 +114,6 @@ class Deployment {
    * @private
    * @param  {Number} blocksToWait
    * @param  {Object} receipt
-   * @param  {Object} web3
    * @param  {Object} interfaceAdapter
    * @return {Promise}             Resolves after `blockToWait` blocks
    */
@@ -357,9 +355,7 @@ class Deployment {
           // Reporter might not be enabled (via Migrate.launchReporter) so
           // message is a (potentially empty) array of results from the emitter
           if (!message.length) {
-            message = `while migrating ${contract.contractName}: ${
-              eventArgs.error.message
-            }`;
+            message = `while migrating ${contract.contractName}: ${eventArgs.error.message}`;
           }
 
           self.close();
