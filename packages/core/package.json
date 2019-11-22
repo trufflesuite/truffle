@@ -53,6 +53,7 @@
     "ganache-core": "2.8.0",
     "glob": "^7.1.4",
     "hdkey": "^1.1.0",
+    "lodash.flatmap": "^4.5.0",
     "mkdirp": "^0.5.1",
     "mocha": "5.2.0",
     "node-emoji": "^1.8.1",

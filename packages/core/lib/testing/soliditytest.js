@@ -2,42 +2,34 @@ const web3Utils = require("web3-utils");
 const TestCase = require("mocha/lib/test.js");
 const Suite = require("mocha/lib/suite.js");
 const Deployer = require("@truffle/deployer");
-const find_contracts = require("@truffle/contract-sources");
 const compile = require("@truffle/compile-solidity/legacy");
 const abi = require("web3-eth-abi");
-const series = require("async").series;
 const path = require("path");
 const semver = require("semver");
 const Native = require("@truffle/compile-solidity/compilerSupplier/loadingStrategies/Native");
+const util = require("util");
+const debug = require("debug")("lib:testing:soliditytest");
 
 let SafeSend;
 
 const SolidityTest = {
-  define(abstraction, dependency_paths, runner, mocha) {
+  async define(abstraction, dependencyPaths, runner, mocha) {
     const self = this;
 
     const suite = new Suite(abstraction.contract_name, {});
     suite.timeout(runner.BEFORE_TIMEOUT);
 
     // Set up our runner's needs first.
-    suite.beforeAll("prepare suite", function(done) {
-      series(
-        [
-          runner.initialize.bind(runner),
-          self.compileNewAbstractInterface.bind(this, runner),
-          self.deployTestDependencies.bind(
-            this,
-            abstraction,
-            dependency_paths,
-            runner
-          )
-        ],
-        done
-      );
+    suite.beforeAll("prepare suite", async function() {
+      await runner.initialize.bind(runner)();
+      await self.compileNewAbstractInterface.bind(this)(runner);
+      await self.deployTestDependencies.bind(
+        this
+      )(abstraction, dependencyPaths, runner);
     });
 
-    suite.beforeEach("before test", function(done) {
-      runner.startTest(this, done);
+    suite.beforeEach("before test", async function() {
+      await runner.startTest(this);
     });
 
     // Function that decodes raw logs from unlinked third party assertion
@@ -48,7 +40,7 @@ const SolidityTest = {
       const logs = [];
       const signature = web3Utils.sha3("TestEvent(bool,string)");
 
-      result.receipt.logs.forEach(log => {
+      for (const log of result.receipt.logs) {
         if (log.topics.length === 2 && log.topics[0] === signature) {
           const decoded = {
             event: "TestEvent",
@@ -59,7 +51,7 @@ const SolidityTest = {
           };
           logs.push(decoded);
         }
-      });
+      }
       return logs;
     }
 
@@ -67,111 +59,109 @@ const SolidityTest = {
     function processResult(result) {
       result.logs = decodeTestEvents(result);
 
-      result.logs.forEach(log => {
-        if (log.event === "TestEvent" && !log.args.result)
+      for (const log of result.logs) {
+        if (log.event === "TestEvent" && !log.args.result) {
           throw new Error(log.args.message);
-      });
+        }
+      }
     }
 
     // Add functions from test file.
-    abstraction.abi.forEach(item => {
-      if (item.type !== "function") return;
+    for (const item of abstraction.abi) {
+      if (item.type !== "function") {
+        continue;
+      }
 
-      ["beforeAll", "beforeEach", "afterAll", "afterEach"].forEach(fn_type => {
-        if (item.name.indexOf(fn_type) === 0) {
-          suite[fn_type](item.name, () => {
-            return abstraction
-              .deployed()
-              .then(deployed => {
-                return deployed[item.name]();
-              })
-              .then(processResult);
+      const hookTypes = ["beforeAll", "beforeEach", "afterAll", "afterEach"];
+      for (const hookType of hookTypes) {
+        if (item.name.startsWith(hookType)) {
+          suite[hookType](item.name, async () => {
+            let deployed = await abstraction.deployed();
+            return processResult(await deployed[item.name]());
           });
         }
-      });
+      }
 
-      if (item.name.indexOf("test") === 0) {
-        const test = new TestCase(item.name, () => {
-          return abstraction
-            .deployed()
-            .then(deployed => {
-              return deployed[item.name]();
-            })
-            .then(processResult);
+      if (item.name.startsWith("test")) {
+        const test = new TestCase(item.name, async () => {
+          let deployed = await abstraction.deployed();
+          return processResult(await deployed[item.name]());
         });
 
         test.timeout(runner.TEST_TIMEOUT);
         suite.addTest(test);
       }
-    });
+    }
 
-    suite.afterEach("after test", function(done) {
-      runner.endTest(this, done);
+    suite.afterEach("after test", async function() {
+      await runner.endTest(this);
     });
 
     mocha.suite.addSuite(suite);
   },
 
-  compileNewAbstractInterface(runner, callback) {
-    find_contracts(runner.config.contracts_directory, err => {
-      if (err) return callback(err);
+  async compileNewAbstractInterface(runner) {
+    debug("compiling");
+    const config = runner.config;
+    const solcVersion = config.compilers.solc.version;
+    if (solcVersion === "native") {
+      solcVersion = new Native().load().version();
+    }
+    if (!solcVersion) {
+      SafeSend = "NewSafeSend.sol";
+    } else if (semver.lt(semver.coerce(solcVersion), "0.5.0")) {
+      SafeSend = "OldSafeSend.sol";
+    } else {
+      SafeSend = "NewSafeSend.sol";
+    }
 
-      const config = runner.config;
-      let solcVersion = config.compilers.solc.version;
-      if (solcVersion === "native") solcVersion = new Native().load().version();
-      if (!solcVersion) SafeSend = "NewSafeSend.sol";
-      else if (semver.lt(semver.coerce(solcVersion), "0.5.0"))
-        SafeSend = "OldSafeSend.sol";
-      else SafeSend = "NewSafeSend.sol";
+    //HACK: promisify seems to lose context, so we explicitly bind compile
+    const contracts = await util.promisify(
+      compile.with_dependencies.bind(compile)
+    )(
+      runner.config.with({
+        paths: [
+          path.join(__dirname, "Assert.sol"),
+          path.join(__dirname, "AssertAddress.sol"),
+          path.join(__dirname, "AssertAddressArray.sol"),
+          // path.join(__dirname, "AssertAddressPayableArray.sol"), only compatible w/ ^0.5.0
+          path.join(__dirname, "AssertBalance.sol"),
+          path.join(__dirname, "AssertBool.sol"),
+          path.join(__dirname, "AssertBytes32.sol"),
+          path.join(__dirname, "AssertBytes32Array.sol"),
+          path.join(__dirname, "AssertGeneral.sol"),
+          path.join(__dirname, "AssertInt.sol"),
+          path.join(__dirname, "AssertIntArray.sol"),
+          path.join(__dirname, "AssertString.sol"),
+          path.join(__dirname, "AssertUint.sol"),
+          path.join(__dirname, "AssertUintArray.sol"),
+          "truffle/DeployedAddresses.sol", // generated by deployed.js
+          path.join(__dirname, SafeSend)
+        ],
+        quiet: true
+      })
+    );
 
-      compile.with_dependencies(
-        runner.config.with({
-          paths: [
-            path.join(__dirname, "Assert.sol"),
-            path.join(__dirname, "AssertAddress.sol"),
-            path.join(__dirname, "AssertAddressArray.sol"),
-            // path.join(__dirname, "AssertAddressPayableArray.sol"), only compatible w/ ^0.5.0
-            path.join(__dirname, "AssertBalance.sol"),
-            path.join(__dirname, "AssertBool.sol"),
-            path.join(__dirname, "AssertBytes32.sol"),
-            path.join(__dirname, "AssertBytes32Array.sol"),
-            path.join(__dirname, "AssertGeneral.sol"),
-            path.join(__dirname, "AssertInt.sol"),
-            path.join(__dirname, "AssertIntArray.sol"),
-            path.join(__dirname, "AssertString.sol"),
-            path.join(__dirname, "AssertUint.sol"),
-            path.join(__dirname, "AssertUintArray.sol"),
-            "truffle/DeployedAddresses.sol", // generated by deployed.js
-            path.join(__dirname, SafeSend)
-          ],
-          quiet: true
-        }),
-        (err, contracts) => {
-          if (err) return callback(err);
+    // Set network values.
+    for (const name in contracts) {
+      contracts[name].network_id = config.network_id;
+      contracts[name].default_network = config.default_network;
+    }
 
-          // Set network values.
-          Object.keys(contracts).forEach(name => {
-            contracts[name].network_id = config.network_id;
-            contracts[name].default_network = config.default_network;
-          });
-
-          config.artifactor
-            .saveAll(contracts)
-            .then(() => {
-              callback();
-            })
-            .catch(callback);
-        }
-      );
-    });
+    await config.artifactor.saveAll(contracts);
+    debug("compiled");
   },
 
-  deployTestDependencies(abstraction, dependency_paths, runner, callback) {
+  async deployTestDependencies(abstraction, dependencyPaths, runner) {
+    debug("deploying %s", abstraction.contract_name);
     const deployer = new Deployer(
       runner.config.with({
         logger: { log() {} }
       })
     );
+
+    debug("starting deployer");
+    await deployer.start();
 
     const testLibraries = [
       "Assert",
@@ -197,52 +187,40 @@ const SolidityTest = {
 
     SafeSend = runner.config.resolver.require(SafeSend);
 
+    debug("deploying test libs");
     for (const testLib of testAbstractions) {
-      deployer.deploy(testLib);
-      deployer.link(testLib, abstraction);
+      await deployer.deploy(testLib);
+      await deployer.link(testLib, abstraction);
     }
 
-    dependency_paths.forEach(dependency_path => {
-      const dependency = runner.config.resolver.require(dependency_path);
+    debug("linking dependencies");
+    for (const dependencyPath of dependencyPaths) {
+      const dependency = runner.config.resolver.require(dependencyPath);
 
-      if (dependency.isDeployed()) deployer.link(dependency, abstraction);
-    });
+      if (dependency.isDeployed()) {
+        await deployer.link(dependency, abstraction);
+      }
+    }
 
-    let deployed;
-    deployer
-      .deploy(abstraction)
-      .then(() => {
-        return abstraction.deployed();
-      })
-      .then(instance => {
-        deployed = instance;
-        if (deployed.initialBalance) {
-          return deployed.initialBalance.call();
-        } else {
-          return 0;
-        }
-      })
-      .then(balance => {
-        if (balance !== 0) {
-          return deployer
-            .deploy(SafeSend, deployed.address, {
-              value: balance
-            })
-            .then(() => {
-              return SafeSend.deployed();
-            })
-            .then(safesend => {
-              return safesend.deliver();
-            });
-        }
+    debug("deploying contract");
+    await deployer.deploy(abstraction);
+    const deployed = await abstraction.deployed();
+    let balance;
+    if (deployed.initialBalance) {
+      balance = deployed.initialBalance.call();
+    } else {
+      balance = 0;
+    }
+
+    if (balance !== 0) {
+      await deployer.deploy(SafeSend, deployed.address, {
+        value: balance
       });
+      const safeSend = await SafeSend.deployed();
+      await safeSend.deliver();
+    }
 
-    deployer
-      .start()
-      .then(() => {
-        callback();
-      })
-      .catch(callback);
+    debug("deployed %s", abstraction.contract_name);
   }
 };
 

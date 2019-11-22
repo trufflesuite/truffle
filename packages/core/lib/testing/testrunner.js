@@ -2,17 +2,18 @@ const {
   Web3Shim,
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
-var Config = require("@truffle/config");
-var Migrate = require("@truffle/migrate");
-var TestResolver = require("./testresolver");
-var TestSource = require("./testsource");
-var expect = require("@truffle/expect");
-var contract = require("@truffle/contract");
-var abi = require("web3-eth-abi");
-var path = require("path");
-var _ = require("lodash");
-var async = require("async");
-var fs = require("fs");
+const Config = require("@truffle/config");
+const Migrate = require("@truffle/migrate");
+const TestResolver = require("./testresolver");
+const TestSource = require("./testsource");
+const expect = require("@truffle/expect");
+const contract = require("@truffle/contract");
+const abi = require("web3-eth-abi");
+const path = require("path");
+const fs = require("fs-extra");
+const flatMap = require("lodash.flatmap");
+const util = require("util");
+const debug = require("debug")("lib:testing:testrunner");
 
 function TestRunner(options = {}) {
   expect.options(options, [
@@ -48,232 +49,167 @@ function TestRunner(options = {}) {
   this.TEST_TIMEOUT = (options.mocha && options.mocha.timeout) || 300000;
 }
 
-TestRunner.prototype.initialize = function(callback) {
-  var self = this;
-
-  var test_source = new TestSource(self.config);
+TestRunner.prototype.initialize = async function() {
+  debug("initializing");
+  let test_source = new TestSource(this.config);
   this.config.resolver = new TestResolver(
-    self.initial_resolver,
+    this.initial_resolver,
     test_source,
-    self.config.contracts_build_directory
+    this.config.contracts_build_directory
   );
 
-  var afterStateReset = function(err) {
-    if (err) return callback(err);
-
-    fs.readdir(self.config.contracts_build_directory, function(err, files) {
-      if (err) return callback(err);
-
-      files = _.filter(files, function(file) {
-        return path.extname(file) === ".json";
-      });
-
-      async.map(
-        files,
-        function(file, finished) {
-          fs.readFile(
-            path.join(self.config.contracts_build_directory, file),
-            "utf8",
-            finished
-          );
-        },
-        function(err, data) {
-          if (err) return callback(err);
-
-          var contracts = data.map(JSON.parse).map(json => contract(json));
-          var abis = _.flatMap(contracts, "abi");
-
-          abis.map(function(abi) {
-            if (abi.type === "event") {
-              var signature =
-                abi.name + "(" + _.map(abi.inputs, "type").join(",") + ")";
-              self.known_events[self.web3.utils.sha3(signature)] = {
-                signature: signature,
-                abi_entry: abi
-              };
-            }
-          });
-          callback();
-        }
-      );
-    });
-  };
-
-  if (self.first_snapshot) {
+  if (this.first_snapshot) {
     // // Make the initial deployment (full migration).
-    // self.deploy(function(err) {
-    //   if (err) return callback(err);
+    // await this.deploy();
 
-    self.snapshot(function(err, initial_snapshot) {
-      if (err == null) {
-        self.can_snapshot = true;
-        self.initial_snapshot = initial_snapshot;
-      }
-
-      self.first_snapshot = false;
-
-      afterStateReset();
-    });
-    //});
+    try {
+      let initial_snapshot = await this.snapshot();
+      this.can_snapshot = true;
+      this.initial_snapshot = initial_snapshot;
+    } catch (_) {}
+    this.first_snapshot = false;
   } else {
-    self.resetState(afterStateReset);
+    await this.resetState();
   }
+
+  let files = await fs.readdir(this.config.contracts_build_directory);
+
+  files = files.filter(file => path.extname(file) === ".json");
+
+  let data = await Promise.all(
+    files.map(
+      async file =>
+        await fs.readFile(
+          path.join(this.config.contracts_build_directory, file),
+          "utf8"
+        )
+    )
+  );
+
+  let contracts = data.map(JSON.parse).map(json => contract(json));
+  //flatMap is only on Node 11 & later at the moment, so we'll use
+  //lodash's flatMap
+  let abis = flatMap(contracts, "abi");
+
+  abis.map(abi => {
+    if (abi.type === "event") {
+      let signature =
+        abi.name + "(" + abi.inputs.map(input => input.type).join(",") + ")";
+      this.known_events[this.web3.utils.sha3(signature)] = {
+        signature: signature,
+        abi_entry: abi
+      };
+    }
+  });
 };
 
-TestRunner.prototype.deploy = function(callback) {
-  Migrate.run(
+TestRunner.prototype.deploy = async function() {
+  await Migrate.run(
     this.config.with({
       reset: true,
       quiet: true
-    }),
-    callback
-  );
-};
-
-TestRunner.prototype.resetState = function(callback) {
-  var self = this;
-  if (this.can_snapshot) {
-    this.revert(this.initial_snapshot, function(err) {
-      if (err) return callback(err);
-      self.snapshot(function(err, snapshot) {
-        if (err) return callback(err);
-        self.initial_snapshot = snapshot;
-        callback();
-      });
-    });
-  } else {
-    this.deploy(callback);
-  }
-};
-
-TestRunner.prototype.startTest = function(mocha, callback) {
-  var self = this;
-  this.web3.eth
-    .getBlockNumber()
-    .then(result => {
-      var one = self.web3.utils.toBN(1);
-      result = self.web3.utils.toBN(result);
-
-      // Add one in base 10
-      self.currentTestStartBlock = result.add(one);
-
-      callback();
     })
-    .catch(callback);
-};
-
-TestRunner.prototype.endTest = function(mocha, callback) {
-  var self = this;
-
-  // Skip logging if test passes and `show-events` option is not true
-  if (mocha.currentTest.state !== "failed" && !self.config["show-events"]) {
-    return callback();
-  }
-
-  // There's no API for eth_getLogs?
-  this.rpc(
-    "eth_getLogs",
-    [
-      {
-        fromBlock: "0x" + this.currentTestStartBlock.toString(16)
-      }
-    ],
-    function(err, result) {
-      if (err) return callback(err);
-
-      var logs = result.result;
-
-      if (logs.length === 0) {
-        self.logger.log("    > No events were emitted");
-        return callback();
-      }
-
-      self.logger.log("\n    Events emitted during test:");
-      self.logger.log("    ---------------------------");
-      self.logger.log("");
-
-      logs.forEach(function(log) {
-        var event = self.known_events[log.topics[0]];
-
-        if (event == null) {
-          return; // do not log anonymous events
-        }
-
-        var types = event.abi_entry.inputs.map(function(input) {
-          return input.type;
-        });
-
-        var values;
-        try {
-          values = abi.decodeLog(
-            event.abi_entry.inputs,
-            log.data,
-            log.topics.slice(1) // skip topic[0] for non-anonymous event
-          );
-        } catch (_) {
-          //temporary HACK until we're using the new decoder
-          self.logger.log(`    Warning: event decoding failed`);
-          self.logger.log(
-            `    (This may be due to multiple events with same signature`
-          );
-          self.logger.log(`    or due to unsupported data types)`);
-          return;
-        }
-
-        var eventName = event.abi_entry.name;
-        var eventArgs = event.abi_entry.inputs
-          .map(function(input, index) {
-            var prefix = input.indexed === true ? "<indexed> " : "";
-            var value = `${values[index]} (${types[index]})`;
-            return `${input.name}: ${prefix}${value}`;
-          })
-          .join(", ");
-
-        self.logger.log(`    ${eventName}(${eventArgs})`);
-      });
-      self.logger.log("\n    ---------------------------");
-      callback();
-    }
   );
 };
 
-(TestRunner.prototype.snapshot = function(callback) {
-  this.rpc("evm_snapshot", function(err, result) {
-    if (err) return callback(err);
-    callback(null, result.result);
-  });
-}),
-  (TestRunner.prototype.revert = function(snapshot_id, callback) {
-    this.rpc("evm_revert", [snapshot_id], callback);
+TestRunner.prototype.resetState = async function() {
+  if (this.can_snapshot) {
+    await this.revert(this.initial_snapshot);
+    this.initial_snapshot = await this.snapshot();
+  } else {
+    await this.deploy();
+  }
+};
+
+TestRunner.prototype.startTest = async function() {
+  let blockNumber = await this.web3.eth.getBlockNumber();
+  let one = this.web3.utils.toBN(1);
+  blockNumber = this.web3.utils.toBN(blockNumber);
+
+  // Add one in base 10
+  this.currentTestStartBlock = blockNumber.add(one);
+};
+
+TestRunner.prototype.endTest = async function(mocha) {
+  // Skip logging if test passes and `show-events` option is not true
+  if (mocha.currentTest.state !== "failed" && !this.config["show-events"]) {
+    return;
+  }
+
+  let logs = await this.web3.eth.getPastLogs({
+    fromBlock: "0x" + this.currentTestStartBlock.toString(16)
   });
 
-TestRunner.prototype.rpc = function(method, arg, cb) {
-  var req = {
+  if (logs.length === 0) {
+    this.logger.log("    > No events were emitted");
+    return;
+  }
+
+  this.logger.log("\n    Events emitted during test:");
+  this.logger.log("    ---------------------------");
+  this.logger.log("");
+
+  for (let log of logs) {
+    let event = this.known_events[log.topics[0]];
+
+    if (event == null) {
+      return; // do not log anonymous events
+    }
+
+    let types = event.abi_entry.inputs.map(input => input.type);
+
+    let values;
+    try {
+      values = abi.decodeLog(
+        event.abi_entry.inputs,
+        log.data,
+        log.topics.slice(1) // skip topic[0] for non-anonymous event
+      );
+    } catch (_) {
+      //temporary HACK until we're using the new decoder
+      this.logger.log(`    Warning: event decoding failed`);
+      this.logger.log(
+        `    (This may be due to multiple events with same signature`
+      );
+      this.logger.log(`    or due to unsupported data types)`);
+      return;
+    }
+
+    let eventName = event.abi_entry.name;
+    let eventArgs = event.abi_entry.inputs
+      .map((input, index) => {
+        let prefix = input.indexed === true ? "<indexed> " : "";
+        let value = `${values[index]} (${types[index]})`;
+        return `${input.name}: ${prefix}${value}`;
+      })
+      .join(", ");
+
+    this.logger.log(`    ${eventName}(${eventArgs})`);
+  }
+  this.logger.log("\n    ---------------------------");
+};
+
+TestRunner.prototype.snapshot = async function() {
+  return (await this.rpc("evm_snapshot")).result;
+};
+
+TestRunner.prototype.revert = async function(snapshot_id) {
+  await this.rpc("evm_revert", [snapshot_id]);
+};
+
+TestRunner.prototype.rpc = async function(method, arg) {
+  let request = {
     jsonrpc: "2.0",
     method: method,
-    id: new Date().getTime()
+    id: Date.now(),
+    params: arg
   };
-  if (arguments.length === 3) {
-    req.params = arg;
-  } else {
-    cb = arg;
+
+  let result = await util.promisify(this.provider.send)(request);
+
+  if (result.error != null) {
+    throw new Error("RPC Error: " + (result.error.message || result.error));
   }
-
-  var intermediary = function(err, result) {
-    if (err != null) {
-      cb(err);
-      return;
-    }
-
-    if (result.error != null) {
-      cb(new Error("RPC Error: " + (result.error.message || result.error)));
-      return;
-    }
-
-    cb(null, result);
-  };
-
-  this.provider.send(req, intermediary);
 };
 
 module.exports = TestRunner;
