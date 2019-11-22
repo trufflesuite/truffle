@@ -6,23 +6,23 @@ function EPM(working_directory, contracts_build_directory) {
   this.contracts_build_directory = contracts_build_directory;
 }
 
-EPM.prototype.require = function(import_path, _search_path) {
-  if (import_path.indexOf(".") === 0 || import_path.indexOf("/") === 0) {
+EPM.prototype.require = function(importPath, _searchPath) {
+  if (importPath.indexOf(".") === 0 || importPath.indexOf("/") === 0) {
     return null;
   }
 
   // Look to see if we've compiled our own version first.
-  var contract_name = path.basename(import_path, ".sol");
+  const contractName = path.basename(importPath, ".sol");
 
   // We haven't compiled our own version. Assemble from data in the lockfile.
-  var separator = import_path.indexOf("/");
-  var package_name = import_path.substring(0, separator);
+  const separator = importPath.indexOf("/");
+  const packageName = importPath.substring(0, separator);
 
-  var install_directory = path.join(
+  const installDirectory = path.join(
     this.working_directory,
     "installed_contracts"
   );
-  var lockfile = path.join(install_directory, package_name, "lock.json");
+  let lockfile = path.join(installDirectory, packageName, "lock.json");
 
   try {
     lockfile = fs.readFileSync(lockfile, "utf8");
@@ -32,16 +32,16 @@ EPM.prototype.require = function(import_path, _search_path) {
 
   lockfile = JSON.parse(lockfile);
 
-  var json = {
-    contract_name: contract_name,
+  const json = {
+    contract_name: contractName,
     networks: {}
   };
 
   // TODO: contracts that reference other types
   // TODO: contract types that specify a hash as their key
   // TODO: imported name doesn't match type but matches deployment name
-  var contract_types = lockfile.contract_types || {};
-  var type = contract_types[contract_name];
+  const contractTypes = lockfile.contract_types || {};
+  const type = contractTypes[contractName];
 
   // No contract name of the type asked.
   if (!type) return null;
@@ -51,11 +51,11 @@ EPM.prototype.require = function(import_path, _search_path) {
 
   // Go through deployments and save all of them
   Object.keys(lockfile.deployments || {}).forEach(function(blockchain) {
-    var deployments = lockfile.deployments[blockchain];
+    const deployments = lockfile.deployments[blockchain];
 
     Object.keys(deployments).forEach(function(name) {
-      var deployment = deployments[name];
-      if (deployment.contract_type === contract_name) {
+      const deployment = deployments[name];
+      if (deployment.contract_type === contractName) {
         json.networks[blockchain] = {
           events: {},
           links: {},
