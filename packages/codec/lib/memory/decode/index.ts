@@ -19,12 +19,24 @@ export function* decodeMemory(
   options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   if (Format.Types.isReferenceType(dataType)) {
-    return yield* decodeMemoryReferenceByAddress(
-      dataType,
-      pointer,
-      info,
-      options
-    );
+    if (dataType.typeClass === "mapping") {
+      //special case: a mapping in memory is always empty
+      //(this is here and not in decodeMemoryReferenceByAddress
+      //since no addresses are involved, and it's not worth
+      //making into its own function)
+      return {
+        type: dataType,
+        kind: "value" as const,
+        value: []
+      };
+    } else {
+      return yield* decodeMemoryReferenceByAddress(
+        dataType,
+        pointer,
+        info,
+        options
+      );
+    }
   } else {
     return yield* Basic.Decode.decodeBasic(dataType, pointer, info, options);
   }
@@ -39,10 +51,6 @@ export function* decodeMemoryReferenceByAddress(
   const { state } = info;
   const memoryVisited = options.memoryVisited || [];
   debug("pointer %o", pointer);
-  //note: for mappings, the following operations are pretty
-  //meaningless, but I'm leaving them in anyway rather than
-  //making mappings a totally separate case because it works
-  //anyway and I may as well keep things parallel
   let rawValue: Uint8Array;
   try {
     rawValue = yield* read(pointer, state);
@@ -276,13 +284,5 @@ export function* decodeMemoryReferenceByAddress(
         value: decodedMembers
       };
     }
-
-    case "mapping":
-      //a mapping in memory is always empty
-      return {
-        type: dataType,
-        kind: "value" as const,
-        value: []
-      };
   }
 }
