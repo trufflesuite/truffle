@@ -440,22 +440,25 @@ var DebugUtils = {
   },
 
   //HACK
-  cleanConstructors: function(object) {
+  //note that this is written in terms of mutating things
+  //rather than just using map() due to the need to handle
+  //circular objects
+  cleanConstructors: function(object, seenSoFar = new Map()) {
     debug("object %o", object);
-
-    if (object && typeof object.map === "function") {
-      //array case
-      return object.map(DebugUtils.cleanConstructors);
+    if (seenSoFar.has(object)) {
+      return seenSoFar.get(object);
     }
 
-    if (object && object instanceof Map) {
-      //map case
-      return new Map(
-        Array.from(object.entries()).map(([key, value]) => [
-          key,
-          DebugUtils.cleanConstructors(value)
-        ])
-      );
+    if (Array.isArray(object)) {
+      //array case
+      let output = object.slice(); //clone
+      //set up new seenSoFar
+      let seenNow = new Map(seenSoFar);
+      seenNow.set(object, output);
+      for (let index in output) {
+        output[index] = DebugUtils.cleanConstructors(output[index], seenNow);
+      }
+      return output;
     }
 
     //HACK -- due to safeEval altering things, it's possible for isBN() to
@@ -472,16 +475,23 @@ var DebugUtils = {
 
     if (object && typeof object === "object") {
       //generic object case
-      return Object.assign(
+      let output = Object.assign(
         {},
         ...Object.entries(object)
           .filter(
             ([key, value]) => key !== "constructor" || value !== undefined
           )
           .map(([key, value]) => ({
-            [key]: DebugUtils.cleanConstructors(value)
+            [key]: value //don't clean yet!
           }))
       );
+      //set up new seenSoFar
+      let seenNow = new Map(seenSoFar);
+      seenNow.set(object, output);
+      for (let field in output) {
+        output[field] = DebugUtils.cleanConstructors(output[field], seenNow);
+      }
+      return output;
     }
 
     //for strings, numbers, etc

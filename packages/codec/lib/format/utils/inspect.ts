@@ -374,7 +374,7 @@ function styleHexString(hex: string, options: InspectOptions): string {
 //this function will be used in the future for displaying circular
 //structures
 function formatCircular(loopLength: number, options: InspectOptions): string {
-  return options.stylize(`[Circular (=up ${this.loopLength})]`, "special");
+  return options.stylize(`[Circular (=up ${loopLength})]`, "special");
 }
 
 function enumFullName(value: Format.Values.EnumValue): string {
@@ -412,10 +412,9 @@ export function nativizeVariables(variables: {
  * you have any better option!
  *
  * This function is a giant hack.  It will throw exceptions on numbers that
- * don't fit in a Javascript number.  It will go into an infinite loop on
- * circular structures (although that might be fixed eventually).  It was only
- * ever written to support our hacked-together watch expression system, and
- * later repurposed to make testing easier.
+ * don't fit in a Javascript number.  It loses various information.  It was
+ * only ever written to support our hacked-together watch expression system,
+ * and later repurposed to make testing easier.
  *
  * If you are not doing something as horrible as evaluating user-inputted
  * Javascript expressions meant to operate upon Solidity variables, then you
@@ -433,9 +432,20 @@ export function nativizeVariables(variables: {
  * manageable than the one that caused us to write this.
  */
 export function nativize(result: Format.Values.Result): any {
+  return nativizeWithTable(result, []);
+}
+
+function nativizeWithTable(
+  result: Format.Values.Result,
+  seenSoFar: any[]
+): any {
   if (result.kind === "error") {
     return undefined;
   }
+  //NOTE: for simplicity, only arrays & structs will call nativizeWithTable;
+  //other containers will just call nativize because they can get away with it
+  //(only things that can *be* circular need nativizeWithTable, not things that
+  //can merely *contain* circularities)
   switch (result.type.typeClass) {
     case "uint":
     case "int":
@@ -472,8 +482,26 @@ export function nativize(result: Format.Values.Result): any {
           result
         )).value.asBig.toString()
       ); //WARNING
-    case "array": //WARNING: circular case not handled; will loop infinitely
-      return (<Format.Values.ArrayValue>result).value.map(nativize);
+    case "array": {
+      let coercedResult = <Format.Values.ArrayValue>result;
+      if (coercedResult.reference === undefined) {
+        //we need to do some pointer stuff here, so let's first create our new
+        //object we'll be pointing to
+        //[we don't want to alter the original accidentally so let's clone a bit]
+        let output: any[] = [...coercedResult.value];
+        //now, we can't use a map here, or we'll screw things up!
+        //we want to *mutate* output, not replace it with a new object
+        for (let index in output) {
+          output[index] = nativizeWithTable(output[index], [
+            output,
+            ...seenSoFar
+          ]);
+        }
+        return output;
+      } else {
+        return seenSoFar[coercedResult.reference - 1];
+      }
+    }
     case "mapping":
       return Object.assign(
         {},
@@ -481,15 +509,33 @@ export function nativize(result: Format.Values.Result): any {
           [nativize(key).toString()]: nativize(value)
         }))
       );
-    case "struct": //WARNING: circular case not handled; will loop infinitely
-      return Object.assign(
-        {},
-        ...(<Format.Values.StructValue>result).value.map(({ name, value }) => ({
-          [name]: nativize(value)
-        }))
-      );
-    case "type": //keeping this separate from struct as struct will likely get
-      //some modifications later
+    case "struct": {
+      let coercedResult = <Format.Values.StructValue>result;
+      if (coercedResult.reference === undefined) {
+        //we need to do some pointer stuff here, so let's first create our new
+        //object we'll be pointing to
+        let output = Object.assign(
+          {},
+          ...(<Format.Values.StructValue>result).value.map(
+            ({ name, value }) => ({
+              [name]: value //we *don't* nativize yet!
+            })
+          )
+        );
+        //now, we can't use a map here, or we'll screw things up!
+        //we want to *mutate* output, not replace it with a new object
+        for (let name in output) {
+          output[name] = nativizeWithTable(output[name], [
+            output,
+            ...seenSoFar
+          ]);
+        }
+        return output;
+      } else {
+        return seenSoFar[coercedResult.reference - 1];
+      }
+    }
+    case "type":
       return Object.assign(
         {},
         ...(<Format.Values.TypeValue>result).value.map(({ name, value }) => ({

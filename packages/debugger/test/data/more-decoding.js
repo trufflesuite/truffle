@@ -241,13 +241,38 @@ contract BadBoolTest {
 }
 `;
 
+const __CIRCULAR = `
+pragma solidity ^0.5.0;
+
+contract CircularTest {
+
+  struct Tree {
+    uint x;
+    Tree[] children;
+  }
+
+  event Done();
+
+  function run() public {
+
+    Tree memory circular;
+    circular.x = 3;
+    circular.children = new Tree[](1);
+    circular.children[0] = circular;
+
+    emit Done(); //BREAK HERE
+  }
+}
+`;
+
 let sources = {
   "ContainersTest.sol": __CONTAINERS,
   "ElementaryTest.sol": __KEYSANDBYTES,
   "SpliceTest.sol": __SPLICING,
   "ComplexMappingsTest.sol": __INNERMAPS,
   "OverflowTest.sol": __OVERFLOW,
-  "BadBoolTest.sol": __BADBOOL
+  "BadBoolTest.sol": __BADBOOL,
+  "Circular.sol": __CIRCULAR
 };
 
 describe("Further Decoding", function() {
@@ -490,6 +515,40 @@ describe("Further Decoding", function() {
     };
 
     assert.deepInclude(variables, expectedResult);
+  });
+
+  it("Decodes circular structures", async function() {
+    this.timeout(12000);
+
+    let instance = await abstractions.CircularTest.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    let sourceId = session.view(solidity.current.source).id;
+    let source = session.view(solidity.current.source).source;
+    await session.addBreakpoint({
+      sourceId,
+      line: lineOf("BREAK HERE", source)
+    });
+
+    await session.continueUntilBreakpoint();
+
+    const circular = Codec.Format.Utils.Inspect.nativize(
+      await session.variable("circular")
+    );
+
+    assert.strictEqual(circular.x, 3);
+    assert.isArray(circular.children);
+    assert.lengthOf(circular.children, 1);
+    assert.strictEqual(circular.children[0], circular);
   });
 
   describe("Overflow", function() {

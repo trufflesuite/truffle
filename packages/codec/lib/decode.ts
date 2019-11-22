@@ -21,6 +21,17 @@ export default function* decode(
   info: Evm.EvmInfo,
   options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
+  return Format.Utils.Circularity.tie(
+    yield* decodeDispatch(dataType, pointer, info, options)
+  );
+}
+
+function* decodeDispatch(
+  dataType: Format.Types.Type,
+  pointer: Pointer.DataPointer,
+  info: Evm.EvmInfo,
+  options: DecoderOptions = {}
+): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   debug("type %O", dataType);
   debug("pointer %O", pointer);
 
@@ -51,6 +62,11 @@ export default function* decode(
     case "memory":
       //NOTE: this case should never actually occur, but I'm including it
       //anyway as a fallback
-      return yield* Memory.Decode.decodeMemory(dataType, pointer, info);
+      return yield* Memory.Decode.decodeMemory(
+        dataType,
+        pointer,
+        info,
+        options
+      );
   }
 }
