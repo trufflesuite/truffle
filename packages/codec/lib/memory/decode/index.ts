@@ -37,7 +37,7 @@ export function* decodeMemoryReferenceByAddress(
   options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   const { state } = info;
-  let memoryVisited = (options.memoryVisited || []).slice(); //we'll be modifying this, so let's clone first
+  const memoryVisited = options.memoryVisited || [];
   debug("pointer %o", pointer);
   //note: for mappings, the following operations are pretty
   //meaningless, but I'm leaving them in anyway rather than
@@ -125,7 +125,7 @@ export function* decodeMemoryReferenceByAddress(
 
       return yield* Bytes.Decode.decodeBytes(dataType, childPointer, info);
 
-    case "array":
+    case "array": {
       //first: circularity check!
       seenPreviously = memoryVisited.indexOf(objectPosition);
       if (seenPreviously !== -1) {
@@ -174,7 +174,7 @@ export function* decodeMemoryReferenceByAddress(
         };
       }
 
-      memoryVisited.unshift(objectPosition);
+      let memoryNowVisited = [objectPosition, ...memoryVisited];
 
       let baseType = dataType.baseType;
 
@@ -189,7 +189,7 @@ export function* decodeMemoryReferenceByAddress(
               length: Evm.Utils.WORD_SIZE
             },
             info,
-            { memoryVisited } //note this has been modified
+            { memoryVisited: memoryNowVisited }
           )
         );
       }
@@ -199,8 +199,9 @@ export function* decodeMemoryReferenceByAddress(
         kind: "value" as const,
         value: decodedChildren
       };
+    }
 
-    case "struct":
+    case "struct": {
       //first: circularity check!
       seenPreviously = memoryVisited.indexOf(objectPosition);
       if (seenPreviously !== -1) {
@@ -232,7 +233,7 @@ export function* decodeMemoryReferenceByAddress(
 
       debug("structAllocation %O", structAllocation);
 
-      memoryVisited.unshift(objectPosition);
+      let memoryNowVisited = [objectPosition, ...memoryVisited];
       let decodedMembers: Format.Values.NameValuePair[] = [];
       for (let index = 0; index < structAllocation.members.length; index++) {
         const memberAllocation = structAllocation.members[index];
@@ -265,9 +266,8 @@ export function* decodeMemoryReferenceByAddress(
         decodedMembers.push({
           name: memberName,
           value: yield* decodeMemory(memberType, childPointer, info, {
-            memoryVisited
+            memoryVisited: memoryNowVisited
           })
-          //note that memoryVisited has been modified
         });
       }
       return {
@@ -275,6 +275,7 @@ export function* decodeMemoryReferenceByAddress(
         kind: "value" as const,
         value: decodedMembers
       };
+    }
 
     case "mapping":
       //a mapping in memory is always empty
