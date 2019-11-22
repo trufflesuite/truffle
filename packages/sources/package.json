@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +12,9 @@
   "dependencies": {
     "detect-installed": "^2.0.4",
     "get-installed-path": "^4.0.8"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.2",
+    "sinon": "^7.5.0"
   }
 }
