@@ -1,5 +1,6 @@
-var path = require("path");
-var fs = require("fs");
+const path = require("path");
+const fs = require("fs");
+
 function NPM(working_directory) {
   this.working_directory = working_directory;
 }

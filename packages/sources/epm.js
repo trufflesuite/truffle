@@ -1,5 +1,5 @@
-var path = require("path");
-var fs = require("fs");
+const path = require("path");
+const fs = require("fs");
 
 function EPM(working_directory, contracts_build_directory) {
   this.working_directory = working_directory;
