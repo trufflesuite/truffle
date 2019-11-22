@@ -17,6 +17,7 @@ export type TxHash = string;
 export interface InterfaceAdapter {
   getNetworkId(): Promise<NetworkId>;
   getBlock(block: BlockType): Promise<Block>;
+  getBlockNumber(): Promise<number>;
   getTransaction(tx: TxHash): Promise<Transaction>;
   getTransactionReceipt(tx: TxHash): Promise<TransactionReceipt>;
   getBalance(address: string): Promise<string>;
