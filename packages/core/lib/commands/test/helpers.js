@@ -34,7 +34,9 @@ const determineTestFilesToRun = ({ inputFile, inputArgs = [], config }) => {
   }
 
   if (filesToRun.length === 0) {
-    const directoryContents = glob.sync(`${config.test_directory}${path.sep}*`);
+    const directoryContents = glob.sync(
+      `${config.test_directory}${path.sep}**${path.sep}*`
+    );
     filesToRun =
       directoryContents.filter(item => fs.statSync(item).isFile()) || [];
   }
