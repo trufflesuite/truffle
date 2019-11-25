@@ -35,7 +35,7 @@ class FS {
       file => file.match(".json") != null
     );
 
-    filteredBuildArtifacts.forEach(buildArtifact => {
+    for (const buildArtifact of filteredBuildArtifacts) {
       const artifact = JSON.parse(
         fs.readFileSync(path.resolve(searchPath, buildArtifact))
       );
@@ -43,7 +43,7 @@ class FS {
       if (artifact.sourcePath === sourcePath) {
         return artifact.contractName;
       }
-    });
+    }
 
     // fallback
     return path.basename(sourcePath, ".sol");
