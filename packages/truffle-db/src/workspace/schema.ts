@@ -1,6 +1,4 @@
-import {
-  mergeSchemas,
-} from "@gnd/graphql-tools";
+import { mergeSchemas } from "@gnd/graphql-tools";
 
 import { schema as rootSchema } from "truffle-db/schema";
 
@@ -10,7 +8,8 @@ export const schema = mergeSchemas({
     // fix seems to require nesting mergeSchemas so extend works
     mergeSchemas({
       schemas: [
-        rootSchema, `
+        rootSchema,
+        `
         extend type Source {
           id: ID!
         }
@@ -29,12 +28,15 @@ export const schema = mergeSchemas({
         extend type Network {
           id: ID!
         }
+        extend type NameRecord {
+          id: ID!
+        }
         `
       ]
     }),
 
     // define entrypoints
-   `type Query {
+    `type Query {
       contractNames: [String]!
       contract(id: ID!): Contract
       compilation(id: ID!): Compilation
@@ -45,11 +47,13 @@ export const schema = mergeSchemas({
       contractInstances: [ContractInstance]
       networks: [Network]
       sources: [Source]
+      nameRecords: [NameRecord]
 
       source(id: ID!): Source
       bytecode(id: ID!): Bytecode
       contractInstance(id: ID!): ContractInstance
       network(id: ID!): Network
+      nameRecord(id:ID!): NameRecord
     }
 
     input SourceInput {
@@ -104,7 +108,7 @@ export const schema = mergeSchemas({
     }
 
     input ContractInput {
-      name: String
+      name: String!
       abi: AbiInput
       compilation: ContractCompilationInput
       sourceContract: ContractSourceContractInput
@@ -224,13 +228,36 @@ export const schema = mergeSchemas({
     }
 
     input NetworkInput {
-      name: String
+      name: String!
       networkId: NetworkId!
       historicBlock: HistoricBlockInput!
     }
 
     input NetworksAddInput {
       networks: [NetworkInput!]!
+    }
+
+    input ResourceInput {
+      id: ID!
+      type: String!
+    }
+
+    input PreviousNameRecordInput {
+      id: ID!
+    }
+
+    input NameRecordAddInput {
+      name: String!
+      resource: ResourceInput!
+      previous: PreviousNameRecordInput
+    }
+
+    input NameRecordsAddInput {
+      nameRecords: [NameRecordAddInput!]!
+    }
+
+    type NameRecordsAddPayload {
+      nameRecords: [NameRecord]
     }
 
     type Mutation {
@@ -240,47 +267,41 @@ export const schema = mergeSchemas({
       compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
       contractInstancesAdd(input: ContractInstancesAddInput!): ContractInstancesAddPayload
       networksAdd(input: NetworksAddInput!): NetworksAddPayload
+      nameRecordsAdd(input: NameRecordsAddInput!): NameRecordsAddPayload
     } `
   ],
 
   resolvers: {
     Query: {
       contractNames: {
-        resolve: (_, {}, { workspace }) =>
-          workspace.contractNames()
+        resolve: (_, {}, { workspace }) => workspace.contractNames()
       },
       contracts: {
         resolve: (_, {}, { workspace }) => workspace.contracts()
       },
       contract: {
-        resolve: (_, { id }, { workspace }) =>
-          workspace.contract({ id })
+        resolve: (_, { id }, { workspace }) => workspace.contract({ id })
       },
       sources: {
         resolve: (_, {}, { workspace }) => workspace.sources()
       },
       source: {
-        resolve: (_, { id }, { workspace }) =>
-          workspace.source({ id })
+        resolve: (_, { id }, { workspace }) => workspace.source({ id })
       },
       bytecodes: {
         resolve: (_, {}, { workspace }) => workspace.bytecodes()
       },
       bytecode: {
-        resolve: (_, { id }, { workspace }) =>
-          workspace.bytecode({ id })
+        resolve: (_, { id }, { workspace }) => workspace.bytecode({ id })
       },
       compilations: {
-        resolve: (_, {}, { workspace }) =>
-          workspace.compilations()
+        resolve: (_, {}, { workspace }) => workspace.compilations()
       },
       compilation: {
-        resolve: (_, { id }, { workspace }) =>
-          workspace.compilation({ id })
+        resolve: (_, { id }, { workspace }) => workspace.compilation({ id })
       },
       contractInstances: {
-        resolve: (_, {}, { workspace }) =>
-          workspace.contractInstances()
+        resolve: (_, {}, { workspace }) => workspace.contractInstances()
       },
       contractInstance: {
         resolve: (_, { id }, { workspace }) =>
@@ -290,8 +311,13 @@ export const schema = mergeSchemas({
         resolve: (_, {}, { workspace }) => workspace.networks()
       },
       network: {
-        resolve: (_, { id }, { workspace }) =>
-          workspace.network({ id })
+        resolve: (_, { id }, { workspace }) => workspace.network({ id })
+      },
+      nameRecord: {
+        resolve: (_, { id }, { workspace }) => workspace.nameRecord({ id })
+      },
+      nameRecords: {
+        resolve: (_, { id }, { workspace }) => workspace.nameRecords()
       }
     },
     Mutation: {
@@ -318,14 +344,40 @@ export const schema = mergeSchemas({
       networksAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.networksAdd({ input })
+      },
+      nameRecordsAdd: {
+        resolve: async (_, { input }, { workspace }) => {
+          return await workspace.nameRecordsAdd({ input });
+        }
+      }
+    },
+    Named: {
+      __resolveType: (obj, _, { workspace }) => {
+        if (obj.networkId) {
+          return "Network";
+        } else {
+          return "Contract";
+        }
+      }
+    },
+    NameRecord: {
+      resource: {
+        resolve: async (obj, _, { workspace }) => {
+          if (obj.resource.type == "Network") {
+            let network = await workspace.network({ id: obj.resource.id });
+            return network;
+          }
+          if (obj.resource.type == "Contract") {
+            let contract = await workspace.contract({ id: obj.resource.id });
+            return contract;
+          }
+        }
       }
     },
     Compilation: {
       sources: {
         resolve: ({ sources }, _, { workspace }) =>
-          Promise.all(
-            sources.map(source => workspace.source(source))
-          )
+          Promise.all(sources.map(source => workspace.source(source)))
       }
     },
     Contract: {
@@ -336,8 +388,9 @@ export const schema = mergeSchemas({
       sourceContract: {
         fragment: `... on Contract { compilation { id } }`,
         resolve: async ({ sourceContract, compilation }, _, { workspace }) => {
-          const { contracts: sourceContracts } =
-            await workspace.compilation(compilation);
+          const { contracts: sourceContracts } = await workspace.compilation(
+            compilation
+          );
 
           return sourceContracts[sourceContract.index];
         }
@@ -358,16 +411,20 @@ export const schema = mergeSchemas({
       },
       creation: {
         resolve: async (input, _, { workspace }) => {
-          let bytecode = await workspace.bytecode(input.creation.constructor.createBytecode);
+          let bytecode = await workspace.bytecode(
+            input.creation.constructor.createBytecode
+          );
           let transactionHash = input.creation.transactionHash;
-          return { transactionHash: transactionHash, constructor: { createBytecode: bytecode } };
+          return {
+            transactionHash: transactionHash,
+            constructor: { createBytecode: bytecode }
+          };
         }
       }
     },
     SourceContract: {
       source: {
-        resolve: ({ source }, _, { workspace }) =>
-          workspace.source(source)
+        resolve: ({ source }, _, { workspace }) => workspace.source(source)
       }
     },
     Constructor: {

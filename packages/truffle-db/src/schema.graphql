@@ -7,6 +7,16 @@ scalar Object
 scalar ByteOffset
 scalar FileIndex
 
+type NameRecord {
+  name: String!
+  resource: Named!
+  previous: NameRecord
+}
+
+interface Named {
+  name: String!
+}
+
 type ContractInstance {
   address: Address!
   network: Network!
@@ -25,8 +35,8 @@ type Constructor {
   createBytecode: Bytecode
 }
 
-type Contract {
-  name: String
+type Contract implements Named {
+  name: String!
   source: Source
   abi: ABI
   compilation: Compilation
@@ -54,8 +64,8 @@ type AST {
   json: String!
 }
 
-type Network {
-  name: String
+type Network implements Named {
+  name: String!
   networkId: NetworkId!
   historicBlock: HistoricBlock!
 }

@@ -10,6 +10,10 @@ declare namespace DataModel {
     [key: string]: any;
   }
 
+  interface INamed {
+    name: string;
+  }
+
   // interface IGraphQLResponseErrorLocation {
   //   line: number;
   //   column: number;
