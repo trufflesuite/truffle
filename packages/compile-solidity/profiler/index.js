@@ -4,7 +4,7 @@
 const path = require("path");
 const CompilerSupplier = require("../compilerSupplier");
 const expect = require("@truffle/expect");
-const { findContracts } = require("@truffle/contract-sources");
+const { findContracts, resolve } = require("@truffle/contract-sources");
 const semver = require("semver");
 const debug = require("debug")("compile:profiler");
 const { readAndParseArtifactFiles } = require("./readAndParseArtifactFiles");
@@ -98,7 +98,8 @@ module.exports = {
           resolver,
           allPaths,
           solc,
-          parserSolc
+          parserSolc,
+          options
         );
         // Generate hash of all sources including external packages - passed to solc inputs.
         const resolvedPaths = Object.keys(resolved);
@@ -166,7 +167,7 @@ module.exports = {
 
   // Resolves sources in several async passes. For each resolved set it detects unknown
   // imports from external packages and adds them to the set of files to resolve.
-  async resolveAllSources(resolver, initialPaths, solc, parserSolc) {
+  async resolveAllSources(resolver, initialPaths, solc, parserSolc, options) {
     const mapping = {};
     const allPaths = initialPaths.slice();
 
@@ -190,12 +191,10 @@ module.exports = {
         } else {
           file = candidate;
         }
-        const promise = new Promise((accept, reject) => {
-          resolver.resolve(file, parent, (err, body, absolutePath, source) => {
-            err ? reject(err) : accept({ file: absolutePath, body, source });
-          });
-        });
-        promises.push(promise);
+
+        const source = resolveSource(file, parent, options);
+        // format of 'source' = { file, body, source }
+        promises.push(source);
       }
 
       // Resolve everything known and add it to the map, then inspect each file's
