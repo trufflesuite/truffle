@@ -14,6 +14,7 @@ describe("Network", () => {
   });
 
   const variables = {
+    name: "ganache",
     networkId: Object.keys(Migrations.networks)[0],
     height: 1,
     hash: expectedHash
@@ -23,6 +24,7 @@ describe("Network", () => {
 
   beforeEach(async () => {
     addNetworksResult = await wsClient.execute(AddNetworks, {
+      name: "ganache",
       networkId: variables.networkId,
       height: variables.height,
       hash: variables.hash

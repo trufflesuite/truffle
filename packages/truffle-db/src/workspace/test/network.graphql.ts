@@ -11,7 +11,7 @@ export const GetNetwork = gql`
 
 export const GetAllNetworks = gql`
   query getAllNetworks {
-    networks  {
+    networks {
       id
       networkId
     }
@@ -19,16 +19,23 @@ export const GetAllNetworks = gql`
 `;
 
 export const AddNetworks = gql`
-  mutation AddNetworks($networkId: NetworkId!, $height: Int!, $hash: String!) {
-    networksAdd(input: {
-      networks: [{
-        networkId: $networkId
-        historicBlock: {
-          height: $height
-          hash: $hash
-        }
-      }]
-    }) {
+  mutation AddNetworks(
+    $networkId: NetworkId!
+    $height: Int!
+    $hash: String!
+    $name: String!
+  ) {
+    networksAdd(
+      input: {
+        networks: [
+          {
+            name: $name
+            networkId: $networkId
+            historicBlock: { height: $height, hash: $hash }
+          }
+        ]
+      }
+    ) {
       networks {
         networkId
         id

@@ -17,6 +17,10 @@ export type WorkspaceCollections = {
     resource: DataModel.IContract;
     input: DataModel.IContractsAddInput;
   };
+  nameRecords: {
+    resource: DataModel.INameRecord;
+    input: DataModel.INameRecordsAddInput;
+  };
   networks: {
     resource: DataModel.INetwork;
     input: DataModel.INetworksAddInput;
@@ -51,5 +55,9 @@ export const definitions: Definitions<WorkspaceCollections> = {
   contractInstances: {
     createIndexes: [],
     idFields: ["address", "network"]
+  },
+  nameRecords: {
+    createIndexes: [{ fields: ["id"] }],
+    idFields: ["name", "type", "resource", "previous"]
   }
 };
