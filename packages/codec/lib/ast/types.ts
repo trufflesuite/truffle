@@ -58,7 +58,7 @@ export interface AstNode {
 
 export interface AstNodes {
   [nodeId: number]: AstNode;
-};
+}
 
 //the debugger uses this
 export interface Scopes {
@@ -72,5 +72,5 @@ export interface Scopes {
       id: number;
     }[];
     definition?: AstNode;
-  }
+  };
 }

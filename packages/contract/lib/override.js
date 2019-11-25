@@ -97,10 +97,10 @@ const override = {
     };
 
     // Start polling
-    let currentPollingBlock = await constructor.web3.eth.getBlockNumber();
+    let currentPollingBlock = await constructor.interfaceAdapter.getBlockNumber();
 
     const pollID = setInterval(async () => {
-      const newBlock = await constructor.web3.eth.getBlockNumber();
+      const newBlock = await constructor.interfaceAdapter.getBlockNumber();
 
       if (newBlock > currentPollingBlock) {
         currentPollingBlock = newBlock;

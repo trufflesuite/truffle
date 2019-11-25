@@ -1,7 +1,6 @@
 var OS = require("os");
 var dir = require("node-dir");
 var path = require("path");
-var async = require("async");
 var debug = require("debug")("debug-utils");
 var BN = require("bn.js");
 var util = require("util");
@@ -50,57 +49,37 @@ const truffleColors = {
 };
 
 var DebugUtils = {
-  gatherArtifacts: function(config) {
-    return new Promise((accept, reject) => {
-      // Gather all available contract artifacts
-      dir.files(config.contracts_build_directory, (err, files) => {
-        if (err) return reject(err);
+  gatherArtifacts: async function(config) {
+    // Gather all available contract artifacts
+    let files = await dir.promiseFiles(config.contracts_build_directory);
 
-        var contracts = files
-          .filter(file_path => {
-            return path.extname(file_path) === ".json";
-          })
-          .map(file_path => {
-            return path.basename(file_path, ".json");
-          })
-          .map(contract_name => {
-            return config.resolver.require(contract_name);
-          });
-
-        async.each(
-          contracts,
-          (abstraction, finished) => {
-            abstraction
-              .detectNetwork()
-              .then(() => {
-                finished();
-              })
-              .catch(finished);
-          },
-          err => {
-            if (err) return reject(err);
-            accept(
-              contracts.map(contract => {
-                debug("contract.sourcePath: %o", contract.sourcePath);
-
-                return {
-                  contractName: contract.contractName,
-                  source: contract.source,
-                  sourceMap: contract.sourceMap,
-                  sourcePath: contract.sourcePath,
-                  binary: contract.binary,
-                  abi: contract.abi,
-                  ast: contract.ast,
-                  deployedBinary: contract.deployedBinary,
-                  deployedSourceMap: contract.deployedSourceMap,
-                  compiler: contract.compiler
-                };
-              })
-            );
-          }
-        );
+    var contracts = files
+      .filter(file_path => {
+        return path.extname(file_path) === ".json";
+      })
+      .map(file_path => {
+        return path.basename(file_path, ".json");
+      })
+      .map(contract_name => {
+        return config.resolver.require(contract_name);
       });
-    });
+
+    await Promise.all(
+      contracts.map(abstraction => abstraction.detectNetwork())
+    );
+
+    return contracts.map(contract => ({
+      contractName: contract.contractName,
+      source: contract.source,
+      sourceMap: contract.sourceMap,
+      sourcePath: contract.sourcePath,
+      binary: contract.binary,
+      abi: contract.abi,
+      ast: contract.ast,
+      deployedBinary: contract.deployedBinary,
+      deployedSourceMap: contract.deployedSourceMap,
+      compiler: contract.compiler
+    }));
   },
 
   formatStartMessage: function(withTransaction) {
@@ -461,22 +440,25 @@ var DebugUtils = {
   },
 
   //HACK
-  cleanConstructors: function(object) {
+  //note that this is written in terms of mutating things
+  //rather than just using map() due to the need to handle
+  //circular objects
+  cleanConstructors: function(object, seenSoFar = new Map()) {
     debug("object %o", object);
-
-    if (object && typeof object.map === "function") {
-      //array case
-      return object.map(DebugUtils.cleanConstructors);
+    if (seenSoFar.has(object)) {
+      return seenSoFar.get(object);
     }
 
-    if (object && object instanceof Map) {
-      //map case
-      return new Map(
-        Array.from(object.entries()).map(([key, value]) => [
-          key,
-          DebugUtils.cleanConstructors(value)
-        ])
-      );
+    if (Array.isArray(object)) {
+      //array case
+      let output = object.slice(); //clone
+      //set up new seenSoFar
+      let seenNow = new Map(seenSoFar);
+      seenNow.set(object, output);
+      for (let index in output) {
+        output[index] = DebugUtils.cleanConstructors(output[index], seenNow);
+      }
+      return output;
     }
 
     //HACK -- due to safeEval altering things, it's possible for isBN() to
@@ -493,16 +475,23 @@ var DebugUtils = {
 
     if (object && typeof object === "object") {
       //generic object case
-      return Object.assign(
+      let output = Object.assign(
         {},
         ...Object.entries(object)
           .filter(
             ([key, value]) => key !== "constructor" || value !== undefined
           )
           .map(([key, value]) => ({
-            [key]: DebugUtils.cleanConstructors(value)
+            [key]: value //don't clean yet!
           }))
       );
+      //set up new seenSoFar
+      let seenNow = new Map(seenSoFar);
+      seenNow.set(object, output);
+      for (let field in output) {
+        output[field] = DebugUtils.cleanConstructors(output[field], seenNow);
+      }
+      return output;
     }
 
     //for strings, numbers, etc
