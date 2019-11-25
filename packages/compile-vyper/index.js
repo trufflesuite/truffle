@@ -6,7 +6,7 @@ const async = require("async");
 const colors = require("colors");
 const minimatch = require("minimatch");
 
-const find_contracts = require("@truffle/contract-sources");
+const { findContracts } = require("@truffle/contract-sources");
 const Profiler = require("@truffle/compile-solidity/profiler");
 
 const compiler = {
@@ -24,7 +24,7 @@ const compile = {};
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
 compile.all = function(options, callback) {
-  find_contracts(options.contracts_directory, function(err, files) {
+  findContracts(options.contracts_directory, function(err, files) {
     if (err) return callback(err);
 
     options.paths = files;

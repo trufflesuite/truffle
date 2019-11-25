@@ -2,7 +2,7 @@ const Deployed = require("./deployed");
 const path = require("path");
 const fse = require("fs-extra");
 const contract = require("@truffle/contract");
-const find_contracts = require("@truffle/contract-sources");
+const { findContracts } = require("@truffle/contract-sources");
 
 function TestSource(config) {
   this.config = config;
@@ -16,7 +16,7 @@ TestSource.prototype.resolve = function(importPath, callback) {
   const self = this;
 
   if (importPath === "truffle/DeployedAddresses.sol") {
-    return find_contracts(this.config.contracts_directory, function(
+    return findContracts(this.config.contracts_directory, function(
       err,
       sourceFiles
     ) {

@@ -2,7 +2,7 @@ const web3Utils = require("web3-utils");
 const TestCase = require("mocha/lib/test.js");
 const Suite = require("mocha/lib/suite.js");
 const Deployer = require("@truffle/deployer");
-const find_contracts = require("@truffle/contract-sources");
+const { findContracts } = require("@truffle/contract-sources");
 const compile = require("@truffle/compile-solidity/legacy");
 const abi = require("web3-eth-abi");
 const series = require("async").series;
@@ -113,7 +113,7 @@ const SolidityTest = {
   },
 
   compileNewAbstractInterface(runner, callback) {
-    find_contracts(runner.config.contracts_directory, err => {
+    findContracts(runner.config.contracts_directory, err => {
       if (err) return callback(err);
 
       const config = runner.config;
