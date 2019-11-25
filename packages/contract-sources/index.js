@@ -36,59 +36,26 @@ const findContracts = (pattern, callback) => {
     });
 };
 
-const resolve = function(options, importPath, importedFrom) {
-  const self = this;
+const resolveSource = function(importPath, importedFrom, options) {
   const SOURCES = sources(options);
 
-  if (typeof importedFrom === "function") {
-    callback = importedFrom;
-    importedFrom = null;
+  for (let source in SOURCES) {
+    const { body, filePath } = source.resolve(importPath, importedFrom);
+    if (body) {
+      return {
+        resolvedBody: body,
+        resolvedPath: filePath,
+        currentSource: source
+      };
+    }
   }
 
-  let resolved_body = null;
-  let resolved_path = null;
-  let current_index = -1;
-  let current_source;
-
-  whilst(
-    function() {
-      return !resolved_body && current_index < self.sources.length - 1;
-    },
-    function(next) {
-      current_index += 1;
-      current_source = self.sources[current_index];
-
-      current_source.resolve(importPath, importedFrom, function(
-        err,
-        body,
-        file_path
-      ) {
-        if (!err && body) {
-          resolved_body = body;
-          resolved_path = file_path;
-        }
-        next(err);
-      });
-    },
-    function(err) {
-      if (err) return callback(err);
-
-      if (!resolved_body) {
-        var message = "Could not find " + importPath + " from any sources";
-
-        if (importedFrom) {
-          message += "; imported from " + importedFrom;
-        }
-
-        return callback(new Error(message));
-      }
-
-      callback(null, resolved_body, resolved_path, current_source);
-    }
-  );
+  let message = "Could not find " + importPath + " from any sources";
+  if (importedFrom) message += "; imported from " + importedFrom;
+  throw new Error(message);
 }
 
 module.exports = {
   findContracts,
-  resolve
+  resolveSource
 }
