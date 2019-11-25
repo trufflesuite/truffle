@@ -33,22 +33,25 @@ GlobalNPM.prototype.require = function(import_path) {
   }
 };
 
-GlobalNPM.prototype.resolve = function(import_path, imported_from, callback) {
-  let [package_name] = import_path.split("/", 1);
+GlobalNPM.prototype.resolve = function(importPath, _importedFrom) {
+  let [packageName] = importPath.split("/", 1);
   let body;
-  if (detectInstalled.sync(package_name)) {
-    const regex = new RegExp(`/${package_name}$`);
-    const global_package_path = getInstalledPath
-      .getInstalledPathSync(package_name)
+  if (detectInstalled.sync(packageName)) {
+    const regex = new RegExp(`/${packageName}$`);
+    const globalPackagePath = getInstalledPath
+      .getInstalledPathSync(packageName)
       .replace(regex, "");
-    const expected_path = path.join(global_package_path, import_path);
+    const expectedPath = path.join(globalPackagePath, importPath);
     try {
-      body = fs.readFileSync(expected_path, { encoding: "utf8" });
+      body = fs.readFileSync(expectedPath, { encoding: "utf8" });
     } catch (err) {}
   }
 
   // If nothing's found, body returns `undefined`
-  return callback(null, body, import_path);
+  return {
+    body,
+    filePath: importPath
+  }
 };
 
 // We're resolving package paths to other package paths, not absolute paths.

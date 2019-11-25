@@ -68,45 +68,46 @@ EPM.prototype.require = function(importPath, _searchPath) {
   return json;
 };
 
-(EPM.prototype.resolve = function(import_path, imported_from, callback) {
-  var separator = import_path.indexOf("/");
-  var package_name = import_path.substring(0, separator);
-  var internal_path = import_path.substring(separator + 1);
-  var installDir = this.working_directory;
+(EPM.prototype.resolve = function(importPath, _importedFrom) {
+  const separator = importPath.indexOf("/");
+  const packageName = importPath.substring(0, separator);
+  const internalPath = importPath.substring(separator + 1);
+  const installDir = this.working_directory;
 
   // If nothing's found, body returns `undefined`
-  var body;
+  let body;
 
   while (true) {
-    var file_path = path.join(installDir, "installed_contracts", import_path);
+    let filePath = path.join(installDir, "installed_contracts", importPath);
 
     try {
-      body = fs.readFileSync(file_path, { encoding: "utf8" });
+      body = fs.readFileSync(filePath, { encoding: "utf8" });
       break;
     } catch (err) {}
 
-    file_path = path.join(
+    filePath = path.join(
       installDir,
       "installed_contracts",
-      package_name,
+      packageName,
       "contracts",
-      internal_path
+      internalPath
     );
 
     try {
-      body = fs.readFileSync(file_path, { encoding: "utf8" });
+      body = fs.readFileSync(filePath, { encoding: "utf8" });
       break;
     } catch (err) {}
 
     // Recurse outwards until impossible
-    var oldInstallDir = installDir;
+    const oldInstallDir = installDir;
     installDir = path.join(installDir, "..");
-    if (installDir === oldInstallDir) {
-      break;
-    }
+    if (installDir === oldInstallDir) break;
   }
 
-  return callback(null, body, import_path);
+  return {
+    body,
+    filePath: importPath
+  }
 }),
   // We're resolving package paths to other package paths, not absolute paths.
   // This will ensure the source fetcher conintues to use the correct sources for packages.

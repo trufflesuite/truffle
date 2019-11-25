@@ -32,27 +32,30 @@ NPM.prototype.require = function(import_path, search_path) {
   }
 };
 
-NPM.prototype.resolve = function(import_path, imported_from, callback) {
+NPM.prototype.resolve = function(importPath, _importedFrom) {
   // If nothing's found, body returns `undefined`
-  var body;
-  var modulesDir = this.working_directory;
+  let body;
+  let modulesDir = this.working_directory;
 
   while (true) {
-    var expected_path = path.join(modulesDir, "node_modules", import_path);
+    const expectedPath = path.join(modulesDir, "node_modules", importPath);
 
     try {
-      var body = fs.readFileSync(expected_path, { encoding: "utf8" });
+      body = fs.readFileSync(expectedPath, { encoding: "utf8" });
       break;
     } catch (err) {}
 
     // Recurse outwards until impossible
-    var oldModulesDir = modulesDir;
+    const oldModulesDir = modulesDir;
     modulesDir = path.join(modulesDir, "..");
     if (modulesDir === oldModulesDir) {
       break;
     }
   }
-  return callback(null, body, import_path);
+  return {
+    body,
+    filePath: importPath
+  };
 };
 
 // We're resolving package paths to other package paths, not absolute paths.
