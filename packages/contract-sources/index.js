@@ -38,16 +38,9 @@ const findContracts = (pattern, callback) => {
 
 const resolveSource = function(importPath, importedFrom, options) {
   const SOURCES = sources(options);
-
-  for (let source in SOURCES) {
+  for (let source of SOURCES) {
     const { body, filePath } = source.resolve(importPath, importedFrom);
-    if (body) {
-      return {
-        resolvedBody: body,
-        resolvedPath: filePath,
-        currentSource: source
-      };
-    }
+    if (body) return { body, filePath, source };
   }
 
   let message = "Could not find " + importPath + " from any sources";

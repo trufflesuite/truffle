@@ -72,7 +72,7 @@ EPM.prototype.require = function(importPath, _searchPath) {
   const separator = importPath.indexOf("/");
   const packageName = importPath.substring(0, separator);
   const internalPath = importPath.substring(separator + 1);
-  const installDir = this.working_directory;
+  let installDir = this.working_directory;
 
   // If nothing's found, body returns `undefined`
   let body;

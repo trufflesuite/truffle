@@ -53,8 +53,6 @@ async function compile(config) {
   );
 
   // collect results
-  //
-
   const compilations = rawCompilations.reduce(
     (a, b) => Object.assign({}, a, b),
     {}
@@ -70,15 +68,15 @@ async function compile(config) {
 const Contracts = {
   async compile(options) {
     const config = prepareConfig(options);
+
     reportCompilationStarted(config);
 
     const { contracts, compilations } = await compile(config);
 
-    if (contracts.length === 0) {
-      reportNothingToCompile(config);
-    }
+    if (contracts.length === 0) reportNothingToCompile(config);
 
     reportCompilationFinished(config);
+
     return {
       contracts,
       compilations

@@ -178,7 +178,7 @@ module.exports = {
       // Dequeue all the known paths, generating resolver promises,
       // We'll add paths if we discover external package imports.
       while (allPaths.length) {
-        let file;
+        let filePath;
         let parent = null;
 
         const candidate = allPaths.shift();
@@ -186,14 +186,14 @@ module.exports = {
         // Some paths will have been extracted as imports from a file
         // and have information about their parent location we need to track.
         if (typeof candidate === "object") {
-          file = candidate.file;
+          filePath = candidate.file;
           parent = candidate.parent;
         } else {
-          file = candidate;
+          filePath = candidate;
         }
 
-        const source = resolveSource(file, parent, options);
-        // format of 'source' = { file, body, source }
+        const source = resolveSource(filePath, parent, options);
+        // format of 'source' = { filePath, body, source }
         promises.push(source);
       }
 
@@ -201,7 +201,7 @@ module.exports = {
       // imports and add those to the list of paths to resolve if we don't have it.
       return Promise.all(promises).then(async results => {
         // Generate the sources mapping
-        results.forEach(item => (mapping[item.file] = Object.assign({}, item)));
+        results.forEach(item => (mapping[item.filePath] = Object.assign({}, item)));
 
         // Queue unknown imports for the next resolver cycle
         while (results.length) {
@@ -210,7 +210,7 @@ module.exports = {
           // Inspect the imports
           let imports;
           try {
-            imports = await getImports(result.file, result, solc, parserSolc);
+            imports = await getImports(result.filePath, result, solc, parserSolc);
           } catch (err) {
             if (err.message.includes("requires different compiler version")) {
               const contractSolcPragma = err.message.match(
@@ -232,7 +232,7 @@ module.exports = {
           // Keep track of location of this import because we need to report that.
           imports.forEach(item => {
             if (!mapping[item])
-              allPaths.push({ file: item, parent: result.file });
+              allPaths.push({ file: item, parent: result.filePath });
           });
         }
       });

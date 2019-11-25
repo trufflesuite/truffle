@@ -55,22 +55,16 @@ class FS {
       importPath,
       path.join(path.dirname(importedFrom), importPath)
     ];
-
+    let body, filePath;
     possiblePaths.forEach(possiblePath => {
-      try {
-        const resolvedSource = fs.readFileSync(possiblePath, {
-          encoding: "utf8"
-        });
-        return {
-          body: resolvedSource,
-          filePath: possiblePath
-        };
-      } catch (error) {}
+      if (fs.existsSync(possiblePath)) {
+        try {
+          body = fs.readFileSync(possiblePath, { encoding: "utf8" });
+          filePath = possiblePath;
+        } catch (error) {}
+      }
     });
-    return {
-      body: null,
-      filePath: importPath
-    }
+    return { body, filePath }
   }
 
   // Here we're resolving from local files to local files, all absolute.
