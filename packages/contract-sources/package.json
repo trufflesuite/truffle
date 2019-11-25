@@ -3,7 +3,9 @@
   "version": "0.1.7",
   "description": "Utility for finding all contracts within a directory",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "mocha test"
+  },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/contract-sources",
   "keywords": [
     "ethereum",
