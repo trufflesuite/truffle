@@ -3,10 +3,7 @@ const Box = require("@truffle/box");
 const fse = require("fs-extra");
 const glob = require("glob");
 const path = require("path");
-const mkdirp = require("mkdirp");
 const async = require("async");
-const Resolver = require("@truffle/resolver");
-const Artifactor = require("@truffle/artifactor");
 const Contracts = require("@truffle/workflow-compile");
 const { resolveSource } = require("../index");
 
@@ -19,50 +16,32 @@ describe("sources integration", function() {
   const parentContractSource =
     "pragma solidity ^0.5.0; import 'fake_source/contracts/Module.sol'; contract Parent {}";
 
-  before("Create a sandbox", async () => {
+  before("Create a sandbox and fake npm source", async () => {
     config = await Box.sandbox("default");
-    // config.resolver = new Resolver(config);
-    // config.artifactor = new Artifactor(config.contracts_build_directory);
-    // config.networks = {
-    //   development: {
-    //     network_id: 1
-    //   }
-    // };
-    // config.network = "development";
-
     fse.writeFileSync(
       path.join(config.contracts_directory, "Parent.sol"),
       parentContractSource,
       { encoding: "utf8" }
     );
-  });
-
-  before("Create a fake npm source", function(done) {
     const fakeSourcePath = path.join(
       config.working_directory,
       "node_modules",
       "fake_source",
       "contracts"
     );
-
-    async.series(
-      [
-        mkdirp.bind(mkdirp, fakeSourcePath),
-        fse.writeFile.bind(
-          fse,
-          path.join(fakeSourcePath, "Module.sol"),
-          moduleSource,
-          { encoding: "utf8" }
-        ),
-        fse.writeFile.bind(
-          fse,
-          path.join(fakeSourcePath, "ModuleDependency.sol"),
-          moduleDependencySource,
-          { encoding: "utf8" }
-        )
-      ],
-      done
-    );
+    fse.ensureDirSync(fakeSourcePath);
+    fse.writeFileSync.bind(
+      fse,
+      path.join(fakeSourcePath, "Module.sol"),
+      moduleSource,
+      { encoding: "utf8" }
+    )();
+    fse.writeFileSync.bind(
+      fse,
+      path.join(fakeSourcePath, "ModuleDependency.sol"),
+      moduleDependencySource,
+      { encoding: "utf8" }
+    )();
   });
 
   after("Cleanup tmp files", function() {
