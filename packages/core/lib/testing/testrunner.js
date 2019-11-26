@@ -9,12 +9,12 @@ const TestResolver = require("./testresolver");
 const TestSource = require("./testsource");
 const expect = require("@truffle/expect");
 const contract = require("@truffle/contract");
-const abi = require("web3-eth-abi");
 const path = require("path");
 const fs = require("fs-extra");
-const flatMap = require("lodash.flatmap");
 const util = require("util");
 const debug = require("debug")("lib:testing:testrunner");
+const Decoder = require("@truffle/decoder");
+const Codec = require("@truffle/codec");
 
 function TestRunner(options = {}) {
   expect.options(options, [
@@ -32,7 +32,6 @@ function TestRunner(options = {}) {
   this.can_snapshot = false;
   this.first_snapshot = true;
   this.initial_snapshot = null;
-  this.known_events = {};
   this.interfaceAdapter = createInterfaceAdapter({
     provider: options.provider,
     networkType: options.networks[options.network].type
@@ -41,6 +40,7 @@ function TestRunner(options = {}) {
     provider: options.provider,
     networkType: options.networks[options.network].type
   });
+  this.decoder = null;
 
   // For each test
   this.currentTestStartBlock = null;
@@ -88,20 +88,9 @@ TestRunner.prototype.initialize = async function() {
   );
 
   let contracts = data.map(JSON.parse).map(json => contract(json));
-  //flatMap is only on Node 11 & later at the moment, so we'll use
-  //lodash's flatMap
-  let abis = flatMap(contracts, "abi");
 
-  abis.map(abi => {
-    if (abi.type === "event") {
-      let signature =
-        abi.name + "(" + abi.inputs.map(input => input.type).join(",") + ")";
-      this.known_events[web3Utils.sha3(signature)] = {
-        signature: signature,
-        abi_entry: abi
-      };
-    }
-  });
+  //NOTE: in future should get rid of contracts argument
+  this.decoder = await Decoder.forProject(this.provider, contracts);
 };
 
 TestRunner.prototype.deploy = async function() {
@@ -137,8 +126,36 @@ TestRunner.prototype.endTest = async function(mocha) {
     return;
   }
 
-  let logs = await this.web3.eth.getPastLogs({
-    fromBlock: "0x" + this.currentTestStartBlock.toString(16)
+  function printEvent(decoding) {
+    const anonymousPrefix = decoding.kind === "anonymous" ? "<anonymous> " : "";
+    const className = decoding.class.typeName;
+    const eventName = decoding.abi.name;
+    const fullEventName = anonymousPrefix + `${className}.${eventName}`;
+    const eventArgs = decoding.arguments
+      .map(({ name, indexed, value }) => {
+        let namePrefix = name ? `${name}: ` : "";
+        let indexedPrefix = indexed ? "<indexed> " : "";
+        let displayValue = util.inspect(
+          new Codec.Format.Utils.Inspect.ResultInspector(value),
+          {
+            depth: null,
+            colors: true,
+            maxArrayLength: null,
+            breakLength: Infinity,
+            compact: true
+          }
+        );
+        return namePrefix + indexedPrefix + displayValue;
+      })
+      .join(", ");
+    return `${fullEventName}(${eventArgs})`;
+  }
+
+  const logs = await this.decoder.events({
+    //NOTE: block numbers shouldn't be over 2^53 so this
+    //should be fine, but should change this once decoder
+    //accepts more general types for blocks
+    fromBlock: this.currentTestStartBlock.toNumber()
   });
 
   if (logs.length === 0) {
@@ -150,42 +167,22 @@ TestRunner.prototype.endTest = async function(mocha) {
   this.logger.log("    ---------------------------");
   this.logger.log("");
 
-  for (let log of logs) {
-    let event = this.known_events[log.topics[0]];
-
-    if (event == null) {
-      return; // do not log anonymous events
+  for (const log of logs) {
+    switch (log.decodings.length) {
+      case 0:
+        this.logger.log(`    Warning: Could not decode event!`);
+        break;
+      case 1:
+        this.logger.log("    " + printEvent(log.decodings[0]));
+        break;
+      default:
+        this.logger.log(`    Ambiguous event, possible interpretations:`);
+        for (const decoding of log.decodings) {
+          this.logger.log(`      Could be:`); //6 spaces to indent a little
+          this.logger.log("      " + printEvent(decoding));
+        }
+        break;
     }
-
-    let types = event.abi_entry.inputs.map(input => input.type);
-
-    let values;
-    try {
-      values = abi.decodeLog(
-        event.abi_entry.inputs,
-        log.data,
-        log.topics.slice(1) // skip topic[0] for non-anonymous event
-      );
-    } catch (_) {
-      //temporary HACK until we're using the new decoder
-      this.logger.log(`    Warning: event decoding failed`);
-      this.logger.log(
-        `    (This may be due to multiple events with same signature`
-      );
-      this.logger.log(`    or due to unsupported data types)`);
-      return;
-    }
-
-    let eventName = event.abi_entry.name;
-    let eventArgs = event.abi_entry.inputs
-      .map((input, index) => {
-        let prefix = input.indexed === true ? "<indexed> " : "";
-        let value = `${values[index]} (${types[index]})`;
-        return `${input.name}: ${prefix}${value}`;
-      })
-      .join(", ");
-
-    this.logger.log(`    ${eventName}(${eventArgs})`);
   }
   this.logger.log("\n    ---------------------------");
 };

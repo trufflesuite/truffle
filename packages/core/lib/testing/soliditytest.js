@@ -1,9 +1,7 @@
-const web3Utils = require("web3-utils");
 const TestCase = require("mocha/lib/test.js");
 const Suite = require("mocha/lib/suite.js");
 const Deployer = require("@truffle/deployer");
 const compile = require("@truffle/compile-solidity/legacy");
-const abi = require("web3-eth-abi");
 const path = require("path");
 const semver = require("semver");
 const Native = require("@truffle/compile-solidity/compilerSupplier/loadingStrategies/Native");
@@ -32,36 +30,42 @@ const SolidityTest = {
       await runner.startTest(this);
     });
 
-    // Function that decodes raw logs from unlinked third party assertion
-    // libraries and returns usable TestEvent logs
-    function decodeTestEvents(result) {
-      if (result.logs.length) return result.logs;
-
-      const logs = [];
-      const signature = web3Utils.sha3("TestEvent(bool,string)");
-
-      for (const log of result.receipt.logs) {
-        if (log.topics.length === 2 && log.topics[0] === signature) {
-          const decoded = {
-            event: "TestEvent",
-            args: {
-              result: abi.decodeLog(["bool"], log.topics[1], log.topics)[0],
-              message: abi.decodeLog(["string"], log.data, log.topics)[0]
-            }
-          };
-          logs.push(decoded);
-        }
-      }
-      return logs;
-    }
-
     // Function that checks transaction logs to see if a test failed.
-    function processResult(result) {
-      result.logs = decodeTestEvents(result);
-
-      for (const log of result.logs) {
-        if (log.event === "TestEvent" && !log.args.result) {
-          throw new Error(log.args.message);
+    async function checkResultForFailure(result) {
+      const logs = result.receipt.rawLogs;
+      for (const log of logs) {
+        const decodings = await runner.decoder.decodeLog(log);
+        for (const decoding of decodings) {
+          //check: is this a TestEvent?
+          //note: we don't check the argument names
+          if (
+            decoding.abi.name === "TestEvent" &&
+            decoding.arguments.length === 2 &&
+            decoding.arguments[0].value.type.typeClass === "bool" &&
+            decoding.arguments[0].indexed &&
+            decoding.arguments[1].value.type.typeClass === "string" &&
+            !decoding.arguments[1].indexed
+          ) {
+            //if so: did the test fail?
+            if (!decoding.arguments[0].value.value.asBoolean) {
+              //if so: extract the message
+              let messageDecoding = decoding.arguments[1].value;
+              let message;
+              switch (messageDecoding.value.kind) {
+                case "valid":
+                  message = messageDecoding.value.asString;
+                  break;
+                case "malformed":
+                  //use buffer to convert hex to string
+                  //(this causes malformed UTF-8 to become U+FFFD)
+                  message = Buffer.from(
+                    messageDecoding.value.asHex.slice(2),
+                    "hex"
+                  ).toString();
+              }
+              throw new Error(message);
+            }
+          }
         }
       }
     }
@@ -77,7 +81,7 @@ const SolidityTest = {
         if (item.name.startsWith(hookType)) {
           suite[hookType](item.name, async () => {
             let deployed = await abstraction.deployed();
-            return processResult(await deployed[item.name]());
+            await checkResultForFailure(await deployed[item.name]());
           });
         }
       }
@@ -85,7 +89,7 @@ const SolidityTest = {
       if (item.name.startsWith("test")) {
         const test = new TestCase(item.name, async () => {
           let deployed = await abstraction.deployed();
-          return processResult(await deployed[item.name]());
+          await checkResultForFailure(await deployed[item.name]());
         });
 
         test.timeout(runner.TEST_TIMEOUT);
