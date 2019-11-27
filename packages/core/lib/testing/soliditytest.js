@@ -207,7 +207,7 @@ const SolidityTest = {
     const deployed = await abstraction.deployed();
     let balance;
     if (deployed.initialBalance) {
-      balance = deployed.initialBalance.call();
+      balance = await deployed.initialBalance.call();
     } else {
       balance = 0;
     }
