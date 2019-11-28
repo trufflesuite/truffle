@@ -1,23 +1,14 @@
-var EPMSource = require("./epm");
-var NPMSource = require("./npm");
-var GlobalNPMSource = require("./globalnpm");
-var FSSource = require("./fs");
-var whilst = require("async/whilst");
-var contract = require("@truffle/contract");
-var expect = require("@truffle/expect");
-var provision = require("@truffle/provisioner");
+const whilst = require("async/whilst");
+const contract = require("@truffle/contract");
+const expect = require("@truffle/expect");
+const provision = require("@truffle/provisioner");
+const sources = require("../sources");
 
 function Resolver(options) {
   expect.options(options, ["working_directory", "contracts_build_directory"]);
 
   this.options = options;
-
-  this.sources = [
-    new EPMSource(options.working_directory, options.contracts_build_directory),
-    new NPMSource(options.working_directory),
-    new GlobalNPMSource(),
-    new FSSource(options.working_directory, options.contracts_build_directory)
-  ];
+  this.sources = sources(options);
 }
 
 // This function might be doing too much. If so, too bad (for now).

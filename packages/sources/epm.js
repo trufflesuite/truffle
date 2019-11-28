@@ -68,7 +68,7 @@ EPM.prototype.require = function(import_path, _search_path) {
   return json;
 };
 
-(EPM.prototype.resolve = function(import_path, imported_from) {
+(EPM.prototype.resolve = function(import_path, imported_from, callback) {
   var separator = import_path.indexOf("/");
   var package_name = import_path.substring(0, separator);
   var internal_path = import_path.substring(separator + 1);
@@ -106,10 +106,7 @@ EPM.prototype.require = function(import_path, _search_path) {
     }
   }
 
-  return {
-    body,
-    file_path: import_path
-  }
+  return callback(null, body, import_path);
 }),
   // We're resolving package paths to other package paths, not absolute paths.
   // This will ensure the source fetcher conintues to use the correct sources for packages.

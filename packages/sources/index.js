@@ -10,6 +10,6 @@ module.exports = (options, findContracts) => {
     new NPMSource(options.working_directory),
     new GlobalNPMSource(),
     new FSSource(options.working_directory, options.contracts_build_directory),
-    new TestSource(options, findContracts)
+    // new TestSource(options, findContracts)
   ]
 }

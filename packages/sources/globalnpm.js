@@ -2,7 +2,6 @@ const path = require("path");
 const fs = require("fs");
 const detectInstalled = require("detect-installed");
 const get_installed_path = require("get-installed-path");
-
 function GlobalNPM() {}
 
 GlobalNPM.prototype.require = function(import_path) {
@@ -33,7 +32,7 @@ GlobalNPM.prototype.require = function(import_path) {
   }
 };
 
-GlobalNPM.prototype.resolve = function(import_path, imported_from) {
+GlobalNPM.prototype.resolve = function(import_path, imported_from, callback) {
   let [package_name] = import_path.split("/", 1);
   let body;
   if (detectInstalled.sync(package_name)) {
@@ -48,10 +47,7 @@ GlobalNPM.prototype.resolve = function(import_path, imported_from) {
   }
 
   // If nothing's found, body returns `undefined`
-  return {
-    body,
-    file_path: import_path
-  }
+  return callback(null, body, import_path);
 };
 
 // We're resolving package paths to other package paths, not absolute paths.

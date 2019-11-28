@@ -31,7 +31,7 @@ NPM.prototype.require = function(import_path, search_path) {
   }
 };
 
-NPM.prototype.resolve = function(import_path, imported_from) {
+NPM.prototype.resolve = function(import_path, imported_from, callback) {
   // If nothing's found, body returns `undefined`
   var body;
   var modulesDir = this.working_directory;
@@ -51,10 +51,7 @@ NPM.prototype.resolve = function(import_path, imported_from) {
       break;
     }
   }
-  return {
-    body,
-    file_path: import_path
-  }
+  return callback(null, body, import_path);
 };
 
 // We're resolving package paths to other package paths, not absolute paths.
