@@ -195,35 +195,49 @@ export function* decodeEvent(
   let libraryAllocations: {
     [contextHash: string]: AbiData.Allocate.EventAllocation[];
   }; //similar
+  let contractAnonymousAllocations: {
+    [contextHash: string]: AbiData.Allocate.EventAllocation[];
+  };
+  let libraryAnonymousAllocations: {
+    [contextHash: string]: AbiData.Allocate.EventAllocation[];
+  };
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
-  if (topicsCount > 0) {
-    rawSelector = yield* read(
-      {
-        location: "eventtopic",
-        topic: 0
-      },
-      info.state
-    );
-    selector = Conversion.toHexString(rawSelector);
+  if (allocations[topicsCount]) {
+    if (topicsCount > 0) {
+      rawSelector = yield* read(
+        {
+          location: "eventtopic",
+          topic: 0
+        },
+        info.state
+      );
+      if (allocations[topicsCount].bySelector[selector]) {
+        ({
+          contract: contractAllocations,
+          library: libraryAllocations
+        } = allocations[topicsCount].bySelector[selector]);
+      } else {
+        contractAllocations = {};
+        libraryAllocations = {};
+      }
+      selector = Conversion.toHexString(rawSelector);
+    } else {
+      //if we don't have a selector, it means we don't have any non-anonymous events
+      contractAllocations = {};
+      libraryAllocations = {};
+    }
+    //now: let's get our allocations for anonymous events
     ({
-      contract: contractAllocations,
-      library: libraryAllocations
-    } = allocations[topicsCount].bySelector[selector] || {
-      contract: {},
-      library: {}
-    });
+      contract: contractAnonymousAllocations,
+      library: libraryAnonymousAllocations
+    } = allocations[topicsCount].anonymous);
   } else {
-    //if we don't have a selector, it means we don't have any non-anonymous events
-    contractAllocations = {};
-    libraryAllocations = {};
+    //if there's not even an allocation for the topics count, we can't
+    //decode; we could do this the honest way of setting all four allocation
+    //objects to {}, but let's just short circuit
+    return [];
   }
-  //now: let's get our allocations for anonymous events
-  //note: these ones map contract IDs to *arrays* of event allocations, not individual allocations!
-  const {
-    contract: contractAnonymousAllocations,
-    library: libraryAnonymousAllocations
-  } = allocations[topicsCount].anonymous;
   //now: what contract are we (probably) dealing with? let's get its code to find out
   const codeBytes: Uint8Array = yield {
     type: "code",
