@@ -558,42 +558,74 @@ function allocateEvent(
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations,
   compiler: Compiler.CompilerVersion | undefined
-): EventAllocation {
+): EventAllocation | undefined {
   let parameterTypes: EventParameterInfo[];
   let id: string;
   //first: determine the corresponding event node
   //search through base contracts, from most derived (right) to most base (left)
   let node: Ast.AstNode | undefined = undefined;
+  let definedIn: Format.Types.ContractType | undefined = undefined;
   let allocationMode: DecodingMode = "full"; //degrade to abi as needed
   if (contractNode) {
-    const linearizedBaseContracts = contractNode.linearizedBaseContracts;
-    node = linearizedBaseContracts.reduceRight(
-      (foundNode: Ast.AstNode, baseContractId: number) => {
-        if (foundNode !== undefined) {
-          return foundNode; //once we've found something, we don't need to keep looking
-        }
-        let baseContractNode = referenceDeclarations[baseContractId];
-        if (baseContractNode === undefined) {
-          return null; //return null rather than undefined so that this will propagate through
-          //(i.e. by returning null here we give up the search)
-          //(we don't want to continue due to possibility of grabbing the wrong override)
-        }
-        return baseContractNode.nodes.find(
-          //may be undefined! that's OK!
-          eventNode =>
-            AbiDataUtils.definitionMatchesAbi(
-              //note this needn't actually be a event node, but then it will return false
-              abiEntry,
-              eventNode,
-              referenceDeclarations
-            )
-        );
-      },
-      undefined //start with no node found
+    let linearizedBaseContractsMinusSelf = contractNode.linearizedBaseContracts.slice();
+    linearizedBaseContractsMinusSelf.pop(); //remove self
+    //first: check same contract for the event
+    node = contractNode.nodes.find(eventNode =>
+      AbiDataUtils.definitionMatchesAbi(
+        //note this needn't actually be an event node, but then it will
+        //return false
+        abiEntry,
+        eventNode,
+        referenceDeclarations
+      )
     );
+    //if we found the node, great!  If not...
+    if (!node) {
+      //let's search for the node among the base contracts.
+      //but if we find it...
+      //[note: the following code is overcomplicated; it was used
+      //when we were trying to get the actual node, it's overcomplicated
+      //now that we're just determining its presence.  oh well]
+      node = linearizedBaseContractsMinusSelf.reduceRight(
+        (foundNode: Ast.AstNode, baseContractId: number) => {
+          if (foundNode !== undefined) {
+            return foundNode; //once we've found something, we don't need to keep looking
+          }
+          let baseContractNode = referenceDeclarations[baseContractId];
+          if (baseContractNode === undefined) {
+            return null; //return null rather than undefined so that this will propagate through
+            //(i.e. by returning null here we give up the search)
+            //(we don't want to continue due to possibility of grabbing the wrong override)
+          }
+          return baseContractNode.nodes.find(
+            //may be undefined! that's OK!
+            eventNode =>
+              AbiDataUtils.definitionMatchesAbi(
+                //note this needn't actually be a event node, but then it will return false
+                abiEntry,
+                eventNode,
+                referenceDeclarations
+              )
+          );
+        },
+        undefined //start with no node found
+      );
+      if (node) {
+        //...if we find the node in an ancestor, we
+        //deliberately *don't* allocate!  instead such cases
+        //will be handled during a later combination step
+        return undefined;
+      }
+    }
   }
   //otherwise, leave node undefined
-  if (!node) {
+  if (node) {
+    //if we found the node, let's also turn it into a type
+    definedIn = <Format.Types.ContractType>(
+      Ast.Import.definitionToStoredType(node, compiler)
+    ); //can skip 3rd argument here
+  } else {
+    //if no node, have to fall back into ABI mode
     allocationMode = "abi";
   }
   //now: construct the list of parameter types, attaching indexedness info
@@ -681,6 +713,7 @@ function allocateEvent(
   return {
     abi: abiEntry,
     contextHash,
+    definedIn,
     arguments: argumentsAllocation,
     allocationMode,
     anonymous: abiEntry.anonymous
@@ -805,35 +838,21 @@ function getEventAllocationsForContract(
 ): EventAllocationTemporary[] {
   return abi
     .filter((abiEntry: AbiData.AbiEntry) => abiEntry.type === "event")
-    .map(
-      (abiEntry: AbiData.EventAbiEntry) =>
-        abiEntry.anonymous
-          ? {
-              topics: AbiDataUtils.topicsCount(abiEntry),
-              allocation: allocateEvent(
-                abiEntry,
-                contractNode,
-                contextHash,
-                referenceDeclarations,
-                userDefinedTypes,
-                abiAllocations,
-                compiler
-              )
-            }
-          : {
-              selector: AbiDataUtils.abiSelector(abiEntry),
-              topics: AbiDataUtils.topicsCount(abiEntry),
-              allocation: allocateEvent(
-                abiEntry,
-                contractNode,
-                contextHash,
-                referenceDeclarations,
-                userDefinedTypes,
-                abiAllocations,
-                compiler
-              )
-            }
-    );
+    .map((abiEntry: AbiData.EventAbiEntry) => ({
+      selector: AbiDataUtils.abiSelector(abiEntry),
+      anonymous: abiEntry.anonymous,
+      topics: AbiDataUtils.topicsCount(abiEntry),
+      allocation: allocateEvent(
+        abiEntry,
+        contractNode,
+        contextHash,
+        referenceDeclarations,
+        userDefinedTypes,
+        abiAllocations,
+        compiler
+      )
+    }))
+    .filter(({ allocation }) => allocation);
 }
 
 //note: constructor context is ignored by this function; no need to pass it in
@@ -843,6 +862,25 @@ export function getEventAllocations(
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations
 ): EventAllocations {
+  //first: do allocations for individual contracts
+  let individualAllocations: {
+    [contextHash: string]: {
+      [selector: string]: {
+        contractNode: Ast.AstNode;
+        context: Contexts.DecoderContext;
+        allocationTemporary: EventAllocationTemporary;
+      };
+    };
+  } = {};
+  let groupedAllocations: {
+    [contextHash: string]: {
+      [selector: string]: {
+        contractNode: Ast.AstNode;
+        context: Contexts.DecoderContext;
+        allocationsTemporary: EventAllocationTemporary[];
+      };
+    };
+  } = {};
   let allocations: EventAllocations = {};
   for (let { abi, deployedContext, contractNode, compiler } of contracts) {
     if (!deployedContext) {
@@ -859,32 +897,114 @@ export function getEventAllocations(
       abiAllocations,
       compiler
     );
-    for (let { selector, topics, allocation } of contractAllocations) {
-      if (allocations[topics] === undefined) {
-        allocations[topics] = {
-          bySelector: {},
-          anonymous: { contract: {}, library: {} }
-        };
+    //we'll use selector *even for anonymous* here, because it's just
+    //for determining what overrides what
+    individualAllocations[contextHash] = {};
+    for (let allocationTemporary of contractAllocations) {
+      individualAllocations[contextHash][allocationTemporary.selector] = {
+        context: deployedContext,
+        allocationTemporary,
+        contractNode
+      };
+    }
+  }
+  //now: put things together for inheritance
+  //note how we always put things in order from most derived to most base
+  for (let contextHash in individualAllocations) {
+    for (let selector in individualAllocations[contextHash]) {
+      let {
+        contractNode,
+        context,
+        allocationTemporary
+      } = individualAllocations[contextHash][selector];
+      //first, copy from individual allocations
+      groupedAllocations[contextHash] = {};
+      groupedAllocations[contextHash][selector] = {
+        contractNode,
+        context,
+        allocationsTemporary: [allocationTemporary]
+      };
+      //if no contract node, that's all.  if there is...
+      if (contractNode) {
+        //...we have to do inheritance processing
+        let linearizedBaseContractsFromBase = contractNode.linearizedBaseContracts
+          .slice()
+          .reverse();
+        linearizedBaseContractsFromBase.shift(); //remove contract itself; only want ancestors
+        for (let baseId of linearizedBaseContractsFromBase) {
+          let baseNode = referenceDeclarations[baseId];
+          if (!baseNode) {
+            break; //not a continue!
+            //if we can't find the base node, it's better to stop the loop,
+            //rather than continue to potentially erroneous things
+          }
+          //note: we're not actually going to *use* the baseNode here.
+          //we're just checking for whether we can *find* it
+          //why? because if we couldn't find it, that means that events defined in
+          //base contracts *weren't* skipped earlier, and so we shouldn't now add them in
+          let baseContext = contracts.find(
+            contractAllocationInfo =>
+              contractAllocationInfo.contractNode.id === baseId
+          ).deployedContext;
+          if (!baseContext) {
+            continue; //I mean what else are you gonna do?
+          }
+          let baseHash = baseContext.context;
+          let baseAllocationTemporary =
+            individualAllocations[baseHash][selector].allocationTemporary;
+          groupedAllocations[contextHash][selector].allocationsTemporary.push(
+            baseAllocationTemporary
+          );
+        }
       }
-      if (selector !== undefined) {
-        if (allocations[topics].bySelector[selector] === undefined) {
-          allocations[topics].bySelector[selector] = {
-            contract: {},
-            library: {}
+    }
+  }
+  //finally: transform into final form & return
+  for (let contextHash in groupedAllocations) {
+    for (let selector in groupedAllocations[contextHash]) {
+      let { contractNode, context, allocationsTemporary } = groupedAllocations[
+        contextHash
+      ][selector];
+      for (let { anonymous, topics, allocation } of allocationsTemporary) {
+        let contractKind = context.contractKind;
+        if (allocations[topics] === undefined) {
+          allocations[topics] = {
+            bySelector: {},
+            anonymous: { contract: {}, library: {} }
           };
         }
-        allocations[topics].bySelector[selector][contractKind][
-          contextHash
-        ] = allocation;
-      } else {
-        if (
-          allocations[topics].anonymous[contractKind][contextHash] === undefined
-        ) {
-          allocations[topics].anonymous[contractKind][contextHash] = [];
+        if (!anonymous) {
+          if (allocations[topics].bySelector[selector] === undefined) {
+            allocations[topics].bySelector[selector] = {
+              contract: {},
+              library: {}
+            };
+          }
+          if (
+            allocations[topics].bySelector[selector][contractKind][
+              contextHash
+            ] === undefined
+          ) {
+            allocations[topics].bySelector[selector][contractKind][
+              contextHash
+            ] = [];
+          }
+          allocations[topics].bySelector[selector][contractKind][
+            contextHash
+          ].push(allocation);
+        } else {
+          if (
+            allocations[topics].anonymous[contractKind][contextHash] ===
+            undefined
+          ) {
+            allocations[topics].anonymous[contractKind][contextHash] = [];
+          }
+          if (allocation) {
+            allocations[topics].anonymous[contractKind][contextHash].push(
+              allocation
+            );
+          }
         }
-        allocations[topics].anonymous[contractKind][contextHash].push(
-          allocation
-        );
       }
     }
   }

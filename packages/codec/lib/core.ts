@@ -190,10 +190,10 @@ export function* decodeEvent(
   let rawSelector: Uint8Array;
   let selector: string;
   let contractAllocations: {
-    [contextHash: string]: AbiData.Allocate.EventAllocation;
+    [contextHash: string]: AbiData.Allocate.EventAllocation[];
   }; //for non-anonymous events
   let libraryAllocations: {
-    [contextHash: string]: AbiData.Allocate.EventAllocation;
+    [contextHash: string]: AbiData.Allocate.EventAllocation[];
   }; //similar
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
@@ -242,9 +242,7 @@ export function* decodeEvent(
     const contractAllocation = contractAllocations[contextHash];
     const contractAnonymousAllocation =
       contractAnonymousAllocations[contextHash];
-    possibleContractAllocations = contractAllocation
-      ? [contractAllocation]
-      : [];
+    possibleContractAllocations = contractAllocation || [];
     possibleContractAnonymousAllocations = contractAnonymousAllocation || [];
   } else {
     //if we couldn't determine the contract, well, we have to assume it's from a library
@@ -252,7 +250,9 @@ export function* decodeEvent(
     possibleContractAnonymousAllocations = [];
   }
   //now we get all the library allocations!
-  const possibleLibraryAllocations = Object.values(libraryAllocations);
+  const possibleLibraryAllocations = [].concat(
+    ...Object.values(libraryAllocations)
+  );
   const possibleLibraryAnonymousAllocations = [].concat(
     ...Object.values(libraryAnonymousAllocations)
   );
@@ -276,7 +276,8 @@ export function* decodeEvent(
     let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     const contextHash = allocation.contextHash;
     const attemptContext = info.contexts[contextHash];
-    const contractType = Contexts.Import.contextToType(attemptContext);
+    const emittingContractType = Contexts.Import.contextToType(attemptContext);
+    const contractType = allocation.definedIn;
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];
     for (const argumentAllocation of allocation.arguments) {
@@ -381,7 +382,8 @@ export function* decodeEvent(
     if (allocation.abi.anonymous) {
       decodings.push({
         kind: "anonymous",
-        class: contractType,
+        definedIn: contractType,
+        class: emittingContractType,
         abi: allocation.abi,
         arguments: decodedArguments,
         decodingMode
@@ -389,7 +391,8 @@ export function* decodeEvent(
     } else {
       decodings.push({
         kind: "event",
-        class: contractType,
+        definedIn: contractType,
+        class: emittingContractType,
         abi: allocation.abi,
         arguments: decodedArguments,
         selector,

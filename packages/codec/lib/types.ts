@@ -214,6 +214,11 @@ export interface EventDecoding {
    */
   class: Format.Types.ContractType;
   /**
+   * The class of the contract that (according to this decoding) defined the event, as a Format.Types.ContractType.
+   * May be omitted if we can't determine it, as may occur in ABI mode.
+   */
+  definedIn?: Format.Types.ContractType;
+  /**
    * The list of decoded arguments to the event.
    */
   arguments: AbiArgument[];
@@ -250,6 +255,11 @@ export interface AnonymousDecoding {
    * (The address of the contract the EVM thinks emitted the event can of course be found in the original log.)
    */
   class: Format.Types.ContractType;
+  /**
+   * The class of the contract that (according to this decoding) defined the event, as a Format.Types.ContractType.
+   * May be omitted if we can't determine it, as may occur in ABI mode.
+   */
+  definedIn?: Format.Types.ContractType;
   /**
    * The list of decoded arguments to the event.
    */
