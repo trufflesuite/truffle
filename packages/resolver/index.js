@@ -37,28 +37,25 @@ Resolver.prototype.resolve = function(import_path, imported_from, callback) {
 
   var resolved_body = null;
   var resolved_path = null;
-  var current_index = -1;
-  var current_source;
+  var source;
+  var current_index = 0;
 
   whilst(
     function() {
-      return !resolved_body && current_index < self.sources.length - 1;
+      return !resolved_body && current_index <= self.sources.length - 1;
     },
     function(next) {
-      current_index += 1;
-      current_source = self.sources[current_index];
-
-      current_source.resolve(import_path, imported_from, function(
-        err,
-        body,
-        file_path
-      ) {
-        if (!err && body) {
-          resolved_body = body;
-          resolved_path = file_path;
-        }
-        next(err);
-      });
+      source = self.sources[current_index];
+      source.resolve(import_path, imported_from)
+        .then(result => {
+          if (result.body) {
+            resolved_body = result.body;
+            resolved_path = result.filePath;
+          }
+          current_index++;
+          next();
+        })
+        .catch(next);
     },
     function(err) {
       if (err) return callback(err);
@@ -73,7 +70,7 @@ Resolver.prototype.resolve = function(import_path, imported_from, callback) {
         return callback(new Error(message));
       }
 
-      callback(null, resolved_body, resolved_path, current_source);
+      callback(null, resolved_body, resolved_path, source);
     }
   );
 };
