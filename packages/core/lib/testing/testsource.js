@@ -12,76 +12,67 @@ TestSource.prototype.require = function() {
   return null; // FSSource will get it.
 };
 
-TestSource.prototype.resolve = function(importPath, callback) {
+TestSource.prototype.resolve = async function(importPath) {
   const self = this;
 
   if (importPath === "truffle/DeployedAddresses.sol") {
-    return find_contracts(this.config.contracts_directory, function(
-      err,
-      sourceFiles
-    ) {
-      // Ignore this error. Continue on.
+    const sourceFiles = await find_contracts(this.config.contracts_directory);
 
-      let abstractionFiles;
-      try {
-        const buildDirFiles = (abstractionFiles = fse.readdirSync(
-          self.config.contracts_build_directory
-        ));
-        abstractionFiles = buildDirFiles.filter(file =>
-          file.match(/^.*.json$/)
-        );
+    let abstractionFiles;
+    const buildDirFiles = (abstractionFiles = fse.readdirSync(
+      self.config.contracts_build_directory
+    ));
+    abstractionFiles = buildDirFiles.filter(file =>
+      file.match(/^.*.json$/)
+    );
 
-        const mapping = {};
+    const mapping = {};
 
-        const blacklist = ["Assert", "DeployedAddresses"];
+    const blacklist = ["Assert", "DeployedAddresses"];
 
-        // Ensure we have a mapping for source files and abstraction files
-        // to prevent any compile errors in tests.
-        sourceFiles.forEach(file => {
-          const name = path.basename(file, ".sol");
-          if (blacklist.indexOf(name) >= 0) return;
-          mapping[name] = false;
-        });
-
-        abstractionFiles.forEach(file => {
-          const name = path.basename(file, ".json");
-          if (blacklist.indexOf(name) >= 0) return;
-          mapping[name] = false;
-        });
-
-        const filesData = abstractionFiles.map(file => {
-          return fse.readFileSync(
-            path.join(self.config.contracts_build_directory, file),
-            "utf8"
-          );
-        });
-
-        const addresses = filesData
-          .map(data => JSON.parse(data))
-          .map(json => contract(json))
-          .map(c => {
-            c.setNetwork(self.config.network_id);
-            if (c.isDeployed()) return c.address;
-            return null;
-          });
-
-        addresses.forEach((address, i) => {
-          const name = path.basename(abstractionFiles[i], ".json");
-
-          if (blacklist.indexOf(name) >= 0) return;
-
-          mapping[name] = address;
-        });
-
-        const addressSource = Deployed.makeSolidityDeployedAddressesLibrary(
-          mapping,
-          self.config.compilers
-        );
-        return callback(null, addressSource, importPath);
-      } catch (error) {
-        return callback(error);
-      }
+    // Ensure we have a mapping for source files and abstraction files
+    // to prevent any compile errors in tests.
+    sourceFiles.forEach(file => {
+      const name = path.basename(file, ".sol");
+      if (blacklist.indexOf(name) >= 0) return;
+      mapping[name] = false;
     });
+
+    abstractionFiles.forEach(file => {
+      const name = path.basename(file, ".json");
+      if (blacklist.indexOf(name) >= 0) return;
+      mapping[name] = false;
+    });
+
+    const filesData = abstractionFiles.map(file => {
+      return fse.readFileSync(
+        path.join(self.config.contracts_build_directory, file),
+        "utf8"
+      );
+    });
+
+    const addresses = filesData
+      .map(data => JSON.parse(data))
+      .map(json => contract(json))
+      .map(c => {
+        c.setNetwork(self.config.network_id);
+        if (c.isDeployed()) return c.address;
+        return null;
+      });
+
+    addresses.forEach((address, i) => {
+      const name = path.basename(abstractionFiles[i], ".json");
+
+      if (blacklist.indexOf(name) >= 0) return;
+
+      mapping[name] = address;
+    });
+
+    const addressSource = Deployed.makeSolidityDeployedAddressesLibrary(
+      mapping,
+      self.config.compilers
+    );
+    return { body: addressSource, resolvedPath: importPath };
   }
   const assertLibraries = [
     "Assert",
@@ -102,19 +93,13 @@ TestSource.prototype.resolve = function(importPath, callback) {
 
   for (const lib of assertLibraries) {
     if (importPath === `truffle/${lib}.sol`) {
-      try {
-        const body = fse.readFileSync(
-          path.resolve(path.join(__dirname, `${lib}.sol`)),
-          { encoding: "utf8" }
-        );
-        return callback(null, body, importPath);
-      } catch (error) {
-        return callback(error);
-      }
+      const body = fse.readFileSync(
+        path.resolve(path.join(__dirname, `${lib}.sol`)),
+        { encoding: "utf8" }
+      );
+      return { body, resolvedPath: importPath };
     }
   }
-
-  return callback();
 };
 
 TestSource.prototype.resolve_dependency_path = (importPath, dependencyPath) => {
