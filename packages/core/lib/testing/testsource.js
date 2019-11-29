@@ -30,63 +30,57 @@ TestSource.prototype.resolve = function(importPath, callback) {
         abstractionFiles = buildDirFiles.filter(file =>
           file.match(/^.*.json$/)
         );
+
+        const mapping = {};
+
+        const blacklist = ["Assert", "DeployedAddresses"];
+
+        // Ensure we have a mapping for source files and abstraction files
+        // to prevent any compile errors in tests.
+        sourceFiles.forEach(file => {
+          const name = path.basename(file, ".sol");
+          if (blacklist.indexOf(name) >= 0) return;
+          mapping[name] = false;
+        });
+
+        abstractionFiles.forEach(file => {
+          const name = path.basename(file, ".json");
+          if (blacklist.indexOf(name) >= 0) return;
+          mapping[name] = false;
+        });
+
+        const filesData = abstractionFiles.map(file => {
+          return fse.readFileSync(
+            path.join(self.config.contracts_build_directory, file),
+            "utf8"
+          );
+        });
+
+        const addresses = filesData
+          .map(data => JSON.parse(data))
+          .map(json => contract(json))
+          .map(c => {
+            c.setNetwork(self.config.network_id);
+            if (c.isDeployed()) return c.address;
+            return null;
+          });
+
+        addresses.forEach((address, i) => {
+          const name = path.basename(abstractionFiles[i], ".json");
+
+          if (blacklist.indexOf(name) >= 0) return;
+
+          mapping[name] = address;
+        });
+
+        const addressSource = Deployed.makeSolidityDeployedAddressesLibrary(
+          mapping,
+          self.config.compilers
+        );
+        return callback(null, addressSource, importPath);
       } catch (error) {
         return callback(error);
       }
-
-      const mapping = {};
-
-      const blacklist = ["Assert", "DeployedAddresses"];
-
-      // Ensure we have a mapping for source files and abstraction files
-      // to prevent any compile errors in tests.
-      sourceFiles.forEach(file => {
-        const name = path.basename(file, ".sol");
-        if (blacklist.indexOf(name) >= 0) return;
-        mapping[name] = false;
-      });
-
-      abstractionFiles.forEach(file => {
-        const name = path.basename(file, ".json");
-        if (blacklist.indexOf(name) >= 0) return;
-        mapping[name] = false;
-      });
-
-      const promises = abstractionFiles.map(file => {
-        return fse.readFile(
-          path.join(self.config.contracts_build_directory, file),
-          "utf8"
-        );
-      });
-
-      Promise.all(promises)
-        .then(filesData => {
-          const addresses = filesData
-            .map(data => JSON.parse(data))
-            .map(json => contract(json))
-            .map(c => {
-              c.setNetwork(self.config.network_id);
-              if (c.isDeployed()) return c.address;
-              return null;
-            });
-
-          addresses.forEach((address, i) => {
-            const name = path.basename(abstractionFiles[i], ".json");
-
-            if (blacklist.indexOf(name) >= 0) return;
-
-            mapping[name] = address;
-          });
-
-          return Deployed.makeSolidityDeployedAddressesLibrary(
-            mapping,
-            self.config.compilers
-          );
-        })
-        .then(addressSource => {
-          callback(null, addressSource, importPath);
-        })
-        .catch(callback);
     });
   }
   const assertLibraries = [
@@ -107,12 +101,17 @@ TestSource.prototype.resolve = function(importPath, callback) {
   ];
 
   for (const lib of assertLibraries) {
-    if (importPath === `truffle/${lib}.sol`)
-      return fse.readFile(
-        path.resolve(path.join(__dirname, `${lib}.sol`)),
-        { encoding: "utf8" },
-        (err, body) => callback(err, body, importPath)
-      );
+    if (importPath === `truffle/${lib}.sol`) {
+      try {
+        const body = fse.readFileSync(
+          path.resolve(path.join(__dirname, `${lib}.sol`)),
+          { encoding: "utf8" }
+        );
+        return callback(null, body, importPath);
+      } catch (error) {
+        return callback(error);
+      }
+    }
   }
 
   return callback();
