@@ -28,15 +28,15 @@ TestResolver.prototype.require = function(import_path) {
 };
 
 TestResolver.prototype.resolve = function(
-  import_path,
-  imported_from,
+  importPath,
+  importedFrom,
   callback
 ) {
   var self = this;
-  this.source.resolve(import_path)
+  this.source.resolve(importPath)
     .then(result => {
       if (result && result.body) return callback(null, result.body, result.resolvedPath);
-      self.resolver.resolve(import_path, imported_from, callback);
+      self.resolver.resolve(importPath, importedFrom, callback);
     })
     .catch(callback);
 };
