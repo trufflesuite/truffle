@@ -2,7 +2,7 @@ const whilst = require("async/whilst");
 const contract = require("@truffle/contract");
 const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
-const sources = require("../sources");
+const sources = require("./sources");
 
 function Resolver(options) {
   expect.options(options, ["working_directory", "contracts_build_directory"]);
