@@ -212,16 +212,17 @@ export function* decodeEvent(
         },
         info.state
       );
+      selector = Conversion.toHexString(rawSelector);
       if (allocations[topicsCount].bySelector[selector]) {
         ({
           contract: contractAllocations,
           library: libraryAllocations
         } = allocations[topicsCount].bySelector[selector]);
       } else {
+        debug("no allocations for that selector!");
         contractAllocations = {};
         libraryAllocations = {};
       }
-      selector = Conversion.toHexString(rawSelector);
     } else {
       //if we don't have a selector, it means we don't have any non-anonymous events
       contractAllocations = {};
@@ -236,6 +237,7 @@ export function* decodeEvent(
     //if there's not even an allocation for the topics count, we can't
     //decode; we could do this the honest way of setting all four allocation
     //objects to {}, but let's just short circuit
+    debug("no allocations for that topic count!");
     return [];
   }
   //now: what contract are we (probably) dealing with? let's get its code to find out
@@ -260,6 +262,7 @@ export function* decodeEvent(
     possibleContractAnonymousAllocations = contractAnonymousAllocation || [];
   } else {
     //if we couldn't determine the contract, well, we have to assume it's from a library
+    debug("couldn't find context");
     possibleContractAllocations = [];
     possibleContractAnonymousAllocations = [];
   }
@@ -374,13 +377,11 @@ export function* decodeEvent(
     const indexedValues = decodedArguments
       .filter(argument => argument.indexed)
       .map(argument => argument.value);
-    debug("indexedValues: %O", indexedValues);
     const reEncodedTopics = indexedValues.map(Topic.Encode.encodeTopic);
     const encodedTopics = info.state.eventtopics;
     //now: do *these* match?
     const selectorAdjustment = allocation.anonymous ? 0 : 1;
     for (let i = 0; i < reEncodedTopics.length; i++) {
-      debug("encodedTopics[i]: %O", encodedTopics[i]);
       if (
         !Evm.Utils.equalData(
           reEncodedTopics[i],
