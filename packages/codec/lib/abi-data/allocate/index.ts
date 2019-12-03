@@ -855,11 +855,14 @@ function getEventAllocationsForContract(
         abiAllocations,
         compiler
       )
-    }))
-    .filter(({ allocation }) => allocation);
+    }));
+  //note we do *not* filter out undefined allocations; we need these as placeholders
 }
 
 //note: constructor context is ignored by this function; no need to pass it in
+//TODO: put the goddamn context & contractNode info back in >_>
+//filter out cases of undefined allocation on passing from individual to grouped
+//get rid of allSelectors
 export function getEventAllocations(
   contracts: ContractAllocationInfo[],
   referenceDeclarations: Ast.AstNodes,
@@ -870,8 +873,8 @@ export function getEventAllocations(
   let individualAllocations: {
     [contextHash: string]: {
       [selector: string]: {
-        contractNode: Ast.AstNode;
         context: Contexts.DecoderContext;
+        contractNode: Ast.AstNode;
         allocationTemporary: EventAllocationTemporary;
       };
     };
@@ -879,8 +882,8 @@ export function getEventAllocations(
   let groupedAllocations: {
     [contextHash: string]: {
       [selector: string]: {
-        contractNode: Ast.AstNode;
         context: Contexts.DecoderContext;
+        contractNode: Ast.AstNode;
         allocationsTemporary: EventAllocationTemporary[];
       };
     };
@@ -909,8 +912,8 @@ export function getEventAllocations(
     for (let allocationTemporary of contractAllocations) {
       individualAllocations[contextHash][allocationTemporary.selector] = {
         context: deployedContext,
-        allocationTemporary,
-        contractNode
+        contractNode,
+        allocationTemporary
       };
     }
   }
@@ -920,15 +923,18 @@ export function getEventAllocations(
     groupedAllocations[contextHash] = {};
     for (let selector in individualAllocations[contextHash]) {
       let {
-        contractNode,
         context,
+        contractNode,
         allocationTemporary
       } = individualAllocations[contextHash][selector];
+      let allocationsTemporary = allocationTemporary.allocation
+        ? [allocationTemporary]
+        : []; //filter out undefined allocations
       //first, copy from individual allocations
       groupedAllocations[contextHash][selector] = {
-        contractNode,
         context,
-        allocationsTemporary: [allocationTemporary]
+        contractNode,
+        allocationsTemporary
       };
       //if no contract node, that's all.  if there is...
       if (contractNode) {
@@ -936,8 +942,10 @@ export function getEventAllocations(
         let linearizedBaseContractsMinusSelf = contractNode.linearizedBaseContracts.slice();
         linearizedBaseContractsMinusSelf.shift(); //remove contract itself; only want ancestors
         for (let baseId of linearizedBaseContractsMinusSelf) {
+          debug("checking base baseId: %d", baseId);
           let baseNode = referenceDeclarations[baseId];
           if (!baseNode) {
+            debug("failed to find node for baseId: %d", baseId);
             break; //not a continue!
             //if we can't find the base node, it's better to stop the loop,
             //rather than continue to potentially erroneous things
@@ -948,18 +956,24 @@ export function getEventAllocations(
           //base contracts *weren't* skipped earlier, and so we shouldn't now add them in
           let baseContext = contracts.find(
             contractAllocationInfo =>
+              contractAllocationInfo.contractNode &&
               contractAllocationInfo.contractNode.id === baseId
           ).deployedContext;
           if (!baseContext) {
+            debug("failed to find context for baseId: %d", baseId);
             continue; //I mean what else are you gonna do?
           }
           let baseHash = baseContext.context;
           if (individualAllocations[baseHash][selector] !== undefined) {
-            let baseAllocationTemporary =
+            let baseAllocation =
               individualAllocations[baseHash][selector].allocationTemporary;
-            groupedAllocations[contextHash][selector].allocationsTemporary.push(
-              baseAllocationTemporary
-            );
+            debug("pushing inherited alloc from baseId: %d", baseId);
+            if (baseAllocation.allocation) {
+              //don't push undefined!
+              groupedAllocations[contextHash][
+                selector
+              ].allocationsTemporary.push(baseAllocation);
+            }
           }
         }
       }
@@ -968,11 +982,16 @@ export function getEventAllocations(
   //finally: transform into final form & return
   for (let contextHash in groupedAllocations) {
     for (let selector in groupedAllocations[contextHash]) {
-      let { contractNode, context, allocationsTemporary } = groupedAllocations[
-        contextHash
-      ][selector];
+      let { allocationsTemporary, context } = groupedAllocations[contextHash][
+        selector
+      ];
       for (let { anonymous, topics, allocation } of allocationsTemporary) {
-        let contractKind = context.contractKind;
+        let contractKind = context.contractKind; //HACK: this is the wrong context, but libraries can't inherit, so it's OK
+        allocation = {
+          ...allocation,
+          contextHash
+        }; //the allocation's context hash at this point depends on where it was defined, but
+        //that's not what we want going in the final allocation table!
         if (allocations[topics] === undefined) {
           allocations[topics] = {
             bySelector: {},
@@ -1012,5 +1031,6 @@ export function getEventAllocations(
       }
     }
   }
+  debug("allocations: %O", allocations);
   return allocations;
 }
