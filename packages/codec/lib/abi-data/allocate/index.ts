@@ -562,7 +562,6 @@ function allocateEvent(
   //first: determine the corresponding event node
   //search through base contracts, from most derived (right) to most base (left)
   let node: Ast.AstNode | undefined = undefined;
-  let definingContract: Ast.AstNode | undefined = undefined;
   let definedIn: Format.Types.ContractType | undefined = undefined;
   let allocationMode: DecodingMode = "full"; //degrade to abi as needed
   debug("allocating ABI: %O", abiEntry);
@@ -579,31 +578,26 @@ function allocateEvent(
         referenceDeclarations
       )
     );
-    if (node) {
-      definingContract = contractNode;
-    }
     //if we found the node, great!  If not...
-    else {
+    if (!node) {
       debug("didn't find node in base contract...");
       //let's search for the node among the base contracts.
-      //but if we find it... we might not use it!
-      ({ node, definingContract } = linearizedBaseContractsMinusSelf.reduce(
-        (
-          { node: foundNode, definingContract: foundContract },
-          baseContractId: number
-        ) => {
+      //but if we find it...
+      //[note: the following code is overcomplicated; it was used
+      //when we were trying to get the actual node, it's overcomplicated
+      //now that we're just determining its presence.  oh well]
+      node = linearizedBaseContractsMinusSelf.reduce(
+        (foundNode: Ast.AstNode, baseContractId: number) => {
           if (foundNode !== undefined) {
             return foundNode; //once we've found something, we don't need to keep looking
-            //note we check node, not definedIn, because latter can be defined even if
-            //nothing found!
           }
           let baseContractNode = referenceDeclarations[baseContractId];
           if (baseContractNode === undefined) {
-            return { node: null, definedIn: null }; //return null rather than undefined so that this will propagate through
+            return null; //return null rather than undefined so that this will propagate through
             //(i.e. by returning null here we give up the search)
             //(we don't want to continue due to possibility of grabbing the wrong override)
           }
-          let nodeFound = baseContractNode.nodes.find(
+          return baseContractNode.nodes.find(
             //may be undefined! that's OK!
             eventNode =>
               AbiDataUtils.definitionMatchesAbi(
@@ -613,31 +607,25 @@ function allocateEvent(
                 referenceDeclarations
               )
           );
-          return { node: nodeFound, definingContract: baseContractNode };
-          //baseContractNode may be defined even if no node found, but we check node, not definedIn!
         },
-        { node: undefined, definingContract: undefined } //start with nothing found
-      ));
+        undefined //start with no node found
+      );
       if (node) {
-        //...if we find the node in an ancestor, and that ancestor has a
-        //is not an interface, we deliberately *don't* allocate!  instead such
-        //cases will be handled during a later combination step
-        //NOTE: This should *really* probably be, if that ancestor does not have
-        //a deployed context.  However, we can't determine that down here, because
-        //I didn't account for this problem originally!  While I could make it work
-        //that way, I don't think it's enough of a difference to bother right now...
-        if (definingContract.contractKind !== "interface") {
-          return undefined;
-        }
+        //...if we find the node in an ancestor, we
+        //deliberately *don't* allocate!  instead such cases
+        //will be handled during a later combination step
+        debug("bailing out for later handling!");
+        debug("ABI: %O", abiEntry);
+        return undefined;
       }
     }
   }
-  //otherwise, leave node and definingContract undefined
+  //otherwise, leave node undefined
   if (node) {
     debug("found node");
     //if we found the node, let's also turn it into a type
     definedIn = <Format.Types.ContractType>(
-      Ast.Import.definitionToStoredType(definingContract, compiler)
+      Ast.Import.definitionToStoredType(node, compiler)
     ); //can skip 3rd argument here
   } else {
     //if no node, have to fall back into ABI mode
