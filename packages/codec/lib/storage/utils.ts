@@ -1,6 +1,5 @@
 import debugModule from "debug";
 const debug = debugModule("codec:storage:utils");
-
 import BN from "bn.js";
 import * as Evm from "@truffle/codec/evm";
 import * as MappingKey from "@truffle/codec/mapping-key";

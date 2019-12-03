@@ -22,6 +22,7 @@ export default function* read(
     case "memory":
     case "calldata":
     case "eventdata":
+    case "returndata":
       return BytesRead.readBytes(pointer, state);
 
     case "stackliteral":
