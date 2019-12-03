@@ -79,7 +79,6 @@ function allocateStruct(
   userDefinedTypes: Format.Types.TypesById,
   existingAllocations: AbiAllocations
 ): AbiAllocations {
-  debug("allocating struct: %O", dataType);
   //NOTE: dataType here should be a *stored* type!
   //it is up to the caller to take care of this
   return allocateMembers(
@@ -255,7 +254,6 @@ function abiSizeAndAllocate(
             Format.Types.typeString(dataType)
           );
         }
-        debug("storedType: %O", storedType);
         allocations = allocateStruct(
           storedType,
           userDefinedTypes,
@@ -362,10 +360,10 @@ function allocateCalldataAndReturndata(
       break;
     case "function":
       offset = Evm.Utils.SELECTOR_SIZE;
-      //search through base contracts, from most derived (right) to most base (left)
+      //search through base contracts, from most derived (left) to most base (right)
       if (contractNode) {
         const linearizedBaseContracts = contractNode.linearizedBaseContracts;
-        node = linearizedBaseContracts.reduceRight(
+        node = linearizedBaseContracts.reduce(
           (foundNode: Ast.AstNode, baseContractId: number) => {
             if (foundNode !== undefined) {
               return foundNode; //once we've found something, we don't need to keep looking
@@ -566,9 +564,10 @@ function allocateEvent(
   let node: Ast.AstNode | undefined = undefined;
   let definedIn: Format.Types.ContractType | undefined = undefined;
   let allocationMode: DecodingMode = "full"; //degrade to abi as needed
+  debug("allocating ABI: %O", abiEntry);
   if (contractNode) {
     let linearizedBaseContractsMinusSelf = contractNode.linearizedBaseContracts.slice();
-    linearizedBaseContractsMinusSelf.pop(); //remove self
+    linearizedBaseContractsMinusSelf.shift(); //remove self
     //first: check same contract for the event
     node = contractNode.nodes.find(eventNode =>
       AbiDataUtils.definitionMatchesAbi(
@@ -581,12 +580,13 @@ function allocateEvent(
     );
     //if we found the node, great!  If not...
     if (!node) {
+      debug("didn't find node in base contract...");
       //let's search for the node among the base contracts.
       //but if we find it...
       //[note: the following code is overcomplicated; it was used
       //when we were trying to get the actual node, it's overcomplicated
       //now that we're just determining its presence.  oh well]
-      node = linearizedBaseContractsMinusSelf.reduceRight(
+      node = linearizedBaseContractsMinusSelf.reduce(
         (foundNode: Ast.AstNode, baseContractId: number) => {
           if (foundNode !== undefined) {
             return foundNode; //once we've found something, we don't need to keep looking
@@ -614,18 +614,22 @@ function allocateEvent(
         //...if we find the node in an ancestor, we
         //deliberately *don't* allocate!  instead such cases
         //will be handled during a later combination step
+        debug("bailing out for later handling!");
+        debug("ABI: %O", abiEntry);
         return undefined;
       }
     }
   }
   //otherwise, leave node undefined
   if (node) {
+    debug("found node");
     //if we found the node, let's also turn it into a type
     definedIn = <Format.Types.ContractType>(
       Ast.Import.definitionToStoredType(node, compiler)
     ); //can skip 3rd argument here
   } else {
     //if no node, have to fall back into ABI mode
+    debug("falling back to ABI because no node");
     allocationMode = "abi";
   }
   //now: construct the list of parameter types, attaching indexedness info
@@ -899,7 +903,9 @@ export function getEventAllocations(
     );
     //we'll use selector *even for anonymous* here, because it's just
     //for determining what overrides what
-    individualAllocations[contextHash] = {};
+    if (individualAllocations[contextHash] === undefined) {
+      individualAllocations[contextHash] = {};
+    }
     for (let allocationTemporary of contractAllocations) {
       individualAllocations[contextHash][allocationTemporary.selector] = {
         context: deployedContext,
@@ -911,6 +917,7 @@ export function getEventAllocations(
   //now: put things together for inheritance
   //note how we always put things in order from most derived to most base
   for (let contextHash in individualAllocations) {
+    groupedAllocations[contextHash] = {};
     for (let selector in individualAllocations[contextHash]) {
       let {
         contractNode,
@@ -918,7 +925,6 @@ export function getEventAllocations(
         allocationTemporary
       } = individualAllocations[contextHash][selector];
       //first, copy from individual allocations
-      groupedAllocations[contextHash] = {};
       groupedAllocations[contextHash][selector] = {
         contractNode,
         context,
@@ -927,11 +933,9 @@ export function getEventAllocations(
       //if no contract node, that's all.  if there is...
       if (contractNode) {
         //...we have to do inheritance processing
-        let linearizedBaseContractsFromBase = contractNode.linearizedBaseContracts
-          .slice()
-          .reverse();
-        linearizedBaseContractsFromBase.shift(); //remove contract itself; only want ancestors
-        for (let baseId of linearizedBaseContractsFromBase) {
+        let linearizedBaseContractsMinusSelf = contractNode.linearizedBaseContracts.slice();
+        linearizedBaseContractsMinusSelf.shift(); //remove contract itself; only want ancestors
+        for (let baseId of linearizedBaseContractsMinusSelf) {
           let baseNode = referenceDeclarations[baseId];
           if (!baseNode) {
             break; //not a continue!
@@ -950,11 +954,13 @@ export function getEventAllocations(
             continue; //I mean what else are you gonna do?
           }
           let baseHash = baseContext.context;
-          let baseAllocationTemporary =
-            individualAllocations[baseHash][selector].allocationTemporary;
-          groupedAllocations[contextHash][selector].allocationsTemporary.push(
-            baseAllocationTemporary
-          );
+          if (individualAllocations[baseHash][selector] !== undefined) {
+            let baseAllocationTemporary =
+              individualAllocations[baseHash][selector].allocationTemporary;
+            groupedAllocations[contextHash][selector].allocationsTemporary.push(
+              baseAllocationTemporary
+            );
+          }
         }
       }
     }
@@ -999,11 +1005,9 @@ export function getEventAllocations(
           ) {
             allocations[topics].anonymous[contractKind][contextHash] = [];
           }
-          if (allocation) {
-            allocations[topics].anonymous[contractKind][contextHash].push(
-              allocation
-            );
-          }
+          allocations[topics].anonymous[contractKind][contextHash].push(
+            allocation
+          );
         }
       }
     }
