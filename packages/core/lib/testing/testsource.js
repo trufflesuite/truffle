@@ -3,7 +3,6 @@ const path = require("path");
 const fse = require("fs-extra");
 const contract = require("@truffle/contract");
 const find_contracts = require("@truffle/contract-sources");
-const { isBundled } = require("@truffle/resolver");
 
 function TestSource(config) {
   this.config = config;
@@ -119,9 +118,10 @@ TestSource.prototype.resolve = function(importPath, callback) {
   const loggingLibraries = ["TruffleLogger"];
 
   for (const lib of loggingLibraries) {
-    const actualImportPath = isBundled
-      ? path.resolve(__dirname, path.basename(importPath))
-      : path.resolve(__dirname, "../logging", path.basename(importPath));
+    const actualImportPath =
+      typeof BUNDLE_VERSION !== "undefined"
+        ? path.resolve(__dirname, path.basename(importPath))
+        : path.resolve(__dirname, "../logging", path.basename(importPath));
     if (importPath === `truffle/${lib}.sol`)
       return fse.readFile(actualImportPath, { encoding: "utf8" }, (err, body) =>
         callback(err, body, importPath)
