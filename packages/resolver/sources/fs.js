@@ -1,6 +1,5 @@
 const path = require("path");
 const fs = require("fs");
-const { isBundled } = require("./");
 
 class FS {
   constructor(workingDirectory, contractsBuildDirectory) {
@@ -60,13 +59,14 @@ class FS {
     let body, filePath;
 
     if (importPath === "truffle/TruffleLogger.sol") {
-      const actualImportPath = isBundled
-        ? path.resolve(__dirname, path.basename(importPath))
-        : path.resolve(
-            __dirname,
-            "../core/lib/logging",
-            path.basename(importPath)
-          );
+      const actualImportPath =
+        typeof BUNDLE_VERSION !== "undefined"
+          ? path.resolve(__dirname, path.basename(importPath))
+          : path.resolve(
+              __dirname,
+              "../core/lib/logging",
+              path.basename(importPath)
+            );
       const resolvedSource = fs.readFileSync(actualImportPath, {
         encoding: "utf8"
       });
