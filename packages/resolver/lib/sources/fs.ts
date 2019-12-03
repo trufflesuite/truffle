@@ -1,6 +1,5 @@
 import path from "path";
 import fs from "fs";
-import { isBundled } from "../utils";
 
 import { ResolverSource } from "../source";
 
@@ -68,13 +67,15 @@ export class FS implements ResolverSource {
     let body, filePath;
 
     if (importPath === "truffle/TruffleLogger.sol") {
-      const actualImportPath = isBundled
-        ? path.resolve(__dirname, path.basename(importPath))
-        : path.resolve(
-            __dirname,
-            "../../core/lib/logging",
-            path.basename(importPath)
-          );
+      const actualImportPath =
+        // @ts-ignore
+        typeof BUNDLE_VERSION !== "undefined"
+          ? path.resolve(__dirname, path.basename(importPath))
+          : path.resolve(
+              __dirname,
+              "../../core/lib/logging",
+              path.basename(importPath)
+            );
       const resolvedSource = fs.readFileSync(actualImportPath, {
         encoding: "utf8"
       });

@@ -101,7 +101,7 @@ module.exports = class TestSource {
     const loggingLibraries = ["TruffleLogger"];
 
     for (const lib of loggingLibraries) {
-      const actualImportPath = isBundled
+      const actualImportPath = typeof BUNDLE_VERSION !== "undefined"
         ? path.resolve(__dirname, path.basename(importPath))
         : path.resolve(__dirname, "../logging", path.basename(importPath));
       if (importPath === `truffle/${lib}.sol`)
