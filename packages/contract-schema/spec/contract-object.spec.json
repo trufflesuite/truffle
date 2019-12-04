@@ -55,6 +55,7 @@
       "type": "string",
       "format": "date-time"
     },
+    "networkType": { "$ref": "#/definitions/NetworkType" },
     "devdoc": { "$ref": "#/definitions/NatSpec" },
     "userdoc": { "$ref": "#/definitions/NatSpec" }
   },
@@ -87,6 +88,10 @@
     },
 
     "Code": {
+      "type": "string"
+    },
+
+    "NetworkType": {
       "type": "string"
     },
 

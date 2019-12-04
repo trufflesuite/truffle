@@ -43,7 +43,10 @@ class Console extends EventEmitter {
     this.repl = options.repl || new ReplManager(options);
     this.command = new Command(tasks);
 
-    this.interfaceAdapter = new InterfaceAdapter();
+    this.interfaceAdapter = new InterfaceAdapter({
+      provider: options.provider,
+      networkType: options.networks[options.network].type
+    });
     this.web3 = new Web3Shim({
       config: options,
       provider: options.provider,

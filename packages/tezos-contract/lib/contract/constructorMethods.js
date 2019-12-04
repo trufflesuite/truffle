@@ -1,4 +1,4 @@
-const { Web3Shim } = require("@truffle/interface-adapter");
+const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
@@ -12,6 +12,7 @@ module.exports = Contract => ({
     }
 
     this.web3.setProvider(provider);
+    this.interfaceAdapter.setProvider(provider);
     this.currentProvider = provider;
   },
 
@@ -114,7 +115,7 @@ module.exports = Contract => ({
     // since artifacts don't have a network_id synced with a network configuration,
     // poll chain for network_id and sync artifacts
     try {
-      const chainNetworkID = await this.web3.eth.net.getId();
+      const chainNetworkID = await this.interfaceAdapter.getNetworkId();
       const { gasLimit } = await this.web3.eth.getBlock("latest");
       return await utils.setInstanceNetworkID(this, chainNetworkID, gasLimit);
     } catch (error) {
@@ -218,6 +219,9 @@ module.exports = Contract => ({
     bootstrap(temp);
 
     temp.web3 = new Web3Shim({
+      networkType: temp.networkType
+    });
+    temp.interfaceAdapter = new InterfaceAdapter({
       networkType: temp.networkType
     });
     temp.class_defaults = temp.prototype.defaults || {};

@@ -1,6 +1,8 @@
 const debug = require("debug")("provider");
 const Web3 = require("web3");
+const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
+const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
 
 module.exports = {
   wrap: function(provider, options) {
@@ -31,31 +33,43 @@ module.exports = {
     return provider;
   },
 
-  testConnection: function(web3, interfaceAdapter) {
+  testConnection: function(options) {
+    let networkCheckTimeout, networkType;
+    const { networks, network, config } = options;
+    if (networks && networks[network]) {
+      networkCheckTimeout =
+        networks[network].networkCheckTimeout || DEFAULT_NETWORK_CHECK_TIMEOUT;
+      networkType = networks[network].type;
+    } else {
+      networkCheckTimeout = DEFAULT_NETWORK_CHECK_TIMEOUT;
+    }
+    const provider = this.getProvider(options);
+    const web3 = new Web3Shim({ config, provider, networkType });
+    const interfaceAdapter = new InterfaceAdapter({
+      config,
+      provider,
+      networkType
+    });
     return new Promise((resolve, reject) => {
-      console.log("Testing the provider...");
-      console.log("=======================");
       const noResponseFromNetworkCall = setTimeout(() => {
-        console.log(
-          "> There was a timeout while attempting to connect " +
-            "to the network."
-        );
         const errorMessage =
-          "Failed to connect to the network using the " +
-          "supplied provider.\n       Check to see that your provider is valid.";
+          "There was a timeout while attempting to connect to the network." +
+          "\n       Check to see that your provider is valid.\n       If you " +
+          "have a slow internet connection, try configuring a longer " +
+          "timeout in your Truffle config. Use the " +
+          "networks[networkName].networkCheckTimeout property to do this.";
         throw new Error(errorMessage);
-      }, 20000);
+      }, networkCheckTimeout);
       web3.eth
         .getBlockNumber()
         .then(() => {
-          console.log("> The test was successful!");
           clearTimeout(noResponseFromNetworkCall);
           resolve(true);
         })
         .catch(error => {
           console.log(
             "> Something went wrong while attempting to connect " +
-              "to the network."
+              "to the network. Check your network configuration."
           );
           clearTimeout(noResponseFromNetworkCall);
           reject(error);

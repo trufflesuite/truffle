@@ -138,6 +138,7 @@ var properties = {
       return value;
     }
   },
+  networkType: {},
   devdoc: {},
   userdoc: {}
 };
