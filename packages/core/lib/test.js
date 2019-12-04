@@ -1,7 +1,11 @@
 const Mocha = require("mocha");
+const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 const Contracts = require("@truffle/workflow-compile/new");
 const Resolver = require("@truffle/resolver");
@@ -34,7 +38,7 @@ const Test = {
       return path.resolve(testFile);
     });
 
-    const interfaceAdapter = new InterfaceAdapter({
+    const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
@@ -81,7 +85,7 @@ const Test = {
       mocha.addFile(file);
     });
 
-    const accounts = await this.getAccounts(web3, interfaceAdapter);
+    const accounts = await this.getAccounts(interfaceAdapter);
 
     if (!config.resolver) config.resolver = new Resolver(config);
 
@@ -114,13 +118,15 @@ const Test = {
       runner
     );
 
-    await this.setJSTestGlobals(
+    await this.setJSTestGlobals({
+      config,
       web3,
       interfaceAdapter,
       accounts,
       testResolver,
-      runner
-    );
+      runner,
+      compilation: compilations.solc
+    });
 
     // Finally, run mocha.
     process.on("unhandledRejection", reason => {
@@ -128,9 +134,8 @@ const Test = {
     });
 
     return new Promise(resolve => {
-      mocha.run(failures => {
+      this.mochaRunner = mocha.run(failures => {
         config.logger.warn = warn;
-
         resolve(failures);
       });
     });
@@ -138,25 +143,19 @@ const Test = {
 
   createMocha: function(config) {
     // Allow people to specify config.mocha in their config.
-    var mochaConfig = config.mocha || {};
+    const mochaConfig = config.mocha || {};
 
     // If the command line overrides color usage, use that.
-    if (config.colors != null) {
-      mochaConfig.useColors = config.colors;
-    }
+    if (config.colors != null) mochaConfig.useColors = config.colors;
 
     // Default to true if configuration isn't set anywhere.
-    if (mochaConfig.useColors == null) {
-      mochaConfig.useColors = true;
-    }
+    if (mochaConfig.useColors == null) mochaConfig.useColors = true;
 
-    var mocha = new Mocha(mochaConfig);
-
-    return mocha;
+    return new Mocha(mochaConfig);
   },
 
-  getAccounts: function(web3, interfaceAdapter) {
-    return web3.eth.getAccounts();
+  getAccounts: function(interfaceAdapter) {
+    return interfaceAdapter.getAccounts();
   },
 
   compileContractsWithTestFilesIfNeeded: async function(
@@ -195,71 +194,86 @@ const Test = {
     return Migrate.run(migrateConfig);
   },
 
-  defineSolidityTests: function(mocha, contracts, dependencyPaths, runner) {
-    return new Promise(resolve => {
-      contracts.forEach(contract => {
-        SolidityTest.define(contract, dependencyPaths, runner, mocha);
-      });
-
-      resolve();
+  defineSolidityTests: async (mocha, contracts, dependencyPaths, runner) => {
+    contracts.forEach(contract => {
+      SolidityTest.define(contract, dependencyPaths, runner, mocha);
     });
   },
 
-  setJSTestGlobals: function(
+  setJSTestGlobals: async function({
+    config,
     web3,
     interfaceAdapter,
     accounts,
     testResolver,
-    runner
-  ) {
-    return new Promise(function(accept) {
-      global.interfaceAdapter = interfaceAdapter;
-      global.web3 = web3;
-      global.assert = chai.assert;
-      global.expect = chai.expect;
-      global.artifacts = {
-        require: import_path => testResolver.require(import_path)
-      };
+    runner,
+    compilation
+  }) {
+    global.interfaceAdapter = interfaceAdapter;
+    global.web3 = web3;
+    global.assert = chai.assert;
+    global.expect = chai.expect;
+    global.artifacts = {
+      require: import_path => testResolver.require(import_path)
+    };
 
-      const template = function(tests) {
-        this.timeout(runner.TEST_TIMEOUT);
+    global[config.debugGlobal] = async operation => {
+      if (!config.debug) {
+        config.logger.log(
+          `${colors.bold(
+            "Warning:"
+          )} Invoked in-test debugger without --debug flag. ` +
+            `Try: \`truffle test --debug\``
+        );
+        return operation;
+      }
 
-        before("prepare suite", function(done) {
-          this.timeout(runner.BEFORE_TIMEOUT);
-          runner.initialize(done);
-        });
+      // wrapped inside function so as not to load debugger on every test
+      const { CLIDebugHook } = require("./debug/mocha");
 
-        beforeEach("before test", function(done) {
-          runner.startTest(this, done);
-        });
+      // note: this.mochaRunner will be available by the time debug()
+      // is invoked
+      const hook = new CLIDebugHook(config, compilation, this.mochaRunner);
 
-        afterEach("after test", function(done) {
-          runner.endTest(this, done);
-        });
+      return await hook.debug(operation);
+    };
 
-        tests(accounts);
-      };
+    const template = function(tests) {
+      this.timeout(runner.TEST_TIMEOUT);
 
-      global.contract = function(name, tests) {
-        Mocha.describe("Contract: " + name, function() {
-          template.bind(this, tests)();
-        });
-      };
+      before("prepare suite", function(done) {
+        this.timeout(runner.BEFORE_TIMEOUT);
+        runner.initialize(done);
+      });
 
-      global.contract.only = function(name, tests) {
-        Mocha.describe.only("Contract: " + name, function() {
-          template.bind(this, tests)();
-        });
-      };
+      beforeEach("before test", function(done) {
+        runner.startTest(this, done);
+      });
 
-      global.contract.skip = function(name, tests) {
-        Mocha.describe.skip("Contract: " + name, function() {
-          template.bind(this, tests)();
-        });
-      };
+      afterEach("after test", function(done) {
+        runner.endTest(this, done);
+      });
 
-      accept();
-    });
+      tests(accounts);
+    };
+
+    global.contract = function(name, tests) {
+      Mocha.describe("Contract: " + name, function() {
+        template.bind(this, tests)();
+      });
+    };
+
+    global.contract.only = function(name, tests) {
+      Mocha.describe.only("Contract: " + name, function() {
+        template.bind(this, tests)();
+      });
+    };
+
+    global.contract.skip = function(name, tests) {
+      Mocha.describe.skip("Contract: " + name, function() {
+        template.bind(this, tests)();
+      });
+    };
   }
 };
 

@@ -8,21 +8,27 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.0.40",
+  "version": "3.1.1",
   "main": "index.js",
   "scripts": {
     "test": "mocha --no-warnings --timeout 10000 --exit"
   },
   "dependencies": {
-    "@truffle/contract": "^4.0.39",
-    "@truffle/expect": "^0.0.12",
-    "emittery": "^0.4.0"
+    "@ensdomains/ens": "^0.3.11",
+    "@ensdomains/resolver": "^0.1.9",
+    "@truffle/contract": "^4.1.1",
+    "@truffle/expect": "^0.0.13",
+    "emittery": "^0.4.0",
+    "eth-ens-namehash": "^2.0.8",
+    "ethereum-ens": "^0.7.7",
+    "web3-utils": "1.2.2"
   },
   "devDependencies": {
-    "@truffle/reporters": "^1.0.16",
-    "@truffle/workflow-compile": "^2.1.12",
+    "@truffle/reporters": "^1.0.17",
+    "@truffle/workflow-compile": "^2.1.14",
     "ganache-core": "2.8.0",
     "mocha": "5.2.0",
+    "sinon": "^7.3.2",
     "web3": "1.2.2"
   },
   "keywords": [

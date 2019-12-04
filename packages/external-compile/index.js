@@ -8,8 +8,7 @@ const glob = promisify(require("glob"));
 const fs = require("fs");
 const expect = require("@truffle/expect");
 const Schema = require("@truffle/contract-schema");
-const web3 = {};
-web3.utils = require("web3-utils");
+const web3Utils = require("web3-utils");
 
 const DEFAULT_ABI = [
   {
@@ -144,7 +143,7 @@ function decodeContents(contents) {
   }
 
   // raw binary
-  return web3.utils.bytesToHex(contents);
+  return web3Utils.bytesToHex(contents);
 }
 
 async function processTargets(targets, cwd, logger) {

@@ -572,7 +572,10 @@ describe("Methods", function() {
       const example = await Example.new(1);
       const triggered = await example.fallbackTriggered();
 
-      assert(triggered === false, "Fallback should not have been triggered yet");
+      assert(
+        triggered === false,
+        "Fallback should not have been triggered yet"
+      );
 
       await example.sendTransaction({
         value: web3.utils.toWei("1", "ether")
@@ -589,7 +592,10 @@ describe("Methods", function() {
       const example = await Example.new(1);
       const triggered = await example.fallbackTriggered();
 
-      assert(triggered === false, "Fallback should not have been triggered yet");
+      assert(
+        triggered === false,
+        "Fallback should not have been triggered yet"
+      );
 
       await example.send(web3.utils.toWei("1", "ether"));
 

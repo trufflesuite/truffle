@@ -19,14 +19,13 @@ const execute = {
   getGasEstimate: function(params, blockLimit) {
     const constructor = this;
     const interfaceAdapter = this.interfaceAdapter;
-    const web3 = this.web3;
 
     return new Promise(function(accept) {
       // Always prefer specified gas - this includes gas set by class_defaults
       if (params.gas) return accept(params.gas);
       if (!constructor.autoGas) return accept();
 
-      web3.eth
+      interfaceAdapter
         .estimateGas(params)
         .then(gas => {
           const bestEstimate = utils.multiplyBigNumberByDecimal(
@@ -55,15 +54,27 @@ const execute = {
    * @param  {Array}  _arguments    Arguments passed to method invocation
    * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
    */
-  prepareCall: function(constructor, methodABI, _arguments) {
+  prepareCall: async function(constructor, methodABI, _arguments) {
     let args = Array.prototype.slice.call(_arguments);
     let params = utils.getTxParams.call(constructor, methodABI, args);
 
     args = utils.convertToEthersBN(args);
 
-    return constructor.detectNetwork().then(network => {
-      return { args: args, params: params, network: network };
-    });
+    if (constructor.ens && constructor.ens.enabled) {
+      const { web3 } = constructor;
+      const processedValues = await utils.ens.convertENSNames({
+        ensSettings: constructor.ens,
+        inputArgs: args,
+        inputParams: params,
+        methodABI,
+        web3
+      });
+      args = processedValues.args;
+      params = processedValues.params;
+    }
+
+    const network = await constructor.detectNetwork();
+    return { args, params, network };
   },
 
   /**

@@ -1,2 +1,3 @@
-export { Web3Shim } from "./web3-shim";
-export { InterfaceAdapter } from "./interface-adapter";
+export { Web3Shim } from "./shim";
+export { createInterfaceAdapter, InterfaceAdapterOptions } from "./adapter";
+export * from "./adapter/types";

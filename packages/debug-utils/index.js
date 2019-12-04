@@ -1,18 +1,24 @@
 var OS = require("os");
 var dir = require("node-dir");
 var path = require("path");
-var async = require("async");
-var debug = require("debug")("lib:debug");
+var debug = require("debug")("debug-utils");
 var BN = require("bn.js");
 var util = require("util");
+var Codec = require("@truffle/codec");
 
-var commandReference = {
+var chromafi = require("@trufflesuite/chromafi");
+var hljsDefineSolidity = require("highlightjs-solidity");
+hljsDefineSolidity(chromafi.hljs);
+var chalk = require("chalk");
+
+const commandReference = {
   "o": "step over",
   "i": "step into",
   "u": "step out",
   "n": "step next",
   ";": "step instruction (include number to step multiple)",
   "p": "print instruction",
+  "l": "print additional source context",
   "h": "print this help",
   "v": "print variables and values",
   ":": "evaluate expression - see `v`",
@@ -28,58 +34,52 @@ var commandReference = {
   "T": "unload transaction"
 };
 
+const truffleColors = {
+  mint: chalk.hex("#3FE0C5"),
+  orange: chalk.hex("#E4A663"),
+  pink: chalk.hex("#E911BD"),
+  purple: chalk.hex("#8731E8"),
+  green: chalk.hex("#00D717"),
+  red: chalk.hex("#D60000"),
+  yellow: chalk.hex("#F2E941"),
+  blue: chalk.hex("#25A9E0"),
+  comment: chalk.hsl(30, 20, 50),
+  watermelon: chalk.hex("#E86591"),
+  periwinkle: chalk.hex("#7F9DD1")
+};
+
 var DebugUtils = {
-  gatherArtifacts: function(config) {
-    return new Promise((accept, reject) => {
-      // Gather all available contract artifacts
-      dir.files(config.contracts_build_directory, (err, files) => {
-        if (err) return reject(err);
+  gatherArtifacts: async function(config) {
+    // Gather all available contract artifacts
+    let files = await dir.promiseFiles(config.contracts_build_directory);
 
-        var contracts = files
-          .filter(file_path => {
-            return path.extname(file_path) === ".json";
-          })
-          .map(file_path => {
-            return path.basename(file_path, ".json");
-          })
-          .map(contract_name => {
-            return config.resolver.require(contract_name);
-          });
-
-        async.each(
-          contracts,
-          (abstraction, finished) => {
-            abstraction
-              .detectNetwork()
-              .then(() => {
-                finished();
-              })
-              .catch(finished);
-          },
-          err => {
-            if (err) return reject(err);
-            accept(
-              contracts.map(contract => {
-                debug("contract.sourcePath: %o", contract.sourcePath);
-
-                return {
-                  contractName: contract.contractName,
-                  source: contract.source,
-                  sourceMap: contract.sourceMap,
-                  sourcePath: contract.sourcePath,
-                  binary: contract.binary,
-                  abi: contract.abi,
-                  ast: contract.ast,
-                  deployedBinary: contract.deployedBinary,
-                  deployedSourceMap: contract.deployedSourceMap,
-                  compiler: contract.compiler
-                };
-              })
-            );
-          }
-        );
+    var contracts = files
+      .filter(file_path => {
+        return path.extname(file_path) === ".json";
+      })
+      .map(file_path => {
+        return path.basename(file_path, ".json");
+      })
+      .map(contract_name => {
+        return config.resolver.require(contract_name);
       });
-    });
+
+    await Promise.all(
+      contracts.map(abstraction => abstraction.detectNetwork())
+    );
+
+    return contracts.map(contract => ({
+      contractName: contract.contractName,
+      source: contract.source,
+      sourceMap: contract.sourceMap,
+      sourcePath: contract.sourcePath,
+      binary: contract.binary,
+      abi: contract.abi,
+      ast: contract.ast,
+      deployedBinary: contract.deployedBinary,
+      deployedSourceMap: contract.deployedSourceMap,
+      compiler: contract.compiler
+    }));
   },
 
   formatStartMessage: function(withTransaction) {
@@ -143,7 +143,8 @@ var DebugUtils = {
 
     var commandSections = [
       ["o", "i", "u", "n"],
-      [";", "p"],
+      [";"],
+      ["p", "l"],
       ["h", "q", "r"],
       ["t", "T"],
       ["b", "B", "c"],
@@ -205,38 +206,47 @@ var DebugUtils = {
       output += additional;
     }
 
-    return prefix + output;
+    return truffleColors.purple(prefix + output);
   },
 
-  formatRangeLines: function(source, range, contextBefore) {
+  //NOTE: source and uncolorizedSource here have already
+  //been split into lines here, they're not the raw text
+  formatRangeLines: function(
+    source,
+    range,
+    uncolorizedSource,
+    contextBefore = 2,
+    contextAfter = 0
+  ) {
     // range is {
     //   start: { line, column },
     //   end: { line, column}
     // }
     //
 
-    if (contextBefore == undefined) {
-      contextBefore = 2;
-    }
+    var startIndex = Math.max(range.start.line - contextBefore, 0);
+    var endIndex = Math.min(range.start.line + contextAfter, source.length - 1);
 
-    var startBeforeIndex = Math.max(range.start.line - contextBefore, 0);
+    var prefixLength = (endIndex + 1 + "").length; //+1 to account for 0-index
 
-    var prefixLength = (range.start.line + 1 + "").length;
-
+    //note: beforeLines now includes the line itself
     var beforeLines = source
-      .filter(function(line, index) {
-        return index >= startBeforeIndex && index < range.start.line;
-      })
-      .map(function(line, index) {
-        var number = startBeforeIndex + index + 1; // 1 to account for 0-index
+      .slice(startIndex, range.start.line + 1)
+      .map((line, index) => {
+        let number = startIndex + index + 1; // 1 to account for 0-index
+        return DebugUtils.formatLineNumberPrefix(line, number, prefixLength);
+      });
+    var afterLines = source
+      .slice(range.start.line + 1, endIndex + 1)
+      .map((line, index) => {
+        let number = range.start.line + 1 + index + 1; // 1 to account for 0-index
         return DebugUtils.formatLineNumberPrefix(line, number, prefixLength);
       });
 
-    var line = source[range.start.line];
-    var number = range.start.line + 1; // zero-index
-
     var pointerStart = range.start.column;
     var pointerEnd;
+
+    let uncolorizedLine = uncolorizedSource[range.start.line];
 
     // range.end is undefined in some cases
     // null/undefined check to avoid exceptions
@@ -244,13 +254,22 @@ var DebugUtils = {
       // start and end are same line: pointer ends at column
       pointerEnd = range.end.column;
     } else {
-      pointerEnd = line.length;
+      pointerEnd = uncolorizedLine.length;
     }
 
-    var allLines = beforeLines.concat([
-      DebugUtils.formatLineNumberPrefix(line, number, prefixLength),
-      DebugUtils.formatLinePointer(line, pointerStart, pointerEnd, prefixLength)
-    ]);
+    var allLines = beforeLines.concat(
+      [
+        DebugUtils.formatLinePointer(
+          //the line-pointer formatter doesn't work right with colorized
+          //lines, so we pass in the uncolored version
+          uncolorizedLine,
+          pointerStart,
+          pointerEnd,
+          prefixLength
+        )
+      ],
+      afterLines
+    );
 
     return allLines.join(OS.EOL);
   },
@@ -316,19 +335,20 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatValue: function(value, indent) {
-    if (!indent) {
-      indent = 0;
-    }
-
+  formatValue: function(value, indent = 0, nativized = false) {
+    let inspectOptions = {
+      colors: true,
+      depth: null,
+      maxArrayLength: null,
+      breakLength: 30
+    };
+    let valueToInspect = nativized
+      ? value
+      : new Codec.Format.Utils.Inspect.ResultInspector(value);
     return util
-      .inspect(value, {
-        colors: true,
-        depth: null,
-        breakLength: 30
-      })
+      .inspect(valueToInspect, inspectOptions)
       .split(/\r?\n/g)
-      .map(function(line, i) {
+      .map((line, i) => {
         // don't indent first line
         const padding = i > 0 ? Array(indent).join(" ") : "";
         return padding + line;
@@ -336,23 +356,109 @@ var DebugUtils = {
       .join(OS.EOL);
   },
 
-  //HACK
-  cleanConstructors: function(object) {
-    debug("object %o", object);
+  colorize: function(code) {
+    //I'd put these outside the function
+    //but then it gives me errors, because
+    //you can't just define self-referential objects like that...
 
-    if (object && typeof object.map === "function") {
-      //array case
-      return object.map(DebugUtils.cleanConstructors);
+    const trufflePalette = {
+      /* base (chromafi special, not hljs) */
+      "base": chalk,
+      "lineNumbers": chalk,
+      "trailingSpace": chalk,
+      /* classes hljs-solidity actually uses */
+      "keyword": truffleColors.mint,
+      "number": truffleColors.red,
+      "string": truffleColors.green,
+      "params": truffleColors.pink,
+      "builtIn": truffleColors.watermelon,
+      "built_in": truffleColors.watermelon, //just to be sure
+      "literal": truffleColors.watermelon,
+      "function": truffleColors.orange,
+      "title": truffleColors.orange,
+      "class": truffleColors.orange,
+      "comment": truffleColors.comment,
+      "doctag": truffleColors.comment,
+      /* classes it might soon use! */
+      "meta": truffleColors.pink,
+      "metaString": truffleColors.green,
+      "meta-string": truffleColors.green, //similar
+      /* classes it doesn't currently use but notionally could */
+      "type": truffleColors.orange,
+      "symbol": truffleColors.orange,
+      "metaKeyword": truffleColors.mint,
+      "meta-keyword": truffleColors.mint, //again, to be sure
+      /* classes that don't make sense for Solidity */
+      "regexp": chalk, //solidity does not have regexps
+      "subst": chalk, //or string interpolation
+      "name": chalk, //or s-expressions
+      "builtInName": chalk, //or s-expressions, again
+      "builtin-name": chalk, //just to be sure
+      /* classes for config, markup, CSS, templates, diffs (not programming) */
+      "section": chalk,
+      "tag": chalk,
+      "attr": chalk,
+      "attribute": chalk,
+      "variable": chalk,
+      "bullet": chalk,
+      "code": chalk,
+      "emphasis": chalk,
+      "strong": chalk,
+      "formula": chalk,
+      "link": chalk,
+      "quote": chalk,
+      "selectorAttr": chalk, //lotta redundancy follows
+      "selector-attr": chalk,
+      "selectorClass": chalk,
+      "selector-class": chalk,
+      "selectorId": chalk,
+      "selector-id": chalk,
+      "selectorPseudo": chalk,
+      "selector-pseudo": chalk,
+      "selectorTag": chalk,
+      "selector-tag": chalk,
+      "templateTag": chalk,
+      "template-tag": chalk,
+      "templateVariable": chalk,
+      "template-variable": chalk,
+      "addition": chalk,
+      "deletion": chalk
+    };
+
+    const options = {
+      lang: "solidity",
+      colors: trufflePalette,
+      //we want to turn off basically everything else, as we're
+      //handling padding & numbering manually
+      lineNumbers: false,
+      stripIndent: false,
+      codePad: 0
+      //NOTE: you might think you should pass highlight: true,
+      //but you'd be wrong!  I don't understand this either
+    };
+    return chromafi(code, options);
+  },
+
+  //HACK
+  //note that this is written in terms of mutating things
+  //rather than just using map() due to the need to handle
+  //circular objects
+  cleanConstructors: function(object, seenSoFar = new Map()) {
+    debug("object %o", object);
+    if (seenSoFar.has(object)) {
+      return seenSoFar.get(object);
     }
 
-    if (object && object instanceof Map) {
-      //map case
-      return new Map(
-        Array.from(object.entries()).map(([key, value]) => [
-          key,
-          DebugUtils.cleanConstructors(value)
-        ])
-      );
+    if (Array.isArray(object)) {
+      //array case
+      let output = object.slice(); //clone
+      //set up new seenSoFar
+      let seenNow = new Map(seenSoFar);
+      seenNow.set(object, output);
+      for (let index in output) {
+        output[index] = DebugUtils.cleanConstructors(output[index], seenNow);
+      }
+      return output;
     }
 
     //HACK -- due to safeEval altering things, it's possible for isBN() to
@@ -369,16 +475,23 @@ var DebugUtils = {
 
     if (object && typeof object === "object") {
       //generic object case
-      return Object.assign(
+      let output = Object.assign(
         {},
         ...Object.entries(object)
           .filter(
             ([key, value]) => key !== "constructor" || value !== undefined
           )
           .map(([key, value]) => ({
-            [key]: DebugUtils.cleanConstructors(value)
+            [key]: value //don't clean yet!
           }))
       );
+      //set up new seenSoFar
+      let seenNow = new Map(seenSoFar);
+      seenNow.set(object, output);
+      for (let field in output) {
+        output[field] = DebugUtils.cleanConstructors(output[field], seenNow);
+      }
+      return output;
     }
 
     //for strings, numbers, etc
@@ -394,54 +507,6 @@ var DebugUtils = {
           variable === "this" ? { [replacement]: value } : { [variable]: value }
       )
     );
-  },
-
-  //HACK
-  //replace maps with objects (POJSOs?) and BNs with numbers
-  //May cause errors if BNs are too big!  But I think this is the right
-  //tradeoff for now; note this is only used when dealing with *expressions*,
-  //not individual variables (it's used so you can add and index and etc like
-  //you would in Solidity)
-  nativize: function(object) {
-    if (object && typeof object.map === "function") {
-      //array case
-      return object.map(DebugUtils.nativize);
-    }
-
-    if (object && object instanceof Map) {
-      //map case
-      //HACK -- we apply toString() to all the keys; due to JS's use of weak
-      //comparison for indexing, this should still work
-      return Object.assign(
-        {},
-        ...Array.from(object.entries()).map(([key, value]) => ({
-          [key.toString()]: DebugUtils.nativize(value)
-        }))
-      );
-    }
-
-    //HACK -- due to safeEval altering things, it's possible for isBN() to
-    //throw an error here
-    try {
-      if (BN.isBN(object)) {
-        return object.toNumber();
-      }
-    } catch (e) {
-      //if isBN threw an error, it's not a BN, so move on
-    }
-
-    if (object && typeof object === "object") {
-      //generic object case
-      return Object.assign(
-        {},
-        ...Object.entries(object).map(([key, value]) => ({
-          [key]: DebugUtils.nativize(value)
-        }))
-      );
-    }
-
-    //default case for strings, numbers, etc
-    return object;
   }
 };
 

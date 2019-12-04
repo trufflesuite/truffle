@@ -1,0 +1,33 @@
+{
+  "name": "Truffle Decoding and Encoding",
+  "mode": "modules",
+  "module": "commonjs",
+  "theme": "../../../node_modules/@trufflesuite/typedoc-default-themes/bin/default/",
+  "includeDeclarations": false,
+  "ignoreCompilerErrors": true,
+  "preserveConstEnums": true,
+  "excludeExternals": true,
+  "categoryOrder": [
+    "Data",
+    "ABI data location",
+    "Solidity data location",
+    "Common data location",
+    "Output",
+    "Enumerations",
+    "Requests",
+    "Decoding",
+    "ABIfication",
+    "General categories",
+    "Elementary types",
+    "Container types",
+    "Other user-defined types",
+    "Function types",
+    "Special container types (debugger-only)",
+    "*",
+    "Other"
+  ],
+  "exclude": [
+    "**/test/*"
+  ],
+  "target": "ES6"
+}

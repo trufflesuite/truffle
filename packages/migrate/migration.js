@@ -2,7 +2,10 @@ const path = require("path");
 const Deployer = require("@truffle/deployer");
 const Require = require("@truffle/require");
 const Emittery = require("emittery");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 
 const ResolverIntercept = require("./resolverintercept");
 
@@ -23,13 +26,13 @@ class Migration {
   /**
    * Loads & validates migration, then runs it.
    * @param  {Object}   options  config and command-line
-   * @param  {Object}   context  web3
+   * @param  {Object}   context  web3 & interfaceAdapter
    * @param  {Object}   deployer truffle module
    * @param  {Object}   resolver truffle module
    */
   async _load(options, context, deployer, resolver) {
     // Load assets and run `execute`
-    const accounts = await context.web3.eth.getAccounts();
+    const accounts = await context.interfaceAdapter.getAccounts();
     const requireOptions = {
       file: this.file,
       context: context,
@@ -121,7 +124,7 @@ class Migration {
 
       await this.emitter.emit("error", payload);
       deployer.finish();
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -166,7 +169,7 @@ class Migration {
 
   prepareForMigrations(options) {
     const logger = options.logger;
-    const interfaceAdapter = new InterfaceAdapter({
+    const interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
       networkType: options.networks[options.network].type
     });
@@ -188,7 +191,8 @@ class Migration {
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,
-      basePath: path.dirname(this.file)
+      basePath: path.dirname(this.file),
+      ens: options.ens
     });
 
     return { interfaceAdapter, resolver, context, deployer };
