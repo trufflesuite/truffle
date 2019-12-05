@@ -3,11 +3,15 @@ import {
   Web3InterfaceAdapterOptions
 } from "./web3-interface-adapter";
 import { TezosAdapter, TezosAdapterOptions } from "./tezos-adapter";
+import { Block as EvmBlock } from "web3-eth";
+import { Provider } from "@truffle/provider";
 
 export type InterfaceAdapterOptions =
   | Web3InterfaceAdapterOptions
   | TezosAdapterOptions;
-export type NetworkId = Number | String;
+export type NetworkId = number | string;
+export type Block = EvmBlock | any;
+export type BlockType = number | string;
 
 const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
 
@@ -45,5 +49,14 @@ export class InterfaceAdapter {
 
   public getNetworkId(): Promise<NetworkId> {
     return this.adapter.getNetworkId();
+  }
+
+  public getBlock(block: BlockType): Promise<Block> {
+    return this.adapter.getBlock(block);
+  }
+
+  // @ts-ignore
+  public setProvider(provider: Provider) {
+    return this.adapter.setProvider(provider);
   }
 }

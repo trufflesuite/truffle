@@ -2,7 +2,12 @@ const assert = require("assert");
 const Config = require("@truffle/config");
 const Migration = require("../migration");
 const sinon = require("sinon");
-let options, prepareForMigrationsReturn, fakeWeb3, migration, context, resolver;
+let options,
+  prepareForMigrationsReturn,
+  fakeInterfaceAdapter,
+  migration,
+  context,
+  resolver;
 let deployer;
 
 describe("Migration", () => {
@@ -21,14 +26,12 @@ describe("Migration", () => {
         network_id: "this is also fake",
         from: "Russia with love"
       }));
-    fakeWeb3 = {
-      eth: {
-        getBlock: sinon.stub().returns({ gasLimit: 2000 })
-      }
+    fakeInterfaceAdapter = {
+      getBlock: sinon.stub().returns({ gasLimit: 2000 })
     };
-    context = { web3: fakeWeb3 };
+    context = { interfaceAdapter: fakeInterfaceAdapter };
     prepareForMigrationsReturn = {
-      web3: fakeWeb3,
+      interfaceAdapter: fakeInterfaceAdapter,
       resolver,
       context,
       deployer
@@ -48,11 +51,11 @@ describe("Migration", () => {
       migration._load.restore();
     });
 
-    it("calls web3.eth.getBlock('latest')", done => {
+    it("calls interfaceAdapter.getBlock('latest')", done => {
       migration
         .run(options)
         .then(() => {
-          assert(fakeWeb3.eth.getBlock.calledWith("latest"));
+          assert(fakeInterfaceAdapter.getBlock.calledWith("latest"));
           done();
         })
         .catch(error => {

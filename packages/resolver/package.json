@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver#readme",
   "dependencies": {
+    "@truffle/contract": "^4.1.1-alphaTez.0",
     "@truffle/expect": "^0.0.14-alphaTez.0",
     "@truffle/provisioner": "^0.2.1-alphaTez.0",
     "async": "2.6.1",

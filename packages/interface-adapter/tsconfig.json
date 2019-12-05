@@ -10,16 +10,17 @@
     "baseUrl": ".",
     "lib": ["es2017"],
     "paths": {
-      "web3": [
-        "../../node_modules/@types/web3/index",
-        "node_modules/web3/index"
+      "web3-eth": [
+        "../../node_modules/web3/node_modules/web3-eth/types",
+        "node_modules/web3/node_modules/web3-eth/types"
       ]
     },
     "rootDir": "lib",
     "typeRoots": [
-      "../../**/node_modules/@types/bn.js",
-      "../../**/node_modules/@types/mocha",
-      "../../**/node_modules/@truffle/config"
+      "../../node_modules/@types/bn.js",
+      "../../node_modules/@types/mocha",
+      "../../node_modules/@truffle/config/typings",
+      "../../node_modules/@truffle/provider/typings"
     ]
   },
   "include": [

@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.0.39",
+  "version": "3.0.40",
   "main": "index.js",
   "scripts": {
     "test": "mocha --no-warnings --timeout 10000 --exit"
@@ -20,10 +20,10 @@
   },
   "devDependencies": {
     "@truffle/reporters": "^2.0.1-alphaTez.0",
-    "@truffle/workflow-compile": "^2.1.11",
+    "@truffle/workflow-compile": "^2.1.12",
     "ganache-core": "2.7.0",
     "mocha": "5.2.0",
-    "web3": "1.2.1"
+    "web3": "1.2.2"
   },
   "keywords": [
     "contracts",

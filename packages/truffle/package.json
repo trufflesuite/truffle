@@ -31,12 +31,11 @@
     "original-require": "1.0.1"
   },
   "devDependencies": {
-    "@truffle/box": "^1.0.44",
-    "@truffle/contract": "^4.0.38",
+    "@truffle/box": "^1.0.45",
     "@truffle/contract": "^4.1.1-alphaTez.0",
     "@truffle/core": "^5.1.1-alphaTez.0",
-    "@truffle/debugger": "^5.0.33",
-    "@truffle/interface-adapter": "^0.3.1",
+    "@truffle/debugger": "^5.0.35",
+    "@truffle/interface-adapter": "^0.3.2",
     "clean-webpack-plugin": "^0.1.16",
     "copy-webpack-plugin": "^4.0.1",
     "eslint": "^5.7.0",
@@ -54,7 +53,7 @@
     "shebang-loader": "0.0.1",
     "stream-buffers": "^3.0.1",
     "tmp": "0.0.33",
-    "web3": "1.2.1",
+    "web3": "1.2.2",
     "webpack": "^2.5.1",
     "webpack-bundle-analyzer": "^3.0.3",
     "yargs": "^8.0.2"

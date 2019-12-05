@@ -370,7 +370,7 @@ class TezosReporter {
       )[0];
       let burn = new web3Utils.BN(0);
 
-      const block = await data.contract.web3.eth.getBlock(
+      const block = await data.contract.interfaceAdapter.getBlock(
         data.receipt.includedInBlock
       );
 

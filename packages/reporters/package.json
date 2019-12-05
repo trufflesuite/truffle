@@ -10,7 +10,7 @@
   "dependencies": {
     "node-emoji": "^1.8.1",
     "ora": "^3.0.0",
-    "web3-utils": "1.2.1"
+    "web3-utils": "1.2.2"
   },
   "publishConfig": {
     "access": "public"

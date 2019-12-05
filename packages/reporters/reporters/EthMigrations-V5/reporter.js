@@ -369,7 +369,7 @@ class EthReporter {
         data.receipt.transactionHash
       );
 
-      const block = await data.contract.web3.eth.getBlock(
+      const block = await data.contract.interfaceAdapter.getBlock(
         data.receipt.blockNumber
       );
 

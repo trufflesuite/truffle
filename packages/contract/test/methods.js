@@ -529,10 +529,8 @@ describe("Methods", function() {
         assert.fail();
       } catch (e) {
         assert(e.reason === "reasonstring");
-        assert(
-          e.message.includes("consuming all gas"),
-          "Triggered require should consume all gas"
-        );
+        assert(e.message.includes("reasonstring"));
+        assert(e.message.includes("revert"));
         assert(e.receipt.status === false);
       }
     });

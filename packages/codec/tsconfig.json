@@ -27,7 +27,8 @@
       "../../**/node_modules/@types/lodash",
       "../../**/node_modules/@types/lodash.clonedeep",
       "../../**/node_modules/@types/lodash.isequal",
-      "../../**/node_modules/@types/lodash.merge"
+      "../../**/node_modules/@types/lodash.merge",
+      "../../node_modules/@truffle/provider/typings"
     ]
 
   },

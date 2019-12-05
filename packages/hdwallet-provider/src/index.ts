@@ -11,7 +11,7 @@ import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
 import Url from "url";
 import Web3 from "web3";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
-import { Callback, JsonRPCResponse } from "web3/providers";
+import { Callback, JsonRpcResponse } from "@truffle/provider";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 
@@ -175,14 +175,14 @@ class HDWalletProvider {
 
   public send(
     payload: JSONRPCRequestPayload,
-    callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
+    callback: JSONRPCErrorCallback | Callback<JsonRpcResponse>
   ): void {
     return this.engine.send.call(this.engine, payload, callback);
   }
 
   public sendAsync(
     payload: JSONRPCRequestPayload,
-    callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
+    callback: JSONRPCErrorCallback | Callback<JsonRpcResponse>
   ): void {
     this.engine.sendAsync.call(this.engine, payload, callback);
   }
