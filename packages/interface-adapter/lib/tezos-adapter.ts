@@ -1,5 +1,5 @@
 import { Web3Shim, Web3ShimOptions } from "./web3-shim";
-import { BlockType } from "./interface-adapter";
+import { BlockType } from "./interface-adapter/types";
 
 export interface TezosAdapterOptions extends Web3ShimOptions {}
 
@@ -19,5 +19,17 @@ export class TezosAdapter {
 
   public setProvider(provider: any) {
     return this.web3.setProvider(provider);
+  }
+
+  public getTransaction(tx: string) {
+    return this.web3.eth.getTransaction(tx);
+  }
+
+  public getTransactionReceipt(tx: string) {
+    return this.web3.eth.getTransactionReceipt(tx);
+  }
+
+  public getBalance(address: string) {
+    return this.web3.eth.getBalance(address);
   }
 }

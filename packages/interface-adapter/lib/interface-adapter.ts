@@ -3,15 +3,19 @@ import {
   Web3InterfaceAdapterOptions
 } from "./web3-interface-adapter";
 import { TezosAdapter, TezosAdapterOptions } from "./tezos-adapter";
-import { Block as EvmBlock } from "web3-eth";
+import {
+  NetworkId,
+  Block,
+  BlockType,
+  Transaction,
+  TransactionReceipt,
+  TxHash
+} from "./interface-adapter/types";
 import { Provider } from "@truffle/provider";
 
 export type InterfaceAdapterOptions =
   | Web3InterfaceAdapterOptions
   | TezosAdapterOptions;
-export type NetworkId = number | string;
-export type Block = EvmBlock | any;
-export type BlockType = number | string;
 
 const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
 
@@ -55,8 +59,19 @@ export class InterfaceAdapter {
     return this.adapter.getBlock(block);
   }
 
-  // @ts-ignore
   public setProvider(provider: Provider) {
     return this.adapter.setProvider(provider);
+  }
+
+  public getTransaction(tx: TxHash): Promise<Transaction> {
+    return this.adapter.getTransaction(tx);
+  }
+
+  public getTransactionReceipt(tx: TxHash): Promise<TransactionReceipt> {
+    return this.adapter.getTransactionReceipt(tx);
+  }
+
+  public getBalance(address: string): Promise<string> {
+    return this.adapter.getBalance(address);
   }
 }

@@ -81,23 +81,19 @@ const Migrate = {
 
       if (options.reset === true) {
         await this.runAll(options);
-        if (callbackPassed) {
-          return callback();
-        }
+        if (callbackPassed) return callback();
         return;
       }
 
       const lastMigration = await this.lastCompletedMigration(options);
+
       // Don't rerun the last completed migration.
       await this.runFrom(lastMigration + 1, options);
-      if (callbackPassed) {
-        return callback();
-      }
+
+      if (callbackPassed) return callback();
       return;
     } catch (error) {
-      if (callbackPassed) {
-        return callback(error);
-      }
+      if (callbackPassed) return callback(error);
       throw new Error(error);
     }
   },
@@ -115,7 +111,6 @@ const Migrate = {
         migration => migration.number <= options.to
       );
     }
-
     return await this.runMigrations(migrations, options);
   },
 

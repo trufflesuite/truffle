@@ -4,7 +4,7 @@ const debug = debugModule("debugger:trace:sagas");
 import { take, takeEvery, put, select } from "redux-saga/effects";
 import { prefixName, isCallMnemonic } from "lib/helpers";
 
-import { Utils as CodecUtils } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 import * as actions from "../actions";
 
@@ -70,7 +70,7 @@ export function* processTrace(steps) {
           ({ op, stack }) =>
             isCallMnemonic(op)
               ? //if it's a call, just fetch the address off the stack
-                CodecUtils.Conversion.toAddress(stack[stack.length - 2])
+                Codec.Evm.Utils.toAddress(stack[stack.length - 2])
               : //if it's not a call, just return undefined (we've gone back to
                 //skipping creates)
                 undefined
@@ -78,7 +78,7 @@ export function* processTrace(steps) {
         //filter out zero addresses from failed creates (as well as undefineds)
         .filter(
           address =>
-            address !== undefined && address !== CodecUtils.EVM.ZERO_ADDRESS
+            address !== undefined && address !== Codec.Evm.Utils.ZERO_ADDRESS
         )
     )
   ];

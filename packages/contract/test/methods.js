@@ -521,8 +521,8 @@ describe("Methods", function() {
     });
   });
 
-  describe("error with reason (ganache only)", function() {
-    it("errors with receipt and revert reason", async function() {
+  describe("revert with reason (ganache only)", function() {
+    it("errors with receipt and revert message", async function() {
       const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError();

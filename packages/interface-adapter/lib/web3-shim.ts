@@ -33,7 +33,6 @@ export type NetworkType = string;
 
 export interface Web3ShimOptions {
   config?: Config;
-  // @ts-ignore
   provider?: Provider;
   networkType?: NetworkType;
 }

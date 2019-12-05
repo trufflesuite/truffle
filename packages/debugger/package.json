@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.0.35",
+  "version": "6.0.0",
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
@@ -21,9 +21,7 @@
   },
   "dependencies": {
     "@truffle/code-utils": "^1.2.10",
-    "@truffle/codec": "^3.0.15-alphaTez.0",
-    "@truffle/decode-utils": "^1.0.19",
-    "@truffle/decoder": "^3.0.16",
+    "@truffle/codec": "^0.1.0",
     "@truffle/expect": "^0.0.14-alphaTez.0",
     "@truffle/solidity-utils": "^1.2.8-alphaTez.0",
     "bn.js": "^4.11.8",
@@ -39,12 +37,12 @@
     "web3-eth-abi": "1.2.2"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.38",
-    "@truffle/box": "^1.0.45",
-    "@truffle/debug-utils": "^1.0.22-alphaTez.0",
+    "@truffle/artifactor": "^4.0.39",
+    "@truffle/box": "^1.0.46",
+    "@truffle/debug-utils": "^2.0.0",
     "@truffle/migrate": "^3.1.1-alphaTez.0",
     "@truffle/resolver": "^5.1.1-alphaTez.0",
-    "@truffle/workflow-compile": "^2.1.12",
+    "@truffle/workflow-compile": "^2.1.13",
     "async": "2.6.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
@@ -60,7 +58,7 @@
     "express": "^4.16.2",
     "faker": "^4.1.0",
     "fs-extra": "6.0.1",
-    "ganache-core": "2.7.0",
+    "ganache-core": "2.8.0",
     "istanbul-instrumenter-loader": "^3.0.1",
     "mocha": "5.2.0",
     "mocha-webpack": "^1.1.0",

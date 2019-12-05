@@ -4,6 +4,11 @@ import * as Types from "./types";
 
 //note that we often want an elementary *value*, and not an error!
 //so let's define those types too
+/**
+ * An elementary value
+ *
+ * @Category General categories
+ */
 export type ElementaryValue =
   | UintValue
   | IntValue
@@ -13,11 +18,18 @@ export type ElementaryValue =
   | StringValue
   | FixedValue
   | UfixedValue;
-//we don't include FixedValue or UfixedValue because those
-//aren't implemented yet
+/**
+ * A bytestring value (static or dynamic)
+ *
+ * @Category Elementary types
+ */
 export type BytesValue = BytesStaticValue | BytesDynamicValue;
 
-//Uints
+/**
+ * An unsigned integer value
+ *
+ * @Category Elementary types
+ */
 export interface UintValue {
   type: Types.UintType;
   kind: "value";
@@ -27,7 +39,11 @@ export interface UintValue {
   };
 }
 
-//Ints
+/**
+ * A signed integer value
+ *
+ * @Category Elementary types
+ */
 export interface IntValue {
   type: Types.IntType;
   kind: "value";
@@ -37,7 +53,11 @@ export interface IntValue {
   };
 }
 
-//Bools
+/**
+ * A boolean value
+ *
+ * @Category Elementary types
+ */
 export interface BoolValue {
   type: Types.BoolType;
   kind: "value";
@@ -46,59 +66,105 @@ export interface BoolValue {
   };
 }
 
-//bytes (static)
+/**
+ * A bytestring value (static length)
+ *
+ * @Category Elementary types
+ */
 export interface BytesStaticValue {
   type: Types.BytesTypeStatic;
   kind: "value";
   value: {
-    asHex: string; //should be hex-formatted, with leading "0x"
+    /**
+     * hex-formatted, with leading "0x"
+     */
+    asHex: string;
     rawAsHex?: string;
   };
 }
 
-//bytes (dynamic)
+/**
+ * A bytestring value (dynamic length)
+ *
+ * @Category Elementary types
+ */
 export interface BytesDynamicValue {
   type: Types.BytesTypeDynamic;
   kind: "value";
   value: {
-    asHex: string; //should be hex-formatted, with leading "0x"
+    /**
+     * hex-formatted, with leading "0x"
+     */
+    asHex: string;
   };
 }
 
-//addresses
+/**
+ * An address value
+ *
+ * @Category Elementary types
+ */
 export interface AddressValue {
   type: Types.AddressType;
   kind: "value";
   value: {
-    asAddress: string; //should have 0x and be checksum-cased
+    /**
+     * has leading "0x" and is checksum-cased
+     */
+    asAddress: string;
+    /**
+     * just a hex string, so no checksum
+     */
     rawAsHex?: string;
   };
 }
 
-//strings
-//strings have a special new type as their value: StringValueInfo
+/**
+ * A string value; see [[StringValueInfo]] for more detail
+ *
+ * @Category Elementary types
+ */
 export interface StringValue {
   type: Types.StringType;
   kind: "value";
   value: StringValueInfo;
 }
 
-//these come in two types: valid strings and malformed strings
+/**
+ * These come in two types: valid strings and malformed strings.
+ *
+ * @Category Elementary types
+ */
 export type StringValueInfo = StringValueInfoValid | StringValueInfoMalformed;
 
-//valid strings
+/**
+ * This type of StringValueInfo represents a valid UTF-8 string.
+ *
+ * @Category Elementary types
+ */
 export interface StringValueInfoValid {
   kind: "valid";
   asString: string;
 }
 
-//malformed strings
+/**
+ * This type of StringValueInfo represents a malformed string.
+ *
+ * @Category Elementary types
+ */
 export interface StringValueInfoMalformed {
   kind: "malformed";
+  /**
+   * hex-formatted, with leading "0x"
+   */
   asHex: string;
 }
 
-//Fixed & Ufixed
+/**
+ * A signed fixed-point value
+ *
+ * @Category Elementary types
+ */
 export interface FixedValue {
   type: Types.FixedType;
   kind: "value";
@@ -108,6 +174,11 @@ export interface FixedValue {
   };
 }
 
+/**
+ * An unsigned fixed-point value
+ *
+ * @Category Elementary types
+ */
 export interface UfixedValue {
   type: Types.UfixedType;
   kind: "value";

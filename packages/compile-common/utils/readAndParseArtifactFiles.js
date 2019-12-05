@@ -30,7 +30,7 @@ const readAndParseArtifactFiles = (sourceFiles, contracts_build_directory) => {
     return { file, body };
   });
 
-  jsonData.forEach(({ body, file }) => {
+  jsonData.forEach(({ body }) => {
     try {
       const data = JSON.parse(body);
 
@@ -42,8 +42,8 @@ const readAndParseArtifactFiles = (sourceFiles, contracts_build_directory) => {
       sourceFilesArtifacts[data.sourcePath].push(data);
     } catch (error) {
       // JSON.parse throws SyntaxError objects
-      if (e instanceof SyntaxError) {
-        throw new Error(`Problem parsing artifact: ${file}`);
+      if (error instanceof SyntaxError) {
+        throw new Error("Problem parsing artifact: " + jsonData[i].file);
       } else {
         throw error;
       }

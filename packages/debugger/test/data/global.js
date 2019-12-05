@@ -8,7 +8,7 @@ import Ganache from "ganache-core";
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
-import { Utils as TruffleCodecUtils } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 import solidity from "lib/solidity/selectors";
 
@@ -189,7 +189,7 @@ describe("Globally-available variables", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -223,7 +223,7 @@ describe("Globally-available variables", function() {
     });
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -257,7 +257,7 @@ describe("Globally-available variables", function() {
     });
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -291,7 +291,7 @@ describe("Globally-available variables", function() {
     });
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -318,7 +318,7 @@ describe("Globally-available variables", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -352,7 +352,7 @@ describe("Globally-available variables", function() {
     });
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 

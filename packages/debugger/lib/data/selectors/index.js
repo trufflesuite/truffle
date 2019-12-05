@@ -9,7 +9,7 @@ import { stableKeccak256 } from "lib/helpers";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
-import { Utils as CodecUtils } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 /**
  * @private
@@ -50,7 +50,7 @@ function modifierForInvocation(invocation, scopes) {
       return rawNode.nodes.find(
         node =>
           node.nodeType === "FunctionDefinition" &&
-          CodecUtils.Definition.functionKind(node) === "constructor"
+          Codec.Ast.Utils.functionKind(node) === "constructor"
       );
     default:
       //we should never hit this case
@@ -78,9 +78,73 @@ function debuggerContextToDecoderContext(context) {
     contractId,
     contractKind,
     isConstructor,
-    abi: CodecUtils.AbiUtils.computeSelectors(abi),
+    abi: Codec.AbiData.Utils.computeSelectors(abi),
     payable,
     compiler
+  };
+}
+
+//spoofed definitions we'll need
+//we'll give them id -1 to indicate that they're spoofed
+
+export const NOW_DEFINITION = {
+  id: -1,
+  src: "0:0:-1",
+  name: "now",
+  nodeType: "VariableDeclaration",
+  typeDescriptions: {
+    typeIdentifier: "t_uint256",
+    typeString: "uint256"
+  }
+};
+
+export const MSG_DEFINITION = {
+  id: -1,
+  src: "0:0:-1",
+  name: "msg",
+  nodeType: "VariableDeclaration",
+  typeDescriptions: {
+    typeIdentifier: "t_magic_message",
+    typeString: "msg"
+  }
+};
+
+export const TX_DEFINITION = {
+  id: -1,
+  src: "0:0:-1",
+  name: "tx",
+  nodeType: "VariableDeclaration",
+  typeDescriptions: {
+    typeIdentifier: "t_magic_transaction",
+    typeString: "tx"
+  }
+};
+
+export const BLOCK_DEFINITION = {
+  id: -1,
+  src: "0:0:-1",
+  name: "block",
+  nodeType: "VariableDeclaration",
+  typeDescriptions: {
+    typeIdentifier: "t_magic_block",
+    typeString: "block"
+  }
+};
+
+function spoofThisDefinition(contractName, contractId, contractKind) {
+  let formattedName = contractName.replace(/\$/g, "$$".repeat(3));
+  //note that string.replace treats $'s specially in the replacement string;
+  //we want 3 $'s for each $ in the input, so we need to put *6* $'s in the
+  //replacement string
+  return {
+    id: -1,
+    src: "0:0:-1",
+    name: "this",
+    nodeType: "VariableDeclaration",
+    typeDescriptions: {
+      typeIdentifier: "t_contract$_" + formattedName + "_$" + contractId,
+      typeString: contractKind + " " + contractName
+    }
   };
 }
 
@@ -157,7 +221,7 @@ const data = createSelectorTree({
           return Object.assign(
             {},
             ...Object.entries(referenceDeclarations).map(([id, node]) => ({
-              [id]: CodecUtils.MakeType.definitionToStoredType(
+              [id]: Codec.Ast.Import.definitionToStoredType(
                 node,
                 sources[scopes[node.id].sourceId].compiler,
                 referenceDeclarations
@@ -224,7 +288,7 @@ const data = createSelectorTree({
       Object.assign(
         {},
         ...Object.entries(instances).map(([address, { binary }]) => ({
-          [address]: CodecUtils.Conversion.toBytes(binary)
+          [address]: Codec.Conversion.toBytes(binary)
         }))
       )
     ),
@@ -311,7 +375,7 @@ const data = createSelectorTree({
                 let definition = inlined[variable.id].definition;
                 return (
                   !definition.constant ||
-                  CodecUtils.Definition.isSimpleConstant(definition.value)
+                  Codec.Ast.Utils.isSimpleConstant(definition.value)
                 );
               });
 
@@ -428,7 +492,7 @@ const data = createSelectorTree({
       stack: createLeaf(
         [evm.current.state.stack],
 
-        words => (words || []).map(word => CodecUtils.Conversion.toBytes(word))
+        words => (words || []).map(word => Codec.Conversion.toBytes(word))
       ),
 
       /**
@@ -437,7 +501,7 @@ const data = createSelectorTree({
       memory: createLeaf(
         [evm.current.state.memory],
 
-        words => CodecUtils.Conversion.toBytes(words.join(""))
+        words => Codec.Conversion.toBytes(words.join(""))
       ),
 
       /**
@@ -446,7 +510,7 @@ const data = createSelectorTree({
       calldata: createLeaf(
         [evm.current.call],
 
-        ({ data }) => CodecUtils.Conversion.toBytes(data)
+        ({ data }) => Codec.Conversion.toBytes(data)
       ),
 
       /**
@@ -459,7 +523,7 @@ const data = createSelectorTree({
           Object.assign(
             {},
             ...Object.entries(mapping).map(([address, word]) => ({
-              [`0x${address}`]: CodecUtils.Conversion.toBytes(word)
+              [`0x${address}`]: Codec.Conversion.toBytes(word)
             }))
           )
       ),
@@ -473,24 +537,24 @@ const data = createSelectorTree({
       specials: createLeaf(
         ["/current/address", evm.current.call, evm.transaction.globals],
         (address, { sender, value }, { tx, block }) => ({
-          this: CodecUtils.Conversion.toBytes(address),
+          this: Codec.Conversion.toBytes(address),
 
-          sender: CodecUtils.Conversion.toBytes(sender),
+          sender: Codec.Conversion.toBytes(sender),
 
-          value: CodecUtils.Conversion.toBytes(value),
+          value: Codec.Conversion.toBytes(value),
 
           //let's crack open that tx and block!
           ...Object.assign(
             {},
             ...Object.entries(tx).map(([variable, value]) => ({
-              [variable]: CodecUtils.Conversion.toBytes(value)
+              [variable]: Codec.Conversion.toBytes(value)
             }))
           ),
 
           ...Object.assign(
             {},
             ...Object.entries(block).map(([variable, value]) => ({
-              [variable]: CodecUtils.Conversion.toBytes(value)
+              [variable]: Codec.Conversion.toBytes(value)
             }))
           )
         })
@@ -757,10 +821,10 @@ const data = createSelectorTree({
               })
             );
             let builtins = {
-              msg: CodecUtils.Definition.MSG_DEFINITION,
-              tx: CodecUtils.Definition.TX_DEFINITION,
-              block: CodecUtils.Definition.BLOCK_DEFINITION,
-              now: CodecUtils.Definition.NOW_DEFINITION
+              msg: MSG_DEFINITION,
+              tx: TX_DEFINITION,
+              block: BLOCK_DEFINITION,
+              now: NOW_DEFINITION
             };
             //only include this when it has a proper definition
             if (thisDefinition) {
@@ -779,7 +843,7 @@ const data = createSelectorTree({
           ["/current/contract"],
           contractNode =>
             contractNode && contractNode.nodeType === "ContractDefinition"
-              ? CodecUtils.Definition.spoofThisDefinition(
+              ? spoofThisDefinition(
                   contractNode.name,
                   contractNode.id,
                   contractNode.contractKind
@@ -875,7 +939,7 @@ const data = createSelectorTree({
       stack: createLeaf(
         [evm.next.state.stack],
 
-        words => (words || []).map(word => CodecUtils.Conversion.toBytes(word))
+        words => (words || []).map(word => Codec.Conversion.toBytes(word))
       )
     },
 
@@ -951,9 +1015,7 @@ const data = createSelectorTree({
         [solidity.current.nextMapped],
 
         step =>
-          ((step || {}).stack || []).map(word =>
-            CodecUtils.Conversion.toBytes(word)
-          )
+          ((step || {}).stack || []).map(word => Codec.Conversion.toBytes(word))
       )
     }
   }
