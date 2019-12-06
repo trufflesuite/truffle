@@ -29,7 +29,7 @@
     "ganache-core": "2.8.0",
     "mocha": "5.2.0",
     "sinon": "^7.3.2",
-    "web3": "1.2.2"
+    "web3": "1.2.4"
   },
   "keywords": [
     "contracts",

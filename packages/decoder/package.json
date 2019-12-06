@@ -1,36 +1,33 @@
 {
   "name": "@truffle/decoder",
-  "version": "4.0.1",
   "description": "A decoder and encoder for Solidity variables of all sorts",
+  "license": "MIT",
+  "author": "Mike Seese and Harry Altman",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "4.0.1",
   "main": "dist/index.js",
-  "types": "lib/index.ts",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
-    "prepare": "yarn build",
     "build": "node_modules/.bin/tsc",
+    "prepare": "yarn build",
     "start": "node_modules/.bin/tsc --watch",
     "test": "cd test && npx truffle test"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
-  "keywords": [
-    "ethereum",
-    "solidity",
-    "contract",
-    "state",
-    "decoder",
-    "encoder",
-    "abi"
-  ],
-  "author": "Mike Seese and Harry Altman",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
+  "types": "lib/index.ts",
+  "dependencies": {
+    "@truffle/codec": "^0.2.0",
+    "bn.js": "^4.11.8",
+    "debug": "^4.1.0",
+    "web3": "1.2.4"
   },
-  "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "publishConfig": {
-    "access": "public"
+  "peerDependencies": {
+    "truffle": "^5.0.14"
   },
   "devDependencies": {
     "@truffle/contract-schema": "^3.0.19",
@@ -44,14 +41,17 @@
     "@types/utf8": "^2.1.6",
     "typescript": "^3.6.3"
   },
-  "dependencies": {
-    "@truffle/codec": "^0.2.0",
-    "bn.js": "^4.11.8",
-    "debug": "^4.1.0",
-    "web3": "1.2.2"
-  },
-  "peerDependencies": {
-    "truffle": "^5.0.14"
+  "keywords": [
+    "abi",
+    "contract",
+    "decoder",
+    "encoder",
+    "ethereum",
+    "solidity",
+    "state"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }
