@@ -4,7 +4,7 @@ const OS = require("os");
 const BlockchainUtils = require("@truffle/blockchain-utils");
 const Provider = require("@truffle/provider");
 const async = require("async");
-const { InterfaceAdapter } = require("@truffle/interface-adapter");
+const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 
 const Networks = {
   deployed: async function(options) {
@@ -236,7 +236,7 @@ const Networks = {
     // If both network ids are numbers, then they don't match, and we should quit.
     if (isFirstANumber && isSecondANumber) return callback(null, false);
 
-    const interfaceAdapter = new InterfaceAdapter({
+    const interfaceAdapter = createInterfaceAdapter({
       provider,
       networkType: network_options.type
     });

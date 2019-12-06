@@ -22,13 +22,16 @@ function Resolver(options) {
 
 // This function might be doing too much. If so, too bad (for now).
 Resolver.prototype.require = function(import_path, search_path) {
+  const loadedNetworkConfig = this.options.networks && this.options.network;
   let abstraction;
   this.sources.forEach(source => {
     const result = source.require(import_path, search_path);
     if (result) {
       abstraction = contract(
         result,
-        this.options.networks[this.options.network].type
+        loadedNetworkConfig
+          ? this.options.networks[this.options.network].type
+          : "ethereum"
       );
       provision(abstraction, this.options);
     }

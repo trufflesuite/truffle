@@ -1,4 +1,4 @@
-import { Web3Shim, Web3ShimOptions } from "./web3-shim";
+import { Web3Shim, Web3ShimOptions } from "..";
 import { Tezos } from "@taquito/taquito";
 
 export const TezosDefinition = {

@@ -10,8 +10,6 @@
     "**/dist/**",
     "**/webpack",
     "**/*webpack.config*",
-    "packages/truffle/nil.js",
-    "packages/debugger",
     "notes/"
   ]
 }

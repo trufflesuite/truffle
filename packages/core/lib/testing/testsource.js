@@ -63,7 +63,9 @@ TestSource.prototype.resolve = function(importPath, callback) {
         .then(filesData => {
           const addresses = filesData
             .map(data => JSON.parse(data))
-            .map(json => contract(json))
+            .map(json =>
+              contract(json, this.config.networks[this.config.network].type)
+            )
             .map(c => {
               c.setNetwork(self.config.network_id);
               if (c.isDeployed()) return c.address;

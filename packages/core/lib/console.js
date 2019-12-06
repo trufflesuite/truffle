@@ -1,7 +1,10 @@
 const ReplManager = require("./repl");
 const Command = require("./command");
 const provision = require("@truffle/provisioner");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const contract = require("@truffle/contract");
 const vm = require("vm");
 const expect = require("@truffle/expect");
@@ -43,7 +46,8 @@ class Console extends EventEmitter {
     this.repl = options.repl || new ReplManager(options);
     this.command = new Command(tasks);
 
-    this.interfaceAdapter = new InterfaceAdapter({
+    this.interfaceAdapter = createInterfaceAdapter({
+      config: options,
       provider: options.provider,
       networkType: options.networks[options.network].type
     });
@@ -67,11 +71,7 @@ class Console extends EventEmitter {
     const config = this.options;
 
     try {
-      let accounts;
-      // TODO temp stopgap!
-      if (config.networks[config.network].type === "tezos")
-        accounts = await this.web3.eth.getAccounts(config);
-      else accounts = await this.web3.eth.getAccounts();
+      const accounts = await this.interfaceAdapter.getAccounts(config);
 
       const abstractions = this.provision();
 

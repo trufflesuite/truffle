@@ -3,11 +3,11 @@ import { Provider } from "@truffle/provider";
 import Config from "@truffle/config";
 import { TezosToolkit } from "@taquito/taquito";
 
-import { TezosDefinition } from "./tezos-overloads";
-import { EthereumDefinition } from "./ethereum-overloads";
-import { QuorumDefinition } from "./quorum-overloads";
-import { FabricEvmDefinition } from "./fabric-evm-overloads";
-import { Web3JsDefinition } from "./web3-js-definition";
+import { TezosDefinition } from "./overloads/tezos";
+import { EthereumDefinition } from "./overloads/ethereum";
+import { QuorumDefinition } from "./overloads/quorum";
+import { FabricEvmDefinition } from "./overloads/fabric-evm";
+import { Web3JsDefinition } from "./overloads/web3js";
 
 const initInterface = async (web3Shim: Web3Shim, options?: Web3ShimOptions) => {
   const networkTypes: NetworkTypesConfig = new Map(

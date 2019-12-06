@@ -1,10 +1,10 @@
 import BN from "bn.js";
-import { Web3Shim } from "./web3-shim";
+import { Web3Shim } from "..";
 import {
   Transaction as EvmTransaction,
   TransactionReceipt as EvmTransactionReceipt
 } from "web3-core";
-import { BlockType } from "./interface-adapter/types";
+import { BlockType } from "../../adapter/types";
 
 export const EthereumDefinition = {
   async initNetworkType(web3: Web3Shim) {

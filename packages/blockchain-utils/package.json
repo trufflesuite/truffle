@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.0.15",
+  "version": "0.0.16",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -18,6 +18,7 @@
   "types": "./typings/index.d.ts",
   "devDependencies": {
     "@types/assert": "^1.4.2",
+    "@types/mocha": "^5.2.7",
     "@types/node": "^12.12.5",
     "mocha": "5.2.0",
     "ts-node": "^8.3.0",
@@ -32,6 +33,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@truffle/provider": "^0.2.2"
+    "@truffle/provider": "^0.2.3"
   }
 }

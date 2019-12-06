@@ -19,14 +19,13 @@ const execute = {
   getGasEstimate: function(params, blockLimit) {
     const constructor = this;
     const interfaceAdapter = this.interfaceAdapter;
-    const web3 = this.web3;
 
     return new Promise(function(accept) {
       // Always prefer specified gas - this includes gas set by class_defaults
       if (params.gas) return accept(params.gas);
       if (!constructor.autoGas) return accept();
 
-      web3.eth
+      interfaceAdapter
         .estimateGas(params)
         .then(gas => {
           const bestEstimate = utils.multiplyBigNumberByDecimal(

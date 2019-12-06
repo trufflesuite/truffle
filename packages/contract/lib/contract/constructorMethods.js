@@ -1,9 +1,34 @@
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
 
 module.exports = Contract => ({
+  configureNetwork({ networkType, provider } = {}) {
+    // otherwise use existing value as default (at most one of these)
+    networkType = networkType || this.networkType;
+    provider = provider || this.currentProvider;
+
+    // recreate interfaceadapter
+    this.interfaceAdapter = createInterfaceAdapter({ networkType, provider });
+
+    if (this.web3) {
+      // update existing
+      this.web3.setNetworkType(networkType);
+      this.web3.setProvider(provider);
+    } else {
+      // create new
+      this.web3 = new Web3Shim({ networkType, provider });
+    }
+
+    // save properties
+    this.currentProvider = provider;
+    this.networkType = networkType;
+  },
+
   setProvider(provider) {
     if (!provider) {
       throw new Error(
@@ -11,9 +36,7 @@ module.exports = Contract => ({
       );
     }
 
-    this.web3.setProvider(provider);
-    this.interfaceAdapter.setProvider(provider);
-    this.currentProvider = provider;
+    this.configureNetwork({ provider });
   },
 
   new() {
@@ -47,7 +70,7 @@ module.exports = Contract => ({
 
     try {
       await this.detectNetwork();
-      const onChainCode = await this.web3.eth.getCode(address);
+      const onChainCode = await this.interfaceAdapter.getCode(address);
       await utils.checkCode(onChainCode, this.contractName, address);
       return new this(address);
     } catch (error) {
@@ -128,14 +151,12 @@ module.exports = Contract => ({
   },
 
   setNetworkType(networkType = "ethereum") {
-    if (this.web3) {
-      this.web3.setNetworkType(networkType);
-    }
-
-    this.networkType = networkType;
+    this.configureNetwork({ networkType });
   },
 
   setWallet(wallet) {
+    this.configureNetwork();
+
     this.web3.eth.accounts.wallet = wallet;
   },
 
@@ -216,16 +237,17 @@ module.exports = Contract => ({
 
     bootstrap(temp);
 
-    temp.interfaceAdapter = new InterfaceAdapter({
-      networkType: temp.networkType
-    });
-    temp.web3 = new Web3Shim({
-      networkType: temp.networkType
-    });
     temp.class_defaults = temp.prototype.defaults || {};
 
     if (network_id) {
       temp.setNetwork(network_id);
+    }
+
+    if (this.currentProvider) {
+      temp.configureNetwork({
+        provider: this.currentProvider,
+        networkType: this.networkType
+      });
     }
 
     // Copy over custom key/values to the contract class

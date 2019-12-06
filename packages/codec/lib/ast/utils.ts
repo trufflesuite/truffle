@@ -696,31 +696,7 @@ function getterDefinitionToAbi(
 //important note: inner structs within a struct are just returned, not
 //partially destructured like the outermost struct!  Yes, this is confusing.
 
-//here's a simplified function that just does the inputs. it's for use by the
-//allocator. I'm keeping it separate because it doesn't require a
-//referenceDeclarations argument.
-export function getterInputs(node: AstNode): AstNode[] {
-  node = node.typeName || node;
-  let inputs: AstNode[] = [];
-  while (typeClass(node) === "array" || typeClass(node) === "mapping") {
-    let keyNode = keyDefinition(node); //note: if node is an array, this spoofs up a uint256 definition
-    inputs.push({ ...keyNode, name: "" }); //getter input params have no name
-    switch (typeClass(node)) {
-      case "array":
-        node = node.baseType;
-        break;
-      case "mapping":
-        node = node.valueType;
-        break;
-    }
-  }
-  return inputs;
-}
-
-//again, despite the duplication, this function is kept separate from the
-//more straightforward getterInputs function because, since it has to handle
-//outputs too, it requires referenceDeclarations
-function getterParameters(
+export function getterParameters(
   node: AstNode,
   referenceDeclarations: AstNodes
 ): { inputs: AstNode[]; outputs: AstNode[] } {
