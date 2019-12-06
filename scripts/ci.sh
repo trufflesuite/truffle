@@ -59,6 +59,7 @@ elif [ "$FABRICEVM" = true ]; then
   sudo add-apt-repository -y ppa:rmescandon/yq
   sudo apt update
   sudo apt install -y yq
+  eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.12 bash)"
   cd $GOPATH
   mkdir -p src/github.com/hyperledger
   cd src/github.com/hyperledger
@@ -84,6 +85,7 @@ elif [ "$FABRICEVM" = true ]; then
 
 elif [ "$PACKAGES" = true ]; then
 
+  docker pull ligolang/ligo:next
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo add-apt-repository -y ppa:ethereum/ethereum
@@ -96,6 +98,7 @@ elif [ "$PACKAGES" = true ]; then
 
 elif [ "$COVERAGE" = true ]; then
 
+  docker pull ligolang/ligo:next
   docker pull ethereum/solc:0.4.22
   sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo add-apt-repository -y ppa:ethereum/ethereum

@@ -16,13 +16,6 @@ describe("Utils", function() {
       //now we'll check that it was removed
       assert(!cleanedResult.hasOwnProperty("constructor"));
     });
-    it("Leaves maps recognizable", function() {
-      let context = { a: new Map([["value", 107]]) };
-      let expr = "a";
-      let result = safeEval(expr, context);
-      let cleanedResult = DebugUtils.cleanConstructors(result);
-      assert.instanceOf(cleanedResult, Map);
-    });
     it("Leaves BNs recognizable", function() {
       let context = { a: new BN(107) };
       let expr = "a";
@@ -36,6 +29,15 @@ describe("Utils", function() {
       let result = safeEval(expr, context);
       let cleanedResult = DebugUtils.cleanConstructors(result);
       assert.isArray(cleanedResult);
+    });
+    it("Doesn't choke on circular objects", function() {
+      let circular = { x: 107, children: [] };
+      circular.children.push(circular);
+      let context = { circular };
+      let expr = "circular";
+      let result = safeEval(expr, context);
+      DebugUtils.cleanConstructors(result);
+      //no need for an assert, if we finish without crashing we're good
     });
   });
 });

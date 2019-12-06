@@ -218,7 +218,7 @@ describe("Error cases", function() {
     }
   });
 
-  it("constructor revert", async function() {
+  it("revert", async function() {
     migrate = function() {
       deployer.deploy(ExampleRevert);
     };
@@ -229,13 +229,11 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch (err) {
-      assert(err.message.includes("ExampleRevert"));
-      assert(err.message.includes("code couldn't be stored"));
-      assert(err.message.includes("check your gas limit"));
+      assert(err.message.includes("revert"));
     }
   });
 
-  it("failing constructor assert", async function() {
+  it("assert", async function() {
     migrate = function() {
       deployer.deploy(ExampleAssert);
     };
@@ -246,9 +244,7 @@ describe("Error cases", function() {
       await deployer.start();
       assert.fail();
     } catch (err) {
-      assert(err.message.includes("ExampleAssert"));
-      assert(err.message.includes("code couldn't be stored"));
-      assert(err.message.includes("check your gas limit"));
+      assert(err.message.includes("invalid opcode"));
     }
   });
 

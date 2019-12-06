@@ -1,4 +1,8 @@
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
+const web3Utils = require("web3-utils");
 var Config = require("@truffle/config");
 var Migrate = require("@truffle/migrate");
 var TestResolver = require("./testresolver");
@@ -28,7 +32,10 @@ function TestRunner(options = {}) {
   this.first_snapshot = true;
   this.initial_snapshot = null;
   this.known_events = {};
-  this.interfaceAdapter = new InterfaceAdapter();
+  this.interfaceAdapter = createInterfaceAdapter({
+    provider: options.provider,
+    networkType: options.networks[options.network].type
+  });
   this.web3 = new Web3Shim({
     provider: options.provider,
     networkType: options.networks[options.network].type
@@ -74,14 +81,18 @@ TestRunner.prototype.initialize = function(callback) {
         function(err, data) {
           if (err) return callback(err);
 
-          var contracts = data.map(JSON.parse).map(contract);
+          var contracts = data
+            .map(JSON.parse)
+            .map(json =>
+              contract(json, self.config.networks[self.config.network].type)
+            );
           var abis = _.flatMap(contracts, "abi");
 
           abis.map(function(abi) {
             if (abi.type === "event") {
               var signature =
                 abi.name + "(" + _.map(abi.inputs, "type").join(",") + ")";
-              self.known_events[self.web3.utils.sha3(signature)] = {
+              self.known_events[web3Utils.sha3(signature)] = {
                 signature: signature,
                 abi_entry: abi
               };
@@ -141,15 +152,14 @@ TestRunner.prototype.resetState = function(callback) {
 };
 
 TestRunner.prototype.startTest = function(mocha, callback) {
-  var self = this;
-  this.web3.eth
+  this.interfaceAdapter
     .getBlockNumber()
     .then(result => {
-      var one = self.web3.utils.toBN(1);
-      result = self.web3.utils.toBN(result);
+      const one = web3Utils.toBN(1);
+      const resultBN = web3Utils.toBN(result);
 
       // Add one in base 10
-      self.currentTestStartBlock = result.add(one);
+      this.currentTestStartBlock = resultBN.add(one);
 
       callback();
     })

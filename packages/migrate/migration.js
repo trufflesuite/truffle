@@ -2,38 +2,37 @@ const path = require("path");
 const Deployer = require("@truffle/deployer");
 const Require = require("@truffle/require");
 const Emittery = require("emittery");
-const { Web3Shim, InterfaceAdapter } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 
 const ResolverIntercept = require("./resolverintercept");
 
 class Migration {
-  constructor(file, reporter, options) {
+  constructor(file, reporter, config) {
     this.file = path.resolve(file);
     this.reporter = reporter;
     this.number = parseInt(path.basename(file));
     this.emitter = new Emittery();
     this.isFirst = false;
     this.isLast = false;
-    this.dryRun = options.dryRun;
-    this.interactive = options.interactive;
-    this.options = options || {};
+    this.dryRun = config.dryRun;
+    this.interactive = config.interactive;
+    this.config = config || {};
   }
 
   // ------------------------------------- Private -------------------------------------------------
   /**
    * Loads & validates migration, then runs it.
    * @param  {Object}   options  config and command-line
-   * @param  {Object}   context  web3
+   * @param  {Object}   context  web3 & interfaceAdapter
    * @param  {Object}   deployer truffle module
    * @param  {Object}   resolver truffle module
    */
   async _load(options, context, deployer, resolver) {
     // Load assets and run `execute`
-    // TODO temp stopgap!
-    let accounts;
-    if (options.networks[options.network].type === "tezos")
-      accounts = await context.web3.eth.getAccounts(options);
-    else accounts = await context.web3.eth.getAccounts();
+    const accounts = await context.interfaceAdapter.getAccounts();
     const requireOptions = {
       file: this.file,
       context: context,
@@ -113,8 +112,8 @@ class Migration {
         // Exiting w provider-engine appears to be hopeless. This hack on
         // our fork just swallows errors from eth-block-tracking
         // as we unwind the handlers downstream from here.
-        if (this.options.provider && this.options.provider.engine) {
-          this.options.provider.engine.silent = true;
+        if (this.config.provider && this.config.provider.engine) {
+          this.config.provider.engine.silent = true;
         }
       }
     } catch (error) {
@@ -125,7 +124,7 @@ class Migration {
 
       await this.emitter.emit("error", payload);
       deployer.finish();
-      throw new Error(error);
+      throw error;
     }
   }
 
@@ -137,7 +136,6 @@ class Migration {
    */
   async run(options) {
     const {
-      web3,
       interfaceAdapter,
       resolver,
       context,
@@ -154,7 +152,7 @@ class Migration {
 
     // Get file path and emit pre-migration event
     const file = path.relative(options.migrations_directory, this.file);
-    const { gasLimit } = await web3.eth.getBlock("latest");
+    const { gasLimit } = await interfaceAdapter.getBlock("latest");
 
     const preMigrationsData = {
       file: file,
@@ -171,7 +169,11 @@ class Migration {
 
   prepareForMigrations(options) {
     const logger = options.logger;
-    const interfaceAdapter = new InterfaceAdapter();
+    const interfaceAdapter = createInterfaceAdapter({
+      config: options,
+      provider: options.provider,
+      networkType: options.networks[options.network].type
+    });
     const web3 = new Web3Shim({
       config: options,
       provider: options.provider,
@@ -181,7 +183,7 @@ class Migration {
     const resolver = new ResolverIntercept(options.resolver);
 
     // Initial context.
-    const context = { web3, interfaceAdapter };
+    const context = { web3, interfaceAdapter, config: this.config };
 
     const deployer = new Deployer({
       logger,
@@ -191,10 +193,11 @@ class Migration {
       network: options.network,
       network_id: options.network_id,
       provider: options.provider,
-      basePath: path.dirname(this.file)
+      basePath: path.dirname(this.file),
+      ens: options.ens
     });
 
-    return { logger, web3, interfaceAdapter, resolver, context, deployer };
+    return { interfaceAdapter, resolver, context, deployer };
   }
 
   /**

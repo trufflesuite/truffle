@@ -110,6 +110,7 @@ const command = {
       2, // Morden (ETC)
       3, // Ropsten
       4, // Rinkeby
+      5, // Goerli
       8, // Ubiq
       42, // Kovan (Parity)
       77, // Sokol
@@ -190,6 +191,7 @@ const command = {
     Contracts.compile(conf)
       .then(async () => {
         await Environment.detect(conf);
+
         const {
           dryRunOnly,
           dryRunAndMigrations
@@ -217,9 +219,7 @@ const command = {
         }
         done();
       })
-      .catch(error => {
-        done(error);
-      });
+      .catch(done);
 
     async function setupDryRunEnvironmentThenRunMigrations(config) {
       await Environment.fork(config);

@@ -1,4 +1,4 @@
-import { Utils } from "@truffle/codec";
+import * as Codec from "@truffle/codec";
 
 const stringify = require("json-stable-stringify");
 
@@ -19,7 +19,7 @@ export function isSkippedNodeType(node) {
     node.nodeType.includes("TypeName") || //HACK
     //skip string literals too -- we'll handle that manually
     (node.typeDescriptions !== undefined && //seems this sometimes happens?
-      Utils.Definition.typeClass(node) === "stringliteral")
+      Codec.Ast.Utils.typeClass(node) === "stringliteral")
   );
 }
 
@@ -46,7 +46,7 @@ export function extractPrimarySource(sourceMap) {
  * @return 0x-prefix string of keccak256 hash
  */
 export function keccak256(...args) {
-  return Utils.Conversion.toHexString(Utils.EVM.keccak256(...args));
+  return Codec.Conversion.toHexString(Codec.Evm.Utils.keccak256(...args));
 }
 
 /**

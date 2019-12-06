@@ -1,12 +1,12 @@
-const debug = require("debug")("contract:handlers"); // eslint-disable-line no-unused-vars
-var StatusError = require("./statuserror");
-var Utils = require("./utils");
-var Reason = require("./reason");
+const debug = require("debug")("contract:handlers");
+const StatusError = require("./statuserror");
+const Utils = require("./utils");
+const Reason = require("./reason");
 
 /*
   Handlers for events emitted by `send` / `call` etc.
  */
-var handlers = {
+const handlers = {
   // ----------------------------------- Constants -------------------------------------------------
 
   maxConfirmations: 24, // Maximum number of confirmation web3 emits
@@ -22,10 +22,10 @@ var handlers = {
    * @return {Boolean}
    */
   ignoreTimeoutError: function(context, error) {
-    var timedOut =
+    const timedOut =
       error.message && error.message.includes(handlers.timeoutMessage);
 
-    var shouldWait =
+    const shouldWait =
       context.contract &&
       context.contract.timeoutBlocks &&
       context.contract.timeoutBlocks > handlers.defaultTimeoutBlocks;
@@ -112,13 +112,13 @@ var handlers = {
 
     // .method(): resolve/reject receipt in handler
     if (receipt.status !== undefined && !receipt.status) {
-      var reason = await Reason.get(
+      const reason = await Reason.get(
         context.params,
         context.contract.web3,
         context.contract.interfaceAdapter
       );
 
-      var error = new StatusError(
+      const error = new StatusError(
         context.params,
         receipt.transactionHash,
         receipt,

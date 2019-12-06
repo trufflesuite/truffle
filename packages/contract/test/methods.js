@@ -217,6 +217,30 @@ describe("Methods", function() {
       assert(web3.utils.isBN(value[1]));
     });
 
+    it("should output nested uint array values as BN by default (call)", async function() {
+      let value;
+      const example = await Example.new(1);
+
+      value = await example.returnsNamedStaticNestedArray();
+      assert(Array.isArray(value));
+      assert(Array.isArray(value[0]));
+      assert(Array.isArray(value[1]));
+      assert(web3.utils.isBN(value[0][0]));
+      assert(web3.utils.isBN(value[0][1]));
+      assert(web3.utils.isBN(value[1][0]));
+      assert(web3.utils.isBN(value[1][1]));
+
+      value = await example.returnsUnnamedStaticNestedArray();
+
+      assert(Array.isArray(value));
+      assert(Array.isArray(value[0]));
+      assert(Array.isArray(value[1]));
+      assert(web3.utils.isBN(value[0][0]));
+      assert(web3.utils.isBN(value[0][1]));
+      assert(web3.utils.isBN(value[1][0]));
+      assert(web3.utils.isBN(value[1][1]));
+    });
+
     it("should output int values as BN by default (call)", async function() {
       let value;
       const example = await Example.new(1);
@@ -497,18 +521,16 @@ describe("Methods", function() {
     });
   });
 
-  describe("error with reason (ganache only)", function() {
-    it("errors with receipt and revert reason", async function() {
+  describe("revert with reason (ganache only)", function() {
+    it("errors with receipt and revert message", async function() {
       const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError();
         assert.fail();
       } catch (e) {
         assert(e.reason === "reasonstring");
-        assert(
-          e.message.includes("consuming all gas"),
-          "Triggered require should consume all gas"
-        );
+        assert(e.message.includes("reasonstring"));
+        assert(e.message.includes("revert"));
         assert(e.receipt.status === false);
       }
     });

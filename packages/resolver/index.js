@@ -22,18 +22,21 @@ function Resolver(options) {
 
 // This function might be doing too much. If so, too bad (for now).
 Resolver.prototype.require = function(import_path, search_path) {
-  for (let i = 0; i < this.sources.length; i++) {
-    var source = this.sources[i];
-    var result = source.require(import_path, search_path);
+  const loadedNetworkConfig = this.options.networks && this.options.network;
+  let abstraction;
+  this.sources.forEach(source => {
+    const result = source.require(import_path, search_path);
     if (result) {
-      var abstraction = contract(
+      abstraction = contract(
         result,
-        this.options.networks[this.options.network].type
+        loadedNetworkConfig
+          ? this.options.networks[this.options.network].type
+          : "ethereum"
       );
       provision(abstraction, this.options);
-      return abstraction;
     }
-  }
+  });
+  if (abstraction) return abstraction;
   throw new Error(
     "Could not find artifacts for " + import_path + " from any sources"
   );

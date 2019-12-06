@@ -171,9 +171,9 @@ describe("TruffleContract.setNetworkType()", () => {
   it("sets network_type on Web3Shim", () => {
     const freshTruffleContract = TruffleContract();
     // default Web3Shim networkType
-    assert.strictEqual(freshTruffleContract.web3.networkType, "ethereum");
+    assert.strictEqual(freshTruffleContract.networkType, "ethereum");
     freshTruffleContract.setNetworkType("quorum");
-    assert.strictEqual(freshTruffleContract.web3.networkType, "quorum");
+    assert.strictEqual(freshTruffleContract.networkType, "quorum");
   });
 });
 
@@ -181,7 +181,6 @@ describe("TruffleContract.setWallet()", () => {
   it("sets wallet on Web3Shim", () => {
     const freshTruffleContract = TruffleContract();
     const mockWalletObj = {};
-    assert(freshTruffleContract.web3.eth.accounts.wallet);
     freshTruffleContract.setWallet(mockWalletObj);
     assert.deepStrictEqual(
       freshTruffleContract.web3.eth.accounts.wallet,

@@ -1,4 +1,7 @@
-const { Web3Shim } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
@@ -12,6 +15,7 @@ module.exports = Contract => ({
     }
 
     this.web3.setProvider(provider);
+    this.interfaceAdapter.setProvider(provider);
     this.currentProvider = provider;
   },
 
@@ -45,6 +49,7 @@ module.exports = Contract => ({
     try {
       await this.detectNetwork();
       const contract = await this.web3.tez.contract.at(this.address);
+      contract.transactionHash = this.transactionHash;
       return new this(contract);
     } catch (error) {
       throw error;
@@ -58,6 +63,7 @@ module.exports = Contract => ({
       utils.checkNetworkArtifactMatch(this);
       utils.checkDeployment(this);
       const contract = await this.web3.tez.contract.at(this.address);
+      contract.transactionHash = this.transactionHash;
       return new this(contract);
     } catch (error) {
       throw error;
@@ -102,7 +108,7 @@ module.exports = Contract => ({
     // use that network and use latest block gasLimit
     if (this.network_id && this.networks[this.network_id] != null) {
       try {
-        const { gasLimit } = await this.web3.eth.getBlock("latest");
+        const { gasLimit } = await this.interfaceAdapter.getBlock("latest");
         return { id: this.network_id, blockLimit: gasLimit };
       } catch (error) {
         throw error;
@@ -112,8 +118,8 @@ module.exports = Contract => ({
     // since artifacts don't have a network_id synced with a network configuration,
     // poll chain for network_id and sync artifacts
     try {
-      const chainNetworkID = await this.web3.eth.net.getId();
-      const { gasLimit } = await this.web3.eth.getBlock("latest");
+      const chainNetworkID = await this.interfaceAdapter.getNetworkId();
+      const { gasLimit } = await this.interfaceAdapter.getBlock("latest");
       return await utils.setInstanceNetworkID(this, chainNetworkID, gasLimit);
     } catch (error) {
       throw error;
@@ -216,6 +222,9 @@ module.exports = Contract => ({
     bootstrap(temp);
 
     temp.web3 = new Web3Shim({
+      networkType: temp.networkType
+    });
+    temp.interfaceAdapter = createInterfaceAdapter({
       networkType: temp.networkType
     });
     temp.class_defaults = temp.prototype.defaults || {};
