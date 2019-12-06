@@ -19,7 +19,7 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@taquito/taquito": "^5.1.0-beta.1",
+    "@taquito/taquito": "5.2.0-beta.1",
     "@truffle/config": "^1.2.7",
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
