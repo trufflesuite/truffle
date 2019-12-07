@@ -251,8 +251,8 @@ var execute = {
 
           const originateParams = {
             balance: params.value || "0",
-            code: params.data,
             init: `${params.arguments}`, // TODO: robust encoding/decoding of deployer params from migration scripts
+            code: JSON.parse(params.data),
             fee: params.fee,
             storageLimit: params.storageLimit,
             gasLimit: params.gasLimit || params.gas
