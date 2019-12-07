@@ -1,5 +1,5 @@
-import { generateId, Migrations, WorkspaceClient } from './utils';
-import { AddBytecode, GetAllBytecodes, GetBytecode } from './bytecode.graphql';
+import { generateId, Migrations, WorkspaceClient } from "./utils";
+import { AddBytecode, GetAllBytecodes, GetBytecode } from "./bytecode.graphql";
 import { shimBytecode } from "@truffle/workflow-compile/shims";
 
 describe("Bytecode", () => {
@@ -14,7 +14,7 @@ describe("Bytecode", () => {
     addBytecodeResult = await wsClient.execute(AddBytecode, shimmedBytecode);
   });
 
-  test ("can be added", async () => {
+  test("can be added", async () => {
     expect(addBytecodeResult).toHaveProperty("bytecodesAdd");
     const { bytecodesAdd } = addBytecodeResult;
     expect(bytecodesAdd).toHaveProperty("bytecodes");
@@ -29,8 +29,11 @@ describe("Bytecode", () => {
     expect(id).toEqual(expectedId);
   });
 
-  test("can be queried", async() =>{
-    const executionResult = await wsClient.execute(GetBytecode, { id: expectedId });
+  test("can be queried", async () => {
+    const executionResult = await wsClient.execute(GetBytecode, {
+      id: expectedId
+    });
+
     expect(executionResult).toHaveProperty("bytecode");
 
     const { bytecode } = executionResult;
@@ -43,22 +46,20 @@ describe("Bytecode", () => {
     expect(linkReferences).toEqual(shimmedBytecode.linkReferences);
   });
 
+  test("can retrieve all bytecodes", async () => {
+    const executionResult = await wsClient.execute(GetAllBytecodes, {});
 
-  test("can retrieve all bytecodes", async() => {
-    const executionResult = await wsClient.execute(GetAllBytecodes);
     expect(executionResult).toHaveProperty("bytecodes");
 
     const { bytecodes } = executionResult;
 
-    expect(bytecodes).toHaveProperty("length")
+    expect(bytecodes).toHaveProperty("length");
 
     bytecodes.forEach(bc => {
       expect(bc).toHaveProperty("id");
       expect(bc).toHaveProperty("bytes");
       expect(bc).toHaveProperty("linkReferences");
       expect(bc).toHaveProperty("instructions");
-    })
-
-  })
-
+    });
+  });
 });

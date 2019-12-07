@@ -56,6 +56,14 @@ const googleAnalytics = {
     }
   },
   /**
+   * get user-level options for analytics
+   * @param {Object} userConfig
+   * @returns {bool}
+   */
+  getAnalytics: function() {
+    return userConfig.get("enableAnalytics");
+  },
+  /**
    * set user-level options for analytics
    * @param {bool} analyticsBool
    * @param {Object} userConfig
@@ -68,12 +76,18 @@ const googleAnalytics = {
         analyticsSet: true,
         analyticsMessageDateTime: Date.now()
       });
-    } else {
+    } else if (analyticsBool === false) {
       userConfig.set({
         enableAnalytics: false,
         analyticsSet: true,
         analyticsMessageDateTime: Date.now()
       });
+    } else {
+      const message =
+        `Error setting config option.` +
+        `\n> You must set the 'analytics' option to either 'true' ` +
+        `or 'false'. \n> The value you provided was ${analyticsBool}.`;
+      throw new Error(message);
     }
     return true;
   },

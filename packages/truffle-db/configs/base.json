@@ -9,6 +9,7 @@
     "allowSyntheticDefaultImports": true,
     "module": "commonjs",
     "outDir": "../dist",
+    "strictBindCallApply": true,
     "paths": {
       "truffle-db": ["../src"],
       "truffle-db/*": ["../src/*"],

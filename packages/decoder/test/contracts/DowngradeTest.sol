@@ -26,6 +26,8 @@ contract DowngradeTest {
   function() external payable {
   }
 
+  function() external doYouSeeMe = this.causeTrouble;
+
   function run(AsymmetricTriple memory at, Ternary t, DowngradeTest dt, address payable ap) public {
     emit TheWorks(at, t, dt, ap);
   }
@@ -52,9 +54,17 @@ contract DowngradeTest {
 
   event EnumSilliness1(uint8 indexed, uint8 indexed, Ternary, PositionOnHill);
   event EnumSilliness2(uint8, uint8, Ternary indexed, PositionOnHill indexed);
+
+  function decoy() public { //here to make the additionalContexts test harder
+    DecoyLibrary.decoy();
+    emit Done();
+  }
 }
 
 library DecoyLibrary {
   event EnumSilliness1(uint8, uint8, DowngradeTest.Ternary indexed, DowngradeTest.PositionOnHill indexed);
   event EnumSilliness2(uint8 indexed, uint8 indexed, DowngradeTest.Ternary, DowngradeTest.PositionOnHill);
+
+  function decoy() external pure {
+  }
 }

@@ -1,10 +1,11 @@
 const assert = require("assert");
 const util = require("util"); // eslint-disable-line no-unused-vars
 
-const TruffleDecoder = require("../../../decoder");
-const TruffleCodecUtils = require("../../../truffle-codec-utils");
+const Decoder = require("../..");
+const { nativizeDecoderVariables } = require("../../dist/utils");
 
 const DecodingSample = artifacts.require("DecodingSample");
+const DecodingSampleParent = artifacts.require("DecodingSampleParent");
 
 function validateStructS(struct, values) {
   assert.equal(typeof struct, "object");
@@ -31,16 +32,16 @@ contract("DecodingSample", _accounts => {
   it("should get the initial state properly", async function() {
     let deployedContract = await DecodingSample.deployed();
     let address = deployedContract.address;
-    const decoder = await TruffleDecoder.forContractInstance(
-      DecodingSample,
-      [],
-      web3.currentProvider
-    );
+    const decoder = await Decoder.forContractInstance(deployedContract, [
+      DecodingSampleParent
+    ]);
 
-    decoder.watchMappingKey("varMapping", 2);
-    decoder.watchMappingKey("varMapping", 3);
+    await decoder.watchMappingKey("varMapping", 2);
+    await decoder.watchMappingKey("varMapping", 3);
+    await decoder.watchMappingKey("varAddressMapping", address);
 
     const initialState = await decoder.state();
+    const initialVariables = await decoder.variables();
 
     // used for debugging test results
     // console.log(
@@ -51,10 +52,13 @@ contract("DecodingSample", _accounts => {
     //   })
     // );
 
-    assert.equal(initialState.name, "DecodingSample");
-    const variables = TruffleCodecUtils.Conversion.nativizeVariables(
-      initialState.variables
-    );
+    assert.equal(initialState.class.typeName, "DecodingSample");
+    //before we move on to the main section, we'll test the defining classes
+    //of the first two variables
+    assert.equal(initialVariables[0].class.typeName, "DecodingSampleParent");
+    assert.equal(initialVariables[1].class.typeName, "DecodingSample");
+
+    const variables = nativizeDecoderVariables(initialVariables);
 
     assert.notStrictEqual(typeof variables.varUint, "undefined");
 
@@ -131,6 +135,7 @@ contract("DecodingSample", _accounts => {
 
     assert.equal(variables.varMapping[2], 41);
     assert.equal(variables.varMapping[3], 107);
+    assert.equal(variables.varAddressMapping[address], 683);
 
     assert.equal(
       variables.functionExternal,

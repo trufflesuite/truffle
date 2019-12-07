@@ -1,10 +1,14 @@
 const Web3 = require("web3");
-const { Web3Shim } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
 const Resolver = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 const Ganache = require("ganache-core/public-exports");
+const Provider = require("@truffle/provider");
 
 const Environment = {
   // It's important config is a Config object and not a vanilla object
@@ -14,38 +18,48 @@ const Environment = {
     helpers.setUpConfig(config);
     helpers.validateNetworkConfig(config);
 
+    const interfaceAdapter = createInterfaceAdapter({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+    });
     const web3 = new Web3Shim({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
 
-    await helpers.detectAndSetNetworkId(config, web3);
-    await helpers.setFromOnConfig(config, web3);
+    await Provider.testConnection(config);
+    await helpers.detectAndSetNetworkId(config, web3, interfaceAdapter);
+    await helpers.setFromOnConfig(config, web3, interfaceAdapter);
   },
 
   // Ensure you call Environment.detect() first.
   fork: async function(config) {
     expect.options(config, ["from", "provider", "networks", "network"]);
 
+    const interfaceAdapter = createInterfaceAdapter({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+    });
     const web3 = new Web3Shim({
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
 
     const accounts = await web3.eth.getAccounts();
-    const block = await web3.eth.getBlock("latest");
+    const block = await interfaceAdapter.getBlock("latest");
 
     const upstreamNetwork = config.network;
     const upstreamConfig = config.networks[upstreamNetwork];
     const forkedNetwork = config.network + "-fork";
+    const ganacheOptions = {
+      fork: config.provider,
+      gasLimit: block.gasLimit
+    };
+    if (accounts.length > 0) ganacheOptions.unlocked_accounts = accounts;
 
     config.networks[forkedNetwork] = {
       network_id: config.network_id,
-      provider: Ganache.provider({
-        fork: config.provider,
-        unlocked_accounts: accounts,
-        gasLimit: block.gasLimit
-      }),
+      provider: Ganache.provider(ganacheOptions),
       from: config.from,
       gas: upstreamConfig.gas,
       gasPrice: upstreamConfig.gasPrice
@@ -73,16 +87,16 @@ const Environment = {
 };
 
 const helpers = {
-  setFromOnConfig: async (config, web3) => {
+  setFromOnConfig: async (config, web3, interfaceAdapter) => {
     if (config.from) return;
 
     const accounts = await web3.eth.getAccounts();
     config.networks[config.network].from = accounts[0];
   },
 
-  detectAndSetNetworkId: async (config, web3) => {
+  detectAndSetNetworkId: async (config, web3, interfaceAdapter) => {
     const configNetworkId = config.networks[config.network].network_id;
-    const providerNetworkId = await web3.eth.net.getId();
+    const providerNetworkId = await interfaceAdapter.getNetworkId();
     if (configNetworkId !== "*") {
       // Ensure the network id matches the one in the config for safety
       if (providerNetworkId.toString() !== configNetworkId.toString()) {
@@ -140,6 +154,15 @@ const helpers = {
           network_id: 5777
         };
       }
+    }
+
+    const currentNetworkSettings = config.networks[config.network];
+    if (
+      currentNetworkSettings &&
+      currentNetworkSettings.ens &&
+      currentNetworkSettings.ens.registry
+    ) {
+      config.ens.registryAddress = currentNetworkSettings.ens.registry.address;
     }
   }
 };

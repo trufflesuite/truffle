@@ -5,9 +5,8 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 
-import { slotAddress } from "truffle-codec";
+import * as Codec from "@truffle/codec";
 import { makeAssignment } from "lib/helpers";
-import { Conversion, Definition, EVM } from "truffle-codec-utils";
 
 const DEFAULT_SCOPES = {
   byId: {}
@@ -186,16 +185,19 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
       //we do NOT want to distinguish between types with and without "_ptr" on
       //the end here!
       debug("typeIdentifier %s", typeIdentifier);
-      typeIdentifier = Definition.restorePtr(typeIdentifier);
-      parentType = Definition.restorePtr(parentType);
+      typeIdentifier = Codec.Ast.Utils.restorePtr(typeIdentifier);
+      parentType = Codec.Ast.Utils.restorePtr(parentType);
 
       debug("slot %o", slot);
-      let hexSlotAddress = Conversion.toHexString(
-        slotAddress(slot),
-        EVM.WORD_SIZE
+      let hexSlotAddress = Codec.Conversion.toHexString(
+        Codec.Storage.Utils.slotAddress(slot),
+        Codec.Evm.Utils.WORD_SIZE
       );
       let parentAddress = slot.path
-        ? Conversion.toHexString(slotAddress(slot.path), EVM.WORD_SIZE)
+        ? Codec.Conversion.toHexString(
+            Codec.Storage.Utils.slotAddress(slot.path),
+            Codec.Evm.Utils.WORD_SIZE
+          )
         : undefined;
 
       //this is going to be messy and procedural, sorry.  but let's start with

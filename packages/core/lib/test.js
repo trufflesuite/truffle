@@ -2,7 +2,10 @@ const Mocha = require("mocha");
 const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
-const Web3 = require("web3");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 const Contracts = require("@truffle/workflow-compile/new");
 const Resolver = require("@truffle/resolver");
@@ -35,10 +38,19 @@ const Test = {
       return path.resolve(testFile);
     });
 
+    const interfaceAdapter = createInterfaceAdapter({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+    });
+
     // `accounts` will be populated before each contract() invocation
     // and passed to it so tests don't have to call it themselves.
-    const web3 = new Web3();
-    web3.setProvider(config.provider);
+    const web3 = new Web3Shim({
+      provider: config.provider,
+      networkType: config.networks[config.network].type
+        ? config.networks[config.network].type
+        : "web3js"
+    });
 
     // Override console.warn() because web3 outputs gross errors to it.
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
@@ -73,7 +85,7 @@ const Test = {
       mocha.addFile(file);
     });
 
-    const accounts = await this.getAccounts(web3);
+    const accounts = await this.getAccounts(web3, interfaceAdapter);
 
     if (!config.resolver) config.resolver = new Resolver(config);
 
@@ -109,6 +121,7 @@ const Test = {
     await this.setJSTestGlobals({
       config,
       web3,
+      interfaceAdapter,
       accounts,
       testResolver,
       runner,
@@ -148,7 +161,7 @@ const Test = {
     return mocha;
   },
 
-  getAccounts: function(web3) {
+  getAccounts: function(web3, interfaceAdapter) {
     return web3.eth.getAccounts();
   },
 
@@ -164,7 +177,7 @@ const Test = {
       all: config.compileAll === true,
       files: updated.concat(solidityTestFiles),
       resolver: testResolver,
-      quiet: config.quiet,
+      quiet: config.runnerOutputOnly || config.quiet,
       quietWrite: true
     });
 
@@ -201,12 +214,14 @@ const Test = {
   setJSTestGlobals: function({
     config,
     web3,
+    interfaceAdapter,
     accounts,
     testResolver,
     runner,
     compilation
   }) {
     return new Promise(accept => {
+      global.interfaceAdapter = interfaceAdapter;
       global.web3 = web3;
       global.assert = chai.assert;
       global.expect = chai.expect;

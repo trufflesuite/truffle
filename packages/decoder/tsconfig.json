@@ -2,18 +2,14 @@
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es6",
+    "target": "es5",
+    "downlevelIteration": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
     "lib": ["es2017"],
-    "paths": {
-      "web3": ["../../node_modules/@types/web3/index", "node_modules/web3/index"],
-      "web3/types": ["../../node_modules/@types/web3/types", "node_modules/web3/types"],
-      "web3/eth/types": ["../../node_modules/@types/web3/eth/types", "node_modules/web3/eth/types"]
-    },
     "rootDir": "lib",
     "typeRoots": [
       "./typings",
@@ -30,4 +26,5 @@
     "./lib/**/*.ts",
     "./typings/**/*.d.ts"
   ]
+
 }

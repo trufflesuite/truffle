@@ -1,8 +1,11 @@
-import { generateId, Migrations, WorkspaceClient } from './utils';
+import { generateId, Migrations, WorkspaceClient } from "./utils";
 import { shimBytecode } from "@truffle/workflow-compile/shims";
-
-import { AddNetworks } from './network.graphql';
-import { AddContractInstances, GetContractInstance, GetAllContractInstances } from './contractInstance.graphql';
+import { AddNetworks } from "./network.graphql";
+import {
+  AddContractInstances,
+  GetContractInstance,
+  GetAllContractInstances
+} from "./contractInstance.graphql";
 
 describe("Contract Instance", () => {
   const wsClient = new WorkspaceClient();
@@ -15,40 +18,51 @@ describe("Contract Instance", () => {
     addNetworkResult = await wsClient.execute(AddNetworks, {
       networkId: Object.keys(Migrations.networks)[0],
       height: 1,
-      hash: '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6'
+      hash: "0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6"
     });
 
-    expectedId = generateId({ address: address, network: { id: addNetworkResult.networksAdd.networks[0].id }});
-    let shimmedBytecode = shimBytecode(Migrations.bytecode)
-
-    variables = [{
+    expectedId = generateId({
       address: address,
-      network: {
-        id: addNetworkResult.networksAdd.networks[0].id
-      },
-      contract: {
-        id:  generateId({
-          name: Migrations.contractName,
-          abi: { json: JSON.stringify(Migrations.abi) } ,
-          sourceContract: { index: 0 } ,
-          compilation: { id:  '0x7f91bdeb02ae5fd772f829f41face7250ce9eada560e3e7fa7ed791c40d926bd' }
-        })
-      },
-      creation: {
-        transactionHash: Migrations.networks['5777'].transactionHash,
-        constructor: {
-          createBytecode: {
-            bytecode: {
-              id: generateId(shimmedBytecode)
+      network: { id: addNetworkResult.networksAdd.networks[0].id }
+    });
+    let shimmedBytecode = shimBytecode(Migrations.bytecode);
+
+    variables = [
+      {
+        address: address,
+        network: {
+          id: addNetworkResult.networksAdd.networks[0].id
+        },
+        contract: {
+          id: generateId({
+            name: Migrations.contractName,
+            abi: { json: JSON.stringify(Migrations.abi) },
+            sourceContract: { index: 0 },
+            compilation: {
+              id:
+                "0x7f91bdeb02ae5fd772f829f41face7250ce9eada560e3e7fa7ed791c40d926bd"
+            }
+          })
+        },
+        creation: {
+          transactionHash: Migrations.networks["5777"].transactionHash,
+          constructor: {
+            createBytecode: {
+              bytecode: {
+                id: generateId(shimmedBytecode)
+              }
             }
           }
         }
       }
-    }];
+    ];
   });
 
   test("can be added", async () => {
-    const addContractInstancesResult = await wsClient.execute(AddContractInstances, { contractInstances: variables });
+    const addContractInstancesResult = await wsClient.execute(
+      AddContractInstances,
+      { contractInstances: variables }
+    );
     expect(addContractInstancesResult).toHaveProperty("contractInstancesAdd");
 
     const { contractInstancesAdd } = addContractInstancesResult;
@@ -64,11 +78,14 @@ describe("Contract Instance", () => {
 
     const { networkId } = network;
     expect(networkId).toEqual(Object.keys(Migrations.networks)[0]);
-
   });
 
-  test("can be queried", async() => {
-    const getContractInstanceResult = await wsClient.execute(GetContractInstance, { id: expectedId });
+  test("can be queried", async () => {
+    const getContractInstanceResult = await wsClient.execute(
+      GetContractInstance,
+      { id: expectedId }
+    );
+
     expect(getContractInstanceResult).toHaveProperty("contractInstance");
 
     const { contractInstance } = getContractInstanceResult;
@@ -79,11 +96,17 @@ describe("Contract Instance", () => {
     expect(address).toEqual(Object.values(Migrations.networks)[0]["address"]);
 
     const { networkId } = network;
-    expect(networkId).toEqual(addNetworkResult.networksAdd.networks[0].networkId);
+    expect(networkId).toEqual(
+      addNetworkResult.networksAdd.networks[0].networkId
+    );
   });
 
-  test("can retrieve all contractInstances", async() => {
-    const getAllContractInstancesResult = await wsClient.execute(GetAllContractInstances);
+  test("can retrieve all contractInstances", async () => {
+    const getAllContractInstancesResult = await wsClient.execute(
+      GetAllContractInstances,
+      {}
+    );
+
     expect(getAllContractInstancesResult).toHaveProperty("contractInstances");
 
     const { contractInstances } = getAllContractInstancesResult;

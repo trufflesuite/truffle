@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
-
 import { TruffleDB } from "truffle-db";
 import { shimBytecode } from "@truffle/workflow-compile/shims";
+import tmp from "tmp";
 
 const fixturesDirectory = path.join(
   __dirname, // truffle-db/src/test
@@ -13,9 +13,13 @@ const fixturesDirectory = path.join(
   "fixtures"
 );
 
+const tempDir = tmp.dirSync({ unsafeCleanup: true });
+tmp.setGracefulCleanup();
+
 // minimal config
 const config = {
-  contracts_build_directory: fixturesDirectory
+  contracts_build_directory: fixturesDirectory,
+  working_directory: tempDir.name
 };
 
 const db = new TruffleDB(config);
@@ -81,6 +85,10 @@ const GetContractConstructor = `
     }
   }`;
 
+afterAll(() => {
+  tempDir.removeCallback();
+});
+
 describe("Artifacts queries", () => {
   it("lists artifact contract names", async () => {
     const result = await db.query(GetContractNames);
@@ -125,7 +133,7 @@ describe("Artifacts queries", () => {
     expect(ast.json).toEqual(JSON.stringify(Migrations.ast));
   });
 
-  it("retrieves contract constructor object correctly", async() => {
+  it("retrieves contract constructor object correctly", async () => {
     const result = await db.query(GetContractConstructor, {
       name: Migrations.contractName
     });
@@ -145,8 +153,12 @@ describe("Artifacts queries", () => {
     expect(contractConstructor).toHaveProperty("createBytecode");
 
     const { createBytecode } = contractConstructor;
-    expect(createBytecode.bytecode.bytes).toEqual(shimBytecode(Migrations.bytecode).bytes)
-    expect(createBytecode.bytecode.linkReferences).toEqual(shimBytecode(Migrations.bytecode).linkReferences)
+    expect(createBytecode.bytecode.bytes).toEqual(
+      shimBytecode(Migrations.bytecode).bytes
+    );
+    expect(createBytecode.bytecode.linkReferences).toEqual(
+      shimBytecode(Migrations.bytecode).linkReferences
+    );
 
     const { name, sourceContract, abi } = contract;
     expect(name).toEqual(Migrations.contractName);
@@ -155,7 +167,6 @@ describe("Artifacts queries", () => {
 
     const { source } = sourceContract;
     expect(source).not.toEqual(null);
-
   });
 
   const GetContractFromInstance = `
@@ -228,7 +239,9 @@ describe("Artifacts queries", () => {
 
     const { bytecode } = callBytecode;
     const { bytes, linkReferences } = bytecode;
-    expect(bytes).toEqual(shimBytecode(Migrations.deployedBytecode).bytes)
-    expect(linkReferences).toEqual(shimBytecode(Migrations.deployedBytecode).linkReferences)
+    expect(bytes).toEqual(shimBytecode(Migrations.deployedBytecode).bytes);
+    expect(linkReferences).toEqual(
+      shimBytecode(Migrations.deployedBytecode).linkReferences
+    );
   });
 });

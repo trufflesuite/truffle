@@ -87,11 +87,6 @@ type Bytecode {
   linkReferences: [LinkReference]
 }
 
-type SourceMap {
-  bytecode: Bytecode!
-  instructionSourceRange: SourceRange
-}
-
 type Instruction {
   opcode: String!,
   programCounter: Int!,
@@ -122,10 +117,15 @@ type Source {
   ast: AST
 }
 
+type SourceMap {
+  json: String!
+}
+
 type Compilation {
   compiler: Compiler!
   sources: [Source]!
   contracts: [SourceContract]!
+  sourceMaps: [SourceMap]
 }
 
 type Compiler {

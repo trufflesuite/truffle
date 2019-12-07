@@ -56,29 +56,23 @@ module.exports = {
   devtool: "source-map",
   module: {
     rules: [
-      { test: /\.js$/, use: "shebang-loader" },
-      { test: /rx\.lite\.aggregates\.js/, use: "imports-loader?define=>false" }
+      // ignores "#!/bin..." lines inside files
+      {
+        test: /\.js$/,
+        include: [
+          path.resolve(__dirname, "../core"),
+          path.resolve(__dirname, "../environment")
+        ],
+        use: "shebang-loader"
+      }
     ]
   },
   externals: [
-    // If you look at webpack's docs, `externals` doesn't need to be a function.
-    // But I never got it to work otherwise, so this is a function because "it works".
-    function(context, request, callback) {
-      // truffle-config uses the original-require module.
-      // Here, we leave it as an external, and use the original-require
-      // module that's a dependency of Truffle instead.
-      if (/^original-require$/.test(request)) {
-        return callback(null, "commonjs original-require");
-      }
-
-      // Mocha doesn't seem to bundle well either. This is a stop-gap until
-      // I can look into it further.
-      if (/^mocha$/.test(request)) {
-        return callback(null, "commonjs mocha");
-      }
-
-      callback();
-    }
+    // truffle-config uses the original-require module.
+    // Here, we leave it as an external, and use the original-require
+    // module that's a dependency of Truffle instead.
+    /^original-require$/,
+    /^mocha$/
   ],
   plugins: [
     new webpack.DefinePlugin({

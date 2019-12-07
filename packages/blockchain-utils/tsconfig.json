@@ -10,16 +10,15 @@
     "baseUrl": ".",
     "lib": ["es2017"],
     "paths": {
-      "web3": [
-        "../../node_modules/@types/web3/index",
-        "node_modules/web3/index"
+      "net": [
+        "../../node_modules/@types/node",
+        "node_modules/@types/node"
       ]
     },
     "rootDir": ".",
     "typeRoots": [
       "./typings",
       "../../**/node_modules/@types/mocha",
-      "../../**/node_modules/@types/web3",
       "../../**/node_modules/@types/assert"
     ]
   },

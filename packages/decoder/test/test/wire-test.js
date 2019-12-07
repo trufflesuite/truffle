@@ -2,8 +2,8 @@ const debug = require("debug")("decoder:test:wire-test");
 const assert = require("chai").assert;
 const BN = require("bn.js");
 
-const TruffleDecoder = require("../../../decoder");
-const ConversionUtils = require("../../../truffle-codec-utils").Conversion;
+const Decoder = require("../..");
+const Codec = require("../../../codec");
 
 const WireTest = artifacts.require("WireTest");
 const WireTestParent = artifacts.require("WireTestParent");
@@ -15,10 +15,11 @@ contract("WireTest", _accounts => {
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
 
-    const decoder = await TruffleDecoder.forProject(
-      [WireTest, WireTestParent, WireTestLibrary],
-      web3.currentProvider
-    );
+    const decoder = await Decoder.forProject(web3.currentProvider, [
+      WireTest,
+      WireTestParent,
+      WireTestLibrary
+    ]);
 
     let deployedContractNoConstructor = await WireTestParent.new();
     let defaultConstructorHash = deployedContractNoConstructor.transactionHash;
@@ -78,36 +79,38 @@ contract("WireTest", _accounts => {
       defaultConstructorHash
     );
 
-    let constructorDecoding = (await decoder.decodeTransaction(constructorTx))
-      .decoding;
-    let emitStuffDecoding = (await decoder.decodeTransaction(emitStuffTx))
-      .decoding;
-    let moreStuffDecoding = (await decoder.decodeTransaction(moreStuffTx))
-      .decoding;
-    let inheritedDecoding = (await decoder.decodeTransaction(inheritedTx))
-      .decoding;
-    let getterDecoding1 = (await decoder.decodeTransaction(getterTx1)).decoding;
-    let getterDecoding2 = (await decoder.decodeTransaction(getterTx2)).decoding;
-    let defaultConstructorDecoding = (await decoder.decodeTransaction(
+    let constructorDecoding = await decoder.decodeTransaction(constructorTx);
+    let emitStuffDecoding = await decoder.decodeTransaction(emitStuffTx);
+    let moreStuffDecoding = await decoder.decodeTransaction(moreStuffTx);
+    let inheritedDecoding = await decoder.decodeTransaction(inheritedTx);
+    let getterDecoding1 = await decoder.decodeTransaction(getterTx1);
+    let getterDecoding2 = await decoder.decodeTransaction(getterTx2);
+    let defaultConstructorDecoding = await decoder.decodeTransaction(
       defaultConstructorTx
-    )).decoding;
+    );
 
     assert.strictEqual(constructorDecoding.kind, "constructor");
     assert.strictEqual(constructorDecoding.class.typeName, "WireTest");
     assert.lengthOf(constructorDecoding.arguments, 3);
     assert.strictEqual(constructorDecoding.arguments[0].name, "status");
     assert.strictEqual(
-      ConversionUtils.nativize(constructorDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(
+        constructorDecoding.arguments[0].value
+      ),
       true
     );
     assert.strictEqual(constructorDecoding.arguments[1].name, "info");
     assert.strictEqual(
-      ConversionUtils.nativize(constructorDecoding.arguments[1].value),
+      Codec.Format.Utils.Inspect.nativize(
+        constructorDecoding.arguments[1].value
+      ),
       "0xdeadbeef"
     );
     assert.strictEqual(constructorDecoding.arguments[2].name, "whoknows");
     assert.strictEqual(
-      ConversionUtils.nativize(constructorDecoding.arguments[2].value),
+      Codec.Format.Utils.Inspect.nativize(
+        constructorDecoding.arguments[2].value
+      ),
       "WireTest.Ternary.MaybeSo"
     );
 
@@ -117,17 +120,17 @@ contract("WireTest", _accounts => {
     assert.lengthOf(emitStuffDecoding.arguments, 3);
     assert.strictEqual(emitStuffDecoding.arguments[0].name, "p");
     assert.deepEqual(
-      ConversionUtils.nativize(emitStuffDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(emitStuffDecoding.arguments[0].value),
       emitStuffArgs[0]
     );
     assert.strictEqual(emitStuffDecoding.arguments[1].name, "precompiles");
     assert.deepEqual(
-      ConversionUtils.nativize(emitStuffDecoding.arguments[1].value),
+      Codec.Format.Utils.Inspect.nativize(emitStuffDecoding.arguments[1].value),
       emitStuffArgs[1]
     );
     assert.strictEqual(emitStuffDecoding.arguments[2].name, "strings");
     assert.deepEqual(
-      ConversionUtils.nativize(emitStuffDecoding.arguments[2].value),
+      Codec.Format.Utils.Inspect.nativize(emitStuffDecoding.arguments[2].value),
       emitStuffArgs[2]
     );
 
@@ -137,12 +140,12 @@ contract("WireTest", _accounts => {
     assert.lengthOf(moreStuffDecoding.arguments, 2);
     assert.strictEqual(moreStuffDecoding.arguments[0].name, "notThis");
     assert.strictEqual(
-      ConversionUtils.nativize(moreStuffDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(moreStuffDecoding.arguments[0].value),
       `WireTest(${moreStuffArgs[0]})`
     );
     assert.strictEqual(moreStuffDecoding.arguments[1].name, "bunchOfInts");
     assert.deepEqual(
-      ConversionUtils.nativize(moreStuffDecoding.arguments[1].value),
+      Codec.Format.Utils.Inspect.nativize(moreStuffDecoding.arguments[1].value),
       moreStuffArgs[1]
     );
 
@@ -152,7 +155,7 @@ contract("WireTest", _accounts => {
     assert.lengthOf(inheritedDecoding.arguments, 1);
     assert.isUndefined(inheritedDecoding.arguments[0].name);
     assert.deepEqual(
-      ConversionUtils.nativize(inheritedDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(inheritedDecoding.arguments[0].value),
       inheritedArg
     );
 
@@ -169,12 +172,12 @@ contract("WireTest", _accounts => {
     assert.lengthOf(getterDecoding1.arguments, 2);
     assert.isUndefined(getterDecoding1.arguments[0].name);
     assert.strictEqual(
-      ConversionUtils.nativize(getterDecoding1.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(getterDecoding1.arguments[0].value),
       getter1Args[0]
     );
     assert.isUndefined(getterDecoding1.arguments[1].name);
     assert.strictEqual(
-      ConversionUtils.nativize(getterDecoding1.arguments[1].value),
+      Codec.Format.Utils.Inspect.nativize(getterDecoding1.arguments[1].value),
       getter1Args[1]
     );
 
@@ -184,12 +187,12 @@ contract("WireTest", _accounts => {
     assert.lengthOf(getterDecoding2.arguments, 2);
     assert.isUndefined(getterDecoding2.arguments[0].name);
     assert.strictEqual(
-      ConversionUtils.nativize(getterDecoding2.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(getterDecoding2.arguments[0].value),
       getter2Args[0]
     );
     assert.isUndefined(getterDecoding2.arguments[1].name);
     assert.strictEqual(
-      ConversionUtils.nativize(getterDecoding2.arguments[1].value),
+      Codec.Format.Utils.Inspect.nativize(getterDecoding2.arguments[1].value),
       getter2Args[1]
     );
 
@@ -278,17 +281,23 @@ contract("WireTest", _accounts => {
     assert.lengthOf(constructorEventDecoding.arguments, 3);
     assert.strictEqual(constructorEventDecoding.arguments[0].name, "bit");
     assert.strictEqual(
-      ConversionUtils.nativize(constructorEventDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(
+        constructorEventDecoding.arguments[0].value
+      ),
       true
     );
     assert.isUndefined(constructorEventDecoding.arguments[1].name);
     assert.strictEqual(
-      ConversionUtils.nativize(constructorEventDecoding.arguments[1].value),
+      Codec.Format.Utils.Inspect.nativize(
+        constructorEventDecoding.arguments[1].value
+      ),
       "0xdeadbeef"
     );
     assert.isUndefined(constructorEventDecoding.arguments[2].name);
     assert.strictEqual(
-      ConversionUtils.nativize(constructorEventDecoding.arguments[2].value),
+      Codec.Format.Utils.Inspect.nativize(
+        constructorEventDecoding.arguments[2].value
+      ),
       "WireTest.Ternary.MaybeSo"
     );
 
@@ -298,17 +307,23 @@ contract("WireTest", _accounts => {
     assert.lengthOf(emitStuffEventDecoding.arguments, 3);
     assert.isUndefined(emitStuffEventDecoding.arguments[0].name);
     assert.deepEqual(
-      ConversionUtils.nativize(emitStuffEventDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(
+        emitStuffEventDecoding.arguments[0].value
+      ),
       emitStuffArgs[0]
     );
     assert.isUndefined(emitStuffEventDecoding.arguments[1].name);
     assert.deepEqual(
-      ConversionUtils.nativize(emitStuffEventDecoding.arguments[1].value),
+      Codec.Format.Utils.Inspect.nativize(
+        emitStuffEventDecoding.arguments[1].value
+      ),
       emitStuffArgs[1]
     );
     assert.isUndefined(emitStuffEventDecoding.arguments[2].name);
     assert.deepEqual(
-      ConversionUtils.nativize(emitStuffEventDecoding.arguments[2].value),
+      Codec.Format.Utils.Inspect.nativize(
+        emitStuffEventDecoding.arguments[2].value
+      ),
       emitStuffArgs[2]
     );
 
@@ -318,12 +333,16 @@ contract("WireTest", _accounts => {
     assert.lengthOf(moreStuffEventDecoding.arguments, 2);
     assert.isUndefined(moreStuffEventDecoding.arguments[0].name);
     assert.strictEqual(
-      ConversionUtils.nativize(moreStuffEventDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(
+        moreStuffEventDecoding.arguments[0].value
+      ),
       `WireTest(${moreStuffArgs[0]})`
     );
     assert.strictEqual(moreStuffEventDecoding.arguments[1].name, "data");
     assert.deepEqual(
-      ConversionUtils.nativize(moreStuffEventDecoding.arguments[1].value),
+      Codec.Format.Utils.Inspect.nativize(
+        moreStuffEventDecoding.arguments[1].value
+      ),
       moreStuffArgs[1]
     );
 
@@ -338,26 +357,36 @@ contract("WireTest", _accounts => {
     assert.lengthOf(indexTestEventDecoding.arguments, 5);
     assert.isUndefined(indexTestEventDecoding.arguments[0].name);
     assert.strictEqual(
-      ConversionUtils.nativize(indexTestEventDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(
+        indexTestEventDecoding.arguments[0].value
+      ),
       indexTestArgs[0]
     );
     assert.isUndefined(indexTestEventDecoding.arguments[1].name);
     assert.deepEqual(
-      ConversionUtils.nativize(indexTestEventDecoding.arguments[1].value),
+      Codec.Format.Utils.Inspect.nativize(
+        indexTestEventDecoding.arguments[1].value
+      ),
       indexTestArgs[1]
     );
     assert.isUndefined(indexTestEventDecoding.arguments[2].name);
     assert.deepEqual(
-      ConversionUtils.nativize(indexTestEventDecoding.arguments[2].value),
+      Codec.Format.Utils.Inspect.nativize(
+        indexTestEventDecoding.arguments[2].value
+      ),
       indexTestArgs[2]
     );
     assert.isUndefined(indexTestEventDecoding.arguments[3].name);
     assert.isUndefined(
-      ConversionUtils.nativize(indexTestEventDecoding.arguments[3].value) //can't decode indexed reference type!
+      Codec.Format.Utils.Inspect.nativize(
+        indexTestEventDecoding.arguments[3].value
+      ) //can't decode indexed reference type!
     );
     assert.isUndefined(indexTestEventDecoding.arguments[4].name);
     assert.deepEqual(
-      ConversionUtils.nativize(indexTestEventDecoding.arguments[4].value),
+      Codec.Format.Utils.Inspect.nativize(
+        indexTestEventDecoding.arguments[4].value
+      ),
       indexTestArgs[4]
     );
 
@@ -370,7 +399,9 @@ contract("WireTest", _accounts => {
     assert.lengthOf(libraryTestEventDecoding.arguments, 1);
     assert.isUndefined(libraryTestEventDecoding.arguments[0].name);
     assert.strictEqual(
-      ConversionUtils.nativize(libraryTestEventDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(
+        libraryTestEventDecoding.arguments[0].value
+      ),
       libraryTestArg
     );
 
@@ -379,7 +410,9 @@ contract("WireTest", _accounts => {
     assert.lengthOf(dangerEventDecoding.arguments, 1);
     assert.isUndefined(dangerEventDecoding.arguments[0].name);
     assert.strictEqual(
-      ConversionUtils.nativize(dangerEventDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(
+        dangerEventDecoding.arguments[0].value
+      ),
       `WireTest(${address}).danger`
     );
   });
@@ -387,10 +420,11 @@ contract("WireTest", _accounts => {
   it("disambiguates events when possible and not when impossible", async function() {
     let deployedContract = await WireTest.deployed();
 
-    const decoder = await TruffleDecoder.forProject(
-      [WireTest, WireTestParent, WireTestLibrary],
-      web3.currentProvider
-    );
+    const decoder = await Decoder.forProject(web3.currentProvider, [
+      WireTest,
+      WireTestParent,
+      WireTestLibrary
+    ]);
 
     //HACK HACK -- we're going to repeatedly apply the hack from above
     //because ethers also can't handle ambiguous events
@@ -432,10 +466,12 @@ contract("WireTest", _accounts => {
     );
     assert.lengthOf(ambiguityTestContractDecoding.arguments, 2);
     assert.isUndefined(
-      ConversionUtils.nativize(ambiguityTestContractDecoding.arguments[0].value)
+      Codec.Format.Utils.Inspect.nativize(
+        ambiguityTestContractDecoding.arguments[0].value
+      )
     );
     assert.deepEqual(
-      ConversionUtils.nativize(
+      Codec.Format.Utils.Inspect.nativize(
         ambiguityTestContractDecoding.arguments[1].value
       ),
       [32, 3, 17, 18, 19]
@@ -449,11 +485,15 @@ contract("WireTest", _accounts => {
     );
     assert.lengthOf(ambiguityTestLibraryDecoding.arguments, 2);
     assert.deepEqual(
-      ConversionUtils.nativize(ambiguityTestLibraryDecoding.arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(
+        ambiguityTestLibraryDecoding.arguments[0].value
+      ),
       [17, 18, 19]
     );
     assert.isUndefined(
-      ConversionUtils.nativize(ambiguityTestLibraryDecoding.arguments[1].value)
+      Codec.Format.Utils.Inspect.nativize(
+        ambiguityTestLibraryDecoding.arguments[1].value
+      )
     );
 
     for (let decoding of unambiguousDecodings) {
@@ -464,30 +504,42 @@ contract("WireTest", _accounts => {
     assert.strictEqual(unambiguousDecodings[0].class.typeName, "WireTest");
     assert.lengthOf(unambiguousDecodings[0].arguments, 2);
     assert.isUndefined(
-      ConversionUtils.nativize(unambiguousDecodings[0].arguments[0].value)
+      Codec.Format.Utils.Inspect.nativize(
+        unambiguousDecodings[0].arguments[0].value
+      )
     );
     assert.deepEqual(
-      ConversionUtils.nativize(unambiguousDecodings[0].arguments[1].value),
+      Codec.Format.Utils.Inspect.nativize(
+        unambiguousDecodings[0].arguments[1].value
+      ),
       [32, 1e12, 17, 18, 19]
     );
 
     assert.strictEqual(unambiguousDecodings[1].class.typeName, "WireTest");
     assert.lengthOf(unambiguousDecodings[1].arguments, 2);
     assert.isUndefined(
-      ConversionUtils.nativize(unambiguousDecodings[1].arguments[0].value)
+      Codec.Format.Utils.Inspect.nativize(
+        unambiguousDecodings[1].arguments[0].value
+      )
     );
     assert.deepEqual(
-      ConversionUtils.nativize(unambiguousDecodings[1].arguments[1].value),
+      Codec.Format.Utils.Inspect.nativize(
+        unambiguousDecodings[1].arguments[1].value
+      ),
       [32, 3, 257, 257, 257]
     );
 
     assert.strictEqual(unambiguousDecodings[2].class.typeName, "WireTest");
     assert.lengthOf(unambiguousDecodings[2].arguments, 2);
     assert.isUndefined(
-      ConversionUtils.nativize(unambiguousDecodings[2].arguments[0].value)
+      Codec.Format.Utils.Inspect.nativize(
+        unambiguousDecodings[2].arguments[0].value
+      )
     );
     assert.deepEqual(
-      ConversionUtils.nativize(unambiguousDecodings[2].arguments[1].value),
+      Codec.Format.Utils.Inspect.nativize(
+        unambiguousDecodings[2].arguments[1].value
+      ),
       [64, 0, 2, 1, 1]
     );
 
@@ -497,26 +549,32 @@ contract("WireTest", _accounts => {
     );
     assert.lengthOf(unambiguousDecodings[3].arguments, 2);
     assert.deepEqual(
-      ConversionUtils.nativize(unambiguousDecodings[3].arguments[0].value),
+      Codec.Format.Utils.Inspect.nativize(
+        unambiguousDecodings[3].arguments[0].value
+      ),
       [107]
     );
     assert.isUndefined(
-      ConversionUtils.nativize(unambiguousDecodings[3].arguments[1].value)
+      Codec.Format.Utils.Inspect.nativize(
+        unambiguousDecodings[3].arguments[1].value
+      )
     );
   });
 
   it("Handles anonymous events", async function() {
     let deployedContract = await WireTest.deployed();
 
-    const decoder = await TruffleDecoder.forProject(
-      [WireTest, WireTestParent, WireTestLibrary],
-      web3.currentProvider
-    );
+    const decoder = await Decoder.forProject(web3.currentProvider, [
+      WireTest,
+      WireTestParent,
+      WireTestLibrary
+    ]);
 
     //thankfully, ethers ignores anonymous events,
     //so we don't need to use that hack here
     let anonymousTest = await deployedContract.anonymousTest();
-    let block = anonymousTest.blockNumber;
+    let block = anonymousTest.receipt.blockNumber;
+    debug("block: %O", block);
     let anonymousTestEvents = await decoder.events({
       fromBlock: block,
       toBlock: block
@@ -543,7 +601,7 @@ contract("WireTest", _accounts => {
     assert.lengthOf(anonymousTestEvents[0].decodings[0].arguments, 4);
     assert.deepEqual(
       anonymousTestEvents[0].decodings[0].arguments.map(({ value }) =>
-        ConversionUtils.nativize(value)
+        Codec.Format.Utils.Inspect.nativize(value)
       ),
       [257, 1, 1, 1]
     );
@@ -561,7 +619,7 @@ contract("WireTest", _accounts => {
     assert.lengthOf(anonymousTestEvents[1].decodings[0].arguments, 4);
     assert.deepEqual(
       anonymousTestEvents[1].decodings[0].arguments.map(({ value }) =>
-        ConversionUtils.nativize(value)
+        Codec.Format.Utils.Inspect.nativize(value)
       ),
       [1, 2, 3, 4]
     );
@@ -577,7 +635,7 @@ contract("WireTest", _accounts => {
     assert.lengthOf(anonymousTestEvents[1].decodings[1].arguments, 4);
     assert.deepEqual(
       anonymousTestEvents[1].decodings[1].arguments.map(({ value }) =>
-        ConversionUtils.nativize(value)
+        Codec.Format.Utils.Inspect.nativize(value)
       ),
       [1, 2, 3, 4]
     );
@@ -592,7 +650,7 @@ contract("WireTest", _accounts => {
     assert.lengthOf(anonymousTestEvents[2].decodings[0].arguments, 3);
     assert.deepEqual(
       anonymousTestEvents[2].decodings[0].arguments.map(({ value }) =>
-        ConversionUtils.nativize(value)
+        Codec.Format.Utils.Inspect.nativize(value)
       ),
       [1, 2, 3]
     );
@@ -610,7 +668,7 @@ contract("WireTest", _accounts => {
     assert.deepEqual(
       anonymousTestEvents[2].decodings[1].arguments
         .slice(1)
-        .map(({ value }) => ConversionUtils.nativize(value)),
+        .map(({ value }) => Codec.Format.Utils.Inspect.nativize(value)),
       [1, 2, 3]
     );
     assert(
@@ -631,7 +689,7 @@ contract("WireTest", _accounts => {
     );
     assert.lengthOf(anonymousTestEvents[3].decodings[0].arguments, 1);
     assert.strictEqual(
-      ConversionUtils.nativize(
+      Codec.Format.Utils.Inspect.nativize(
         anonymousTestEvents[3].decodings[0].arguments[0].value
       ),
       "0xfe"
@@ -648,7 +706,7 @@ contract("WireTest", _accounts => {
     assert.lengthOf(specifiedNameDecoding.arguments, 4);
     assert.deepEqual(
       specifiedNameDecoding.arguments.map(({ value }) =>
-        ConversionUtils.nativize(value)
+        Codec.Format.Utils.Inspect.nativize(value)
       ),
       [1, 2, 3, 4]
     );
