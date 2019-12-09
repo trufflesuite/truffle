@@ -260,20 +260,17 @@ function createStepSelectors(step, state = null) {
       /*
        * .returnValue
        *
-       * for a RETURN instruction, the value returned
+       * for a RETURN or REVERT instruction, the value returned;
        * we DO prepend "0x"
-       * (will also return "0x" for STOP or SELFDESTRUCT but
-       * null otherwise)
+       * for everything else, just returns "0x" (which is what the
+       * return value would be if the instruction were to fail)
+       * (or succeed in the case of STOP or SELFDESTRUCT)
        */
       returnValue: createLeaf(
-        ["./trace", "./isHalting", state],
+        ["./trace", state],
 
-        (step, isHalting, { stack, memory }) => {
-          if (!isHalting) {
-            return null;
-          }
-          if (step.op !== "RETURN") {
-            //STOP and SELFDESTRUCT return empty value
+        (step, { stack, memory }) => {
+          if (step.op !== "RETURN" && step.op !== "REVERT") {
             return "0x";
           }
           // Get the data from memory.
