@@ -42,7 +42,6 @@ class DebugInterpreter {
 
     this.repl = config.repl || new ReplManager(config);
     this.enabledExpressions = new Set();
-    this.printouts = new Set(["sta"]);
   }
 
   async setOrClearBreakpoint(args, setOrClear) {
@@ -459,7 +458,6 @@ class DebugInterpreter {
         break;
       case "p":
         //first: process which locations we should print out
-        const locations = ["sto", "cal", "mem", "sta"];
         let temporaryPrintouts = new Set();
         for (let argument of splitArgs) {
           let fullLocation;
@@ -468,18 +466,18 @@ class DebugInterpreter {
           } else {
             fullLocation = argument;
           }
-          let location = locations.find(possibleLocation =>
+          let location = this.printer.locations.find(possibleLocation =>
             fullLocation.startsWith(possibleLocation)
           );
           if (argument[0] === "+") {
-            this.printouts.add(location);
+            this.printer.printouts.add(location);
           } else if (argument[0] === "-") {
-            this.printouts.delete(location);
+            this.printer.printouts.delete(location);
           } else {
             temporaryPrintouts.add(location);
           }
         }
-        for (let location of this.printouts) {
+        for (let location of this.printer.printouts) {
           debug("location: %s", location);
           temporaryPrintouts.add(location);
         }
@@ -502,7 +500,7 @@ class DebugInterpreter {
       case ";":
         if (!this.session.view(trace.finishedOrUnloaded)) {
           this.printer.printFile();
-          this.printer.printInstruction(this.printouts);
+          this.printer.printInstruction();
           this.printer.printState();
         }
         await this.printer.printWatchExpressionsResults(

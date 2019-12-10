@@ -41,6 +41,9 @@ class DebugPrinter {
       const colorized = DebugUtils.colorize(uncolorized);
       this.colorizedSources[id] = colorized;
     }
+
+    this.printouts = new Set(["sta"]);
+    this.locations = ["sto", "cal", "mem", "sta"]; //should remain constant
   }
 
   print(...args) {
@@ -132,7 +135,7 @@ class DebugPrinter {
     this.config.logger.log("");
   }
 
-  printInstruction(locations) {
+  printInstruction(locations = this.printouts) {
     const instruction = this.session.view(solidity.current.instruction);
     const step = this.session.view(trace.step);
     const traceIndex = this.session.view(trace.index);
