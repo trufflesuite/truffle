@@ -482,8 +482,8 @@ class DebugInterpreter {
           temporaryPrintouts.add(location);
         }
         if (this.session.view(selectors.session.status.loaded)) {
-          this.printer.printFile();
           this.printer.printInstruction(temporaryPrintouts);
+          this.printer.printFile();
           this.printer.printState();
         }
         //finally, print watch expressions
@@ -499,8 +499,8 @@ class DebugInterpreter {
         break;
       case ";":
         if (!this.session.view(trace.finishedOrUnloaded)) {
-          this.printer.printFile();
           this.printer.printInstruction();
+          this.printer.printFile();
           this.printer.printState();
         }
         await this.printer.printWatchExpressionsResults(
