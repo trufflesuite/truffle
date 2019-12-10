@@ -19,7 +19,7 @@
     "@truffle/resolver": "^5.0.22",
     "ganache-core": "2.8.0",
     "node-ipc": "^9.1.1",
-    "web3": "1.2.2"
+    "web3": "1.2.1"
   },
   "devDependencies": {
     "debug": "^4.1.0"

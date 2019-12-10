@@ -152,7 +152,7 @@ export {
   BlockSpecifier
 } from "./types";
 
-import { Provider } from "@truffle/provider";
+import { Provider } from "web3/providers";
 import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import { ContractConstructorObject, ContractInstanceObject } from "./types";
 
