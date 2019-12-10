@@ -24,6 +24,8 @@ matrix:
       env: FABRICEVM=true
     - node_js: 8
       env: COVERAGE=true
+    - node_js: 10
+      env: COLONY=true
   allow_failures:
     - node_js: 8
       env: COVERAGE=true
