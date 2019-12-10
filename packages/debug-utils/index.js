@@ -319,7 +319,7 @@ var DebugUtils = {
   },
 
   formatStack: function(stack) {
-    var formatted = stack.map(function(item, index) {
+    var formatted = stack.map((item, index) => {
       item = "  " + item;
       if (index === stack.length - 1) {
         item += " (top)";
@@ -329,8 +329,57 @@ var DebugUtils = {
     });
 
     if (stack.length === 0) {
-      formatted.push("  No data on stack.");
+      formatted.unshift("  No data on stack.");
+    } else {
+      formatted.unshift("Stack:");
     }
+
+    return formatted.join(OS.EOL);
+  },
+
+  formatMemory: function(memory) {
+    //note memory here is an array of hex words,
+    //not a single long hex string
+    var formatted = memory.map(word => "  " + word);
+    if (memory.length === 0) {
+      formatted.unshift("  No data in memory.");
+    } else {
+      formatted.unshift("Memory:");
+    }
+
+    return formatted.join(OS.EOL);
+  },
+
+  formatCalldata: function(calldata) {
+    //takes a Uint8Array
+    let selector = calldata.slice(0, Codec.Evm.Utils.SELECTOR_SIZE);
+    let words = [];
+    for (
+      let wordIndex = Codec.Evm.Utils.SELECTOR_SIZE;
+      wordIndex < calldata.length;
+      wordIndex += Codec.Evm.Utils.WORD_SIZE
+    ) {
+      words.push(
+        calldata.slice(wordIndex, wordIndex + Codec.Evm.Utils.WORD_SIZE)
+      );
+    }
+    let formattedSelector;
+    if (selector.length > 0) {
+      formattedSelector =
+        "Calldata:\n" +
+        "  " +
+        Codec.Conversion.toHexString(selector)
+          .slice(2)
+          .padStart(2 * Codec.Evm.Utils.WORD_SIZE, "  ");
+    } else {
+      formattedSelector = "  No data in calldata.";
+    }
+
+    let formatted = words.map(
+      word => "  " + Codec.Conversion.toHexString(word).slice(2)
+    );
+
+    formatted.unshift(formattedSelector);
 
     return formatted.join(OS.EOL);
   },

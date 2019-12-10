@@ -8,7 +8,7 @@ const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
 
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, controller } = selectors;
+const { session, solidity, trace, controller, data } = selectors;
 
 class DebugPrinter {
   constructor(config, session) {
@@ -132,18 +132,31 @@ class DebugPrinter {
     this.config.logger.log("");
   }
 
-  printInstruction() {
+  printInstruction(locations) {
     const instruction = this.session.view(solidity.current.instruction);
     const step = this.session.view(trace.step);
     const traceIndex = this.session.view(trace.index);
     const totalSteps = this.session.view(trace.steps).length;
+    //note calldata will be a Uint8Array, not a hex string or array of such
+    const calldata = this.session.view(data.current.state.calldata);
 
     this.config.logger.log("");
+    if (locations.has("cal")) {
+      this.config.logger.log(DebugUtils.formatCalldata(calldata));
+      this.config.logger.log("");
+    }
+    if (locations.has("mem")) {
+      this.config.logger.log(DebugUtils.formatMemory(step.memory));
+      this.config.logger.log("");
+    }
+    if (locations.has("sta")) {
+      this.config.logger.log(DebugUtils.formatStack(step.stack));
+      this.config.logger.log("");
+    }
     this.config.logger.log(
       DebugUtils.formatInstruction(traceIndex + 1, totalSteps, instruction)
     );
     this.config.logger.log(DebugUtils.formatPC(step.pc));
-    this.config.logger.log(DebugUtils.formatStack(step.stack));
     this.config.logger.log("");
     this.config.logger.log(step.gas + " gas remaining");
   }

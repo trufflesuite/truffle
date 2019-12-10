@@ -42,6 +42,7 @@ class DebugInterpreter {
 
     this.repl = config.repl || new ReplManager(config);
     this.enabledExpressions = new Set();
+    this.printouts = new Set(["sta"]);
   }
 
   async setOrClearBreakpoint(args, setOrClear) {
@@ -457,11 +458,37 @@ class DebugInterpreter {
         await this.setOrClearBreakpoint(splitArgs, false);
         break;
       case "p":
+        //first: process which locations we should print out
+        const locations = ["cal", "mem", "sta"];
+        let temporaryPrintouts = new Set();
+        for (let argument of splitArgs) {
+          let fullLocation;
+          if (argument[0] === "+" || argument[0] === "-") {
+            fullLocation = argument.slice(1);
+          } else {
+            fullLocation = argument;
+          }
+          let location = locations.find(possibleLocation =>
+            fullLocation.startsWith(possibleLocation)
+          );
+          if (argument[0] === "+") {
+            this.printouts.add(location);
+          } else if (argument[0] === "-") {
+            this.printouts.delete(location);
+          } else {
+            temporaryPrintouts.add(location);
+          }
+        }
+        for (let location of this.printouts) {
+          debug("location: %s", location);
+          temporaryPrintouts.add(location);
+        }
         if (this.session.view(selectors.session.status.loaded)) {
           this.printer.printFile();
-          this.printer.printInstruction();
+          this.printer.printInstruction(temporaryPrintouts);
           this.printer.printState();
         }
+        //finally, print watch expressions
         await this.printer.printWatchExpressionsResults(
           this.enabledExpressions
         );
@@ -475,7 +502,7 @@ class DebugInterpreter {
       case ";":
         if (!this.session.view(trace.finishedOrUnloaded)) {
           this.printer.printFile();
-          this.printer.printInstruction();
+          this.printer.printInstruction(this.printouts);
           this.printer.printState();
         }
         await this.printer.printWatchExpressionsResults(
