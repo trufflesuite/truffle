@@ -369,6 +369,37 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
+  formatStorage: function(storage) {
+    //storage here is an object mapping hex words to hex words (no 0x)
+
+    //first: sort the keys (slice to clone as sort is in-place)
+    //note: we can use the default sort here; it will do the righ thing
+    let slots = Object.keys(storage)
+      .slice()
+      .sort();
+
+    let formatted = slots.map((slot, index) => {
+      if (
+        index === 0 ||
+        !Codec.Conversion.toBN(slot).eq(
+          Codec.Conversion.toBN(slots[index - 1]).addn(1)
+        )
+      ) {
+        return `0x${slot}:\n` + `  ${truffleColors.purple(storage[slot])}`;
+      } else {
+        return `  ${truffleColors.purple(storage[slot])}`;
+      }
+    });
+
+    if (slots.length === 0) {
+      formatted.unshift("  No known relevant data found in storage.");
+    } else {
+      formatted.unshift("Storage (partial view):");
+    }
+
+    return formatted.join(OS.EOL);
+  },
+
   formatCalldata: function(calldata) {
     //takes a Uint8Array
     let selector = calldata.slice(0, Codec.Evm.Utils.SELECTOR_SIZE);

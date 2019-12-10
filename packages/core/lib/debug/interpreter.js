@@ -459,7 +459,7 @@ class DebugInterpreter {
         break;
       case "p":
         //first: process which locations we should print out
-        const locations = ["cal", "mem", "sta"];
+        const locations = ["sto", "cal", "mem", "sta"];
         let temporaryPrintouts = new Set();
         for (let argument of splitArgs) {
           let fullLocation;
