@@ -53,6 +53,12 @@ elif [ "$QUORUM" = true ]; then
   sleep 90
   lerna run --scope truffle test --stream -- --exit
 
+elif [ "$TEZOS" = true ]; then
+
+  truffle version
+  mkdir tezos-tests && cd tezos-tests && truffle unbox tezos-example
+  truffle compile && truffle migrate && truffle test
+
 elif [ "$FABRICEVM" = true ]; then
 
   root=$(pwd)
