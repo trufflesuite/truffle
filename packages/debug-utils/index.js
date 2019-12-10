@@ -95,7 +95,9 @@ var DebugUtils = {
   },
 
   formatCommandDescription: function(commandId) {
-    return "(" + commandId + ") " + commandReference[commandId];
+    return (
+      truffleColors.mint(`(${commandId})`) + " " + commandReference[commandId]
+    );
   },
 
   formatPrompt: function(network, txHash) {
@@ -138,7 +140,10 @@ var DebugUtils = {
 
     var prefix = [
       "Commands:",
-      "(enter) last command entered (" + commandReference[lastCommand] + ")"
+      truffleColors.mint("(enter)") +
+        " last command entered (" +
+        commandReference[lastCommand] +
+        ")"
     ];
 
     var commandSections = [
