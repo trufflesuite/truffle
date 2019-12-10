@@ -304,9 +304,7 @@ var DebugUtils = {
       "/" +
       traceLength +
       ") " +
-      instruction.name +
-      " " +
-      (instruction.pushData || "")
+      truffleColors.mint(instruction.name + " " + (instruction.pushData || ""))
     );
   },
 
@@ -319,10 +317,14 @@ var DebugUtils = {
   },
 
   formatStack: function(stack) {
+    //stack here is an array of hex words (no "0x")
     var formatted = stack.map((item, index) => {
+      item = truffleColors.orange(item);
       item = "  " + item;
       if (index === stack.length - 1) {
         item += " (top)";
+      } else {
+        item += ` (${stack.length - index - 1} from top)`;
       }
 
       return item;
@@ -338,9 +340,26 @@ var DebugUtils = {
   },
 
   formatMemory: function(memory) {
-    //note memory here is an array of hex words,
+    //note memory here is an array of hex words (no "0x"),
     //not a single long hex string
-    var formatted = memory.map(word => "  " + word);
+
+    //get longest prefix needed;
+    //minimum of 2 so always show at least 2 hex digits
+    let maxPrefixLength = Math.max(
+      2,
+      ((memory.length - 1) * Codec.Evm.Utils.WORD_SIZE).toString(16).length
+    );
+    if (maxPrefixLength % 2 !== 0) {
+      maxPrefixLength++; //make sure to use even # of hex digits
+    }
+
+    let formatted = memory.map((word, index) => {
+      let address = (index * Codec.Evm.Utils.WORD_SIZE)
+        .toString(16)
+        .padStart(maxPrefixLength, "0");
+      return `  0x${address}:  ${truffleColors.pink(word)}`;
+    });
+
     if (memory.length === 0) {
       formatted.unshift("  No data in memory.");
     } else {
@@ -363,21 +382,39 @@ var DebugUtils = {
         calldata.slice(wordIndex, wordIndex + Codec.Evm.Utils.WORD_SIZE)
       );
     }
+    let maxWordIndex =
+      (words.length - 1) * Codec.Evm.Utils.WORD_SIZE +
+      Codec.Evm.Utils.SELECTOR_SIZE;
+    let maxPrefixLength = Math.max(2, maxWordIndex.toString(16).length);
+    if (maxPrefixLength % 2 !== 0) {
+      maxPrefixLength++;
+    }
     let formattedSelector;
     if (selector.length > 0) {
       formattedSelector =
         "Calldata:\n" +
-        "  " +
-        Codec.Conversion.toHexString(selector)
-          .slice(2)
-          .padStart(2 * Codec.Evm.Utils.WORD_SIZE, "  ");
+        `  0x${"00".padStart(maxPrefixLength, "0")}:  ` +
+        truffleColors.pink(
+          Codec.Conversion.toHexString(selector)
+            .slice(2)
+            .padStart(2 * Codec.Evm.Utils.WORD_SIZE, "  ")
+        );
     } else {
       formattedSelector = "  No data in calldata.";
     }
 
-    let formatted = words.map(
-      word => "  " + Codec.Conversion.toHexString(word).slice(2)
-    );
+    let formatted = words.map((word, index) => {
+      let address = (
+        index * Codec.Evm.Utils.WORD_SIZE +
+        Codec.Evm.Utils.SELECTOR_SIZE
+      )
+        .toString(16)
+        .padStart(maxPrefixLength, "0");
+      let data = Codec.Conversion.toHexString(word)
+        .slice(2)
+        .padEnd(2 * Codec.Evm.Utils.WORD_SIZE);
+      return `  0x${address}:  ${truffleColors.pink(data)}`;
+    });
 
     formatted.unshift(formattedSelector);
 
