@@ -2,7 +2,7 @@ const debug = require("debug")("provider");
 const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
-const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
+const DEFAULT_NETWORK_CHECK_TIMEOUT = 10000;
 
 module.exports = {
   wrap: function(provider, options) {
