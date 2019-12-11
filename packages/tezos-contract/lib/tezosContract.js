@@ -1,6 +1,5 @@
 const debug = require("debug")("tezos-contract:contract"); // eslint-disable-line no-unused-vars
 let Web3 = require("web3");
-//const webUtils = require("web3-utils");
 const execute = require("./execute");
 const {
   bootstrap,
@@ -15,99 +14,22 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
 }
 
 (function(module) {
-  // Accepts a contract object created with web3.eth.Contract or an address.
+  // Accepts a contract object created with web3.tez.originate,
+  // or an address (web3.tez.contract.at).
   function Contract(contract) {
     var instance = this;
     var constructor = instance.constructor;
 
     // Core:
     instance.methods = {};
-    //    instance.abi = constructor.abi;
     instance.address = contract.address;
     instance.transactionHash = contract.transactionHash;
     instance.contract = contract;
 
-    // User defined methods, overloaded methods, events
-    /*instance.abi.forEach(function(item) {
-      switch (item.type) {
-        case "function":
-          var isConstant =
-            ["pure", "view"].includes(item.stateMutability) || item.constant; // new form // deprecated case
-
-          var signature = webUtils._jsonInterfaceMethodToString(item);
-
-          var method = function(constant, web3Method) {
-            var fn;
-
-            constant
-              ? (fn = execute.call.call(
-                  constructor,
-                  web3Method,
-                  item,
-                  instance.address
-                ))
-              : (fn = execute.send.call(
-                  constructor,
-                  web3Method,
-                  item,
-                  instance.address
-                ));
-
-            fn.call = execute.call.call(
-              constructor,
-              web3Method,
-              item,
-              instance.address
-            );
-            fn.sendTransaction = execute.send.call(
-              constructor,
-              web3Method,
-              item,
-              instance.address
-            );
-            fn.estimateGas = execute.estimate.call(
-              constructor,
-              web3Method,
-              item,
-              instance.address
-            );
-            fn.request = execute.request.call(
-              constructor,
-              web3Method,
-              item,
-              instance.address
-            );
-
-            return fn;
-          };
-
-          // Only define methods once. Any overloaded methods will have all their
-          // accessors available by ABI signature available on the `methods` key below.
-          if (instance[item.name] === undefined) {
-            instance[item.name] = method(
-              isConstant,
-              contract.methods[item.name]
-            );
-          }
-
-          // Overloaded methods should be invoked via the .methods property
-          instance.methods[signature] = method(
-            isConstant,
-            contract.methods[signature]
-          );
-          break;
-
-        case "event":
-          instance[item.name] = execute.event.call(
-            constructor,
-            contract.events[item.name]
-          );
-          break;
-      }
-    });*/
-
+    // User defined methods 
+    // TODOS: overloaded methods not currently supported in ligo,
+    // events not currently supported in Tezos (as of writing this comment)
     for (const method in contract.methods) {
-      //const signature = webUtils._jsonInterfaceMethodToString(method);
       const loadMethod = tezosMethod => {
         let fn;
 
@@ -118,13 +40,15 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
           instance.address
         );
 
-        // TODO: not supported in Tezos (as of writing this comment)
-        /*fn.call = execute.call.call(
+        // TODO: views not supported in Tezos (as of writing this comment)
+        /*
+        fn.call = execute.call.call(
           constructor,
           tezosMethod,
           method,
           instance.address
-        );*/
+        );
+        */
 
         fn.sendTransaction = execute.send.call(
           constructor,
@@ -132,17 +56,19 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
           method,
           instance.address
         );
-
-        // TODO: not supported in Tezos (as of writing this comment)
+        
+        // TODO: Taquito supports, not yet implemented here
         /*
         fn.estimateGas = execute.estimate.call(
           constructor,
           tezosMethod,
           method,
           instance.address
-        );*/
+        );
+        */
 
         // TODO: not supported in Tezos (as of writing this comment)
+        // also currently useless in @truffle/contract
         /*
         fn.request = execute.request.call(
           constructor,
@@ -155,16 +81,18 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
         return fn;
       };
 
-      // Only define methods once. Any overloaded methods will have all their
-      // accessors available by ABI signature available on the `methods` key below.
+      // Only define methods once.
       if (instance[method] === undefined) {
         instance[method] = loadMethod(contract.methods[method]);
       }
 
+      // TODO: not supported in ligo (as of writing this comment)
       // Overloaded methods should be invoked via the .methods property
-      /*          instance.methods[signature] = loadMethod(
-            contract.methods[signature]
-          );*/
+      /*
+        instance.methods[signature] = loadMethod(
+          contract.methods[signature]
+        );
+      */
     }
 
     // fallback
@@ -190,6 +118,7 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
       };
     }
 
+    // TODO: events not supported in Tezos (as of writing this comment)
     // Other events
     //instance.allEvents = execute.allEvents.call(constructor, contract);
     //instance.getPastEvents = execute.getPastEvents.call(constructor, contract);
