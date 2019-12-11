@@ -8,7 +8,7 @@ const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
 
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, controller } = selectors;
+const { session, solidity, trace, controller, evm } = selectors;
 
 class DebugPrinter {
   constructor(config, session) {
@@ -197,9 +197,10 @@ class DebugPrinter {
     }
   }
 
-  printRevertMessage(rawRevertMessage) {
+  printRevertMessage() {
     this.config.logger.log("Transaction halted with a RUNTIME ERROR.");
     this.config.logger.log("");
+    let rawRevertMessage = this.session.view(evm.current.step.returnValue);
     let revertDecodings = Codec.decodeRevert(
       Codec.Conversion.toBytes(rawRevertMessage)
     );

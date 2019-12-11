@@ -412,8 +412,7 @@ class DebugInterpreter {
       this.printer.print("");
       //check if transaction failed
       if (!this.session.view(evm.transaction.status)) {
-        let rawRevertMessage = this.session.view(evm.current.step.returnValue);
-        this.printer.printRevertMessage(rawRevertMessage);
+        this.printer.printRevertMessage();
       } else {
         //case if transaction succeeded
         this.printer.print("Transaction completed successfully.");
