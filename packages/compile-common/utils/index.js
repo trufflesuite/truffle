@@ -13,7 +13,7 @@ const updatedFiles = async options => {
   const { contracts_directory, contracts_build_directory } = options;
 
   getFiles = async () => {
-    if (options.files) return options.files;
+    if (options.files && options.files.length !== 0) return options.files;
     else return findContracts(contracts_directory);
   };
 
