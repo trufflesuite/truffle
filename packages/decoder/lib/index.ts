@@ -227,14 +227,7 @@ export async function forContract(
   contract: ContractConstructorObject,
   artifacts: Artifact[]
 ): Promise<ContractDecoder> {
-  //HACK: again we have to work around web3's messed-up typing;
-  //it for some reason is convinced that currentProvider is a string
-  //rather than a Provider.
-  return await forArtifact(
-    contract,
-    <Provider>contract.web3.currentProvider,
-    artifacts
-  );
+  return await forArtifact(contract, contract.web3.currentProvider, artifacts);
 }
 
 /**
