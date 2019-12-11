@@ -26,7 +26,7 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
     instance.transactionHash = contract.transactionHash;
     instance.contract = contract;
 
-    // User defined methods 
+    // User defined methods
     // TODOS: overloaded methods not currently supported in ligo,
     // events not currently supported in Tezos (as of writing this comment)
     for (const method in contract.methods) {
@@ -56,7 +56,7 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
           method,
           instance.address
         );
-        
+
         // TODO: Taquito supports, not yet implemented here
         /*
         fn.estimateGas = execute.estimate.call(
@@ -106,15 +106,23 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
           { to: instance.address, amount: value },
           txParams
         );
+        let op;
+
         // NOTE: this will only work if the contract parameter is type Unit!!!
-        const op = await instance.constructor.web3.tez.contract.transfer(
-          packet
-        );
+        try {
+          op = await instance.constructor.web3.tez.contract.transfer(packet);
+        } catch (error) {
+          console.error(
+            `\nTo transfer tez, contract parameter must be type unit.`
+          );
+          throw error;
+        }
+
         await op.confirmation();
         return op;
       };
     }
-    
+
     // fallback
     if (instance.main) instance.sendTransaction = instance.main;
     else instance.sendTransaction = instance.send;
