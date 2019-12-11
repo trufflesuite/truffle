@@ -8,7 +8,7 @@ const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
 
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, controller, evm } = selectors;
+const { session, solidity, trace, controller, data, evm } = selectors;
 
 class DebugPrinter {
   constructor(config, session) {
@@ -41,6 +41,9 @@ class DebugPrinter {
       const colorized = DebugUtils.colorize(uncolorized);
       this.colorizedSources[id] = colorized;
     }
+
+    this.printouts = new Set(["sta"]);
+    this.locations = ["sto", "cal", "mem", "sta"]; //should remain constant
   }
 
   print(...args) {
@@ -132,18 +135,37 @@ class DebugPrinter {
     this.config.logger.log("");
   }
 
-  printInstruction() {
+  printInstruction(locations = this.printouts) {
     const instruction = this.session.view(solidity.current.instruction);
     const step = this.session.view(trace.step);
     const traceIndex = this.session.view(trace.index);
     const totalSteps = this.session.view(trace.steps).length;
+    //note calldata will be a Uint8Array, not a hex string or array of such
+    const calldata = this.session.view(data.current.state.calldata);
+    //storage here is an object mapping hex words to hex words, all w/o 0x prefix
+    const storage = this.session.view(evm.current.codex.storage);
 
     this.config.logger.log("");
+    if (locations.has("sto")) {
+      this.config.logger.log(DebugUtils.formatStorage(storage));
+      this.config.logger.log("");
+    }
+    if (locations.has("cal")) {
+      this.config.logger.log(DebugUtils.formatCalldata(calldata));
+      this.config.logger.log("");
+    }
+    if (locations.has("mem")) {
+      this.config.logger.log(DebugUtils.formatMemory(step.memory));
+      this.config.logger.log("");
+    }
+    if (locations.has("sta")) {
+      this.config.logger.log(DebugUtils.formatStack(step.stack));
+      this.config.logger.log("");
+    }
     this.config.logger.log(
       DebugUtils.formatInstruction(traceIndex + 1, totalSteps, instruction)
     );
     this.config.logger.log(DebugUtils.formatPC(step.pc));
-    this.config.logger.log(DebugUtils.formatStack(step.stack));
     this.config.logger.log("");
     this.config.logger.log(step.gas + " gas remaining");
   }

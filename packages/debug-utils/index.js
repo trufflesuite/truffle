@@ -17,7 +17,7 @@ const commandReference = {
   "u": "step out",
   "n": "step next",
   ";": "step instruction (include number to step multiple)",
-  "p": "print instruction",
+  "p": "print instruction & state (can specify locations, e.g. p mem; see docs)",
   "l": "print additional source context",
   "h": "print this help",
   "v": "print variables and values",
@@ -95,7 +95,9 @@ var DebugUtils = {
   },
 
   formatCommandDescription: function(commandId) {
-    return "(" + commandId + ") " + commandReference[commandId];
+    return (
+      truffleColors.mint(`(${commandId})`) + " " + commandReference[commandId]
+    );
   },
 
   formatPrompt: function(network, txHash) {
@@ -138,15 +140,18 @@ var DebugUtils = {
 
     var prefix = [
       "Commands:",
-      "(enter) last command entered (" + commandReference[lastCommand] + ")"
+      truffleColors.mint("(enter)") +
+        " last command entered (" +
+        commandReference[lastCommand] +
+        ")"
     ];
 
     var commandSections = [
       ["o", "i", "u", "n"],
       [";"],
-      ["p", "l"],
-      ["h", "q", "r"],
-      ["t", "T"],
+      ["p"],
+      ["l", "h"],
+      ["q", "r", "t", "T"],
       ["b", "B", "c"],
       ["+", "-"],
       ["?"],
@@ -304,9 +309,7 @@ var DebugUtils = {
       "/" +
       traceLength +
       ") " +
-      instruction.name +
-      " " +
-      (instruction.pushData || "")
+      truffleColors.mint(instruction.name + " " + (instruction.pushData || ""))
     );
   },
 
@@ -319,18 +322,137 @@ var DebugUtils = {
   },
 
   formatStack: function(stack) {
-    var formatted = stack.map(function(item, index) {
+    //stack here is an array of hex words (no "0x")
+    var formatted = stack.map((item, index) => {
+      item = truffleColors.orange(item);
       item = "  " + item;
       if (index === stack.length - 1) {
         item += " (top)";
+      } else {
+        item += ` (${stack.length - index - 1} from top)`;
       }
 
       return item;
     });
 
     if (stack.length === 0) {
-      formatted.push("  No data on stack.");
+      formatted.unshift("  No data on stack.");
+    } else {
+      formatted.unshift("Stack:");
     }
+
+    return formatted.join(OS.EOL);
+  },
+
+  formatMemory: function(memory) {
+    //note memory here is an array of hex words (no "0x"),
+    //not a single long hex string
+
+    //get longest prefix needed;
+    //minimum of 2 so always show at least 2 hex digits
+    let maxPrefixLength = Math.max(
+      2,
+      ((memory.length - 1) * Codec.Evm.Utils.WORD_SIZE).toString(16).length
+    );
+    if (maxPrefixLength % 2 !== 0) {
+      maxPrefixLength++; //make sure to use even # of hex digits
+    }
+
+    let formatted = memory.map((word, index) => {
+      let address = (index * Codec.Evm.Utils.WORD_SIZE)
+        .toString(16)
+        .padStart(maxPrefixLength, "0");
+      return `  0x${address}:  ${truffleColors.pink(word)}`;
+    });
+
+    if (memory.length === 0) {
+      formatted.unshift("  No data in memory.");
+    } else {
+      formatted.unshift("Memory:");
+    }
+
+    return formatted.join(OS.EOL);
+  },
+
+  formatStorage: function(storage) {
+    //storage here is an object mapping hex words to hex words (no 0x)
+
+    //first: sort the keys (slice to clone as sort is in-place)
+    //note: we can use the default sort here; it will do the righ thing
+    let slots = Object.keys(storage)
+      .slice()
+      .sort();
+
+    let formatted = slots.map((slot, index) => {
+      if (
+        index === 0 ||
+        !Codec.Conversion.toBN(slot).eq(
+          Codec.Conversion.toBN(slots[index - 1]).addn(1)
+        )
+      ) {
+        return `0x${slot}:\n` + `  ${truffleColors.blue(storage[slot])}`;
+      } else {
+        return `  ${truffleColors.blue(storage[slot])}`;
+      }
+    });
+
+    if (slots.length === 0) {
+      formatted.unshift("  No known relevant data found in storage.");
+    } else {
+      formatted.unshift("Storage (partial view):");
+    }
+
+    return formatted.join(OS.EOL);
+  },
+
+  formatCalldata: function(calldata) {
+    //takes a Uint8Array
+    let selector = calldata.slice(0, Codec.Evm.Utils.SELECTOR_SIZE);
+    let words = [];
+    for (
+      let wordIndex = Codec.Evm.Utils.SELECTOR_SIZE;
+      wordIndex < calldata.length;
+      wordIndex += Codec.Evm.Utils.WORD_SIZE
+    ) {
+      words.push(
+        calldata.slice(wordIndex, wordIndex + Codec.Evm.Utils.WORD_SIZE)
+      );
+    }
+    let maxWordIndex =
+      (words.length - 1) * Codec.Evm.Utils.WORD_SIZE +
+      Codec.Evm.Utils.SELECTOR_SIZE;
+    let maxPrefixLength = Math.max(2, maxWordIndex.toString(16).length);
+    if (maxPrefixLength % 2 !== 0) {
+      maxPrefixLength++;
+    }
+    let formattedSelector;
+    if (selector.length > 0) {
+      formattedSelector =
+        "Calldata:\n" +
+        `  0x${"00".padStart(maxPrefixLength, "0")}:  ` +
+        truffleColors.pink(
+          Codec.Conversion.toHexString(selector)
+            .slice(2)
+            .padStart(2 * Codec.Evm.Utils.WORD_SIZE, "  ")
+        );
+    } else {
+      formattedSelector = "  No data in calldata.";
+    }
+
+    let formatted = words.map((word, index) => {
+      let address = (
+        index * Codec.Evm.Utils.WORD_SIZE +
+        Codec.Evm.Utils.SELECTOR_SIZE
+      )
+        .toString(16)
+        .padStart(maxPrefixLength, "0");
+      let data = Codec.Conversion.toHexString(word)
+        .slice(2)
+        .padEnd(2 * Codec.Evm.Utils.WORD_SIZE);
+      return `  0x${address}:  ${truffleColors.pink(data)}`;
+    });
+
+    formatted.unshift(formattedSelector);
 
     return formatted.join(OS.EOL);
   },
