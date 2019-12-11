@@ -95,9 +95,6 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
       */
     }
 
-    // fallback
-    instance.sendTransaction = instance.main;
-
     instance.storage = () => {
       return instance.contract.storage();
     };
@@ -117,6 +114,10 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
         return op;
       };
     }
+    
+    // fallback
+    if (instance.main) instance.sendTransaction = instance.main;
+    else instance.sendTransaction = instance.send;
 
     // TODO: events not supported in Tezos (as of writing this comment)
     // Other events
