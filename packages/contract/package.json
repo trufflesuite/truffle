@@ -27,10 +27,10 @@
     "bignumber.js": "^7.2.1",
     "ethereum-ens": "^0.7.7",
     "ethers": "^4.0.0-beta.1",
-    "web3": "1.2.2",
-    "web3-core-promievent": "1.2.2",
-    "web3-eth-abi": "1.2.2",
-    "web3-utils": "1.2.2"
+    "web3": "1.2.1",
+    "web3-core-promievent": "1.2.1",
+    "web3-eth-abi": "1.2.1",
+    "web3-utils": "1.2.1"
   },
   "devDependencies": {
     "@truffle/compile-solidity": "^4.2.13",

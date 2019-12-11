@@ -1,17 +1,20 @@
-import { Block as EvmBlock } from "web3-eth";
 import {
-  Transaction as EvmTransaction,
-  TransactionReceipt as EvmTransactionReceipt,
-  TransactionConfig as EvmTransactionConfig
-} from "web3-core";
+  Block as EvmBlock,
+  BlockType as EvmBlockType,
+  Tx as EvmTransaction
+} from "web3/eth/types";
+import { TransactionReceipt as EvmTransactionReceipt } from "web3/types";
+import { Provider } from "web3/providers";
 
-export type EvmBlockType = number | string;
+export type EvmTransactionReceipt = EvmTransactionReceipt;
+export type EvmTransaction = EvmTransaction;
+export type Provider = Provider;
+export type EvmBlockType = EvmBlockType;
 export type NetworkId = Number | String;
 export type Block = EvmBlock | any;
 export type BlockType = EvmBlockType | any;
 export type Transaction = EvmTransaction | any;
 export type TransactionReceipt = EvmTransactionReceipt | any;
-export type TransactionConfig = EvmTransactionConfig | any;
 export type TxHash = string;
 
 export interface InterfaceAdapter {
@@ -23,5 +26,5 @@ export interface InterfaceAdapter {
   getBalance(address: string): Promise<string>;
   getCode(address: string): Promise<string>;
   getAccounts(): Promise<string[]>;
-  estimateGas(transactionConfig: TransactionConfig): Promise<number>;
+  estimateGas(transactionConfig: Transaction): Promise<number>;
 }

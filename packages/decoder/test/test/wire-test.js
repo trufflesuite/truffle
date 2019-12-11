@@ -573,8 +573,7 @@ contract("WireTest", _accounts => {
     //thankfully, ethers ignores anonymous events,
     //so we don't need to use that hack here
     let anonymousTest = await deployedContract.anonymousTest();
-    let block = anonymousTest.receipt.blockNumber;
-    debug("block: %O", block);
+    let block = anonymousTest.blockNumber;
     let anonymousTestEvents = await decoder.events({
       fromBlock: block,
       toBlock: block

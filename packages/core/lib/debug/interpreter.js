@@ -412,11 +412,7 @@ class DebugInterpreter {
       this.printer.print("");
       //check if transaction failed
       if (!this.session.view(evm.transaction.status)) {
-        this.printer.print("Transaction halted with a RUNTIME ERROR.");
-        this.printer.print("");
-        this.printer.print(
-          "This is likely due to an intentional halting expression, like assert(), require() or revert(). It can also be due to out-of-gas exceptions. Please inspect your transaction parameters and contract code to determine the meaning of this error."
-        );
+        this.printer.printRevertMessage();
       } else {
         //case if transaction succeeded
         this.printer.print("Transaction completed successfully.");

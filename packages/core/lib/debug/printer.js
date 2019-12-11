@@ -219,6 +219,63 @@ class DebugPrinter {
     }
   }
 
+  printRevertMessage() {
+    this.config.logger.log("Transaction halted with a RUNTIME ERROR.");
+    this.config.logger.log("");
+    let rawRevertMessage = this.session.view(evm.current.step.returnValue);
+    let revertDecodings = Codec.decodeRevert(
+      Codec.Conversion.toBytes(rawRevertMessage)
+    );
+    switch (revertDecodings.length) {
+      case 0:
+        this.config.logger.log(
+          "There was a revert message, but it could not be decoded."
+        );
+        break;
+      case 1:
+        let revertDecoding = revertDecodings[0];
+        switch (revertDecoding.kind) {
+          case "failure":
+            this.config.logger.log(
+              "There was no revert message.  This may be due to an in intentional halting expression, such as assert(), revert(), or require(), or could be due to an unintentional exception such as out-of-gas exceptions."
+            );
+            break;
+          case "revert":
+            let revertStringInfo = revertDecoding.arguments[0].value.value;
+            let revertString;
+            switch (revertStringInfo.kind) {
+              case "valid":
+                revertString = revertStringInfo.asString;
+                this.config.logger.log(`Revert message: ${revertString}`);
+                break;
+              case "malformed":
+                //turn into a JS string while smoothing over invalid UTF-8
+                //slice 2 to remove 0x prefix
+                revertString = Buffer.from(
+                  revertStringInfo.asHex.slice(2),
+                  "hex"
+                ).toString();
+                this.config.logger.log(`Revert message: ${revertString}`);
+                this.config.logger.log(
+                  "Warning: This message contained invalid UTF-8."
+                );
+                break;
+            }
+            break;
+        }
+        break;
+      default:
+        //Note: This shouldn't happen
+        this.config.logger.log(
+          "There was a revert message, but it could not be unambiguously decoded."
+        );
+        break;
+    }
+    this.config.logger.log(
+      "Please inspect your transaction parameters and contract code to determine the meaning of this error."
+    );
+  }
+
   async printWatchExpressionsResults(expressions) {
     debug("expressions %o", expressions);
     for (let expression of expressions) {
