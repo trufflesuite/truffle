@@ -17,7 +17,7 @@ const commandReference = {
   "u": "step out",
   "n": "step next",
   ";": "step instruction (include number to step multiple)",
-  "p": "print instruction & state (see docs for how to customize)",
+  "p": "print instruction & state (can specify locations, e.g. p mem; see docs)",
   "l": "print additional source context",
   "h": "print this help",
   "v": "print variables and values",
@@ -390,9 +390,9 @@ var DebugUtils = {
           Codec.Conversion.toBN(slots[index - 1]).addn(1)
         )
       ) {
-        return `0x${slot}:\n` + `  ${truffleColors.purple(storage[slot])}`;
+        return `0x${slot}:\n` + `  ${truffleColors.blue(storage[slot])}`;
       } else {
-        return `  ${truffleColors.purple(storage[slot])}`;
+        return `  ${truffleColors.blue(storage[slot])}`;
       }
     });
 
