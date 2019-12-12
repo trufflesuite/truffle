@@ -1,10 +1,10 @@
 import BN from "bn.js";
 import { Web3Shim } from "..";
 import {
-  Transaction as EvmTransaction,
-  TransactionReceipt as EvmTransactionReceipt
-} from "web3-core";
-import { EvmBlockType } from "../../adapter/types";
+  BlockType,
+  EvmTransaction,
+  EvmTransactionReceipt
+} from "../../adapter/types";
 
 export const EthereumDefinition = {
   async initNetworkType(web3: Web3Shim) {
@@ -25,7 +25,7 @@ const overrides = {
     const _oldFormatter = web3.eth.getBlock.method.outputFormatter;
 
     // @ts-ignore
-    web3.eth.getBlock.method.outputFormatter = (block: EvmBlockType) => {
+    web3.eth.getBlock.method.outputFormatter = (block: BlockType) => {
       // @ts-ignore
       let result = _oldFormatter.call(web3.eth.getBlock.method, block);
 
