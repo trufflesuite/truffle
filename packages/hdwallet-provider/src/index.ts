@@ -164,7 +164,7 @@ class HDWalletProvider {
       this.engine.addProvider(
         new ProviderSubprovider(
           // @ts-ignore
-          new Web3.providers.HttpProvider(provider, { keepAlive: false })
+          new Web3.providers.WebsocketProvider(provider)
         )
       );
     } else {
