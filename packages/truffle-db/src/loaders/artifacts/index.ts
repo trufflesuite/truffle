@@ -145,8 +145,19 @@ const AddContracts = gql`
     id: ID!
   }
 
+  input LinkReferenceInput {
+    bytecode: ID!
+    index: FileIndex
+  }
+
+  input ContractConstructorLinkValueInput {
+    value: Address!
+    LinkReference: LinkReferenceInput
+  }
+
   input ContractConstructorLinkedBytecodeInput {
     bytecode: ContractConstructorBytecodeInput!
+    linkValues: [ContractContructorLinkValueInput]
   }
 
   input ContractConstructorInput {
@@ -243,7 +254,7 @@ const AddContractInstances = gql`
   }
 
   input LinkValueInput {
-    value: String!
+    value: Address!
     linkReference: LinkValueLinkReferenceInput!
   }
 
@@ -418,16 +429,19 @@ export class ArtifactsLoader {
     await Promise.all(
       compilations.data.workspace.compilationsAdd.compilations.map(
         async ({ compiler, id }) => {
-          const contractIds = await this.loadCompilationContracts(
-            contracts[compiler.name].contracts,
-            id,
-            compiler.name
-          );
           const networks = await this.loadNetworks(
             contracts[compiler.name].contracts,
             this.config["artifacts_directory"],
             this.config["contracts_directory"]
           );
+
+          const contractIds = await this.loadCompilationContracts(
+            contracts[compiler.name].contracts,
+            id,
+            compiler.name,
+            networks
+          );
+
           if (networks[0].length) {
             this.loadContractInstances(
               contracts[compiler.name].contracts,
@@ -444,26 +458,47 @@ export class ArtifactsLoader {
   async loadCompilationContracts(
     contracts: Array<ContractObject>,
     compilationId: string,
-    compilerName: string
+    compilerName: string,
+    networks: Array<any>
   ) {
     const bytecodes = await this.loadBytecodes(contracts);
-    const contractObjects = contracts.map((contract, index) => ({
-      name: contract["contractName"],
-      abi: {
-        json: JSON.stringify(contract["abi"])
-      },
-      compilation: {
-        id: compilationId
-      },
-      sourceContract: {
-        index: index
-      },
-      constructor: {
-        createBytecode: {
-          bytecode: { id: bytecodes.bytecodes[index].id }
-        }
+
+    const contractObjects = contracts.map((contract, index) => {
+      let createBytecodeLinkValues;
+      let network = networks[index].filter(
+        network => network.contract == contract["contractName"]
+      );
+
+      if (network.length > 0) {
+        createBytecodeLinkValues = this.getNetworkLinks(
+          network[0],
+          bytecodes.bytecodes[index]
+        );
+      } else {
+        createBytecodeLinkValues = [];
       }
-    }));
+
+      let contractObject = {
+        name: contract["contractName"],
+        abi: {
+          json: JSON.stringify(contract["abi"])
+        },
+        compilation: {
+          id: compilationId
+        },
+        sourceContract: {
+          index: index
+        },
+        constructor: {
+          createBytecode: {
+            bytecode: { id: bytecodes.bytecodes[index].id },
+            linkValues: createBytecodeLinkValues
+          }
+        }
+      };
+
+      return contractObject;
+    });
 
     const contractsLoaded = await this.db.query(AddContracts, {
       contracts: contractObjects
@@ -634,14 +669,18 @@ export class ArtifactsLoader {
     let networkLink = {};
     if (network.links) {
       networkLink = Object.entries(network.links).map(link => {
-        let linkReferenceByName = bytecode.linkReferences.filter(
-          ({ name }, index) => name === link[0]
+        let linkReferenceIndexByName = bytecode.linkReferences.findIndex(
+          ({ name }) => name === link[0]
         );
 
         let linkValue = {
           value: link[1],
-          linkReference: linkReferenceByName[0]
+          linkReference: {
+            bytecode: bytecode.id,
+            index: linkReferenceIndexByName
+          }
         };
+
         return linkValue;
       });
     }

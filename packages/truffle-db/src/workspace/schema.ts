@@ -171,9 +171,8 @@ export const schema = mergeSchemas({
     }
 
     input LinkReferenceInput {
-      offsets: [ByteOffset!]
-      name: String
-      length: Int!
+      bytecode: ID!
+      index: FileIndex
     }
 
     input ContractInstanceLinkValueInput {
@@ -364,6 +363,27 @@ export const schema = mergeSchemas({
 
           return sourceContracts[sourceContract.index];
         }
+      },
+      constructor: {
+        resolve: async ({ constructor }, _, { workspace }) => {
+          let bytecode = await workspace.bytecode(
+            constructor.createBytecode.bytecode
+          );
+          let linkValues = constructor.createBytecode.linkValues.map(
+            ({ value, linkReference }) => {
+              return {
+                value: value,
+                linkReference: bytecode.linkReferences[linkReference.index]
+              };
+            }
+          );
+          return {
+            createBytecode: {
+              bytecode: bytecode,
+              linkValues: linkValues
+            }
+          };
+        }
       }
     },
     ContractInstance: {
@@ -376,9 +396,20 @@ export const schema = mergeSchemas({
           workspace.contract(contract)
       },
       callBytecode: {
-        resolve: ({ callBytecode }, _, { workspace }) => {
-          let bytecode = workspace.bytecode(callBytecode.bytecode);
-          return { bytecode: bytecode };
+        resolve: async ({ callBytecode }, _, { workspace }) => {
+          let bytecode = await workspace.bytecode(callBytecode.bytecode);
+          let linkValues = callBytecode.linkValues.map(
+            ({ value, linkReference }) => {
+              return {
+                value: value,
+                linkReference: bytecode.linkReferences[linkReference.index]
+              };
+            }
+          );
+          return {
+            bytecode: bytecode,
+            linkValues: linkValues
+          };
         }
       },
       creation: {
@@ -387,10 +418,22 @@ export const schema = mergeSchemas({
             input.creation.constructor.createBytecode.bytecode
           );
           let transactionHash = input.creation.transactionHash;
-
+          let linkValues = input.creation.constructor.createBytecode.linkValues.map(
+            ({ value, linkReference }) => {
+              return {
+                value: value,
+                linkReference: bytecode.linkReferences[linkReference.index]
+              };
+            }
+          );
           return {
             transactionHash: transactionHash,
-            constructor: { createBytecode: { bytecode: bytecode } }
+            constructor: {
+              createBytecode: {
+                bytecode: bytecode,
+                linkValues: linkValues
+              }
+            }
           };
         }
       }
@@ -398,14 +441,6 @@ export const schema = mergeSchemas({
     SourceContract: {
       source: {
         resolve: ({ source }, _, { workspace }) => workspace.source(source)
-      }
-    },
-    Constructor: {
-      createBytecode: {
-        resolve: async ({ createBytecode }, _, { workspace }) => {
-          let bytecode = await workspace.bytecode(createBytecode.bytecode);
-          return { bytecode: bytecode };
-        }
       }
     }
   }

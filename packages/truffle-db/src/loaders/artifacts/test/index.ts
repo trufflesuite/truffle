@@ -242,6 +242,12 @@ const GetWorkspaceContract = gql`
             bytecode {
               bytes
             }
+            linkValues {
+              value
+              linkReference {
+                name
+              }
+            }
           }
         }
         sourceContract {
@@ -417,6 +423,7 @@ describe("Compilation", () => {
         const networksArray = Object.entries(networks);
 
         if (networksArray.length > 0) {
+          const links = networksArray[networksArray.length - 1][1]["links"];
           const transaction = await web3.eth.getTransaction(
             networksArray[networksArray.length - 1][1]["transactionHash"]
           );
@@ -432,7 +439,8 @@ describe("Compilation", () => {
           netIds.push({ id: netId });
           migratedNetworks.push({
             networkId: networkId,
-            historicBlock: historicBlock
+            historicBlock: historicBlock,
+            links: links
           });
           const contractInstanceId = generateId({
             network: {
@@ -619,11 +627,7 @@ describe("Compilation", () => {
             contract: {
               id,
               name,
-              constructor: {
-                createBytecode: {
-                  bytecode: { bytes }
-                }
-              },
+              constructor: { createBytecode },
               sourceContract: {
                 source: { contents }
               },
@@ -635,8 +639,18 @@ describe("Compilation", () => {
         }
       } = await db.query(GetWorkspaceContract, contractIds[index]);
 
+      if (createBytecode.linkValues.length > 0) {
+        let linkReferenceName = Object.values(createBytecode.linkValues[0])[1][
+          "name"
+        ];
+        let linkReferenceInNetwork = Object.keys(
+          migratedNetworks[index].links
+        )[0];
+        expect(linkReferenceName).toEqual(linkReferenceInNetwork);
+      }
+
       let shimmedBytecode = shimBytecode(artifacts[index].bytecode);
-      expect(bytes).toEqual(shimmedBytecode.bytes);
+      expect(createBytecode.bytecode.bytes).toEqual(shimmedBytecode.bytes);
       expect(name).toEqual(artifacts[index].contractName);
       expect(contents).toEqual(artifacts[index].source);
       expect(version).toEqual(artifacts[index].compiler.version);
