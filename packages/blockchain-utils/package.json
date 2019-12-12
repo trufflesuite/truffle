@@ -20,6 +20,7 @@
     "@types/assert": "^1.4.2",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.12.5",
+    "@types/web3": "1.0.19",
     "mocha": "5.2.0",
     "ts-node": "^8.3.0",
     "typescript": "^3.6.3"
@@ -31,8 +32,5 @@
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "dependencies": {
-    "@truffle/provider": "^0.2.4-alphaTez.0"
   }
 }

@@ -26,6 +26,11 @@ matrix:
       env: COVERAGE=true
     - node_js: 8
       env: TEZOS=true
+    - if: |
+        branch = develop AND \
+        type = push
+      node_js: 10
+      env: COLONY=true
   allow_failures:
     - node_js: 8
       env: COVERAGE=true

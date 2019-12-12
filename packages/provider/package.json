@@ -17,14 +17,11 @@
   "dependencies": {
     "@truffle/error": "^0.0.11-alphaTez.0",
     "@truffle/interface-adapter": "^0.4.1-alphaTez.0",
-    "web3": "1.2.2"
+    "web3": "1.2.1"
   },
   "devDependencies": {
     "ganache-core": "2.8.0",
-    "mocha": "5.2.0",
-    "web3-providers-http": "1.2.2",
-    "web3-providers-ipc": "1.2.2",
-    "web3-providers-ws": "1.2.2"
+    "mocha": "5.2.0"
   },
   "keywords": [
     "ethereum",

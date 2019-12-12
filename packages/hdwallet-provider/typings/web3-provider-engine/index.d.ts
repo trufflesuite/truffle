@@ -3,7 +3,7 @@ import {
   JSONRPCRequestPayload,
   JSONRPCErrorCallback
 } from "ethereum-protocol";
-import { Callback, JsonRpcResponse } from "@truffle/provider";
+import { Callback, JsonRPCResponse } from "web3/providers";
 
 interface Web3ProviderEngineOptions {
   pollingInterval?: number;
@@ -15,11 +15,11 @@ declare class Web3ProviderEngine implements Provider {
   on(event: string, handler: () => void): void;
   send(
     payload: JSONRPCRequestPayload,
-    callback?: JSONRPCErrorCallback | Callback<JsonRpcResponse>
+    callback?: JSONRPCErrorCallback | Callback<JsonRPCResponse>
   ): void;
   sendAsync(
     payload: JSONRPCRequestPayload,
-    callback: JSONRPCErrorCallback | Callback<JsonRpcResponse>
+    callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
   ): void;
   addProvider(provider: any): void;
   // start block polling

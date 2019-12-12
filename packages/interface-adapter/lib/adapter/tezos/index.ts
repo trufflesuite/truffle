@@ -1,6 +1,6 @@
 import { Web3Shim } from "../../shim";
-import { InterfaceAdapter, BlockType } from "../types";
-import { Provider } from "@truffle/provider";
+import { InterfaceAdapter } from "../types";
+import { Provider } from "web3/providers";
 import Config from "@truffle/config";
 
 export interface TezosAdapterOptions {
@@ -19,7 +19,7 @@ export class TezosAdapter implements InterfaceAdapter {
     return this.web3.eth.net.getId();
   }
 
-  public getBlock(block: BlockType) {
+  public getBlock(block: any) {
     return this.web3.eth.getBlock(block);
   }
 

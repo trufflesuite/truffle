@@ -1,5 +1,6 @@
 import BN from "bn.js";
 import { Web3Shim } from "..";
+import { EvmTransaction } from "../../adapter/types";
 import { AbiCoder as EthersAbi } from "ethers/utils/abi-coder";
 import _ from "lodash";
 
@@ -60,7 +61,7 @@ const overrides = {
       web3.eth.getTransaction.method.outputFormatter;
 
     // @ts-ignore
-    web3.eth.getTransaction.method.outputFormatter = (tx: any) => {
+    web3.eth.getTransaction.method.outputFormatter = (tx: EvmTransaction) => {
       const _oldGas = tx.gas;
 
       tx.gas = "0x0";

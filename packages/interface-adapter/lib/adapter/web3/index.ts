@@ -1,7 +1,10 @@
 import { Web3Shim } from "../../shim";
-import { TransactionConfig as EvmTransactionConfig } from "web3-core";
-import { InterfaceAdapter, BlockType } from "../types";
-import { Provider } from "@truffle/provider";
+import {
+  InterfaceAdapter,
+  EvmBlockType,
+  Provider,
+  Transaction
+} from "../types";
 import Config from "@truffle/config";
 
 export interface Web3InterfaceAdapterOptions {
@@ -21,7 +24,7 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
     return this.web3.eth.net.getId();
   }
 
-  public getBlock(block: BlockType) {
+  public getBlock(block: EvmBlockType) {
     return this.web3.eth.getBlock(block);
   }
 
@@ -45,7 +48,7 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
     return this.web3.eth.getAccounts();
   }
 
-  public estimateGas(transactionConfig: EvmTransactionConfig) {
+  public estimateGas(transactionConfig: Transaction) {
     return this.web3.eth.estimateGas(transactionConfig);
   }
 

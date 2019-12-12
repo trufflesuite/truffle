@@ -51,7 +51,7 @@ const overrides = {
     const _oldGetBlock = web3.eth.getBlock;
 
     // @ts-ignore
-    web3.eth.getBlock = async (blockNumber = "head") => {
+    web3.eth.getBlock = async (blockNumber: any = "head") => {
       // translate ETH nomenclature to XTZ
       if (blockNumber === "latest") blockNumber = "head";
       const { hard_gas_limit_per_block } = await web3.tez.rpc.getConstants();
