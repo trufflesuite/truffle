@@ -8,15 +8,15 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.3",
+  "version": "0.2.4-alphaTez.0",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
   "types": "./typings/index.d.ts",
   "dependencies": {
-    "@truffle/error": "^0.0.10-alphaTez.0",
-    "@truffle/interface-adapter": "^0.4.0",
+    "@truffle/error": "^0.0.11-alphaTez.0",
+    "@truffle/interface-adapter": "^0.4.1-alphaTez.0",
     "web3": "1.2.2"
   },
   "devDependencies": {

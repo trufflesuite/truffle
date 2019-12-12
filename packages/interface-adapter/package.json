@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.4.0",
+  "version": "0.4.1-alphaTez.0",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
@@ -20,14 +20,14 @@
   },
   "dependencies": {
     "@taquito/taquito": "5.2.0-beta.1",
-    "@truffle/config": "^1.2.7",
+    "@truffle/config": "^1.2.8-alphaTez.0",
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
     "lodash": "^4.17.13",
     "web3": "1.2.2"
   },
   "devDependencies": {
-    "@truffle/provider": "^0.2.3",
+    "@truffle/provider": "^0.2.4-alphaTez.0",
     "@types/bn.js": "^4.11.4",
     "@types/lodash": "^4.14.136",
     "@types/mocha": "^5.2.6",
