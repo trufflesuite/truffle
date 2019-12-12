@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.1.2-alphaTez.0",
+  "version": "4.1.3-alphaTez.0",
   "main": "index.js",
   "scripts": {
     "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
@@ -20,10 +20,10 @@
   },
   "typings": "./typings/index.d.ts",
   "dependencies": {
-    "@truffle/blockchain-utils": "^0.0.17-alphaTez.0",
-    "@truffle/contract-schema": "^3.1.2-alphaTez.0",
-    "@truffle/error": "^0.0.11-alphaTez.0",
-    "@truffle/interface-adapter": "^0.4.1-alphaTez.0",
+    "@truffle/blockchain-utils": "^0.0.18-alphaTez.0",
+    "@truffle/contract-schema": "^3.1.3-alphaTez.0",
+    "@truffle/error": "^0.0.12-alphaTez.0",
+    "@truffle/interface-adapter": "^0.4.2-alphaTez.0",
     "bignumber.js": "^7.2.1",
     "ethereum-ens": "^0.7.7",
     "ethers": "^4.0.0-beta.1",
@@ -33,7 +33,7 @@
     "web3-utils": "1.2.1"
   },
   "devDependencies": {
-    "@truffle/compile-solidity": "^4.2.14-alphaTez.0",
+    "@truffle/compile-solidity": "^4.2.15-alphaTez.0",
     "browserify": "^14.0.0",
     "chai": "4.2.0",
     "debug": "^4.1.0",
