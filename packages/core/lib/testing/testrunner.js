@@ -151,11 +151,15 @@ TestRunner.prototype.endTest = async function(mocha) {
         return namePrefix + indexedPrefix + displayValue + typeString;
       })
       .join(",\n");
-    return indent(
-      `${fullEventName}(\n${indent(eventArgs, 2)}\n)`,
-      indentation,
-      initialPrefix
-    );
+    if (decoding.arguments.length > 0) {
+      return indent(
+        `${fullEventName}(\n${indent(eventArgs, 2)}\n)`,
+        indentation,
+        initialPrefix
+      );
+    } else {
+      return indent(`${fullEventName}()`, indentation, initialPrefix);
+    }
   }
 
   const logs = await this.decoder.events({
