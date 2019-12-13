@@ -53,9 +53,6 @@ TestRunner.prototype.initialize = async function() {
   );
 
   if (this.first_snapshot) {
-    // // Make the initial deployment (full migration).
-    // await this.deploy();
-
     try {
       let initial_snapshot = await this.snapshot();
       this.can_snapshot = true;

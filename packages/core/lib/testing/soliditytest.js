@@ -125,7 +125,6 @@ const SolidityTest = {
           path.join(__dirname, "Assert.sol"),
           path.join(__dirname, "AssertAddress.sol"),
           path.join(__dirname, "AssertAddressArray.sol"),
-          // path.join(__dirname, "AssertAddressPayableArray.sol"), only compatible w/ ^0.5.0
           path.join(__dirname, "AssertBalance.sol"),
           path.join(__dirname, "AssertBool.sol"),
           path.join(__dirname, "AssertBytes32.sol"),
@@ -168,7 +167,6 @@ const SolidityTest = {
       "Assert",
       "AssertAddress",
       "AssertAddressArray",
-      //      "AssertAddressPayableArray", only compatible w/ ^0.5.0
       "AssertBalance",
       "AssertBool",
       "AssertBytes32",
