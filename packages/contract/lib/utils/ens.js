@@ -1,4 +1,5 @@
 const ENSJS = require("ethereum-ens");
+const { isAddress } = require("web3-utils");
 
 module.exports = {
   convertENSNames: async function({
@@ -38,7 +39,6 @@ module.exports = {
 
   convertENSArgsNames: function(inputArgs, methodABI, web3, registryAddress) {
     if (methodABI.inputs.length === 0) return inputArgs;
-    const { isAddress } = web3.utils;
     const ensjs = this.getNewENSJS({
       provider: web3.currentProvider,
       registryAddress
@@ -60,7 +60,6 @@ module.exports = {
   },
 
   convertENSParamsNames: async function(params, web3, registryAddress) {
-    const { isAddress } = web3.utils;
     if (params.from && !isAddress(params.from)) {
       const ensjs = this.getNewENSJS({
         provider: web3.currentProvider,

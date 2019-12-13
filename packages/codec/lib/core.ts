@@ -4,13 +4,17 @@ const debug = debugModule("codec:core");
 import * as Ast from "@truffle/codec/ast";
 import * as AbiData from "@truffle/codec/abi-data";
 import * as Topic from "@truffle/codec/topic";
+import * as Bytes from "@truffle/codec/bytes";
 import * as Pointer from "@truffle/codec/pointer";
 import {
   DecoderRequest,
   CalldataDecoding,
+  ReturndataDecoding,
+  BytecodeDecoding,
   DecodingMode,
   AbiArgument,
-  LogDecoding
+  LogDecoding,
+  DecoderOptions
 } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import * as Contexts from "@truffle/codec/contexts";
@@ -20,6 +24,8 @@ import * as Format from "@truffle/codec/format";
 import { StopDecodingError } from "@truffle/codec/errors";
 import read from "@truffle/codec/read";
 import decode from "@truffle/codec/decode";
+// untyped import since no @types/web3-utils exists
+const Web3Utils = require("web3-utils");
 
 /**
  * @Category Decoding
@@ -67,7 +73,7 @@ export function* decodeCalldata(
   let selector: string;
   //first: is this a creation call?
   if (isConstructor) {
-    allocation = allocations.constructorAllocations[contextHash];
+    allocation = allocations.constructorAllocations[contextHash].input;
   } else {
     //skipping any error-handling on this read, as a calldata read can't throw anyway
     let rawSelector = yield* read(
@@ -79,7 +85,7 @@ export function* decodeCalldata(
       info.state
     );
     selector = Conversion.toHexString(rawSelector);
-    allocation = allocations.functionAllocations[contextHash][selector];
+    allocation = allocations.functionAllocations[contextHash][selector].input;
   }
   if (allocation === undefined) {
     return {
@@ -393,4 +399,276 @@ export function* decodeEvent(
     }
   }
   return decodings;
+}
+
+const errorSelector: Uint8Array = Conversion.toBytes(
+  Web3Utils.soliditySha3({
+    type: "string",
+    value: "Error(string)"
+  })
+).subarray(0, Evm.Utils.SELECTOR_SIZE);
+
+const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
+  {
+    kind: "revert" as const,
+    allocationMode: "full" as const,
+    selector: errorSelector,
+    arguments: [
+      {
+        name: "",
+        pointer: {
+          location: "returndata" as const,
+          start: errorSelector.length,
+          length: Evm.Utils.WORD_SIZE
+        },
+        type: {
+          typeClass: "string" as const,
+          typeHint: "string"
+        }
+      }
+    ]
+  },
+  {
+    kind: "failure" as const,
+    allocationMode: "full" as const,
+    selector: new Uint8Array(), //empty by default
+    arguments: []
+  },
+  {
+    kind: "selfdestruct" as const,
+    allocationMode: "full" as const,
+    selector: new Uint8Array(), //empty by default
+    arguments: []
+  }
+];
+
+/**
+ * If there are multiple possibilities, they're always returned in
+ * the order: return, revert, failure, empty, bytecode, unknownbytecode
+ * @Category Decoding
+ */
+export function* decodeReturndata(
+  info: Evm.EvmInfo,
+  successAllocation: AbiData.Allocate.ReturndataAllocation | null, //null here must be explicit
+  status?: boolean //you can pass this to indicate that you know the status
+): Generator<DecoderRequest, ReturndataDecoding[], Uint8Array> {
+  let possibleAllocations: AbiData.Allocate.ReturndataAllocation[];
+  if (successAllocation === null) {
+    possibleAllocations = defaultReturnAllocations;
+  } else {
+    switch (successAllocation.kind) {
+      case "return":
+        possibleAllocations = [successAllocation, ...defaultReturnAllocations];
+        break;
+      case "bytecode":
+        possibleAllocations = [...defaultReturnAllocations, successAllocation];
+        break;
+      //Other cases shouldn't happen so I'm leaving them to cause errors!
+    }
+  }
+  let decodings: ReturndataDecoding[] = [];
+  allocationAttempts: for (const allocation of possibleAllocations) {
+    debug("trying allocation: %O", allocation);
+    //before we attempt to use this allocation, we check: does the selector match?
+    let encodedData = info.state.returndata; //again, not great to read this directly, but oh well
+    const encodedPrefix = encodedData.subarray(0, allocation.selector.length);
+    if (!Evm.Utils.equalData(encodedPrefix, allocation.selector)) {
+      continue;
+    }
+    encodedData = encodedData.subarray(allocation.selector.length); //slice off the selector for later
+    //also we check, does the status match?
+    if (status !== undefined) {
+      const successKinds = ["return", "selfdestruct", "bytecode"];
+      const failKinds = ["failure", "revert"];
+      if (status) {
+        if (!successKinds.includes(allocation.kind)) {
+          continue;
+        }
+      } else {
+        if (!failKinds.includes(allocation.kind)) {
+          continue;
+        }
+      }
+    }
+    let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
+    if (allocation.kind === "bytecode") {
+      //bytecode is special and can't really be integrated with the other cases.
+      //so it gets its own code here.
+      const bytecode = Conversion.toHexString(info.state.returndata);
+      const context = Contexts.Utils.findDecoderContext(
+        info.contexts,
+        bytecode
+      );
+      if (!context) {
+        decodings.push({
+          kind: "unknownbytecode" as const,
+          status: true as const,
+          decodingMode,
+          bytecode
+        });
+        continue; //skip the rest of the code in the allocation loop!
+      }
+      const contractType = Contexts.Import.contextToType(context);
+      let decoding: BytecodeDecoding = {
+        kind: "bytecode" as const,
+        status: true as const,
+        decodingMode,
+        bytecode,
+        class: contractType
+      };
+      if (contractType.contractKind === "library") {
+        //note: I am relying on this being present!
+        //(also this part is a bit HACKy)
+        const pushAddressInstruction = (
+          0x60 +
+          Evm.Utils.ADDRESS_SIZE -
+          1
+        ).toString(16); //"73"
+        const delegateCallGuardString =
+          "0x" + pushAddressInstruction + "..".repeat(Evm.Utils.ADDRESS_SIZE);
+        if (context.binary.startsWith(delegateCallGuardString)) {
+          decoding.address = Web3Utils.toChecksumAddress(
+            bytecode.slice(4, 4 + 2 * Evm.Utils.ADDRESS_SIZE) //4 = "0x73".length
+          );
+        }
+      }
+      decodings.push(decoding);
+      continue; //skip the rest of the code in the allocation loop!
+    }
+    //you can't map with a generator, so we have to do this map manually
+    let decodedArguments: AbiArgument[] = [];
+    for (const argumentAllocation of allocation.arguments) {
+      let value: Format.Values.Result;
+      //if in full mode, use the allocation's listed data type.
+      //if in ABI mode, abify it before use.
+      let dataType =
+        decodingMode === "full"
+          ? argumentAllocation.type
+          : abifyType(argumentAllocation.type);
+      //now, let's decode!
+      try {
+        value = yield* decode(dataType, argumentAllocation.pointer, info, {
+          abiPointerBase: allocation.selector.length,
+          strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
+          allowRetry: decodingMode === "full" //this option is unnecessary but including for clarity
+        });
+        debug("value on first try: %O", value);
+      } catch (error) {
+        if (
+          error instanceof StopDecodingError &&
+          error.allowRetry &&
+          decodingMode === "full"
+        ) {
+          debug("retry!");
+          //if a retry happens, we've got to do several things in order to switch to ABI mode:
+          //1. mark that we're switching to ABI mode;
+          decodingMode = "abi";
+          //2. abify all previously decoded values;
+          decodedArguments = decodedArguments.map(argumentDecoding => ({
+            ...argumentDecoding,
+            value: abifyResult(argumentDecoding.value, info.userDefinedTypes)
+          }));
+          //3. retry this particular decode in ABI mode.
+          try {
+            value = yield* decode(
+              abifyType(argumentAllocation.type), //type is now abified!
+              argumentAllocation.pointer,
+              info,
+              {
+                abiPointerBase: allocation.selector.length,
+                strictAbiMode: true //turns on STRICT MODE to cause more errors to be thrown
+                //retries no longer allowed, not that this has an effect
+              }
+            );
+            debug("value on retry: %O", value);
+          } catch (_) {
+            //if an error occurred on the retry, this isn't a valid decoding!
+            debug("rejected due to exception on retry");
+            continue allocationAttempts;
+          }
+          //4. the remaining parameters will then automatically be decoded in ABI mode due to (1),
+          //so we don't need to do anything special there.
+        } else {
+          //if any other sort of error occurred, this isn't a valid decoding!
+          debug("rejected due to exception on first try: %O", error);
+          continue allocationAttempts;
+        }
+      }
+      const name = argumentAllocation.name;
+      decodedArguments.push(
+        name //deliberate general falsiness test
+          ? { name, value }
+          : { value }
+      );
+    }
+    //OK, so, having decoded the result, the question is: does it reencode to the original?
+    //first, we have to filter out the indexed arguments, and also get rid of the name information
+    debug("decodedArguments: %O", decodedArguments);
+    const decodedArgumentValues = decodedArguments.map(
+      argument => argument.value
+    );
+    const reEncodedData = AbiData.Encode.encodeTupleAbi(
+      decodedArgumentValues,
+      info.allocations.abi
+    );
+    //are they equal? note the selector has been stripped off encodedData!
+    if (!Evm.Utils.equalData(reEncodedData, encodedData)) {
+      //if not, this allocation doesn't work
+      debug("rejected due to mismatch");
+      continue;
+    }
+    //if we've made it here, the allocation works!  hooray!
+    debug("allocation accepted!");
+    let decoding: ReturndataDecoding;
+    let kind = allocation.kind;
+    switch (kind) {
+      case "return":
+        decoding = {
+          kind,
+          status: true as const,
+          arguments: decodedArguments,
+          decodingMode
+        };
+        break;
+      case "revert":
+        decoding = {
+          kind,
+          status: false as const,
+          arguments: decodedArguments,
+          decodingMode
+        };
+        break;
+      case "selfdestruct":
+        decoding = {
+          kind,
+          status: true as const,
+          decodingMode
+        };
+        break;
+      case "failure":
+        decoding = {
+          kind,
+          status: false as const,
+          decodingMode
+        };
+        break;
+    }
+    decodings.push(decoding);
+  }
+  return decodings;
+}
+
+export function decodeRevert(returndata: Uint8Array): ReturndataDecoding[] {
+  //coercing because TS doesn't know it'll finish in one go
+  return <ReturndataDecoding[]>decodeReturndata(
+    {
+      allocations: {},
+      state: {
+        storage: {},
+        returndata
+      }
+    },
+    null,
+    false
+  ).next().value;
 }

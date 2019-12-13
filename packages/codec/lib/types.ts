@@ -23,6 +23,20 @@ export type CalldataDecoding =
 export type LogDecoding = EventDecoding | AnonymousDecoding;
 
 /**
+ * A type representing a returndata (return value or revert message) decoding.
+ * As you can see, these come in six types, each of which is documented
+ * separately.
+ * @Category Output
+ */
+export type ReturndataDecoding =
+  | ReturnDecoding
+  | BytecodeDecoding
+  | UnknownBytecodeDecoding
+  | SelfDestructDecoding
+  | RevertMessageDecoding
+  | EmptyFailureDecoding;
+
+/**
  * This is a type for recording what decoding mode a given decoding was produced in.  There are two
  * decoding modes, full mode and ABI mode.  In ABI mode, decoding is done purely based on the ABI JSON.
  * Full mode, by contrast, additionally uses AST information to produce a more informative decoding.
@@ -59,7 +73,8 @@ export interface FunctionDecoding {
    */
   selector: string;
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -99,7 +114,8 @@ export interface ConstructorDecoding {
    */
   bytecode: string;
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -130,7 +146,8 @@ export interface MessageDecoding {
    */
   data: string;
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -147,11 +164,12 @@ export interface UnknownCallDecoding {
    */
   kind: "unknown";
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
   /**
-   * The data that was sent to the contract
+   * The data that was sent to the contract.
    */
   data: string;
 }
@@ -168,11 +186,12 @@ export interface UnknownCreationDecoding {
    */
   kind: "create";
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
   /**
-   * The bytecode of the contract creation
+   * The bytecode of the contract creation.
    */
   bytecode: string;
 }
@@ -208,7 +227,8 @@ export interface EventDecoding {
    */
   selector: string;
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
@@ -240,13 +260,180 @@ export interface AnonymousDecoding {
    */
   abi: AbiData.EventAbiEntry; //should be anonymous
   /**
-   * The decoding mode that was used; see the README for more on these.
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
    */
   decodingMode: DecodingMode;
 }
 
 /**
- * This type represents a decoded argument passed to a transaction or event.
+ * This type represents a decoding of the return data as a collection of
+ * return values from a successful call.
+ * @Category Output
+ */
+export interface ReturnDecoding {
+  /**
+   * The kind of decoding; indicates that this is a ReturnDecoding.
+   */
+  kind: "return";
+  /**
+   * Indicates that this kind of decoding indicates a successful return.
+   */
+  status: true;
+  /**
+   * The list of decoded return values from the function.
+   */
+  arguments: AbiArgument[];
+  /**
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
+   */
+  decodingMode: DecodingMode;
+}
+
+/**
+ * This type represents a decoding of unexpectedly empty return data from a
+ * successful call, indicating that the contract self-destructed.
+ * @Category Output
+ */
+export interface SelfDestructDecoding {
+  /**
+   * The kind of decoding; indicates that this is an SelfDestructDecoding.
+   */
+  kind: "selfdestruct";
+  /**
+   * Indicates that this kind of decoding indicates a successful return.
+   */
+  status: true;
+  /**
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
+   */
+  decodingMode: DecodingMode;
+}
+
+/**
+ * This type represents a decoding of empty return data from an unsuccessful
+ * call, a reversion with no message.
+ * @Category Output
+ */
+export interface EmptyFailureDecoding {
+  /**
+   * The kind of decoding; indicates that this is an EmptyFailureDecoding.
+   */
+  kind: "failure";
+  /**
+   * Indicates that this kind of decoding indicates an unsuccessful return.
+   */
+  status: false;
+  /**
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
+   */
+  decodingMode: DecodingMode;
+}
+
+/**
+ * This type represents a decoding of the return data as a revert message.
+ * For forward-compatibility, we do not assume that the revert message is
+ * a string.
+ * @Category Output
+ */
+export interface RevertMessageDecoding {
+  /**
+   * The kind of decoding; indicates that this is a RevertMessageDecoding.
+   */
+  kind: "revert";
+  /**
+   * Indicates that this kind of decoding indicates an unsuccessful return.
+   */
+  status: false;
+  /**
+   * The list of decoded arguments passed to revert(); currently, this will
+   * always contain just a single string.
+   */
+  arguments: AbiArgument[];
+  /**
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
+   */
+  decodingMode: DecodingMode;
+}
+
+/**
+ * This type represents a decoding of the return data as bytecode for a known
+ * class returned from a constructor.
+ *
+ * NOTE: In the future, this type will also contain information about
+ * any linked libraries the contract being constructed uses.  However,
+ * this is not implemented at present.
+ *
+ * @Category Output
+ */
+export interface BytecodeDecoding {
+  /**
+   * The kind of decoding; indicates that this is a BytecodeDecoding.
+   */
+  kind: "bytecode";
+  /**
+   * Indicates that this kind of decoding indicates a successful return.
+   */
+  status: true;
+  /**
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
+   */
+  decodingMode: DecodingMode;
+  /**
+   * The class of contract being constructed, as a Format.Types.ContractType.
+   */
+  class: Format.Types.ContractType;
+  /**
+   * The bytecode of the contract that was created.
+   */
+  bytecode: string;
+  /**
+   * If the contract created was a library, and was compiled with Solidity
+   * 0.4.20 or later, this field will be included, which gives the address of
+   * the created contract (checksummed).  This field will not be included
+   * otherwise!
+   */
+  address?: string;
+}
+
+/**
+ * This type represents a decoding of the return data as bytecode for an
+ * unknown class returned from a constructor.
+ *
+ * NOTE: In the future, this type will also contain information about
+ * any linked libraries the contract being constructed uses.  However,
+ * this is not implemented at present.
+ *
+ * @Category Output
+ */
+export interface UnknownBytecodeDecoding {
+  /**
+   * The kind of decoding; indicates that this is an UnknownBytecodeDecoding.
+   */
+  kind: "unknownbytecode";
+  /**
+   * Indicates that this kind of decoding indicates a successful return.
+   */
+  status: true;
+  /**
+   * The decoding mode that was used; [see the README](../#decoding-modes) for
+   * more on these.
+   */
+  decodingMode: DecodingMode;
+  /**
+   * The bytecode of the contract that was created.
+   */
+  bytecode: string;
+}
+
+/**
+ * This type represents a decoded argument passed to a transaction or event,
+ * or returned from a call.
  *
  * @Category Output
  */
@@ -296,6 +483,6 @@ export interface DecoderOptions {
   permissivePadding?: boolean; //allows incorrect padding on certain data types
   strictAbiMode?: boolean; //throw errors instead of returning; check array & string lengths (crudely)
   allowRetry?: boolean; //turns on error-throwing for retry-allowed errors only
-  abiPointerBase?: number;
-  memoryVisited?: number[]; //for the future
+  abiPointerBase?: number; //what relative pointers should be considered relative to
+  memoryVisited?: number[]; //for circularity detection
 }

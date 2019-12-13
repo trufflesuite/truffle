@@ -18,8 +18,8 @@
       ]
     },
     "typeRoots": [
-      "../../node_modules/@types/mocha",
-      "../../node_modules/@truffle/provider/typings"
+      "./typings",
+      "../../node_modules/@types/mocha"
     ]
   },
   "include": [

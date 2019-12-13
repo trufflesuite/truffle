@@ -85,7 +85,7 @@ describe("commands/unbox.js", () => {
           );
         });
         Promise.all(promises).then(() => done());
-      });
+      }).timeout(3000);
 
       it("runs when passed a relative unbox path", done => {
         let promises = [];
@@ -97,7 +97,7 @@ describe("commands/unbox.js", () => {
           );
         });
         Promise.all(promises).then(() => done());
-      }).timeout(5000);
+      }).timeout(6000);
     });
   });
 });
