@@ -1,3 +1,4 @@
+const web3Utils = require("web3-utils");
 const TestCase = require("mocha/lib/test.js");
 const Suite = require("mocha/lib/suite.js");
 const Deployer = require("@truffle/deployer");
@@ -45,7 +46,7 @@ const SolidityTest = {
       if (result.logs.length) return result.logs;
 
       const logs = [];
-      const signature = web3.utils.sha3("TestEvent(bool,string)");
+      const signature = web3Utils.sha3("TestEvent(bool,string)");
 
       result.receipt.logs.forEach(log => {
         if (log.topics.length === 2 && log.topics[0] === signature) {

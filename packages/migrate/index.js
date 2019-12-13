@@ -1,6 +1,6 @@
 const fs = require("fs");
-const dir = require("node-dir");
 const path = require("path");
+const glob = require("glob");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
 const Reporter = require("@truffle/reporters").migrationsV5;
@@ -35,8 +35,11 @@ const Migrate = {
       return [];
     }
 
-    const files = dir.files(config.migrations_directory, { sync: true });
-    if (!files) return [];
+    const migrationsDir = config.migrations_directory;
+    const directoryContents = glob.sync(`${migrationsDir}${path.sep}*`);
+    const files = directoryContents.filter(item => fs.statSync(item).isFile());
+
+    if (files.length === 0) return [];
 
     let migrations = files
       .filter(file => isNaN(parseInt(path.basename(file))) === false)

@@ -15,7 +15,6 @@ const debug = debugModule("codec:format:types");
 //that might change in the future.
 
 import BN from "bn.js";
-
 import { ContractKind, Location, Mutability } from "@truffle/codec/common";
 
 /**

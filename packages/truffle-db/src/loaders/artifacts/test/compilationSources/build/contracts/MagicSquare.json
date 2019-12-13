@@ -6195,6 +6195,7 @@
   "networks": {},
   "schemaVersion": "3.0.11",
   "updatedAt": "",
+  "networkType": "ethereum",
   "devdoc": {
     "methods": {}
   },

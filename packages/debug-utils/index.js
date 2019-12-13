@@ -1,7 +1,6 @@
 var OS = require("os");
 var dir = require("node-dir");
 var path = require("path");
-var async = require("async");
 var debug = require("debug")("debug-utils");
 var BN = require("bn.js");
 var util = require("util");
@@ -18,7 +17,7 @@ const commandReference = {
   "u": "step out",
   "n": "step next",
   ";": "step instruction (include number to step multiple)",
-  "p": "print instruction",
+  "p": "print instruction & state (can specify locations, e.g. p mem; see docs)",
   "l": "print additional source context",
   "h": "print this help",
   "v": "print variables and values",
@@ -50,57 +49,37 @@ const truffleColors = {
 };
 
 var DebugUtils = {
-  gatherArtifacts: function(config) {
-    return new Promise((accept, reject) => {
-      // Gather all available contract artifacts
-      dir.files(config.contracts_build_directory, (err, files) => {
-        if (err) return reject(err);
+  gatherArtifacts: async function(config) {
+    // Gather all available contract artifacts
+    let files = await dir.promiseFiles(config.contracts_build_directory);
 
-        var contracts = files
-          .filter(file_path => {
-            return path.extname(file_path) === ".json";
-          })
-          .map(file_path => {
-            return path.basename(file_path, ".json");
-          })
-          .map(contract_name => {
-            return config.resolver.require(contract_name);
-          });
-
-        async.each(
-          contracts,
-          (abstraction, finished) => {
-            abstraction
-              .detectNetwork()
-              .then(() => {
-                finished();
-              })
-              .catch(finished);
-          },
-          err => {
-            if (err) return reject(err);
-            accept(
-              contracts.map(contract => {
-                debug("contract.sourcePath: %o", contract.sourcePath);
-
-                return {
-                  contractName: contract.contractName,
-                  source: contract.source,
-                  sourceMap: contract.sourceMap,
-                  sourcePath: contract.sourcePath,
-                  binary: contract.binary,
-                  abi: contract.abi,
-                  ast: contract.ast,
-                  deployedBinary: contract.deployedBinary,
-                  deployedSourceMap: contract.deployedSourceMap,
-                  compiler: contract.compiler
-                };
-              })
-            );
-          }
-        );
+    var contracts = files
+      .filter(file_path => {
+        return path.extname(file_path) === ".json";
+      })
+      .map(file_path => {
+        return path.basename(file_path, ".json");
+      })
+      .map(contract_name => {
+        return config.resolver.require(contract_name);
       });
-    });
+
+    await Promise.all(
+      contracts.map(abstraction => abstraction.detectNetwork())
+    );
+
+    return contracts.map(contract => ({
+      contractName: contract.contractName,
+      source: contract.source,
+      sourceMap: contract.sourceMap,
+      sourcePath: contract.sourcePath,
+      binary: contract.binary,
+      abi: contract.abi,
+      ast: contract.ast,
+      deployedBinary: contract.deployedBinary,
+      deployedSourceMap: contract.deployedSourceMap,
+      compiler: contract.compiler
+    }));
   },
 
   formatStartMessage: function(withTransaction) {
@@ -116,7 +95,9 @@ var DebugUtils = {
   },
 
   formatCommandDescription: function(commandId) {
-    return "(" + commandId + ") " + commandReference[commandId];
+    return (
+      truffleColors.mint(`(${commandId})`) + " " + commandReference[commandId]
+    );
   },
 
   formatPrompt: function(network, txHash) {
@@ -159,15 +140,18 @@ var DebugUtils = {
 
     var prefix = [
       "Commands:",
-      "(enter) last command entered (" + commandReference[lastCommand] + ")"
+      truffleColors.mint("(enter)") +
+        " last command entered (" +
+        commandReference[lastCommand] +
+        ")"
     ];
 
     var commandSections = [
       ["o", "i", "u", "n"],
       [";"],
-      ["p", "l"],
-      ["h", "q", "r"],
-      ["t", "T"],
+      ["p"],
+      ["l", "h"],
+      ["q", "r", "t", "T"],
       ["b", "B", "c"],
       ["+", "-"],
       ["?"],
@@ -325,9 +309,7 @@ var DebugUtils = {
       "/" +
       traceLength +
       ") " +
-      instruction.name +
-      " " +
-      (instruction.pushData || "")
+      truffleColors.mint(instruction.name + " " + (instruction.pushData || ""))
     );
   },
 
@@ -340,18 +322,137 @@ var DebugUtils = {
   },
 
   formatStack: function(stack) {
-    var formatted = stack.map(function(item, index) {
+    //stack here is an array of hex words (no "0x")
+    var formatted = stack.map((item, index) => {
+      item = truffleColors.orange(item);
       item = "  " + item;
       if (index === stack.length - 1) {
         item += " (top)";
+      } else {
+        item += ` (${stack.length - index - 1} from top)`;
       }
 
       return item;
     });
 
     if (stack.length === 0) {
-      formatted.push("  No data on stack.");
+      formatted.unshift("  No data on stack.");
+    } else {
+      formatted.unshift("Stack:");
     }
+
+    return formatted.join(OS.EOL);
+  },
+
+  formatMemory: function(memory) {
+    //note memory here is an array of hex words (no "0x"),
+    //not a single long hex string
+
+    //get longest prefix needed;
+    //minimum of 2 so always show at least 2 hex digits
+    let maxPrefixLength = Math.max(
+      2,
+      ((memory.length - 1) * Codec.Evm.Utils.WORD_SIZE).toString(16).length
+    );
+    if (maxPrefixLength % 2 !== 0) {
+      maxPrefixLength++; //make sure to use even # of hex digits
+    }
+
+    let formatted = memory.map((word, index) => {
+      let address = (index * Codec.Evm.Utils.WORD_SIZE)
+        .toString(16)
+        .padStart(maxPrefixLength, "0");
+      return `  0x${address}:  ${truffleColors.pink(word)}`;
+    });
+
+    if (memory.length === 0) {
+      formatted.unshift("  No data in memory.");
+    } else {
+      formatted.unshift("Memory:");
+    }
+
+    return formatted.join(OS.EOL);
+  },
+
+  formatStorage: function(storage) {
+    //storage here is an object mapping hex words to hex words (no 0x)
+
+    //first: sort the keys (slice to clone as sort is in-place)
+    //note: we can use the default sort here; it will do the righ thing
+    let slots = Object.keys(storage)
+      .slice()
+      .sort();
+
+    let formatted = slots.map((slot, index) => {
+      if (
+        index === 0 ||
+        !Codec.Conversion.toBN(slot).eq(
+          Codec.Conversion.toBN(slots[index - 1]).addn(1)
+        )
+      ) {
+        return `0x${slot}:\n` + `  ${truffleColors.blue(storage[slot])}`;
+      } else {
+        return `  ${truffleColors.blue(storage[slot])}`;
+      }
+    });
+
+    if (slots.length === 0) {
+      formatted.unshift("  No known relevant data found in storage.");
+    } else {
+      formatted.unshift("Storage (partial view):");
+    }
+
+    return formatted.join(OS.EOL);
+  },
+
+  formatCalldata: function(calldata) {
+    //takes a Uint8Array
+    let selector = calldata.slice(0, Codec.Evm.Utils.SELECTOR_SIZE);
+    let words = [];
+    for (
+      let wordIndex = Codec.Evm.Utils.SELECTOR_SIZE;
+      wordIndex < calldata.length;
+      wordIndex += Codec.Evm.Utils.WORD_SIZE
+    ) {
+      words.push(
+        calldata.slice(wordIndex, wordIndex + Codec.Evm.Utils.WORD_SIZE)
+      );
+    }
+    let maxWordIndex =
+      (words.length - 1) * Codec.Evm.Utils.WORD_SIZE +
+      Codec.Evm.Utils.SELECTOR_SIZE;
+    let maxPrefixLength = Math.max(2, maxWordIndex.toString(16).length);
+    if (maxPrefixLength % 2 !== 0) {
+      maxPrefixLength++;
+    }
+    let formattedSelector;
+    if (selector.length > 0) {
+      formattedSelector =
+        "Calldata:\n" +
+        `  0x${"00".padStart(maxPrefixLength, "0")}:  ` +
+        truffleColors.pink(
+          Codec.Conversion.toHexString(selector)
+            .slice(2)
+            .padStart(2 * Codec.Evm.Utils.WORD_SIZE, "  ")
+        );
+    } else {
+      formattedSelector = "  No data in calldata.";
+    }
+
+    let formatted = words.map((word, index) => {
+      let address = (
+        index * Codec.Evm.Utils.WORD_SIZE +
+        Codec.Evm.Utils.SELECTOR_SIZE
+      )
+        .toString(16)
+        .padStart(maxPrefixLength, "0");
+      let data = Codec.Conversion.toHexString(word)
+        .slice(2)
+        .padEnd(2 * Codec.Evm.Utils.WORD_SIZE);
+      return `  0x${address}:  ${truffleColors.pink(data)}`;
+    });
+
+    formatted.unshift(formattedSelector);
 
     return formatted.join(OS.EOL);
   },
@@ -461,22 +562,25 @@ var DebugUtils = {
   },
 
   //HACK
-  cleanConstructors: function(object) {
+  //note that this is written in terms of mutating things
+  //rather than just using map() due to the need to handle
+  //circular objects
+  cleanConstructors: function(object, seenSoFar = new Map()) {
     debug("object %o", object);
-
-    if (object && typeof object.map === "function") {
-      //array case
-      return object.map(DebugUtils.cleanConstructors);
+    if (seenSoFar.has(object)) {
+      return seenSoFar.get(object);
     }
 
-    if (object && object instanceof Map) {
-      //map case
-      return new Map(
-        Array.from(object.entries()).map(([key, value]) => [
-          key,
-          DebugUtils.cleanConstructors(value)
-        ])
-      );
+    if (Array.isArray(object)) {
+      //array case
+      let output = object.slice(); //clone
+      //set up new seenSoFar
+      let seenNow = new Map(seenSoFar);
+      seenNow.set(object, output);
+      for (let index in output) {
+        output[index] = DebugUtils.cleanConstructors(output[index], seenNow);
+      }
+      return output;
     }
 
     //HACK -- due to safeEval altering things, it's possible for isBN() to
@@ -493,16 +597,23 @@ var DebugUtils = {
 
     if (object && typeof object === "object") {
       //generic object case
-      return Object.assign(
+      let output = Object.assign(
         {},
         ...Object.entries(object)
           .filter(
             ([key, value]) => key !== "constructor" || value !== undefined
           )
           .map(([key, value]) => ({
-            [key]: DebugUtils.cleanConstructors(value)
+            [key]: value //don't clean yet!
           }))
       );
+      //set up new seenSoFar
+      let seenNow = new Map(seenSoFar);
+      seenNow.set(object, output);
+      for (let field in output) {
+        output[field] = DebugUtils.cleanConstructors(output[field], seenNow);
+      }
+      return output;
     }
 
     //for strings, numbers, etc

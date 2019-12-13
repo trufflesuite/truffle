@@ -68,7 +68,7 @@ class Console extends EventEmitter {
     this.options.repl = this.repl;
 
     try {
-      this.web3.eth.getAccounts().then(fetchedAccounts => {
+      this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
         const abstractions = this.provision();
 
         this.repl.start({
