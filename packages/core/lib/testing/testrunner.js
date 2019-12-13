@@ -128,7 +128,9 @@ TestRunner.prototype.endTest = async function(mocha) {
 
   function printEvent(decoding) {
     const anonymousPrefix = decoding.kind === "anonymous" ? "<anonymous> " : "";
-    const className = decoding.class.typeName;
+    const className = decoding.definedIn
+      ? decoding.definedIn.typeName
+      : decoding.class.typeName;
     const eventName = decoding.abi.name;
     const fullEventName = anonymousPrefix + `${className}.${eventName}`;
     const eventArgs = decoding.arguments
