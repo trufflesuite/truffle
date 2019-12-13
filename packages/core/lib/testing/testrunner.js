@@ -1,7 +1,4 @@
-const {
-  Web3Shim,
-  createInterfaceAdapter
-} = require("@truffle/interface-adapter");
+const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const web3Utils = require("web3-utils");
 const Config = require("@truffle/config");
 const Migrate = require("@truffle/migrate");
@@ -33,10 +30,6 @@ function TestRunner(options = {}) {
   this.first_snapshot = true;
   this.initial_snapshot = null;
   this.interfaceAdapter = createInterfaceAdapter({
-    provider: options.provider,
-    networkType: options.networks[options.network].type
-  });
-  this.web3 = new Web3Shim({
     provider: options.provider,
     networkType: options.networks[options.network].type
   });
@@ -73,17 +66,14 @@ TestRunner.prototype.initialize = async function() {
     await this.resetState();
   }
 
-  let files = await fs.readdir(this.config.contracts_build_directory);
+  let files = fs
+    .readdirSync(this.config.contracts_build_directory)
+    .filter(file => path.extname(file) === ".json");
 
-  files = files.filter(file => path.extname(file) === ".json");
-
-  let data = await Promise.all(
-    files.map(
-      async file =>
-        await fs.readFile(
-          path.join(this.config.contracts_build_directory, file),
-          "utf8"
-        )
+  let data = files.map(file =>
+    fs.readFileSync(
+      path.join(this.config.contracts_build_directory, file),
+      "utf8"
     )
   );
 
@@ -112,7 +102,7 @@ TestRunner.prototype.resetState = async function() {
 };
 
 TestRunner.prototype.startTest = async function() {
-  let blockNumber = await this.web3.eth.getBlockNumber();
+  let blockNumber = await this.interfaceAdapter.getBlockNumber();
   let one = web3Utils.toBN(1);
   blockNumber = web3Utils.toBN(blockNumber);
 
