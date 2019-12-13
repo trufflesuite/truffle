@@ -24,6 +24,7 @@
     "@truffle/contract-schema": "^3.1.3-alphaTez.0",
     "@truffle/error": "^0.0.12-alphaTez.0",
     "@truffle/interface-adapter": "^0.4.2-alphaTez.0",
+    "@truffle/tezos-contract": "^0.3.1-alphaTez.0",
     "bignumber.js": "^7.2.1",
     "ethereum-ens": "^0.7.7",
     "ethers": "^4.0.0-beta.1",
