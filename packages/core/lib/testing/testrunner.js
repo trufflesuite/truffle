@@ -116,7 +116,19 @@ TestRunner.prototype.endTest = async function(mocha) {
     return;
   }
 
-  function printEvent(decoding) {
+  function indent(unindented, indentation, initialPrefix = "") {
+    return unindented
+      .split("\n")
+      .map(
+        (line, index) =>
+          index === 0
+            ? initialPrefix + " ".repeat(indentation - initialPrefix) + line
+            : " ".repeat(indentation) + line
+      )
+      .join("\n");
+  }
+
+  function printEvent(decoding, indentation = 0, initialPrefix = "") {
     const anonymousPrefix = decoding.kind === "anonymous" ? "<anonymous> " : "";
     const className = decoding.definedIn
       ? decoding.definedIn.typeName
@@ -133,14 +145,20 @@ TestRunner.prototype.endTest = async function(mocha) {
             depth: null,
             colors: true,
             maxArrayLength: null,
-            breakLength: Infinity,
-            compact: true
+            breakLength: 80
           }
         );
-        return namePrefix + indexedPrefix + displayValue;
+        let typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
+          value.type
+        )})`;
+        return namePrefix + indexedPrefix + displayValue + typeString;
       })
-      .join(", ");
-    return `${fullEventName}(${eventArgs})`;
+      .join(",\n");
+    return indent(
+      `${fullEventName}(\n${indent(eventArgs, 2)}\n)`,
+      indentation,
+      initialPrefix
+    );
   }
 
   const logs = await this.decoder.events({
@@ -163,15 +181,18 @@ TestRunner.prototype.endTest = async function(mocha) {
     switch (log.decodings.length) {
       case 0:
         this.logger.log(`    Warning: Could not decode event!`);
+        this.logger.log("");
         break;
       case 1:
-        this.logger.log("    " + printEvent(log.decodings[0]));
+        this.logger.log(printEvent(log.decodings[0], 4));
+        this.logger.log("");
         break;
       default:
         this.logger.log(`    Ambiguous event, possible interpretations:`);
         for (const decoding of log.decodings) {
-          this.logger.log("    - " + printEvent(decoding));
+          this.logger.log(printEvent(decoding, 6, "    * "));
         }
+        this.logger.log("");
         break;
     }
   }
