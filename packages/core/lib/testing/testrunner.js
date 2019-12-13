@@ -170,8 +170,7 @@ TestRunner.prototype.endTest = async function(mocha) {
       default:
         this.logger.log(`    Ambiguous event, possible interpretations:`);
         for (const decoding of log.decodings) {
-          this.logger.log(`      Could be:`); //6 spaces to indent a little
-          this.logger.log("      " + printEvent(decoding));
+          this.logger.log("    - " + printEvent(decoding));
         }
         break;
     }
