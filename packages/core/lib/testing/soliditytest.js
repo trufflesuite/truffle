@@ -1,11 +1,11 @@
 const TestCase = require("mocha/lib/test.js");
 const Suite = require("mocha/lib/suite.js");
 const Deployer = require("@truffle/deployer");
-const compile = require("@truffle/compile-solidity/legacy");
+const compile = require("@truffle/compile-solidity/new");
+const { shimContract } = require("@truffle/compile-solidity/legacy/shims");
 const path = require("path");
 const semver = require("semver");
 const Native = require("@truffle/compile-solidity/compilerSupplier/loadingStrategies/Native");
-const util = require("util");
 const debug = require("debug")("lib:testing:soliditytest");
 
 let SafeSend;
@@ -119,10 +119,7 @@ const SolidityTest = {
       SafeSend = "NewSafeSend.sol";
     }
 
-    //HACK: promisify seems to lose context, so we explicitly bind compile
-    const contracts = await util.promisify(
-      compile.with_dependencies.bind(compile)
-    )(
+    const { contracts } = await compile.with_dependencies(
       runner.config.with({
         paths: [
           path.join(__dirname, "Assert.sol"),
@@ -147,12 +144,12 @@ const SolidityTest = {
     );
 
     // Set network values.
-    for (const name in contracts) {
-      contracts[name].network_id = config.network_id;
-      contracts[name].default_network = config.default_network;
+    for (let contract of contracts) {
+      contract.network_id = config.network_id;
+      contract.default_network = config.default_network;
     }
 
-    await config.artifactor.saveAll(contracts);
+    await config.artifactor.saveAll(contracts.map(shimContract));
     debug("compiled");
   },
 
