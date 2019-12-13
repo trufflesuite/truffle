@@ -19,7 +19,7 @@ jobs:
   build:
     strategy:
       matrix:
-        platform: [ubuntu-latest]
+        platform: [ubuntu-16.04]
         node-version: [8.x, 10.x, 12.x]
         env: [GETH=true, QUORUM=true, PACKAGES=true, INTEGRATION=true]
     runs-on: ${{ matrix.platform }}
