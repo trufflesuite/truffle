@@ -10,9 +10,24 @@ contract WireTestParent {
   }
 
   //no constructor
+
+  event Overridden(uint);
 }
 
-contract WireTest is WireTestParent {
+contract WireTestAbstract {
+  event AbstractEvent();
+
+  event AbstractOverridden(uint indexed);
+
+  function danger() public;
+}
+
+contract WireTest is WireTestParent, WireTestAbstract {
+
+  function notImplemented() public {
+    emit Done();
+  } //just a dummy function, not 
+
   constructor(bool status, bytes memory info, Ternary whoknows) public {
     deepStruct["blornst"].length = 9;
     deepString.length = 9;
@@ -131,6 +146,17 @@ contract WireTest is WireTestParent {
 
   mapping(string => Triple[]) public deepStruct;
   mapping(string => string)[] public deepString;
+
+  event Overridden(uint indexed);
+  event AbstractOverridden(uint);
+
+  function interfaceAndOverrideTest() public {
+    emit AbstractEvent();
+    emit AbstractOverridden(107);
+    emit WireTestAbstract.AbstractOverridden(683);
+    emit Overridden(107);
+    emit WireTestParent.Overridden(683);
+  }
 }
 
 library WireTestLibrary {

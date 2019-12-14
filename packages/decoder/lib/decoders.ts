@@ -302,9 +302,11 @@ export class WireDecoder {
    *
    * If there are multiple possible decodings, they will always be listed in the following order:
    *
-   * 1. A non-anonymous event coming from the contract itself (there can be at most one of these)
+   * 1. Non-anonymous events coming from the contract itself (these will moreover be ordered
+   *   from most derived to most base)
    * 2. Non-anonymous events coming from libraries
-   * 3. Anonymous events coming from the contract itself
+   * 3. Anonymous events coming from the contract itself (again, ordered from most derived
+   *   to most base)
    * 4. Anonymous events coming from libraries
    *
    * You can check the kind and class.contractKind fields to distinguish between these.

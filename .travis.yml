@@ -14,7 +14,6 @@ branches:
     - truffle-db
 
 before_install:
-  - npm list -g lerna --depth=0 || npm install -g lerna
   - npm install -g yarn
 
 matrix:

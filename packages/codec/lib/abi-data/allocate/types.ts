@@ -92,14 +92,13 @@ export interface CalldataArgumentAllocation {
 //3. then by selector (this one is skipped for anonymou)
 //4. then by contract kind
 //5. then by (deployed) context hash
-//(and then the anonymous ones are in an array)
 
 export interface EventAllocations {
   [topics: number]: {
     bySelector: {
       [selector: string]: {
         [contractKind: string]: {
-          [contextHash: string]: EventAllocation;
+          [contextHash: string]: EventAllocation[];
         };
       };
     };
@@ -114,6 +113,7 @@ export interface EventAllocations {
 export interface EventAllocation {
   abi: AbiData.EventAbiEntry;
   contextHash: string;
+  definedIn?: Format.Types.ContractType; //is omitted if we don't know
   anonymous: boolean;
   arguments: EventArgumentAllocation[];
   allocationMode: DecodingMode;
@@ -148,9 +148,10 @@ export interface ReturndataArgumentAllocation {
 
 //NOTE: the folowing types are not for outside use!  just produced temporarily by the allocator!
 export interface EventAllocationTemporary {
-  selector?: string; //leave out for anonymous
+  selector: string; //included even for anonymous!
+  anonymous: boolean;
   topics: number;
-  allocation: EventAllocation;
+  allocation: EventAllocation | undefined;
 }
 
 export interface CalldataAllocationTemporary {
