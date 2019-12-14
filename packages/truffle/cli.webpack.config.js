@@ -64,13 +64,6 @@ module.exports = {
           path.resolve(__dirname, "../environment")
         ],
         use: "shebang-loader"
-      },
-      {
-        test: /rx\.lite\.aggregates\.js/,
-        include: [
-          path.resolve(__dirname, "../../node_modules/rx-lite-aggregates")
-        ],
-        use: "imports-loader?define=>false"
       }
     ]
   },
