@@ -276,6 +276,57 @@ const AddNetworks = gql`
   }
 `;
 
+const AddNameRecords = gql`
+  input ResourceInput {
+    id: ID!
+    type: String!
+  }
+
+  input PreviousNameRecordInput {
+    id: ID!
+  }
+
+  input NameRecordAddInput {
+    name: String!
+    resource: ResourceInput!
+    previous: PreviousNameRecordInput
+  }
+
+  mutation AddNameRecords($nameRecords: [NameRecordAddInput!]!) {
+    workspace {
+      nameRecordsAdd(input: { nameRecords: $nameRecords }) {
+        nameRecords {
+          id
+          resource {
+            name
+            ... on Network {
+              networkId
+            }
+            ... on Contract {
+              abi {
+                json
+              }
+            }
+          }
+          previous {
+            name
+          }
+        }
+      }
+    }
+  }
+`;
+
+const getPreviousNameRecord = gql`
+  query GetPreviousNameRecord($name: String!, $type: String!) {
+    workspace {
+      previousNameRecord(name: $name, type: $type) {
+        id
+      }
+    }
+  }
+`;
+
 type WorkflowCompileResult = {
   outputs: { [compilerName: string]: string[] };
   contracts: { [contractName: string]: ContractObject };
@@ -298,6 +349,17 @@ type CompilationConfigObject = {
   artifacts_directory?: string;
   working_directory?: string;
   all?: boolean;
+};
+
+type ResourceObject = {
+  id: string;
+  type: string;
+};
+
+type NameRecordObject = {
+  name: string;
+  resource: ResourceObject;
+  previous?: IdObject;
 };
 
 export class ArtifactsLoader {
@@ -340,6 +402,10 @@ export class ArtifactsLoader {
     );
   }
 
+  async loadNameRecords(nameRecords: Array<NameRecordObject>) {
+    await this.db.query(AddNameRecords, { nameRecords: nameRecords });
+  }
+
   async loadCompilationContracts(
     contracts: Array<ContractObject>,
     compilationId: string,
@@ -369,6 +435,28 @@ export class ArtifactsLoader {
     const contractIds = contractsLoaded.data.workspace.contractsAdd.contracts.map(
       ({ id }) => ({ id })
     );
+
+    const nameRecords = await Promise.all(
+      contractObjects.map(async (contract, index) => {
+        let previous = await this.db.query(getPreviousNameRecord, {
+          name: contract.name,
+          type: "Contract"
+        });
+
+        let nameRecordObject = {
+          name: contract.name,
+          resource: {
+            id: contractIds[index].id,
+            type: "Contract"
+          },
+          previous: previous.data.workspace.previousNameRecord
+        };
+
+        return nameRecordObject as NameRecordObject;
+      })
+    );
+
+    await this.loadNameRecords(nameRecords);
 
     return {
       compilerName: contracts[0].compiler.name,
@@ -515,12 +603,36 @@ export class ArtifactsLoader {
                   id: id,
                   address: filteredNetwork[0][1]["address"],
                   transactionHash: filteredNetwork[0][1]["transactionHash"],
-                  bytecode: bytecode
+                  bytecode: bytecode,
+                  name: network
                 });
               }
             }
           }
         }
+
+        const nameRecords = await Promise.all(
+          configNetworks.map(async (network, index) => {
+            let previous = await this.db.query(getPreviousNameRecord, {
+              name: network.name,
+              type: "Network"
+            });
+
+            let nameRecordObject = {
+              name: network.name,
+              resource: {
+                id: configNetworks[index].id,
+                type: "Network"
+              },
+              previous: previous.data.workspace.previousNameRecord
+            };
+
+            return nameRecordObject as NameRecordObject;
+          })
+        );
+
+        await this.loadNameRecords(nameRecords);
+
         return configNetworks;
       })
     );

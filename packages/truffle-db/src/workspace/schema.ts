@@ -54,6 +54,7 @@ export const schema = mergeSchemas({
       contractInstance(id: ID!): ContractInstance
       network(id: ID!): Network
       nameRecord(id:ID!): NameRecord
+      previousNameRecord(name: String!, type: String!): NameRecord
     }
 
     input SourceInput {
@@ -317,7 +318,18 @@ export const schema = mergeSchemas({
         resolve: (_, { id }, { workspace }) => workspace.nameRecord({ id })
       },
       nameRecords: {
-        resolve: (_, { id }, { workspace }) => workspace.nameRecords()
+        resolve: (_, {}, { workspace }) => workspace.nameRecords()
+      },
+      previousNameRecord: {
+        resolve: async (_, { name, type }, { workspace }) => {
+          let previous = await workspace.previousNameRecord({
+            name: name,
+            type: type
+          });
+          if (previous) {
+            return { id: previous };
+          }
+        }
       }
     },
     Mutation: {
@@ -371,6 +383,19 @@ export const schema = mergeSchemas({
             let contract = await workspace.contract({ id: obj.resource.id });
             return contract;
           }
+        }
+      },
+      previous: {
+        resolve: async (obj, _, { workspace }) => {
+          let previousRecord = null;
+
+          if (obj.previous !== null && obj.resource.type == "Network") {
+            previousRecord = await workspace.network({ id: obj.previous.id });
+          } else if (obj.previous !== null && obj.resource.type == "Contract") {
+            previousRecord = await workspace.contract({ id: obj.previous.id });
+          }
+
+          return previousRecord;
         }
       }
     },
