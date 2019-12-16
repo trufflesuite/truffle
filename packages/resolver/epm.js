@@ -14,23 +14,20 @@ EPM.prototype.require = function(import_path, _search_path) {
   // Look to see if we've compiled our own version first.
   var contract_name = path.basename(import_path, ".sol");
 
-  // We haven't compiled our own version. Assemble from data in the lockfile.
+  // We haven't compiled our own version. Assemble from data in the manifest.
   var separator = import_path.indexOf("/");
   var package_name = import_path.substring(0, separator);
 
-  var install_directory = path.join(
-    this.working_directory,
-    "installed_contracts"
-  );
-  var lockfile = path.join(install_directory, package_name, "lock.json");
+  var install_directory = path.join(this.working_directory, "_ethpm_packages");
+  var manifest = path.join(install_directory, package_name, "manifest.json");
 
   try {
-    lockfile = fs.readFileSync(lockfile, "utf8");
+    manifest = fs.readFileSync(manifest, "utf8");
   } catch (e) {
     return null;
   }
 
-  lockfile = JSON.parse(lockfile);
+  manifest = JSON.parse(manifest);
 
   var json = {
     contract_name: contract_name,
@@ -40,18 +37,18 @@ EPM.prototype.require = function(import_path, _search_path) {
   // TODO: contracts that reference other types
   // TODO: contract types that specify a hash as their key
   // TODO: imported name doesn't match type but matches deployment name
-  var contract_types = lockfile.contract_types || {};
+  var contract_types = manifest.contract_types || {};
   var type = contract_types[contract_name];
 
   // No contract name of the type asked.
   if (!type) return null;
 
   json.abi = type.abi;
-  json.unlinked_binary = type.bytecode;
+  json.unlinked_binary = type.deployment_bytecode.bytecode;
 
   // Go through deployments and save all of them
-  Object.keys(lockfile.deployments || {}).forEach(function(blockchain) {
-    var deployments = lockfile.deployments[blockchain];
+  Object.keys(manifest.deployments || {}).forEach(function(blockchain) {
+    var deployments = manifest.deployments[blockchain];
 
     Object.keys(deployments).forEach(function(name) {
       var deployment = deployments[name];
@@ -64,7 +61,6 @@ EPM.prototype.require = function(import_path, _search_path) {
       }
     });
   });
-
   return json;
 };
 
@@ -78,7 +74,7 @@ EPM.prototype.require = function(import_path, _search_path) {
   var body;
 
   while (true) {
-    var file_path = path.join(installDir, "installed_contracts", import_path);
+    var file_path = path.join(installDir, "_ethpm_packages", import_path);
 
     try {
       body = fs.readFileSync(file_path, { encoding: "utf8" });
@@ -87,9 +83,9 @@ EPM.prototype.require = function(import_path, _search_path) {
 
     file_path = path.join(
       installDir,
-      "installed_contracts",
+      "_ethpm_packages",
       package_name,
-      "contracts",
+      "_src",
       internal_path
     );
 

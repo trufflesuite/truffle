@@ -1,351 +1,214 @@
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
-const Networks = require("./networks");
-const EthPM = require("ethpm");
-const EthPMRegistry = require("ethpm-registry");
-const Web3 = require("web3");
-const { createInterfaceAdapter } = require("@truffle/interface-adapter");
-const async = require("async");
+const { EthPM } = require("ethpm");
+const { Erc1319URI } = require("ethpm/utils/uri");
+const { parseTruffleArtifacts } = require("ethpm/utils/truffle");
 const path = require("path");
 const fs = require("fs");
-const OS = require("os");
 
 const Package = {
-  install: async function(options, callback) {
-    expect.options(options, ["working_directory", "ethpm"]);
+  install: async options => {
+    expect.options(options.ethpm, ["ipfs_host", "ipfs_port", "ipfs_protocol"]);
+    expect.options(options, ["working_directory", "ethpm_uri", "logger"]);
 
-    expect.options(options.ethpm, ["registry", "ipfs_host"]);
-
-    expect.one(options.ethpm, ["provider", "install_provider_uri"]);
-
-    // ipfs_port and ipfs_protocol are optinal.
-
+    // Create a web3 instance connected to a blockchain
+    if (!options.provider && !options.ethpm.install_provider_uri) {
+      throw new TruffleError("No provider or install_provider_uri found.");
+    }
     const provider =
-      options.ethpm.provider ||
-      new Web3.providers.HttpProvider(options.ethpm.install_provider_uri, {
-        keepAlive: false
-      });
-    let host = options.ethpm.ipfs_host;
+      options.provider ||
+      new Web3.providers.HttpProvider(options.ethpm.install_provider_uri);
 
-    if (host instanceof EthPM.hosts.IPFS === false) {
-      host = new EthPM.hosts.IPFSWithLocalReader(
-        options.ethpm.ipfs_host,
-        options.ethpm.ipfs_port,
-        options.ethpm.ipfs_protocol
+    // Parse ethpm uri
+    const ethpmURI = new Erc1319URI(options.ethpm_uri);
+    if (!ethpmURI.packageName && !ethpmURI.version) {
+      throw new TruffleError(
+        "Invalid ethPM uri. URIs must specify a package name and version to install."
+      );
+    }
+    // Convert ens names
+
+    // Create an ethpm instance
+    const ethpm = await EthPM.configure({
+      registries: "ethpm/registries/web3",
+      installer: "ethpm/installer/truffle",
+      storage: "ethpm/storage/ipfs"
+    }).connect({
+      provider: provider,
+      workingDirectory: options.working_directory,
+      registryAddress: ethpmURI.address,
+      ipfs: {
+        host: options.ethpm.ipfs_host,
+        port: options.ethpm.ipfs_port,
+        protocol: options.ethpm.ipfs_protocol
+      }
+    });
+
+    // Validate target package is available on connected registry
+    const availablePackages = await ethpm.registries.packages();
+    if (!availablePackages.includes(ethpmURI.packageName)) {
+      throw new TruffleError(
+        "Package: " +
+          ethpmURI.packageName +
+          ", not found on registry at address: " +
+          ethpmURI.address +
+          ". Available packages include: " +
+          availablePackages
       );
     }
 
-    // When installing, we use infura to make a bunch of eth_call's.
-    // We don't make any transactions. To satisfy APIs we'll put a from address,
-    // but it doesn't really matter in this case.
-    const fakeAddress = "0x1234567890123456789012345678901234567890";
+    // Fetch target package manifest URI
+    const manifestURI = await ethpm.registries
+      .package(ethpmURI.packageName)
+      .release(ethpmURI.version);
 
-    let registry = options.ethpm.registry;
-
-    if (typeof registry === "string") {
-      registry = await EthPMRegistry.use(
-        options.ethpm.registry,
-        fakeAddress,
-        provider
-      );
-    }
-
-    const pkg = new EthPM(options.working_directory, host, registry);
-
-    if (options.packages) {
-      const promises = options.packages.map(package_name => {
-        const pieces = package_name.split("@");
-        package_name = pieces[0];
-
-        let version = "*";
-
-        if (pieces.length > 1) version = pieces[1];
-
-        return pkg.installDependency(package_name, version);
-      });
-
-      Promise.all(promises)
-        .then(() => {
-          if (options.packages.length > 0) {
-            console.log("");
-            console.log("Successfully installed the following package(s)...");
-            console.log("==================================================");
-            options.packages.forEach(singlePackage => {
-              console.log(`> ${singlePackage}`);
-            });
-            console.log("");
-          }
-          callback();
-        })
-        .catch(callback);
-    } else {
-      fs.access(
-        path.join(options.working_directory, "ethpm.json"),
-        fs.constants.R_OK,
-        error => {
-          let manifest;
-
-          // If the ethpm.json file doesn't exist, use the config as the manifest.
-          if (error) manifest = options;
-
-          pkg
-            .install(manifest)
-            .then(() => {
-              callback();
-            })
-            .catch(callback);
-        }
-      );
-    }
+    // Install target manifest URI to working directory
+    await ethpm.installer.install(manifestURI, ethpmURI.address);
+    options.logger.log(
+      `Installed ${ethpmURI.packageName}@${ethpmURI.version} to ${
+        options.working_directory
+      }`
+    );
   },
 
-  publish: function(options, callback) {
-    var self = this;
-
+  release: async options => {
+    expect.options(options.ethpm, [
+      "ipfs_host",
+      "ipfs_port",
+      "ipfs_protocol",
+      "registry"
+    ]);
     expect.options(options, [
-      "ethpm",
       "working_directory",
       "contracts_directory",
-      "networks"
+      "contracts_build_directory",
+      "networks",
+      "network",
+      "logger"
     ]);
 
-    expect.options(options.ethpm, ["registry", "ipfs_host"]);
+    if (options.network !== "mainnet") {
+      // validate is setup with mnemonic?
+      // validate mnemonic has releasing rights for options.registry?
+      throw new TruffleError(
+        "Please add a mainnet provider with your 12 word mnemonic to truffle.js"
+      );
+    }
 
-    // ipfs_port and ipfs_protocol are optinal.
+    // Create an ethpm instance
+    let ethpm = await EthPM.configure({
+      manifests: "ethpm/manifests/v2",
+      storage: "ethpm/storage/ipfs",
+      registries: "ethpm/registries/web3"
+    }).connect({
+      provider: options.networks.mainnet.provider,
+      registryAddress: options.ethpm.registry,
+      ipfs: {
+        host: options.ethpm.ipfs_host,
+        port: options.ethpm.ipfs_port,
+        protocol: options.ethpm.ipfs_protocol
+      }
+    });
 
-    // When publishing, you need a ropsten network configured.
-    var ropsten = options.networks.ropsten;
+    let artifacts = releasable_artifacts(options);
 
-    if (!ropsten) {
-      return callback(
-        new TruffleError(
-          "You need to have a `ropsten` network configured in order to publish to the Ethereum Package Registry. See the following link for an example configuration:" +
-            OS.EOL +
-            OS.EOL +
-            "    http://truffleframework.com/tutorials/using-infura-custom-provider" +
-            OS.EOL
+    // Build sourcesConfig
+    const sourcePaths = fs.readdirSync(options.contracts_directory);
+    let sourcesConfig = {};
+    for (const file of sourcePaths) {
+      const targetPath = path.join(options.contracts_directory, file);
+      const ipfsHash = await ethpm.storage.write(
+        fs.readFileSync(targetPath).toString()
+      );
+      sourcesConfig[file] = ipfsHash.href;
+    }
+
+    // Fetch ethpm.json config
+    let ethpmConfig;
+    try {
+      ethpmConfig = JSON.parse(
+        fs.readFileSync(
+          path.join(options.working_directory, "ethpm.json"),
+          "utf8"
         )
       );
-    }
-
-    options.network = "ropsten";
-
-    var provider = options.provider;
-    const interfaceAdapter = createInterfaceAdapter({
-      provider: options.provider,
-      networkType: "ethereum"
-    });
-    var host = options.ethpm.ipfs_host;
-
-    if (host instanceof EthPM.hosts.IPFS === false) {
-      host = new EthPM.hosts.IPFS(
-        options.ethpm.ipfs_host,
-        options.ethpm.ipfs_port,
-        options.ethpm.ipfs_protocol
-      );
-    }
-
-    options.logger.log("Finding publishable artifacts...");
-
-    self.publishable_artifacts(options, function(err, artifacts) {
-      if (err) return callback(err);
-
-      interfaceAdapter
-        .getAccounts()
-        .then(async accs => {
-          var registry = await EthPMRegistry.use(
-            options.ethpm.registry,
-            accs[0],
-            provider
-          );
-          var pkg = new EthPM(options.working_directory, host, registry);
-
-          fs.access(
-            path.join(options.working_directory, "ethpm.json"),
-            fs.constants.R_OK,
-            function(err) {
-              var manifest;
-
-              // If the ethpm.json file doesn't exist, use the config as the manifest.
-              if (err) {
-                manifest = options;
-              }
-
-              options.logger.log(
-                "Uploading sources and publishing to registry..."
-              );
-
-              // TODO: Gather contract_types and deployments
-              pkg
-                .publish(
-                  artifacts.contract_types,
-                  artifacts.deployments,
-                  manifest
-                )
-                .then(function(lockfile) {
-                  // If we get here, publishing was a success.
-                  options.logger.log(
-                    "+ " + lockfile.package_name + "@" + lockfile.version
-                  );
-                  callback();
-                })
-                .catch(callback);
-            }
-          );
-        })
-        .catch(callback);
-    });
-  },
-
-  digest: function(options, callback) {
-    // async.parallel({
-    //   contracts: provision.bind(provision, options, false),
-    //   files: dir.files.bind(dir, options.contracts_directory)
-    // }, function(err, results) {
-    //   if (err) return callback(err);
-    //
-    //   results.contracts = results.contracts.map(function(contract) {
-    //     return contract.contract_name;
-    //   });
-    //
-    //   callback(null, results);
-    // });
-    callback(new Error("Not yet implemented"));
-  },
-
-  // Return a list of publishable artifacts
-  publishable_artifacts: function(options, callback) {
-    // Filter out "test" and "development" networks.
-    var deployed_networks = Object.keys(options.networks).filter(function(
-      network_name
-    ) {
-      return network_name !== "test" && network_name !== "development";
-    });
-
-    // Now get the URIs of each network that's been deployed to.
-    Networks.asURIs(options, deployed_networks, function(err, result) {
-      if (err) return callback(err);
-
-      var uris = result.uris;
-
-      if (result.failed.length > 0) {
-        return callback(
-          new Error(
-            "Could not connect to the following networks: " +
-              result.failed.join(", ") +
-              ". These networks have deployed artifacts that can't be published as a package without an active and accessible connection. Please ensure clients for each network are up and running prior to publishing, or use the -n option to specify specific networks you'd like published."
-          )
+      if (
+        ethpmConfig.package_name === undefined ||
+        ethpmConfig.version === undefined
+      ) {
+        throw new Error(
+          "Invalid ethpm.json: Must contain a 'package_name' and 'version'."
         );
       }
+    } catch (e) {
+      throw new Error("Invalid ethpm.json configuration detected.");
+    }
+    const ethpmFields = {
+      sources: sourcesConfig,
+      contract_types: artifacts.contract_types,
+      deployments: artifacts.deployments,
+      build_dependencies: {}
+    };
 
-      var files = fs.readdirSync(options.contracts_build_directory);
-      files = files.filter(file => file.includes(".json"));
+    const targetConfig = Object.assign(ethpmFields, ethpmConfig);
+    const pkg = await ethpm.manifests.read(JSON.stringify(targetConfig));
+    const manifest = await ethpm.manifests.write(pkg);
+    const manifestURI = await ethpm.storage.write(manifest);
 
-      if (!files.length) {
-        var msg =
-          "Could not locate any publishable artifacts in " +
-          options.contracts_build_directory +
-          ". " +
-          "Run `truffle compile` before publishing.";
-
-        return callback(new Error(msg));
-      }
-
-      var promises = files.map(function(file) {
-        return new Promise(function(accept, reject) {
-          fs.readFile(
-            path.join(options.contracts_build_directory, file),
-            "utf8",
-            function(err, body) {
-              if (err) return reject(err);
-
-              try {
-                body = JSON.parse(body);
-              } catch (e) {
-                return reject(e);
-              }
-
-              accept(body);
-            }
-          );
-        });
+    await ethpm.registries.registry.methods
+      .release(ethpmConfig.package_name, ethpmConfig.version, manifestURI.href)
+      .send({
+        from: options.networks.mainnet.from,
+        gas: 4712388,
+        gasPrice: 100000000000
       });
-
-      var contract_types = {};
-      var deployments = {};
-
-      Promise.all(promises)
-        .then(function(contracts) {
-          // contract_types first.
-          contracts.forEach(function(data) {
-            contract_types[data.contractName] = {
-              contract_name: data.contractName,
-              bytecode: data.bytecode,
-              abi: data.abi
-            };
-          });
-
-          //var network_cache = {};
-          var matching_promises = [];
-
-          contracts.forEach(function(data) {
-            Object.keys(data.networks).forEach(function(network_id) {
-              matching_promises.push(
-                new Promise(function(accept, reject) {
-                  // Go through each deployed network and see if this network matches.
-                  // Bail early if we foun done.
-                  async.each(
-                    deployed_networks,
-                    function(deployed_network, finished) {
-                      Networks.matchesNetwork(
-                        network_id,
-                        options.networks[deployed_network],
-                        function(err, matches) {
-                          if (err) return finished(err);
-                          if (matches) {
-                            var uri = uris[deployed_network];
-
-                            if (!deployments[uri]) {
-                              deployments[uri] = {};
-                            }
-
-                            deployments[uri][data.contractName] = {
-                              contract_type: data.contractName, // TODO: Handle conflict resolution
-                              address: data.networks[network_id].address
-                            };
-
-                            return finished("bail early");
-                          }
-                          finished();
-                        }
-                      );
-                    },
-                    function(err) {
-                      if (err && err !== "bail early") {
-                        return reject(err);
-                      }
-
-                      accept();
-                    }
-                  );
-                })
-              );
-            });
-          });
-
-          return Promise.all(matching_promises);
-        })
-        .then(function() {
-          var to_return = {
-            contract_types: contract_types,
-            deployments: deployments
-          };
-
-          callback(null, to_return);
-        })
-        .catch(callback);
-    });
+    options.logger.log(
+      `Released ${ethpmConfig.package_name}@${
+        ethpmConfig.version
+      } to registry @ ${options.ethpm.registry}`
+    );
+    return JSON.parse(manifest);
   }
 };
+
+// Returns a list of releasable artifacts
+// aka contract_types and deployments found in all artifacts
+function releasable_artifacts(options) {
+  var files = fs.readdirSync(options.contracts_build_directory);
+  files = files.filter(file => file.includes(".json"));
+
+  if (!files.length) {
+    var msg =
+      "Could not locate any releasable artifacts in " +
+      options.contracts_build_directory +
+      ". " +
+      "Run `truffle compile` before releasing.";
+
+    return new Error(msg);
+  }
+
+  const fileData = [];
+  const blockchainUri = options.networks.mainnet.network_id;
+  for (let file of files) {
+    const fileContents = JSON.parse(
+      fs.readFileSync(
+        path.join(options.contracts_build_directory, file),
+        "utf8"
+      )
+    );
+    // hacky af - blockchain uri wasn't getting picked up as network_id for 2 of 3 migrations
+    // some artifacts are coming through w/ network ids that are ints
+    // the blockchain uri coming through is what is set as the network_id
+    // not a freshly created one with latest block via BlockchainUtils
+    const foundNetworkId = Object.keys(fileContents.networks)[0];
+    if (foundNetworkId !== blockchainUri) {
+      delete Object.assign(fileContents.networks, {
+        [blockchainUri]: fileContents.networks[foundNetworkId]
+      })[foundNetworkId];
+    }
+    fileData.push(fileContents);
+  }
+  return parseTruffleArtifacts(fileData);
+}
 
 module.exports = Package;
