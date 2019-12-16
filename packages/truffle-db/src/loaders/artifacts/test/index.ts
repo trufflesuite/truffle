@@ -3,6 +3,7 @@ import path from "path";
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
 import { ArtifactsLoader } from "truffle-db/loaders/artifacts";
+import { AddContracts } from "truffle-db/loaders/queries";
 import { generateId } from "truffle-db/helpers";
 import * as Contracts from "@truffle/workflow-compile/new";
 import Migrate from "@truffle/migrate";
@@ -314,6 +315,72 @@ const GetWorkspaceContractInstance: boolean = gql`
   }
 `;
 
+const AddNameRecords = gql`
+  input ResourceInput {
+    id: ID!
+  }
+
+  input PreviousNameRecordInput {
+    id: ID!
+  }
+
+  input NameRecordInput {
+    name: String!
+    type: String!
+    resource: ResourceInput!
+    previous: PreviousNameRecordInput
+  }
+
+  mutation AddNameRecords(
+    $name: String!
+    $type: String!
+    $resource: ResourceInput!
+    $previous: PreviousNameRecordInput
+  ) {
+    workspace {
+      nameRecordsAdd(
+        input: {
+          nameRecords: [
+            {
+              name: $name
+              type: $type
+              resource: $resource
+              previous: $previous
+            }
+          ]
+        }
+      ) {
+        nameRecords {
+          id
+          name
+          type
+          ... on Network {
+            networkId
+          }
+          ... on Contract {
+            abi {
+              json
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const GetWorkspaceNameRecord = gql`
+  query GetNameRecord($id: ID!) {
+    workspace {
+      nameRecord(id: $id) {
+        id
+        resource {
+          name
+        }
+      }
+    }
+  }
+`;
+
 describe("Compilation", () => {
   let sourceIds = [];
   let bytecodeIds = [];
@@ -325,6 +392,7 @@ describe("Compilation", () => {
   let contractInstances = [];
   let expectedSolcCompilationId;
   let expectedVyperCompilationId;
+  let contractNameRecordId;
 
   beforeAll(async () => {
     await Environment.detect(migrationConfig);
@@ -339,7 +407,6 @@ describe("Compilation", () => {
           sourcePath: contract["sourcePath"]
         });
         sourceIds.push({ id: sourceId });
-
         const shimBytecodeObject = shimBytecode(contract["bytecode"]);
         const shimCallBytecodeObject = shimBytecode(
           contract["deployedBytecode"]
@@ -560,6 +627,14 @@ describe("Compilation", () => {
         }
       });
 
+      contractNameRecordId = generateId({
+        name: artifacts[index].contractName,
+        type: "Contract",
+        resource: {
+          id: expectedId
+        }
+      });
+
       contractIds.push({ id: expectedId });
 
       let {
@@ -593,6 +668,17 @@ describe("Compilation", () => {
       expect(contents).toEqual(artifacts[index].source);
       expect(version).toEqual(artifacts[index].compiler.version);
       expect(id).toEqual(contractIds[index].id);
+
+      const {
+        data: {
+          workspace: {
+            nameRecord: {
+              resource: { name: nameRecordResourceName }
+            }
+          }
+        }
+      } = await db.query(GetWorkspaceNameRecord, { id: contractNameRecordId });
+      expect(nameRecordResourceName).toEqual(artifacts[index].contractName);
     }
   });
 

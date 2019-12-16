@@ -14,6 +14,7 @@ import {
   AddCompilation,
   AddContracts,
   AddContractInstances,
+  AddNameRecords,
   AddNetworks
 } from "../queries";
 
@@ -78,6 +79,13 @@ type CompilationConfigObject = {
   all?: boolean;
 };
 
+type NameRecordObject = {
+  name: string;
+  type: string;
+  resource: IdObject;
+  previous?: IdObject;
+};
+
 export class ArtifactsLoader {
   private db: TruffleDB;
   private config: object;
@@ -118,6 +126,10 @@ export class ArtifactsLoader {
         }
       )
     );
+  }
+
+  async loadNameRecords(nameRecords: Array<NameRecordObject>) {
+    await this.db.query(AddNameRecords, { nameRecords: nameRecords });
   }
 
   async loadCompilationContracts(
@@ -166,6 +178,22 @@ export class ArtifactsLoader {
     const contractIds = contractsLoaded.data.workspace.contractsAdd.contracts.map(
       ({ id }) => ({ id })
     );
+
+    const nameRecords = await Promise.all(
+      contractObjects.map(async (contract, index) => {
+        let nameRecordObject = {
+          name: contract.name,
+          type: "Contract",
+          resource: {
+            id: contractIds[index].id
+          }
+        };
+
+        return nameRecordObject as NameRecordObject;
+      })
+    );
+
+    await this.loadNameRecords(nameRecords);
 
     return {
       compilerName: contracts[0].compiler.name,
@@ -312,12 +340,30 @@ export class ArtifactsLoader {
                   address: filteredNetwork[0][1]["address"],
                   transactionHash: filteredNetwork[0][1]["transactionHash"],
                   bytecode: bytecode,
-                  links: filteredNetwork[0][1]["links"]
+                  links: filteredNetwork[0][1]["links"],
+                  name: network
                 });
               }
             }
           }
         }
+
+        const nameRecords = await Promise.all(
+          configNetworks.map(async (network, index) => {
+            let nameRecordObject = {
+              name: network.name,
+              type: "Network",
+              resource: {
+                id: configNetworks[index].id
+              }
+            };
+
+            return nameRecordObject as NameRecordObject;
+          })
+        );
+
+        await this.loadNameRecords(nameRecords);
+
         return configNetworks;
       })
     );
