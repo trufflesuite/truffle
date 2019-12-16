@@ -32,6 +32,9 @@ export const getInitialConfig = ({
     build: null,
     resolver: null,
     artifactor: null,
+    db: {
+      enabled: false
+    },
     ethpm: {
       ipfs_host: "ipfs.infura.io",
       ipfs_protocol: "https",
