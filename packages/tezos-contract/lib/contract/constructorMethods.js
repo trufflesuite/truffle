@@ -1,12 +1,22 @@
-const {
-  Web3Shim,
-  createInterfaceAdapter
-} = require("@truffle/interface-adapter");
+const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
 
 module.exports = Contract => ({
+  configureNetwork({ networkType, provider } = {}) {
+    // otherwise use existing value as default (at most one of these)
+    networkType = networkType || this.networkType;
+    provider = provider || this.currentProvider;
+
+    // recreate interfaceAdapter
+    this.interfaceAdapter = createInterfaceAdapter({ networkType, provider });
+
+    // save properties
+    this.currentProvider = provider;
+    this.networkType = networkType;
+  },
+
   setProvider(provider) {
     if (!provider) {
       throw new Error(
@@ -14,9 +24,7 @@ module.exports = Contract => ({
       );
     }
 
-    this.web3.setProvider(provider);
-    this.interfaceAdapter.setProvider(provider);
-    this.currentProvider = provider;
+    this.configureNetwork({ provider });
   },
 
   new() {
@@ -29,8 +37,6 @@ module.exports = Contract => ({
         } error: contract code not set. Can't deploy new instance.\n`
       );
     }
-
-    //var constructorABI = this.abi.filter(i => i.type === "constructor")[0];
 
     return execute.deploy.call(this)(...arguments);
   },
@@ -48,7 +54,9 @@ module.exports = Contract => ({
 
     try {
       await this.detectNetwork();
-      const contract = await this.web3.tez.contract.at(this.address);
+      const contract = await this.interfaceAdapter.tezos.contract.at(
+        this.address
+      );
       contract.transactionHash = this.transactionHash;
       return new this(contract);
     } catch (error) {
@@ -62,7 +70,9 @@ module.exports = Contract => ({
       await this.detectNetwork();
       utils.checkNetworkArtifactMatch(this);
       utils.checkDeployment(this);
-      const contract = await this.web3.tez.contract.at(this.address);
+      const contract = await this.interfaceAdapter.tezos.contract.at(
+        this.address
+      );
       contract.transactionHash = this.transactionHash;
       return new this(contract);
     } catch (error) {
@@ -131,17 +141,12 @@ module.exports = Contract => ({
     this.network_id = `${network_id}`;
   },
 
-  setNetworkType(networkType = "ethereum", options) {
-    const config = { options };
-    if (this.web3) {
-      this.web3.setNetworkType(networkType, config);
-    }
-
-    this.networkType = networkType;
+  setNetworkType(networkType = "ethereum") {
+    this.configureNetwork({ networkType });
   },
 
   setWallet(wallet) {
-    this.web3.eth.accounts.wallet = wallet;
+    this.configureNetwork();
   },
 
   // Overrides the deployed address to null.
@@ -221,16 +226,17 @@ module.exports = Contract => ({
 
     bootstrap(temp);
 
-    temp.web3 = new Web3Shim({
-      networkType: temp.networkType
-    });
-    temp.interfaceAdapter = createInterfaceAdapter({
-      networkType: temp.networkType
-    });
     temp.class_defaults = temp.prototype.defaults || {};
 
     if (network_id) {
       temp.setNetwork(network_id);
+    }
+
+    if (this.currentProvider) {
+      temp.configureNetwork({
+        provider: this.currentProvider,
+        networkType: this.networkType
+      });
     }
 
     // Copy over custom key/values to the contract class

@@ -215,7 +215,8 @@ var execute = {
    */
   deploy: function() {
     var constructor = this;
-    var web3 = this.web3;
+    const web3 = this.web3;
+    const interfaceAdapter = this.interfaceAdapter;
 
     return function() {
       var deferred;
@@ -258,7 +259,7 @@ var execute = {
             gasLimit: params.gasLimit || params.gas
           };
 
-          deferred = web3.tez.contract.originate(originateParams);
+          deferred = interfaceAdapter.tezos.contract.originate(originateParams);
 
           try {
             const receipt = await deferred;
@@ -286,9 +287,10 @@ var execute = {
             }
 
             context.promiEvent.resolve(new constructor(contractInstance));
-          } catch (web3Error) {
-            context.promiEvent.eventEmitter.emit("error", web3Error);
-            throw Error(`Error: \n${JSON.stringify(web3Error, null, " ")}`);
+          } catch (error) {
+            throw error;
+            context.promiEvent.eventEmitter.emit("error", error);
+            throw Error(`Error: \n${JSON.stringify(error, null, " ")}`);
           }
         })
         .catch(promiEvent.reject);

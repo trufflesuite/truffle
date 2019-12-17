@@ -9,7 +9,7 @@ export type InterfaceAdapterOptions =
   | TezosAdapterOptions;
 
 const getNetworkTypeClass = (networkType = "ethereum") => {
-  const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum"];
+  const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum", "web3js"];
 
   if (supportedEvmNetworks.includes(networkType)) return "evm-like";
   return networkType;
@@ -18,7 +18,7 @@ const getNetworkTypeClass = (networkType = "ethereum") => {
 export const createInterfaceAdapter = (
   options: InterfaceAdapterOptions
 ): InterfaceAdapter => {
-  const { config, provider, networkType } = options;
+  const { provider, networkType } = options;
 
   switch (getNetworkTypeClass(networkType)) {
     case "evm-like": {
@@ -29,9 +29,7 @@ export const createInterfaceAdapter = (
     }
     case "tezos": {
       return new TezosAdapter({
-        config,
-        provider,
-        networkType
+        provider
       });
     }
     default:

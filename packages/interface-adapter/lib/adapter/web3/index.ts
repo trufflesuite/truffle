@@ -3,9 +3,9 @@ import {
   InterfaceAdapter,
   EvmBlockType,
   Provider,
-  Transaction
+  Transaction,
+  Config
 } from "../types";
-import Config from "@truffle/config";
 
 export interface Web3InterfaceAdapterOptions {
   config?: Config;
