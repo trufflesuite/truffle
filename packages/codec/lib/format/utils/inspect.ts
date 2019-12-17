@@ -208,7 +208,9 @@ export class ResultInspector {
                 }
                 let secondLine = `${contractString}]`;
                 let breakingSpace =
-                  firstLine.length >= options.breakLength ? "\n" : " ";
+                  firstLine.length + secondLine.length + 1 > options.breakLength
+                    ? "\n"
+                    : " ";
                 //now, put it together
                 return options.stylize(
                   firstLine + breakingSpace + secondLine,
@@ -239,7 +241,10 @@ export class ResultInspector {
                       coercedResult.value.constructorProgramCounter
                     })]`;
                     let breakingSpace =
-                      firstLine.length >= options.breakLength ? "\n" : " ";
+                      firstLine.length + secondLine.length + 1 >
+                      options.breakLength
+                        ? "\n"
+                        : " ";
                     //now, put it together
                     return options.stylize(
                       firstLine + breakingSpace + secondLine,
@@ -319,10 +324,16 @@ export class ResultInspector {
             return `Malformed internal function w/constructor PC only (value: ${
               errorResult.error.constructorProgramCounter
             })`;
-          case "IndexedReferenceTypeError":
-            return `Cannot decode indexed parameter of reference type ${
+          case "IndexedReferenceTypeError": //for this one we'll bother with some line-wrapping
+            let firstLine = `Cannot decode indexed parameter of reference type ${
               errorResult.error.type.typeClass
-            } (raw value ${errorResult.error.raw})`;
+            }`;
+            let secondLine = `(raw value ${errorResult.error.raw})`;
+            let breakingSpace =
+              firstLine.length + secondLine.length + 1 > options.breakLength
+                ? "\n"
+                : " ";
+            return firstLine + breakingSpace + secondLine;
           case "OverlongArraysAndStringsNotImplementedError":
             return `Array or string is too long (length ${errorResult.error.lengthAsBN.toString()}); decoding is not supported`;
           case "OverlargePointersNotImplementedError":
