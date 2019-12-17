@@ -142,7 +142,7 @@ TestRunner.prototype.endTest = async function(mocha) {
             depth: null,
             colors: true,
             maxArrayLength: null,
-            breakLength: 80
+            breakLength: 80 - indentation //should this include prefix lengths as well?
           }
         );
         let typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
