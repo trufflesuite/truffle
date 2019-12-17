@@ -16,7 +16,6 @@ const Environment = {
     helpers.validateNetworkConfig(config);
 
     const interfaceAdapter = createInterfaceAdapter({
-      config,
       provider: config.provider,
       networkType: config.networks[config.network].type
     });
@@ -80,7 +79,7 @@ const helpers = {
   setFromOnConfig: async (config, interfaceAdapter) => {
     if (config.from) return;
 
-    const accounts = await interfaceAdapter.getAccounts();
+    const accounts = await interfaceAdapter.getAccounts(config);
     config.networks[config.network].from = accounts[0];
   },
 

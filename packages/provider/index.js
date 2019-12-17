@@ -35,7 +35,7 @@ module.exports = {
 
   testConnection: function(options) {
     let networkCheckTimeout, networkType;
-    const { networks, network, config } = options;
+    const { networks, network } = options;
     if (networks && networks[network]) {
       networkCheckTimeout =
         networks[network].networkCheckTimeout || DEFAULT_NETWORK_CHECK_TIMEOUT;
@@ -45,7 +45,6 @@ module.exports = {
     }
     const provider = this.getProvider(options);
     const interfaceAdapter = createInterfaceAdapter({
-      config,
       provider,
       networkType
     });

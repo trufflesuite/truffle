@@ -2,10 +2,7 @@ const path = require("path");
 const Deployer = require("@truffle/deployer");
 const Require = require("@truffle/require");
 const Emittery = require("emittery");
-const {
-  Web3Shim,
-  createInterfaceAdapter
-} = require("@truffle/interface-adapter");
+const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 
 const ResolverIntercept = require("./resolverintercept");
 
@@ -26,17 +23,17 @@ class Migration {
   /**
    * Loads & validates migration, then runs it.
    * @param  {Object}   options  config and command-line
-   * @param  {Object}   context  web3 & interfaceAdapter
+   * @param  {Object}   context  interfaceAdapter
    * @param  {Object}   deployer truffle module
    * @param  {Object}   resolver truffle module
    */
   async _load(options, context, deployer, resolver) {
     // Load assets and run `execute`
-    const accounts = await context.interfaceAdapter.getAccounts();
+    const accounts = await context.interfaceAdapter.getAccounts(options);
     const requireOptions = {
       file: this.file,
-      context: context,
-      resolver: resolver,
+      context,
+      resolver,
       args: [deployer]
     };
 
@@ -170,20 +167,21 @@ class Migration {
   prepareForMigrations(options) {
     const logger = options.logger;
     const interfaceAdapter = createInterfaceAdapter({
-      config: options,
       provider: options.provider,
       networkType: options.networks[options.network].type
-    });
-    const web3 = new Web3Shim({
-      config: options,
-      provider: options.provider,
-      networkType: options.networks[options.network].type
+        ? options.networks[options.network].type
+        : "web3js"
     });
 
     const resolver = new ResolverIntercept(options.resolver);
 
     // Initial context.
-    const context = { web3, interfaceAdapter, config: this.config };
+    const context = {
+      web3: interfaceAdapter.web3 ? interfaceAdapter.web3 : undefined,
+      tezos: interfaceAdapter.tezos ? interfaceAdapter.tezos : undefined,
+      interfaceAdapter,
+      config: this.config
+    };
 
     const deployer = new Deployer({
       logger,

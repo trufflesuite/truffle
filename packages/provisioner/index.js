@@ -10,10 +10,12 @@ var provision = function(abstraction, options) {
   }
 
   if (options.network && options.networks) {
-    abstraction.setNetworkType(options.networks[options.network].type, options);
+    abstraction.setNetworkType(options.networks[options.network].type);
   }
 
-  abstraction.ens = options.ens;
+  if (options.ens) {
+    abstraction.ens = options.ens;
+  }
 
   ["from", "gas", "gasPrice"].forEach(function(key) {
     // TODO: handle contract class default logic better
