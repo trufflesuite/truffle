@@ -1,5 +1,5 @@
 const assert = require("assert");
-const GlobalNPM = require("../globalnpm");
+const GlobalNPM = require("../sources/globalnpm");
 const global_npm = new GlobalNPM();
 const detectInstalled = require("detect-installed");
 const get_installed_path = require("get-installed-path");
