@@ -11,6 +11,7 @@ export type EvmTransactionReceipt = EvmTransactionReceipt;
 export type EvmTransaction = EvmTransaction;
 export type Provider = Provider;
 export type EvmBlockType = EvmBlockType;
+export type Config = Config;
 export type NetworkId = number | string;
 export type Block = EvmBlock | any;
 export type BlockType = number | string;

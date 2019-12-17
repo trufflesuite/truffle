@@ -1,7 +1,4 @@
-const {
-  Web3Shim,
-  createInterfaceAdapter
-} = require("@truffle/interface-adapter");
+const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const web3Utils = require("web3-utils");
 var Config = require("@truffle/config");
 var Migrate = require("@truffle/migrate");
@@ -33,10 +30,6 @@ function TestRunner(options = {}) {
   this.initial_snapshot = null;
   this.known_events = {};
   this.interfaceAdapter = createInterfaceAdapter({
-    provider: options.provider,
-    networkType: options.networks[options.network].type
-  });
-  this.web3 = new Web3Shim({
     provider: options.provider,
     networkType: options.networks[options.network].type
   });

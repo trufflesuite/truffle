@@ -1,57 +1,92 @@
-import { Web3Shim } from "../../shim";
-import { InterfaceAdapter } from "../types";
-import { Provider } from "web3/providers";
-import Config from "@truffle/config";
+import { InterfaceAdapter, BlockType, Provider, Config } from "../types";
+import { TezosToolkit, Tezos } from "@taquito/taquito";
 
 export interface TezosAdapterOptions {
-  config?: Config;
   provider?: Provider;
   networkType?: string;
 }
 
 export class TezosAdapter implements InterfaceAdapter {
-  public web3: Web3Shim;
-  constructor({ config, provider, networkType }: TezosAdapterOptions = {}) {
-    this.web3 = new Web3Shim({ config, provider, networkType });
+  public tezos: TezosToolkit;
+  constructor({ provider }: TezosAdapterOptions) {
+    this.tezos = Tezos;
+    if (provider) this.setProvider(provider);
   }
 
-  public getNetworkId() {
-    return this.web3.eth.net.getId();
+  public async getNetworkId() {
+    const { chain_id } = await this.tezos.rpc.getBlockHeader();
+    return chain_id;
   }
 
-  public getBlock(block: any) {
-    return this.web3.eth.getBlock(block);
+  public async getBlock(blockNumber: BlockType) {
+    // translate ETH nomenclature to XTZ
+    if (blockNumber === "latest") blockNumber = "head";
+    const { hard_gas_limit_per_block } = await this.tezos.rpc.getConstants();
+    const block = await this.tezos.rpc.getBlockHeader({
+      block: `${blockNumber}`
+    });
+    // @ts-ignore: Property 'gasLimit' does not exist on type 'BlockHeaderResponse'.
+    block.gasLimit = hard_gas_limit_per_block;
+    return block;
   }
 
-  public getTransaction(tx: string) {
-    return this.web3.eth.getTransaction(tx);
+  public async getTransaction(tx: string) {
+    //  return this.web3.eth.getTransaction(tx);
+    return;
   }
 
-  public getTransactionReceipt(tx: string) {
-    return this.web3.eth.getTransactionReceipt(tx);
+  public async getTransactionReceipt(tx: string) {
+    //  return this.web3.eth.getTransactionReceipt(tx);
+    return;
   }
 
-  public getBalance(address: string) {
-    return this.web3.eth.getBalance(address);
+  public async getBalance(address: string) {
+    const balance = (await this.tezos.tz.getBalance(address)).toString();
+    return balance;
   }
 
-  public getCode(address: string) {
-    return this.web3.eth.getCode(address);
+  public async getCode(address: string) {
+    //   return this.web3.eth.getCode(address);
+    return "0";
   }
 
-  public getAccounts(config: any) {
-    return this.web3.eth.getAccounts(config);
+  public async getAccounts(config: Config) {
+    await this.setWallet(config);
+    const currentAccount = await this.tezos.signer.publicKeyHash();
+    return [currentAccount];
   }
 
-  public estimateGas(transactionConfig: any) {
-    return this.web3.eth.estimateGas(transactionConfig);
+  public async estimateGas(transactionConfig: any) {
+    //    return this.web3.eth.estimateGas(transactionConfig);
+    return 0;
   }
 
-  public getBlockNumber() {
-    return this.web3.eth.getBlockNumber();
+  public async getBlockNumber() {
+    const { level } = await this.tezos.rpc.getBlockHeader();
+    return level;
   }
 
   public setProvider(provider: Provider) {
-    return this.web3.setProvider(provider);
+    // @ts-ignore: Property 'host' does not exist on type 'Provider'.
+    const currentHost = provider.host;
+    // web3 has some neat quirks
+    const parsedHost = currentHost.match(/(^https?:\/\/)(.*?)\:\d.*/)[2];
+    return this.tezos.setProvider({ rpc: parsedHost });
+  }
+
+  public async setWallet(config: Config) {
+    const { networks, network } = config;
+    // here we import user's faucet account:
+    // email, passphrase, mnemonic, & secret are all REQUIRED.
+    // TODO: add logic to check if user is importing only a private secret key
+    // that would unlock the account, or a psk w/ passphrase
+    let mnemonic = networks[network].mnemonic;
+    if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
+    await this.tezos.importKey(
+      networks[network].email,
+      networks[network].passphrase,
+      mnemonic,
+      networks[network].secret
+    );
   }
 }

@@ -1,5 +1,5 @@
 const debug = require("debug")("tezos-contract:contract"); // eslint-disable-line no-unused-vars
-let Web3 = require("web3");
+let { Tezos } = require("@taquito/taquito");
 const execute = require("./execute");
 const {
   bootstrap,
@@ -9,13 +9,13 @@ const {
 
 // For browserified version. If browserify gave us an empty version,
 // look for the one provided by the user.
-if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
-  Web3 = global.Web3;
+if (typeof Tezos === "object" && Object.keys(Tezos).length === 0) {
+  Tezos = global.Tezos;
 }
 
 (function(module) {
-  // Accepts a contract object created with web3.tez.originate,
-  // or an address (web3.tez.contract.at).
+  // Accepts a contract object created with interfaceAdapter.tezos.originate,
+  // or an address (interfaceAdapter.tezos.contract.at).
   function Contract(contract) {
     var instance = this;
     var constructor = instance.constructor;
@@ -110,7 +110,9 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
 
         // NOTE: this will only work if the contract parameter is type Unit!!!
         try {
-          op = await instance.constructor.web3.tez.contract.transfer(packet);
+          op = await instance.constructor.interfaceAdapter.tezos.contract.transfer(
+            packet
+          );
         } catch (error) {
           console.error(
             `\nTo transfer tez, contract parameter must be type unit.`

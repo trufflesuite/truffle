@@ -234,7 +234,9 @@ class TezosReporter {
 
       // `Insufficient funds`
       case "ETH":
-        const balance = await data.contract.web3.eth.getBalance(data.from);
+        const balance = await data.contract.interfaceAdapter.getBalance(
+          data.from
+        );
         data.balance = balance.toString();
         return this.messages.errors("noMoney", data);
 
@@ -380,7 +382,7 @@ class TezosReporter {
       data.timestamp = block.timestamp;
 
       const balance = new web3Utils.BN(
-        await data.contract.web3.tez.getBalance(tx.source)
+        await data.contract.interfaceAdapter.getBalance(tx.source)
       );
       const gasUsed = new web3Utils.BN(
         tx.metadata.operation_result.consumed_gas

@@ -1,10 +1,7 @@
 const ReplManager = require("./repl");
 const Command = require("./command");
 const provision = require("@truffle/provisioner");
-const {
-  Web3Shim,
-  createInterfaceAdapter
-} = require("@truffle/interface-adapter");
+const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const contract = require("@truffle/contract");
 const vm = require("vm");
 const expect = require("@truffle/expect");
@@ -47,14 +44,10 @@ class Console extends EventEmitter {
     this.command = new Command(tasks);
 
     this.interfaceAdapter = createInterfaceAdapter({
-      config: options,
       provider: options.provider,
       networkType: options.networks[options.network].type
-    });
-    this.web3 = new Web3Shim({
-      config: options,
-      provider: options.provider,
-      networkType: options.networks[options.network].type
+        ? options.networks[options.network].type
+        : "web3js"
     });
 
     // Bubble the ReplManager's exit event
@@ -78,8 +71,12 @@ class Console extends EventEmitter {
       this.repl.start({
         prompt: "truffle(" + this.options.network + ")> ",
         context: {
-          web3: this.web3,
-          interfaceAdapter: this.interfaceAdapter,
+          web3: this.interfaceAdapter.web3
+            ? this.interfaceAdapter.web3
+            : undefined,
+          tezos: this.interfaceAdapter.tezos
+            ? this.interfaceAdapter.tezos
+            : undefined,
           accounts
         },
         interpreter: this.interpret.bind(this),

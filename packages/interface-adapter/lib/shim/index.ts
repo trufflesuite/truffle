@@ -1,26 +1,22 @@
 import Web3 from "web3";
 import { Provider } from "web3/providers";
-import Config from "@truffle/config";
-import { TezosToolkit } from "@taquito/taquito";
 
-import { TezosDefinition } from "./overloads/tezos";
 import { EthereumDefinition } from "./overloads/ethereum";
 import { QuorumDefinition } from "./overloads/quorum";
 import { FabricEvmDefinition } from "./overloads/fabric-evm";
 import { Web3JsDefinition } from "./overloads/web3js";
 
-const initInterface = async (web3Shim: Web3Shim, options?: Web3ShimOptions) => {
+const initInterface = async (web3Shim: Web3Shim) => {
   const networkTypes: NetworkTypesConfig = new Map(
     Object.entries({
       web3js: Web3JsDefinition,
-      tezos: TezosDefinition,
       ethereum: EthereumDefinition,
       quorum: QuorumDefinition,
       "fabric-evm": FabricEvmDefinition
     })
   );
 
-  networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim, options);
+  networkTypes.get(web3Shim.networkType).initNetworkType(web3Shim);
 };
 
 // March 13, 2019 - Mike Seese:
@@ -32,7 +28,6 @@ const initInterface = async (web3Shim: Web3Shim, options?: Web3ShimOptions) => {
 export type NetworkType = string;
 
 export interface Web3ShimOptions {
-  config?: Config;
   provider?: Provider;
   networkType?: NetworkType;
 }
@@ -70,6 +65,7 @@ export class Web3Shim extends Web3 {
     super();
 
     if (options) {
+      if (options.networkType === "tezos") options.networkType = "ethereum";
       this.networkType = options.networkType || "ethereum";
 
       if (options.provider) {
@@ -79,13 +75,11 @@ export class Web3Shim extends Web3 {
       this.networkType = "ethereum";
     }
 
-    initInterface(this, options);
+    initInterface(this);
   }
 
-  public setNetworkType(networkType: NetworkType, options?: Web3ShimOptions) {
+  public setNetworkType(networkType: NetworkType) {
     this.networkType = networkType;
-    initInterface(this, options);
+    initInterface(this);
   }
-
-  public tez: TezosToolkit;
 }
