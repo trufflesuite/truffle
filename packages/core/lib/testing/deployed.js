@@ -10,7 +10,9 @@ var Deployed = {
     var self = this;
 
     var source = "";
-    source += "pragma solidity ^0.5.0; \n\n library DeployedAddresses {" + "\n";
+    source +=
+      "pragma solidity >= 0.5.0 < 0.7.0; \n\n library DeployedAddresses {" +
+      "\n";
 
     Object.keys(mapping).forEach(function(name) {
       var address = mapping[name];
