@@ -4,7 +4,7 @@
   "license": "MIT",
   "author": "",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/reporters",
-  "version": "2.0.3-alphaTez.0",
+  "version": "2.0.4-alphaTez.0",
   "main": "index.js",
   "scripts": {},
   "dependencies": {
