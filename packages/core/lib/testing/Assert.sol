@@ -1,7 +1,7 @@
 // This file taken from here: https://raw.githubusercontent.com/smartcontractproduction/sol-unit/master/contracts/src/Assertions.sol
 // It was renamed to Assert.sol by Tim Coulter. Refactored for solidity 0.5.0 by Cruz Molina.
 
-pragma solidity >= 0.4.15 < 0.6.0;
+pragma solidity >= 0.4.15 < 0.7.0;
 
 import "truffle/AssertString.sol";
 import "truffle/AssertBytes32.sol";
