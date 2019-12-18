@@ -67,11 +67,18 @@ export class TezosAdapter implements InterfaceAdapter {
   }
 
   public setProvider(provider: Provider) {
+    let currentHost;
+    let host;
     // @ts-ignore: Property 'host' does not exist on type 'Provider'.
-    const currentHost = provider.host;
-    // web3 has some neat quirks
-    const parsedHost = currentHost.match(/(^https?:\/\/)(.*?)\:\d.*/)[2];
-    return this.tezos.setProvider({ rpc: parsedHost });
+    if (provider.host) {
+      // @ts-ignore: Property 'host' does not exist on type 'Provider'.
+      currentHost = provider.host;
+      // web3 has some neat quirks
+      host = currentHost.match(/(^https?:\/\/)(.*?)\:\d.*/)[2];
+    } else {
+      host = provider;
+    }
+    return this.tezos.setProvider({ rpc: host });
   }
 
   public async setWallet(config: Config) {
