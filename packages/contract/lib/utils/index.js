@@ -81,7 +81,7 @@ const Utils = {
   },
 
   consoleLog(receiptLogs) {
-    const TruffleLogEvents = receiptLogs.filter(x => x.event === "__Log");
+    const TruffleLogEvents = receiptLogs.filter(x => x.event === "_TruffleLog");
     TruffleLogEvents.forEach(event => {
       const result = event.args;
 
