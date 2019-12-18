@@ -17,6 +17,44 @@ import {
   isNormalHaltingMnemonic
 } from "lib/helpers";
 
+function determineFullContext(
+  { address, binary },
+  instances,
+  search,
+  contexts
+) {
+  let contextId;
+  let isConstructor = Boolean(binary);
+  if (address) {
+    //if we're in a call to a deployed contract, we must have recorded
+    //the context in the codex, so we don't need to do any further
+    //searching
+    ({ context: contextId, binary } = instances[address]);
+  } else if (isConstructor) {
+    //otherwise, if we're in a constructor, we'll need to actually do a
+    //search
+    contextId = search(binary);
+  } else {
+    //exceptional case: no transaction is loaded
+    return null;
+  }
+
+  if (contextId != undefined) {
+    //if we found the context, use it
+    let context = contexts[contextId];
+    return {
+      ...context,
+      binary
+    };
+  } else {
+    //otherwise we'll construct something default
+    return {
+      binary,
+      isConstructor
+    };
+  }
+}
+
 /**
  * create EVM-level selectors for a given trace step selector
  * may specify additional selectors to include
@@ -255,6 +293,23 @@ function createStepSelectors(step, state = null) {
 
           return stack[stack.length - 1];
         }
+      ),
+
+      /**
+       * .callContext
+       *
+       * context of what this step is calling/creating (if applicable)
+       */
+      callContext: createLeaf(
+        [
+          "./callAddress",
+          "./createBinary",
+          "/current/codex/instances",
+          "/info/binaries/search",
+          "/info/contexts"
+        ],
+        (address, binary, instances, search, contexts) =>
+          determineFullContext({ address, binary }, instances, search, contexts)
       )
     });
   }
@@ -319,7 +374,23 @@ const evm = createSelectorTree({
     /*
      * evm.transaction.initialCall
      */
-    initialCall: createLeaf(["/state"], state => state.transaction.initialCall)
+    initialCall: createLeaf(["/state"], state => state.transaction.initialCall),
+
+    /*
+     * evm.transaction.startingContext
+     */
+    startingContext: createLeaf(
+      [
+        "/current/callstack", //we're just getting bottom stackframe, so this is in fact tx-level
+        "/current/codex/instances", //this should also be fine?
+        "/info/binaries/search",
+        "/info/contexts"
+      ],
+      (stack, instances, search, contexts) =>
+        stack.length > 0
+          ? determineFullContext(stack[0], instances, search, contexts)
+          : null
+    )
   },
 
   /**
@@ -350,39 +421,7 @@ const evm = createSelectorTree({
         "/info/binaries/search",
         "/info/contexts"
       ],
-      ({ address, binary }, instances, search, contexts) => {
-        let contextId;
-        if (address) {
-          //if we're in a call to a deployed contract, we must have recorded
-          //the context in the codex, so we don't need to do any further
-          //searching
-          ({ context: contextId, binary } = instances[address]);
-        } else if (binary) {
-          //otherwise, if we're in a constructor, we'll need to actually do a
-          //search
-          contextId = search(binary);
-        } else {
-          //exceptional case: no transaction is loaded
-          return null;
-        }
-
-        if (contextId != undefined) {
-          //if we found the context, use it
-          let context = contexts[contextId];
-          return {
-            ...context,
-            binary
-          };
-        } else {
-          //otherwise we'll construct something default
-          return {
-            binary,
-            isConstructor: address === undefined
-            //WARNING: we've mutated binary here, so
-            //instead we go by whether address is undefined
-          };
-        }
-      }
+      determineFullContext
     ),
 
     /**
