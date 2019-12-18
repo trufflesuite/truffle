@@ -8,27 +8,27 @@ contract TruffleLogger {
   event _TruffleLog(bytes32 b32);
   event _TruffleLog(address addr);
 
-  function Log(bool x) public {
+  function log(bool x) public {
     emit _TruffleLog(x);
   }
 
-  function Log(int x) public {
+  function log(int x) public {
     emit _TruffleLog(x);
   }
 
-  function Log(uint x) public {
+  function log(uint x) public {
     emit _TruffleLog(x);
   }
 
-  function Log(string memory x) public {
+  function log(string memory x) public {
     emit _TruffleLog(x);
   }
 
-  function Log(bytes32 x) public {
+  function log(bytes32 x) public {
     emit _TruffleLog(x);
   }
 
-  function Log(address x) public {
+  function log(address x) public {
     emit _TruffleLog(x);
   }
 }
