@@ -255,34 +255,6 @@ function createStepSelectors(step, state = null) {
 
           return stack[stack.length - 1];
         }
-      ),
-
-      /*
-       * .returnValue
-       *
-       * for a RETURN instruction, the value returned
-       * we DO prepend "0x"
-       * (will also return "0x" for STOP or SELFDESTRUCT but
-       * null otherwise)
-       */
-      returnValue: createLeaf(
-        ["./trace", "./isHalting", state],
-
-        (step, isHalting, { stack, memory }) => {
-          if (!isHalting) {
-            return null;
-          }
-          if (step.op !== "RETURN") {
-            //STOP and SELFDESTRUCT return empty value
-            return "0x";
-          }
-          // Get the data from memory.
-          // Note we multiply by 2 because these offsets are in bytes.
-          const offset = parseInt(stack[stack.length - 1], 16) * 2;
-          const length = parseInt(stack[stack.length - 2], 16) * 2;
-
-          return "0x" + memory.join("").substring(offset, offset + length);
-        }
       )
     });
   }
@@ -516,6 +488,36 @@ const evm = createSelectorTree({
             const ZERO_WORD = "00".repeat(Codec.Evm.Utils.WORD_SIZE);
             return stack[stack.length - 1] !== ZERO_WORD;
           }
+        }
+      ),
+
+      /*
+       * evm.current.step.returnValue
+       *
+       * for a [successful] RETURN or REVERT instruction, the value returned;
+       * we DO prepend "0x"
+       * for everything else, including unsuccessful RETURN, just returns "0x"
+       * (which is what the return value would be if the instruction were to
+       * fail) (or succeed in the case of STOP or SELFDESTRUCT)
+       * NOTE: technically this will be wrong if a REVERT fails, but that case
+       * is hard to detect and it barely matters
+       */
+      returnValue: createLeaf(
+        ["./trace", "./isExceptionalHalting", "../state"],
+
+        (step, isExceptionalHalting, { stack, memory }) => {
+          if (step.op !== "RETURN" && step.op !== "REVERT") {
+            return "0x";
+          }
+          if (isExceptionalHalting && step.op !== "REVERT") {
+            return "0x";
+          }
+          // Get the data from memory.
+          // Note we multiply by 2 because these offsets are in bytes.
+          const offset = parseInt(stack[stack.length - 1], 16) * 2;
+          const length = parseInt(stack[stack.length - 2], 16) * 2;
+
+          return "0x" + memory.join("").substring(offset, offset + length);
         }
       )
     },

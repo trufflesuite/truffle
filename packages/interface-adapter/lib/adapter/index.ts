@@ -2,7 +2,6 @@ import { Web3InterfaceAdapter, Web3InterfaceAdapterOptions } from "./web3";
 
 import { InterfaceAdapter } from "./types";
 
-// type union of supported network types
 export type InterfaceAdapterOptions = Web3InterfaceAdapterOptions;
 
 const getNetworkTypeClass = (networkType = "ethereum") => {

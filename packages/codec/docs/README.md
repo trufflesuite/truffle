@@ -83,6 +83,10 @@ which accept decodings in either mode and always return ABI mode.
 - You can only decode storage variables in full mode. If full mode fails
   while decoding a storage variable, it will throw an exception.
 
+- If a contract `Base` declares an event `Event` and a contract `Derived`
+  inheriting from `Base` overrides `Event`, if `Derived` then emits
+  `Base.Event`, ABI mode may not be able to decode it.
+
 ---
 
 <p align="center">

@@ -1,6 +1,6 @@
 const debug = require("debug")("contract:utils");
 const web3Utils = require("web3-utils");
-const { bigNumberify } = require("ethers/utils");
+const { bigNumberify } = require("ethers/utils/bignumber");
 const abi = require("web3-eth-abi");
 const BlockchainUtils = require("@truffle/blockchain-utils");
 const reformat = require("../reformat");

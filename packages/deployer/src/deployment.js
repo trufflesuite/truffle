@@ -355,7 +355,9 @@ class Deployment {
           // Reporter might not be enabled (via Migrate.launchReporter) so
           // message is a (potentially empty) array of results from the emitter
           if (!message.length) {
-            message = `while migrating ${contract.contractName}: ${eventArgs.error.message}`;
+            message = `while migrating ${contract.contractName}: ${
+              eventArgs.error.message
+            }`;
           }
 
           self.close();

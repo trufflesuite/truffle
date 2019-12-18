@@ -460,6 +460,7 @@ function* variablesAndMappingsSaga() {
           Codec.Ast.Utils.typeIdentifier(baseExpression)
         )
       );
+      break;
 
     default:
       if (node.typeDescriptions == undefined) {

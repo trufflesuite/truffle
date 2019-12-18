@@ -4,13 +4,13 @@
   "license": "MIT",
   "author": "",
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/reporters",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "main": "index.js",
   "scripts": {},
   "dependencies": {
     "node-emoji": "^1.8.1",
     "ora": "^3.0.0",
-    "web3-utils": "1.2.2"
+    "web3-utils": "1.2.1"
   },
   "publishConfig": {
     "access": "public"
