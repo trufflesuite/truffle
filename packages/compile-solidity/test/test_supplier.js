@@ -18,6 +18,7 @@ describe("CompilerSupplier", function() {
     let oldPragmaFloatSource; // ^0.4.15
     let version4PragmaSource; // ^0.4.21
     let version5PragmaSource; // ^0.5.0
+    let version6PragmaSource; // ^0.6.0
 
     const options = {
       contracts_directory: "",
@@ -43,10 +44,16 @@ describe("CompilerSupplier", function() {
         "utf-8"
       );
 
+      const version6Pragma = await fse.readFile(
+        path.join(__dirname, "./sources/v0.6.x/Version6Pragma.sol"),
+        "utf-8"
+      );
+
       oldPragmaPinSource = { "OldPragmaPin.sol": oldPragmaPin };
       oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat };
       version4PragmaSource = { "NewPragma.sol": version4Pragma };
       version5PragmaSource = { "Version5Pragma.sol": version5Pragma };
+      version6PragmaSource = { "Version6Pragma.sol": version6Pragma };
     });
 
     it("compiles w/ default solc if no compiler specified (float)", async function() {
@@ -173,13 +180,13 @@ describe("CompilerSupplier", function() {
         const nativeSolcOptions = Config.default().merge(options);
 
         const { contracts } = await compile(
-          version5PragmaSource,
+          version6PragmaSource,
           nativeSolcOptions
         );
-        const Version5Pragma = findOne("Version5Pragma", contracts);
-        assert(Version5Pragma.compiler.version.includes("0.5."));
+        const Version6Pragma = findOne("Version6Pragma", contracts);
+        assert(Version6Pragma.compiler.version.includes("0.6."));
         assert(
-          Version5Pragma.contractName === "Version5Pragma",
+          Version6Pragma.contractName === "Version6Pragma",
           "Should have compiled"
         );
       });
