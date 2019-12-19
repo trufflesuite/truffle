@@ -1,6 +1,6 @@
 {
   "name": "@truffle/decoder",
-  "version": "4.0.2",
+  "version": "4.0.4-truffleLogger.0",
   "description": "A decoder and encoder for Solidity variables of all sorts",
   "main": "dist/index.js",
   "types": "lib/index.ts",
@@ -14,7 +14,7 @@
     "test": "cd test && npx truffle test"
   },
   "dependencies": {
-    "@truffle/codec": "^0.3.0",
+    "@truffle/codec": "^0.3.2-truffleLogger.0",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
     "web3": "1.2.1"
@@ -39,8 +39,8 @@
     "access": "public"
   },
   "devDependencies": {
-    "@truffle/contract-schema": "^3.0.19",
-    "@truffle/provider": "^0.2.4",
+    "@truffle/contract-schema": "^3.0.21-truffleLogger.0",
+    "@truffle/provider": "^0.2.6-truffleLogger.0",
     "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",

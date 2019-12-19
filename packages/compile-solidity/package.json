@@ -1,7 +1,7 @@
 {
   "name": "@truffle/compile-solidity",
   "description": "Compiler helper and artifact manager for Solidity files",
-  "version": "4.2.14",
+  "version": "4.2.16-truffleLogger.0",
   "main": "index.js",
   "dependencies": {
     "@truffle/config": "^1.2.8",
@@ -20,7 +20,7 @@
     "solc": "^0.6.0"
   },
   "devDependencies": {
-    "@truffle/resolver": "^5.0.23",
+    "@truffle/resolver": "^5.0.25-truffleLogger.0",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
