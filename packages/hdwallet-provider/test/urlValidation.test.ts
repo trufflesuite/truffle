@@ -1,6 +1,6 @@
-import assert from 'assert';
-import WalletProvider from '../dist';
-import { describe, it } from 'mocha';
+import assert from "assert";
+import WalletProvider from "../dist";
+import { describe, it } from "mocha";
 
 const { isValidProvider } = WalletProvider;
 

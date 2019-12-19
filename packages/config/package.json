@@ -31,6 +31,7 @@
     "typescript": "^3.6.3"
   },
   "dependencies": {
+    "@truffle/events": "^0.0.1",
     "@truffle/error": "^0.0.8",
     "@truffle/provider": "^0.2.4",
     "@types/lodash": "^4.14.149",

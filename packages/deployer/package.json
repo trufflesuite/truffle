@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@ensdomains/ens": "^0.3.11",
-    "@ensdomains/resolver": "0.1.9",
+    "@ensdomains/resolver": "0.1.12",
     "@truffle/contract": "^4.1.2",
     "@truffle/expect": "^0.0.13",
     "emittery": "^0.4.0",

@@ -17,7 +17,6 @@
     "fs-extra": "6.0.1",
     "github-download": "^0.5.0",
     "inquirer": "^7.0.0",
-    "ora": "^3.0.0",
     "request": "^2.85.0",
     "request-promise-native": "^1.0.7",
     "tmp": "0.0.33",

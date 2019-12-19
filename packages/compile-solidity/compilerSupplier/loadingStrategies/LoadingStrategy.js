@@ -14,7 +14,6 @@ class LoadingStrategy {
         "https://registry.hub.docker.com/v2/repositories/ethereum/solc/tags/"
     };
     this.config = Object.assign({}, defaultConfig, options);
-
     const compilersDir = path.resolve(
       Config.getTruffleDataDirectory(),
       "compilers"

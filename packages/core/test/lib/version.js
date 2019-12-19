@@ -1,3 +1,4 @@
+const Config = require("@truffle/config");
 const version = require("../../lib/version");
 const assert = require("assert");
 const truffleVersion = require("../../package.json").version;
@@ -11,13 +12,7 @@ describe("core/lib/version", () => {
       },
       loggedStuff: ""
     };
-    config = {
-      compilers: {
-        solc: {
-          version: "0.5.0"
-        }
-      }
-    };
+    config = new Config();
     ({ core, solc } = version.info(config));
   });
 

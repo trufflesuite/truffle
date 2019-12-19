@@ -27,7 +27,7 @@ class Native extends LoadingStrategy {
     } catch (error) {
       throw this.errors("noNative", null, error);
     }
-    return new VersionRange().normalizeSolcVersion(version);
+    return new VersionRange(this.config).normalizeSolcVersion(version);
   }
 }
 

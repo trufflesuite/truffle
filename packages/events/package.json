@@ -1,0 +1,15 @@
+{
+  "name": "@truffle/events",
+  "version": "0.0.1",
+  "description": "Event system for Truffle",
+  "main": "index.js",
+  "keywords": [],
+  "author": "Nick D'Andrea and Tyler Feickert",
+  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "emittery": "^0.4.1"
+  }
+}

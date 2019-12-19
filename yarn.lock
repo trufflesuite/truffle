@@ -125,10 +125,10 @@
     testrpc "0.0.1"
     web3-utils "^1.0.0-beta.31"
 
-"@ensdomains/resolver@0.1.9":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@ensdomains/resolver/-/resolver-0.1.9.tgz#013bc88397c2c204737aaaf602380145d845e09e"
-  integrity sha512-eSZIEWi2UcxNZXJhAeoTYUZr20fyly9eMUy17WQ5UjszXf0QgE1Zzh/Oj9Mhl0i8s7xqoPOsntr2ZI0JhsX78w==
+"@ensdomains/resolver@0.1.12":
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/@ensdomains/resolver/-/resolver-0.1.12.tgz#44ca93d6a3c4fa0a4080f2d59496ca5cd011d4e5"
+  integrity sha512-7Fv+KVSH7PBgRmHoWumI18HlI8ePcXp9ojUiY72VQCmmjOVoXDO/cd4ChoeCQIGxfd0TP1XkK3yOnGz22utHMQ==
 
 "@evocateur/libnpmaccess@^3.1.2":
   version "3.1.2"
@@ -5031,7 +5031,7 @@ elliptic@6.5.2, elliptic@^6.0.0, elliptic@^6.4.0, elliptic@^6.4.1:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.0"
 
-emittery@^0.4.0:
+emittery@^0.4.0, emittery@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/emittery/-/emittery-0.4.1.tgz#abe9d3297389ba424ac87e53d1c701962ce7433d"
   integrity sha512-r4eRSeStEGf6M5SKdrQhhLK5bOwOBxQhIE3YSTnZE3GpKiLfnnhE+tPtrJE79+eDJgm39BM6LSoI8SCx4HbwlQ==

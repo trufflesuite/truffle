@@ -6,6 +6,7 @@ import Configstore from "configstore";
 import TruffleError from "@truffle/error";
 import originalRequire from "original-require";
 import { getInitialConfig, configProps } from "./configDefaults";
+import { EventManager } from "@truffle/events";
 
 const DEFAULT_CONFIG_FILENAME = "truffle-config.js";
 const BACKUP_CONFIG_FILENAME = "truffle.js"; // old config filename
@@ -28,11 +29,22 @@ class TruffleConfig {
       network
     });
 
+    const eventsOptions = this.eventManagerOptions(this);
+    this.events = new EventManager(eventsOptions);
+
     const props = configProps({ configObject: this });
 
     Object.entries(props).forEach(([propName, descriptor]) =>
       this.addProp(propName, descriptor)
     );
+  }
+
+  public eventManagerOptions(config: TruffleConfig): any {
+    let muteLogging;
+    const { quiet, logger, subscribers } = config;
+
+    if (quiet) muteLogging = true;
+    return { logger, muteLogging, subscribers };
   }
 
   public addProp(propertyName: string, descriptor: any): void {
@@ -91,6 +103,9 @@ class TruffleConfig {
     const current = this.normalize(this);
     const normalized = this.normalize(obj);
 
+    let eventsOptions = this.eventManagerOptions(this);
+    this.events.updateSubscriberOptions(eventsOptions);
+
     return lodash.extend(
       Object.create(TruffleConfig.prototype),
       current,
@@ -115,6 +130,9 @@ class TruffleConfig {
         // ignore
       }
     });
+
+    const eventsOptions = this.eventManagerOptions(this);
+    this.events.updateSubscriberOptions(eventsOptions);
 
     return this;
   }
@@ -186,6 +204,11 @@ class TruffleConfig {
 
     config.merge(staticConfig);
     config.merge(options);
+
+    // When loading a user's config, ensure their subscribers are initialized
+    const eventsOptions = config.eventManagerOptions(config);
+    config.events.updateSubscriberOptions(eventsOptions);
+    config.events.initializeUserSubscribers(eventsOptions);
 
     return config;
   }
