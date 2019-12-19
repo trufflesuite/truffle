@@ -6,6 +6,7 @@ export type AbiEntry =
   | FunctionAbiEntry
   | ConstructorAbiEntry
   | FallbackAbiEntry
+  | ReceiveAbiEntry
   | EventAbiEntry;
 
 export interface FunctionAbiEntry {
@@ -29,6 +30,14 @@ export interface FallbackAbiEntry {
   type: "fallback";
   stateMutability?: "payable" | "nonpayable"; //only in newer ones
   payable?: boolean; //only in older ones
+}
+
+export interface ReceiveAbiEntry {
+  type: "receive";
+  stateMutability?: "payable";
+  payable?: boolean; //will never actually be present -- receive was
+  //introduced in 0.6.0, after this field was removed -- but included
+  //to keep typings simpler elsewhere
 }
 
 export interface EventAbiEntry {
