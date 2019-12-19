@@ -46,6 +46,14 @@ export function makeContext(
       value: binary
     })
   );
+  const fallback =
+    <Codec.AbiData.FallbackAbiEntry>(
+      abi.find(abiEntry => abiEntry.type === "fallback")
+    ) || null; //TS is failing at inference here
+  const receive =
+    <Codec.AbiData.ReceiveAbiEntry>(
+      abi.find(abiEntry => abiEntry.type === "receive")
+    ) || null; //and here
   return {
     context: hash,
     contractName: contract.contractName,
@@ -55,7 +63,7 @@ export function makeContext(
     isConstructor,
     abi: Codec.AbiData.Utils.computeSelectors(abi),
     payable: Codec.AbiData.Utils.abiHasPayableFallback(abi),
-    hasFallback: Codec.AbiData.Utils.abiHasFallback(abi),
+    fallbackAbi: { fallback, receive },
     compiler: contract.compiler
   };
 }

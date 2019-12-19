@@ -137,10 +137,10 @@ export interface MessageDecoding {
    */
   class: Format.Types.ContractType;
   /**
-   * The ABI entry for the contract's fallback function; will be null if
-   * there is none.
+   * The ABI entry for the contract's fallback or receive function that would
+   * handle this message; will be null if there is none.
    */
-  abi: AbiData.FallbackAbiEntry | null; //null indicates no fallback ABI
+  abi: AbiData.FallbackAbiEntry | AbiData.ReceiveAbiEntry | null;
   /**
    * The data that was sent to the contract.
    */

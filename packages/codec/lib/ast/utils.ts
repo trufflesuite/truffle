@@ -444,15 +444,12 @@ export function mutability(node: AstNode): Common.Mutability | undefined {
  * @category Definition Reading
  */
 export function isContractPayable(definition: AstNode): boolean {
-  let fallback = definition.nodes.find(
+  return definition.nodes.some(
     node =>
       node.nodeType === "FunctionDefinition" &&
-      functionKind(node) === "fallback"
+      (functionKind(node) === "fallback" || functionKind(node) === "receive") &&
+      mutability(node) === "payable"
   );
-  if (!fallback) {
-    return false;
-  }
-  return mutability(fallback) === "payable";
 }
 
 /**
@@ -490,7 +487,8 @@ function functionDefinitionToAbi(
 ):
   | AbiData.FunctionAbiEntry
   | AbiData.ConstructorAbiEntry
-  | AbiData.FallbackAbiEntry {
+  | AbiData.FallbackAbiEntry
+  | AbiData.ReceiveAbiEntry {
   let kind = functionKind(node);
   let stateMutability = mutability(node);
   let payable = stateMutability === "payable";
@@ -532,6 +530,13 @@ function functionDefinitionToAbi(
       //note: need to coerce because of mutability restrictions
       return <AbiData.FallbackAbiEntry>{
         type: "fallback",
+        stateMutability,
+        payable
+      };
+    case "receive":
+      //note: need to coerce because of mutability restrictions
+      return <AbiData.ReceiveAbiEntry>{
+        type: "receive",
         stateMutability,
         payable
       };
