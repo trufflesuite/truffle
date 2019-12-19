@@ -23,7 +23,10 @@ export function typeString(definition: AstNode): string {
  * @category Definition Reading
  */
 export function typeStringWithoutLocation(definition: AstNode): string {
-  return typeString(definition).replace(/ (storage|memory|calldata)$/, "");
+  return typeString(definition).replace(
+    / (storage|memory|calldata)( slice)?$/,
+    ""
+  );
 }
 
 /**
@@ -57,7 +60,7 @@ export function typeId(definition: AstNode): number {
   debug("definition %O", definition);
   return parseInt(
     typeIdentifier(definition).match(
-      /\$(\d+)(_(storage|memory|calldata)(_ptr)?)?$/
+      /\$(\d+)(_(storage|memory|calldata)(_ptr(_slice)?)?)?$/
     )[1]
   );
 }
@@ -131,7 +134,7 @@ export function isDynamicArray(definition: AstNode): boolean {
     //checking the length field, because we might be using this on a faked-up
     //definition
     typeIdentifier(definition).match(
-      /\$dyn_(storage|memory|calldata)(_ptr)?$/
+      /\$dyn_(storage|memory|calldata)(_ptr(_slice)?)?$/
     ) != null
   );
 }
@@ -154,7 +157,7 @@ export function staticLength(definition: AstNode): number {
  */
 export function staticLengthAsString(definition: AstNode): string {
   return typeIdentifier(definition).match(
-    /\$(\d+)_(storage|memory|calldata)(_ptr)?$/
+    /\$(\d+)_(storage|memory|calldata)(_ptr(_slice)?)?$/
   )[1];
 }
 
@@ -176,8 +179,9 @@ export function isEnum(definition: AstNode): boolean {
 /** @category Definition Reading */
 export function isReference(definition: AstNode): boolean {
   return (
-    typeIdentifier(definition).match(/_(memory|storage|calldata)(_ptr)?$/) !=
-    null
+    typeIdentifier(definition).match(
+      /_(memory|storage|calldata)(_ptr(_slice)?)?$/
+    ) != null
   );
 }
 
@@ -187,7 +191,7 @@ export function isReference(definition: AstNode): boolean {
  */
 export function referenceType(definition: AstNode): Common.Location {
   return typeIdentifier(definition).match(
-    /_([^_]+)(_ptr)?$/
+    /_([^_]+)(_ptr(_slice)?)?$/
   )[1] as Common.Location;
 }
 
@@ -247,7 +251,7 @@ export function spliceLocation(
       ...definition.typeDescriptions,
 
       typeIdentifier: definition.typeDescriptions.typeIdentifier.replace(
-        /_(storage|memory|calldata)(?=_ptr$|$)/,
+        /_(storage|memory|calldata)(?=((_slice)?_ptr)?$)/,
         "_" + location
       )
     }
@@ -256,11 +260,14 @@ export function spliceLocation(
 
 /**
  * adds "_ptr" on to the end of type identifiers that might need it; note that
- * this operats on identifiers, not definitions
+ * this operates on identifiers, not definitions
  * @category Definition Reading
  */
-export function restorePtr(identifier: string): string {
-  return identifier.replace(/(?<=_(storage|memory|calldata))$/, "_ptr");
+export function regularizeTypeIdentifier(identifier: string): string {
+  return identifier.replace(
+    /(?<=_(storage|memory|calldata))((_slice)?_ptr)?$/,
+    "_ptr"
+  );
 }
 
 /**
@@ -292,9 +299,7 @@ export function baseDefinition(definition: AstNode): AstNode {
   //greedy match to extract everything from first to last dollar sign
 
   // HACK - internal types for memory or storage also seem to be pointers
-  if (baseIdentifier.match(/_(memory|storage|calldata)$/) != null) {
-    baseIdentifier = `${baseIdentifier}_ptr`;
-  }
+  baseIdentifier = regularizeTypeIdentifier(baseIdentifier);
 
   // another HACK - we get away with it because we're only using that one property
   let result: AstNode = cloneDeep(definition);
@@ -341,9 +346,7 @@ export function keyDefinition(definition: AstNode, scopes?: Scopes): AstNode {
       //are not allowed as key types, so this can't come up
 
       // HACK - internal types for memory or storage also seem to be pointers
-      if (keyIdentifier.match(/_(memory|storage|calldata)$/) != null) {
-        keyIdentifier = `${keyIdentifier}_ptr`;
-      }
+      keyIdentifier = regularizeTypeIdentifier(keyIdentifier);
 
       let keyString = typeString(definition).match(
         /mapping\((.*?) => .*\)( storage)?$/
