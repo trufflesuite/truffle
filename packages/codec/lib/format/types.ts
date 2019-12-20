@@ -671,7 +671,7 @@ export function typeStringWithoutLocation(dataType: Type): string {
           return `${dataType.typeClass} ${dataType.definingContractName}.${
             dataType.typeName
           }`;
-        case "global": //WARNING, SPECULATIVE
+        case "global":
           return `${dataType.typeClass} ${dataType.typeName}`;
       }
     case "tuple":
