@@ -1080,6 +1080,25 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
+"@truffle/interface-adapter@^0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@truffle/interface-adapter/-/interface-adapter-0.4.2.tgz#20343505240d4fdb4b071d30c2c46d894329eb56"
+  integrity sha512-NyHGq8DFWLJvxzz0EQlHw33hwmBIGJMN7R0dPmyVPTtVw3PfHeNJ/D4IRHAhgeV+LMZhwd8iLUpvHl6C6b4wUA==
+  dependencies:
+    bn.js "^4.11.8"
+    ethers "^4.0.32"
+    lodash "^4.17.13"
+    web3 "1.2.1"
+
+"@truffle/provider@^0.2.4":
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/@truffle/provider/-/provider-0.2.5.tgz#c30eb14bb02b0bac948ba4e4fca3cdc2450891db"
+  integrity sha512-B7K4IS0ybOVdVCYVGkBIQist4EfDDPjlYa7yCJW/NRAKaHxWk0Tg0/7l2DJaKjbXEb/b+/5elwVLIbo23+o36Q==
+  dependencies:
+    "@truffle/error" "^0.0.8"
+    "@truffle/interface-adapter" "^0.4.2"
+    web3 "1.2.1"
+
 "@trufflesuite/chromafi@^2.1.2":
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.1.2.tgz#50715070093c5543a406a2cc85fa70fc8d1a36ab"
@@ -10782,7 +10801,7 @@ no-case@^2.2.0, no-case@^2.3.2:
   dependencies:
     lower-case "^1.1.1"
 
-node-dir@0.1.17, node-dir@^0.1.16:
+node-dir@0.1.17, node-dir@^0.1.16, node-dir@^0.1.17:
   version "0.1.17"
   resolved "https://registry.yarnpkg.com/node-dir/-/node-dir-0.1.17.tgz#5f5665d93351335caabef8f1c554516cf5f1e4e5"
   integrity sha1-X1Zl2TNRM1yqvvjxxVRRbPXx5OU=

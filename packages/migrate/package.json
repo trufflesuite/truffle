@@ -22,6 +22,7 @@
     "@truffle/require": "^2.0.37",
     "emittery": "^0.4.0",
     "glob": "^7.1.6",
+    "node-dir": "^0.1.17",
     "web3": "1.2.1"
   },
   "devDependencies": {

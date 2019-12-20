@@ -2,6 +2,7 @@ const path = require("path");
 const Deployer = require("@truffle/deployer");
 const Require = require("@truffle/require");
 const Emittery = require("emittery");
+const dir = require("node-dir");
 const {
   Web3Shim,
   createInterfaceAdapter
@@ -142,6 +143,8 @@ class Migration {
       deployer
     } = this.prepareForMigrations(options);
 
+    await this.deployAndLinkLogger(options, resolver);
+
     // Connect reporter to this migration
     if (this.reporter) {
       this.reporter.setMigration(this);
@@ -196,6 +199,46 @@ class Migration {
     });
 
     return { interfaceAdapter, resolver, context, deployer };
+  }
+
+  async deployAndLinkLogger(options, resolver) {
+    const { networks, network, network_id, provider } = options;
+    let TruffleLogger;
+    try {
+      TruffleLogger = resolver.require("TruffleLogger");
+    } catch (error) {
+      return;
+    }
+
+    if (!TruffleLogger.isDeployed()) {
+      const loggerDeployer = new Deployer({
+        networks,
+        network,
+        network_id,
+        provider
+      });
+      await loggerDeployer.start();
+      await loggerDeployer.deploy(TruffleLogger);
+
+      // Gather all available contract artifacts
+      const files = await dir.promiseFiles(options.contracts_build_directory);
+
+      const contracts = files
+        .filter(filePath => {
+          return path.extname(filePath) === ".json";
+        })
+        .map(filePath => {
+          return path.basename(filePath, ".json");
+        })
+        .map(contractName => {
+          return resolver.require(contractName);
+        });
+
+      for (const contract of contracts) {
+        await loggerDeployer.link(TruffleLogger, contract);
+      }
+      await loggerDeployer.finish();
+    }
   }
 
   /**
