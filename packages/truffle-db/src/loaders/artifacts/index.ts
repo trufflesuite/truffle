@@ -7,7 +7,6 @@ import path from "path";
 import Config from "@truffle/config";
 import { Environment } from "@truffle/environment";
 import Web3 from "web3";
-import { shimBytecode } from "@truffle/workflow-compile/shims";
 
 const AddBytecodes = gql`
   input LinkReferenceInput {
@@ -376,6 +375,16 @@ type networkLinkObject = {
   [name: string]: string;
 };
 
+type LinkValueLinkReferenceObject = {
+  bytecode: string;
+  index: number;
+};
+
+type LinkValueObject = {
+  value: string;
+  linkReference: LinkValueLinkReferenceObject;
+};
+
 type LoaderNetworkObject = {
   contract: string;
   id: string;
@@ -527,7 +536,7 @@ export class ArtifactsLoader {
       deployedBytecodes.push(deployedBytecode);
     });
 
-    const bytecodeResult = await this.db.query(AddBytecodes, {
+    const createBytecodeResult = await this.db.query(AddBytecodes, {
       bytecodes: bytecodes
     });
     const callBytecodeResult = await this.db.query(AddBytecodes, {
@@ -535,7 +544,7 @@ export class ArtifactsLoader {
     });
 
     return {
-      bytecodes: bytecodeResult.data.workspace.bytecodesAdd.bytecodes,
+      bytecodes: createBytecodeResult.data.workspace.bytecodesAdd.bytecodes,
       callBytecodes: callBytecodeResult.data.workspace.bytecodesAdd.bytecodes
     };
   }
@@ -666,7 +675,7 @@ export class ArtifactsLoader {
   }
 
   getNetworkLinks(network: LoaderNetworkObject, bytecode: BytecodeInfo) {
-    let networkLink = {};
+    let networkLink: Array<LinkValueObject> = [];
     if (network.links) {
       networkLink = Object.entries(network.links).map(link => {
         let linkReferenceIndexByName = bytecode.linkReferences.findIndex(
