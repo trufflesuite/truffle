@@ -72,7 +72,7 @@ type LinkValue {
 
 type LinkedBytecode {
   bytecode: Bytecode!
-  linkValues: [LinkValue]
+  linkValues: [LinkValue]!
 }
 
 type LinkReference {
