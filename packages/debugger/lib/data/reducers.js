@@ -183,10 +183,10 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
       //replacing a fairly bare-bones Slot object with one with a full path.
 
       //we do NOT want to distinguish between types with and without "_ptr" on
-      //the end here!
+      //the end here! (or _slice)
       debug("typeIdentifier %s", typeIdentifier);
-      typeIdentifier = Codec.Ast.Utils.restorePtr(typeIdentifier);
-      parentType = Codec.Ast.Utils.restorePtr(parentType);
+      typeIdentifier = Codec.Ast.Utils.regularizeTypeIdentifier(typeIdentifier);
+      parentType = Codec.Ast.Utils.regularizeTypeIdentifier(parentType);
 
       debug("slot %o", slot);
       let hexSlotAddress = Codec.Conversion.toHexString(

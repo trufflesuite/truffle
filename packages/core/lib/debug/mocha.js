@@ -2,7 +2,7 @@ const colors = require("colors");
 const util = require("util");
 
 const { CLIDebugger } = require("./cli");
-const execute = require("truffle-contract/lib/execute");
+const execute = require("@truffle/contract/lib/execute");
 
 class CLIDebugHook {
   constructor(config, compilation, runner) {
