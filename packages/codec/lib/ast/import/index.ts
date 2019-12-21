@@ -234,8 +234,66 @@ export function definitionToType(
       let qualifiedName = Utils.typeStringWithoutLocation(definition).match(
         /struct (.*)/
       )[1];
-      let [definingContractName, typeName] = qualifiedName.split(".");
+      let definingContractName: string;
+      let typeName: string;
+      if (qualifiedName.includes(".")) {
+        [definingContractName, typeName] = qualifiedName.split(".");
+      } else {
+        typeName = qualifiedName;
+        //leave definingContractName undefined
+      }
       if (forceLocation === null) {
+        if (definingContractName) {
+          return {
+            typeClass,
+            kind: "local",
+            id,
+            typeName,
+            definingContractName
+          };
+        } else {
+          return {
+            typeClass,
+            kind: "global",
+            id,
+            typeName
+          };
+        }
+      }
+      let location = forceLocation || Utils.referenceType(definition);
+      if (definingContractName) {
+        return {
+          typeClass,
+          kind: "local",
+          id,
+          typeName,
+          definingContractName,
+          location
+        };
+      } else {
+        return {
+          typeClass,
+          kind: "global",
+          id,
+          typeName,
+          location
+        };
+      }
+    }
+    case "enum": {
+      let id = Utils.typeId(definition).toString();
+      let qualifiedName = Utils.typeStringWithoutLocation(definition).match(
+        /enum (.*)/
+      )[1];
+      let definingContractName: string;
+      let typeName: string;
+      if (qualifiedName.includes(".")) {
+        [definingContractName, typeName] = qualifiedName.split(".");
+      } else {
+        typeName = qualifiedName;
+        //leave definingContractName undefined
+      }
+      if (definingContractName) {
         return {
           typeClass,
           kind: "local",
@@ -243,30 +301,14 @@ export function definitionToType(
           typeName,
           definingContractName
         };
+      } else {
+        return {
+          typeClass,
+          kind: "global",
+          id,
+          typeName
+        };
       }
-      let location = forceLocation || Utils.referenceType(definition);
-      return {
-        typeClass,
-        kind: "local",
-        id,
-        typeName,
-        definingContractName,
-        location
-      };
-    }
-    case "enum": {
-      let id = Utils.typeId(definition).toString();
-      let qualifiedName = Utils.typeStringWithoutLocation(definition).match(
-        /enum (.*)/
-      )[1];
-      let [definingContractName, typeName] = qualifiedName.split(".");
-      return {
-        typeClass,
-        kind: "local",
-        id,
-        typeName,
-        definingContractName
-      };
     }
     case "contract": {
       let id = Utils.typeId(definition).toString();
@@ -305,9 +347,14 @@ export function definitionToStoredType(
   switch (definition.nodeType) {
     case "StructDefinition": {
       let id = definition.id.toString();
-      let [definingContractName, typeName] = definition.canonicalName.split(
-        "."
-      );
+      let definingContractName: string;
+      let typeName: string;
+      if (definition.canonicalName.includes(".")) {
+        [definingContractName, typeName] = definition.canonicalName.split(".");
+      } else {
+        typeName = definition.canonicalName;
+        //leave definingContractName undefined
+      }
       let memberTypes: {
         name: string;
         type: Format.Types.Type;
@@ -322,25 +369,42 @@ export function definitionToStoredType(
             node.nodeType === "ContractDefinition" &&
             node.nodes.some((subNode: AstNode) => subNode.id.toString() === id)
         );
-        definingContract = <Format.Types.ContractTypeNative>(
-          definitionToStoredType(contractDefinition, compiler)
-        ); //can skip reference declarations
+        if (contractDefinition) {
+          definingContract = <Format.Types.ContractTypeNative>(
+            definitionToStoredType(contractDefinition, compiler)
+          ); //can skip reference declarations
+        }
       }
-      return {
-        typeClass: "struct",
-        kind: "local",
-        id,
-        typeName,
-        definingContractName,
-        definingContract,
-        memberTypes
-      };
+      if (definingContract) {
+        return {
+          typeClass: "struct",
+          kind: "local",
+          id,
+          typeName,
+          definingContractName,
+          definingContract,
+          memberTypes
+        };
+      } else {
+        return {
+          typeClass: "struct",
+          kind: "global",
+          id,
+          typeName,
+          memberTypes
+        };
+      }
     }
     case "EnumDefinition": {
       let id = definition.id.toString();
-      let [definingContractName, typeName] = definition.canonicalName.split(
-        "."
-      );
+      let definingContractName: string;
+      let typeName: string;
+      if (definition.canonicalName.includes(".")) {
+        [definingContractName, typeName] = definition.canonicalName.split(".");
+      } else {
+        typeName = definition.canonicalName;
+        //leave definingContractName undefined
+      }
       let options = definition.members.map(member => member.name);
       let definingContract;
       if (referenceDeclarations) {
@@ -349,19 +413,31 @@ export function definitionToStoredType(
             node.nodeType === "ContractDefinition" &&
             node.nodes.some((subNode: AstNode) => subNode.id.toString() === id)
         );
-        definingContract = <Format.Types.ContractTypeNative>(
-          definitionToStoredType(contractDefinition, compiler)
-        ); //can skip reference declarations
+        if (contractDefinition) {
+          definingContract = <Format.Types.ContractTypeNative>(
+            definitionToStoredType(contractDefinition, compiler)
+          ); //can skip reference declarations
+        }
       }
-      return {
-        typeClass: "enum",
-        kind: "local",
-        id,
-        typeName,
-        definingContractName,
-        definingContract,
-        options
-      };
+      if (definingContract) {
+        return {
+          typeClass: "enum",
+          kind: "local",
+          id,
+          typeName,
+          definingContractName,
+          definingContract,
+          options
+        };
+      } else {
+        return {
+          typeClass: "enum",
+          kind: "global",
+          id,
+          typeName,
+          options
+        };
+      }
     }
     case "ContractDefinition": {
       let id = definition.id.toString();
