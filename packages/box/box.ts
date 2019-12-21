@@ -107,9 +107,7 @@ const Box = {
       setGracefulCleanup,
       logger,
       force
-    } = parseSandboxOptions(
-      options
-    );
+    } = parseSandboxOptions(options);
 
     if (setGracefulCleanup) tmp.setGracefulCleanup();
 

@@ -280,7 +280,7 @@ describe("Solidity Debugging", function() {
     });
 
     it("is unaffected by precompiles", async function() {
-      const numExpected = 1;
+      const numExpected = 0;
 
       let instance = await abstractions.SingleCall.deployed();
       let receipt = await instance.runSha();
@@ -294,28 +294,18 @@ describe("Solidity Debugging", function() {
 
       let session = bugger.connect();
 
-      let hasBegun = false; //we don't check until it's nonzero, since it
-      //starts as zero now
-
       while (!session.view(trace.finished)) {
-        let actual = session.view(solidity.current.functionDepth);
-        if (actual !== 0) {
-          hasBegun = true;
-        }
-        if (hasBegun) {
-          assert.equal(actual, numExpected);
-        }
+        let depth = session.view(solidity.current.functionDepth);
+        assert.equal(depth, numExpected);
 
         await session.stepNext();
       }
-
-      assert(hasBegun); //check for non-vacuity of the above tests
     });
 
     //NOTE: this is same as previous test except for the transaction run;
     //not bothering to factor for now
     it("is unaffected by overly large transfers", async function() {
-      const numExpected = 1;
+      const numExpected = 0;
 
       let instance = await abstractions.BadTransferTest.deployed();
       //HACK: because this transaction fails, we have to extract the hash from
@@ -336,22 +326,12 @@ describe("Solidity Debugging", function() {
 
       let session = bugger.connect();
 
-      let hasBegun = false; //we don't check until it's nonzero, since it
-      //starts as zero now
-
       while (!session.view(trace.finished)) {
-        let actual = session.view(solidity.current.functionDepth);
-        if (actual !== 0) {
-          hasBegun = true;
-        }
-        if (hasBegun) {
-          assert.equal(actual, numExpected);
-        }
+        let depth = session.view(solidity.current.functionDepth);
+        assert.equal(depth, numExpected);
 
         await session.stepNext();
       }
-
-      assert(hasBegun); //check for non-vacuity of the above tests
     });
 
     it("spelunks correctly", async function() {
@@ -370,8 +350,7 @@ describe("Solidity Debugging", function() {
 
       // follow functionDepth values in list
       // see source above
-      let expectedDepthSequence = [0, 1, 2, 3, 2, 1, 2, 1, 0];
-      //end at -1 due to losing 2 from contract method return
+      let expectedDepthSequence = [0, 1, 2, 1, 0, 1, 0];
       let actualSequence = [session.view(solidity.current.functionDepth)];
 
       var finished;
