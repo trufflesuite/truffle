@@ -283,7 +283,7 @@ module.exports = {
           "@truffle/core",
           "lib",
           "logging",
-          "TruffleLogger.sol"
+          "Console.sol"
         )
       }
     ]),
