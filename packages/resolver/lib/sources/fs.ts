@@ -66,7 +66,7 @@ export class FS implements ResolverSource {
 
     let body, filePath;
 
-    if (importPath === "truffle/TruffleLogger.sol") {
+    if (importPath === "truffle/Console.sol") {
       const actualImportPath =
         // @ts-ignore
         typeof BUNDLE_VERSION !== "undefined"

@@ -207,14 +207,14 @@ class Migration {
 
   async deployAndLinkLogger(options, resolver) {
     const { networks, network, network_id, provider } = options;
-    let TruffleLogger;
+    let Console;
     try {
-      TruffleLogger = resolver.require("TruffleLogger");
+      Console = resolver.require("Console");
     } catch (error) {
       return;
     }
 
-    if (!TruffleLogger.isDeployed()) {
+    if (!Console.isDeployed()) {
       const loggerDeployer = new Deployer({
         networks,
         network,
@@ -222,7 +222,7 @@ class Migration {
         provider
       });
       await loggerDeployer.start();
-      await loggerDeployer.deploy(TruffleLogger);
+      await loggerDeployer.deploy(Console);
 
       // Gather all available contract artifacts
       const files = await dir.promiseFiles(options.contracts_build_directory);
@@ -239,7 +239,7 @@ class Migration {
         });
 
       for (const contract of contracts) {
-        await loggerDeployer.link(TruffleLogger, contract);
+        await loggerDeployer.link(Console, contract);
       }
       await loggerDeployer.finish();
     }

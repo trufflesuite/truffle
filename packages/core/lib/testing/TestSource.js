@@ -98,7 +98,7 @@ module.exports = class TestSource {
       }
     }
 
-    const loggingLibraries = ["TruffleLogger"];
+    const loggingLibraries = ["Console"];
 
     for (const lib of loggingLibraries) {
       const actualImportPath = typeof BUNDLE_VERSION !== "undefined"
