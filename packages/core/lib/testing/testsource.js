@@ -99,7 +99,7 @@ TestSource.prototype.resolve = async function(importPath) {
     }
   }
 
-  const loggingLibraries = ["TruffleLogger"];
+  const loggingLibraries = ["Console"];
 
   for (const lib of loggingLibraries) {
     const actualImportPath =
