@@ -8,6 +8,7 @@ import * as Codec from "@truffle/codec";
 
 import { findRange } from "lib/ast/map";
 import jsonpointer from "json-pointer";
+import semver from "semver";
 
 import evm from "lib/evm/selectors";
 import trace from "lib/trace/selectors";
@@ -27,6 +28,12 @@ function getSourceRange(instruction = {}) {
       }
     }
   };
+}
+
+function contextRequiresPhantomStackframes({ compiler }) {
+  return semver.satisfies(compiler.version, ">=0.5.1", {
+    includePrerelease: true
+  });
 }
 
 //function to create selectors that need both a current and next version
@@ -96,6 +103,19 @@ let solidity = createSelectorTree({
   },
 
   /**
+   * solidity.transaction
+   */
+  transaction: {
+    /**
+     * solidity.transaction.bottomStackframeRequiresPhantomFrame
+     */
+    bottomStackframeRequiresPhantomFrame: createLeaf(
+      [evm.transaction.startingContext],
+      contextRequiresPhantomStackframes
+    )
+  },
+
+  /**
    * solidity.current
    */
   current: {
@@ -114,11 +134,24 @@ let solidity = createSelectorTree({
     functionDepthStack: state => state.solidity.proc.functionDepthStack,
 
     /**
+     * solidity.current.nextFrameIsPhantom
+     */
+    nextFrameIsPhantom: state => state.solidity.proc.nextFrameIsPhantom,
+
+    /**
      * solidity.current.functionDepth
      */
     functionDepth: createLeaf(
       ["./functionDepthStack"],
       stack => stack[stack.length - 1]
+    ),
+
+    /**
+     * solidity.current.callRequiresPhantomFrame
+     */
+    callRequiresPhantomFrame: createLeaf(
+      [evm.current.context],
+      contextRequiresPhantomStackframes
     ),
 
     /**

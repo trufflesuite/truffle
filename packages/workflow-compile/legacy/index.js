@@ -50,7 +50,7 @@ const Contracts = {
         ? [config.compiler]
         : Object.keys(config.compilers);
 
-      this.reportCompilationStarted(options);
+      if (config.events) config.events.emit("compile:start");
 
       const compilations = await this.compileSources(config, compilers);
 
@@ -61,9 +61,17 @@ const Contracts = {
         0
       );
 
-      if (numberOfCompiledContracts === 0) this.reportNothingToCompile(options);
+      if (numberOfCompiledContracts === 0 && config.events) {
+        config.events.emit("compile:nothingToCompile");
+      }
 
-      this.reportCompilationFinished(config);
+      if (config.events) {
+        config.events.emit("compile:succeed", {
+          contractsBuildDirectory: config.contracts_build_directory,
+          compilersInfo: config.compilersInfo
+        });
+      }
+
       const result = await this.collectCompilations(compilations);
       if (callbackPassed) return callback(null, result);
       return result;

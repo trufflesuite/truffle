@@ -11,7 +11,7 @@ import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
 import Url from "url";
 import Web3 from "web3";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
-import { Callback, JsonRpcResponse } from "@truffle/provider";
+import { Callback, JsonRPCResponse } from "web3/providers";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 
@@ -162,19 +162,21 @@ class HDWalletProvider {
       // Web3.providers.HttpProvider.prototype.sendAsync =
       // Web3.providers.HttpProvider.prototype.send;
       let subProvider;
-      const providerProtocol = (Url.parse(provider).protocol || 'http').toLowerCase();
+      const providerProtocol = (
+        Url.parse(provider).protocol || "http"
+      ).toLowerCase();
 
       switch (providerProtocol) {
-        case 'ws':
-        case 'wss':
+        case "ws":
+        case "wss":
           subProvider = new Web3.providers.WebsocketProvider(provider);
         default:
-          subProvider = new Web3.providers.HttpProvider(provider, { keepAlive: false });
+          subProvider = new Web3.providers.HttpProvider(provider, {
+            keepAlive: false
+          });
       }
 
-      this.engine.addProvider(
-        new ProviderSubprovider(subProvider)
-      );
+      this.engine.addProvider(new ProviderSubprovider(subProvider));
     } else {
       this.engine.addProvider(new ProviderSubprovider(provider));
     }
@@ -183,14 +185,14 @@ class HDWalletProvider {
 
   public send(
     payload: JSONRPCRequestPayload,
-    callback: JSONRPCErrorCallback | Callback<JsonRpcResponse>
+    callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
   ): void {
     return this.engine.send.call(this.engine, payload, callback);
   }
 
   public sendAsync(
     payload: JSONRPCRequestPayload,
-    callback: JSONRPCErrorCallback | Callback<JsonRpcResponse>
+    callback: JSONRPCErrorCallback | Callback<JsonRPCResponse>
   ): void {
     this.engine.sendAsync.call(this.engine, payload, callback);
   }

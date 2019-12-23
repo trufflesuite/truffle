@@ -17,6 +17,7 @@ const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
+const debug = require("debug")("lib:test");
 
 chai.use(require("./assertions"));
 
@@ -195,9 +196,10 @@ const Test = {
   },
 
   defineSolidityTests: async (mocha, contracts, dependencyPaths, runner) => {
-    contracts.forEach(contract => {
-      SolidityTest.define(contract, dependencyPaths, runner, mocha);
-    });
+    for (const contract of contracts) {
+      await SolidityTest.define(contract, dependencyPaths, runner, mocha);
+      debug("defined solidity tests for %s", contract.contractName);
+    }
   },
 
   setJSTestGlobals: async function({
@@ -241,17 +243,17 @@ const Test = {
     const template = function(tests) {
       this.timeout(runner.TEST_TIMEOUT);
 
-      before("prepare suite", function(done) {
+      before("prepare suite", async function() {
         this.timeout(runner.BEFORE_TIMEOUT);
-        runner.initialize(done);
+        await runner.initialize();
       });
 
-      beforeEach("before test", function(done) {
-        runner.startTest(this, done);
+      beforeEach("before test", async function() {
+        await runner.startTest();
       });
 
-      afterEach("after test", function(done) {
-        runner.endTest(this, done);
+      afterEach("after test", async function() {
+        await runner.endTest(this);
       });
 
       tests(accounts);

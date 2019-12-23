@@ -1,7 +1,7 @@
-var Command = require("../lib/command");
-var commands = require("../lib/commands");
-var commander = new Command(commands);
-var assert = require("assert");
+const Command = require("../lib/command");
+const commands = require("../lib/commands");
+const commander = new Command(commands);
+const assert = require("assert");
 
 describe("Commander", function() {
   before("assert preconditions", function() {

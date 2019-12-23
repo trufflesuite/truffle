@@ -137,10 +137,10 @@ export interface MessageDecoding {
    */
   class: Format.Types.ContractType;
   /**
-   * The ABI entry for the contract's fallback function; will be null if
-   * there is none.
+   * The ABI entry for the contract's fallback or receive function that would
+   * handle this message; will be null if there is none.
    */
-  abi: AbiData.FallbackAbiEntry | null; //null indicates no fallback ABI
+  abi: AbiData.FallbackAbiEntry | AbiData.ReceiveAbiEntry | null;
   /**
    * The data that was sent to the contract.
    */
@@ -214,6 +214,11 @@ export interface EventDecoding {
    */
   class: Format.Types.ContractType;
   /**
+   * The class of the contract that (according to this decoding) defined the event, as a Format.Types.ContractType.
+   * May be omitted if we can't determine it, as may occur in ABI mode.
+   */
+  definedIn?: Format.Types.ContractType;
+  /**
    * The list of decoded arguments to the event.
    */
   arguments: AbiArgument[];
@@ -250,6 +255,11 @@ export interface AnonymousDecoding {
    * (The address of the contract the EVM thinks emitted the event can of course be found in the original log.)
    */
   class: Format.Types.ContractType;
+  /**
+   * The class of the contract that (according to this decoding) defined the event, as a Format.Types.ContractType.
+   * May be omitted if we can't determine it, as may occur in ABI mode.
+   */
+  definedIn?: Format.Types.ContractType;
   /**
    * The list of decoded arguments to the event.
    */

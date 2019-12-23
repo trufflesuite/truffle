@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "6.1.0",
+  "version": "6.1.2",
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
@@ -20,8 +20,8 @@
     "test:debug": "NODE_ENV=testing node --inspect ./node_modules/.bin/mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive"
   },
   "dependencies": {
-    "@truffle/code-utils": "^1.2.11",
-    "@truffle/codec": "^0.2.0",
+    "@truffle/code-utils": "^1.2.12",
+    "@truffle/codec": "^0.3.1",
     "@truffle/expect": "^0.0.13",
     "@truffle/solidity-utils": "^1.2.7",
     "bn.js": "^4.11.8",
@@ -34,16 +34,17 @@
     "redux-saga": "1.0.0",
     "remote-redux-devtools": "^0.5.12",
     "reselect-tree": "^1.3.1",
-    "web3": "1.2.2",
-    "web3-eth-abi": "1.2.2"
+    "semver": "^7.1.1",
+    "web3": "1.2.1",
+    "web3-eth-abi": "1.2.1"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.0.40",
-    "@truffle/box": "^1.0.47",
-    "@truffle/debug-utils": "^2.1.0",
-    "@truffle/migrate": "^3.1.1",
-    "@truffle/resolver": "^5.0.22",
-    "@truffle/workflow-compile": "^2.1.14",
+    "@truffle/artifactor": "^4.0.42",
+    "@truffle/box": "^1.0.49",
+    "@truffle/debug-utils": "^2.1.2",
+    "@truffle/migrate": "^3.1.3",
+    "@truffle/resolver": "^5.0.24",
+    "@truffle/workflow-compile": "^2.1.16",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",

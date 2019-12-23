@@ -307,8 +307,7 @@ export type UserDefinedType =
 /**
  * Type of a struct
  *
- * Structs may be local (defined in a contract) or global (defined outside of any contract);
- * the latter will be introduced in Solidity 0.6.x
+ * Structs may be local (defined in a contract) or global (defined outside of any contract)
  *
  * @Category Container types
  */
@@ -342,7 +341,7 @@ export interface StructTypeLocal {
 }
 
 /**
- * Global structs (coming in 0.6.x)
+ * Global structs
  *
  * @Category Container types
  */
@@ -380,8 +379,7 @@ export interface TupleType {
 /**
  * Type of an enum
  *
- * Enums may be local (defined in a contract) or global (defined outside of any contract);
- * the latter will be introduced in Solidity 0.6.x
+ * Enums may be local (defined in a contract) or global (defined outside of any contract)
  *
  * @Category Other user-defined types
  */
@@ -409,7 +407,7 @@ export interface EnumTypeLocal {
 }
 
 /**
- * Global enum (coming in 0.6.x)
+ * Global enum
  *
  * @Category Other user-defined types
  */
@@ -671,7 +669,7 @@ export function typeStringWithoutLocation(dataType: Type): string {
           return `${dataType.typeClass} ${dataType.definingContractName}.${
             dataType.typeName
           }`;
-        case "global": //WARNING, SPECULATIVE
+        case "global":
           return `${dataType.typeClass} ${dataType.typeName}`;
       }
     case "tuple":
@@ -711,7 +709,7 @@ export function typeStringWithoutLocation(dataType: Type): string {
           break;
       }
       let mutabilityString =
-        dataType.mutability === "nonpayable" ? " " + dataType.mutability : ""; //again, note the deliberate space
+        dataType.mutability === "nonpayable" ? "" : " " + dataType.mutability; //again, note the deliberate space
       let inputList = dataType.inputParameterTypes.map(typeString).join(","); //note that we do include location, and do not put spaces
       let outputList = dataType.outputParameterTypes.map(typeString).join(",");
       let inputString = `function(${inputList})`;

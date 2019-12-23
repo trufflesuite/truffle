@@ -1,13 +1,14 @@
 // Override artifactor
-var assert = require("chai").assert;
-var temp = require("temp").track();
-var contract = require("../");
-var Web3 = require("web3");
-var debug = require("debug")("ganache-core");
-var Ganache = require("ganache-core");
-var path = require("path");
-var fs = require("fs");
-var Compile = require("@truffle/compile-solidity/legacy");
+const Config = require("@truffle/config");
+const { assert } = require("chai");
+const temp = require("temp").track();
+const contract = require("../");
+const Web3 = require("web3");
+const debug = require("debug")("ganache-core");
+const Ganache = require("ganache-core");
+const path = require("path");
+const fs = require("fs");
+const Compile = require("@truffle/compile-solidity/legacy");
 const { promisify } = require("util");
 
 // Clean up after solidity. Only remove solidity's listener,
@@ -142,7 +143,7 @@ describe("Library linking with contract objects", function() {
       )
     };
 
-    const options = {
+    const config = Config.default().with({
       contracts_directory: path.join(__dirname, "sources"),
       quiet: true,
       compilers: {
@@ -156,10 +157,10 @@ describe("Library linking with contract objects", function() {
           }
         }
       }
-    };
+    });
 
     // Compile first
-    var result = await promisify(Compile)(sources, options);
+    const result = await promisify(Compile)(sources, config);
 
     var library, libraryContractName;
     if (result["ExampleLibrary"]) {
