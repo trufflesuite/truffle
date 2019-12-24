@@ -210,35 +210,27 @@ class Migration {
       return;
     }
 
-    if (!Console.isDeployed()) {
-      const loggerDeployer = new Deployer({
-        networks,
-        network,
-        network_id,
-        provider
-      });
-      await loggerDeployer.start();
-      await loggerDeployer.deploy(Console);
+    const loggerDeployer = new Deployer({
+      networks,
+      network,
+      network_id,
+      provider
+    });
+    await loggerDeployer.start();
+    await loggerDeployer.deploy(Console);
 
-      // Gather all available contract artifacts
-      const files = await dir.promiseFiles(options.contracts_build_directory);
+    // Gather all available contract artifacts
+    const files = await dir.promiseFiles(options.contracts_build_directory);
 
-      const contracts = files
-        .filter(filePath => {
-          return path.extname(filePath) === ".json";
-        })
-        .map(filePath => {
-          return path.basename(filePath, ".json");
-        })
-        .map(contractName => {
-          return resolver.require(contractName);
-        });
+    const contracts = files
+      .filter(filePath => path.extname(filePath) === ".json")
+      .map(filePath => path.basename(filePath, ".json"))
+      .map(contractName => resolver.require(contractName));
 
-      for (const contract of contracts) {
-        await loggerDeployer.link(Console, contract);
-      }
-      await loggerDeployer.finish();
+    for (const contract of contracts) {
+      await loggerDeployer.link(Console, contract);
     }
+    await loggerDeployer.finish();
   }
 
   /**
