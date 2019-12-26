@@ -24,7 +24,7 @@ const command = {
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>]",
+      "truffle test [<test_file>] [--compile-all || --compile-none] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>]",
     options: [
       {
         option: "<test_file>",
@@ -37,6 +37,12 @@ const command = {
         description:
           "Compile all contracts instead of intelligently choosing which contracts need " +
           "to be compiled."
+      },
+      {
+        option: "--compile-none",
+        description:
+          "Do not compile any contracts before running tests. It will not compile and run solidity tests." +
+          "\n                    User has to make sure that all required artifacts are built."
       },
       {
         option: "--network <name>",
@@ -94,6 +100,13 @@ const command = {
 
     // enables in-test debug() interrupt, forcing compileAll
     if (config.debug) config.compileAll = true;
+
+    if (config.compileAll && config.compileNone) {
+      options.logger.log(
+        "--compile-none can not be set together with --compile-all or --debug"
+      );
+      throw "Command line error.";
+    }
 
     let ipcDisconnect, files;
     try {

@@ -98,26 +98,31 @@ const Test = {
     );
     testResolver.cache_on = false;
 
-    const { compilations } = await this.compileContractsWithTestFilesIfNeeded(
-      solTests,
-      config,
-      testResolver
-    );
-
-    const testContracts = solTests.map(testFilePath => {
-      return testResolver.require(testFilePath);
-    });
-
     const runner = new TestRunner(config);
+    var compilations = null;
+
+    // Do not compile contracts, test contracts, do not add test contracts to testing set
+    // when --compile-none flag is set
+    if (!config.compileNone) {
+      var { compilations } = await this.compileContractsWithTestFilesIfNeeded(
+        solTests,
+        config,
+        testResolver
+      );
+
+      const testContracts = solTests.map(testFilePath => {
+        return testResolver.require(testFilePath);
+      });
+
+      await this.defineSolidityTests(
+        mocha,
+        testContracts,
+        compilations.solc.sourceIndexes,
+        runner
+      );
+    }
 
     await this.performInitialDeploy(config, testResolver);
-
-    await this.defineSolidityTests(
-      mocha,
-      testContracts,
-      compilations.solc.sourceIndexes,
-      runner
-    );
 
     await this.setJSTestGlobals({
       config,
@@ -126,7 +131,7 @@ const Test = {
       accounts,
       testResolver,
       runner,
-      compilation: compilations.solc
+      compilation: compilations ? compilations.solc : {}
     });
 
     // Finally, run mocha.
