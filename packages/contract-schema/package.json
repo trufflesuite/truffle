@@ -1,6 +1,6 @@
 {
   "name": "@truffle/contract-schema",
-  "version": "3.0.21-truffleLogger.0",
+  "version": "3.0.22-truffleLogger.0",
   "description": "JSON schema for contract artifacts",
   "main": "index.js",
   "typings": "./typings/index.d.ts",

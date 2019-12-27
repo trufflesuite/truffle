@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.6-truffleLogger.0",
+  "version": "0.2.7-truffleLogger.0",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
@@ -16,7 +16,7 @@
   "types": "./typings/index.d.ts",
   "dependencies": {
     "@truffle/error": "^0.0.8",
-    "@truffle/interface-adapter": "^0.4.3-truffleLogger.0",
+    "@truffle/interface-adapter": "^0.4.4-truffleLogger.0",
     "web3": "1.2.1"
   },
   "devDependencies": {
