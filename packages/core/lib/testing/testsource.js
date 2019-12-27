@@ -115,7 +115,7 @@ TestSource.prototype.resolve = function(importPath, callback) {
       );
   }
 
-  const loggingLibraries = ["TruffleLogger"];
+  const loggingLibraries = ["Console"];
 
   for (const lib of loggingLibraries) {
     const actualImportPath =

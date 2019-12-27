@@ -1,6 +1,6 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity >=0.4.21 <0.7.0;
 
-library TruffleLogger {
+library Console {
   event _TruffleLog(bool boolean);
   event _TruffleLog(int num);
   event _TruffleLog(uint num);

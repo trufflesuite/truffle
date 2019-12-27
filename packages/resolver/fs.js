@@ -56,7 +56,7 @@ class FS {
       path.join(path.dirname(importedFrom), importPath)
     ];
 
-    if (importPath === "truffle/TruffleLogger.sol") {
+    if (importPath === "truffle/Console.sol") {
       const actualImportPath =
         typeof BUNDLE_VERSION !== "undefined"
           ? path.resolve(__dirname, path.basename(importPath))
