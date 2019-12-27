@@ -98,18 +98,17 @@ const Test = {
     );
     testResolver.cache_on = false;
 
+    var { compilations } = await this.compileContractsWithTestFilesIfNeeded(
+      solTests,
+      config,
+      testResolver
+    );
+
     const runner = new TestRunner(config);
-    var compilations = null;
 
     // Do not compile contracts, test contracts, do not add test contracts to testing set
     // when --compile-none flag is set
     if (!config.compileNone) {
-      var { compilations } = await this.compileContractsWithTestFilesIfNeeded(
-        solTests,
-        config,
-        testResolver
-      );
-
       const testContracts = solTests.map(testFilePath => {
         return testResolver.require(testFilePath);
       });
@@ -169,6 +168,9 @@ const Test = {
     config,
     testResolver
   ) {
+    // Do not compile anything and return null --compile-none flag is set.
+    if (config.compileNone) return {};
+
     const updated =
       (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
 
