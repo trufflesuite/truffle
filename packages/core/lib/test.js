@@ -168,7 +168,7 @@ const Test = {
     config,
     testResolver
   ) {
-    // Do not compile anything and return null --compile-none flag is set.
+    // Do not compile anything and return empty object when --compile-none flag is set.
     if (config.compileNone) return {};
 
     const updated =
