@@ -130,7 +130,7 @@ const Test = {
       accounts,
       testResolver,
       runner,
-      compilation: compilations ? compilations.solc : {}
+      compilation: compilations.solc
     });
 
     // Finally, run mocha.
