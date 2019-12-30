@@ -86,6 +86,12 @@ const command = {
     } = require("./helpers");
 
     const config = Config.detect(options);
+    if (config.compileAll && config.compileNone) {
+      options.logger.log(
+        "--compile-none can not be set together with --compile-all or --debug"
+      );
+      throw "Command line error";
+    }
 
     // if "development" exists, default to using that for testing
     if (!config.network && config.networks.development) {
@@ -100,13 +106,6 @@ const command = {
 
     // enables in-test debug() interrupt, forcing compileAll
     if (config.debug) config.compileAll = true;
-
-    if (config.compileAll && config.compileNone) {
-      options.logger.log(
-        "--compile-none can not be set together with --compile-all or --debug"
-      );
-      throw "Command line error.";
-    }
 
     let ipcDisconnect, files;
     try {

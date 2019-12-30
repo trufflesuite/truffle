@@ -168,12 +168,12 @@ const Test = {
     config,
     testResolver
   ) {
-    // Do not compile anything and return empty object when --compile-none flag is set.
-    if (config.compileNone) return {};
+    // Do not compile anything when --compile-none flag is set.
 
     const updated =
-      (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
-
+      (!config.compileNone
+        ? await Profiler.updated(config.with({ resolver: testResolver }))
+        : []) || [];
     const compileConfig = config.with({
       all: config.compileAll === true,
       files: updated.concat(solidityTestFiles),
