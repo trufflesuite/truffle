@@ -59,8 +59,10 @@ describe("test command", function() {
       "test.sol"
     );
     fs.createFileSync(filename);
+
     filename = path.join(config.test_directory, "sub_directory", "test.js");
     fs.createFileSync(filename);
+
     filename = path.join(
       config.test_directory,
       "sub_directory",
