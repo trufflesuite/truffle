@@ -71,6 +71,16 @@ describe("test command", function() {
     );
     fs.createFileSync(filename);
 
+    let dirName = path.join(
+      config.test_directory,
+      "sub_directory",
+      "empty_sub_directory"
+    );
+
+    // Create empty subdirectory to check if
+    // determineTestFilesTo run function can process it without crashing
+    fs.ensureDirSync(dirName);
+
     let newTestFiles = TestHelpers.determineTestFilesToRun({ config });
     assert.equal(
       newTestFiles.length,
@@ -123,6 +133,10 @@ describe("test command", function() {
                 {
                   name: "js_only_subdir",
                   files: ["test19.js", "test19.js", "test20.js"]
+                },
+                {
+                  name: "empty_sub_sub_directory",
+                  files: []
                 }
               ]
             }
@@ -134,6 +148,8 @@ describe("test command", function() {
     // Create file in recursion. Used instead foreach since foreach loop doesn't wait for files to be created
     // Function does not count already existing files.
     function createFile(dirName, files, index) {
+      // return zero if there are no files to create
+      if (!files[index]) return 0;
       var fileName = path.join(dirName, files[index]);
       let filesCount = 0;
       if (!fs.existsSync(fileName)) {
