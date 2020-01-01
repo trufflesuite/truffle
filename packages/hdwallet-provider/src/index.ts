@@ -171,6 +171,7 @@ class HDWalletProvider {
         case "wss":
           subProvider = new Web3.providers.WebsocketProvider(provider);
         default:
+          // @ts-ignore
           subProvider = new Web3.providers.HttpProvider(provider, {
             keepAlive: false
           });
