@@ -12,6 +12,21 @@ let config;
 let output = "";
 let memStream;
 
+function updateFile(filename, _stat = undefined) {
+  var file_to_update = path.resolve(
+    path.join(config.contracts_directory, filename)
+  );
+  if (_stat) {
+    fs.utimesSync(file_to_update, _stat.atime, _stat.mtime);
+    return;
+  } else {
+    var stat = fs.statSync(file_to_update);
+    var newTime = new Date().getTime();
+    fs.utimesSync(file_to_update, newTime, newTime);
+    return stat;
+  }
+}
+
 describe("compile", function () {
   before("Create a sandbox", async () => {
     config = await Box.sandbox("default");
@@ -65,21 +80,16 @@ describe("compile", function () {
   });
 
   it("compiles updated contract and its ancestors", async function () {
-    const fileToUpdate = path.resolve(
-      path.join(config.contracts_directory, "ConvertLib.sol")
-    );
-    const stat = fs.statSync(fileToUpdate);
+    this.timeout(10000);
 
-    // Update the modification time to simulate an edit.
-    const newTime = new Date().getTime();
-    fs.utimesSync(fileToUpdate, newTime, newTime);
-
-    const {contracts} = await WorkflowCompile.compileAndSave(
+    const stat = updateFile("ConvertLib.sol");
+    const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
         quiet: true
       })
     );
+
     assert.equal(
       Object.keys(contracts).length,
       2,
@@ -87,7 +97,7 @@ describe("compile", function () {
     );
 
     // reset time
-    fs.utimesSync(fileToUpdate, stat.atime, stat.mtime);
+    updateFile("ConvertLib.sol", stat);
   });
 
   it("compiling shouldn't create any network artifacts", function () {
