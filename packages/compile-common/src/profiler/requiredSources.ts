@@ -1,6 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("compile-common:profiler:requiredSources");
 
+import { UnresolvedPathsError } from "../errors";
 import {
   resolveAllSources,
   ResolveAllSourcesOptions
@@ -58,6 +59,13 @@ export async function requiredSources({
     shouldIncludePath,
     paths: allPaths
   });
+
+  const missing = updatedPaths.filter(
+    updatedPath => !(updatedPath in resolved)
+  );
+  if (missing.length > 0) {
+    throw new UnresolvedPathsError(missing);
+  }
 
   //exit out semi-quickly if we've been asked to compile everything
   if (listsEqual(updatedPaths, allPaths)) {

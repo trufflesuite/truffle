@@ -102,6 +102,36 @@ describe("compile", function () {
     );
   });
 
+  it("compiles one specified contract after three are updated", async function () {
+    this.timeout(10000);
+
+    const reset = await updateSources([
+      "ConvertLib.sol",
+      "MetaCoin.sol",
+      "Migrations.sol"
+    ]);
+
+    try {
+      const { contracts } = await WorkflowCompile.compileAndSave(
+        config.with({
+          all: false,
+          quiet: true,
+          specificFiles: [
+            path.resolve(config.contracts_directory, "ConvertLib.sol")
+          ]
+        })
+      );
+
+      assert.equal(
+        Object.keys(contracts).length,
+        2, //ConvertLib.sol is imported by MetaCoin.sol so there should be two files.
+        "Didn't compile specified contracts."
+      );
+    } finally {
+      reset();
+    }
+  });
+
   it("compiles updated contract and its ancestors", async function () {
     this.timeout(10000);
 
