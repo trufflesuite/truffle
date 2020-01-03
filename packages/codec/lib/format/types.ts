@@ -15,7 +15,6 @@ const debug = debugModule("codec:format:types");
 //that might change in the future.
 
 import BN from "bn.js";
-
 import { ContractKind, Location, Mutability } from "@truffle/codec/common";
 
 /**
@@ -712,7 +711,7 @@ export function typeStringWithoutLocation(dataType: Type): string {
           break;
       }
       let mutabilityString =
-        dataType.mutability === "nonpayable" ? " " + dataType.mutability : ""; //again, note the deliberate space
+        dataType.mutability === "nonpayable" ? "" : " " + dataType.mutability; //again, note the deliberate space
       let inputList = dataType.inputParameterTypes.map(typeString).join(","); //note that we do include location, and do not put spaces
       let outputList = dataType.outputParameterTypes.map(typeString).join(",");
       let inputString = `function(${inputList})`;

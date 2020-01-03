@@ -110,6 +110,7 @@ const command = {
       2, // Morden (ETC)
       3, // Ropsten
       4, // Rinkeby
+      5, // Goerli
       8, // Ubiq
       42, // Kovan (Parity)
       77, // Sokol

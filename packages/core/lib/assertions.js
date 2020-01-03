@@ -1,5 +1,4 @@
-var Web3 = require("web3");
-var web3 = new Web3();
+const web3Utils = require("web3-utils");
 
 module.exports = function(chai, _utils) {
   var assert = chai.assert;
@@ -14,7 +13,7 @@ module.exports = function(chai, _utils) {
     // Controversial: Technically there is that edge case where
     // all zeroes could be a valid address. But: This catches all
     // those cases where Ethereum returns 0x0000... if something fails.
-    var number = web3.utils.toBN(this._obj);
+    const number = web3Utils.toBN(this._obj);
     this.assert(
       number.equals(0) === false,
       "expected address #{this} to not be zero",

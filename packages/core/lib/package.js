@@ -4,10 +4,7 @@ const Networks = require("./networks");
 const EthPM = require("ethpm");
 const EthPMRegistry = require("ethpm-registry");
 const Web3 = require("web3");
-const {
-  Web3Shim,
-  createInterfaceAdapter
-} = require("@truffle/interface-adapter");
+const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const async = require("async");
 const path = require("path");
 const fs = require("fs");
@@ -138,10 +135,6 @@ const Package = {
       provider: options.provider,
       networkType: "ethereum"
     });
-    var web3 = new Web3Shim({
-      provider: options.provider,
-      networkType: "ethereum"
-    });
     var host = options.ethpm.ipfs_host;
 
     if (host instanceof EthPM.hosts.IPFS === false) {
@@ -157,7 +150,7 @@ const Package = {
     self.publishable_artifacts(options, function(err, artifacts) {
       if (err) return callback(err);
 
-      web3.eth
+      interfaceAdapter
         .getAccounts()
         .then(async accs => {
           var registry = await EthPMRegistry.use(

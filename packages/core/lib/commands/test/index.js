@@ -71,17 +71,13 @@ const command = {
     ]
   },
   run: function(options, done) {
-    const OS = require("os");
-    const temp = require("temp").track();
-    const glob = require("glob");
-    const path = require("path");
     const Config = require("@truffle/config");
-    const Artifactor = require("@truffle/artifactor");
-    const Test = require("../test");
-    const fs = require("fs");
-    const { promisify } = require("util");
-    const promisifiedCopy = promisify(require("../copy"));
     const { Environment, Develop } = require("@truffle/environment");
+    const {
+      copyArtifactsToTempDir,
+      determineTestFilesToRun,
+      prepareConfigAndRunTests
+    } = require("./helpers");
 
     const config = Config.detect(options);
 
@@ -97,87 +93,34 @@ const command = {
     }
 
     // enables in-test debug() interrupt, forcing compileAll
-    if (config.debug) {
-      config.compileAll = true;
-    }
+    if (config.debug) config.compileAll = true;
 
-    let ipcDisconnect;
-
-    let files = [];
-
-    if (options.file) {
-      files = [options.file];
-    } else if (options._.length > 0) {
-      Array.prototype.push.apply(files, options._);
-    }
-
+    let ipcDisconnect, files;
     try {
-      if (files.length === 0) {
-        const directoryContents = glob.sync(
-          `${config.test_directory}${path.sep}**${path.sep}*`
-        );
-        files =
-          directoryContents.filter(item => fs.statSync(item).isFile()) || [];
-      }
-    } catch (error) {
-      return done(error);
-    }
-
-    files = files.filter(function(file) {
-      return file.match(config.test_file_extension_regexp) != null;
-    });
-
-    let temporaryDirectory;
-    try {
-      temporaryDirectory = temp.mkdirSync("test-");
-    } catch (error) {
-      return done(error);
-    }
-
-    function runCallback() {
-      var args = arguments;
-      // Ensure directory cleanup.
-      done.apply(null, args);
-      if (ipcDisconnect) ipcDisconnect();
-    }
-
-    function run() {
-      // Set a new artifactor; don't rely on the one created by Environments.
-      // TODO: Make the test artifactor configurable.
-      config.artifactor = new Artifactor(temporaryDirectory);
-
-      const testConfig = config.with({
-        test_files: files,
-        contracts_build_directory: temporaryDirectory
+      const { file } = options;
+      const inputArgs = options._;
+      files = determineTestFilesToRun({
+        config,
+        inputArgs,
+        inputFile: file
       });
-      Test.run(testConfig)
-        .then(runCallback)
-        .catch(runCallback);
+    } catch (error) {
+      return done(error);
     }
-
-    const environmentCallback = function() {
-      // Copy all the built files over to a temporary directory, because we
-      // don't want to save any tests artifacts. Only do this if the build directory
-      // exists.
-      try {
-        fs.statSync(config.contracts_build_directory);
-      } catch (_error) {
-        return run();
-      }
-
-      promisifiedCopy(config.contracts_build_directory, temporaryDirectory)
-        .then(() => {
-          if (config.runnerOutputOnly !== true) {
-            config.logger.log(`Using network '${config.network}'.${OS.EOL}`);
-          }
-          run();
-        })
-        .catch(done);
-    };
 
     if (config.networks[config.network]) {
       Environment.detect(config)
-        .then(() => environmentCallback())
+        .then(() => copyArtifactsToTempDir(config))
+        .then(({ config, temporaryDirectory }) => {
+          return prepareConfigAndRunTests({
+            config,
+            files,
+            temporaryDirectory
+          });
+        })
+        .then(numberOfFailures => {
+          done.call(null, numberOfFailures);
+        })
         .catch(done);
     } else {
       const ipcOptions = { network: "test" };
@@ -189,7 +132,7 @@ const command = {
         mnemonic:
           "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
         gasLimit: config.gas,
-        noVMErrorsOnRPCResponse: true,
+        vmErrorsOnRPCResponse: false,
         time: config.genesis_time
       };
       Develop.connectOrStart(
@@ -198,7 +141,18 @@ const command = {
         (started, disconnect) => {
           ipcDisconnect = disconnect;
           Environment.develop(config, ganacheOptions)
-            .then(() => environmentCallback())
+            .then(() => copyArtifactsToTempDir(config))
+            .then(({ config, temporaryDirectory }) => {
+              return prepareConfigAndRunTests({
+                config,
+                files,
+                temporaryDirectory
+              });
+            })
+            .then(numberOfFailures => {
+              done.call(null, numberOfFailures);
+              ipcDisconnect();
+            })
             .catch(done);
         }
       );

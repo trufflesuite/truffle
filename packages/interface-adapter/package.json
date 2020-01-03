@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.3.3",
+  "version": "0.4.1",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
@@ -22,13 +22,14 @@
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
     "lodash": "^4.17.13",
-    "web3": "1.2.2"
+    "web3": "1.2.1"
   },
   "devDependencies": {
-    "@truffle/provider": "^0.2.2",
+    "@truffle/provider": "^0.2.4",
     "@types/bn.js": "^4.11.4",
     "@types/lodash": "^4.14.136",
     "@types/mocha": "^5.2.6",
+    "@types/web3": "1.0.19",
     "ganache-core": "2.8.0",
     "mocha": "^6.0.2",
     "ts-node": "^8.0.3",

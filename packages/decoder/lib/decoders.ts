@@ -21,7 +21,7 @@ import * as DecoderTypes from "./types";
 import Web3 from "web3";
 import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import BN from "bn.js";
-import { Provider } from "@truffle/provider";
+import { Provider } from "web3/providers";
 import {
   ContractBeingDecodedHasNoNodeError,
   ContractAllocationFailedError,
@@ -302,9 +302,11 @@ export class WireDecoder {
    *
    * If there are multiple possible decodings, they will always be listed in the following order:
    *
-   * 1. A non-anonymous event coming from the contract itself (there can be at most one of these)
+   * 1. Non-anonymous events coming from the contract itself (these will moreover be ordered
+   *   from most derived to most base)
    * 2. Non-anonymous events coming from libraries
-   * 3. Anonymous events coming from the contract itself
+   * 3. Anonymous events coming from the contract itself (again, ordered from most derived
+   *   to most base)
    * 4. Anonymous events coming from libraries
    *
    * You can check the kind and class.contractKind fields to distinguish between these.
@@ -330,9 +332,7 @@ export class WireDecoder {
     const block = log.blockNumber;
     const blockNumber = await this.regularizeBlock(block);
     const data = Conversion.toBytes(log.data);
-    //HACK: log.topics is a string[], but because of web3's cruddy typing,
-    //TypeScript thinks it's a (string | string[])[]
-    const topics = (<string[]>log.topics).map(Conversion.toBytes);
+    const topics = log.topics.map(Conversion.toBytes);
     const info: Evm.EvmInfo = {
       state: {
         storage: {},
@@ -389,15 +389,7 @@ export class WireDecoder {
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
-    const defaultOptions: DecoderTypes.EventOptions = {
-      fromBlock: "latest",
-      toBlock: "latest"
-      //we can leave address and name blank
-    };
-    const { address, name, fromBlock, toBlock } = {
-      ...defaultOptions,
-      ...options
-    }; //passed options override defaults
+    const { address, name, fromBlock, toBlock } = options;
     const fromBlockNumber = await this.regularizeBlock(fromBlock);
     const toBlockNumber = await this.regularizeBlock(toBlock);
 
@@ -426,10 +418,7 @@ export class WireDecoder {
       events = events.filter(event => event.decodings.length > 0);
     }
 
-    //HACK: topics is a string[], but because of web3's cruddy typing,
-    //TypeScript thinks it's a (string | string[])[], so we have to
-    //coerce here
-    return <DecoderTypes.DecodedLog[]>events;
+    return events;
   }
 
   /**
@@ -1073,13 +1062,7 @@ export class ContractInstanceDecoder {
     //if pending, bypass the cache
     if (block === "pending") {
       return Conversion.toBytes(
-        //HACK: for some reason getStorageAt is typed to only take a number!!
-        //fortunately it still actually accepts strings & BNs
-        await this.web3.eth.getStorageAt(
-          address,
-          <number>(<unknown>slot),
-          block
-        ),
+        await this.web3.eth.getStorageAt(address, slot, block),
         Codec.Evm.Utils.WORD_SIZE
       );
     }
@@ -1097,9 +1080,7 @@ export class ContractInstanceDecoder {
     }
     //otherwise, get it, cache it, and return it
     let word = Conversion.toBytes(
-      //HACK: for some reason getStorageAt is typed to only take a number!!
-      //fortunately it still actually accepts strings & BNs
-      await this.web3.eth.getStorageAt(address, <number>(<unknown>slot), block),
+      await this.web3.eth.getStorageAt(address, slot, block),
       Codec.Evm.Utils.WORD_SIZE
     );
     this.storageCache[block][address][slot.toString()] = word;

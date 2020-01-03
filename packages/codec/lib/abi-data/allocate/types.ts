@@ -57,13 +57,18 @@ export interface CalldataAllocations {
 }
 
 export interface CalldataConstructorAllocations {
-  [contextHash: string]: CalldataAllocation;
+  [contextHash: string]: CalldataAndReturndataAllocation;
 }
 
 export interface CalldataFunctionAllocations {
   [contextHash: string]: {
-    [selector: string]: CalldataAllocation;
+    [selector: string]: CalldataAndReturndataAllocation;
   };
+}
+
+export interface CalldataAndReturndataAllocation {
+  input: CalldataAllocation;
+  output: ReturndataAllocation; //return data will be discussed below
 }
 
 export interface CalldataAllocation {
@@ -87,14 +92,13 @@ export interface CalldataArgumentAllocation {
 //3. then by selector (this one is skipped for anonymou)
 //4. then by contract kind
 //5. then by (deployed) context hash
-//(and then the anonymous ones are in an array)
 
 export interface EventAllocations {
   [topics: number]: {
     bySelector: {
       [selector: string]: {
         [contractKind: string]: {
-          [contextHash: string]: EventAllocation;
+          [contextHash: string]: EventAllocation[];
         };
       };
     };
@@ -109,6 +113,7 @@ export interface EventAllocations {
 export interface EventAllocation {
   abi: AbiData.EventAbiEntry;
   contextHash: string;
+  definedIn?: Format.Types.ContractType; //is omitted if we don't know
   anonymous: boolean;
   arguments: EventArgumentAllocation[];
   allocationMode: DecodingMode;
@@ -120,16 +125,38 @@ export interface EventArgumentAllocation {
   pointer: Pointer.EventDataPointer | Pointer.EventTopicPointer;
 }
 
+//now let's go back ands fill in returndata
+type ReturndataKind =
+  | "return"
+  | "revert"
+  | "failure"
+  | "selfdestruct"
+  | "bytecode";
+
+export interface ReturndataAllocation {
+  selector: Uint8Array;
+  arguments: ReturndataArgumentAllocation[]; //ignored if kind="bytecode"
+  allocationMode: DecodingMode;
+  kind: ReturndataKind;
+}
+
+export interface ReturndataArgumentAllocation {
+  name: string;
+  type: Format.Types.Type;
+  pointer: Pointer.ReturndataPointer;
+}
+
 //NOTE: the folowing types are not for outside use!  just produced temporarily by the allocator!
 export interface EventAllocationTemporary {
-  selector?: string; //leave out for anonymous
+  selector: string; //included even for anonymous!
+  anonymous: boolean;
   topics: number;
-  allocation: EventAllocation;
+  allocation: EventAllocation | undefined;
 }
 
 export interface CalldataAllocationTemporary {
-  constructorAllocation?: CalldataAllocation;
+  constructorAllocation?: CalldataAndReturndataAllocation;
   functionAllocations: {
-    [selector: string]: CalldataAllocation;
+    [selector: string]: CalldataAndReturndataAllocation;
   };
 }
