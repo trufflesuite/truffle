@@ -31,6 +31,9 @@ export const schema = mergeSchemas({
         extend type NameRecord {
           id: ID!
         }
+        extend type Project {
+          id: ID!
+        }
         `
       ]
     }),
@@ -48,13 +51,14 @@ export const schema = mergeSchemas({
       networks: [Network]
       sources: [Source]
       nameRecords: [NameRecord]
+      projects: [Project]
 
       source(id: ID!): Source
       bytecode(id: ID!): Bytecode
       contractInstance(id: ID!): ContractInstance
       network(id: ID!): Network
       nameRecord(id:ID!): NameRecord
-      previousNameRecord(name: String!, type: String!): NameRecord
+      project(directory: String): Project
     }
 
     input SourceInput {
@@ -261,6 +265,40 @@ export const schema = mergeSchemas({
       nameRecords: [NameRecord]
     }
 
+    input ProjectNamesSetNameRecordInput {
+      id: ID!
+    }
+
+    input ProjectInput {
+      directory: String!
+    }
+
+    input ProjectNamesSetInput {
+      project: ProjectInput!
+      nameRecords: [ProjectNamesSetNameRecordInput!]!
+    }
+
+    type ProjectNamesSetPayload {
+      project: Project
+      nameRecords: [NameRecord]
+    }
+
+    input ProjectAddInput {
+      directory: String
+    }
+
+    type ProjectName {
+      type: String
+      name: String
+      id: ID!
+    }
+
+    type ProjectAddPayload {
+      directory: String
+      names: [ProjectName]
+      id: ID
+    }
+
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
@@ -269,6 +307,8 @@ export const schema = mergeSchemas({
       contractInstancesAdd(input: ContractInstancesAddInput!): ContractInstancesAddPayload
       networksAdd(input: NetworksAddInput!): NetworksAddPayload
       nameRecordsAdd(input: NameRecordsAddInput!): NameRecordsAddPayload
+      projectNamesSet(input:ProjectNamesSetInput!):ProjectNamesSetPayload
+      projectAdd(input:ProjectAddInput!):ProjectAddPayload
     } `
   ],
 
@@ -320,15 +360,10 @@ export const schema = mergeSchemas({
       nameRecords: {
         resolve: (_, {}, { workspace }) => workspace.nameRecords()
       },
-      previousNameRecord: {
-        resolve: async (_, { name, type }, { workspace }) => {
-          let previous = await workspace.previousNameRecord({
-            name: name,
-            type: type
-          });
-          if (previous) {
-            return { id: previous };
-          }
+      project: {
+        resolve: async (_, { directory }, { workspace }) => {
+          let project = await workspace.project({ directory: directory });
+          return project[0];
         }
       }
     },
@@ -360,6 +395,32 @@ export const schema = mergeSchemas({
       nameRecordsAdd: {
         resolve: async (_, { input }, { workspace }) => {
           return await workspace.nameRecordsAdd({ input });
+        }
+      },
+      projectNamesSet: {
+        resolve: async (_, { input }, { workspace }) => {
+          let nameRecords = await Promise.all(
+            input.nameRecords.map(async ({ id }) => {
+              return await workspace.nameRecord({ id: id });
+            })
+          );
+
+          let project = await workspace.project({
+            directory: input.project.directory
+          });
+
+          let updatedProject = await workspace.projectNamesSet({
+            project: project[0],
+            nameRecords: nameRecords
+          });
+
+          return updatedProject;
+        }
+      },
+      projectAdd: {
+        resolve: async (_, { input }, { workspace }) => {
+          let project = await workspace.projectAdd({ input });
+          return project;
         }
       }
     },

@@ -7,6 +7,19 @@ scalar Object
 scalar ByteOffset
 scalar FileIndex
 
+type ProjectName {
+  type: String!
+  name: String!
+  id: String!
+}
+
+type Project {
+  name: String
+  directory: String!
+  names: [ProjectName]
+  resolve(type: String!, name: String!): NameRecord
+}
+
 type NameRecord {
   name: String!
   resource: Named!

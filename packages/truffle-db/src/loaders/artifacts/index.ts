@@ -327,6 +327,82 @@ const getPreviousNameRecord = gql`
   }
 `;
 
+const getProject = gql`
+  query GetProject($directory: String!) {
+    workspace {
+      project(directory: $directory) {
+        names {
+          type
+          name
+          id
+        }
+      }
+    }
+  }
+`;
+
+const addProject = gql`
+  mutation AddProject($directory: String) {
+    workspace {
+      projectAdd(input: { directory: $directory }) {
+        directory
+        id
+      }
+    }
+  }
+`;
+
+export const setProjectNames = gql`
+  input ProjectInput {
+    directory: String!
+  }
+
+  input ProjectNamesSetNameRecordInput {
+    id: ID!
+  }
+
+  input ProjectNamesSetInput {
+    project: ProjectInput!
+    nameRecords: [ProjectNamesSetNameRecordInput!]!
+  }
+
+  mutation AddProjectNames(
+    $project: ProjectInput!
+    $nameRecords: [ProjectNamesSetNameRecordInput!]!
+  ) {
+    workspace {
+      projectNamesSet(input: { project: $project, nameRecords: $nameRecords }) {
+        nameRecords {
+          name
+          resource {
+            id
+            ... on Network {
+              networkId
+            }
+            ... on Contract {
+              name
+            }
+          }
+          previous {
+            resource {
+              id
+            }
+          }
+        }
+        project {
+          names {
+            type
+            name
+            id
+          }
+          directory
+          id
+        }
+      }
+    }
+  }
+`;
+
 type WorkflowCompileResult = {
   outputs: { [compilerName: string]: string[] };
   contracts: { [contractName: string]: ContractObject };
@@ -362,6 +438,12 @@ type NameRecordObject = {
   previous?: IdObject;
 };
 
+type NameHeadObject = {
+  type: string;
+  name: string;
+  id: string;
+};
+
 export class ArtifactsLoader {
   private db: TruffleDB;
   private config: object;
@@ -372,6 +454,10 @@ export class ArtifactsLoader {
   }
 
   async load(): Promise<void> {
+    const addNewProject = await this.db.query(addProject, {
+      directory: this.config["contracts_directory"]
+    });
+
     const compilationsOutput = await this.loadCompilation(this.config);
     const { compilations, contracts } = compilationsOutput;
 
@@ -403,7 +489,35 @@ export class ArtifactsLoader {
   }
 
   async loadNameRecords(nameRecords: Array<NameRecordObject>) {
-    await this.db.query(AddNameRecords, { nameRecords: nameRecords });
+    let nameRecordLoaded = await this.db.query(AddNameRecords, {
+      nameRecords: nameRecords
+    });
+    let nameRecordsArray =
+      nameRecordLoaded.data.workspace.nameRecordsAdd.nameRecords;
+
+    //set new projectNameHeads based on name records added
+    await this.db.query(setProjectNames, {
+      project: { directory: this.config["contracts_directory"] },
+      nameRecords: nameRecordsArray
+    });
+  }
+
+  async getPrevious(
+    type: string,
+    name: string,
+    currentNameHeads: Array<NameHeadObject>
+  ) {
+    let previous;
+    let previousIndex = currentNameHeads.findIndex(
+      head => type == head.type && name.toLowerCase() == head.name
+    );
+
+    if (previousIndex !== -1) {
+      previous = { id: currentNameHeads[previousIndex].id };
+    } else {
+      previous = null;
+    }
+    return previous;
   }
 
   async loadCompilationContracts(
@@ -436,12 +550,18 @@ export class ArtifactsLoader {
       ({ id }) => ({ id })
     );
 
+    let currentNameHeads = await this.db.query(getProject, {
+      directory: this.config["contracts_directory"]
+    });
+
     const nameRecords = await Promise.all(
       contractObjects.map(async (contract, index) => {
-        let previous = await this.db.query(getPreviousNameRecord, {
-          name: contract.name,
-          type: "Contract"
-        });
+        //check if there is already a current head for this item. if so save it as previous
+        let previous: IdObject = await this.getPrevious(
+          "Contract",
+          contract.name as string,
+          currentNameHeads.data.workspace.project.names
+        );
 
         let nameRecordObject = {
           name: contract.name,
@@ -449,7 +569,7 @@ export class ArtifactsLoader {
             id: contractIds[index].id,
             type: "Contract"
           },
-          previous: previous.data.workspace.previousNameRecord
+          previous: previous
         };
 
         return nameRecordObject as NameRecordObject;
@@ -611,12 +731,18 @@ export class ArtifactsLoader {
           }
         }
 
+        let currentNameHeads = await this.db.query(getProject, {
+          directory: this.config["contracts_directory"]
+        });
+
         const nameRecords = await Promise.all(
           configNetworks.map(async (network, index) => {
-            let previous = await this.db.query(getPreviousNameRecord, {
-              name: network.name,
-              type: "Network"
-            });
+            //check if there is already a current head for this item. if so save it as previous
+            let previous: IdObject = await this.getPrevious(
+              "Network",
+              network.name,
+              currentNameHeads.data.workspace.project.names
+            );
 
             let nameRecordObject = {
               name: network.name,
@@ -624,7 +750,7 @@ export class ArtifactsLoader {
                 id: configNetworks[index].id,
                 type: "Network"
               },
-              previous: previous.data.workspace.previousNameRecord
+              previous: previous
             };
 
             return nameRecordObject as NameRecordObject;

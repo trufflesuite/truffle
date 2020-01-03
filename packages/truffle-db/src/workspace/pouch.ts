@@ -17,6 +17,7 @@ type PouchApi = {
   networks: PouchDB.Database;
   sources: PouchDB.Database;
   nameRecords: PouchDB.Database;
+  projects: PouchDB.Database;
 };
 
 type IWorkspaceQueryResource = keyof PouchApi;
@@ -45,12 +46,51 @@ const resources = {
     createIndexes: []
   },
   nameRecords: {
-    createIndexes: [{ fields: ["id"] }]
+    createIndexes: [{ fields: ["id"] }, { fields: ["name"] }]
+  },
+  projects: {
+    createIndexes: [{ fields: ["id"] }, { fields: ["directory"] }]
   }
+};
+
+type ProjectObject = {
+  directory: string;
+  id: string;
+  _id: string;
+  _rev: string;
+};
+
+type ResourceObject = {
+  id: string;
+  type: string;
+};
+
+type NameRecordObject = {
+  name: string;
+  resource: ResourceObject;
+  createdAt: string;
+  _id: string;
+  _rev: string;
+  id: string;
+};
+
+type IdObject = {
+  id: string;
+};
+type NameHeadList = {
+  name: string;
+  type: string;
+  id: string;
+};
+
+type NameHeadObject = Array<NameHeadList>;
+type NamesObject = {
+  [key: string]: NameHeadObject;
 };
 
 export class Workspace {
   public dbApi: PouchApi;
+  public directory: string;
 
   getSavePath(workingDirectory: string, resource: string): string {
     const savePath = path.join(workingDirectory, ".db", resource);
@@ -75,6 +115,7 @@ export class Workspace {
   private ready: Promise<void>;
 
   constructor(workingDirectory: string) {
+    this.directory = workingDirectory;
     PouchDB.plugin(pouchdbDebug);
     PouchDB.plugin(PouchDBFind);
 
@@ -148,6 +189,119 @@ export class Workspace {
     return this.fetchAll("nameRecords");
   }
 
+  async projects(): Promise<IWorkspaceQueryResourceCollection> {
+    return this.fetchAll("projects");
+  }
+
+  async project({ directory }: { directory: string }) {
+    await this.ready;
+
+    const result = await this.dbApi.projects.find({
+      selector: { directory: directory }
+    });
+
+    if (result.docs.length > 0) {
+      return result.docs;
+    } else {
+      return null;
+    }
+  }
+
+  async projectAdd({ input }) {
+    await this.ready;
+
+    let { directory } = input;
+    let projectDir: string;
+
+    if (directory) {
+      projectDir = directory;
+    } else {
+      projectDir = this.directory;
+    }
+
+    let id = soliditySha3(
+      jsonStableStringify({
+        directory: projectDir
+      })
+    );
+
+    let project = await this.project({ directory: directory });
+
+    if (project) {
+      return project[0];
+    } else {
+      let projectAdded = await this.dbApi.projects.put({
+        directory: projectDir,
+        names: [],
+        _id: id
+      });
+
+      return {
+        directory: projectDir,
+        names: [],
+        id: id
+      };
+    }
+  }
+
+  async projectNamesSet({
+    project,
+    nameRecords
+  }: {
+    project: ProjectObject;
+    nameRecords: Array<NameRecordObject>;
+  }) {
+    await this.ready;
+
+    let existingProject = await this.project({ directory: project.directory });
+
+    nameRecords.map(nameRecord => {
+      //find matching type/name, this is the current head if it exists
+      let existingTypeAndNameIndex: number = existingProject[0][
+        "names"
+      ].findIndex(
+        name =>
+          nameRecord["resource"]["type"] == name["type"] &&
+          nameRecord["name"] == name["name"]
+      );
+
+      let projectNameHead = {
+        type: nameRecord.resource.type,
+        name: nameRecord.name.toLowerCase(),
+        id: nameRecord.resource.id
+      };
+
+      let previousNameHead;
+
+      if (existingTypeAndNameIndex === -1) {
+        // no head exists for this type/name, add it here
+        existingProject[0]["names"].push(projectNameHead);
+      } else {
+        // this type/name has a head, replace with new head
+        previousNameHead =
+          existingProject[0]["names"][existingTypeAndNameIndex];
+        existingProject[0]["names"][existingTypeAndNameIndex] = projectNameHead;
+      }
+    });
+
+    let updateProject = await this.dbApi.projects.put({
+      names: existingProject[0]["names"],
+      directory: project.directory,
+      _id: project._id,
+      _rev: project._rev,
+      id: project._id
+    });
+
+    let newProjectUpdated = await this.project({
+      directory: project.directory
+    });
+
+    return {
+      project: newProjectUpdated[0],
+      nameRecords
+    };
+  }
+
   async contractNames() {
     await this.ready;
 
@@ -191,6 +345,7 @@ export class Workspace {
               previous: previous
             })
           );
+
           const nameRecord = await this.nameRecord({ id });
 
           if (nameRecord) {

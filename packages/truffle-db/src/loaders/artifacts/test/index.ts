@@ -409,6 +409,51 @@ const AddContracts = gql`
   }
 `;
 
+const AddProject = gql`
+  mutation AddProject($directory: String) {
+    workspace {
+      projectAdd(input: { directory: $directory }) {
+        directory
+        id
+      }
+    }
+  }
+`;
+
+const SetProjectNames = gql`
+  input ProjectInput {
+    directory: String!
+  }
+
+  input ProjectNamesSetNameRecordInput {
+    id: ID!
+  }
+
+  input ProjectNamesSetInput {
+    project: ProjectInput!
+    nameRecords: [ProjectNamesSetNameRecordInput!]!
+  }
+
+  mutation AddProjectNames(
+    $project: ProjectInput!
+    $nameRecords: [ProjectNamesSetNameRecordInput!]!
+  ) {
+    workspace {
+      projectNamesSet(input: { project: $project, nameRecords: $nameRecords }) {
+        project {
+          names {
+            type
+            name
+            id
+          }
+          directory
+          id
+        }
+      }
+    }
+  }
+`;
+
 describe("Compilation", () => {
   let sourceIds = [];
   let bytecodeIds = [];
@@ -519,6 +564,10 @@ describe("Compilation", () => {
     );
 
     // setting up a fake previous contract to test previous name record
+    let projectAdded = await db.query(AddProject, {
+      directory: compilationConfig["contracts_directory"]
+    });
+
     let previousContract = {
       name: "Migrations",
       abi: { json: JSON.stringify(artifacts[1].abi) },
@@ -553,7 +602,7 @@ describe("Compilation", () => {
     };
 
     // add this fake name record, which differs in its abi, so that a previous contract
-    // with this name exists for testing
+    // with this name exists for testing; also adding as a name head here
 
     const contractNameRecord = await db.query(
       AddNameRecords,
@@ -562,6 +611,15 @@ describe("Compilation", () => {
     contractNameRecordId =
       contractNameRecord.data.workspace.nameRecordsAdd.nameRecords[0].id;
 
+    let setContractHead = await db.query(SetProjectNames, {
+      project: { directory: compilationConfig["contracts_directory"] },
+      nameRecords: [
+        {
+          id: contractNameRecordId
+        }
+      ]
+    });
+
     networkNameRecordId = generateId({
       name: "development",
       resource: {
@@ -569,6 +627,15 @@ describe("Compilation", () => {
         type: "Network"
       },
       previous: null
+    });
+
+    let setNetworkHead = await db.query(SetProjectNames, {
+      directory: compilationConfig["contracts_directory"],
+      nameRecords: [
+        {
+          id: networkNameRecordId
+        }
+      ]
     });
 
     const loader = new ArtifactsLoader(db, compilationConfig);
