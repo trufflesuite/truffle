@@ -269,6 +269,10 @@ module.exports = {
     get: function() {
       var code = this._json.deployedBytecode;
 
+      if (!code) {
+        return code;
+      }
+
       if (code.indexOf("0x") !== 0) {
         code = "0x" + code;
       }
@@ -278,7 +282,7 @@ module.exports = {
     set: function(val) {
       var code = val;
 
-      if (val.indexOf("0x") !== 0) {
+      if (val && val.indexOf("0x") !== 0) {
         code = "0x" + code;
       }
 
