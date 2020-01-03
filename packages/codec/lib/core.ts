@@ -191,40 +191,56 @@ export function* decodeEvent(
   let rawSelector: Uint8Array;
   let selector: string;
   let contractAllocations: {
-    [contextHash: string]: AbiData.Allocate.EventAllocation;
+    [contextHash: string]: AbiData.Allocate.EventAllocation[];
   }; //for non-anonymous events
   let libraryAllocations: {
-    [contextHash: string]: AbiData.Allocate.EventAllocation;
+    [contextHash: string]: AbiData.Allocate.EventAllocation[];
   }; //similar
+  let contractAnonymousAllocations: {
+    [contextHash: string]: AbiData.Allocate.EventAllocation[];
+  };
+  let libraryAnonymousAllocations: {
+    [contextHash: string]: AbiData.Allocate.EventAllocation[];
+  };
   const topicsCount = info.state.eventtopics.length;
   //yeah, it's not great to read directly from the state like this (bypassing read), but what are you gonna do?
-  if (topicsCount > 0) {
-    rawSelector = yield* read(
-      {
-        location: "eventtopic",
-        topic: 0
-      },
-      info.state
-    );
-    selector = Conversion.toHexString(rawSelector);
+  if (allocations[topicsCount]) {
+    if (topicsCount > 0) {
+      rawSelector = yield* read(
+        {
+          location: "eventtopic",
+          topic: 0
+        },
+        info.state
+      );
+      selector = Conversion.toHexString(rawSelector);
+      if (allocations[topicsCount].bySelector[selector]) {
+        ({
+          contract: contractAllocations,
+          library: libraryAllocations
+        } = allocations[topicsCount].bySelector[selector]);
+      } else {
+        debug("no allocations for that selector!");
+        contractAllocations = {};
+        libraryAllocations = {};
+      }
+    } else {
+      //if we don't have a selector, it means we don't have any non-anonymous events
+      contractAllocations = {};
+      libraryAllocations = {};
+    }
+    //now: let's get our allocations for anonymous events
     ({
-      contract: contractAllocations,
-      library: libraryAllocations
-    } = allocations[topicsCount].bySelector[selector] || {
-      contract: {},
-      library: {}
-    });
+      contract: contractAnonymousAllocations,
+      library: libraryAnonymousAllocations
+    } = allocations[topicsCount].anonymous);
   } else {
-    //if we don't have a selector, it means we don't have any non-anonymous events
-    contractAllocations = {};
-    libraryAllocations = {};
+    //if there's not even an allocation for the topics count, we can't
+    //decode; we could do this the honest way of setting all four allocation
+    //objects to {}, but let's just short circuit
+    debug("no allocations for that topic count!");
+    return [];
   }
-  //now: let's get our allocations for anonymous events
-  //note: these ones map contract IDs to *arrays* of event allocations, not individual allocations!
-  const {
-    contract: contractAnonymousAllocations,
-    library: libraryAnonymousAllocations
-  } = allocations[topicsCount].anonymous;
   //now: what contract are we (probably) dealing with? let's get its code to find out
   const codeBytes: Uint8Array = yield {
     type: "code",
@@ -243,17 +259,18 @@ export function* decodeEvent(
     const contractAllocation = contractAllocations[contextHash];
     const contractAnonymousAllocation =
       contractAnonymousAllocations[contextHash];
-    possibleContractAllocations = contractAllocation
-      ? [contractAllocation]
-      : [];
+    possibleContractAllocations = contractAllocation || [];
     possibleContractAnonymousAllocations = contractAnonymousAllocation || [];
   } else {
     //if we couldn't determine the contract, well, we have to assume it's from a library
+    debug("couldn't find context");
     possibleContractAllocations = [];
     possibleContractAnonymousAllocations = [];
   }
   //now we get all the library allocations!
-  const possibleLibraryAllocations = Object.values(libraryAllocations);
+  const possibleLibraryAllocations = [].concat(
+    ...Object.values(libraryAllocations)
+  );
   const possibleLibraryAnonymousAllocations = [].concat(
     ...Object.values(libraryAnonymousAllocations)
   );
@@ -277,7 +294,8 @@ export function* decodeEvent(
     let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     const contextHash = allocation.contextHash;
     const attemptContext = info.contexts[contextHash];
-    const contractType = Contexts.Import.contextToType(attemptContext);
+    const emittingContractType = Contexts.Import.contextToType(attemptContext);
+    const contractType = allocation.definedIn;
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];
     for (const argumentAllocation of allocation.arguments) {
@@ -360,13 +378,11 @@ export function* decodeEvent(
     const indexedValues = decodedArguments
       .filter(argument => argument.indexed)
       .map(argument => argument.value);
-    debug("indexedValues: %O", indexedValues);
     const reEncodedTopics = indexedValues.map(Topic.Encode.encodeTopic);
     const encodedTopics = info.state.eventtopics;
     //now: do *these* match?
     const selectorAdjustment = allocation.anonymous ? 0 : 1;
     for (let i = 0; i < reEncodedTopics.length; i++) {
-      debug("encodedTopics[i]: %O", encodedTopics[i]);
       if (
         !Evm.Utils.equalData(
           reEncodedTopics[i],
@@ -382,7 +398,8 @@ export function* decodeEvent(
     if (allocation.abi.anonymous) {
       decodings.push({
         kind: "anonymous",
-        class: contractType,
+        definedIn: contractType,
+        class: emittingContractType,
         abi: allocation.abi,
         arguments: decodedArguments,
         decodingMode
@@ -390,7 +407,8 @@ export function* decodeEvent(
     } else {
       decodings.push({
         kind: "event",
-        class: contractType,
+        definedIn: contractType,
+        class: emittingContractType,
         abi: allocation.abi,
         arguments: decodedArguments,
         selector,
