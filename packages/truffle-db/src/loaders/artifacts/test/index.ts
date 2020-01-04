@@ -31,63 +31,11 @@ afterAll(async done => {
 // and also to keep from adding more time to Travis testing
 jest.mock("@truffle/workflow-compile/new", () => ({
   compile: function(config, callback) {
-    const magicSquare = require(path.join(
+    return require(path.join(
       __dirname,
-      "sources",
-      "MagicSquare.json"
+      "workflowCompileOutputMock",
+      "compilationOutput.json"
     ));
-    const migrations = require(path.join(
-      __dirname,
-      "sources",
-      "Migrations.json"
-    ));
-    const squareLib = require(path.join(
-      __dirname,
-      "sources",
-      "SquareLib.json"
-    ));
-    const vyperStorage = require(path.join(
-      __dirname,
-      "sources",
-      "VyperStorage.json"
-    ));
-    const returnValue = {
-      compilations: {
-        solc: {
-          sourceIndexes: [
-            "/Users/fainashalts/solidity-magic-square/contracts/MagicSquare.sol",
-            "/Users/fainashalts/solidity-magic-square/contracts/Migrations.sol",
-            "/Users/fainashalts/solidity-magic-square/contracts/SquareLib.sol"
-          ],
-          contracts: [
-            {
-              contractName: "MagicSquare",
-              ...magicSquare
-            },
-            {
-              contractName: "Migrations",
-              ...migrations
-            },
-            {
-              contractName: "SquareLib",
-              ...squareLib
-            }
-          ]
-        },
-        vyper: {
-          sourceIndexes: [
-            "/Users/fainashalts/solidity-magic-square/contracts/VyperStorage.sol"
-          ],
-          contracts: [
-            {
-              contractName: "VyperStorage",
-              ...vyperStorage
-            }
-          ]
-        }
-      }
-    };
-    return returnValue;
   }
 }));
 
