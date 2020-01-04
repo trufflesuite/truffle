@@ -432,20 +432,20 @@ export class ArtifactsLoader {
   }
 
   async load(): Promise<void> {
-    const compilationsOutput = await this.loadCompilation(this.config);
-    const { compilations, contracts } = compilationsOutput;
+    const compileOutput = await this.loadCompilation(this.config);
+    const { compilations, compilationsOutput } = compileOutput;
     //map contracts and contract instances to compiler
     await Promise.all(
       compilations.data.workspace.compilationsAdd.compilations.map(
         async ({ compiler, id }) => {
           const networks = await this.loadNetworks(
-            contracts[compiler.name].contracts,
+            compilationsOutput[compiler.name].contracts,
             this.config["artifacts_directory"],
             this.config["contracts_directory"]
           );
 
           const contractIds = await this.loadCompilationContracts(
-            contracts[compiler.name].contracts,
+            compilationsOutput[compiler.name].contracts,
             id,
             compiler.name,
             networks
@@ -453,7 +453,7 @@ export class ArtifactsLoader {
 
           if (networks[0].length) {
             this.loadContractInstances(
-              contracts[compiler.name].contracts,
+              compilationsOutput[compiler.name].contracts,
               contractIds.contractIds,
               networks,
               contractIds.bytecodes
@@ -749,11 +749,11 @@ export class ArtifactsLoader {
   }
 
   async loadCompilation(compilationConfig: CompilationConfigObject) {
-    const compilationOutput = await Contracts.compile(compilationConfig);
-    const contracts = compilationOutput.compilations;
+    const compileOutput = await Contracts.compile(compilationConfig);
+    const compilationsOutput = compileOutput.compilations;
 
     const compilationObjects = await Promise.all(
-      Object.values(contracts)
+      Object.values(compilationsOutput)
         .filter(contracts => contracts["contracts"].length > 0)
         .map(({ contracts }) => {
           return this.setCompilation(contracts);
@@ -764,6 +764,6 @@ export class ArtifactsLoader {
       compilations: compilationObjects
     });
 
-    return { compilations, contracts };
+    return { compilations, compilationsOutput };
   }
 }
