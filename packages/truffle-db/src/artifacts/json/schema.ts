@@ -64,7 +64,13 @@ function convertToArray(schema, keyName = "key", valueName = "value") {
   };
 }
 
-function processSchema(name, schema) {
+interface SchemaDefinitions {
+  [name: string]: {
+    [k: string]: any;
+  }
+}
+
+function processSchema(name, schema: { definitions: SchemaDefinitions }) {
   const definitions = [
     ...Object.entries(schema.definitions).map(([id, definition]) => ({
       ...definition,
