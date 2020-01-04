@@ -15,7 +15,7 @@ import {
   AddContracts,
   AddContractInstances,
   AddNetworks
-} from "./queries";
+} from "../queries";
 
 type WorkflowCompileResult = {
   compilations: {
