@@ -11,7 +11,7 @@ jest.mock("@truffle/workflow-compile/new", () => ({
     return require(path.join(
       __dirname,
       "..",
-      "artifacts",
+      "schema",
       "test",
       "workflowCompileOutputMock",
       "compilationOutput.json"
@@ -19,7 +19,7 @@ jest.mock("@truffle/workflow-compile/new", () => ({
   }
 }));
 
-const fixturesDirectory = path.join(__dirname, "..", "artifacts", "test");
+const fixturesDirectory = path.join(__dirname, "..", "schema", "test");
 
 const tempDir = tmp.dirSync({ unsafeCleanup: true });
 tmp.setGracefulCleanup();

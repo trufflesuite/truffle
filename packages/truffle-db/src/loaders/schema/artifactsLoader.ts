@@ -1,31 +1,20 @@
-import gql from "graphql-tag";
-import { TruffleDB } from "truffle-db/db";
-import * as Contracts from "@truffle/workflow-compile/new";
-import { ContractObject } from "@truffle/contract-schema/spec";
-import * as fse from "fs-extra";
 import path from "path";
-import Config from "@truffle/config";
-import { Environment } from "@truffle/environment";
+
+import * as fse from "fs-extra";
 import Web3 from "web3";
 
-import {
-  AddBytecodes,
-  AddSources,
-  AddCompilation,
-  AddContracts,
-  AddContractInstances,
-  AddNetworks
-} from "../queries";
+import * as Contracts from "@truffle/workflow-compile/new";
+import Config from "@truffle/config";
+import { ContractObject } from "@truffle/contract-schema/spec";
+import { Environment } from "@truffle/environment";
 
-type WorkflowCompileResult = {
-  compilations: {
-    [compilerName: string]: {
-      sourceIndexes: Array<string>;
-      contracts: Array<ContractObject>;
-    };
-  };
-  contracts: { [contractName: string]: ContractObject };
-};
+import { TruffleDB } from "truffle-db/db";
+import { AddBytecodes } from "truffle-db/loaders/resources/bytecodes";
+import { AddCompilations } from "truffle-db/loaders/resources/compilations";
+import { AddContractInstances } from "truffle-db/loaders/resources/contractInstances";
+import { AddContracts } from "truffle-db/loaders/resources/contracts";
+import { AddNetworks } from "truffle-db/loaders/resources/networks";
+import { AddSources } from "truffle-db/loaders/resources/sources";
 
 type networkLinkObject = {
   [name: string]: string;
@@ -393,8 +382,10 @@ export class ArtifactsLoader {
       return contractInstancesByNetwork;
     });
 
-    await this.db.query(AddContractInstances, {
-      contractInstances: instances.flat()
+    const result = await this.db.query(AddContractInstances, {
+      // HACK this was `instances.flat()` but then that stopped working
+      // hence the inlining
+      contractInstances: instances.reduce((acc, cur) => [...acc, ...cur], [])
     });
   }
 
@@ -410,7 +401,7 @@ export class ArtifactsLoader {
         })
     );
 
-    const compilations = await this.db.query(AddCompilation, {
+    const compilations = await this.db.query(AddCompilations, {
       compilations: compilationObjects
     });
 
