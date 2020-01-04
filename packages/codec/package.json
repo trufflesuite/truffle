@@ -1,6 +1,6 @@
 {
   "name": "@truffle/codec",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "Library for encoding and decoding smart contract data",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@gnd/typedoc": "^0.15.0-0",
-    "@truffle/contract-schema": "^3.0.19",
+    "@truffle/contract-schema": "^3.0.20",
     "@trufflesuite/typedoc-default-themes": "^0.6.1",
     "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",

@@ -2,7 +2,6 @@ import utils from "./lib/utils";
 import tmp from "tmp";
 import path from "path";
 import Config from "@truffle/config";
-import ora from "ora";
 import fse from "fs-extra";
 import inquirer from "inquirer";
 import { sandboxOptions, unboxOptions } from "typings";
@@ -13,13 +12,17 @@ function parseSandboxOptions(options: sandboxOptions) {
     return {
       name: options,
       unsafeCleanup: false,
-      setGracefulCleanup: false
+      setGracefulCleanup: false,
+      logger: console,
+      force: false
     };
   } else if (typeof options === "object") {
     return {
       name: options.name || "default",
       unsafeCleanup: options.unsafeCleanup || false,
-      setGracefulCleanup: options.setGracefulCleanup || false
+      setGracefulCleanup: options.setGracefulCleanup || false,
+      logger: options.logger || console,
+      force: options.force || false
     };
   }
 }
@@ -28,8 +31,10 @@ const Box = {
   unbox: async (
     url: string,
     destination: string,
-    options: unboxOptions = {}
+    options: unboxOptions = {},
+    config: any
   ) => {
+    const { events } = config;
     let tempDirCleanup;
     const logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
@@ -38,14 +43,12 @@ const Box = {
     };
 
     try {
-      logger.log("");
       await Box.checkDir(options, destination);
-      const tempDir = await utils.setUpTempDirectory();
-
+      const tempDir = await utils.setUpTempDirectory(events);
       const tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
-      await utils.downloadBox(url, tempDirPath);
+      await utils.downloadBox(url, tempDirPath, events);
 
       const boxConfig = await utils.readBoxConfig(tempDirPath);
 
@@ -56,15 +59,16 @@ const Box = {
         unpackBoxOptions
       );
 
-      const cleanupSpinner = ora("Cleaning up temporary files").start();
+      events.emit("unbox:cleaningTempFiles:start");
       tempDirCleanup();
-      cleanupSpinner.succeed();
+      events.emit("unbox:cleaningTempFiles:succeed");
 
-      await utils.setUpBox(boxConfig, destination);
+      await utils.setUpBox(boxConfig, destination, events);
 
       return boxConfig;
     } catch (error) {
       if (tempDirCleanup) tempDirCleanup();
+      events.emit("unbox:fail");
       throw error;
     }
   },
@@ -97,18 +101,24 @@ const Box = {
   // options.setGracefulCleanup
   //   Cleanup temporary files even when an uncaught exception occurs
   sandbox: async (options: sandboxOptions) => {
-    const { name, unsafeCleanup, setGracefulCleanup } = parseSandboxOptions(
-      options
-    );
+    const {
+      name,
+      unsafeCleanup,
+      setGracefulCleanup,
+      logger,
+      force
+    } = parseSandboxOptions(options);
 
-    if (setGracefulCleanup) {
-      tmp.setGracefulCleanup();
-    }
+    if (setGracefulCleanup) tmp.setGracefulCleanup();
 
+    let config = new Config();
     const tmpDir = tmp.dirSync({ unsafeCleanup });
+    const unboxOptions = { logger, force };
     await Box.unbox(
       `https://github.com/trufflesuite/truffle-init-${name}`,
-      tmpDir.name
+      tmpDir.name,
+      unboxOptions,
+      config
     );
     return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
   }

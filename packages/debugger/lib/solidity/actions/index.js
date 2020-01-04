@@ -18,8 +18,8 @@ export function jump(jumpDirection) {
 }
 
 export const EXTERNAL_CALL = "EXTERNAL_CALL";
-export function externalCall() {
-  return { type: EXTERNAL_CALL };
+export function externalCall(guard) {
+  return { type: EXTERNAL_CALL, guard };
 }
 
 export const EXTERNAL_RETURN = "EXTERNAL_RETURN";
@@ -27,7 +27,17 @@ export function externalReturn() {
   return { type: EXTERNAL_RETURN };
 }
 
+export const CLEAR_PHANTOM_GUARD = "CLEAR_PHANTOM_GUARD";
+export function clearPhantomGuard() {
+  return { type: CLEAR_PHANTOM_GUARD };
+}
+
 export const RESET = "SOLIDITY_RESET";
-export function reset() {
-  return { type: RESET };
+export function reset(guard) {
+  return { type: RESET, guard };
+}
+
+export const UNLOAD_TRANSACTION = "SOLIDITY_UNLOAD_TRANSACTION";
+export function unloadTransaction() {
+  return { type: UNLOAD_TRANSACTION };
 }

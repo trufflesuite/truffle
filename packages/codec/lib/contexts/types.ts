@@ -25,7 +25,11 @@ export interface DecoderContext {
   contractKind?: Common.ContractKind; //note: should never be "interface"
   abi?: AbiData.FunctionAbiBySelectors;
   payable?: boolean;
-  hasFallback?: boolean; //used just by the calldata decoder...
+  fallbackAbi?: {
+    //used only by the calldata decoder
+    fallback: AbiData.FallbackAbiEntry | null; //set to null if none
+    receive: AbiData.ReceiveAbiEntry | null; //set to null if none
+  };
   compiler?: Compiler.CompilerVersion;
 }
 

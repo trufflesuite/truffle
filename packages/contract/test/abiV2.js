@@ -27,6 +27,7 @@ describe("ABIEncoderV2", function() {
 
       userDirectory = await UserDirectory.new();
       const { receipt } = await userDirectory.addUser(user);
+
       addUserReceipt = receipt;
     });
 
