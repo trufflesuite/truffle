@@ -14,7 +14,9 @@ export const GetContractInstance = gql`
         transactionHash
         constructor {
           createBytecode {
-            bytes
+            bytecode {
+              bytes
+            }
           }
         }
       }
@@ -49,8 +51,12 @@ export const AddContractInstances = gql`
       id: ID!
     }
 
-    input ContractInstanceCreationConstructorBytecodeInput {
+    input BytecodeInput {
       id: ID!
+    }
+
+    input ContractInstanceCreationConstructorBytecodeInput {
+      bytecode: BytecodeInput!
     }
 
     input ContractInstanceCreationConstructorInput {
@@ -84,7 +90,9 @@ export const AddContractInstances = gql`
           transactionHash
           constructor {
             createBytecode {
-              bytes
+              bytecode {
+                bytes
+              }
             }
           }
         }

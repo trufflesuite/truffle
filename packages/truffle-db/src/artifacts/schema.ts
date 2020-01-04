@@ -11,8 +11,8 @@ export const schema = mergeSchemas({
   schemas: [
     rootSchema,
     transformSchema(jsonSchema, [
-      new FilterRootFields( (_, rootField) => rootField !== "contract"),
-      new FilterRootFields( (_, rootField) => rootField !== "contractNames"),
+      new FilterRootFields((_, rootField) => rootField !== "contract"),
+      new FilterRootFields((_, rootField) => rootField !== "contractNames")
     ]),
     `type Query {
       contractNames: [String]!
@@ -23,34 +23,37 @@ export const schema = mergeSchemas({
   resolvers: {
     Query: {
       contractNames: {
-        resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
-          schema: jsonSchema,
-          operation: "query",
-          fieldName: "contractNames",
-          args,
-          context,
-          info
-        })
+        resolve: (_, args, context, info) =>
+          info.mergeInfo.delegateToSchema({
+            schema: jsonSchema,
+            operation: "query",
+            fieldName: "contractNames",
+            args,
+            context,
+            info
+          })
       },
       contract: {
-        resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
-          schema: jsonSchema,
-          operation: "query",
-          fieldName: "contract",
-          args,
-          context,
-          info
-        })
+        resolve: (_, args, context, info) =>
+          info.mergeInfo.delegateToSchema({
+            schema: jsonSchema,
+            operation: "query",
+            fieldName: "contract",
+            args,
+            context,
+            info
+          })
       },
       contractInstance: {
-        resolve: (_, args, context, info) => info.mergeInfo.delegateToSchema({
-          schema: jsonSchema,
-          operation: "query",
-          fieldName: "contract",
-          args,
-          context,
-          info,
-        })
+        resolve: (_, args, context, info) =>
+          info.mergeInfo.delegateToSchema({
+            schema: jsonSchema,
+            operation: "query",
+            fieldName: "contract",
+            args,
+            context,
+            info
+          })
       }
     },
 
@@ -65,12 +68,11 @@ export const schema = mergeSchemas({
             }
           }
         }`,
-        resolve: (obj) => {
+        resolve: obj => {
           const { networks } = obj;
-          const result = networks
-            .map(
-              ({ networkObject: { address } }) => address
-            )[0];
+          const result = networks.map(
+            ({ networkObject: { address } }) => address
+          )[0];
 
           return result;
         }
@@ -81,10 +83,11 @@ export const schema = mergeSchemas({
             networkId
           }
         }`,
-        resolve: (obj) => {
+        resolve: obj => {
           const { networks } = obj;
-          const result = networks
-            .map( ({ networkId }) => ({ networkID: networkId }))[0]
+          const result = networks.map(({ networkId }) => ({
+            networkID: networkId
+          }))[0];
 
           return result;
         }
@@ -103,14 +106,20 @@ export const schema = mergeSchemas({
       },
       callBytecode: {
         fragment: `... on ContractObject {
-          deployedSourceMap,
-          deployedBytecode
+          deployedBytecode { bytes, linkReferences { offsets, name, length } }
         }`,
-        resolve: ({
-          deployedBytecode: bytes,
-          deployedSourceMap: sourceMap
-        }) => ({ bytes, sourceMap })
-      },
+        resolve: obj => {
+          const { deployedBytecode } = obj;
+          const callBytecode = {
+            bytecode: {
+              bytes: deployedBytecode.bytes,
+              linkReferences: deployedBytecode.linkReferences
+            },
+            linkValues: []
+          };
+          return callBytecode;
+        }
+      }
     },
 
     Contract: {
@@ -122,30 +131,34 @@ export const schema = mergeSchemas({
           ast { json }
           source { contents, sourcePath }
         }`,
-        resolve: (obj) => {
+        resolve: obj => {
           const { name, source, ast } = obj;
           const sourceContract = {
             name: name,
             source: source,
             ast: ast
-          }
+          };
           return sourceContract;
         }
       },
       constructor: {
         fragment: `... on ContractObject {
-            bytecode
+            bytecode { bytes, linkReferences { offsets, name, length } }
           }`,
-          resolve: (obj) => {
-            const { bytecode } = obj;
-            const contractConstructor = {
-              createBytecode: {
-                bytes: bytecode
-              }
+        resolve: obj => {
+          const { bytecode } = obj;
+          const contractConstructor = {
+            createBytecode: {
+              bytecode: {
+                bytes: bytecode.bytes,
+                linkReferences: bytecode.linkReferences
+              },
+              linkValues: []
             }
-            return contractConstructor;
-          }
+          };
+          return contractConstructor;
         }
-      },
+      }
     }
+  }
 });

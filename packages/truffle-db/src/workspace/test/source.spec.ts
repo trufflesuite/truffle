@@ -1,9 +1,8 @@
-import { generateId, Migrations, WorkspaceClient } from './utils';
-import { AddSource, GetSource, GetAllSources } from './source.graphql';
-
+import { generateId, Migrations, WorkspaceClient } from "./utils";
+import { AddSource, GetSource, GetAllSources } from "./source.graphql";
 
 describe("Source", () => {
-  let wsClient, addSourceResult
+  let wsClient, addSourceResult;
 
   const expectedId = generateId({
     contents: Migrations.source,
@@ -12,13 +11,13 @@ describe("Source", () => {
 
   const variables = {
     contents: Migrations.source,
-    sourcePath: Migrations.sourcePath,
+    sourcePath: Migrations.sourcePath
   };
 
-  beforeEach(async() => {
+  beforeEach(async () => {
     wsClient = new WorkspaceClient();
     addSourceResult = await wsClient.execute(AddSource, variables);
-  })
+  });
 
   test("can be added", async () => {
     expect(addSourceResult).toHaveProperty("sourcesAdd");
@@ -34,11 +33,12 @@ describe("Source", () => {
 
     const { id } = source;
     expect(id).toEqual(expectedId);
-
   });
 
-  test("can be queried", async() => {
-    const getSourceResult = await wsClient.execute(GetSource, { id: expectedId });
+  test("can be queried", async () => {
+    const getSourceResult = await wsClient.execute(GetSource, {
+      id: expectedId
+    });
 
     expect(getSourceResult).toHaveProperty("source");
 
@@ -51,10 +51,9 @@ describe("Source", () => {
     expect(id).toEqual(expectedId);
     expect(contents).toEqual(variables.contents);
     expect(sourcePath).toEqual(variables.sourcePath);
-
   });
 
-  test("can retrieve all sources", async() => {
+  test("can retrieve all sources", async () => {
     const getAllSourcesResult = await wsClient.execute(GetAllSources, {});
 
     expect(getAllSourcesResult).toHaveProperty("sources");
@@ -69,5 +68,4 @@ describe("Source", () => {
     expect(firstSource).toHaveProperty("contents");
     expect(firstSource).toHaveProperty("sourcePath");
   });
-
 });

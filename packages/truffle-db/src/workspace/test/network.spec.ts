@@ -1,9 +1,10 @@
-import { generateId, Migrations, WorkspaceClient } from './utils';
-import { AddNetworks, GetNetwork, GetAllNetworks } from './network.graphql';
+import { generateId, Migrations, WorkspaceClient } from "./utils";
+import { AddNetworks, GetNetwork, GetAllNetworks } from "./network.graphql";
 
-describe ('Network', () => {
+describe("Network", () => {
   const wsClient = new WorkspaceClient();
-  const expectedHash = '0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6';
+  const expectedHash =
+    "0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6";
   const expectedId = generateId({
     networkId: Object.keys(Migrations.networks)[0],
     historicBlock: {
@@ -21,16 +22,14 @@ describe ('Network', () => {
   let addNetworksResult;
 
   beforeEach(async () => {
-    addNetworksResult = await wsClient.execute(AddNetworks,
-      {
-        networkId: variables.networkId,
-        height: variables.height,
-        hash: variables.hash
-      }
-    );
+    addNetworksResult = await wsClient.execute(AddNetworks, {
+      networkId: variables.networkId,
+      height: variables.height,
+      hash: variables.hash
+    });
   });
 
-  test('can be added', () => {
+  test("can be added", () => {
     expect(addNetworksResult).toHaveProperty("networksAdd");
 
     const { networksAdd } = addNetworksResult;
@@ -46,8 +45,10 @@ describe ('Network', () => {
     expect(id).toEqual(expectedId);
   });
 
-  test('can be queried', async () => {
-    const getNetworkResult = await wsClient.execute(GetNetwork, { id: expectedId });
+  test("can be queried", async () => {
+    const getNetworkResult = await wsClient.execute(GetNetwork, {
+      id: expectedId
+    });
 
     expect(getNetworkResult).toHaveProperty("network");
 
@@ -60,19 +61,19 @@ describe ('Network', () => {
     expect(networkId).toEqual(variables.networkId);
   });
 
-  test('can retrieve all networks', async () => {
+  test("can retrieve all networks", async () => {
     const getAllNetworksResult = await wsClient.execute(GetAllNetworks, {});
 
     expect(getAllNetworksResult).toHaveProperty("networks");
 
     const { networks } = getAllNetworksResult;
-    expect(Array.isArray(networks)).toBeTruthy
+    expect(Array.isArray(networks)).toBeTruthy;
 
-    const network = networks[0]
+    const network = networks[0];
     expect(network).toHaveProperty("networkId");
 
     const { id, networkId } = network;
     expect(id).toEqual(expectedId);
     expect(networkId).toEqual(variables.networkId);
-  })
+  });
 });

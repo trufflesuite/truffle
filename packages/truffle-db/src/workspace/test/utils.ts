@@ -27,7 +27,7 @@ export class WorkspaceClient {
   private workspace: Workspace;
   private persistedWorkspace: Workspace;
 
-  constructor () {
+  constructor() {
     this.workspace = new Workspace(tempDir.name);
   }
 
@@ -35,22 +35,24 @@ export class WorkspaceClient {
     await this.workspace.dbApi[resource].destroy();
   }
 
-  async execute (request, variables = {}, persisted = false) {
-      if(persisted) {
-        this.persistedWorkspace = new Workspace(tempDir.name);
-      }
+  async execute(request, variables = {}, persisted = false) {
+    if (persisted) {
+      this.persistedWorkspace = new Workspace(tempDir.name);
+    }
 
-      const result = await graphql.execute(
-        schema,
-        request,
-        null, // root object, managed by workspace
-        { workspace: persisted ? this.persistedWorkspace : this.workspace }, // context vars
-        variables
-      );
+    const result = await graphql.execute(
+      schema,
+      request,
+      null, // root object, managed by workspace
+      { workspace: persisted ? this.persistedWorkspace : this.workspace }, // context vars
+      variables
+    );
 
-      return result.data;
-
+    return result.data;
   }
 }
 
-export const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
+export const Migrations = require(path.join(
+  fixturesDirectory,
+  "Migrations.json"
+));
