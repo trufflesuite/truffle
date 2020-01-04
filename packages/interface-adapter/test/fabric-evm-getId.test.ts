@@ -6,7 +6,8 @@ import { Server } from "http";
 import Web3 from "web3";
 import Ganache from "ganache-core";
 
-import { createInterfaceAdapter, InterfaceAdapter } from "../lib";
+import { createInterfaceAdapter } from "../lib";
+import { InterfaceAdapter } from "../lib/adapter/types";
 
 const port = 12345;
 

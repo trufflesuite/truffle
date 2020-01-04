@@ -1,4 +1,4 @@
-pragma solidity >= 0.4.15 < 0.6.0;
+pragma solidity >= 0.4.15 < 0.7.0;
 
 library AssertAddress {
 

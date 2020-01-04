@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity >= 0.5.0 < 0.7.0;
 
 contract NewSafeSend {
   address payable public recipient;

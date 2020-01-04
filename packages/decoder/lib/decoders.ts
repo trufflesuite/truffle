@@ -163,20 +163,23 @@ export class WireDecoder {
       const contractNode = this.contractNodes[id];
       references[id] = contractNode;
       types[id] = Ast.Import.definitionToStoredType(contractNode, compiler);
-      //now, add its struct and enum definitions
-      for (const node of contractNode.nodes) {
+      //now, add its struct and enum definitions, as well as any globals in its file
+      const globalNode = this.contracts[id].ast;
+      for (const node of [...contractNode.nodes, ...globalNode.nodes]) {
         if (
           node.nodeType === "StructDefinition" ||
           node.nodeType === "EnumDefinition"
         ) {
-          references[node.id] = node;
-          //HACK even though we don't have all the references, we only need one:
-          //the reference to the contract itself, which we just added, so we're good
-          types[node.id] = Ast.Import.definitionToStoredType(
-            node,
-            compiler,
-            references
-          );
+          if (!references[node.id]) {
+            references[node.id] = node;
+            //HACK even though we don't have all the references, we only need one:
+            //the reference to the contract itself, which we just added, so we're good
+            types[node.id] = Ast.Import.definitionToStoredType(
+              node,
+              compiler,
+              references
+            );
+          }
         }
       }
     }
