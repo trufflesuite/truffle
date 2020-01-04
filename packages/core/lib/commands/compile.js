@@ -59,6 +59,7 @@ const command = {
         .catch(done);
     } else {
       Contracts.compile(config)
+        .then(({ contracts }) => Contracts.save(config, contracts))
         .then(() => done())
         .catch(done);
     }
