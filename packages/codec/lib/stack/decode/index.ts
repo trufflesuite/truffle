@@ -70,7 +70,7 @@ export function* decodeLiteral(
 
         //if it's a string or bytes, we will interpret the pointer ourself and skip
         //straight to decodeBytes.  this is to allow us to correctly handle the
-        //case of msg.data used as a mapping key.
+        //case of msg.data used as a mapping key (or, as of 0.6.0, slices)
         if (dataType.typeClass === "bytes" || dataType.typeClass === "string") {
           let startAsBN = Conversion.toBN(
             pointer.literal.slice(0, Evm.Utils.WORD_SIZE)
@@ -125,6 +125,10 @@ export function* decodeLiteral(
           //in this case, we're actually going to *throw away* the length info,
           //because it makes the logic simpler -- we'll get the length info back
           //from calldata
+          //WARNING: this approach will *not* decode slices correctly!
+          //But, there's presently no need for the debugger to decode slices of arrays
+          //(as opposed to of strings/bytestrings),
+          //so this can be addressed later perhaps?
           let locationOnly = pointer.literal.slice(0, Evm.Utils.WORD_SIZE);
           //HACK -- in order to read the correct location, we need to add an offset
           //of -32 (since, again, we're throwing away the length info), so we pass

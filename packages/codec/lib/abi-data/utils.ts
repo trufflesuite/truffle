@@ -21,12 +21,6 @@ export const DEFAULT_CONSTRUCTOR_ABI: Abi.ConstructorAbiEntry = {
   payable: false
 };
 
-export const DEFAULT_FALLBACK_ABI: Abi.FallbackAbiEntry = {
-  type: "fallback",
-  stateMutability: "nonpayable",
-  payable: false
-};
-
 export function schemaAbiToAbi(abiLoose: SchemaAbi): Abi.Abi {
   return abiLoose.map(
     entry =>
@@ -53,37 +47,18 @@ export function computeSelectors(
   );
 }
 
-//does this ABI have a payable fallback function?
+//does this ABI have a payable fallback (or receive) function?
 export function abiHasPayableFallback(
   abi: Abi.Abi | undefined
 ): boolean | undefined {
   if (abi === undefined) {
     return undefined;
   }
-  return abiMutability(getFallbackEntry(abi)) === "payable";
-}
-
-export function abiHasFallback(abi: Abi.Abi) {
-  return abi.some((abiEntry: Abi.AbiEntry) => abiEntry.type === "fallback");
-}
-
-//gets the fallback entry; if there isn't one, returns a default one
-export function getFallbackEntry(abi: Abi.Abi): Abi.FallbackAbiEntry {
-  //no idea why TS's type inference is failing on this one...
-  return (
-    <Abi.FallbackAbiEntry>abi.find(abiEntry => abiEntry.type === "fallback") ||
-    DEFAULT_FALLBACK_ABI
+  return abi.some(
+    abiEntry =>
+      (abiEntry.type === "fallback" || abiEntry.type === "receive") &&
+      abiMutability(abiEntry) === "payable"
   );
-}
-
-export function fallbackAbiForPayability(
-  payable: boolean
-): Abi.FallbackAbiEntry {
-  return {
-    type: "fallback",
-    stateMutability: payable ? "payable" : "nonpayable",
-    payable
-  };
 }
 
 //shim for old abi versions
@@ -92,6 +67,7 @@ function abiMutability(
     | Abi.FunctionAbiEntry
     | Abi.ConstructorAbiEntry
     | Abi.FallbackAbiEntry
+    | Abi.ReceiveAbiEntry
 ): Common.Mutability {
   if (abiEntry.stateMutability !== undefined) {
     return abiEntry.stateMutability;
@@ -171,6 +147,7 @@ export function abisMatch(
         abiTupleSignature((<Abi.ConstructorAbiEntry>entry2).inputs)
       );
     case "fallback":
+    case "receive":
       return true;
   }
 }

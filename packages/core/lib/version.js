@@ -1,5 +1,6 @@
 const pkg = require("../package.json");
 const { CompilerSupplier } = require("@truffle/compile-solidity");
+const Config = require("@truffle/config");
 
 const info = config => {
   let bundleVersion;
@@ -7,13 +8,22 @@ const info = config => {
   if (typeof BUNDLE_VERSION != "undefined") bundleVersion = BUNDLE_VERSION;
 
   let supplierOptions;
-  if (config && config.compilers) supplierOptions = config.compilers.solc;
+  if (config && config.compilers) {
+    supplierOptions = {
+      events: config.events,
+      solcConfig: config.compilers.solc
+    };
+  } else {
+    const { events, compilers } = new Config();
+    const solcConfig = compilers.solc;
+    supplierOptions = { events, solcConfig };
+  }
   const supplier = new CompilerSupplier(supplierOptions);
 
   return {
     core: pkg.version,
     bundle: bundleVersion,
-    solc: supplier.config.version
+    solc: supplier.version
   };
 };
 
