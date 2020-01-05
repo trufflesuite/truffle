@@ -7,6 +7,7 @@ import {
 
 import { generateBytecodesLoad } from "truffle-db/loaders/resources/bytecodes";
 import { generateCompilationsLoad } from "truffle-db/loaders/resources/compilations";
+import { generateContractsLoad } from "truffle-db/loaders/resources/contracts";
 import { generateSourcesLoad } from "truffle-db/loaders/resources/sources";
 
 /**
@@ -48,5 +49,25 @@ export function* generateCompileLoad(
   }
   const compilations = yield* generateCompilationsLoad(loadableCompilations);
 
-  return { compilations };
+  // now time to add contracts and track them by compilation
+  //
+  // again going one compilation at a time (for impl. convenience; HACK)
+  // (@cds-amal reminds that "premature optimization is the root of all evil")
+  const compilationContracts = {};
+  for (const [
+    compilationIndex,
+    { id: compilationId }
+  ] of compilations.entries()) {
+    const compiledContracts =
+      compilationsWithContracts[compilationIndex].contracts;
+    const contractBytecodes = compilationContractBytecodes[compilationIndex];
+
+    compilationContracts[compilationId] = yield* generateContractsLoad(
+      compiledContracts,
+      contractBytecodes,
+      { id: compilationId }
+    );
+  }
+
+  return { compilations, compilationContracts };
 }

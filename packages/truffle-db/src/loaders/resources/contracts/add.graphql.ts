@@ -72,6 +72,7 @@ export const AddContracts = gql`
             }
           }
           createBytecode {
+            id
             bytes
             linkReferences {
               offsets
@@ -80,6 +81,7 @@ export const AddContracts = gql`
             }
           }
           callBytecode {
+            id
             bytes
             linkReferences {
               offsets

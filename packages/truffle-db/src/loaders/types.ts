@@ -37,6 +37,12 @@ export interface IdObject {
   id: string;
 }
 
+export interface LoadedContract {
+  id: string;
+  createBytecode: DataModel.IBytecode;
+  callBytecode: DataModel.IBytecode;
+}
+
 export interface Request {
   mutation: string; // GraphQL request
   variables: {
