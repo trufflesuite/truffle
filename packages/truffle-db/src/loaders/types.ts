@@ -28,6 +28,11 @@ export interface Compilations {
   [compilerName: string]: Compilation;
 }
 
+export interface ContractBytecodes {
+  createBytecode: DataModel.IBytecode;
+  callBytecode: DataModel.IBytecode;
+}
+
 export interface IdObject {
   id: string;
 }
