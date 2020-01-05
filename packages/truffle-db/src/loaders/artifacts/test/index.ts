@@ -432,7 +432,7 @@ describe("Compilation", () => {
 
     const loader = new ArtifactsLoader(db, compilationConfig);
     await loader.load();
-  });
+  }, 10000);
 
   afterAll(async () => {
     await Promise.all(
