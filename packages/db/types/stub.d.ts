@@ -35,6 +35,7 @@ declare namespace DataModel {
   type ISourceInput = any;
   type ISourceRange = any;
   type ISourcesAddInput = any;
+  type ISourcesAddPayload = any;
 
   interface IWorkspaceQuery {
     [key: string]: any;

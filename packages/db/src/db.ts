@@ -1,7 +1,11 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
 
 import { schema } from "@truffle/db/data";
-
+import { generateCompileLoad } from "@truffle/db/loaders/commands";
+import {
+  WorkflowCompileResult,
+  WorkspaceRequest
+} from "@truffle/db/loaders/types";
 import { Workspace } from "@truffle/db/workspace";
 
 interface IConfig {
@@ -42,6 +46,26 @@ export class TruffleDB {
       typeof query !== "string" ? query : parse(query);
 
     return await execute(this.schema, document, null, this.context, variables);
+  }
+
+  async loadCompilations(result: WorkflowCompileResult) {
+    const saga = generateCompileLoad(result);
+
+    let cur = saga.next();
+    while (!cur.done) {
+      // HACK not sure why this is necessary; TS knows we're not done, so
+      // cur.value should only be WorkspaceRequest (first Generator param),
+      // not the return value (second Generator param)
+      const {
+        request,
+        variables
+      }: WorkspaceRequest = cur.value as WorkspaceRequest;
+      const response = await this.query(request, variables);
+
+      cur = saga.next(response);
+    }
+
+    return cur.value;
   }
 
   createContext(config: IConfig): IContext {
