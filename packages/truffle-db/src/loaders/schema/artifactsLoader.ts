@@ -10,11 +10,9 @@ import { Environment } from "@truffle/environment";
 
 import { TruffleDB } from "truffle-db/db";
 import { AddBytecodes } from "truffle-db/loaders/resources/bytecodes";
-import { AddCompilations } from "truffle-db/loaders/resources/compilations";
 import { AddContractInstances } from "truffle-db/loaders/resources/contractInstances";
 import { AddContracts } from "truffle-db/loaders/resources/contracts";
 import { AddNetworks } from "truffle-db/loaders/resources/networks";
-import { AddSources } from "truffle-db/loaders/resources/sources";
 
 type networkLinkObject = {
   [name: string]: string;
@@ -77,35 +75,35 @@ export class ArtifactsLoader {
   }
 
   async load(): Promise<void> {
-    const compileOutput = await this.loadCompilation(this.config);
-    const { compilations, compilationsOutput } = compileOutput;
+    const result = await Contracts.compile(this.config);
+
+    const { compilations } = await this.db.loadCompilations(result);
+
     //map contracts and contract instances to compiler
     await Promise.all(
-      compilations.data.workspace.compilationsAdd.compilations.map(
-        async ({ compiler, id }) => {
-          const networks = await this.loadNetworks(
-            compilationsOutput[compiler.name].contracts,
-            this.config["artifacts_directory"],
-            this.config["contracts_directory"]
-          );
+      compilations.map(async ({ compiler, id }) => {
+        const networks = await this.loadNetworks(
+          result.compilations[compiler.name].contracts,
+          this.config["artifacts_directory"],
+          this.config["contracts_directory"]
+        );
 
-          const contractIds = await this.loadCompilationContracts(
-            compilationsOutput[compiler.name].contracts,
-            id,
-            compiler.name,
-            networks
-          );
+        const contractIds = await this.loadCompilationContracts(
+          result.compilations[compiler.name].contracts,
+          id,
+          compiler.name,
+          networks
+        );
 
-          if (networks[0].length) {
-            this.loadContractInstances(
-              compilationsOutput[compiler.name].contracts,
-              contractIds.contractIds,
-              networks,
-              contractIds.bytecodes
-            );
-          }
+        if (networks[0].length) {
+          this.loadContractInstances(
+            result.compilations[compiler.name].contracts,
+            contractIds.contractIds,
+            networks,
+            contractIds.bytecodes
+          );
         }
-      )
+      })
     );
   }
 
@@ -186,61 +184,6 @@ export class ArtifactsLoader {
       bytecodes: createBytecodeResult.data.workspace.bytecodesAdd.bytecodes,
       callBytecodes: callBytecodeResult.data.workspace.bytecodesAdd.bytecodes
     };
-  }
-
-  async loadCompilationSources(contracts: Array<ContractObject>) {
-    // transform contract objects into data model source inputs
-    // and run mutation
-    const result = await this.db.query(AddSources, {
-      sources: contracts.map(({ source, sourcePath }) => ({
-        contents: source,
-        sourcePath
-      }))
-    });
-
-    // extract sources
-    const sources = result.data.workspace.sourcesAdd.sources;
-
-    // return only array of objects { id }
-    return sources.map(({ id }) => ({ id }));
-  }
-
-  async compilationSourceContracts(
-    compilation: Array<ContractObject>,
-    sourceIds: Array<IdObject>
-  ) {
-    return compilation.map(({ contractName: name, ast }, index) => ({
-      name,
-      source: sourceIds[index],
-      ast: ast ? { json: JSON.stringify(ast) } : undefined
-    }));
-  }
-
-  async setCompilation(organizedCompilation: Array<ContractObject>) {
-    const sourceIds = await this.loadCompilationSources(organizedCompilation);
-    const sourceContracts = await this.compilationSourceContracts(
-      organizedCompilation,
-      sourceIds
-    );
-
-    const compilationObject = {
-      compiler: {
-        name: organizedCompilation[0]["compiler"]["name"],
-        version: organizedCompilation[0]["compiler"]["version"]
-      },
-      contracts: sourceContracts,
-      sources: sourceIds
-    };
-
-    if (organizedCompilation[0]["compiler"]["name"] == "solc") {
-      compilationObject["sourceMaps"] = organizedCompilation.map(
-        ({ sourceMap }) => {
-          return { json: sourceMap };
-        }
-      );
-    }
-
-    return compilationObject;
   }
 
   async loadNetworks(
@@ -387,24 +330,5 @@ export class ArtifactsLoader {
       // hence the inlining
       contractInstances: instances.reduce((acc, cur) => [...acc, ...cur], [])
     });
-  }
-
-  async loadCompilation(compilationConfig: CompilationConfigObject) {
-    const compileOutput = await Contracts.compile(compilationConfig);
-    const compilationsOutput = compileOutput.compilations;
-
-    const compilationObjects = await Promise.all(
-      Object.values(compilationsOutput)
-        .filter(contracts => contracts["contracts"].length > 0)
-        .map(({ contracts }) => {
-          return this.setCompilation(contracts);
-        })
-    );
-
-    const compilations = await this.db.query(AddCompilations, {
-      compilations: compilationObjects
-    });
-
-    return { compilations, compilationsOutput };
   }
 }
