@@ -2,12 +2,15 @@ import { TruffleDB } from "@truffle/db/db";
 import {
   WorkflowCompileResult,
   CompilationData,
+  IdObject,
   toIdObject,
   WorkspaceRequest,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
 
+import { generateBytecodesLoad } from "@truffle/db/loaders/resources/bytecodes";
 import { generateCompilationsLoad } from "@truffle/db/loaders/resources/compilations";
+import { generateContractsLoad } from "@truffle/db/loaders/resources/contracts";
 import { generateSourcesLoad } from "@truffle/db/loaders/resources/sources";
 
 /**
@@ -23,23 +26,51 @@ export function* generateCompileLoad(
 ): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
   const resultCompilations = processResultCompilations(result);
 
-  let loadableCompilations = [];
-  for (let compilation of resultCompilations) {
+  // for each compilation returned by workflow-compile:
+  // - add sources
+  // - add bytecodes
+  // then, add the compilations in a single mutation
+  //
+  // track each compilation's bytecodes by contract
+  // NOTE: this relies on array indices
+  const loadableCompilations = [];
+  const compilationBytecodes = [];
+  for (const compilation of resultCompilations) {
     // add sources for each compilation
     const sources: DataModel.ISource[] = yield* generateSourcesLoad(
       compilation
     );
 
-    // record compilation with its sources
+    // add bytecodes
+    const bytecodes = yield* generateBytecodesLoad(compilation.contracts);
+    compilationBytecodes.push(bytecodes);
+
+    // record compilation with its sources (bytecodes are related later)
     loadableCompilations.push({
       compilation,
       sources: sources.map(toIdObject)
     });
   }
-
-  // then add compilations
   const compilations = yield* generateCompilationsLoad(loadableCompilations);
-  return { compilations };
+
+  // now time to add contracts and track them by compilation
+  //
+  // again going one compilation at a time (for impl. convenience; HACK)
+  // (@cds-amal reminds that "premature optimization is the root of all evil")
+  const compilationContracts = {};
+  for (const [compilationIndex, compilation] of compilations.entries()) {
+    const compiledContracts =
+      resultCompilations[compilationIndex].contracts;
+    const bytecodes = compilationBytecodes[compilationIndex];
+
+    compilationContracts[compilation.id] = yield* generateContractsLoad(
+      compiledContracts,
+      bytecodes,
+      ({ id: compilation.id } as unknown) as IdObject<DataModel.ICompilation>
+    );
+  }
+
+  return { compilations, compilationContracts };
 }
 
 function processResultCompilations(

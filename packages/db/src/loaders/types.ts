@@ -24,6 +24,11 @@ export interface CompilationData {
   contracts: CompiledContract[];
 }
 
+export interface ContractBytecodes {
+  createBytecode: DataModel.IBytecode;
+  callBytecode: DataModel.IBytecode;
+}
+
 type Resource = {
   id: string;
 };

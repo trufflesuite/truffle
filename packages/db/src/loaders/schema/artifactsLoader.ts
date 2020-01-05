@@ -8,9 +8,7 @@ import Config from "@truffle/config";
 import { Environment } from "@truffle/environment";
 import Web3 from "web3";
 
-import { AddBytecodes } from "@truffle/db/loaders/resources/bytecodes";
 import { AddContractInstances } from "@truffle/db/loaders/resources/contractInstances";
-import { AddContracts } from "@truffle/db/loaders/resources/contracts";
 import { AddNameRecords } from "@truffle/db/loaders/resources/nameRecords";
 import { AddNetworks } from "@truffle/db/loaders/resources/networks";
 import {
@@ -18,7 +16,6 @@ import {
   AssignProjectNames,
   ResolveProjectName
 } from "@truffle/db/loaders/resources/projects";
-import { AddSources } from "@truffle/db/loaders/resources/sources";
 
 type NetworkLinkObject = {
   [name: string]: string;
@@ -94,7 +91,10 @@ export class ArtifactsLoader {
 
     const result = await Contracts.compile(this.config);
 
-    const { compilations } = await this.db.loadCompilations(result);
+    const {
+      compilations,
+      compilationContracts
+    } = await this.db.loadCompilations(result);
 
     //map contracts and contract instances to compiler
     await Promise.all(
@@ -106,21 +106,32 @@ export class ArtifactsLoader {
           this.config["contracts_directory"]
         );
 
-        const contractIds = await this.loadCompilationContracts(
-          projectId,
-          result.compilations[compiler.name].contracts,
-          id,
-          compiler.name,
-          networks
+        const contracts = compilationContracts[id];
+
+        const nameRecords: NameRecordObject[] = await Promise.all(
+          contracts.map(async contract => {
+            //check if there is already a current head for this item. if so save it as previous
+            let current: IdObject = await this.resolveProjectName(
+              projectId,
+              "Contract",
+              contract.name
+            );
+
+            return {
+              name: contract.name,
+              type: "Contract",
+              resource: {
+                id: contract.id
+              },
+              previous: current
+            };
+          })
         );
 
+        await this.loadNameRecords(projectId, nameRecords);
+
         if (networks[0].length) {
-          this.loadContractInstances(
-            result.compilations[compiler.name].contracts,
-            contractIds.contractIds,
-            networks,
-            contractIds.bytecodes
-          );
+          await this.loadContractInstances(contracts, networks);
         }
       })
     );
@@ -176,108 +187,6 @@ export class ArtifactsLoader {
         id: data.workspace.project.resolve[0].id
       };
     }
-  }
-
-  async loadCompilationContracts(
-    projectId: string,
-    contracts: Array<ContractObject>,
-    compilationId: string,
-    compilerName: string,
-    networks: Array<Array<LoaderNetworkObject>>
-  ) {
-    const bytecodes = await this.loadBytecodes(contracts);
-
-    const contractObjects = contracts.map((contract, index) => {
-      let createBytecodeLinkValues;
-      let network = networks[index].filter(
-        network => network.contract == contract["contractName"]
-      );
-
-      const createBytecode = bytecodes.bytecodes[index];
-      const callBytecode = bytecodes.callBytecodes[index];
-
-      let contractObject = {
-        name: contract["contractName"],
-        abi: {
-          json: JSON.stringify(contract["abi"])
-        },
-        compilation: {
-          id: compilationId
-        },
-        processedSource: {
-          index: index
-        },
-        createBytecode: {
-          id: createBytecode.id
-        },
-        callBytecode: {
-          id: callBytecode.id
-        }
-      };
-
-      return contractObject;
-    });
-
-    const contractsLoaded = await this.db.query(AddContracts, {
-      contracts: contractObjects
-    });
-
-    const contractIds = contractsLoaded.data.workspace.contractsAdd.contracts.map(
-      ({ id }) => ({ id })
-    );
-
-    const nameRecords = await Promise.all(
-      contractObjects.map(async (contract, index) => {
-        //check if there is already a current head for this item. if so save it as previous
-        let current: IdObject = await this.resolveProjectName(
-          projectId,
-          "Contract",
-          contract.name
-        );
-
-        return {
-          name: contract.name,
-          type: "Contract",
-          resource: {
-            id: contractIds[index].id
-          },
-          previous: current
-        };
-      })
-    );
-
-    await this.loadNameRecords(projectId, nameRecords);
-
-    return {
-      compilerName: contracts[0].compiler.name,
-      contractIds: contractIds,
-      bytecodes: bytecodes
-    };
-  }
-
-  async loadBytecodes(
-    contracts: Array<ContractObject>
-  ): Promise<BytecodesObject> {
-    // transform contract objects into data model bytecode inputs
-    // and run mutation
-    let bytecodes = [];
-    let deployedBytecodes = [];
-    contracts.map(({ deployedBytecode, bytecode }) => {
-      bytecodes.push(bytecode);
-      deployedBytecodes.push(deployedBytecode);
-    });
-
-    const createBytecodeResult = await this.db.query(AddBytecodes, {
-      bytecodes: bytecodes
-    });
-    const callBytecodeResult = await this.db.query(AddBytecodes, {
-      bytecodes: deployedBytecodes
-    });
-
-    return {
-      bytecodes: createBytecodeResult.data.workspace.bytecodesAdd.bytecodes,
-      callBytecodes: callBytecodeResult.data.workspace.bytecodesAdd.bytecodes
-    };
   }
 
   async loadNetworks(
@@ -399,10 +308,8 @@ export class ArtifactsLoader {
   }
 
   async loadContractInstances(
-    contracts: Array<ContractObject>,
-    contractIds: Array<IdObject>,
-    networksArray: Array<Array<LoaderNetworkObject>>,
-    bytecodes: BytecodesObject
+    contracts: Array<DataModel.IContract>,
+    networksArray: Array<Array<LoaderNetworkObject>>
   ) {
     // networksArray is an array of arrays of networks for each contract;
     // this first mapping maps to each contract
@@ -411,16 +318,18 @@ export class ArtifactsLoader {
       const contractInstancesByNetwork = networks.map(network => {
         let createBytecodeLinkValues = this.getNetworkLinks(
           network,
-          bytecodes.bytecodes[index]
+          contracts[index].createBytecode
         );
         let callBytecodeLinkValues = this.getNetworkLinks(
           network,
-          bytecodes.callBytecodes[index]
+          contracts[index].callBytecode
         );
 
         let instance = {
           address: network.address,
-          contract: contractIds[index],
+          contract: {
+            id: contracts[index].id
+          },
           network: {
             id: network.id
           },
@@ -428,13 +337,13 @@ export class ArtifactsLoader {
             transactionHash: network.transactionHash,
             constructor: {
               createBytecode: {
-                bytecode: { id: bytecodes.bytecodes[index].id },
+                bytecode: { id: contracts[index].createBytecode.id },
                 linkValues: createBytecodeLinkValues
               }
             }
           },
           callBytecode: {
-            bytecode: { id: bytecodes.callBytecodes[index].id },
+            bytecode: { id: contracts[index].callBytecode.id },
             linkValues: callBytecodeLinkValues
           }
         };
