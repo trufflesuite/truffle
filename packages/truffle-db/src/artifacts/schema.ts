@@ -141,23 +141,17 @@ export const schema = mergeSchemas({
           return sourceContract;
         }
       },
-      constructor: {
+      createBytecode: {
         fragment: `... on ContractObject {
-            bytecode { bytes, linkReferences { offsets, name, length } }
-          }`,
-        resolve: obj => {
-          const { bytecode } = obj;
-          const contractConstructor = {
-            createBytecode: {
-              bytecode: {
-                bytes: bytecode.bytes,
-                linkReferences: bytecode.linkReferences
-              },
-              linkValues: []
-            }
-          };
-          return contractConstructor;
-        }
+          bytecode { bytes, linkReferences { offsets, name, length } }
+        }`,
+        resolve: ({ bytecode: createBytecode }) => createBytecode
+      },
+      callBytecode: {
+        fragment: `... on ContractObject {
+          deployedBytecode { bytes, linkReferences { offsets, name, length } }
+        }`,
+        resolve: ({ deployedBytecode: callBytecode }) => callBytecode
       }
     }
   }

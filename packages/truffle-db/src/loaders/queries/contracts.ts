@@ -14,7 +14,7 @@ export const AddContracts = gql`
     index: FileIndex
   }
 
-  input ContractConstructorBytecodeInput {
+  input ContractBytecodeInput {
     id: ID!
   }
 
@@ -23,26 +23,13 @@ export const AddContracts = gql`
     index: FileIndex
   }
 
-  input ContractConstructorLinkValueInput {
-    value: Address!
-    LinkReference: LinkReferenceInput
-  }
-
-  input ContractConstructorLinkedBytecodeInput {
-    bytecode: ContractConstructorBytecodeInput!
-    linkValues: [ContractContructorLinkValueInput]
-  }
-
-  input ContractConstructorInput {
-    createBytecode: ContractConstructorLinkedBytecodeInput!
-  }
-
   input ContractInput {
     name: String
     abi: AbiInput
     compilation: ContractCompilationInput
     sourceContract: ContractSourceContractInput
-    constructor: ContractConstructorInput
+    createBytecode: ContractBytecodeInput
+    callBytecode: ContractBytecodeInput
   }
 
   mutation AddContracts($contracts: [ContractInput!]!) {
@@ -84,16 +71,20 @@ export const AddContracts = gql`
               sourcePath
             }
           }
-          constructor {
-            createBytecode {
-              bytecode {
-                bytes
-                linkReferences {
-                  offsets
-                  name
-                  length
-                }
-              }
+          createBytecode {
+            bytes
+            linkReferences {
+              offsets
+              name
+              length
+            }
+          }
+          callBytecode {
+            bytes
+            linkReferences {
+              offsets
+              name
+              length
             }
           }
         }

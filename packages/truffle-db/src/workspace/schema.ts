@@ -100,17 +100,8 @@ export const schema = mergeSchemas({
       index: FileIndex
     }
 
-    input ContractConstructorBytecodeInput {
+    input ContractBytecodeInput {
       id: ID!
-    }
-
-    input ContractConstructorLinkedBytecodeInput {
-      bytecode: ContractConstructorBytecodeInput!
-      linkValues: [ContractConstructorLinkValueInput]
-    }
-
-    input ContractConstructorInput {
-      createBytecode: ContractConstructorLinkedBytecodeInput!
     }
 
     input ContractInput {
@@ -118,7 +109,8 @@ export const schema = mergeSchemas({
       abi: AbiInput
       compilation: ContractCompilationInput
       sourceContract: ContractSourceContractInput
-      constructor: ContractConstructorInput
+      createBytecode: ContractBytecodeInput
+      callBytecode: ContractBytecodeInput
     }
 
     input ContractsAddInput {
@@ -181,11 +173,6 @@ export const schema = mergeSchemas({
     }
 
     input ContractInstanceCreationConstructorLinkValueInput {
-      value: Address!
-      linkReference: LinkReferenceInput!
-    }
-
-    input ContractConstructorLinkValueInput {
       value: Address!
       linkReference: LinkReferenceInput!
     }
@@ -364,26 +351,13 @@ export const schema = mergeSchemas({
           return sourceContracts[sourceContract.index];
         }
       },
-      constructor: {
-        resolve: async ({ constructor }, _, { workspace }) => {
-          let bytecode = await workspace.bytecode(
-            constructor.createBytecode.bytecode
-          );
-          let linkValues = constructor.createBytecode.linkValues.map(
-            ({ value, linkReference }) => {
-              return {
-                value: value,
-                linkReference: bytecode.linkReferences[linkReference.index]
-              };
-            }
-          );
-          return {
-            createBytecode: {
-              bytecode: bytecode,
-              linkValues: linkValues
-            }
-          };
-        }
+      createBytecode: {
+        resolve: ({ createBytecode }, _, { workspace }) =>
+          workspace.bytecode(createBytecode)
+      },
+      callBytecode: {
+        resolve: ({ callBytecode }, _, { workspace }) =>
+          workspace.bytecode(callBytecode)
       }
     },
     ContractInstance: {
