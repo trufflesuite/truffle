@@ -14,7 +14,11 @@ import {
   AddCompilation,
   AddContracts,
   AddContractInstances,
-  AddNetworks
+  AddNetworks,
+  AddNameRecords,
+  GetProject,
+  AddProject,
+  SetProjectNames
 } from "../queries";
 
 type WorkflowCompileResult = {
@@ -40,133 +44,6 @@ type LinkValueObject = {
   value: string;
   linkReference: LinkValueLinkReferenceObject;
 };
-
-const AddNameRecords = gql`
-  input ResourceInput {
-    id: ID!
-    type: String!
-  }
-
-  input PreviousNameRecordInput {
-    id: ID!
-  }
-
-  input NameRecordAddInput {
-    name: String!
-    resource: ResourceInput!
-    previous: PreviousNameRecordInput
-  }
-
-  mutation AddNameRecords($nameRecords: [NameRecordAddInput!]!) {
-    workspace {
-      nameRecordsAdd(input: { nameRecords: $nameRecords }) {
-        nameRecords {
-          id
-          resource {
-            name
-            ... on Network {
-              networkId
-            }
-            ... on Contract {
-              abi {
-                json
-              }
-            }
-          }
-          previous {
-            name
-          }
-        }
-      }
-    }
-  }
-`;
-
-const getPreviousNameRecord = gql`
-  query GetPreviousNameRecord($name: String!, $type: String!) {
-    workspace {
-      previousNameRecord(name: $name, type: $type) {
-        id
-      }
-    }
-  }
-`;
-
-const getProject = gql`
-  query GetProject($directory: String!) {
-    workspace {
-      project(directory: $directory) {
-        names {
-          type
-          name
-          id
-        }
-      }
-    }
-  }
-`;
-
-const addProject = gql`
-  mutation AddProject($directory: String) {
-    workspace {
-      projectAdd(input: { directory: $directory }) {
-        directory
-        id
-      }
-    }
-  }
-`;
-
-export const setProjectNames = gql`
-  input ProjectInput {
-    directory: String!
-  }
-
-  input ProjectNamesSetNameRecordInput {
-    id: ID!
-  }
-
-  input ProjectNamesSetInput {
-    project: ProjectInput!
-    nameRecords: [ProjectNamesSetNameRecordInput!]!
-  }
-
-  mutation AddProjectNames(
-    $project: ProjectInput!
-    $nameRecords: [ProjectNamesSetNameRecordInput!]!
-  ) {
-    workspace {
-      projectNamesSet(input: { project: $project, nameRecords: $nameRecords }) {
-        nameRecords {
-          name
-          resource {
-            id
-            ... on Network {
-              networkId
-            }
-            ... on Contract {
-              name
-            }
-          }
-          previous {
-            resource {
-              id
-            }
-          }
-        }
-        project {
-          names {
-            type
-            name
-            id
-          }
-          directory
-          id
-        }
-      }
-    }
-  }
-`;
 
 type LoaderNetworkObject = {
   contract: string;
@@ -232,7 +109,7 @@ export class ArtifactsLoader {
   }
 
   async load(): Promise<void> {
-    const addNewProject = await this.db.query(addProject, {
+    const addNewProject = await this.db.query(AddProject, {
       directory: this.config["contracts_directory"]
     });
 
@@ -277,7 +154,7 @@ export class ArtifactsLoader {
       nameRecordLoaded.data.workspace.nameRecordsAdd.nameRecords;
 
     //set new projectNameHeads based on name records added
-    await this.db.query(setProjectNames, {
+    await this.db.query(SetProjectNames, {
       project: { directory: this.config["contracts_directory"] },
       nameRecords: nameRecordsArray
     });
@@ -347,7 +224,7 @@ export class ArtifactsLoader {
     const contractIds = contractsLoaded.data.workspace.contractsAdd.contracts.map(
       ({ id }) => ({ id })
     );
-    let currentNameHeads = await this.db.query(getProject, {
+    let currentNameHeads = await this.db.query(GetProject, {
       directory: this.config["contracts_directory"]
     });
 
@@ -528,7 +405,7 @@ export class ArtifactsLoader {
           }
         }
 
-        let currentNameHeads = await this.db.query(getProject, {
+        let currentNameHeads = await this.db.query(GetProject, {
           directory: this.config["contracts_directory"]
         });
 
