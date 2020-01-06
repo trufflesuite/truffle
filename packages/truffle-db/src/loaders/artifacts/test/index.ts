@@ -4,13 +4,14 @@ import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
 import { ArtifactsLoader } from "truffle-db/loaders/artifacts";
 import { generateId } from "truffle-db/helpers";
-import * as Contracts from "@truffle/workflow-compile";
+import * as Contracts from "@truffle/workflow-compile/new";
 import Migrate from "@truffle/migrate";
 import { Environment } from "@truffle/environment";
 import Config from "@truffle/config";
 import Ganache from "ganache-core";
 import Web3 from "web3";
 import * as fse from "fs-extra";
+import { shimBytecode } from "@truffle/workflow-compile/shims";
 import * as tmp from "tmp";
 
 let server;
@@ -28,63 +29,22 @@ afterAll(async done => {
 
 // mocking the truffle-workflow-compile to avoid jest timing issues
 // and also to keep from adding more time to Travis testing
-jest.mock("@truffle/workflow-compile", () => ({
+jest.mock("@truffle/workflow-compile/new", () => ({
   compile: function(config, callback) {
-    const magicSquare = require(path.join(
+    return require(path.join(
       __dirname,
-      "sources",
-      "MagicSquare.json"
+      "workflowCompileOutputMock",
+      "compilationOutput.json"
     ));
-    const migrations = require(path.join(
-      __dirname,
-      "sources",
-      "Migrations.json"
-    ));
-    const squareLib = require(path.join(
-      __dirname,
-      "sources",
-      "SquareLib.json"
-    ));
-    const vyperStorage = require(path.join(
-      __dirname,
-      "sources",
-      "VyperStorage.json"
-    ));
-    const returnValue = {
-      outputs: {
-        solc: [
-          "/Users/fainashalts/solidity-magic-square/contracts/MagicSquare.sol",
-          "/Users/fainashalts/solidity-magic-square/contracts/Migrations.sol",
-          "/Users/fainashalts/solidity-magic-square/contracts/SquareLib.sol"
-        ],
-        vyper: [
-          "/Users/fainashalts/truffle-six/testing2/contracts/VyperStorage.vy"
-        ]
-      },
-      contracts: [
-        {
-          contract_name: "MagicSquare",
-          ...magicSquare
-        },
-        {
-          contract_name: "Migrations",
-          ...migrations
-        },
-        {
-          contract_name: "SquareLib",
-          ...squareLib
-        },
-        {
-          contract_name: "VyperStorage",
-          ...vyperStorage
-        }
-      ]
-    };
-    return returnValue;
   }
 }));
 
-const fixturesDirectory = path.join(__dirname, "sources");
+const fixturesDirectory = path.join(
+  __dirname,
+  "compilationSources",
+  "build",
+  "contracts"
+);
 const tempDir = tmp.dirSync({ unsafeCleanup: true });
 tmp.setGracefulCleanup();
 
@@ -158,10 +118,34 @@ const db = new TruffleDB(config);
 const Migrations = require(path.join(fixturesDirectory, "Migrations.json"));
 
 const artifacts = [
-  require(path.join(__dirname, "sources", "MagicSquare.json")),
-  require(path.join(__dirname, "sources", "Migrations.json")),
-  require(path.join(__dirname, "sources", "SquareLib.json")),
-  require(path.join(__dirname, "sources", "VyperStorage.json"))
+  require(path.join(
+    __dirname,
+    "compilationSources",
+    "build",
+    "contracts",
+    "MagicSquare.json"
+  )),
+  require(path.join(
+    __dirname,
+    "compilationSources",
+    "build",
+    "contracts",
+    "Migrations.json"
+  )),
+  require(path.join(
+    __dirname,
+    "compilationSources",
+    "build",
+    "contracts",
+    "SquareLib.json"
+  )),
+  require(path.join(
+    __dirname,
+    "compilationSources",
+    "build",
+    "contracts",
+    "VyperStorage.json"
+  ))
 ];
 
 const GetWorkspaceBytecode: boolean = gql`
@@ -170,6 +154,11 @@ const GetWorkspaceBytecode: boolean = gql`
       bytecode(id: $id) {
         id
         bytes
+        linkReferences {
+          offsets
+          name
+          length
+        }
       }
     }
   }
@@ -196,10 +185,11 @@ const GetWorkspaceContract = gql`
         abi {
           json
         }
-        constructor {
-          createBytecode {
-            bytes
-          }
+        createBytecode {
+          bytes
+        }
+        callBytecode {
+          bytes
         }
         sourceContract {
           source {
@@ -298,7 +288,24 @@ const GetWorkspaceContractInstance: boolean = gql`
           transactionHash
           constructor {
             createBytecode {
-              bytes
+              bytecode {
+                bytes
+                linkReferences {
+                  offsets
+                  name
+                  length
+                }
+              }
+            }
+          }
+        }
+        callBytecode {
+          bytecode {
+            bytes
+            linkReferences {
+              offsets
+              name
+              length
             }
           }
         }
@@ -391,12 +398,16 @@ const AddContracts = gql`
   input ContractConstructorInput {
     createBytecode: ContractConstructorBytecodeInput!
   }
+  input ContractBytecodeInput {
+    id: ID!
+  }
   input ContractInput {
     name: String
     abi: AbiInput
     compilation: ContractCompilationInput
     sourceContract: ContractSourceContractInput
-    constructor: ContractConstructorInput
+    createBytecode: ContractBytecodeInput
+    callBytecode: ContractBytecodeInput
   }
   mutation AddContracts($contracts: [ContractInput!]!) {
     workspace {
@@ -457,6 +468,7 @@ const SetProjectNames = gql`
 describe("Compilation", () => {
   let sourceIds = [];
   let bytecodeIds = [];
+  let callBytecodeIds = [];
   let compilationIds = [];
   let netIds = [];
   let migratedNetworks = [];
@@ -483,10 +495,14 @@ describe("Compilation", () => {
         });
         sourceIds.push({ id: sourceId });
 
-        let bytecodeId = generateId({
-          bytes: contract["bytecode"]
-        });
+        const shimBytecodeObject = shimBytecode(contract["bytecode"]);
+        const shimCallBytecodeObject = shimBytecode(
+          contract["deployedBytecode"]
+        );
+        let bytecodeId = generateId(shimBytecodeObject);
         bytecodeIds.push({ id: bytecodeId });
+        let callBytecodeId = generateId(shimCallBytecodeObject);
+        callBytecodeIds.push({ id: callBytecodeId });
 
         const networksPath = fse
           .readFileSync(
@@ -503,6 +519,8 @@ describe("Compilation", () => {
         const networksArray = Object.entries(networks);
 
         if (networksArray.length > 0) {
+          const links = networksArray[networksArray.length - 1][1]["links"];
+
           const transaction = await web3.eth.getTransaction(
             networksArray[networksArray.length - 1][1]["transactionHash"]
           );
@@ -519,7 +537,8 @@ describe("Compilation", () => {
           netIds.push({ id: netId });
           migratedNetworks.push({
             networkId: networkId,
-            historicBlock: historicBlock
+            historicBlock: historicBlock,
+            links: links
           });
           const contractInstanceId = generateId({
             network: {
@@ -542,8 +561,13 @@ describe("Compilation", () => {
               transactionHash:
                 networksArray[networksArray.length - 1][1]["transactionHash"],
               constructor: {
-                createBytecode: contract["bytecode"]
+                createBytecode: {
+                  bytecode: shimBytecodeObject
+                }
               }
+            },
+            callBytecode: {
+              bytecode: shimCallBytecodeObject
             }
           });
         }
@@ -575,9 +599,8 @@ describe("Compilation", () => {
       compilation: {
         id: expectedSolcCompilationId
       },
-      constructor: {
-        createBytecode: bytecodeIds[0]
-      }
+      createBytecode: bytecodeIds[0],
+      callBytecode: callBytecodeIds[0]
     };
 
     let previousContractAdded = await db.query(AddContracts, {
@@ -745,7 +768,8 @@ describe("Compilation", () => {
         }
       } = await db.query(GetWorkspaceBytecode, bytecodeIds[index]);
 
-      expect(bytes).toEqual(artifacts[index].bytecode);
+      let shimmedBytecode = shimBytecode(artifacts[index].bytecode);
+      expect(bytes).toEqual(shimmedBytecode.bytes);
     }
   });
 
@@ -768,28 +792,35 @@ describe("Compilation", () => {
       });
 
       contractIds.push({ id: expectedId });
+
       let {
         data: {
           workspace: {
             contract: {
               id,
               name,
-              constructor: {
-                createBytecode: { bytes }
-              },
               sourceContract: {
                 source: { contents }
               },
               compilation: {
                 compiler: { version }
-              }
+              },
+              createBytecode,
+              callBytecode
             }
           }
         }
       } = await db.query(GetWorkspaceContract, contractIds[index]);
 
+      const artifactsCreateBytecode = shimBytecode(artifacts[index].bytecode);
+      expect(createBytecode.bytes).toEqual(artifactsCreateBytecode.bytes);
+
+      const artifactsCallBytecode = shimBytecode(
+        artifacts[index].deployedBytecode
+      );
+      expect(callBytecode.bytes).toEqual(artifactsCallBytecode.bytes);
+
       expect(name).toEqual(artifacts[index].contractName);
-      expect(bytes).toEqual(artifacts[index].bytecode);
       expect(contents).toEqual(artifacts[index].source);
       expect(version).toEqual(artifacts[index].compiler.version);
       expect(id).toEqual(contractIds[index].id);
@@ -846,9 +877,12 @@ describe("Compilation", () => {
               creation: {
                 transactionHash,
                 constructor: {
-                  createBytecode: { bytes }
+                  createBytecode: {
+                    bytecode: { bytes, linkReferences }
+                  }
                 }
-              }
+              },
+              callBytecode: { bytecode }
             }
           }
         }
@@ -864,14 +898,20 @@ describe("Compilation", () => {
         contractInstances[index].creation.transactionHash
       );
       expect(bytes).toEqual(
-        contractInstances[index].creation.constructor.createBytecode
+        contractInstances[index].creation.constructor.createBytecode.bytecode
+          .bytes
+      );
+      expect(linkReferences).toEqual(
+        contractInstances[index].creation.constructor.createBytecode.bytecode
+          .linkReferences
+      );
+      expect(bytecode.bytes).toEqual(
+        contractInstances[index].callBytecode.bytecode.bytes
       );
     }
   });
 
   it("loads name records", async () => {
-    // testing whether network name record was added. contract name record tested in contract test as
-    // more efficient that way for now; more robust testing of network name record in workspace tests
     let {
       data: {
         workspace: {

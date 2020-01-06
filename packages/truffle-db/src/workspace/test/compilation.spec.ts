@@ -1,12 +1,16 @@
-import { generateId, Migrations, WorkspaceClient } from './utils';
-import { AddSource } from './source.graphql';
-import { AddCompilation, GetCompilation, GetAllCompilations } from './compilation.graphql';
+import { generateId, Migrations, WorkspaceClient } from "./utils";
+import { AddSource } from "./source.graphql";
+import {
+  AddCompilation,
+  GetCompilation,
+  GetAllCompilations
+} from "./compilation.graphql";
 
 describe("Compilation", () => {
   const wsClient = new WorkspaceClient();
 
-  let sourceId
-  let variables, addCompilationResult
+  let sourceId;
+  let variables, addCompilationResult;
 
   beforeEach(async () => {
     //add source and get id
@@ -25,10 +29,9 @@ describe("Compilation", () => {
       sourceMap: JSON.stringify(Migrations.sourceMap)
     };
     addCompilationResult = await wsClient.execute(AddCompilation, variables);
-
   });
 
-  test("can be added", async() => {
+  test("can be added", async () => {
     expect(addCompilationResult).toHaveProperty("compilationsAdd");
 
     const { compilationsAdd } = addCompilationResult;
@@ -51,7 +54,7 @@ describe("Compilation", () => {
 
       expect(contracts).toHaveLength(1);
 
-      for(let contract of contracts) {
+      for (let contract of contracts) {
         expect(contract).toHaveProperty("source");
         expect(contract).toHaveProperty("name");
         expect(contract).toHaveProperty("ast");
@@ -59,13 +62,15 @@ describe("Compilation", () => {
     }
   });
 
-  test("can be queried", async() => {
+  test("can be queried", async () => {
     const expectedId = generateId({
       compiler: Migrations.compiler,
       sourceIds: [{ id: sourceId }]
     });
 
-    const getCompilationResult = await wsClient.execute(GetCompilation, { id: expectedId });
+    const getCompilationResult = await wsClient.execute(GetCompilation, {
+      id: expectedId
+    });
 
     expect(getCompilationResult).toHaveProperty("compilation");
 
@@ -87,7 +92,10 @@ describe("Compilation", () => {
   });
 
   test("can retrieve all compilations", async () => {
-    const allCompilationsResult = await wsClient.execute(GetAllCompilations, {});
+    const allCompilationsResult = await wsClient.execute(
+      GetAllCompilations,
+      {}
+    );
 
     expect(allCompilationsResult).toHaveProperty("compilations");
 

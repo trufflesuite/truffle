@@ -8,10 +8,10 @@ export const GetSource = gql`
       sourcePath
     }
   }
-`
+`;
 
 export const GetAllSources = gql`
-  query getAllSources{
+  query getAllSources {
     sources {
       id
       sourcePath
@@ -25,14 +25,9 @@ export const GetAllSources = gql`
 
 export const AddSource = gql`
   mutation AddSource($contents: String!, $sourcePath: String) {
-    sourcesAdd(input: {
-      sources: [
-         {
-           contents: $contents,
-           sourcePath: $sourcePath,
-         }
-      ]
-    }) {
+    sourcesAdd(
+      input: { sources: [{ contents: $contents, sourcePath: $sourcePath }] }
+    ) {
       sources {
         id
       }

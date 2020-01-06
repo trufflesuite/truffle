@@ -3,9 +3,7 @@ import { ArtifactsLoader } from "./artifacts";
 import { schema as rootSchema } from "truffle-db/schema";
 import { Workspace, schema } from "truffle-db/workspace";
 const tmp = require("tmp");
-import {
-  makeExecutableSchema
-} from "@gnd/graphql-tools";
+import { makeExecutableSchema } from "@gnd/graphql-tools";
 import { gql } from "apollo-server";
 
 //dummy query here because of known issue with Apollo mutation-only schemas
@@ -24,8 +22,13 @@ const typeDefs = gql`
 const resolvers = {
   Mutation: {
     artifactsLoad: {
-      resolve: async (_, args, { artifactsDirectory, contractsDirectory, workingDirectory, db }, info) => {
-        const tempDir = tmp.dirSync({ unsafeCleanup: true })
+      resolve: async (
+        _,
+        args,
+        { artifactsDirectory, contractsDirectory, workingDirectory, db },
+        info
+      ) => {
+        const tempDir = tmp.dirSync({ unsafeCleanup: true });
         tmp.setGracefulCleanup();
         const compilationConfig = {
           contracts_directory: contractsDirectory,
@@ -33,9 +36,9 @@ const resolvers = {
           artifacts_directory: artifactsDirectory,
           working_directory: workingDirectory,
           all: true
-        }
+        };
         const loader = new ArtifactsLoader(db, compilationConfig);
-        await loader.load()
+        await loader.load();
         tempDir.removeCallback();
         return true;
       }
@@ -46,6 +49,6 @@ const resolvers = {
       resolve: () => true
     }
   }
-}
+};
 
 export const loaderSchema = makeExecutableSchema({ typeDefs, resolvers });

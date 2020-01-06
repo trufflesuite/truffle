@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-
 import { TruffleDB } from "truffle-db";
+import { shimBytecode } from "@truffle/workflow-compile/shims";
 import tmp from "tmp";
 
 const fixturesDirectory = path.join(
@@ -54,8 +54,8 @@ const GetContract = `
     }
   }`;
 
-const GetContractConstructor = `
-  query getContractConstructor($name: String!) {
+const GetContractBytecodes = `
+  query getContractBytecodes($name: String!) {
     artifacts {
       contract(name: $name) {
         name
@@ -66,9 +66,20 @@ const GetContractConstructor = `
             sourcePath
           }
         }
-        constructor {
-          createBytecode {
-            bytes
+        createBytecode {
+          bytes
+          linkReferences {
+            offsets
+            name
+            length
+          }
+        }
+        callBytecode {
+          bytes
+          linkReferences {
+            offsets
+            name
+            length
           }
         }
         abi {
@@ -126,8 +137,8 @@ describe("Artifacts queries", () => {
     expect(ast.json).toEqual(JSON.stringify(Migrations.ast));
   });
 
-  it("retrieves contract constructor object correctly", async() => {
-    const result = await db.query(GetContractConstructor, {
+  it("retrieves contract bytecodes correctly", async () => {
+    const result = await db.query(GetContractBytecodes, {
       name: Migrations.contractName
     });
     const { data } = result;
@@ -137,28 +148,43 @@ describe("Artifacts queries", () => {
     expect(artifacts).toHaveProperty("contract");
 
     const { contract } = artifacts;
-    expect(contract).toHaveProperty("constructor");
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("abi");
     expect(contract).toHaveProperty("sourceContract");
+    expect(contract).toHaveProperty("createBytecode");
+    expect(contract).toHaveProperty("callBytecode");
 
-    const { constructor: contractConstructor } = contract;
-    expect(contractConstructor).toHaveProperty("createBytecode");
-
-    const { name, sourceContract, abi } = contract;
+    const {
+      name,
+      sourceContract,
+      abi,
+      createBytecode,
+      callBytecode
+    } = contract;
     expect(name).toEqual(Migrations.contractName);
+    expect(createBytecode).toEqual(shimBytecode(Migrations.bytecode));
+    expect(callBytecode).toEqual(shimBytecode(Migrations.deployedBytecode));
+
     expect(sourceContract).toHaveProperty("name");
     expect(sourceContract).toHaveProperty("source");
-
     const { source } = sourceContract;
     expect(source).not.toEqual(null);
-
   });
 
   const GetContractFromInstance = `
     query GetContractFromInstance($name: String!, $networkId: String!) {
       artifacts {
         contractInstance(name: $name, networkId: $networkId) {
+          callBytecode {
+            bytecode {
+              bytes
+              linkReferences {
+                offsets
+                name
+                length
+              }
+            }
+          }
           contract {
             name
             sourceContract {
@@ -194,7 +220,7 @@ describe("Artifacts queries", () => {
     const { contractInstance } = artifacts;
     expect(contractInstance).toHaveProperty("contract");
 
-    const { contract } = contractInstance;
+    const { contract, callBytecode } = contractInstance;
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("abi");
     expect(contract).toHaveProperty("sourceContract");
@@ -212,5 +238,12 @@ describe("Artifacts queries", () => {
 
     const { json } = abi;
     expect(json).toEqual(JSON.stringify(Migrations.abi));
+
+    const { bytecode } = callBytecode;
+    const { bytes, linkReferences } = bytecode;
+    expect(bytes).toEqual(shimBytecode(Migrations.deployedBytecode).bytes);
+    expect(linkReferences).toEqual(
+      shimBytecode(Migrations.deployedBytecode).linkReferences
+    );
   });
 });

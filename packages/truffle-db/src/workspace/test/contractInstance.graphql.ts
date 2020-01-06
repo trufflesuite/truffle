@@ -14,7 +14,9 @@ export const GetContractInstance = gql`
         transactionHash
         constructor {
           createBytecode {
-            bytes
+            bytecode {
+              bytes
+            }
           }
         }
       }
@@ -36,42 +38,43 @@ export const GetAllContractInstances = gql`
         name
       }
     }
-
   }
 `;
 
 export const AddContractInstances = gql`
   input ContractInstanceNetworkInput {
-      id: ID!
-    }
+    id: ID!
+  }
 
-    input ContractInstanceContractInput {
-      id: ID!
-    }
+  input ContractInstanceContractInput {
+    id: ID!
+  }
 
-    input ContractInstanceCreationConstructorBytecodeInput {
-      id: ID!
-    }
+  input BytecodeInput {
+    id: ID!
+  }
 
-    input ContractInstanceCreationConstructorInput {
-      createBytecode: ContractInstanceCreationConstructorBytecodeInput!
-    }
+  input ContractInstanceCreationConstructorBytecodeInput {
+    bytecode: BytecodeInput!
+  }
 
-    input ContractInstanceCreationInput {
-      transactionHash: TransactionHash!
-      constructor: ContractInstanceCreationConstructorInput!
-    }
+  input ContractInstanceCreationConstructorInput {
+    createBytecode: ContractInstanceCreationConstructorBytecodeInput!
+  }
 
-    input ContractInstanceInput {
-      address: Address!
-      network: ContractInstanceNetworkInput!
-      creation: ContractInstanceCreationInput
-      contract: ContractInstanceContractInput
-    }
+  input ContractInstanceCreationInput {
+    transactionHash: TransactionHash!
+    constructor: ContractInstanceCreationConstructorInput!
+  }
+
+  input ContractInstanceInput {
+    address: Address!
+    network: ContractInstanceNetworkInput!
+    creation: ContractInstanceCreationInput
+    contract: ContractInstanceContractInput
+  }
   mutation AddContractInstances($contractInstances: [ContractInstanceInput!]!) {
-    contractInstancesAdd(input: {
-      contractInstances: $contractInstances
-    }) {
+    contractInstancesAdd(input: { contractInstances: $contractInstances }) {
       contractInstances {
         address
         network {
@@ -84,7 +87,9 @@ export const AddContractInstances = gql`
           transactionHash
           constructor {
             createBytecode {
-              bytes
+              bytecode {
+                bytes
+              }
             }
           }
         }

@@ -34,7 +34,7 @@ type ContractInstance {
   address: Address!
   network: Network!
   creation: ContractInstanceCreation
-  callBytecode: Bytecode
+  callBytecode: LinkedBytecode
   contract: Contract
 }
 
@@ -45,7 +45,7 @@ type ContractInstanceCreation {
 }
 
 type Constructor {
-  createBytecode: Bytecode
+  createBytecode: LinkedBytecode
 }
 
 type Contract implements Named {
@@ -54,7 +54,8 @@ type Contract implements Named {
   abi: ABI
   compilation: Compilation
   sourceContract: SourceContract
-  constructor: Constructor
+  createBytecode: Bytecode
+  callBytecode: Bytecode
 }
 
 type ABI {
@@ -93,8 +94,14 @@ type LinkValue {
   value: Bytes
 }
 
+type LinkedBytecode {
+  bytecode: Bytecode!
+  linkValues: [LinkValue]!
+}
+
 type LinkReference {
   offsets: [ByteOffset!]!
+  name: String
   length: Int!
 }
 

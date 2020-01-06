@@ -3,36 +3,38 @@ const { default: convert } = require("@gnd/jsonschema2graphql");
 import { makeExecutableSchema } from "@gnd/graphql-tools";
 
 import {
-  printSchema, GraphQLObjectType, GraphQLNonNull, GraphQLList, GraphQLString
+  printSchema,
+  GraphQLObjectType,
+  GraphQLNonNull,
+  GraphQLList,
+  GraphQLString
 } from "graphql";
 
 const rawSchemas = {
   abi: require("@truffle/contract-schema/spec/abi.spec.json"),
   networkObject: require("@truffle/contract-schema/spec/network-object.spec.json"),
-  contractObject: require("@truffle/contract-schema/spec/contract-object.spec.json"),
+  contractObject: require("@truffle/contract-schema/spec/contract-object.spec.json")
 };
 
 import { resolvers } from "./resolvers";
 
 function searchReplace(predicate, func) {
-  const search = (item) => {
+  const search = item => {
     if (item instanceof Array) {
       return item.map(search);
     } else if (typeof item === "object") {
       return Object.assign(
-        {}, ...Object.entries(item)
-          .map(
-            ([ key, value ]: any) => {
-              return predicate(key, value)
-                ? func(key, value)
-                : { [key]: search(value) }
-            }
-          )
+        {},
+        ...Object.entries(item).map(([key, value]: any) => {
+          return predicate(key, value)
+            ? func(key, value)
+            : { [key]: search(value) };
+        })
       );
     } else {
       return item;
     }
-  }
+  };
 
   return search;
 }
@@ -47,9 +49,8 @@ function convertToArray(schema, keyName = "key", valueName = "value") {
     return schema;
   }
 
-  const valueType = (valueTypes.length > 1)
-    ? { oneOf: valueTypes }
-    : valueTypes[0];
+  const valueType =
+    valueTypes.length > 1 ? { oneOf: valueTypes } : valueTypes[0];
 
   return {
     type: "array",
@@ -60,26 +61,25 @@ function convertToArray(schema, keyName = "key", valueName = "value") {
         [valueName]: valueType
       }
     }
-  }
+  };
 }
 
 interface SchemaDefinitions {
   [name: string]: {
     [k: string]: any;
-  }
+  };
 }
 
 function processSchema(name, schema: { definitions: SchemaDefinitions }) {
   const definitions = [
-    ...Object.entries(schema.definitions)
-      .map( ([ id, definition ]) => ({
-        ...definition,
+    ...Object.entries(schema.definitions).map(([id, definition]) => ({
+      ...definition,
 
-        "$id": id
-      }))
+      $id: id
+    }))
   ];
 
-  return [...definitions, { ...schema, "$id": name }];
+  return [...definitions, { ...schema, $id: name }];
 }
 
 const translations = [
@@ -99,9 +99,10 @@ const translations = [
           // instead of "network-object.spec.json#"
           // uses object mapping indirection to avoid hard-coding regex
           patternProperties: Object.assign(
-            {}, ...
-            Object.keys(contractObject.properties.networks.patternProperties)
-              .map( (pattern) => ({ [pattern]: { $ref: "NetworkObject" } }) )
+            {},
+            ...Object.keys(
+              contractObject.properties.networks.patternProperties
+            ).map(pattern => ({ [pattern]: { $ref: "NetworkObject" } }))
           )
         }
       }
@@ -139,12 +140,7 @@ const translations = [
         // add definition - not in schema
         ItemType: {
           type: "string",
-          enum: [
-            "event",
-            "function",
-            "constructor",
-            "fallback"
-          ]
+          enum: ["event", "function", "constructor", "fallback"]
         },
 
         // ensure all items have same definition for `type` property
@@ -159,29 +155,25 @@ const translations = [
             "FallbackFunction"
           ]
             // lookup corresponding definition so we can use it by short name
-            .map(
-              (typeName) => ([ typeName, abi.definitions[typeName] ])
-            )
+            .map(typeName => [typeName, abi.definitions[typeName]])
             // generate revised definition as key/value pair
-            .map(
-              ([ typeName, itemType ]) => ({
-                [typeName]: {
-                  ...itemType,
+            .map(([typeName, itemType]) => ({
+              [typeName]: {
+                ...itemType,
 
-                  properties: {
-                    ...itemType.properties,
+                properties: {
+                  ...itemType.properties,
 
-                    // assign that new definition for all item types
-                    type: {
-                      $ref: "#/definitions/ItemType"
-                    }
-                  },
+                  // assign that new definition for all item types
+                  type: {
+                    $ref: "#/definitions/ItemType"
+                  }
+                },
 
-                  // ensure `type` is in array of required property names
-                  required: Array.from(new Set([ ...itemType.required, "type" ]))
-                }
-              })
-            )
+                // ensure `type` is in array of required property names
+                required: Array.from(new Set([...itemType.required, "type"]))
+              }
+            }))
         )
       }
     }
@@ -203,7 +195,7 @@ const translations = [
             json: {
               type: "string",
               description: "JSON-encoded ABI"
-            },
+            }
           },
 
           required: ["json"]
@@ -228,7 +220,7 @@ const translations = [
             json: {
               type: "string",
               description: "JSON-encoded AST"
-            },
+            }
           },
 
           required: ["json"]
@@ -253,7 +245,7 @@ const translations = [
             json: {
               type: "string",
               description: "JSON-encoded sourceMap"
-            },
+            }
           },
 
           required: ["json"]
@@ -264,20 +256,17 @@ const translations = [
 
   // find all refs and remove leading `#/definitions/`
   searchReplace(
-    (key) => key === "$ref",
+    key => key === "$ref",
     (key, value) => ({ [key]: value.replace(/^#\/definitions\/(.+)/, "$1") })
   ),
 
   // find all `^x-` patternProperties and remove
-  searchReplace(
-    (key) => key === "^x-",
-    () => ({})
-  ),
+  searchReplace(key => key === "^x-", () => ({})),
 
   // manually fix network object references to event
   searchReplace(
     (_, value) => value === "abi.spec.json#/definitions/Event",
-    (key) => ({ [key]: "Event" })
+    key => ({ [key]: "Event" })
   ),
 
   // convert networks to key/value array
@@ -315,19 +304,82 @@ const translations = [
         }
       }
     }
+  }),
+
+  ({ contractObject, ...schemas }) => ({
+    ...schemas,
+
+    contractObject: {
+      ...contractObject,
+
+      properties: {
+        ...contractObject.properties,
+        bytecode: {
+          type: "object",
+          properties: {
+            bytes: { type: "string" },
+            linkReferences: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  offsets: {
+                    type: "array",
+                    items: {
+                      type: "integer"
+                    }
+                  },
+                  name: { type: "string" },
+                  length: { type: "integer" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }),
+
+  ({ contractObject, ...schemas }) => ({
+    ...schemas,
+
+    contractObject: {
+      ...contractObject,
+
+      properties: {
+        ...contractObject.properties,
+        deployedBytecode: {
+          type: "object",
+          properties: {
+            bytes: { type: "string" },
+            linkReferences: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  offsets: {
+                    type: "array",
+                    items: {
+                      type: "integer"
+                    }
+                  },
+                  name: { type: "string" },
+                  length: { type: "integer" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   })
 ];
 
-
 function processSchemas(schemas) {
-  const {
-    abi,
-    networkObject,
-    contractObject
-  } = translations.reduce(
+  const { abi, networkObject, contractObject } = translations.reduce(
     (schemas, translate: any) => translate(schemas),
     schemas
-  )
+  );
 
   return {
     abi: processSchema("ABI", abi),
@@ -364,7 +416,7 @@ export const schema = makeExecutableSchema({
       jsonSchema: [
         ...jsonSchemas.abi,
         ...jsonSchemas.networkObject,
-        ...jsonSchemas.contractObject,
+        ...jsonSchemas.contractObject
       ],
       entryPoints
     })

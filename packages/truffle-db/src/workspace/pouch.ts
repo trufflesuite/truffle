@@ -116,6 +116,7 @@ export class Workspace {
 
   constructor(workingDirectory: string) {
     this.directory = workingDirectory;
+
     PouchDB.plugin(pouchdbDebug);
     PouchDB.plugin(PouchDBFind);
 
@@ -377,6 +378,7 @@ export class Workspace {
 
         id
       };
+
       return result;
     } catch (_) {
       return null;
@@ -396,7 +398,8 @@ export class Workspace {
             abi,
             compilation,
             sourceContract,
-            constructor: contractConstructor
+            createBytecode,
+            callBytecode
           } = contractInput;
           const id = soliditySha3(
             jsonStableStringify({
@@ -422,7 +425,8 @@ export class Workspace {
               abi,
               compilation,
               sourceContract,
-              constructor: contractConstructor,
+              createBytecode,
+              callBytecode,
               id
             };
           }
@@ -557,6 +561,7 @@ export class Workspace {
       networks: Promise.all(
         networks.map(async networkInput => {
           const { name, networkId, historicBlock } = networkInput;
+
           const id = soliditySha3(
             jsonStableStringify({
               networkId: networkId,
@@ -652,9 +657,14 @@ export class Workspace {
     return {
       bytecodes: await Promise.all(
         bytecodes.map(async bytecodeInput => {
-          const { bytes } = bytecodeInput;
+          const { bytes, linkReferences } = bytecodeInput;
 
-          const id = soliditySha3(jsonStableStringify({ bytes: bytes }));
+          const id = soliditySha3(
+            jsonStableStringify({
+              bytes: bytes,
+              linkReferences: linkReferences
+            })
+          );
 
           const bytecode = (await this.bytecode({ id })) || {
             ...bytecodeInput,

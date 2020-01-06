@@ -69,7 +69,6 @@ describe("Project", () => {
     addProjectResult = await wsClient.execute(AddProject, {
       directory: "test/path"
     });
-    console.debug("Add result %o", addProjectResult);
 
     //add name records to project
     networkVariables = {

@@ -1,6 +1,6 @@
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db/db";
-import * as Contracts from "@truffle/workflow-compile";
+import * as Contracts from "@truffle/workflow-compile/new";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import * as fse from "fs-extra";
 import path from "path";
@@ -8,273 +8,38 @@ import Config from "@truffle/config";
 import { Environment } from "@truffle/environment";
 import Web3 from "web3";
 
-const AddBytecodes = gql`
-  input BytecodeInput {
-    bytes: Bytes!
-  }
+import {
+  AddBytecodes,
+  AddSources,
+  AddCompilation,
+  AddContracts,
+  AddContractInstances,
+  AddNetworks
+} from "../queries";
 
-  mutation AddBytecodes($bytecodes: [BytecodeInput!]!) {
-    workspace {
-      bytecodesAdd(input: { bytecodes: $bytecodes }) {
-        bytecodes {
-          id
-        }
-      }
-    }
-  }
-`;
+type WorkflowCompileResult = {
+  compilations: {
+    [compilerName: string]: {
+      sourceIndexes: Array<string>;
+      contracts: Array<ContractObject>;
+    };
+  };
+  contracts: { [contractName: string]: ContractObject };
+};
 
-const AddSources = gql`
-  input SourceInput {
-    contents: String!
-    sourcePath: String
-  }
+type networkLinkObject = {
+  [name: string]: string;
+};
 
-  mutation AddSource($sources: [SourceInput!]!) {
-    workspace {
-      sourcesAdd(input: { sources: $sources }) {
-        sources {
-          id
-          contents
-          sourcePath
-        }
-      }
-    }
-  }
-`;
+type LinkValueLinkReferenceObject = {
+  bytecode: string;
+  index: number;
+};
 
-const AddCompilation = gql`
-  input CompilerInput {
-    name: String
-    version: String
-    settings: Object
-  }
-
-  input CompilationSourceInput {
-    id: ID!
-  }
-
-  input CompilationSourceContractSourceInput {
-    id: ID!
-  }
-
-  input CompilationSourceContractAstInput {
-    json: String!
-  }
-
-  input CompilationSourceMapInput {
-    json: String!
-  }
-
-  input CompilationSourceContractInput {
-    name: String
-    source: CompilationSourceContractSourceInput
-    ast: CompilationSourceContractAstInput
-  }
-
-  input CompilationInput {
-    compiler: CompilerInput!
-    contracts: [CompilationSourceContractInput!]
-    sources: [CompilationSourceInput!]!
-    sourceMaps: [CompilationSourceMapInput]
-  }
-  input CompilationsAddInput {
-    compilations: [CompilationInput!]!
-  }
-
-  mutation AddCompilation($compilations: [CompilationInput!]!) {
-    workspace {
-      compilationsAdd(input: { compilations: $compilations }) {
-        compilations {
-          id
-          compiler {
-            name
-            version
-          }
-          contracts {
-            name
-            source {
-              contents
-              sourcePath
-            }
-            ast {
-              json
-            }
-          }
-          sources {
-            contents
-            sourcePath
-          }
-          sourceMaps {
-            json
-          }
-        }
-      }
-    }
-  }
-`;
-
-const AddContracts = gql`
-  input AbiInput {
-    json: String!
-    items: [String]
-  }
-  input ContractCompilationInput {
-    id: ID!
-  }
-  input ContractSourceContractInput {
-    index: FileIndex
-  }
-  input ContractConstructorBytecodeInput {
-    id: ID!
-  }
-  input ContractConstructorInput {
-    createBytecode: ContractConstructorBytecodeInput!
-  }
-  input ContractInput {
-    name: String
-    abi: AbiInput
-    compilation: ContractCompilationInput
-    sourceContract: ContractSourceContractInput
-    constructor: ContractConstructorInput
-  }
-  mutation AddContracts($contracts: [ContractInput!]!) {
-    workspace {
-      contractsAdd(input: { contracts: $contracts }) {
-        contracts {
-          id
-          name
-          abi {
-            json
-          }
-          sourceContract {
-            name
-            source {
-              contents
-              sourcePath
-            }
-            ast {
-              json
-            }
-          }
-          compilation {
-            compiler {
-              name
-              version
-            }
-            contracts {
-              name
-              source {
-                contents
-                sourcePath
-              }
-              ast {
-                json
-              }
-            }
-            sources {
-              contents
-              sourcePath
-            }
-          }
-          constructor {
-            createBytecode {
-              bytes
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-const AddContractInstances = gql`
-  input ContractInstanceNetworkInput {
-    id: ID!
-  }
-
-  input ContractInstanceContractInput {
-    id: ID!
-  }
-
-  input ContractInstanceCreationConstructorBytecodeInput {
-    id: ID!
-  }
-
-  input ContractInstanceCreationConstructorInput {
-    createBytecode: ContractInstanceCreationConstructorBytecodeInput!
-  }
-
-  input ContractInstanceCreationInput {
-    transactionHash: TransactionHash!
-    constructor: ContractInstanceCreationConstructorInput!
-  }
-
-  input ContractInstanceInput {
-    address: Address!
-    network: ContractInstanceNetworkInput!
-    creation: ContractInstanceCreationInput
-    contract: ContractInstanceContractInput
-  }
-
-  mutation AddContractInstances($contractInstances: [ContractInstanceInput!]!) {
-    workspace {
-      contractInstancesAdd(input: { contractInstances: $contractInstances }) {
-        contractInstances {
-          address
-          network {
-            name
-            networkID
-            historicBlock {
-              height
-              hash
-            }
-          }
-          contract {
-            name
-          }
-          creation {
-            transactionHash
-            constructor {
-              createBytecode {
-                bytes
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-const AddNetworks = gql`
-  input HistoricBlockInput {
-    height: Int!
-    hash: String!
-  }
-
-  input NetworkInput {
-    name: String!
-    networkId: NetworkId!
-    historicBlock: HistoricBlockInput!
-  }
-
-  mutation AddNetworks($networks: [NetworkInput!]!) {
-    workspace {
-      networksAdd(input: { networks: $networks }) {
-        networks {
-          id
-          name
-          networkId
-          historicBlock {
-            height
-            hash
-          }
-        }
-      }
-    }
-  }
-`;
+type LinkValueObject = {
+  value: string;
+  linkReference: LinkValueLinkReferenceObject;
+};
 
 const AddNameRecords = gql`
   input ResourceInput {
@@ -403,16 +168,29 @@ export const setProjectNames = gql`
   }
 `;
 
-type WorkflowCompileResult = {
-  outputs: { [compilerName: string]: string[] };
-  contracts: { [contractName: string]: ContractObject };
-};
-
 type LoaderNetworkObject = {
   contract: string;
   id: string;
   address: string;
   transactionHash: string;
+  links?: networkLinkObject;
+};
+
+type LinkReferenceObject = {
+  offsets: Array<number>;
+  name: string;
+  length: number;
+};
+
+type BytecodeInfo = {
+  id: string;
+  linkReferences: Array<LinkReferenceObject>;
+  bytes?: string;
+};
+
+type BytecodesObject = {
+  bytecodes: Array<BytecodeInfo>;
+  callBytecodes: Array<BytecodeInfo>;
 };
 
 type IdObject = {
@@ -458,26 +236,29 @@ export class ArtifactsLoader {
       directory: this.config["contracts_directory"]
     });
 
-    const compilationsOutput = await this.loadCompilation(this.config);
-    const { compilations, contracts } = compilationsOutput;
+    const compileOutput = await this.loadCompilation(this.config);
+    const { compilations, compilationsOutput } = compileOutput;
 
     //map contracts and contract instances to compiler
     await Promise.all(
       compilations.data.workspace.compilationsAdd.compilations.map(
         async ({ compiler, id }) => {
-          const contractIds = await this.loadCompilationContracts(
-            contracts[compiler.name],
-            id,
-            compiler.name
-          );
           const networks = await this.loadNetworks(
-            contracts[compiler.name],
+            compilationsOutput[compiler.name].contracts,
             this.config["artifacts_directory"],
             this.config["contracts_directory"]
           );
+
+          const contractIds = await this.loadCompilationContracts(
+            compilationsOutput[compiler.name].contracts,
+            id,
+            compiler.name,
+            networks
+          );
+
           if (networks[0].length) {
             this.loadContractInstances(
-              contracts[compiler.name],
+              compilationsOutput[compiler.name].contracts,
               contractIds.contractIds,
               networks,
               contractIds.bytecodeIds
@@ -523,24 +304,41 @@ export class ArtifactsLoader {
   async loadCompilationContracts(
     contracts: Array<ContractObject>,
     compilationId: string,
-    compilerName: string
+    compilerName: string,
+    networks: Array<any>
   ) {
-    const bytecodeIds = await this.loadCompilationBytecodes(contracts);
-    const contractObjects = contracts.map((contract, index) => ({
-      name: contract["contract_name"],
-      abi: {
-        json: JSON.stringify(contract["abi"])
-      },
-      compilation: {
-        id: compilationId
-      },
-      sourceContract: {
-        index: index
-      },
-      constructor: {
-        createBytecode: bytecodeIds[index]
-      }
-    }));
+    const bytecodes = await this.loadBytecodes(contracts);
+
+    const contractObjects = contracts.map((contract, index) => {
+      let createBytecodeLinkValues;
+      let network = networks[index].filter(
+        network => network.contract == contract["contractName"]
+      );
+
+      const createBytecode = bytecodes.bytecodes[index];
+      const callBytecode = bytecodes.callBytecodes[index];
+
+      let contractObject = {
+        name: contract["contractName"],
+        abi: {
+          json: JSON.stringify(contract["abi"])
+        },
+        compilation: {
+          id: compilationId
+        },
+        sourceContract: {
+          index: index
+        },
+        createBytecode: {
+          id: createBytecode.id
+        },
+        callBytecode: {
+          id: callBytecode.id
+        }
+      };
+
+      return contractObject;
+    });
 
     const contractsLoaded = await this.db.query(AddContracts, {
       contracts: contractObjects
@@ -549,7 +347,6 @@ export class ArtifactsLoader {
     const contractIds = contractsLoaded.data.workspace.contractsAdd.contracts.map(
       ({ id }) => ({ id })
     );
-
     let currentNameHeads = await this.db.query(getProject, {
       directory: this.config["contracts_directory"]
     });
@@ -581,19 +378,33 @@ export class ArtifactsLoader {
     return {
       compilerName: contracts[0].compiler.name,
       contractIds: contractIds,
-      bytecodeIds: bytecodeIds
+      bytecodeIds: bytecodes
     };
   }
 
-  async loadCompilationBytecodes(contracts: Array<ContractObject>) {
+  async loadBytecodes(
+    contracts: Array<ContractObject>
+  ): Promise<BytecodesObject> {
     // transform contract objects into data model bytecode inputs
     // and run mutation
-    const result = await this.db.query(AddBytecodes, {
-      bytecodes: contracts.map(({ bytecode }) => ({ bytes: bytecode }))
+    let bytecodes = [];
+    let deployedBytecodes = [];
+    contracts.map(({ deployedBytecode, bytecode }) => {
+      bytecodes.push(bytecode);
+      deployedBytecodes.push(deployedBytecode);
     });
-    const bytecodeIds = result.data.workspace.bytecodesAdd.bytecodes;
 
-    return bytecodeIds;
+    const createBytecodeResult = await this.db.query(AddBytecodes, {
+      bytecodes: bytecodes
+    });
+    const callBytecodeResult = await this.db.query(AddBytecodes, {
+      bytecodes: deployedBytecodes
+    });
+
+    return {
+      bytecodes: createBytecodeResult.data.workspace.bytecodesAdd.bytecodes,
+      callBytecodes: callBytecodeResult.data.workspace.bytecodesAdd.bytecodes
+    };
   }
 
   async loadCompilationSources(contracts: Array<ContractObject>) {
@@ -617,26 +428,11 @@ export class ArtifactsLoader {
     compilation: Array<ContractObject>,
     sourceIds: Array<IdObject>
   ) {
-    return compilation.map(({ contract_name: name, ast }, index) => ({
+    return compilation.map(({ contractName: name, ast }, index) => ({
       name,
       source: sourceIds[index],
       ast: ast ? { json: JSON.stringify(ast) } : undefined
     }));
-  }
-
-  async organizeContractsByCompiler(result: WorkflowCompileResult) {
-    const { outputs, contracts } = result;
-
-    return Object.entries(outputs)
-      .map(([compilerName, sourcePaths]) => ({
-        [compilerName]: sourcePaths.map(
-          sourcePath =>
-            Object.values(contracts).filter(
-              contract => contract.sourcePath === sourcePath
-            )[0] || undefined
-        )
-      }))
-      .reduce((a, b) => ({ ...a, ...b }), {});
   }
 
   async setCompilation(organizedCompilation: Array<ContractObject>) {
@@ -672,10 +468,10 @@ export class ArtifactsLoader {
     workingDirectory: string
   ) {
     const networksByContract = await Promise.all(
-      contracts.map(async ({ contract_name, bytecode }) => {
-        const contractName = contract_name.toString().concat(".json");
+      contracts.map(async ({ contractName, bytecode }) => {
+        const name = contractName.toString().concat(".json");
         const artifactsNetworksPath = fse.readFileSync(
-          path.join(artifacts, contractName)
+          path.join(artifacts, name)
         );
         const artifactsNetworks = JSON.parse(artifactsNetworksPath.toString())
           .networks;
@@ -724,7 +520,8 @@ export class ArtifactsLoader {
                   address: filteredNetwork[0][1]["address"],
                   transactionHash: filteredNetwork[0][1]["transactionHash"],
                   bytecode: bytecode,
-                  name: network
+                  name: network,
+                  links: filteredNetwork[0][1]["links"]
                 });
               }
             }
@@ -765,17 +562,49 @@ export class ArtifactsLoader {
     return networksByContract;
   }
 
+  getNetworkLinks(network: LoaderNetworkObject, bytecode: BytecodeInfo) {
+    let networkLink: Array<LinkValueObject> = [];
+    if (network.links) {
+      networkLink = Object.entries(network.links).map(link => {
+        let linkReferenceIndexByName = bytecode.linkReferences.findIndex(
+          ({ name }) => name === link[0]
+        );
+
+        let linkValue = {
+          value: link[1],
+          linkReference: {
+            bytecode: bytecode.id,
+            index: linkReferenceIndexByName
+          }
+        };
+
+        return linkValue;
+      });
+    }
+
+    return networkLink;
+  }
+
   async loadContractInstances(
     contracts: Array<ContractObject>,
     contractIds: Array<IdObject>,
     networksArray: Array<Array<LoaderNetworkObject>>,
-    bytecodeIds: Array<IdObject>
+    bytecodes: BytecodesObject
   ) {
     // networksArray is an array of arrays of networks for each contract;
     // this first mapping maps to each contract
     const instances = networksArray.map((networks, index) => {
       // this second mapping maps each network in a contract
       const contractInstancesByNetwork = networks.map(network => {
+        let createBytecodeLinkValues = this.getNetworkLinks(
+          network,
+          bytecodes.bytecodes[index]
+        );
+        let callBytecodeLinkValues = this.getNetworkLinks(
+          network,
+          bytecodes.callBytecodes[index]
+        );
+
         let instance = {
           address: network.address,
           contract: contractIds[index],
@@ -785,8 +614,15 @@ export class ArtifactsLoader {
           creation: {
             transactionHash: network.transactionHash,
             constructor: {
-              createBytecode: bytecodeIds[index]
+              createBytecode: {
+                bytecode: { id: bytecodes.bytecodes[index].id },
+                linkValues: createBytecodeLinkValues
+              }
             }
+          },
+          callBytecode: {
+            bytecode: { id: bytecodes.callBytecodes[index].id },
+            linkValues: callBytecodeLinkValues
           }
         };
         return instance;
@@ -801,18 +637,21 @@ export class ArtifactsLoader {
   }
 
   async loadCompilation(compilationConfig: CompilationConfigObject) {
-    const compilationOutput = await Contracts.compile(compilationConfig);
-    const contracts = await this.organizeContractsByCompiler(compilationOutput);
+    const compileOutput = await Contracts.compile(compilationConfig);
+    const compilationsOutput = compileOutput.compilations;
+
     const compilationObjects = await Promise.all(
-      Object.values(contracts)
-        .filter(contractsArray => contractsArray.length > 0)
-        .map(contractsArray => this.setCompilation(contractsArray))
+      Object.values(compilationsOutput)
+        .filter(contracts => contracts["contracts"].length > 0)
+        .map(({ contracts }) => {
+          return this.setCompilation(contracts);
+        })
     );
 
     const compilations = await this.db.query(AddCompilation, {
       compilations: compilationObjects
     });
 
-    return { compilations, contracts };
+    return { compilations, compilationsOutput };
   }
 }
