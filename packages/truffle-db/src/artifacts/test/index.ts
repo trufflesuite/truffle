@@ -54,8 +54,8 @@ const GetContract = `
     }
   }`;
 
-const GetContractConstructor = `
-  query getContractConstructor($name: String!) {
+const GetContractBytecodes = `
+  query getContractBytecodes($name: String!) {
     artifacts {
       contract(name: $name) {
         name
@@ -66,16 +66,20 @@ const GetContractConstructor = `
             sourcePath
           }
         }
-        constructor {
-          createBytecode {
-            bytecode {
-              bytes
-              linkReferences {
-                offsets
-                name
-                length
-              }
-            }
+        createBytecode {
+          bytes
+          linkReferences {
+            offsets
+            name
+            length
+          }
+        }
+        callBytecode {
+          bytes
+          linkReferences {
+            offsets
+            name
+            length
           }
         }
         abi {
@@ -133,8 +137,8 @@ describe("Artifacts queries", () => {
     expect(ast.json).toEqual(JSON.stringify(Migrations.ast));
   });
 
-  it("retrieves contract constructor object correctly", async () => {
-    const result = await db.query(GetContractConstructor, {
+  it("retrieves contract bytecodes correctly", async () => {
+    const result = await db.query(GetContractBytecodes, {
       name: Migrations.contractName
     });
     const { data } = result;
@@ -144,27 +148,25 @@ describe("Artifacts queries", () => {
     expect(artifacts).toHaveProperty("contract");
 
     const { contract } = artifacts;
-    expect(contract).toHaveProperty("constructor");
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("abi");
     expect(contract).toHaveProperty("sourceContract");
+    expect(contract).toHaveProperty("createBytecode");
+    expect(contract).toHaveProperty("callBytecode");
 
-    const { constructor: contractConstructor } = contract;
-    expect(contractConstructor).toHaveProperty("createBytecode");
-
-    const { createBytecode } = contractConstructor;
-    expect(createBytecode.bytecode.bytes).toEqual(
-      shimBytecode(Migrations.bytecode).bytes
-    );
-    expect(createBytecode.bytecode.linkReferences).toEqual(
-      shimBytecode(Migrations.bytecode).linkReferences
-    );
-
-    const { name, sourceContract, abi } = contract;
+    const {
+      name,
+      sourceContract,
+      abi,
+      createBytecode,
+      callBytecode
+    } = contract;
     expect(name).toEqual(Migrations.contractName);
+    expect(createBytecode).toEqual(shimBytecode(Migrations.bytecode));
+    expect(callBytecode).toEqual(shimBytecode(Migrations.deployedBytecode));
+
     expect(sourceContract).toHaveProperty("name");
     expect(sourceContract).toHaveProperty("source");
-
     const { source } = sourceContract;
     expect(source).not.toEqual(null);
   });

@@ -178,7 +178,8 @@ export class Workspace {
             abi,
             compilation,
             sourceContract,
-            constructor: contractConstructor
+            createBytecode,
+            callBytecode
           } = contractInput;
           const id = soliditySha3(
             jsonStableStringify({
@@ -204,7 +205,8 @@ export class Workspace {
               abi,
               compilation,
               sourceContract,
-              constructor: contractConstructor,
+              createBytecode,
+              callBytecode,
               id
             };
           }

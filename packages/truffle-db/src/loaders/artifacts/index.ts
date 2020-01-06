@@ -134,14 +134,8 @@ export class ArtifactsLoader {
         network => network.contract == contract["contractName"]
       );
 
-      if (network.length > 0) {
-        createBytecodeLinkValues = this.getNetworkLinks(
-          network[0],
-          bytecodes.bytecodes[index]
-        );
-      } else {
-        createBytecodeLinkValues = [];
-      }
+      const createBytecode = bytecodes.bytecodes[index];
+      const callBytecode = bytecodes.callBytecodes[index];
 
       let contractObject = {
         name: contract["contractName"],
@@ -154,11 +148,11 @@ export class ArtifactsLoader {
         sourceContract: {
           index: index
         },
-        constructor: {
-          createBytecode: {
-            bytecode: { id: bytecodes.bytecodes[index].id },
-            linkValues: createBytecodeLinkValues
-          }
+        createBytecode: {
+          id: createBytecode.id
+        },
+        callBytecode: {
+          id: callBytecode.id
         }
       };
 

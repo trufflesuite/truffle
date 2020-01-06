@@ -31,7 +31,8 @@ type Contract {
   abi: ABI
   compilation: Compilation
   sourceContract: SourceContract
-  constructor: Constructor
+  createBytecode: Bytecode
+  callBytecode: Bytecode
 }
 
 type ABI {

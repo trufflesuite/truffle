@@ -185,18 +185,11 @@ const GetWorkspaceContract = gql`
         abi {
           json
         }
-        constructor {
-          createBytecode {
-            bytecode {
-              bytes
-            }
-            linkValues {
-              value
-              linkReference {
-                name
-              }
-            }
-          }
+        createBytecode {
+          bytes
+        }
+        callBytecode {
+          bytes
         }
         sourceContract {
           source {
@@ -575,30 +568,27 @@ describe("Compilation", () => {
             contract: {
               id,
               name,
-              constructor: { createBytecode },
               sourceContract: {
                 source: { contents }
               },
               compilation: {
                 compiler: { version }
-              }
+              },
+              createBytecode,
+              callBytecode
             }
           }
         }
       } = await db.query(GetWorkspaceContract, contractIds[index]);
 
-      if (createBytecode.linkValues.length > 0) {
-        let linkReferenceName = Object.values(createBytecode.linkValues[0])[1][
-          "name"
-        ];
-        let linkReferenceInNetwork = Object.keys(
-          migratedNetworks[index].links
-        )[0];
-        expect(linkReferenceName).toEqual(linkReferenceInNetwork);
-      }
+      const artifactsCreateBytecode = shimBytecode(artifacts[index].bytecode);
+      expect(createBytecode.bytes).toEqual(artifactsCreateBytecode.bytes);
 
-      let shimmedBytecode = shimBytecode(artifacts[index].bytecode);
-      expect(createBytecode.bytecode.bytes).toEqual(shimmedBytecode.bytes);
+      const artifactsCallBytecode = shimBytecode(
+        artifacts[index].deployedBytecode
+      );
+      expect(callBytecode.bytes).toEqual(artifactsCallBytecode.bytes);
+
       expect(name).toEqual(artifacts[index].contractName);
       expect(contents).toEqual(artifacts[index].source);
       expect(version).toEqual(artifacts[index].compiler.version);
