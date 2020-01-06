@@ -28,7 +28,7 @@ type WorkflowCompileResult = {
   contracts: { [contractName: string]: ContractObject };
 };
 
-type networkLinkObject = {
+type NetworkLinkObject = {
   [name: string]: string;
 };
 
@@ -47,7 +47,7 @@ type LoaderNetworkObject = {
   id: string;
   address: string;
   transactionHash: string;
-  links?: networkLinkObject;
+  links?: NetworkLinkObject;
 };
 
 type LinkReferenceObject = {
@@ -136,7 +136,7 @@ export class ArtifactsLoader {
     contracts: Array<ContractObject>,
     compilationId: string,
     compilerName: string,
-    networks: Array<any>
+    networks: Array<Array<LoaderNetworkObject>>
   ) {
     const bytecodes = await this.loadBytecodes(contracts);
 
