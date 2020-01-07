@@ -43,9 +43,7 @@ module.exports = {
     "compile:warnings": [
       function({ warnings }) {
         this.logger.log("> Compilation warnings encountered:");
-        this.logger.log(
-          warnings.map(warning => warning.formattedMessage).join()
-        );
+        this.logger.log(`${OS.EOL}    ${warnings.join()}`);
       }
     ],
     "compile:nothingToCompile": [
