@@ -65,7 +65,18 @@ var SolidityUtils = {
         processedInstruction.modifierDepth = parseInt(splitInstruction[4]);
       }
 
-      processedSourceMap.push({ ...processedInstruction }); //need to clone so they won't all be copies!
+      //we need to clone before pushing so that the array won't contain a
+      //bunch of copies of the same thing.  unfortunately, we don't have
+      //babel here, so we need to clone a bit manually.
+      let clonedProcessedInstruction = {
+        start: processedInstruction.start,
+        length: processedInstruction.length,
+        file: processedInstruction.file,
+        jump: processedInstruction.jump,
+        modifierDepth: processedInstruction.modifierDepth
+      };
+
+      processedSourceMap.push(clonedProcessedInstruction);
     }
 
     return processedSourceMap;
