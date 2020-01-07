@@ -200,7 +200,7 @@ var execute = {
             context.promiEvent.resolve({ tx: receipt.hash, receipt });
           } catch (error) {
             context.promiEvent.eventEmitter.emit("error", error);
-            throw Error(`Error: \n${JSON.stringify(error, null, " ")}`);
+            throw error;
           }
         })
         .catch(promiEvent.reject);
