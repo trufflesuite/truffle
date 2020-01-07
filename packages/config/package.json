@@ -1,6 +1,6 @@
 {
   "name": "@truffle/config",
-  "version": "1.2.11-alphaTez.0",
+  "version": "1.2.12-alphaTez.0",
   "description": "Utility for interacting with truffle-config.js files",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -31,8 +31,8 @@
     "typescript": "^3.6.3"
   },
   "dependencies": {
-    "@truffle/error": "^0.0.14-alphaTez.0",
-    "@truffle/provider": "^0.2.7-alphaTez.0",
+    "@truffle/error": "^0.0.15-alphaTez.0",
+    "@truffle/provider": "^0.2.8-alphaTez.0",
     "@types/lodash": "^4.14.149",
     "@types/node": "^12.12.9",
     "configstore": "^4.0.0",
