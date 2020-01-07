@@ -157,15 +157,10 @@ const Utils = {
   getTxParams(args) {
     const constructor = this;
 
-    const expected_arg_count = 1; // Tezos always expects at least an init arg
-
     let tx_params = {};
     const last_arg = args[args.length - 1];
 
-    if (
-      args.length === expected_arg_count + 1 &&
-      Utils.is_tx_params(last_arg)
-    ) {
+    if (Utils.is_tx_params(last_arg)) {
       tx_params = args.pop();
     }
 
