@@ -58,7 +58,7 @@ var execute = {
     args = utils.convertToEthersBN(args);
 
     return constructor.detectNetwork().then(network => {
-      return { args: args, params: params, network: network };
+      return { args, params, network };
     });
   },
 
