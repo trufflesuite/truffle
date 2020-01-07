@@ -1,3 +1,5 @@
+var debug = require("debug")("solidity-utils");
+
 var SolidityUtils = {
   getCharacterOffsetToLineAndColumnMapping: function(source) {
     var mapping = [];
@@ -30,37 +32,43 @@ var SolidityUtils = {
   },
 
   getHumanReadableSourceMap: function(sourceMap) {
-    var map = sourceMap.split(";");
+    const instructions = sourceMap.split(";");
 
-    var last = {};
+    let processedInstruction = {}; //persists across instructions for when info doesn't change
+    let processedSourceMap = [];
 
-    return map.map(function(current) {
-      var ret = {
-        start: last.start,
-        length: last.length,
-        file: last.file,
-        jump: last.jump
-      };
+    //JS doesn't have scan, so we'll do this scan manually
+    for (let instruction of instructions) {
+      let splitInstruction = instruction.split(":");
 
-      current = current.split(":");
+      //note: if(splitInstruction[i]) checks both that there are
+      //at least that many fields, and that that particular field
+      //is nonempty
 
-      if (current[0] && current[0] !== "-1" && current[0].length) {
-        ret.start = parseInt(current[0]);
-      }
-      if (current[1] && current[1] !== "-1" && current[1].length) {
-        ret.length = parseInt(current[1]);
-      }
-      if (current[2] /*&& current[2] !== '-1'*/ && current[2].length) {
-        ret.file = parseInt(current[2]);
-      }
-      if (current[3] && current[3].length) {
-        ret.jump = current[3];
+      if (splitInstruction[0] && splitInstruction[0] !== "-1") {
+        processedInstruction.start = parseInt(splitInstruction[0]);
       }
 
-      last = ret;
+      if (splitInstruction[1] && splitInstruction[1] !== "-1") {
+        processedInstruction.length = parseInt(splitInstruction[1]);
+      }
 
-      return ret;
-    });
+      if (splitInstruction[2]) {
+        processedInstruction.file = parseInt(splitInstruction[2]);
+      }
+
+      if (splitInstruction[3]) {
+        processedInstruction.jump = splitInstruction[3];
+      }
+
+      if (splitInstruction[4]) {
+        processedInstruction.modifierDepth = parseInt(splitInstruction[4]);
+      }
+
+      processedSourceMap.push({ ...processedInstruction }); //need to clone so they won't all be copies!
+    }
+
+    return processedSourceMap;
   }
 };
 
