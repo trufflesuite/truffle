@@ -1,468 +1,123 @@
-export { schema } from "./schema";
-
-import PouchDB from "pouchdb";
-import PouchDBMemoryAdapter from "pouchdb-adapter-memory";
-import PouchDBFind from "pouchdb-find";
 import path from "path";
-import * as jsondown from "jsondown";
-import * as pouchdbUtils from "pouchdb-utils";
-import CoreLevelPouch from "pouchdb-adapter-leveldb-core";
-import pouchdbDebug from "pouchdb-debug";
-import { soliditySha3 } from "web3-utils";
-import jsonStableStringify from "json-stable-stringify";
 
-type PouchApi = {
-  bytecodes: PouchDB.Database;
-  compilations: PouchDB.Database;
-  contractInstances: PouchDB.Database;
-  contracts: PouchDB.Database;
-  networks: PouchDB.Database;
-  sources: PouchDB.Database;
-};
-
-type IWorkspaceQueryResource = keyof PouchApi;
-type IWorkspaceQueryResourceCollection = DataModel.IWorkspaceQuery[keyof Pick<
-  DataModel.IWorkspaceQuery,
-  IWorkspaceQueryResource
->];
-
-const resources = {
-  contracts: {
-    createIndexes: [],
-    idFields: ["name", "abi", "sourceContract", "compilation"]
-  },
-  sources: {
-    createIndexes: [{ fields: ["contents"] }, { fields: ["sourcePath"] }],
-    idFields: ["contents", "sourcePath"]
-  },
-  compilations: {
-    createIndexes: [],
-    idFields: ["compiler", "sources"]
-  },
-  bytecodes: {
-    createIndexes: [],
-    idFields: ["bytes", "linkReferences"]
-  },
-  networks: {
-    createIndexes: [{ fields: ["id"] }],
-    idFields: ["networkId", "historicBlock"]
-  },
-  contractInstances: {
-    createIndexes: [],
-    idFields: ["address", "network"]
-  }
-};
+export { schema } from "./schema";
+import { FSDatabases } from "./pouch";
+import { WorkspaceDatabases } from "./types";
+import { definitions } from "./definitions";
 
 export class Workspace {
-  public dbApi: PouchApi;
-
-  getSavePath(workingDirectory: string, resource: string): string {
-    const savePath = path.join(workingDirectory, ".db", resource);
-    return savePath;
-  }
-
-  jsondownpouch(opts: any, callback: any): any {
-    const _opts = pouchdbUtils.assign(
-      {
-        db: jsondown.default
-      },
-      opts
-    );
-
-    CoreLevelPouch.call(this, _opts, callback);
-  }
-
-  adapter(PouchDB: any): any {
-    PouchDB.adapter("jsondown", this.jsondownpouch, true);
-  }
-
-  private ready: Promise<void>;
+  public databases: WorkspaceDatabases;
 
   constructor(workingDirectory: string) {
-    PouchDB.plugin(pouchdbDebug);
-    PouchDB.plugin(PouchDBFind);
+    const directory = path.join(workingDirectory, ".db");
 
-    this.jsondownpouch["valid"] = () => true;
-    this.jsondownpouch["use_prefix"] = false;
-
-    this.adapter(PouchDB);
-
-    this.dbApi = {} as PouchApi;
-    for (let resource of Object.keys(resources)) {
-      let savePath = this.getSavePath(workingDirectory, resource);
-      this.dbApi[resource] = new PouchDB(savePath, { adapter: "jsondown" });
-    }
-    this.ready = this.initialize();
+    this.databases = new FSDatabases({ directory, definitions });
   }
 
-  async initialize() {
-    for (let [resource, definition] of Object.entries(resources)) {
-      const db = this.dbApi[resource];
+  /***************************************************************************
+   * Collection queries
+   ***************************************************************************/
 
-      const { createIndexes } = definition;
-
-      for (let index of createIndexes || []) {
-        await db.createIndex({ index });
-      }
-    }
+  async bytecodes(): Promise<DataModel.IBytecode[]> {
+    return await this.databases.all("bytecodes");
   }
 
-  private async all(
-    res: IWorkspaceQueryResource
-  ): Promise<IWorkspaceQueryResourceCollection> {
-    await this.ready;
-
-    try {
-      const query = { selector: {} };
-      const { docs }: any = await this.dbApi[res].find(query);
-
-      return docs.map(doc => ({ ...doc, id: doc["_id"] }));
-    } catch (error) {
-      console.log(`Error fetching all ${res}\n`);
-      console.log(error);
-      return [];
-    }
+  async compilations(): Promise<DataModel.ICompilation[]> {
+    return await this.databases.all("compilations");
   }
 
-  async bytecodes(): Promise<IWorkspaceQueryResourceCollection> {
-    return this.all("bytecodes");
+  async contracts(): Promise<DataModel.IContract[]> {
+    return await this.databases.all("contracts");
   }
 
-  async contracts(): Promise<IWorkspaceQueryResourceCollection> {
-    return this.all("contracts");
+  async contractInstances(): Promise<DataModel.IContractInstance[]> {
+    return await this.databases.all("contractInstances");
   }
 
-  async compilations(): Promise<IWorkspaceQueryResourceCollection> {
-    return this.all("compilations");
+  async networks(): Promise<DataModel.INetwork[]> {
+    return await this.databases.all("networks");
   }
 
-  async contractInstances(): Promise<IWorkspaceQueryResourceCollection> {
-    return this.all("contractInstances");
+  async sources(): Promise<DataModel.ISource[]> {
+    return await this.databases.all("sources");
   }
 
-  async networks(): Promise<IWorkspaceQueryResourceCollection> {
-    return this.all("networks");
+  /***************************************************************************
+   * Resource queries
+   ***************************************************************************/
+
+  async bytecode({ id }: { id: string }): Promise<DataModel.IBytecode | null> {
+    return await this.databases.get("bytecodes", id);
   }
 
-  async sources(): Promise<IWorkspaceQueryResourceCollection> {
-    return this.all("sources");
+  async compilation({
+    id
+  }: {
+    id: string;
+  }): Promise<DataModel.ICompilation | null> {
+    return await this.databases.get("compilations", id);
   }
 
-  async contractNames() {
-    await this.ready;
+  async contract({ id }: { id: string }): Promise<DataModel.IContract | null> {
+    return await this.databases.get("contracts", id);
+  }
 
-    const { docs }: any = await this.dbApi.contracts.find({
+  async contractInstance({
+    id
+  }: {
+    id: string;
+  }): Promise<DataModel.IContractInstance | null> {
+    return await this.databases.get("contractInstances", id);
+  }
+
+  async network({ id }: { id: string }): Promise<DataModel.INetwork | null> {
+    return await this.databases.get("networks", id);
+  }
+  async source({ id }: { id: string }): Promise<DataModel.ISource | null> {
+    return await this.databases.get("sources", id);
+  }
+
+  /***************************************************************************
+   * Mutations
+   ***************************************************************************/
+
+  async bytecodesAdd({ input }): Promise<{ bytecodes: DataModel.IBytecode[] }> {
+    return await this.databases.add("bytecodes", input);
+  }
+
+  async compilationsAdd({
+    input
+  }): Promise<{ compilations: DataModel.ICompilation[] }> {
+    return await this.databases.add("compilations", input);
+  }
+
+  async contractsAdd({ input }): Promise<{ contracts: DataModel.IContract[] }> {
+    return await this.databases.add("contracts", input);
+  }
+
+  async contractInstancesAdd({
+    input
+  }): Promise<{ contractInstances: DataModel.IContractInstance[] }> {
+    return await this.databases.add("contractInstances", input);
+  }
+
+  async networksAdd({ input }): Promise<{ networks: DataModel.INetwork[] }> {
+    return await this.databases.add("networks", input);
+  }
+
+  async sourcesAdd({ input }): Promise<{ sources: DataModel.ISource[] }> {
+    return await this.databases.add("sources", input);
+  }
+
+  /***************************************************************************
+   * Misc.
+   ***************************************************************************/
+
+  async contractNames(): Promise<DataModel.IContract["name"][]> {
+    const contracts = await this.databases.find("contracts", {
       selector: {},
       fields: ["name"]
     });
-    return docs.map(({ name }) => name);
-  }
-
-  async contract({ id }: { id: string }) {
-    await this.ready;
-
-    try {
-      const result = {
-        ...(await this.dbApi.contracts.get(id)),
-
-        id
-      };
-      return result;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  async contractsAdd({ input }) {
-    await this.ready;
-
-    const { contracts } = input;
-
-    return {
-      contracts: Promise.all(
-        contracts.map(async contractInput => {
-          const {
-            name,
-            abi,
-            compilation,
-            sourceContract,
-            createBytecode,
-            callBytecode
-          } = contractInput;
-          const id = soliditySha3(
-            jsonStableStringify({
-              name: name,
-              abi: abi,
-              sourceContract: sourceContract,
-              compilation: compilation
-            })
-          );
-
-          const contract = await this.contract({ id });
-
-          if (contract) {
-            return contract;
-          } else {
-            const contractAdded = await this.dbApi.contracts.put({
-              ...contractInput,
-              _id: id
-            });
-
-            return {
-              name,
-              abi,
-              compilation,
-              sourceContract,
-              createBytecode,
-              callBytecode,
-              id
-            };
-          }
-        })
-      )
-    };
-  }
-
-  async compilation({ id }: { id: string }) {
-    await this.ready;
-
-    try {
-      return {
-        ...(await this.dbApi.compilations.get(id)),
-        id
-      };
-    } catch (_) {
-      return null;
-    }
-  }
-
-  async compilationsAdd({ input }) {
-    await this.ready;
-
-    const { compilations } = input;
-
-    return {
-      compilations: Promise.all(
-        compilations.map(async compilationInput => {
-          const { compiler, contracts, sources, sourceMaps } = compilationInput;
-
-          const id = soliditySha3(jsonStableStringify({ compiler, sources }));
-
-          const compilation = (await this.compilation({ id })) || {
-            ...compilationInput,
-            id
-          };
-
-          await this.dbApi.compilations.put({
-            ...compilation,
-            ...compilationInput,
-            _id: id
-          });
-
-          return compilation;
-        })
-      )
-    };
-  }
-
-  async contractInstance({ id }: { id: string }) {
-    await this.ready;
-
-    try {
-      return {
-        ...(await this.dbApi.contractInstances.get(id)),
-
-        id
-      };
-    } catch (_) {
-      return null;
-    }
-  }
-
-  async contractInstancesAdd({ input }) {
-    await this.ready;
-
-    const { contractInstances } = input;
-
-    return {
-      contractInstances: Promise.all(
-        contractInstances.map(async contractInstanceInput => {
-          const {
-            address,
-            network,
-            creation,
-            contract,
-            callBytecode
-          } = contractInstanceInput;
-          // hash includes address and network of this contractInstance
-          const id = soliditySha3(
-            jsonStableStringify({
-              address: address,
-              network: { id: network.id }
-            })
-          );
-
-          const contractInstance = await this.contractInstance({ id });
-
-          if (contractInstance) {
-            return contractInstance;
-          } else {
-            let contractInstanceAdded = await this.dbApi.contractInstances.put({
-              ...contractInstance,
-              ...contractInstanceInput,
-
-              _id: id
-            });
-
-            return { ...contractInstanceInput, id };
-          }
-        })
-      )
-    };
-  }
-
-  async network({ id }: { id: string }) {
-    await this.ready;
-
-    try {
-      return {
-        ...(await this.dbApi.networks.get(id)),
-
-        id
-      };
-    } catch (_) {
-      return null;
-    }
-  }
-
-  async networksAdd({ input }) {
-    await this.ready;
-
-    const { networks } = input;
-
-    return {
-      networks: Promise.all(
-        networks.map(async networkInput => {
-          const { networkId, historicBlock } = networkInput;
-          const id = soliditySha3(
-            jsonStableStringify({
-              networkId: networkId,
-              historicBlock: historicBlock
-            })
-          );
-
-          const network = await this.network({ id });
-
-          if (network) {
-            return network;
-          } else {
-            await this.dbApi.networks.put({
-              ...networkInput,
-              _id: id
-            });
-
-            return { networkId, historicBlock, id };
-          }
-        })
-      )
-    };
-  }
-
-  async source({ id }: { id: string }) {
-    await this.ready;
-
-    try {
-      return {
-        ...(await this.dbApi.sources.get(id)),
-
-        id
-      };
-    } catch (_) {
-      return null;
-    }
-  }
-
-  async sourcesAdd({ input }) {
-    await this.ready;
-
-    const { sources } = input;
-
-    return {
-      sources: Promise.all(
-        sources.map(async sourceInput => {
-          const { contents, sourcePath } = sourceInput;
-          // hash includes sourcePath because two files can have same contents, but
-          // should have different IDs
-          const id = sourcePath
-            ? soliditySha3(
-                jsonStableStringify({
-                  contents: contents,
-                  sourcePath: sourcePath
-                })
-              )
-            : soliditySha3(jsonStableStringify({ contents: contents }));
-
-          const source = (await this.source({ id })) || { ...sourceInput, id };
-
-          await this.dbApi.sources.put({
-            ...source,
-            ...sourceInput,
-
-            _id: id
-          });
-
-          return source;
-        })
-      )
-    };
-  }
-
-  async bytecode({ id }: { id: string }) {
-    await this.ready;
-
-    try {
-      return {
-        ...(await this.dbApi.bytecodes.get(id)),
-
-        id
-      };
-    } catch (_) {
-      return null;
-    }
-  }
-
-  async bytecodesAdd({ input }) {
-    await this.ready;
-
-    const { bytecodes } = input;
-
-    return {
-      bytecodes: await Promise.all(
-        bytecodes.map(async bytecodeInput => {
-          const { bytes, linkReferences } = bytecodeInput;
-
-          const id = soliditySha3(
-            jsonStableStringify({
-              bytes: bytes,
-              linkReferences: linkReferences
-            })
-          );
-
-          const bytecode = (await this.bytecode({ id })) || {
-            ...bytecodeInput,
-            id
-          };
-
-          await this.dbApi.bytecodes.put({
-            ...bytecode,
-            ...bytecodeInput,
-
-            _id: id
-          });
-
-          return bytecode;
-        })
-      )
-    };
+    return contracts.map(({ name }) => name);
   }
 }
