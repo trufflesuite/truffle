@@ -65,7 +65,7 @@ jobs:
         - truffle obtain --solc=0.5.8
   allow_failures:
       - env: COVERAGE=true
-      - env: YARN_GPG=no WINDOWS=true
+      - os: windows
 
 
 cache:
