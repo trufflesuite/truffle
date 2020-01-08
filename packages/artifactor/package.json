@@ -10,7 +10,9 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "mocha"
+    "prepare_windows": "yarn build",
+    "test": "mocha",
+    "test_windows": "mocha --recursive --colors"
   },
   "dependencies": {
     "@truffle/contract-schema": "^3.0.20",

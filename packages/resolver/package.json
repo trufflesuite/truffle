@@ -4,7 +4,8 @@
   "description": "Resolve contract dependencies given multiple configurable dependency sources",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "test_windows": "mocha --colors"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver",
   "keywords": [

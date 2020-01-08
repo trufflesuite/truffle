@@ -15,7 +15,8 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "test_windows": "mocha --colors"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/workflow-compile",
   "author": "Truffle Suite <inquiry@trufflesuite.com>",

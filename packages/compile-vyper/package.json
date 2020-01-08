@@ -7,7 +7,8 @@
   "version": "1.0.39",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "test_windows": "mocha --colors --exit --recursive"
   },
   "dependencies": {
     "@truffle/compile-solidity": "^4.2.15",

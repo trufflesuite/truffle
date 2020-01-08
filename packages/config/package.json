@@ -7,7 +7,9 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts"
+    "prepare_windows": "yarn build",
+    "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts",
+    "test_windows": "mocha --exit --recursive test/*.test.ts"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/config",
   "keywords": [

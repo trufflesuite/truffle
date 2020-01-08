@@ -9,7 +9,10 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
+    "prepare_windows": "yarn build",
+    "test": "mocha --exit -r ts-node/register test/**/*.test.ts",
+    "test_windows": "mocha --exit -r ts-node/register test/*.test.ts *.ts --colors"
+
   },
   "types": "./typings/index.d.ts",
   "devDependencies": {

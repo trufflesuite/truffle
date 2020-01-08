@@ -11,7 +11,9 @@
   "version": "0.2.5",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "test_windows": "mocha --recursive --colors"
+
   },
   "types": "./typings/index.d.ts",
   "dependencies": {

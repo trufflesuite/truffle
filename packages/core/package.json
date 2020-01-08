@@ -13,7 +13,8 @@
     "truffle-exec": "./exec.js"
   },
   "scripts": {
-    "test": "mocha ./test/** ./test/**/*"
+    "test": "mocha ./test/** ./test/**/*",
+    "test_windows": "mocha  --recursive --colors"
   },
   "dependencies": {
     "@truffle/artifactor": "^4.0.42",

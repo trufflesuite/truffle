@@ -18,11 +18,13 @@
     "build-cli": "webpack --config ./cli.webpack.config.js",
     "postinstall": "node ./scripts/postinstall.js",
     "prepare": "yarn build",
+    "prepare_windows": "yarn build",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
     "publish:external-compiler": "node ./scripts/prereleaseVersion.js external-compiler external-compiler",
     "publish:next": "node ./scripts/prereleaseVersion.js next next",
     "publish:user-level-mnemonic": "node ./scripts/prereleaseVersion.js user-level-mnemonic user-level-mnemonic",
     "test": "./scripts/test.sh",
+    "test_windows": "mocha --no-warnings --timeout 7000 --grep @geth --invert --colors",
     "test:raw": "NO_BUILD=true mocha"
   },
   "dependencies": {

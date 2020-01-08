@@ -11,7 +11,9 @@
   "version": "3.1.3",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --no-warnings --timeout 10000 --exit"
+    "test": "mocha --no-warnings --timeout 10000 --exit",
+    "test_windows": "mocha --no-warnings --timeout 10000 --colors --exit"
+
   },
   "dependencies": {
     "@ensdomains/ens": "^0.3.11",

@@ -1,5 +1,3 @@
-dist: xenial
-sudo: required
 language: node_js
 
 # configure Travis to run on-push builds only on PR-recipient branches
@@ -9,32 +7,66 @@ branches:
     - master
     - develop
     - next
-
     # other targets
-    - truffle-db
+    - trufle-db
+
 
 before_install:
   - npm install -g yarn
+install:
+  - yarn bootstrap
+  - truffle obtain --solc=0.5.8
 
-matrix:
+script: yarn ci
+
+
+jobs:
   fast_finish: true
   include:
     - node_js: 8
       env: FABRICEVM=true
+      dist: xenial
+      sudo: required
+      install:
+        - yarn bootstrap
+        - truffle obtain --solc=0.5.8
+    # WINDOWS -- BEGINNING -- 
+    - node_js: 10
+      env: 
+        # Use YARN_GPG=no so Travis doesn't freeze after finished build
+        - YARN_GPG=no WINDOWS=true
+      before_install:
+        - powershell Set-ExecutionPolicy -ExecutionPolicy unrestricted
+        - npm install -g yarn
+      os: windows
+      install:
+        - yarn bootstrap_windows
+        - yarn prepare_windows
+        - truffle obtain --solc=0.5.8
+      script: 
+        - yarn ci_windows
+    # WINDOWS -- END --
     - node_js: 8
       env: COVERAGE=true
+      dist: xenial
+      sudo: required
+      install:
+        - yarn bootstrap
+        - truffle obtain --solc=0.5.8
     - if: |
         branch = develop AND \
         type = push
       node_js: 10
       env: COLONY=true
+      dist: xenial
+      sudo: required
+      install:
+        - yarn bootstrap
+        - truffle obtain --solc=0.5.8
   allow_failures:
-    - node_js: 8
-      env: COVERAGE=true
+      - env: COVERAGE=true
+      - env: YARN_GPG=no WINDOWS=true
 
-install:
-  - yarn bootstrap
-  - truffle obtain --solc=0.5.8
 
 cache:
   directories:
@@ -42,8 +74,6 @@ cache:
     - $(npm config get prefix)/lib/node_modules # globally installed stuff (i.e. lerna)
     - ~/.config/truffle/compilers
 
-script:
-  - yarn ci
 
 notifications:
   slack:

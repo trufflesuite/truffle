@@ -15,7 +15,9 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
+    "prepare_windows": "yarn build",
     "test": "mocha --exit -r ts-node/register test/**/*.test.ts",
+    "test_windows": "mocha --exit --recursive ts-node/register test/*.test.ts --colors",
     "watch": "tsc -w"
   },
   "dependencies": {

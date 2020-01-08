@@ -2,12 +2,15 @@
   "private": true,
   "scripts": {
     "bootstrap": "npx lerna bootstrap",
+    "bootstrap_windows": "npx lerna bootstrap --ignore-scripts",
     "prepare": "lerna run prepare --stream --concurrency=1",
+    "prepare_windows": "lerna run prepare_windows --stream --concurrency=1",
     "publish-release": "./scripts/publish-release.sh",
     "publish-dist-tag": "./scripts/publish-dist-tag.sh",
     "prepare-release": "./scripts/prepare-release.sh",
     "test": "lerna run test --stream --concurrency=1 -- --colors",
     "ci": "./scripts/ci.sh",
+    "ci_windows": "powershell -File scripts/ci_windows.ps1",
     "geth": "./scripts/geth.sh",
     "solc-bump": "node ./scripts/solc-bump.js",
     "update": "lernaupdate"
