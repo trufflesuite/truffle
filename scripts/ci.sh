@@ -101,7 +101,7 @@ elif [ "$PACKAGES" = true ]; then
   sudo apt install -y python3.6 python3.6-dev python3.6-venv solc
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python3.6 get-pip.py
-  sudo pip3 install vyper
+  sudo pip3 install vyper==0.1.b14
   lerna run --ignore truffle test --stream --concurrency=1
 
 elif [ "$COVERAGE" = true ]; then
