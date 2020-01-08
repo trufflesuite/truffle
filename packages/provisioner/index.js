@@ -17,14 +17,15 @@ var provision = function(abstraction, options) {
     abstraction.ens = options.ens;
   }
 
-  ["from", "gas", "gasPrice"].forEach(function(key) {
-    // TODO: handle contract class default logic better
-    if (options[key] && options.networks[options.network].type !== "tezos") {
-      var obj = {};
-      obj[key] = options[key];
-      abstraction.defaults(obj);
-    }
-  });
+  if (abstraction.interfaceAdapter.web3) {
+    ["from", "gas", "gasPrice"].forEach(key => {
+      if (options[key]) {
+        var obj = {};
+        obj[key] = options[key];
+        abstraction.defaults(obj);
+      }
+    });
+  }
 
   return abstraction;
 };
