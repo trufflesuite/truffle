@@ -279,6 +279,7 @@ var execute = {
             const contractInstance = await receipt.contract();
             contractInstance.transactionHash = receipt.hash;
             context.transactionHash = contractInstance.transactionHash;
+            constructor.address = contractInstance.address;
             context.logs = []; // none in Tezos?
 
             // .new(): We need the promiEvent to resolve a contract instance.

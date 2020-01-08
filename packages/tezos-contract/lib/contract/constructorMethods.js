@@ -157,6 +157,13 @@ module.exports = Contract => ({
     );
   },
 
+  async storageSchema() {
+    const contract = await this.interfaceAdapter.tezos.contract.at(
+      this.address
+    );
+    return contract.schema.ExtractSchema();
+  },
+
   // Overrides the deployed address to null.
   // You must call this explicitly so you don't inadvertently do this otherwise.
   resetAddress() {
