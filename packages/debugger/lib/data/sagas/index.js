@@ -113,6 +113,8 @@ function* variablesAndMappingsSaga() {
   let currentAssignments = yield select(data.proc.assignments);
   let mappedPaths = yield select(data.proc.mappedPaths);
   let currentDepth = yield select(data.current.functionDepth);
+  let modifierDepth = yield select(data.current.modifierDepth);
+  let inModifier = yield select(data.current.inModifier);
   let address = yield select(data.current.address);
   //storage address, not code address
 
@@ -174,7 +176,9 @@ function* variablesAndMappingsSaga() {
     preambleAssignments = assignParameters(
       parameters,
       top + adjustment,
-      currentDepth
+      currentDepth,
+      modifierDepth,
+      modifier.nodeType === "ModifierDefinition"
     );
   } else {
     preambleAssignments = {};
@@ -203,7 +207,13 @@ function* variablesAndMappingsSaga() {
       //works out that way)
 
       //we can skip preambleAssignments here, that isn't used in this case
-      assignments = assignParameters(parameters, top, currentDepth);
+      assignments = assignParameters(
+        parameters,
+        top,
+        currentDepth,
+        modifierDepth,
+        inModifier
+      );
 
       debug("Function definition case");
       debug("assignments %O", assignments);
@@ -277,7 +287,9 @@ function* variablesAndMappingsSaga() {
 
       //otherwise, go ahead and make the assignment
       assignment = makeAssignment(
-        { astId: varId, stackframe: currentDepth },
+        inModifier
+          ? { astId: varId, stackframe: currentDepth, modifierDepth }
+          : { astId: varId, stackframe: currentDepth },
         {
           location: "stack",
           from: top - Codec.Ast.Utils.stackSize(node) + 1,
@@ -303,7 +315,13 @@ function* variablesAndMappingsSaga() {
       //going to forget this for a bit while we handle the rest...
       assignments = {
         ...preambleAssignments,
-        ...literalAssignments(node, alternateStack, currentDepth)
+        ...literalAssignments(
+          node,
+          alternateStack,
+          currentDepth,
+          modifierDepth,
+          inModifier
+        )
       };
 
       //we'll need this
@@ -412,7 +430,13 @@ function* variablesAndMappingsSaga() {
       //going to forget this for a bit while we handle the rest...
       assignments = {
         ...preambleAssignments,
-        ...literalAssignments(node, alternateStack, currentDepth)
+        ...literalAssignments(
+          node,
+          alternateStack,
+          currentDepth,
+          modifierDepth,
+          inModifier
+        )
       };
 
       debug("Member access case");
@@ -473,7 +497,13 @@ function* variablesAndMappingsSaga() {
 
       assignments = {
         ...preambleAssignments,
-        ...literalAssignments(node, stack, currentDepth)
+        ...literalAssignments(
+          node,
+          stack,
+          currentDepth,
+          modifierDepth,
+          inModifier
+        )
       };
       yield put(actions.assign(assignments));
       break;
@@ -624,7 +654,13 @@ export function* recordAllocations() {
   );
 }
 
-function literalAssignments(node, stack, currentDepth) {
+function literalAssignments(
+  node,
+  stack,
+  currentDepth,
+  modifierDepth,
+  inModifier
+) {
   let top = stack.length - 1;
 
   let literal;
@@ -646,7 +682,9 @@ function literalAssignments(node, stack, currentDepth) {
   }
 
   let assignment = makeAssignment(
-    { astId: node.id, stackframe: currentDepth },
+    inModifier
+      ? { astId: node.id, stackframe: currentDepth, modifierDepth }
+      : { astId: node.id, stackframe: currentDepth },
     { location: "stackliteral", literal }
   );
 
@@ -654,7 +692,13 @@ function literalAssignments(node, stack, currentDepth) {
 }
 
 //takes a parameter list as given in the AST
-function assignParameters(parameters, top, functionDepth) {
+function assignParameters(
+  parameters,
+  top,
+  functionDepth,
+  modifierDepth = 0,
+  forModifier = false
+) {
   let reverseParameters = parameters.slice().reverse();
   //reverse is in-place, so we use slice() to clone first
   debug("reverseParameters %o", parameters);
@@ -670,7 +714,9 @@ function assignParameters(parameters, top, functionDepth) {
       to: currentPosition
     };
     let assignment = makeAssignment(
-      { astId: parameter.id, stackframe: functionDepth },
+      forModifier
+        ? { astId: parameter.id, stackframe: functionDepth, modifierDepth }
+        : { astId: parameter.id, stackframe: functionDepth },
       pointer
     );
     assignments[assignment.id] = assignment;

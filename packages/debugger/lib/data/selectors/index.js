@@ -586,11 +586,43 @@ const data = createSelectorTree({
       }
     ),
 
+    /*
+     * data.current.function
+     * may be modifier rather than function!
+     */
+    function: createLeaf(
+      ["./node", "/views/scopes/inlined"],
+      (node, scopes) => {
+        const types = [
+          "FunctionDefinition",
+          "ModifierDefinition",
+          "ContractDefinition",
+          "SourceUnit"
+        ];
+        //SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes);
+      }
+    ),
+
+    /*
+     * data.current.inModifier
+     */
+    inModifier: createLeaf(
+      ["./function"],
+      node => node && node.nodeType === "ModifierDefinition"
+    ),
+
     /**
      * data.current.functionDepth
      */
 
     functionDepth: createLeaf([solidity.current.functionDepth], identity),
+
+    /**
+     * data.current.modifierDepth
+     */
+
+    modifierDepth: createLeaf([solidity.current.modifierDepth], identity),
 
     /**
      * data.current.address
@@ -862,10 +894,19 @@ const data = createSelectorTree({
           "/proc/assignments",
           "./_",
           "/current/functionDepth", //for pruning things too deep on stack
+          "/current/modifierDepth", //when it's useful
+          "/current/inModifier",
           "/current/address" //for contract variables
         ],
 
-        (assignments, identifiers, currentDepth, address) =>
+        (
+          assignments,
+          identifiers,
+          currentDepth,
+          modifierDepth,
+          inModifier,
+          address
+        ) =>
           Object.assign(
             {},
             ...Object.entries(identifiers).map(
@@ -896,7 +937,16 @@ const data = createSelectorTree({
                         currentDepth,
                         Math.max(...matchFrames)
                       );
-                      id = stableKeccak256({ astId, stackframe: maxMatch });
+                      //if we're in a modifier, include modifierDepth
+                      if (inModifier) {
+                        id = stableKeccak256({
+                          astId,
+                          stackframe: maxMatch,
+                          modifierDepth
+                        });
+                      } else {
+                        id = stableKeccak256({ astId, stackframe: maxMatch });
+                      }
                     }
                   }
                 } else {

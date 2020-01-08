@@ -53,6 +53,14 @@ function createMultistepSelectors(stepSelector) {
     ),
 
     /**
+     * .modifierDepth
+     */
+    modifierDepth: createLeaf(
+      ["./instruction"],
+      instruction => instruction.modifierDepth
+    ),
+
+    /**
      * .source
      */
     source: createLeaf(
@@ -78,8 +86,10 @@ function createMultistepSelectors(stepSelector) {
     /**
      * .node
      */
-    node: createLeaf(["./source", "./pointer"], ({ ast }, pointer) =>
-      pointer ? jsonpointer.get(ast, pointer) : jsonpointer.get(ast, "")
+    node: createLeaf(
+      ["./source", "./pointer"],
+      ({ ast }, pointer) =>
+        pointer ? jsonpointer.get(ast, pointer) : jsonpointer.get(ast, "")
     )
   };
 }
@@ -129,19 +139,10 @@ let solidity = createSelectorTree({
     /**
      * solidity.current.humanReadableSourceMap
      */
-    humanReadableSourceMap: createLeaf(["./sourceMap"], sourceMap =>
-      sourceMap ? SolidityUtils.getHumanReadableSourceMap(sourceMap) : null
-    ),
-
-    /**
-     * solidity.current.isModifierDepthAvailable
-     */
-    isModifierDepthAvailable: createLeaf(
-      ["./humanReadableSourceMap"],
+    humanReadableSourceMap: createLeaf(
+      ["./sourceMap"],
       sourceMap =>
-        sourceMap && sourceMap[0]
-          ? sourceMap[0].modifierDepth !== undefined
-          : null
+        sourceMap ? SolidityUtils.getHumanReadableSourceMap(sourceMap) : null
     ),
 
     /**
