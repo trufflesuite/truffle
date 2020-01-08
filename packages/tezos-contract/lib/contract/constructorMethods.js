@@ -145,8 +145,16 @@ module.exports = Contract => ({
     this.configureNetwork({ networkType });
   },
 
-  setWallet(wallet) {
-    this.configureNetwork();
+  async setWallet(email, passphrase, mnemonic, secret) {
+    await this.configureNetwork();
+
+    if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
+    await this.interfaceAdapter.tezos.importKey(
+      email,
+      passphrase,
+      mnemonic,
+      secret
+    );
   },
 
   // Overrides the deployed address to null.
