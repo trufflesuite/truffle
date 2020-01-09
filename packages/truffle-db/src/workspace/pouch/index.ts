@@ -8,6 +8,7 @@ import CoreLevelPouch from "pouchdb-adapter-leveldb-core";
 import pouchdbDebug from "pouchdb-debug";
 import { soliditySha3 } from "web3-utils";
 import jsonStableStringify from "json-stable-stringify";
+export { Databases } from "./types";
 
 type PouchApi = {
   bytecodes: PouchDB.Database;
