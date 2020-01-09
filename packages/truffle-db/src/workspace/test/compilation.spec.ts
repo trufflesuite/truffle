@@ -65,7 +65,7 @@ describe("Compilation", () => {
   test("can be queried", async () => {
     const expectedId = generateId({
       compiler: Migrations.compiler,
-      sourceIds: [{ id: sourceId }]
+      sources: [{ id: sourceId }]
     });
 
     const getCompilationResult = await wsClient.execute(GetCompilation, {

@@ -238,12 +238,7 @@ export class Workspace {
         compilations.map(async compilationInput => {
           const { compiler, contracts, sources, sourceMaps } = compilationInput;
 
-          const sourceIds = sources.map(source => source.id);
-          const sourcesObject = Object.assign({}, sourceIds);
-
-          const id = soliditySha3(
-            jsonStableStringify({ compiler: compiler, sourceIds: sources })
-          );
+          const id = soliditySha3(jsonStableStringify({ compiler, sources }));
 
           const compilation = (await this.compilation({ id })) || {
             ...compilationInput,
