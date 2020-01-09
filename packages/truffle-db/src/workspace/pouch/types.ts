@@ -20,6 +20,21 @@ export type MutationMapping<C, M> = {
   };
 };
 
+/**
+ * Aggegrates logic for interacting wth a set of PouchDB databases identified
+ * by resource collection name.
+ *
+ * Notes on type parameters:
+ *   1. R is the schema subset for querying individual resources
+ *   2. C is the schema subset for querying collections of resources
+ *   3. M is the schema subset for mutations to add resources
+ *   4. CR is a type-defined mapping from collection name to resource name
+ *   5. CM is a type-defiined mapping from collection name to mutation info
+ *
+ * As a convention, when present, those type parameters are always specified
+ * in that order. For the last two (CR and CM), the convention is that the
+ * type maps C to R and C to M, respectively.
+ */
 export abstract class Databases<
   R,
   C,
