@@ -923,30 +923,17 @@ const data = createSelectorTree({
                     id = matchIds[0]; //there should only be one!
                   }
 
-                  //if not contract, it's local, so find the innermost
-                  //(but not beyond current depth)
+                  //if not contract, it's local, so identify by stackframe
                   if (id === undefined) {
-                    let matchFrames = (assignments.byAstId[astId] || [])
-                      .map(id => assignments.byId[id].stackframe)
-                      .filter(stackframe => stackframe !== undefined);
-
-                    if (matchFrames.length > 0) {
-                      //this check isn't *really*
-                      //necessary, but may as well prevent stupid stuff
-                      let maxMatch = Math.min(
-                        currentDepth,
-                        Math.max(...matchFrames)
-                      );
-                      //if we're in a modifier, include modifierDepth
-                      if (inModifier) {
-                        id = stableKeccak256({
-                          astId,
-                          stackframe: maxMatch,
-                          modifierDepth
-                        });
-                      } else {
-                        id = stableKeccak256({ astId, stackframe: maxMatch });
-                      }
+                    //if we're in a modifier, include modifierDepth
+                    if (inModifier) {
+                      id = stableKeccak256({
+                        astId,
+                        stackframe: currentDepth,
+                        modifierDepth
+                      });
+                    } else {
+                      id = stableKeccak256({ astId, stackframe: currentDepth });
                     }
                   }
                 } else {
