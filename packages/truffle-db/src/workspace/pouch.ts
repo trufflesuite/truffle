@@ -26,22 +26,28 @@ type IWorkspaceQueryResourceCollection = DataModel.IWorkspaceQuery[keyof Pick<
 
 const resources = {
   contracts: {
-    createIndexes: []
+    createIndexes: [],
+    idFields: ["name", "abi", "sourceContract", "compilation"]
   },
   sources: {
-    createIndexes: [{ fields: ["contents"] }, { fields: ["sourcePath"] }]
+    createIndexes: [{ fields: ["contents"] }, { fields: ["sourcePath"] }],
+    idFields: ["contents", "sourcePath"]
   },
   compilations: {
-    createIndexes: []
+    createIndexes: [],
+    idFields: ["compiler", "sources"]
   },
   bytecodes: {
-    createIndexes: []
+    createIndexes: [],
+    idFields: ["bytes", "linkReferences"]
   },
   networks: {
-    createIndexes: [{ fields: ["id"] }]
+    createIndexes: [{ fields: ["id"] }],
+    idFields: ["networkId", "historicBlock"]
   },
   contractInstances: {
-    createIndexes: []
+    createIndexes: [],
+    idFields: ["address", "network"]
   }
 };
 
