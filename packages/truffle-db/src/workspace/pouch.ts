@@ -105,7 +105,7 @@ export class Workspace {
     }
   }
 
-  private async fetchAll(
+  private async all(
     res: IWorkspaceQueryResource
   ): Promise<IWorkspaceQueryResourceCollection> {
     await this.ready;
@@ -123,27 +123,27 @@ export class Workspace {
   }
 
   async bytecodes(): Promise<IWorkspaceQueryResourceCollection> {
-    return this.fetchAll("bytecodes");
+    return this.all("bytecodes");
   }
 
   async contracts(): Promise<IWorkspaceQueryResourceCollection> {
-    return this.fetchAll("contracts");
+    return this.all("contracts");
   }
 
   async compilations(): Promise<IWorkspaceQueryResourceCollection> {
-    return this.fetchAll("compilations");
+    return this.all("compilations");
   }
 
   async contractInstances(): Promise<IWorkspaceQueryResourceCollection> {
-    return this.fetchAll("contractInstances");
+    return this.all("contractInstances");
   }
 
   async networks(): Promise<IWorkspaceQueryResourceCollection> {
-    return this.fetchAll("networks");
+    return this.all("networks");
   }
 
   async sources(): Promise<IWorkspaceQueryResourceCollection> {
-    return this.fetchAll("sources");
+    return this.all("sources");
   }
 
   async contractNames() {
