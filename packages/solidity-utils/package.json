@@ -19,5 +19,8 @@
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/solidity-utils#readme",
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "debug": "^4.1.1"
   }
 }
