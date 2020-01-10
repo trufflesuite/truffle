@@ -14,7 +14,7 @@ import trace from "lib/trace/selectors";
 import { getRange } from "lib/ast/map";
 
 const __VARIABLES = `
-pragma solidity ~0.5;
+pragma solidity ^0.6.1;
 
 contract Variables {
   event Result(uint256 result);
