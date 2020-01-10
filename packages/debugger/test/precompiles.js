@@ -13,7 +13,7 @@ import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
 
 const __PRECOMPILE = `
-pragma solidity ~0.5;
+pragma solidity ^0.6.1;
 
 contract HasPrecompile {
   event Called();

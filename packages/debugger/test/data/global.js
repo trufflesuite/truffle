@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __GLOBAL = `
-pragma solidity ^0.5.4;
+pragma solidity ^0.6.1;
 
 contract GlobalTest {
 
@@ -116,16 +116,13 @@ library GlobalTestLib {
     GlobalTest.Msg memory __msg;
     GlobalTest.Tx memory __tx;
     GlobalTest.Block memory __block;
-    GlobalTestLib __this;
     uint __now;
-    __this = this;
     __now = now;
     __msg = GlobalTest.Msg(msg.data, msg.sender, msg.sig, msg.value);
     __tx = GlobalTest.Tx(tx.origin, tx.gasprice);
     __block = GlobalTest.Block(block.coinbase, block.difficulty,
       block.gaslimit, block.number, block.timestamp);
-    emit Done(x + uint(address(__this)) + __now       //BREAK LIBRARY
-      + __msg.value + __tx.gasprice + __block.number);
+    emit Done(x + __now + __msg.value + __tx.gasprice + __block.number); //BREAK LIBRARY
   }
 }
 `;
@@ -295,7 +292,6 @@ describe("Globally-available variables", function() {
       await session.variables()
     );
 
-    assert.equal(variables.this, variables.__this);
     assert.deepEqual(variables.msg, variables.__msg);
     assert.deepEqual(variables.tx, variables.__tx);
     assert.deepEqual(variables.block, variables.__block);
