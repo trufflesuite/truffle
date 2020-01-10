@@ -12,7 +12,7 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 
 const __SETSTHINGS = `
-pragma solidity ~0.5;
+pragma solidity ^0.6.1;
 
 contract SetsThings {
   int x;
