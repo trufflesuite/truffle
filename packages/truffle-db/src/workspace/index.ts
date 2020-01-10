@@ -1,15 +1,15 @@
 import path from "path";
 
 export { schema } from "./schema";
-import { FSDatabases } from "./pouch";
+import { FSDatabases, MemoryDatabases } from "./pouch";
 import { WorkspaceDatabases } from "./types";
 import { definitions } from "./definitions";
 
 export interface WorkspaceConfig {
-  workingDirectory: string;
+  workingDirectory?: string;
   adapter?: {
     name: string;
-    settings: any; // to allow adapters to define any options type
+    settings?: any; // to allow adapters to define any options type
   };
 }
 
@@ -30,6 +30,10 @@ export class Workspace {
     switch (name) {
       case "fs": {
         this.databases = new FSDatabases({ definitions, settings });
+        break;
+      }
+      case "memory": {
+        this.databases = new MemoryDatabases({ definitions, settings });
         break;
       }
       default: {

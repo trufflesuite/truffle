@@ -20,10 +20,6 @@ export class FSDatabases<
 > extends Databases<R, C, M, CR, CM> {
   private directory: string;
 
-  constructor(options: WorkspaceDatabasesOptions<C>) {
-    super(options);
-  }
-
   setup(options) {
     this.directory = options.settings.directory;
 
