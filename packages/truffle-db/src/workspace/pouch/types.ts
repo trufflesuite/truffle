@@ -170,12 +170,6 @@ export abstract class Databases<
       [collectionName]: resources
     } as MutationResult<R, C, CR, N>;
   }
-
-  async destroy<N extends CollectionName<C>>(collectionName: N) {
-    await this.ready;
-
-    await this.collections[collectionName].destroy();
-  }
 }
 
 type CollectionDatabases<C> = {
