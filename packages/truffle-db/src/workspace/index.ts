@@ -16,7 +16,7 @@ export interface WorkspaceConfig {
 const getDefaultAdapter = workingDirectory => ({
   name: "fs",
   settings: {
-    directory: path.join(workingDirectory, ".db")
+    directory: path.join(workingDirectory, ".db", "json")
   }
 });
 
