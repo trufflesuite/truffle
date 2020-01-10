@@ -53,7 +53,7 @@
     "ts-jest": "^23.10.5",
     "ts-node-dev": "^1.0.0-pre.32",
     "tsconfig-paths": "^3.7.0",
-    "typescript": "^3.2.2"
+    "typescript": "^3.6.3"
   },
   "dependencies": {
     "@gnd/graphql-tools": "^4.0.5-fix.0",
