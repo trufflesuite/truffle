@@ -20,7 +20,7 @@ var log = {
 };
 
 function getAndSetAccounts(contract, done) {
-  contract.web3.eth
+  contract.interfaceAdapter
     .getAccounts()
     .then(function(accs) {
       contract.defaults({
@@ -94,27 +94,24 @@ describe("Different networks: ", function() {
     done();
   });
 
-  it("does not deploy to the same network (eth_getCode)", function(done) {
-    function getCode(firstContract, secondContract, callback) {
-      firstContract.web3.eth.getCode(secondContract.address, callback);
-    }
+  it("does not deploy to the same network (getCode)", async () => {
+    const getCode = async (firstContract, secondContract) => {
+      return firstContract.interfaceAdapter.getCode(secondContract.address);
+    };
 
-    getCode(ExampleOne, ExampleTwo, function(err, code) {
-      assert.equal(
-        code,
-        "0x",
-        "ExampleTwo's address must not exist on ExampleOne's network"
-      );
+    let code = await getCode(ExampleOne, ExampleTwo);
+    assert.equal(
+      code,
+      "0x",
+      "ExampleTwo's address must not exist on ExampleOne's network"
+    );
 
-      getCode(ExampleTwo, ExampleOne, function(err, code) {
-        assert.equal(
-          code,
-          "0x",
-          "ExampleOne's address must not exist on ExampleTwo's network"
-        );
-        done();
-      });
-    });
+    code = await getCode(ExampleTwo, ExampleOne);
+    assert.equal(
+      code,
+      "0x",
+      "ExampleOne's address must not exist on ExampleTwo's network"
+    );
   });
 
   it("has no network if none set", function() {
@@ -164,7 +161,7 @@ describe("Different networks: ", function() {
       .catch(done);
   });
 
-  it("deployed() used as a thennable funnels errors correctly", function(done) {
+  it.only("deployed() used as a thennable funnels errors correctly", function(done) {
     var Example = contract(ExampleOne.toJSON());
 
     // No provider is set. Using deployed().then() should send errors down the promise chain.

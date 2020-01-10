@@ -235,7 +235,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
 
       const example = await Example.new(1);
       try {
-        const accounts = await Example.web3.eth.getAccounts();
+        const accounts = await Example.interfaceAdapter.getAccounts();
         // specifying a gasLimit as ganache-core @2.7.0 no longer limits gas
         // estimations to the default block gas limit.
         await example.runsOutOfGas({ from: accounts[0], gasLimit: "0x6691b7" });

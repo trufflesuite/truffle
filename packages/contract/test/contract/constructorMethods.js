@@ -183,7 +183,7 @@ describe("TruffleContract.setWallet()", () => {
     const mockWalletObj = {};
     freshTruffleContract.setWallet(mockWalletObj);
     assert.deepStrictEqual(
-      freshTruffleContract.web3.eth.accounts.wallet,
+      freshTruffleContract.interfaceAdapter.web3.eth.accounts.wallet,
       mockWalletObj
     );
   });
