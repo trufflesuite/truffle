@@ -17,7 +17,7 @@
     "request-promise": "^4.2.2",
     "require-from-string": "^2.0.2",
     "semver": "^5.6.0",
-    "solc": "^0.5.0"
+    "solc": "^0.6.0"
   },
   "devDependencies": {
     "@truffle/resolver": "^5.1.6-alphaTez.1",

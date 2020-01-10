@@ -88,12 +88,20 @@ export function* decodeCalldata(
     allocation = allocations.functionAllocations[contextHash][selector].input;
   }
   if (allocation === undefined) {
+    let abiEntry:
+      | AbiData.FallbackAbiEntry
+      | AbiData.ReceiveAbiEntry
+      | null = null;
+    if (info.state.calldata.length === 0) {
+      //to hell with reads, let's just be direct
+      abiEntry = context.fallbackAbi.receive || context.fallbackAbi.fallback;
+    } else {
+      abiEntry = context.fallbackAbi.fallback;
+    }
     return {
       kind: "message" as const,
       class: contractType,
-      abi: context.hasFallback
-        ? AbiData.Utils.fallbackAbiForPayability(context.payable)
-        : null,
+      abi: abiEntry,
       data: Conversion.toHexString(info.state.calldata),
       decodingMode: "full" as const
     };

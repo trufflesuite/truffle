@@ -1,4 +1,6 @@
-import { InterfaceAdapter, BlockType, Provider, Config } from "../types";
+import { InterfaceAdapter, BlockType } from "../types";
+import Config from "@truffle/config";
+import { Provider } from "web3/providers";
 import { TezosToolkit, Tezos } from "@taquito/taquito";
 
 export interface TezosAdapterOptions {

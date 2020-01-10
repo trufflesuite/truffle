@@ -33,19 +33,28 @@ Common.necessary = async (compile, options, callback) => {
   compile.with_dependencies(options, callback);
 };
 
-Common.display = (paths, { quiet, working_directory, logger }, entryPoint) => {
+Common.display = (paths, { quiet, working_directory, events }, entryPoint) => {
   if (quiet !== true) {
     if (!Array.isArray(paths)) paths = Object.keys(paths);
 
     const blacklistRegex = /^truffle\//;
 
-    paths.sort().forEach(contract => {
-      if (path.isAbsolute(contract))
-        contract = `.${path.sep}${path.relative(working_directory, contract)}`;
-      if (contract.match(blacklistRegex)) return;
-      logger.log(`> Compiling ${contract}`);
+    const sources = paths
+      .sort()
+      .map(contract => {
+        if (path.isAbsolute(contract))
+          contract = `.${path.sep}${path.relative(
+            working_directory,
+            contract
+          )}`;
+        if (contract.match(blacklistRegex)) return;
+        return contract;
+      })
+      .filter(contract => contract);
+    events.emit("compile:sourcesToCompile", {
+      sourceFileNames: sources,
+      entryPoint
     });
-    if (entryPoint) logger.log(`> Using entry point "${entryPoint}"`);
   }
 };
 

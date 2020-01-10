@@ -1,18 +1,10 @@
-import {
-  Block as EvmBlock,
-  BlockType as EvmBlockType,
-  Tx as EvmTransaction
-} from "web3/eth/types";
+import { Block as EvmBlock, Tx as EvmTransaction } from "web3/eth/types";
 import { TransactionReceipt as EvmTransactionReceipt } from "web3/types";
 import { Provider } from "web3/providers";
 import Config from "@truffle/config";
 
-export type EvmTransactionReceipt = EvmTransactionReceipt;
-export type EvmTransaction = EvmTransaction;
-export type Provider = Provider;
-export type EvmBlockType = EvmBlockType;
-export type Config = Config;
-export type NetworkId = number | string;
+export { BlockType as EvmBlockType } from "web3/eth/types";
+export type NetworkId = Number | String;
 export type Block = EvmBlock | any;
 export type BlockType = number | string;
 export type Transaction = EvmTransaction | any;

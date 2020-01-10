@@ -132,7 +132,7 @@ const command = {
         mnemonic:
           "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
         gasLimit: config.gas,
-        vmErrorsOnRPCResponse: false,
+        noVMErrorsOnRPCResponse: true,
         time: config.genesis_time
       };
       Develop.connectOrStart(
