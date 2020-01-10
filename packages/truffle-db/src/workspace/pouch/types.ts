@@ -63,7 +63,7 @@ export abstract class Databases<
       .map((resource: CollectionName<C>) => ({
         [resource]: this.createDatabase(resource)
       }))
-      .reduce((a, b) => ({ ...a, ...b })) as CollectionDatabases<C>;
+      .reduce((a, b) => ({ ...a, ...b }), {}) as CollectionDatabases<C>;
   }
 
   protected abstract createDatabase(
