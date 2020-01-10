@@ -13,11 +13,8 @@ export interface WorkspaceConfig {
   };
 }
 
-const getDefaultAdapter = workingDirectory => ({
-  name: "fs",
-  settings: {
-    directory: path.join(workingDirectory, ".db", "json")
-  }
+const getDefaultFSAdapterSettings = workingDirectory => ({
+  directory: path.join(workingDirectory, ".db", "json")
 });
 
 export class Workspace {
@@ -25,11 +22,14 @@ export class Workspace {
 
   constructor({
     workingDirectory,
-    adapter: { name, settings } = getDefaultAdapter(workingDirectory)
+    adapter: { name, settings } = { name: "fs" }
   }: WorkspaceConfig) {
     switch (name) {
       case "fs": {
-        this.databases = new FSDatabases({ definitions, settings });
+        this.databases = new FSDatabases({
+          definitions,
+          settings: settings || getDefaultFSAdapterSettings(workingDirectory)
+        });
         break;
       }
       case "memory": {
