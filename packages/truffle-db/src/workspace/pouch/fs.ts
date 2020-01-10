@@ -27,8 +27,6 @@ export class FSDatabases<
     this.jsondownpouch["use_prefix"] = false;
 
     (PouchDB as any).adapter("jsondown", this.jsondownpouch, true);
-
-    super.setup(options);
   }
 
   createDatabase(resource) {

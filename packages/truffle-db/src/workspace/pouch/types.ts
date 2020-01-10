@@ -50,21 +50,21 @@ export abstract class Databases<
   constructor(options: WorkspaceDatabasesOptions<C>) {
     this.setup(options);
 
-    this.ready = this.initialize();
-  }
-
-  protected setup({ definitions }: WorkspaceDatabasesOptions<C>) {
-    this.definitions = definitions;
+    this.definitions = options.definitions;
 
     PouchDB.plugin(PouchDBDebug);
     PouchDB.plugin(PouchDBFind);
 
-    this.collections = Object.keys(definitions)
+    this.collections = Object.keys(options.definitions)
       .map((resource: CollectionName<C>) => ({
         [resource]: this.createDatabase(resource)
       }))
       .reduce((a, b) => ({ ...a, ...b }), {}) as CollectionDatabases<C>;
+
+    this.ready = this.initialize();
   }
+
+  protected setup(_) {}
 
   protected abstract createDatabase(
     resource: CollectionName<C>
