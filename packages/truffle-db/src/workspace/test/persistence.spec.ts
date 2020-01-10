@@ -1,32 +1,65 @@
-import { generateId, Migrations, WorkspaceClient } from "./utils";
-import { AddBytecode, GetBytecode } from "./bytecode.graphql";
+import { Workspace } from "..";
+import { generateId, Migrations } from "./utils";
 
-let expectedBytecodeId, wsClient;
+import tmp from "tmp";
+const tempDir = tmp.dirSync({ unsafeCleanup: true });
 
-beforeAll(async () => {
-  expectedBytecodeId = generateId({ bytes: Migrations.bytecode });
-  wsClient = new WorkspaceClient();
-  await wsClient.execute(AddBytecode, { bytes: Migrations.bytecode });
+const bytecode = {
+  bytes: "deadbeef",
+  linkReferences: []
+};
+
+const id = generateId(bytecode);
+
+const memoryAdapter = {
+  name: "memory"
+};
+
+const fsAdapter = {
+  name: "fs",
+  settings: {
+    directory: tempDir.name
+  }
+};
+
+describe("Memory-based Workspace", () => {
+  it("does not persist data", async () => {
+    // create first workspace and add to it
+    const workspace1 = new Workspace({ adapter: memoryAdapter });
+    await workspace1.bytecodesAdd({
+      input: {
+        bytecodes: [bytecode]
+      }
+    });
+
+    // make sure we can get data out of that workspace
+    expect(await workspace1.bytecode({ id })).toBeDefined();
+
+    // create a second workspace and don't add anything
+    const workspace2 = new Workspace({ adapter: memoryAdapter });
+
+    // and don't get data out!
+    expect(await workspace2.bytecode({ id })).toBeNull();
+  });
 });
 
-describe("Persisted data", () => {
-  test("Directories are saved for all resources", async () => {
-    const destroy = await wsClient.destroy("bytecodes");
+describe("FS-based Workspace", () => {
+  it("does persist data", async () => {
+    // create first workspace and add to it
+    const workspace1 = new Workspace({ adapter: fsAdapter });
+    await workspace1.bytecodesAdd({
+      input: {
+        bytecodes: [bytecode]
+      }
+    });
 
-    const executionResult = await wsClient.execute(
-      GetBytecode,
-      { id: expectedBytecodeId },
-      false
-    );
-    expect(executionResult.bytecode).toBe(null);
+    // make sure we can get data out of that workspace
+    expect(await workspace1.bytecode({ id })).toBeDefined();
 
-    const executionResultPersisted = await wsClient.execute(
-      GetBytecode,
-      { id: expectedBytecodeId },
-      true
-    );
-    expect(executionResultPersisted.bytecode.bytes).toEqual(
-      Migrations.bytecode
-    );
+    // create a second workspace and don't add anything
+    const workspace2 = new Workspace({ adapter: fsAdapter });
+
+    // but DO get data out
+    expect(await workspace2.bytecode({ id })).toBeDefined();
   });
 });

@@ -419,11 +419,11 @@ describe("Compilation", () => {
 
     expectedSolcCompilationId = generateId({
       compiler: artifacts[0].compiler,
-      sourceIds: [sourceIds[0], sourceIds[1], sourceIds[2]]
+      sources: [sourceIds[0], sourceIds[1], sourceIds[2]]
     });
     expectedVyperCompilationId = generateId({
       compiler: artifacts[3].compiler,
-      sourceIds: [sourceIds[3]]
+      sources: [sourceIds[3]]
     });
     compilationIds.push(
       { id: expectedSolcCompilationId },
