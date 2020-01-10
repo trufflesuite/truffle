@@ -1,6 +1,6 @@
 import BN from "bn.js";
 import { Web3Shim } from "..";
-import { EvmTransaction } from "../../adapter/types";
+import { Tx as EvmTransaction } from "web3/eth/types";
 import { AbiCoder as EthersAbi } from "ethers/utils/abi-coder";
 import _ from "lodash";
 

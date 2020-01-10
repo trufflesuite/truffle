@@ -15,7 +15,7 @@ import data from "lib/data/selectors";
 import * as Codec from "@truffle/codec";
 
 const __CONTAINERS = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract ContainersTest {
 
@@ -53,10 +53,10 @@ contract ContainersTest {
     uint[2] storage localStorage = pointedAt;
 
     //set up variables with values
-    storageStructArray.length = 1;
+    storageStructArray.push();
     storageStructArray[0].x = 107;
 
-    storageArrayArray.length = 1;
+    storageArrayArray.push();
     storageArrayArray[0][0] = 2;
     storageArrayArray[0][1] = 3;
 
@@ -83,7 +83,7 @@ contract ContainersTest {
 `;
 
 const __KEYSANDBYTES = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract ElementaryTest {
 
@@ -133,7 +133,7 @@ contract ElementaryTest {
 `;
 
 const __SPLICING = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract SpliceTest {
   //splicing is (nontrivially) used in two contexts right now:
@@ -171,7 +171,7 @@ contract SpliceTest {
 `;
 
 const __INNERMAPS = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract ComplexMappingTest {
 
@@ -197,7 +197,7 @@ contract ComplexMappingTest {
 `;
 
 const __OVERFLOW = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract OverflowTest {
 
@@ -229,7 +229,7 @@ contract OverflowTest {
 `;
 
 const __BADBOOL = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract BadBoolTest {
 
@@ -242,7 +242,7 @@ contract BadBoolTest {
 `;
 
 const __CIRCULAR = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract CircularTest {
 

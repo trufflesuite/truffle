@@ -34,19 +34,41 @@ function* functionDepthSaga() {
     //again, we put this second so we can be sure the other cases are not this
   } else if (yield select(solidity.current.willJump)) {
     let jumpDirection = yield select(solidity.current.jumpDirection);
-    yield put(actions.jump(jumpDirection));
-  } else if (yield select(solidity.current.willCall)) {
-    debug("about to call");
-    yield put(actions.externalCall());
-  } else if (yield select(solidity.current.willCreate)) {
-    yield put(actions.externalCall());
+    debug("checking guard");
+    let guard = yield select(solidity.current.nextFrameIsPhantom);
+    if (jumpDirection === "i" && guard) {
+      yield put(actions.clearPhantomGuard());
+    } else {
+      yield put(actions.jump(jumpDirection));
+    }
+  } else if (
+    (yield select(solidity.current.willCall)) ||
+    (yield select(solidity.current.willCreate))
+  ) {
+    debug("checking if guard needed");
+    let guard = yield select(solidity.current.callRequiresPhantomFrame);
+    yield put(actions.externalCall(guard));
   } else if (yield select(solidity.current.willReturn)) {
     yield put(actions.externalReturn());
   }
 }
 
 export function* reset() {
-  yield put(actions.reset());
+  let guard = yield select(
+    solidity.transaction.bottomStackframeRequiresPhantomFrame
+  );
+  yield put(actions.reset(guard));
+}
+
+export function* unload() {
+  yield put(actions.unloadTransaction());
+}
+
+export function* begin() {
+  let guard = yield select(
+    solidity.transaction.bottomStackframeRequiresPhantomFrame
+  );
+  yield put(actions.externalCall(guard));
 }
 
 export function* saga() {

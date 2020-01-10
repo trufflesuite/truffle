@@ -1,6 +1,6 @@
 {
   "name": "@truffle/codec",
-  "version": "0.3.3-alphaTez.1",
+  "version": "0.3.3",
   "description": "Library for encoding and decoding smart contract data",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -33,7 +33,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@gnd/typedoc": "^0.15.0-0",
+    "@gnd/typedoc": "0.15.0-0",
     "@truffle/contract-schema": "^3.1.6-alphaTez.1",
     "@trufflesuite/typedoc-default-themes": "^0.6.1",
     "@types/big.js": "^4.0.5",
@@ -47,7 +47,7 @@
     "@types/utf8": "^2.1.6",
     "@zerollup/ts-transform-paths": "^1.7.3",
     "ttypescript": "^1.5.7",
-    "typedoc": "^0.15.0",
+    "typedoc": "0.15.0",
     "typedoc-plugin-external-module-name": "^2.1.0",
     "typescript": "^3.6.2"
   },

@@ -87,7 +87,9 @@ class Docker extends LoadingStrategy {
     const version = execSync(
       "docker run ethereum/solc:" + image + " --version"
     );
-    const normalized = new VersionRange().normalizeSolcVersion(version);
+    const normalized = new VersionRange(this.config).normalizeSolcVersion(
+      version
+    );
     this.addFileToCache(normalized, fileName);
     return normalized;
   }

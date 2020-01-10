@@ -161,7 +161,7 @@ describe("Different networks: ", function() {
       .catch(done);
   });
 
-  it.only("deployed() used as a thennable funnels errors correctly", function(done) {
+  it("deployed() used as a thennable funnels errors correctly", function(done) {
     var Example = contract(ExampleOne.toJSON());
 
     // No provider is set. Using deployed().then() should send errors down the promise chain.

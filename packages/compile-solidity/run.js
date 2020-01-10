@@ -13,21 +13,18 @@ async function run(rawSources, options) {
       compilerInfo: undefined
     };
   }
-
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
   const { sources, targets, originalSourcePaths } = collectSources(
     rawSources,
     options.compilationTargets
   );
-
   // construct solc compiler input
   const compilerInput = prepareCompilerInput({
     sources,
     targets,
     settings: options.compilers.solc.settings
   });
-
   // perform compilation
   const { compilerOutput, solcVersion } = await invokeCompiler({
     compilerInput,
@@ -41,11 +38,8 @@ async function run(rawSources, options) {
     options,
     solcVersion
   });
-  if (warnings.length > 0 && !options.quiet) {
-    options.logger.log(
-      OS.EOL + "    > compilation warnings encountered:" + OS.EOL
-    );
-    options.logger.log(warnings);
+  if (warnings.length > 0) {
+    options.events.emit("compile:warnings", { warnings });
   }
 
   if (errors.length > 0) {
@@ -243,8 +237,12 @@ function prepareOutputSelection({ targets = [] }) {
  * Load solc and perform compilation
  */
 async function invokeCompiler({ compilerInput, options }) {
-  // load solc
-  const supplier = new CompilerSupplier(options.compilers.solc);
+  const supplierOptions = {
+    parser: options.parser,
+    events: options.events,
+    solcConfig: options.compilers.solc
+  };
+  const supplier = new CompilerSupplier(supplierOptions);
   const { solc } = await supplier.load();
   const solcVersion = solc.version();
 
@@ -279,9 +277,7 @@ function detectErrors({
 
   // extract messages
   let errors = rawErrors.map(({ formattedMessage }) => formattedMessage).join();
-  const warnings = rawWarnings
-    .map(({ formattedMessage }) => formattedMessage)
-    .join();
+  const warnings = rawWarnings.map(({ formattedMessage }) => formattedMessage);
 
   if (errors.includes("requires different compiler version")) {
     const contractSolcVer = errors.match(/pragma solidity[^;]*/gm)[0];
