@@ -1,7 +1,7 @@
 import path from "path";
 
 export { schema } from "./schema";
-import { FSDatabases, MemoryDatabases } from "./pouch";
+import { FSDatabases, MemoryDatabases, SqliteDatabases } from "./pouch";
 import { WorkspaceDatabases } from "./types";
 import { definitions } from "./definitions";
 
@@ -17,6 +17,10 @@ const getDefaultFSAdapterSettings = workingDirectory => ({
   directory: path.join(workingDirectory, ".db", "json")
 });
 
+const getDefaultSqliteAdapterSettings = workingDirectory => ({
+  directory: path.join(workingDirectory, ".db", "sqlite")
+});
+
 export class Workspace {
   public databases: WorkspaceDatabases;
 
@@ -29,6 +33,14 @@ export class Workspace {
         this.databases = new FSDatabases({
           definitions,
           settings: settings || getDefaultFSAdapterSettings(workingDirectory)
+        });
+        break;
+      }
+      case "sqlite": {
+        this.databases = new SqliteDatabases({
+          definitions,
+          settings:
+            settings || getDefaultSqliteAdapterSettings(workingDirectory)
         });
         break;
       }
