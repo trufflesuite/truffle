@@ -5,7 +5,7 @@ import { soliditySha3 } from "web3-utils";
 import jsonStableStringify from "json-stable-stringify";
 
 export interface WorkspaceDatabasesOptions<C> {
-  directory: string;
+  settings: any;
   definitions: CollectionDefinitions<C>;
 }
 

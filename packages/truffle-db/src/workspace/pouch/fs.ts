@@ -25,7 +25,7 @@ export class FSDatabases<
   }
 
   setup(options) {
-    this.directory = options.directory;
+    this.directory = options.settings.directory;
 
     this.jsondownpouch["valid"] = () => true;
     this.jsondownpouch["use_prefix"] = false;

@@ -5,13 +5,37 @@ import { FSDatabases } from "./pouch";
 import { WorkspaceDatabases } from "./types";
 import { definitions } from "./definitions";
 
+export interface WorkspaceConfig {
+  workingDirectory: string;
+  adapter?: {
+    name: string;
+    settings: any; // to allow adapters to define any options type
+  };
+}
+
+const getDefaultAdapter = workingDirectory => ({
+  name: "fs",
+  settings: {
+    directory: path.join(workingDirectory, ".db")
+  }
+});
+
 export class Workspace {
   public databases: WorkspaceDatabases;
 
-  constructor(workingDirectory: string) {
-    const directory = path.join(workingDirectory, ".db");
-
-    this.databases = new FSDatabases({ directory, definitions });
+  constructor({
+    workingDirectory,
+    adapter: { name, settings } = getDefaultAdapter(workingDirectory)
+  }: WorkspaceConfig) {
+    switch (name) {
+      case "fs": {
+        this.databases = new FSDatabases({ definitions, settings });
+        break;
+      }
+      default: {
+        throw new Error(`Unknown Truffle DB adapter: ${name}`);
+      }
+    }
   }
 
   /***************************************************************************

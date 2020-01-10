@@ -28,7 +28,7 @@ export class WorkspaceClient {
   private persistedWorkspace: Workspace;
 
   constructor() {
-    this.workspace = new Workspace(tempDir.name);
+    this.workspace = new Workspace({ workingDirectory: tempDir.name });
   }
 
   async destroy(resource) {
@@ -37,7 +37,9 @@ export class WorkspaceClient {
 
   async execute(request, variables = {}, persisted = false) {
     if (persisted) {
-      this.persistedWorkspace = new Workspace(tempDir.name);
+      this.persistedWorkspace = new Workspace({
+        workingDirectory: tempDir.name
+      });
     }
 
     const result = await graphql.execute(
