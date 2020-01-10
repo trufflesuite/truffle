@@ -104,7 +104,7 @@ describe("Decoding", function() {
     evm.current.state.storage,
 
     (contractName, fixtures) => {
-      return `pragma solidity ~0.5;
+      return `pragma solidity ^0.6.1;
 
 contract ${contractName} {
 
@@ -131,7 +131,7 @@ contract ${contractName} {
     evm.current.state.storage,
 
     (contractName, fixtures) => {
-      return `pragma solidity ~0.5;
+      return `pragma solidity ^0.6.1;
 
 contract ${contractName} {
   event Done();
@@ -186,7 +186,7 @@ contract ${contractName} {
         }
       }
 
-      return `pragma solidity ~0.5;
+      return `pragma solidity ^0.6.1;
 
 contract ${contractName} {
 

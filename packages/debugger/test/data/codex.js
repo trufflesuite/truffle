@@ -10,7 +10,7 @@ import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
 
 const __LIBTEST = `
-pragma solidity ^0.5.4;
+pragma solidity ^0.6.1;
 
 contract MappingPointerTest {
   mapping(string => uint) surface;
@@ -28,14 +28,14 @@ library TouchLib {
 `;
 
 const __REVERT_TEST = `
-pragma solidity ^0.5.4;
+pragma solidity ^0.6.1;
 
 contract RevertTest {
 
   uint x;
   uint y;
 
-  function() external {
+  fallback() external {
     x = 2;
     y = x;
     revert();
@@ -52,7 +52,7 @@ contract RevertTest2 {
   uint x;
   uint y;
 
-  function() external {
+  fallback() external {
     x = 2;
     y = x;
     assert(false);
