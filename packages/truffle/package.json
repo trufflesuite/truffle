@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "app-module-path": "^2.2.0",
-    "mocha": "5.2.0",
+    "mocha": "https://github.com/trufflesuite/mocha.git#v5.2.1",
     "original-require": "1.0.1"
   },
   "devDependencies": {
