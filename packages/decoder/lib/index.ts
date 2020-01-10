@@ -227,7 +227,7 @@ export async function forContract(
   contract: ContractConstructorObject,
   artifacts: Artifact[]
 ): Promise<ContractDecoder> {
-  return await forArtifact(contract, contract.web3.currentProvider, artifacts);
+  return await forArtifact(contract, contract.currentProvider, artifacts);
 }
 
 /**

@@ -7,10 +7,9 @@ const reason = {
    * Extracts a reason string from `eth_call` response
    * @param  {Object}           res  response from `eth_call` to extract reason
    * @param  {Web3}             web3 a helpful friend
-   * @param  {InterfaceAdapter}      interfaceAdapter a new helpful friend
    * @return {String|Undefined}      decoded reason string
    */
-  _extract: function(res, web3, interfaceAdapter) {
+  _extract: function(res, web3) {
     if (!res || (!res.error && !res.result)) return;
 
     const errorStringHash = "0x08c379a0";
@@ -38,10 +37,9 @@ const reason = {
   /**
    * Runs tx via `eth_call` and resolves a reason string if it exists on the response.
    * @param  {Object} web3
-   * @param  {Object} interfaceAdapter
    * @return {String|Undefined}
    */
-  get: function(params, web3, interfaceAdapter) {
+  get: function(params, web3) {
     const packet = {
       jsonrpc: "2.0",
       method: "eth_call",
@@ -51,7 +49,7 @@ const reason = {
 
     return new Promise(resolve => {
       web3.currentProvider.send(packet, (err, response) => {
-        const reasonString = reason._extract(response, web3, interfaceAdapter);
+        const reasonString = reason._extract(response, web3);
         resolve(reasonString);
       });
     });

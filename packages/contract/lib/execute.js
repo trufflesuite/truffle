@@ -18,7 +18,7 @@ const execute = {
    */
   getGasEstimate: function(params, blockLimit) {
     const constructor = this;
-    const interfaceAdapter = this.interfaceAdapter;
+    const { interfaceAdapter } = this;
 
     return new Promise(function(accept) {
       // Always prefer specified gas - this includes gas set by class_defaults
@@ -54,14 +54,14 @@ const execute = {
    * @param  {Array}  _arguments    Arguments passed to method invocation
    * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
    */
-  prepareCall: async function(constructor, methodABI, _arguments) {
+  prepareEvmCall: async (constructor, methodABI, _arguments) => {
     let args = Array.prototype.slice.call(_arguments);
-    let params = utils.getTxParams.call(constructor, methodABI, args);
+    let params = utils.getEvmTxParams.call(constructor, methodABI, args);
 
     args = utils.convertToEthersBN(args);
 
     if (constructor.ens && constructor.ens.enabled) {
-      const { web3 } = constructor;
+      const { web3 } = constructor.interfaceAdapter;
       const processedValues = await utils.ens.convertENSNames({
         ensSettings: constructor.ens,
         inputArgs: args,
@@ -72,6 +72,23 @@ const execute = {
       args = processedValues.args;
       params = processedValues.params;
     }
+
+    const network = await constructor.detectNetwork();
+    return { args, params, network };
+  },
+
+  /**
+   * Prepares simple wrapped calls by checking network and organizing the method inputs into
+   * objects tezos can consume.
+   * @param  {Object} constructor   TruffleContract constructor
+   * @param  {Array}  _arguments    Arguments passed to method invocation
+   * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
+   */
+  prepareTezosCall: async (constructor, _arguments) => {
+    let args = Array.prototype.slice.call(_arguments);
+    const params = utils.getTezosTxParams.call(constructor, args);
+
+    args = utils.convertToEthersBN(args);
 
     const network = await constructor.detectNetwork();
     return { args, params, network };
@@ -125,7 +142,7 @@ const execute = {
       }
 
       execute
-        .prepareCall(constructor, methodABI, args)
+        .prepareEvmCall(constructor, methodABI, args)
         .then(async ({ args, params }) => {
           let result;
 
@@ -154,22 +171,22 @@ const execute = {
   },
 
   /**
-   * Executes method as .send
+   * Executes EVM method as .send
    * @param  {Function} fn         Method to invoke
    * @param  {Object}   methodABI  Function ABI segment w/ inputs & outputs keys.
    * @param  {String}   address    Deployed address of the targeted instance
    * @return {PromiEvent}          Resolves a transaction receipt (via the receipt handler)
    */
-  send: function(fn, methodABI, address) {
+  sendEvm: function(fn, methodABI, address) {
     const constructor = this;
-    const web3 = constructor.web3;
+    const { web3 } = constructor.interfaceAdapter;
 
     return function() {
       let deferred;
       const promiEvent = PromiEvent();
 
       execute
-        .prepareCall(constructor, methodABI, arguments)
+        .prepareEvmCall(constructor, methodABI, arguments)
         .then(async ({ args, params, network }) => {
           const context = {
             contract: constructor, // Can't name this field `constructor` or `_constructor`
@@ -210,20 +227,92 @@ const execute = {
   },
 
   /**
-   * Deploys an instance
-   * @param  {Object} constructorABI  Constructor ABI segment w/ inputs & outputs keys
-   * @return {PromiEvent}             Resolves a TruffleContract instance
+   * Executes Tezos method as .send
+   * @param  {Function} fn         Method to invoke
+   * @param  {String}   address    Deployed address of the targeted instance
+   * @return {PromiEvent}          Resolves a transaction receipt (via the receipt handler)
    */
-  deploy: function(constructorABI) {
+  sendTezos: function(fn, address) {
     const constructor = this;
-    const web3 = constructor.web3;
 
     return function() {
       let deferred;
       const promiEvent = PromiEvent();
 
       execute
-        .prepareCall(constructor, constructorABI, arguments)
+        .prepareTezosCall(constructor, arguments)
+        .then(async ({ args, params, network }) => {
+          const context = {
+            contract: constructor, // Can't name this field `constructor` or `_constructor`
+            promiEvent,
+            params
+          };
+
+          const methodCall = fn(...args);
+
+          promiEvent.eventEmitter.emit("execute:send:method", {
+            fn,
+            args,
+            address,
+            contract: constructor
+          });
+
+          /*
+          try {
+            params.gas = await execute.getGasEstimate.call(
+              constructor,
+              params,
+              network.blockLimit
+            );
+          } catch (error) {
+            promiEvent.reject(error);
+            return;
+          }
+          */
+
+          params = {
+            amount: params.amount || 0,
+            fee: params.fee,
+            gasLimit: params.gasLimit || params.gas
+          };
+
+          deferred = methodCall.send(params);
+
+          try {
+            const receipt = await deferred;
+            context.promiEvent.eventEmitter.emit("receipt", receipt);
+            context.promiEvent.eventEmitter.emit(
+              "transactionHash",
+              receipt.hash
+            );
+            await receipt.confirmation();
+            context.promiEvent.resolve({ tx: receipt.hash, receipt });
+          } catch (error) {
+            context.promiEvent.eventEmitter.emit("error", error);
+            throw error;
+          }
+        })
+        .catch(promiEvent.reject);
+
+      return promiEvent.eventEmitter;
+    };
+  },
+
+  /**
+   * Deploys an Evm instance
+   * @param  {Object} constructorABI  Constructor ABI segment w/ inputs & outputs keys
+   * @return {PromiEvent}             Resolves a TruffleContract instance
+   */
+  deployEvm: function(constructorABI) {
+    const constructor = this;
+    const { web3 } = constructor.interfaceAdapter;
+
+    return function() {
+      let deferred;
+      const promiEvent = PromiEvent();
+
+      execute
+        .prepareEvmCall(constructor, constructorABI, arguments)
         .then(async ({ args, params, network }) => {
           const { blockLimit } = network;
 
@@ -287,6 +376,85 @@ const execute = {
             // Manage web3's 50 blocks' timeout error.
             // Web3's own subscriptions go dead here.
             await override.start.call(constructor, context, web3Error);
+          }
+        })
+        .catch(promiEvent.reject);
+
+      return promiEvent.eventEmitter;
+    };
+  },
+
+  /**
+   * Deploys a Tezos instance
+   * @return {PromiEvent}             Resolves a TruffleContract instance
+   */
+  deployTezos: function() {
+    const constructor = this;
+    const { tezos } = this.interfaceAdapter;
+
+    return function() {
+      let deferred;
+      const promiEvent = PromiEvent();
+
+      execute
+        .prepareTezosCall(constructor, arguments)
+        .then(async ({ args, params, network }) => {
+          const { blockLimit } = network;
+
+          // Promievent and flag that allows instance to resolve (rather than just receipt)
+          const context = {
+            contract: constructor,
+            promiEvent,
+            onlyEmitReceipt: true
+          };
+
+          params.data = constructor.code;
+          params.arguments = args[0] || `0`;
+
+          /*
+          params.gas = await execute.getGasEstimate.call(
+            constructor,
+            params,
+            blockLimit
+          );*/
+
+          context.params = params;
+
+          promiEvent.eventEmitter.emit("execute:deploy:method", {
+            args,
+            contract: constructor
+          });
+
+          const originateParams = {
+            balance: params.value || "0",
+            code: JSON.parse(params.data),
+            storage: params.arguments,
+            fee: params.fee,
+            storageLimit: params.storageLimit,
+            gasLimit: params.gasLimit || params.gas
+          };
+
+          deferred = tezos.contract.originate(originateParams);
+
+          try {
+            const receipt = await deferred;
+            context.promiEvent.eventEmitter.emit("receipt", receipt);
+            context.promiEvent.eventEmitter.emit(
+              "transactionHash",
+              receipt.hash
+            );
+
+            const contractInstance = await receipt.contract();
+            contractInstance.transactionHash = receipt.hash;
+            context.transactionHash = contractInstance.transactionHash;
+            constructor.address = contractInstance.address;
+            context.logs = []; // none in Tezos?
+            context.receipt = receipt;
+
+            context.promiEvent.resolve(new constructor(contractInstance));
+          } catch (error) {
+            context.promiEvent.eventEmitter.emit("error", error);
+            throw error;
           }
         })
         .catch(promiEvent.reject);
@@ -418,7 +586,7 @@ const execute = {
     const constructor = this;
     return function() {
       return execute
-        .prepareCall(constructor, methodABI, arguments)
+        .prepareEvmCall(constructor, methodABI, arguments)
         .then(res => fn(...res.args).estimateGas(res.params));
     };
   },
@@ -433,7 +601,7 @@ const execute = {
     const constructor = this;
     return function() {
       return execute
-        .prepareCall(constructor, methodABI, arguments)
+        .prepareEvmCall(constructor, methodABI, arguments)
         .then(res => fn(...res.args).request(res.params));
     };
   },
@@ -442,13 +610,14 @@ const execute = {
   // during bootstrapping as `estimate`
   estimateDeployment: function() {
     const constructor = this;
+    const { web3 } = constructor.interfaceAdapter;
 
     const constructorABI = constructor.abi.filter(
       i => i.type === "constructor"
     )[0];
 
     return execute
-      .prepareCall(constructor, constructorABI, arguments)
+      .prepareEvmCall(constructor, constructorABI, arguments)
       .then(res => {
         const options = {
           data: constructor.binary,
@@ -457,10 +626,7 @@ const execute = {
 
         delete res.params["data"]; // Is this necessary?
 
-        const instance = new constructor.web3.eth.Contract(
-          constructor.abi,
-          res.params
-        );
+        const instance = new web3.eth.Contract(constructor.abi, res.params);
         return instance.deploy(options).estimateGas(res.params);
       });
   }

@@ -36,6 +36,7 @@ const override = {
    */
   start: async function(context, web3Error) {
     const constructor = this;
+    const { web3 } = constructor.interfaceAdapter;
     let currentBlock = override.defaultMaxBlocks;
     const maxBlocks = constructor.timeoutBlocks;
 
@@ -56,11 +57,7 @@ const override = {
 
       // This will run if there's a reason and no status field
       // e.g: revert with reason ganache-cli --vmErrorsOnRPCResponse=true
-      const reason = await Reason.get(
-        context.params,
-        constructor.web3,
-        constructor.interfaceAdapter
-      );
+      const reason = await Reason.get(context.params, web3);
       if (reason) {
         web3Error.reason = reason;
         web3Error.message += ` -- Reason given: ${reason}.`;

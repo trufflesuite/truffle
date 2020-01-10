@@ -29,7 +29,11 @@ const Utils = {
       from: true,
       to: true,
       gas: true,
+      gasLimit: true,
+      storageLimit: true,
+      fee: true,
       gasPrice: true,
+      amount: true,
       value: true,
       data: true,
       nonce: true,
@@ -154,8 +158,8 @@ const Utils = {
     return bytecode;
   },
 
-  // Extracts optional tx params from a list of fn arguments
-  getTxParams(methodABI, args) {
+  // Extracts optional EVM tx params from a list of fn arguments
+  getEvmTxParams(methodABI, args) {
     const constructor = this;
 
     const expected_arg_count = methodABI ? methodABI.inputs.length : 0;
@@ -167,6 +171,20 @@ const Utils = {
       args.length === expected_arg_count + 1 &&
       Utils.is_tx_params(last_arg)
     ) {
+      tx_params = args.pop();
+    }
+
+    return Utils.merge(constructor.class_defaults, tx_params);
+  },
+
+  // Extracts optional Tezos tx params from a list of fn arguments
+  getTezosTxParams(args) {
+    const constructor = this;
+
+    let tx_params = {};
+    const last_arg = args[args.length - 1];
+
+    if (Utils.is_tx_params(last_arg)) {
       tx_params = args.pop();
     }
 

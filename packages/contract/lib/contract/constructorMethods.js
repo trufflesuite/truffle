@@ -1,7 +1,4 @@
-const {
-  Web3Shim,
-  createInterfaceAdapter
-} = require("@truffle/interface-adapter");
+const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
@@ -14,15 +11,6 @@ module.exports = Contract => ({
 
     // recreate interfaceadapter
     this.interfaceAdapter = createInterfaceAdapter({ networkType, provider });
-
-    if (this.web3) {
-      // update existing
-      this.web3.setNetworkType(networkType);
-      this.web3.setProvider(provider);
-    } else {
-      // create new
-      this.web3 = new Web3Shim({ networkType, provider });
-    }
 
     // save properties
     this.currentProvider = provider;
@@ -41,52 +29,124 @@ module.exports = Contract => ({
 
   new() {
     utils.checkProvider(this);
+    const { web3, tezos } = this.interfaceAdapter;
 
-    if (!this.bytecode || this.bytecode === "0x") {
-      throw new Error(
-        `${
-          this.contractName
-        } error: contract binary not set. Can't deploy new instance.\n` +
-          `This contract may be abstract, not implement an abstract parent's methods completely\n` +
-          `or not invoke an inherited contract's constructor correctly\n`
-      );
+    if (web3) {
+      if (!this.bytecode || this.bytecode === "0x") {
+        throw new Error(
+          `${
+            this.contractName
+          } error: contract binary not set. Can't deploy new instance.\n` +
+            `This contract may be abstract, not implement an abstract parent's methods completely\n` +
+            `or not invoke an inherited contract's constructor correctly\n`
+        );
+      }
+
+      const constructorABI = this.abi.filter(i => i.type === "constructor")[0];
+
+      return execute.deployEvm.call(this, constructorABI)(...arguments);
     }
 
-    var constructorABI = this.abi.filter(i => i.type === "constructor")[0];
+    if (tezos) {
+      if (!this.code) {
+        throw new Error(
+          `${
+            this.contractName
+          } error: contract code not set. Can't deploy new instance.\n`
+        );
+      }
 
-    return execute.deploy.call(this, constructorABI)(...arguments);
+      return execute.deployTezos.call(this)(...arguments);
+    }
   },
 
   async at(address) {
-    if (
-      address == null ||
-      typeof address !== "string" ||
-      address.length !== 42
-    ) {
-      throw new Error(
-        `Invalid address passed to ${this.contractName}.at(): ${address}`
-      );
+    const { web3, tezos } = this.interfaceAdapter;
+    if (web3) {
+      if (
+        address == null ||
+        typeof address !== "string" ||
+        address.length !== 42
+      ) {
+        throw new Error(
+          `Invalid address passed to ${this.contractName}.at(): ${address}`
+        );
+      }
+
+      try {
+        await this.detectNetwork();
+        const onChainCode = await web3.eth.getCode(address);
+        await utils.checkCode(onChainCode, this.contractName, address);
+        const contractInstance = new web3.eth.Contract(this.abi);
+        contractInstance.options.address = address;
+        if (
+          this._json.networks[this.network_id] &&
+          this._json.networks[this.network_id].address === address
+        ) {
+          contractInstance.transactionHash = this.transactionHash;
+        }
+        return new this(contractInstance);
+      } catch (error) {
+        throw error;
+      }
     }
 
-    try {
-      await this.detectNetwork();
-      const onChainCode = await this.interfaceAdapter.getCode(address);
-      await utils.checkCode(onChainCode, this.contractName, address);
-      return new this(address);
-    } catch (error) {
-      throw error;
+    if (tezos) {
+      if (
+        address == null ||
+        typeof address !== "string" ||
+        address.length !== 36
+      ) {
+        throw new Error(
+          `Invalid address passed to ${this.contractName}.at(): ${address}`
+        );
+      }
+
+      try {
+        await this.detectNetwork();
+        const contractInstance = await tezos.contract.at(address);
+        if (
+          this._json.networks[this.network_id] &&
+          this._json.networks[this.network_id].address === address
+        ) {
+          contractInstance.transactionHash = this.transactionHash;
+        }
+        return new this(contractInstance);
+      } catch (error) {
+        throw error;
+      }
     }
   },
 
   async deployed() {
-    try {
-      utils.checkProvider(this);
-      await this.detectNetwork();
-      utils.checkNetworkArtifactMatch(this);
-      utils.checkDeployment(this);
-      return new this(this.address);
-    } catch (error) {
-      throw error;
+    utils.checkProvider(this);
+    const { web3, tezos } = this.interfaceAdapter;
+
+    if (web3) {
+      try {
+        await this.detectNetwork();
+        utils.checkNetworkArtifactMatch(this);
+        utils.checkDeployment(this);
+        const contractInstance = new web3.eth.Contract(this.abi);
+        contractInstance.options.address = this.address;
+        contractInstance.transactionHash = this.transactionHash;
+        return new this(contractInstance);
+      } catch (error) {
+        throw error;
+      }
+    }
+
+    if (tezos) {
+      try {
+        await this.detectNetwork();
+        utils.checkNetworkArtifactMatch(this);
+        utils.checkDeployment(this);
+        const contractInstance = await tezos.contract.at(this.address);
+        contractInstance.transactionHash = this.transactionHash;
+        return new this(contractInstance);
+      } catch (error) {
+        throw error;
+      }
     }
   },
 
@@ -154,10 +214,26 @@ module.exports = Contract => ({
     this.configureNetwork({ networkType });
   },
 
-  setWallet(wallet) {
+  async setWallet(wallet) {
     this.configureNetwork();
+    const { web3, tezos } = this.interfaceAdapter;
 
-    this.web3.eth.accounts.wallet = wallet;
+    if (web3) web3.eth.accounts.wallet = wallet;
+    if (tezos) {
+      const { email, passphrase, mnemonic, secret } = wallet;
+
+      if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
+      await tezos.importKey(email, passphrase, mnemonic, secret);
+    }
+  },
+
+  async storageSchema() {
+    const { tezos } = this.interfaceAdapter;
+    if (tezos) {
+      const contract = await tezos.contract.at(this.address);
+      return contract.schema.ExtractSchema();
+    }
+    throw new Error("Method only available for Tezos contract abstractions");
   },
 
   // Overrides the deployed address to null.

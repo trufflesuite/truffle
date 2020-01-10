@@ -252,7 +252,7 @@ export type RegularizedBlockSpecifier = number | "pending";
 //HACK
 export interface ContractConstructorObject extends Artifact {
   _json: Artifact;
-  web3: Web3;
+  currentProvider: Web3["currentProvider"];
 }
 
 //HACK

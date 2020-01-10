@@ -87,6 +87,7 @@ const handlers = {
    * @param  {Object} receipt   transaction receipt
    */
   receipt: async function(context, receipt) {
+    const { web3 } = context.contract.interfaceAdapter;
     // keep around the raw (not decoded) logs in the raw logs field as a
     // stopgap until we can get the ABI for all events, not just the current
     // contract
@@ -112,11 +113,7 @@ const handlers = {
 
     // .method(): resolve/reject receipt in handler
     if (receipt.status !== undefined && !receipt.status) {
-      const reason = await Reason.get(
-        context.params,
-        context.contract.web3,
-        context.contract.interfaceAdapter
-      );
+      const reason = await Reason.get(context.params, web3);
 
       const error = new StatusError(
         context.params,
