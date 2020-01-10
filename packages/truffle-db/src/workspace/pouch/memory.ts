@@ -1,12 +1,7 @@
 import PouchDB from "pouchdb";
 import PouchDBMemoryAdapter from "pouchdb-adapter-memory";
 
-import {
-  Databases,
-  MutationMapping,
-  ResourceMapping,
-  WorkspaceDatabasesOptions
-} from "./types";
+import { Databases, MutationMapping, ResourceMapping } from "./types";
 
 export class MemoryDatabases<
   R,
