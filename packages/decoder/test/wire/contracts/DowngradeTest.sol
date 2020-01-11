@@ -1,4 +1,4 @@
-pragma solidity ^0.5.11;
+pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
 
 contract DowngradeTestParent {
@@ -27,7 +27,7 @@ contract DowngradeTest is DowngradeTestParent {
     Up, Down, HalfwayUp
   }
 
-  function() external payable {
+  fallback() external {
   }
 
   function() external doYouSeeMe = this.causeTrouble;
