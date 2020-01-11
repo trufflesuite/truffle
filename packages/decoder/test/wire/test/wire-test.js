@@ -10,7 +10,7 @@ const WireTestParent = artifacts.require("WireTestParent");
 const WireTestLibrary = artifacts.require("WireTestLibrary");
 const WireTestAbstract = artifacts.require("WireTestAbstract");
 
-contract("WireTest", _accounts => {
+contract("WireTest", function(_accounts) {
   it("should correctly decode transactions and events", async function() {
     let deployedContract = await WireTest.new(true, "0xdeadbeef", 2);
     let address = deployedContract.address;
