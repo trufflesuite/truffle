@@ -2,8 +2,8 @@ const debug = require("debug")("decoder:test:wire-test");
 const assert = require("chai").assert;
 const BN = require("bn.js");
 
-const Decoder = require("../..");
-const Codec = require("../../../codec");
+const Decoder = require("../../..");
+const Codec = require("../../../../codec");
 
 const WireTest = artifacts.require("WireTest");
 const WireTestParent = artifacts.require("WireTestParent");
@@ -57,14 +57,14 @@ contract("WireTest", _accounts => {
     let libraryTestArg = "zooglyzooglyzooglyzoogly";
     let libraryTest = await deployedContract.libraryTest(libraryTestArg);
 
-    let getter1Args = ["blornst", 7];
+    let getter1Args = ["blornst", 1];
     //this function is view so we have to use sendTransaction
     let getterTest1 = await deployedContract.deepStruct.sendTransaction(
       ...getter1Args
     );
     let getterHash1 = getterTest1.tx;
 
-    let getter2Args = [7, "blornst"];
+    let getter2Args = [1, "blornst"];
     //this function is view so we have to use sendTransaction
     let getterTest2 = await deployedContract.deepString.sendTransaction(
       ...getter2Args

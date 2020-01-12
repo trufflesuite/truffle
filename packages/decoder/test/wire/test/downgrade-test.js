@@ -3,8 +3,8 @@ const assert = require("chai").assert;
 const Big = require("big.js");
 const clonedeep = require("lodash.clonedeep");
 
-const Decoder = require("../..");
-const Codec = require("../../../codec");
+const Decoder = require("../../..");
+const Codec = require("../../../../codec");
 
 const DowngradeTestUnmodified = artifacts.require("DowngradeTest");
 const DowngradeTestParent = artifacts.require("DowngradeTestParent");
