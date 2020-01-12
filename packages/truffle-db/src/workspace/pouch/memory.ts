@@ -1,20 +1,10 @@
 import PouchDB from "pouchdb";
 import PouchDBMemoryAdapter from "pouchdb-adapter-memory";
 
-import {
-  Databases,
-  MutationMapping,
-  ResourceMapping,
-  WorkspaceDatabasesOptions
-} from "./types";
+import { Databases } from "./databases";
+import { Collections } from "./types";
 
-export class MemoryDatabases<
-  R,
-  C,
-  M,
-  CR extends ResourceMapping<R, C>,
-  CM extends MutationMapping<C, M>
-> extends Databases<R, C, M, CR, CM> {
+export class MemoryDatabases<C extends Collections> extends Databases<C> {
   static counter: number = 0;
 
   setup(options) {

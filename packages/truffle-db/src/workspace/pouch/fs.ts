@@ -4,20 +4,10 @@ import * as jsondown from "jsondown";
 import * as PouchDBUtils from "pouchdb-utils";
 import CoreLevelPouch from "pouchdb-adapter-leveldb-core";
 
-import {
-  Databases,
-  MutationMapping,
-  ResourceMapping,
-  WorkspaceDatabasesOptions
-} from "./types";
+import { Collections } from "./types";
+import { Databases } from "./databases";
 
-export class FSDatabases<
-  R,
-  C,
-  M,
-  CR extends ResourceMapping<R, C>,
-  CM extends MutationMapping<C, M>
-> extends Databases<R, C, M, CR, CM> {
+export class FSDatabases<C extends Collections> extends Databases<C> {
   private directory: string;
 
   setup(options) {

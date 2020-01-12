@@ -1,4 +1,33 @@
-export const definitions = {
+import { Definitions } from "./pouch";
+
+export type WorkspaceCollections = {
+  bytecodes: {
+    resource: DataModel.IBytecode;
+    input: DataModel.IBytecodesAddInput;
+  };
+  compilations: {
+    resource: DataModel.ICompilation;
+    input: DataModel.ICompilationsAddInput;
+  };
+  contractInstances: {
+    resource: DataModel.IContractInstance;
+    input: DataModel.IContractInstancesAddInput;
+  };
+  contracts: {
+    resource: DataModel.IContract;
+    input: DataModel.IContractsAddInput;
+  };
+  networks: {
+    resource: DataModel.INetwork;
+    input: DataModel.INetworksAddInput;
+  };
+  sources: {
+    resource: DataModel.ISource;
+    input: DataModel.ISourcesAddInput;
+  };
+};
+
+export const definitions: Definitions<WorkspaceCollections> = {
   contracts: {
     createIndexes: [],
     idFields: ["name", "abi", "sourceContract", "compilation"]

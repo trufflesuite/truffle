@@ -3,20 +3,10 @@ import fse from "fs-extra";
 import PouchDB from "pouchdb";
 import PouchDBNodeWebSQLAdapter from "pouchdb-adapter-node-websql";
 
-import {
-  Databases,
-  MutationMapping,
-  ResourceMapping,
-  WorkspaceDatabasesOptions
-} from "./types";
+import { Databases } from "./databases";
+import { Collections } from "./types";
 
-export class SqliteDatabases<
-  R,
-  C,
-  M,
-  CR extends ResourceMapping<R, C>,
-  CM extends MutationMapping<C, M>
-> extends Databases<R, C, M, CR, CM> {
+export class SqliteDatabases<C extends Collections> extends Databases<C> {
   private directory: string;
 
   setup(options) {
