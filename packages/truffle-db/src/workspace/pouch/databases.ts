@@ -1,8 +1,7 @@
 import PouchDB from "pouchdb";
 import PouchDBDebug from "pouchdb-debug";
 import PouchDBFind from "pouchdb-find";
-import jsonStableStringify from "json-stable-stringify";
-import { soliditySha3 } from "web3-utils";
+import { generateId } from "truffle-db/helpers";
 
 import {
   AddInput,
@@ -127,15 +126,13 @@ export abstract class Databases<C extends Collections> {
 
     const resources = await Promise.all(
       input[collectionName].map(async (resourceInput: AddInput<C, N>) => {
-        const id = soliditySha3(
-          jsonStableStringify(
-            idFields.reduce(
-              (obj, field) => ({
-                ...obj,
-                [field]: resourceInput[field]
-              }),
-              {}
-            )
+        const id = generateId(
+          idFields.reduce(
+            (obj, field) => ({
+              ...obj,
+              [field]: resourceInput[field]
+            }),
+            {}
           )
         );
 
