@@ -15,7 +15,10 @@ import {
   AddContracts,
   AddContractInstances,
   AddNameRecords,
-  AddNetworks
+  AddNetworks,
+  AddProjects,
+  GetCurrent,
+  AssignProjectNames
 } from "../queries";
 
 type WorkflowCompileResult = {
@@ -88,7 +91,7 @@ type NameRecordObject = {
 
 export class ArtifactsLoader {
   private db: TruffleDB;
-  private config: object;
+  private config: CompilationConfigObject;
 
   constructor(db: TruffleDB, config?: CompilationConfigObject) {
     this.db = db;
@@ -96,19 +99,26 @@ export class ArtifactsLoader {
   }
 
   async load(): Promise<void> {
+    const { id: projectId } = await this.loadProject({
+      directory: this.config.working_directory
+    });
+
     const compileOutput = await this.loadCompilation(this.config);
     const { compilations, compilationsOutput } = compileOutput;
+
     //map contracts and contract instances to compiler
     await Promise.all(
       compilations.data.workspace.compilationsAdd.compilations.map(
         async ({ compiler, id }) => {
           const networks = await this.loadNetworks(
+            projectId,
             compilationsOutput[compiler.name].contracts,
             this.config["artifacts_directory"],
             this.config["contracts_directory"]
           );
 
           const contractIds = await this.loadCompilationContracts(
+            projectId,
             compilationsOutput[compiler.name].contracts,
             id,
             compiler.name,
@@ -128,11 +138,56 @@ export class ArtifactsLoader {
     );
   }
 
-  async loadNameRecords(nameRecords: Array<NameRecordObject>) {
-    await this.db.query(AddNameRecords, { nameRecords: nameRecords });
+  async loadProject({ directory }: { directory: string }) {
+    let result = await this.db.query(AddProjects, {
+      projects: [{ directory }]
+    });
+
+    const { id } = result.data.workspace.projectsAdd.projects[0];
+
+    return { id };
+  }
+
+  async loadNameRecords(
+    projectId: string,
+    nameRecords: Array<NameRecordObject>
+  ) {
+    const nameRecordsResult = await this.db.query(AddNameRecords, {
+      nameRecords: nameRecords
+    });
+    let {
+      data: {
+        workspace: { nameRecordsAdd }
+      }
+    } = nameRecordsResult;
+
+    const projectNames = nameRecordsAdd.nameRecords.map(
+      ({ id: nameRecordId, name, type }) => ({
+        project: { id: projectId },
+        nameRecord: { id: nameRecordId },
+        name,
+        type
+      })
+    );
+
+    //set new projectNameHeads based on name records added
+    const projectNamesResult = await this.db.query(AssignProjectNames, {
+      projectNames
+    });
+  }
+
+  async getCurrent(projectId: string, type: string, name: string) {
+    let { data } = await this.db.query(GetCurrent, { projectId, type, name });
+
+    if (data.workspace.project.resolve.length > 0) {
+      return {
+        id: data.workspace.project.resolve[0].id
+      };
+    }
   }
 
   async loadCompilationContracts(
+    projectId: string,
     contracts: Array<ContractObject>,
     compilationId: string,
     compilerName: string,
@@ -179,19 +234,27 @@ export class ArtifactsLoader {
       ({ id }) => ({ id })
     );
 
-    const nameRecords = contractObjects.map((contract, index) => {
-      let nameRecordObject = {
-        name: contract.name,
-        type: "Contract",
-        resource: {
-          id: contractIds[index].id
-        }
-      };
+    const nameRecords = await Promise.all(
+      contractObjects.map(async (contract, index) => {
+        //check if there is already a current head for this item. if so save it as previous
+        let current: IdObject = await this.getCurrent(
+          projectId,
+          "Contract",
+          contract.name
+        );
 
-      return nameRecordObject as NameRecordObject;
-    });
+        return {
+          name: contract.name,
+          type: "Contract",
+          resource: {
+            id: contractIds[index].id
+          },
+          previous: current
+        };
+      })
+    );
 
-    await this.loadNameRecords(nameRecords);
+    await this.loadNameRecords(projectId, nameRecords);
 
     return {
       compilerName: contracts[0].compiler.name,
@@ -281,6 +344,7 @@ export class ArtifactsLoader {
   }
 
   async loadNetworks(
+    projectId: string,
     contracts: Array<ContractObject>,
     artifacts: string,
     workingDirectory: string
@@ -346,19 +410,27 @@ export class ArtifactsLoader {
           }
         }
 
-        const nameRecords = configNetworks.map((network, index) => {
-          let nameRecordObject = {
-            name: network.name,
-            type: "Network",
-            resource: {
-              id: configNetworks[index].id
-            }
-          };
+        const nameRecords = await Promise.all(
+          configNetworks.map(async (network, index) => {
+            //check if there is already a current head for this item. if so save it as previous
+            let current: IdObject = await this.getCurrent(
+              projectId,
+              "Network",
+              network.name
+            );
 
-          return nameRecordObject as NameRecordObject;
-        });
+            return {
+              name: network.name,
+              type: "Network",
+              resource: {
+                id: configNetworks[index].id
+              },
+              previous: current
+            };
+          })
+        );
 
-        await this.loadNameRecords(nameRecords);
+        await this.loadNameRecords(projectId, nameRecords);
 
         return configNetworks;
       })

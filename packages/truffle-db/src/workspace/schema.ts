@@ -423,8 +423,9 @@ export const schema = mergeSchemas({
           workspace.projectsAdd({ input })
       },
       projectNamesAssign: {
-        resolve: (_, { input }, { workspace }) =>
-          workspace.projectNamesAssign({ input })
+        resolve: (_, { input }, { workspace }) => {
+          return workspace.projectNamesAssign({ input });
+        }
       }
     },
     Named: {
@@ -450,6 +451,9 @@ export const schema = mergeSchemas({
               return null;
           }
         }
+      },
+      previous: {
+        resolve: ({ id }, _, { workspace }) => workspace.nameRecord({ id })
       }
     },
     Project: {

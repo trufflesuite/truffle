@@ -3,7 +3,13 @@ import path from "path";
 import gql from "graphql-tag";
 import { TruffleDB } from "truffle-db";
 import { ArtifactsLoader } from "truffle-db/loaders/artifacts";
-import { AddContracts } from "truffle-db/loaders/queries";
+import {
+  AddContracts,
+  AddProjects,
+  AssignProjectNames,
+  AddNameRecords,
+  GetCurrent
+} from "truffle-db/loaders/queries";
 import { generateId } from "truffle-db/helpers";
 import * as Contracts from "@truffle/workflow-compile/new";
 import Migrate from "@truffle/migrate";
@@ -69,6 +75,7 @@ const compilationConfig = {
     "build",
     "contracts"
   ),
+  working_directory: tempDir.name,
   all: true
 };
 
@@ -315,72 +322,6 @@ const GetWorkspaceContractInstance: boolean = gql`
   }
 `;
 
-const AddNameRecords = gql`
-  input ResourceInput {
-    id: ID!
-  }
-
-  input PreviousNameRecordInput {
-    id: ID!
-  }
-
-  input NameRecordInput {
-    name: String!
-    type: String!
-    resource: ResourceInput!
-    previous: PreviousNameRecordInput
-  }
-
-  mutation AddNameRecords(
-    $name: String!
-    $type: String!
-    $resource: ResourceInput!
-    $previous: PreviousNameRecordInput
-  ) {
-    workspace {
-      nameRecordsAdd(
-        input: {
-          nameRecords: [
-            {
-              name: $name
-              type: $type
-              resource: $resource
-              previous: $previous
-            }
-          ]
-        }
-      ) {
-        nameRecords {
-          id
-          name
-          type
-          ... on Network {
-            networkId
-          }
-          ... on Contract {
-            abi {
-              json
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-const GetWorkspaceNameRecord = gql`
-  query GetNameRecord($id: ID!) {
-    workspace {
-      nameRecord(id: $id) {
-        id
-        resource {
-          name
-        }
-      }
-    }
-  }
-`;
-
 describe("Compilation", () => {
   let sourceIds = [];
   let bytecodeIds = [];
@@ -393,6 +334,10 @@ describe("Compilation", () => {
   let expectedSolcCompilationId;
   let expectedVyperCompilationId;
   let contractNameRecordId;
+  let previousContractNameRecord;
+  let previousContractExpectedId;
+  let expectedProjectId;
+  let projectId;
 
   beforeAll(async () => {
     await Environment.detect(migrationConfig);
@@ -496,6 +441,84 @@ describe("Compilation", () => {
       { id: expectedSolcCompilationId },
       { id: expectedVyperCompilationId }
     );
+
+    expectedProjectId = generateId({
+      directory: compilationConfig["working_directory"]
+    });
+
+    // setting up a fake previous contract to test previous name record
+    const {
+      data: {
+        workspace: {
+          projectsAdd: { projects }
+        }
+      }
+    } = await db.query(AddProjects, {
+      projects: [
+        {
+          directory: compilationConfig["working_directory"]
+        }
+      ]
+    });
+
+    expect(projects).toHaveLength(1);
+    projectId = projects[0].id;
+
+    expect(projectId).toEqual(expectedProjectId);
+
+    let previousContract = {
+      name: "Migrations",
+      abi: { json: JSON.stringify(artifacts[1].abi) },
+      sourceContract: { index: 0 },
+      compilation: {
+        id: expectedSolcCompilationId
+      },
+      createBytecode: bytecodeIds[0],
+      callBytecode: callBytecodeIds[0]
+    };
+
+    let previousContractAdded = await db.query(AddContracts, {
+      contracts: [previousContract]
+    });
+
+    previousContractExpectedId = generateId({
+      name: "Migrations",
+      abi: { json: JSON.stringify(artifacts[1].abi) },
+      sourceContract: { index: 0 },
+      compilation: {
+        id: expectedSolcCompilationId
+      }
+    });
+
+    previousContractNameRecord = {
+      name: "Migrations",
+      type: "Contract",
+      resource: {
+        id: previousContractExpectedId
+      }
+    };
+
+    // add this fake name record, which differs in its abi, so that a previous contract
+    // with this name exists for testing; also adding as a name head here
+    const contractNameRecord = await db.query(AddNameRecords, {
+      nameRecords: [previousContractNameRecord]
+    });
+
+    contractNameRecordId =
+      contractNameRecord.data.workspace.nameRecordsAdd.nameRecords[0].id;
+
+    let setContractHead = await db.query(AssignProjectNames, {
+      projectNames: [
+        {
+          project: { id: projectId },
+          name: "Migrations",
+          type: "Contract",
+          nameRecord: {
+            id: contractNameRecordId
+          }
+        }
+      ]
+    });
 
     const loader = new ArtifactsLoader(db, compilationConfig);
     await loader.load();
@@ -627,13 +650,25 @@ describe("Compilation", () => {
         }
       });
 
-      contractNameRecordId = generateId({
-        name: artifacts[index].contractName,
-        type: "Contract",
-        resource: {
-          id: expectedId
-        }
-      });
+      contractNameRecordId =
+        artifacts[index].contractName === previousContractNameRecord.name
+          ? generateId({
+              name: artifacts[index].contractName,
+              type: "Contract",
+              resource: {
+                id: expectedId
+              },
+              previous: {
+                id: previousContractExpectedId
+              }
+            })
+          : generateId({
+              name: artifacts[index].contractName,
+              type: "Contract",
+              resource: {
+                id: expectedId
+              }
+            });
 
       contractIds.push({ id: expectedId });
 
@@ -672,13 +707,18 @@ describe("Compilation", () => {
       const {
         data: {
           workspace: {
-            nameRecord: {
-              resource: { name: nameRecordResourceName }
-            }
+            project: { resolve }
           }
         }
-      } = await db.query(GetWorkspaceNameRecord, { id: contractNameRecordId });
-      expect(nameRecordResourceName).toEqual(artifacts[index].contractName);
+      } = await db.query(GetCurrent, {
+        projectId,
+        name: artifacts[index].contractName,
+        type: "Contract"
+      });
+
+      const nameRecord = resolve[0];
+
+      expect(nameRecord.resource.id).toEqual(contractIds[index].id);
     }
   });
 

@@ -5,3 +5,4 @@ export { AddContracts } from "./contracts";
 export { AddContractInstances } from "./contractInstances";
 export { AddNameRecords } from "./nameRecords";
 export { AddNetworks } from "./networks";
+export { AddProjects, GetCurrent, AssignProjectNames } from "./projects";
