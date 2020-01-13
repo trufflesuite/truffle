@@ -7,6 +7,13 @@ scalar Object
 scalar ByteOffset
 scalar FileIndex
 
+type Project {
+  name: String
+  directory: String!
+  names(type: String!): [NameRecord] # null means unknown type
+  resolve(type: String!, name: String!): NameRecord
+}
+
 type NameRecord {
   name: String!
   type: String!

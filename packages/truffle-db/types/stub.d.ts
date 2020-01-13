@@ -27,6 +27,8 @@ declare namespace DataModel {
   type INetwork = any;
   type INetworkInput = any;
   type INetworksAddInput = any;
+  type IProject = any;
+  type IProjectsAddInput = any;
   type ISource = any;
   type ISourceInput = any;
   type ISourceRange = any;

@@ -82,6 +82,10 @@ export class Workspace {
     return await this.databases.all("sources");
   }
 
+  async projects(): Promise<DataModel.IProject[]> {
+    return await this.databases.all("projects");
+  }
+
   /***************************************************************************
    * Resource queries
    ***************************************************************************/
@@ -126,6 +130,10 @@ export class Workspace {
     return await this.databases.get("sources", id);
   }
 
+  async project({ id }: { id: string }): Promise<DataModel.IProject | null> {
+    return await this.databases.get("projects", id);
+  }
+
   /***************************************************************************
    * Mutations
    ***************************************************************************/
@@ -162,6 +170,10 @@ export class Workspace {
 
   async sourcesAdd({ input }): Promise<{ sources: DataModel.ISource[] }> {
     return await this.databases.add("sources", input);
+  }
+
+  async projectsAdd({ input }): Promise<{ projects: DataModel.IProject[] }> {
+    return await this.databases.add("projects", input);
   }
 
   /***************************************************************************
