@@ -22,6 +22,15 @@ abstract contract WireTestAbstract {
   function danger() public virtual;
 }
 
+struct GlobalStruct {
+  uint x;
+  uint y;
+}
+
+enum GlobalEnum {
+  No, Yes
+}
+
 contract WireTest is WireTestParent, WireTestAbstract {
 
   function notImplemented() public {
@@ -68,6 +77,12 @@ contract WireTest is WireTestParent, WireTestAbstract {
 
   function moreStuff(WireTest notThis, uint[] memory bunchOfInts) public {
     emit MoreStuff(notThis, bunchOfInts);
+  }
+
+  event Globals(GlobalStruct, GlobalEnum);
+
+  function globalTest(GlobalStruct memory s, GlobalEnum e) public {
+    emit Globals(s, e);
   }
 
   event Danger(function() external);
