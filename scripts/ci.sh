@@ -101,7 +101,7 @@ elif [ "$PACKAGES" = true ]; then
   sudo apt install -y python3.6 python3.6-dev python3.6-venv solc
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python3.6 get-pip.py
-  sudo pip3 install vyper==0.1.b14
+  sudo pip3 install vyper
   lerna run --ignore truffle test --stream --concurrency=1
 
 elif [ "$COVERAGE" = true ]; then
@@ -113,7 +113,7 @@ elif [ "$COVERAGE" = true ]; then
   sudo apt install -y jq python3.6 python3.6-dev python3.6-venv solc
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python3.6 get-pip.py
-  sudo pip3 install vyper==0.1.b14
+  sudo pip3 install vyper
   cd packages/debugger && yarn test:coverage && \
   cd ../../ && nyc lerna run --ignore debugger test && \
   cat ./packages/debugger/coverage/lcov.info >> ./coverage/lcov.info && \
