@@ -1,9 +1,13 @@
 import path from "path";
 
 export { schema } from "./schema";
-import { FSDatabases, MemoryDatabases } from "./pouch";
-import { WorkspaceDatabases } from "./types";
-import { definitions } from "./definitions";
+import {
+  Databases,
+  FSDatabases,
+  MemoryDatabases,
+  SqliteDatabases
+} from "./pouch";
+import { WorkspaceCollections, definitions } from "./definitions";
 
 export interface WorkspaceConfig {
   workingDirectory?: string;
@@ -13,23 +17,27 @@ export interface WorkspaceConfig {
   };
 }
 
-const getDefaultAdapter = workingDirectory => ({
-  name: "fs",
-  settings: {
-    directory: path.join(workingDirectory, ".db", "json")
-  }
-});
-
 export class Workspace {
-  public databases: WorkspaceDatabases;
+  public databases: Databases<WorkspaceCollections>;
 
   constructor({
     workingDirectory,
-    adapter: { name, settings } = getDefaultAdapter(workingDirectory)
+    adapter: { name, settings } = { name: "fs" }
   }: WorkspaceConfig) {
     switch (name) {
       case "fs": {
-        this.databases = new FSDatabases({ definitions, settings });
+        this.databases = new FSDatabases({
+          definitions,
+          settings: settings || getDefaultFSAdapterSettings(workingDirectory)
+        });
+        break;
+      }
+      case "sqlite": {
+        this.databases = new SqliteDatabases({
+          definitions,
+          settings:
+            settings || getDefaultSqliteAdapterSettings(workingDirectory)
+        });
         break;
       }
       case "memory": {
@@ -149,3 +157,11 @@ export class Workspace {
     return contracts.map(({ name }) => name);
   }
 }
+
+const getDefaultFSAdapterSettings = workingDirectory => ({
+  directory: path.join(workingDirectory, ".db", "json")
+});
+
+const getDefaultSqliteAdapterSettings = workingDirectory => ({
+  directory: path.join(workingDirectory, ".db", "sqlite")
+});

@@ -8,6 +8,12 @@ interface IConfig {
   contracts_build_directory: string;
   contracts_directory: string;
   working_directory?: string;
+  db?: {
+    adapter?: {
+      name: string;
+      settings?: any;
+    };
+  };
 }
 
 interface IContext {
@@ -41,7 +47,8 @@ export class TruffleDB {
   createContext(config: IConfig): IContext {
     return {
       workspace: new Workspace({
-        workingDirectory: config.working_directory
+        workingDirectory: config.working_directory,
+        adapter: (config.db || {}).adapter
       }),
       artifactsDirectory: config.contracts_build_directory,
       workingDirectory: config.working_directory || process.cwd(),

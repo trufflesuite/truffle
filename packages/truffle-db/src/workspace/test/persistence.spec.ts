@@ -1,3 +1,4 @@
+import path from "path";
 import { Workspace } from "..";
 import { generateId, Migrations } from "./utils";
 
@@ -18,7 +19,14 @@ const memoryAdapter = {
 const fsAdapter = {
   name: "fs",
   settings: {
-    directory: tempDir.name
+    directory: path.join(tempDir.name, "json")
+  }
+};
+
+const sqliteAdapter = {
+  name: "sqlite",
+  settings: {
+    directory: path.join(tempDir.name, "sqlite")
   }
 };
 
@@ -58,6 +66,27 @@ describe("FS-based Workspace", () => {
 
     // create a second workspace and don't add anything
     const workspace2 = new Workspace({ adapter: fsAdapter });
+
+    // but DO get data out
+    expect(await workspace2.bytecode({ id })).toBeDefined();
+  });
+});
+
+describe("SQLite-based Workspace", () => {
+  it("does persist data", async () => {
+    // create first workspace and add to it
+    const workspace1 = new Workspace({ adapter: sqliteAdapter });
+    await workspace1.bytecodesAdd({
+      input: {
+        bytecodes: [bytecode]
+      }
+    });
+
+    // make sure we can get data out of that workspace
+    expect(await workspace1.bytecode({ id })).toBeDefined();
+
+    // create a second workspace and don't add anything
+    const workspace2 = new Workspace({ adapter: sqliteAdapter });
 
     // but DO get data out
     expect(await workspace2.bytecode({ id })).toBeDefined();

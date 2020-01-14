@@ -9,11 +9,7 @@ const config = Config.detect({
   workingDirectory: process.argv[2] || process.cwd()
 });
 
-const db = new TruffleDB({
-  contracts_build_directory: config.contracts_build_directory,
-  contracts_directory: config.contracts_directory,
-  working_directory: config.working_directory
-});
+const db = new TruffleDB(config);
 
 const { schema, context } = db;
 

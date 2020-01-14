@@ -68,6 +68,7 @@
     "pascal-case": "^2.0.1",
     "pouchdb": "7.1.1",
     "pouchdb-adapter-memory": "^7.1.1",
+    "pouchdb-adapter-node-websql": "^7.0.0",
     "pouchdb-debug": "^7.1.1",
     "pouchdb-find": "^7.0.0",
     "source-map-support": "^0.5.9",
