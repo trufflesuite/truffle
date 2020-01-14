@@ -1,5 +1,6 @@
 const debug = require("debug")("provider");
 const Web3 = require("web3");
+const parseUrl = require("url-parse");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 10000;
@@ -25,10 +26,15 @@ module.exports = {
         "ws://" + options.host + ":" + options.port
       );
     } else {
-      provider = new Web3.providers.HttpProvider(
-        `http://${options.host}:${options.port}`,
-        { keepAlive: false }
-      );
+      let parsedHost = parseUrl(options.host);
+      if (!parsedHost.protocol) {
+        parsedHost.set("protocol", "http");
+        parsedHost = parseUrl(parsedHost.href);
+      }
+      parsedHost.set("port", options.port);
+      provider = new Web3.providers.HttpProvider(parsedHost.href, {
+        keepAlive: false
+      });
     }
     return provider;
   },

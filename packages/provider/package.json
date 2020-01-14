@@ -17,6 +17,7 @@
   "dependencies": {
     "@truffle/error": "^0.0.15-alphaTez.1",
     "@truffle/interface-adapter": "^0.5.2-alphaTez.1",
+    "url-parse": "^1.4.7",
     "web3": "1.2.1"
   },
   "devDependencies": {
