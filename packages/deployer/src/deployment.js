@@ -279,6 +279,7 @@ class Deployment {
 
     return async function() {
       await self._preFlightCheck(contract);
+      const { web3, tezos } = contract.interfaceAdapter;
 
       let instance;
       let eventArgs;
@@ -371,13 +372,14 @@ class Deployment {
 
       // Emit `postDeploy`
       eventArgs = {
-        contract: contract,
-        instance: instance,
+        contract,
+        instance,
         deployed: shouldDeploy,
         receipt: state.receipt
       };
 
-      await self.emitter.emit("postDeploy", eventArgs);
+      if (web3) await self.emitter.emit("postEvmDeploy", eventArgs);
+      if (tezos) await self.emitter.emit("postTezosDeploy", eventArgs);
 
       // Wait for `n` blocks
       if (self.confirmations !== 0 && shouldDeploy) {

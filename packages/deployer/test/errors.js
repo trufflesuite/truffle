@@ -1,7 +1,7 @@
 const ganache = require("ganache-core");
 const Web3 = require("web3");
 const assert = require("assert");
-const { EthMigrationsV5: EthReporter } = require("@truffle/reporters");
+const Reporter = require("@truffle/reporters");
 const EventEmitter = require("events");
 
 const Deployer = require("../index");
@@ -78,7 +78,7 @@ describe("Error cases", function() {
       }
     };
     deployer = new Deployer(options);
-    reporter = new EthReporter();
+    reporter = new Reporter();
     reporter.setDeployer(deployer);
     reporter.setMigration(mockMigration);
     reporter.listen();
