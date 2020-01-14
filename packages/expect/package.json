@@ -1,6 +1,6 @@
 {
   "name": "@truffle/expect",
-  "version": "0.0.19-alphaTez.1",
+  "version": "0.0.19-alphaTez.2",
   "description": "Simple module for ensuring specific options are passed to a function",
   "main": "index.js",
   "scripts": {

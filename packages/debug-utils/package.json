@@ -1,9 +1,9 @@
 {
   "name": "@truffle/debug-utils",
-  "version": "2.1.5-alphaTez.1",
+  "version": "2.1.5-alphaTez.2",
   "description": "Integration utils for truffle/debugger",
   "dependencies": {
-    "@truffle/codec": "^0.3.3",
+    "@truffle/codec": "^0.3.4-alphaTez.0",
     "@trufflesuite/chromafi": "^2.1.2",
     "chalk": "^2.4.2",
     "debug": "^4.1.0",

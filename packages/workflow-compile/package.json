@@ -1,15 +1,15 @@
 {
   "name": "@truffle/workflow-compile",
-  "version": "2.1.19-alphaTez.1",
+  "version": "2.1.19-alphaTez.2",
   "description": "Core workflow behavior for `truffle compile` command",
   "dependencies": {
-    "@truffle/artifactor": "^4.0.45-alphaTez.1",
-    "@truffle/compile-solidity": "^4.2.18-alphaTez.1",
-    "@truffle/compile-vyper": "^1.0.42-alphaTez.1",
-    "@truffle/config": "^1.2.12-alphaTez.1",
-    "@truffle/expect": "^0.0.19-alphaTez.1",
-    "@truffle/external-compile": "^1.0.28-alphaTez.1",
-    "@truffle/resolver": "^5.1.6-alphaTez.1",
+    "@truffle/artifactor": "^4.0.45-alphaTez.2",
+    "@truffle/compile-solidity": "^4.2.18-alphaTez.2",
+    "@truffle/compile-vyper": "^1.0.42-alphaTez.2",
+    "@truffle/config": "^1.2.12-alphaTez.2",
+    "@truffle/expect": "^0.0.19-alphaTez.2",
+    "@truffle/external-compile": "^1.0.28-alphaTez.2",
+    "@truffle/resolver": "^5.1.6-alphaTez.2",
     "fs-extra": "^7.0.1",
     "mkdirp": "^0.5.1"
   },
