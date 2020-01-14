@@ -10,8 +10,9 @@ scalar FileIndex
 type Project {
   name: String
   directory: String!
-  names(type: String!): [NameRecord] # null means unknown type
-  resolve(type: String!, name: String!): NameRecord
+  contract(name: String!): Contract
+  network(name: String!): Network
+  resolve(type: String, name: String): [NameRecord] # null means unknown type
 }
 
 type NameRecord {

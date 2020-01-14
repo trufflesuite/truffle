@@ -134,6 +134,22 @@ export class Workspace {
     return await this.databases.get("projects", id);
   }
 
+  async projectNames({
+    project,
+    name,
+    type
+  }): Promise<DataModel.INameRecord[]> {
+    const results = await this.databases.find("projectNames", {
+      selector: { "project.id": project.id, name, type }
+    });
+    const nameRecordIds = results.map(({ nameRecord: { id } }) => id);
+    return await this.databases.find("nameRecords", {
+      selector: {
+        id: { $in: nameRecordIds }
+      }
+    });
+  }
+
   /***************************************************************************
    * Mutations
    ***************************************************************************/
@@ -174,6 +190,12 @@ export class Workspace {
 
   async projectsAdd({ input }): Promise<{ projects: DataModel.IProject[] }> {
     return await this.databases.add("projects", input);
+  }
+
+  async projectNamesAssign({
+    input
+  }): Promise<{ projectNames: DataModel.IProjectName[] }> {
+    return await this.databases.update("projectNames", input);
   }
 
   /***************************************************************************

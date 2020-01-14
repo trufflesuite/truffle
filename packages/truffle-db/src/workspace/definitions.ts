@@ -33,6 +33,11 @@ export type WorkspaceCollections = {
     resource: DataModel.IProject;
     input: DataModel.IProjectsAddInput;
   };
+  projectNames: {
+    resource: DataModel.IProjectName;
+    input: DataModel.IProjectNameInput;
+    mutable: true;
+  };
 };
 
 export const definitions: Definitions<WorkspaceCollections> = {
@@ -67,5 +72,19 @@ export const definitions: Definitions<WorkspaceCollections> = {
   projects: {
     createIndexes: [],
     idFields: ["directory"]
+  },
+  projectNames: {
+    createIndexes: [
+      {
+        fields: ["project.id"]
+      },
+      {
+        fields: ["project.id", "type"]
+      },
+      {
+        fields: ["project.id", "name", "type"]
+      }
+    ],
+    idFields: ["project", "name", "type"]
   }
 };
