@@ -82,7 +82,7 @@ class Migration {
         const message = `Saving migration to chain.`;
 
         if (!this.dryRun) {
-          const data = { message: message };
+          const data = { message };
           await this.emitter.emit("startTransaction", data);
         }
 
@@ -90,12 +90,15 @@ class Migration {
         const receipt = await migrations.setCompleted(this.number);
 
         if (!this.dryRun) {
-          const data = { receipt: receipt, message: message };
+          const data = { receipt, message };
           await this.emitter.emit("endTransaction", data);
         }
       }
 
-      await this.emitter.emit("postMigrate", this.isLast);
+      const { web3, tezos } = Migrations.interfaceAdapter;
+
+      if (web3) await this.emitter.emit("postEvmMigrate", this.isLast);
+      if (tezos) await this.emitter.emit("postTezosMigrate", this.isLast);
 
       // Save artifacts to local filesystem
       await options.artifactor.saveAll(resolver.contracts());
@@ -116,7 +119,7 @@ class Migration {
     } catch (error) {
       const payload = {
         type: "migrateErr",
-        error: error
+        error
       };
 
       await this.emitter.emit("error", payload);

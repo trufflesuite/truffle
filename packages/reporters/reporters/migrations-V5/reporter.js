@@ -21,7 +21,7 @@ const MigrationsMessages = require("./messages");
  *  + `this.migration`
  *  + `this.deployer`
  */
-class EthReporter {
+class Reporter {
   constructor(describeJson) {
     this.migrator = null;
     this.deployer = null;
@@ -98,14 +98,25 @@ class EthReporter {
         "endTransaction",
         this.endTransaction.bind(this)
       );
-      this.migration.emitter.on("postMigrate", this.postMigrate.bind(this));
+      this.migration.emitter.on(
+        "postEvmMigrate",
+        this.postEvmMigrate.bind(this)
+      );
+      this.migration.emitter.on(
+        "postTezosMigrate",
+        this.postTezosMigrate.bind(this)
+      );
       this.migration.emitter.on("error", this.error.bind(this));
     }
 
     // Deployment
     if (this.deployer && this.deployer.emitter) {
       this.deployer.emitter.on("preDeploy", this.preDeploy.bind(this));
-      this.deployer.emitter.on("postDeploy", this.postDeploy.bind(this));
+      this.deployer.emitter.on("postEvmDeploy", this.postEvmDeploy.bind(this));
+      this.deployer.emitter.on(
+        "postTezosDeploy",
+        this.postTezosDeploy.bind(this)
+      );
       this.deployer.emitter.on("deployFailed", this.deployFailed.bind(this));
       this.deployer.emitter.on("linking", this.linking.bind(this));
       this.deployer.emitter.on("error", this.error.bind(this));
@@ -124,10 +135,10 @@ class EthReporter {
   }
 
   /**
-   * Retrieves gas usage totals per migrations file / totals since the reporter
+   * Retrieves EVM gas usage totals per migrations file / totals since the reporter
    * started running. Calling this method resets the gas counters for migrations totals
    */
-  getTotals() {
+  getEvmTotals() {
     const gas = this.currentGasTotal.clone();
     const cost = web3Utils.fromWei(this.currentCostTotal, "ether");
     this.finalCostTotal = this.finalCostTotal.add(this.currentCostTotal);
@@ -137,8 +148,28 @@ class EthReporter {
 
     return {
       gas: gas.toString(10),
-      cost: cost,
+      cost,
       finalCost: web3Utils.fromWei(this.finalCostTotal, "ether"),
+      deployments: this.deployments.toString()
+    };
+  }
+
+  /**
+   * Retrieves Tezos gas usage totals per migrations file / totals since the reporter
+   * started running. Calling this method resets the gas counters for migrations totals
+   */
+  getTezosTotals() {
+    const gas = this.currentGasTotal.clone();
+    const cost = web3Utils.fromWei(this.currentCostTotal, "mwei");
+    this.finalCostTotal = this.finalCostTotal.add(this.currentCostTotal);
+
+    this.currentGasTotal = new web3Utils.BN(0);
+    this.currentCostTotal = new web3Utils.BN(0);
+
+    return {
+      gas: gas.toString(10),
+      cost,
+      finalCost: web3Utils.fromWei(this.finalCostTotal, "mwei"),
       deployments: this.deployments.toString()
     };
   }
@@ -305,21 +336,46 @@ class EthReporter {
   }
 
   /**
-   * Run after a migrations file has completed and the migration has been saved.
+   * Run after an EVM migrations file has completed and the migration has been saved.
    * @param  {Boolean} isLast  true if this the last file in the sequence.
    */
-  async postMigrate(isLast) {
-    let data = {};
+  async postEvmMigrate(isLast) {
+    let data = { evm: true };
     data.number = this.summary[this.currentFileIndex].number;
-    data.cost = this.getTotals().cost;
+    data.cost = this.getEvmTotals().cost;
     this.summary[this.currentFileIndex].totalCost = data.cost;
 
     let message = this.messages.steps("postMigrate", data);
     this.deployer.logger.log(message);
 
     if (isLast) {
-      data.totalDeployments = this.getTotals().deployments;
-      data.finalCost = this.getTotals().finalCost;
+      data.totalDeployments = this.getEvmTotals().deployments;
+      data.finalCost = this.getEvmTotals().finalCost;
+
+      this.summary.totalDeployments = data.totalDeployments;
+      this.summary.finalCost = data.finalCost;
+
+      message = this.messages.steps("lastMigrate", data);
+      this.deployer.logger.log(message);
+    }
+  }
+
+  /**
+   * Run after a Tezos  migrations file has completed and the migration has been saved.
+   * @param  {Boolean} isLast  true if this the last file in the sequence.
+   */
+  async postTezosMigrate(isLast) {
+    let data = { tezos: true };
+    data.number = this.summary[this.currentFileIndex].number;
+    data.cost = this.getTezosTotals().cost;
+    this.summary[this.currentFileIndex].totalCost = data.cost;
+
+    let message = this.messages.steps("postMigrate", data);
+    this.deployer.logger.log(message);
+
+    if (isLast) {
+      data.totalDeployments = this.getTezosTotals().deployments;
+      data.finalCost = this.getTezosTotals().finalCost;
 
       this.summary.totalDeployments = data.totalDeployments;
       this.summary.finalCost = data.finalCost;
@@ -358,13 +414,13 @@ class EthReporter {
   }
 
   /**
-   * Run after a deployment instance has resolved. This handler collects deployment cost
+   * Run after an EVM deployment instance has resolved. This handler collects deployment cost
    * data and stores it a `summary` map so that it can later be replayed in an interactive
    * preview (e.g. dry-run --> real). Also passes this data to the messaging utility for
    * output formatting.
    * @param  {Object} data
    */
-  async postDeploy(data) {
+  async postEvmDeploy(data) {
     let message;
     if (data.deployed) {
       const tx = await data.contract.interfaceAdapter.getTransaction(
@@ -376,7 +432,7 @@ class EthReporter {
       );
 
       // if geth returns null, try again!
-      if (!block) return this.postDeploy(data);
+      if (!block) return this.postEvmDeploy(data);
 
       data.timestamp = block.timestamp;
 
@@ -403,7 +459,73 @@ class EthReporter {
         this.summary[this.currentFileIndex].deployments.push(data);
       }
 
-      message = this.messages.steps("deployed", data);
+      message = this.messages.steps("evmDeployed", data);
+    } else {
+      message = this.messages.steps("reusing", data);
+    }
+
+    this.deployer.logger.log(message);
+  }
+
+  /**
+   * Run after a Tezos deployment instance has resolved. This handler collects deployment cost
+   * data and stores it a `summary` map so that it can later be replayed in an interactive
+   * preview (e.g. dry-run --> real). Also passes this data to the messaging utility for
+   * output formatting.
+   * @param  {Object} data
+   */
+  async postTezosDeploy(data) {
+    let message;
+    if (data.deployed) {
+      const tx = data.receipt.results.filter(
+        result => result.kind === "origination"
+      )[0];
+      let burn = new web3Utils.BN(0);
+
+      const block = await data.contract.interfaceAdapter.getBlock(
+        data.receipt.includedInBlock
+      );
+
+      if (!block) return this.postTezosDeploy(data);
+
+      data.timestamp = block.timestamp;
+
+      const balance = new web3Utils.BN(
+        await data.contract.interfaceAdapter.getBalance(tx.source)
+      );
+      const gasUsed = new web3Utils.BN(
+        tx.metadata.operation_result.consumed_gas
+      );
+      const storageUsed = new web3Utils.BN(
+        tx.metadata.operation_result.paid_storage_size_diff
+      );
+      const fee = new web3Utils.BN(tx.fee);
+      tx.metadata.operation_result.balance_updates.forEach(
+        update => (burn = burn.add(new web3Utils.BN(update.change)))
+      );
+      burn = burn.abs();
+      const value = new web3Utils.BN(tx.balance);
+      const cost = fee.add(value).add(burn);
+
+      data.from = tx.source;
+      data.balance = web3Utils.fromWei(balance, "mwei");
+      data.gasUsed = gasUsed.toString(10);
+      data.storageUsed = storageUsed.toString(10);
+      data.fee = web3Utils.fromWei(fee, "kwei");
+      data.burn = web3Utils.fromWei(burn, "mwei");
+      data.value = web3Utils.fromWei(value, "mwei");
+      data.cost = web3Utils.fromWei(cost, "mwei");
+
+      this.currentGasTotal = this.currentGasTotal.add(gasUsed);
+      this.currentCostTotal = this.currentCostTotal.add(cost);
+      this.currentAddress = this.from;
+      this.deployments++;
+
+      if (this.summary[this.currentFileIndex]) {
+        this.summary[this.currentFileIndex].deployments.push(data);
+      }
+
+      message = this.messages.steps("tezosDeployed", data);
     } else {
       message = this.messages.steps("reusing", data);
     }
@@ -484,7 +606,12 @@ class EthReporter {
   async hash(data) {
     if (this.migration.dryRun) return;
 
-    let message = this.messages.steps("hash", data);
+    const { networks, network } = this.deployer;
+    let message;
+
+    if (networks[network].type === "tezos")
+      message = this.messages.steps("opHash", data);
+    else message = this.messages.steps("hash", data);
     this.deployer.logger.log(message);
 
     this.currentBlockWait = `Blocks: 0`.padEnd(21) + `Seconds: 0`;
@@ -508,4 +635,4 @@ class EthReporter {
   }
 }
 
-module.exports = EthReporter;
+module.exports = Reporter;

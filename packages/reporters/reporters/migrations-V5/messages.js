@@ -250,7 +250,7 @@ class MigrationsMessages {
         return output;
       },
 
-      deployed: () => {
+      evmDeployed: () => {
         if (reporter.blockSpinner) {
           reporter.blockSpinner.stop();
           const stopText = `   > ${reporter.currentBlockWait}`;
@@ -303,6 +303,61 @@ class MigrationsMessages {
         return output;
       },
 
+      tezosDeployed: () => {
+        if (reporter.blockSpinner) {
+          reporter.blockSpinner.stop();
+          const stopText = `   > ${reporter.currentBlockWait}`;
+          reporter.deployer.logger.log(stopText);
+        }
+
+        let output = "";
+
+        if (!reporter.migration.dryRun)
+          output += `   > ${"contract address:".padEnd(20)} ${
+            data.receipt.contractAddress
+          }\n`;
+
+        output += `   > ${"block number:".padEnd(20)} ${
+          data.receipt.includedInBlock
+        }\n`;
+
+        output += `   > ${"block timestamp:".padEnd(20)} ${data.timestamp}\n`;
+
+        output +=
+          `   > ${"account:".padEnd(20)} ${data.from}\n` +
+          `   > ${"balance:".padEnd(20)} ${data.balance}\n` +
+          `   > ${"gas used:".padEnd(20)} ${data.gasUsed}\n` +
+          `   > ${"storage used:".padEnd(20)} ${data.storageUsed} bytes\n` +
+          `   > ${"fee spent:".padEnd(20)} ${data.fee} mtz\n` +
+          `   > ${"burn cost:".padEnd(20)} ${data.burn} tez\n` +
+          `   > ${"value sent:".padEnd(20)} ${data.value} XTZ\n` +
+          `   > ${"total cost:".padEnd(20)} ${data.cost} XTZ\n`;
+
+        if (reporter.confirmations !== 0)
+          output += self.underline(
+            `Pausing for ${reporter.confirmations} confirmations...`
+          );
+
+        if (this.describeJson) {
+          output += self.migrationStatus({
+            status: "deployed",
+            data: Object.assign({}, data, {
+              contract: {
+                contractName: data.contract.contractName,
+                address: data.contract.address
+              },
+              instance: undefined,
+              receipt: {
+                transactionHash: data.receipt.transactionHash,
+                gasUsed: data.receipt.gasUsed
+              }
+            })
+          });
+        }
+
+        return output;
+      },
+
       // Transactions
       endTransaction: () => {
         if (reporter.blockSpinner) reporter.blockSpinner.stop();
@@ -328,7 +383,11 @@ class MigrationsMessages {
       hash: () =>
         `   > ${"transaction hash:".padEnd(20)} ` + data.transactionHash,
 
-      receipt: () => `   > ${"gas usage:".padEnd(20)} ` + data.gas,
+      opHash: () =>
+        `   > ${"operation hash:".padEnd(20)} ` + data.transactionHash,
+
+      receipt: () =>
+        `   > ${"gas usage:".padEnd(20)} ` + data.gas ? data.gas : data.gasUsed,
 
       confirmation: () =>
         `   > ${"confirmation number:".padEnd(20)} ` +
@@ -401,6 +460,7 @@ class MigrationsMessages {
       },
 
       postMigrate: () => {
+        const currencyAbbreviation = data.evm ? "ETH" : "XTZ";
         let output = "";
         let deployments =
           reporter.summary[reporter.currentFileIndex].deployments;
@@ -411,7 +471,9 @@ class MigrationsMessages {
         output +=
           self.underline(37) +
           "\n" +
-          `   > ${"Total cost:".padEnd(15)} ${data.cost.padStart(15)} ETH\n`;
+          `   > ${"Total cost:".padEnd(15)} ${data.cost.padStart(
+            15
+          )} ${currencyAbbreviation}\n`;
 
         if (self.describeJson) {
           output +=
@@ -427,13 +489,16 @@ class MigrationsMessages {
       },
 
       lastMigrate: () => {
+        const currencyAbbreviation = data.evm ? "ETH" : "XTZ";
         let output = "";
 
         output +=
           self.doubleline("Summary") +
           "\n" +
           `> ${"Total deployments:".padEnd(20)} ${data.totalDeployments}\n` +
-          `> ${"Final cost:".padEnd(20)} ${data.finalCost} ETH\n`;
+          `> ${"Final cost:".padEnd(20)} ${
+            data.finalCost
+          } ${currencyAbbreviation}\n`;
 
         if (self.describeJson) {
           output +=
