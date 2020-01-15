@@ -195,7 +195,7 @@ describe("Globally-available variables", function() {
   });
 
   it("Gets globals correctly in nested call", async function() {
-    this.timeout(8000);
+    this.timeout(12000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.runRun(9, { value: 100 });
     let txHash = receipt.tx;
@@ -319,7 +319,7 @@ describe("Globally-available variables", function() {
   });
 
   it("Gets globals correctly in nested creation", async function() {
-    this.timeout(8000);
+    this.timeout(12000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.runCreate(9, { value: 100 });
     let txHash = receipt.tx;
