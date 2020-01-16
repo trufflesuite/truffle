@@ -70,6 +70,10 @@ export class Workspace {
     return await this.databases.all("contractInstances");
   }
 
+  async nameRecords(): Promise<DataModel.INameRecord[]> {
+    return await this.databases.all("nameRecords");
+  }
+
   async networks(): Promise<DataModel.INetwork[]> {
     return await this.databases.all("networks");
   }
@@ -106,9 +110,18 @@ export class Workspace {
     return await this.databases.get("contractInstances", id);
   }
 
+  async nameRecord({
+    id
+  }: {
+    id: string;
+  }): Promise<DataModel.INameRecord | null> {
+    return await this.databases.get("nameRecords", id);
+  }
+
   async network({ id }: { id: string }): Promise<DataModel.INetwork | null> {
     return await this.databases.get("networks", id);
   }
+
   async source({ id }: { id: string }): Promise<DataModel.ISource | null> {
     return await this.databases.get("sources", id);
   }
@@ -135,6 +148,12 @@ export class Workspace {
     input
   }): Promise<{ contractInstances: DataModel.IContractInstance[] }> {
     return await this.databases.add("contractInstances", input);
+  }
+
+  async nameRecordsAdd({
+    input
+  }): Promise<{ nameRecords: DataModel.INameRecord[] }> {
+    return await this.databases.add("nameRecords", input);
   }
 
   async networksAdd({ input }): Promise<{ networks: DataModel.INetwork[] }> {

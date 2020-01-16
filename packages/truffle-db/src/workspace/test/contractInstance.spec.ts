@@ -16,6 +16,7 @@ describe("Contract Instance", () => {
   beforeEach(async () => {
     const address = Object.values(Migrations.networks)[0]["address"];
     addNetworkResult = await wsClient.execute(AddNetworks, {
+      name: "ganache",
       networkId: Object.keys(Migrations.networks)[0],
       height: 1,
       hash: "0xcba0b90a5e65512202091c12a2e3b328f374715b9f1c8f32cb4600c726fe2aa6"

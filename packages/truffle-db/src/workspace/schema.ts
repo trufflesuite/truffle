@@ -28,6 +28,9 @@ export const schema = mergeSchemas({
         extend type Network {
           id: ID!
         }
+        extend type NameRecord {
+          id: ID!
+        }
         `
       ]
     }),
@@ -44,11 +47,13 @@ export const schema = mergeSchemas({
       contractInstances: [ContractInstance]
       networks: [Network]
       sources: [Source]
+      nameRecords: [NameRecord]
 
       source(id: ID!): Source
       bytecode(id: ID!): Bytecode
       contractInstance(id: ID!): ContractInstance
       network(id: ID!): Network
+      nameRecord(id:ID!): NameRecord
     }
 
     input SourceInput {
@@ -105,7 +110,7 @@ export const schema = mergeSchemas({
     }
 
     input ContractInput {
-      name: String
+      name: String!
       abi: AbiInput
       compilation: ContractCompilationInput
       sourceContract: ContractSourceContractInput
@@ -242,13 +247,36 @@ export const schema = mergeSchemas({
     }
 
     input NetworkInput {
-      name: String
+      name: String!
       networkId: NetworkId!
       historicBlock: HistoricBlockInput!
     }
 
     input NetworksAddInput {
       networks: [NetworkInput!]!
+    }
+
+    input ResourceInput {
+      id: ID!
+    }
+
+    input PreviousNameRecordInput {
+      id: ID!
+    }
+
+    input NameRecordInput {
+      name: String!
+      type: String!
+      resource: ResourceInput!
+      previous: PreviousNameRecordInput
+    }
+
+    input NameRecordsAddInput {
+      nameRecords: [NameRecordInput!]!
+    }
+
+    type NameRecordsAddPayload {
+      nameRecords: [NameRecord]
     }
 
     type Mutation {
@@ -258,6 +286,7 @@ export const schema = mergeSchemas({
       compilationsAdd(input: CompilationsAddInput!): CompilationsAddPayload
       contractInstancesAdd(input: ContractInstancesAddInput!): ContractInstancesAddPayload
       networksAdd(input: NetworksAddInput!): NetworksAddPayload
+      nameRecordsAdd(input: NameRecordsAddInput!): NameRecordsAddPayload
     } `
   ],
 
@@ -302,6 +331,12 @@ export const schema = mergeSchemas({
       },
       network: {
         resolve: (_, { id }, { workspace }) => workspace.network({ id })
+      },
+      nameRecord: {
+        resolve: (_, { id }, { workspace }) => workspace.nameRecord({ id })
+      },
+      nameRecords: {
+        resolve: (_, {}, { workspace }) => workspace.nameRecords()
       }
     },
     Mutation: {
@@ -328,6 +363,36 @@ export const schema = mergeSchemas({
       networksAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.networksAdd({ input })
+      },
+      nameRecordsAdd: {
+        resolve: async (_, { input }, { workspace }) => {
+          return await workspace.nameRecordsAdd({ input });
+        }
+      }
+    },
+    Named: {
+      __resolveType: obj => {
+        if (obj.networkId) {
+          return "Network";
+        } else if (obj.abi) {
+          return "Contract";
+        } else {
+          return null;
+        }
+      }
+    },
+    NameRecord: {
+      resource: {
+        resolve: async ({ type, resource: { id } }, _, { workspace }) => {
+          switch (type) {
+            case "Contract":
+              return await workspace.contract({ id });
+            case "Network":
+              return await workspace.network({ id });
+            default:
+              return null;
+          }
+        }
       }
     },
     Compilation: {

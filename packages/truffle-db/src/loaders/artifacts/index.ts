@@ -14,6 +14,7 @@ import {
   AddCompilation,
   AddContracts,
   AddContractInstances,
+  AddNameRecords,
   AddNetworks
 } from "../queries";
 
@@ -27,7 +28,7 @@ type WorkflowCompileResult = {
   contracts: { [contractName: string]: ContractObject };
 };
 
-type networkLinkObject = {
+type NetworkLinkObject = {
   [name: string]: string;
 };
 
@@ -46,7 +47,7 @@ type LoaderNetworkObject = {
   id: string;
   address: string;
   transactionHash: string;
-  links?: networkLinkObject;
+  links?: NetworkLinkObject;
 };
 
 type LinkReferenceObject = {
@@ -76,6 +77,13 @@ type CompilationConfigObject = {
   artifacts_directory?: string;
   working_directory?: string;
   all?: boolean;
+};
+
+type NameRecordObject = {
+  name: string;
+  type: string;
+  resource: IdObject;
+  previous?: IdObject;
 };
 
 export class ArtifactsLoader {
@@ -120,11 +128,15 @@ export class ArtifactsLoader {
     );
   }
 
+  async loadNameRecords(nameRecords: Array<NameRecordObject>) {
+    await this.db.query(AddNameRecords, { nameRecords: nameRecords });
+  }
+
   async loadCompilationContracts(
     contracts: Array<ContractObject>,
     compilationId: string,
     compilerName: string,
-    networks: Array<any>
+    networks: Array<Array<LoaderNetworkObject>>
   ) {
     const bytecodes = await this.loadBytecodes(contracts);
 
@@ -166,6 +178,20 @@ export class ArtifactsLoader {
     const contractIds = contractsLoaded.data.workspace.contractsAdd.contracts.map(
       ({ id }) => ({ id })
     );
+
+    const nameRecords = contractObjects.map((contract, index) => {
+      let nameRecordObject = {
+        name: contract.name,
+        type: "Contract",
+        resource: {
+          id: contractIds[index].id
+        }
+      };
+
+      return nameRecordObject as NameRecordObject;
+    });
+
+    await this.loadNameRecords(nameRecords);
 
     return {
       compilerName: contracts[0].compiler.name,
@@ -312,12 +338,28 @@ export class ArtifactsLoader {
                   address: filteredNetwork[0][1]["address"],
                   transactionHash: filteredNetwork[0][1]["transactionHash"],
                   bytecode: bytecode,
-                  links: filteredNetwork[0][1]["links"]
+                  links: filteredNetwork[0][1]["links"],
+                  name: network
                 });
               }
             }
           }
         }
+
+        const nameRecords = configNetworks.map((network, index) => {
+          let nameRecordObject = {
+            name: network.name,
+            type: "Network",
+            resource: {
+              id: configNetworks[index].id
+            }
+          };
+
+          return nameRecordObject as NameRecordObject;
+        });
+
+        await this.loadNameRecords(nameRecords);
+
         return configNetworks;
       })
     );

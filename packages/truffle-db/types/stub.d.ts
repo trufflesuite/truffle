@@ -22,6 +22,8 @@ declare namespace DataModel {
   type IContractsAddInput = any;
   type IContractsAddPayload = any;
   type IInstruction = any;
+  type INameRecord = any;
+  type INameRecordsAddInput = any;
   type INetwork = any;
   type INetworkInput = any;
   type INetworksAddInput = any;
@@ -36,6 +38,10 @@ declare namespace DataModel {
 
   interface IWorkspaceMutation {
     [key: string]: any;
+  }
+
+  interface INamed {
+    name: string;
   }
 }
 
