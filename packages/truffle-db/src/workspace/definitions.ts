@@ -41,7 +41,7 @@ export const definitions: Definitions<WorkspaceCollections> = {
     idFields: ["name", "abi", "sourceContract", "compilation"]
   },
   sources: {
-    createIndexes: [{ fields: ["contents"] }, { fields: ["sourcePath"] }],
+    createIndexes: [],
     idFields: ["contents", "sourcePath"]
   },
   compilations: {
@@ -53,7 +53,7 @@ export const definitions: Definitions<WorkspaceCollections> = {
     idFields: ["bytes", "linkReferences"]
   },
   networks: {
-    createIndexes: [{ fields: ["id"] }],
+    createIndexes: [],
     idFields: ["networkId", "historicBlock"]
   },
   contractInstances: {
@@ -61,11 +61,11 @@ export const definitions: Definitions<WorkspaceCollections> = {
     idFields: ["address", "network"]
   },
   nameRecords: {
-    createIndexes: [{ fields: ["id"] }],
+    createIndexes: [],
     idFields: ["name", "type", "resource", "previous"]
   },
   projects: {
-    createIndexes: [{ fields: ["id"] }],
+    createIndexes: [],
     idFields: ["directory"]
   }
 };

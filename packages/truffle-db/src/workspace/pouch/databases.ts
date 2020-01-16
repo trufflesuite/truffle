@@ -77,7 +77,7 @@ export abstract class Databases<C extends Collections> {
   public async all<N extends CollectionName<C>>(
     collectionName: N
   ): Promise<CollectionResult<C, N>> {
-    return await this.find<N>(collectionName, { selector: [] });
+    return await this.find<N>(collectionName, { selector: {} });
   }
 
   public async find<N extends CollectionName<C>>(
@@ -86,11 +86,24 @@ export abstract class Databases<C extends Collections> {
   ): Promise<CollectionResult<C, N>> {
     await this.ready;
 
-    try {
-      const { docs }: any = await this.collections[collectionName].find(
-        options
-      );
+    // allows searching with `id` instead of pouch's internal `_id`,
+    // since we call the field `id` externally, and this approach avoids
+    // an extra index
+    const fixIdSelector = selector =>
+      Object.entries(selector)
+        .map(
+          ([field, predicate]) =>
+            field === "id" ? { _id: predicate } : { [field]: predicate }
+        )
+        .reduce((a, b) => ({ ...a, ...b }), {});
 
+    try {
+      const { docs }: any = await this.collections[collectionName].find({
+        ...options,
+        selector: fixIdSelector(options.selector)
+      });
+
+      // make sure we include `id` in the response as well
       return docs.map(doc => ({ ...doc, id: doc["_id"] }));
     } catch (error) {
       console.log(`Error fetching all ${collectionName}\n`);
