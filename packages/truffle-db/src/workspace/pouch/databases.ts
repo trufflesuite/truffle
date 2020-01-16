@@ -4,14 +4,14 @@ import PouchDBFind from "pouchdb-find";
 import { generateId } from "truffle-db/helpers";
 
 import {
-  AddInput,
-  AddPayload,
   CollectionDatabases,
   CollectionName,
   CollectionResult,
   Collections,
   Definition,
   Definitions,
+  Input,
+  Payload,
   Resource
 } from "./types";
 
@@ -131,14 +131,14 @@ export abstract class Databases<C extends Collections> {
 
   public async add<N extends CollectionName<C>>(
     collectionName: N,
-    input: AddInput<C, N>
-  ): Promise<AddPayload<C, N>> {
+    input: Input<C, N>
+  ): Promise<Payload<C, N>> {
     await this.ready;
 
     const { idFields } = this.definitions[collectionName];
 
     const resources = await Promise.all(
-      input[collectionName].map(async (resourceInput: AddInput<C, N>) => {
+      input[collectionName].map(async (resourceInput: Input<C, N>) => {
         const id = generateId(
           idFields.reduce(
             (obj, field) => ({
@@ -169,6 +169,6 @@ export abstract class Databases<C extends Collections> {
 
     return ({
       [collectionName]: resources
-    } as unknown) as AddPayload<C, N>;
+    } as unknown) as Payload<C, N>;
   }
 }

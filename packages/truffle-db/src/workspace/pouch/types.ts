@@ -30,12 +30,12 @@ export type Resource<
   N extends CollectionName<C>
 > = C[N]["resource"];
 
-export type AddInput<
+export type Input<
   C extends Collections,
   N extends CollectionName<C>
 > = C[N]["input"];
 
-export type AddPayload<C extends Collections, N extends CollectionName<C>> = {
+export type Payload<C extends Collections, N extends CollectionName<C>> = {
   [K in N]: Resource<C, N>[]
 };
 
