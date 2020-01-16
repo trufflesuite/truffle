@@ -179,19 +179,17 @@ export class ArtifactsLoader {
       ({ id }) => ({ id })
     );
 
-    const nameRecords = await Promise.all(
-      contractObjects.map(async (contract, index) => {
-        let nameRecordObject = {
-          name: contract.name,
-          type: "Contract",
-          resource: {
-            id: contractIds[index].id
-          }
-        };
+    const nameRecords = contractObjects.map((contract, index) => {
+      let nameRecordObject = {
+        name: contract.name,
+        type: "Contract",
+        resource: {
+          id: contractIds[index].id
+        }
+      };
 
-        return nameRecordObject as NameRecordObject;
-      })
-    );
+      return nameRecordObject as NameRecordObject;
+    });
 
     await this.loadNameRecords(nameRecords);
 
@@ -348,19 +346,17 @@ export class ArtifactsLoader {
           }
         }
 
-        const nameRecords = await Promise.all(
-          configNetworks.map(async (network, index) => {
-            let nameRecordObject = {
-              name: network.name,
-              type: "Network",
-              resource: {
-                id: configNetworks[index].id
-              }
-            };
+        const nameRecords = configNetworks.map((network, index) => {
+          let nameRecordObject = {
+            name: network.name,
+            type: "Network",
+            resource: {
+              id: configNetworks[index].id
+            }
+          };
 
-            return nameRecordObject as NameRecordObject;
-          })
-        );
+          return nameRecordObject as NameRecordObject;
+        });
 
         await this.loadNameRecords(nameRecords);
 
