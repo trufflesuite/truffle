@@ -13,8 +13,7 @@
     "truffle-exec": "./exec.js"
   },
   "scripts": {
-    "test": "mocha ./test/** ./test/**/*",
-    "test_windows": "mocha  --recursive --colors"
+    "test": "mocha --recursive"
   },
   "dependencies": {
     "@truffle/artifactor": "^4.0.43",
@@ -72,7 +71,7 @@
   },
   "devDependencies": {
     "@truffle/blockchain-utils": "^0.0.17",
-    "glob": "^7.1.2",
+    "glob": "^7.1.4",
     "memorystream": "^0.3.1"
   },
   "publishConfig": {

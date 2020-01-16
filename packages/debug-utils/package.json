@@ -13,8 +13,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
-    "test_windows": "mocha --colors --exit --recursive"
+    "test": "mocha"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/debug-utils",
   "author": "Truffle Suite <inquiry@trufflesuite.com>",

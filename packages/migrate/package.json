@@ -11,8 +11,7 @@
   "version": "3.1.4",
   "main": "index.js",
   "scripts": {
-    "test": "mocha ./test/* ./test/**/*",
-    "test_windows": "mocha --recursive"
+    "test": "mocha ./test --recursive"
   },
   "dependencies": {
     "@truffle/config": "^1.2.10",

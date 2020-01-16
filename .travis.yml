@@ -10,6 +10,7 @@ branches:
     - next
     # other targets
     - truffle-db
+    - PR_2637_work
 
 
 before_install:
@@ -31,19 +32,17 @@ jobs:
         - truffle obtain --solc=0.5.8
     # WINDOWS -- BEGINNING -- 
     - node_js: 10
+      os: windows
       env: 
         # Use YARN_GPG=no so Travis doesn't freeze after finished build
         - YARN_GPG=no WINDOWS=true
       before_install:
         - powershell Set-ExecutionPolicy -ExecutionPolicy unrestricted
+        # We hav to use powershell to install geth on windows environment. Git Bash doesn't have package manager.
+        - powershell ./scripts/install_geth.ps1
         - npm install -g yarn
-      os: windows
       install:
-        - yarn bootstrap_windows
-        - yarn prepare_windows
-        - truffle obtain --solc=0.5.8
-      script: 
-        - yarn ci_windows
+        - yarn bootstrap
     # WINDOWS -- END --
     - node_js: 8
       env: COVERAGE=true
@@ -59,8 +58,8 @@ jobs:
         - yarn bootstrap
         - truffle obtain --solc=0.5.8
   allow_failures:
-      - env: COVERAGE=true
       - os: windows
+      - env: COVERAGE=true
 
 
 cache:

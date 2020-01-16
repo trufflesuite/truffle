@@ -11,8 +11,7 @@
   "version": "1.0.25",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
-    "test_windows": "mocha --colors"
+    "test": "mocha"
   },
   "dependencies": {
     "@truffle/contract-schema": "^3.0.20",

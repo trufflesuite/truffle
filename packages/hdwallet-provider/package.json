@@ -13,9 +13,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "prepare_windows": "yarn build",
-    "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts",
-    "test_windows": "mocha --exit --recursive ts-node/register test/*.test.ts"
+    "test": "yarn build && mocha --exit -r ts-node/register \"test/**/*.test.ts\""
   },
   "types": "dist/index.d.ts",
   "dependencies": {

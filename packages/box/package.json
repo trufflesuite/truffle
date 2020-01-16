@@ -9,9 +9,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
-    "prepare_windows": "yarn build",
-    "test": "mocha --timeout 10000",
-    "test_windows": "mocha --timeout 10000 --colors"
+    "test": "mocha --timeout 10000"
   },
   "types": "./typings/index.d.ts",
   "dependencies": {

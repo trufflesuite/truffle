@@ -14,10 +14,8 @@
     "build": "webpack --config webpack/webpack.config.js",
     "docs": "esdoc",
     "prepare": "yarn build",
-    "prepare_windows": "yarn build",
     "start": "node ./webpack/dev-server.js",
     "test": "mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive",
-    "test_windows": "mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive --colors",
     "test:coverage": "nyc mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive",
     "test:debug": "NODE_ENV=testing node --inspect ./node_modules/.bin/mocha-webpack --webpack-config webpack/webpack.config-test.js --recursive"
   },

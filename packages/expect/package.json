@@ -4,8 +4,7 @@
   "description": "Simple module for ensuring specific options are passed to a function",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
-    "test_windows": "mocha --colors"
+    "test": "mocha"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/expect",
   "keywords": [

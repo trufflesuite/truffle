@@ -10,7 +10,6 @@
   "scripts": {
     "docs": "./scripts/generate-docs",
     "prepare": "yarn build",
-    "prepare_windows": "yarn build",
     "build": "node_modules/.bin/ttsc",
     "start": "node_modules/.bin/ttsc --watch"
   },

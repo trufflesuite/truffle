@@ -11,9 +11,7 @@
   "version": "2.0.32",
   "main": "require.js",
   "scripts": {
-    "test": "mocha",
-    "test_windows": "mocha --colors"
-
+    "test": "mocha"
   },
   "dependencies": {
     "@truffle/config": "^1.2.10",

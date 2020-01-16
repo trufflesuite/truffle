@@ -2,31 +2,42 @@
 # Exit script as soon as a command fails.
 set -o errexit
 
-run_geth() {
-  docker run \
-    -v /$PWD/scripts:/scripts \
-    -d \
-    -p 8545:8545 \
-    -p 8546:8546 \
-    -p 30303:30303 \
-    ethereum/client-go:v1.9.3 \
-    --rpc \
-    --rpcaddr '0.0.0.0' \
-    --rpcport 8545 \
-    --rpccorsdomain '*' \
-    --ws \
-    --wsaddr '0.0.0.0' \
-    --wsorigins '*' \
-    --nodiscover \
-    --dev \
-    --dev.period 0 \
-    --allow-insecure-unlock \
-    --targetgaslimit '7000000' \
-    js ./scripts/geth-accounts.js \
-    > /dev/null &
-}
+# Verbosity is set to 1 to show only ERROR in geth. 
+GETH_OPTIONS="--rpc \
+      --rpcaddr 0.0.0.0 \
+      --rpcport 8545 \
+      --rpccorsdomain '*' \
+      --ws \
+      --wsaddr 0.0.0.0 \
+      --wsorigins '*' \
+      --nodiscover \
+      --dev \
+      --dev.period 0 \
+      --allow-insecure-unlock \
+      --miner.gastarget 7000000 \
+      --nousb \ 
+      --verbosity 3 \
+      js ./scripts/geth-accounts.js"
 
-if [ "$INTEGRATION" = true ]; then
+    run_geth() {
+      docker run \
+        -v /$PWD/scripts:/scripts \
+        -d \
+        -p 8545:8545 \
+        -p 8546:8546 \
+        -p 30303:30303 \
+        ethereum/client-go:v1.9.3 \
+        $GETH_OPTIONS &
+  }
+
+if [ "$WINDOWS" = true ]; then
+
+  export PATH=$PATH:"/C/Program Files/Geth"
+  # We don't use docker on Windows. Geth is installed in 'before-install' stage in .travis.xml. 
+  geth $GETH_OPTIONS &
+  lerna run test --no-bail --stream -- --exit --colors
+
+elif [ "$INTEGRATION" = true ]; then
 
   sudo apt install -y jq
   lerna run --scope truffle test --stream
@@ -50,7 +61,7 @@ elif [ "$QUORUM" = true ]; then
   cd quorum-examples
   docker-compose up -d
   sleep 90
-  lerna run --scope truffle test --stream -- --exit
+  lerna run --scope truffle test --stream -- --exit --colors
 
 elif [ "$COLONY" = true ]; then
 
@@ -117,5 +128,4 @@ elif [ "$COVERAGE" = true ]; then
   cd ../../ && nyc lerna run --ignore debugger test && \
   cat ./packages/debugger/coverage/lcov.info >> ./coverage/lcov.info && \
   cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
-
 fi

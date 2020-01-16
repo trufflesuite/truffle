@@ -34,8 +34,7 @@
     ]
   },
   "scripts": {
-    "test": "./scripts/test.sh",
-    "test_windows": "mocha --recursive --colors -exit --timeout"
+    "test": "bash ./scripts/test.sh"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/compile-solidity",
   "keywords": [

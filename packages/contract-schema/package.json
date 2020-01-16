@@ -6,11 +6,8 @@
   "typings": "./typings/index.d.ts",
   "scripts": {
     "prepare": "yarn run build",
-    "prepare_windows": "yarn run build_windows",
-    "build": "./scripts/generate-declarations",
-    "build_windows": "powershell -File ./scripts/generate-declarations.ps1",
-    "test": "mocha",
-    "test_windows": "mocha --colors --exit --recursive"
+    "build":  "bash ./scripts/generate-declarations",
+    "test": "mocha"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/contract-schema",
   "keywords": [
