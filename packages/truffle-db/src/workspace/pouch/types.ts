@@ -4,6 +4,7 @@ export type Collections = {
   [collectionName: string]: {
     resource: any;
     input: any;
+    mutable?: boolean;
   };
 };
 
@@ -43,3 +44,7 @@ export type Definition<
   C extends Collections,
   N extends CollectionName<C>
 > = Definitions<C>[N];
+
+export type MutableCollectionName<C extends Collections> = {
+  [K in CollectionName<C>]: C[K]["mutable"] extends true ? K : never
+}[CollectionName<C>];

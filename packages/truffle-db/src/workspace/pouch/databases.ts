@@ -12,6 +12,7 @@ import {
   Definitions,
   Input,
   Payload,
+  MutableCollectionName,
   Resource
 } from "./types";
 
@@ -135,19 +136,9 @@ export abstract class Databases<C extends Collections> {
   ): Promise<Payload<C, N>> {
     await this.ready;
 
-    const { idFields } = this.definitions[collectionName];
-
     const resources = await Promise.all(
-      input[collectionName].map(async (resourceInput: Input<C, N>) => {
-        const id = generateId(
-          idFields.reduce(
-            (obj, field) => ({
-              ...obj,
-              [field]: resourceInput[field]
-            }),
-            {}
-          )
-        );
+      input[collectionName].map(async resourceInput => {
+        const id = this.generateId(collectionName, resourceInput);
 
         // check for existing
         const resource = await this.get(collectionName, id);
@@ -170,5 +161,86 @@ export abstract class Databases<C extends Collections> {
     return ({
       [collectionName]: resources
     } as unknown) as Payload<C, N>;
+  }
+
+  public async update<M extends MutableCollectionName<C>>(
+    collectionName: M,
+    input: Input<C, M>
+  ): Promise<Payload<C, M>> {
+    await this.ready;
+
+    const resources = await Promise.all(
+      input[collectionName].map(async resourceInput => {
+        const id = this.generateId(collectionName, resourceInput);
+
+        // check for existing
+        const resource = await this.get(collectionName, id);
+        const {
+          _rev
+        }: {
+          _rev: PouchDB.Core.RevisionId;
+        } = resource ? resource : {};
+
+        const resourceAdded = await this.collections[collectionName].put({
+          ...resourceInput,
+          _rev,
+          _id: id
+        });
+
+        return {
+          ...resourceInput,
+          id
+        } as Resource<C, M>;
+      })
+    );
+
+    return ({
+      [collectionName]: resources
+    } as unknown) as Payload<C, M>;
+  }
+
+  public async remove<M extends MutableCollectionName<C>>(
+    collectionName: M,
+    input: Input<C, M>
+  ): Promise<void> {
+    await this.ready;
+
+    await Promise.all(
+      input[collectionName].map(async resourceInput => {
+        const id = this.generateId(collectionName, resourceInput);
+
+        const resource = await this.get(collectionName, id);
+        const {
+          _rev
+        }: {
+          _rev: PouchDB.Core.RevisionId;
+        } = resource ? resource : {};
+
+        if (_rev) {
+          await this.collections[collectionName].put({
+            _rev,
+            _id: id,
+            _deleted: true
+          });
+        }
+      })
+    );
+  }
+
+  private generateId<N extends CollectionName<C>>(
+    collectionName: N,
+    input: Input<C, N>[N][number]
+  ): string {
+    const { idFields } = this.definitions[collectionName];
+
+    return generateId(
+      idFields.reduce(
+        (obj, field) => ({
+          ...obj,
+          [field]: input[field]
+        }),
+        {}
+      )
+    );
   }
 }
