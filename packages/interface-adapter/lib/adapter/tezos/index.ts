@@ -83,17 +83,39 @@ export class TezosAdapter implements InterfaceAdapter {
 
   public async setWallet(config: Config) {
     const { networks, network } = config;
-    // here we import user's faucet account:
-    // email, passphrase, mnemonic, & secret are all REQUIRED.
-    // TODO: add logic to check if user is importing only a private secret key
-    // that would unlock the account, or a psk w/ passphrase
-    let mnemonic = networks[network].mnemonic;
-    if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
-    await this.tezos.importKey(
-      networks[network].email,
-      networks[network].passphrase,
-      mnemonic,
-      networks[network].secret
+    let { mnemonic, secretKey } = networks[network];
+
+    if (mnemonic) {
+      // here we import user's faucet account:
+      // email, passphrase, mnemonic, & secret are all REQUIRED.
+      if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
+      try {
+        return await this.tezos.importKey(
+          networks[network].email,
+          networks[network].passphrase,
+          mnemonic,
+          networks[network].secret
+        );
+      } catch (error) {
+        throw Error(
+          `Faucet account invalid or incorrectly imported in truffle config file (config.networks[${network}]).`
+        );
+      }
+    }
+
+    if (secretKey) {
+      try {
+        return await this.tezos.importKey(secretKey);
+      } catch (error) {
+        throw Error(
+          `Secret key invalid or incorrectly imported in truffle config file (config.networks[${network}].secretKey).`
+        );
+      }
+    }
+
+    // TODO: add logic to check if user is importing a psk w/ passphrase
+    throw Error(
+      `No faucet account or secret key detected in truffle config file (config.networks[${network}]).`
     );
   }
 }
