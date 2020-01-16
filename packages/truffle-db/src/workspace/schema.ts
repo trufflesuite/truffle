@@ -374,8 +374,10 @@ export const schema = mergeSchemas({
       __resolveType: obj => {
         if (obj.networkId) {
           return "Network";
-        } else {
+        } else if (obj.abi) {
           return "Contract";
+        } else {
+          return null;
         }
       }
     },
@@ -387,6 +389,8 @@ export const schema = mergeSchemas({
               return await workspace.contract({ id });
             case "Network":
               return await workspace.network({ id });
+            default:
+              return null;
           }
         }
       }
