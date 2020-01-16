@@ -214,6 +214,7 @@ describe("Deployments", function() {
       Example.autoGas = true;
     });
 
+    // Constructor in this test consumes ~6437823 (ganache) vs blockLimit of 6721975.
     it("should not multiply past the blockLimit", async function() {
       this.timeout(50000);
       let iterations = 1000; // # of times to set a uint in a loop, consuming gas.
@@ -224,8 +225,8 @@ describe("Deployments", function() {
 
       assert(multiplier === 1.25, "Multiplier should be initialized to 1.25");
       assert(
-        multiplier * estimate < block.gasLimit,
-        "Multiplied estimate should not be higher than the blockLimit"
+        multiplier * estimate > block.gasLimit,
+        "Multiplied estimate should be too high"
       );
       assert(estimate < block.gasLimit, "Estimate on it's own should be ok");
 
