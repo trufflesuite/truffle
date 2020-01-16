@@ -37,7 +37,7 @@
     "browserify": "^14.0.0",
     "chai": "4.2.0",
     "debug": "^4.1.0",
-    "ganache-core": "2.8.0",
+    "ganache-core": "2.9.2",
     "mocha": "5.2.0",
     "sinon": "^7.3.2",
     "temp": "^0.8.3",
