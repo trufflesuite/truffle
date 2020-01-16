@@ -31,6 +31,12 @@ export const schema = mergeSchemas({
         extend type NameRecord {
           id: ID!
         }
+        extend type Project {
+          id: ID!
+        }
+        extend interface Named {
+          id: ID!
+        }
         `
       ]
     }),
@@ -48,12 +54,14 @@ export const schema = mergeSchemas({
       networks: [Network]
       sources: [Source]
       nameRecords: [NameRecord]
+      projects: [Project]
 
       source(id: ID!): Source
       bytecode(id: ID!): Bytecode
       contractInstance(id: ID!): ContractInstance
       network(id: ID!): Network
       nameRecord(id:ID!): NameRecord
+      project(id: ID!): Project
     }
 
     input SourceInput {
@@ -279,6 +287,18 @@ export const schema = mergeSchemas({
       nameRecords: [NameRecord]
     }
 
+    input ProjectInput {
+      directory: String!
+    }
+
+    input ProjectsAddInput {
+      projects: [ProjectInput!]!
+    }
+
+    type ProjectsAddPayload {
+      projects: [Project!]!
+    }
+
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
@@ -287,6 +307,7 @@ export const schema = mergeSchemas({
       contractInstancesAdd(input: ContractInstancesAddInput!): ContractInstancesAddPayload
       networksAdd(input: NetworksAddInput!): NetworksAddPayload
       nameRecordsAdd(input: NameRecordsAddInput!): NameRecordsAddPayload
+      projectsAdd(input:ProjectsAddInput!):ProjectsAddPayload
     } `
   ],
 
@@ -337,6 +358,12 @@ export const schema = mergeSchemas({
       },
       nameRecords: {
         resolve: (_, {}, { workspace }) => workspace.nameRecords()
+      },
+      project: {
+        resolve: (_, { id }, { workspace }) => workspace.project({ id })
+      },
+      projects: {
+        resolve: (_, { id }, { workspace }) => workspace.projects()
       }
     },
     Mutation: {
@@ -368,6 +395,10 @@ export const schema = mergeSchemas({
         resolve: async (_, { input }, { workspace }) => {
           return await workspace.nameRecordsAdd({ input });
         }
+      },
+      projectsAdd: {
+        resolve: (_, { input }, { workspace }) =>
+          workspace.projectsAdd({ input })
       }
     },
     Named: {
