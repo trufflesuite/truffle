@@ -1,6 +1,6 @@
 {
   "name": "@truffle/events",
-  "version": "0.0.4-alphaTez.0",
+  "version": "0.0.4-alphaTez.1",
   "description": "Event system for Truffle",
   "main": "index.js",
   "keywords": [],

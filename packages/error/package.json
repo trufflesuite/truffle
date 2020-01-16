@@ -1,6 +1,6 @@
 {
   "name": "@truffle/error",
-  "version": "0.0.15-alphaTez.2",
+  "version": "0.0.15-alphaTez.3",
   "description": "Simple module that allows native Error objects to be extended",
   "main": "index.js",
   "scripts": {},
