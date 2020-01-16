@@ -72,7 +72,7 @@ describe("compile", function() {
       function(err, result) {
         if (err) return done(err);
         let { contracts } = result;
-        
+
         assert.equal(
           Object.keys(contracts).length,
           0,
