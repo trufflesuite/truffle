@@ -13652,19 +13652,19 @@ socks@~2.3.2:
     ip "1.1.5"
     smart-buffer "^4.1.0"
 
-solc@0.5.12:
-  version "0.5.12"
-  resolved "https://registry.yarnpkg.com/solc/-/solc-0.5.12.tgz#e63047dce04c82ec6f469f6e28febfbde713b808"
-  integrity sha512-OX/AGZT04tuUsagoVXSZBiBZYJReA02hdwZOfRkB03/eeYP9Dl3pr+M+au+1MhssgiuWBlFPN7sRXFiqwkAW2g==
+solc@0.5.16:
+  version "0.5.16"
+  resolved "https://registry.yarnpkg.com/solc/-/solc-0.5.16.tgz#6c8d710a3792ccc79db924606b558a1149b1c603"
+  integrity sha512-weEtRtisJyf+8UjELs7S4ST1KK7UIq6SRB7tpprfJBL9b5mTrZAT7m4gJKi2h6MiBpuSWfnraK8BnkyWzuTMRA==
   dependencies:
     command-exists "^1.2.8"
+    commander "3.0.2"
     fs-extra "^0.30.0"
     js-sha3 "0.8.0"
     memorystream "^0.3.1"
     require-from-string "^2.0.0"
     semver "^5.5.0"
     tmp "0.0.33"
-    yargs "^13.2.0"
 
 solc@^0.4.20:
   version "0.4.26"
@@ -16540,7 +16540,7 @@ yargs@13.2.4:
     y18n "^4.0.0"
     yargs-parser "^13.1.0"
 
-yargs@13.3.0, yargs@^13.2.0, yargs@^13.3.0:
+yargs@13.3.0, yargs@^13.3.0:
   version "13.3.0"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-13.3.0.tgz#4c657a55e07e5f2cf947f8a366567c04a0dedc83"
   integrity sha512-2eehun/8ALW8TLoIl7MVaRUrg+yCnenu8B4kBlRxj3GJGDKU1Og7sMXPNm1BYyM1DOJmTZ4YeN/Nwxv+8XJsUA==
