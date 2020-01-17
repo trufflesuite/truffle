@@ -49,7 +49,9 @@ export class TruffleDB {
   }
 
   async loadCompilations(result: WorkflowCompileResult) {
-    const saga = generateCompileLoad(result);
+    const saga = generateCompileLoad(result, {
+      directory: this.context.workingDirectory
+    });
 
     let cur = saga.next();
     while (!cur.done) {

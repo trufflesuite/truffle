@@ -12,7 +12,6 @@ import { AddContractInstances } from "@truffle/db/loaders/resources/contractInst
 import { AddNameRecords } from "@truffle/db/loaders/resources/nameRecords";
 import { AddNetworks } from "@truffle/db/loaders/resources/networks";
 import {
-  AddProjects,
   AssignProjectNames,
   ResolveProjectName
 } from "@truffle/db/loaders/resources/projects";
@@ -85,13 +84,10 @@ export class ArtifactsLoader {
   }
 
   async load(): Promise<void> {
-    const { id: projectId } = await this.loadProject({
-      directory: this.config.working_directory
-    });
-
     const result = await Contracts.compile(this.config);
 
     const {
+      project,
       compilations,
       compilationContracts
     } = await this.db.loadCompilations(result);
@@ -100,7 +96,7 @@ export class ArtifactsLoader {
     await Promise.all(
       compilations.map(async ({ compiler, id }) => {
         const networks = await this.loadNetworks(
-          projectId,
+          project.id,
           result.compilations[compiler.name].contracts,
           this.config["artifacts_directory"],
           this.config["contracts_directory"]
@@ -112,7 +108,7 @@ export class ArtifactsLoader {
           contracts.map(async contract => {
             //check if there is already a current head for this item. if so save it as previous
             let current: IdObject = await this.resolveProjectName(
-              projectId,
+              project.id,
               "Contract",
               contract.name
             );
@@ -128,23 +124,13 @@ export class ArtifactsLoader {
           })
         );
 
-        await this.loadNameRecords(projectId, nameRecords);
+        await this.loadNameRecords(project.id, nameRecords);
 
         if (networks[0].length) {
           await this.loadContractInstances(contracts, networks);
         }
       })
     );
-  }
-
-  async loadProject({ directory }: { directory: string }) {
-    let result = await this.db.query(AddProjects, {
-      projects: [{ directory }]
-    });
-
-    const { id } = result.data.workspace.projectsAdd.projects[0];
-
-    return { id };
   }
 
   async loadNameRecords(
