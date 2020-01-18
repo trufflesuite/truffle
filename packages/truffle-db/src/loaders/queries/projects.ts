@@ -1,7 +1,7 @@
 import gql from "graphql-tag";
 
-export const GetCurrent = gql`
-  query GetCurrent($projectId: ID!, $type: String!, $name: String!) {
+export const ResolveProjectName = gql`
+  query ResolveProjectName($projectId: ID!, $type: String!, $name: String!) {
     workspace {
       project(id: $projectId) {
         resolve(type: $type, name: $name) {

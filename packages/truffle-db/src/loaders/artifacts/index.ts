@@ -17,7 +17,7 @@ import {
   AddNameRecords,
   AddNetworks,
   AddProjects,
-  GetCurrent,
+  ResolveProjectName,
   AssignProjectNames
 } from "../queries";
 
@@ -176,8 +176,12 @@ export class ArtifactsLoader {
     });
   }
 
-  async getCurrent(projectId: string, type: string, name: string) {
-    let { data } = await this.db.query(GetCurrent, { projectId, type, name });
+  async resolveProjectName(projectId: string, type: string, name: string) {
+    let { data } = await this.db.query(ResolveProjectName, {
+      projectId,
+      type,
+      name
+    });
 
     if (data.workspace.project.resolve.length > 0) {
       return {
@@ -237,7 +241,7 @@ export class ArtifactsLoader {
     const nameRecords = await Promise.all(
       contractObjects.map(async (contract, index) => {
         //check if there is already a current head for this item. if so save it as previous
-        let current: IdObject = await this.getCurrent(
+        let current: IdObject = await this.resolveProjectName(
           projectId,
           "Contract",
           contract.name
@@ -413,7 +417,7 @@ export class ArtifactsLoader {
         const nameRecords = await Promise.all(
           configNetworks.map(async (network, index) => {
             //check if there is already a current head for this item. if so save it as previous
-            let current: IdObject = await this.getCurrent(
+            let current: IdObject = await this.resolveProjectName(
               projectId,
               "Network",
               network.name

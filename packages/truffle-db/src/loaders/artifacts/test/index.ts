@@ -8,7 +8,7 @@ import {
   AddProjects,
   AssignProjectNames,
   AddNameRecords,
-  GetCurrent
+  ResolveProjectName
 } from "truffle-db/loaders/queries";
 import { generateId } from "truffle-db/helpers";
 import * as Contracts from "@truffle/workflow-compile/new";
@@ -710,7 +710,7 @@ describe("Compilation", () => {
             project: { resolve }
           }
         }
-      } = await db.query(GetCurrent, {
+      } = await db.query(ResolveProjectName, {
         projectId,
         name: artifacts[index].contractName,
         type: "Contract"
