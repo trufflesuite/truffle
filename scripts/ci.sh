@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
+
 # Exit script as soon as a command fails.
 set -o errexit
 
-# Verbosity is set to 1 to show only ERROR in geth. 
 GETH_OPTIONS="--rpc \
       --rpcaddr 0.0.0.0 \
       --rpcport 8545 \
@@ -15,20 +15,22 @@ GETH_OPTIONS="--rpc \
       --dev.period 0 \
       --allow-insecure-unlock \
       --miner.gastarget 7000000 \
-      --nousb \ 
-      --verbosity 3 \
+      --nousb \
+      --verbosity 1 \
+      --override.istanbul 0 \
       js ./scripts/geth-accounts.js"
 
-    run_geth() {
-      docker run \
-        -v /$PWD/scripts:/scripts \
-        -d \
-        -p 8545:8545 \
-        -p 8546:8546 \
-        -p 30303:30303 \
-        ethereum/client-go:v1.9.3 \
-        $GETH_OPTIONS &
-  }
+#We don't redirect to /dev/null because verbosity is set to 1. This will show errors, but nothing else. 
+run_geth() {
+  docker run \
+    -v /$PWD/scripts:/scripts \
+    -d \
+    -p 8545:8545 \
+    -p 8546:8546 \
+    -p 30303:30303 \
+    ethereum/client-go:latest \
+    $GETH_OPTIONS &
+}
 
 if [ "$WINDOWS" = true ]; then
 
@@ -61,7 +63,7 @@ elif [ "$QUORUM" = true ]; then
   cd quorum-examples
   docker-compose up -d
   sleep 90
-  lerna run --scope truffle test --stream -- --exit --colors
+  lerna run --scope truffle test --stream -- --exit
 
 elif [ "$COLONY" = true ]; then
 

@@ -10,8 +10,6 @@ branches:
     - next
     # other targets
     - truffle-db
-    - PR_2637_work
-
 
 before_install:
   - npm install -g yarn
