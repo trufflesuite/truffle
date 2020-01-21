@@ -1,8 +1,8 @@
 const assert = require("assert");
 const util = require("util"); // eslint-disable-line no-unused-vars
 
-const Decoder = require("../..");
-const { nativizeDecoderVariables } = require("../../dist/utils");
+const Decoder = require("../../..");
+const { nativizeDecoderVariables } = require("../../../dist/utils");
 
 const DecodingSample = artifacts.require("DecodingSample");
 const DecodingSampleParent = artifacts.require("DecodingSampleParent");

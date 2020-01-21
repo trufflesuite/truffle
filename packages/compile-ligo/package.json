@@ -23,7 +23,7 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "devDependencies": {
-    "@truffle/config": "^1.2.12-alphaTez.3",
+    "@truffle/config": "^1.2.11",
     "mocha": "5.2.0"
   },
   "dependencies": {

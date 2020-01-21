@@ -1,6 +1,6 @@
 {
   "name": "@truffle/solidity-utils",
-  "version": "1.2.13-alphaTez.3",
+  "version": "1.2.8",
   "description": "Utilities for Solidity contracts",
   "main": "index.js",
   "scripts": {},

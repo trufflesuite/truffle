@@ -1,10 +1,8 @@
 import { Web3Shim } from "../../shim";
 import { Provider } from "web3/providers";
-import Config from "@truffle/config";
 import { InterfaceAdapter, EvmBlockType, Transaction } from "../types";
 
 export interface Web3InterfaceAdapterOptions {
-  config?: Config;
   provider?: Provider;
   networkType?: string;
 }

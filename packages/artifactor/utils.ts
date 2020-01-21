@@ -29,6 +29,5 @@ export function finalizeArtifact(
     normalizedNewArtifact,
     { networks: knownNetworks }
   );
-
   return completeArtifact;
 }

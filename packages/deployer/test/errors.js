@@ -181,7 +181,7 @@ describe("Error cases", function() {
   });
 
   it("OOG (w/ estimate, hits block limit)", async function() {
-    this.timeout(30000);
+    this.timeout(100000);
 
     const migrate = function() {
       deployer.deploy(Loops);
@@ -213,8 +213,9 @@ describe("Error cases", function() {
       assert.fail();
     } catch (err) {
       assert(err.message.includes("Loops"));
-      assert(err.message.includes("code couldn't be stored"));
-      assert(err.message.includes("check your gas limit"));
+      assert(err.message.includes("out of gas"));
+      assert(err.message.includes("Gas sent"));
+      assert(err.message.includes("Block limit"));
     }
   });
 

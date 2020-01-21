@@ -174,6 +174,7 @@ const Migrate = {
 
   lastCompletedMigration: async function(options) {
     let Migrations;
+
     try {
       Migrations = options.resolver.require("Migrations");
     } catch (error) {

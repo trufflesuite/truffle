@@ -32,10 +32,7 @@ export interface Web3ShimOptions {
   networkType?: NetworkType;
 }
 
-export type InitNetworkType = (
-  web3Shim: Web3Shim,
-  options?: Web3ShimOptions
-) => Promise<void>;
+export type InitNetworkType = (web3Shim: Web3Shim) => Promise<void>;
 
 export interface NetworkTypeDefinition {
   initNetworkType: InitNetworkType;
@@ -65,7 +62,6 @@ export class Web3Shim extends Web3 {
     super();
 
     if (options) {
-      if (options.networkType === "tezos") options.networkType = "ethereum";
       this.networkType = options.networkType || "ethereum";
 
       if (options.provider) {
