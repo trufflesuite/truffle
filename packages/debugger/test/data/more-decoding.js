@@ -265,6 +265,31 @@ contract CircularTest {
 }
 `;
 
+const __GLOBALDECLS = `
+pragma solidity ^0.6.1;
+
+struct GlobalStruct {
+  uint x;
+  uint y;
+}
+
+enum GlobalEnum {
+  No, Yes
+}
+
+contract GlobalDeclarationTest {
+
+  GlobalStruct globalStruct;
+  GlobalEnum globalEnum;
+
+  function run() public {
+    globalStruct.x = 2;
+    globalStruct.y = 3;
+    globalEnum = GlobalEnum.Yes;
+  }
+}
+`;
+
 let sources = {
   "ContainersTest.sol": __CONTAINERS,
   "ElementaryTest.sol": __KEYSANDBYTES,
@@ -272,7 +297,8 @@ let sources = {
   "ComplexMappingsTest.sol": __INNERMAPS,
   "OverflowTest.sol": __OVERFLOW,
   "BadBoolTest.sol": __BADBOOL,
-  "Circular.sol": __CIRCULAR
+  "Circular.sol": __CIRCULAR,
+  "GlobalDeclarations.sol": __GLOBALDECLS
 };
 
 describe("Further Decoding", function() {
@@ -512,6 +538,36 @@ describe("Further Decoding", function() {
 
     const expectedResult = {
       boolMap: { true: 1 }
+    };
+
+    assert.deepInclude(variables, expectedResult);
+  });
+
+  it("Handles globally-declared structs and enums", async function() {
+    this.timeout(12000);
+
+    let instance = await abstractions.GlobalDeclarationTest.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    await session.continueUntilBreakpoint(); //run till end
+
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      await session.variables()
+    );
+    debug("variables %O", variables);
+
+    const expectedResult = {
+      globalStruct: { x: 2, y: 3 },
+      globalEnum: "GlobalEnum.Yes"
     };
 
     assert.deepInclude(variables, expectedResult);

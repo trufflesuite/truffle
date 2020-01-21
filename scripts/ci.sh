@@ -39,13 +39,13 @@ if [ "$WINDOWS" = true ]; then
 
 elif [ "$INTEGRATION" = true ]; then
 
-  sudo apt install -y jq
+sudo apt install -y jq
   lerna run --scope truffle test --stream
 
 elif [ "$GETH" = true ]; then
 
   sudo apt install -y jq
-  docker pull ethereum/client-go:v1.9.3
+  docker pull ethereum/client-go:latest
   run_geth
   sleep 30
   lerna run --scope truffle test --stream -- --exit
