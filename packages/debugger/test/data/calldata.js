@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __CALLDATA = `
-pragma solidity ^0.5.6;
+pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
 
 contract CalldataTest {

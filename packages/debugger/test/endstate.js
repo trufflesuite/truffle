@@ -14,7 +14,7 @@ import data from "lib/data/selectors";
 import * as Codec from "@truffle/codec";
 
 const __FAILURE = `
-pragma solidity ~0.5;
+pragma solidity ^0.6.1;
 
 contract FailureTest {
   function run() public {
@@ -24,7 +24,7 @@ contract FailureTest {
 `;
 
 const __SUCCESS = `
-pragma solidity ~0.5;
+pragma solidity ^0.6.1;
 
 contract SuccessTest {
 uint x;

@@ -13,7 +13,7 @@ import controller from "lib/controller/selectors";
 import trace from "lib/trace/selectors";
 
 const __SINGLE_CALL = `
-pragma solidity ~0.5;
+pragma solidity ^0.6.1;
 
 contract SingleCall {
   event Called();
@@ -32,7 +32,7 @@ contract SingleCall {
 `;
 
 const __NESTED_CALL = `
-pragma solidity ~0.5;
+pragma solidity ^0.6.1;
 
 contract NestedCall {
   event First();
@@ -66,14 +66,14 @@ contract NestedCall {
 `;
 
 const __FAILED_CALL = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract RevertTest {
 
   event Begin();
   event Done();
 
-  function() external {
+  fallback() external {
     doStuff();
   }
 
@@ -94,7 +94,7 @@ contract RevertTest {
 `;
 
 const __OVER_TRANSFER = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract BadTransferTest {
 
@@ -112,7 +112,7 @@ contract Recipient {
 `;
 
 const __ADJUSTMENT = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract AdjustTest {
 

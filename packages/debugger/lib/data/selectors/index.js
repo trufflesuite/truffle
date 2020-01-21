@@ -586,11 +586,43 @@ const data = createSelectorTree({
       }
     ),
 
+    /*
+     * data.current.function
+     * may be modifier rather than function!
+     */
+    function: createLeaf(
+      ["./node", "/views/scopes/inlined"],
+      (node, scopes) => {
+        const types = [
+          "FunctionDefinition",
+          "ModifierDefinition",
+          "ContractDefinition",
+          "SourceUnit"
+        ];
+        //SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes);
+      }
+    ),
+
+    /*
+     * data.current.inModifier
+     */
+    inModifier: createLeaf(
+      ["./function"],
+      node => node && node.nodeType === "ModifierDefinition"
+    ),
+
     /**
      * data.current.functionDepth
      */
 
     functionDepth: createLeaf([solidity.current.functionDepth], identity),
+
+    /**
+     * data.current.modifierDepth
+     */
+
+    modifierDepth: createLeaf([solidity.current.modifierDepth], identity),
 
     /**
      * data.current.address
@@ -862,10 +894,19 @@ const data = createSelectorTree({
           "/proc/assignments",
           "./_",
           "/current/functionDepth", //for pruning things too deep on stack
+          "/current/modifierDepth", //when it's useful
+          "/current/inModifier",
           "/current/address" //for contract variables
         ],
 
-        (assignments, identifiers, currentDepth, address) =>
+        (
+          assignments,
+          identifiers,
+          currentDepth,
+          modifierDepth,
+          inModifier,
+          address
+        ) =>
           Object.assign(
             {},
             ...Object.entries(identifiers).map(
@@ -882,21 +923,17 @@ const data = createSelectorTree({
                     id = matchIds[0]; //there should only be one!
                   }
 
-                  //if not contract, it's local, so find the innermost
-                  //(but not beyond current depth)
+                  //if not contract, it's local, so identify by stackframe
                   if (id === undefined) {
-                    let matchFrames = (assignments.byAstId[astId] || [])
-                      .map(id => assignments.byId[id].stackframe)
-                      .filter(stackframe => stackframe !== undefined);
-
-                    if (matchFrames.length > 0) {
-                      //this check isn't *really*
-                      //necessary, but may as well prevent stupid stuff
-                      let maxMatch = Math.min(
-                        currentDepth,
-                        Math.max(...matchFrames)
-                      );
-                      id = stableKeccak256({ astId, stackframe: maxMatch });
+                    //if we're in a modifier, include modifierDepth
+                    if (inModifier) {
+                      id = stableKeccak256({
+                        astId,
+                        stackframe: currentDepth,
+                        modifierDepth
+                      });
+                    } else {
+                      id = stableKeccak256({ astId, stackframe: currentDepth });
                     }
                   }
                 } else {

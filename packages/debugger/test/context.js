@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import sessionSelector from "lib/session/selectors";
 
 const __OUTER = `
-pragma solidity ~0.5;
+pragma solidity ^0.6.1;
 
 import "./InnerContract.sol";
 
@@ -33,7 +33,7 @@ contract OuterContract {
 `;
 
 const __INNER = `
-pragma solidity ~0.5;
+pragma solidity ^0.6.1;
 
 contract InnerContract {
   event Inner();

@@ -15,7 +15,7 @@ import data from "lib/data/selectors";
 import * as Codec from "@truffle/codec";
 
 const __CONTAINERS = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract ContainersTest {
 
@@ -53,10 +53,10 @@ contract ContainersTest {
     uint[2] storage localStorage = pointedAt;
 
     //set up variables with values
-    storageStructArray.length = 1;
+    storageStructArray.push();
     storageStructArray[0].x = 107;
 
-    storageArrayArray.length = 1;
+    storageArrayArray.push();
     storageArrayArray[0][0] = 2;
     storageArrayArray[0][1] = 3;
 
@@ -83,7 +83,7 @@ contract ContainersTest {
 `;
 
 const __KEYSANDBYTES = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract ElementaryTest {
 
@@ -133,7 +133,7 @@ contract ElementaryTest {
 `;
 
 const __SPLICING = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract SpliceTest {
   //splicing is (nontrivially) used in two contexts right now:
@@ -171,7 +171,7 @@ contract SpliceTest {
 `;
 
 const __INNERMAPS = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract ComplexMappingTest {
 
@@ -197,7 +197,7 @@ contract ComplexMappingTest {
 `;
 
 const __OVERFLOW = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract OverflowTest {
 
@@ -229,7 +229,7 @@ contract OverflowTest {
 `;
 
 const __BADBOOL = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract BadBoolTest {
 
@@ -242,7 +242,7 @@ contract BadBoolTest {
 `;
 
 const __CIRCULAR = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract CircularTest {
 
@@ -265,6 +265,31 @@ contract CircularTest {
 }
 `;
 
+const __GLOBALDECLS = `
+pragma solidity ^0.6.1;
+
+struct GlobalStruct {
+  uint x;
+  uint y;
+}
+
+enum GlobalEnum {
+  No, Yes
+}
+
+contract GlobalDeclarationTest {
+
+  GlobalStruct globalStruct;
+  GlobalEnum globalEnum;
+
+  function run() public {
+    globalStruct.x = 2;
+    globalStruct.y = 3;
+    globalEnum = GlobalEnum.Yes;
+  }
+}
+`;
+
 let sources = {
   "ContainersTest.sol": __CONTAINERS,
   "ElementaryTest.sol": __KEYSANDBYTES,
@@ -272,7 +297,8 @@ let sources = {
   "ComplexMappingsTest.sol": __INNERMAPS,
   "OverflowTest.sol": __OVERFLOW,
   "BadBoolTest.sol": __BADBOOL,
-  "Circular.sol": __CIRCULAR
+  "Circular.sol": __CIRCULAR,
+  "GlobalDeclarations.sol": __GLOBALDECLS
 };
 
 describe("Further Decoding", function() {
@@ -512,6 +538,36 @@ describe("Further Decoding", function() {
 
     const expectedResult = {
       boolMap: { true: 1 }
+    };
+
+    assert.deepInclude(variables, expectedResult);
+  });
+
+  it("Handles globally-declared structs and enums", async function() {
+    this.timeout(12000);
+
+    let instance = await abstractions.GlobalDeclarationTest.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+
+    await session.continueUntilBreakpoint(); //run till end
+
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      await session.variables()
+    );
+    debug("variables %O", variables);
+
+    const expectedResult = {
+      globalStruct: { x: 2, y: 3 },
+      globalEnum: "GlobalEnum.Yes"
     };
 
     assert.deepInclude(variables, expectedResult);

@@ -53,6 +53,14 @@ function createMultistepSelectors(stepSelector) {
     ),
 
     /**
+     * .modifierDepth
+     */
+    modifierDepth: createLeaf(
+      ["./instruction"],
+      instruction => instruction.modifierDepth
+    ),
+
+    /**
      * .source
      */
     source: createLeaf(
@@ -78,8 +86,10 @@ function createMultistepSelectors(stepSelector) {
     /**
      * .node
      */
-    node: createLeaf(["./source", "./pointer"], ({ ast }, pointer) =>
-      pointer ? jsonpointer.get(ast, pointer) : jsonpointer.get(ast, "")
+    node: createLeaf(
+      ["./source", "./pointer"],
+      ({ ast }, pointer) =>
+        pointer ? jsonpointer.get(ast, pointer) : jsonpointer.get(ast, "")
     )
   };
 }
@@ -127,6 +137,15 @@ let solidity = createSelectorTree({
     ),
 
     /**
+     * solidity.current.humanReadableSourceMap
+     */
+    humanReadableSourceMap: createLeaf(
+      ["./sourceMap"],
+      sourceMap =>
+        sourceMap ? SolidityUtils.getHumanReadableSourceMap(sourceMap) : null
+    ),
+
+    /**
      * solidity.current.functionDepthStack
      */
     functionDepthStack: state => state.solidity.proc.functionDepthStack,
@@ -156,7 +175,7 @@ let solidity = createSelectorTree({
      * solidity.current.instructions
      */
     instructions: createLeaf(
-      ["/info/sources", evm.current.context, "./sourceMap"],
+      ["/info/sources", evm.current.context, "./humanReadableSourceMap"],
 
       (sources, context, sourceMap) => {
         if (!context) {
@@ -169,7 +188,7 @@ let solidity = createSelectorTree({
 
         let numInstructions;
         if (sourceMap) {
-          numInstructions = sourceMap.split(";").length;
+          numInstructions = sourceMap.length;
         } else {
           //HACK
           numInstructions = (binary.length - 2) / 2;
@@ -186,10 +205,14 @@ let solidity = createSelectorTree({
           // map maps just as many ranges as there are instructions (or
           // possibly more), and marks them all as being Solidity-internal and
           // not jumps.
-          sourceMap =
-            binary !== "0x"
-              ? "0:0:-1:-".concat(";".repeat(instructions.length - 1))
-              : "";
+          sourceMap = new Array(instructions.length);
+          sourceMap.fill({
+            start: 0,
+            length: 0,
+            file: -1,
+            jump: "-",
+            modifierDepth: "0"
+          });
         }
 
         var lineAndColumnMappings = Object.assign(
@@ -200,11 +223,11 @@ let solidity = createSelectorTree({
             )
           }))
         );
-        var humanReadableSourceMap = SolidityUtils.getHumanReadableSourceMap(
-          sourceMap
-        );
 
-        let primaryFile = humanReadableSourceMap[0].file;
+        let primaryFile;
+        if (sourceMap[0]) {
+          primaryFile = sourceMap[0].file;
+        }
         debug("primaryFile %o", primaryFile);
 
         return instructions
@@ -213,23 +236,23 @@ let solidity = createSelectorTree({
             // instruction
             //
 
-            const sourceMap = humanReadableSourceMap[index] || {};
+            const instructionSourceMap = sourceMap[index] || {};
 
             return {
               instruction: { ...instruction, index },
-              sourceMap
+              instructionSourceMap
             };
           })
-          .map(({ instruction, sourceMap }) => {
+          .map(({ instruction, instructionSourceMap }) => {
             // add source map information to instruction, or defaults
-            //
 
             const {
               jump,
               start = 0,
               length = 0,
-              file = primaryFile
-            } = sourceMap;
+              file = primaryFile,
+              modifierDepth = 0
+            } = instructionSourceMap;
             const lineAndColumnMapping = lineAndColumnMappings[file] || {};
             const range = {
               start: lineAndColumnMapping[start] || {
@@ -253,7 +276,8 @@ let solidity = createSelectorTree({
               start,
               length,
               file,
-              range
+              range,
+              modifierDepth
             };
           });
       }

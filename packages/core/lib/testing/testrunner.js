@@ -53,11 +53,15 @@ TestRunner.prototype.initialize = async function() {
   );
 
   if (this.first_snapshot) {
+    debug("taking first snapshot");
     try {
       let initial_snapshot = await this.snapshot();
       this.can_snapshot = true;
       this.initial_snapshot = initial_snapshot;
-    } catch (_) {}
+    } catch (error) {
+      debug("first snapshot failed");
+      debug("Error: %O", error);
+    }
     this.first_snapshot = false;
   } else {
     await this.resetState();
@@ -91,9 +95,11 @@ TestRunner.prototype.deploy = async function() {
 
 TestRunner.prototype.resetState = async function() {
   if (this.can_snapshot) {
+    debug("reverting...");
     await this.revert(this.initial_snapshot);
     this.initial_snapshot = await this.snapshot();
   } else {
+    debug("redeploying...");
     await this.deploy();
   }
 };
@@ -221,6 +227,8 @@ TestRunner.prototype.rpc = async function(method, arg) {
   if (result.error != null) {
     throw new Error("RPC Error: " + (result.error.message || result.error));
   }
+
+  return result;
 };
 
 module.exports = TestRunner;

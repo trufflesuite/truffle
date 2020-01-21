@@ -214,10 +214,10 @@ describe("Deployments", function() {
       Example.autoGas = true;
     });
 
-    // Constructor in this test consumes ~6437823 (ganache) vs blockLimit of 6721975.
+    // Constructor in this test consumes ~6388773 (ganache) vs blockLimit of 6721975.
     it("should not multiply past the blockLimit", async function() {
       this.timeout(50000);
-      let iterations = 1000; // # of times to set a uint in a loop, consuming gas.
+      let iterations = 6000; // # of times to set a uint in a loop, consuming gas.
 
       const estimate = await Example.new.estimateGas(iterations);
       const block = await web3.eth.getBlock("latest");

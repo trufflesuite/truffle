@@ -2,15 +2,15 @@ const debug = require("debug")("decoder:test:wire-test");
 const assert = require("chai").assert;
 const BN = require("bn.js");
 
-const Decoder = require("../..");
-const Codec = require("../../../codec");
+const Decoder = require("../../..");
+const Codec = require("../../../../codec");
 
 const WireTest = artifacts.require("WireTest");
 const WireTestParent = artifacts.require("WireTestParent");
 const WireTestLibrary = artifacts.require("WireTestLibrary");
 const WireTestAbstract = artifacts.require("WireTestAbstract");
 
-contract("WireTest", _accounts => {
+contract("WireTest", function(_accounts) {
   it("should correctly decode transactions and events", async function() {
     let deployedContract = await WireTest.new(true, "0xdeadbeef", 2);
     let address = deployedContract.address;
@@ -38,14 +38,16 @@ contract("WireTest", _accounts => {
       ],
       ["hello", "hi", "hooblypoob"]
     ];
-
     let emitStuff = await deployedContract.emitStuff(...emitStuffArgs);
     let emitStuffHash = emitStuff.tx;
 
     let moreStuffArgs = [address, [8, 8, 8, 7, 8, 8, 8]];
-
     let moreStuff = await deployedContract.moreStuff(...moreStuffArgs);
     let moreStuffHash = moreStuff.tx;
+
+    let globalTestArgs = [{ x: 3, y: 5 }, 1];
+    let globalTest = await deployedContract.globalTest(...globalTestArgs);
+    let globalTestHash = globalTest.tx;
 
     let inheritedArg = [2, 3];
     let inherited = await deployedContract.inherited(inheritedArg);
@@ -57,14 +59,14 @@ contract("WireTest", _accounts => {
     let libraryTestArg = "zooglyzooglyzooglyzoogly";
     let libraryTest = await deployedContract.libraryTest(libraryTestArg);
 
-    let getter1Args = ["blornst", 7];
+    let getter1Args = ["blornst", 1];
     //this function is view so we have to use sendTransaction
     let getterTest1 = await deployedContract.deepStruct.sendTransaction(
       ...getter1Args
     );
     let getterHash1 = getterTest1.tx;
 
-    let getter2Args = [7, "blornst"];
+    let getter2Args = [1, "blornst"];
     //this function is view so we have to use sendTransaction
     let getterTest2 = await deployedContract.deepString.sendTransaction(
       ...getter2Args
@@ -76,6 +78,7 @@ contract("WireTest", _accounts => {
     let constructorTx = await web3.eth.getTransaction(constructorHash);
     let emitStuffTx = await web3.eth.getTransaction(emitStuffHash);
     let moreStuffTx = await web3.eth.getTransaction(moreStuffHash);
+    let globalTestTx = await web3.eth.getTransaction(globalTestHash);
     let inheritedTx = await web3.eth.getTransaction(inheritedHash);
     let getterTx1 = await web3.eth.getTransaction(getterHash1);
     let getterTx2 = await web3.eth.getTransaction(getterHash2);
@@ -86,6 +89,7 @@ contract("WireTest", _accounts => {
     let constructorDecoding = await decoder.decodeTransaction(constructorTx);
     let emitStuffDecoding = await decoder.decodeTransaction(emitStuffTx);
     let moreStuffDecoding = await decoder.decodeTransaction(moreStuffTx);
+    let globalTestDecoding = await decoder.decodeTransaction(globalTestTx);
     let inheritedDecoding = await decoder.decodeTransaction(inheritedTx);
     let getterDecoding1 = await decoder.decodeTransaction(getterTx1);
     let getterDecoding2 = await decoder.decodeTransaction(getterTx2);
@@ -153,6 +157,25 @@ contract("WireTest", _accounts => {
       moreStuffArgs[1]
     );
 
+    assert.strictEqual(globalTestDecoding.kind, "function");
+    assert.strictEqual(globalTestDecoding.abi.name, "globalTest");
+    assert.strictEqual(globalTestDecoding.class.typeName, "WireTest");
+    assert.lengthOf(globalTestDecoding.arguments, 2);
+    assert.strictEqual(globalTestDecoding.arguments[0].name, "s");
+    assert.deepEqual(
+      Codec.Format.Utils.Inspect.nativize(
+        globalTestDecoding.arguments[0].value
+      ),
+      globalTestArgs[0]
+    );
+    assert.strictEqual(globalTestDecoding.arguments[1].name, "e");
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.nativize(
+        globalTestDecoding.arguments[1].value
+      ),
+      "GlobalEnum.Yes"
+    );
+
     assert.strictEqual(inheritedDecoding.kind, "function");
     assert.strictEqual(inheritedDecoding.abi.name, "inherited");
     assert.strictEqual(inheritedDecoding.class.typeName, "WireTest"); //NOT WireTestParent
@@ -204,6 +227,7 @@ contract("WireTest", _accounts => {
     let constructorBlock = constructorTx.blockNumber;
     let emitStuffBlock = emitStuff.receipt.blockNumber;
     let moreStuffBlock = moreStuff.receipt.blockNumber;
+    let globalTestBlock = globalTest.receipt.blockNumber;
     let inheritedBlock = inherited.receipt.blockNumber;
     let indexTestBlock = indexTest.receipt.blockNumber;
     let libraryTestBlock = libraryTest.receipt.blockNumber;
@@ -228,6 +252,10 @@ contract("WireTest", _accounts => {
     let moreStuffEvents = await decoder.events({
       fromBlock: moreStuffBlock,
       toBlock: moreStuffBlock
+    });
+    let globalTestEvents = await decoder.events({
+      fromBlock: globalTestBlock,
+      toBlock: globalTestBlock
     });
     let inheritedEvents = await decoder.events({
       fromBlock: inheritedBlock,
@@ -263,6 +291,11 @@ contract("WireTest", _accounts => {
     let moreStuffEventDecodings = moreStuffEvents[0].decodings;
     assert.lengthOf(moreStuffEventDecodings, 1);
     let moreStuffEventDecoding = moreStuffEventDecodings[0];
+
+    assert.lengthOf(globalTestEvents, 1);
+    let globalTestEventDecodings = globalTestEvents[0].decodings;
+    assert.lengthOf(globalTestEventDecodings, 1);
+    let globalTestEventDecoding = globalTestEventDecodings[0];
 
     assert.lengthOf(inheritedEvents, 1);
     let inheritedEventDecodings = inheritedEvents[0].decodings;
@@ -356,6 +389,26 @@ contract("WireTest", _accounts => {
         moreStuffEventDecoding.arguments[1].value
       ),
       moreStuffArgs[1]
+    );
+
+    assert.strictEqual(globalTestEventDecoding.kind, "event");
+    assert.strictEqual(globalTestEventDecoding.abi.name, "Globals");
+    assert.strictEqual(globalTestEventDecoding.class.typeName, "WireTest");
+    assert.strictEqual(globalTestEventDecoding.definedIn.typeName, "WireTest");
+    assert.lengthOf(globalTestEventDecoding.arguments, 2);
+    assert.isUndefined(globalTestEventDecoding.arguments[0].name);
+    assert.deepEqual(
+      Codec.Format.Utils.Inspect.nativize(
+        globalTestEventDecoding.arguments[0].value
+      ),
+      globalTestArgs[0]
+    );
+    assert.isUndefined(globalTestEventDecoding.arguments[1].name);
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.nativize(
+        globalTestEventDecoding.arguments[1].value
+      ),
+      "GlobalEnum.Yes"
     );
 
     assert.strictEqual(inheritedEventDecoding.kind, "event");
