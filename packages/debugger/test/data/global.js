@@ -293,7 +293,7 @@ describe("Globally-available variables", function() {
   });
 
   it("Gets globals correctly in simple creation", async function() {
-    this.timeout(8000);
+    this.timeout(12000);
     let contract = await abstractions.CreationTest.new(9, { value: 100 });
     let txHash = contract.transactionHash;
 
