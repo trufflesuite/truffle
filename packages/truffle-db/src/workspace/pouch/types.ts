@@ -4,6 +4,7 @@ export type Collections = {
   [collectionName: string]: {
     resource: any;
     input: any;
+    mutable?: boolean;
   };
 };
 
@@ -30,12 +31,12 @@ export type Resource<
   N extends CollectionName<C>
 > = C[N]["resource"];
 
-export type AddInput<
+export type Input<
   C extends Collections,
   N extends CollectionName<C>
 > = C[N]["input"];
 
-export type AddPayload<C extends Collections, N extends CollectionName<C>> = {
+export type Payload<C extends Collections, N extends CollectionName<C>> = {
   [K in N]: Resource<C, N>[]
 };
 
@@ -43,3 +44,7 @@ export type Definition<
   C extends Collections,
   N extends CollectionName<C>
 > = Definitions<C>[N];
+
+export type MutableCollectionName<C extends Collections> = {
+  [K in CollectionName<C>]: C[K]["mutable"] extends true ? K : never
+}[CollectionName<C>];

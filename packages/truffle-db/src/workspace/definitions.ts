@@ -33,6 +33,11 @@ export type WorkspaceCollections = {
     resource: DataModel.IProject;
     input: DataModel.IProjectsAddInput;
   };
+  projectNames: {
+    resource: DataModel.IProjectName;
+    input: DataModel.IProjectNameInput;
+    mutable: true;
+  };
 };
 
 export const definitions: Definitions<WorkspaceCollections> = {
@@ -41,7 +46,7 @@ export const definitions: Definitions<WorkspaceCollections> = {
     idFields: ["name", "abi", "sourceContract", "compilation"]
   },
   sources: {
-    createIndexes: [{ fields: ["contents"] }, { fields: ["sourcePath"] }],
+    createIndexes: [],
     idFields: ["contents", "sourcePath"]
   },
   compilations: {
@@ -53,7 +58,7 @@ export const definitions: Definitions<WorkspaceCollections> = {
     idFields: ["bytes", "linkReferences"]
   },
   networks: {
-    createIndexes: [{ fields: ["id"] }],
+    createIndexes: [],
     idFields: ["networkId", "historicBlock"]
   },
   contractInstances: {
@@ -61,11 +66,25 @@ export const definitions: Definitions<WorkspaceCollections> = {
     idFields: ["address", "network"]
   },
   nameRecords: {
-    createIndexes: [{ fields: ["id"] }],
+    createIndexes: [],
     idFields: ["name", "type", "resource", "previous"]
   },
   projects: {
-    createIndexes: [{ fields: ["id"] }],
+    createIndexes: [],
     idFields: ["directory"]
+  },
+  projectNames: {
+    createIndexes: [
+      {
+        fields: ["project.id"]
+      },
+      {
+        fields: ["project.id", "type"]
+      },
+      {
+        fields: ["project.id", "name", "type"]
+      }
+    ],
+    idFields: ["project", "name", "type"]
   }
 };

@@ -37,6 +37,12 @@ export const schema = mergeSchemas({
         extend interface Named {
           id: ID!
         }
+        type ProjectName {
+          project: Project!
+          name: String!
+          type: String!
+          nameRecord: NameRecord!
+        }
         `
       ]
     }),
@@ -299,6 +305,21 @@ export const schema = mergeSchemas({
       projects: [Project!]!
     }
 
+    input ProjectNameInput {
+      project: ResourceInput!
+      name: String!
+      type: String!
+      nameRecord: ResourceInput!
+    }
+
+    input ProjectNamesAssignInput {
+      projectNames: [ProjectNameInput!]!
+    }
+
+    type ProjectNamesAssignPayload {
+      projectNames: [ProjectName!]!
+    }
+
     type Mutation {
       sourcesAdd(input: SourcesAddInput!): SourcesAddPayload
       bytecodesAdd(input: BytecodesAddInput!): BytecodesAddPayload
@@ -308,6 +329,7 @@ export const schema = mergeSchemas({
       networksAdd(input: NetworksAddInput!): NetworksAddPayload
       nameRecordsAdd(input: NameRecordsAddInput!): NameRecordsAddPayload
       projectsAdd(input:ProjectsAddInput!):ProjectsAddPayload
+      projectNamesAssign(input: ProjectNamesAssignInput): ProjectNamesAssignPayload
     } `
   ],
 
@@ -399,6 +421,11 @@ export const schema = mergeSchemas({
       projectsAdd: {
         resolve: (_, { input }, { workspace }) =>
           workspace.projectsAdd({ input })
+      },
+      projectNamesAssign: {
+        resolve: (_, { input }, { workspace }) => {
+          return workspace.projectNamesAssign({ input });
+        }
       }
     },
     Named: {
@@ -424,6 +451,58 @@ export const schema = mergeSchemas({
               return null;
           }
         }
+      },
+      previous: {
+        resolve: ({ id }, _, { workspace }) => workspace.nameRecord({ id })
+      }
+    },
+    Project: {
+      resolve: {
+        resolve: async ({ id }, { name, type }, { workspace }) => {
+          return await workspace.projectNames({
+            project: { id },
+            name,
+            type
+          });
+        }
+      },
+      network: {
+        resolve: async ({ id }, { name }, { workspace }) => {
+          const nameRecords = await workspace.projectNames({
+            project: { id },
+            type: "Network",
+            name
+          });
+          if (nameRecords.length === 0) {
+            return;
+          }
+          const { resource } = nameRecords[0];
+          return await workspace.network(resource);
+        }
+      },
+      contract: {
+        resolve: async ({ id }, { name }, { workspace }) => {
+          const nameRecords = await workspace.projectNames({
+            project: { id },
+            type: "Contract",
+            name
+          });
+          if (nameRecords.length === 0) {
+            return;
+          }
+          const { resource } = nameRecords[0];
+          return await workspace.contract(resource);
+        }
+      }
+    },
+    ProjectName: {
+      project: {
+        resolve: ({ project: { id } }, _, { workspace }) =>
+          workspace.project({ id })
+      },
+      nameRecord: {
+        resolve: ({ nameRecord: { id } }, _, { workspace }) =>
+          workspace.nameRecord({ id })
       }
     },
     Compilation: {

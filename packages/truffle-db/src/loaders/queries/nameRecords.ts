@@ -21,18 +21,13 @@ export const AddNameRecords = gql`
       nameRecordsAdd(input: { nameRecords: $nameRecords }) {
         nameRecords {
           id
+          name
+          type
           resource {
             name
-            ... on Network {
-              networkId
-            }
-            ... on Contract {
-              abi {
-                json
-              }
-            }
           }
           previous {
+            id
             name
           }
         }
