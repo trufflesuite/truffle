@@ -15,6 +15,7 @@ branches:
 
 before_install:
   - npm install -g yarn
+  - sudo apt install build-essential
 
 matrix:
   fast_finish: true
