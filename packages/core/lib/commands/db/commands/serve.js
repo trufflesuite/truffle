@@ -19,7 +19,7 @@ const command = {
     const { playgroundServer } = require("truffle-db");
 
     const config = Config.detect(argv);
-    const port = config.db.PORT || 4444;
+    const port = (config.db && config.db.PORT) || 4444;
 
     const { url } = await playgroundServer(config).listen({ port });
 
