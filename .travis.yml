@@ -27,7 +27,7 @@ jobs:
       env: FABRICEVM=true
       install:
         - yarn bootstrap
-        - truffle obtain --solc=0.5.8
+        - truffle obtain --solc=0.5.16
     # WINDOWS -- BEGINNING -- 
     - node_js: 10
       os: windows
@@ -54,7 +54,7 @@ jobs:
       env: COLONY=true
       install:
         - yarn bootstrap
-        - truffle obtain --solc=0.5.8
+        - truffle obtain --solc=0.5.16
   allow_failures:
       - os: windows
       - env: COVERAGE=true
