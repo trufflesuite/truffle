@@ -36,7 +36,15 @@ function checkLigo(callback) {
 
 // Execute ligo for single source file
 function execLigo(sourcePath, entryPoint, callback) {
-  const command = `docker run -v $PWD:$PWD --rm -i ligolang/ligo:next compile-contract --michelson-format=json ${sourcePath} ${entryPoint}`;
+  // Note that the first volume parameter passed to docker needs to have a path
+  // denoted in the format of of the host filesystem. The latter volume parameter,
+  // as well as the entry point, needs to be denoted in the format of the VM.
+  // Because of this, we rewrite the VM paths relative to a mounted volume called "project".
+  let fullInternalSourcePath =
+    "/project" + sourcePath.replace(process.env.PWD, "");
+  const command = `docker run -v ${
+    process.env.PWD
+  }:/project --rm -i ligolang/ligo:next compile-contract --michelson-format=json ${fullInternalSourcePath} ${entryPoint}`;
 
   exec(command, { maxBuffer: 600 * 1024 }, (err, stdout, stderr) => {
     if (err)

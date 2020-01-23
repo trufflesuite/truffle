@@ -11,7 +11,7 @@
   "version": "4.1.5",
   "main": "index.js",
   "scripts": {
-    "compile": "mkdir -p dist && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
+    "compile": "sh -c \"mkdir -p ./dist\" && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
     "prepare": "yarn compile",
     "publish:next": "node ../truffle/scripts/prereleaseVersion.js next next",
     "test": "./scripts/test.sh",
