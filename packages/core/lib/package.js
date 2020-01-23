@@ -43,11 +43,15 @@ const Package = {
     let registry = options.ethpm.registry;
 
     if (typeof registry === "string") {
-      registry = await EthPMRegistry.use(
-        options.ethpm.registry,
-        fakeAddress,
-        provider
-      );
+      try {
+        registry = await EthPMRegistry.use(
+          options.ethpm.registry,
+          fakeAddress,
+          provider
+        );
+      } catch (error) {
+        callback(error);
+      }
     }
 
     const pkg = new EthPM(options.working_directory, host, registry);
