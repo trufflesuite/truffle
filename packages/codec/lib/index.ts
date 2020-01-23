@@ -372,6 +372,9 @@ export { Ast };
 import * as Compiler from "./compiler";
 export { Compiler };
 
+import * as Compilations from "./compilations";
+export { Compilations };
+
 import * as Contexts from "./contexts";
 export { Contexts };
 
