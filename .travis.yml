@@ -46,7 +46,7 @@ jobs:
       env: COVERAGE=true
       install:
         - yarn bootstrap
-        - truffle obtain --solc=0.5.8
+        - truffle obtain --solc=0.5.16
     - if: |
         branch = develop AND \
         type = push
