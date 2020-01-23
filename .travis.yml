@@ -15,7 +15,7 @@ before_install:
   - npm install -g yarn
 install:
   - yarn bootstrap
-  - truffle obtain --solc=0.5.8
+  - truffle obtain --solc=0.5.16
 
 script: yarn ci
 
