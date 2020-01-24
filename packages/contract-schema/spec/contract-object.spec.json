@@ -76,7 +76,8 @@
       "format": "date-time"
     },
     "networkType": {
-      "$ref": "#/definitions/NetworkType"
+      "$ref": "#/definitions/NetworkType",
+      "default": "ethereum"
     },
     "devdoc": {
       "$ref": "#/definitions/NatSpec"
