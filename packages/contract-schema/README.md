@@ -7,7 +7,7 @@
 
 [@truffle/contract](https://github.com/trufflesuite/truffle/tree/develop/packages/contract) uses a
 formally specified<sup>[1](#footnote-1)</sup> JSON object format to represent
-Ethereum Virtual Machine (EVM) smart contracts. This representation is intended
+supported smart contracts. This representation is intended
 to facilitate the use of general purpose smart contract abstractions
 (such as @truffle/contract) by capturing relevant smart contract information in a
 persistent and portable manner.
@@ -32,8 +32,7 @@ with deployed contracts on-chain)
 
 <a name="footnote-1">1.</a> JSON Schema [http://json-schema.org](http://json-schema.org/)
 
-<a name="footnote-2">2.</a> Ethereum Contract JSON ABI [https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI#json](https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI#json)
-
+<a name="footnote-2">2.</a> Ethereum Contract JSON ABI [https://solidity.readthedocs.io/en/develop/abi-spec.html](https://solidity.readthedocs.io/en/develop/abi-spec.html). Note: Note: Tezos Contracts do not currently store a functional ABI.
 
 
 ## Properties
@@ -71,6 +70,16 @@ for the instance.
 
 Contract metadata. Stringified JSON.
 
+
+### `michelson`
+
+| type | _string_ |
+| ---: | ---- |
+
+
+Tezos instructions that run as part of a contract origination transaction.
+Constructor code for a new Tezos contract instance.
+Stringified array of JSON.
 
 
 ### `bytecode`
