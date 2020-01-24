@@ -20,24 +20,43 @@ GETH_OPTIONS="--rpc \
       --override.istanbul 0 \
       js ./scripts/geth-accounts.js"
 
-#We don't redirect to /dev/null because verbosity is set to 1. This will show errors, but nothing else. 
+#We don't redirect to /dev/null because verbosity is set to 1. This will show errors, but nothing else.
 run_geth() {
-  docker run \
+  if [ "$WINDOWS" = true ]; then
+    export PATH=$PATH:"/C/Program Files/Geth"
+    geth $GETH_OPTIONS   > /dev/null &
+    GETH_PID=$!
+  else
+    sudo apt install -y jq
+    docker pull ethereum/client-go:latest
+    docker run \
     -v /$PWD/scripts:/scripts \
     -d \
     -p 8545:8545 \
     -p 8546:8546 \
     -p 30303:30303 \
     ethereum/client-go:latest \
-    $GETH_OPTIONS &
+    $GETH_OPTIONS > /dev/null
+  fi
 }
 
 if [ "$WINDOWS" = true ]; then
-
-  export PATH=$PATH:"/C/Program Files/Geth"
-  # We don't use docker on Windows. Geth is installed in 'before-install' stage in .travis.xml. 
-  geth $GETH_OPTIONS &
-  lerna run test --scope @truffle/truffle --no-bail --stream -- --exit --colors
+  if [ "$GETH" = true ]; then
+    # Do not quit if first test fails because we still have to run other test and then KILL!!! Geth. 
+    set +o errexit 
+    run_geth
+    sleep 30
+    lerna run --scope truffle test --stream -- --exit
+    EXIT_CODE=$?
+    lerna run --scope @truffle/contract test --stream -- --exit
+    EXIT_CODE=$(($EXIT_CODE|$?))
+    kill -9 $GETH_PID
+    exit $EXIT_CODE
+  else
+    lerna run --scope truffle test --stream -- --exit
+    lerna run --scope @truffle/contract test --stream -- --exit
+  fi
+  ps auxf
 
 elif [ "$INTEGRATION" = true ]; then
 
@@ -46,9 +65,7 @@ sudo apt install -y jq
 
 elif [ "$GETH" = true ]; then
 
-  sudo apt install -y jq
-  docker pull ethereum/client-go:latest
-  run_geth
+  run_geth &
   sleep 30
   lerna run --scope truffle test --stream -- --exit
   lerna run --scope @truffle/contract test --stream -- --exit

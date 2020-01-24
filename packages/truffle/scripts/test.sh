@@ -2,14 +2,11 @@
 
 set -o errexit
 
-if [ "$GETH" == true ]; then
+
+if [ "$WINDOWS" == true ] && [ "$GETH" = false ]; then
+    mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
+elif [ "$GETH" == true ]; then
   mocha --timeout 50000 --grep '@ganache|@standalone' --invert --colors $@
-elif [ "$WINDOWS" == true ]; then
-# TODO: This is something we should review and go through for windows. 
-# Maybe we need some extra tests we should run for windows only.
-#  For now it is equal to GETH==true
-  # mocha --timeout 50000 --grep '@ganache|@standalone' --invert --colors $@
-  mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
 elif [ "$QUORUM" == true ]; then
   mocha --timeout 50000 --grep @quorum --colors $@
 elif [ "$FABRICEVM" == true ]; then
