@@ -1,7 +1,6 @@
 const debug = require("debug")("compile:legacy"); // eslint-disable-line no-unused-vars
-const path = require("path");
 const expect = require("@truffle/expect");
-const findContracts = require("@truffle/contract-sources");
+const Common = require("@truffle/compile-common");
 const Config = require("@truffle/config");
 const Profiler = require("../profiler");
 const CompilerSupplier = require("../compilerSupplier");
@@ -34,38 +33,14 @@ const compile = function(sources, options, callback) {
     .catch(callback);
 };
 
-// contracts_directory: String. Directory where .sol files can be found.
-// quiet: Boolean. Suppress output. Defaults to false.
-// strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.all = function(options, callback) {
-  findContracts(options.contracts_directory, function(err, files) {
-    if (err) return callback(err);
+// -------- Pass Common helpers --------
 
-    options.paths = files;
-    compile.with_dependencies(options, callback);
-  });
-};
+compile.all = (options, callback) => Common.all(compile, options, callback);
+compile.necessary = (options, callback) =>
+  Common.necessary(compile, options, callback);
+compile.display = Common.display;
 
-// contracts_directory: String. Directory where .sol files can be found.
-// build_directory: String. Optional. Directory where .sol.js files can be found. Only required if `all` is false.
-// all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
-//      in the build directory to see what needs to be compiled.
-// quiet: Boolean. Suppress output. Defaults to false.
-// strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.necessary = function(options, callback) {
-  options.logger = options.logger || console;
-
-  Profiler.updated(options, function(err, updated) {
-    if (err) return callback(err);
-
-    if (updated.length === 0 && options.quiet !== true) {
-      return callback(null, [], {});
-    }
-
-    options.paths = updated;
-    compile.with_dependencies(options, callback);
-  });
-};
+// -------- Start of compile-solidity specific methods --------
 
 compile.with_dependencies = function(options, callback) {
   var self = this;
@@ -94,32 +69,13 @@ compile.with_dependencies = function(options, callback) {
       var hasTargets = required.length;
 
       hasTargets
-        ? self.calculateCompiledSources(required, options)
-        : self.calculateCompiledSources(allSources, options);
+        ? self.display(required, options)
+        : self.display(allSources, options);
 
       options.compilationTargets = required;
       compile(allSources, options, callback);
     }
   );
-};
-
-compile.calculateCompiledSources = function(paths, options) {
-  if (!Array.isArray(paths)) paths = Object.keys(paths);
-
-  const blacklistRegex = /^truffle\//;
-
-  const sources = paths
-    .sort()
-    .map(contract => {
-      if (path.isAbsolute(contract)) {
-        contract =
-          "." + path.sep + path.relative(options.working_directory, contract);
-      }
-      if (contract.match(blacklistRegex)) return;
-      return contract;
-    })
-    .filter(contract => contract);
-  options.events.emit("compile:sourcesToCompile", { sourceFileNames: sources });
 };
 
 compile.CompilerSupplier = CompilerSupplier;
