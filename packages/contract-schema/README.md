@@ -7,7 +7,7 @@
 
 [@truffle/contract](https://github.com/trufflesuite/truffle/tree/develop/packages/contract) uses a
 formally specified<sup>[1](#footnote-1)</sup> JSON object format to represent
-Ethereum Virtual Machine (EVM) smart contracts. This representation is intended
+supported smart contracts. This representation is intended
 to facilitate the use of general purpose smart contract abstractions
 (such as @truffle/contract) by capturing relevant smart contract information in a
 persistent and portable manner.
@@ -32,8 +32,7 @@ with deployed contracts on-chain)
 
 <a name="footnote-1">1.</a> JSON Schema [http://json-schema.org](http://json-schema.org/)
 
-<a name="footnote-2">2.</a> Ethereum Contract JSON ABI [https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI#json](https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI#json)
-
+<a name="footnote-2">2.</a> Ethereum Contract JSON ABI [https://solidity.readthedocs.io/en/develop/abi-spec.html](https://solidity.readthedocs.io/en/develop/abi-spec.html). Note: Note: Tezos Contracts do not currently store a functional ABI.
 
 
 ## Properties
@@ -56,22 +55,31 @@ Name used to identify the contract. Semi-alphanumeric string.
 | JSON Schema | [abi.spec.json](spec/abi.spec.json) |
 | **required** |
 
+
 External programmatic description of contract's interface. The contract's ABI
 determines the means by which applications may interact with individual contract
 instances. Array of functions and events representing valid inputs and outputs
 for the instance.
 
 
-### `ast`
+### `metadata`
 
-| type | _object_ |
+| type | _string_ |
 | ---: | ---- |
 
-_not included in current version of this specification_
 
-Abstract Syntax Tree. A nested JSON object representation of contract source
-code, as output by compiler.
+Contract metadata. Stringified JSON.
 
+
+### `michelson`
+
+| type | _string_ |
+| ---: | ---- |
+
+
+Tezos instructions that run as part of a contract origination transaction.
+Constructor code for a new Tezos contract instance.
+Stringified array of JSON.
 
 
 ### `bytecode`
@@ -87,7 +95,6 @@ Specified as a hexadecimal string, may include `__`-prefixed (double underscore)
 link references.
 
 
-
 ### `deployedBytecode`
 
 | type | _string_ matching pattern `^0x0$\|^0x([a-fA-F0-9]{2}\|__.{38})+$` |
@@ -99,23 +106,6 @@ EVM instruction bytecode associated with contract that specifies behavior for
 incoming transactions/messages. Underlying implementation of ABI.
 Specified as a hexadecimal string, may include `__`-prefixed (double underscore)
 link references.
-
-
-### `source`
-
-| type | _string_ |
-| ---: | ---- |
-
-
-Uncompiled source code for contract. Text string.
-
-
-### `sourcePath`
-
-| type | _string_ |
-| ---: | ---- |
-
-File path for uncompiled source code.
 
 
 ### `sourceMap`
@@ -133,8 +123,96 @@ with origin statements in uncompiled `source`.
 | type | _string_ matching pattern `^[0-9;]*` |
 | ---: | ---- |
 
+
 Source mapping for `deployedBytecode`, pairing contract program data bytes
 with origin statements in uncompiled `source`.
+
+
+### `source`
+
+| type | _string_ |
+| ---: | ---- |
+
+
+Uncompiled source code for contract. Text string.
+
+
+### `sourcePath`
+
+| type | _string_ |
+| ---: | ---- |
+
+
+File path for uncompiled source code.
+
+
+### `ast`
+
+| type | _object_ |
+| ---: | ---- |
+
+
+_format not included in current version of this specification_
+
+Abstract Syntax Tree. A nested JSON object representation of contract source
+code, as output by compiler.
+
+
+### `legacyAST`
+
+| type | _object_ |
+| ---: | ---- |
+
+
+_format not included in current version of this specification_
+
+Legacy Abstract Syntax Tree. A nested JSON object representation of contract source
+code, as output by compiler.
+
+
+### `compiler`
+
+| type | _object_ |
+| ---: | ---- |
+
+
+Compiler information.
+
+
+### `name`
+
+| type | string |
+| ---: | ---- |
+
+
+Name of the compiler used.
+
+
+### `version`
+
+| type | string |
+| ---: | ---- |
+
+
+Version of the compiler used.
+
+
+### `networks`
+
+| type | _object_ |
+| ---: | ---- |
+
+
+Listing of contract instances. Object mapping network ID keys to network object
+values. Includes address information, links to other contract instances, and/or
+contract event logs.
+
+
+#### Properties (key matching `^[a-zA-Z0-9]+$`)
+
+| type | _object_ |
+| ---: | ---- |
+| ref | [Network Object](network-object.spec.md) |
 
 
 ### `schemaVersion`
@@ -142,8 +220,8 @@ with origin statements in uncompiled `source`.
 | type | _string_ matching pattern `[0-9]+\.[0-9]+\.[0-9]+` |
 | ---: | ---- |
 
-Version of this schema used by contract object representation.
 
+Version of this schema used by contract object representation.
 
 
 ### `updatedAt`
@@ -157,20 +235,31 @@ Time at which contract object representation was generated/most recently
 updated.
 
 
-### `networks`
+### `networkType`
 
-| type | _object_ |
+| type | string |
 | ---: | ---- |
 
-Listing of contract instances. Object mapping network ID keys to network object
-values. Includes address information, links to other contract instances, and/or
-contract event logs.
 
-#### Properties (key matching `^[a-zA-Z0-9]+$`)
+Specific blockchain network type targeted.
 
-| type | _object_ |
+
+### `devdoc`
+
+| type | string |
 | ---: | ---- |
-| ref | [Network Object](network-object.spec.md) |
+
+
+NatSpec developer documentation of the contract.
+
+
+### `userdoc`
+
+| type | string |
+| ---: | ---- |
+
+
+NatSpec user documentation of the contract.
 
 
 ## Custom Properties
@@ -180,20 +269,19 @@ contract event logs.
 | type | _string or number or object or array_ |
 | ---: | ---- |
 
+
 Objects following this schema may include additional properties with
 `x-`-prefixed keys.
 
 
-
 ## Definitions
-
-
 
 
 ### <a name="contract-object--bytecode">Bytecode</a>
 
 | type | _string_ matching pattern `^0x0$\|^0x([a-fA-F0-9]{2}\|__.{38})+$` |
 | ---: | ---- |
+
 
 `0x`-prefixed string representing compiled EVM machine language.
 
