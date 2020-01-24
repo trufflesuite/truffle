@@ -230,6 +230,7 @@ updated.
 
 | type | string |
 | ---: | ---- |
+| default | `"ethereum"` |
 
 
 Specific blockchain network type targeted.
