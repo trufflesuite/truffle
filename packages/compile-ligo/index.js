@@ -13,7 +13,7 @@ const compiler = {
   version: "next"
 };
 
-const LIGO_PATTERN = "**/*.{ligo,mligo}";
+const LIGO_PATTERN = "**/*.{ligo,mligo,religo}";
 
 // -------- Pass Common helpers --------
 
