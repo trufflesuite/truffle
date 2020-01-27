@@ -40,6 +40,24 @@ const sanitizedValue = dirtyValueArray => {
   return sanitizedValueArray;
 };
 
+// filter `signature` property from an event
+const sanitizeEvent = dirtyEvent =>
+  Object.entries(dirtyEvent).reduce(
+    (acc, [property, value]) =>
+      property === "signature"
+        ? acc
+        : Object.assign(acc, { [property]: value }),
+    {}
+  );
+
+// sanitize aggregrate events given a `network-object.spec.json#events` object
+const sanitizeAllEvents = dirtyEvents =>
+  Object.entries(dirtyEvents).reduce(
+    (acc, [property, event]) =>
+      Object.assign(acc, { [property]: sanitizeEvent(event) }),
+    {}
+  );
+
 var properties = {
   contractName: {
     sources: ["contractName", "contract_name"]
@@ -117,7 +135,7 @@ var properties = {
         value = {};
       }
       if (obj.network_id && value[obj.network_id]) {
-        value[obj.network_id].events = obj.events;
+        value[obj.network_id].events = sanitizeAllEvents(obj.events);
         value[obj.network_id].links = obj.links;
       }
       return value;
