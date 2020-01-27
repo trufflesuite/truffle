@@ -20,7 +20,7 @@
   },
   "typings": "./typings/index.d.ts",
   "dependencies": {
-    "@taquito/taquito": "5.2.0-beta.1",
+    "@taquito/taquito": "^6.0.0-beta.0",
     "@truffle/blockchain-utils": "^0.0.17",
     "@truffle/contract-schema": "^3.0.22",
     "@truffle/error": "^0.0.8",
