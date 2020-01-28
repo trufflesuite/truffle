@@ -207,7 +207,6 @@ const Test = {
     compilation
   }) {
     global.web3 = interfaceAdapter.web3 ? interfaceAdapter.web3 : undefined;
-    global.tezos = interfaceAdapter.tezos ? interfaceAdapter.tezos : undefined;
     global.assert = chai.assert;
     global.expect = chai.expect;
     global.artifacts = {
