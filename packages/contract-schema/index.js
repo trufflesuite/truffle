@@ -130,14 +130,32 @@ var properties = {
   },
   compiler: {},
   networks: {
-    transform: function(value, obj) {
-      if (value === undefined) {
-        value = {};
+    /**
+     * Normalize a networks object. Currently this makes sure `events` are
+     * always sanitized and `links` is extracted when copying from
+     * a TruffleContract context object.
+     *
+     * @param {object} value - the target object
+     * @param {object | TruffleContract} obj - the context, or source object.
+     * @return {object} The normalized Network object
+     */
+    transform: function(value = {}, obj) {
+      // Sanitize value's events for known networks
+      Object.keys(value).forEach(networkId => {
+        if (value[networkId].events) {
+          value[networkId].events = sanitizeAllEvents(value[networkId].events);
+        }
+      });
+
+      // Set and sanitize the current networks property from the
+      // TruffleContract. Note: obj is a TruffleContract if it has
+      // `network_id` attribute
+      const networkId = obj.network_id;
+      if (networkId && value.hasOwnProperty(networkId)) {
+        value[networkId].links = obj.links;
+        value[networkId].events = sanitizeAllEvents(obj.events);
       }
-      if (obj.network_id && value[obj.network_id]) {
-        value[obj.network_id].events = sanitizeAllEvents(obj.events);
-        value[obj.network_id].links = obj.links;
-      }
+
       return value;
     }
   },
