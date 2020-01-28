@@ -230,8 +230,21 @@ module.exports = Contract => ({
   async storageSchema() {
     const { tezos } = this.interfaceAdapter;
     if (tezos) {
-      const contract = await tezos.contract.at(this.address);
-      return contract.schema.ExtractSchema();
+      let schema;
+      const { Schema } = require("@taquito/michelson-encoder");
+
+      try {
+        schema = new Schema(JSON.parse(this.code)[1].args[0]);
+      } catch (error) {
+        if (error instanceof SyntaxError) {
+          throw new Error(
+            `Problem parsing artifact: ${this.contractName}.code.`
+          );
+        }
+        throw error;
+      }
+
+      return schema.ExtractSchema();
     }
     throw new Error("Method only available for Tezos contract abstractions");
   },
