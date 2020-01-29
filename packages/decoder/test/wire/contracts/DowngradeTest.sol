@@ -1,7 +1,11 @@
-pragma solidity ^0.5.11;
+pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
 
-contract DowngradeTest {
+contract DowngradeTestParent {
+  event Inherited();
+}
+
+contract DowngradeTest is DowngradeTestParent {
 
   //structs; enums; contracts; address payable; functions
 
@@ -23,7 +27,7 @@ contract DowngradeTest {
     Up, Down, HalfwayUp
   }
 
-  function() external payable {
+  fallback() external {
   }
 
   function() external doYouSeeMe = this.causeTrouble;
@@ -58,6 +62,10 @@ contract DowngradeTest {
   function decoy() public { //here to make the additionalContexts test harder
     DecoyLibrary.decoy();
     emit Done();
+  }
+
+  function emitParent() public {
+    emit Inherited();
   }
 }
 

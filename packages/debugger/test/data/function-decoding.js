@@ -12,7 +12,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __EXTERNALS = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract ExternalsTester {
 
@@ -52,13 +52,13 @@ contract ExternalsDerived is ExternalsBase {
 `;
 
 const __INTERNALS = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract InternalsBase {
 
   event Log(uint);
 
-  function inherited() public {
+  function inherited() public virtual {
     emit Log(0);
   }
 }
@@ -74,7 +74,7 @@ library InternalsLib {
 
 contract InternalsTest is InternalsBase {
 
-  function inherited() public {
+  function inherited() public override {
     emit Log(1);
   }
 

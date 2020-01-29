@@ -136,6 +136,7 @@ function* fetchTx(txHash) {
 
   debug("sending initial call");
   yield* evm.begin(result);
+  yield* solidity.begin(); //note: these must occur in this order
 }
 
 function* recordContexts(...contexts) {
@@ -172,7 +173,7 @@ function* error(err) {
 export function* unload() {
   debug("unloading");
   yield* data.reset();
-  yield* solidity.reset();
+  yield* solidity.unload();
   yield* evm.unload();
   yield* trace.unload();
   yield put(actions.unloadTransaction());

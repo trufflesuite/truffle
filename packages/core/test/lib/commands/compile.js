@@ -1,19 +1,18 @@
-var assert = require("chai").assert;
-var Box = require("@truffle/box");
-var Contracts = require("@truffle/workflow-compile");
-var Artifactor = require("@truffle/artifactor");
-var Resolver = require("@truffle/resolver");
-var MemoryStream = require("memorystream");
-var command = require("../../../lib/commands/compile");
-var path = require("path");
-var fs = require("fs-extra");
-var glob = require("glob");
+const assert = require("chai").assert;
+const Box = require("@truffle/box");
+const Contracts = require("@truffle/workflow-compile");
+const Artifactor = require("@truffle/artifactor");
+const Resolver = require("@truffle/resolver");
+const MemoryStream = require("memorystream");
+const command = require("../../../lib/commands/compile");
+const path = require("path");
+const fs = require("fs-extra");
+const glob = require("glob");
+let config;
+let output = "";
+let memStream;
 
 describe("compile", function() {
-  var config;
-  var output = "";
-  var memStream;
-
   before("Create a sandbox", async () => {
     config = await Box.sandbox("default");
     config.resolver = new Resolver(config);

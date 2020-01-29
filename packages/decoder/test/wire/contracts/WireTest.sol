@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
 
 contract WireTestParent {
@@ -10,12 +10,38 @@ contract WireTestParent {
   }
 
   //no constructor
+
+  event Overridden(uint);
 }
 
-contract WireTest is WireTestParent {
+abstract contract WireTestAbstract {
+  event AbstractEvent();
+
+  event AbstractOverridden(uint indexed);
+
+  function danger() public virtual;
+}
+
+struct GlobalStruct {
+  uint x;
+  uint y;
+}
+
+enum GlobalEnum {
+  No, Yes
+}
+
+contract WireTest is WireTestParent, WireTestAbstract {
+
+  function notImplemented() public {
+    emit Done();
+  } //just a dummy function, not 
+
   constructor(bool status, bytes memory info, Ternary whoknows) public {
-    deepStruct["blornst"].length = 9;
-    deepString.length = 9;
+    deepStruct["blornst"].push();
+    deepStruct["blornst"].push();
+    deepString.push();
+    deepString.push();
     emit ConstructorEvent(status, info, whoknows);
   }
 
@@ -53,9 +79,15 @@ contract WireTest is WireTestParent {
     emit MoreStuff(notThis, bunchOfInts);
   }
 
+  event Globals(GlobalStruct, GlobalEnum);
+
+  function globalTest(GlobalStruct memory s, GlobalEnum e) public {
+    emit Globals(s, e);
+  }
+
   event Danger(function() external);
 
-  function danger() public {
+  function danger() public override {
     emit Danger(this.danger);
   }
 
@@ -131,6 +163,17 @@ contract WireTest is WireTestParent {
 
   mapping(string => Triple[]) public deepStruct;
   mapping(string => string)[] public deepString;
+
+  event Overridden(uint indexed);
+  event AbstractOverridden(uint);
+
+  function interfaceAndOverrideTest() public {
+    emit AbstractEvent();
+    emit AbstractOverridden(107);
+    emit WireTestAbstract.AbstractOverridden(683);
+    emit Overridden(107);
+    emit WireTestParent.Overridden(683);
+  }
 }
 
 library WireTestLibrary {

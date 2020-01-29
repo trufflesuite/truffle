@@ -32,7 +32,7 @@ GlobalNPM.prototype.require = function(import_path) {
   }
 };
 
-GlobalNPM.prototype.resolve = function(import_path, imported_from, callback) {
+GlobalNPM.prototype.resolve = async function(import_path, imported_from) {
   let [package_name] = import_path.split("/", 1);
   let body;
   if (detectInstalled.sync(package_name)) {
@@ -47,7 +47,7 @@ GlobalNPM.prototype.resolve = function(import_path, imported_from, callback) {
   }
 
   // If nothing's found, body returns `undefined`
-  return callback(null, body, import_path);
+  return { body, filePath: import_path };
 };
 
 // We're resolving package paths to other package paths, not absolute paths.

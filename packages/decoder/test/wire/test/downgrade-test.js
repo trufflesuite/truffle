@@ -3,11 +3,13 @@ const assert = require("chai").assert;
 const Big = require("big.js");
 const clonedeep = require("lodash.clonedeep");
 
-const Decoder = require("../..");
-const Codec = require("../../../codec");
+const Decoder = require("../../..");
+const Codec = require("../../../../codec");
 
 const DowngradeTestUnmodified = artifacts.require("DowngradeTest");
+const DowngradeTestParent = artifacts.require("DowngradeTestParent");
 const DecoyLibrary = artifacts.require("DecoyLibrary");
+const OtherContracts = [DowngradeTestParent, DecoyLibrary];
 
 //verify the decoding for run
 function verifyAbiDecoding(decoding, address) {
@@ -78,7 +80,7 @@ async function runTestBody(
 ) {
   let decoder = await Decoder.forProject(
     web3.currentProvider,
-    [DowngradeTest._json, DecoyLibrary] //HACK: because we've clonedeep'd DowngradeTest,
+    [DowngradeTest._json, ...OtherContracts] //HACK: because we've clonedeep'd DowngradeTest,
     //we need to pass in its _json rather than it itself (its getters have been stripped off)
   );
   let deployedContract = await DowngradeTest.new();
@@ -192,7 +194,7 @@ contract("DowngradeTest", function(accounts) {
     //...and now let's set up a decoder for our hacked-up contract artifact.
     let decoder = await Decoder.forProject(
       web3.currentProvider,
-      [DowngradeTest._json, DecoyLibrary] //HACK: see clonedeep note above
+      [DowngradeTest._json, ...OtherContracts] //HACK: see clonedeep note above
     );
 
     //the ethers encoder can't yet handle fixed-point
@@ -248,12 +250,40 @@ contract("DowngradeTest", function(accounts) {
     assert(txDecoding.arguments[0].value.value.asBig.eq(tau));
   });
 
+  it("Correctly decodes inherited events when no node", async function() {
+    //HACK
+    let DowngradeTest = clonedeep(DowngradeTestUnmodified);
+    DowngradeTest._json.ast = undefined;
+
+    //...and now let's set up a decoder for our hacked-up contract artifact.
+    let decoder = await Decoder.forProject(
+      web3.currentProvider,
+      [DowngradeTest._json, ...OtherContracts] //HACK: see clonedeep note above
+    );
+
+    let deployedContract = await DowngradeTest.new();
+
+    let result = await deployedContract.emitParent();
+    let resultLog = result.receipt.rawLogs[0];
+
+    let logDecodings = await decoder.decodeLog(resultLog);
+
+    //now let's check the results!
+    assert.lengthOf(logDecodings, 1);
+    assert.strictEqual(logDecodings[0].kind, "event");
+    assert.strictEqual(logDecodings[0].decodingMode, "abi");
+    assert.strictEqual(logDecodings[0].abi.name, "Inherited");
+    assert.strictEqual(logDecodings[0].class.typeName, "DowngradeTest");
+    assert.isUndefined(logDecodings[0].definedIn);
+    assert.isEmpty(logDecodings[0].arguments);
+  });
+
   describe("Out-of-range enums", function() {
     it("Doesn't include out-of-range enums in full mode", async function() {
       let DowngradeTest = DowngradeTestUnmodified;
       let decoder = await Decoder.forProject(
         web3.currentProvider,
-        [DowngradeTest._json, DecoyLibrary] //not strictly necessary here, but see clonedeep comment above
+        [DowngradeTest._json, ...OtherContracts] //not strictly necessary here, but see clonedeep comment above
       );
       let deployedContract = await DowngradeTest.new();
 
@@ -319,7 +349,7 @@ contract("DowngradeTest", function(accounts) {
     let address = deployedContract.address;
     let decoder = await Decoder.forContractInstance(
       deployedContract,
-      [DowngradeTest._json, DecoyLibrary] //HACK: because we've clonedeep'd DowngradeTest,
+      [DowngradeTest._json, ...OtherContracts] //HACK: because we've clonedeep'd DowngradeTest,
       //we need to pass in its _json rather than it itself (its getters have been stripped off)
     );
 
@@ -346,7 +376,7 @@ contract("DowngradeTest", function(accounts) {
 async function runEnumTestBody(DowngradeTest) {
   let decoder = await Decoder.forProject(
     web3.currentProvider,
-    [DowngradeTest._json, DecoyLibrary] //HACK: see clonedeep comment above
+    [DowngradeTest._json, ...OtherContracts] //HACK: see clonedeep comment above
   );
   let deployedContract = await DowngradeTest.new();
 

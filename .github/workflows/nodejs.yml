@@ -30,7 +30,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm install -g yarn lerna
+    - run: npm install -g yarn
     - run: yarn bootstrap
     - run: ${{ matrix.env }} yarn ci
       env:

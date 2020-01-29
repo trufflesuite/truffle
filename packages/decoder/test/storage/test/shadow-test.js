@@ -1,8 +1,8 @@
 const debug = require("debug")("decoder:test:shadow-test");
 const assert = require("chai").assert;
 
-const Decoder = require("../..");
-const Codec = require("../../../codec");
+const Decoder = require("../../..");
+const Codec = require("../../../../codec");
 
 const ShadowBase = artifacts.require("ShadowBase");
 const ShadowDerived = artifacts.require("ShadowDerived");

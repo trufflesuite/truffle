@@ -1,4 +1,3 @@
-const Mocha = require("mocha");
 const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
@@ -17,6 +16,9 @@ const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
+const debug = require("debug")("lib:test");
+
+let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
 chai.use(require("./assertions"));
 
@@ -149,9 +151,15 @@ const Test = {
     if (config.colors != null) mochaConfig.useColors = config.colors;
 
     // Default to true if configuration isn't set anywhere.
-    if (mochaConfig.useColors == null) mochaConfig.useColors = true;
+    if (mochaConfig.useColors == null) {
+      mochaConfig.useColors = true;
+    }
 
-    return new Mocha(mochaConfig);
+    Mocha = mochaConfig.package || require("mocha");
+    delete mochaConfig.package;
+    const mocha = new Mocha(mochaConfig);
+
+    return mocha;
   },
 
   getAccounts: function(interfaceAdapter) {
@@ -195,9 +203,10 @@ const Test = {
   },
 
   defineSolidityTests: async (mocha, contracts, dependencyPaths, runner) => {
-    contracts.forEach(contract => {
-      SolidityTest.define(contract, dependencyPaths, runner, mocha);
-    });
+    for (const contract of contracts) {
+      await SolidityTest.define(contract, dependencyPaths, runner, mocha);
+      debug("defined solidity tests for %s", contract.contractName);
+    }
   },
 
   setJSTestGlobals: async function({
@@ -241,17 +250,17 @@ const Test = {
     const template = function(tests) {
       this.timeout(runner.TEST_TIMEOUT);
 
-      before("prepare suite", function(done) {
+      before("prepare suite", async function() {
         this.timeout(runner.BEFORE_TIMEOUT);
-        runner.initialize(done);
+        await runner.initialize();
       });
 
-      beforeEach("before test", function(done) {
-        runner.startTest(this, done);
+      beforeEach("before test", async function() {
+        await runner.startTest();
       });
 
-      afterEach("after test", function(done) {
-        runner.endTest(this, done);
+      afterEach("after test", async function() {
+        await runner.endTest(this);
       });
 
       tests(accounts);
