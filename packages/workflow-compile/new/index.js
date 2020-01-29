@@ -60,30 +60,50 @@ async function compile(config) {
     {}
   );
 
+  const [compilerUsed] = Object.values(compilations)
+    .map(({ compilerInfo }) => compilerInfo)
+    .filter(compilerInfo => compilerInfo);
+
   const contracts = Object.values(compilations)
     .map(({ contracts }) => contracts)
     .reduce((a, b) => [...a, ...b], []);
 
-  return { contracts, compilations };
+  return { contracts, compilations, compilerUsed };
 }
 
 const Contracts = {
   async compile(options) {
     const config = prepareConfig(options);
-    reportCompilationStarted(config);
 
-    const { contracts, compilations } = await compile(config);
+    if (config.events) config.events.emit("compile:start");
 
-    if (contracts.length === 0) {
-      reportNothingToCompile(config);
+    const { contracts, compilations, compilerUsed } = await compile(config);
+
+    if (compilerUsed) {
+      config.compilersInfo[compilerUsed.name] = {
+        version: compilerUsed.version
+      };
     }
 
-    reportCompilationFinished(config);
+    if (contracts.length === 0 && config.events) {
+      config.events.emit("compile:nothingToCompile");
+    }
+
+    if (config.events) {
+      config.events.emit("compile:succeed", {
+        contractsBuildDirectory: config.contracts_build_directory,
+        compilersInfo: config.compilersInfo
+      });
+    }
     return {
       contracts,
       compilations
     };
   },
+
+  reportCompilationStarted,
+  reportCompilationFinished,
+  reportNothingToCompile,
 
   async save(options, contracts) {
     const config = prepareConfig(options);

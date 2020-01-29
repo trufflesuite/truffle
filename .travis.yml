@@ -73,7 +73,6 @@ jobs:
       - os: windows
       - env: COVERAGE=true
 
-
 cache:
   directories:
     - node_modules

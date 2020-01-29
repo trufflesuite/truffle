@@ -1,4 +1,3 @@
-const Mocha = require("mocha");
 const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
@@ -18,6 +17,8 @@ const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
 const debug = require("debug")("lib:test");
+
+let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
 chai.use(require("./assertions"));
 
@@ -150,9 +151,15 @@ const Test = {
     if (config.colors != null) mochaConfig.useColors = config.colors;
 
     // Default to true if configuration isn't set anywhere.
-    if (mochaConfig.useColors == null) mochaConfig.useColors = true;
+    if (mochaConfig.useColors == null) {
+      mochaConfig.useColors = true;
+    }
 
-    return new Mocha(mochaConfig);
+    Mocha = mochaConfig.package || require("mocha");
+    delete mochaConfig.package;
+    const mocha = new Mocha(mochaConfig);
+
+    return mocha;
   },
 
   getAccounts: function(interfaceAdapter) {
