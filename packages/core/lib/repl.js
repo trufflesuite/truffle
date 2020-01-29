@@ -69,7 +69,7 @@ ReplManager.prototype.start = function(options) {
 
   // Bubble the internal repl's reset event
   this.repl.on("reset", function() {
-    process.stdout.write('\u001B[2J\u001B[0;0f');
+    process.stdout.write("\u001B[2J\u001B[0;0f");
     self.emit("reset");
   });
 

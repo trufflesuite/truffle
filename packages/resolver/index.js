@@ -46,7 +46,8 @@ Resolver.prototype.resolve = function(import_path, imported_from, callback) {
     },
     function(next) {
       source = self.sources[current_index];
-      source.resolve(import_path, imported_from)
+      source
+        .resolve(import_path, imported_from)
         .then(result => {
           if (result.body) {
             resolved_body = result.body;
