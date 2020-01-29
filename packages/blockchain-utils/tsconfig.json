@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": ["es2017"],
+    "paths": {
+      "web3": [
+        "../../node_modules/@types/web3/index",
+        "node_modules/web3/index"
+      ]
+    },
+    "rootDir": ".",
+    "typeRoots": [
+      "./typings",
+      "../../node_modules/@types/mocha",
+      "../../node_modules/@types/web3",
+      "../../node_modules/@types/assert"
+    ]
+  },
+  "include": [
+    "./**/*.ts",
+    "./typings/**/*.d.ts"
+  ]
+}

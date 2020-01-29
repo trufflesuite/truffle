@@ -1,0 +1,42 @@
+{
+  "name": "@truffle/contract-schema",
+  "description": "JSON schema for contract artifacts",
+  "license": "MIT",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/contract-schema#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/contract-schema",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "3.0.22",
+  "main": "index.js",
+  "directories": {
+    "spec": "./spec"
+  },
+  "scripts": {
+    "build": "sh ./scripts/generate-declarations",
+    "prepare": "yarn run build",
+    "test": "mocha"
+  },
+  "typings": "./typings/index.d.ts",
+  "dependencies": {
+    "ajv": "^6.10.0",
+    "crypto-js": "^3.1.9-1",
+    "debug": "^4.1.0"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "^5.5.0",
+    "mocha": "5.2.0",
+    "solc": "0.5.16"
+  },
+  "keywords": [
+    "artifacts",
+    "contract",
+    "ethereum",
+    "json",
+    "schema"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@truffle/contract-sources",
+  "version": "0.1.7",
+  "description": "Utility for finding all contracts within a directory",
+  "main": "index.js",
+  "scripts": {},
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/contract-sources",
+  "keywords": [
+    "ethereum",
+    "contracts",
+    "find",
+    "filesystem"
+  ],
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/contract-sources#readme",
+  "dependencies": {
+    "debug": "^4.1.0",
+    "glob": "^7.1.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

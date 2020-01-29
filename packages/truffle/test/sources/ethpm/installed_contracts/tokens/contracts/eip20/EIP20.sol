@@ -1,7 +1,7 @@
 /*
 Implements EIP20 token standard: https://github.com/ethereum/EIPs/issues/20
 .*/
-pragma solidity ^0.4.8;
+pragma solidity ^0.5.0;
 
 import "./EIP20Interface.sol";
 
@@ -19,7 +19,7 @@ contract EIP20 is EIP20Interface {
     uint8 public decimals;                //How many decimals to show.
     string public symbol;                 //An identifier: eg SBX
 
-     function EIP20(
+     constructor(
         uint256 _initialAmount,
         string _tokenName,
         uint8 _decimalUnits,

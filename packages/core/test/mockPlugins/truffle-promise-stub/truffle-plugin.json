@@ -1,0 +1,5 @@
+{
+  "commands": {
+    "promise-stub": "index.js"
+  }
+}

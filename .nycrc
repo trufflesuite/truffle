@@ -1,0 +1,15 @@
+{
+  "all": true,
+  "reporter": "lcovonly",
+  "exclude": [
+    "**/node_modules/**",
+    "**/.tmp",
+    "**/scripts/**",
+    "**/test/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/webpack",
+    "**/*webpack.config*",
+    "notes/"
+  ]
+}

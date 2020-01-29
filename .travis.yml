@@ -1,38 +1,49 @@
-dist: trusty
+dist: xenial
 sudo: required
 language: node_js
 
-services:
-  - docker
+# configure Travis to run on-push builds only on PR-recipient branches
+branches:
+  only:
+    # long-lived branches
+    - master
+    - develop
+    - next
+
+    # other targets
+    - truffle-db
 
 before_install:
-  - docker pull ethereum/client-go:latest
+  - npm install -g yarn
 
 matrix:
   fast_finish: true
   include:
     - node_js: 8
-      env: GETH=true
+      env: FABRICEVM=true
     - node_js: 8
-      env: PACKAGES=true
-    - node_js: 8
-      env: INTEGRATION=true
-    - node_js: 6
-      env: INTEGRATION=true
+      env: COVERAGE=true
+    - if: |
+        branch = develop AND \
+        type = push
+      node_js: 10
+      env: COLONY=true
   allow_failures:
     - node_js: 8
-      env: GETH=true
-    - node_js: 6
-      env: INTEGRATION=true
-
+      env: COVERAGE=true
 
 install:
-  - npm install -g lerna
-  - npm install -g yarn
-  - npm run bootstrap
+  - yarn bootstrap
+  - truffle obtain --solc=0.5.16
+
+cache:
+  directories:
+    - node_modules
+    - $(npm config get prefix)/lib/node_modules # globally installed stuff (i.e. lerna)
+    - ~/.config/truffle/compilers
 
 script:
-  - npm run ci
+  - yarn ci
 
 notifications:
   slack:

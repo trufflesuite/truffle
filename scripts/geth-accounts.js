@@ -25,7 +25,7 @@ function unlockAccounts() {
 function setupDevNode() {
   // keep accounts unlocked
   while (true) {
-      unlockAccounts()
+      unlockAccounts();
   }
 }
 

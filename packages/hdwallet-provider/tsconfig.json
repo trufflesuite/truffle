@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "noImplicitAny": true,
+    "declaration": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "lib": [
+      "es2017"
+    ],
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "typings/*"
+      ]
+    },
+    "typeRoots": [
+      "./typings",
+      "../../node_modules/@types/mocha"
+    ]
+  },
+  "include": [
+    "./src/**/*.ts",
+    "./typings/**/*.d.ts"
+  ]
+}

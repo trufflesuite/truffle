@@ -1,0 +1,63 @@
+# Configuration for probot-stale - https://github.com/probot/stale
+
+# Number of days of inactivity before an Issue or Pull Request becomes stale
+daysUntilStale: 120
+
+# Number of days of inactivity before an Issue or Pull Request with the stale label is closed.
+# Set to false to disable. If disabled, issues still need to be closed manually, but will remain marked as stale.
+daysUntilClose: 14
+
+# Issues or Pull Requests with these labels will never be considered stale. Set to `[]` to disable
+exemptLabels:
+  - bug
+  - enhancement
+  - "in progress"
+  - Infrastructure
+  - Next
+  - optimization
+  - "needs roadmapped"
+
+# Set to true to ignore issues with an assignee (defaults to false)
+exemptAssignees: true  
+
+# Set to true to ignore issues in a project (defaults to false)
+exemptProjects: false
+
+# Set to true to ignore issues in a milestone (defaults to false)
+exemptMilestones: false
+
+# Label to use when marking as stale
+staleLabel: stale
+
+# Comment to post when marking as stale. Set to `false` to disable
+markComment: >
+  Thank you for raising this issue! It has been automatically marked as stale because it has not had
+  recent activity. It will be closed in 7 days if no further activity occurs. If you would like to keep this issue open,
+  please respond with information about the current state of this problem.
+
+# Comment to post when removing the stale label.
+unmarkComment: >
+  Thanks for your response! This issue is no longer considered stale and someone from the Truffle team will try to respond as soon as they can.
+
+# Comment to post when closing a stale Issue or Pull Request.
+closeComment: >
+  There has been no new activity on this issue since it was marked as stale 7 days ago, so it is being automatically closed. 
+  If you'd like help with this or a different problem, please open a new issue. Thanks!
+
+# Limit the number of actions per hour, from 1-30. Default is 30
+limitPerRun: 30
+
+# Limit to only `issues` or `pulls`
+only: issues
+
+# Optionally, specify configuration settings that are specific to just 'issues' or 'pulls':
+# pulls:
+#   daysUntilStale: 30
+#   markComment: >
+#     This pull request has been automatically marked as stale because it has not had
+#     recent activity. It will be closed if no further activity occurs. Thank you
+#     for your contributions.
+
+# issues:
+#   exemptLabels:
+#     - confirmed

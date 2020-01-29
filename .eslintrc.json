@@ -1,0 +1,21 @@
+{
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 9,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "debug" }
+    ],
+    "quote-props": [ "error", "consistent" ],
+    "semi": [ "error", "always" ],
+    "no-mixed-operators": "warn",
+    "no-tabs": "warn",
+    "no-useless-escape": "warn"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "@truffle/blockchain-utils",
+  "description": "Utilities for identifying and managing blockchains",
+  "license": "MIT",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/blockchain-utils#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/blockchain-utils",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.0.17",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
+  },
+  "types": "./typings/index.d.ts",
+  "devDependencies": {
+    "@types/assert": "^1.4.2",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^12.12.5",
+    "@types/web3": "1.0.19",
+    "mocha": "5.2.0",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.6.3"
+  },
+  "keywords": [
+    "blockchain",
+    "ethereum",
+    "truffle"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

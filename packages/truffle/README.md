@@ -1,4 +1,4 @@
-<img src="http://truffleframework.com/docs/img/logo.png" width="200">
+<img src="https://truffleframework.com/img/truffle-logo-dark.svg" width="200">
 
 [![npm](https://img.shields.io/npm/v/truffle.svg)]()
 [![npm](https://img.shields.io/npm/dm/truffle.svg)]()
@@ -34,7 +34,7 @@ $ truffle init
 
 From there, you can run `truffle compile`, `truffle migrate` and `truffle test` to compile your contracts, deploy those contracts to the network, and run their associated unit tests.
 
-Truffle comes bundled with a local development blockchain server that launches automatically when you invoke the commands  above. If you'd like to [configure a more advanced development environment](http://truffleframework.com/docs/advanced/configuration) we recommend you install the blockchain server separately by running `npm install -g ganache-cli` at the command line. 
+Truffle comes bundled with a local development blockchain server that launches automatically when you invoke the commands  above. If you'd like to [configure a more advanced development environment](http://truffleframework.com/docs/advanced/configuration) we recommend you install the blockchain server separately by running `npm install -g ganache-cli` at the command line.
 
 +  [ganache-cli](https://github.com/trufflesuite/ganache-cli): a command-line version of Truffle's blockchain server.
 +  [ganache](http://truffleframework.com/ganache/): A GUI for the server that displays your transaction history and chain state.
@@ -46,7 +46,7 @@ Please see the [Official Truffle Documentation](http://truffleframework.com/docs
 
 ### Contributing
 
-This package is a distribution package of the Truffle command line tool. Please see [truffle-core](https://github.com/trufflesuite/truffle-core) to contribute to the main core code.
+This package is a distribution package of the Truffle command line tool. Please see [@truffle/core](https://github.com/trufflesuite/truffle/tree/develop/packages/core) to contribute to the main core code.
 
 ### License
 

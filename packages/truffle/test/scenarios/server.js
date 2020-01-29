@@ -1,14 +1,14 @@
-var TestRPC = require("ganache-cli");
-var fs = require('fs-extra');
-var glob = require('glob');
+var Ganache = require("ganache-core");
+var fs = require("fs-extra");
+var glob = require("glob");
 
 var server = null;
 
 module.exports = {
   start: function(done) {
-    this.stop(function(err) {
-      if (!process.env.GETH){
-        server = TestRPC.server({gasLimit: 6721975});
+    this.stop(function() {
+      if (!process.env.GETH) {
+        server = Ganache.server({ gasLimit: 6721975 });
         server.listen(8545, done);
       } else {
         done();
@@ -18,7 +18,7 @@ module.exports = {
   stop: function(done) {
     var self = this;
     if (server) {
-      server.close(function(err) {
+      server.close(function() {
         server = null;
         self.cleanUp().then(done);
       });
@@ -29,12 +29,12 @@ module.exports = {
 
   cleanUp: function() {
     return new Promise((resolve, reject) => {
-      glob('tmp-*', (err, files) => {
-        if(err) reject(err);
+      glob("tmp-*", (err, files) => {
+        if (err) reject(err);
 
         files.forEach(file => fs.removeSync(file));
         resolve();
-      })
-    })
-  },
-}
+      });
+    });
+  }
+};
