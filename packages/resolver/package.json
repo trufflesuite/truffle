@@ -23,8 +23,11 @@
     "@truffle/contract": "^4.1.6",
     "@truffle/expect": "^0.0.13",
     "@truffle/provisioner": "^0.2.0",
+    "debug": "^4.1.1",
     "detect-installed": "^2.0.4",
-    "get-installed-path": "^4.0.8"
+    "get-installed-path": "^4.0.8",
+    "glob": "^7.1.6",
+    "supports-color": "^7.1.0"
   },
   "devDependencies": {
     "mocha": "5.2.0",
