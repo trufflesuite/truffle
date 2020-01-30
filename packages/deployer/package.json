@@ -14,13 +14,13 @@
     "test": "mocha --no-warnings --timeout 10000 --exit"
   },
   "dependencies": {
-    "@ensdomains/ens": "^0.3.11",
-    "@ensdomains/resolver": "0.1.12",
+    "@ensdomains/ens": "^0.4.0",
+    "@ensdomains/resolver": "^0.2.0",
     "@truffle/contract": "^4.1.6",
     "@truffle/expect": "^0.0.13",
     "emittery": "^0.4.0",
     "eth-ens-namehash": "^2.0.8",
-    "ethereum-ens": "^0.7.7",
+    "ethereum-ens": "^0.8.0",
     "web3-utils": "1.2.2"
   },
   "devDependencies": {

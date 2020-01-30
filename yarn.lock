@@ -112,23 +112,23 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@ensdomains/ens@^0.3.11":
-  version "0.3.11"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ens/-/ens-0.3.11.tgz#3001c76687b2ee36523a234e520ee3b0b6800b89"
-  integrity sha512-XqOWQYqdjZTZQA7vAJty9Bdw5er+K0KGLTkrMDBXuJj5yNSf2oM4cj+dW6RATA4Bwz5cBCH2mjA8EsOxa+8eDA==
+"@ensdomains/ens@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@ensdomains/ens/-/ens-0.4.0.tgz#bca927b4ac81f5da0ab1580a2dfea5289a95357a"
+  integrity sha512-J6/Gc1ttVz//dW/BVl5Wz9tJ0wB2LMSzzbXTJ5rZLQvWMkpN8o3Rukw1EeDA1zmS3IOjOdsmu3wgQkGA7vtGRw==
   dependencies:
     bluebird "^3.5.2"
-    eth-ens-namehash "^1.0.2"
+    eth-ens-namehash "^2.0.8"
     ethereumjs-testrpc "^6.0.3"
     ganache-cli "^6.1.0"
     solc "^0.4.20"
     testrpc "0.0.1"
     web3-utils "^1.0.0-beta.31"
 
-"@ensdomains/resolver@0.1.12":
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/@ensdomains/resolver/-/resolver-0.1.12.tgz#44ca93d6a3c4fa0a4080f2d59496ca5cd011d4e5"
-  integrity sha512-7Fv+KVSH7PBgRmHoWumI18HlI8ePcXp9ojUiY72VQCmmjOVoXDO/cd4ChoeCQIGxfd0TP1XkK3yOnGz22utHMQ==
+"@ensdomains/resolver@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@ensdomains/resolver/-/resolver-0.2.0.tgz#762255d9f9de087bdcbba8516b347cf89650d7f8"
+  integrity sha512-RqwaRgY3WVk6TPoAH7MzGCbyU4iYYrbwLvqnhaNX8lFWXRl/E+hXoNHzz4UQ39Ulrsk5JJL4OxoCbpDdMG/D8g==
 
 "@evocateur/libnpmaccess@^3.1.2":
   version "3.1.2"
@@ -5514,14 +5514,6 @@ eth-ens-namehash@2.0.8, eth-ens-namehash@^2.0.0, eth-ens-namehash@^2.0.8:
     idna-uts46-hx "^2.3.1"
     js-sha3 "^0.5.7"
 
-eth-ens-namehash@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/eth-ens-namehash/-/eth-ens-namehash-1.0.2.tgz#05ecdd6bac2d7fd7bc5ca84a993c6bad9da4edb9"
-  integrity sha1-Bezda6wtf9e8XKhKmTxrrZ2k7bk=
-  dependencies:
-    idna-uts46 "^1.0.1"
-    js-sha3 "^0.5.7"
-
 eth-json-rpc-infura@^3.1.0:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/eth-json-rpc-infura/-/eth-json-rpc-infura-3.2.1.tgz#26702a821067862b72d979c016fd611502c6057f"
@@ -5643,10 +5635,10 @@ ethereum-common@^0.0.18:
   resolved "https://registry.yarnpkg.com/ethereum-common/-/ethereum-common-0.0.18.tgz#2fdc3576f232903358976eb39da783213ff9523f"
   integrity sha1-L9w1dvIykDNYl26znaeDIT/5Uj8=
 
-ethereum-ens@^0.7.7:
-  version "0.7.8"
-  resolved "https://registry.yarnpkg.com/ethereum-ens/-/ethereum-ens-0.7.8.tgz#102874541801507774fef21c9a626fabb1ed0630"
-  integrity sha512-HJBDmF5/abP/IIM6N7rGHmmlQ4yCKIVK4kzT/Mu05+eZn0i5ZlR25LTAE47SVZ7oyTBvOkNJhxhSkWRvjh7srg==
+ethereum-ens@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/ethereum-ens/-/ethereum-ens-0.8.0.tgz#6d0f79acaa61fdbc87d2821779c4e550243d4c57"
+  integrity sha512-a8cBTF4AWw1Q1Y37V1LSCS9pRY4Mh3f8vCg5cbXCCEJ3eno1hbI/+Ccv9SZLISYpqQhaglP3Bxb/34lS4Qf7Bg==
   dependencies:
     bluebird "^3.4.7"
     eth-ens-namehash "^2.0.0"
@@ -7812,13 +7804,6 @@ idna-uts46-hx@^2.3.1:
   integrity sha512-PWoF9Keq6laYdIRwwCdhTPl60xRqAloYNMQLiyUnG42VjT53oW07BXIRM+NK7eQjzXjAk2gUvX9caRxlnF9TAA==
   dependencies:
     punycode "2.1.0"
-
-idna-uts46@^1.0.1:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/idna-uts46/-/idna-uts46-1.1.0.tgz#be098b2b7c1cabfbef87a8b80f626fac37366aea"
-  integrity sha1-vgmLK3wcq/vvh6i4D2JvrDc2auo=
-  dependencies:
-    punycode "^2.1.0"
 
 ieee754@^1.1.4:
   version "1.1.13"
