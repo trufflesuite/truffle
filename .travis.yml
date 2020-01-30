@@ -36,7 +36,7 @@ matrix:
 
 install:
   - yarn bootstrap
-  - truffle obtain --solc=0.5.8
+  - truffle obtain --solc=0.5.16
 
 cache:
   directories:
