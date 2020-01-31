@@ -111,6 +111,7 @@ export function* decodeCalldata(
     };
   }
   let decodingMode: DecodingMode = allocation.allocationMode; //starts out this way, degrades to ABI if necessary
+  debug("calldata decoding mode: %s", decodingMode);
   //you can't map with a generator, so we have to do this map manually
   let decodedArguments: AbiArgument[] = [];
   for (const argumentAllocation of allocation.arguments) {
@@ -130,6 +131,8 @@ export function* decodeCalldata(
         error.allowRetry &&
         decodingMode === "full"
       ) {
+        debug("problem! retrying as ABI");
+        debug("error: %O", error);
         //if a retry happens, we've got to do several things in order to switch to ABI mode:
         //1. mark that we're switching to ABI mode;
         decodingMode = "abi";
