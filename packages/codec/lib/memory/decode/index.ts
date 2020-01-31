@@ -251,7 +251,7 @@ export function* decodeMemoryReferenceByAddress(
           length: memberPointer.length //always equals WORD_SIZE or 0
         };
 
-        let memberName = memberAllocation.definition.name;
+        let memberName = memberAllocation.name;
         let storedType = <Format.Types.StructType>userDefinedTypes[typeId];
         if (!storedType) {
           return <Format.Errors.ErrorResult>{

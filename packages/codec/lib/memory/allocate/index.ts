@@ -1,23 +1,23 @@
 import debugModule from "debug";
 const debug = debugModule("codec:memory:allocate");
 
-import * as Ast from "@truffle/codec/ast";
 import {
   MemoryAllocations,
   MemoryAllocation,
   MemoryMemberAllocation
 } from "./types";
 import * as Evm from "@truffle/codec/evm";
+import * as Format from "@truffle/codec/format";
 
 export { MemoryAllocations, MemoryAllocation, MemoryMemberAllocation };
 
 export function getMemoryAllocations(
-  referenceDeclarations: Ast.AstNodes
+  userDefinedTypes: Format.Types.TypesById
 ): MemoryAllocations {
   let allocations: MemoryAllocations = {};
-  for (const node of Object.values(referenceDeclarations)) {
-    if (node.nodeType === "StructDefinition") {
-      allocations[node.id] = allocateStruct(node);
+  for (const dataType of Object.values(userDefinedTypes)) {
+    if (dataType.typeClass === "struct") {
+      allocations[dataType.id] = allocateStruct(dataType);
     }
   }
   return allocations;
@@ -25,13 +25,14 @@ export function getMemoryAllocations(
 
 //unlike in storage and calldata, we'll just return the one allocation, nothing fancy
 //that's because allocating one struct can never necessitate allocating another
-function allocateStruct(definition: Ast.AstNode): MemoryAllocation {
+function allocateStruct(dataType: Format.Types.StructType): MemoryAllocation {
   let memberAllocations: MemoryMemberAllocation[] = [];
   let position = 0;
-  for (const member of definition.members) {
-    const length = Ast.Utils.isMapping(member) ? 0 : Evm.Utils.WORD_SIZE;
+  for (const { name, type: memberType } of dataType.memberTypes) {
+    const length = memberType.typeClass === "mapping" ? 0 : Evm.Utils.WORD_SIZE;
     memberAllocations.push({
-      definition: member,
+      name,
+      type: memberType,
       pointer: {
         location: "memory",
         start: position,
@@ -42,7 +43,6 @@ function allocateStruct(definition: Ast.AstNode): MemoryAllocation {
   }
 
   return {
-    definition,
     members: memberAllocations
   };
 }
