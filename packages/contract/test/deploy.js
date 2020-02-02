@@ -272,5 +272,41 @@ describe("Deployments", function() {
         "Should have returned a usable contract instance"
       );
     });
+
+    it("should override gateway tx propagation delay err / return a usable instance", async () => {
+      // Mock web3 non-response, fire error @ block 50, resolve receipt @ block 52.
+      const tempSendTransaction = Example.web3.eth.sendTransaction;
+      const tempGetTransactionReceipt = Example.web3.eth.getTransactionReceipt;
+
+      Example.web3.eth.sendTransaction = util.fakeSendTransaction;
+      Example.web3.eth.getTransactionReceipt = util.fakeNoReceipt;
+      Example.timeoutBlocks = 52;
+
+      const example = await Example.new(1).on(
+        "transactionHash",
+        async function() {
+          for (var i = 1; i < 50; i++) {
+            await util.evm_mine();
+          }
+          await util.fakeGatewayDelay();
+          await util.evm_mine();
+          await util.evm_mine();
+          Example.web3.eth.getTransactionReceipt = util.fakeGotReceipt;
+          await util.evm_mine();
+        }
+      );
+
+      // Restore web3
+      Example.web3.eth.sendTransaction = tempSendTransaction;
+      Example.web3.eth.getTransactionReceipt = tempGetTransactionReceipt;
+
+      await example.setValue(77);
+      const newValue = await example.value();
+      assert.equal(
+        newValue,
+        77,
+        "Should have returned a usable contract instance"
+      );
+    }).timeout(50000);
   });
 });
