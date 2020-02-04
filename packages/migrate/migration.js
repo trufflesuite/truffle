@@ -23,13 +23,14 @@ class Migration {
   /**
    * Loads & validates migration, then runs it.
    * @param  {Object}   options  config and command-line
-   * @param  {Object}   context  interfaceAdapter
+   * @param  {Object}   context  migrations script context
    * @param  {Object}   deployer truffle module
    * @param  {Object}   resolver truffle module
+   * @param  {Object}   interfaceAdapter interfaceAdapter
    */
-  async _load(options, context, deployer, resolver) {
+  async _load(options, context, deployer, resolver, interfaceAdapter) {
     // Load assets and run `execute`
-    const accounts = await context.interfaceAdapter.getAccounts(options);
+    const accounts = await interfaceAdapter.getAccounts(options);
     const requireOptions = {
       file: this.file,
       context,
@@ -164,7 +165,7 @@ class Migration {
     };
 
     await this.emitter.emit("preMigrate", preMigrationsData);
-    await this._load(options, context, deployer, resolver);
+    await this._load(options, context, deployer, resolver, interfaceAdapter);
   }
 
   prepareForMigrations(options) {
@@ -182,7 +183,6 @@ class Migration {
     const context = {
       web3: interfaceAdapter.web3 ? interfaceAdapter.web3 : undefined,
       tezos: interfaceAdapter.tezos ? interfaceAdapter.tezos : undefined,
-      interfaceAdapter,
       config: this.config
     };
 
