@@ -33,10 +33,15 @@ const Web3Utils = require("web3-utils");
 export function* decodeVariable(
   definition: Ast.AstNode,
   pointer: Pointer.DataPointer,
-  info: Evm.EvmInfo
+  info: Evm.EvmInfo,
+  compilationId: string
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
-  let dataType = Ast.Import.definitionToType(definition, compiler);
+  let dataType = Ast.Import.definitionToType(
+    definition,
+    compilationId,
+    compiler
+  );
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 

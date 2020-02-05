@@ -1,7 +1,10 @@
 import * as Common from "@truffle/codec/common";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Ast from "@truffle/codec/ast";
-import { StorageAllocations } from "@truffle/codec/storage/allocate/types";
+import {
+  StorageAllocations,
+  StateAllocations
+} from "@truffle/codec/storage/allocate/types";
 import { MemoryAllocations } from "@truffle/codec/memory/allocate/types";
 import {
   AbiAllocations,
@@ -44,6 +47,7 @@ export interface AllocationInfo {
   abi?: AbiAllocations;
   calldata?: CalldataAllocations;
   event?: EventAllocations;
+  state?: StateAllocations;
 }
 
 export interface InternalFunctions {

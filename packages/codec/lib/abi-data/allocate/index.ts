@@ -326,6 +326,7 @@ function allocateCalldataAndReturndata(
   referenceDeclarations: Ast.AstNodes,
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations,
+  compilationId: string,
   compiler: Compiler.CompilerVersion | undefined,
   constructorContext?: Contexts.DecoderContext
 ): CalldataAndReturndataAllocation | undefined {
@@ -426,6 +427,7 @@ function allocateCalldataAndReturndata(
     inputParametersAbi,
     userDefinedTypes,
     abiAllocations,
+    compilationId,
     compiler,
     offset
   );
@@ -437,6 +439,7 @@ function allocateCalldataAndReturndata(
     outputParametersAbi,
     userDefinedTypes,
     abiAllocations,
+    compilationId,
     compiler
     //note no offset
   );
@@ -493,6 +496,7 @@ function allocateDataArguments(
   abiParameters: AbiData.AbiParameter[],
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations,
+  compilationId: string,
   compiler: Compiler.CompilerVersion | undefined,
   offset: number = 0
 ): AbiAllocationAndMode {
@@ -503,7 +507,7 @@ function allocateDataArguments(
     let id = "-1"; //fake ID that doesn't matter
     parameterTypes = fullModeParameters.map(parameter => ({
       name: parameter.name,
-      type: Ast.Import.definitionToType(parameter, compiler) //if node is defined, compiler had also better be!
+      type: Ast.Import.definitionToType(parameter, compilationId, compiler) //if node is defined, compiler had also better be!
     }));
     //now: perform the allocation!
     try {
@@ -554,6 +558,7 @@ function allocateEvent(
   referenceDeclarations: Ast.AstNodes,
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations,
+  compilationId: string,
   compiler: Compiler.CompilerVersion | undefined
 ): EventAllocation | undefined {
   let parameterTypes: EventParameterInfo[];
@@ -627,7 +632,7 @@ function allocateEvent(
     debug("found node");
     //if we found the node, let's also turn it into a type
     definedIn = <Format.Types.ContractType>(
-      Ast.Import.definitionToStoredType(contractNode, compiler)
+      Ast.Import.definitionToStoredType(contractNode, compilationId, compiler)
     ); //can skip 3rd argument here
   } else {
     //if no node, have to fall back into ABI mode
@@ -644,7 +649,7 @@ function allocateEvent(
     let parameters = node.parameters.parameters;
     parameterTypes = parameters.map(definition => ({
       //note: if node is defined, compiler had better be defined, too!
-      type: Ast.Import.definitionToType(definition, compiler),
+      type: Ast.Import.definitionToType(definition, compilationId, compiler),
       name: definition.name,
       indexed: definition.indexed
     }));
@@ -733,6 +738,7 @@ function getCalldataAllocationsForContract(
   referenceDeclarations: Ast.AstNodes,
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations,
+  compilationId: string,
   compiler: Compiler.CompilerVersion
 ): CalldataAllocationTemporary {
   let allocations: CalldataAllocationTemporary = {
@@ -749,6 +755,7 @@ function getCalldataAllocationsForContract(
           referenceDeclarations,
           userDefinedTypes,
           abiAllocations,
+          compilationId,
           compiler,
           constructorContext
         );
@@ -762,6 +769,7 @@ function getCalldataAllocationsForContract(
           referenceDeclarations,
           userDefinedTypes,
           abiAllocations,
+          compilationId,
           compiler,
           constructorContext
         );
@@ -803,7 +811,7 @@ const constructorOutputAllocation: ReturndataAllocation = {
 
 export function getCalldataAllocations(
   contracts: ContractAllocationInfo[],
-  referenceDeclarations: Ast.AstNodes,
+  referenceDeclarations: { [compilation: string]: Ast.AstNodes },
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations
 ): CalldataAllocations {
@@ -816,9 +824,10 @@ export function getCalldataAllocations(
       contract.abi,
       contract.contractNode,
       contract.constructorContext,
-      referenceDeclarations,
+      referenceDeclarations[contract.compilation],
       userDefinedTypes,
       abiAllocations,
+      contract.compilation,
       contract.compiler
     );
     if (contract.constructorContext) {
@@ -839,6 +848,7 @@ function getEventAllocationsForContract(
   referenceDeclarations: Ast.AstNodes,
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations,
+  compilationId: string,
   compiler: Compiler.CompilerVersion | undefined
 ): EventAllocationTemporary[] {
   return abi
@@ -853,6 +863,7 @@ function getEventAllocationsForContract(
         referenceDeclarations,
         userDefinedTypes,
         abiAllocations,
+        compilationId,
         compiler
       )
     }));
@@ -863,7 +874,7 @@ function getEventAllocationsForContract(
 //WARNING: this function is full of hacks... sorry
 export function getEventAllocations(
   contracts: ContractAllocationInfo[],
-  referenceDeclarations: Ast.AstNodes,
+  referenceDeclarations: { [compilation: string]: Ast.AstNodes },
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations
 ): EventAllocations {
@@ -875,6 +886,7 @@ export function getEventAllocations(
         context: Contexts.DecoderContext;
         contractNode: Ast.AstNode;
         allocationTemporary: EventAllocationTemporary;
+        compilation: string;
       };
     };
   } = {};
@@ -889,7 +901,13 @@ export function getEventAllocations(
     };
   } = {};
   let allocations: EventAllocations = {};
-  for (let { abi, deployedContext, contractNode, compiler } of contracts) {
+  for (let {
+    abi,
+    deployedContext,
+    contractNode,
+    compilation,
+    compiler
+  } of contracts) {
     if (!deployedContext && !contractNode) {
       //we'll need *one* of these two at least
       continue;
@@ -900,9 +918,10 @@ export function getEventAllocations(
     let contractAllocations = getEventAllocationsForContract(
       abi,
       contractNode,
-      referenceDeclarations,
+      referenceDeclarations[compilation],
       userDefinedTypes,
       abiAllocations,
+      compilation,
       compiler
     );
     let key = deployedContext
@@ -919,7 +938,8 @@ export function getEventAllocations(
       individualAllocations[key][allocationTemporary.selector] = {
         context: deployedContext,
         contractNode,
-        allocationTemporary
+        allocationTemporary,
+        compilation
       };
     }
   }
@@ -931,7 +951,8 @@ export function getEventAllocations(
       let {
         context,
         contractNode,
-        allocationTemporary
+        allocationTemporary,
+        compilation
       } = individualAllocations[contextOrId][selector];
       let allocationsTemporary = allocationTemporary.allocation
         ? [allocationTemporary]
@@ -949,7 +970,7 @@ export function getEventAllocations(
         linearizedBaseContractsMinusSelf.shift(); //remove contract itself; only want ancestors
         for (let baseId of linearizedBaseContractsMinusSelf) {
           debug("checking base baseId: %d", baseId);
-          let baseNode = referenceDeclarations[baseId];
+          let baseNode = referenceDeclarations[compilation][baseId];
           if (!baseNode) {
             debug("failed to find node for baseId: %d", baseId);
             break; //not a continue!
