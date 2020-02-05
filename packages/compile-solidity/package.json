@@ -4,7 +4,6 @@
   "version": "4.2.19",
   "main": "index.js",
   "dependencies": {
-    "@truffle/compile-common": "^0.2.6-alphaTez.3",
     "@truffle/config": "^1.2.13",
     "@truffle/contract-sources": "^0.1.7",
     "@truffle/error": "^0.0.8",

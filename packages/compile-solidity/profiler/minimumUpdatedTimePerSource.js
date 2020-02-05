@@ -27,4 +27,6 @@ const minimumUpdatedTimePerSource = sourceFilesArtifacts => {
   return sourceFilesArtifactsUpdatedTimes;
 };
 
-module.exports = minimumUpdatedTimePerSource;
+module.exports = {
+  minimumUpdatedTimePerSource
+};

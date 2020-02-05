@@ -10,7 +10,8 @@
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/compile-common": "^0.2.6-alphaTez.3",
+    "@truffle/compile-solidity": "^4.2.19",
+    "@truffle/contract-sources": "^0.1.7",
     "async": "2.6.1",
     "colors": "^1.1.2",
     "minimatch": "^3.0.4"

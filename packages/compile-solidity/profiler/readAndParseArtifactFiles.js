@@ -52,4 +52,6 @@ const readAndParseArtifactFiles = (sourceFiles, contracts_build_directory) => {
   return sourceFilesArtifacts;
 };
 
-module.exports = readAndParseArtifactFiles;
+module.exports = {
+  readAndParseArtifactFiles
+};
