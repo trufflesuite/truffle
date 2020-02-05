@@ -491,7 +491,7 @@ describe("Further Decoding", function() {
     //get offsets of top-level variables for this contract
     //converting to numbers for convenience
     const startingOffsets = Object.values(
-      session.view(data.info.allocations.storage)
+      session.view(data.current.allocations.contracts)
     )
       .find(({ definition }) => definition.name === "ComplexMappingTest")
       .members.map(({ pointer }) => pointer.range.from.slot.offset);

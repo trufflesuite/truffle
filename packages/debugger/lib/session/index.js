@@ -17,18 +17,21 @@ import controllerSelector from "lib/controller/selectors";
 import rootSaga from "./sagas";
 import reducer from "./reducers";
 
+import { extractPrimarySource } from "lib/helpers";
+
+import { shimBytecode } from "@truffle/compile-solidity/legacy/shims";
+
 /**
  * Debugger Session
  */
 export default class Session {
   /**
-   * @param {Array<Contract>} contracts - contract definitions
-   * @param {Array<String>} files - array of filenames for sourceMap indexes
+   * @param {Array<Compilations>} compilations
    * @param {Web3Provider} provider - web3 provider
    * txHash parameter is now optional!
    * @private
    */
-  constructor(contracts, files, provider, txHash) {
+  constructor(compilations, provider, txHash) {
     /**
      * @private
      */
@@ -36,7 +39,7 @@ export default class Session {
     this._store = store;
     this._sagaMiddleware = sagaMiddleware;
 
-    let { contexts, sources } = Session.normalize(contracts, files);
+    let { contexts, sources } = Session.normalize(compilations);
 
     // record contracts
     this._store.dispatch(actions.recordContracts(contexts, sources));
@@ -99,78 +102,135 @@ export default class Session {
    * Multiple contracts can be defined in the same source file, but have
    * different bytecodes.
    *
-   * This iterates over the contracts and collects binaries separately
-   * from sources, using the optional `files` argument to force
-   * source ordering.
+   * (NOTE: now that this takes compilations, the splitting is largely already
+   * done.  However, there's still remaining work to do.)
+   *
    * @private
    */
-  static normalize(contracts, files = null) {
-    let sourcesByPath = {};
+  static normalize(compilations) {
     let contexts = [];
-    let sources;
+    let sources = {}; //by compilation, then index
 
-    for (let contract of contracts) {
-      let {
-        contractName,
-        binary,
-        sourceMap,
-        deployedBinary,
-        deployedSourceMap,
-        sourcePath,
-        source,
-        ast,
-        abi,
-        compiler
-      } = contract;
+    for (let compilation of compilations) {
+      if (compilation.unreliableSourceOrder) {
+        throw new Error(
+          `Error: Compilation ${compilation.id} has unreliable source order.`
+        );
+      }
+      let compiler = compilation.compiler; //note: we'll prefer one listed on contract or source
+      sources[compilation.id] = [];
+      for (let index in compilation.sources) {
+        debug("adding index: %d", index);
+        //not the recommended way to iterate over an array,
+        //but the order doesn't matter here so it's safe
+        let source = compilation.sources[index];
+        if (!source) {
+          continue; //just for safety (in case there are gaps)
+        }
+        sources[compilation.id][index] = {
+          ...source,
+          compiler: source.compiler || compiler,
+          compilation: compilation.id,
+          id: index
+        };
+      }
 
-      let contractNode = ast.nodes.find(
-        node =>
-          node.nodeType === "ContractDefinition" && node.name === contractName
-      ); //ideally we'd hold this off till later, but that would break the
-      //direction of the evm/solidity dependence, so we do it now
-
-      let contractId = contractNode.id;
-      let contractKind = contractNode.contractKind;
-      abi = Codec.AbiData.Utils.schemaAbiToAbi(abi); //let's handle this up front
-
-      debug("contractName %s", contractName);
-      debug("sourceMap %o", sourceMap);
-      debug("compiler %o", compiler);
-      debug("abi %O", abi);
-
-      sourcesByPath[sourcePath] = { sourcePath, source, ast, compiler };
-
-      if (binary && binary != "0x") {
-        contexts.push({
+      debug("sources: %o", sources[compilation.id]);
+      for (let contract of compilation.contracts) {
+        let {
           contractName,
-          binary,
+          bytecode: binary,
           sourceMap,
+          deployedBytecode: deployedBinary,
+          deployedSourceMap,
           abi,
           compiler,
-          contractId,
-          contractKind,
-          isConstructor: true
-        });
-      }
+          primarySourceIndex,
+          primarySourceId
+        } = contract;
 
-      if (deployedBinary && deployedBinary != "0x") {
-        contexts.push({
-          contractName,
-          binary: deployedBinary,
-          sourceMap: deployedSourceMap,
-          abi,
-          compiler,
-          contractId,
-          contractKind,
-          isConstructor: false
-        });
-      }
-    }
+        //hopefully we can get rid of this step eventually, but not yet
+        if (typeof binary === "object") {
+          binary = shimBytecode(binary);
+        }
+        if (typeof deployedBinary === "object") {
+          deployedBinary = shimBytecode(deployedBinary);
+        }
 
-    if (!files) {
-      sources = Object.values(sourcesByPath);
-    } else {
-      sources = files.map(file => sourcesByPath[file]);
+        //now: we need to find the contract node.
+        //to do this, we will attempt to locate the primary source;
+        //if we can't find it, we'll just check every source in this
+        //compilation.
+        //
+        //note: ideally we'd hold this off till later, but that would break the
+        //direction of the evm/solidity dependence, so we do it now
+
+        let sourcesToCheck;
+
+        if (primarySourceIndex !== undefined) {
+          debug("index: %d", primarySourceIndex);
+          sourcesToCheck = [sources[compilation.id][primarySourceIndex]];
+        } else if (primarySourceId !== undefined) {
+          sourcesToCheck = [
+            sources[compilation.id].find(
+              source => source && source.id === primarySourceId
+            )
+          ];
+        } else if (deployedSourceMap || sourceMap) {
+          let sourceId = extractPrimarySource(deployedSourceMap || sourceMap);
+          sourcesToCheck = [sources[compilation.id][sourceId]];
+        } else {
+          sourcesToCheck = sources[compilation.id];
+        }
+
+        let contractNode = sourcesToCheck.reduce((foundNode, source) => {
+          if (foundNode || !source) {
+            return foundNode;
+          }
+          return source.ast.nodes.find(
+            node =>
+              node.nodeType === "ContractDefinition" &&
+              node.name === contractName
+          );
+        }, undefined);
+
+        let contractId = contractNode.id;
+        let contractKind = contractNode.contractKind;
+        abi = Codec.AbiData.Utils.schemaAbiToAbi(abi); //let's handle this up front
+
+        debug("contractName %s", contractName);
+        debug("sourceMap %o", sourceMap);
+        debug("compiler %o", compiler);
+        debug("abi %O", abi);
+
+        if (binary && binary != "0x") {
+          contexts.push({
+            contractName,
+            binary,
+            sourceMap,
+            abi,
+            compiler,
+            compilation: compilation.id,
+            contractId,
+            contractKind,
+            isConstructor: true
+          });
+        }
+
+        if (deployedBinary && deployedBinary != "0x") {
+          contexts.push({
+            contractName,
+            binary: deployedBinary,
+            sourceMap: deployedSourceMap,
+            abi,
+            compiler,
+            compilation: compilation.id,
+            contractId,
+            contractKind,
+            isConstructor: false
+          });
+        }
+      }
     }
 
     return { contexts, sources };
@@ -308,8 +368,14 @@ export default class Session {
   async variable(name) {
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
+    const compilation = this.view(data.current.compilation);
 
-    return await this._runSaga(dataSagas.decode, definitions[name], refs[name]);
+    return await this._runSaga(
+      dataSagas.decode,
+      definitions[name],
+      refs[name],
+      compilation
+    );
   }
 
   async variables() {
@@ -318,13 +384,15 @@ export default class Session {
     }
     let definitions = this.view(data.current.identifiers.definitions);
     let refs = this.view(data.current.identifiers.refs);
+    let compilation = this.view(data.current.compilation);
     let decoded = {};
     for (let [identifier, ref] of Object.entries(refs)) {
       if (identifier in definitions) {
         decoded[identifier] = await this._runSaga(
           dataSagas.decode,
           definitions[identifier],
-          ref
+          ref,
+          compilation
         );
       }
     }

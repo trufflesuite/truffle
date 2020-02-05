@@ -1,6 +1,5 @@
 import debugModule from "debug";
 const debug = debugModule("debugger");
-import expect from "@truffle/expect";
 
 import Session from "./session";
 
@@ -39,18 +38,12 @@ export default class Debugger {
    * Instantiates a Debugger for a given transaction hash.
    *
    * @param {String} txHash - transaction hash with leading "0x"
-   * @param {{contracts: Array<Contract>, files: Array<String>, provider: Web3Provider}} options -
+   * @param provider: Web3Provider
+   * @param compilations: Array<Compilation>
    * @return {Debugger} instance
    */
-  static async forTx(txHash, options = {}) {
-    expect.options(options, ["contracts", "provider"]);
-
-    let session = new Session(
-      options.contracts,
-      options.files,
-      options.provider,
-      txHash
-    );
+  static async forTx(txHash, provider, compilations) {
+    let session = new Session(compilations, provider, txHash);
 
     try {
       await session.ready();
@@ -66,17 +59,12 @@ export default class Debugger {
   /*
    * Instantiates a Debugger for a given project (with no transaction loaded)
    *
-   * @param {{contracts: Array<Contract>, files: Array<String>, provider: Web3Provider}} options -
+   * @param provider: Web3Provider
+   * @param compilations: Array<Compilation>
    * @return {Debugger} instance
    */
-  static async forProject(options = {}) {
-    expect.options(options, ["contracts", "provider"]);
-
-    let session = new Session(
-      options.contracts,
-      options.files,
-      options.provider
-    );
+  static async forProject(provider, compilations) {
+    let session = new Session(compilations, provider);
 
     await session.ready();
 
