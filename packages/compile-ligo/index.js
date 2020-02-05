@@ -87,7 +87,7 @@ function compileAll(options, callback) {
           abi: [], // TEMP!
           sourcePath,
           source: sourceContents,
-          code: compiledContract,
+          michelson: compiledContract,
           compiler
         };
 

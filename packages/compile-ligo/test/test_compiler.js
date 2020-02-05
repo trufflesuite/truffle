@@ -49,8 +49,8 @@ describe("ligo compiler", () => {
         );
 
         assert(
-          /([parameter][storage][code]){1}/.test(contract.code),
-          "Contract code stored improperly, something is wrong!"
+          /([parameter][storage][code]){1}/.test(contract.michelson),
+          "Contract michelson stored improperly, something is wrong!"
         );
 
         assert(

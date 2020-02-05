@@ -48,11 +48,11 @@ module.exports = Contract => ({
     }
 
     if (tezos) {
-      if (!this.code) {
+      if (!this.michelson) {
         throw new Error(
           `${
             this.contractName
-          } error: contract code not set. Can't deploy new instance.\n`
+          } error: contract michelson not set. Can't deploy new instance.\n`
         );
       }
 
@@ -234,11 +234,11 @@ module.exports = Contract => ({
       const { Schema } = require("@taquito/michelson-encoder");
 
       try {
-        schema = new Schema(JSON.parse(this.code)[1].args[0]);
+        schema = new Schema(JSON.parse(this.michelson)[1].args[0]);
       } catch (error) {
         if (error instanceof SyntaxError) {
           throw new Error(
-            `Problem parsing artifact: ${this.contractName}.code.`
+            `Problem parsing artifact: ${this.contractName}.michelson.`
           );
         }
         throw error;
