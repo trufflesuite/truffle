@@ -114,7 +114,8 @@ const Require = {
       const fn = this.file({
         file: options.file,
         context: {
-          web3: interfaceAdapter.web3 ? interfaceAdapter.web3 : undefined
+          web3: interfaceAdapter.web3 ? interfaceAdapter.web3 : undefined,
+          tezos: interfaceAdapter.tezos ? interfaceAdapter.tezos : undefined
         },
         resolver: options.resolver
       });

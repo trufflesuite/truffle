@@ -77,6 +77,9 @@ class Console extends EventEmitter {
           web3: this.interfaceAdapter.web3
             ? this.interfaceAdapter.web3
             : undefined,
+          tezos: this.interfaceAdapter.tezos
+            ? this.interfaceAdapter.tezos
+            : undefined,
           accounts
         },
         interpreter: this.interpret.bind(this),
