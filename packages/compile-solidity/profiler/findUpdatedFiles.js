@@ -38,4 +38,6 @@ const findUpdatedFiles = (
     .filter(file => file);
 };
 
-module.exports = findUpdatedFiles;
+module.exports = {
+  findUpdatedFiles
+};

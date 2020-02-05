@@ -11,7 +11,7 @@ const TestSource = require("./testing/testsource");
 const SolidityTest = require("./testing/soliditytest");
 const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
-const { updatedFiles } = require("@truffle/compile-common");
+const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
 const debug = require("debug")("lib:test");
 
@@ -161,7 +161,7 @@ const Test = {
     testResolver
   ) {
     const updated =
-      (await updatedFiles(config.with({ resolver: testResolver }))) || [];
+      (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
 
     const compileConfig = config.with({
       all: config.compileAll === true,
