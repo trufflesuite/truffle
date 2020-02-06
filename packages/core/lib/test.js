@@ -48,7 +48,7 @@ const Test = {
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
     // Output looks like this during tests: https://gist.github.com/tcoulter/1988349d1ec65ce6b958
     const warn = config.logger.warn;
-    config.logger.warn = message => {
+    config.logger.warn = function(message) {
       if (message === "cannot find event for log") {
         return;
       } else {

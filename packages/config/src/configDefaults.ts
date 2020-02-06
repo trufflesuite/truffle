@@ -56,9 +56,7 @@ export const getInitialConfig = ({
       vyper: {},
       ligo: {}
     },
-    logger: {
-      log() {}
-    }
+    logger: console
   };
 };
 
