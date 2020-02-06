@@ -282,6 +282,7 @@ var DebugUtils = {
   formatBreakpointLocation: function(
     breakpoint,
     here,
+    currentCompilationId,
     currentSourceId,
     sourceNames
   ) {
@@ -294,8 +295,11 @@ var DebugUtils = {
     } else {
       baseMessage = `line ${breakpoint.line + 1}`;
     }
-    if (breakpoint.sourceId !== currentSourceId) {
-      let sourceName = sourceNames[breakpoint.sourceId];
+    if (
+      breakpoint.compilationId !== currentCompilationId ||
+      breakpoint.sourceId !== currentSourceId
+    ) {
+      let sourceName = sourceNames[breakpoint.compilation][breakpoint.sourceId];
       return baseMessage + ` in ${sourceName}`;
     } else {
       return baseMessage;
