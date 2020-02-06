@@ -305,8 +305,7 @@ describe("Further Decoding", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -317,8 +316,7 @@ describe("Further Decoding", function() {
 
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   it("Decodes various reference types correctly", async function() {
@@ -328,11 +326,7 @@ describe("Further Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -374,11 +368,7 @@ describe("Further Decoding", function() {
     let txHash = receipt.tx;
     let address = instance.address;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -420,11 +410,7 @@ describe("Further Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -463,11 +449,7 @@ describe("Further Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -527,11 +509,7 @@ describe("Further Decoding", function() {
     let receipt = await instance.sendTransaction({ data: selector + argument });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -556,11 +534,7 @@ describe("Further Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -586,11 +560,7 @@ describe("Further Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -621,11 +591,7 @@ describe("Further Decoding", function() {
       let receipt = await instance.unsignedTest();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, {
-        provider,
-        files,
-        contracts: artifacts
-      });
+      let bugger = await Debugger.forTx(txHash, provider, compilations);
 
       let session = bugger.connect();
 
@@ -659,11 +625,7 @@ describe("Further Decoding", function() {
       let receipt = await instance.signedTest();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, {
-        provider,
-        files,
-        contracts: artifacts
-      });
+      let bugger = await Debugger.forTx(txHash, provider, compilations);
 
       let session = bugger.connect();
 
@@ -697,11 +659,7 @@ describe("Further Decoding", function() {
       let receipt = await instance.rawTest();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, {
-        provider,
-        files,
-        contracts: artifacts
-      });
+      let bugger = await Debugger.forTx(txHash, provider, compilations);
 
       let session = bugger.connect();
 

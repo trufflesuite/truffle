@@ -73,10 +73,10 @@ var DebugUtils = {
       source: contract.source,
       sourceMap: contract.sourceMap,
       sourcePath: contract.sourcePath,
-      binary: contract.binary,
+      bytecode: contract.bytecode,
       abi: contract.abi,
       ast: contract.ast,
-      deployedBinary: contract.deployedBinary,
+      deployedBytecode: contract.deployedBytecode,
       deployedSourceMap: contract.deployedSourceMap,
       compiler: contract.compiler
     }));
@@ -624,9 +624,8 @@ var DebugUtils = {
   cleanThis: function(variables, replacement) {
     return Object.assign(
       {},
-      ...Object.entries(variables).map(
-        ([variable, value]) =>
-          variable === "this" ? { [replacement]: value } : { [variable]: value }
+      ...Object.entries(variables).map(([variable, value]) =>
+        variable === "this" ? { [replacement]: value } : { [variable]: value }
       )
     );
   }

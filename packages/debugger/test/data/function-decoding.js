@@ -123,8 +123,7 @@ describe("Function Pointer Decoding", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -135,8 +134,7 @@ describe("Function Pointer Decoding", function() {
 
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   it("Decodes external function pointers correctly", async function() {
@@ -146,11 +144,7 @@ describe("Function Pointer Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -192,11 +186,7 @@ describe("Function Pointer Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -233,11 +223,7 @@ describe("Function Pointer Decoding", function() {
     let receipt = await abstractions.InternalsTest.new();
     let txHash = receipt.transactionHash;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 

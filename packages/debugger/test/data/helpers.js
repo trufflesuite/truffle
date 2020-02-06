@@ -51,7 +51,7 @@ function lastStatementLine(source) {
 async function prepareDebugger(testName, sources) {
   const provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
 
-  let { abstractions, artifacts: contracts, files } = await prepareContracts(
+  let { abstractions, compilations } = await prepareContracts(
     provider,
     sources
   );
@@ -60,7 +60,7 @@ async function prepareDebugger(testName, sources) {
   let receipt = await instance.run();
   let txHash = receipt.tx;
 
-  let bugger = await Debugger.forTx(txHash, { provider, files, contracts });
+  let bugger = await Debugger.forTx(txHash, provider, compilations);
 
   let session = bugger.connect();
 

@@ -191,8 +191,7 @@ describe("Variable IDs", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -203,8 +202,7 @@ describe("Variable IDs", function() {
 
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   it("Distinguishes between stackframes", async function() {
@@ -213,11 +211,7 @@ describe("Variable IDs", function() {
     let receipt = await instance.factorial(3);
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
@@ -255,11 +249,7 @@ describe("Variable IDs", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
@@ -302,11 +292,7 @@ describe("Variable IDs", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
@@ -329,11 +315,7 @@ describe("Variable IDs", function() {
     let receipt = await instance.runLib();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);

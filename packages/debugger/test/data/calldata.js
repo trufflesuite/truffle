@@ -104,7 +104,7 @@ describe("Calldata Decoding", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
+  var compilations;
   var files;
 
   before("Create Provider", async function() {
@@ -116,7 +116,7 @@ describe("Calldata Decoding", function() {
 
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
+    compilations = prepared.compilations;
     files = prepared.files;
   });
 
@@ -126,11 +126,7 @@ describe("Calldata Decoding", function() {
     let receipt = await instance.multiTester();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -164,11 +160,7 @@ describe("Calldata Decoding", function() {
     let receipt = await instance.simpleTest("hello world");
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -200,11 +192,7 @@ describe("Calldata Decoding", function() {
     let receipt = await instance.stringBoxTest({ it: "hello world" });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -241,7 +229,7 @@ describe("Calldata Decoding", function() {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       files,
-      contracts: artifacts
+      compilations
     });
 
     let session = bugger.connect();
@@ -277,7 +265,7 @@ describe("Calldata Decoding", function() {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       files,
-      contracts: artifacts
+      compilations
     });
 
     let session = bugger.connect();

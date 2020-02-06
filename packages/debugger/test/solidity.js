@@ -139,7 +139,7 @@ describe("Solidity Debugging", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
+  var compilations;
   var files;
 
   before("Create Provider", async function() {
@@ -151,7 +151,7 @@ describe("Solidity Debugging", function() {
 
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
+    compilations = prepared.compilations;
     files = prepared.files;
   });
 
@@ -161,11 +161,7 @@ describe("Solidity Debugging", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, provider, compilations);
 
     let session = bugger.connect();
 
@@ -199,7 +195,7 @@ describe("Solidity Debugging", function() {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       files,
-      contracts: artifacts
+      compilations
     });
 
     let session = bugger.connect();
@@ -228,7 +224,7 @@ describe("Solidity Debugging", function() {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       files,
-      contracts: artifacts
+      compilations
     });
 
     let session = bugger.connect();
@@ -267,7 +263,7 @@ describe("Solidity Debugging", function() {
       let bugger = await Debugger.forTx(txHash, {
         provider,
         files,
-        contracts: artifacts
+        compilations
       });
 
       let session = bugger.connect();
@@ -293,7 +289,7 @@ describe("Solidity Debugging", function() {
       let bugger = await Debugger.forTx(txHash, {
         provider,
         files,
-        contracts: artifacts
+        compilations
       });
 
       let session = bugger.connect();
@@ -325,7 +321,7 @@ describe("Solidity Debugging", function() {
       let bugger = await Debugger.forTx(txHash, {
         provider,
         files,
-        contracts: artifacts
+        compilations
       });
 
       let session = bugger.connect();
@@ -347,7 +343,7 @@ describe("Solidity Debugging", function() {
       let bugger = await Debugger.forTx(txHash, {
         provider,
         files,
-        contracts: artifacts
+        compilations
       });
 
       let session = bugger.connect();
@@ -383,7 +379,7 @@ describe("Solidity Debugging", function() {
       let bugger = await Debugger.forTx(txHash, {
         provider,
         files,
-        contracts: artifacts
+        compilations
       });
 
       let session = bugger.connect();

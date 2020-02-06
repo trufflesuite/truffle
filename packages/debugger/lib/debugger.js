@@ -16,10 +16,7 @@ import controllerSelector from "./controller/selectors";
 /**
  * @example
  * let session = Debugger
- *   .forTx(<txHash>, {
- *     contracts: [<contract obj>, ...],
- *     provider: <provider instance>
- *   })
+ *   .forTx(<txHash>, <provider instance>, <compilations>)
  *   .connect();
  */
 export default class Debugger {
@@ -106,15 +103,3 @@ export default class Debugger {
     });
   }
 }
-
-/**
- * @typedef {Object} Contract
- * @property {string} contractName contract name
- * @property {string} source solidity source code
- * @property {string} sourcePath path to source file
- * @property {string} binary 0x-prefixed hex string with create bytecode
- * @property {string} sourceMap solidity source map for create bytecode
- * @property {Object} ast Abstract Syntax Tree from Solidity
- * @property {string} deployedBinary 0x-prefixed compiled binary (on chain)
- * @property {string} deployedSourceMap solidity source map for on-chain bytecode
- */
