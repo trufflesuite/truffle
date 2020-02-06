@@ -55,9 +55,7 @@ export const getInitialConfig = ({
       },
       vyper: {}
     },
-    logger: {
-      log() {}
-    }
+    logger: console
   };
 };
 
