@@ -107,7 +107,7 @@ const SolidityTest = {
   async compileNewAbstractInterface(runner) {
     debug("compiling");
     const config = runner.config;
-    const solcVersion = config.compilers.solc.version;
+    let solcVersion = config.compilers.solc.version;
     if (solcVersion === "native") {
       solcVersion = new Native().load().version();
     }
