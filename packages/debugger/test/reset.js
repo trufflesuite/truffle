@@ -65,13 +65,18 @@ describe("Reset Button", function() {
 
     let session = bugger.connect();
     let sourceId = session.view(solidity.current.source).id;
+    let compilation = session.view(solidity.current.source).compilation;
     let source = session.view(solidity.current.source).source;
 
     let variables = [];
     variables[0] = []; //collected during 1st run
     variables[1] = []; //collected during 2nd run
 
-    await session.addBreakpoint({ sourceId, line: lineOf("BREAK", source) });
+    await session.addBreakpoint({
+      sourceId,
+      compilation,
+      line: lineOf("BREAK", source)
+    });
 
     variables[0].push(
       Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
@@ -91,7 +96,11 @@ describe("Reset Button", function() {
     variables[1].push(
       Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
     );
-    await session.addBreakpoint({ sourceId, line: lineOf("BREAK", source) });
+    await session.addBreakpoint({
+      sourceId,
+      compilation,
+      line: lineOf("BREAK", source)
+    });
     await session.continueUntilBreakpoint(); //advance to line 10
     variables[1].push(
       Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())

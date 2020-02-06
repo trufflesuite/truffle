@@ -115,7 +115,9 @@ const controller = createSelectorTree({
       let adjustedBreakpoint;
       if (breakpoint.node === undefined) {
         let line = breakpoint.line;
-        let { source, ast } = sources[breakpoint.sourceId];
+        let { source, ast } = sources[breakpoint.compilation][
+          breakpoint.sourceId
+        ];
         let lineLengths = source.split("\n").map(line => line.length);
         //why does neither JS nor lodash have a scan function like Haskell??
         //guess we'll have to do our scan manually

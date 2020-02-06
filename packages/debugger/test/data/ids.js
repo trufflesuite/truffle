@@ -223,13 +223,16 @@ describe("Variable IDs", function() {
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilation = session.view(solidity.current.source).compilation;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilation,
       line: lineOf("break here #1", source)
     });
     await session.addBreakpoint({
       sourceId,
+      compilation,
       line: lineOf("break here #2", source)
     });
 
@@ -262,13 +265,16 @@ describe("Variable IDs", function() {
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilation = session.view(solidity.current.source).compilation;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilation,
       line: lineOf("BREAK HERE #1", source)
     });
     await session.addBreakpoint({
       sourceId,
+      compilation,
       line: lineOf("BREAK HERE #2", source)
     });
 
@@ -306,9 +312,11 @@ describe("Variable IDs", function() {
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilation = session.view(solidity.current.source).compilation;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilation,
       line: lineOf("break here #1", source)
     });
     await session.continueUntilBreakpoint();
@@ -331,9 +339,11 @@ describe("Variable IDs", function() {
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilation = session.view(solidity.current.source).compilation;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilation,
       line: lineOf("break here #2", source)
     });
     await session.continueUntilBreakpoint();

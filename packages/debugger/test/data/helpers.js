@@ -4,6 +4,7 @@ const debug = debugModule("test:data:decode");
 import Ganache from "ganache-core";
 import { assert } from "chai";
 import changeCase from "change-case";
+import flatten from "lodash.flatten";
 import * as Codec from "@truffle/codec";
 
 import { prepareContracts } from "test/helpers";
@@ -66,14 +67,18 @@ async function prepareDebugger(testName, sources) {
   let source = sources[fileName(testName)];
 
   //we'll need the debugger-internal ID of this source
-  let debuggerSources = session.view(solidity.info.sources);
-  let matchingSources = Object.values(debuggerSources).filter(sourceObject =>
+  let debuggerSources = flatten(
+    Object.values(session.view(solidity.info.sources)).map(({ byId }) => byId)
+  );
+  let matchingSources = debuggerSources.filter(sourceObject =>
     sourceObject.sourcePath.includes(contractName(testName))
   );
   let sourceId = matchingSources[0].id;
+  let compilation = matchingSources[0].compilation;
 
   let breakpoint = {
     sourceId,
+    compilation,
     line: lastStatementLine(source)
   };
 

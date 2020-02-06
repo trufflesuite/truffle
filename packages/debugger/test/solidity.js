@@ -172,7 +172,11 @@ describe("Solidity Debugging", function() {
     // at `second();`
     let source = session.view(solidity.current.source);
     let breakLine = lineOf("BREAK", source.source);
-    let breakpoint = { sourceId: source.id, line: breakLine };
+    let breakpoint = {
+      sourceId: source.id,
+      compilation: source.compilation,
+      line: breakLine
+    };
 
     await session.addBreakpoint(breakpoint);
 
@@ -386,10 +390,18 @@ describe("Solidity Debugging", function() {
 
       let source = session.view(solidity.current.source);
       let breakLine1 = lineOf("BREAK #1", source.source);
-      let breakpoint1 = { sourceId: source.id, line: breakLine1 };
+      let breakpoint1 = {
+        sourceId: source.id,
+        compilation: source.compilation,
+        line: breakLine1
+      };
       await session.addBreakpoint(breakpoint1);
       let breakLine2 = lineOf("BREAK #2", source.source);
-      let breakpoint2 = { sourceId: source.id, line: breakLine2 };
+      let breakpoint2 = {
+        sourceId: source.id,
+        compilation: source.compilation,
+        line: breakLine2
+      };
       await session.addBreakpoint(breakpoint2);
 
       await session.continueUntilBreakpoint();
