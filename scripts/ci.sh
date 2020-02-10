@@ -10,7 +10,7 @@ run_geth() {
     -p 8545:8545 \
     -p 8546:8546 \
     -p 30303:30303 \
-    ethereum/client-go:v1.9.3 \
+    ethereum/client-go:latest \
     --rpc \
     --rpcaddr '0.0.0.0' \
     --rpcport 8545 \
@@ -23,6 +23,7 @@ run_geth() {
     --dev.period 0 \
     --allow-insecure-unlock \
     --targetgaslimit '7000000' \
+    --override.istanbul '0' \
     js ./scripts/geth-accounts.js \
     > /dev/null &
 }
@@ -35,7 +36,7 @@ if [ "$INTEGRATION" = true ]; then
 elif [ "$GETH" = true ]; then
 
   sudo apt install -y jq
-  docker pull ethereum/client-go:v1.9.3
+  docker pull ethereum/client-go:latest
   run_geth
   sleep 30
   lerna run --scope truffle test --stream -- --exit
@@ -53,12 +54,22 @@ elif [ "$QUORUM" = true ]; then
   sleep 90
   lerna run --scope truffle test --stream -- --exit
 
+elif [ "$COLONY" = true ]; then
+
+  git clone https://github.com/JoinColony/colonyNetwork.git
+  cd colonyNetwork && yarn
+  git submodule update --init
+  truffle version
+  truffle compile --compilers.solc.parser=solcjs && truffle compile --compilers.solc.parser=solcjs --contracts_directory 'lib/dappsys/[!note][!stop][!proxy][!thing][!token]*.sol' && bash ./scripts/provision-token-contracts.sh
+  npm run start:blockchain:client & truffle migrate --compilers.solc.parser=solcjs --reset --compile-all && truffle test --compilers.solc.parser=solcjs ./test/contracts-network/* ./test/extensions/* --network development
+
 elif [ "$FABRICEVM" = true ]; then
 
   root=$(pwd)
   sudo add-apt-repository -y ppa:rmescandon/yq
   sudo apt update
   sudo apt install -y yq
+  eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.12 bash)"
   cd $GOPATH
   mkdir -p src/github.com/hyperledger
   cd src/github.com/hyperledger

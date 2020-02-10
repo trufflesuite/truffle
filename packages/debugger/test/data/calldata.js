@@ -8,12 +8,12 @@ import Ganache from "ganache-core";
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
-import * as TruffleDecodeUtils from "@truffle/decode-utils";
+import * as Codec from "@truffle/codec";
 
 import solidity from "lib/solidity/selectors";
 
 const __CALLDATA = `
-pragma solidity ^0.5.6;
+pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
 
 contract CalldataTest {
@@ -143,7 +143,7 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -179,7 +179,9 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      await session.variables()
+    );
 
     const expectedResult = {
       hello: "hello world"
@@ -211,7 +213,9 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      await session.variables()
+    );
 
     const expectedResult = {
       stringBox: {
@@ -245,7 +249,9 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      await session.variables()
+    );
 
     const expectedResult = {
       hello: "hello world"
@@ -277,7 +283,9 @@ describe("Calldata Decoding", function() {
 
     await session.continueUntilBreakpoint();
 
-    const variables = await session.variables();
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      await session.variables()
+    );
 
     const expectedResult = {
       hello: "hello world"

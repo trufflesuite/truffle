@@ -1,71 +1,70 @@
-
-declare module 'solc' {
+declare module "solc" {
   export type Primitive =
-    'bool' |
-    'string' |
-    'address' |
-    'uint8' |
-    'uint16' |
-    'uint32' |
-    'uint64' |
-    'uint128' |
-    'uint256' |
-    'int8' |
-    'int16' |
-    'int32' |
-    'int64' |
-    'int128' |
-    'int256' |
-    'bytes' |
-    'bytes20' |
-    'bytes32' |
-    'bool[]' |
-    'string[]' |
-    'address[]' |
-    'uint8[]' |
-    'uint16[]' |
-    'uint32[]' |
-    'uint64[]' |
-    'uint128[]' |
-    'uint256[]' |
-    'int8[]' |
-    'int16[]' |
-    'int32[]' |
-    'int64[]' |
-    'int128[]' |
-    'int256[]' |
-    'bytes[]' |
-    'bytes20[]' |
-    'bytes32[]';
+    | "bool"
+    | "string"
+    | "address"
+    | "uint8"
+    | "uint16"
+    | "uint32"
+    | "uint64"
+    | "uint128"
+    | "uint256"
+    | "int8"
+    | "int16"
+    | "int32"
+    | "int64"
+    | "int128"
+    | "int256"
+    | "bytes"
+    | "bytes20"
+    | "bytes32"
+    | "bool[]"
+    | "string[]"
+    | "address[]"
+    | "uint8[]"
+    | "uint16[]"
+    | "uint32[]"
+    | "uint64[]"
+    | "uint128[]"
+    | "uint256[]"
+    | "int8[]"
+    | "int16[]"
+    | "int32[]"
+    | "int64[]"
+    | "int128[]"
+    | "int256[]"
+    | "bytes[]"
+    | "bytes20[]"
+    | "bytes32[]";
 
   export interface AbiParameter {
-    name: string,
-    type: Primitive,
+    name: string;
+    type: Primitive;
   }
-  
+
   export interface AbiEventParameter extends AbiParameter {
-    indexed: boolean,
+    indexed: boolean;
   }
-  
+
   export interface AbiFunction {
-    name: string,
-    type: 'function' | 'constructor' | 'fallback',
-    stateMutability: 'pure' | 'view' | 'payable' | 'nonpayable',
-    constant: boolean,
-    payable: boolean,
-    inputs: Array<AbiParameter>,
-    outputs: Array<AbiParameter>,
+    name: string;
+    type: "function" | "constructor" | "fallback";
+    stateMutability: "pure" | "view" | "payable" | "nonpayable";
+    constant: boolean;
+    payable: boolean;
+    inputs: Array<AbiParameter>;
+    outputs: Array<AbiParameter>;
   }
-  
+
   export interface AbiEvent {
-    name: string,
-    type: 'event',
-    inputs: Array<AbiEventParameter>,
-    anonymous: boolean,
+    name: string;
+    type: "event";
+    inputs: Array<AbiEventParameter>;
+    anonymous: boolean;
   }
-  
+
   export type Abi = Array<AbiFunction | AbiEvent>;
-  
+
   interface CompilerInputSourceFile {
     keccak256?: string;
     urls: string[];
@@ -78,9 +77,9 @@ declare module 'solc' {
 
   interface CompilerInput {
     language: "Solidity" | "serpent" | "lll" | "assembly";
-    settings?: any,
+    settings?: any;
     sources: {
-      [globalName: string]: CompilerInputSourceFile|CompilerInputSourceCode,
+      [globalName: string]: CompilerInputSourceFile | CompilerInputSourceCode;
     };
   }
 
@@ -101,11 +100,13 @@ declare module 'solc' {
     object?: string;
     opcodes?: string;
     sourceMap?: string;
-    linkReferences?: {} | {
-      [globalName: string]: {
-        [name: string]: {start: number, length: number}[];
-      };
-    };
+    linkReferences?:
+      | {}
+      | {
+          [globalName: string]: {
+            [name: string]: { start: number; length: number }[];
+          };
+        };
   }
 
   interface CompilerOutputSources {
@@ -113,7 +114,7 @@ declare module 'solc' {
       id: number;
       ast?: any;
       legacyAST?: any;
-    },
+    };
   }
 
   interface CompilerOutputContracts {
@@ -149,8 +150,8 @@ declare module 'solc' {
         ewasm: {
           wast?: string;
           wasm?: string;
-        }
-      }
+        };
+      };
     };
   }
 
@@ -170,7 +171,10 @@ declare module 'solc' {
 
   type ASTNode = any;
 
-  type ReadCallback = (path: string) => { contents?: string, error?: string};
+  type ReadCallback = (path: string) => { contents?: string; error?: string };
 
-  function compileStandardWrapper(input: string, readCallback?: ReadCallback): string;
+  function compileStandardWrapper(
+    input: string,
+    readCallback?: ReadCallback
+  ): string;
 }

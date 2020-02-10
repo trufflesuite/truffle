@@ -6,7 +6,7 @@ import BN from "bn.js";
 
 import trace from "lib/trace/selectors";
 
-import * as DecodeUtils from "@truffle/decode-utils";
+import * as Codec from "@truffle/codec";
 import {
   isCallMnemonic,
   isCreateMnemonic,
@@ -16,6 +16,44 @@ import {
   isStaticCallMnemonic,
   isNormalHaltingMnemonic
 } from "lib/helpers";
+
+function determineFullContext(
+  { address, binary },
+  instances,
+  search,
+  contexts
+) {
+  let contextId;
+  let isConstructor = Boolean(binary);
+  if (address) {
+    //if we're in a call to a deployed contract, we must have recorded
+    //the context in the codex, so we don't need to do any further
+    //searching
+    ({ context: contextId, binary } = instances[address]);
+  } else if (isConstructor) {
+    //otherwise, if we're in a constructor, we'll need to actually do a
+    //search
+    contextId = search(binary);
+  } else {
+    //exceptional case: no transaction is loaded
+    return null;
+  }
+
+  if (contextId != undefined) {
+    //if we found the context, use it
+    let context = contexts[contextId];
+    return {
+      ...context,
+      binary
+    };
+  } else {
+    //otherwise we'll construct something default
+    return {
+      binary,
+      isConstructor
+    };
+  }
+}
 
 /**
  * create EVM-level selectors for a given trace step selector
@@ -150,7 +188,7 @@ function createStepSelectors(step, state = null) {
           }
 
           let address = stack[stack.length - 2];
-          return DecodeUtils.Conversion.toAddress(address);
+          return Codec.Evm.Utils.toAddress(address);
         }
       ),
 
@@ -220,7 +258,7 @@ function createStepSelectors(step, state = null) {
 
           //otherwise, for CALL and CALLCODE, it's the 3rd argument
           let value = stack[stack.length - 3];
-          return DecodeUtils.Conversion.toBN(value);
+          return Codec.Conversion.toBN(value);
         }
       ),
 
@@ -236,7 +274,7 @@ function createStepSelectors(step, state = null) {
 
         //creates have the value as the first argument
         let value = stack[stack.length - 1];
-        return DecodeUtils.Conversion.toBN(value);
+        return Codec.Conversion.toBN(value);
       }),
 
       /**
@@ -257,32 +295,21 @@ function createStepSelectors(step, state = null) {
         }
       ),
 
-      /*
-       * .returnValue
+      /**
+       * .callContext
        *
-       * for a RETURN instruction, the value returned
-       * we DO prepend "0x"
-       * (will also return "0x" for STOP or SELFDESTRUCT but
-       * null otherwise)
+       * context of what this step is calling/creating (if applicable)
        */
-      returnValue: createLeaf(
-        ["./trace", "./isHalting", state],
-
-        (step, isHalting, { stack, memory }) => {
-          if (!isHalting) {
-            return null;
-          }
-          if (step.op !== "RETURN") {
-            //STOP and SELFDESTRUCT return empty value
-            return "0x";
-          }
-          // Get the data from memory.
-          // Note we multiply by 2 because these offsets are in bytes.
-          const offset = parseInt(stack[stack.length - 1], 16) * 2;
-          const length = parseInt(stack[stack.length - 2], 16) * 2;
-
-          return "0x" + memory.join("").substring(offset, offset + length);
-        }
+      callContext: createLeaf(
+        [
+          "./callAddress",
+          "./createBinary",
+          "/current/codex/instances",
+          "/info/binaries/search",
+          "/info/contexts"
+        ],
+        (address, binary, instances, search, contexts) =>
+          determineFullContext({ address, binary }, instances, search, contexts)
       )
     });
   }
@@ -316,7 +343,7 @@ const evm = createSelectorTree({
        * (returns null on no match)
        */
       search: createLeaf(["/info/contexts"], contexts => binary =>
-        DecodeUtils.Contexts.findDebuggerContext(contexts, binary)
+        Codec.Contexts.Utils.findDebuggerContext(contexts, binary)
       )
     }
   },
@@ -347,7 +374,23 @@ const evm = createSelectorTree({
     /*
      * evm.transaction.initialCall
      */
-    initialCall: createLeaf(["/state"], state => state.transaction.initialCall)
+    initialCall: createLeaf(["/state"], state => state.transaction.initialCall),
+
+    /*
+     * evm.transaction.startingContext
+     */
+    startingContext: createLeaf(
+      [
+        "/current/callstack", //we're just getting bottom stackframe, so this is in fact tx-level
+        "/current/codex/instances", //this should also be fine?
+        "/info/binaries/search",
+        "/info/contexts"
+      ],
+      (stack, instances, search, contexts) =>
+        stack.length > 0
+          ? determineFullContext(stack[0], instances, search, contexts)
+          : null
+    )
   },
 
   /**
@@ -378,39 +421,7 @@ const evm = createSelectorTree({
         "/info/binaries/search",
         "/info/contexts"
       ],
-      ({ address, binary }, instances, search, contexts) => {
-        let contextId;
-        if (address) {
-          //if we're in a call to a deployed contract, we must have recorded
-          //the context in the codex, so we don't need to do any further
-          //searching
-          ({ context: contextId, binary } = instances[address]);
-        } else if (binary) {
-          //otherwise, if we're in a constructor, we'll need to actually do a
-          //search
-          contextId = search(binary);
-        } else {
-          //exceptional case: no transaction is loaded
-          return null;
-        }
-
-        if (contextId != undefined) {
-          //if we found the context, use it
-          let context = contexts[contextId];
-          return {
-            ...context,
-            binary
-          };
-        } else {
-          //otherwise we'll construct something default
-          return {
-            binary,
-            isConstructor: address === undefined
-            //WARNING: we've mutated binary here, so
-            //instead we go by whether address is undefined
-          };
-        }
-      }
+      determineFullContext
     ),
 
     /**
@@ -446,19 +457,24 @@ const evm = createSelectorTree({
             return null;
           }
           let address = stack[stack.length - 1];
-          return DecodeUtils.Conversion.toAddress(address);
+          return Codec.Evm.Utils.toAddress(address);
         }
       ),
 
       /**
-       * evm.current.step.callsPrecompileOrExternal
+       * evm.current.step.isInstantCallOrReturn
        *
-       * are we calling a precompiled contract or an externally-owned account,
-       * rather than a contract account that isn't precompiled?
+       * are we doing a call or create for which there are no trace steps?
+       * This can happen if:
+       * 1. we call a precompile
+       * 2. we call an externally-owned account
+       * 3. we do a call or create but the call stack is exhausted
+       * 4. we attempt to transfer more ether than we have
        */
-      callsPrecompileOrExternal: createLeaf(
-        ["./isCall", "/current/state/depth", "/next/state/depth"],
-        (calls, currentDepth, nextDepth) => calls && currentDepth === nextDepth
+      isInstantCallOrCreate: createLeaf(
+        ["./isCall", "./isCreate", "/current/state/depth", "/next/state/depth"],
+        (calls, creates, currentDepth, nextDepth) =>
+          (calls || creates) && currentDepth === nextDepth
       ),
 
       /**
@@ -508,9 +524,39 @@ const evm = createSelectorTree({
           if (remaining <= 1) {
             return finalStatus;
           } else {
-            const ZERO_WORD = "00".repeat(DecodeUtils.EVM.WORD_SIZE);
+            const ZERO_WORD = "00".repeat(Codec.Evm.Utils.WORD_SIZE);
             return stack[stack.length - 1] !== ZERO_WORD;
           }
+        }
+      ),
+
+      /*
+       * evm.current.step.returnValue
+       *
+       * for a [successful] RETURN or REVERT instruction, the value returned;
+       * we DO prepend "0x"
+       * for everything else, including unsuccessful RETURN, just returns "0x"
+       * (which is what the return value would be if the instruction were to
+       * fail) (or succeed in the case of STOP or SELFDESTRUCT)
+       * NOTE: technically this will be wrong if a REVERT fails, but that case
+       * is hard to detect and it barely matters
+       */
+      returnValue: createLeaf(
+        ["./trace", "./isExceptionalHalting", "../state"],
+
+        (step, isExceptionalHalting, { stack, memory }) => {
+          if (step.op !== "RETURN" && step.op !== "REVERT") {
+            return "0x";
+          }
+          if (isExceptionalHalting && step.op !== "REVERT") {
+            return "0x";
+          }
+          // Get the data from memory.
+          // Note we multiply by 2 because these offsets are in bytes.
+          const offset = parseInt(stack[stack.length - 1], 16) * 2;
+          const length = parseInt(stack[stack.length - 2], 16) * 2;
+
+          return "0x" + memory.join("").substring(offset, offset + length);
         }
       )
     },
@@ -535,7 +581,7 @@ const evm = createSelectorTree({
       storage: createLeaf(
         ["./_", "../state/storage", "../call"],
         (codex, rawStorage, { storageAddress }) =>
-          storageAddress === DecodeUtils.EVM.ZERO_ADDRESS
+          storageAddress === Codec.Evm.Utils.ZERO_ADDRESS
             ? rawStorage //HACK -- if zero address ignore the codex
             : codex[codex.length - 1].accounts[storageAddress].storage
       ),

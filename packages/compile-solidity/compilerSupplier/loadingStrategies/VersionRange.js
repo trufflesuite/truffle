@@ -1,7 +1,6 @@
 const debug = require("debug")("compile:compilerSupplier");
 const requireFromString = require("require-from-string");
 const fs = require("fs");
-const ora = require("ora");
 const originalRequire = require("original-require");
 const request = require("request-promise");
 const semver = require("semver");
@@ -100,17 +99,17 @@ class VersionRange extends LoadingStrategy {
 
   async getSolcByUrlAndCache(fileName, index = 0) {
     const url = this.config.compilerRoots[index] + fileName;
-    const spinner = ora({
-      text: "Downloading compiler. Attempt #" + (index + 1),
-      color: "red"
-    }).start();
+    const { events } = this.config;
+    events.emit("downloadCompiler:start", {
+      attemptNumber: index + 1
+    });
     try {
       const response = await request.get(url);
-      spinner.stop();
+      events.emit("downloadCompiler:succeed");
       this.addFileToCache(response, fileName);
       return this.compilerFromString(response);
     } catch (error) {
-      spinner.stop();
+      events.emit("downloadCompiler:fail");
       if (index >= this.config.compilerRoots.length - 1) {
         throw this.errors("noRequest", "compiler URLs", error);
       }
@@ -125,36 +124,39 @@ class VersionRange extends LoadingStrategy {
     } catch (error) {
       throw this.errors("noRequest", versionConstraint, error);
     }
-
     const isVersionRange = !semver.valid(versionConstraint);
 
     versionToUse = isVersionRange
       ? this.findNewestValidVersion(versionConstraint, allVersions)
       : versionConstraint;
-
     const fileName = this.getSolcVersionFileName(versionToUse, allVersions);
+
     if (!fileName) throw this.errors("noVersion", versionToUse);
 
     if (this.fileIsCached(fileName))
       return this.getCachedSolcByFileName(fileName);
-
     return this.getSolcByUrlAndCache(fileName);
   }
 
   getSolcVersions(index = 0) {
-    const spinner = ora({
-      text: "Fetching solc version list from solc-bin. Attempt #" + (index + 1),
-      color: "yellow"
-    }).start();
-    if (!this.config.compilerRoots || this.config.compilerRoots.length < 1)
+    const { events } = this.config;
+    events.emit("fetchSolcList:start", { attemptNumber: index + 1 });
+    if (!this.config.compilerRoots || this.config.compilerRoots.length < 1) {
+      events.emit("fetchSolcList:fail");
       throw this.errors("noUrl");
-    return request(this.config.compilerRoots[index] + "list.json")
+    }
+    const { compilerRoots } = this.config;
+    const url =
+      compilerRoots[compilerRoots.length] === "/"
+        ? `${compilerRoots[index]}list.json`
+        : `${compilerRoots[index]}/list.json`;
+    return request(url)
       .then(list => {
-        spinner.stop();
+        events.emit("fetchSolcList:succeed");
         return JSON.parse(list);
       })
       .catch(error => {
-        spinner.stop();
+        events.emit("fetchSolcList:fail");
         if (index >= this.config.compilerRoots.length - 1) {
           throw this.errors("noRequest", "version URLs", error);
         }

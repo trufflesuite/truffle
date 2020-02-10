@@ -11,10 +11,10 @@ import Debugger from "lib/debugger";
 import evm from "lib/evm/selectors";
 import data from "lib/data/selectors";
 
-import * as TruffleDecodeUtils from "@truffle/decode-utils";
+import * as Codec from "@truffle/codec";
 
 const __FAILURE = `
-pragma solidity ~0.5;
+pragma solidity ^0.6.1;
 
 contract FailureTest {
   function run() public {
@@ -24,7 +24,7 @@ contract FailureTest {
 `;
 
 const __SUCCESS = `
-pragma solidity ~0.5;
+pragma solidity ^0.6.1;
 
 contract SuccessTest {
 uint x;
@@ -102,7 +102,7 @@ describe("End State", function() {
     debug("proc.assignments %O", session.view(data.proc.assignments));
 
     assert.ok(session.view(evm.transaction.status));
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
     assert.include(variables, { x: 107 });

@@ -5,9 +5,10 @@ const path = require("path");
 const safeEval = require("safe-eval");
 
 const DebugUtils = require("@truffle/debug-utils");
+const Codec = require("@truffle/codec");
 
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, controller } = selectors;
+const { session, solidity, trace, controller, data, evm } = selectors;
 
 class DebugPrinter {
   constructor(config, session) {
@@ -30,6 +31,19 @@ class DebugPrinter {
 
       return result;
     };
+
+    this.colorizedSources = {};
+    for (const source of Object.values(
+      this.session.view(solidity.info.sources)
+    )) {
+      const id = source.id;
+      const uncolorized = source.source;
+      const colorized = DebugUtils.colorize(uncolorized);
+      this.colorizedSources[id] = colorized;
+    }
+
+    this.printouts = new Set(["sta"]);
+    this.locations = ["sto", "cal", "mem", "sta"]; //should remain constant
   }
 
   print(...args) {
@@ -82,44 +96,76 @@ class DebugPrinter {
     this.config.logger.log(message + ":");
   }
 
-  printState() {
-    const source = this.session.view(solidity.current.source).source;
-    const range = this.session.view(solidity.current.sourceRange);
-    debug("source: %o", source);
-    debug("range: %o", range);
+  printState(contextBefore = 2, contextAfter = 0) {
+    const { id: sourceId, source } = this.session.view(solidity.current.source);
 
-    // We were splitting on OS.EOL, but it turns out on Windows,
-    // in some environments (perhaps?) line breaks are still denoted by just \n
-    const splitLines = str => str.split(/\r?\n/g);
-
-    if (!source) {
+    if (sourceId === undefined) {
       this.config.logger.log();
       this.config.logger.log("1: // No source code found.");
       this.config.logger.log("");
       return;
     }
 
+    const colorizedSource = this.colorizedSources[sourceId];
+
+    const range = this.session.view(solidity.current.sourceRange);
+    debug("range: %o", range);
+
+    // We were splitting on OS.EOL, but it turns out on Windows,
+    // in some environments (perhaps?) line breaks are still denoted by just \n
+    const splitLines = str => str.split(/\r?\n/g);
+
     const lines = splitLines(source);
+    const colorizedLines = splitLines(colorizedSource);
 
     this.config.logger.log("");
 
-    this.config.logger.log(DebugUtils.formatRangeLines(lines, range.lines));
+    //HACK -- the line-pointer formatter doesn't work right with colorized
+    //lines, so we pass in the uncolored version too
+    this.config.logger.log(
+      DebugUtils.formatRangeLines(
+        colorizedLines,
+        range.lines,
+        lines,
+        contextBefore,
+        contextAfter
+      )
+    );
 
     this.config.logger.log("");
   }
 
-  printInstruction() {
+  printInstruction(locations = this.printouts) {
     const instruction = this.session.view(solidity.current.instruction);
     const step = this.session.view(trace.step);
     const traceIndex = this.session.view(trace.index);
     const totalSteps = this.session.view(trace.steps).length;
+    //note calldata will be a Uint8Array, not a hex string or array of such
+    const calldata = this.session.view(data.current.state.calldata);
+    //storage here is an object mapping hex words to hex words, all w/o 0x prefix
+    const storage = this.session.view(evm.current.codex.storage);
 
     this.config.logger.log("");
+    if (locations.has("sto")) {
+      this.config.logger.log(DebugUtils.formatStorage(storage));
+      this.config.logger.log("");
+    }
+    if (locations.has("cal")) {
+      this.config.logger.log(DebugUtils.formatCalldata(calldata));
+      this.config.logger.log("");
+    }
+    if (locations.has("mem")) {
+      this.config.logger.log(DebugUtils.formatMemory(step.memory));
+      this.config.logger.log("");
+    }
+    if (locations.has("sta")) {
+      this.config.logger.log(DebugUtils.formatStack(step.stack));
+      this.config.logger.log("");
+    }
     this.config.logger.log(
       DebugUtils.formatInstruction(traceIndex + 1, totalSteps, instruction)
     );
     this.config.logger.log(DebugUtils.formatPC(step.pc));
-    this.config.logger.log(DebugUtils.formatStack(step.stack));
     this.config.logger.log("");
     this.config.logger.log(step.gas + " gas remaining");
   }
@@ -171,6 +217,63 @@ class DebugPrinter {
     } else {
       this.config.logger.log("No breakpoints added.");
     }
+  }
+
+  printRevertMessage() {
+    this.config.logger.log("Transaction halted with a RUNTIME ERROR.");
+    this.config.logger.log("");
+    let rawRevertMessage = this.session.view(evm.current.step.returnValue);
+    let revertDecodings = Codec.decodeRevert(
+      Codec.Conversion.toBytes(rawRevertMessage)
+    );
+    switch (revertDecodings.length) {
+      case 0:
+        this.config.logger.log(
+          "There was a revert message, but it could not be decoded."
+        );
+        break;
+      case 1:
+        let revertDecoding = revertDecodings[0];
+        switch (revertDecoding.kind) {
+          case "failure":
+            this.config.logger.log(
+              "There was no revert message.  This may be due to an in intentional halting expression, such as assert(), revert(), or require(), or could be due to an unintentional exception such as out-of-gas exceptions."
+            );
+            break;
+          case "revert":
+            let revertStringInfo = revertDecoding.arguments[0].value.value;
+            let revertString;
+            switch (revertStringInfo.kind) {
+              case "valid":
+                revertString = revertStringInfo.asString;
+                this.config.logger.log(`Revert message: ${revertString}`);
+                break;
+              case "malformed":
+                //turn into a JS string while smoothing over invalid UTF-8
+                //slice 2 to remove 0x prefix
+                revertString = Buffer.from(
+                  revertStringInfo.asHex.slice(2),
+                  "hex"
+                ).toString();
+                this.config.logger.log(`Revert message: ${revertString}`);
+                this.config.logger.log(
+                  "Warning: This message contained invalid UTF-8."
+                );
+                break;
+            }
+            break;
+        }
+        break;
+      default:
+        //Note: This shouldn't happen
+        this.config.logger.log(
+          "There was a revert message, but it could not be unambiguously decoded."
+        );
+        break;
+    }
+    this.config.logger.log(
+      "Please inspect your transaction parameters and contract code to determine the meaning of this error."
+    );
   }
 
   async printWatchExpressionsResults(expressions) {
@@ -269,7 +372,7 @@ class DebugPrinter {
     //if we're not in the single-variable case, we'll need to do some
     //things to Javascriptify our variables so that the JS syntax for
     //using them is closer to the Solidity syntax
-    variables = DebugUtils.nativize(variables);
+    variables = Codec.Format.Utils.Inspect.nativizeVariables(variables);
 
     let context = Object.assign(
       { $: this.select },
@@ -310,7 +413,7 @@ class DebugPrinter {
     try {
       let result = safeEval(expr, context);
       result = DebugUtils.cleanConstructors(result); //HACK
-      const formatted = DebugUtils.formatValue(result, indent);
+      const formatted = DebugUtils.formatValue(result, indent, true);
       this.config.logger.log(formatted);
       this.config.logger.log();
     } catch (e) {
@@ -330,7 +433,7 @@ class DebugPrinter {
       if (!suppress) {
         this.config.logger.log(e);
       } else {
-        this.config.logger.log(DebugUtils.formatValue(undefined));
+        this.config.logger.log(DebugUtils.formatValue(undefined, indent, true));
       }
     }
   }

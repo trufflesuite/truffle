@@ -5,9 +5,8 @@ import { combineReducers } from "redux";
 
 import * as actions from "./actions";
 
-import { slotAddress } from "@truffle/decoder";
+import * as Codec from "@truffle/codec";
 import { makeAssignment } from "lib/helpers";
-import { Conversion, Definition, EVM } from "@truffle/decode-utils";
 
 const DEFAULT_SCOPES = {
   byId: {}
@@ -80,7 +79,7 @@ function userDefinedTypes(state = [], action) {
 const DEFAULT_ALLOCATIONS = {
   storage: {},
   memory: {},
-  calldata: {}
+  abi: {}
 };
 
 function allocations(state = DEFAULT_ALLOCATIONS, action) {
@@ -88,7 +87,7 @@ function allocations(state = DEFAULT_ALLOCATIONS, action) {
     return {
       storage: action.storage,
       memory: action.memory,
-      calldata: action.calldata
+      abi: action.abi
     };
   } else {
     return state;
@@ -102,11 +101,11 @@ const info = combineReducers({
 });
 
 const GLOBAL_ASSIGNMENTS = [
-  [{ builtin: "msg" }, { special: "msg" }],
-  [{ builtin: "tx" }, { special: "tx" }],
-  [{ builtin: "block" }, { special: "block" }],
-  [{ builtin: "this" }, { special: "this" }],
-  [{ builtin: "now" }, { special: "timestamp" }] //we don't have an alias "now"
+  [{ builtin: "msg" }, { location: "special", special: "msg" }],
+  [{ builtin: "tx" }, { location: "special", special: "tx" }],
+  [{ builtin: "block" }, { location: "special", special: "block" }],
+  [{ builtin: "this" }, { location: "special", special: "this" }],
+  [{ builtin: "now" }, { location: "special", special: "timestamp" }] //we don't have an alias "now"
 ].map(([idObj, ref]) => makeAssignment(idObj, ref));
 
 const DEFAULT_ASSIGNMENTS = {
@@ -184,18 +183,21 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
       //replacing a fairly bare-bones Slot object with one with a full path.
 
       //we do NOT want to distinguish between types with and without "_ptr" on
-      //the end here!
+      //the end here! (or _slice)
       debug("typeIdentifier %s", typeIdentifier);
-      typeIdentifier = Definition.restorePtr(typeIdentifier);
-      parentType = Definition.restorePtr(parentType);
+      typeIdentifier = Codec.Ast.Utils.regularizeTypeIdentifier(typeIdentifier);
+      parentType = Codec.Ast.Utils.regularizeTypeIdentifier(parentType);
 
       debug("slot %o", slot);
-      let hexSlotAddress = Conversion.toHexString(
-        slotAddress(slot),
-        EVM.WORD_SIZE
+      let hexSlotAddress = Codec.Conversion.toHexString(
+        Codec.Storage.Utils.slotAddress(slot),
+        Codec.Evm.Utils.WORD_SIZE
       );
       let parentAddress = slot.path
-        ? Conversion.toHexString(slotAddress(slot.path), EVM.WORD_SIZE)
+        ? Codec.Conversion.toHexString(
+            Codec.Storage.Utils.slotAddress(slot.path),
+            Codec.Evm.Utils.WORD_SIZE
+          )
         : undefined;
 
       //this is going to be messy and procedural, sorry.  but let's start with

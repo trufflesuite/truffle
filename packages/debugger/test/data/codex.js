@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("test:data:codex");
 
 import { assert } from "chai";
+import * as Codec from "@truffle/codec";
 
 import Ganache from "ganache-core";
 
@@ -9,7 +10,7 @@ import { prepareContracts } from "../helpers";
 import Debugger from "lib/debugger";
 
 const __LIBTEST = `
-pragma solidity ^0.5.4;
+pragma solidity ^0.6.1;
 
 contract MappingPointerTest {
   mapping(string => uint) surface;
@@ -27,14 +28,14 @@ library TouchLib {
 `;
 
 const __REVERT_TEST = `
-pragma solidity ^0.5.4;
+pragma solidity ^0.6.1;
 
 contract RevertTest {
 
   uint x;
   uint y;
 
-  function() external {
+  fallback() external {
     x = 2;
     y = x;
     revert();
@@ -51,7 +52,7 @@ contract RevertTest2 {
   uint x;
   uint y;
 
-  function() external {
+  fallback() external {
     x = 2;
     y = x;
     assert(false);
@@ -122,11 +123,15 @@ describe("Codex", function() {
 
     let session = bugger.connect();
 
+    debug("starting stepping");
     await session.continueUntilBreakpoint(); //run till end
+    debug("made it to end of transaction");
 
-    const variables = await session.variables();
+    const surface = Codec.Format.Utils.Inspect.nativize(
+      await session.variable("surface")
+    );
 
-    assert.equal(variables.surface.get("ping").toNumber(), 1);
+    assert.equal(surface["ping"], 1);
   });
 
   it("Reverts storage when a call reverts", async function() {
@@ -145,9 +150,9 @@ describe("Codex", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = await session.variables();
+    const x = Codec.Format.Utils.Inspect.nativize(await session.variable("x"));
 
-    assert.equal(variables.x.toNumber(), 1);
+    assert.equal(x, 1);
   });
 
   it("Reverts storage when a call otherwise fails", async function() {
@@ -166,8 +171,8 @@ describe("Codex", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = await session.variables();
+    const x = Codec.Format.Utils.Inspect.nativize(await session.variable("x"));
 
-    assert.equal(variables.x.toNumber(), 1);
+    assert.equal(x, 1);
   });
 });

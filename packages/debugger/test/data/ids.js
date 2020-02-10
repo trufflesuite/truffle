@@ -10,9 +10,10 @@ import Debugger from "lib/debugger";
 
 import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
+import * as Codec from "@truffle/codec";
 
 const __FACTORIAL = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract FactorialTest {
 
@@ -24,7 +25,7 @@ contract FactorialTest {
     uint prevFac;
     nbang = n;
     prev = n - 1; //break here #1 (12)
-    if(n>0)
+    if(n > 0)
     {
       prevFac = factorial(n - 1);
       nbang = n * prevFac;
@@ -39,7 +40,7 @@ contract FactorialTest {
 `;
 
 const __ADDRESS = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 contract AddressTest {
 
@@ -77,7 +78,7 @@ contract SecretByte {
 `;
 
 const __INTERVENING = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 import "./InterveningLib.sol";
 
@@ -125,12 +126,31 @@ contract Inner {
 `;
 
 const __INTERVENINGLIB = `
-pragma solidity ^0.5.0;
+pragma solidity ^0.6.1;
 
 library InterveningLib {
 
   function run() pure external returns (uint8) {
     return 2;
+  }
+}
+`;
+
+const __MODIFIERS = `
+pragma solidity ^0.6.1;
+
+contract ModifierTest {
+
+  event Echo(uint);
+
+  modifier modifiedBy(uint x) {
+    uint temp = x + 1;
+    emit Echo(temp); //BREAK HERE #1
+    _;
+    emit Echo(temp); //BREAK HERE #2
+  }
+
+  function run() public modifiedBy(3) modifiedBy(5) {
   }
 }
 `;
@@ -141,6 +161,7 @@ let Inner = artifacts.require("Inner");
 let AddressTest = artifacts.require("AddressTest");
 let FactorialTest = artifacts.require("FactorialTest");
 let InterveningLib = artifacts.require("InterveningLib");
+let ModifierTest = artifacts.require("ModifierTest");
 
 module.exports = async function(deployer) {
   await deployer.deploy(InterveningLib);
@@ -150,6 +171,7 @@ module.exports = async function(deployer) {
   await deployer.deploy(Intervening, inner.address);
   await deployer.deploy(AddressTest);
   await deployer.deploy(FactorialTest);
+  await deployer.deploy(ModifierTest);
 };
 `;
 
@@ -157,7 +179,8 @@ let sources = {
   "FactorialTest.sol": __FACTORIAL,
   "AddressTest.sol": __ADDRESS,
   "Intervening.sol": __INTERVENING,
-  "InterveningLib.sol": __INTERVENINGLIB
+  "InterveningLib.sol": __INTERVENINGLIB,
+  "ModifierTest.sol": __MODIFIERS
 };
 
 let migrations = {
@@ -214,11 +237,57 @@ describe("Variable IDs", function() {
 
     await session.continueUntilBreakpoint();
     while (!session.view(trace.finished)) {
-      values.push((await session.variable("nbang")).toNumber());
+      values.push(
+        Codec.Format.Utils.Inspect.nativize(await session.variable("nbang"))
+      );
       await session.continueUntilBreakpoint();
     }
 
     assert.deepEqual(values, [3, 2, 1, 0, 1, 1, 2, 6]);
+  });
+
+  it("Distinguishes between modifier invocations", async function() {
+    this.timeout(8000);
+    let instance = await abstractions.ModifierTest.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      files,
+      contracts: artifacts
+    });
+
+    let session = bugger.connect();
+    debug("sourceId %d", session.view(solidity.current.source).id);
+
+    let sourceId = session.view(solidity.current.source).id;
+    let source = session.view(solidity.current.source).source;
+    await session.addBreakpoint({
+      sourceId,
+      line: lineOf("BREAK HERE #1", source)
+    });
+    await session.addBreakpoint({
+      sourceId,
+      line: lineOf("BREAK HERE #2", source)
+    });
+
+    var xValues = [];
+    var tempValues = [];
+
+    await session.continueUntilBreakpoint();
+    while (!session.view(trace.finished)) {
+      xValues.push(
+        Codec.Format.Utils.Inspect.nativize(await session.variable("x"))
+      );
+      tempValues.push(
+        Codec.Format.Utils.Inspect.nativize(await session.variable("temp"))
+      );
+      await session.continueUntilBreakpoint();
+    }
+
+    assert.deepEqual(xValues, [3, 5, 5, 3]);
+    assert.deepEqual(tempValues, [4, 6, 6, 4]);
   });
 
   it("Stays at correct stackframe after contract call", async function() {

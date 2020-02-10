@@ -15,6 +15,7 @@ describe("truffle migrate", () => {
         config = conf;
         config.network = "development";
         config.logger = { log: () => {} };
+        config.workingDirectory = conf.working_directory;
       })
       .then(() => Server.start(done));
   });

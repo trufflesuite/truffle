@@ -1,7 +1,10 @@
 const ReplManager = require("./repl");
 const Command = require("./command");
 const provision = require("@truffle/provisioner");
-const { Web3Shim } = require("@truffle/interface-adapter");
+const {
+  Web3Shim,
+  createInterfaceAdapter
+} = require("@truffle/interface-adapter");
 const contract = require("@truffle/contract");
 const vm = require("vm");
 const expect = require("@truffle/expect");
@@ -43,6 +46,10 @@ class Console extends EventEmitter {
     this.repl = options.repl || new ReplManager(options);
     this.command = new Command(tasks);
 
+    this.interfaceAdapter = createInterfaceAdapter({
+      provider: options.provider,
+      networkType: options.networks[options.network].type
+    });
     this.web3 = new Web3Shim({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -50,6 +57,9 @@ class Console extends EventEmitter {
 
     // Bubble the ReplManager's exit event
     this.repl.on("exit", () => this.emit("exit"));
+
+    // Bubble the ReplManager's reset event
+    this.repl.on("reset", () => this.emit("reset"));
   }
 
   start(callback) {
@@ -61,13 +71,14 @@ class Console extends EventEmitter {
     this.options.repl = this.repl;
 
     try {
-      this.web3.eth.getAccounts().then(fetchedAccounts => {
+      this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
         const abstractions = this.provision();
 
         this.repl.start({
           prompt: "truffle(" + this.options.network + ")> ",
           context: {
             web3: this.web3,
+            interfaceAdapter: this.interfaceAdapter,
             accounts: fetchedAccounts
           },
           interpreter: this.interpret.bind(this),
@@ -87,7 +98,10 @@ class Console extends EventEmitter {
   provision() {
     let files;
     try {
-      files = fse.readdirSync(this.options.contracts_build_directory);
+      const unfilteredFiles = fse.readdirSync(
+        this.options.contracts_build_directory
+      );
+      files = unfilteredFiles.filter(file => file.match(".json") !== null);
     } catch (error) {
       // Error reading the build directory? Must mean it doesn't exist or we don't have access to it.
       // Couldn't provision the contracts if we wanted. It's possible we're hiding very rare FS

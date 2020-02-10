@@ -32,7 +32,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         .catch(() => null);
     });
 
-    it("should error w/ revert error if constructor reverts", async function() {
+    it("should error w/gas limit error if constructor reverts", async function() {
       try {
         await Example.new(13); // 13 fails a constructor require gate
         assert.fail();
@@ -42,7 +42,10 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
           !e.message.includes("Reason"),
           "Should not include reason message"
         );
-        assert(e.message.includes("revert"), "Should include revert message");
+        assert(
+          e.message.includes("exceeds gas limit"),
+          "Error should be gas limit err"
+        );
       }
     });
 
@@ -60,8 +63,8 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
           "Error message should include reason"
         );
         assert(
-          e.message.includes("revert reasonstring"),
-          "Error should be revert w/ reason"
+          e.message.includes("exceeds gas limit"),
+          "Error should be gas limit err"
         );
       }
     });
@@ -85,10 +88,22 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         await Example.new(1, { gas: 10 });
         assert.fail();
       } catch (e) {
-        assert(e.stack.includes("Error: base fee exceeds gas limit"), "Should keep hijacked error description");
-        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
-        assert(e.hijackedStack.includes("Error: base fee exceeds gas limit"), "Should preserve hijacked error message");
-        assert(e.hijackedStack.includes("dist/runTx.js:"), "Should preserve hijacked stack details");
+        assert(
+          e.stack.includes("Error: base fee exceeds gas limit"),
+          "Should keep hijacked error description"
+        );
+        assert(
+          e.stack.includes("/test/errors.js:"),
+          "Should include original stack details"
+        );
+        assert(
+          e.hijackedStack.includes("Error: base fee exceeds gas limit"),
+          "Should preserve hijacked error message"
+        );
+        assert(
+          e.hijackedStack.includes("dist/runTx.js:"),
+          "Should preserve hijacked stack details"
+        );
       }
     });
   });
@@ -216,7 +231,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
     // NB: this error is different than the `invalid` opcode error
     // produced when the vmErrors flag is on.
     it("errors with OOG on internal OOG", async function() {
-      this.timeout(5000);
+      this.timeout(40000);
 
       const example = await Example.new(1);
       try {
@@ -236,10 +251,22 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         await example.getValue("apples", "oranges", "pineapples");
         assert.fail();
       } catch (e) {
-        assert(e.stack.includes("Error: Invalid number of"), "Should keep hijacked error description");
-        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
-        assert(e.hijackedStack.includes("Error: Invalid number of"), "Should preserve hijacked error message");
-        assert(e.hijackedStack.includes("/lib/execute.js:"), "Should preserve hijacked stack details");
+        assert(
+          e.stack.includes("Error: Invalid number of"),
+          "Should keep hijacked error description"
+        );
+        assert(
+          e.stack.includes("/test/errors.js:"),
+          "Should include original stack details"
+        );
+        assert(
+          e.hijackedStack.includes("Error: Invalid number of"),
+          "Should preserve hijacked error message"
+        );
+        assert(
+          e.hijackedStack.includes("/lib/execute.js:"),
+          "Should preserve hijacked stack details"
+        );
       }
     });
 
@@ -249,25 +276,55 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         await example.triggerRequireWithReasonError();
         assert.fail();
       } catch (e) {
-        assert(e.stack.includes("RuntimeError"), "Should keep hijacked error type");
-        assert(e.stack.includes("VM Exception"), "Should keep hijacked error details");
-        assert(e.stack.includes("revert reasonstring"), "Should keep hijacked error description");
-        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
-        assert(e.hijackedStack.includes("revert reasonstring"), "Should preserve hijacked error message");
-        assert(e.hijackedStack.includes("/utils/runtimeerror.js:"), "Should preserve hijacked stack details");
+        assert(
+          e.stack.includes("RuntimeError"),
+          "Should keep hijacked error type"
+        );
+        assert(
+          e.stack.includes("VM Exception"),
+          "Should keep hijacked error details"
+        );
+        assert(
+          e.stack.includes("revert reasonstring"),
+          "Should keep hijacked error description"
+        );
+        assert(
+          e.stack.includes("/test/errors.js:"),
+          "Should include original stack details"
+        );
+        assert(
+          e.hijackedStack.includes("revert reasonstring"),
+          "Should preserve hijacked error message"
+        );
+        assert(
+          e.hijackedStack.includes("/utils/runtimeerror.js:"),
+          "Should preserve hijacked stack details"
+        );
       }
     });
 
     it("should append original stacktrace for argument parsing error", async function() {
       const example = await Example.new(1);
       try {
-        await example.setValue('foo');
+        await example.setValue("foo");
         assert.fail();
       } catch (e) {
-        assert(e.stack.includes("Error: invalid number value ("), "Should keep hijacked error description");
-        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
-        assert(e.hijackedStack.includes("Error: invalid number value ("), "Should preserve hijacked error message");
-        assert(e.hijackedStack.includes("/utils/abi-coder.js:"), "Should preserve hijacked stack details");
+        assert(
+          e.stack.includes("Error: invalid number value ("),
+          "Should keep hijacked error description"
+        );
+        assert(
+          e.stack.includes("/test/errors.js:"),
+          "Should include original stack details"
+        );
+        assert(
+          e.hijackedStack.includes("Error: invalid number value ("),
+          "Should preserve hijacked error message"
+        );
+        assert(
+          e.hijackedStack.includes("/utils/abi-coder.js:"),
+          "Should preserve hijacked stack details"
+        );
       }
     });
 
@@ -277,10 +334,22 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         await example.setValue(10, { gas: 10 });
         assert.fail();
       } catch (e) {
-        assert(e.stack.includes("Error: base fee exceeds gas limit"), "Should keep hijacked error description");
-        assert(e.stack.includes("/test/errors.js:"), "Should include original stack details");
-        assert(e.hijackedStack.includes("Error: base fee exceeds gas limit"), "Should preserve hijacked error message");
-        assert(e.hijackedStack.includes("dist/runTx.js:"), "Should preserve hijacked stack details");
+        assert(
+          e.stack.includes("Error: base fee exceeds gas limit"),
+          "Should keep hijacked error description"
+        );
+        assert(
+          e.stack.includes("/test/errors.js:"),
+          "Should include original stack details"
+        );
+        assert(
+          e.hijackedStack.includes("Error: base fee exceeds gas limit"),
+          "Should preserve hijacked error message"
+        );
+        assert(
+          e.hijackedStack.includes("dist/runTx.js:"),
+          "Should preserve hijacked stack details"
+        );
       }
     });
   });

@@ -1,5 +1,4 @@
-// Using web3 for its sha function...
-var Web3 = require("web3");
+const web3Utils = require("web3-utils");
 const semver = require("semver");
 const Native = require("@truffle/compile-solidity/compilerSupplier/loadingStrategies/Native");
 
@@ -11,7 +10,9 @@ var Deployed = {
     var self = this;
 
     var source = "";
-    source += "pragma solidity ^0.5.0; \n\n library DeployedAddresses {" + "\n";
+    source +=
+      "pragma solidity >= 0.5.0 < 0.7.0; \n\n library DeployedAddresses {" +
+      "\n";
 
     Object.keys(mapping).forEach(function(name) {
       var address = mapping[name];
@@ -47,9 +48,8 @@ var Deployed = {
 
   // Pulled from ethereumjs-util, but I don't want all its dependencies at the moment.
   toChecksumAddress: function(address) {
-    var web3 = new Web3();
     address = address.toLowerCase().replace("0x", "");
-    var hash = web3.utils.sha3(address).replace("0x", "");
+    const hash = web3Utils.sha3(address).replace("0x", "");
     var ret = "0x";
 
     for (var i = 0; i < address.length; i++) {

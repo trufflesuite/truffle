@@ -2,6 +2,7 @@ const path = require("path");
 const assert = require("assert");
 const Resolver = require("@truffle/resolver");
 const compile = require("../index");
+const Config = require("@truffle/config");
 
 describe("JSparser", () => {
   const options = {
@@ -33,7 +34,9 @@ describe("JSparser", () => {
     options.paths = paths;
     options.resolver = new Resolver(options);
 
-    compile.with_dependencies(options, (err, result) => {
+    const config = Config.default().merge(options);
+
+    compile.with_dependencies(config, (err, result) => {
       if (err) return done(err);
 
       // This contract imports / inherits
@@ -57,7 +60,9 @@ describe("JSparser", () => {
     options.paths = paths;
     options.resolver = new Resolver(options);
 
-    compile.with_dependencies(options, (err, result) => {
+    const config = Config.default().merge(options);
+
+    compile.with_dependencies(config, (err, result) => {
       if (err) return done(err);
 
       // This contract imports / inherits
@@ -80,7 +85,9 @@ describe("JSparser", () => {
     options.paths = paths;
     options.resolver = new Resolver(options);
 
-    compile.with_dependencies(options, (err, result) => {
+    const config = Config.default().merge(options);
+
+    compile.with_dependencies(config, (err, result) => {
       if (result) {
         assert(false, "should have failed!");
         done();

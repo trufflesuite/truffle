@@ -1,38 +1,27 @@
-var EPMSource = require("./epm");
-var NPMSource = require("./npm");
-var GlobalNPMSource = require("./globalnpm");
-var FSSource = require("./fs");
-var whilst = require("async/whilst");
-var contract = require("@truffle/contract");
-var expect = require("@truffle/expect");
-var provision = require("@truffle/provisioner");
+const whilst = require("async/whilst");
+const contract = require("@truffle/contract");
+const expect = require("@truffle/expect");
+const provision = require("@truffle/provisioner");
+const sources = require("./sources");
 
 function Resolver(options) {
   expect.options(options, ["working_directory", "contracts_build_directory"]);
 
   this.options = options;
-
-  this.sources = [
-    new EPMSource(options.working_directory, options.contracts_build_directory),
-    new NPMSource(options.working_directory),
-    new GlobalNPMSource(),
-    new FSSource(options.working_directory, options.contracts_build_directory)
-  ];
+  this.sources = sources(options);
 }
 
 // This function might be doing too much. If so, too bad (for now).
 Resolver.prototype.require = function(import_path, search_path) {
-  var self = this;
-
-  for (let i = 0; i < self.sources.length; i++) {
-    var source = self.sources[i];
-    var result = source.require(import_path, search_path);
+  let abstraction;
+  this.sources.forEach(source => {
+    const result = source.require(import_path, search_path);
     if (result) {
-      var abstraction = contract(result);
-      provision(abstraction, self.options);
-      return abstraction;
+      abstraction = contract(result);
+      provision(abstraction, this.options);
     }
-  }
+  });
+  if (abstraction) return abstraction;
   throw new Error(
     "Could not find artifacts for " + import_path + " from any sources"
   );
@@ -48,28 +37,26 @@ Resolver.prototype.resolve = function(import_path, imported_from, callback) {
 
   var resolved_body = null;
   var resolved_path = null;
-  var current_index = -1;
-  var current_source;
+  var source;
+  var current_index = 0;
 
   whilst(
     function() {
-      return !resolved_body && current_index < self.sources.length - 1;
+      return !resolved_body && current_index <= self.sources.length - 1;
     },
     function(next) {
-      current_index += 1;
-      current_source = self.sources[current_index];
-
-      current_source.resolve(import_path, imported_from, function(
-        err,
-        body,
-        file_path
-      ) {
-        if (!err && body) {
-          resolved_body = body;
-          resolved_path = file_path;
-        }
-        next(err);
-      });
+      source = self.sources[current_index];
+      source
+        .resolve(import_path, imported_from)
+        .then(result => {
+          if (result.body) {
+            resolved_body = result.body;
+            resolved_path = result.filePath;
+          }
+          current_index++;
+          next();
+        })
+        .catch(next);
     },
     function(err) {
       if (err) return callback(err);
@@ -84,7 +71,7 @@ Resolver.prototype.resolve = function(import_path, imported_from, callback) {
         return callback(new Error(message));
       }
 
-      callback(null, resolved_body, resolved_path, current_source);
+      callback(null, resolved_body, resolved_path, source);
     }
   );
 };

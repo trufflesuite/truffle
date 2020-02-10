@@ -48,7 +48,7 @@ const command = {
     ]
   },
   run: function(options, done) {
-    const Contracts = require("@truffle/workflow-compile");
+    const Contracts = require("@truffle/workflow-compile/new");
     const Config = require("@truffle/config");
     const config = Config.detect(options);
 
@@ -59,14 +59,18 @@ const command = {
         .catch(done);
     } else {
       Contracts.compile(config)
+        .then(({ contracts }) => Contracts.save(config, contracts))
         .then(() => done())
         .catch(done);
     }
   },
+
   listVersions: async function(options) {
-    const CompilerSupplier = require("@truffle/compile-solidity")
-      .CompilerSupplier;
-    const supplier = new CompilerSupplier();
+    const { CompilerSupplier } = require("@truffle/compile-solidity");
+    const supplier = new CompilerSupplier({
+      solcConfig: options.compilers.solc,
+      events: options.events
+    });
 
     const log = options.logger.log;
     options.list = options.list.length ? options.list : "releases";

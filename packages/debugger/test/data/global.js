@@ -8,12 +8,12 @@ import Ganache from "ganache-core";
 import { prepareContracts, lineOf } from "../helpers";
 import Debugger from "lib/debugger";
 
-import * as TruffleDecodeUtils from "@truffle/decode-utils";
+import * as Codec from "@truffle/codec";
 
 import solidity from "lib/solidity/selectors";
 
 const __GLOBAL = `
-pragma solidity ^0.5.4;
+pragma solidity ^0.6.1;
 
 contract GlobalTest {
 
@@ -116,16 +116,13 @@ library GlobalTestLib {
     GlobalTest.Msg memory __msg;
     GlobalTest.Tx memory __tx;
     GlobalTest.Block memory __block;
-    GlobalTestLib __this;
     uint __now;
-    __this = this;
     __now = now;
     __msg = GlobalTest.Msg(msg.data, msg.sender, msg.sig, msg.value);
     __tx = GlobalTest.Tx(tx.origin, tx.gasprice);
     __block = GlobalTest.Block(block.coinbase, block.difficulty,
       block.gaslimit, block.number, block.timestamp);
-    emit Done(x + uint(address(__this)) + __now       //BREAK LIBRARY
-      + __msg.value + __tx.gasprice + __block.number);
+    emit Done(x + __now + __msg.value + __tx.gasprice + __block.number); //BREAK LIBRARY
   }
 }
 `;
@@ -158,12 +155,10 @@ describe("Globally-available variables", function() {
   var files;
 
   before("Create Provider", async function() {
-    this.skip();
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
   before("Prepare contracts and artifacts", async function() {
-    this.skip();
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources, migrations);
@@ -173,7 +168,6 @@ describe("Globally-available variables", function() {
   });
 
   it("Gets globals correctly in simple call", async function() {
-    this.skip();
     this.timeout(8000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.run(9, { value: 100 });
@@ -189,7 +183,7 @@ describe("Globally-available variables", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -201,8 +195,7 @@ describe("Globally-available variables", function() {
   });
 
   it("Gets globals correctly in nested call", async function() {
-    this.skip();
-    this.timeout(8000);
+    this.timeout(12000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.runRun(9, { value: 100 });
     let txHash = receipt.tx;
@@ -223,7 +216,7 @@ describe("Globally-available variables", function() {
     });
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -235,7 +228,6 @@ describe("Globally-available variables", function() {
   });
 
   it("Gets globals correctly in static call", async function() {
-    this.skip();
     this.timeout(8000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.runStatic(9);
@@ -257,7 +249,7 @@ describe("Globally-available variables", function() {
     });
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -269,7 +261,6 @@ describe("Globally-available variables", function() {
   });
 
   it("Gets globals correctly in library call", async function() {
-    this.skip();
     this.timeout(8000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.runLib(9, { value: 100 });
@@ -291,11 +282,10 @@ describe("Globally-available variables", function() {
     });
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
-    assert.equal(variables.this, variables.__this);
     assert.deepEqual(variables.msg, variables.__msg);
     assert.deepEqual(variables.tx, variables.__tx);
     assert.deepEqual(variables.block, variables.__block);
@@ -303,8 +293,7 @@ describe("Globally-available variables", function() {
   });
 
   it("Gets globals correctly in simple creation", async function() {
-    this.skip();
-    this.timeout(8000);
+    this.timeout(12000);
     let contract = await abstractions.CreationTest.new(9, { value: 100 });
     let txHash = contract.transactionHash;
 
@@ -318,7 +307,7 @@ describe("Globally-available variables", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
@@ -330,8 +319,7 @@ describe("Globally-available variables", function() {
   });
 
   it("Gets globals correctly in nested creation", async function() {
-    this.skip();
-    this.timeout(8000);
+    this.timeout(12000);
     let instance = await abstractions.GlobalTest.deployed();
     let receipt = await instance.runCreate(9, { value: 100 });
     let txHash = receipt.tx;
@@ -352,7 +340,7 @@ describe("Globally-available variables", function() {
     });
     await session.continueUntilBreakpoint();
 
-    const variables = TruffleDecodeUtils.Conversion.cleanBNs(
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
       await session.variables()
     );
 
