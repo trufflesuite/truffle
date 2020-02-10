@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["esnext", "dom"],
+    "target": "es6",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs",
+    "outDir": "../dist",
+    "strictBindCallApply": true,
+    "paths": {
+      "db": ["../src"],
+      "db/*": ["../src/*"],
+      "test/*": ["../test/*"]
+    },
+    "rootDir": "..",
+    "baseUrl": ".",
+    "types": [
+      "express",
+      "jest",
+      "node",
+      "pouchdb"
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "test/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -63,7 +63,7 @@
     "source-map-support": "^0.5.3",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",
-    "truffle-db": "^0.1.0-0",
+    "db": "^0.1.0-0",
     "universal-analytics": "^0.4.17",
     "web3": "1.2.1",
     "web3-utils": "1.2.1",
