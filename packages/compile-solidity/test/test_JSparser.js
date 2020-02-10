@@ -51,7 +51,7 @@ describe("JSparser", () => {
   it("resolves imports quickly when using solcjs parser instead of native solc", done => {
     options.compilers.solc.version = "native";
     delete options.compilers.solc.docker;
-    options.contracts_directory = path.join(__dirname, "./sources/v0.5.x");
+    options.contracts_directory = path.join(__dirname, "./sources/v0.6.x");
 
     const paths = [];
     paths.push(path.join(__dirname, "./sources/v0.5.x/ComplexOrdered.sol"));
