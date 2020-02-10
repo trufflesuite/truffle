@@ -54,8 +54,8 @@ describe("JSparser", () => {
     options.contracts_directory = path.join(__dirname, "./sources/v0.6.x");
 
     const paths = [];
-    paths.push(path.join(__dirname, "./sources/v0.5.x/ComplexOrdered.sol"));
-    paths.push(path.join(__dirname, "./sources/v0.5.x/InheritB.sol"));
+    paths.push(path.join(__dirname, "./sources/v0.6.x/ComplexOrdered.sol"));
+    paths.push(path.join(__dirname, "./sources/v0.6.x/InheritB.sol"));
 
     options.paths = paths;
     options.resolver = new Resolver(options);
