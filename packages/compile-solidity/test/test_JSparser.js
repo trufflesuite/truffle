@@ -72,7 +72,7 @@ describe("JSparser", () => {
       );
       done();
     });
-  }).timeout(8000);
+  }).timeout(20000);
 
   it("properly throws when passed an invalid parser value", done => {
     options.compilers.solc.parser = "badParser";
