@@ -150,7 +150,7 @@ Creates an instance of the contract abstraction representing the contract at its
 
 #### `MyContract.transactionHash`
 
-This property accesses the hash of the transaction in which the contract was `deployed()`.
+This property accesses the hash of the transaction in which the contract was deployed. This field gets populated for contract objects created with `.deployed()` or `.new()` but not with `.at()`.
 
 #### `MyContract.link(instance)`
 
