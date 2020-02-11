@@ -52,7 +52,13 @@ class Migration {
     // `migrateFn` might be sync or async. We negotiate that difference in
     // `execute` through the deployer API.
     const migrateFn = fn(deployer, options.network, accounts);
-    await this._deploy(options, deployer, resolver, migrateFn);
+    await this._deploy(
+      options,
+      deployer,
+      resolver,
+      migrateFn,
+      interfaceAdapter
+    );
   }
 
   /**
@@ -62,8 +68,9 @@ class Migration {
    * @param  {Object}   deployer    truffle module
    * @param  {Object}   resolver    truffle module
    * @param  {[type]}   migrateFn   module.exports of a migrations.js
+   * @param  {Object}   interfaceAdapter interfaceAdapter
    */
-  async _deploy(options, deployer, resolver, migrateFn) {
+  async _deploy(options, deployer, resolver, migrateFn, interfaceAdapter) {
     try {
       await deployer.start();
 
@@ -76,8 +83,14 @@ class Migration {
       // Migrate without saving
       if (options.save === false) return;
 
-      // Write migrations record to chain
-      const Migrations = resolver.require("Migrations");
+      let Migrations;
+
+      // Attempt to write migrations record to chain
+      try {
+        Migrations = resolver.require("Migrations");
+      } catch (error) {
+        // do nothing, Migrations contract optional
+      }
 
       if (Migrations && Migrations.isDeployed()) {
         const message = `Saving migration to chain.`;
@@ -96,7 +109,7 @@ class Migration {
         }
       }
 
-      const { web3, tezos } = Migrations.interfaceAdapter;
+      const { web3, tezos } = interfaceAdapter;
 
       if (web3) await this.emitter.emit("postEvmMigrate", this.isLast);
       if (tezos) await this.emitter.emit("postTezosMigrate", this.isLast);
