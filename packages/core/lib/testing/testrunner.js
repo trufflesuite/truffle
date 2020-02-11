@@ -175,11 +175,11 @@ TestRunner.prototype.endTest = async function(mocha) {
     fromBlock: this.currentTestStartBlock.toNumber()
   });
 
-  const filteredLogs = logs.filter(log => {
+  const userDefinedEventLogs = logs.filter(log => {
     return !log.decodings.length || log.decodings[0].abi.name !== "TestEvent";
   });
 
-  if (filteredLogs.length === 0) {
+  if (userDefinedEventLogs.length === 0) {
     this.logger.log("    > No events were emitted");
     return;
   }
@@ -188,7 +188,7 @@ TestRunner.prototype.endTest = async function(mocha) {
   this.logger.log("    ---------------------------");
   this.logger.log("");
 
-  for (const log of filteredLogs) {
+  for (const log of userDefinedEventLogs) {
     switch (log.decodings.length) {
       case 0:
         this.logger.log(`    Warning: Could not decode event!`);
