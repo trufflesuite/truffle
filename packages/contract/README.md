@@ -53,7 +53,7 @@ Each instance is tied to a specific address on the Ethereum network, and each in
 or equivalently in ES6 <sup>(node.js 8 or newer)</sup>:  
 
   ```javascript
-  const deployed = await MyContract.deployed();
+  const instance = await MyContract.deployed();
   const result = await instance.someFunction(5);  
   ```  
 
