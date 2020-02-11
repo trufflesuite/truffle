@@ -19,8 +19,10 @@ const SolidityTest = {
 
     // Set up our runner's needs first.
     suite.beforeAll("prepare suite", async function() {
-      await runner.initialize.bind(runner)();
+      // This compiles some native contracts (including the assertion library
+      // contracts) which need to be compiled before initializing the runner
       await self.compileNewAbstractInterface.bind(this)(runner);
+      await runner.initialize.bind(runner)();
       await self.deployTestDependencies.bind(
         this
       )(abstraction, dependencyPaths, runner);
