@@ -6,7 +6,7 @@ const command = {
     usage: "truffle version",
     options: []
   },
-  run: function(options, done) {
+  run: function(options) {
     let config;
     const version = require("../version");
     const { logger } = options;
@@ -19,12 +19,11 @@ const command = {
       if (error.message === "Could not find suitable configuration file.") {
         config = Config.default();
       } else {
-        return done(error);
+        throw error;
       }
     }
 
     version.logAll(logger, config);
-    done();
   }
 };
 

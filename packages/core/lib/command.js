@@ -72,14 +72,12 @@ class Command {
     };
   }
 
-  run(inputStrings, options, callback) {
+  async run(inputStrings, options) {
     const result = this.getCommand(inputStrings, options.noAliases);
 
     if (result == null) {
-      return callback(
-        new TaskError(
-          "Cannot find command based on input: " + JSON.stringify(inputStrings)
-        )
+      throw new TaskError(
+        "Cannot find command based on input: " + JSON.stringify(inputStrings)
       );
     }
 
@@ -102,46 +100,42 @@ class Command {
     });
 
     // Check unsupported command line flag according to the option list in help
-    try {
-      // while in `console` & `develop`, input is passed as a string, not as an array
-      if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ");
-      // Method `extractFlags(args)` : Extracts the `--option` flags from arguments
-      const inputOptions = extractFlags(inputStrings);
-      const validOptions = result.command.help.options
-        .map(item => {
-          let opt = item.option.split(" ")[0];
-          return opt.startsWith("--") ? opt : null;
-        })
-        .filter(item => {
-          return item != null;
-        });
-
-      let invalidOptions = inputOptions.filter(
-        opt => !validOptions.includes(opt)
-      );
-
-      // TODO: Remove exception for 'truffle run' when plugin options support added.
-      if (invalidOptions.length > 0 && result.name !== "run") {
-        if (options.logger) {
-          const log = options.logger.log || options.logger.debug;
-          log(
-            "> Warning: possible unsupported (undocumented in help) command line option: " +
-              invalidOptions
-          );
-        }
-      }
-
-      const newOptions = Object.assign({}, clone, argv);
-
-      result.command.run(newOptions, callback);
-      analytics.send({
-        command: result.name ? result.name : "other",
-        args: result.argv._,
-        version: bundled || "(unbundled) " + core
+    // while in `console` & `develop`, input is passed as a string, not as an array
+    if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ");
+    // Method `extractFlags(args)` : Extracts the `--option` flags from arguments
+    const inputOptions = extractFlags(inputStrings);
+    const validOptions = result.command.help.options
+      .map(item => {
+        let opt = item.option.split(" ")[0];
+        return opt.startsWith("--") ? opt : null;
+      })
+      .filter(item => {
+        return item != null;
       });
-    } catch (err) {
-      callback(err);
+
+    let invalidOptions = inputOptions.filter(
+      opt => !validOptions.includes(opt)
+    );
+
+    // TODO: Remove exception for 'truffle run' when plugin options support added.
+    if (invalidOptions.length > 0 && result.name !== "run") {
+      if (options.logger) {
+        const log = options.logger.log || options.logger.debug;
+        log(
+          "> Warning: possible unsupported (undocumented in help) command line option: " +
+            invalidOptions
+        );
+      }
     }
+
+    const newOptions = Object.assign({}, clone, argv);
+
+    await result.command.run(newOptions);
+    analytics.send({
+      command: result.name ? result.name : "other",
+      args: result.argv._,
+      version: bundled || "(unbundled) " + core
+    });
   }
 
   displayGeneralHelp() {
