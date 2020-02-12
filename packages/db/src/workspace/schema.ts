@@ -1,6 +1,6 @@
 import { mergeSchemas } from "@gnd/graphql-tools";
 
-import { schema as rootSchema } from "db/schema";
+import { schema as rootSchema } from "@truffle/db/schema";
 
 export const schema = mergeSchemas({
   schemas: [

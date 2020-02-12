@@ -11,8 +11,8 @@
     "outDir": "../dist",
     "strictBindCallApply": true,
     "paths": {
-      "db": ["../src"],
-      "db/*": ["../src/*"],
+      "@truffle/db": ["../src"],
+      "@truffle/db/*": ["../src/*"],
       "test/*": ["../test/*"]
     },
     "rootDir": "..",

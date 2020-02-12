@@ -1,6 +1,6 @@
 const { ApolloServer } = require("apollo-server");
 
-const { TruffleDB } = require("db");
+const { TruffleDB } = require("@truffle/db");
 const Config = require("@truffle/config");
 
 const port = 4444;

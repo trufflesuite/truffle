@@ -1,8 +1,8 @@
 import { GraphQLSchema, DocumentNode, parse, execute } from "graphql";
 
-import { schema } from "db/data";
+import { schema } from "@truffle/db/data";
 
-import { Workspace } from "db/workspace";
+import { Workspace } from "@truffle/db/workspace";
 
 interface IConfig {
   contracts_build_directory: string;

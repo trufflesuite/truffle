@@ -1,7 +1,7 @@
 import PouchDB from "pouchdb";
 import PouchDBDebug from "pouchdb-debug";
 import PouchDBFind from "pouchdb-find";
-import { generateId } from "db/helpers";
+import { generateId } from "@truffle/db/helpers";
 
 import {
   CollectionDatabases,

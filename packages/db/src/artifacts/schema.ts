@@ -4,7 +4,7 @@ import {
   FilterRootFields
 } from "@gnd/graphql-tools";
 
-import { schema as rootSchema } from "db/schema";
+import { schema as rootSchema } from "@truffle/db/schema";
 import { schema as jsonSchema } from "./json";
 
 export const schema = mergeSchemas({

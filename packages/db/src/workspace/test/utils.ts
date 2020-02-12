@@ -2,9 +2,9 @@ import path from "path";
 
 import * as graphql from "graphql";
 
-import { Workspace, schema } from "db/workspace";
+import { Workspace, schema } from "@truffle/db/workspace";
 
-export { generateId } from "db/helpers";
+export { generateId } from "@truffle/db/helpers";
 
 import tmp from "tmp";
 import * as fse from "fs-extra";

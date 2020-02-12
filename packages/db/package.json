@@ -1,5 +1,5 @@
 {
-  "name": "db",
+  "name": "@truffle/db",
   "version": "0.1.0",
   "description": "Smart contract data aggregation",
   "keywords": [
@@ -94,8 +94,8 @@
       }
     },
     "moduleNameMapper": {
-      "^db/(.*)": "<rootDir>/src/$1",
-      "^db$": "<rootDir>/src",
+      "^@truffle/db/(.*)": "<rootDir>/src/$1",
+      "^@truffle/db$": "<rootDir>/src",
       "^test/(.*)": "<rootDir>/test/$1"
     },
     "testMatch": [
@@ -106,6 +106,6 @@
     ]
   },
   "_moduleAliases": {
-    "db": "db/dist/src"
+    "@truffle/db": "db/dist/src"
   }
 }

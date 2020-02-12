@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { TruffleDB } from "db";
+import { TruffleDB } from "@truffle/db";
 import { shimBytecode } from "@truffle/workflow-compile/shims";
 import tmp from "tmp";
 

@@ -2,9 +2,9 @@ import { transformSchema, FilterRootFields } from "@gnd/graphql-tools";
 
 import { scopeSchemas } from "./utils";
 
-import { abiSchema, schema as artifactsSchema } from "db/artifacts";
-import { schema as workspaceSchema } from "db/workspace";
-import { loaderSchema } from "db/loaders";
+import { abiSchema, schema as artifactsSchema } from "@truffle/db/artifacts";
+import { schema as workspaceSchema } from "@truffle/db/workspace";
+import { loaderSchema } from "@truffle/db/loaders";
 
 import { readInstructions } from "./bytecode";
 

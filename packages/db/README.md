@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-const truffleDb = require('db');
+const { TruffleDB } = require('@truffle/db');
 
 // TODO: DEMONSTRATE API
 ```
