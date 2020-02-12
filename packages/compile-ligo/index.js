@@ -1,5 +1,5 @@
 const path = require("path");
-const { exec } = require("child_process");
+const { exec, spawn } = require("child_process");
 const fs = require("fs");
 
 const async = require("async");
@@ -90,19 +90,53 @@ function execLigo(sourcePath, entryPoint, callback) {
   // denoted in the format of of the host filesystem. The latter volume parameter,
   // as well as the entry point, needs to be denoted in the format of the VM.
   // Because of this, we rewrite the VM paths relative to a mounted volume called "project".
-  let fullInternalSourcePath =
-    "/project" + sourcePath.replace(process.env.PWD, "");
-  const command = `docker run -v ${
-    process.env.PWD
-  }:/project --rm -i ligolang/ligo:next compile-contract --michelson-format=json ${fullInternalSourcePath} ${entryPoint}`;
 
-  exec(command, { maxBuffer: 600 * 1024 }, (err, stdout, stderr) => {
-    if (err)
+  // In order to make this work on all platforms, we first normalize every host path
+  // (working directory, and source path). We then construct a VM internal sourch path,
+  // using normalized working directory and source path. From there, we know this constructed
+  // internal source path won't contain any "gotcha's", such as double-escaped path separators,
+  // etc. From there, we replace all backslashes with forward slashes, which is the path
+  // separator expected within the internal source.
+  let currentWorkingDirectory = path.normalize(process.cwd());
+  sourcePath = path.normalize(sourcePath);
+
+  let fullInternalSourcePath = path
+    .normalize("/project" + sourcePath.replace(currentWorkingDirectory, ""))
+    .replace(/\\/g, "/");
+
+  // Use spawn() instead of exec() here so that the OS can take care of escaping args.
+  let docker = spawn("docker", [
+    "run",
+    "-v",
+    currentWorkingDirectory + ":/project",
+    "--rm",
+    "-i",
+    "ligolang/ligo:next",
+    "compile-contract",
+    "--michelson-format=json",
+    fullInternalSourcePath,
+    entryPoint
+  ]);
+
+  let stdout = "";
+  let stderr = "";
+
+  docker.stdout.on("data", data => {
+    stdout += data;
+  });
+
+  docker.stderr.on("data", data => {
+    stderr += data;
+  });
+
+  docker.on("close", code => {
+    if (code != 0 || stderr != "") {
       return callback(
         `${stderr}\n${colors.red(
           `Compilation of ${sourcePath} failed. See above.`
         )}`
       );
+    }
 
     const jsonContractOutput = stdout.trim();
 
