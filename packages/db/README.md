@@ -1,4 +1,4 @@
-# `db`
+# `@truffle/db`
 
 > TODO: description
 
