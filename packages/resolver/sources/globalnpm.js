@@ -32,7 +32,7 @@ GlobalNPM.prototype.require = function(import_path) {
   }
 };
 
-GlobalNPM.prototype.resolve = async function(import_path, imported_from) {
+GlobalNPM.prototype.resolve = async function(import_path, _imported_from) {
   let [package_name] = import_path.split("/", 1);
   let body;
   if (detectInstalled.sync(package_name)) {

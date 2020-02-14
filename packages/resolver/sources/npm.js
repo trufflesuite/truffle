@@ -31,7 +31,7 @@ NPM.prototype.require = function(import_path, search_path) {
   }
 };
 
-NPM.prototype.resolve = async function(import_path, imported_from) {
+NPM.prototype.resolve = async function(import_path, _imported_from) {
   // If nothing's found, body returns `undefined`
   var body;
   var modulesDir = this.working_directory;

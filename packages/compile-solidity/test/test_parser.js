@@ -8,6 +8,15 @@ describe("Parser", () => {
   let source = null;
   let solc;
 
+  const expected = [
+    "./Dependency.sol",
+    "./path/to/AnotherDep.sol",
+    "../../../path/to/AnotherDep.sol",
+    "ethpmpackage/Contract.sol",
+    "./somePath.sol",
+    "./someImportWithNoSpace.sol"
+  ];
+
   before("get code", async () => {
     source = fs.readFileSync(
       path.join(__dirname, "./sources/v0.4.15/MyContract.sol"),
@@ -28,19 +37,11 @@ describe("Parser", () => {
     // Note that this test is important because certain parts of the solidity
     // output cuts off path prefixes like "./" and "../../../". If we get the
     // imports list incorrectly, we'll have collisions.
-    const expected = [
-      "./Dependency.sol",
-      "./path/to/AnotherDep.sol",
-      "../../../path/to/AnotherDep.sol",
-      "ethpmpackage/Contract.sol",
-      "./somePath.sol",
-      "./someImportWithNoSpace.sol"
-    ];
 
     assert.deepEqual(imports, expected);
   });
 
-  it.skip("should return correct imports with native solc [ @native ]", () => {
+  it("should return correct imports with native solc [ @native ]", () => {
     const options = {
       events: { emit: () => {} },
       solcConfig: { version: "native" }
@@ -52,18 +53,12 @@ describe("Parser", () => {
       // Note that this test is important because certain parts of the solidity
       // output cuts off path prefixes like "./" and "../../../". If we get the
       // imports list incorrectly, we'll have collisions.
-      const expected = [
-        "./Dependency.sol",
-        "./path/to/AnotherDep.sol",
-        "../../../path/to/AnotherDep.sol",
-        "ethpmpackage/Contract.sol"
-      ];
 
       assert.deepEqual(imports, expected);
     });
   });
 
-  it.skip("should return correct imports with docker solc [ @native ]", () => {
+  it("should return correct imports with docker solc [ @native ]", () => {
     const options = {
       events: { emit: () => {} },
       solcConfig: {
@@ -78,12 +73,6 @@ describe("Parser", () => {
       // Note that this test is important because certain parts of the solidity
       // output cuts off path prefixes like "./" and "../../../". If we get the
       // imports list incorrectly, we'll have collisions.
-      const expected = [
-        "./Dependency.sol",
-        "./path/to/AnotherDep.sol",
-        "../../../path/to/AnotherDep.sol",
-        "ethpmpackage/Contract.sol"
-      ];
 
       assert.deepEqual(imports, expected);
     });
