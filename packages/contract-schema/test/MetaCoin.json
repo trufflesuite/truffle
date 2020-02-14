@@ -12,16 +12,19 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
           "name": "_from",
           "type": "address"
         },
         {
           "indexed": true,
+          "internalType": "address",
           "name": "_to",
           "type": "address"
         },
         {
           "indexed": false,
+          "internalType": "uint256",
           "name": "_value",
           "type": "uint256"
         }
@@ -33,10 +36,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "receiver",
           "type": "address"
         },
         {
+          "internalType": "uint256",
           "name": "amount",
           "type": "uint256"
         }
@@ -44,6 +49,7 @@
       "name": "sendCoin",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "sufficient",
           "type": "bool"
         }
@@ -56,6 +62,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "addr",
           "type": "address"
         }
@@ -63,6 +70,7 @@
       "name": "getBalanceInEth",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -75,6 +83,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "address",
           "name": "addr",
           "type": "address"
         }
@@ -82,6 +91,7 @@
       "name": "getBalance",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -91,15 +101,15 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.8+commit.23d335f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":true,\"inputs\":[{\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"getBalanceInEth\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"receiver\",\"type\":\"address\"},{\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"sendCoin\",\"outputs\":[{\"name\":\"sufficient\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"getBalance\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_from\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_to\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/home/mike/work/truffle/metacoin/contracts/MetaCoin.sol\":\"MetaCoin\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/mike/work/truffle/metacoin/contracts/ConvertLib.sol\":{\"keccak256\":\"0x64971bee9ef0af43109f80ffc9912eaea745c8d8ba775fe42d27e24ad307dab9\",\"urls\":[\"bzzr://0cf7c2951278cb5e786ca88a13e11558cd30b1f49f0662b55bc346f0c2ecd9ed\"]},\"/home/mike/work/truffle/metacoin/contracts/MetaCoin.sol\":{\"keccak256\":\"0x8a5ca0851c8caee3c536837e0e2f65052a6ff6bbbc7cfacc0d6f0b9b2d59d1ac\",\"urls\":[\"bzzr://8a0d816955eb2e5d0c4119f887bed9ce02e28e83b61b0b7545a22de3a97fc8f5\"]}},\"version\":1}",
-  "bytecode": "0x608060405234801561001057600080fd5b506127106000803273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020819055506103cd806100656000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c80637bd703e81461004657806390b98a111461009e578063f8b2cb4f14610104575b600080fd5b6100886004803603602081101561005c57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061015c565b6040518082815260200191505060405180910390f35b6100ea600480360360408110156100b457600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190505050610200565b604051808215151515815260200191505060405180910390f35b6101466004803603602081101561011a57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610359565b6040518082815260200191505060405180910390f35b600073__ConvertLib____________________________6396e4ee3d61018184610359565b60026040518363ffffffff1660e01b8152600401808381526020018281526020019250505060206040518083038186803b1580156101be57600080fd5b505af41580156101d2573d6000803e3d6000fd5b505050506040513d60208110156101e857600080fd5b81019080805190602001909291905050509050919050565b6000816000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205410156102515760009050610353565b816000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008282540392505081905550816000808573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825401925050819055508273ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef846040518082815260200191505060405180910390a3600190505b92915050565b60008060008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054905091905056fea165627a7a723058202b0b566dc91aa5cd79c06294c526ee762eb2058d5cbccca9034bb1d1a3dd33380029",
-  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c80637bd703e81461004657806390b98a111461009e578063f8b2cb4f14610104575b600080fd5b6100886004803603602081101561005c57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061015c565b6040518082815260200191505060405180910390f35b6100ea600480360360408110156100b457600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190505050610200565b604051808215151515815260200191505060405180910390f35b6101466004803603602081101561011a57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610359565b6040518082815260200191505060405180910390f35b600073__ConvertLib____________________________6396e4ee3d61018184610359565b60026040518363ffffffff1660e01b8152600401808381526020018281526020019250505060206040518083038186803b1580156101be57600080fd5b505af41580156101d2573d6000803e3d6000fd5b505050506040513d60208110156101e857600080fd5b81019080805190602001909291905050509050919050565b6000816000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205410156102515760009050610353565b816000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008282540392505081905550816000808573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825401925050819055508273ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef846040518082815260200191505060405180910390a3600190505b92915050565b60008060008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054905091905056fea165627a7a723058202b0b566dc91aa5cd79c06294c526ee762eb2058d5cbccca9034bb1d1a3dd33380029",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.12+commit.7709ece9\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"_to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"getBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"internalType\":\"address\",\"name\":\"addr\",\"type\":\"address\"}],\"name\":\"getBalanceInEth\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"sendCoin\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"sufficient\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/amal/dev/meta-coin/contracts/MetaCoin.sol\":\"MetaCoin\"},\"evmVersion\":\"petersburg\",\"libraries\":{},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/amal/dev/meta-coin/contracts/ConvertLib.sol\":{\"keccak256\":\"0xfde82bd17946d3836267b249a3805d7376587f40b08aecd17764223217a3c048\",\"urls\":[\"bzz-raw://768c78ccfa036bc0cad39c385961ad4aba48327f9752aa8992d36c4dc2a7384f\",\"dweb:/ipfs/QmQRjB1rSC8C38rX55ALgNosgsusHK71Tf7r4xHtqPuSd7\"]},\"/Users/amal/dev/meta-coin/contracts/MetaCoin.sol\":{\"keccak256\":\"0xbf496e14edf732985b418a96b3a8af216c781c3cf751f8db082444fec3f9d8e5\",\"urls\":[\"bzz-raw://490f52ad699aa2aea6ef336453727b8971be7d929d889c2fe4c3336e5c6eba0c\",\"dweb:/ipfs/QmYnHz8mARA92zvohkHSvXKg6hWQSqMP26KHc1Nt3GNqpv\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b506127106000803273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020819055506103d6806100656000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c80637bd703e81461004657806390b98a111461009e578063f8b2cb4f14610104575b600080fd5b6100886004803603602081101561005c57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061015c565b6040518082815260200191505060405180910390f35b6100ea600480360360408110156100b457600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190505050610200565b604051808215151515815260200191505060405180910390f35b6101466004803603602081101561011a57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610359565b6040518082815260200191505060405180910390f35b600073__ConvertLib____________________________6396e4ee3d61018184610359565b60026040518363ffffffff1660e01b8152600401808381526020018281526020019250505060206040518083038186803b1580156101be57600080fd5b505af41580156101d2573d6000803e3d6000fd5b505050506040513d60208110156101e857600080fd5b81019080805190602001909291905050509050919050565b6000816000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205410156102515760009050610353565b816000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008282540392505081905550816000808573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825401925050819055508273ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef846040518082815260200191505060405180910390a3600190505b92915050565b60008060008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054905091905056fea265627a7a723158200d1b00b70c8c9412d93b560cae926ab5808622ceb15cbde0e869f3b883fdccfb64736f6c634300050c0032",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c80637bd703e81461004657806390b98a111461009e578063f8b2cb4f14610104575b600080fd5b6100886004803603602081101561005c57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061015c565b6040518082815260200191505060405180910390f35b6100ea600480360360408110156100b457600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190505050610200565b604051808215151515815260200191505060405180910390f35b6101466004803603602081101561011a57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610359565b6040518082815260200191505060405180910390f35b600073__ConvertLib____________________________6396e4ee3d61018184610359565b60026040518363ffffffff1660e01b8152600401808381526020018281526020019250505060206040518083038186803b1580156101be57600080fd5b505af41580156101d2573d6000803e3d6000fd5b505050506040513d60208110156101e857600080fd5b81019080805190602001909291905050509050919050565b6000816000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205410156102515760009050610353565b816000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008282540392505081905550816000808573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825401925050819055508273ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef846040518082815260200191505060405180910390a3600190505b92915050565b60008060008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054905091905056fea265627a7a723158200d1b00b70c8c9412d93b560cae926ab5808622ceb15cbde0e869f3b883fdccfb64736f6c634300050c0032",
   "sourceMap": "324:674:1:-;;;461:56;8:9:-1;5:2;;;30:1;27;20:12;5:2;461:56:1;508:5;486:8;:19;495:9;486:19;;;;;;;;;;;;;;;:27;;;;324:674;;;;;;",
   "deployedSourceMap": "324:674:1:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;324:674:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;787:117;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;787:117:1;;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;520:264;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;520:264:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;907:89;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;907:89:1;;;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;787:117;846:4;862:10;:18;881:16;892:4;881:10;:16::i;:::-;898:1;862:38;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;862:38:1;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;862:38:1;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;862:38:1;;;;;;;;;;;;;;;;855:45;;787:117;;;:::o;520:264::-;584:15;632:6;609:8;:20;618:10;609:20;;;;;;;;;;;;;;;;:29;605:47;;;647:5;640:12;;;;605:47;680:6;656:8;:20;665:10;656:20;;;;;;;;;;;;;;;;:30;;;;;;;;;;;712:6;690:8;:18;699:8;690:18;;;;;;;;;;;;;;;;:28;;;;;;;;;;;748:8;727:38;;736:10;727:38;;;758:6;727:38;;;;;;;;;;;;;;;;;;776:4;769:11;;520:264;;;;;:::o;907:89::-;961:4;978:8;:14;987:4;978:14;;;;;;;;;;;;;;;;971:21;;907:89;;;:::o",
-  "source": "pragma solidity >=0.4.25 <0.6.0;\n\nimport \"./ConvertLib.sol\";\n\n// This is just a simple example of a coin-like contract.\n// It is not standards compatible and cannot be expected to talk to other\n// coin/token contracts. If you want to create a standards-compliant\n// token, see: https://github.com/ConsenSys/Tokens. Cheers!\n\ncontract MetaCoin {\n\tmapping (address => uint) balances;\n\n\tevent Transfer(address indexed _from, address indexed _to, uint256 _value);\n\n\tconstructor() public {\n\t\tbalances[tx.origin] = 10000;\n\t}\n\n\tfunction sendCoin(address receiver, uint amount) public returns(bool sufficient) {\n\t\tif (balances[msg.sender] < amount) return false;\n\t\tbalances[msg.sender] -= amount;\n\t\tbalances[receiver] += amount;\n\t\temit Transfer(msg.sender, receiver, amount);\n\t\treturn true;\n\t}\n\n\tfunction getBalanceInEth(address addr) public view returns(uint){\n\t\treturn ConvertLib.convert(getBalance(addr),2);\n\t}\n\n\tfunction getBalance(address addr) public view returns(uint) {\n\t\treturn balances[addr];\n\t}\n}\n",
-  "sourcePath": "/home/mike/work/truffle/metacoin/contracts/MetaCoin.sol",
+  "source": "pragma solidity >=0.4.25 <0.7.0;\n\nimport \"./ConvertLib.sol\";\n\n// This is just a simple example of a coin-like contract.\n// It is not standards compatible and cannot be expected to talk to other\n// coin/token contracts. If you want to create a standards-compliant\n// token, see: https://github.com/ConsenSys/Tokens. Cheers!\n\ncontract MetaCoin {\n\tmapping (address => uint) balances;\n\n\tevent Transfer(address indexed _from, address indexed _to, uint256 _value);\n\n\tconstructor() public {\n\t\tbalances[tx.origin] = 10000;\n\t}\n\n\tfunction sendCoin(address receiver, uint amount) public returns(bool sufficient) {\n\t\tif (balances[msg.sender] < amount) return false;\n\t\tbalances[msg.sender] -= amount;\n\t\tbalances[receiver] += amount;\n\t\temit Transfer(msg.sender, receiver, amount);\n\t\treturn true;\n\t}\n\n\tfunction getBalanceInEth(address addr) public view returns(uint){\n\t\treturn ConvertLib.convert(getBalance(addr),2);\n\t}\n\n\tfunction getBalance(address addr) public view returns(uint) {\n\t\treturn balances[addr];\n\t}\n}\n",
+  "sourcePath": "/Users/amal/dev/meta-coin/contracts/MetaCoin.sol",
   "ast": {
-    "absolutePath": "/home/mike/work/truffle/metacoin/contracts/MetaCoin.sol",
+    "absolutePath": "/Users/amal/dev/meta-coin/contracts/MetaCoin.sol",
     "exportedSymbols": {
       "MetaCoin": [
         112
@@ -116,14 +126,14 @@
           "0.4",
           ".25",
           "<",
-          "0.6",
+          "0.7",
           ".0"
         ],
         "nodeType": "PragmaDirective",
         "src": "0:32:1"
       },
       {
-        "absolutePath": "/home/mike/work/truffle/metacoin/contracts/ConvertLib.sol",
+        "absolutePath": "/Users/amal/dev/meta-coin/contracts/ConvertLib.sol",
         "file": "./ConvertLib.sol",
         "id": 19,
         "nodeType": "ImportDirective",
@@ -327,7 +337,7 @@
                           "name": "tx",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 196,
+                          "referencedDeclaration": 176,
                           "src": "495:2:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_transaction",
@@ -458,7 +468,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 184,
+                          "referencedDeclaration": 164,
                           "src": "618:3:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -572,7 +582,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 184,
+                          "referencedDeclaration": 164,
                           "src": "665:3:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -714,7 +724,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 184,
+                          "referencedDeclaration": 164,
                           "src": "736:3:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -1297,7 +1307,7 @@
     "src": "0:999:1"
   },
   "legacyAST": {
-    "absolutePath": "/home/mike/work/truffle/metacoin/contracts/MetaCoin.sol",
+    "absolutePath": "/Users/amal/dev/meta-coin/contracts/MetaCoin.sol",
     "exportedSymbols": {
       "MetaCoin": [
         112
@@ -1314,14 +1324,14 @@
           "0.4",
           ".25",
           "<",
-          "0.6",
+          "0.7",
           ".0"
         ],
         "nodeType": "PragmaDirective",
         "src": "0:32:1"
       },
       {
-        "absolutePath": "/home/mike/work/truffle/metacoin/contracts/ConvertLib.sol",
+        "absolutePath": "/Users/amal/dev/meta-coin/contracts/ConvertLib.sol",
         "file": "./ConvertLib.sol",
         "id": 19,
         "nodeType": "ImportDirective",
@@ -1525,7 +1535,7 @@
                           "name": "tx",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 196,
+                          "referencedDeclaration": 176,
                           "src": "495:2:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_transaction",
@@ -1656,7 +1666,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 184,
+                          "referencedDeclaration": 164,
                           "src": "618:3:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -1770,7 +1780,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 184,
+                          "referencedDeclaration": 164,
                           "src": "665:3:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -1912,7 +1922,7 @@
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 184,
+                          "referencedDeclaration": 164,
                           "src": "736:3:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
@@ -2496,11 +2506,47 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.5.8+commit.23d335f2.Emscripten.clang"
+    "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
-  "networks": {},
-  "schemaVersion": "3.0.10",
-  "updatedAt": "2019-06-04T22:46:43.385Z",
+  "networks": {
+    "69420": {
+      "events": {
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "_to",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_value",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        }
+      },
+      "links": {
+        "ConvertLib": "0xB5AF56dF69655d7a68d248EA963eD1416Dd053E2"
+      },
+      "address": "0x0440CA1E0AE55F562b73da4Ab078A0E46c8fBfB4",
+      "transactionHash": "0x2edf494a263aaa7645563ba4c45a68cee5f15c8bc29eed9224f0504eb057754a"
+    }
+  },
+  "schemaVersion": "3.0.20",
+  "updatedAt": "2020-01-29T01:33:51.405Z",
+  "networkType": "ethereum",
   "devdoc": {
     "methods": {}
   },

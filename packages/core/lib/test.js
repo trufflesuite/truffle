@@ -1,4 +1,3 @@
-const Mocha = require("mocha");
 const colors = require("colors");
 const chai = require("chai");
 const path = require("path");
@@ -18,6 +17,8 @@ const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
 const debug = require("debug")("lib:test");
+
+let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
 chai.use(require("./assertions"));
 
@@ -57,7 +58,7 @@ const Test = {
     // e.g., https://github.com/ethereum/web3.js/blob/master/lib/web3/allevents.js#L61
     // Output looks like this during tests: https://gist.github.com/tcoulter/1988349d1ec65ce6b958
     const warn = config.logger.warn;
-    config.logger.warn = message => {
+    config.logger.warn = function(message) {
       if (message === "cannot find event for log") {
         return;
       } else {
@@ -150,9 +151,15 @@ const Test = {
     if (config.colors != null) mochaConfig.useColors = config.colors;
 
     // Default to true if configuration isn't set anywhere.
-    if (mochaConfig.useColors == null) mochaConfig.useColors = true;
+    if (mochaConfig.useColors == null) {
+      mochaConfig.useColors = true;
+    }
 
-    return new Mocha(mochaConfig);
+    Mocha = mochaConfig.package || require("mocha");
+    delete mochaConfig.package;
+    const mocha = new Mocha(mochaConfig);
+
+    return mocha;
   },
 
   getAccounts: function(interfaceAdapter) {

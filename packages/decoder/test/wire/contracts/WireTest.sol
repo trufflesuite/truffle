@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
 
 contract WireTestParent {
@@ -14,12 +14,21 @@ contract WireTestParent {
   event Overridden(uint);
 }
 
-contract WireTestAbstract {
+abstract contract WireTestAbstract {
   event AbstractEvent();
 
   event AbstractOverridden(uint indexed);
 
-  function danger() public;
+  function danger() public virtual;
+}
+
+struct GlobalStruct {
+  uint x;
+  uint y;
+}
+
+enum GlobalEnum {
+  No, Yes
 }
 
 contract WireTest is WireTestParent, WireTestAbstract {
@@ -29,8 +38,10 @@ contract WireTest is WireTestParent, WireTestAbstract {
   } //just a dummy function, not 
 
   constructor(bool status, bytes memory info, Ternary whoknows) public {
-    deepStruct["blornst"].length = 9;
-    deepString.length = 9;
+    deepStruct["blornst"].push();
+    deepStruct["blornst"].push();
+    deepString.push();
+    deepString.push();
     emit ConstructorEvent(status, info, whoknows);
   }
 
@@ -68,9 +79,15 @@ contract WireTest is WireTestParent, WireTestAbstract {
     emit MoreStuff(notThis, bunchOfInts);
   }
 
+  event Globals(GlobalStruct, GlobalEnum);
+
+  function globalTest(GlobalStruct memory s, GlobalEnum e) public {
+    emit Globals(s, e);
+  }
+
   event Danger(function() external);
 
-  function danger() public {
+  function danger() public override {
     emit Danger(this.danger);
   }
 

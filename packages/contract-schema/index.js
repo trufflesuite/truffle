@@ -40,6 +40,24 @@ const sanitizedValue = dirtyValueArray => {
   return sanitizedValueArray;
 };
 
+// filter `signature` property from an event
+const sanitizeEvent = dirtyEvent =>
+  Object.entries(dirtyEvent).reduce(
+    (acc, [property, value]) =>
+      property === "signature"
+        ? acc
+        : Object.assign(acc, { [property]: value }),
+    {}
+  );
+
+// sanitize aggregrate events given a `network-object.spec.json#events` object
+const sanitizeAllEvents = dirtyEvents =>
+  Object.entries(dirtyEvents).reduce(
+    (acc, [property, event]) =>
+      Object.assign(acc, { [property]: sanitizeEvent(event) }),
+    {}
+  );
+
 var properties = {
   contractName: {
     sources: ["contractName", "contract_name"]
@@ -112,14 +130,32 @@ var properties = {
   },
   compiler: {},
   networks: {
-    transform: function(value, obj) {
-      if (value === undefined) {
-        value = {};
+    /**
+     * Normalize a networks object. Currently this makes sure `events` are
+     * always sanitized and `links` is extracted when copying from
+     * a TruffleContract context object.
+     *
+     * @param {object} value - the target object
+     * @param {object | TruffleContract} obj - the context, or source object.
+     * @return {object} The normalized Network object
+     */
+    transform: function(value = {}, obj) {
+      // Sanitize value's events for known networks
+      Object.keys(value).forEach(networkId => {
+        if (value[networkId].events) {
+          value[networkId].events = sanitizeAllEvents(value[networkId].events);
+        }
+      });
+
+      // Set and sanitize the current networks property from the
+      // TruffleContract. Note: obj is a TruffleContract if it has
+      // `network_id` attribute
+      const networkId = obj.network_id;
+      if (networkId && value.hasOwnProperty(networkId)) {
+        value[networkId].links = obj.links;
+        value[networkId].events = sanitizeAllEvents(obj.events);
       }
-      if (obj.network_id && value[obj.network_id]) {
-        value[obj.network_id].events = obj.events;
-        value[obj.network_id].links = obj.links;
-      }
+
       return value;
     }
   },

@@ -27,18 +27,16 @@ TestResolver.prototype.require = function(import_path) {
   return result;
 };
 
-TestResolver.prototype.resolve = function(
-  import_path,
-  imported_from,
-  callback
-) {
+TestResolver.prototype.resolve = function(importPath, importedFrom, callback) {
   var self = this;
-  this.source.resolve(import_path, function(err, result, resolved_path) {
-    if (err) return callback(err);
-    if (result) return callback(null, result, resolved_path);
-
-    self.resolver.resolve(import_path, imported_from, callback);
-  });
+  this.source
+    .resolve(importPath)
+    .then(result => {
+      if (result && result.body)
+        return callback(null, result.body, result.resolvedPath);
+      self.resolver.resolve(importPath, importedFrom, callback);
+    })
+    .catch(callback);
 };
 
 module.exports = TestResolver;

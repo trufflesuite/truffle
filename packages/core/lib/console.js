@@ -57,6 +57,9 @@ class Console extends EventEmitter {
 
     // Bubble the ReplManager's exit event
     this.repl.on("exit", () => this.emit("exit"));
+
+    // Bubble the ReplManager's reset event
+    this.repl.on("reset", () => this.emit("reset"));
   }
 
   start(callback) {
