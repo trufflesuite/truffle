@@ -161,12 +161,23 @@ class HDWalletProvider {
       // shim Web3 to give it expected sendAsync method. Needed if web3-engine-provider upgraded!
       // Web3.providers.HttpProvider.prototype.sendAsync =
       // Web3.providers.HttpProvider.prototype.send;
-      this.engine.addProvider(
-        new ProviderSubprovider(
-          // @ts-ignore
-          new Web3.providers.HttpProvider(provider, { keepAlive: false })
-        )
-      );
+      let subProvider;
+      const providerProtocol = (
+        Url.parse(provider).protocol || "http"
+      ).toLowerCase();
+
+      switch (providerProtocol) {
+        case "ws":
+        case "wss":
+          subProvider = new Web3.providers.WebsocketProvider(provider);
+        default:
+          // @ts-ignore: Incorrect typings in @types/web3
+          subProvider = new Web3.providers.HttpProvider(provider, {
+            keepAlive: false
+          });
+      }
+
+      this.engine.addProvider(new ProviderSubprovider(subProvider));
     } else {
       this.engine.addProvider(new ProviderSubprovider(provider));
     }

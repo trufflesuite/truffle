@@ -49,24 +49,26 @@ class FS {
     return path.basename(sourcePath, ".sol");
   }
 
-  resolve(importPath, importedFrom, callback) {
+  async resolve(importPath, importedFrom) {
     importedFrom = importedFrom || "";
     const possiblePaths = [
       importPath,
       path.join(path.dirname(importedFrom), importPath)
     ];
 
+    let body, filePath;
     possiblePaths.forEach(possiblePath => {
       try {
         const resolvedSource = fs.readFileSync(possiblePath, {
           encoding: "utf8"
         });
-        callback(null, resolvedSource, possiblePath);
+        body = resolvedSource;
+        filePath = possiblePath;
       } catch (error) {
         // do nothing
       }
     });
-    callback(null);
+    return { body, filePath };
   }
 
   // Here we're resolving from local files to local files, all absolute.

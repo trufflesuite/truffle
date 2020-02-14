@@ -67,6 +67,14 @@ ReplManager.prototype.start = function(options) {
     self.emit("exit");
   });
 
+  // Bubble the internal repl's reset event
+  this.repl.on("reset", function() {
+    process.stdout.write("\u001B[2J\u001B[0;0f");
+    self.emit("reset");
+  });
+
+  this.repl.setPrompt(options.prompt);
+  this.setContextVars(options.context || {});
   this.activate(options);
 };
 

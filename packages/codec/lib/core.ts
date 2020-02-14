@@ -85,7 +85,11 @@ export function* decodeCalldata(
       info.state
     );
     selector = Conversion.toHexString(rawSelector);
-    allocation = allocations.functionAllocations[contextHash][selector].input;
+    allocation = (
+      allocations.functionAllocations[contextHash][selector] || {
+        input: undefined
+      }
+    ).input;
   }
   if (allocation === undefined) {
     let abiEntry:
