@@ -16,11 +16,11 @@ const command = {
       },
       {
         option: "get",
-        discription: "Get a Truffle config option value."
+        description: "Get a Truffle config option value."
       },
       {
         option: "set",
-        discription: "Set a Truffle config option value."
+        description: "Set a Truffle config option value."
       }
     ]
   },
