@@ -176,7 +176,7 @@ TestRunner.prototype.endTest = async function(mocha) {
   });
 
   const userDefinedEventLogs = logs.filter(log => {
-    return !log.decodings.length || log.decodings[0].abi.name !== "TestEvent";
+    return log.decodings.every(decoding => decoding.abi.name !== "TestEvent")
   });
 
   if (userDefinedEventLogs.length === 0) {
