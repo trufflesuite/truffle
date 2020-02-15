@@ -1,8 +1,8 @@
 lerna-debug.log
 packages/truffle/build
 packages/truffle-debugger/.tmp
-packages/truffle-db/dist
-packages/truffle-db/types/schema.d.ts
+packages/db/dist
+packages/db/types/schema.d.ts
 packages/truffle-contract/dist
 packages/**/node_modules
 node_modules
@@ -23,5 +23,5 @@ packages/debugger/.tmp
 # @truffle/contract
 packages/contract/dist
 
-# @truffle/truffle-db
-packages/truffle-db/test/**/.db
+# @truffle/db
+packages/db/test/**/.db

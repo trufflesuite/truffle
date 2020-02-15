@@ -73,7 +73,7 @@ module.exports = {
     // module that's a dependency of Truffle instead.
     /^original-require$/,
     /^mocha$/,
-    /^truffle-db/
+    /^@truffle\/db/
   ],
   plugins: [
     new webpack.DefinePlugin({

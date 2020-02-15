@@ -16,7 +16,7 @@ const command = {
    */
   run: async function(argv) {
     const Config = require("@truffle/config");
-    const { playgroundServer } = require("truffle-db");
+    const { playgroundServer } = require("@truffle/db");
 
     const config = Config.detect(argv);
     const port = (config.db && config.db.port) || 4444;
