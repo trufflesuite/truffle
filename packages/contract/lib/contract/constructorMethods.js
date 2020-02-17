@@ -220,10 +220,29 @@ module.exports = Contract => ({
 
     if (web3) web3.eth.accounts.wallet = wallet;
     if (tezos) {
-      const { email, password, mnemonic, secret } = wallet;
+      let { email, password, mnemonic, secret, secretKey } = wallet;
 
-      if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
-      await tezos.importKey(email, password, mnemonic, secret);
+      if (mnemonic) {
+        // here we import user's faucet account:
+        // email, password, mnemonic, & secret are all REQUIRED.
+        if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
+        try {
+          await tezos.importKey(email, password, mnemonic, secret);
+        } catch (error) {
+          throw Error(`Faucet account invalid or incorrectly imported.`);
+        }
+      }
+
+      if (secretKey) {
+        try {
+          await tezos.importKey(secretKey);
+        } catch (error) {
+          throw Error(`Secret key invalid or incorrectly imported.`);
+        }
+      }
+
+      // TODO: add logic to check if user is importing a psk w/ password
+      throw Error(`No faucet account or secret key detected.`);
     }
   },
 
