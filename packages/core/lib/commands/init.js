@@ -14,7 +14,7 @@ var command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: async function(options) {
     const UnboxCommand = require("./unbox");
     const fse = require("fs-extra");
     let inputPath;
@@ -27,7 +27,7 @@ var command = {
     const url = "https://github.com/truffle-box/bare-box.git";
     options._ = [url, inputPath];
 
-    UnboxCommand.run(options, done);
+    return UnboxCommand.run(options);
   }
 };
 
