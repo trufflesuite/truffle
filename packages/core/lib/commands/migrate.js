@@ -175,7 +175,7 @@ const command = {
     }
   },
 
-  run: function(options, done) {
+  run: async function(options) {
     const Artifactor = require("@truffle/artifactor");
     const Resolver = require("@truffle/resolver");
     const Migrate = require("@truffle/migrate");
@@ -188,38 +188,31 @@ const command = {
 
     const conf = Config.detect(options);
 
-    Contracts.compile(conf)
-      .then(async () => {
-        await Environment.detect(conf);
+    await Contracts.compile(conf);
+    await Environment.detect(conf);
 
-        const {
-          dryRunOnly,
-          dryRunAndMigrations
-        } = command.determineDryRunSettings(conf, options);
+    const { dryRunOnly, dryRunAndMigrations } = command.determineDryRunSettings(
+      conf,
+      options
+    );
 
-        if (dryRunOnly) {
-          conf.dryRun = true;
-          await setupDryRunEnvironmentThenRunMigrations(conf);
-        } else if (dryRunAndMigrations) {
-          const currentBuild = conf.contracts_build_directory;
-          conf.dryRun = true;
+    if (dryRunOnly) {
+      conf.dryRun = true;
+      await setupDryRunEnvironmentThenRunMigrations(conf);
+    } else if (dryRunAndMigrations) {
+      const currentBuild = conf.contracts_build_directory;
+      conf.dryRun = true;
 
-          await setupDryRunEnvironmentThenRunMigrations(conf);
+      await setupDryRunEnvironmentThenRunMigrations(conf);
 
-          let {
-            config,
-            proceed
-          } = await command.prepareConfigForRealMigrations(
-            currentBuild,
-            options
-          );
-          if (proceed) await runMigrations(config);
-        } else {
-          await runMigrations(conf);
-        }
-        done();
-      })
-      .catch(done);
+      let { config, proceed } = await command.prepareConfigForRealMigrations(
+        currentBuild,
+        options
+      );
+      if (proceed) await runMigrations(config);
+    } else {
+      await runMigrations(conf);
+    }
 
     async function setupDryRunEnvironmentThenRunMigrations(config) {
       await Environment.fork(config);
