@@ -17,55 +17,49 @@ var command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: async function(options) {
     var Config = require("@truffle/config");
     var TruffleError = require("@truffle/error");
     var Contracts = require("@truffle/workflow-compile");
     var CodeUtils = require("@truffle/code-utils");
 
     if (options._.length === 0) {
-      return done(new TruffleError("Please specify a contract name."));
+      throw new TruffleError("Please specify a contract name.");
     }
 
     var config = Config.detect(options);
-    Contracts.compile(config, function(err) {
-      if (err) return done(err);
+    await Contracts.compile(config);
 
-      var contractName = options._[0];
-      var Contract;
-      try {
-        Contract = config.resolver.require(contractName);
-      } catch (e) {
-        return done(
-          new TruffleError(
-            'Cannot find compiled contract with name "' + contractName + '"'
-          )
-        );
+    var contractName = options._[0];
+    var Contract;
+    try {
+      Contract = config.resolver.require(contractName);
+    } catch (e) {
+      throw new TruffleError(
+        'Cannot find compiled contract with name "' + contractName + '"'
+      );
+    }
+
+    var bytecode = Contract.deployedBytecode;
+    var numInstructions = Contract.deployedSourceMap.split(";").length;
+
+    if (options.creation) {
+      bytecode = Contract.bytecode;
+      numInstructions = Contract.sourceMap.split(";").length;
+    }
+
+    var opcodes = CodeUtils.parseCode(bytecode, numInstructions);
+
+    var indexLength = (opcodes.length + "").length;
+
+    opcodes.forEach(function(opcode, index) {
+      var strIndex = index + ":";
+
+      while (strIndex.length < indexLength + 1) {
+        strIndex += " ";
       }
 
-      var bytecode = Contract.deployedBytecode;
-      var numInstructions = Contract.deployedSourceMap.split(";").length;
-
-      if (options.creation) {
-        bytecode = Contract.bytecode;
-        numInstructions = Contract.sourceMap.split(";").length;
-      }
-
-      var opcodes = CodeUtils.parseCode(bytecode, numInstructions);
-
-      var indexLength = (opcodes.length + "").length;
-
-      opcodes.forEach(function(opcode, index) {
-        var strIndex = index + ":";
-
-        while (strIndex.length < indexLength + 1) {
-          strIndex += " ";
-        }
-
-        console.log(
-          strIndex + " " + opcode.name + " " + (opcode.pushData || "")
-        );
-      });
+      console.log(strIndex + " " + opcode.name + " " + (opcode.pushData || ""));
     });
   }
 };
