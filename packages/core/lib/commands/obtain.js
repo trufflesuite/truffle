@@ -10,7 +10,7 @@ module.exports = {
       }
     ]
   },
-  run: function(options, done) {
+  run: async function(options) {
     const SUPPORTED_COMPILERS = ["--solc"];
     const Config = require("@truffle/config");
     const config = Config.default().with(options);
@@ -25,9 +25,7 @@ module.exports = {
     config.events.emit("obtain:start");
 
     if (options.solc) {
-      return this.downloadAndCacheSolc({ config, options, supplier })
-        .then(done)
-        .catch(done);
+      return this.downloadAndCacheSolc({ config, options, supplier });
     }
 
     const message =
@@ -36,7 +34,7 @@ module.exports = {
       `compilers as well as a version as arguments: ` +
       `${SUPPORTED_COMPILERS.join(", ")}\nSee 'truffle help ` +
       `obtain' for more information and usage.`;
-    return done(new Error(message));
+    throw new Error(message);
   },
 
   downloadAndCacheSolc: async ({ config, options, supplier }) => {
