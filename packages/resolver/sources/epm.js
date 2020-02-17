@@ -68,7 +68,7 @@ EPM.prototype.require = function(import_path, _search_path) {
   return json;
 };
 
-(EPM.prototype.resolve = async function(import_path, imported_from) {
+(EPM.prototype.resolve = async function(import_path, _imported_from) {
   var separator = import_path.indexOf("/");
   var package_name = import_path.substring(0, separator);
   var internal_path = import_path.substring(separator + 1);

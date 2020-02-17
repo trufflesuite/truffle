@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.7",
+  "version": "0.2.8",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
@@ -16,12 +16,12 @@
   "types": "./typings/index.d.ts",
   "dependencies": {
     "@truffle/error": "^0.0.8",
-    "@truffle/interface-adapter": "^0.4.4",
+    "@truffle/interface-adapter": "^0.4.5",
     "url-parse": "^1.4.7",
     "web3": "1.2.1"
   },
   "devDependencies": {
-    "ganache-core": "2.10.1",
+    "ganache-core": "2.10.2",
     "mocha": "5.2.0"
   },
   "keywords": [

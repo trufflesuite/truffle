@@ -9,15 +9,15 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.1.28",
+  "version": "0.1.29",
   "main": "index.js",
   "dependencies": {
-    "@truffle/artifactor": "^4.0.47",
+    "@truffle/artifactor": "^4.0.48",
     "@truffle/error": "^0.0.8",
     "@truffle/expect": "^0.0.13",
-    "@truffle/interface-adapter": "^0.4.4",
-    "@truffle/resolver": "^5.1.1",
-    "ganache-core": "2.10.1",
+    "@truffle/interface-adapter": "^0.4.5",
+    "@truffle/resolver": "^5.1.2",
+    "ganache-core": "2.10.2",
     "node-ipc": "^9.1.1",
     "web3": "1.2.1"
   },
