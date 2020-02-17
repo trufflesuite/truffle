@@ -19,20 +19,16 @@ var command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: async function(options) {
     const Config = require("@truffle/config");
     const Networks = require("../networks");
 
     const config = Config.detect(options);
 
     if (options.clean) {
-      Networks.clean(config)
-        .then(() => done())
-        .catch(done);
+      return Networks.clean(config);
     } else {
-      Networks.display(config)
-        .then(() => done())
-        .catch(done);
+      return Networks.display(config);
     }
   }
 };
