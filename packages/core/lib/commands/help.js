@@ -12,17 +12,16 @@ var command = {
     ]
   },
   builder: {},
-  run: function(options, callback) {
+  run: function(options) {
     var commands = require("./index");
     if (options._.length === 0) {
       this.displayCommandHelp("help");
-      return callback();
+      return;
     }
     var selectedCommand = options._[0];
 
     if (commands[selectedCommand]) {
       this.displayCommandHelp(selectedCommand);
-      return callback();
     } else {
       console.log(`\n  Cannot find the given command '${selectedCommand}'`);
       console.log("  Please ensure your command is one of the following: ");
@@ -30,8 +29,8 @@ var command = {
         .sort()
         .forEach(command => console.log(`      ${command}`));
       console.log("");
-      return callback();
     }
+    return;
   },
   displayCommandHelp: function(selectedCommand) {
     var commands = require("./index");
