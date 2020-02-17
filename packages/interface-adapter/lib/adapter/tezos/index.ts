@@ -87,12 +87,12 @@ export class TezosAdapter implements InterfaceAdapter {
 
     if (mnemonic) {
       // here we import user's faucet account:
-      // email, passphrase, mnemonic, & secret are all REQUIRED.
+      // email, password, mnemonic, & secret are all REQUIRED.
       if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
       try {
         return await this.tezos.importKey(
           networks[network].email,
-          networks[network].passphrase,
+          networks[network].password,
           mnemonic,
           networks[network].secret
         );
@@ -113,7 +113,7 @@ export class TezosAdapter implements InterfaceAdapter {
       }
     }
 
-    // TODO: add logic to check if user is importing a psk w/ passphrase
+    // TODO: add logic to check if user is importing a psk w/ password
     throw Error(
       `No faucet account or secret key detected in truffle config file (config.networks[${network}]).`
     );

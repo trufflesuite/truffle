@@ -220,10 +220,10 @@ module.exports = Contract => ({
 
     if (web3) web3.eth.accounts.wallet = wallet;
     if (tezos) {
-      const { email, passphrase, mnemonic, secret } = wallet;
+      const { email, password, mnemonic, secret } = wallet;
 
       if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
-      await tezos.importKey(email, passphrase, mnemonic, secret);
+      await tezos.importKey(email, password, mnemonic, secret);
     }
   },
 
