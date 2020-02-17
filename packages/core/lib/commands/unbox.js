@@ -98,7 +98,7 @@ const command = {
       }
     ]
   },
-  run(options, done) {
+  async run(options) {
     const Config = require("@truffle/config");
     const Box = require("@truffle/box");
     const fse = require("fs-extra");
@@ -119,12 +119,15 @@ const command = {
 
     config.events.emit("unbox:start");
 
-    Box.unbox(url, normalizedDestination, unboxOptions, config)
-      .then(async boxConfig => {
-        await config.events.emit("unbox:succeed", { boxConfig });
-        done();
-      })
-      .catch(done);
+    const boxConfig = await Box.unbox(
+      url,
+      normalizedDestination,
+      unboxOptions,
+      config
+    );
+    if (config.events) {
+      config.events.emit("unbox:succeed", { boxConfig });
+    }
   }
 };
 
