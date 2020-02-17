@@ -47,21 +47,16 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: async function(options) {
     const Contracts = require("@truffle/workflow-compile/new");
     const Config = require("@truffle/config");
     const config = Config.detect(options);
 
     if (config.list !== undefined) {
-      command
-        .listVersions(config)
-        .then(() => done())
-        .catch(done);
+      return command.listVersions(config);
     } else {
-      Contracts.compile(config)
-        .then(({ contracts }) => Contracts.save(config, contracts))
-        .then(() => done())
-        .catch(done);
+      const { contracts } = await Contracts.compile(config);
+      return Contracts.save(config, contracts);
     }
   },
 
