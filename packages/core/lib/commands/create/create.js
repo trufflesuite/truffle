@@ -1,8 +1,8 @@
-var copy = require("./copy");
-var path = require("path");
-var fs = require("fs");
+const copy = require("../../copy");
+const path = require("path");
+const fs = require("fs");
 
-var templates = {
+const templates = {
   test: {
     filename: path.join(__dirname, "templates", "example.js"),
     variable: "example"
