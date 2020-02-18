@@ -1,10 +1,15 @@
-import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import debugModule from "debug";
+const debug = debugModule("decoder:utils");
+
 import Web3 from "web3";
 import BN from "bn.js";
 
 import * as Codec from "@truffle/codec";
 
 import * as Types from "./types";
+
+//sorry for the untyped import, but...
+const { shimBytecode } = require("@truffle/compile-solidity/legacy/shims");
 
 //NOTE: Definitely do not use this in real code!  For tests only!
 //for convenience: invokes the nativize method on all the given variables, and changes them to
@@ -24,28 +29,82 @@ export function nativizeDecoderVariables(
   //Again, don't use this in real code!
 }
 
-export function getContractNode(contract: Artifact): Codec.Ast.AstNode {
-  return (contract.ast || { nodes: [] }).nodes.find(
-    (contractNode: Codec.Ast.AstNode) =>
-      contractNode.nodeType === "ContractDefinition" &&
-      (contractNode.name === contract.contractName ||
-        contractNode.name === contract.contract_name)
+//Note: duplicated code warning
+//(from the debugger's normalize function in session)
+export function getContractNode(
+  contract: Codec.Compilations.Contract,
+  compilation: Codec.Compilations.Compilation
+): Codec.Ast.AstNode {
+  const {
+    contractName,
+    sourceMap,
+    deployedSourceMap,
+    primarySourceId,
+    primarySourceIndex
+  } = contract;
+  const { unreliableSourceOrder, sources } = compilation;
+
+  let sourcesToCheck: Codec.Compilations.Source[];
+
+  if (primarySourceIndex !== undefined) {
+    sourcesToCheck = [sources[primarySourceIndex]];
+  } else if (primarySourceId !== undefined) {
+    sourcesToCheck = [sources.find(source => source.id === primarySourceId)];
+  } else if (!unreliableSourceOrder && (deployedSourceMap || sourceMap)) {
+    let sourceId = extractPrimarySource(deployedSourceMap || sourceMap);
+    sourcesToCheck = [sources[sourceId]];
+  } else {
+    //WARNING: if we end up in this case, we could get the wrong contract!
+    //(but we shouldn't end up here)
+    sourcesToCheck = sources;
+  }
+
+  return sourcesToCheck.reduce(
+    (foundNode: Codec.Ast.AstNode, source: Codec.Compilations.Source) => {
+      if (foundNode || !source) {
+        return foundNode;
+      }
+      if (!source.ast) {
+        return undefined;
+      }
+      return source.ast.nodes.find(
+        node =>
+          node.nodeType === "ContractDefinition" && node.name === contractName
+      );
+    },
+    undefined
   );
 }
 
+/*
+ * extract the primary source from a source map
+ * (i.e., the source for the first instruction, found
+ * between the second and third colons)
+ * (this is something of a HACK)
+ * NOTE: duplicated from debugger, sorry
+ */
+function extractPrimarySource(sourceMap: string): number {
+  return parseInt(sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]);
+}
+
 export function makeContext(
-  contract: Artifact,
+  contract: Codec.Compilations.Contract,
   node: Codec.Ast.AstNode | undefined,
+  compiler: Codec.Compiler.CompilerVersion,
   isConstructor = false
 ): Codec.Contexts.DecoderContext {
   const abi = Codec.AbiData.Utils.schemaAbiToAbi(contract.abi);
-  const binary = isConstructor ? contract.bytecode : contract.deployedBytecode;
+  const bytecode = isConstructor
+    ? contract.bytecode
+    : contract.deployedBytecode;
+  const binary: string = robustShimBytecode(bytecode);
   const hash = Codec.Conversion.toHexString(
     Codec.Evm.Utils.keccak256({
       type: "string",
       value: binary
     })
   );
+  debug("hash: %s", hash);
   const fallback =
     <Codec.AbiData.FallbackAbiEntry>(
       abi.find(abiEntry => abiEntry.type === "fallback")
@@ -64,13 +123,13 @@ export function makeContext(
     abi: Codec.AbiData.Utils.computeSelectors(abi),
     payable: Codec.AbiData.Utils.abiHasPayableFallback(abi),
     fallbackAbi: { fallback, receive },
-    compiler: contract.compiler
+    compiler: compiler || contract.compiler
   };
 }
 
 //attempts to determine if the given contract is a library or not
 function contractKind(
-  contract: Artifact,
+  contract: Codec.Compilations.Contract,
   node?: Codec.Ast.AstNode
 ): Codec.ContractKind {
   //first: if we have a node, use its listed contract kind
@@ -85,6 +144,7 @@ function contractKind(
   //PUSH20 followed by 20 0s, in which case we'll assume it's a library
   //(note: this will fail to detect libraries from before Solidity 0.4.20)
   if (contract.deployedBytecode) {
+    const deployedBytecode = robustShimBytecode(contract.deployedBytecode);
     const pushAddressInstruction = (
       0x60 +
       Codec.Evm.Utils.ADDRESS_SIZE -
@@ -92,9 +152,7 @@ function contractKind(
     ).toString(16); //"73"
     const libraryString =
       "0x" + pushAddressInstruction + "00".repeat(Codec.Evm.Utils.ADDRESS_SIZE);
-    return contract.deployedBytecode.startsWith(libraryString)
-      ? "library"
-      : "contract";
+    return deployedBytecode.startsWith(libraryString) ? "library" : "contract";
   }
   //finally, in the absence of anything to go on, we'll assume it's an ordinary contract
   return "contract";
@@ -112,15 +170,6 @@ function contractKind(
 //1. check its inputs,
 //2. take a slightly different input format,
 //3. also be named differently and... it'll be different :P ]
-export function wrapElementaryViaDefinition(
-  value: any,
-  definition: Codec.Ast.AstNode,
-  compiler: Codec.Compiler.CompilerVersion
-): Codec.Format.Values.ElementaryValue {
-  let dataType = Codec.Ast.Import.definitionToType(definition, compiler, null); //force location to undefined
-  return wrapElementaryValue(value, dataType);
-}
-
 export function wrapElementaryValue(
   value: any,
   dataType: Codec.Format.Types.Type
@@ -182,4 +231,14 @@ export function wrapElementaryValue(
       };
     //fixed and ufixed are not handled for now!
   }
+}
+
+//shimBytecode handles undefined, but not strings, so let's fix that
+export function robustShimBytecode(
+  bytecode: string | Codec.Compilations.Bytecode
+): string {
+  if (typeof bytecode === "string") {
+    return bytecode;
+  }
+  return shimBytecode(bytecode);
 }

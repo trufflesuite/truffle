@@ -509,6 +509,7 @@ function allocateDataArguments(
       name: parameter.name,
       type: Ast.Import.definitionToType(parameter, compilationId, compiler) //if node is defined, compiler had also better be!
     }));
+    debug("parameterTypes: %O", parameterTypes);
     //now: perform the allocation!
     try {
       abiAllocation = allocateMembers(
@@ -633,7 +634,7 @@ function allocateEvent(
     //if we found the node, let's also turn it into a type
     definedIn = <Format.Types.ContractType>(
       Ast.Import.definitionToStoredType(contractNode, compilationId, compiler)
-    ); //can skip 3rd argument here
+    ); //can skip reference declarations argument here
   } else {
     //if no node, have to fall back into ABI mode
     debug("falling back to ABI because no node");

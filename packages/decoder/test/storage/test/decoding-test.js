@@ -1,3 +1,4 @@
+const debug = require("debug")("decoder:test:decoding-test");
 const assert = require("assert");
 const util = require("util"); // eslint-disable-line no-unused-vars
 
@@ -43,14 +44,7 @@ contract("DecodingSample", _accounts => {
     const initialState = await decoder.state();
     const initialVariables = await decoder.variables();
 
-    // used for debugging test results
-    // console.log(
-    //   util.inspect(initialState, {
-    //     showHidden: false,
-    //     depth: null,
-    //     colors: true
-    //   })
-    // );
+    debug("initialVariables: %O", initialVariables);
 
     assert.equal(initialState.class.typeName, "DecodingSample");
     //before we move on to the main section, we'll test the defining classes

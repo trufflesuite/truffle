@@ -6,11 +6,37 @@
  */
 export class ContractBeingDecodedHasNoNodeError extends Error {
   public contractName: string;
-  constructor(contractName: string) {
+  public compilationId: string;
+  constructor(contractName: string, compilationId: string) {
     const message = `Contract ${contractName} does not appear to have been compiled with Solidity (cannot locate contract node)`;
     super(message);
     this.contractName = contractName;
+    this.compilationId = compilationId;
     this.name = "ContractBeingDecodedHasNoNodeError";
+  }
+}
+
+/**
+ * This error indicates that the contract you are attempting to decode could not be found in
+ * the project info.  This error will be thrown if you attempt to spawn a contract decoder or
+ * contract instance decoder for a contract not appearing in the project info.
+ * @category Exception
+ */
+export class ContractNotFoundError extends Error {
+  public contractName: string;
+  public bytecode: string;
+  public deployedBytecode: string;
+  constructor(
+    contractName: string,
+    bytecode: string,
+    deployedBytecode: string
+  ) {
+    const message = `Contract ${contractName} could not be found in the project information`;
+    super(message);
+    this.contractName = contractName;
+    this.bytecode = bytecode;
+    this.deployedBytecode = deployedBytecode;
+    this.name = "ContractNotFoundError";
   }
 }
 
@@ -26,10 +52,14 @@ export class ContractBeingDecodedHasNoNodeError extends Error {
 export class ContractAllocationFailedError extends Error {
   public id: number;
   public contractName: string;
-  constructor(id: number, contractName: string) {
-    super(`No allocation found for contract ID ${id} (${contractName})`);
+  public compilationId: string;
+  constructor(id: number, contractName: string, compilationId: string) {
+    super(
+      `No allocation found for contract ID ${id} (${contractName}) in compilation ${compilationId}`
+    );
     this.id = id;
     this.contractName = contractName;
+    this.compilationId = compilationId;
     this.name = "ContractAllocationFailedError";
   }
 }
@@ -61,5 +91,17 @@ export class VariableNotFoundError extends Error {
     super(`No such variable ${nameOrId}`);
     this.nameOrId = nameOrId;
     this.name = "VariableNotFoundError";
+  }
+}
+
+/**
+ * This error indicates that the user attempted to instantiate a decoder
+ * with no project information (by explicitly overriding the default).
+ * @category Exception
+ */
+export class NoProjectInfoError extends Error {
+  constructor() {
+    super("No project information specified.");
+    this.name = "NoProjectInfoError";
   }
 }

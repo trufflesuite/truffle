@@ -139,8 +139,13 @@ export { ContractDecoder, ContractInstanceDecoder, WireDecoder };
 
 export {
   ContractBeingDecodedHasNoNodeError,
-  ContractAllocationFailedError
+  ContractNotFoundError,
+  ContractAllocationFailedError,
+  InvalidAddressError,
+  VariableNotFoundError
 } from "./errors";
+import { NoProjectInfoError } from "./errors";
+export { NoProjectInfoError };
 
 export {
   ContractState,
@@ -151,10 +156,14 @@ export {
   Log,
   BlockSpecifier
 } from "./types";
+import { ProjectInfo } from "./types";
+export { ProjectInfo };
 
 import { Provider } from "web3/providers";
 import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import { ContractConstructorObject, ContractInstanceObject } from "./types";
+
+import { Compilations } from "@truffle/codec";
 
 /**
  * **This function is asynchronous.**
@@ -171,9 +180,10 @@ import { ContractConstructorObject, ContractInstanceObject } from "./types";
  */
 export async function forProject(
   provider: Provider,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<WireDecoder> {
-  return new WireDecoder(artifacts, provider);
+  let compilations = infoToCompilations(projectInfo);
+  return new WireDecoder(compilations, provider);
 }
 
 /**
@@ -199,15 +209,11 @@ export async function forProject(
 export async function forArtifact(
   artifact: Artifact,
   provider: Provider,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractDecoder> {
-  artifacts = artifacts.includes(artifact)
-    ? artifacts
-    : [artifact, ...artifacts];
-  let wireDecoder = await forProject(provider, artifacts);
-  let contractDecoder = new ContractDecoder(artifact, wireDecoder);
-  await contractDecoder.init();
-  return contractDecoder;
+  let compilations = infoToCompilations(projectInfo, artifact);
+  let wireDecoder = await forProject(provider, { compilations });
+  return await wireDecoder.forArtifact(artifact);
 }
 
 /**
@@ -225,9 +231,13 @@ export async function forArtifact(
  */
 export async function forContract(
   contract: ContractConstructorObject,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractDecoder> {
-  return await forArtifact(contract, contract.web3.currentProvider, artifacts);
+  return await forArtifact(
+    contract,
+    contract.web3.currentProvider,
+    projectInfo
+  );
 }
 
 /**
@@ -250,9 +260,9 @@ export async function forContract(
 export async function forDeployedArtifact(
   artifact: Artifact,
   provider: Provider,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractInstanceDecoder> {
-  let contractDecoder = await forArtifact(artifact, provider, artifacts);
+  let contractDecoder = await forArtifact(artifact, provider, projectInfo);
   let instanceDecoder = await contractDecoder.forInstance();
   return instanceDecoder;
 }
@@ -272,9 +282,9 @@ export async function forDeployedArtifact(
  */
 export async function forDeployedContract(
   contract: ContractConstructorObject,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractInstanceDecoder> {
-  let contractDecoder = await forContract(contract, artifacts);
+  let contractDecoder = await forContract(contract, projectInfo);
   let instanceDecoder = await contractDecoder.forInstance();
   return instanceDecoder;
 }
@@ -304,9 +314,9 @@ export async function forArtifactAt(
   artifact: Artifact,
   provider: Provider,
   address: string,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractInstanceDecoder> {
-  let contractDecoder = await forArtifact(artifact, provider, artifacts);
+  let contractDecoder = await forArtifact(artifact, provider, projectInfo);
   let instanceDecoder = await contractDecoder.forInstance(address);
   return instanceDecoder;
 }
@@ -331,9 +341,9 @@ export async function forArtifactAt(
 export async function forContractAt(
   contract: ContractConstructorObject,
   address: string,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractInstanceDecoder> {
-  let contractDecoder = await forContract(contract, artifacts);
+  let contractDecoder = await forContract(contract, projectInfo);
   let instanceDecoder = await contractDecoder.forInstance(address);
   return instanceDecoder;
 }
@@ -353,7 +363,42 @@ export async function forContractAt(
  */
 export async function forContractInstance(
   contract: ContractInstanceObject,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractInstanceDecoder> {
-  return await forContractAt(contract.constructor, contract.address, artifacts);
+  return await forContractAt(
+    contract.constructor,
+    contract.address,
+    projectInfo
+  );
+}
+
+function infoToCompilations(
+  projectInfo: ProjectInfo | Artifact[],
+  primaryArtifact?: Artifact
+): Compilations.Compilation[] {
+  if (!projectInfo) {
+    projectInfo = [];
+  }
+  if (Array.isArray(projectInfo)) {
+    let artifacts = projectInfo;
+    if (
+      primaryArtifact &&
+      !artifacts.find(
+        artifact =>
+          artifact === primaryArtifact ||
+          artifact.contractName === primaryArtifact.contractName
+      )
+    ) {
+      artifacts = [primaryArtifact, ...artifacts];
+    }
+    return Compilations.Utils.shimArtifacts(artifacts);
+  } else {
+    if (projectInfo.compilations) {
+      return projectInfo.compilations;
+    } else if (projectInfo.artifacts) {
+      return Compilations.Utils.shimArtifacts(projectInfo.artifacts);
+    } else {
+      throw new NoProjectInfoError();
+    }
+  }
 }

@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:ast:convert");
+const debug = debugModule("codec:ast:import");
 
 import BN from "bn.js";
 import * as Format from "@truffle/codec/format/common";
@@ -23,7 +23,6 @@ export function definitionToType(
   compiler: Compiler.CompilerVersion,
   forceLocation?: Common.Location | null
 ): Format.Types.Type {
-  debug("definition %O", definition);
   let typeClass = Utils.typeClass(definition);
   let typeHint = Utils.typeStringWithoutLocation(definition);
   switch (typeClass) {
@@ -416,6 +415,7 @@ export function definitionToStoredType(
       let id = makeTypeId(definition.id, compilationId);
       let definingContractName: string;
       let typeName: string;
+      debug("typeName: %s", typeName);
       if (definition.canonicalName.includes(".")) {
         [definingContractName, typeName] = definition.canonicalName.split(".");
       } else {
@@ -428,12 +428,16 @@ export function definitionToStoredType(
         let contractDefinition = Object.values(referenceDeclarations).find(
           node =>
             node.nodeType === "ContractDefinition" &&
-            node.nodes.some((subNode: AstNode) => subNode.id.toString() === id)
+            node.nodes.some(
+              (subNode: AstNode) => makeTypeId(subNode.id, compilationId) === id
+            )
         );
         if (contractDefinition) {
           definingContract = <Format.Types.ContractTypeNative>(
             definitionToStoredType(contractDefinition, compilationId, compiler)
           ); //can skip reference declarations
+          debug("contractDefinition: %o", contractDefinition);
+          debug("definingContract: %o", definingContract);
         }
       }
       if (definingContract) {
@@ -473,6 +477,9 @@ export function definitionToStoredType(
   }
 }
 
+//I am deliberately *NOT* exporting this.
+//If you have to make a type ID, instead make the type and then
+//take its ID.
 function makeTypeId(astId: number, compilationId: string): string {
   return compilationId + ":" + astId;
 }
