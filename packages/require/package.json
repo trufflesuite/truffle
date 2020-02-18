@@ -8,15 +8,15 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.0.37",
+  "version": "2.1.0-tezos.0",
   "main": "require.js",
   "scripts": {
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/config": "^1.2.15",
-    "@truffle/expect": "^0.0.13",
-    "@truffle/interface-adapter": "^0.4.5",
+    "@truffle/config": "^1.3.0-tezos.0",
+    "@truffle/expect": "^0.1.0-tezos.0",
+    "@truffle/interface-adapter": "^0.5.0-tezos.0",
     "original-require": "1.0.1",
     "web3": "1.2.1"
   },
