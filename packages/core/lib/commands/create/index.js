@@ -31,7 +31,7 @@ const command = {
   run: function(options, done) {
     const Config = require("@truffle/config");
     const ConfigurationError = require("../../errors/configurationerror");
-    const create = require("./create");
+    const create = require("./helpers");
 
     const config = Config.detect(options);
 

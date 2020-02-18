@@ -69,11 +69,12 @@ var Create = {
       );
     }
 
-    copy.file(from, to, function(err) {
-      if (err) return callback(err);
-
-      replaceContents(to, templates.contract.name, name, callback);
-    });
+    copy
+      .file(from, to)
+      .then(() => {
+        replaceContents(to, templates.contract.name, name, callback);
+      })
+      .catch(callback);
   },
 
   test: function(directory, name, options, callback) {
@@ -92,15 +93,22 @@ var Create = {
       );
     }
 
-    copy.file(from, to, function(err) {
-      if (err) return callback(err);
-
-      replaceContents(to, templates.contract.name, name, function(err) {
-        if (err) return callback(err);
-        replaceContents(to, templates.contract.variable, underscored, callback);
-      });
-    });
+    copy
+      .file(from, to)
+      .then(() => {
+        replaceContents(to, templates.contract.name, name, function(err) {
+          if (err) return callback(err);
+          replaceContents(
+            to,
+            templates.contract.variable,
+            underscored,
+            callback
+          );
+        });
+      })
+      .catch(callback);
   },
+
   migration: function(directory, name, options, callback) {
     if (typeof options === "function") {
       callback = options;
@@ -124,7 +132,12 @@ var Create = {
       );
     }
 
-    copy.file(from, to, callback);
+    copy
+      .file(from, to)
+      .then(() => {
+        callback();
+      })
+      .catch(callback);
   }
 };
 
