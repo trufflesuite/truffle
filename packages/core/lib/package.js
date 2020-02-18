@@ -113,7 +113,8 @@ const Package = {
     }
   },
 
-  publish: function(options, callback) {
+  publish: async function(options, callback) {
+    const callbackPassed = typeof callback === "function";
     var self = this;
 
     expect.options(options, [
@@ -131,15 +132,19 @@ const Package = {
     var ropsten = options.networks.ropsten;
 
     if (!ropsten) {
-      return callback(
-        new TruffleError(
-          "You need to have a `ropsten` network configured in order to publish to the Ethereum Package Registry. See the following link for an example configuration:" +
-            OS.EOL +
-            OS.EOL +
-            "    http://truffleframework.com/tutorials/using-infura-custom-provider" +
-            OS.EOL
-        )
-      );
+      const message =
+        "You need to have a `ropsten` network configured in " +
+        "order to publish to the Ethereum Package Registry. See the " +
+        "following link for an example configuration:" +
+        OS.EOL +
+        OS.EOL +
+        "    http://truffleframework.com/tutorials/using-infura-custom-provider" +
+        OS.EOL;
+      if (callbackPassed) {
+        callback(new TruffleError(message));
+        return;
+      }
+      throw new TruffleError(message);
     }
 
     options.network = "ropsten";
@@ -161,54 +166,47 @@ const Package = {
 
     options.logger.log("Finding publishable artifacts...");
 
-    self.publishable_artifacts(options, function(err, artifacts) {
-      if (err) return callback(err);
+    try {
+      const artifacts = await self.publishable_artifacts(options);
 
-      interfaceAdapter
-        .getAccounts()
-        .then(async accs => {
-          var registry = await EthPMRegistry.use(
-            options.ethpm.registry,
-            accs[0],
-            provider
-          );
-          var pkg = new EthPM(options.working_directory, host, registry);
+      const accs = await interfaceAdapter.getAccounts();
+      var registry = await EthPMRegistry.use(
+        options.ethpm.registry,
+        accs[0],
+        provider
+      );
+      var pkg = new EthPM(options.working_directory, host, registry);
+      let manifest;
+      try {
+        fs.accessSync(
+          path.join(options.working_directory, "ethpm.json"),
+          fs.constants.R_OK
+        );
+      } catch (error) {
+        // If the ethpm.json file doesn't exist, use the config as the manifest.
+        manifest = options;
+      }
 
-          fs.access(
-            path.join(options.working_directory, "ethpm.json"),
-            fs.constants.R_OK,
-            function(err) {
-              var manifest;
+      options.logger.log("Uploading sources and publishing to registry...");
 
-              // If the ethpm.json file doesn't exist, use the config as the manifest.
-              if (err) {
-                manifest = options;
-              }
-
-              options.logger.log(
-                "Uploading sources and publishing to registry..."
-              );
-
-              // TODO: Gather contract_types and deployments
-              pkg
-                .publish(
-                  artifacts.contract_types,
-                  artifacts.deployments,
-                  manifest
-                )
-                .then(function(lockfile) {
-                  // If we get here, publishing was a success.
-                  options.logger.log(
-                    "+ " + lockfile.package_name + "@" + lockfile.version
-                  );
-                  callback();
-                })
-                .catch(callback);
-            }
-          );
-        })
-        .catch(callback);
-    });
+      // TODO: Gather contract_types and deployments
+      const lockfile = await pkg.publish(
+        artifacts.contract_types,
+        artifacts.deployments,
+        manifest
+      );
+      // If we get here, publishing was a success.
+      options.logger.log("+ " + lockfile.package_name + "@" + lockfile.version);
+      if (callbackPassed) {
+        callback();
+      }
+      return;
+    } catch (error) {
+      if (callbackPassed) {
+        return callback(error);
+      }
+      throw error;
+    }
   },
 
   digest: function(options, callback) {
@@ -229,6 +227,7 @@ const Package = {
 
   // Return a list of publishable artifacts
   publishable_artifacts: function(options, callback) {
+    const callbackPassed = typeof callback === "function";
     // Filter out "test" and "development" networks.
     var deployed_networks = Object.keys(options.networks).filter(function(
       network_name
@@ -238,31 +237,43 @@ const Package = {
 
     // Now get the URIs of each network that's been deployed to.
     Networks.asURIs(options, deployed_networks, function(err, result) {
-      if (err) return callback(err);
+      if (err) {
+        if (callbackPassed) {
+          return callback(err);
+        }
+        throw err;
+      }
 
       var uris = result.uris;
 
       if (result.failed.length > 0) {
-        return callback(
-          new Error(
-            "Could not connect to the following networks: " +
-              result.failed.join(", ") +
-              ". These networks have deployed artifacts that can't be published as a package without an active and accessible connection. Please ensure clients for each network are up and running prior to publishing, or use the -n option to specify specific networks you'd like published."
-          )
-        );
+        const message =
+          "Could not connect to the following networks: " +
+          result.failed.join(", ") +
+          ". These networks have deployed " +
+          "artifacts that can't be published as a package without an active " +
+          "and accessible connection. Please ensure clients for each " +
+          "network are up and running prior to publishing, or use the -n " +
+          "option to specify specific networks you'd like published.";
+        if (callbackPassed) {
+          return callback(new Error(message));
+        }
+        throw new Error(message);
       }
 
       var files = fs.readdirSync(options.contracts_build_directory);
       files = files.filter(file => file.includes(".json"));
 
       if (!files.length) {
-        var msg =
+        const message =
           "Could not locate any publishable artifacts in " +
           options.contracts_build_directory +
           ". " +
           "Run `truffle compile` before publishing.";
-
-        return callback(new Error(msg));
+        if (callbackPassed) {
+          return callback(new Error(message));
+        }
+        throw new Error(message);
       }
 
       var promises = files.map(function(file) {
@@ -354,10 +365,18 @@ const Package = {
             contract_types: contract_types,
             deployments: deployments
           };
-
-          callback(null, to_return);
+          if (callbackPassed) {
+            callback(null, to_return);
+            return;
+          }
+          return to_return;
         })
-        .catch(callback);
+        .catch(error => {
+          if (callbackPassed) {
+            callback(error);
+          }
+          throw error;
+        });
     });
   }
 };
