@@ -69,7 +69,7 @@ describe("End State", function() {
       txHash = error.hashes[0]; //it's the only hash involved
     }
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -81,7 +81,7 @@ describe("End State", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 

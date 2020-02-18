@@ -171,7 +171,7 @@ describe("Globally-available variables", function() {
     let receipt = await instance.run(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -194,7 +194,7 @@ describe("Globally-available variables", function() {
     let receipt = await instance.runRun(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -225,7 +225,7 @@ describe("Globally-available variables", function() {
     let receipt = await instance.runStatic(9);
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -256,7 +256,7 @@ describe("Globally-available variables", function() {
     let receipt = await instance.runLib(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -285,7 +285,7 @@ describe("Globally-available variables", function() {
     let contract = await abstractions.CreationTest.new(9, { value: 100 });
     let txHash = contract.transactionHash;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -308,7 +308,7 @@ describe("Globally-available variables", function() {
     let receipt = await instance.runCreate(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 

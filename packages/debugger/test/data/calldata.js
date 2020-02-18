@@ -105,7 +105,6 @@ describe("Calldata Decoding", function() {
 
   var abstractions;
   var compilations;
-  var files;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -117,7 +116,6 @@ describe("Calldata Decoding", function() {
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
     compilations = prepared.compilations;
-    files = prepared.files;
   });
 
   it("Decodes various types correctly", async function() {
@@ -126,7 +124,7 @@ describe("Calldata Decoding", function() {
     let receipt = await instance.multiTester();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -160,7 +158,7 @@ describe("Calldata Decoding", function() {
     let receipt = await instance.simpleTest("hello world");
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -192,7 +190,7 @@ describe("Calldata Decoding", function() {
     let receipt = await instance.stringBoxTest({ it: "hello world" });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -228,7 +226,6 @@ describe("Calldata Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      files,
       compilations
     });
 
@@ -264,7 +261,6 @@ describe("Calldata Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      files,
       compilations
     });
 

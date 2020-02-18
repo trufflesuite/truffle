@@ -13,10 +13,15 @@ import soliditySelector from "./solidity/selectors";
 import sessionSelector from "./session/selectors";
 import controllerSelector from "./controller/selectors";
 
+import { Compilations } from "@truffle/codec";
+
 /**
  * @example
  * let session = Debugger
- *   .forTx(<txHash>, <provider instance>, <compilations>)
+ *   .forTx(<txHash>, {
+ *     contracts: [<contract obj>, ...],
+ *     provider: <provider instance>
+ *   })
  *   .connect();
  */
 export default class Debugger {
@@ -32,14 +37,18 @@ export default class Debugger {
   }
 
   /**
+   /**
    * Instantiates a Debugger for a given transaction hash.
    *
    * @param {String} txHash - transaction hash with leading "0x"
-   * @param provider: Web3Provider
-   * @param compilations: Array<Compilation>
+   * @param {{contracts: Array<Artifact>, files: Array<String>, provider: Web3Provider, compilations: Array<Compilation>}} options -
    * @return {Debugger} instance
    */
-  static async forTx(txHash, provider, compilations) {
+  static async forTx(txHash, options = {}) {
+    let { contracts, files, provider, compilations } = options;
+    if (!compilations) {
+      compilations = Compilations.Utils.shimArtifacts(contracts, files);
+    }
     let session = new Session(compilations, provider, txHash);
 
     try {
@@ -56,11 +65,14 @@ export default class Debugger {
   /*
    * Instantiates a Debugger for a given project (with no transaction loaded)
    *
-   * @param provider: Web3Provider
-   * @param compilations: Array<Compilation>
+   * @param {{contracts: Array<Artifact>, files: Array<String>, provider: Web3Provider, compilations: Array<Compilation>}} options -
    * @return {Debugger} instance
    */
-  static async forProject(provider, compilations) {
+  static async forProject(options = {}) {
+    let { contracts, files, provider, compilations } = options;
+    if (!compilations) {
+      compilations = Compilations.Utils.shimArtifacts(contracts, files);
+    }
     let session = new Session(compilations, provider);
 
     await session.ready();

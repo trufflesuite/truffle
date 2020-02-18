@@ -65,8 +65,14 @@ class CLIDebugger {
 
     const bugger =
       txHash !== undefined
-        ? await Debugger.forTx(txHash, this.config.provider, compilations)
-        : await Debugger.forProject(this.config.provider, compilations);
+        ? await Debugger.forTx(txHash, {
+            provider: this.config.provider,
+            compilations
+          })
+        : await Debugger.forProject({
+            provider: this.config.provider,
+            compilations
+          });
 
     const session = bugger.connect();
 

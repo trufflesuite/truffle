@@ -50,7 +50,6 @@ describe("Precompiled Contracts", function() {
 
   let abstractions;
   let compilations;
-  let files;
 
   // object where key is selector name, value is list of results at step
   let results = {};
@@ -65,7 +64,6 @@ describe("Precompiled Contracts", function() {
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
     compilations = prepared.compilations;
-    files = prepared.files;
   });
 
   before("Initialize results", function() {
@@ -82,7 +80,6 @@ describe("Precompiled Contracts", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      files,
       compilations
     });
 

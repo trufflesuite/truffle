@@ -326,7 +326,7 @@ describe("Further Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -368,7 +368,7 @@ describe("Further Decoding", function() {
     let txHash = receipt.tx;
     let address = instance.address;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -410,7 +410,7 @@ describe("Further Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -449,7 +449,7 @@ describe("Further Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -509,7 +509,7 @@ describe("Further Decoding", function() {
     let receipt = await instance.sendTransaction({ data: selector + argument });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -534,7 +534,7 @@ describe("Further Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -560,7 +560,7 @@ describe("Further Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -591,7 +591,7 @@ describe("Further Decoding", function() {
       let receipt = await instance.unsignedTest();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, provider, compilations);
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let session = bugger.connect();
 
@@ -625,7 +625,7 @@ describe("Further Decoding", function() {
       let receipt = await instance.signedTest();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, provider, compilations);
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let session = bugger.connect();
 
@@ -659,7 +659,7 @@ describe("Further Decoding", function() {
       let receipt = await instance.rawTest();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, provider, compilations);
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let session = bugger.connect();
 

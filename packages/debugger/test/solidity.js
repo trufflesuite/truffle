@@ -140,7 +140,6 @@ describe("Solidity Debugging", function() {
 
   var abstractions;
   var compilations;
-  var files;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -152,7 +151,6 @@ describe("Solidity Debugging", function() {
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
     compilations = prepared.compilations;
-    files = prepared.files;
   });
 
   it("exposes functionality to stop at breakpoints", async function() {
@@ -161,7 +159,7 @@ describe("Solidity Debugging", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -194,7 +192,6 @@ describe("Solidity Debugging", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      files,
       compilations
     });
 
@@ -223,7 +220,6 @@ describe("Solidity Debugging", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      files,
       compilations
     });
 
@@ -262,7 +258,6 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        files,
         compilations
       });
 
@@ -288,7 +283,6 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        files,
         compilations
       });
 
@@ -320,7 +314,6 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        files,
         compilations
       });
 
@@ -342,7 +335,6 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        files,
         compilations
       });
 
@@ -378,7 +370,6 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        files,
         compilations
       });
 

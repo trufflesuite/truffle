@@ -211,7 +211,7 @@ describe("Variable IDs", function() {
     let receipt = await instance.factorial(3);
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
@@ -249,7 +249,7 @@ describe("Variable IDs", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
@@ -292,7 +292,7 @@ describe("Variable IDs", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
@@ -315,7 +315,7 @@ describe("Variable IDs", function() {
     let receipt = await instance.runLib();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, provider, compilations);
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);

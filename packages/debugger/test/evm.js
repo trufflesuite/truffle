@@ -89,7 +89,7 @@ describe("EVM Debugging", function() {
       let receipt = await instance.run();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, provider, compilations);
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let session = bugger.connect();
       var finished; // is the trace finished?
@@ -110,7 +110,7 @@ describe("EVM Debugging", function() {
       let receipt = await instance.run();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, provider, compilations);
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let session = bugger.connect();
 
