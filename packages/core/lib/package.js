@@ -12,6 +12,7 @@ const OS = require("os");
 
 const Package = {
   install: async function(options, callback) {
+    const callbackPassed = typeof callback === "function";
     expect.options(options, ["working_directory", "ethpm"]);
 
     expect.options(options.ethpm, ["registry", "ipfs_host"]);
@@ -50,7 +51,11 @@ const Package = {
           provider
         );
       } catch (error) {
-        callback(error);
+        if (callbackPassed) {
+          callback(error);
+          return;
+        }
+        throw error;
       }
     }
 
@@ -68,38 +73,43 @@ const Package = {
         return pkg.installDependency(package_name, version);
       });
 
-      Promise.all(promises)
-        .then(() => {
-          if (options.packages.length > 0) {
-            console.log("");
-            console.log("Successfully installed the following package(s)...");
-            console.log("==================================================");
-            options.packages.forEach(singlePackage => {
-              console.log(`> ${singlePackage}`);
-            });
-            console.log("");
-          }
-          callback();
-        })
-        .catch(callback);
+      await Promise.all(promises);
+      if (options.packages.length > 0) {
+        console.log("");
+        console.log("Successfully installed the following package(s)...");
+        console.log("==================================================");
+        options.packages.forEach(singlePackage => {
+          console.log(`> ${singlePackage}`);
+        });
+        console.log("");
+      }
+      if (callbackPassed) {
+        callback();
+      }
+      return;
     } else {
-      fs.access(
-        path.join(options.working_directory, "ethpm.json"),
-        fs.constants.R_OK,
-        error => {
-          let manifest;
-
-          // If the ethpm.json file doesn't exist, use the config as the manifest.
-          if (error) manifest = options;
-
-          pkg
-            .install(manifest)
-            .then(() => {
-              callback();
-            })
-            .catch(callback);
+      let manifest;
+      try {
+        fs.accessSync(
+          path.join(options.working_directory, "ethpm.json"),
+          fs.constants.R_OK
+        );
+      } catch (_error) {
+        // If the ethpm.json file doesn't exist, use the config as the manifest.
+        manifest = options;
+      }
+      try {
+        await pkg.install(manifest);
+        if (callbackPassed) {
+          callback();
         }
-      );
+      } catch (error) {
+        if (callbackPassed) {
+          callback(error);
+          return;
+        }
+        throw error;
+      }
     }
   },
 
