@@ -330,6 +330,7 @@ function allocateContractState(
     ({ definition, definedIn }, index) => ({
       definition,
       definedIn,
+      compilationId: compilation,
       pointer: storageVariableStorageAllocations.members[index].pointer
     })
   );
@@ -339,6 +340,7 @@ function allocateContractState(
     ({ definition, definedIn }) => ({
       definition,
       definedIn,
+      compilationId: compilation,
       pointer: {
         location: "definition" as const,
         definition: definition.value
