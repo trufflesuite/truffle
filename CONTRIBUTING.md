@@ -39,7 +39,7 @@ $ lerna create truffle-mycmd
 ### Add the package to `@truffle/core`
 
 ```shell
-$ lerna add truffle-mycmd --scope=core
+$ lerna add truffle-mycmd --scope=@truffle/core
 ```
 
 ### Create a new command in `@truffle/core`
