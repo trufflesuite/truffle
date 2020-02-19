@@ -150,6 +150,30 @@ export class ResultInspector {
               options
             );
           }
+          case "tuple": {
+            let coercedResult = <Format.Values.TupleValue>this.result;
+            //if everything is named, do same as with struct.
+            //if not, just do an array.
+            //(good behavior in the mixed case is hard, unfortunately)
+            if (coercedResult.value.every(({ name }) => name)) {
+              return util.inspect(
+                Object.assign(
+                  {},
+                  ...coercedResult.value.map(({ name, value }) => ({
+                    [name]: new ResultInspector(value)
+                  }))
+                ),
+                options
+              );
+            } else {
+              return util.inspect(
+                coercedResult.value.map(
+                  ({ value }) => new ResultInspector(value)
+                ),
+                options
+              );
+            }
+          }
           case "type": {
             //same as struct case but w/o circularity check
             let coercedResult = <Format.Values.TypeValue>this.result;
