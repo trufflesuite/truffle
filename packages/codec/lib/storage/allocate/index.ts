@@ -358,6 +358,9 @@ function allocateContractState(
   }
 
   //finally, set things and return
+  if (!allocations[compilation]) {
+    allocations[compilation] = {};
+  }
   allocations[compilation][contract.id] = {
     members: contractAllocation
   };

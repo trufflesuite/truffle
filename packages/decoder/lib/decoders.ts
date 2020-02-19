@@ -292,7 +292,6 @@ export class WireDecoder {
     transaction: DecoderTypes.Transaction,
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<CalldataDecoding> {
-    debug("transaction: %O", transaction);
     const block = transaction.blockNumber;
     const blockNumber = await this.regularizeBlock(block);
     const isConstructor = transaction.to === null;
@@ -949,6 +948,7 @@ export class ContractInstanceDecoder {
         this.contractNode,
         this.compiler
       );
+      this.contextHash = extraContext.context;
       this.additionalContexts = { [extraContext.context]: extraContext };
       //the following line only has any effect if we're dealing with a library,
       //since the code we pulled from the blockchain obviously does not have unresolved link references!
@@ -996,6 +996,7 @@ export class ContractInstanceDecoder {
       contexts: this.contexts,
       currentContext: this.context
     };
+    debug("this.contextHash: %s", this.contextHash);
 
     const decoder = Codec.decodeVariable(
       variable.definition,
