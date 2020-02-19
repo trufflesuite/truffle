@@ -124,7 +124,7 @@ export function* decodeCalldata(
     let dataType =
       decodingMode === "full"
         ? argumentAllocation.type
-        : abifyType(argumentAllocation.type);
+        : abifyType(argumentAllocation.type, info.userDefinedTypes);
     try {
       value = yield* decode(dataType, argumentAllocation.pointer, info, {
         abiPointerBase: allocation.offset, //note the use of the offset for decoding pointers!
@@ -150,7 +150,7 @@ export function* decodeCalldata(
         //(no try/catch on this one because we can't actually handle errors here!
         //not that they should be occurring)
         value = yield* decode(
-          abifyType(argumentAllocation.type), //type is now abified!
+          abifyType(argumentAllocation.type, info.userDefinedTypes), //type is now abified!
           argumentAllocation.pointer,
           info,
           {
@@ -325,7 +325,7 @@ export function* decodeEvent(
       let dataType =
         decodingMode === "full"
           ? argumentAllocation.type
-          : abifyType(argumentAllocation.type);
+          : abifyType(argumentAllocation.type, info.userDefinedTypes);
       try {
         value = yield* decode(dataType, argumentAllocation.pointer, info, {
           strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
@@ -348,7 +348,7 @@ export function* decodeEvent(
           //3. retry this particular decode in ABI mode.
           try {
             value = yield* decode(
-              abifyType(argumentAllocation.type), //type is now abified!
+              abifyType(argumentAllocation.type, info.userDefinedTypes), //type is now abified!
               argumentAllocation.pointer,
               info,
               {
@@ -582,7 +582,7 @@ export function* decodeReturndata(
       let dataType =
         decodingMode === "full"
           ? argumentAllocation.type
-          : abifyType(argumentAllocation.type);
+          : abifyType(argumentAllocation.type, info.userDefinedTypes);
       //now, let's decode!
       try {
         value = yield* decode(dataType, argumentAllocation.pointer, info, {
@@ -609,7 +609,7 @@ export function* decodeReturndata(
           //3. retry this particular decode in ABI mode.
           try {
             value = yield* decode(
-              abifyType(argumentAllocation.type), //type is now abified!
+              abifyType(argumentAllocation.type, info.userDefinedTypes), //type is now abified!
               argumentAllocation.pointer,
               info,
               {
