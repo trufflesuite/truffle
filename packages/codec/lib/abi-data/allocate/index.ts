@@ -881,8 +881,7 @@ export function getEventAllocations(
 ): EventAllocations {
   //first: do allocations for individual contracts
   let individualAllocations: {
-    [contextOrId: string]: {
-      //HACK
+    [contractKey: string]: {
       [selector: string]: {
         context: Contexts.DecoderContext;
         contractNode: Ast.AstNode;
@@ -892,8 +891,7 @@ export function getEventAllocations(
     };
   } = {};
   let groupedAllocations: {
-    [contextOrId: string]: {
-      //HACK
+    [contractKey: string]: {
       [selector: string]: {
         context: Contexts.DecoderContext;
         contractNode: Ast.AstNode;
@@ -925,11 +923,11 @@ export function getEventAllocations(
       compilation,
       compiler
     );
-    let key = deployedContext
-      ? deployedContext.context
-      : contractNode.id.toString();
-    //HACK: we can distinguish these two cases because context hashes begin with "0x"
-    //(sorry about this one!)
+    let key = makeContractKey(
+      deployedContext,
+      contractNode ? contractNode.id : undefined,
+      compilation
+    );
     if (individualAllocations[key] === undefined) {
       individualAllocations[key] = {};
     }
@@ -967,6 +965,8 @@ export function getEventAllocations(
       //if no contract node, that's all.  if there is...
       if (contractNode) {
         //...we have to do inheritance processing
+        debug("contract Id: %d", contractNode.id);
+        debug("base contracts: %o", contractNode.linearizedBaseContracts);
         let linearizedBaseContractsMinusSelf = contractNode.linearizedBaseContracts.slice();
         linearizedBaseContractsMinusSelf.shift(); //remove contract itself; only want ancestors
         for (let baseId of linearizedBaseContractsMinusSelf) {
@@ -982,12 +982,19 @@ export function getEventAllocations(
           //we're just checking for whether we can *find* it
           //why? because if we couldn't find it, that means that events defined in
           //base contracts *weren't* skipped earlier, and so we shouldn't now add them in
+          debug("baseId: %d", baseId);
+          debug("ids: %o", contracts.map(({ contractNode: { id } }) => id));
+          debug(
+            "names: %o",
+            contracts.map(({ contractNode: { name } }) => name)
+          );
           let baseContext = contracts.find(
             contractAllocationInfo =>
+              contractAllocationInfo.compilation === compilation &&
               contractAllocationInfo.contractNode &&
               contractAllocationInfo.contractNode.id === baseId
           ).deployedContext;
-          let baseKey = baseContext ? baseContext.context : baseId; //HACK
+          let baseKey = makeContractKey(baseContext, baseId, compilation);
           if (individualAllocations[baseKey][selector] !== undefined) {
             let baseAllocation =
               individualAllocations[baseKey][selector].allocationTemporary;
@@ -1005,13 +1012,14 @@ export function getEventAllocations(
   }
   //finally: transform into final form & return,
   //filtering out things w/o a context
-  for (let contextHash in groupedAllocations) {
-    if (!contextHash.startsWith("0x")) {
-      continue; //HACKY HACKY HACK HACK
+  for (let contractKey in groupedAllocations) {
+    if (!hasContext(contractKey)) {
+      continue;
       //(this filters out ones that had no context and therefore were
       //given by ID; we needed these at the previous stage but from
       //here on they're irrelevant)
     }
+    let contextHash = contextHashForKey(contractKey);
     for (let selector in groupedAllocations[contextHash]) {
       let { allocationsTemporary, context } = groupedAllocations[contextHash][
         selector
@@ -1066,4 +1074,22 @@ export function getEventAllocations(
     }
   }
   return allocations;
+}
+
+function makeContractKey(
+  context: Contexts.DecoderContext | undefined,
+  id: number,
+  compilation: string
+): string {
+  return context ? context.context : id + ":" + compilation; //HACK!
+}
+
+function hasContext(key: string): boolean {
+  return key.startsWith("0x"); //HACK!
+}
+
+function contextHashForKey(key: string): string {
+  return hasContext(key)
+    ? key //HACK!
+    : undefined;
 }
