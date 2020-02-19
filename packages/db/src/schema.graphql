@@ -8,7 +8,6 @@ scalar ByteOffset
 scalar FileIndex
 
 type Project {
-  name: String
   directory: String!
   contract(name: String!): Contract
   network(name: String!): Network
@@ -30,7 +29,7 @@ type ContractInstance {
   address: Address!
   network: Network!
   creation: ContractInstanceCreation
-  callBytecode: LinkedBytecode
+  callBytecode: LinkedBytecode!
   contract: Contract
 }
 
@@ -77,10 +76,11 @@ type AST {
 type Network implements Named {
   name: String!
   networkId: NetworkId!
-  historicBlock: HistoricBlock!
+  historicBlock: Block!
+  fork: Network
 }
 
-type HistoricBlock {
+type Block {
   height: Int!
   hash: String!
 }
@@ -108,11 +108,11 @@ type Bytecode {
 }
 
 type Instruction {
-  opcode: String!,
-  programCounter: Int!,
+  opcode: Int!,
+  programCounter: String!,
   meta: InstructionMeta,
   sourceRange: SourceRange,
-  pushData: Bytes
+  pushData: String
 }
 
 type InstructionMeta {
@@ -125,7 +125,7 @@ type InstructionMeta {
 }
 
 type SourceRange {
-  source: Source
+  source: Source!
   start: ByteOffset!
   length: Int!
   meta: SourceRangeMeta!
@@ -134,7 +134,6 @@ type SourceRange {
 type Source {
   sourcePath: String
   contents: String!
-  ast: AST
 }
 
 type SourceMap {
@@ -149,8 +148,8 @@ type Compilation {
 }
 
 type Compiler {
-  name: String
-  version: String
+  name: String!
+  version: String!
   settings: Object
 }
 

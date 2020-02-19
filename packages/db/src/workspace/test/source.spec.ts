@@ -64,7 +64,6 @@ describe("Source", () => {
     const firstSource = sources[0];
 
     expect(firstSource).toHaveProperty("id");
-    expect(firstSource).toHaveProperty("ast");
     expect(firstSource).toHaveProperty("contents");
     expect(firstSource).toHaveProperty("sourcePath");
   });
