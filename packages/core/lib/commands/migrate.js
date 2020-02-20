@@ -183,8 +183,7 @@ const command = {
     const { Environment } = require("@truffle/environment");
     const Config = require("@truffle/config");
     const temp = require("temp").track();
-    const { promisify } = require("util");
-    const promisifiedCopy = promisify(require("../copy"));
+    const copy = require("../copy");
 
     const conf = Config.detect(options);
 
@@ -226,10 +225,7 @@ const command = {
       // Copy artifacts to a temporary directory
       const temporaryDirectory = temp.mkdirSync("migrate-dry-run-");
 
-      await promisifiedCopy(
-        config.contracts_build_directory,
-        temporaryDirectory
-      );
+      await copy(config.contracts_build_directory, temporaryDirectory);
 
       config.contracts_build_directory = temporaryDirectory;
       // Note: Create a new artifactor and resolver with the updated config.

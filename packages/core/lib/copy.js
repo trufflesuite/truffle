@@ -12,7 +12,7 @@ var cpr_options = {
 // won't override individual files. If a file exists, it will
 // simply move onto the next file.
 
-var copy = function(from, to, extra_options, callback) {
+var copy = function(from, to, extra_options) {
   if (typeof extra_options === "function") {
     callback = extra_options;
     extra_options = {};
@@ -20,21 +20,24 @@ var copy = function(from, to, extra_options, callback) {
 
   var options = _.merge(_.clone(cpr_options), extra_options);
 
-  cpr(from, to, options, function(err, files) {
-    var new_files = [];
+  return new Promise((resolve, reject) => {
+    cpr(from, to, options, function(err, files) {
+      reject(err);
+      var new_files = [];
 
-    // Remove placeholders. Placeholders allow us to copy "empty" directories,
-    // but lets NPM and git not ignore them.
-    files = files || [];
-    for (var file of files) {
-      if (file.match(/.*PLACEHOLDER.*/) != null) {
-        fs.unlinkSync(file);
-        continue;
+      // Remove placeholders. Placeholders allow us to copy "empty" directories,
+      // but lets NPM and git not ignore them.
+      files = files || [];
+      for (var file of files) {
+        if (file.match(/.*PLACEHOLDER.*/) != null) {
+          fs.unlinkSync(file);
+          continue;
+        }
+        new_files.push(file);
       }
-      new_files.push(file);
-    }
 
-    callback(err, new_files);
+      resolve(new_files);
+    });
   });
 };
 
