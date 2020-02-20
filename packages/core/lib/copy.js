@@ -17,7 +17,9 @@ const copy = function(from, to, extra_options) {
 
   return new Promise((resolve, reject) => {
     cpr(from, to, options, function(err, files) {
-      reject(err);
+      if (err) {
+        reject(err);
+      }
       var new_files = [];
 
       // Remove placeholders. Placeholders allow us to copy "empty" directories,
