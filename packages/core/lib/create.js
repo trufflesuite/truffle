@@ -17,29 +17,20 @@ var templates = {
   }
 };
 
-var processFile = function(file_path, processfn, callback) {
-  fs.readFile(file_path, { encoding: "utf8" }, function(err, data) {
-    if (err != null) {
-      callback(err);
-      return;
+const replaceContents = function(file_path, find, replacement, callback) {
+  let data;
+  try {
+    data = fs.readFileSync(file_path, { encoding: "utf8" });
+    if (typeof find === "string") {
+      find = new RegExp(find, "g");
     }
-
-    var result = processfn(data);
+    const result = data.replace(find, replacement);
     fs.writeFile(file_path, result, { encoding: "utf8" }, callback);
-  });
-};
-
-var replaceContents = function(file_path, find, replacement, callback) {
-  processFile(
-    file_path,
-    function(data) {
-      if (typeof find === "string") {
-        find = new RegExp(find, "g");
-      }
-      return data.replace(find, replacement);
-    },
-    callback
-  );
+    return;
+  } catch (error) {
+    callback(error);
+    return;
+  }
 };
 
 var toUnderscoreFromCamel = function(string) {
