@@ -46,7 +46,7 @@ var toUnderscoreFromCamel = function(string) {
 };
 
 var Create = {
-  contract: function(directory, name, options, callback) {
+  contract: async function(directory, name, options, callback) {
     if (typeof options === "function") {
       callback = options;
     }
@@ -60,14 +60,16 @@ var Create = {
       );
     }
 
-    copy.file(from, to, function(err) {
-      if (err) return callback(err);
+    try {
+      await copy.file(from, to);
+    } catch (error) {
+      return callback(error);
+    }
 
-      replaceContents(to, templates.contract.name, name, callback);
-    });
+    replaceContents(to, templates.contract.name, name, callback);
   },
 
-  test: function(directory, name, options, callback) {
+  test: async function(directory, name, options, callback) {
     if (typeof options === "function") {
       callback = options;
     }
@@ -83,16 +85,18 @@ var Create = {
       );
     }
 
-    copy.file(from, to, function(err) {
-      if (err) return callback(err);
+    try {
+      await copy.file(from, to);
+    } catch (error) {
+      return callback(error);
+    }
 
-      replaceContents(to, templates.contract.name, name, function(err) {
-        if (err) return callback(err);
-        replaceContents(to, templates.contract.variable, underscored, callback);
-      });
+    replaceContents(to, templates.contract.name, name, function(err) {
+      if (err) return callback(err);
+      replaceContents(to, templates.contract.variable, underscored, callback);
     });
   },
-  migration: function(directory, name, options, callback) {
+  migration: async function(directory, name, options, callback) {
     if (typeof options === "function") {
       callback = options;
     }
@@ -115,7 +119,12 @@ var Create = {
       );
     }
 
-    copy.file(from, to, callback);
+    try {
+      await copy.file(from, to);
+      callback();
+    } catch (error) {
+      callback(error);
+    }
   }
 };
 
