@@ -11,7 +11,6 @@ export function shimArtifacts(
   files?: string[]
 ): Compilation[] {
   //note: always returns a one-element array (a single fictional compilation)
-  let sourcesByPath: { [path: string]: Source } = {};
   let contracts: Contract[] = [];
   let sources: Source[] = [];
   let unreliableSourceOrder: boolean = false;
