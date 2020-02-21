@@ -235,11 +235,19 @@ describe("Solidity Debugging", function() {
 
     for (let i = 0; i < NUM_TESTS; i++) {
       let inputLine = lineOf("input " + i, source.source);
-      breakpoints.push({ sourceId: source.id, line: inputLine });
+      breakpoints.push({
+        compilation: source.compilation,
+        sourceId: source.id,
+        line: inputLine
+      });
       let outputLine = lineOf("output " + i, source.source);
       expectedResolutions.push(
         outputLine !== -1 //lineOf will return -1 if no such line exists
-          ? { sourceId: source.id, line: outputLine }
+          ? {
+              compilation: source.compilation,
+              sourceId: source.id,
+              line: outputLine
+            }
           : null
       );
     }
