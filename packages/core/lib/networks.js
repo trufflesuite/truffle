@@ -6,6 +6,14 @@ const Provider = require("@truffle/provider");
 const async = require("async");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 
+const tezosNetworkChainIdMapping = {
+  babylonnet: "NetXUdfLh6Gm88t",
+  carthagenet: "NetXjD3HPJJjmcd",
+  development: "NetXdQprcVkpaWU",
+  mainnet: "NetXdQprcVkpaWU",
+  zeronet: "NetXKakFj1A7ouL"
+};
+
 const Networks = {
   deployed: async function(options) {
     let files;
@@ -52,7 +60,7 @@ const Networks = {
   },
 
   display: async function(config) {
-    const networks = await this.deployed(config);
+    let networks = await this.deployed(config);
     let networkNames = Object.keys(networks).sort();
 
     const starNetworks = networkNames.filter(networkName => {
@@ -70,8 +78,22 @@ const Networks = {
     const unknownNetworks = networkNames.filter(networkName => {
       const configuredNetworks = Object.keys(config.networks);
       let found = false;
-      for (let i = 0; i < configuredNetworks.length; i++) {
-        const configuredNetworkName = configuredNetworks[i];
+
+      for (const configuredNetworkName of configuredNetworks) {
+        if (
+          config.networks[configuredNetworkName].type === "tezos" &&
+          Object.keys(tezosNetworkChainIdMapping).includes(
+            configuredNetworkName
+          ) &&
+          tezosNetworkChainIdMapping[configuredNetworkName] === networkName
+        ) {
+          networks[configuredNetworkName] = networks[networkName];
+          delete networks[networkName];
+          networkNames = networkNames.filter(item => item !== networkName);
+          config.networks[configuredNetworkName].network_id = networkName;
+          networkName = configuredNetworkName;
+          networkNames.push(networkName);
+        }
         if (networkName === configuredNetworkName) {
           found = true;
           break;
