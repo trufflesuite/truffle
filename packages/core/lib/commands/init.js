@@ -1,6 +1,6 @@
 var command = {
   command: "init",
-  description: "Initialize new and empty Ethereum project",
+  description: "Initialize new and empty project",
   builder: {},
   help: {
     usage: "truffle init [--force]",

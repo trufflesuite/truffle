@@ -5,7 +5,7 @@ const fse = require("fs-extra");
 const path = require("path");
 let config;
 
-describe("truffle install [ @standalone ]", () => {
+describe.skip("truffle install [ @standalone ]", () => {
   before(async () => {
     config = await sandbox.create(
       path.join(__dirname, "../../sources/install/init")
