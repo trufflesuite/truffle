@@ -149,7 +149,7 @@ class Command {
       .usage(
         "Truffle v" +
           (bundled || core) +
-          " - a development framework for Ethereum" +
+          " - the most popular blockchain development framework" +
           OS.EOL +
           OS.EOL +
           "Usage: truffle <command> [options]"
