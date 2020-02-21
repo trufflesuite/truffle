@@ -106,12 +106,6 @@ export interface Contract {
    * The ID of the contract's primary source.
    */
   primarySourceId?: string;
-  /**
-   * This field is a compatibility hack only inteded for internal use.
-   * (It allows the primary source to be specified by array index rather than
-   * by ID, but please don't actually do that.)
-   */
-  primarySourceIndex?: number; //compatibility hack!
 }
 
 //defining this ourselves for now, sorry!

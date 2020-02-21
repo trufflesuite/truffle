@@ -145,7 +145,6 @@ export default class Session {
           deployedSourceMap,
           abi,
           compiler,
-          primarySourceIndex,
           primarySourceId
         } = contract;
 
@@ -167,10 +166,7 @@ export default class Session {
 
         let sourcesToCheck;
 
-        if (primarySourceIndex !== undefined) {
-          debug("index: %d", primarySourceIndex);
-          sourcesToCheck = [sources[compilation.id][primarySourceIndex]];
-        } else if (primarySourceId !== undefined) {
+        if (primarySourceId !== undefined) {
           sourcesToCheck = [
             sources[compilation.id].find(
               source => source && source.id === primarySourceId

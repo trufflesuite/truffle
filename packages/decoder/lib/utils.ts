@@ -39,17 +39,16 @@ export function getContractNode(
     contractName,
     sourceMap,
     deployedSourceMap,
-    primarySourceId,
-    primarySourceIndex
+    primarySourceId
   } = contract;
   const { unreliableSourceOrder, sources } = compilation;
 
   let sourcesToCheck: Codec.Compilations.Source[];
 
-  if (primarySourceIndex !== undefined) {
-    sourcesToCheck = [sources[primarySourceIndex]];
-  } else if (primarySourceId !== undefined) {
-    sourcesToCheck = [sources.find(source => source.id === primarySourceId)];
+  if (primarySourceId !== undefined) {
+    sourcesToCheck = [
+      sources.find(source => source && source.id === primarySourceId)
+    ];
   } else if (!unreliableSourceOrder && (deployedSourceMap || sourceMap)) {
     let sourceId = extractPrimarySource(deployedSourceMap || sourceMap);
     sourcesToCheck = [sources[sourceId]];

@@ -55,7 +55,8 @@ export function shimArtifacts(
     if (files) {
       let index = files.indexOf(sourcePath);
       sources[index] = sourceObject;
-      contractObject.primarySourceIndex = index;
+      sourceObject.id = index.toString(); //HACK
+      contractObject.primarySourceId = index.toString();
       //note: we never set the unreliableSourceOrder flag in this branch;
       //we just trust files.  If files is bad, then, uh, too bad.
     } else {
@@ -73,7 +74,8 @@ export function shimArtifacts(
           !(index in sources)
         ) {
           sources[index] = sourceObject;
-          contractObject.primarySourceIndex = index;
+          sourceObject.id = index.toString(); //HACK
+          contractObject.primarySourceId = index.toString();
         } else {
           //if we fail, set the unreliable source order flag
           unreliableSourceOrder = true;
@@ -81,8 +83,9 @@ export function shimArtifacts(
         if (unreliableSourceOrder) {
           //in case of unreliable source order, we'll ignore what indices
           //things are *supposed* to have and just append things to the end
-          contractObject.primarySourceIndex = sources.length;
-          sources.push(sourceObject); //these two lines don't commute, obviously!
+          sourceObject.id = sources.length.toString(); //HACK
+          contractObject.primarySourceId = sources.length.toString();
+          sources.push(sourceObject); //these lines don't commute, obviously!
         }
       }
     }
