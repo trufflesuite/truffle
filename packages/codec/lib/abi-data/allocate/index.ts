@@ -1,5 +1,5 @@
 import debugModule from "debug";
-const debug = debugModule("codec:abi:allocate");
+const debug = debugModule("codec:abi-data:allocate");
 
 import * as AbiData from "@truffle/codec/abi-data/types";
 import * as Import from "@truffle/codec/abi-data/import";
