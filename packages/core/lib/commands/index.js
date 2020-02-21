@@ -3,7 +3,7 @@ module.exports = {
   compile: require("./compile"),
   config: require("./config"),
   console: require("./console"),
-  create: require("./create"),
+  // create: require("./create"),
   debug: require("./debug"),
   deploy: require("./deploy"),
   develop: require("./develop"),
