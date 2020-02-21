@@ -11,6 +11,7 @@ import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
 import data from "lib/data/selectors";
+import evm from "lib/evm/selectors";
 
 import * as Codec from "@truffle/codec";
 
@@ -476,13 +477,14 @@ describe("Further Decoding", function() {
 
     assert.deepInclude(variables, expectedResult);
 
+    //let's get the ID of the current contract to use as an index
+    let contractId = session.view(evm.current.context).contractId;
+
     //get offsets of top-level variables for this contract
     //converting to numbers for convenience
     const startingOffsets = Object.values(
-      session.view(data.current.allocations.state)
-    )
-      .find(({ definition }) => definition.name === "ComplexMappingTest")
-      .members.map(({ pointer }) => pointer.range.from.slot.offset);
+      session.view(data.current.allocations.state)[contractId].members
+    ).map(({ pointer }) => pointer.range.from.slot.offset);
 
     const mappingKeys = session.view(data.views.mappingKeys);
     for (let slot of mappingKeys) {
