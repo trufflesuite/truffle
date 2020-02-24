@@ -3,13 +3,13 @@
   "version": "4.0.9",
   "description": "A decoder and encoder for Solidity variables of all sorts",
   "main": "dist/index.js",
-  "types": "lib/index.ts",
+  "types": "dist/index.d.ts",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
     "prepare": "yarn build",
-    "build": "node_modules/.bin/tsc",
+    "build": "node_modules/.bin/tsc --declaration",
     "start": "node_modules/.bin/tsc --watch",
     "test": "cd test/wire && npx truffle test && cd ../storage && npx truffle test"
   },
