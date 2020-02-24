@@ -16,11 +16,16 @@ export interface Compilation {
    */
   id: string;
   /**
-   * This field is a compatibility hack only intended for internal use.
+   * This field is a compatibility hack only intended for internal use.  It indicates
+   * that the order on the sources should be disregarded and disables functionality
+   * that relies on such an order.  (E.g., the debugger will throw an exception if
+   * this is set.)
    */
   unreliableSourceOrder?: boolean; //compatibility hack!
   /**
-   * A list of sources involved in the compilation.
+   * A list of sources involved in the compilation.  These must be ordered according
+   * to their compilation indices.  (If there is for some reason a gap in the
+   * compilation indices, a corresponding gap must be left in the sources array.)
    */
   sources: Source[];
   /**

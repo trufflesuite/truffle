@@ -46,9 +46,9 @@ For a contract instance decoder, use one of the following:
 See the documentation of these functions for details, or below for usage
 examples.
 
-All of these functions presently require a final argument containing all
-artifacts that could potentially be relevant.  It's intended that this argument
-will be optional in the future.
+All of these functions take a final argument in which information about the
+project is specified; currently only a few methods for specifying project
+information are allowed, but more are planned.
 
 ### Decoder methods
 
@@ -170,12 +170,14 @@ import { Compilations } from "@truffle/codec";
  *
  * Constructs a wire decoder for the project.
  * @param provider The Web3 provider object to use.
- * @param artifacts A list of contract artifacts for contracts in the project.
+ * @param projectInfo Information about the project or contracts being decoded.
+ *   This may come in several forms; see the [[ProjectInfo]] documentation for
+ *   more information.
  *
- *   Contract constructor objects may be substituted for artifacts, so if
- *   you're not sure which you're dealing with, it's OK.
- *
- *   This parameter is intended to be made optional in the future.
+ *   Alternatively, instead of a [[ProjectInfo]], one may simply pass a list of
+ *   artifacts.  Contract constructor objects may be substituted for artifacts,
+ *   so if you're not sure which you're dealing with, it's OK.  If this parameter
+ *   is omitted, it's treated as if one had passed `[]`.
  * @category Provider-based Constructor
  */
 export async function forProject(
@@ -195,15 +197,21 @@ export async function forProject(
  *   A contract constructor object may be substituted for the artifact, so if
  *   you're not sure which you're dealing with, it's OK.
  * @param provider The Web3 provider object to use.
- * @param artifacts A list of artifacts for other contracts in the project that may be relevant
- *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms; see the [[ProjectInfo]] documentation for more
+ *   information.
  *
- *   Contract constructor objects may be substituted for artifacts, so if
- *   you're not sure which you're dealing with, it's OK.
+ *   Alternatively, instead of a [[ProjectInfo]], one may simply pass a list of
+ *   artifacts.  Contract constructor objects may be substituted for artifacts,
+ *   so if you're not sure which you're dealing with, it's OK.
  *
- *   Including the contract itself here is fine; so is excluding it.
+ *   If this latter option is used, one may omit `artifact` itself from the
+ *   list of artifacts and only include the *other* relevant artifacts; note
+ *   that omission this is not allowed when passing a `ProjectInfo`.
  *
- *   This parameter is intended to be made optional in the future.
+ *   If this parameter is omitted, it's treated as if one had passed `[]`.
  * @category Provider-based Constructor
  */
 export async function forArtifact(
@@ -223,10 +231,12 @@ export async function forArtifact(
  * @param contract The contract constructor object corresponding to the type of the contract.
  * @param artifacts A list of artifacts for other contracts in the project that may be relevant
  *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
- *
- *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
- *
- *   This parameter is intended to be made optional in the future.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forArtifact]]
+ *   for more detail.
  * @category Truffle Contract-based Constructor
  */
 export async function forContract(
@@ -249,12 +259,12 @@ export async function forContract(
  *   A contract constructor object may be substituted for the artifact, so if
  *   you're not sure which you're dealing with, it's OK.
  * @param provider The Web3 provider object to use.
- * @param artifacts A list of artifacts for other contracts in the project that may be relevant
- *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
- *
- *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
- *
- *   This parameter is intended to be made optional in the future.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forArtifact]]
+ *   for more detail.
  * @category Provider-based Constructor
  */
 export async function forDeployedArtifact(
@@ -272,12 +282,12 @@ export async function forDeployedArtifact(
  *
  * Constructs a contract instance decoder for a deployed contract instance.
  * @param contract The contract constructor object corresponding to the type of the contract.
- * @param artifacts A list of artifacts for other contracts in the project that may be relevant
- *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
- *
- *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
- *
- *   This parameter is intended to be made optional in the future.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forArtifact]]
+ *   for more detail.
  * @category Truffle Contract-based Constructor
  */
 export async function forDeployedContract(
@@ -302,12 +312,12 @@ export async function forDeployedContract(
  *
  *   Address must either be checksummed, or in all one case to circumvent the checksum.
  *   Mixed-case with bad checksum will cause this function to throw an exception.
- * @param artifacts A list of artifacts for other contracts in the project that may be relevant
- *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
- *
- *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
- *
- *   This parameter is intended to be made optional in the future.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forArtifact]]
+ *   for more detail.
  * @category Provider-based Constructor
  */
 export async function forArtifactAt(
@@ -330,12 +340,12 @@ export async function forArtifactAt(
  *
  *   Address must either be checksummed, or in all one case to circumvent the checksum.
  *   Mixed-case with bad checksum will cause this function to throw an exception.
- * @param artifacts A list of artifacts for other contracts in the project that may be relevant
- *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
- *
- *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
- *
- *   This parameter is intended to be made optional in the future.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forArtifact]]
+ *   for more detail.
  * @category Truffle Contract-based Constructor
  */
 export async function forContractAt(
@@ -353,12 +363,12 @@ export async function forContractAt(
  *
  * Constructs a contract instance decoder for a given contract instance.
  * @param contract The contract abstraction object corresponding to the contract instance.
- * @param artifacts A list of artifacts for other contracts in the project that may be relevant
- *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
- *
- *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
- *
- *   This parameter is intended to be made optional in the future.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forArtifact]]
+ *   for more detail.
  * @category Truffle Contract-based Constructor
  */
 export async function forContractInstance(

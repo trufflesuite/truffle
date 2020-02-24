@@ -16,7 +16,7 @@ import Web3 from "web3";
  * be passed in various ways; this type is given here as an interface rahter
  * than a union, but note that really you only need to include one of these
  * fields.  (The `compilations` field will be used if present, then `artifacts`
- * if not, etc.)  Additiona, more convenient options for how to specify project
+ * if not, etc.)  Additional, more convenient options for how to specify project
  * information are intended to be added in the future.
  * @category Inputs
  */
@@ -29,6 +29,8 @@ export interface ProjectInfo {
   compilations?: Compilations.Compilation[];
   /**
    * A list of contract artifacts for contracts in the project.
+   * Contract constructor objects may be substituted for artifacts, so if
+   * you're not sure which you're dealing with, it's OK.
    */
   artifacts?: Artifact[];
 }
