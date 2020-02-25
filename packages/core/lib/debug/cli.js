@@ -50,12 +50,13 @@ class CLIDebugger {
     const compileSpinner = ora("Compiling your contracts...").start();
 
     const compilationResult = await new DebugCompiler(this.config).compile();
+    debug("compilationResult: %O", compilationResult);
 
     compileSpinner.succeed();
 
     return {
       contracts: compilationResult.contracts,
-      files: compilationResult.outputs.solc
+      files: compilationResult.sourceIndexes
     };
   }
 
