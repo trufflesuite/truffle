@@ -1080,49 +1080,6 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@truffle/compile-solidity@^4.2.18":
-  version "4.2.18"
-  resolved "https://registry.yarnpkg.com/@truffle/compile-solidity/-/compile-solidity-4.2.18.tgz#ec5efd58bbf51ec514c7e12b4c6c4a25812575a2"
-  integrity sha512-Bw8NKAbDgZvMJeBHvo5zLtwmd9ce6anQAs+j24PJW1P1NaMrDC/RgmnLc6NS+yBIomGon1yI5XrYclRyXsYwzA==
-  dependencies:
-    "@truffle/config" "^1.2.12"
-    "@truffle/contract-sources" "^0.1.7"
-    "@truffle/error" "^0.0.8"
-    "@truffle/expect" "^0.0.13"
-    colors "^1.1.2"
-    debug "^4.1.0"
-    fs-extra "^8.0.1"
-    ora "^3.0.0"
-    original-require "^1.0.1"
-    request "^2.85.0"
-    request-promise "^4.2.2"
-    require-from-string "^2.0.2"
-    semver "^5.6.0"
-    solc "^0.6.0"
-
-"@truffle/config@^1.2.12":
-  version "1.2.12"
-  resolved "https://registry.yarnpkg.com/@truffle/config/-/config-1.2.12.tgz#22fe6d8ce3f182afa9037ca406cf160ef160355b"
-  integrity sha512-a8txTBliph8OHjjrlg/KYjkXcDCus3ijoK8RiCQsqeqhRUBzBoK2mAlaZk8yvQNK6satc30aTdiURjtdTNQgXg==
-  dependencies:
-    "@truffle/error" "^0.0.8"
-    "@truffle/events" "^0.0.4"
-    "@truffle/provider" "^0.2.6"
-    "@types/lodash" "^4.14.149"
-    "@types/node" "^12.12.9"
-    configstore "^4.0.0"
-    find-up "^2.1.0"
-    lodash "^4.17.13"
-    module "^1.2.5"
-    original-require "1.0.1"
-
-"@truffle/events@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@truffle/events/-/events-0.0.4.tgz#38b6db0e6e5ac3dd408d7848c3a535e0c778ed54"
-  integrity sha512-/Guk0kqHBM41YSeqAcK1LD7dUr8krLoThlipDDshF6gOs7cyBMBmIeRm9iMBExNV6UK2ejSAV39BPCDEo6GoEA==
-  dependencies:
-    emittery "^0.4.1"
-
 "@trufflesuite/chromafi@^2.1.2":
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@trufflesuite/chromafi/-/chromafi-2.1.2.tgz#50715070093c5543a406a2cc85fa70fc8d1a36ab"
