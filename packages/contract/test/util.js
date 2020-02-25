@@ -139,6 +139,13 @@ var util = {
     util.fakePromiEvent.reject(new Error(error));
   },
 
+  fakeGatewayDelay(msg) {
+    const error =
+      msg ||
+      "The contract code couldn't be stored, please check your gas limit";
+    util.fakePromiEvent.reject(new Error(error));
+  },
+
   fakeNoReceipt: function() {
     return Promise.resolve(null);
   },
