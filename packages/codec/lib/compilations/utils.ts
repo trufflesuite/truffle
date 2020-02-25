@@ -62,9 +62,15 @@ export function shimArtifacts(
     } else {
       //if files *wasn't* passed, attempt to determine it from the ast
       //first: is this already there? only add it if it's not.
+      //(we determine this by sourcePath if present, and the actual source
+      //contents if not)
       if (
         sources.every(
-          existingSource => existingSource.sourcePath !== sourcePath
+          existingSource =>
+            existingSource.sourcePath !== sourcePath ||
+            (!sourcePath &&
+              !existingSource.sourcePath &&
+              existingSource.source !== source)
         )
       ) {
         let index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
