@@ -25,7 +25,11 @@ const command = {
     if (options._ && options._.length > 0) options.packages = options._;
 
     const config = Config.detect(options);
-    Package.install(config, done);
+    Package.install(config)
+      .then(() => {
+        return done();
+      })
+      .catch(done);
   }
 };
 

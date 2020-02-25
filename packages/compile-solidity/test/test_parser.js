@@ -76,5 +76,5 @@ describe("Parser", () => {
 
       assert.deepEqual(imports, expected);
     });
-  });
+  }).timeout(20000);
 });
