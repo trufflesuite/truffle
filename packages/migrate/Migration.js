@@ -206,15 +206,16 @@ class Migration {
   }
 
   async deployAndLinkLogger(options, resolver) {
-    const { networks, network, network_id, provider } = options;
-    let Console;
-    try {
-      Console = resolver.require("Console");
-    } catch (error) {
-      return;
-    }
+    const { networks, network, network_id, provider, consoleLog } = options;
 
-    if (!Console.isDeployed()) {
+    if (consoleLog) {
+      let Console;
+      try {
+        Console = resolver.require("Console");
+      } catch (error) {
+        return;
+      }
+
       const loggerDeployer = new Deployer({
         networks,
         network,

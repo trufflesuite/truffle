@@ -12,6 +12,11 @@ const command = {
       type: "boolean",
       default: false
     },
+    "console-log": {
+      describe: "Enable Solidity console logging",
+      type: "boolean",
+      default: false
+    },
     "debug": {
       describe: "Enable in-test debugging",
       type: "boolean",
@@ -46,7 +51,11 @@ const command = {
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all[-debug]] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail] [--stacktrace[-extra]]",
+      "truffle test [<test_file>] [--compile-all[-debug]] [--network <name>] [--verbose-rpc]\n" +
+      "                                " + // spacing to align with previous line
+      "[--show-events] [--debug] [--debug-global <identifier>]\n" +
+      "                                " + // spacing to align with previous line
+      "[--console-log]",
     options: [
       {
         option: "<test_file>",
@@ -65,6 +74,10 @@ const command = {
         description:
           "Compile all contracts and do so in debug mode for extra revert info.  May " +
           "cause errors on large\n                    contracts."
+      },
+      {
+        option: "--console-log",
+        description: "Enables Solidity console logging during testing."
       },
       {
         option: "--network <name>",
