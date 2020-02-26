@@ -64,13 +64,13 @@ class FS {
           ? path.resolve(__dirname, path.basename(importPath))
           : path.resolve(
               __dirname,
-              "../core/lib/logging",
+              "../../core/lib/logging",
               path.basename(importPath)
             );
-      const resolvedSource = fs.readFileSync(actualImportPath, {
+      const body = fs.readFileSync(actualImportPath, {
         encoding: "utf8"
       });
-      return { resolvedSource, importPath };
+      return { body, filePath: importPath };
     }
 
     possiblePaths.forEach(possiblePath => {

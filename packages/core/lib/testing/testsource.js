@@ -106,13 +106,11 @@ TestSource.prototype.resolve = async function(importPath) {
       typeof BUNDLE_VERSION !== "undefined"
         ? path.resolve(__dirname, path.basename(importPath))
         : path.resolve(__dirname, "../logging", path.basename(importPath));
-    if (importPath === `truffle/${lib}.sol`)
-      return fse.readFile(actualImportPath, { encoding: "utf8" }, (err, body) =>
-        callback(err, body, importPath)
-      );
+    if (importPath === `truffle/${lib}.sol`) {
+      const body = fse.readFileSync(actualImportPath, { encoding: "utf8" });
+      return { body, resolvedPath: importPath };
+    }
   }
-
-  return callback();
 };
 
 TestSource.prototype.resolve_dependency_path = (importPath, dependencyPath) => {
