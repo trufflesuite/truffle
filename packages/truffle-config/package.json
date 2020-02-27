@@ -1,6 +1,6 @@
 {
   "name": "truffle-config",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Utility for interacting with truffle.js files",
   "main": "index.js",
   "scripts": {},
