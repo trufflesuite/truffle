@@ -8,8 +8,13 @@ const fs = require("fs");
 
 const Package = {
   install: async options => {
-    expect.options(options.ethpm, ["ipfs_host", "ipfs_port", "ipfs_protocol"]);
-    expect.options(options, ["working_directory", "ethpm_uri", "logger"]);
+    expect.options(options, ["ethpm", "logger", "working_directory"]);
+    expect.options(options.ethpm, [
+      "ethpm_uri",
+      "ipfs_host",
+      "ipfs_port",
+      "ipfs_protocol"
+    ]);
 
     // Create a web3 instance connected to a blockchain
     if (!options.provider && !options.ethpm.install_provider_uri) {
@@ -71,25 +76,26 @@ const Package = {
     );
   },
 
-  release: async options => {
+  publish: async options => {
+    expect.options(options, [
+      "contracts_build_directory",
+      "contracts_directory",
+      "ethpm",
+      "logger",
+      "network",
+      "networks",
+      "working_directory"
+    ]);
     expect.options(options.ethpm, [
       "ipfs_host",
       "ipfs_port",
       "ipfs_protocol",
       "registry"
     ]);
-    expect.options(options, [
-      "working_directory",
-      "contracts_directory",
-      "contracts_build_directory",
-      "networks",
-      "network",
-      "logger"
-    ]);
 
     if (options.network !== "mainnet") {
       // validate is setup with mnemonic?
-      // validate mnemonic has releasing rights for options.registry?
+      // validate mnemonic has publishing rights for options.registry?
       throw new TruffleError(
         "Please add a mainnet provider with your 12 word mnemonic to truffle.js"
       );
@@ -110,7 +116,7 @@ const Package = {
       }
     });
 
-    let artifacts = releasable_artifacts(options);
+    let artifacts = publishableArtifacts(options);
 
     // Build sourcesConfig
     const sourcePaths = fs.readdirSync(options.contracts_directory);
@@ -120,7 +126,8 @@ const Package = {
       const ipfsHash = await ethpm.storage.write(
         fs.readFileSync(targetPath).toString()
       );
-      sourcesConfig[file] = ipfsHash.href;
+      relative_path = `./${file}`;
+      sourcesConfig[relative_path] = ipfsHash.href;
     }
 
     // Fetch ethpm.json config
@@ -171,18 +178,18 @@ const Package = {
   }
 };
 
-// Returns a list of releasable artifacts
+// Returns a list of publishable artifacts
 // aka contract_types and deployments found in all artifacts
-function releasable_artifacts(options) {
+function publishableArtifacts(options) {
   var files = fs.readdirSync(options.contracts_build_directory);
   files = files.filter(file => file.includes(".json"));
 
   if (!files.length) {
     var msg =
-      "Could not locate any releasable artifacts in " +
+      "Could not locate any publishable artifacts in " +
       options.contracts_build_directory +
       ". " +
-      "Run `truffle compile` before releasing.";
+      "Run `truffle compile` before publishing.";
 
     return new Error(msg);
   }
@@ -196,7 +203,7 @@ function releasable_artifacts(options) {
         "utf8"
       )
     );
-    // hacky af - blockchain uri wasn't getting picked up as network_id for 2 of 3 migrations
+    // HACK - blockchain uri wasn't getting picked up as network_id for 2 of 3 migrations
     // some artifacts are coming through w/ network ids that are ints
     // the blockchain uri coming through is what is set as the network_id
     // not a freshly created one with latest block via BlockchainUtils

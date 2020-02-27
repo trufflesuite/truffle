@@ -16,7 +16,7 @@ const Migrate = require("@truffle/migrate");
 const INSTALL_PROVIDER_URI =
   "https://mainnet.infura.io/v3/7707850c2fb7465ebe6f150d67182e22";
 
-describe("ethPM release: ", function() {
+describe("ethPM publish: ", function() {
   this.timeout(30000);
   let web3;
   let config;
@@ -81,7 +81,7 @@ describe("ethPM release: ", function() {
     });
   });
 
-  it("requires valid ethpm.json to release", async () => {
+  it("requires valid ethpm.json to publish", async () => {
     let counter = 0;
     await Contracts.compile(config.with({ all: true, quiet: true }));
 
@@ -93,7 +93,7 @@ describe("ethPM release: ", function() {
     );
     await Migrate.run(config.with({ quiet: true }));
     try {
-      await Package.release(config);
+      await Package.publish(config);
     } catch (error) {
       expect(error.message).to.include(
         "Invalid ethpm.json configuration detected."
@@ -107,7 +107,7 @@ describe("ethPM release: ", function() {
       "utf8"
     );
     try {
-      await Package.release(config.with({ version: "1" }));
+      await Package.publish(config.with({ version: "1" }));
     } catch (error) {
       expect(error.message).to.include(
         "Invalid ethpm.json configuration detected."
@@ -121,7 +121,7 @@ describe("ethPM release: ", function() {
       "utf8"
     );
     try {
-      await Package.release(config.with({ package_name: "pkg" }));
+      await Package.publish(config.with({ package_name: "pkg" }));
     } catch (error) {
       expect(error.message).to.include(
         "Invalid ethpm.json configuration detected."
@@ -131,7 +131,7 @@ describe("ethPM release: ", function() {
     expect(counter).to.equal(3);
   });
 
-  it("releases a basic package", async () => {
+  it("publishes a basic package", async () => {
     await Contracts.compile(config.with({ all: true, quiet: true }));
     const ethpmJson = JSON.stringify({
       package_name: "pkg",
@@ -156,7 +156,7 @@ describe("ethPM release: ", function() {
       "utf8"
     );
     await Migrate.run(config.with({ quiet: true }));
-    const pkg = await Package.release(config);
+    const pkg = await Package.publish(config);
     expect(pkg).to.include.all.keys("package_name", "version");
     expect(pkg.package_name).to.equal("pkg");
     expect(pkg.version).to.equal("1.0");
@@ -167,15 +167,12 @@ describe("ethPM release: ", function() {
     expect(pkg.meta.keywords).to.include("test", "solidity", "truffle");
     expect(pkg.meta.keywords).to.have.lengthOf(3);
     expect(pkg.meta.license).to.equal("mit");
-    // these paths should be relative
     expect(pkg.sources).to.include({
-      "ConvertLib.sol": "ipfs://QmcGD9ynJr3fzYTdNoNygWzDBZEedeX3GUqmaEAi4Jrp6o"
+      "./ConvertLib.sol":
+        "ipfs://QmcGD9ynJr3fzYTdNoNygWzDBZEedeX3GUqmaEAi4Jrp6o"
     });
     expect(pkg.sources).to.include({
       "MetaCoin.sol": "ipfs://QmQaTyKrqbePBsrtbhBYKeRnT7E5sTeNmMXCdtX8VSQLB8"
-    });
-    expect(pkg.sources).to.include({
-      "Migrations.sol": "ipfs://QmascrL8SoRJpMHJnjiCFSXwgEe6fR8oNUszKRGQy2nsnn"
     });
     expect(pkg.sources).to.include({
       "Migrations.sol": "ipfs://QmascrL8SoRJpMHJnjiCFSXwgEe6fR8oNUszKRGQy2nsnn"
@@ -188,7 +185,7 @@ describe("ethPM release: ", function() {
       "runtime_bytecode"
     );
     expect(pkg.contract_types.ConvertLib.compiler.settings.optimize).to.equal(
-      true
+      false
     );
   });
 });
@@ -250,7 +247,7 @@ describe("EthPM install", function() {
 
     config.registry = registry._address;
 
-    // release ens@1.0.0
+    // publish ens@1.0.0
     await registry.methods
       .release(
         "ens",
@@ -259,7 +256,7 @@ describe("EthPM install", function() {
       )
       .send({ from: owner, gas: 4712388, gasPrice: 100000000000 });
 
-    // release ethregistrar@1.0.1
+    // publish ethregistrar@1.0.1
     await registry.methods
       .release(
         "ethregistrar",
@@ -279,7 +276,7 @@ describe("EthPM install", function() {
   });
 
   it("requires a valid package name and version to install", async () => {
-    config.ethpm_uri = `erc1319://${registry._address}:1`;
+    config.ethpm.ethpm_uri = `erc1319://${registry._address}:1`;
     try {
       await Package.install(config);
     } catch (error) {
@@ -287,8 +284,8 @@ describe("EthPM install", function() {
     }
   });
 
-  it("invalidates ethpm uris for packages not released on itself", async () => {
-    config.ethpm_uri = `erc1319://${registry._address}:1/invalid@1.0.0`;
+  it("invalidates ethpm uris for packages not published on itself", async () => {
+    config.ethpm.ethpm_uri = `erc1319://${registry._address}:1/invalid@1.0.0`;
     try {
       await Package.install(config);
     } catch (error) {
@@ -299,7 +296,7 @@ describe("EthPM install", function() {
   });
 
   it("successfully installs single dependency from EthPM", async () => {
-    config.ethpm_uri = `erc1319://${registry._address}:1/ens@1.0.0`;
+    config.ethpm.ethpm_uri = `erc1319://${registry._address}:1/ens@1.0.0`;
     await Package.install(config);
     const expected_ethpm_directory = path.resolve(
       path.join(config.working_directory, "_ethpm_packages")
@@ -317,7 +314,7 @@ describe("EthPM install", function() {
   });
 
   it("successfully installs and provisions a package with dependencies from EthPMv2", async () => {
-    config.ethpm_uri = `erc1319://${registry._address}:1/ens@1.0.0`;
+    config.ethpm.ethpm_uri = `erc1319://${registry._address}:1/ens@1.0.0`;
     await Package.install(config);
 
     // Write a contract that uses transferable, so it will be compiled.
@@ -342,7 +339,7 @@ describe("EthPM install", function() {
   // In addition, this package contains deployments. We need to make sure these deployments are available.
   it("successfully installs and provisions a deployed package with network artifacts from EthPM, without compiling v2", async () => {
     await Contracts.compile(config.with({ all: true, quiet: true }));
-    config.ethpm_uri = `erc1319://${registry._address}:1/ens@1.0.0`;
+    config.ethpm.ethpm_uri = `erc1319://${registry._address}:1/ens@1.0.0`;
     await Package.install(config);
 
     // Make sure we can resolve it.
@@ -368,7 +365,9 @@ describe("EthPM install", function() {
 
     const installed_package = "ethregistrar";
     const expected_contract_name = "BaseRegistrarImplementation";
-    config.ethpm_uri = `erc1319://${registry._address}:1/ethregistrar@1.0.1`;
+    config.ethpm.ethpm_uri = `erc1319://${
+      registry._address
+    }:1/ethregistrar@1.0.1`;
     await Package.install(config);
 
     var expected_manifest_path = path.join(
