@@ -63,7 +63,7 @@
  * @module @truffle/codec
  */ /** */
 
-require("source-map-support/register");
+import "source-map-support/register";
 
 //So, what shall codec export...?
 
