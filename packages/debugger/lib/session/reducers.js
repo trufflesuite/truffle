@@ -25,15 +25,6 @@ function ready(state = false, action) {
   }
 }
 
-function projectInfoComputed(state = false, action) {
-  switch (action.type) {
-    case actions.PROJECT_INFO_COMPUTED:
-      return true;
-    default:
-      return state;
-  }
-}
-
 function lastLoadingError(state = null, action) {
   switch (action.type) {
     case actions.ERROR:
@@ -84,7 +75,6 @@ function block(state = {}, action) {
 const session = combineReducers({
   ready,
   lastLoadingError,
-  projectInfoComputed,
   transaction,
   receipt,
   block
