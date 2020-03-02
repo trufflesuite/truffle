@@ -8,7 +8,7 @@ contract("LogTest", accounts => {
     const tx = await myDapp.doSomething({ from: accounts[0] });
 
     // Take all events, filter for our special __Log event
-    const logEvts = tx.logs.filter(x => x.event === "_TruffleLog");
-    console.log("No. of detected _TruffleLog events: ", logEvts.length);
+    const logEvts = tx.logs.filter(x => x.event === "_TruffleConsoleLog");
+    console.log("No. of detected _TruffleConsoleLog events: ", logEvts.length);
   });
 });
