@@ -42,7 +42,7 @@ describe("Testing with --console-log", () => {
       processErr(err, output);
 
       assert(output.includes("Contract: LogTest"));
-      assert(output.includes("No. of detected _TruffleLog events:  6"));
+      assert(output.includes("No. of detected _TruffleConsoleLog events:  6"));
       done();
     });
   });
