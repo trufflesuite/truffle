@@ -481,5 +481,5 @@ export function definitionToStoredType(
 //If you have to make a type ID, instead make the type and then
 //take its ID.
 function makeTypeId(astId: number, compilationId: string): string {
-  return compilationId + ":" + astId;
+  return `${compilationId}:${astId}`;
 }
