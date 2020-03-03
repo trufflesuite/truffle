@@ -2,14 +2,14 @@ import fs from "fs";
 import path from "path";
 import gql from "graphql-tag";
 import { TruffleDB } from "@truffle/db";
-import { ArtifactsLoader } from "@truffle/db/loaders/artifacts";
+import { ArtifactsLoader } from "@truffle/db/loaders/schema/artifactsLoader";
+import { AddContracts } from "@truffle/db/loaders/resources/contracts";
+import { AddNameRecords } from "@truffle/db/loaders/resources/nameRecords";
 import {
-  AddContracts,
   AddProjects,
   AssignProjectNames,
-  AddNameRecords,
   ResolveProjectName
-} from "@truffle/db/loaders/queries";
+} from "@truffle/db/loaders/resources/projects";
 import { generateId } from "@truffle/db/helpers";
 import * as Contracts from "@truffle/workflow-compile/new";
 import Migrate from "@truffle/migrate";
