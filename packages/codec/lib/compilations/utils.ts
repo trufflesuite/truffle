@@ -125,3 +125,58 @@ function sourceIndexForAst(ast: Ast.AstNode): number | undefined {
   //src is given as start:length:file.
   //we want just the file.
 }
+
+export function getContractNode(
+  contract: Contract,
+  compilation: Compilation
+): Ast.AstNode {
+  const {
+    contractName,
+    sourceMap,
+    deployedSourceMap,
+    primarySourceId
+  } = contract;
+  const { unreliableSourceOrder, sources } = compilation;
+
+  let sourcesToCheck: Source[];
+
+  //we will attempt to locate the primary source;
+  //if we can't find it, we'll just check every source in this
+  //compilation.
+  if (primarySourceId !== undefined) {
+    sourcesToCheck = [
+      sources.find(source => source && source.id === primarySourceId)
+    ];
+  } else if (!unreliableSourceOrder && (deployedSourceMap || sourceMap)) {
+    let sourceId = extractPrimarySource(deployedSourceMap || sourceMap);
+    sourcesToCheck = [sources[sourceId]];
+  } else {
+    //WARNING: if we end up in this case, we could get the wrong contract!
+    //(but we shouldn't end up here)
+    sourcesToCheck = sources;
+  }
+
+  return sourcesToCheck.reduce((foundNode: Ast.AstNode, source: Source) => {
+    if (foundNode || !source) {
+      return foundNode;
+    }
+    if (!source.ast) {
+      return undefined;
+    }
+    return source.ast.nodes.find(
+      node =>
+        node.nodeType === "ContractDefinition" && node.name === contractName
+    );
+  }, undefined);
+}
+
+/*
+ * extract the primary source from a source map
+ * (i.e., the source for the first instruction, found
+ * between the second and third colons)
+ * (this is something of a HACK)
+ * NOTE: duplicated from debugger, sorry
+ */
+function extractPrimarySource(sourceMap: string): number {
+  return parseInt(sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]);
+}

@@ -64,7 +64,10 @@ export class WireDecoder {
 
     for (const compilation of this.compilations) {
       for (const contract of compilation.contracts) {
-        const node: Ast.AstNode = Utils.getContractNode(contract, compilation);
+        const node: Ast.AstNode = Compilations.Utils.getContractNode(
+          contract,
+          compilation
+        );
         let deployedContext: Contexts.DecoderContext | undefined = undefined;
         let constructorContext: Contexts.DecoderContext | undefined = undefined;
         const compiler = compilation.compiler || contract.compiler;
@@ -684,7 +687,10 @@ export class ContractDecoder {
       );
     }
 
-    this.contractNode = Utils.getContractNode(this.contract, this.compilation);
+    this.contractNode = Compilations.Utils.getContractNode(
+      this.contract,
+      this.compilation
+    );
 
     //note: ordinarily this.contract.deployedBytecode should equal artifact.deployedBytecode
     //at this point, so it may seem strange that I'm using this longer version (but not

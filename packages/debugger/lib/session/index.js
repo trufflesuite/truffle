@@ -17,8 +17,6 @@ import controllerSelector from "lib/controller/selectors";
 import rootSaga from "./sagas";
 import reducer from "./reducers";
 
-import { extractPrimarySource } from "lib/helpers";
-
 import { shimBytecode } from "@truffle/compile-solidity/legacy/shims";
 
 /**
@@ -156,39 +154,22 @@ export default class Session {
           deployedBinary = shimBytecode(deployedBinary);
         }
 
+        let primarySourceIndex;
+        if (primarySourceId !== undefined) {
+          //I'm assuming this finds it! it had better!
+          primarySourceIndex = compilation.sources.findIndex(
+            source => source.id === primarySourceId
+          );
+        }
+        //otherwise leave it undefined
+
         //now: we need to find the contract node.
-        //to do this, we will attempt to locate the primary source;
-        //if we can't find it, we'll just check every source in this
-        //compilation.
-        //
         //note: ideally we'd hold this off till later, but that would break the
         //direction of the evm/solidity dependence, so we do it now
-
-        let sourcesToCheck;
-
-        if (primarySourceId !== undefined) {
-          sourcesToCheck = [
-            sources[compilation.id].find(
-              source => source && source.id === primarySourceId
-            )
-          ];
-        } else if (deployedSourceMap || sourceMap) {
-          let sourceId = extractPrimarySource(deployedSourceMap || sourceMap);
-          sourcesToCheck = [sources[compilation.id][sourceId]];
-        } else {
-          sourcesToCheck = sources[compilation.id];
-        }
-
-        let contractNode = sourcesToCheck.reduce((foundNode, source) => {
-          if (foundNode || !source) {
-            return foundNode;
-          }
-          return source.ast.nodes.find(
-            node =>
-              node.nodeType === "ContractDefinition" &&
-              node.name === contractName
-          );
-        }, undefined);
+        let contractNode = Codec.Compilations.Utils.getContractNode(
+          contract,
+          compilation
+        );
 
         let contractId = contractNode.id;
         let contractKind = contractNode.contractKind;
@@ -204,6 +185,7 @@ export default class Session {
             contractName,
             binary,
             sourceMap,
+            primarySource: primarySourceIndex,
             abi,
             compiler,
             compilationId: compilation.id,
@@ -218,6 +200,7 @@ export default class Session {
             contractName,
             binary: deployedBinary,
             sourceMap: deployedSourceMap,
+            primarySource: primarySourceIndex,
             abi,
             compiler,
             compilationId: compilation.id,

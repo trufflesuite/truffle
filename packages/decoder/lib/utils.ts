@@ -29,63 +29,6 @@ export function nativizeDecoderVariables(
   //Again, don't use this in real code!
 }
 
-//Note: duplicated code warning
-//(from the debugger's normalize function in session)
-export function getContractNode(
-  contract: Codec.Compilations.Contract,
-  compilation: Codec.Compilations.Compilation
-): Codec.Ast.AstNode {
-  const {
-    contractName,
-    sourceMap,
-    deployedSourceMap,
-    primarySourceId
-  } = contract;
-  const { unreliableSourceOrder, sources } = compilation;
-
-  let sourcesToCheck: Codec.Compilations.Source[];
-
-  if (primarySourceId !== undefined) {
-    sourcesToCheck = [
-      sources.find(source => source && source.id === primarySourceId)
-    ];
-  } else if (!unreliableSourceOrder && (deployedSourceMap || sourceMap)) {
-    let sourceId = extractPrimarySource(deployedSourceMap || sourceMap);
-    sourcesToCheck = [sources[sourceId]];
-  } else {
-    //WARNING: if we end up in this case, we could get the wrong contract!
-    //(but we shouldn't end up here)
-    sourcesToCheck = sources;
-  }
-
-  return sourcesToCheck.reduce(
-    (foundNode: Codec.Ast.AstNode, source: Codec.Compilations.Source) => {
-      if (foundNode || !source) {
-        return foundNode;
-      }
-      if (!source.ast) {
-        return undefined;
-      }
-      return source.ast.nodes.find(
-        node =>
-          node.nodeType === "ContractDefinition" && node.name === contractName
-      );
-    },
-    undefined
-  );
-}
-
-/*
- * extract the primary source from a source map
- * (i.e., the source for the first instruction, found
- * between the second and third colons)
- * (this is something of a HACK)
- * NOTE: duplicated from debugger, sorry
- */
-function extractPrimarySource(sourceMap: string): number {
-  return parseInt(sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]);
-}
-
 export function makeContext(
   contract: Codec.Compilations.Contract,
   node: Codec.Ast.AstNode | undefined,
