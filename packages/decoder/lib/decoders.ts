@@ -31,6 +31,8 @@ import {
   InvalidAddressError,
   VariableNotFoundError
 } from "./errors";
+//sorry for the untyped import, but...
+const { shimBytecode } = require("@truffle/compile-solidity/legacy/shims");
 
 /**
  * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.
@@ -66,10 +68,8 @@ export class WireDecoder {
         let deployedContext: Contexts.DecoderContext | undefined = undefined;
         let constructorContext: Contexts.DecoderContext | undefined = undefined;
         const compiler = compilation.compiler || contract.compiler;
-        const deployedBytecode = Utils.robustShimBytecode(
-          contract.deployedBytecode
-        );
-        const bytecode = Utils.robustShimBytecode(contract.bytecode);
+        const deployedBytecode = shimBytecode(contract.deployedBytecode);
+        const bytecode = shimBytecode(contract.bytecode);
         if (deployedBytecode && deployedBytecode !== "0x") {
           deployedContext = Utils.makeContext(contract, node, compiler);
           this.contexts[deployedContext.context] = deployedContext;
@@ -632,10 +632,8 @@ export class ContractDecoder {
     this.contexts = wireDecoder.getDeployedContexts();
     const compilations = wireDecoder.getCompilations();
 
-    const deployedBytecode = Utils.robustShimBytecode(
-      artifact.deployedBytecode
-    );
-    const bytecode = Utils.robustShimBytecode(artifact.bytecode);
+    const deployedBytecode = shimBytecode(artifact.deployedBytecode);
+    const bytecode = shimBytecode(artifact.bytecode);
 
     //set this.compilation and this.contract
     ({
@@ -649,7 +647,7 @@ export class ContractDecoder {
         const contractFound = compilation.contracts.find(contract => {
           if (bytecode) {
             return (
-              Utils.robustShimBytecode(contract.bytecode) === bytecode &&
+              shimBytecode(contract.bytecode) === bytecode &&
               contract.contractName ===
                 (artifact.contractName || <string>artifact.contract_name)
             );
@@ -657,8 +655,7 @@ export class ContractDecoder {
             //I'll just go by one of bytecode or deployedBytecode;
             //no real need to check both
             return (
-              Utils.robustShimBytecode(contract.deployedBytecode) ===
-                deployedBytecode &&
+              shimBytecode(contract.deployedBytecode) === deployedBytecode &&
               contract.contractName ===
                 (artifact.contractName || <string>artifact.contract_name)
             );
@@ -925,9 +922,7 @@ export class ContractInstanceDecoder {
       )
     );
 
-    const deployedBytecode = Utils.robustShimBytecode(
-      this.contract.deployedBytecode
-    );
+    const deployedBytecode = shimBytecode(this.contract.deployedBytecode);
 
     if (!deployedBytecode || deployedBytecode === "0x") {
       //if this contract does *not* have the deployedBytecode field, then the decoder core

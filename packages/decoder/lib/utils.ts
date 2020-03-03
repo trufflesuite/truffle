@@ -96,7 +96,7 @@ export function makeContext(
   const bytecode = isConstructor
     ? contract.bytecode
     : contract.deployedBytecode;
-  const binary: string = robustShimBytecode(bytecode);
+  const binary: string = shimBytecode(bytecode);
   const hash = Codec.Conversion.toHexString(
     Codec.Evm.Utils.keccak256({
       type: "string",
@@ -143,7 +143,7 @@ function contractKind(
   //PUSH20 followed by 20 0s, in which case we'll assume it's a library
   //(note: this will fail to detect libraries from before Solidity 0.4.20)
   if (contract.deployedBytecode) {
-    const deployedBytecode = robustShimBytecode(contract.deployedBytecode);
+    const deployedBytecode = shimBytecode(contract.deployedBytecode);
     const pushAddressInstruction = (
       0x60 +
       Codec.Evm.Utils.ADDRESS_SIZE -
@@ -230,14 +230,4 @@ export function wrapElementaryValue(
       };
     //fixed and ufixed are not handled for now!
   }
-}
-
-//shimBytecode handles undefined, but not strings, so let's fix that
-export function robustShimBytecode(
-  bytecode: string | Codec.Compilations.Bytecode
-): string {
-  if (typeof bytecode === "string") {
-    return bytecode;
-  }
-  return shimBytecode(bytecode);
 }
