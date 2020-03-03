@@ -812,7 +812,7 @@ const constructorOutputAllocation: ReturndataAllocation = {
 
 export function getCalldataAllocations(
   contracts: ContractAllocationInfo[],
-  referenceDeclarations: { [compilation: string]: Ast.AstNodes },
+  referenceDeclarations: { [compilationId: string]: Ast.AstNodes },
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations
 ): CalldataAllocations {
@@ -825,10 +825,10 @@ export function getCalldataAllocations(
       contract.abi,
       contract.contractNode,
       contract.constructorContext,
-      referenceDeclarations[contract.compilation],
+      referenceDeclarations[contract.compilationId],
       userDefinedTypes,
       abiAllocations,
-      contract.compilation,
+      contract.compilationId,
       contract.compiler
     );
     if (contract.constructorContext) {
@@ -875,7 +875,7 @@ function getEventAllocationsForContract(
 //WARNING: this function is full of hacks... sorry
 export function getEventAllocations(
   contracts: ContractAllocationInfo[],
-  referenceDeclarations: { [compilation: string]: Ast.AstNodes },
+  referenceDeclarations: { [compilationId: string]: Ast.AstNodes },
   userDefinedTypes: Format.Types.TypesById,
   abiAllocations: AbiAllocations
 ): EventAllocations {
@@ -886,7 +886,7 @@ export function getEventAllocations(
         context: Contexts.DecoderContext;
         contractNode: Ast.AstNode;
         allocationTemporary: EventAllocationTemporary;
-        compilation: string;
+        compilationId: string;
       };
     };
   } = {};
@@ -904,7 +904,7 @@ export function getEventAllocations(
     abi,
     deployedContext,
     contractNode,
-    compilation,
+    compilationId,
     compiler
   } of contracts) {
     if (!deployedContext && !contractNode) {
@@ -917,16 +917,16 @@ export function getEventAllocations(
     let contractAllocations = getEventAllocationsForContract(
       abi,
       contractNode,
-      referenceDeclarations[compilation],
+      referenceDeclarations[compilationId],
       userDefinedTypes,
       abiAllocations,
-      compilation,
+      compilationId,
       compiler
     );
     let key = makeContractKey(
       deployedContext,
       contractNode ? contractNode.id : undefined,
-      compilation
+      compilationId
     );
     if (individualAllocations[key] === undefined) {
       individualAllocations[key] = {};
@@ -938,7 +938,7 @@ export function getEventAllocations(
         context: deployedContext,
         contractNode,
         allocationTemporary,
-        compilation
+        compilationId
       };
     }
   }
@@ -951,7 +951,7 @@ export function getEventAllocations(
         context,
         contractNode,
         allocationTemporary,
-        compilation
+        compilationId
       } = individualAllocations[contextOrId][selector];
       let allocationsTemporary = allocationTemporary.allocation
         ? [allocationTemporary]
@@ -971,7 +971,7 @@ export function getEventAllocations(
         linearizedBaseContractsMinusSelf.shift(); //remove contract itself; only want ancestors
         for (let baseId of linearizedBaseContractsMinusSelf) {
           debug("checking base baseId: %d", baseId);
-          let baseNode = referenceDeclarations[compilation][baseId];
+          let baseNode = referenceDeclarations[compilationId][baseId];
           if (!baseNode) {
             debug("failed to find node for baseId: %d", baseId);
             break; //not a continue!
@@ -990,11 +990,11 @@ export function getEventAllocations(
           );
           let baseContext = contracts.find(
             contractAllocationInfo =>
-              contractAllocationInfo.compilation === compilation &&
+              contractAllocationInfo.compilationId === compilationId &&
               contractAllocationInfo.contractNode &&
               contractAllocationInfo.contractNode.id === baseId
           ).deployedContext;
-          let baseKey = makeContractKey(baseContext, baseId, compilation);
+          let baseKey = makeContractKey(baseContext, baseId, compilationId);
           if (individualAllocations[baseKey][selector] !== undefined) {
             let baseAllocation =
               individualAllocations[baseKey][selector].allocationTemporary;
@@ -1079,9 +1079,9 @@ export function getEventAllocations(
 function makeContractKey(
   context: Contexts.DecoderContext | undefined,
   id: number,
-  compilation: string
+  compilationId: string
 ): string {
-  return context ? context.context : id + ":" + compilation; //HACK!
+  return context ? context.context : id + ":" + compilationId; //HACK!
 }
 
 function hasContext(key: string): boolean {

@@ -57,7 +57,7 @@ class DebugInterpreter {
       ? currentLocation.source.id
       : null;
     const currentCompilationId = currentLocation.source
-      ? currentLocation.source.compilation
+      ? currentLocation.source.compilationId
       : null;
 
     let breakpoint = {};
@@ -72,7 +72,7 @@ class DebugInterpreter {
       breakpoint.node = currentNode;
       breakpoint.line = currentLine;
       breakpoint.sourceId = currentSourceId;
-      breakpoint.compilation = currentCompilationId;
+      breakpoint.compilationId = currentCompilationId;
     }
 
     //the special case of "B all"
@@ -104,7 +104,7 @@ class DebugInterpreter {
       }
 
       breakpoint.sourceId = currentSourceId;
-      breakpoint.compilation = currentCompilationId;
+      breakpoint.compilationId = currentCompilationId;
       breakpoint.line = currentLine + delta;
     }
 
@@ -151,7 +151,7 @@ class DebugInterpreter {
 
       //otherwise, we found it!
       breakpoint.sourceId = matchingSources[0].id;
-      breakpoint.compilation = matchingSources[0].compilation;
+      breakpoint.compilationId = matchingSources[0].compilationId;
       breakpoint.line = line - 1; //adjust for zero-indexing!
     }
 
@@ -171,7 +171,7 @@ class DebugInterpreter {
       }
 
       breakpoint.sourceId = currentSourceId;
-      breakpoint.compilation = currentCompilationId;
+      breakpoint.compilationId = currentCompilationId;
       breakpoint.line = line - 1; //adjust for zero-indexing!
     }
 
@@ -219,7 +219,7 @@ class DebugInterpreter {
     let alreadyExists =
       breakpoints.filter(
         existingBreakpoint =>
-          existingBreakpoint.compilation === breakpoint.compilation &&
+          existingBreakpoint.compilationId === breakpoint.compilationId &&
           existingBreakpoint.sourceId === breakpoint.sourceId &&
           existingBreakpoint.line === breakpoint.line &&
           existingBreakpoint.node === breakpoint.node //may be undefined

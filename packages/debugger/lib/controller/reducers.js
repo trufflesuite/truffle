@@ -12,7 +12,7 @@ function breakpoints(state = [], action) {
       if (
         state.filter(
           breakpoint =>
-            breakpoint.compilation === action.breakpoint.compilation &&
+            breakpoint.compilationId === action.breakpoint.compilationId &&
             breakpoint.sourceId === action.breakpoint.sourceId &&
             breakpoint.line === action.breakpoint.line &&
             breakpoint.node === action.breakpoint.node //may be undefined
@@ -29,7 +29,7 @@ function breakpoints(state = [], action) {
     case actions.REMOVE_BREAKPOINT:
       return state.filter(
         breakpoint =>
-          breakpoint.compilation !== action.breakpoint.compilation ||
+          breakpoint.compilationId !== action.breakpoint.compilationId ||
           breakpoint.sourceId !== action.breakpoint.sourceId ||
           breakpoint.line !== action.breakpoint.line ||
           breakpoint.node !== action.breakpoint.node //may be undefined

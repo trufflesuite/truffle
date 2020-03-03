@@ -114,7 +114,7 @@ let solidity = createSelectorTree({
      * solidity.info.sources
      * NOTE: grouped by compilation!
      */
-    sources: createLeaf(["/state"], state => state.info.sources.byCompilation)
+    sources: createLeaf(["/state"], state => state.info.sources.byCompilationId)
   },
 
   /**
@@ -141,7 +141,8 @@ let solidity = createSelectorTree({
      */
     sources: createLeaf(
       ["/info/sources", evm.current.context],
-      (sources, context) => (context ? sources[context.compilation].byId : null)
+      (sources, context) =>
+        context ? sources[context.compilationId].byId : null
     ),
 
     /**

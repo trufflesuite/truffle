@@ -13,7 +13,7 @@ export interface ContractAllocationInfo {
   deployedContext?: Contexts.DecoderContext; //needed for events & calldata
   constructorContext?: Contexts.DecoderContext; //needed for calldata
   compiler: Compiler.CompilerVersion; //needed for all 3
-  compilation?: string; //needed for all 3
+  compilationId?: string; //needed for all 3
 }
 
 export interface AbiSizeInfo {

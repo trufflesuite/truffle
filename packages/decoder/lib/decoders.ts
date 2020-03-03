@@ -45,7 +45,7 @@ export class WireDecoder {
   private contexts: Contexts.DecoderContexts = {}; //all contexts
   private deployedContexts: Contexts.DecoderContexts = {};
 
-  private referenceDeclarations: { [compilation: string]: Ast.AstNodes };
+  private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
   private userDefinedTypes: Format.Types.TypesById;
   private allocations: Evm.AllocationInfo;
 
@@ -134,7 +134,7 @@ export class WireDecoder {
         constructorContext
       }) => ({
         abi: AbiData.Utils.schemaAbiToAbi(abi),
-        compilation: compilationId,
+        compilationId,
         compiler,
         contractNode: node,
         deployedContext,
@@ -171,10 +171,10 @@ export class WireDecoder {
   }
 
   private collectUserDefinedTypes(): {
-    definitions: { [compilation: string]: Ast.AstNodes };
+    definitions: { [compilationId: string]: Ast.AstNodes };
     types: Format.Types.TypesById;
   } {
-    let references: { [compilation: string]: Ast.AstNodes } = {};
+    let references: { [compilationId: string]: Ast.AstNodes } = {};
     let types: Format.Types.TypesById = {};
     for (const compilation of this.compilations) {
       references[compilation.id] = {};
@@ -556,7 +556,7 @@ export class WireDecoder {
   /**
    * @protected
    */
-  public getReferenceDeclarations(): { [compilation: string]: Ast.AstNodes } {
+  public getReferenceDeclarations(): { [compilationId: string]: Ast.AstNodes } {
     return this.referenceDeclarations;
   }
 
@@ -637,7 +637,7 @@ export class ContractDecoder {
     );
     const bytecode = Utils.robustShimBytecode(artifact.bytecode);
 
-    //set this.compilationId and this.contract
+    //set this.compilation and this.contract
     ({
       compilation: this.compilation,
       contract: this.contract
@@ -864,7 +864,7 @@ export class ContractInstanceDecoder {
   private contexts: Contexts.DecoderContexts = {}; //deployed contexts only
   private additionalContexts: Contexts.DecoderContexts = {}; //for passing to wire decoder when contract has no deployedBytecode
 
-  private referenceDeclarations: { [compilation: string]: Ast.AstNodes };
+  private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
   private userDefinedTypes: Format.Types.TypesById;
   private allocations: Codec.Evm.AllocationInfo;
 

@@ -199,11 +199,11 @@ describe("Globally-available variables", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("BREAK SIMPLE", source)
     });
     await session.continueUntilBreakpoint();
@@ -230,11 +230,11 @@ describe("Globally-available variables", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("BREAK STATIC", source)
     });
     await session.continueUntilBreakpoint();
@@ -261,11 +261,11 @@ describe("Globally-available variables", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("BREAK LIBRARY", source)
     });
     await session.continueUntilBreakpoint();
@@ -313,11 +313,11 @@ describe("Globally-available variables", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("BREAK CREATE", source)
     });
     await session.continueUntilBreakpoint();

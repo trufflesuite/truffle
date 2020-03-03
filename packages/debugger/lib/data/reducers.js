@@ -9,7 +9,7 @@ import * as Codec from "@truffle/codec";
 import { makeAssignment } from "lib/helpers";
 
 const DEFAULT_SCOPES = {
-  byCompilation: {}
+  byCompilationId: {}
 };
 
 function scopes(state = DEFAULT_SCOPES, action) {
@@ -18,54 +18,55 @@ function scopes(state = DEFAULT_SCOPES, action) {
   let variables;
 
   switch (action.type) {
-    case actions.SCOPE:
+    case actions.SCOPE: {
       let { compilationId, id, sourceId, parentId, pointer } = action;
 
       debug("action: %O", action);
 
       newState = {
-        byCompilation: {
-          ...state.byCompilation,
+        byCompilationId: {
+          ...state.byCompilationId,
           [compilationId]: {
-            ...state.byCompilation[compilationId] //just setting this up to avoid errors later
+            ...state.byCompilationId[compilationId] //just setting this up to avoid errors later
           }
         }
       };
 
       //apologies for this multi-stage setup, but JS is like that...
 
-      newState.byCompilation[compilationId] = {
+      newState.byCompilationId[compilationId] = {
         byId: {
-          ...newState.byCompilation[compilationId].byId
+          ...newState.byCompilationId[compilationId].byId
         }
       };
 
-      scope = newState.byCompilation[compilationId].byId[id];
+      scope = newState.byCompilationId[compilationId].byId[id];
 
-      newState.byCompilation[compilationId].byId[id] = {
+      newState.byCompilationId[compilationId].byId[id] = {
         ...scope,
         id,
         sourceId,
         parentId,
         pointer,
-        compilation: compilationId
+        compilationId
       };
 
       return newState;
-
-    case actions.DECLARE:
-      let { compilationId: compilation, node } = action;
+    }
+    case actions.DECLARE: {
+      let { compilationId, node } = action;
 
       //note: we can assume the compilation already exists!
-      scope = state.byCompilation[compilation].byId[action.node.scope] || {};
+      scope =
+        state.byCompilationId[compilationId].byId[action.node.scope] || {};
       variables = scope.variables || [];
 
       return {
-        byCompilation: {
-          ...state.byCompilation,
-          [compilation]: {
+        byCompilationId: {
+          ...state.byCompilationId,
+          [compilationId]: {
             byId: {
-              ...state.byCompilation[compilation].byId,
+              ...state.byCompilationId[compilationId].byId,
 
               [node.scope]: {
                 ...scope,
@@ -76,7 +77,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
                   {
                     name: node.name,
                     id: node.id,
-                    compilation
+                    compilationId
                   }
                 ]
               }
@@ -84,7 +85,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
           }
         }
       };
-
+    }
     default:
       return state;
   }
@@ -102,7 +103,7 @@ function userDefinedTypes(state = [], action) {
     case actions.DEFINE_TYPE:
       return [
         ...state,
-        { id: action.node.id, compilation: action.compilationId }
+        { id: action.node.id, compilationId: action.compilationId }
       ];
     default:
       return state;
@@ -148,7 +149,7 @@ const DEFAULT_ASSIGNMENTS = {
     {}, //we start out with all globals assigned
     ...GLOBAL_ASSIGNMENTS.map(assignment => ({ [assignment.id]: assignment }))
   ),
-  byCompilation: {}, //no regular variables assigned at start
+  byCompilationId: {}, //no regular variables assigned at start
   byBuiltin: Object.assign(
     {}, //again, all globals start assigned
     ...GLOBAL_ASSIGNMENTS.map(assignment => ({
@@ -164,7 +165,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
       debug("action.type %O", action.type);
       debug("action.assignments %O", action.assignments);
       return Object.values(action.assignments).reduce((acc, assignment) => {
-        let { id, astId, compilation } = assignment;
+        let { id, astId, compilationId } = assignment;
         //we assume for now that only ordinary variables will be assigned this
         //way, and not globals; globals are handled in DEFAULT_ASSIGNMENTS
         return {
@@ -173,14 +174,14 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
             ...acc.byId,
             [id]: assignment
           },
-          byCompilation: {
-            ...acc.byCompilation,
-            [compilation]: {
+          byCompilationId: {
+            ...acc.byCompilationId,
+            [compilationId]: {
               byAstId: {
-                ...(acc.byCompilation[compilation] || {}).byAstId,
+                ...(acc.byCompilationId[compilationId] || {}).byAstId,
                 [astId]: [
                   ...new Set([
-                    ...((acc.byCompilation[compilation] || { byAstId: {} })
+                    ...((acc.byCompilationId[compilationId] || { byAstId: {} })
                       .byAstId[astId] || []),
                     id
                   ])

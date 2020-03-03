@@ -130,7 +130,7 @@ export default class Session {
         sources[compilation.id][index] = {
           ...source,
           compiler: source.compiler || compiler,
-          compilation: compilation.id,
+          compilationId: compilation.id,
           id: index
         };
       }
@@ -206,7 +206,7 @@ export default class Session {
             sourceMap,
             abi,
             compiler,
-            compilation: compilation.id,
+            compilationId: compilation.id,
             contractId,
             contractKind,
             isConstructor: true
@@ -220,7 +220,7 @@ export default class Session {
             sourceMap: deployedSourceMap,
             abi,
             compiler,
-            compilation: compilation.id,
+            compilationId: compilation.id,
             contractId,
             contractKind,
             isConstructor: false
@@ -364,13 +364,13 @@ export default class Session {
   async variable(name) {
     const definitions = this.view(data.current.identifiers.definitions);
     const refs = this.view(data.current.identifiers.refs);
-    const compilation = this.view(data.current.compilation);
+    const compilationId = this.view(data.current.compilationId);
 
     return await this._runSaga(
       dataSagas.decode,
       definitions[name],
       refs[name],
-      compilation
+      compilationId
     );
   }
 
@@ -380,7 +380,7 @@ export default class Session {
     }
     let definitions = this.view(data.current.identifiers.definitions);
     let refs = this.view(data.current.identifiers.refs);
-    let compilation = this.view(data.current.compilation);
+    let compilationId = this.view(data.current.compilationId);
     let decoded = {};
     for (let [identifier, ref] of Object.entries(refs)) {
       if (identifier in definitions) {
@@ -388,7 +388,7 @@ export default class Session {
           dataSagas.decode,
           definitions[identifier],
           ref,
-          compilation
+          compilationId
         );
       }
     }

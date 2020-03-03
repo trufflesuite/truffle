@@ -74,11 +74,11 @@ async function prepareDebugger(testName, sources) {
     sourceObject.sourcePath.includes(contractName(testName))
   );
   let sourceId = matchingSources[0].id;
-  let compilation = matchingSources[0].compilation;
+  let compilationId = matchingSources[0].compilationId;
 
   let breakpoint = {
     sourceId,
-    compilation,
+    compilationId,
     line: lastStatementLine(source)
   };
 

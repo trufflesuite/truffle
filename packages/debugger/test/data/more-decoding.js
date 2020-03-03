@@ -332,11 +332,11 @@ describe("Further Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("break here", source)
     });
 
@@ -374,11 +374,11 @@ describe("Further Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("break here", source)
     });
 
@@ -416,11 +416,11 @@ describe("Further Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("break here", source)
     });
 
@@ -567,11 +567,11 @@ describe("Further Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("BREAK HERE", source)
     });
 
@@ -598,11 +598,11 @@ describe("Further Decoding", function() {
       let session = bugger.connect();
 
       let sourceId = session.view(solidity.current.source).id;
-      let compilation = session.view(solidity.current.source).compilation;
+      let compilationId = session.view(solidity.current.source).compilationId;
       let source = session.view(solidity.current.source).source;
       await session.addBreakpoint({
         sourceId,
-        compilation,
+        compilationId,
         line: lineOf("BREAK UNSIGNED", source)
       });
 
@@ -632,11 +632,11 @@ describe("Further Decoding", function() {
       let session = bugger.connect();
 
       let sourceId = session.view(solidity.current.source).id;
-      let compilation = session.view(solidity.current.source).compilation;
+      let compilationId = session.view(solidity.current.source).compilationId;
       let source = session.view(solidity.current.source).source;
       await session.addBreakpoint({
         sourceId,
-        compilation,
+        compilationId,
         line: lineOf("BREAK SIGNED", source)
       });
 
@@ -666,11 +666,11 @@ describe("Further Decoding", function() {
       let session = bugger.connect();
 
       let sourceId = session.view(solidity.current.source).id;
-      let compilation = session.view(solidity.current.source).compilation;
+      let compilationId = session.view(solidity.current.source).compilationId;
       let source = session.view(solidity.current.source).source;
       await session.addBreakpoint({
         sourceId,
-        compilation,
+        compilationId,
         line: lineOf("BREAK RAW", source)
       });
 

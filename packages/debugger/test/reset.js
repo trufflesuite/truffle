@@ -59,7 +59,7 @@ describe("Reset Button", function() {
 
     let session = bugger.connect();
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
 
     let variables = [];
@@ -68,7 +68,7 @@ describe("Reset Button", function() {
 
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("BREAK", source)
     });
 
@@ -92,7 +92,7 @@ describe("Reset Button", function() {
     );
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("BREAK", source)
     });
     await session.continueUntilBreakpoint(); //advance to line 10

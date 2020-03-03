@@ -83,7 +83,7 @@ export function* visitAll() {
   yield all(
     sources
       .filter(({ ast }) => ast)
-      .map(({ ast, id, compilation }) => call(walk, compilation, id, ast))
+      .map(({ ast, id, compilationId }) => call(walk, compilationId, id, ast))
   );
 
   debug("done visiting");

@@ -129,11 +129,11 @@ describe("Calldata Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("break multi", source)
     });
 
@@ -163,11 +163,11 @@ describe("Calldata Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("break simple", source)
     });
 
@@ -195,11 +195,11 @@ describe("Calldata Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("break stringBox", source)
     });
 
@@ -232,11 +232,11 @@ describe("Calldata Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("break static", source)
     });
 
@@ -267,11 +267,11 @@ describe("Calldata Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("break delegate", source)
     });
 

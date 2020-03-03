@@ -100,7 +100,7 @@ class DebugPrinter {
   }
 
   printState(contextBefore = 2, contextAfter = 0) {
-    const { id: sourceId, source, compilation } = this.session.view(
+    const { id: sourceId, source, compilationId } = this.session.view(
       solidity.current.source
     );
 
@@ -111,7 +111,7 @@ class DebugPrinter {
       return;
     }
 
-    const colorizedSource = this.colorizedSources[compilation][sourceId];
+    const colorizedSource = this.colorizedSources[compilationId][sourceId];
 
     const range = this.session.view(solidity.current.sourceRange);
     debug("range: %o", range);
@@ -218,7 +218,7 @@ class DebugPrinter {
           breakpoint,
           currentLocation.node !== undefined &&
             breakpoint.node === currentLocation.node.id,
-          currentLocation.source.compilation,
+          currentLocation.source.compilationId,
           currentLocation.source.id,
           sourceNames
         );

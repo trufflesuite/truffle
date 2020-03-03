@@ -91,7 +91,7 @@ function* stepNext() {
       (upcoming.sourceRange.start === starting.sourceRange.start &&
         upcoming.sourceRange.length === starting.sourceRange.length &&
         upcoming.source.id === starting.source.id &&
-        upcoming.source.compilation === starting.source.compilation))
+        upcoming.source.compilationId === starting.source.compilationId))
   );
 }
 
@@ -137,8 +137,8 @@ function* stepInto() {
     currentDepth <= startingDepth &&
     // we haven't changed files,
     currentLocation.source.id === startingLocation.source.id &&
-    currentLocation.source.compilation ===
-      startingLocation.source.compilation &&
+    currentLocation.source.compilationId ===
+      startingLocation.source.compilationId &&
     // the current source range begins on or after the starting range,
     currentLocation.sourceRange.start >= startingLocation.sourceRange.start &&
     // and the current range ends on or before the starting range ends
@@ -199,8 +199,8 @@ function* stepOver() {
     currentDepth >= startingDepth &&
     // we haven't changed file
     currentLocation.source.id === startingLocation.source.id &&
-    currentLocation.source.compilation ===
-      startingLocation.source.compilation &&
+    currentLocation.source.compilationId ===
+      startingLocation.source.compilationId &&
     // either: function depth is greater than starting (ignore function calls)
     // or, if we're at the same depth, keep stepping until we're on a new
     // line.
@@ -227,7 +227,7 @@ function* continueUntilBreakpoint(action) {
   let currentLocation = yield select(controller.current.location);
   let currentLine = currentLocation.sourceRange.lines.start.line;
   let currentSourceId = currentLocation.source.id;
-  let currentCompilation = currentLocation.source.compilation;
+  let currentCompilationId = currentLocation.source.compilationId;
 
   do {
     yield* stepNext();
@@ -249,15 +249,15 @@ function* continueUntilBreakpoint(action) {
     if (currentSourceId === undefined) {
       continue; //never stop on an unmapped instruction
     }
-    currentCompilation = currentLocation.source.compilation;
+    currentCompilationId = currentLocation.source.compilationId;
     let currentNode = currentLocation.node.id;
     currentLine = currentLocation.sourceRange.lines.start.line;
 
     breakpointHit =
-      breakpoints.filter(({ sourceId, compilation, line, node }) => {
+      breakpoints.filter(({ sourceId, compilationId, line, node }) => {
         if (node !== undefined) {
           return (
-            compilation === currentCompilation &&
+            compilationId === currentCompilationId &&
             sourceId === currentSourceId &&
             node === currentNode
           );
@@ -265,7 +265,7 @@ function* continueUntilBreakpoint(action) {
         //otherwise, we have a line-style breakpoint; we want to stop at the
         //*first* point on the line
         return (
-          compilation === currentCompilation &&
+          compilationId === currentCompilationId &&
           sourceId === currentSourceId &&
           line === currentLine &&
           (currentSourceId !== previousSourceId || currentLine !== previousLine)

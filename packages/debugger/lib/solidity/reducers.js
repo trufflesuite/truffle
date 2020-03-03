@@ -3,7 +3,7 @@ import { combineReducers } from "redux";
 import * as actions from "./actions";
 
 const DEFAULT_SOURCES = {
-  byCompilation: {} //by compilation, then in an array
+  byCompilationId: {} //by compilation, then in an array
 };
 
 function sources(state = DEFAULT_SOURCES, action) {
@@ -13,7 +13,7 @@ function sources(state = DEFAULT_SOURCES, action) {
      */
     case actions.ADD_SOURCES:
       return {
-        byCompilation: Object.assign(
+        byCompilationId: Object.assign(
           {},
           ...Object.entries(action.compilations).map(([id, compilation]) => ({
             [id]: {

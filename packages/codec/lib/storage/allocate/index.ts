@@ -85,20 +85,20 @@ export function getStorageAllocations(
 
 export function getStateAllocations(
   contracts: ContractAllocationInfo[],
-  referenceDeclarations: { [compilation: string]: Ast.AstNodes },
+  referenceDeclarations: { [compilationId: string]: Ast.AstNodes },
   userDefinedTypes: Format.Types.TypesById,
   storageAllocations: StorageAllocations,
   existingAllocations: StateAllocations = {}
 ): StateAllocations {
   let allocations = existingAllocations;
   for (const contractInfo of contracts) {
-    let { contractNode: contract, compiler, compilation } = contractInfo;
+    let { contractNode: contract, compiler, compilationId } = contractInfo;
     try {
       allocations = allocateContractState(
         contract,
-        compilation,
+        compilationId,
         compiler,
-        referenceDeclarations[compilation],
+        referenceDeclarations[compilationId],
         userDefinedTypes,
         storageAllocations,
         allocations
@@ -257,7 +257,7 @@ function getStateVariables(contractNode: Ast.AstNode): Ast.AstNode[] {
 
 function allocateContractState(
   contract: Ast.AstNode,
-  compilation: string,
+  compilationId: string,
   compiler: Compiler.CompilerVersion,
   referenceDeclarations: Ast.AstNodes,
   userDefinedTypes: Format.Types.TypesById,
@@ -268,8 +268,8 @@ function allocateContractState(
   let allocations: StateAllocations = Object.assign(
     {},
     ...Object.entries(existingAllocations).map(
-      ([compilation, compilationAllocations]) => ({
-        [compilation]: { ...compilationAllocations }
+      ([compilationId, compilationAllocations]) => ({
+        [compilationId]: { ...compilationAllocations }
       })
     )
   );
@@ -311,7 +311,7 @@ function allocateContractState(
     name: variable.definition.name,
     type: Ast.Import.definitionToType(
       variable.definition,
-      compilation,
+      compilationId,
       compiler
     )
   }));
@@ -330,7 +330,7 @@ function allocateContractState(
     ({ definition, definedIn }, index) => ({
       definition,
       definedIn,
-      compilationId: compilation,
+      compilationId,
       pointer: storageVariableStorageAllocations.members[index].pointer
     })
   );
@@ -340,7 +340,7 @@ function allocateContractState(
     ({ definition, definedIn }) => ({
       definition,
       definedIn,
-      compilationId: compilation,
+      compilationId,
       pointer: {
         location: "definition" as const,
         definition: definition.value
@@ -358,10 +358,10 @@ function allocateContractState(
   }
 
   //finally, set things and return
-  if (!allocations[compilation]) {
-    allocations[compilation] = {};
+  if (!allocations[compilationId]) {
+    allocations[compilationId] = {};
   }
-  allocations[compilation][contract.id] = {
+  allocations[compilationId][contract.id] = {
     members: contractAllocation
   };
 

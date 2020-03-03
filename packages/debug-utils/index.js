@@ -299,7 +299,8 @@ var DebugUtils = {
       breakpoint.compilationId !== currentCompilationId ||
       breakpoint.sourceId !== currentSourceId
     ) {
-      let sourceName = sourceNames[breakpoint.compilation][breakpoint.sourceId];
+      let sourceName =
+        sourceNames[breakpoint.compilationId][breakpoint.sourceId];
       return baseMessage + ` in ${sourceName}`;
     } else {
       return baseMessage;
@@ -628,8 +629,9 @@ var DebugUtils = {
   cleanThis: function(variables, replacement) {
     return Object.assign(
       {},
-      ...Object.entries(variables).map(([variable, value]) =>
-        variable === "this" ? { [replacement]: value } : { [variable]: value }
+      ...Object.entries(variables).map(
+        ([variable, value]) =>
+          variable === "this" ? { [replacement]: value } : { [variable]: value }
       )
     );
   }

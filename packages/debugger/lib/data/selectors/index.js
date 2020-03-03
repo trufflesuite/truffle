@@ -176,11 +176,11 @@ const data = createSelectorTree({
       _: createLeaf(["./raw", "./inlined/raw"], (scopes, inlined) =>
         Object.assign(
           {},
-          ...Object.entries(scopes).map(([compilation, nodes]) => ({
-            [compilation]: Object.assign(
+          ...Object.entries(scopes).map(([compilationId, nodes]) => ({
+            [compilationId]: Object.assign(
               {},
               ...Object.entries(nodes).map(([id, scope]) => {
-                let definition = inlined[compilation][id].definition;
+                let definition = inlined[compilationId][id].definition;
                 if (definition.nodeType !== "ContractDefinition") {
                   return { [id]: scope };
                 }
@@ -203,26 +203,26 @@ const data = createSelectorTree({
                     //concatenate the variables lists from the base classes
                     ...linearizedBaseContractsFromBase.map(
                       contractId =>
-                        scopes[compilation][contractId].variables || []
+                        scopes[compilationId][contractId].variables || []
                       //we need the || [] because contracts with no state variables
                       //have variables undefined rather than empty like you'd expect
                     )
                   )
                   .filter(
                     variable =>
-                      inlined[compilation][variable.id].definition
+                      inlined[compilationId][variable.id].definition
                         .visibility !== "private"
                     //filter out private variables from the base classes
                   )
                   //add in the variables for the contract itself -- note that here
                   //private variables are not filtered out!
-                  .concat(scopes[compilation][id].variables || [])
+                  .concat(scopes[compilationId][id].variables || [])
                   .filter(variable => {
                     //HACK: let's filter out those constants we don't know
                     //how to read.  they'll just clutter things up.
                     debug("variable %O", variable);
                     let definition =
-                      inlined[compilation][variable.id].definition;
+                      inlined[compilationId][variable.id].definition;
                     return (
                       !definition.constant ||
                       Codec.Ast.Utils.isSimpleConstant(definition.value)
@@ -246,9 +246,9 @@ const data = createSelectorTree({
       raw: createLeaf(["/info/scopes"], scopes =>
         Object.assign(
           {},
-          ...Object.entries(scopes.byCompilation).map(
-            ([compilation, { byId: nodes }]) => ({
-              [compilation]: nodes
+          ...Object.entries(scopes.byCompilationId).map(
+            ([compilationId, { byId: nodes }]) => ({
+              [compilationId]: nodes
             })
           )
         )
@@ -266,13 +266,13 @@ const data = createSelectorTree({
         _: createLeaf(["../_", "./raw"], (scopes, inlined) =>
           Object.assign(
             {},
-            ...Object.entries(inlined).map(([compilation, nodes]) => ({
-              [compilation]: Object.assign(
+            ...Object.entries(inlined).map(([compilationId, nodes]) => ({
+              [compilationId]: Object.assign(
                 {},
                 ...Object.entries(nodes).map(([id, info]) => ({
                   [id]: {
                     ...info,
-                    variables: scopes[compilation][id].variables
+                    variables: scopes[compilationId][id].variables
                   }
                 }))
               )
@@ -290,15 +290,15 @@ const data = createSelectorTree({
           (scopes, sources) =>
             Object.assign(
               {},
-              ...Object.entries(scopes).map(([compilation, nodes]) => ({
-                [compilation]: Object.assign(
+              ...Object.entries(scopes).map(([compilationId, nodes]) => ({
+                [compilationId]: Object.assign(
                   {},
                   ...Object.entries(nodes).map(([id, entry]) => ({
                     [id]: {
                       ...entry,
 
                       definition: jsonpointer.get(
-                        sources[compilation].byId[entry.sourceId].ast,
+                        sources[compilationId].byId[entry.sourceId].ast,
                         entry.pointer
                       )
                     }
@@ -321,19 +321,20 @@ const data = createSelectorTree({
         return Object.assign(
           {},
           ...flatten(
-            Object.entries(referenceDeclarations).map(([compilation, nodes]) =>
-              Object.values(nodes)
-                .map(node =>
-                  Codec.Ast.Import.definitionToStoredType(
-                    node,
-                    compilation,
-                    sources[compilation].byId[
-                      scopes[compilation][node.id].sourceId
-                    ].compiler,
-                    referenceDeclarations[compilation]
+            Object.entries(referenceDeclarations).map(
+              ([compilationId, nodes]) =>
+                Object.values(nodes)
+                  .map(node =>
+                    Codec.Ast.Import.definitionToStoredType(
+                      node,
+                      compilationId,
+                      sources[compilationId].byId[
+                        scopes[compilationId][node.id].sourceId
+                      ].compiler,
+                      referenceDeclarations[compilationId]
+                    )
                   )
-                )
-                .map(type => ({ [type.id]: type }))
+                  .map(type => ({ [type.id]: type }))
             )
           )
         );
@@ -352,15 +353,15 @@ const data = createSelectorTree({
       (userDefinedTypes, scopes, sources) =>
         Object.values(userDefinedTypes)
           .filter(
-            ({ compilation, id }) =>
-              scopes[compilation][id].definition.nodeType ===
+            ({ compilationId, id }) =>
+              scopes[compilationId][id].definition.nodeType ===
               "ContractDefinition"
           )
-          .map(({ compilation, id }) => ({
-            contractNode: scopes[compilation][id].definition,
-            compilation,
+          .map(({ compilationId, id }) => ({
+            contractNode: scopes[compilationId][id].definition,
+            compilationId,
             compiler:
-              sources[compilation].byId[scopes[compilation][id].sourceId]
+              sources[compilationId].byId[scopes[compilationId][id].sourceId]
                 .compiler
           }))
     ),
@@ -378,8 +379,8 @@ const data = createSelectorTree({
             [compilationId]: Object.assign(
               {},
               ...userDefinedTypes.map(
-                ({ compilation, id }) =>
-                  compilation === compilationId
+                ({ compilationId: compilationIdForType, id }) =>
+                  compilationIdForType === compilationId
                     ? { [id]: nodes[id].definition }
                     : {}
               )
@@ -603,11 +604,11 @@ const data = createSelectorTree({
     },
 
     /**
-     * data.current.compilation
+     * data.current.compilationId
      */
-    compilation: createLeaf(
+    compilationId: createLeaf(
       [evm.current.context],
-      ({ compilation }) => compilation
+      ({ compilationId }) => compilationId
     ),
 
     /**
@@ -621,8 +622,8 @@ const data = createSelectorTree({
        * one contains only the current compilation
        */
       _: createLeaf(
-        ["/views/scopes", "../compilation"],
-        (scopes, compilation) => scopes[compilation]
+        ["/views/scopes", "../compilationId"],
+        (scopes, compilationId) => scopes[compilationId]
       ),
 
       /**
@@ -632,8 +633,8 @@ const data = createSelectorTree({
        * one contains only the current compilation
        */
       inlined: createLeaf(
-        ["/views/scopes/inlined", "../compilation"],
-        (scopes, compilation) => scopes[compilation]
+        ["/views/scopes/inlined", "../compilationId"],
+        (scopes, compilationId) => scopes[compilationId]
       )
     },
 
@@ -641,8 +642,8 @@ const data = createSelectorTree({
      * data.current.referenceDeclarations
      */
     referenceDeclarations: createLeaf(
-      ["/views/referenceDeclarations", "./compilation"],
-      (scopes, currentCompilation) => scopes[currentCompilation]
+      ["/views/referenceDeclarations", "./compilationId"],
+      (scopes, compilationId) => scopes[compilationId]
     ),
 
     /*
@@ -657,11 +658,11 @@ const data = createSelectorTree({
        * from the current compilation
        */
       state: createLeaf(
-        ["/info/allocations/state", "../compilation"],
-        (allocations, compilation) =>
+        ["/info/allocations/state", "../compilationId"],
+        (allocations, compilationId) =>
           Object.assign(
             {},
-            ...Object.entries(allocations[compilation]).map(
+            ...Object.entries(allocations[compilationId]).map(
               ([id, allocation]) => ({
                 [id]: {
                   members: Object.assign(
@@ -1008,7 +1009,7 @@ const data = createSelectorTree({
         [
           "/proc/assignments",
           "./_",
-          "/current/compilation",
+          "/current/compilationId",
           "/current/functionDepth", //for pruning things too deep on stack
           "/current/modifierDepth", //when it's useful
           "/current/inModifier",
@@ -1018,7 +1019,7 @@ const data = createSelectorTree({
         (
           assignments,
           identifiers,
-          compilation,
+          compilationId,
           currentDepth,
           modifierDepth,
           inModifier,
@@ -1034,10 +1035,13 @@ const data = createSelectorTree({
                 if (astId !== undefined) {
                   //if not a builtin, first check if it's a contract var
                   debug("assignments: %O", assignments);
-                  debug("compilation: %s", compilation);
+                  debug("compilation: %s", compilationId);
                   let matchIds = (
-                    (assignments.byCompilation[compilation] || { byAstId: {} })
-                      .byAstId[astId] || []
+                    (
+                      assignments.byCompilationId[compilationId] || {
+                        byAstId: {}
+                      }
+                    ).byAstId[astId] || []
                   ).filter(
                     idHash => assignments.byId[idHash].address === address
                   );
@@ -1051,14 +1055,14 @@ const data = createSelectorTree({
                     if (inModifier) {
                       id = stableKeccak256({
                         astId,
-                        compilation,
+                        compilationId,
                         stackframe: currentDepth,
                         modifierDepth
                       });
                     } else {
                       id = stableKeccak256({
                         astId,
-                        compilation,
+                        compilationId,
                         stackframe: currentDepth
                       });
                     }

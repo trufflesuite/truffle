@@ -117,7 +117,7 @@ const controller = createSelectorTree({
         let line = breakpoint.line;
         debug("breakpoint: %O", breakpoint);
         debug("sources: %o", sources);
-        let { source, ast } = sources[breakpoint.compilation].byId[
+        let { source, ast } = sources[breakpoint.compilationId].byId[
           breakpoint.sourceId
         ];
         let lineLengths = source.split("\n").map(line => line.length);

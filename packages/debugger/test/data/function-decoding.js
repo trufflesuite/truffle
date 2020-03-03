@@ -149,11 +149,11 @@ describe("Function Pointer Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("BREAK HERE", source)
     });
 
@@ -191,11 +191,11 @@ describe("Function Pointer Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("BREAK HERE (DEPLOYED)", source)
     });
 
@@ -228,11 +228,11 @@ describe("Function Pointer Decoding", function() {
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
-    let compilation = session.view(solidity.current.source).compilation;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
-      compilation,
+      compilationId,
       line: lineOf("BREAK HERE (CONSTRUCTOR)", source)
     });
 
