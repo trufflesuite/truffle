@@ -36,9 +36,7 @@ export const getInitialConfig = ({
       ipfs_host: "ipfs.infura.io",
       ipfs_protocol: "https",
       ipfs_port: "5001",
-      registry: "ethpm://0x808B53bF4D70A24bA5cb720D37A4835621A9df00:1", // ens.snakecharmers.eth
-      install_provider_uri:
-        "https://mainnet.infura.io/v3/7707850c2fb7465ebe6f150d67182e22",
+      registry: "erc1319://0x5a5FE036d2557Ef4C85341fe4f9848e38173eFBa:3",
       version: "2"
     },
     ens: {

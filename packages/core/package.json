@@ -47,7 +47,7 @@
     "debug": "^4.1.0",
     "del": "^2.2.0",
     "ethereumjs-wallet": "^0.6.2",
-    "ethpm": "0.1.0-next.16",
+    "ethpm": "0.1.0-next.17",
     "fs-extra": "6.0.1",
     "ganache-core": "2.9.2",
     "glob": "^7.1.4",
@@ -70,7 +70,6 @@
   },
   "devDependencies": {
     "@truffle/blockchain-utils": "^0.0.17",
-    "glob": "^7.1.2",
     "memorystream": "^0.3.1"
   },
   "publishConfig": {

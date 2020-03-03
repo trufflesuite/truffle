@@ -18,14 +18,22 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: async function(options, done) {
     const Config = require("@truffle/config");
     const Package = require("../package");
 
-    if (options._ && options._.length > 0) options.packages = options._;
-
-    const config = Config.detect(options);
-    Package.install(config, done);
+    if (options._ && options._.length == 1) {
+      options.ethpm_uri = options._[0];
+      const config = Config.detect(options);
+      await Package.install(config, done);
+    } else {
+      console.log(
+        `Invalid number of arguments provided. Expected a single ethPM URI, received ${
+          options._.length
+        } arguments`
+      );
+      done();
+    }
   }
 };
 
