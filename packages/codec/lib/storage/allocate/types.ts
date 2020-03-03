@@ -24,7 +24,7 @@ export interface StorageMemberAllocation {
 //holds a collection of storage allocations for contracts,
 //indexed by compilation and then by ID
 export interface StateAllocations {
-  [compilation: string]: {
+  [compilationId: string]: {
     [id: number]: StateAllocation;
   };
 }
