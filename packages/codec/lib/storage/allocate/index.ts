@@ -83,6 +83,15 @@ export function getStorageAllocations(
   return allocations;
 }
 
+/**
+ * This function gets allocations for the state variables of the contracts;
+ * this is distinct from getStorageAllocations, which gets allocations for
+ * storage structs.
+ *
+ * While mostly state variables are kept in storage, constant ones are not.
+ * And immutable ones, once those are introduced, will be kept in code!
+ * (But those don't exist yet so this function doesn't handle them yet.)
+ */
 export function getStateAllocations(
   contracts: ContractAllocationInfo[],
   referenceDeclarations: { [compilationId: string]: Ast.AstNodes },
