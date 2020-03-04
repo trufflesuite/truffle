@@ -1484,6 +1484,11 @@ export class ContractInstanceDecoder {
         break;
       case "mapping":
         let keyType = parentType.keyType;
+        if (keyType.typeClass === "enum") {
+          keyType = <Format.Types.EnumType>(
+            Format.Types.fullType(keyType, this.userDefinedTypes)
+          );
+        }
         key = Utils.wrapElementaryValue(rawIndex, keyType);
         dataType = parentType.valueType;
         slot = {
@@ -1493,7 +1498,7 @@ export class ContractInstanceDecoder {
         };
         break;
       case "struct":
-        //NOTE: due to the reliance of storage allocations,
+        //NOTE: due to the reliance on storage allocations,
         //we don't need to use fullType or what have you
         let allocation: Storage.Allocate.StorageMemberAllocation = this.allocations.storage[
           parentType.id
