@@ -58,7 +58,12 @@ tmp.setGracefulCleanup();
 // minimal config
 const config = {
   contracts_build_directory: fixturesDirectory,
-  working_directory: tempDir.name
+  working_directory: tempDir.name,
+  db: {
+    adapter: {
+      name: "memory"
+    }
+  }
 };
 
 const compilationConfig = {
