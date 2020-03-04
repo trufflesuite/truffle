@@ -748,6 +748,10 @@ function getCalldataAllocationsForContract(
     functionAllocations: {}
   };
   for (let abiEntry of abi) {
+    if (AbiDataUtils.abiEntryIsObviouslyIllTyped(abiEntry)) {
+      //hack workaround!
+      continue;
+    }
     switch (abiEntry.type) {
       case "constructor":
         allocations.constructorAllocation = allocateCalldataAndReturndata(
@@ -854,6 +858,10 @@ function getEventAllocationsForContract(
 ): EventAllocationTemporary[] {
   return abi
     .filter((abiEntry: AbiData.AbiEntry) => abiEntry.type === "event")
+    .filter(
+      (abiEntry: AbiData.EventAbiEntry) =>
+        !AbiDataUtils.abiEntryIsObviouslyIllTyped(abiEntry)
+    ) //hack workaround
     .map((abiEntry: AbiData.EventAbiEntry) => ({
       selector: AbiDataUtils.abiSelector(abiEntry),
       anonymous: abiEntry.anonymous,
