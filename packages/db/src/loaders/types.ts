@@ -49,7 +49,7 @@ export interface WorkspaceRequest {
   };
 }
 
-export type WorkspaceResponse<N extends string, R = any> = {
+export type WorkspaceResponse<N extends string = string, R = any> = {
   data: {
     workspace: { [RequestName in N]: R };
   };

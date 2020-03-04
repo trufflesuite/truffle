@@ -12,7 +12,12 @@ import { generateBytecodesLoad } from "@truffle/db/loaders/resources/bytecodes";
 import { generateCompilationsLoad } from "@truffle/db/loaders/resources/compilations";
 import { generateContractsLoad } from "@truffle/db/loaders/resources/contracts";
 import { generateSourcesLoad } from "@truffle/db/loaders/resources/sources";
-import { generateProjectLoad } from "@truffle/db/loaders/resources/projects";
+import {
+  generateProjectLoad,
+  generateProjectNameResolve,
+  generateProjectNamesAssign
+} from "@truffle/db/loaders/resources/projects";
+import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecords";
 
 /**
  * For a compilation result from @truffle/workflow-compile/new, generate a
@@ -28,6 +33,10 @@ export function* generateCompileLoad(
 ): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
   // start by adding loading the project resource
   const project = yield* generateProjectLoad(directory);
+
+  const getCurrent = function*(name, type) {
+    return yield* generateProjectNameResolve(toIdObject(project), name, type);
+  };
 
   const resultCompilations = processResultCompilations(result);
 
@@ -68,11 +77,21 @@ export function* generateCompileLoad(
       resultCompilations[compilationIndex].contracts;
     const bytecodes = compilationBytecodes[compilationIndex];
 
-    compilationContracts[compilation.id] = yield* generateContractsLoad(
+    const contracts = yield* generateContractsLoad(
       compiledContracts,
       bytecodes,
       ({ id: compilation.id } as unknown) as IdObject<DataModel.ICompilation>
     );
+
+    const nameRecords = yield* generateNameRecordsLoad(
+      contracts,
+      "Contract",
+      getCurrent
+    );
+
+    yield* generateProjectNamesAssign(toIdObject(project), nameRecords);
+
+    compilationContracts[compilation.id] = contracts;
   }
 
   return { project, compilations, compilationContracts };

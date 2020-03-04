@@ -104,28 +104,6 @@ export class ArtifactsLoader {
 
         const contracts = compilationContracts[id];
 
-        const nameRecords: NameRecordObject[] = await Promise.all(
-          contracts.map(async contract => {
-            //check if there is already a current head for this item. if so save it as previous
-            let current: IdObject = await this.resolveProjectName(
-              project.id,
-              "Contract",
-              contract.name
-            );
-
-            return {
-              name: contract.name,
-              type: "Contract",
-              resource: {
-                id: contract.id
-              },
-              previous: current
-            };
-          })
-        );
-
-        await this.loadNameRecords(project.id, nameRecords);
-
         if (networks[0].length) {
           await this.loadContractInstances(contracts, networks);
         }
@@ -133,10 +111,7 @@ export class ArtifactsLoader {
     );
   }
 
-  async loadNameRecords(
-    projectId: string,
-    nameRecords: Array<NameRecordObject>
-  ) {
+  async loadNameRecords(projectId: string, nameRecords: NameRecordObject[]) {
     const nameRecordsResult = await this.db.query(AddNameRecords, {
       nameRecords: nameRecords
     });
