@@ -17,7 +17,10 @@ export type ElementaryValue =
   | AddressValue
   | StringValue
   | FixedValue
-  | UfixedValue;
+  | UfixedValue
+  | EnumValue
+  | ContractValue;
+
 /**
  * A bytestring value (static or dynamic)
  *
@@ -186,4 +189,80 @@ export interface UfixedValue {
     asBig: Big;
     rawAsBig?: Big;
   };
+}
+
+/**
+ * An enum value
+ *
+ * @Category User-defined elementary types
+ */
+export interface EnumValue {
+  type: Types.EnumType;
+  kind: "value";
+  value: {
+    name: string;
+    /**
+     * the numeric value of the enum
+     */
+    numericAsBN: BN;
+  };
+}
+
+/**
+ * A contract value; see [[ContractValueInfo]] for more detail
+ *
+ * @Category User-defined elementary types
+ */
+export interface ContractValue {
+  type: Types.ContractType;
+  kind: "value";
+  value: ContractValueInfo;
+}
+
+/**
+ * There are two types -- one for contracts whose class we can identify, and one
+ * for when we can't identify the class.
+ *
+ * @Category User-defined elementary types
+ */
+export type ContractValueInfo =
+  | ContractValueInfoKnown
+  | ContractValueInfoUnknown;
+
+/**
+ * This type of ContractValueInfo is used when we can identify the class.
+ *
+ * @Category User-defined elementary types
+ */
+export interface ContractValueInfoKnown {
+  kind: "known";
+  /**
+   * formatted as address (leading "0x", checksum-cased);
+   * note that this is not an AddressResult!
+   */
+  address: string;
+  /**
+   * this is just a hexstring; no checksum (also may have padding beforehand)
+   */
+  rawAddress?: string;
+  class: Types.ContractType;
+  //may have more optional members defined later, but I'll leave these out for now
+}
+
+/**
+ * This type of ContractValueInfo is used when we can't identify the class.
+ *
+ * @Category User-defined elementary types
+ */
+export interface ContractValueInfoUnknown {
+  kind: "unknown";
+  /**
+   * formatted as address (leading "0x", checksum-cased);
+   * note that this is not an AddressResult!
+   */
+  address: string;
+  /**
+   * this is just a hexstring; no checksum (also may have padding beforehand)
+   */
+  rawAddress?: string;
 }
