@@ -46,5 +46,6 @@ export interface DebuggerContext {
   sourceMap?: string;
   primarySource?: number;
   compiler?: Compiler.CompilerVersion;
+  compilation?: string;
   payable?: boolean;
 }

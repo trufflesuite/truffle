@@ -16,6 +16,7 @@ const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
+const Codec = require("@truffle/codec");
 const debug = require("debug")("lib:test");
 
 let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
@@ -120,6 +121,11 @@ const Test = {
       runner
     );
 
+    const debuggerCompilations = Codec.Compilations.Utils.shimArtifacts(
+      compilations.solc.contracts,
+      compilations.solc.sourceIndexes
+    );
+
     await this.setJSTestGlobals({
       config,
       web3,
@@ -127,7 +133,7 @@ const Test = {
       accounts,
       testResolver,
       runner,
-      compilation: compilations.solc
+      compilations: debuggerCompilations
     });
 
     // Finally, run mocha.
@@ -216,7 +222,7 @@ const Test = {
     accounts,
     testResolver,
     runner,
-    compilation
+    compilations
   }) {
     global.interfaceAdapter = interfaceAdapter;
     global.web3 = web3;
@@ -242,7 +248,7 @@ const Test = {
 
       // note: this.mochaRunner will be available by the time debug()
       // is invoked
-      const hook = new CLIDebugHook(config, compilation, this.mochaRunner);
+      const hook = new CLIDebugHook(config, compilations, this.mochaRunner);
 
       return await hook.debug(operation);
     };

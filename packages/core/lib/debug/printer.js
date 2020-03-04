@@ -33,13 +33,16 @@ class DebugPrinter {
     };
 
     this.colorizedSources = {};
-    for (const source of Object.values(
+    for (const [compilationId, compilation] of Object.entries(
       this.session.view(solidity.info.sources)
     )) {
-      const id = source.id;
-      const uncolorized = source.source;
-      const colorized = DebugUtils.colorize(uncolorized);
-      this.colorizedSources[id] = colorized;
+      this.colorizedSources[compilationId] = {};
+      for (const source of compilation.byId) {
+        const id = source.id;
+        const uncolorized = source.source;
+        const colorized = DebugUtils.colorize(uncolorized);
+        this.colorizedSources[compilationId][id] = colorized;
+      }
     }
 
     this.printouts = new Set(["sta"]);
@@ -97,7 +100,9 @@ class DebugPrinter {
   }
 
   printState(contextBefore = 2, contextAfter = 0) {
-    const { id: sourceId, source } = this.session.view(solidity.current.source);
+    const { id: sourceId, source, compilationId } = this.session.view(
+      solidity.current.source
+    );
 
     if (sourceId === undefined) {
       this.config.logger.log();
@@ -106,7 +111,7 @@ class DebugPrinter {
       return;
     }
 
-    const colorizedSource = this.colorizedSources[sourceId];
+    const colorizedSource = this.colorizedSources[compilationId][sourceId];
 
     const range = this.session.view(solidity.current.sourceRange);
     debug("range: %o", range);
@@ -193,13 +198,17 @@ class DebugPrinter {
   }
 
   printBreakpoints() {
+    let sources = this.session.view(solidity.info.sources);
     let sourceNames = Object.assign(
       {},
-      ...Object.values(this.session.view(solidity.info.sources)).map(
-        ({ id, sourcePath }) => ({
-          [id]: path.basename(sourcePath)
-        })
-      )
+      ...Object.entries(sources).map(([compilationId, compilation]) => ({
+        [compilationId]: Object.assign(
+          {},
+          ...Object.values(compilation.byId).map(({ id, sourcePath }) => ({
+            [id]: path.basename(sourcePath)
+          }))
+        )
+      }))
     );
     let breakpoints = this.session.view(controller.breakpoints);
     if (breakpoints.length > 0) {
@@ -209,6 +218,7 @@ class DebugPrinter {
           breakpoint,
           currentLocation.node !== undefined &&
             breakpoint.node === currentLocation.node.id,
+          currentLocation.source.compilationId,
           currentLocation.source.id,
           sourceNames
         );

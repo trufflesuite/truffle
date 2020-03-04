@@ -49,7 +49,10 @@ function shimContract(contract) {
 
 function shimBytecode(bytecode) {
   if (!bytecode) {
-    return;
+    return bytecode;
+  }
+  if (typeof bytecode === "string") {
+    return bytecode;
   }
 
   let { bytes, linkReferences } = bytecode;

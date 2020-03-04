@@ -603,7 +603,8 @@ contract("WireTest", function(_accounts) {
     const decoder = await Decoder.forProject(web3.currentProvider, [
       WireTest,
       WireTestParent,
-      WireTestLibrary
+      WireTestLibrary,
+      WireTestAbstract
     ]);
 
     //HACK HACK -- we're going to repeatedly apply the hack from above
@@ -747,7 +748,8 @@ contract("WireTest", function(_accounts) {
     const decoder = await Decoder.forProject(web3.currentProvider, [
       WireTest,
       WireTestParent,
-      WireTestLibrary
+      WireTestLibrary,
+      WireTestAbstract
     ]);
 
     //thankfully, ethers ignores anonymous events,

@@ -6,13 +6,14 @@ import * as Pointer from "@truffle/codec/pointer";
 import { DecodingMode } from "@truffle/codec/types";
 import * as Format from "@truffle/codec/format";
 
-//for passing to calldata/event allocation functions
+//for passing to calldata/event/contract allocation functions
 export interface ContractAllocationInfo {
-  abi: AbiData.Abi;
-  contractNode: Ast.AstNode;
-  deployedContext?: Contexts.DecoderContext;
-  constructorContext?: Contexts.DecoderContext;
-  compiler: Compiler.CompilerVersion;
+  abi?: AbiData.Abi; //needed for events & calldata
+  contractNode: Ast.AstNode; //needed for all 3
+  deployedContext?: Contexts.DecoderContext; //needed for events & calldata
+  constructorContext?: Contexts.DecoderContext; //needed for calldata
+  compiler: Compiler.CompilerVersion; //needed for all 3
+  compilationId?: string; //needed for all 3
 }
 
 export interface AbiSizeInfo {

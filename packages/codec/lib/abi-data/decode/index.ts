@@ -436,7 +436,7 @@ function* decodeAbiStructByPosition(
   const typeLocation = location === "calldata" ? "calldata" : null; //other abi locations are not valid type locations
 
   const typeId = dataType.id;
-  const structAllocation = allocations[parseInt(typeId)];
+  const structAllocation = allocations[typeId];
   if (!structAllocation) {
     let error = {
       kind: "UserDefinedTypeNotFoundError" as const,
@@ -464,25 +464,8 @@ function* decodeAbiStructByPosition(
     };
 
     let memberName = memberAllocation.name;
-    let storedType = <Format.Types.StructType>userDefinedTypes[typeId];
-    if (!storedType) {
-      let error = {
-        kind: "UserDefinedTypeNotFoundError" as const,
-        type: dataType
-      };
-      if (options.strictAbiMode || options.allowRetry) {
-        throw new StopDecodingError(error, true);
-        //similarly we allow a retry if we couldn't locate the type
-      }
-      return {
-        type: dataType,
-        kind: "error" as const,
-        error
-      };
-    }
-    let storedMemberType = storedType.memberTypes[index].type;
     let memberType = Format.Types.specifyLocation(
-      storedMemberType,
+      memberAllocation.type,
       typeLocation
     );
 
