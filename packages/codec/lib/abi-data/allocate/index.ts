@@ -983,11 +983,6 @@ export function getEventAllocations(
           //why? because if we couldn't find it, that means that events defined in
           //base contracts *weren't* skipped earlier, and so we shouldn't now add them in
           debug("baseId: %d", baseId);
-          debug("ids: %o", contracts.map(({ contractNode: { id } }) => id));
-          debug(
-            "names: %o",
-            contracts.map(({ contractNode: { name } }) => name)
-          );
           let baseContext = contracts.find(
             contractAllocationInfo =>
               contractAllocationInfo.compilationId === compilationId &&
