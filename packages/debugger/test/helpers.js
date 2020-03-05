@@ -26,7 +26,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 
   config.compilers = {
     solc: {
-      version: "0.6.1",
+      version: "0.6.3",
       settings: {
         optimizer: { enabled: false, runs: 200 },
         evmVersion: "constantinople"
@@ -46,10 +46,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   await migrate(config);
 
   let artifacts = await gatherArtifacts(config);
-  debug(
-    "artifacts: %o",
-    artifacts.map(a => a.contractName)
-  );
+  debug("artifacts: %o", artifacts.map(a => a.contractName));
 
   let abstractions = {};
   for (let name of contractNames) {
