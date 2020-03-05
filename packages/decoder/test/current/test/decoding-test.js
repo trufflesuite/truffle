@@ -6,7 +6,6 @@ const Decoder = require("../../..");
 const { nativizeDecoderVariables } = require("../../../dist/utils");
 
 const DecodingSample = artifacts.require("DecodingSample");
-const DecodingSampleParent = artifacts.require("DecodingSampleParent");
 
 function validateStructS(struct, values) {
   assert.equal(typeof struct, "object");
@@ -33,9 +32,7 @@ contract("DecodingSample", _accounts => {
   it("should get the initial state properly", async function() {
     let deployedContract = await DecodingSample.deployed();
     let address = deployedContract.address;
-    const decoder = await Decoder.forContractInstance(deployedContract, [
-      DecodingSampleParent
-    ]);
+    const decoder = await Decoder.forContractInstance(deployedContract);
 
     await decoder.watchMappingKey("varMapping", 2);
     await decoder.watchMappingKey("varMapping", 3);
@@ -47,10 +44,6 @@ contract("DecodingSample", _accounts => {
     debug("initialVariables: %O", initialVariables);
 
     assert.equal(initialState.class.typeName, "DecodingSample");
-    //before we move on to the main section, we'll test the defining classes
-    //of the first two variables
-    assert.equal(initialVariables[0].class.typeName, "DecodingSampleParent");
-    assert.equal(initialVariables[1].class.typeName, "DecodingSample");
 
     const variables = nativizeDecoderVariables(initialVariables);
 

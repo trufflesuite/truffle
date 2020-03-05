@@ -1,10 +1,6 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.6.3;
 
-contract DecodingSampleParent {
-  uint definedInParent;
-}
-
-contract DecodingSample is DecodingSampleParent {
+contract DecodingSample {
   enum E {
     EnumValZero,
     EnumValOne,
