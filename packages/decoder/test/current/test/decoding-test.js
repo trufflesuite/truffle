@@ -42,8 +42,8 @@ contract("DecodingSample", _accounts => {
       "varEnumMapping",
       "DecodingSample.E.EnumValOne"
     );
-    await decoder.watchMappingKey("varEnumMapping", "E.EnumValTwo");
-    await decoder.watchMappingKey("varEnumMapping", "EnumValThree");
+    await decoder.watchMappingKey("varEnumMapping", "EnumValTwo");
+    await decoder.watchMappingKey("varEnumMapping", "3");
     await decoder.watchMappingKey("varEnumMapping", 4);
 
     const initialState = await decoder.state();
