@@ -338,7 +338,7 @@ export interface UfixedPaddingError {
 }
 
 /*
- * SECTION 4: User-defined elementary types
+ * SECTION 3: User-defined elementary types
  */
 
 /**
@@ -659,7 +659,7 @@ export interface MalformedInternalFunctionError {
 }
 
 /*
- * SECTION 8: Generic errors
+ * SECTION 7: Generic errors
  */
 
 /**
@@ -792,7 +792,7 @@ export interface OverlargePointersNotImplementedError {
   pointerAsBN: BN;
 }
 
-/* SECTION 9: Internal use errors */
+/* SECTION 8: Internal use errors */
 /* you should never see these returned.
  * they are only for internal use. */
 
