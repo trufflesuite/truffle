@@ -11,7 +11,7 @@
     "prepare": "yarn build",
     "build": "node_modules/.bin/tsc --declaration",
     "start": "node_modules/.bin/tsc --watch",
-    "test": "cd test/wire && npx truffle test && cd ../storage && npx truffle test"
+    "test": "cd test/current && npx truffle test && cd ../legacy && npx truffle test"
   },
   "dependencies": {
     "@truffle/codec": "^0.3.6",

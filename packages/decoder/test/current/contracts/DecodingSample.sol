@@ -1,10 +1,6 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.6.3;
 
-contract DecodingSampleParent {
-  uint definedInParent;
-}
-
-contract DecodingSample is DecodingSampleParent {
+contract DecodingSample {
   enum E {
     EnumValZero,
     EnumValOne,
@@ -19,18 +15,12 @@ contract DecodingSample is DecodingSampleParent {
     bool    structBool;
     address structAddress;
     S2      structS2;
-    mapping(uint => uint) structMappingUints;
-    mapping(string => S2) structMappingS2;
   }
 
   struct S2 {
     uint[2] structTwoFixedArrayUint;
     uint[] structTwoDynamicArrayUint;
-    mapping(string => mapping(uint => address)) structTwoDoubleMapping;
   }
-
-  event EventNameOne(string argString);
-  event EventNameTwo(string argString, uint argUint);
 
   uint    varUint;
   string  varString;
@@ -43,6 +33,8 @@ contract DecodingSample is DecodingSampleParent {
 
   mapping(uint => uint) varMapping;
   mapping(address => uint) varAddressMapping;
+  mapping(DecodingSample => uint) varContractMapping;
+  mapping(E => uint) varEnumMapping;
 
   uint[2]    fixedArrayUint;
   string[2]  fixedArrayString;
@@ -59,9 +51,6 @@ contract DecodingSample is DecodingSampleParent {
   bytes7[]  dynamicArrayBytes7;
   byte[]    dynamicArrayByte;
   E[]       dynamicArrayEnum;
-
-  //S[2]       fixedArrayStructS;
-  // S[]       dynamicArrayStructS;
 
   function() external functionExternal = this.example;
 
@@ -129,31 +118,13 @@ contract DecodingSample is DecodingSampleParent {
     dynamicArrayEnum[0] = E.EnumValFour;
     dynamicArrayEnum[1] = E.EnumValTwo;
 
-    //fixedArrayStructS[0].structInt = -134;
-    //fixedArrayStructS[0].structString = "explore";
-    //fixedArrayStructS[0].structBool = true;
-    //fixedArrayStructS[0].structAddress = 0x00a3e11567890abcdeffedcba09876543211337121;
-    //fixedArrayStructS[0].structS2.structTwoFixedArrayUint[0] = 9001;
-    //fixedArrayStructS[0].structS2.structTwoFixedArrayUint[1] = 30231;
-    //fixedArrayStructS[0].structS2.structTwoDynamicArrayUint = new uint[](4);
-    //fixedArrayStructS[0].structS2.structTwoDynamicArrayUint[0] = 2;
-    //fixedArrayStructS[0].structS2.structTwoDynamicArrayUint[1] = 256;
-    //fixedArrayStructS[0].structS2.structTwoDynamicArrayUint[2] = 1023;
-    //fixedArrayStructS[0].structS2.structTwoDynamicArrayUint[3] = 5555;
-    //fixedArrayStructS[1].structInt = -1343;
-    //fixedArrayStructS[1].structString = "exploring";
-    //fixedArrayStructS[1].structBool = true;
-    //fixedArrayStructS[1].structAddress = 0x00a3e11567890abcdeffedcba09876543211337abc;
-    //fixedArrayStructS[1].structS2.structTwoFixedArrayUint[0] = 900103;
-    //fixedArrayStructS[1].structS2.structTwoFixedArrayUint[1] = 3023103;
-    //fixedArrayStructS[1].structS2.structTwoDynamicArrayUint = new uint[](4);
-    //fixedArrayStructS[1].structS2.structTwoDynamicArrayUint[0] = 3;
-    //fixedArrayStructS[1].structS2.structTwoDynamicArrayUint[1] = 250;
-    //fixedArrayStructS[1].structS2.structTwoDynamicArrayUint[2] = 10123;
-    //fixedArrayStructS[1].structS2.structTwoDynamicArrayUint[3] = 68715;
-
     varMapping[2] = 41;
     varMapping[3] = 107;
     varAddressMapping[address(this)] = 683;
+    varContractMapping[this] = 2049;
+    varEnumMapping[E.EnumValOne] = 1;
+    varEnumMapping[E.EnumValTwo] = 2;
+    varEnumMapping[E.EnumValThree] = 3;
+    varEnumMapping[E.EnumValFour] = 4;
   }
 }

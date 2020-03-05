@@ -149,7 +149,7 @@ contract("WireTest", function(_accounts) {
     assert.strictEqual(moreStuffDecoding.arguments[0].name, "notThis");
     assert.strictEqual(
       Codec.Format.Utils.Inspect.nativize(moreStuffDecoding.arguments[0].value),
-      `WireTest(${moreStuffArgs[0]})`
+      moreStuffArgs[0]
     );
     assert.strictEqual(moreStuffDecoding.arguments[1].name, "bunchOfInts");
     assert.deepEqual(
@@ -381,7 +381,7 @@ contract("WireTest", function(_accounts) {
       Codec.Format.Utils.Inspect.nativize(
         moreStuffEventDecoding.arguments[0].value
       ),
-      `WireTest(${moreStuffArgs[0]})`
+      moreStuffArgs[0]
     );
     assert.strictEqual(moreStuffEventDecoding.arguments[1].name, "data");
     assert.deepEqual(

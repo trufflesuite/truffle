@@ -132,15 +132,17 @@ async function runTestBody(
 contract("DowngradeTest", function(accounts) {
   it("Correctly degrades on allocation when no node", async function() {
     let mangledCompilations = clonedeep(compilations);
-    mangledCompilations[0].sources[0].ast = undefined;
+    let source = mangledCompilations[0].sources.find(x => x); //find defined source
+    source.ast = undefined;
 
     await runTestBody(mangledCompilations);
   });
 
   it("Correctly degrades on allocation when error", async function() {
     let mangledCompilations = clonedeep(compilations);
+    let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
-    let contractNode = mangledCompilations[0].sources[0].ast.nodes.find(
+    let contractNode = source.ast.nodes.find(
       node =>
         node.nodeType === "ContractDefinition" && node.name === "DowngradeTest"
     );
@@ -157,8 +159,9 @@ contract("DowngradeTest", function(accounts) {
 
   it("Correctly degrades on decoding when error", async function() {
     let mangledCompilations = clonedeep(compilations);
+    let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
-    let contractNode = mangledCompilations[0].sources[0].ast.nodes.find(
+    let contractNode = source.ast.nodes.find(
       node =>
         node.nodeType === "ContractDefinition" && node.name === "DowngradeTest"
     );
@@ -249,7 +252,8 @@ contract("DowngradeTest", function(accounts) {
 
   it("Correctly decodes inherited events when no node", async function() {
     let mangledCompilations = clonedeep(compilations);
-    mangledCompilations[0].sources[0].ast = undefined;
+    let source = mangledCompilations[0].sources.find(x => x); //find defined source
+    source.ast = undefined;
 
     //...and now let's set up a decoder for our hacked-up contract artifact.
     let decoder = await Decoder.forProject(web3.currentProvider, {
@@ -299,8 +303,9 @@ contract("DowngradeTest", function(accounts) {
 
     it("Abifies correctly when failure occurs in first enum", async function() {
       let mangledCompilations = clonedeep(compilations);
+      let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
-      let contractNode = mangledCompilations[0].sources[0].ast.nodes.find(
+      let contractNode = source.ast.nodes.find(
         node =>
           node.nodeType === "ContractDefinition" &&
           node.name === "DowngradeTest"
@@ -316,8 +321,9 @@ contract("DowngradeTest", function(accounts) {
 
     it("Abifies correctly when failure occurs in second enum", async function() {
       let mangledCompilations = clonedeep(compilations);
+      let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
-      let contractNode = mangledCompilations[0].sources[0].ast.nodes.find(
+      let contractNode = source.ast.nodes.find(
         node =>
           node.nodeType === "ContractDefinition" &&
           node.name === "DowngradeTest"

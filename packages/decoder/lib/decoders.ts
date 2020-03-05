@@ -1264,7 +1264,11 @@ export class ContractInstanceDecoder {
    *   values are given as booleans, or as the strings "true" or "false".
    *   Address values are given as hex strings; they are currently not required
    *   to be in checksum case, but this will likely change in the future, so
-   *   don't rely on that.
+   *   don't rely on that.  Contract values work like address values.
+   *   Enum values can be given either as a numeric value or by name;
+   *   in the latter case you can use either a qualified name or just the
+   *   name of the option (i.e., you can just write `"Option"` rather than
+   *   `"Enum.Option"` or `"Contract.Enum.Option"`, but those will work too).
    *
    *   Note that if the path to a given mapping key
    *   includes mapping keys above it, any ancestors will also be watched
@@ -1484,6 +1488,11 @@ export class ContractInstanceDecoder {
         break;
       case "mapping":
         let keyType = parentType.keyType;
+        if (keyType.typeClass === "enum") {
+          keyType = <Format.Types.EnumType>(
+            Format.Types.fullType(keyType, this.userDefinedTypes)
+          );
+        }
         key = Utils.wrapElementaryValue(rawIndex, keyType);
         dataType = parentType.valueType;
         slot = {
@@ -1493,7 +1502,7 @@ export class ContractInstanceDecoder {
         };
         break;
       case "struct":
-        //NOTE: due to the reliance of storage allocations,
+        //NOTE: due to the reliance on storage allocations,
         //we don't need to use fullType or what have you
         let allocation: Storage.Allocate.StorageMemberAllocation = this.allocations.storage[
           parentType.id

@@ -23,7 +23,12 @@ import {
   AddressValue,
   StringValue,
   FixedValue,
-  UfixedValue
+  UfixedValue,
+  EnumValue,
+  ContractValue,
+  ContractValueInfo,
+  ContractValueInfoKnown,
+  ContractValueInfoUnknown
 } from "./elementary";
 import * as Common from "@truffle/codec/common";
 import * as AbiData from "@truffle/codec/abi-data/types";
@@ -47,8 +52,6 @@ export type Result =
   | TupleResult
   | MagicResult
   | TypeResult
-  | EnumResult
-  | ContractResult
   | FunctionExternalResult
   | FunctionInternalResult;
 /**
@@ -64,13 +67,11 @@ export type Value =
   | TupleValue
   | MagicValue
   | TypeValue
-  | EnumValue
-  | ContractValue
   | FunctionExternalValue
   | FunctionInternalValue;
 
 /*
- * SECTION 2: Elementary values
+ * SECTION 2: Built-in elementary types
  */
 
 //NOTE: for technical reasons, the actual Value type definitions have been moved
@@ -90,7 +91,10 @@ export type ElementaryResult =
   | AddressResult
   | StringResult
   | FixedResult
-  | UfixedResult;
+  | UfixedResult
+  | EnumResult
+  | ContractResult;
+
 /**
  * A bytestring value or error (static or dynamic)
  *
@@ -166,7 +170,25 @@ export type FixedResult = FixedValue | Errors.FixedErrorResult;
 export type UfixedResult = UfixedValue | Errors.UfixedErrorResult;
 
 /*
- * SECTION 3: CONTAINER TYPES (including magic)
+ * SECTION 3: User-defined elementary types
+ */
+
+/**
+ * An enum value or error
+ *
+ * @Category User-defined elementary types
+ */
+export type EnumResult = EnumValue | Errors.EnumErrorResult;
+
+/**
+ * A contract value or error
+ *
+ * @Category User-defined elementary types
+ */
+export type ContractResult = ContractValue | Errors.ContractErrorResult;
+
+/*
+ * SECTION 4: Container types (including magic)
  */
 
 /**
@@ -319,106 +341,7 @@ export interface TypeValue {
 }
 
 /*
- * SECTION 4: ENUMS
- * (they didn't fit anywhere else :P )
- */
-
-/**
- * An enum value or error
- *
- * @Category Other user-defined types
- */
-export type EnumResult = EnumValue | Errors.EnumErrorResult;
-
-/**
- * An enum value
- *
- * @Category Other user-defined types
- */
-export interface EnumValue {
-  type: Types.EnumType;
-  kind: "value";
-  value: {
-    name: string;
-    /**
-     * the numeric value of the enum
-     */
-    numericAsBN: BN;
-  };
-}
-
-/*
- * SECTION 5: CONTRACTS
- */
-
-/**
- * A contract value or error
- *
- * @Category Other user-defined types
- */
-export type ContractResult = ContractValue | Errors.ContractErrorResult;
-
-/**
- * A contract value; see [[ContractValueInfo]] for more detail
- *
- * @Category Other user-defined types
- */
-export interface ContractValue {
-  type: Types.ContractType;
-  kind: "value";
-  value: ContractValueInfo;
-}
-
-/**
- * There are two types -- one for contracts whose class we can identify, and one
- * for when we can't identify the class.
- *
- * @Category Other user-defined types
- */
-export type ContractValueInfo =
-  | ContractValueInfoKnown
-  | ContractValueInfoUnknown;
-
-/**
- * This type of ContractValueInfo is used when we can identify the class.
- *
- * @Category Other user-defined types
- */
-export interface ContractValueInfoKnown {
-  kind: "known";
-  /**
-   * formatted as address (leading "0x", checksum-cased);
-   * note that this is not an AddressResult!
-   */
-  address: string;
-  /**
-   * this is just a hexstring; no checksum (also may have padding beforehand)
-   */
-  rawAddress?: string;
-  class: Types.ContractType;
-  //may have more optional members defined later, but I'll leave these out for now
-}
-
-/**
- * This type of ContractValueInfo is used when we can't identify the class.
- *
- * @Category Other user-defined types
- */
-export interface ContractValueInfoUnknown {
-  kind: "unknown";
-  /**
-   * formatted as address (leading "0x", checksum-cased);
-   * note that this is not an AddressResult!
-   */
-  address: string;
-  /**
-   * this is just a hexstring; no checksum (also may have padding beforehand)
-   */
-  rawAddress?: string;
-}
-
-/*
- * SECTION 6: External functions
+ * SECTION 5: External functions
  */
 
 /**
@@ -499,7 +422,7 @@ export interface FunctionExternalValueInfoUnknown {
 }
 
 /*
- * SECTION 7: INTERNAL FUNCTIONS
+ * SECTION 6: Internal functions
  */
 
 /**

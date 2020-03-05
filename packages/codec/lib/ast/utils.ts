@@ -339,11 +339,12 @@ export function keyDefinition(definition: AstNode, scopes?: Scopes): AstNode {
       //otherwise, we'll need to perform some hackery, similarly to in baseDefinition;
       //we'll have to spoof it up ourselves
       let keyIdentifier = typeIdentifier(definition).match(
-        /^t_mapping\$_(.*?)_\$/
+        /^t_mapping\$_(.*?)_\$_/
       )[1];
       //use *non*-greedy match; note that if the key type could include
-      //dollar signs, this could cause a problem, but user-defined types
-      //are not allowed as key types, so this can't come up
+      //the sequence "_$_", this could cause a problem, but they can't; the only
+      //valid key types that include dollar signs at all are user-defined types,
+      //which contain both "$_" and "_$" but never "_$_".
 
       // HACK - internal types for memory or storage also seem to be pointers
       keyIdentifier = regularizeTypeIdentifier(keyIdentifier);
@@ -406,8 +407,9 @@ export function valueDefinition(definition: AstNode, scopes?: Scopes): AstNode {
     /^t_mapping\$_.*?_\$_(.*)_\$/
   )[1];
   //use *non*-greedy match on the key; note that if the key type could include
-  //dollar signs, this could cause a problem, but user-defined types
-  //are not allowed as key types, so this can't come up
+  //the sequence "_$_", this could cause a problem, but they can't; the only
+  //valid key types that include dollar signs at all are user-defined types,
+  //which contain both "$_" and "_$" but never "_$_".
 
   // HACK - internal types for memory or storage also seem to be pointers
   valueIdentifier = regularizeTypeIdentifier(valueIdentifier);

@@ -6,7 +6,6 @@ const Decoder = require("../../..");
 const { nativizeDecoderVariables } = require("../../../dist/utils");
 
 const DecodingSample = artifacts.require("DecodingSample");
-const DecodingSampleParent = artifacts.require("DecodingSampleParent");
 
 function validateStructS(struct, values) {
   assert.equal(typeof struct, "object");
@@ -33,13 +32,19 @@ contract("DecodingSample", _accounts => {
   it("should get the initial state properly", async function() {
     let deployedContract = await DecodingSample.deployed();
     let address = deployedContract.address;
-    const decoder = await Decoder.forContractInstance(deployedContract, [
-      DecodingSampleParent
-    ]);
+    const decoder = await Decoder.forContractInstance(deployedContract);
 
     await decoder.watchMappingKey("varMapping", 2);
     await decoder.watchMappingKey("varMapping", 3);
     await decoder.watchMappingKey("varAddressMapping", address);
+    await decoder.watchMappingKey("varContractMapping", address);
+    await decoder.watchMappingKey(
+      "varEnumMapping",
+      "DecodingSample.E.EnumValOne"
+    );
+    await decoder.watchMappingKey("varEnumMapping", "EnumValTwo");
+    await decoder.watchMappingKey("varEnumMapping", "3");
+    await decoder.watchMappingKey("varEnumMapping", 4);
 
     const initialState = await decoder.state();
     const initialVariables = await decoder.variables();
@@ -47,10 +52,6 @@ contract("DecodingSample", _accounts => {
     debug("initialVariables: %O", initialVariables);
 
     assert.equal(initialState.class.typeName, "DecodingSample");
-    //before we move on to the main section, we'll test the defining classes
-    //of the first two variables
-    assert.equal(initialVariables[0].class.typeName, "DecodingSampleParent");
-    assert.equal(initialVariables[1].class.typeName, "DecodingSample");
 
     const variables = nativizeDecoderVariables(initialVariables);
 
@@ -130,6 +131,11 @@ contract("DecodingSample", _accounts => {
     assert.equal(variables.varMapping[2], 41);
     assert.equal(variables.varMapping[3], 107);
     assert.equal(variables.varAddressMapping[address], 683);
+    assert.equal(variables.varContractMapping[address], 2049);
+    assert.equal(variables.varEnumMapping["DecodingSample.E.EnumValOne"], 1);
+    assert.equal(variables.varEnumMapping["DecodingSample.E.EnumValTwo"], 2);
+    assert.equal(variables.varEnumMapping["DecodingSample.E.EnumValThree"], 3);
+    assert.equal(variables.varEnumMapping["DecodingSample.E.EnumValFour"], 4);
 
     assert.equal(
       variables.functionExternal,

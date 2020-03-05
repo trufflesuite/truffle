@@ -84,11 +84,13 @@ contract ContainersTest {
 `;
 
 const __KEYSANDBYTES = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.6.3;
 
 contract ElementaryTest {
 
   event Done(); //makes a useful breakpoint
+
+  enum Ternary { Red, Green, Blue }
 
   //storage variables to be tested
   mapping(bool => bool) boolMap;
@@ -98,6 +100,8 @@ contract ElementaryTest {
   mapping(int => int) intMap;
   mapping(string => string) stringMap;
   mapping(address => address) addressMap;
+  mapping(ElementaryTest => ElementaryTest) contractMap;
+  mapping(Ternary => Ternary) enumMap;
 
   //constant state variables to try as mapping keys
   uint constant two = 2;
@@ -127,6 +131,10 @@ contract ElementaryTest {
 
     stringMap["0xdeadbeef"] = "0xdeadbeef";
     stringMap["12345"] = "12345";
+
+    contractMap[this] = this;
+
+    enumMap[Ternary.Blue] = Ternary.Blue;
 
     emit Done(); //break here
   }
@@ -397,6 +405,8 @@ describe("Further Decoding", function() {
       intMap: { "-1": -1 },
       stringMap: { "0xdeadbeef": "0xdeadbeef", "12345": "12345" },
       addressMap: { [address]: address },
+      contractMap: { [address]: address },
+      enumMap: { "ElementaryTest.Ternary.Blue": "ElementaryTest.Ternary.Blue" },
       oneByte: "0xff",
       severalBytes: ["0xff"]
     };
