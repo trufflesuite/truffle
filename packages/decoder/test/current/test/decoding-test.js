@@ -37,6 +37,14 @@ contract("DecodingSample", _accounts => {
     await decoder.watchMappingKey("varMapping", 2);
     await decoder.watchMappingKey("varMapping", 3);
     await decoder.watchMappingKey("varAddressMapping", address);
+    await decoder.watchMappingKey("varContractMapping", address);
+    await decoder.watchMappingKey(
+      "varEnumMapping",
+      "DecodingSample.E.EnumValOne"
+    );
+    await decoder.watchMappingKey("varEnumMapping", "E.EnumValTwo");
+    await decoder.watchMappingKey("varEnumMapping", "EnumValThree");
+    await decoder.watchMappingKey("varEnumMapping", 4);
 
     const initialState = await decoder.state();
     const initialVariables = await decoder.variables();
@@ -123,6 +131,11 @@ contract("DecodingSample", _accounts => {
     assert.equal(variables.varMapping[2], 41);
     assert.equal(variables.varMapping[3], 107);
     assert.equal(variables.varAddressMapping[address], 683);
+    assert.equal(variables.varContractMapping[address], 2049);
+    assert.equal(variables.varEnumMapping["DecodingSample.E.EnumValOne"], 1);
+    assert.equal(variables.varEnumMapping["DecodingSample.E.EnumValTwo"], 2);
+    assert.equal(variables.varEnumMapping["DecodingSample.E.EnumValThree"], 3);
+    assert.equal(variables.varEnumMapping["DecodingSample.E.EnumValFour"], 4);
 
     assert.equal(
       variables.functionExternal,
