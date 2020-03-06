@@ -5,9 +5,11 @@ const Contracts = require("@truffle/workflow-compile");
 const { EthPM } = require("ethpm");
 const { EthpmURI } = require("ethpm/utils/uri");
 const { parseTruffleArtifacts } = require("ethpm/utils/truffle");
+const registryManifest = require("ethpm/registries/web3/simple/registry.json");
 const Web3 = require("web3");
 const path = require("path");
 const fs = require("fs");
+var contract = require("@truffle/contract");
 
 SUPPORTED_CHAIN_IDS = {
   1: "mainnet",
@@ -17,7 +19,6 @@ SUPPORTED_CHAIN_IDS = {
   42: "kovan"
 };
 
-// checksummed / 0x prefix?
 SUPPORTED_GENESIS_BLOCKS = {
   "d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3": 1,
   "41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d": 3,
@@ -26,10 +27,13 @@ SUPPORTED_GENESIS_BLOCKS = {
   "a3c565fc15c7478862d50ccd6561e3c06b24cc509bf388941c25ea985ce32cb9": 42
 };
 
+// ?s for Nick
 // why do i have to manually install hdwallet provider
+// ethpm_uri - shouldn't be part of options.ethpm since its the cli arg
+// how can we support ens
+
 const Package = {
   install: async (options, done) => {
-    // ethpm_uri - shouldn't be part of options.ethpm since its the cli arg
     try {
       expect.options(options, [
         "ethpm",
@@ -47,12 +51,6 @@ const Package = {
     } catch (err) {
       done(new TruffleError(err.message));
     }
-
-    // ethpm.js
-    // validate checksum address or ens name
-    // support ens names in ethpm uri
-    // pkg already install warning
-    // validate registry URI and provider match
 
     // Parse ethpm uri
     let ethpmUri;
@@ -78,6 +76,32 @@ const Package = {
     const provider = new Web3.providers.HttpProvider(infuraUri, {
       keepAlive: true
     }); // do we need/want keepAlive?
+
+    // Resolve ENS names in ethpm uri
+    if (!Web3.utils.isAddress(ethpmUri.address)) {
+      if (ethpmUri.chainId !== 1) {
+        done(
+          new TruffleError(
+            "Invalid ethPM uri. ethPM URIs must use a contract address for registries that are not on the mainnet."
+          )
+        );
+      }
+      try {
+        var RegistryContract = contract({
+          abi: registryManifest.contract_types.PackageRegistry.abi,
+          unlinked_binary:
+            registryManifest.contract_types.PackageRegistry.runtime_bytecode
+              .bytecode
+        });
+        // default ens could be breaking in configDefaults
+        // HACK - this is broken
+        RegistryContract.setProvider(options.provider);
+        const registryContract = await RegistryContract.at(ethpmUri.address);
+        ethpmUri.address = registryContract.address;
+      } catch (err) {
+        done(new TruffleError(`unable to resolve uri: ${err.message}`));
+      }
+    }
 
     // Create an ethpm instance
     let ethpm;
@@ -122,7 +146,11 @@ const Package = {
       .release(ethpmUri.version);
 
     // Install target manifest URI to working directory
-    await ethpm.installer.install(manifestUri, ethpmUri.address);
+    try {
+      await ethpm.installer.install(manifestUri, ethpmUri.address);
+    } catch (err) {
+      done(new TruffleError(`Install error: ${err.message}`));
+    }
     options.logger.log(
       `Installed ${ethpmUri.packageName}@${ethpmUri.version} to ${
         options.working_directory
@@ -142,10 +170,13 @@ const Package = {
 
     if (ethpmPackage.deployments) {
       ethpmPackage.deployments.forEach((value, key, _) => {
-        if (!(key.host in SUPPORTED_GENESIS_BLOCKS)) {
+        const foundGenesisBlock = key.host.toLowerCase();
+        if (!(foundGenesisBlock in SUPPORTED_GENESIS_BLOCKS)) {
           console.log("only support deployments on 5 chains");
         }
-        normalizedDeployments[SUPPORTED_GENESIS_BLOCKS[key.host]] = value;
+        normalizedDeployments[
+          SUPPORTED_GENESIS_BLOCKS[foundGenesisBlock]
+        ] = value;
       });
     }
 

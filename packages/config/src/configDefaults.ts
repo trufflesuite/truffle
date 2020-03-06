@@ -40,7 +40,7 @@ export const getInitialConfig = ({
       version: "2"
     },
     ens: {
-      enabled: false,
+      enabled: true,
       registryAddress: null
     },
     compilers: {

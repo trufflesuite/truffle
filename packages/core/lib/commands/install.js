@@ -21,7 +21,6 @@ const command = {
   run: async function(options, done) {
     const Config = require("@truffle/config");
     const Package = require("../package");
-
     if (options._ && options._.length == 1) {
       options.ethpm_uri = options._[0];
       const config = Config.detect(options);
