@@ -32,16 +32,6 @@ export function prefixName(prefix, fn) {
   return fn;
 }
 
-/*
- * extract the primary source from a source map
- * (i.e., the source for the first instruction, found
- * between the second and third colons)
- * (this is something of a HACK)
- */
-export function extractPrimarySource(sourceMap) {
-  return parseInt(sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]);
-}
-
 /**
  * @return 0x-prefix string of keccak256 hash
  */

@@ -45,12 +45,11 @@ const TEST_CASES = [
   }
 ];
 
-describe("Precompiled Contracts", () => {
+describe("Precompiled Contracts", function() {
   let provider;
 
   let abstractions;
-  let artifacts;
-  let files;
+  let compilations;
 
   // object where key is selector name, value is list of results at step
   let results = {};
@@ -64,11 +63,10 @@ describe("Precompiled Contracts", () => {
 
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
-  before("Initialize results", () => {
+  before("Initialize results", function() {
     // initialize results as mapping of selector to step results list
     for (let { name } of TEST_CASES) {
       results[name] = [];
@@ -82,8 +80,7 @@ describe("Precompiled Contracts", () => {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      files,
-      contracts: artifacts
+      compilations
     });
 
     let session = bugger.connect();
@@ -107,14 +104,14 @@ describe("Precompiled Contracts", () => {
     } while (!finished);
   });
 
-  before("remove final step results", () => {
+  before("remove final step results", function() {
     // since these include one step past end of trace
     for (let { name } of TEST_CASES) {
       results[name].pop();
     }
   });
 
-  it("never fails to know the trace step", async () => {
+  it("never fails to know the trace step", async function() {
     // remove last item (known to be undefined)
     const result = results["trace.step"];
 
@@ -127,7 +124,7 @@ describe("Precompiled Contracts", () => {
     }
   });
 
-  it("never fails to know EVM context", async () => {
+  it("never fails to know EVM context", async function() {
     const result = results["evm.current.context"];
 
     for (let step of result) {
@@ -140,7 +137,7 @@ describe("Precompiled Contracts", () => {
     }
   });
 
-  it("never throws an exception for missing source range", async () => {
+  it("never throws an exception for missing source range", async function() {
     const result = results["solidity.current.sourceRange"];
 
     for (let step of result) {

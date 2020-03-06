@@ -150,6 +150,30 @@ export class ResultInspector {
               options
             );
           }
+          case "tuple": {
+            let coercedResult = <Format.Values.TupleValue>this.result;
+            //if everything is named, do same as with struct.
+            //if not, just do an array.
+            //(good behavior in the mixed case is hard, unfortunately)
+            if (coercedResult.value.every(({ name }) => name)) {
+              return util.inspect(
+                Object.assign(
+                  {},
+                  ...coercedResult.value.map(({ name, value }) => ({
+                    [name]: new ResultInspector(value)
+                  }))
+                ),
+                options
+              );
+            } else {
+              return util.inspect(
+                coercedResult.value.map(
+                  ({ value }) => new ResultInspector(value)
+                ),
+                options
+              );
+            }
+          }
           case "type": {
             //same as struct case but w/o circularity check
             let coercedResult = <Format.Values.TypeValue>this.result;
@@ -566,18 +590,8 @@ function nativizeWithTable(
       );
     case "enum":
       return enumFullName(<Format.Values.EnumValue>result);
-    case "contract": {
-      let coercedResult = <Format.Values.ContractValue>result;
-      switch (coercedResult.value.kind) {
-        case "known":
-          return `${coercedResult.value.class.typeName}(${
-            coercedResult.value.address
-          })`;
-        case "unknown":
-          return coercedResult.value.address;
-      }
-      break; //to satisfy typescript
-    }
+    case "contract":
+      return (<Format.Values.ContractValue>result).value.address; //we no longer include additional info
     case "function":
       switch (result.type.visibility) {
         case "external": {

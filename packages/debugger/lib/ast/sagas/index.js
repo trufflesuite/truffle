@@ -7,25 +7,41 @@ import * as data from "lib/data/sagas";
 
 import ast from "../selectors";
 
-function* walk(sourceId, node, pointer = "", parentId = null) {
+import flatten from "lodash.flatten";
+
+function* walk(compilationId, sourceId, node, pointer = "", parentId = null) {
   debug("walking %o %o", pointer, node);
 
-  yield* handleEnter(sourceId, node, pointer, parentId);
+  yield* handleEnter(compilationId, sourceId, node, pointer, parentId);
 
   if (node instanceof Array) {
     for (let [i, child] of node.entries()) {
-      yield call(walk, sourceId, child, `${pointer}/${i}`, parentId);
+      yield call(
+        walk,
+        compilationId,
+        sourceId,
+        child,
+        `${pointer}/${i}`,
+        parentId
+      );
     }
   } else if (node instanceof Object) {
     for (let [key, child] of Object.entries(node)) {
-      yield call(walk, sourceId, child, `${pointer}/${key}`, node.id);
+      yield call(
+        walk,
+        compilationId,
+        sourceId,
+        child,
+        `${pointer}/${key}`,
+        node.id
+      );
     }
   }
 
-  yield* handleExit(sourceId, node, pointer);
+  yield* handleExit(compilationId, sourceId, node, pointer);
 }
 
-function* handleEnter(sourceId, node, pointer, parentId) {
+function* handleEnter(compilationId, sourceId, node, pointer, parentId) {
   if (!(node instanceof Object)) {
     return;
   }
@@ -34,35 +50,40 @@ function* handleEnter(sourceId, node, pointer, parentId) {
 
   if (node.id !== undefined) {
     debug("%s recording scope %s", pointer, node.id);
-    yield* data.scope(node.id, pointer, parentId, sourceId);
+    yield* data.scope(node.id, pointer, parentId, sourceId, compilationId);
   }
 
   switch (node.nodeType) {
     case "VariableDeclaration":
       debug("%s recording variable %o", pointer, node);
-      yield* data.declare(node);
+      yield* data.declare(node, compilationId);
       break;
     case "ContractDefinition":
     case "StructDefinition":
     case "EnumDefinition":
-      yield* data.defineType(node);
+      yield* data.defineType(node, compilationId);
       break;
   }
 }
 
-function* handleExit(sourceId, node, pointer) {
+function* handleExit(compilationId, sourceId, node, pointer) {
   debug("exiting %s", pointer);
 
   // no-op right now
 }
 
 export function* visitAll() {
-  let sources = yield select(ast.views.sources);
+  let compilations = yield select(ast.views.sources);
+  debug("compilations: %O", compilations);
+
+  let sources = flatten(
+    Object.values(compilations).map(({ byId }) => byId)
+  ).filter(x => x);
 
   yield all(
-    Object.entries(sources)
-      .filter(([_, source]) => source.ast)
-      .map(([id, { ast }]) => call(walk, id, ast))
+    sources
+      .filter(({ ast }) => ast)
+      .map(({ ast, id, compilationId }) => call(walk, compilationId, id, ast))
   );
 
   debug("done visiting");

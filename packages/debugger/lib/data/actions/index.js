@@ -1,19 +1,21 @@
 export const SCOPE = "SCOPE";
-export function scope(id, pointer, parentId, sourceId) {
+export function scope(id, pointer, parentId, sourceId, compilationId) {
   return {
     type: SCOPE,
     id,
     pointer,
     parentId,
-    sourceId
+    sourceId,
+    compilationId
   };
 }
 
 export const DECLARE = "DECLARE_VARIABLE";
-export function declare(node) {
+export function declare(node, compilationId) {
   return {
     type: DECLARE,
-    node
+    node,
+    compilationId
   };
 }
 
@@ -49,19 +51,21 @@ export function reset() {
 }
 
 export const DEFINE_TYPE = "DEFINE_TYPE";
-export function defineType(node) {
+export function defineType(node, compilationId) {
   return {
     type: DEFINE_TYPE,
-    node
+    node,
+    compilationId
   };
 }
 
 export const ALLOCATE = "ALLOCATE";
-export function allocate(storage, memory, abi) {
+export function allocate(storage, memory, abi, state) {
   return {
     type: ALLOCATE,
     storage,
     memory,
-    abi
+    abi,
+    state
   };
 }

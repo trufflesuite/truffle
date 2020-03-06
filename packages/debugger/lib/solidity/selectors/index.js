@@ -30,10 +30,14 @@ function getSourceRange(instruction = {}) {
   };
 }
 
-function contextRequiresPhantomStackframes({ compiler }) {
-  return semver.satisfies(compiler.version, ">=0.5.1", {
-    includePrerelease: true
-  });
+function contextRequiresPhantomStackframes(context) {
+  debug("context: %O", context);
+  return (
+    context.compiler &&
+    semver.satisfies(context.compiler.version, ">=0.5.1", {
+      includePrerelease: true
+    })
+  );
 }
 
 //function to create selectors that need both a current and next version
@@ -64,9 +68,11 @@ function createMultistepSelectors(stepSelector) {
      * .source
      */
     source: createLeaf(
-      ["/info/sources", "./instruction"],
+      //HACK: same hack as with instruction (we use current sources).
+      //but I don't need to give the same warning twice.
+      ["/current/sources", "./instruction"],
 
-      (sources, { file: id }) => sources[id] || {}
+      (sources, { file: id }) => (sources ? sources[id] || {} : {})
     ),
 
     /**
@@ -106,8 +112,9 @@ let solidity = createSelectorTree({
   info: {
     /**
      * solidity.info.sources
+     * NOTE: grouped by compilation!
      */
-    sources: createLeaf(["/state"], state => state.info.sources.byId)
+    sources: createLeaf(["/state"], state => state.info.sources.byCompilationId)
   },
 
   /**
@@ -127,6 +134,17 @@ let solidity = createSelectorTree({
    * solidity.current
    */
   current: {
+    /**
+     * solidity.current.sources
+     * This takes the place of the old solidity.info.sources,
+     * returning only the sources for the current compilation.
+     */
+    sources: createLeaf(
+      ["/info/sources", evm.current.context],
+      (sources, context) =>
+        context ? sources[context.compilationId].byId : null
+    ),
+
     /**
      * solidity.current.sourceMap
      */
@@ -175,7 +193,7 @@ let solidity = createSelectorTree({
      * solidity.current.instructions
      */
     instructions: createLeaf(
-      ["/info/sources", evm.current.context, "./humanReadableSourceMap"],
+      ["./sources", evm.current.context, "./humanReadableSourceMap"],
 
       (sources, context, sourceMap) => {
         if (!context) {
@@ -330,7 +348,7 @@ let solidity = createSelectorTree({
      * solidity.current.functionsByProgramCounter
      */
     functionsByProgramCounter: createLeaf(
-      ["./instructions", "/info/sources"],
+      ["./instructions", "./sources"],
       (instructions, sources) =>
         Object.assign(
           {},

@@ -73,10 +73,10 @@ var DebugUtils = {
       source: contract.source,
       sourceMap: contract.sourceMap,
       sourcePath: contract.sourcePath,
-      binary: contract.binary,
+      bytecode: contract.bytecode,
       abi: contract.abi,
       ast: contract.ast,
-      deployedBinary: contract.deployedBinary,
+      deployedBytecode: contract.deployedBytecode,
       deployedSourceMap: contract.deployedSourceMap,
       compiler: contract.compiler
     }));
@@ -282,6 +282,7 @@ var DebugUtils = {
   formatBreakpointLocation: function(
     breakpoint,
     here,
+    currentCompilationId,
     currentSourceId,
     sourceNames
   ) {
@@ -294,8 +295,12 @@ var DebugUtils = {
     } else {
       baseMessage = `line ${breakpoint.line + 1}`;
     }
-    if (breakpoint.sourceId !== currentSourceId) {
-      let sourceName = sourceNames[breakpoint.sourceId];
+    if (
+      breakpoint.compilationId !== currentCompilationId ||
+      breakpoint.sourceId !== currentSourceId
+    ) {
+      let sourceName =
+        sourceNames[breakpoint.compilationId][breakpoint.sourceId];
       return baseMessage + ` in ${sourceName}`;
     } else {
       return baseMessage;

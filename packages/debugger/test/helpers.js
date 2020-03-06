@@ -10,6 +10,7 @@ import Web3 from "web3";
 import Migrate from "@truffle/migrate";
 import Box from "@truffle/box";
 import Resolver from "@truffle/resolver";
+import * as Codec from "@truffle/codec";
 
 export async function prepareContracts(provider, sources = {}, migrations) {
   let config = await createSandbox();
@@ -25,7 +26,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 
   config.compilers = {
     solc: {
-      version: "0.6.1",
+      version: "0.6.3",
       settings: {
         optimizer: { enabled: false, runs: 200 },
         evmVersion: "constantinople"
@@ -48,14 +49,16 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   debug("artifacts: %o", artifacts.map(a => a.contractName));
 
   let abstractions = {};
-  contractNames.forEach(name => {
+  for (let name of contractNames) {
     abstractions[name] = config.resolver.require(name);
-  });
+  }
+
+  let compilations = Codec.Compilations.Utils.shimArtifacts(artifacts, files);
 
   return {
     files,
     abstractions,
-    artifacts,
+    compilations,
     config
   };
 }

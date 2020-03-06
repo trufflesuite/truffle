@@ -139,8 +139,7 @@ describe("Solidity Debugging", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -151,8 +150,7 @@ describe("Solidity Debugging", function() {
 
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   it("exposes functionality to stop at breakpoints", async function() {
@@ -161,18 +159,18 @@ describe("Solidity Debugging", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
     // at `second();`
     let source = session.view(solidity.current.source);
     let breakLine = lineOf("BREAK", source.source);
-    let breakpoint = { sourceId: source.id, line: breakLine };
+    let breakpoint = {
+      sourceId: source.id,
+      compilationId: source.compilationId,
+      line: breakLine
+    };
 
     await session.addBreakpoint(breakpoint);
 
@@ -194,8 +192,7 @@ describe("Solidity Debugging", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      files,
-      contracts: artifacts
+      compilations
     });
 
     let session = bugger.connect();
@@ -223,8 +220,7 @@ describe("Solidity Debugging", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      files,
-      contracts: artifacts
+      compilations
     });
 
     let session = bugger.connect();
@@ -239,11 +235,19 @@ describe("Solidity Debugging", function() {
 
     for (let i = 0; i < NUM_TESTS; i++) {
       let inputLine = lineOf("input " + i, source.source);
-      breakpoints.push({ sourceId: source.id, line: inputLine });
+      breakpoints.push({
+        compilationId: source.compilationId,
+        sourceId: source.id,
+        line: inputLine
+      });
       let outputLine = lineOf("output " + i, source.source);
       expectedResolutions.push(
         outputLine !== -1 //lineOf will return -1 if no such line exists
-          ? { sourceId: source.id, line: outputLine }
+          ? {
+              compilationId: source.compilationId,
+              sourceId: source.id,
+              line: outputLine
+            }
           : null
       );
     }
@@ -262,8 +266,7 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        files,
-        contracts: artifacts
+        compilations
       });
 
       let session = bugger.connect();
@@ -288,8 +291,7 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        files,
-        contracts: artifacts
+        compilations
       });
 
       let session = bugger.connect();
@@ -320,8 +322,7 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        files,
-        contracts: artifacts
+        compilations
       });
 
       let session = bugger.connect();
@@ -342,8 +343,7 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        files,
-        contracts: artifacts
+        compilations
       });
 
       let session = bugger.connect();
@@ -378,18 +378,25 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        files,
-        contracts: artifacts
+        compilations
       });
 
       let session = bugger.connect();
 
       let source = session.view(solidity.current.source);
       let breakLine1 = lineOf("BREAK #1", source.source);
-      let breakpoint1 = { sourceId: source.id, line: breakLine1 };
+      let breakpoint1 = {
+        sourceId: source.id,
+        compilationId: source.compilationId,
+        line: breakLine1
+      };
       await session.addBreakpoint(breakpoint1);
       let breakLine2 = lineOf("BREAK #2", source.source);
-      let breakpoint2 = { sourceId: source.id, line: breakLine2 };
+      let breakpoint2 = {
+        sourceId: source.id,
+        compilationId: source.compilationId,
+        line: breakLine2
+      };
       await session.addBreakpoint(breakpoint2);
 
       await session.continueUntilBreakpoint();

@@ -38,8 +38,7 @@ describe("Loading and unloading transactions", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -50,8 +49,7 @@ describe("Loading and unloading transactions", function() {
 
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   it("Starts in transactionless mode and loads a transaction", async function() {
@@ -59,11 +57,7 @@ describe("Loading and unloading transactions", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forProject({
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forProject({ provider, compilations });
 
     let session = bugger.connect();
 
@@ -87,11 +81,7 @@ describe("Loading and unloading transactions", function() {
     let receipt2 = await instance2.run();
     let txHash2 = receipt2.tx;
 
-    let bugger = await Debugger.forTx(txHash1, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash1, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -115,11 +105,7 @@ describe("Loading and unloading transactions", function() {
   });
 
   it("Doesn't crash getting location when transactionless", async function() {
-    let bugger = await Debugger.forProject({
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forProject({ provider, compilations });
 
     let session = bugger.connect();
 

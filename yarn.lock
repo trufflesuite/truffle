@@ -7632,10 +7632,10 @@ highlight.js@^9.12.0, highlight.js@^9.15.8:
   dependencies:
     handlebars "^4.5.3"
 
-highlightjs-solidity@^1.0.10:
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/highlightjs-solidity/-/highlightjs-solidity-1.0.10.tgz#4f03e6298cb914b232d531e54d589ccf906b24b8"
-  integrity sha512-frqjEl0EK89rAChdn+CpAISVH/nbC4YXPBGfpoc0n023pPDHH8dcVCqtQFrbZfQEpbsc7wGPRl2qsvGKg/NKGA==
+highlightjs-solidity@^1.0.11:
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/highlightjs-solidity/-/highlightjs-solidity-1.0.11.tgz#06449d7746960c7143f0af4d66bc4f1d48c77e95"
+  integrity sha512-NVilLoFVM/y/KqXdUMCqdCdaagLBb3Kw+pU8nTGiecwNYDodlGZPscdaK2dtXZQvKovP9rq9dZAjPDf0T0el4A==
 
 hmac-drbg@^1.0.0:
   version "1.0.1"
@@ -9572,7 +9572,7 @@ lodash.filter@^4.4.0:
   resolved "https://registry.yarnpkg.com/lodash.filter/-/lodash.filter-4.6.0.tgz#668b1d4981603ae1cc5a6fa760143e480b4c4ace"
   integrity sha1-ZosdSYFgOuHMWm+nYBQ+SAtMSs4=
 
-lodash.flatten@^4.2.0:
+lodash.flatten@^4.2.0, lodash.flatten@^4.4.0:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/lodash.flatten/-/lodash.flatten-4.4.0.tgz#f31c22225a9632d2bbf8e4addbef240aa765a61f"
   integrity sha1-8xwiIlqWMtK7+OSt2+8kCqdlph8=

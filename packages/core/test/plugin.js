@@ -1,5 +1,5 @@
 const assert = require("assert");
-const pluginLoader = require("../lib/plugin");
+const pluginLoader = require("../lib/commands/run/plugin");
 const TruffleError = require("@truffle/error");
 const originalRequire = require("original-require");
 const path = require("path");

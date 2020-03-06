@@ -34,16 +34,14 @@
  * makes requests, and @truffle/decoder fulfills them by
  * looking up the necessary information on the blockchain.
  *
- * This library also provides additional functionality beyond what's used
- * by Truffle Decoder.  In particular, this library also exists to
- * support Truffle Debugger, and so it provides encoding functionality not
- * just for transactions, logs, and state variables, but also for Solidity
- * variables during transaction execution.  It provides functionality for
- * decoding Solidity's internal function pointers, which the debugger uses,
- * even though Truffle Decoder does not.
- *
- * (Note that circularity detection for memory structures has yet to be
- * implemented, but is coming soon.)
+ * This library also provides additional functionality beyond what's used by
+ * Truffle Decoder.  In particular, this library also exists to support Truffle
+ * Debugger, and so it provides encoding functionality not just for
+ * transactions, logs, and state variables, but also for Solidity variables
+ * during transaction execution, including circularity detection for memroy
+ * structures.  It includes functionality for decoding Solidity's internal
+ * function pointers, which the debugger uses, but which Truffle Decoder
+ * currently does not (although this is planned for the future).
  *
  * There is also functionality for decoding return values and revert messages
  * (currently mostly unused, intended to be hooked up later) as well as some
@@ -195,7 +193,8 @@ something is wrong with the encoded data itself.  This value that it
 decodes to will give the program counter values it corresponds to, but
 will not include the function name or defining class, as @truffle/decoder
 is not presently capable of that.  For now, full decoding of internal
-function pointers remains a debugger-only feature.
+function pointers remains a debugger-only feature.  (But limited support for
+this via @truffle/decoder is planned for the future.)
 
 (When using the debugger, an invalid internal function pointer will decode to an
 error.  However, when using @truffle/decoder, we have no way of discerning whether
@@ -371,6 +370,9 @@ export { Ast };
 
 import * as Compiler from "./compiler";
 export { Compiler };
+
+import * as Compilations from "./compilations";
+export { Compilations };
 
 import * as Contexts from "./contexts";
 export { Contexts };

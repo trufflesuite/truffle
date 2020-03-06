@@ -34,11 +34,11 @@ const session = createSelectorTree({
               if (!context) {
                 return { [address]: { binary } };
               }
-              let { contractName, primarySource } = context;
+              let { contractName, compilationId, primarySource } = context;
 
               let source =
                 primarySource !== undefined
-                  ? sources[primarySource]
+                  ? sources[compilationId].byId[primarySource]
                   : undefined;
 
               return {

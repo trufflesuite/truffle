@@ -4,6 +4,7 @@ const debug = debugModule("test:data:decode");
 import Ganache from "ganache-core";
 import { assert } from "chai";
 import changeCase from "change-case";
+import flatten from "lodash.flatten";
 import * as Codec from "@truffle/codec";
 
 import { prepareContracts } from "test/helpers";
@@ -50,7 +51,7 @@ function lastStatementLine(source) {
 async function prepareDebugger(testName, sources) {
   const provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
 
-  let { abstractions, artifacts: contracts, files } = await prepareContracts(
+  let { abstractions, compilations } = await prepareContracts(
     provider,
     sources
   );
@@ -59,21 +60,25 @@ async function prepareDebugger(testName, sources) {
   let receipt = await instance.run();
   let txHash = receipt.tx;
 
-  let bugger = await Debugger.forTx(txHash, { provider, files, contracts });
+  let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
   let session = bugger.connect();
 
   let source = sources[fileName(testName)];
 
   //we'll need the debugger-internal ID of this source
-  let debuggerSources = session.view(solidity.info.sources);
-  let matchingSources = Object.values(debuggerSources).filter(sourceObject =>
+  let debuggerSources = flatten(
+    Object.values(session.view(solidity.info.sources)).map(({ byId }) => byId)
+  );
+  let matchingSources = debuggerSources.filter(sourceObject =>
     sourceObject.sourcePath.includes(contractName(testName))
   );
   let sourceId = matchingSources[0].id;
+  let compilationId = matchingSources[0].compilationId;
 
   let breakpoint = {
     sourceId,
+    compilationId,
     line: lastStatementLine(source)
   };
 
