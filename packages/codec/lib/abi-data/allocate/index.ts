@@ -364,13 +364,17 @@ function allocateCalldataAndReturndata(
       //search through base contracts, from most derived (left) to most base (right)
       if (contractNode) {
         const linearizedBaseContracts = contractNode.linearizedBaseContracts;
+        debug("linearized: %O", linearizedBaseContracts);
         node = linearizedBaseContracts.reduce(
           (foundNode: Ast.AstNode, baseContractId: number) => {
             if (foundNode !== undefined) {
               return foundNode; //once we've found something, we don't need to keep looking
             }
             let baseContractNode = referenceDeclarations[baseContractId];
-            if (baseContractNode === undefined) {
+            if (
+              baseContractNode === undefined ||
+              baseContractNode.nodeType !== "ContractDefinition"
+            ) {
               return null; //return null rather than undefined so that this will propagate through
               //(i.e. by returning null here we give up the search)
               //(we don't want to continue due to possibility of grabbing the wrong override)
