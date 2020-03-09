@@ -29,8 +29,6 @@ export type ErrorResult =
   | MagicErrorResult
   | TypeErrorResult
   | TupleErrorResult
-  | EnumErrorResult
-  | ContractErrorResult
   | FunctionExternalErrorResult
   | FunctionInternalErrorResult;
 
@@ -63,7 +61,7 @@ export type DecoderError =
   | InternalUseError;
 
 /*
- * SECTION 2: Elementary values
+ * SECTION 2: Built-in elementary types
  */
 
 /**
@@ -79,7 +77,10 @@ export type ElementaryErrorResult =
   | AddressErrorResult
   | StringErrorResult
   | FixedErrorResult
-  | UfixedErrorResult;
+  | UfixedErrorResult
+  | EnumErrorResult
+  | ContractErrorResult;
+
 /**
  * An error result for a bytestring
  *
@@ -337,7 +338,82 @@ export interface UfixedPaddingError {
 }
 
 /*
- * SECTION 3: CONTAINER TYPES (including magic)
+ * SECTION 3: User-defined elementary types
+ */
+
+/**
+ * An error result for an enum
+ *
+ * @Category User-defined elementary types
+ */
+export interface EnumErrorResult {
+  type: Types.EnumType;
+  kind: "error";
+  error: GenericError | EnumError;
+}
+
+/**
+ * An enum-specific error
+ *
+ * @Category User-defined elementary types
+ */
+export type EnumError = EnumOutOfRangeError | EnumNotFoundDecodingError;
+
+/**
+ * The enum is out of range
+ *
+ * @Category User-defined elementary types
+ */
+export interface EnumOutOfRangeError {
+  kind: "EnumOutOfRangeError";
+  type: Types.EnumType;
+  rawAsBN: BN;
+}
+
+/**
+ * The enum type definition could not be located
+ *
+ * @Category User-defined elementary types
+ */
+export interface EnumNotFoundDecodingError {
+  kind: "EnumNotFoundDecodingError";
+  type: Types.EnumType;
+  rawAsBN: BN;
+}
+
+/**
+ * An error result for a contract
+ *
+ * @Category User-defined elementary types
+ */
+export interface ContractErrorResult {
+  type: Types.ContractType;
+  kind: "error";
+  error: GenericError | ContractError;
+}
+
+/**
+ * A contract-specific error
+ *
+ * @Category User-defined elementary types
+ */
+export type ContractError = ContractPaddingError;
+
+/**
+ * A padding error for contract (note padding is not always checked)
+ *
+ * @Category User-defined elementary types
+ */
+export interface ContractPaddingError {
+  /**
+   * hex string
+   */
+  raw: string;
+  kind: "ContractPaddingError";
+}
+
+/*
+ * SECTION 4: Container types (including magic)
  */
 
 /**
@@ -450,87 +526,7 @@ export interface TypeErrorResult {
 export type TypeErrorUnion = never;
 
 /*
- * SECTION 4: ENUMS
- * (they didn't fit anywhere else :P )
- */
-
-/**
- * An error result for an enum
- *
- * @Category Other user-defined types
- */
-export interface EnumErrorResult {
-  type: Types.EnumType;
-  kind: "error";
-  error: GenericError | EnumError;
-}
-
-/**
- * An enum-specific error
- *
- * @Category Other user-defined types
- */
-export type EnumError = EnumOutOfRangeError | EnumNotFoundDecodingError;
-
-/**
- * The enum is out of range
- *
- * @Category Other user-defined types
- */
-export interface EnumOutOfRangeError {
-  kind: "EnumOutOfRangeError";
-  type: Types.EnumType;
-  rawAsBN: BN;
-}
-
-/**
- * The enum type definition could not be located
- *
- * @Category Other user-defined types
- */
-export interface EnumNotFoundDecodingError {
-  kind: "EnumNotFoundDecodingError";
-  type: Types.EnumType;
-  rawAsBN: BN;
-}
-
-/*
- * SECTION 5: CONTRACTS
- */
-
-/**
- * An error result for a contract
- *
- * @Category Other user-defined types
- */
-export interface ContractErrorResult {
-  type: Types.ContractType;
-  kind: "error";
-  error: GenericError | ContractError;
-}
-
-/**
- * A contract-specific error
- *
- * @Category Other user-defined types
- */
-export type ContractError = ContractPaddingError;
-
-/**
- * A padding error for contract (note padding is not always checked)
- *
- * @Category Other user-defined types
- */
-export interface ContractPaddingError {
-  /**
-   * hex string
-   */
-  raw: string;
-  kind: "ContractPaddingError";
-}
-
-/*
- * SECTION 6: External functions
+ * SECTION 5: External functions
  */
 
 /**
@@ -584,7 +580,7 @@ export interface FunctionExternalStackPaddingError {
 }
 
 /*
- * SECTION 7: INTERNAL FUNCTIONS
+ * SECTION 6: Internal functions
  */
 
 /**
@@ -663,7 +659,7 @@ export interface MalformedInternalFunctionError {
 }
 
 /*
- * SECTION 8: GENERIC ERRORS
+ * SECTION 7: Generic errors
  */
 
 /**
@@ -796,7 +792,7 @@ export interface OverlargePointersNotImplementedError {
   pointerAsBN: BN;
 }
 
-/* SECTION 9: Internal use errors */
+/* SECTION 8: Internal use errors */
 /* you should never see these returned.
  * they are only for internal use. */
 

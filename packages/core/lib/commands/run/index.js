@@ -13,12 +13,12 @@ const command = {
   },
   run(options, done) {
     const Config = require("@truffle/config");
-    const Plugin = require("../plugin");
-    const Run = require("../run");
+    const Plugin = require("./plugin");
+    const Run = require("./run");
     const config = Config.detect(options);
 
     if (options._.length === 0) {
-      const help = require("./help");
+      const help = require("../help");
       help.displayCommandHelp("run");
       return done();
     }

@@ -10,8 +10,8 @@ import * as trace from "lib/trace/sagas";
 
 import solidity from "../selectors";
 
-export function* addSource(source, sourcePath, ast, compiler) {
-  yield put(actions.addSource(source, sourcePath, ast, compiler));
+export function* addSources(compilations) {
+  yield put(actions.addSources(compilations));
 }
 
 function* tickSaga() {

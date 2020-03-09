@@ -75,8 +75,7 @@ describe("Contexts", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -87,8 +86,7 @@ describe("Contexts", function() {
 
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   it("returns view of addresses affected", async function() {
@@ -102,11 +100,7 @@ describe("Contexts", function() {
 
     let txHash = result.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
     debug("debugger ready");
 
     let session = bugger.connect();

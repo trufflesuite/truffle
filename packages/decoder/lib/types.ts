@@ -3,11 +3,37 @@ import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import {
   Format,
   Ast,
+  Compilations,
   Contexts,
   CalldataDecoding,
   LogDecoding
 } from "@truffle/codec";
 import Web3 from "web3";
+
+/**
+ * This type represents information about a Truffle project that can be used to
+ * construct and initialize a decoder for that project.  This information may
+ * be passed in various ways; this type is given here as an interface rahter
+ * than a union, but note that really you only need to include one of these
+ * fields.  (The `compilations` field will be used if present, then `artifacts`
+ * if not, etc.)  Additional, more convenient options for how to specify project
+ * information are intended to be added in the future.
+ * @category Inputs
+ */
+export interface ProjectInfo {
+  /**
+   * An list of compilations, as specified in codec; this method of specifying
+   * a project is mostly intended for internal Truffle use for now, but you can
+   * see the documentation of the Compilations type if you want to use it.
+   */
+  compilations?: Compilations.Compilation[];
+  /**
+   * A list of contract artifacts for contracts in the project.
+   * Contract constructor objects may be substituted for artifacts, so if
+   * you're not sure which you're dealing with, it's OK.
+   */
+  artifacts?: Artifact[];
+}
 
 /**
  * This type represents the state of a contract aside from its storage.
@@ -73,10 +99,6 @@ export interface DecodedLog extends Log {
   decodings: LogDecoding[];
 }
 
-export interface ContractMapping {
-  [nodeId: number]: Artifact;
-}
-
 export interface StorageCache {
   [block: number]: {
     [address: string]: {
@@ -91,11 +113,26 @@ export interface CodeCache {
   };
 }
 
+export interface CompilationAndContract {
+  compilation: Compilations.Compilation;
+  contract: Compilations.Contract;
+}
+
 export interface ContractAndContexts {
-  contract: Artifact;
+  compilationId: string;
+  contract: Compilations.Contract;
   node: Ast.AstNode;
   deployedContext?: Contexts.DecoderContext;
   constructorContext?: Contexts.DecoderContext;
+}
+
+export interface ContractInfo {
+  compilation: Compilations.Compilation;
+  contract: Compilations.Contract;
+  artifact: Artifact;
+  contractNode: Ast.AstNode;
+  contractNetwork: string;
+  contextHash: string;
 }
 
 /**

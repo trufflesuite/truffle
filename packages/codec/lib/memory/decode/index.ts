@@ -226,7 +226,7 @@ export function* decodeMemoryReferenceByAddress(
       } = info;
 
       const typeId = dataType.id;
-      const structAllocation = allocations[parseInt(typeId)];
+      const structAllocation = allocations[typeId];
       if (!structAllocation) {
         return {
           type: dataType,
@@ -251,22 +251,9 @@ export function* decodeMemoryReferenceByAddress(
           length: memberPointer.length //always equals WORD_SIZE or 0
         };
 
-        let memberName = memberAllocation.definition.name;
-        let storedType = <Format.Types.StructType>userDefinedTypes[typeId];
-        if (!storedType) {
-          return <Format.Errors.ErrorResult>{
-            //dunno why TS is failing here
-            type: dataType,
-            kind: "error" as const,
-            error: {
-              kind: "UserDefinedTypeNotFoundError",
-              type: dataType
-            }
-          };
-        }
-        let storedMemberType = storedType.memberTypes[index].type;
+        let memberName = memberAllocation.name;
         let memberType = Format.Types.specifyLocation(
-          storedMemberType,
+          memberAllocation.type,
           "memory"
         );
 

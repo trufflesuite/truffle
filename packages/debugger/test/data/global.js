@@ -151,8 +151,7 @@ describe("Globally-available variables", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -163,8 +162,7 @@ describe("Globally-available variables", function() {
 
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   it("Gets globals correctly in simple call", async function() {
@@ -173,11 +171,7 @@ describe("Globally-available variables", function() {
     let receipt = await instance.run(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -200,18 +194,16 @@ describe("Globally-available variables", function() {
     let receipt = await instance.runRun(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("BREAK SIMPLE", source)
     });
     await session.continueUntilBreakpoint();
@@ -233,18 +225,16 @@ describe("Globally-available variables", function() {
     let receipt = await instance.runStatic(9);
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("BREAK STATIC", source)
     });
     await session.continueUntilBreakpoint();
@@ -266,18 +256,16 @@ describe("Globally-available variables", function() {
     let receipt = await instance.runLib(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("BREAK LIBRARY", source)
     });
     await session.continueUntilBreakpoint();
@@ -297,11 +285,7 @@ describe("Globally-available variables", function() {
     let contract = await abstractions.CreationTest.new(9, { value: 100 });
     let txHash = contract.transactionHash;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
@@ -324,18 +308,16 @@ describe("Globally-available variables", function() {
     let receipt = await instance.runCreate(9, { value: 100 });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("BREAK CREATE", source)
     });
     await session.continueUntilBreakpoint();

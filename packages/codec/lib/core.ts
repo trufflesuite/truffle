@@ -33,10 +33,15 @@ const Web3Utils = require("web3-utils");
 export function* decodeVariable(
   definition: Ast.AstNode,
   pointer: Pointer.DataPointer,
-  info: Evm.EvmInfo
+  info: Evm.EvmInfo,
+  compilationId: string
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   let compiler = info.currentContext.compiler;
-  let dataType = Ast.Import.definitionToType(definition, compiler);
+  let dataType = Ast.Import.definitionToType(
+    definition,
+    compilationId,
+    compiler
+  );
   return yield* decode(dataType, pointer, info); //no need to pass an offset
 }
 
@@ -111,6 +116,7 @@ export function* decodeCalldata(
     };
   }
   let decodingMode: DecodingMode = allocation.allocationMode; //starts out this way, degrades to ABI if necessary
+  debug("calldata decoding mode: %s", decodingMode);
   //you can't map with a generator, so we have to do this map manually
   let decodedArguments: AbiArgument[] = [];
   for (const argumentAllocation of allocation.arguments) {
@@ -118,7 +124,7 @@ export function* decodeCalldata(
     let dataType =
       decodingMode === "full"
         ? argumentAllocation.type
-        : abifyType(argumentAllocation.type);
+        : abifyType(argumentAllocation.type, info.userDefinedTypes);
     try {
       value = yield* decode(dataType, argumentAllocation.pointer, info, {
         abiPointerBase: allocation.offset, //note the use of the offset for decoding pointers!
@@ -130,6 +136,8 @@ export function* decodeCalldata(
         error.allowRetry &&
         decodingMode === "full"
       ) {
+        debug("problem! retrying as ABI");
+        debug("error: %O", error);
         //if a retry happens, we've got to do several things in order to switch to ABI mode:
         //1. mark that we're switching to ABI mode;
         decodingMode = "abi";
@@ -142,7 +150,7 @@ export function* decodeCalldata(
         //(no try/catch on this one because we can't actually handle errors here!
         //not that they should be occurring)
         value = yield* decode(
-          abifyType(argumentAllocation.type), //type is now abified!
+          abifyType(argumentAllocation.type, info.userDefinedTypes), //type is now abified!
           argumentAllocation.pointer,
           info,
           {
@@ -317,7 +325,7 @@ export function* decodeEvent(
       let dataType =
         decodingMode === "full"
           ? argumentAllocation.type
-          : abifyType(argumentAllocation.type);
+          : abifyType(argumentAllocation.type, info.userDefinedTypes);
       try {
         value = yield* decode(dataType, argumentAllocation.pointer, info, {
           strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
@@ -340,7 +348,7 @@ export function* decodeEvent(
           //3. retry this particular decode in ABI mode.
           try {
             value = yield* decode(
-              abifyType(argumentAllocation.type), //type is now abified!
+              abifyType(argumentAllocation.type, info.userDefinedTypes), //type is now abified!
               argumentAllocation.pointer,
               info,
               {
@@ -574,7 +582,7 @@ export function* decodeReturndata(
       let dataType =
         decodingMode === "full"
           ? argumentAllocation.type
-          : abifyType(argumentAllocation.type);
+          : abifyType(argumentAllocation.type, info.userDefinedTypes);
       //now, let's decode!
       try {
         value = yield* decode(dataType, argumentAllocation.pointer, info, {
@@ -601,7 +609,7 @@ export function* decodeReturndata(
           //3. retry this particular decode in ABI mode.
           try {
             value = yield* decode(
-              abifyType(argumentAllocation.type), //type is now abified!
+              abifyType(argumentAllocation.type, info.userDefinedTypes), //type is now abified!
               argumentAllocation.pointer,
               info,
               {

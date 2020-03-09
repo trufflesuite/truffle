@@ -6,7 +6,7 @@ const Decoder = require("../../..");
 const ReceiveTest = artifacts.require("ReceiveTest");
 const FallbackTest = artifacts.require("FallbackTest");
 
-contract("WireTest", function(accounts) {
+contract("ReceiveTest", function(accounts) {
   it("should decode transactions that invoke fallback or receive", async function() {
     let receiveTest = await ReceiveTest.deployed();
     let fallbackTest = await FallbackTest.deployed();

@@ -1,7 +1,7 @@
 const assert = require("assert");
 const sinon = require("sinon");
-const runHandler = require("../../lib/run");
-const pluginLoader = require("../../lib/plugin");
+const runHandler = require("../../lib/commands/run/run");
+const pluginLoader = require("../../lib/commands/run/plugin");
 const TruffleError = require("@truffle/error");
 
 describe("run handler", () => {

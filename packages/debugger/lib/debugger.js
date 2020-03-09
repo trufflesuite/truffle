@@ -1,6 +1,5 @@
 import debugModule from "debug";
 const debug = debugModule("debugger");
-import expect from "@truffle/expect";
 
 import Session from "./session";
 
@@ -13,6 +12,8 @@ import evmSelector from "./evm/selectors";
 import soliditySelector from "./solidity/selectors";
 import sessionSelector from "./session/selectors";
 import controllerSelector from "./controller/selectors";
+
+import { Compilations } from "@truffle/codec";
 
 /**
  * @example
@@ -36,21 +37,19 @@ export default class Debugger {
   }
 
   /**
+   /**
    * Instantiates a Debugger for a given transaction hash.
    *
    * @param {String} txHash - transaction hash with leading "0x"
-   * @param {{contracts: Array<Contract>, files: Array<String>, provider: Web3Provider}} options -
+   * @param {{contracts: Array<Artifact>, files: Array<String>, provider: Web3Provider, compilations: Array<Compilation>}} options -
    * @return {Debugger} instance
    */
   static async forTx(txHash, options = {}) {
-    expect.options(options, ["contracts", "provider"]);
-
-    let session = new Session(
-      options.contracts,
-      options.files,
-      options.provider,
-      txHash
-    );
+    let { contracts, files, provider, compilations } = options;
+    if (!compilations) {
+      compilations = Compilations.Utils.shimArtifacts(contracts, files);
+    }
+    let session = new Session(compilations, provider, txHash);
 
     try {
       await session.ready();
@@ -66,17 +65,15 @@ export default class Debugger {
   /*
    * Instantiates a Debugger for a given project (with no transaction loaded)
    *
-   * @param {{contracts: Array<Contract>, files: Array<String>, provider: Web3Provider}} options -
+   * @param {{contracts: Array<Artifact>, files: Array<String>, provider: Web3Provider, compilations: Array<Compilation>}} options -
    * @return {Debugger} instance
    */
   static async forProject(options = {}) {
-    expect.options(options, ["contracts", "provider"]);
-
-    let session = new Session(
-      options.contracts,
-      options.files,
-      options.provider
-    );
+    let { contracts, files, provider, compilations } = options;
+    if (!compilations) {
+      compilations = Compilations.Utils.shimArtifacts(contracts, files);
+    }
+    let session = new Session(compilations, provider);
 
     await session.ready();
 
@@ -118,15 +115,3 @@ export default class Debugger {
     });
   }
 }
-
-/**
- * @typedef {Object} Contract
- * @property {string} contractName contract name
- * @property {string} source solidity source code
- * @property {string} sourcePath path to source file
- * @property {string} binary 0x-prefixed hex string with create bytecode
- * @property {string} sourceMap solidity source map for create bytecode
- * @property {Object} ast Abstract Syntax Tree from Solidity
- * @property {string} deployedBinary 0x-prefixed compiled binary (on chain)
- * @property {string} deployedSourceMap solidity source map for on-chain bytecode
- */

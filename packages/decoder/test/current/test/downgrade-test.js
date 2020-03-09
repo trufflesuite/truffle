@@ -6,10 +6,11 @@ const clonedeep = require("lodash.clonedeep");
 const Decoder = require("../../..");
 const Codec = require("../../../../codec");
 
-const DowngradeTestUnmodified = artifacts.require("DowngradeTest");
+const DowngradeTest = artifacts.require("DowngradeTest");
 const DowngradeTestParent = artifacts.require("DowngradeTestParent");
 const DecoyLibrary = artifacts.require("DecoyLibrary");
-const OtherContracts = [DowngradeTestParent, DecoyLibrary];
+const Contracts = [DowngradeTest, DowngradeTestParent, DecoyLibrary];
+const compilations = Codec.Compilations.Utils.shimArtifacts(Contracts);
 
 //verify the decoding for run
 function verifyAbiDecoding(decoding, address) {
@@ -74,15 +75,13 @@ function verifyAbiFunctionDecoding(decoding, address) {
 }
 
 async function runTestBody(
-  DowngradeTest,
+  mangledCompilations,
   skipFunctionTests = false,
   fullMode = false
 ) {
-  let decoder = await Decoder.forProject(
-    web3.currentProvider,
-    [DowngradeTest._json, ...OtherContracts] //HACK: because we've clonedeep'd DowngradeTest,
-    //we need to pass in its _json rather than it itself (its getters have been stripped off)
-  );
+  let decoder = await Decoder.forProject(web3.currentProvider, {
+    compilations: mangledCompilations
+  });
   let deployedContract = await DowngradeTest.new();
   let address = deployedContract.address;
 
@@ -132,17 +131,18 @@ async function runTestBody(
 
 contract("DowngradeTest", function(accounts) {
   it("Correctly degrades on allocation when no node", async function() {
-    let DowngradeTest = clonedeep(DowngradeTestUnmodified);
-    DowngradeTest._json.ast = undefined;
+    let mangledCompilations = clonedeep(compilations);
+    let source = mangledCompilations[0].sources.find(x => x); //find defined source
+    source.ast = undefined;
 
-    await runTestBody(DowngradeTest);
+    await runTestBody(mangledCompilations);
   });
 
   it("Correctly degrades on allocation when error", async function() {
-    //HACK
-    DowngradeTest = clonedeep(DowngradeTestUnmodified);
+    let mangledCompilations = clonedeep(compilations);
+    let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
-    let contractNode = DowngradeTest._json.ast.nodes.find(
+    let contractNode = source.ast.nodes.find(
       node =>
         node.nodeType === "ContractDefinition" && node.name === "DowngradeTest"
     );
@@ -154,14 +154,14 @@ contract("DowngradeTest", function(accounts) {
     structNode.nodeType = "Ninja"; //fake node type which will prevent
     //the decoder from recognizing it as a struct definition
 
-    await runTestBody(DowngradeTest, true);
+    await runTestBody(mangledCompilations, true);
   });
 
   it("Correctly degrades on decoding when error", async function() {
-    //HACK
-    let DowngradeTest = clonedeep(DowngradeTestUnmodified);
+    let mangledCompilations = clonedeep(compilations);
+    let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
-    let contractNode = DowngradeTest._json.ast.nodes.find(
+    let contractNode = source.ast.nodes.find(
       node =>
         node.nodeType === "ContractDefinition" && node.name === "DowngradeTest"
     );
@@ -173,29 +173,29 @@ contract("DowngradeTest", function(accounts) {
     enumNode.nodeType = "Ninja"; //fake node type which will prevent
     //the decoder from recognizing it as a enum definition
 
-    await runTestBody(DowngradeTest, true);
+    await runTestBody(mangledCompilations, true);
   });
 
   it("Correctly abifies after finishing", async function() {
-    let DowngradeTest = DowngradeTestUnmodified; //for once, we're not modifiying it!
-
-    await runTestBody(DowngradeTest, false, true);
+    await runTestBody(compilations, false, true); //for once, we're not modifying it!
   });
 
   it("Correctly decodes decimals", async function() {
-    //HACK
-    let DowngradeTest = clonedeep(DowngradeTestUnmodified);
+    let mangledCompilations = clonedeep(compilations);
+    let downgradeTest = mangledCompilations[0].contracts.find(
+      contract => contract.contractName === "DowngradeTest"
+    );
 
+    //HACK
     //Let's tweak that ABI a little before setting up the decoder...
-    DowngradeTest._json.abi.find(
+    downgradeTest.abi.find(
       abiEntry => abiEntry.name === "shhImADecimal"
     ).inputs[0].type = "fixed168x10";
 
     //...and now let's set up a decoder for our hacked-up contract artifact.
-    let decoder = await Decoder.forProject(
-      web3.currentProvider,
-      [DowngradeTest._json, ...OtherContracts] //HACK: see clonedeep note above
-    );
+    let decoder = await Decoder.forProject(web3.currentProvider, {
+      compilations: mangledCompilations
+    });
 
     //the ethers encoder can't yet handle fixed-point
     //(and the hack I tried earlier didn't work because it messed up the signatures)
@@ -251,15 +251,14 @@ contract("DowngradeTest", function(accounts) {
   });
 
   it("Correctly decodes inherited events when no node", async function() {
-    //HACK
-    let DowngradeTest = clonedeep(DowngradeTestUnmodified);
-    DowngradeTest._json.ast = undefined;
+    let mangledCompilations = clonedeep(compilations);
+    let source = mangledCompilations[0].sources.find(x => x); //find defined source
+    source.ast = undefined;
 
     //...and now let's set up a decoder for our hacked-up contract artifact.
-    let decoder = await Decoder.forProject(
-      web3.currentProvider,
-      [DowngradeTest._json, ...OtherContracts] //HACK: see clonedeep note above
-    );
+    let decoder = await Decoder.forProject(web3.currentProvider, {
+      compilations: mangledCompilations
+    });
 
     let deployedContract = await DowngradeTest.new();
 
@@ -280,10 +279,9 @@ contract("DowngradeTest", function(accounts) {
 
   describe("Out-of-range enums", function() {
     it("Doesn't include out-of-range enums in full mode", async function() {
-      let DowngradeTest = DowngradeTestUnmodified;
       let decoder = await Decoder.forProject(
         web3.currentProvider,
-        [DowngradeTest._json, ...OtherContracts] //not strictly necessary here, but see clonedeep comment above
+        { compilations } //not modifying for once!
       );
       let deployedContract = await DowngradeTest.new();
 
@@ -304,10 +302,10 @@ contract("DowngradeTest", function(accounts) {
     });
 
     it("Abifies correctly when failure occurs in first enum", async function() {
-      //HACK
-      let DowngradeTest = clonedeep(DowngradeTestUnmodified);
+      let mangledCompilations = clonedeep(compilations);
+      let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
-      let contractNode = DowngradeTest._json.ast.nodes.find(
+      let contractNode = source.ast.nodes.find(
         node =>
           node.nodeType === "ContractDefinition" &&
           node.name === "DowngradeTest"
@@ -318,14 +316,14 @@ contract("DowngradeTest", function(accounts) {
       enumNode.nodeType = "Ninja"; //fake node type which will prevent
       //the decoder from recognizing it as a enum definition
 
-      await runEnumTestBody(DowngradeTest);
+      await runEnumTestBody(mangledCompilations);
     });
 
     it("Abifies correctly when failure occurs in second enum", async function() {
-      //HACK
-      let DowngradeTest = clonedeep(DowngradeTestUnmodified);
+      let mangledCompilations = clonedeep(compilations);
+      let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
-      let contractNode = DowngradeTest._json.ast.nodes.find(
+      let contractNode = source.ast.nodes.find(
         node =>
           node.nodeType === "ContractDefinition" &&
           node.name === "DowngradeTest"
@@ -336,22 +334,22 @@ contract("DowngradeTest", function(accounts) {
       );
       enumNode.nodeType = "Ninja"; //fake node type which will prevent
       //the decoder from recognizing it as a enum definition
-      await runEnumTestBody(DowngradeTest);
+      await runEnumTestBody(mangledCompilations);
     });
   });
 
   it("Decodes external functions via additionalContexts", async function() {
-    //HACK
-    let DowngradeTest = clonedeep(DowngradeTestUnmodified);
-    DowngradeTest._json.deployedBytecode = undefined;
+    let mangledCompilations = clonedeep(compilations);
+    let downgradeTest = mangledCompilations[0].contracts.find(
+      contract => contract.contractName === "DowngradeTest"
+    );
+    downgradeTest.deployedBytecode = undefined;
 
     let deployedContract = await DowngradeTest.new();
     let address = deployedContract.address;
-    let decoder = await Decoder.forContractInstance(
-      deployedContract,
-      [DowngradeTest._json, ...OtherContracts] //HACK: because we've clonedeep'd DowngradeTest,
-      //we need to pass in its _json rather than it itself (its getters have been stripped off)
-    );
+    let decoder = await Decoder.forContractInstance(deployedContract, {
+      compilations: mangledCompilations
+    });
 
     let decodedFunction = await decoder.variable("doYouSeeMe");
     assert.strictEqual(decodedFunction.type.typeClass, "function");
@@ -373,11 +371,10 @@ contract("DowngradeTest", function(accounts) {
   });
 });
 
-async function runEnumTestBody(DowngradeTest) {
-  let decoder = await Decoder.forProject(
-    web3.currentProvider,
-    [DowngradeTest._json, ...OtherContracts] //HACK: see clonedeep comment above
-  );
+async function runEnumTestBody(mangledCompilations) {
+  let decoder = await Decoder.forProject(web3.currentProvider, {
+    compilations: mangledCompilations
+  });
   let deployedContract = await DowngradeTest.new();
 
   let txArguments = [9, 9, 1, 1]; //note: 1 is in range; 9 is not
