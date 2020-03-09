@@ -130,6 +130,8 @@ documentation for these individual functions.
  * @module @truffle/decoder
  */ /** */
 
+import "source-map-support/register";
+
 import {
   ContractDecoder,
   ContractInstanceDecoder,

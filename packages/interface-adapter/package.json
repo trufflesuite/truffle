@@ -21,13 +21,12 @@
   "dependencies": {
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
-    "lodash": "^4.17.13",
+    "source-map-support": "^0.5.16",
     "web3": "1.2.1"
   },
   "devDependencies": {
     "@truffle/provider": "^0.2.8",
     "@types/bn.js": "^4.11.4",
-    "@types/lodash": "^4.14.136",
     "@types/mocha": "^5.2.6",
     "@types/web3": "1.0.19",
     "ganache-core": "2.10.2",

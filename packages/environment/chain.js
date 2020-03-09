@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+require("source-map-support/register");
 
 const IPC = require("node-ipc").IPC;
 const Ganache = require("ganache-core/public-exports");

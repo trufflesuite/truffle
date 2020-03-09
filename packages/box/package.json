@@ -19,6 +19,7 @@
     "inquirer": "^7.0.0",
     "request": "^2.85.0",
     "request-promise-native": "^1.0.7",
+    "source-map-support": "^0.5.16",
     "tmp": "0.0.33",
     "vcsurl": "^0.1.1"
   },

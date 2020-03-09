@@ -15,12 +15,15 @@
   "dependencies": {
     "@truffle/contract-schema": "^3.0.23",
     "fs-extra": "6.0.1",
-    "lodash": "^4.17.13"
+    "lodash.assign": "^4.2.0",
+    "lodash.merge": "^4.6.2",
+    "source-map-support": "^0.5.16"
   },
   "devDependencies": {
     "@truffle/contract": "^4.1.12",
     "@types/fs-extra": "^8.0.0",
-    "@types/lodash": "^4.14.148",
+    "@types/lodash.assign": "^4.2.6",
+    "@types/lodash.merge": "^4.6.6",
     "@types/node": "^12.6.2",
     "chai": "4.2.0",
     "debug": "^4.1.1",
