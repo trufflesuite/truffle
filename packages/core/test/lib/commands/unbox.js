@@ -54,52 +54,58 @@ describe("commands/unbox.js", () => {
     describe("Error handling", () => {
       it("throws when passed an invalid box format", () => {
         invalidBoxFormats.forEach(val => {
-          assert.throws(
-            () => {
-              unbox.run({ _: [`${val}`] });
-            },
-            Error,
-            "Error not thrown!"
-          );
+          unbox
+            .run({ _: [`${val}`] })
+            .then(() => {
+              assert(false);
+            })
+            .catch(() => {
+              assert(true);
+            });
         });
       });
 
       it("throws when passed an absolute unbox path", () => {
         absolutePaths.forEach(path => {
-          assert.throws(
-            () => {
-              unbox.run({ _: [`${path}`] });
-            },
-            Error,
-            "Error not thrown!"
-          );
+          unbox
+            .run({ _: [`${path}`] })
+            .then(() => {
+              assert(false);
+            })
+            .catch(() => {
+              assert(true);
+            });
         });
       });
     });
 
     describe("successful unboxes", () => {
-      it("runs when passed valid box input", done => {
+      it("runs when passed valid box input", () => {
         let promises = [];
         validBoxInput.forEach(val => {
-          promises.push(
-            new Promise(resolve => {
-              unbox.run({ _: [`${val}`], force: true }, () => resolve());
-            })
-          );
+          promises.push(unbox.run({ _: [`${val}`], force: true }));
         });
-        Promise.all(promises).then(() => done());
+        return Promise.all(promises)
+          .then(() => {
+            assert(true);
+          })
+          .catch(error => {
+            assert(false, error.message);
+          });
       }).timeout(10000);
 
-      it("runs when passed a relative unbox path", done => {
+      it("runs when passed a relative unbox path", () => {
         let promises = [];
         relativePaths.forEach(path => {
-          promises.push(
-            new Promise(resolve => {
-              unbox.run({ _: [`${path}`], force: true }, () => resolve());
-            })
-          );
+          promises.push(unbox.run({ _: [`${path}`], force: true }));
         });
-        Promise.all(promises).then(() => done());
+        return Promise.all(promises)
+          .then(() => {
+            assert(true);
+          })
+          .catch(error => {
+            assert(false, error.message);
+          });
       }).timeout(10000);
     });
   });

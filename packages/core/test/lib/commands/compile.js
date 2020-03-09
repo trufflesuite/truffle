@@ -135,48 +135,48 @@ describe("compile", function() {
       });
     });
 
-    it("prints a truncated list of solcjs versions", function(done) {
+    it("prints a truncated list of solcjs versions", function() {
       this.timeout(5000);
 
-      const options = {
-        list: ""
-      };
+      const options = { list: "" };
 
-      command.run(config.with(options), err => {
-        if (err) return done(err);
+      return command
+        .run(config.with(options))
+        .then(() => {
+          memStream.on("end", function() {
+            const arr = JSON.parse(output);
+            assert(arr.length === 11);
+          });
 
-        memStream.on("end", function() {
-          const arr = JSON.parse(output);
-          assert(arr.length === 11);
-          done();
+          memStream.end("");
+        })
+        .catch(error => {
+          assert(false, error.message);
         });
-
-        memStream.end("");
-      });
     });
 
-    it("prints a list of docker tags", function(done) {
+    it("prints a list of docker tags", function() {
       this.timeout(5000);
 
-      const options = {
-        list: "docker"
-      };
+      const options = { list: "docker" };
 
-      command.run(config.with(options), err => {
-        if (err) return done(err);
+      return command
+        .run(config.with(options))
+        .then(() => {
+          memStream.on("end", function() {
+            const arr = JSON.parse(output);
+            assert(arr.length === 11);
+            assert(typeof arr[0] === "string");
+          });
 
-        memStream.on("end", function() {
-          const arr = JSON.parse(output);
-          assert(arr.length === 11);
-          assert(typeof arr[0] === "string");
-          done();
+          memStream.end("");
+        })
+        .catch(error => {
+          assert(false, error.message);
         });
-
-        memStream.end("");
-      });
     });
 
-    it("prints a full list of releases when --all is set", function(done) {
+    it("prints a full list of releases when --all is set", function() {
       this.timeout(5000);
 
       const options = {
@@ -184,18 +184,20 @@ describe("compile", function() {
         all: true
       };
 
-      command.run(config.with(options), err => {
-        if (err) return done(err);
+      return command
+        .run(config.with(options))
+        .then(() => {
+          memStream.on("end", function() {
+            const arr = JSON.parse(output);
+            assert(arr.length > 11);
+            assert(typeof arr[0] === "string");
+          });
 
-        memStream.on("end", function() {
-          const arr = JSON.parse(output);
-          assert(arr.length > 11);
-          assert(typeof arr[0] === "string");
-          done();
+          memStream.end("");
+        })
+        .catch(error => {
+          assert(false, error.message);
         });
-
-        memStream.end("");
-      });
     });
   });
 

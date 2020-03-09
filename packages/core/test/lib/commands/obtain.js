@@ -31,9 +31,15 @@ describe("obtain", () => {
         done = input => input;
       });
 
-      it("calls done with an error", async () => {
-        let returnValue = await command.run(options, done);
-        assert.instanceOf(returnValue, Error);
+      it("throws an error", async () => {
+        command
+          .run(options)
+          .then(() => {
+            assert(false, "An error did not occur.");
+          })
+          .catch(() => {
+            assert(true);
+          });
       });
     });
   });
