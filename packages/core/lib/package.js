@@ -5,11 +5,11 @@ const Contracts = require("@truffle/workflow-compile");
 const { EthPM } = require("ethpm");
 const { EthpmURI } = require("ethpm/utils/uri");
 const { parseTruffleArtifacts } = require("ethpm/utils/truffle");
-const registryManifest = require("ethpm/registries/web3/simple/registry.json");
 const Web3 = require("web3");
+const { isAddress } = require("web3-utils");
 const path = require("path");
 const fs = require("fs");
-var contract = require("@truffle/contract");
+const ENSJS = require("ethereum-ens");
 
 SUPPORTED_CHAIN_IDS = {
   1: "mainnet",
@@ -27,26 +27,21 @@ SUPPORTED_GENESIS_BLOCKS = {
   "a3c565fc15c7478862d50ccd6561e3c06b24cc509bf388941c25ea985ce32cb9": 42
 };
 
-// ?s for Nick
-// why do i have to manually install hdwallet provider
-// ethpm_uri - shouldn't be part of options.ethpm since its the cli arg
-// how can we support ens
-
 const Package = {
   install: async (options, done) => {
     try {
       expect.options(options, [
-        "ethpm",
-        "ethpm_uri",
+        "ethpm", // default ethpm settings
+        "ethpmUri", // target uri to install
         "logger",
         "working_directory",
         "contracts_build_directory"
       ]);
       expect.options(options.ethpm, [
-        "ipfs_host",
-        "ipfs_port",
-        "ipfs_protocol",
-        "infura_key"
+        "ipfsHost",
+        "ipfsPort",
+        "ipfsProtocol",
+        "infuraKey"
       ]);
     } catch (err) {
       done(new TruffleError(err.message));
@@ -55,7 +50,7 @@ const Package = {
     // Parse ethpm uri
     let ethpmUri;
     try {
-      ethpmUri = new EthpmURI(options.ethpm_uri);
+      ethpmUri = new EthpmURI(options.ethpmUri);
     } catch (err) {
       done(new TruffleError(err.message));
     }
@@ -71,14 +66,14 @@ const Package = {
     // Create a web3 instance connected to a blockchain
     const infuraUri = getInfuraEndpointForChainId(
       ethpmUri.chainId,
-      options.ethpm.infura_key
+      options.ethpm.infuraKey
     );
     const provider = new Web3.providers.HttpProvider(infuraUri, {
       keepAlive: true
     }); // do we need/want keepAlive?
 
     // Resolve ENS names in ethpm uri
-    if (!Web3.utils.isAddress(ethpmUri.address)) {
+    if (!isAddress(ethpmUri.address)) {
       if (ethpmUri.chainId !== 1) {
         done(
           new TruffleError(
@@ -86,20 +81,19 @@ const Package = {
           )
         );
       }
+      // default ens in configDefaults? breaking!
+      if (options.ens.enabled === false) {
+        done(
+          new TruffleError(
+            "Invalid ethPM uri. ENS must be enabled in truffle-config to use ethPM uris with ENS names."
+          )
+        );
+      }
       try {
-        var RegistryContract = contract({
-          abi: registryManifest.contract_types.PackageRegistry.abi,
-          unlinked_binary:
-            registryManifest.contract_types.PackageRegistry.runtime_bytecode
-              .bytecode
-        });
-        // default ens could be breaking in configDefaults
-        // HACK - this is broken
-        RegistryContract.setProvider(options.provider);
-        const registryContract = await RegistryContract.at(ethpmUri.address);
-        ethpmUri.address = registryContract.address;
+        const ensjs = new ENSJS(provider, options.ens.registry.address);
+        ethpmUri.address = await ensjs.resolver(ethpmUri.address).addr();
       } catch (err) {
-        done(new TruffleError(`unable to resolve uri: ${err.message}`));
+        done(new TruffleError(`Unable to resolve uri: ${err.message}`));
       }
     }
 
@@ -116,9 +110,9 @@ const Package = {
         workingDirectory: options.working_directory,
         registryAddress: ethpmUri.address,
         ipfs: {
-          host: options.ethpm.ipfs_host,
-          port: options.ethpm.ipfs_port,
-          protocol: options.ethpm.ipfs_protocol
+          host: options.ethpm.ipfsHost,
+          port: options.ethpm.ipfsPort,
+          protocol: options.ethpm.ipfsProtocol
         }
       });
     } catch (err) {
@@ -232,11 +226,11 @@ const Package = {
         "working_directory"
       ]);
       expect.options(options.ethpm, [
-        "ipfs_host",
-        "ipfs_port",
-        "ipfs_protocol",
+        "ipfsHost",
+        "ipfsPort",
+        "ipfsProtocol",
         "registry",
-        "infura_key"
+        "infuraKey"
       ]);
     } catch (err) {
       done(new TruffleError(err.message));
@@ -265,9 +259,9 @@ const Package = {
       provider: seededProvider, // bad hardcoded provider
       registryAddress: registryURI.address,
       ipfs: {
-        host: options.ethpm.ipfs_host,
-        port: options.ethpm.ipfs_port,
-        protocol: options.ethpm.ipfs_protocol
+        host: options.ethpm.ipfsHost,
+        port: options.ethpm.ipfsPort,
+        protocol: options.ethpm.ipfsProtocol
       }
     });
 

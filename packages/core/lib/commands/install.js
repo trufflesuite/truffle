@@ -21,11 +21,7 @@ const command = {
   run: async function(options, done) {
     const Config = require("@truffle/config");
     const Package = require("../package");
-    if (options._ && options._.length == 1) {
-      options.ethpm_uri = options._[0];
-      const config = Config.detect(options);
-      await Package.install(config, done);
-    } else {
+    if (options._ && options._.length !== 1) {
       console.log(
         `Invalid number of arguments provided. Expected a single ethPM URI, received ${
           options._.length
@@ -33,6 +29,9 @@ const command = {
       );
       done();
     }
+    options.ethpmUri = options._[0];
+    const config = Config.detect(options);
+    await Package.install(config, done);
   }
 };
 

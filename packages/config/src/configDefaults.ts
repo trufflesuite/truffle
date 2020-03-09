@@ -33,11 +33,10 @@ export const getInitialConfig = ({
     resolver: null,
     artifactor: null,
     ethpm: {
-      ipfs_host: "ipfs.infura.io",
-      ipfs_protocol: "https",
-      ipfs_port: "5001",
-      registry: "erc1319://0x5a5FE036d2557Ef4C85341fe4f9848e38173eFBa:3",
-      version: "2"
+      ipfsHost: "ipfs.infura.io",
+      ipfsProtocol: "https",
+      ipfsPort: "5001",
+      registry: "erc1319://0x5a5FE036d2557Ef4C85341fe4f9848e38173eFBa:3"
     },
     ens: {
       enabled: true,

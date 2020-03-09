@@ -50,9 +50,9 @@ describe("EthPM install", function() {
     };
     config.ethpm = {
       install_provider_uri: INSTALL_PROVIDER_URI,
-      ipfs_host: "ipfs.infura.io",
-      ipfs_port: "5001",
-      ipfs_protocol: "https"
+      ipfsHost: "ipfs.infura.io",
+      ipfsPort: "5001",
+      ipfsProtocol: "https"
     };
   });
 
@@ -277,10 +277,10 @@ describe("ethPM publish: ", function() {
       }
     };
     config.ethpm = {
-      ipfs_host: "ipfs.infura.io",
-      ipfs_port: "5001",
-      ipfs_protocol: "https",
-      infura_key: INFURA_KEY,
+      ipfsHost: "ipfs.infura.io",
+      ipfsPort: "5001",
+      ipfsProtocol: "https",
+      infuraKey: INFURA_KEY,
       registry: `ethpm://${registry._address}`
     };
   });
