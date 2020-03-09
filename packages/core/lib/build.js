@@ -11,36 +11,38 @@ function CommandBuilder(command) {
   this.command = command;
 }
 
-CommandBuilder.prototype.build = function(options, callback) {
-  console.log("Running `" + this.command + "`...");
+CommandBuilder.prototype.build = function(options) {
+  return new Promise((resolve, reject) => {
+    console.log("Running `" + this.command + "`...");
 
-  const args = spawnargs(this.command);
-  const ps = args.shift();
+    const args = spawnargs(this.command);
+    const ps = args.shift();
 
-  const cmd = spawn(ps, args, {
-    detached: false,
-    cwd: options.working_directory,
-    env: _.merge(process.env, {
-      WORKING_DIRECTORY: options.working_directory,
-      BUILD_DESTINATION_DIRECTORY: options.destination_directory,
-      BUILD_CONTRACTS_DIRECTORY: options.contracts_build_directory
-    })
-  });
+    const cmd = spawn(ps, args, {
+      detached: false,
+      cwd: options.working_directory,
+      env: _.merge(process.env, {
+        WORKING_DIRECTORY: options.working_directory,
+        BUILD_DESTINATION_DIRECTORY: options.destination_directory,
+        BUILD_CONTRACTS_DIRECTORY: options.contracts_build_directory
+      })
+    });
 
-  cmd.stdout.on("data", function(data) {
-    console.log(data.toString());
-  });
+    cmd.stdout.on("data", function(data) {
+      console.log(data.toString());
+    });
 
-  cmd.stderr.on("data", function(data) {
-    console.error(data);
-  });
+    cmd.stderr.on("data", function(data) {
+      console.error(data);
+    });
 
-  cmd.on("close", function(code) {
-    let error = null;
-    if (code !== 0) {
-      error = "Command exited with code " + code;
-    }
-    callback(error);
+    cmd.on("close", function(code) {
+      if (code !== 0) {
+        const error = "Command exited with code " + code;
+        return reject(error);
+      }
+      return resolve();
+    });
   });
 };
 
@@ -100,18 +102,21 @@ const Build = {
       if (err) return callback(err);
 
       // If necessary. This prevents errors due to the .sol.js files not existing.
-      Contracts.compile(options, function(err) {
-        if (err) return callback(err);
-
-        if (builder) {
-          builder.build(options, function(err) {
-            if (typeof err === "string") {
-              return callback(new BuildError(err));
-            }
-            return callback(err);
-          });
-        }
-      });
+      Contracts.compile(options)
+        .then(() => {
+          if (builder) {
+            return builder.build(options);
+          }
+        })
+        .then(() => {
+          return callback();
+        })
+        .catch(error => {
+          if (typeof error === "string") {
+            return callback(new BuildError(err));
+          }
+          return callback(error);
+        });
     });
   }
 };

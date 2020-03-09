@@ -177,7 +177,7 @@ describe("compile", function() {
     });
 
     it("prints a full list of releases when --all is set", function() {
-      this.timeout(5000);
+      this.timeout(10000);
 
       const options = {
         list: "releases",
@@ -192,7 +192,6 @@ describe("compile", function() {
             assert(arr.length > 11);
             assert(typeof arr[0] === "string");
           });
-
           memStream.end("");
         })
         .catch(error => {
