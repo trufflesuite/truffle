@@ -34,7 +34,5 @@ module.exports = merge(commonConfig, {
     }),
 
     new WriteFilePlugin()
-  ],
-
-  devtool: "#inline-cheap-module-source-map"
+  ]
 });

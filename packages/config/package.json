@@ -24,6 +24,9 @@
   "devDependencies": {
     "@types/configstore": "^4.0.0",
     "@types/find-up": "^2.1.0",
+    "@types/lodash.assignin": "^4.2.6",
+    "@types/lodash.merge": "^4.6.6",
+    "@types/node": "^12.12.9",
     "@types/sinon": "^7.0.13",
     "mocha": "6.2.0",
     "sinon": "^7.5.0",
@@ -34,13 +37,13 @@
     "@truffle/error": "^0.0.8",
     "@truffle/events": "^0.0.4",
     "@truffle/provider": "^0.2.8",
-    "@types/lodash": "^4.14.149",
-    "@types/node": "^12.12.9",
     "configstore": "^4.0.0",
     "find-up": "^2.1.0",
-    "lodash": "^4.17.13",
+    "lodash.assignin": "^4.2.0",
+    "lodash.merge": "^4.6.2",
     "module": "^1.2.5",
-    "original-require": "1.0.1"
+    "original-require": "1.0.1",
+    "source-map-support": "^0.5.16"
   },
   "publishConfig": {
     "access": "public"

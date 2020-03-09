@@ -19,6 +19,7 @@
     "@truffle/resolver": "^5.1.5",
     "ganache-core": "2.10.2",
     "node-ipc": "^9.1.1",
+    "source-map-support": "^0.5.16",
     "web3": "1.2.1"
   },
   "devDependencies": {
