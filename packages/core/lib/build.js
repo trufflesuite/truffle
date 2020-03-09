@@ -45,14 +45,24 @@ CommandBuilder.prototype.build = function(options, callback) {
 };
 
 const Build = {
-  clean: function(options, callback) {
-    const destination = options.build_directory;
-    const contracts_build_directory = options.contracts_build_directory;
+  clean: async function(options, callback) {
+    const callbackPassed = typeof callback === "function";
+    try {
+      const destination = options.build_directory;
+      const contracts_build_directory = options.contracts_build_directory;
 
-    // Clean first.
-    del([destination + "/*", "!" + contracts_build_directory]).then(() => {
-      mkdirp(destination, callback);
-    });
+      // Clean first.
+      await del([destination + "/*", "!" + contracts_build_directory]);
+      await mkdirp(destination);
+      if (callbackPassed) {
+        return callback();
+      }
+    } catch (error) {
+      if (callbackPassed) {
+        return callback(error);
+      }
+      throw error;
+    }
   },
 
   build: function(options, callback) {
