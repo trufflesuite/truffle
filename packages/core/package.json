@@ -54,7 +54,7 @@
     "ganache-core": "2.10.2",
     "glob": "^7.1.4",
     "hdkey": "^1.1.0",
-    "mkdirp": "^0.5.1",
+    "mkdirp": "1.0.3",
     "mocha": "5.2.0",
     "node-emoji": "^1.8.1",
     "node-ipc": "^9.1.1",
