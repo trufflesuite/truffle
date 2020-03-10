@@ -70,18 +70,20 @@ EPM.prototype.require = function(import_path, _search_path) {
   var internal_path = import_path.substring(separator + 1);
   var installDir = this.working_directory;
 
+  // can find build_deps one level deep
+  let parent_separator;
+  let parent_name;
+
+  if (imported_from !== null) {
+    parent_separator = imported_from.indexOf("/");
+    parent_name = imported_from.substring(0, parent_separator);
+  }
+
   // If nothing's found, body returns `undefined`
   var body;
 
   while (true) {
-    var file_path = path.join(installDir, "_ethpm_packages", import_path);
-
-    try {
-      body = fs.readFileSync(file_path, { encoding: "utf8" });
-      break;
-    } catch (err) {}
-
-    file_path = path.join(
+    var file_path = path.join(
       installDir,
       "_ethpm_packages",
       package_name,
@@ -93,6 +95,22 @@ EPM.prototype.require = function(import_path, _search_path) {
       body = fs.readFileSync(file_path, { encoding: "utf8" });
       break;
     } catch (err) {}
+
+    if (parent_name !== undefined) {
+      file_path = path.join(
+        installDir,
+        "_ethpm_packages",
+        parent_name,
+        "_ethpm_packages",
+        package_name,
+        "_src",
+        import_path
+      );
+      try {
+        body = fs.readFileSync(file_path, { encoding: "utf8" });
+        break;
+      } catch (err) {}
+    }
 
     // Recurse outwards until impossible
     var oldInstallDir = installDir;

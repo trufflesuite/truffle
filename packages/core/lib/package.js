@@ -10,6 +10,7 @@ const { isAddress } = require("web3-utils");
 const path = require("path");
 const fs = require("fs");
 const ENSJS = require("ethereum-ens");
+const TruffleContractSchema = require("@truffle/contract-schema");
 
 SUPPORTED_CHAIN_IDS = {
   1: "mainnet",
@@ -48,6 +49,7 @@ const Package = {
     }
 
     // Parse ethpm uri
+    options.logger.log("Fetching package manifest...");
     let ethpmUri;
     try {
       ethpmUri = new EthpmURI(options.ethpmUri);
@@ -63,14 +65,14 @@ const Package = {
       );
     }
 
-    // Create a web3 instance connected to a blockchain
+    // Create a web3 instance connected to the ethpm uri's registry blockchain
     const infuraUri = getInfuraEndpointForChainId(
       ethpmUri.chainId,
       options.ethpm.infuraKey
     );
     const provider = new Web3.providers.HttpProvider(infuraUri, {
       keepAlive: true
-    }); // do we need/want keepAlive?
+    });
 
     // Resolve ENS names in ethpm uri
     if (!isAddress(ethpmUri.address)) {
@@ -81,7 +83,6 @@ const Package = {
           )
         );
       }
-      // default ens in configDefaults? breaking!
       if (options.ens.enabled === false) {
         done(
           new TruffleError(
@@ -116,7 +117,7 @@ const Package = {
         }
       });
     } catch (err) {
-      done(new TruffleError(`Invalid config: ${err.message}`));
+      done(new TruffleError(`Unable to configure ethPM: ${err.message}`));
     }
 
     // Validate target package is available on connected registry
@@ -124,12 +125,11 @@ const Package = {
     if (!availablePackages.includes(ethpmUri.packageName)) {
       done(
         new TruffleError(
-          "Package: " +
-            ethpmUri.packageName +
-            ", not found on registry at address: " +
-            ethpmUri.address +
-            ". Available packages include: " +
-            availablePackages
+          `Package: ${
+            ethpmUri.packageName
+          }, not found on registry at address: ${
+            ethpmUri.address
+          }. Available packages include: ${availablePackages}`
         )
       );
     }
@@ -159,14 +159,18 @@ const Package = {
     await Contracts.compile(options.with({ all: true, quiet: true }));
     const artifactor = new Artifactor(options.contracts_build_directory);
 
-    // w/ blockchainUri => network id
+    // convert blockchainUri => network id
     const normalizedDeployments = {};
 
     if (ethpmPackage.deployments) {
       ethpmPackage.deployments.forEach((value, key, _) => {
         const foundGenesisBlock = key.host.toLowerCase();
         if (!(foundGenesisBlock in SUPPORTED_GENESIS_BLOCKS)) {
-          console.log("only support deployments on 5 chains");
+          done(
+            new TruffleError(
+              `Blockchain uri detected with unsupported genesis block: ${foundGenesisBlock}`
+            )
+          );
         }
         normalizedDeployments[
           SUPPORTED_GENESIS_BLOCKS[foundGenesisBlock]
@@ -191,26 +195,42 @@ const Package = {
       }
       // WORKS BUT HAS INCORRECT PROVIDER?
       const validContractSchema = {
-        abi: contractData.abi,
-        contractName: contractData.contractName,
-        compiler: {
-          name: contractData.compiler.name,
-          version: contractData.compiler.version
-        }
-        //networks: contractDeployments,
-        //bytecode: contractData.deploymentBytecode,
-        //deployedBytecode: contractData.runtimeBytecode,
-        //test: contractData.test
-        // prob
-        // contractName: contractData.contractName,
+        ...(contractData.abi && { abi: contractData.abi }),
+        ...(contractData.contractName && {
+          contractName: contractData.contractName
+        }),
+        ...(contractData.compiler && {
+          compiler: {
+            ...(contractData.compiler.name && {
+              name: contractData.compiler.name
+            }),
+            ...(contractData.compiler.version && {
+              version: contractData.compiler.version
+            })
+          }
+        }),
+        // idt these support linkrefs
+        ...(contractData.runtimeBytecode &&
+          contractData.runtimeBytecode.bytecode && {
+            deployedBytecode: contractData.runtimeBytecode.bytecode
+          }),
+        ...(contractData.deploymentBytecode &&
+          contractData.deploymentBytecode.bytecode && {
+            bytecode: contractData.deploymentBytecode.bytecode
+          }),
+        ...(contractDeployments && { networks: contractDeployments })
         // source: sources?
-        // no natspec - just devdoc/userdoc
-        // how to only include a field if defined?
+        // contract-schema doesn't define devdoc/userdoc but artifacts have it - can we include?
       };
-      // validate against actual contract schema
+      // seems like abi validation is too strict / outdated?
+      try {
+        await TruffleContractSchema.validate(validContractSchema);
+      } catch (err) {
+        done(new TruffleError(`ethPM package import error: ${err.message}`));
+      }
       await artifactor.save(validContractSchema);
     }
-    options.logger.log("done storing artifacts");
+    options.logger.log("Saved artifacts.");
     done();
   },
 
@@ -236,37 +256,42 @@ const Package = {
       done(new TruffleError(err.message));
     }
 
-    // validate is setup with mnemonic?
-    // validate mnemonic has publishing rights for options.registry?
-
     const registryURI = new EthpmURI(options.ethpm.registry);
     const registryProviderURI = getInfuraEndpointForChainId(
       registryURI.chainId,
-      options.ethpm.infura_key
+      options.ethpm.infuraKey
     );
-    const registryProvider = new Web3.providers.HttpProvider(
-      registryProviderURI,
-      { keepAlive: true }
-    ); // do we need/want keepAlive?
-    const seededProvider = options.networks.ropsten.provider();
-    registryProvider; // bad - what to do about provider
-
-    let ethpm = await EthPM.configure({
-      manifests: "ethpm/manifests/v2",
-      storage: "ethpm/storage/ipfs",
-      registries: "ethpm/registries/web3"
-    }).connect({
-      provider: seededProvider, // bad hardcoded provider
-      registryAddress: registryURI.address,
-      ipfs: {
-        host: options.ethpm.ipfsHost,
-        port: options.ethpm.ipfsPort,
-        protocol: options.ethpm.ipfsProtocol
-      }
+    registryProvider = new Web3.providers.HttpProvider(registryProviderURI, {
+      keepAlive: true
     });
 
-    let artifacts = await getPublishableArtifacts(options, ethpm);
-    console.log("made artifacts");
+    options.logger.log("Gathering contracts..."); // incorrect place
+    let ethpm;
+    try {
+      ethpm = await EthPM.configure({
+        manifests: "ethpm/manifests/v2",
+        storage: "ethpm/storage/ipfs",
+        registries: "ethpm/registries/web3"
+      }).connect({
+        provider: registryProvider, // bad hardcoded provider
+        registryAddress: registryURI.address,
+        ipfs: {
+          host: options.ethpm.ipfsHost,
+          port: options.ethpm.ipfsPort,
+          protocol: options.ethpm.ipfsProtocol
+        }
+      });
+    } catch (err) {
+      done(new TruffleError(`Unable to configure ethPM: ${err.message}`));
+    }
+
+    options.logger.log("Finding publishable artifacts...");
+    let artifacts;
+    try {
+      artifacts = await getPublishableArtifacts(options, ethpm);
+    } catch (err) {
+      done(new TruffleError(`Unable to collect artifacts: ${err}`));
+    }
 
     // Fetch ethpm.json config
     let ethpmConfig;
@@ -278,17 +303,18 @@ const Package = {
         )
       );
       if (
-        ethpmConfig.package_name === undefined ||
-        ethpmConfig.version === undefined
+        ethpmConfig.packageName === "undefined" ||
+        ethpmConfig.version === "undefined"
       ) {
-        throw new TruffleError(
-          "Invalid ethpm.json: Must contain a 'package_name' and 'version'."
+        done(
+          new TruffleError(
+            "Invalid ethpm.json: Must contain a 'packageName' and 'version'."
+          )
         );
       }
-    } catch (e) {
-      throw new TruffleError("Invalid ethpm.json configuration detected.");
+    } catch (err) {
+      done(new TruffleError("Invalid ethpm.json configuration detected."));
     }
-    console.log("made ethpm config");
 
     const ethpmFields = {
       sources: artifacts.resolvedSources,
@@ -297,24 +323,35 @@ const Package = {
       build_dependencies: {}
     };
 
+    options.logger.log(`Generating package manifest...`);
     const targetConfig = Object.assign(ethpmFields, ethpmConfig);
     const pkg = await ethpm.manifests.read(JSON.stringify(targetConfig));
     const manifest = await ethpm.manifests.write(pkg);
     const manifestURI = await ethpm.storage.write(manifest);
 
-    console.log(`made manifest uri: ${manifestURI.href}`);
-    console.log(`releasing package to ${options.ethpm.registry}`);
-    await ethpm.registries.registry.methods
-      .release(ethpmConfig.package_name, ethpmConfig.version, manifestURI.href)
-      .send({
-        from: seededProvider.addresses[0], // this is bad hardcoded account
+    options.logger.log(`Publishing package to ${options.ethpm.registry}`);
+    try {
+      const w3 = new Web3(options.provider);
+      const encoded = ethpm.registries.registry.methods
+        .release(ethpmConfig.packageName, ethpmConfig.version, manifestURI.href)
+        .encodeABI();
+      const tx = await w3.eth.signTransaction({
+        from: options.provider.addresses[0],
+        to: registryURI.address,
         gas: 4712388,
-        gasPrice: 100000000000
+        gasPrice: 100000000000,
+        data: encoded
       });
-    options.logger.log(
-      `Released ${ethpmConfig.package_name}@${
-        ethpmConfig.version
-      } to registry @ ${options.ethpm.registry}`
+      await w3.eth.sendSignedTransaction(tx.raw);
+    } catch (err) {
+      done(new TruffleError(`Error publishing package: ${err}`));
+    }
+    done(
+      options.logger.log(
+        `Published ${ethpmConfig.packageName}@${
+          ethpmConfig.version
+        } to registry @ ${options.ethpm.registry}` // add link to explorer?
+      )
     );
     //return JSON.parse(manifest); // remove this
   }
@@ -322,7 +359,11 @@ const Package = {
 
 function validateSupportedChainId(chainId) {
   if (!(chainId in SUPPORTED_CHAIN_IDS)) {
-    throw new TruffleError("xxx");
+    throw new TruffleError(
+      `Detected chain ID: ${chainId} is not a supported chain id. Supported values include ${Object.keys(
+        SUPPORTED_CHAIN_IDS
+      )}`
+    );
   }
 }
 
@@ -354,19 +395,16 @@ async function getPublishableArtifacts(options, ethpm) {
   files = files.filter(file => file.includes(".json"));
 
   if (!files.length) {
-    var msg =
-      "Could not locate any publishable artifacts in " +
-      options.contracts_build_directory +
-      ". " +
-      "Run `truffle compile` before publishing.";
-
-    return new Error(msg);
+    var msg = `Could not locate any publishable artifacts in ${
+      options.contracts_build_directory
+    }. Run "truffle compile" before publishing.`;
+    return new TruffleError(msg);
   }
 
-  const fileData = [];
-  const normData = {};
+  const artifactsGroupedByNetworkId = {};
   const sourcePaths = {};
-  // group by network id to handle deployments
+
+  // group artifacts by network id to ensure consistency when converting networkId => blockchainUri
   for (let file of files) {
     const fileContents = JSON.parse(
       fs.readFileSync(
@@ -374,35 +412,39 @@ async function getPublishableArtifacts(options, ethpm) {
         "utf8"
       )
     );
+
     sourcePaths[fileContents.sourcePath] = fileContents.source;
     const foundNetworkId = Object.keys(fileContents.networks)[0];
-    if (foundNetworkId in normData) {
-      normData[foundNetworkId].push(fileContents);
+    if (foundNetworkId in artifactsGroupedByNetworkId) {
+      artifactsGroupedByNetworkId[foundNetworkId].push(fileContents);
     } else {
-      normData[foundNetworkId] = [fileContents];
+      artifactsGroupedByNetworkId[foundNetworkId] = [fileContents];
     }
   }
-  // convert network ids to blockchain uri
-  for (let networkId of Object.keys(normData)) {
+
+  const normalizedArtifacts = [];
+  for (let networkId of Object.keys(artifactsGroupedByNetworkId)) {
     // handle artifacts without deployments
-    if (networkId == "undefined") {
-      normData[networkId].forEach(item => {
-        fileData.push(item);
+    // networkId will be an undefined string not obj
+    if (networkId === "undefined") {
+      artifactsGroupedByNetworkId[networkId].forEach(item => {
+        normalizedArtifacts.push(item);
       });
     } else {
+      // convert network ids to blockchain uri
       const blockchainUri = await convertNetworkIdToBlockchainUri(
         networkId,
-        options.ethpm.infura_key
+        options.ethpm.infuraKey
       );
-      normData[networkId].forEach(item => {
+      artifactsGroupedByNetworkId[networkId].forEach(item => {
         delete Object.assign(item.networks, {
           [blockchainUri]: item.networks[networkId]
         })[networkId];
-        fileData.push(item);
+        normalizedArtifacts.push(item);
       });
     }
   }
-  const parsedArtifacts = parseTruffleArtifacts(fileData);
+  const parsedArtifacts = parseTruffleArtifacts(normalizedArtifacts);
   const sources = await resolveSources(
     sourcePaths,
     options.contracts_directory,
@@ -418,13 +460,18 @@ async function getPublishableArtifacts(options, ethpm) {
 // handles sources installed via ethpm
 async function resolveSources(sourcePaths, contractsDirectory, ethpm) {
   const sources = {};
+  // TODO! how do we include installed pkgs in the publishing process?
+  // just add as build dependencies? probably
+  // flatten and include in pkg? probably not
   for (let sourcePath of Object.keys(sourcePaths)) {
-    const ipfsHash = await ethpm.storage.write(sourcePaths[sourcePath]);
-    // resolve all sources (including ethpm) to absolute contracts dir
-    const absolute = path.resolve(contractsDirectory, sourcePath);
-    // resolve all sources to relative path
-    const resolved = path.relative(contractsDirectory, absolute);
-    sources[`./${resolved}`] = ipfsHash.href;
+    if (sourcePath !== "undefined") {
+      const ipfsHash = await ethpm.storage.write(sourcePaths[sourcePath]);
+      // resolve all sources (including ethpm) to absolute contracts dir
+      const absolute = path.resolve(contractsDirectory, sourcePath);
+      // resolve all sources to relative path
+      const resolved = path.relative(contractsDirectory, absolute);
+      sources[`./${resolved}`] = ipfsHash.href;
+    }
   }
   return sources;
 }

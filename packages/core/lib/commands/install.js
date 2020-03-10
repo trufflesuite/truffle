@@ -3,18 +3,11 @@ const command = {
   description: "Install a package from the Ethereum Package Registry",
   builder: {},
   help: {
-    usage: "truffle install <package_name>[@<version>]",
+    usage: "truffle install <ethpm_uri>",
     options: [
       {
         option: "package_name",
-        description:
-          "Name of the package as listed in the Ethereum Package Registry. (required)"
-      },
-      {
-        option: "<@version>",
-        description:
-          "When specified, will install a specific version of the package, otherwise " +
-          "will install\n                    the latest version."
+        description: "ethPM URI for the target package to install. (required)"
       }
     ]
   },
@@ -25,7 +18,7 @@ const command = {
       console.log(
         `Invalid number of arguments provided. Expected a single ethPM URI, received ${
           options._.length
-        } arguments`
+        } arguments.`
       );
       done();
     }
