@@ -475,7 +475,12 @@ function nativizeWithTable(
   seenSoFar: any[]
 ): any {
   if (result.kind === "error") {
-    return undefined;
+    switch (result.error.kind) {
+      case "BoolOutOfRangeError":
+        return true;
+      default:
+        return undefined;
+    }
   }
   //NOTE: for simplicity, only arrays & structs will call nativizeWithTable;
   //other containers will just call nativize because they can get away with it
