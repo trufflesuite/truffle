@@ -57,7 +57,7 @@ const Package = {
       done(new TruffleError(err.message));
     }
 
-    if (!ethpmUri.packageName && !ethpmUri.version) {
+    if (!ethpmUri.package_name && !ethpmUri.version) {
       done(
         new TruffleError(
           "Invalid ethPM uri. URIs must specify a package name and version to install."
@@ -308,7 +308,7 @@ const Package = {
       ) {
         done(
           new TruffleError(
-            "Invalid ethpm.json: Must contain a 'packageName' and 'version'."
+            "Invalid ethpm.json: Must contain a 'package_name' and 'version'."
           )
         );
       }
@@ -316,11 +316,16 @@ const Package = {
       done(new TruffleError("Invalid ethpm.json configuration detected."));
     }
 
+    // Includes all installed ethpm packages in published package
+    const buildDependencies = fetchInstalledBuildDependencies(
+      options.working_directory
+    );
+
     const ethpmFields = {
       sources: artifacts.resolvedSources,
       contract_types: artifacts.resolvedContractTypes,
       deployments: artifacts.resolvedDeployments,
-      build_dependencies: {}
+      build_dependencies: buildDependencies
     };
 
     options.logger.log(`Generating package manifest...`);
@@ -333,7 +338,11 @@ const Package = {
     try {
       const w3 = new Web3(options.provider);
       const encoded = ethpm.registries.registry.methods
-        .release(ethpmConfig.packageName, ethpmConfig.version, manifestURI.href)
+        .release(
+          ethpmConfig.package_name,
+          ethpmConfig.version,
+          manifestURI.href
+        )
         .encodeABI();
       const tx = await w3.eth.signTransaction({
         from: options.provider.addresses[0],
@@ -348,9 +357,9 @@ const Package = {
     }
     done(
       options.logger.log(
-        `Published ${ethpmConfig.packageName}@${
-          ethpmConfig.version
-        } to registry @ ${options.ethpm.registry}` // add link to explorer?
+        `Published ${ethpmConfig.package_name}@${ethpmConfig.version} to ${
+          options.ethpm.registry
+        }` // add link to explorer?
       )
     );
     //return JSON.parse(manifest); // remove this
@@ -474,6 +483,25 @@ async function resolveSources(sourcePaths, contractsDirectory, ethpm) {
     }
   }
   return sources;
+}
+
+function fetchInstalledBuildDependencies(workingDirectory) {
+  let ethpmLock;
+  try {
+    ethpmLock = JSON.parse(
+      fs.readFileSync(
+        path.join(workingDirectory, "_ethpm_packages", "ethpm.lock"),
+        "utf8"
+      )
+    );
+  } catch (err) {
+    return {};
+  }
+  const installedBuildDependencies = {};
+  Object.keys(ethpmLock).forEach(function(key, _) {
+    installedBuildDependencies[key] = ethpmLock[key].resolved_uri;
+  });
+  return installedBuildDependencies;
 }
 
 module.exports = Package;

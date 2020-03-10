@@ -315,7 +315,7 @@ describe("ethPM publish: ", function() {
     // Missing version field
     fs.writeFileSync(
       path.join(config.working_directory, "ethpm.json"),
-      JSON.stringify({ packageName: "pkg" }),
+      JSON.stringify({ package_name: "pkg" }),
       "utf8"
     );
     try {
@@ -326,14 +326,14 @@ describe("ethPM publish: ", function() {
       );
       counter++;
     }
-    // Missing packageName field
+    // Missing package_name field
     fs.writeFileSync(
       path.join(config.working_directory, "ethpm.json"),
       JSON.stringify({ version: "1" }),
       "utf8"
     );
     try {
-      await Package.publish(config.with({ packageName: "pkg" }));
+      await Package.publish(config.with({ package_name: "pkg" }));
     } catch (error) {
       expect(error.message).to.include(
         "Invalid ethpm.json configuration detected."
@@ -346,7 +346,7 @@ describe("ethPM publish: ", function() {
   it("publishes a basic package", async () => {
     await Contracts.compile(config.with({ all: true, quiet: true }));
     const ethpmJson = JSON.stringify({
-      packageName: "pkg",
+      package_name: "pkg",
       version: "1.0",
       meta: {
         description: "test",
