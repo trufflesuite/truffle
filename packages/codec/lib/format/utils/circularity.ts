@@ -81,3 +81,19 @@ function tieWithTable(
       return untied;
   }
 }
+
+export function sever(tied: Format.Values.Result): Format.Values.Result {
+  if (tied.kind === "error") {
+    return tied;
+  }
+  switch (tied.type.typeClass) {
+    case "array":
+    case "struct":
+      return {
+        ...(<Format.Values.ArrayValue | Format.Values.StructValue>tied),
+        value: []
+      };
+    default:
+      return tied;
+  }
+}
