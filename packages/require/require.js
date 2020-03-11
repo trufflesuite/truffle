@@ -96,7 +96,7 @@ const Require = {
     return m.exports;
   },
 
-  exec: function(options, done) {
+  exec: async function(options) {
     expect.options(options, [
       "contracts_build_directory",
       "file",
@@ -115,16 +115,12 @@ const Require = {
       networkType: options.networks[options.network].type
     });
 
-    try {
-      const fn = this.file({
-        file: options.file,
-        context: { web3, interfaceAdapter },
-        resolver: options.resolver
-      });
-      fn(done);
-    } catch (error) {
-      done(error);
-    }
+    const fn = this.file({
+      file: options.file,
+      context: { web3, interfaceAdapter },
+      resolver: options.resolver
+    });
+    return fn();
   }
 };
 
