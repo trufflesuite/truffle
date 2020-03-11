@@ -232,7 +232,7 @@ export interface UfixedValue<
 export interface EnumValue<
   C extends Config.FormatConfig = Config.DefaultFormatConfig
 > {
-  type: Types.EnumType;
+  type: Types.EnumType<C>;
   kind: "value";
   value: EnumValueBaseFields & EnumValueNumericFields[C["integerType"]];
 }

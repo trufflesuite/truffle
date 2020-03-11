@@ -417,14 +417,14 @@ export interface TypeValueContract<
  * @Category Special container types (debugger-only)
  */
 export interface TypeValueEnum<
-  _C extends Config.FormatConfig = Config.DefaultFormatConfig
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
 > {
   type: Types.TypeTypeEnum;
   kind: "value";
   /**
    * these must be stored in order!
    */
-  value: EnumValue[];
+  value: EnumValue<C>[];
 }
 
 /*
