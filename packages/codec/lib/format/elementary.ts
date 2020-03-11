@@ -1,6 +1,7 @@
 import BN from "bn.js";
 import Big from "big.js";
 import * as Types from "./types";
+import * as Config from "./config";
 
 //note that we often want an elementary *value*, and not an error!
 //so let's define those types too
@@ -9,36 +10,50 @@ import * as Types from "./types";
  *
  * @Category General categories
  */
-export type ElementaryValue =
-  | UintValue
-  | IntValue
-  | BoolValue
-  | BytesValue
-  | AddressValue
-  | StringValue
-  | FixedValue
-  | UfixedValue
-  | EnumValue
-  | ContractValue;
+export type ElementaryValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> =
+  | UintValue<C>
+  | IntValue<C>
+  | BoolValue<C>
+  | BytesValue<C>
+  | AddressValue<C>
+  | StringValue<C>
+  | FixedValue<C>
+  | UfixedValue<C>
+  | EnumValue<C>
+  | ContractValue<C>;
 
 /**
  * A bytestring value (static or dynamic)
  *
  * @Category Elementary types
  */
-export type BytesValue = BytesStaticValue | BytesDynamicValue;
+export type BytesValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = BytesStaticValue<C> | BytesDynamicValue<C>;
 
 /**
  * An unsigned integer value
  *
  * @Category Elementary types
  */
-export interface UintValue {
-  type: Types.UintType;
+export interface UintValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.UintType<C>;
   kind: "value";
-  value: {
+  value: IntegerValueInfo[C["integerType"]];
+}
+
+interface IntegerValueInfo {
+  BN: {
     asBN: BN;
     rawAsBN?: BN;
+  };
+  string: {
+    asString: string;
+    rawAsString?: string;
   };
 }
 
@@ -47,13 +62,12 @@ export interface UintValue {
  *
  * @Category Elementary types
  */
-export interface IntValue {
-  type: Types.IntType;
+export interface IntValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.IntType<C>;
   kind: "value";
-  value: {
-    asBN: BN;
-    rawAsBN?: BN;
-  };
+  value: IntegerValueInfo[C["integerType"]];
 }
 
 /**
@@ -61,8 +75,10 @@ export interface IntValue {
  *
  * @Category Elementary types
  */
-export interface BoolValue {
-  type: Types.BoolType;
+export interface BoolValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.BoolType<C>;
   kind: "value";
   value: {
     asBoolean: boolean;
@@ -74,8 +90,10 @@ export interface BoolValue {
  *
  * @Category Elementary types
  */
-export interface BytesStaticValue {
-  type: Types.BytesTypeStatic;
+export interface BytesStaticValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.BytesTypeStatic<C>;
   kind: "value";
   value: {
     /**
@@ -91,8 +109,10 @@ export interface BytesStaticValue {
  *
  * @Category Elementary types
  */
-export interface BytesDynamicValue {
-  type: Types.BytesTypeDynamic;
+export interface BytesDynamicValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.BytesTypeDynamic<C>;
   kind: "value";
   value: {
     /**
@@ -107,8 +127,10 @@ export interface BytesDynamicValue {
  *
  * @Category Elementary types
  */
-export interface AddressValue {
-  type: Types.AddressType;
+export interface AddressValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.AddressType<C>;
   kind: "value";
   value: {
     /**
@@ -127,8 +149,10 @@ export interface AddressValue {
  *
  * @Category Elementary types
  */
-export interface StringValue {
-  type: Types.StringType;
+export interface StringValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.StringType<C>;
   kind: "value";
   value: StringValueInfo;
 }
@@ -168,12 +192,22 @@ export interface StringValueInfoMalformed {
  *
  * @Category Elementary types
  */
-export interface FixedValue {
-  type: Types.FixedType;
+export interface FixedValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.FixedType<C>;
   kind: "value";
-  value: {
+  value: DecimalValueInfo[C["decimalType"]];
+}
+
+interface DecimalValueInfo {
+  Big: {
     asBig: Big;
     rawAsBig?: Big;
+  };
+  string: {
+    asString: string;
+    rawAsString?: string;
   };
 }
 
@@ -182,13 +216,12 @@ export interface FixedValue {
  *
  * @Category Elementary types
  */
-export interface UfixedValue {
+export interface UfixedValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   type: Types.UfixedType;
   kind: "value";
-  value: {
-    asBig: Big;
-    rawAsBig?: Big;
-  };
+  value: DecimalValueInfo[C["decimalType"]];
 }
 
 /**
@@ -196,15 +229,30 @@ export interface UfixedValue {
  *
  * @Category User-defined elementary types
  */
-export interface EnumValue {
+export interface EnumValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   type: Types.EnumType;
   kind: "value";
-  value: {
-    name: string;
+  value: EnumValueBaseFields & EnumValueNumericFields[C["integerType"]];
+}
+
+interface EnumValueBaseFields {
+  name: string;
+}
+
+interface EnumValueNumericFields {
+  BN: {
     /**
      * the numeric value of the enum
      */
     numericAsBN: BN;
+  };
+  string: {
+    /**
+     * the numeric value of the enum
+     */
+    numericAsString: string;
   };
 }
 
@@ -213,10 +261,12 @@ export interface EnumValue {
  *
  * @Category User-defined elementary types
  */
-export interface ContractValue {
-  type: Types.ContractType;
+export interface ContractValue<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.ContractType<C>;
   kind: "value";
-  value: ContractValueInfo;
+  value: ContractValueInfo<C>;
 }
 
 /**
@@ -225,16 +275,18 @@ export interface ContractValue {
  *
  * @Category User-defined elementary types
  */
-export type ContractValueInfo =
-  | ContractValueInfoKnown
-  | ContractValueInfoUnknown;
+export type ContractValueInfo<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = ContractValueInfoKnown<C> | ContractValueInfoUnknown;
 
 /**
  * This type of ContractValueInfo is used when we can identify the class.
  *
  * @Category User-defined elementary types
  */
-export interface ContractValueInfoKnown {
+export interface ContractValueInfoKnown<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "known";
   /**
    * formatted as address (leading "0x", checksum-cased);
@@ -245,7 +297,7 @@ export interface ContractValueInfoKnown {
    * this is just a hexstring; no checksum (also may have padding beforehand)
    */
   rawAddress?: string;
-  class: Types.ContractType;
+  class: Types.ContractType<C>;
   //may have more optional members defined later, but I'll leave these out for now
 }
 

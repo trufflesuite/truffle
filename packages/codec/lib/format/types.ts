@@ -17,36 +17,40 @@ const debug = debugModule("codec:format:types");
 import BN from "bn.js";
 import { ContractKind, Location, Mutability } from "@truffle/codec/common";
 
+import * as Config from "./config";
+
 /**
  * Object representing a type
  *
  * @Category General categories
  */
-export type Type =
-  | UintType
-  | IntType
-  | BoolType
-  | BytesType
-  | AddressType
-  | FixedType
-  | UfixedType
-  | StringType
-  | ArrayType
-  | MappingType
-  | FunctionType
-  | StructType
-  | EnumType
-  | ContractType
-  | MagicType
-  | TypeType
-  | TupleType;
+export type Type<C extends Config.FormatConfig = Config.DefaultFormatConfig> =
+  | UintType<C>
+  | IntType<C>
+  | BoolType<C>
+  | BytesType<C>
+  | AddressType<C>
+  | FixedType<C>
+  | UfixedType<C>
+  | StringType<C>
+  | ArrayType<C>
+  | MappingType<C>
+  | FunctionType<C>
+  | StructType<C>
+  | EnumType<C>
+  | ContractType<C>
+  | MagicType<C>
+  | TypeType<C>
+  | TupleType<C>;
 
 /**
  * Type of an unsigned integer
  *
  * @Category Elementary types
  */
-export interface UintType {
+export interface UintType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "uint";
   bits: number;
   typeHint?: string;
@@ -57,7 +61,9 @@ export interface UintType {
  *
  * @Category Elementary types
  */
-export interface IntType {
+export interface IntType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "int";
   bits: number;
   typeHint?: string;
@@ -68,7 +74,9 @@ export interface IntType {
  *
  * @Category Elementary types
  */
-export interface BoolType {
+export interface BoolType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "bool";
   typeHint?: string;
 }
@@ -78,14 +86,18 @@ export interface BoolType {
  *
  * @Category Elementary types
  */
-export type BytesType = BytesTypeStatic | BytesTypeDynamic;
+export type BytesType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = BytesTypeStatic<C> | BytesTypeDynamic<C>;
 
 /**
  * Type of a static-length bytestring
  *
  * @Category Elementary types
  */
-export interface BytesTypeStatic {
+export interface BytesTypeStatic<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "bytes";
   kind: "static";
   length: number;
@@ -97,7 +109,9 @@ export interface BytesTypeStatic {
  *
  * @Category Elementary types
  */
-export interface BytesTypeDynamic {
+export interface BytesTypeDynamic<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "bytes";
   kind: "dynamic";
   location?: Location;
@@ -109,14 +123,18 @@ export interface BytesTypeDynamic {
  *
  * @Category Elementary types
  */
-export type AddressType = AddressTypeSpecific | AddressTypeGeneral;
+export type AddressType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = AddressTypeSpecific<C> | AddressTypeGeneral<C>;
 
 /**
  * Type of an address (with payability specified)
  *
  * @Category Elementary types
  */
-export interface AddressTypeSpecific {
+export interface AddressTypeSpecific<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "address";
   kind: "specific";
   payable: boolean;
@@ -127,7 +145,9 @@ export interface AddressTypeSpecific {
  *
  * @Category Elementary types
  */
-export interface AddressTypeGeneral {
+export interface AddressTypeGeneral<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "address";
   kind: "general";
   typeHint?: string;
@@ -138,7 +158,9 @@ export interface AddressTypeGeneral {
  *
  * @Category Elementary types
  */
-export interface StringType {
+export interface StringType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "string";
   location?: Location;
   typeHint?: string;
@@ -149,7 +171,9 @@ export interface StringType {
  *
  * @Category Elementary types
  */
-export interface FixedType {
+export interface FixedType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "fixed";
   bits: number;
   places: number;
@@ -161,7 +185,9 @@ export interface FixedType {
  *
  * @Category Elementary types
  */
-export interface UfixedType {
+export interface UfixedType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "ufixed";
   bits: number;
   places: number;
@@ -173,20 +199,36 @@ export interface UfixedType {
  *
  * @Category Container types
  */
-export type ArrayType = ArrayTypeStatic | ArrayTypeDynamic;
+export type ArrayType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = ArrayTypeStatic<C> | ArrayTypeDynamic<C>;
 
 /**
  * Type of a static-length array
  *
  * @Category Container types
  */
-export interface ArrayTypeStatic {
+export type ArrayTypeStatic<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = ArrayTypeStaticBaseFields<C> & ArrayTypeStaticLengthField[C["integerType"]];
+
+interface ArrayTypeStaticBaseFields<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "array";
   kind: "static";
-  baseType: Type;
-  length: BN;
+  baseType: Type<C>;
   location?: Location;
   typeHint?: string;
+}
+
+interface ArrayTypeStaticLengthField {
+  BN: {
+    length: BN;
+  };
+  string: {
+    lengthAsString: string;
+  };
 }
 
 /**
@@ -194,10 +236,12 @@ export interface ArrayTypeStatic {
  *
  * @Category Container types
  */
-export interface ArrayTypeDynamic {
+export interface ArrayTypeDynamic<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "array";
   kind: "dynamic";
-  baseType: Type;
+  baseType: Type<C>;
   location?: Location;
   typeHint?: string;
 }
@@ -207,27 +251,31 @@ export interface ArrayTypeDynamic {
  *
  * @Category General categories
  */
-export type ElementaryType =
-  | UintType
-  | IntType
-  | BoolType
-  | BytesType
-  | FixedType
-  | UfixedType
-  | AddressType
-  | StringType
-  | EnumType
-  | ContractType;
+export type ElementaryType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> =
+  | UintType<C>
+  | IntType<C>
+  | BoolType<C>
+  | BytesType<C>
+  | FixedType<C>
+  | UfixedType<C>
+  | AddressType<C>
+  | StringType<C>
+  | EnumType<C>
+  | ContractType<C>;
 
 /**
  * Type of a mapping
  *
  * @Category Container types
  */
-export interface MappingType {
+export interface MappingType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "mapping";
-  keyType: ElementaryType;
-  valueType: Type;
+  keyType: ElementaryType<C>;
+  valueType: Type<C>;
   location?: "storage";
 }
 
@@ -236,19 +284,23 @@ export interface MappingType {
  *
  * @Category Function types
  */
-export type FunctionType = FunctionInternalType | FunctionExternalType;
+export type FunctionType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = FunctionInternalType<C> | FunctionExternalType<C>;
 
 /**
  * Type of an internal function pointer
  *
  * @Category Function types
  */
-export interface FunctionInternalType {
+export interface FunctionInternalType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "function";
   visibility: "internal";
   mutability: Mutability;
-  inputParameterTypes: Type[];
-  outputParameterTypes: Type[];
+  inputParameterTypes: Type<C>[];
+  outputParameterTypes: Type<C>[];
   //we do not presently support bound functions
 }
 
@@ -257,22 +309,24 @@ export interface FunctionInternalType {
  *
  * @Category Function types
  */
-export type FunctionExternalType =
-  | FunctionExternalTypeSpecific
-  | FunctionExternalTypeGeneral;
+export type FunctionExternalType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = FunctionExternalTypeSpecific<C> | FunctionExternalTypeGeneral<C>;
 
 /**
  * Type of an external function pointer (full Solidity type)
  *
  * @Category Function types
  */
-export interface FunctionExternalTypeSpecific {
+export interface FunctionExternalTypeSpecific<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "function";
   visibility: "external";
   kind: "specific";
   mutability: Mutability;
-  inputParameterTypes: Type[];
-  outputParameterTypes: Type[];
+  inputParameterTypes: Type<C>[];
+  outputParameterTypes: Type<C>[];
   //we do not presently support bound functions
 }
 
@@ -281,7 +335,9 @@ export interface FunctionExternalTypeSpecific {
  *
  * @Category Function types
  */
-export interface FunctionExternalTypeGeneral {
+export interface FunctionExternalTypeGeneral<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "function";
   visibility: "external";
   kind: "general";
@@ -294,17 +350,22 @@ export interface FunctionExternalTypeGeneral {
  *
  * @Category General categories
  */
-export type ContractDefinedType = StructTypeLocal | EnumTypeLocal;
+export type ContractDefinedType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = StructTypeLocal<C> | EnumTypeLocal<C>;
+
 /**
  * User-defined types
  *
  * @Category General categories
  */
-export type UserDefinedType =
-  | ContractDefinedType
-  | ContractTypeNative
-  | StructTypeGlobal
-  | EnumTypeGlobal;
+export type UserDefinedType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> =
+  | ContractDefinedType<C>
+  | ContractTypeNative<C>
+  | StructTypeGlobal<C>
+  | EnumTypeGlobal<C>;
 
 /**
  * Type of a struct
@@ -313,11 +374,15 @@ export type UserDefinedType =
  *
  * @Category Container types
  */
-export type StructType = StructTypeLocal | StructTypeGlobal;
+export type StructType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = StructTypeLocal<C> | StructTypeGlobal<C>;
 
-export interface NameTypePair {
+export interface NameTypePair<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   name: string;
-  type: Type;
+  type: Type<C>;
 }
 
 /**
@@ -325,7 +390,9 @@ export interface NameTypePair {
  *
  * @Category Container types
  */
-export interface StructTypeLocal {
+export interface StructTypeLocal<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "struct";
   kind: "local";
   /**
@@ -334,11 +401,11 @@ export interface StructTypeLocal {
   id: string;
   typeName: string;
   definingContractName: string;
-  definingContract?: ContractTypeNative;
+  definingContract?: ContractTypeNative<C>;
   /**
    * these must be in order
    */
-  memberTypes?: NameTypePair[];
+  memberTypes?: NameTypePair<C>[];
   location?: Location;
 }
 
@@ -347,7 +414,9 @@ export interface StructTypeLocal {
  *
  * @Category Container types
  */
-export interface StructTypeGlobal {
+export interface StructTypeGlobal<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "struct";
   kind: "global";
   /**
@@ -358,13 +427,15 @@ export interface StructTypeGlobal {
   /**
    * these must be in order
    */
-  memberTypes?: NameTypePair[];
+  memberTypes?: NameTypePair<C>[];
   location?: Location;
 }
 
-export interface OptionallyNamedType {
+export interface OptionallyNamedType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   name?: string;
-  type: Type;
+  type: Type<C>;
 }
 
 /**
@@ -372,9 +443,11 @@ export interface OptionallyNamedType {
  *
  * @Category Container types
  */
-export interface TupleType {
+export interface TupleType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "tuple";
-  memberTypes: OptionallyNamedType[];
+  memberTypes: OptionallyNamedType<C>[];
   typeHint?: string;
 }
 
@@ -385,14 +458,18 @@ export interface TupleType {
  *
  * @Category User-defined elementary types
  */
-export type EnumType = EnumTypeLocal | EnumTypeGlobal;
+export type EnumType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = EnumTypeLocal<C> | EnumTypeGlobal<C>;
 
 /**
  * Local enum (defined in a contract)
  *
  * @Category User-defined elementary types
  */
-export interface EnumTypeLocal {
+export interface EnumTypeLocal<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "enum";
   kind: "local";
   /**
@@ -401,7 +478,7 @@ export interface EnumTypeLocal {
   id: string;
   typeName: string;
   definingContractName: string;
-  definingContract?: ContractTypeNative;
+  definingContract?: ContractTypeNative<C>;
   /**
    * these must be in order
    */
@@ -413,7 +490,9 @@ export interface EnumTypeLocal {
  *
  * @Category User-defined elementary types
  */
-export interface EnumTypeGlobal {
+export interface EnumTypeGlobal<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "enum";
   kind: "global";
   /**
@@ -435,14 +514,18 @@ export interface EnumTypeGlobal {
  *
  * @Category User-defined elementary types
  */
-export type ContractType = ContractTypeNative | ContractTypeForeign;
+export type ContractType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = ContractTypeNative<C> | ContractTypeForeign<C>;
 
 /**
  * Type of a contract with full Solidity info -- may be used for actual variables
  *
  * @Category User-defined elemntary types
  */
-export interface ContractTypeNative {
+export interface ContractTypeNative<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "contract";
   kind: "native";
   /**
@@ -464,7 +547,9 @@ export interface ContractTypeNative {
  *
  * @Category User-defined elementary types
  */
-export interface ContractTypeForeign {
+export interface ContractTypeForeign<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "contract";
   kind: "foreign";
   typeName: string;
@@ -484,14 +569,16 @@ export type MagicVariableName = "message" | "block" | "transaction";
  *
  * @Category Special container types (debugger-only)
  */
-export interface MagicType {
+export interface MagicType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "magic";
   variable: MagicVariableName;
   //really, I could do this as a tagged union, but I don't see a reason to
   //introduce such complexity here, especially as this type is basically just
   //for the debugger
   memberTypes?: {
-    [field: string]: Type;
+    [field: string]: Type<C>;
   };
   //may have more optional fields defined in the future
 }
@@ -501,14 +588,16 @@ export interface MagicType {
  * may expand in the future.
  * @Category Special container types (debugger-only)
  */
-export interface TypeType {
+export interface TypeType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   typeClass: "type";
-  type: ContractTypeNative;
+  type: ContractTypeNative<C>;
   /**
    * these must be in order, and must only include
    * **non-inherited** state variables
    */
-  stateVariableTypes?: NameTypePair[];
+  stateVariableTypes?: NameTypePair<C>[];
 }
 
 /**
@@ -516,12 +605,17 @@ export interface TypeType {
  *
  * @Category General categories
  */
-export type ReferenceType =
-  | ArrayType
-  | MappingType
-  | StructType
-  | StringType
-  | BytesTypeDynamic;
+export type ReferenceType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> =
+  | ArrayType<C>
+  | MappingType<C>
+  | StructType<C>
+  | StringType<C>
+  | BytesTypeDynamic<C>;
+
+//not bother parameterizing things further, since the following tools are meant
+//for use with "live" types, not serialized ones
 
 export interface TypesById {
   [id: string]: UserDefinedType;

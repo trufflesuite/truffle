@@ -9,8 +9,9 @@ const debug = debugModule("codec:format:errors");
 
 import BN from "bn.js";
 import * as Types from "./types";
+import * as Config from "./config";
+import * as Storage from "./storage";
 import * as Ast from "@truffle/codec/ast/types";
-import * as Storage from "@truffle/codec/storage/types";
 
 /*
  * SECTION 1: Generic types for values in general (including errors).
@@ -21,44 +22,48 @@ import * as Storage from "@truffle/codec/storage/types";
  *
  * @Category General categories
  */
-export type ErrorResult =
-  | ElementaryErrorResult
-  | ArrayErrorResult
-  | MappingErrorResult
-  | StructErrorResult
-  | MagicErrorResult
-  | TypeErrorResult
-  | TupleErrorResult
-  | FunctionExternalErrorResult
-  | FunctionInternalErrorResult;
+export type ErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> =
+  | ElementaryErrorResult<C>
+  | ArrayErrorResult<C>
+  | MappingErrorResult<C>
+  | StructErrorResult<C>
+  | MagicErrorResult<C>
+  | TypeErrorResult<C>
+  | TupleErrorResult<C>
+  | FunctionExternalErrorResult<C>
+  | FunctionInternalErrorResult<C>;
 
 /**
  * One of the underlying errors contained in an [[ErrorResult]]
  *
  * @Category General categories
  */
-export type DecoderError =
-  | GenericError
-  | UintError
-  | IntError
-  | BoolError
-  | BytesStaticError
-  | BytesDynamicError
-  | AddressError
-  | StringError
-  | FixedError
-  | UfixedError
-  | ArrayError
-  | MappingError
-  | StructError
-  | MagicError
-  | TypeErrorUnion
-  | TupleError
-  | EnumError
-  | ContractError
-  | FunctionExternalError
-  | FunctionInternalError
-  | InternalUseError;
+export type DecoderError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> =
+  | GenericError<C>
+  | UintError<C>
+  | IntError<C>
+  | BoolError<C>
+  | BytesStaticError<C>
+  | BytesDynamicError<C>
+  | AddressError<C>
+  | StringError<C>
+  | FixedError<C>
+  | UfixedError<C>
+  | ArrayError<C>
+  | MappingError<C>
+  | StructError<C>
+  | MagicError<C>
+  | TypeErrorUnion<C>
+  | TupleError<C>
+  | EnumError<C>
+  | ContractError<C>
+  | FunctionExternalError<C>
+  | FunctionInternalError<C>
+  | InternalUseError<C>;
 
 /*
  * SECTION 2: Built-in elementary types
@@ -69,34 +74,40 @@ export type DecoderError =
  *
  * @Category Elementary types
  */
-export type ElementaryErrorResult =
-  | UintErrorResult
-  | IntErrorResult
-  | BoolErrorResult
-  | BytesErrorResult
-  | AddressErrorResult
-  | StringErrorResult
-  | FixedErrorResult
-  | UfixedErrorResult
-  | EnumErrorResult
-  | ContractErrorResult;
+export type ElementaryErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> =
+  | UintErrorResult<C>
+  | IntErrorResult<C>
+  | BoolErrorResult<C>
+  | BytesErrorResult<C>
+  | AddressErrorResult<C>
+  | StringErrorResult<C>
+  | FixedErrorResult<C>
+  | UfixedErrorResult<C>
+  | EnumErrorResult<C>
+  | ContractErrorResult<C>;
 
 /**
  * An error result for a bytestring
  *
  * @Category Elementary types
  */
-export type BytesErrorResult = BytesStaticErrorResult | BytesDynamicErrorResult;
+export type BytesErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = BytesStaticErrorResult<C> | BytesDynamicErrorResult<C>;
 
 /**
  * An error result for an unsigned integer
  *
  * @Category Elementary types
  */
-export interface UintErrorResult {
-  type: Types.UintType;
+export interface UintErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.UintType<C>;
   kind: "error";
-  error: GenericError | UintError;
+  error: GenericError<C> | UintError<C>;
 }
 
 /**
@@ -104,14 +115,18 @@ export interface UintErrorResult {
  *
  * @Category Elementary types
  */
-export type UintError = UintPaddingError;
+export type UintError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = UintPaddingError<C>;
 
 /**
  * A padding error for an unsigned integer (note padding is not always checked)
  *
  * @Category Elementary types
  */
-export interface UintPaddingError {
+export interface UintPaddingError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   /**
    * hex string
    */
@@ -124,10 +139,12 @@ export interface UintPaddingError {
  *
  * @Category Elementary types
  */
-export interface IntErrorResult {
-  type: Types.IntType;
+export interface IntErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.IntType<C>;
   kind: "error";
-  error: GenericError | IntError;
+  error: GenericError<C> | IntError<C>;
 }
 
 /**
@@ -135,14 +152,16 @@ export interface IntErrorResult {
  *
  * @Category Elementary types
  */
-export type IntError = IntPaddingError;
+export type IntError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = IntPaddingError<C>;
 
 /**
  * A padding error for a signed integer (note padding is not always checked)
  *
  * @Category Elementary types
  */
-export interface IntPaddingError {
+export interface IntPaddingError<C> {
   /**
    * hex string
    */
@@ -155,10 +174,12 @@ export interface IntPaddingError {
  *
  * @Category Elementary types
  */
-export interface BoolErrorResult {
-  type: Types.BoolType;
+export interface BoolErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.BoolType<C>;
   kind: "error";
-  error: GenericError | BoolError;
+  error: GenericError<C> | BoolError<C>;
 }
 
 /**
@@ -166,16 +187,30 @@ export interface BoolErrorResult {
  *
  * @Category Elementary types
  */
-export type BoolError = BoolOutOfRangeError;
+export type BoolError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = BoolOutOfRangeError<C>;
 
 /**
  * The bool is neither 0 nor 1
  *
  * @Category Elementary types
  */
-export interface BoolOutOfRangeError {
-  rawAsBN: BN;
+export type BoolOutOfRangeError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = BoolOutOfRangeErrorBaseFields & RawIntegerFields[C["integerType"]];
+
+export interface BoolOutOfRangeErrorBaseFields {
   kind: "BoolOutOfRangeError";
+}
+
+interface RawIntegerFields {
+  BN: {
+    rawAsBN: BN;
+  };
+  string: {
+    rawAsString: string;
+  };
 }
 
 /**
@@ -183,10 +218,12 @@ export interface BoolOutOfRangeError {
  *
  * @Category Elementary types
  */
-export interface BytesStaticErrorResult {
-  type: Types.BytesTypeStatic;
+export interface BytesStaticErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.BytesTypeStatic<C>;
   kind: "error";
-  error: GenericError | BytesStaticError;
+  error: GenericError<C> | BytesStaticError<C>;
 }
 
 /**
@@ -194,14 +231,14 @@ export interface BytesStaticErrorResult {
  *
  * @Category Elementary types
  */
-export type BytesStaticError = BytesPaddingError;
+export type BytesStaticError<C> = BytesPaddingError<C>;
 
 /**
  * A padding error for a static-length bytestring (note padding is not always checked)
  *
  * @Category Elementary types
  */
-export interface BytesPaddingError {
+export interface BytesPaddingError<C> {
   /**
    * hex string
    */
@@ -214,10 +251,12 @@ export interface BytesPaddingError {
  *
  * @Category Elementary types
  */
-export interface BytesDynamicErrorResult {
-  type: Types.BytesTypeDynamic;
+export interface BytesDynamicErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.BytesTypeDynamic<C>;
   kind: "error";
-  error: GenericError | BytesDynamicError;
+  error: GenericError<C> | BytesDynamicError<C>;
 }
 
 /**
@@ -225,17 +264,21 @@ export interface BytesDynamicErrorResult {
  *
  * @Category Elementary types
  */
-export type BytesDynamicError = DynamicDataImplementationError;
+export type BytesDynamicError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = DynamicDataImplementationError<C>;
 
 /**
  * An error result for an address
  *
  * @Category Elementary types
  */
-export interface AddressErrorResult {
-  type: Types.AddressType;
+export interface AddressErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.AddressType<C>;
   kind: "error";
-  error: GenericError | AddressError;
+  error: GenericError<C> | AddressError<C>;
 }
 
 /**
@@ -243,14 +286,18 @@ export interface AddressErrorResult {
  *
  * @Category Elementary types
  */
-export type AddressError = AddressPaddingError;
+export type AddressError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = AddressPaddingError<C>;
 
 /**
  * A padding error for an address (note padding is not always checked)
  *
  * @Category Elementary types
  */
-export interface AddressPaddingError {
+export interface AddressPaddingError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   /**
    * hex string; no checksum
    */
@@ -263,10 +310,12 @@ export interface AddressPaddingError {
  *
  * @Category Elementary types
  */
-export interface StringErrorResult {
-  type: Types.StringType;
+export interface StringErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.StringType<C>;
   kind: "error";
-  error: GenericError | StringError;
+  error: GenericError<C> | StringError<C>;
 }
 
 /**
@@ -274,27 +323,33 @@ export interface StringErrorResult {
  *
  * @Category Elementary types
  */
-export type StringError = DynamicDataImplementationError;
+export type StringError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = DynamicDataImplementationError<C>;
 
 /**
  * An error result for a signed fixed-point number
  *
  * @Category Elementary types
  */
-export interface FixedErrorResult {
-  type: Types.FixedType;
+export interface FixedErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.FixedType<C>;
   kind: "error";
-  error: GenericError | FixedError;
+  error: GenericError<C> | FixedError<C>;
 }
 /**
  * An error result for an unsigned fixed-point number
  *
  * @Category Elementary types
  */
-export interface UfixedErrorResult {
-  type: Types.UfixedType;
+export interface UfixedErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.UfixedType<C>;
   kind: "error";
-  error: GenericError | UfixedError;
+  error: GenericError<C> | UfixedError<C>;
 }
 
 /**
@@ -302,14 +357,18 @@ export interface UfixedErrorResult {
  *
  * @Category Elementary types
  */
-export type FixedError = FixedPaddingError;
+export type FixedError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = FixedPaddingError<C>;
 
 /**
  * A padding error for a signed fixed-point number (note padding is not always checked)
  *
  * @Category Elementary types
  */
-export interface FixedPaddingError {
+export interface FixedPaddingError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   /**
    * hex string
    */
@@ -322,14 +381,18 @@ export interface FixedPaddingError {
  *
  * @Category Elementary types
  */
-export type UfixedError = UfixedPaddingError;
+export type UfixedError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = UfixedPaddingError<C>;
 
 /**
  * A padding error for an unsigned fixed-point number (note padding is not always checked)
  *
  * @Category Elementary types
  */
-export interface UfixedPaddingError {
+export interface UfixedPaddingError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   /**
    * hex string
    */
@@ -346,10 +409,12 @@ export interface UfixedPaddingError {
  *
  * @Category User-defined elementary types
  */
-export interface EnumErrorResult {
-  type: Types.EnumType;
+export interface EnumErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.EnumType<C>;
   kind: "error";
-  error: GenericError | EnumError;
+  error: GenericError<C> | EnumError<C>;
 }
 
 /**
@@ -357,17 +422,24 @@ export interface EnumErrorResult {
  *
  * @Category User-defined elementary types
  */
-export type EnumError = EnumOutOfRangeError | EnumNotFoundDecodingError;
+export type EnumError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = EnumOutOfRangeError<C> | EnumNotFoundDecodingError<C>;
 
 /**
  * The enum is out of range
  *
  * @Category User-defined elementary types
  */
-export interface EnumOutOfRangeError {
+export type EnumOutOfRangeError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = EnumOutOfRangeErrorBaseFields<C> & RawIntegerFields[C["integerType"]];
+
+interface EnumOutOfRangeErrorBaseFields<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "EnumOutOfRangeError";
-  type: Types.EnumType;
-  rawAsBN: BN;
+  type: Types.EnumType<C>;
 }
 
 /**
@@ -375,10 +447,15 @@ export interface EnumOutOfRangeError {
  *
  * @Category User-defined elementary types
  */
-export interface EnumNotFoundDecodingError {
+export type EnumNotFoundDecodingError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = EnumNotFoundDecodingErrorBaseFields<C> & RawIntegerFields[C["integerType"]];
+
+interface EnumNotFoundDecodingErrorBaseFields<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "EnumNotFoundDecodingError";
-  type: Types.EnumType;
-  rawAsBN: BN;
+  type: Types.EnumType<C>;
 }
 
 /**
@@ -386,10 +463,12 @@ export interface EnumNotFoundDecodingError {
  *
  * @Category User-defined elementary types
  */
-export interface ContractErrorResult {
-  type: Types.ContractType;
+export interface ContractErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.ContractType<C>;
   kind: "error";
-  error: GenericError | ContractError;
+  error: GenericError<C> | ContractError<C>;
 }
 
 /**
@@ -397,14 +476,18 @@ export interface ContractErrorResult {
  *
  * @Category User-defined elementary types
  */
-export type ContractError = ContractPaddingError;
+export type ContractError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = ContractPaddingError<C>;
 
 /**
  * A padding error for contract (note padding is not always checked)
  *
  * @Category User-defined elementary types
  */
-export interface ContractPaddingError {
+export interface ContractPaddingError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   /**
    * hex string
    */
@@ -421,10 +504,12 @@ export interface ContractPaddingError {
  *
  * @Category Container types
  */
-export interface ArrayErrorResult {
-  type: Types.ArrayType;
+export interface ArrayErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.ArrayType<C>;
   kind: "error";
-  error: GenericError | ArrayError;
+  error: GenericError<C> | ArrayError<C>;
 }
 
 /**
@@ -432,17 +517,21 @@ export interface ArrayErrorResult {
  *
  * @Category Container types
  */
-export type ArrayError = DynamicDataImplementationError;
+export type ArrayError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = DynamicDataImplementationError<C>;
 
 /**
  * An error result for a mapping
  *
  * @Category Container types
  */
-export interface MappingErrorResult {
-  type: Types.MappingType;
+export interface MappingErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.MappingType<C>;
   kind: "error";
-  error: GenericError | MappingError;
+  error: GenericError<C> | MappingError<C>;
 }
 
 /**
@@ -450,17 +539,21 @@ export interface MappingErrorResult {
  *
  * @Category Container types
  */
-export type MappingError = never;
+export type MappingError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = never;
 
 /**
  * An error result for a struct
  *
  * @Category Container types
  */
-export interface StructErrorResult {
-  type: Types.StructType;
+export interface StructErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.StructType<C>;
   kind: "error";
-  error: GenericError | StructError;
+  error: GenericError<C> | StructError<C>;
 }
 
 /**
@@ -468,17 +561,21 @@ export interface StructErrorResult {
  *
  * @Category Container types
  */
-export type StructError = DynamicDataImplementationError;
+export type StructError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = DynamicDataImplementationError<C>;
 
 /**
  * An error result for a tuple
  *
  * @Category Container types
  */
-export interface TupleErrorResult {
-  type: Types.TupleType;
+export interface TupleErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.TupleType<C>;
   kind: "error";
-  error: GenericError | TupleError;
+  error: GenericError<C> | TupleError<C>;
 }
 
 /**
@@ -486,17 +583,21 @@ export interface TupleErrorResult {
  *
  * @Category Container types
  */
-export type TupleError = DynamicDataImplementationError;
+export type TupleError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = DynamicDataImplementationError<C>;
 
 /**
  * An error result for a magic variable
  *
  * @Category Special container types (debugger-only)
  */
-export interface MagicErrorResult {
-  type: Types.MagicType;
+export interface MagicErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.MagicType<C>;
   kind: "error";
-  error: GenericError | MagicError;
+  error: GenericError<C> | MagicError<C>;
 }
 
 /**
@@ -504,17 +605,21 @@ export interface MagicErrorResult {
  *
  * @Category Special container types (debugger-only)
  */
-export type MagicError = never;
+export type MagicError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = never;
 
 /**
  * An error result for a type
  *
  * @Category Special container types (debugger-only)
  */
-export interface TypeErrorResult {
-  type: Types.TypeType;
+export interface TypeErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.TypeType<C>;
   kind: "error";
-  error: GenericError | TypeErrorUnion;
+  error: GenericError<C> | TypeErrorUnion<C>;
 }
 
 /**
@@ -523,7 +628,9 @@ export interface TypeErrorResult {
  *
  * @Category Special container types (debugger-only)
  */
-export type TypeErrorUnion = never;
+export type TypeErrorUnion<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = never;
 
 /*
  * SECTION 5: External functions
@@ -534,10 +641,12 @@ export type TypeErrorUnion = never;
  *
  * @Category Function types
  */
-export interface FunctionExternalErrorResult {
-  type: Types.FunctionExternalType;
+export interface FunctionExternalErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.FunctionExternalType<C>;
   kind: "error";
-  error: GenericError | FunctionExternalError;
+  error: GenericError<C> | FunctionExternalError<C>;
 }
 
 /**
@@ -545,16 +654,20 @@ export interface FunctionExternalErrorResult {
  *
  * @Category Function types
  */
-export type FunctionExternalError =
-  | FunctionExternalNonStackPaddingError
-  | FunctionExternalStackPaddingError;
+export type FunctionExternalError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> =
+  | FunctionExternalNonStackPaddingError<C>
+  | FunctionExternalStackPaddingError<C>;
 
 /**
  * This error kind represents a padding error for an external function pointer located anywhere other than the stack.
  *
  * @Category Function types
  */
-export interface FunctionExternalNonStackPaddingError {
+export interface FunctionExternalNonStackPaddingError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   /**
    * hex string
    */
@@ -567,7 +680,9 @@ export interface FunctionExternalNonStackPaddingError {
  *
  * @Category Function types
  */
-export interface FunctionExternalStackPaddingError {
+export interface FunctionExternalStackPaddingError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   /**
    * hex string (no checksum; also a full word long)
    */
@@ -588,10 +703,12 @@ export interface FunctionExternalStackPaddingError {
  *
  * @Category Function types
  */
-export interface FunctionInternalErrorResult {
-  type: Types.FunctionInternalType;
+export interface FunctionInternalErrorResult<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  type: Types.FunctionInternalType<C>;
   kind: "error";
-  error: GenericError | FunctionInternalError;
+  error: GenericError<C> | FunctionInternalError<C>;
 }
 
 /**
@@ -599,18 +716,22 @@ export interface FunctionInternalErrorResult {
  *
  * @Category Function types
  */
-export type FunctionInternalError =
-  | FunctionInternalPaddingError
-  | NoSuchInternalFunctionError
-  | DeployedFunctionInConstructorError
-  | MalformedInternalFunctionError;
+export type FunctionInternalError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> =
+  | FunctionInternalPaddingError<C>
+  | NoSuchInternalFunctionError<C>
+  | DeployedFunctionInConstructorError<C>
+  | MalformedInternalFunctionError<C>;
 
 /**
  * A padding error for an internal function
  *
  * @Category Function types
  */
-export interface FunctionInternalPaddingError {
+export interface FunctionInternalPaddingError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   /**
    * hex string
    */
@@ -625,9 +746,11 @@ export interface FunctionInternalPaddingError {
  *
  * @Category Function types
  */
-export interface NoSuchInternalFunctionError {
+export interface NoSuchInternalFunctionError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "NoSuchInternalFunctionError";
-  context: Types.ContractType;
+  context: Types.ContractType<C>;
   deployedProgramCounter: number;
   constructorProgramCounter: number;
 }
@@ -638,9 +761,11 @@ export interface NoSuchInternalFunctionError {
  *
  * @Category Function types
  */
-export interface DeployedFunctionInConstructorError {
+export interface DeployedFunctionInConstructorError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "DeployedFunctionInConstructorError";
-  context: Types.ContractType;
+  context: Types.ContractType<C>;
   deployedProgramCounter: number;
   constructorProgramCounter: number;
 }
@@ -651,9 +776,11 @@ export interface DeployedFunctionInConstructorError {
  *
  * @Category Function types
  */
-export interface MalformedInternalFunctionError {
+export interface MalformedInternalFunctionError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "MalformedInternalFunctionError";
-  context: Types.ContractType;
+  context: Types.ContractType<C>;
   deployedProgramCounter: number;
   constructorProgramCounter: number;
 }
@@ -667,28 +794,34 @@ export interface MalformedInternalFunctionError {
  *
  * @Category Generic errors
  */
-export type GenericError =
-  | UserDefinedTypeNotFoundError
-  | IndexedReferenceTypeError
-  | ReadError;
+export type GenericError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> =
+  | UserDefinedTypeNotFoundError<C>
+  | IndexedReferenceTypeError<C>
+  | ReadError<C>;
 /**
  * A read error
  *
  * @Category Generic errors
  */
-export type ReadError =
-  | UnsupportedConstantError
-  | ReadErrorStack
-  | ReadErrorBytes
-  | ReadErrorStorage;
+export type ReadError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> =
+  | UnsupportedConstantError<C>
+  | ReadErrorStack<C>
+  | ReadErrorBytes<C>
+  | ReadErrorStorage<C>;
 /**
  * An error resulting from overlarge length or pointer values
  *
  * @Category Generic errors
  */
-export type DynamicDataImplementationError =
-  | OverlongArraysAndStringsNotImplementedError
-  | OverlargePointersNotImplementedError;
+export type DynamicDataImplementationError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> =
+  | OverlongArraysAndStringsNotImplementedError<C>
+  | OverlargePointersNotImplementedError<C>;
 
 /**
  * An error that may occur in a component other than the main
@@ -696,7 +829,9 @@ export type DynamicDataImplementationError =
  *
  * @Category Generic errors
  */
-export type ErrorForThrowing = UserDefinedTypeNotFoundError | ReadError;
+export type ErrorForThrowing<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = UserDefinedTypeNotFoundError<C> | ReadError<C>;
 
 /**
  * Used when decoding an indexed parameter of reference (or tuple) type.  These
@@ -704,9 +839,11 @@ export type ErrorForThrowing = UserDefinedTypeNotFoundError | ReadError;
  *
  * @Category Generic errors
  */
-export interface IndexedReferenceTypeError {
+export interface IndexedReferenceTypeError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "IndexedReferenceTypeError";
-  type: Types.ReferenceType | Types.TupleType;
+  type: Types.ReferenceType<C> | Types.TupleType<C>;
   /**
    * hex string
    */
@@ -718,9 +855,11 @@ export interface IndexedReferenceTypeError {
  *
  * @Category Generic errors
  */
-export interface UserDefinedTypeNotFoundError {
+export interface UserDefinedTypeNotFoundError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "UserDefinedTypeNotFoundError";
-  type: Types.UserDefinedType;
+  type: Types.UserDefinedType<C>;
 }
 
 /**
@@ -728,7 +867,9 @@ export interface UserDefinedTypeNotFoundError {
  *
  * @Category Generic errors
  */
-export interface UnsupportedConstantError {
+export interface UnsupportedConstantError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "UnsupportedConstantError";
   definition: Ast.AstNode;
 }
@@ -738,7 +879,9 @@ export interface UnsupportedConstantError {
  *
  * @Category Generic errors
  */
-export interface ReadErrorStack {
+export interface ReadErrorStack<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "ReadErrorStack";
   from: number;
   to: number;
@@ -754,7 +897,9 @@ export type BytesLocation = "memory" | "calldata" | "eventdata" | "returndata";
  *
  * @Category Generic errors
  */
-export interface ReadErrorBytes {
+export interface ReadErrorBytes<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "ReadErrorBytes";
   location: BytesLocation;
   start: number;
@@ -766,9 +911,11 @@ export interface ReadErrorBytes {
  *
  * @Category Generic errors
  */
-export interface ReadErrorStorage {
+export interface ReadErrorStorage<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "ReadErrorStorage";
-  range: Storage.Range;
+  range: Storage.Range<C>;
 }
 
 /**
@@ -776,10 +923,23 @@ export interface ReadErrorStorage {
  *
  * @Category Generic errors
  */
-export interface OverlongArraysAndStringsNotImplementedError {
+export type OverlongArraysAndStringsNotImplementedError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = OverlongArraysAndStringsNotImplementedErrorBaseFields &
+  LengthIntegerFields[C["integerType"]];
+
+interface OverlongArraysAndStringsNotImplementedErrorBaseFields {
   kind: "OverlongArraysAndStringsNotImplementedError";
-  lengthAsBN: BN;
   dataLength?: number; //only included when the special strict mode check fails
+}
+
+interface LengthIntegerFields {
+  BN: {
+    lengthAsBN: BN;
+  };
+  string: {
+    lengthAsString: string;
+  };
 }
 
 /**
@@ -787,9 +947,23 @@ export interface OverlongArraysAndStringsNotImplementedError {
  *
  * @Category Generic errors
  */
-export interface OverlargePointersNotImplementedError {
+export type OverlargePointersNotImplementedError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = OverlargePointersNotImplementedErrorBaseFields &
+  PointerIntegerFields[C["integerType"]];
+
+interface OverlargePointersNotImplementedErrorBaseFields {
   kind: "OverlargePointersNotImplementedError";
   pointerAsBN: BN;
+}
+
+interface PointerIntegerFields {
+  BN: {
+    pointerAsBN: BN;
+  };
+  string: {
+    pointerAsString: string;
+  };
 }
 
 /* SECTION 8: Internal use errors */
@@ -801,18 +975,24 @@ export interface OverlargePointersNotImplementedError {
  *
  * @Category Internal-use errors
  */
-export type InternalUseError =
-  | OverlongArrayOrStringStrictModeError
-  | InternalFunctionInABIError;
+export type InternalUseError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = OverlongArrayOrStringStrictModeError<C> | InternalFunctionInABIError<C>;
 
 /**
  * Error for the stricter length check in strict mode
  *
  * @Category Internal-use errors
  */
-export interface OverlongArrayOrStringStrictModeError {
+export type OverlongArrayOrStringStrictModeError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = OverlongArrayOrStringStrictModeErrorBaseFields &
+  LengthIntegerFields[C["integerType"]];
+
+interface OverlongArrayOrStringStrictModeErrorBaseFields<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "OverlongArrayOrStringStrictModeError";
-  lengthAsBN: BN;
   dataLength: number;
 }
 
@@ -821,6 +1001,8 @@ export interface OverlongArrayOrStringStrictModeError {
  *
  * @Category Internal-use errors
  */
-export interface InternalFunctionInABIError {
+export interface InternalFunctionInABIError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
   kind: "InternalFunctionInABIError";
 }
