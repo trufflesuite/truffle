@@ -33,7 +33,8 @@ function getSourceRange(instruction = {}) {
 function contextRequiresPhantomStackframes(context) {
   debug("context: %O", context);
   return (
-    context.compiler &&
+    context.compiler !== undefined && //(do NOT just put context.compiler here,
+    //we need this to be a boolean, not undefined, because it gets put in the state)
     semver.satisfies(context.compiler.version, ">=0.5.1", {
       includePrerelease: true
     })
