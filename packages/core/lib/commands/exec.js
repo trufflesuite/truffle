@@ -35,7 +35,7 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: async function(options) {
     const Config = require("@truffle/config");
     const Contracts = require("@truffle/workflow-compile");
     const ConfigurationError = require("../errors/configurationerror");
@@ -53,49 +53,30 @@ const command = {
     }
 
     if (file == null) {
-      done(
-        new ConfigurationError(
-          "Please specify a file, passing the path of the script you'd like the run. Note that all scripts *must* call process.exit() when finished."
-        )
-      );
-      return;
+      const message =
+        "Please specify a file, passing the path of the script " +
+        "you'd like the run. Note that all scripts *must* call " +
+        "process.exit() when finished.";
+      throw new ConfigurationError(message);
     }
 
     if (path.isAbsolute(file) === false) {
       file = path.join(process.cwd(), file);
     }
 
-    Environment.detect(config)
-      .then(() => {
-        if (config.networkHint !== false) {
-          config.logger.log("Using network '" + config.network + "'." + OS.EOL);
-        }
+    await Environment.detect(config);
+    if (config.networkHint !== false) {
+      config.logger.log("Using network '" + config.network + "'." + OS.EOL);
+    }
 
-        // `--compile`
-        if (options.c || options.compile) {
-          return Contracts.compile(config, function(err) {
-            if (err) return done(err);
+    // `--compile`
+    if (options.c || options.compile) {
+      await Contracts.compile(config);
+      return Require.exec(config.with({ file }));
+    }
 
-            Require.exec(
-              config.with({
-                file: file
-              }),
-              done
-            );
-          });
-        }
-
-        // Just exec
-        Require.exec(
-          config.with({
-            file: file
-          }),
-          done
-        );
-      })
-      .catch(error => {
-        done(error);
-      });
+    // Just exec
+    return Require.exec(config.with({ file }));
   }
 };
 

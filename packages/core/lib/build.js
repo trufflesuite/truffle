@@ -6,6 +6,7 @@ const { spawn } = require("child_process");
 const spawnargs = require("spawn-args");
 const _ = require("lodash");
 const expect = require("@truffle/expect");
+const { promisify } = require("util");
 
 function CommandBuilder(command) {
   this.command = command;
@@ -47,17 +48,16 @@ CommandBuilder.prototype.build = function(options) {
 };
 
 const Build = {
-  clean: function(options, callback) {
+  clean: async function(options) {
     const destination = options.build_directory;
     const contracts_build_directory = options.contracts_build_directory;
 
     // Clean first.
-    del([destination + "/*", "!" + contracts_build_directory]).then(() => {
-      mkdirp(destination, callback);
-    });
+    await del([destination + "/*", "!" + contracts_build_directory]);
+    return promisify(mkdirp)(destination);
   },
 
-  build: function(options, callback) {
+  build: async function(options) {
     expect.options(options, [
       "build_directory",
       "working_directory",
@@ -79,11 +79,11 @@ const Build = {
       builder = new CommandBuilder(builder);
     } else if (typeof builder !== "function") {
       if (builder.build == null) {
-        return callback(
-          new BuildError(
-            "Build configuration can no longer be specified as an object. Please see our documentation for an updated list of supported build configurations."
-          )
-        );
+        const message =
+          "Build configuration can no longer be specified as " +
+          "an object. Please see our documentation for an updated list of " +
+          "supported build configurations.";
+        throw new BuildError(message);
       }
     } else {
       // If they've only provided a build function, use that.
@@ -98,26 +98,19 @@ const Build = {
       clean = builder.clean;
     }
 
-    clean(options, function(err) {
-      if (err) return callback(err);
-
+    try {
+      await clean(options);
       // If necessary. This prevents errors due to the .sol.js files not existing.
-      Contracts.compile(options)
-        .then(() => {
-          if (builder) {
-            return builder.build(options);
-          }
-        })
-        .then(() => {
-          return callback();
-        })
-        .catch(error => {
-          if (typeof error === "string") {
-            return callback(new BuildError(err));
-          }
-          return callback(error);
-        });
-    });
+      await Contracts.compile(options);
+      if (builder) {
+        return builder.build(options);
+      }
+    } catch (error) {
+      if (typeof error === "string") {
+        throw new BuildError(error);
+      }
+      throw error;
+    }
   }
 };
 

@@ -54,18 +54,17 @@ const command = {
   }
 };
 
-const build = config => {
+const build = async config => {
   const Build = require("../build");
 
   config.logger.log("Rebuilding...");
 
-  Build.build(config, function(error) {
-    printSummary(config, error);
-  });
-};
-
-const printSummary = (config, error) => {
-  if (error) {
+  try {
+    await Build.build(config);
+    config.logger.log(
+      colors.green("Completed without errors on " + new Date().toString())
+    );
+  } catch (error) {
     const TruffleError = require("@truffle/error");
     if (error instanceof TruffleError) {
       console.log(error.message);
@@ -73,10 +72,6 @@ const printSummary = (config, error) => {
       // Bubble up all other unexpected errors.
       console.log(error.stack || error.toString());
     }
-  } else {
-    config.logger.log(
-      colors.green("Completed without errors on " + new Date().toString())
-    );
   }
 };
 

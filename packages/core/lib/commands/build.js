@@ -6,12 +6,12 @@ const command = {
     usage: "truffle build",
     options: []
   },
-  run: function(options, done) {
+  run: async function(options) {
     const Config = require("@truffle/config");
     const Build = require("../build");
     const config = Config.detect(options);
 
-    Build.build(config, done);
+    return Build.build(config);
   }
 };
 
