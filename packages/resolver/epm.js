@@ -1,9 +1,13 @@
 var path = require("path");
 var fs = require("fs");
+var glob = require("glob");
 
 function EPM(working_directory, contracts_build_directory) {
   this.working_directory = working_directory;
   this.contracts_build_directory = contracts_build_directory;
+  this.allEthpmFiles = glob.sync("**/*", {
+    cwd: path.join(this.working_directory, "_ethpm_packages")
+  });
 }
 
 EPM.prototype.require = function(import_path, _search_path) {
@@ -70,19 +74,12 @@ EPM.prototype.require = function(import_path, _search_path) {
   var internal_path = import_path.substring(separator + 1);
   var installDir = this.working_directory;
 
-  // can find build_deps one level deep
-  let parent_separator;
-  let parent_name;
-
-  if (imported_from !== null) {
-    parent_separator = imported_from.indexOf("/");
-    parent_name = imported_from.substring(0, parent_separator);
-  }
-
   // If nothing's found, body returns `undefined`
   var body;
+  var matches = this.allEthpmFiles.filter(p => p.includes(import_path));
 
   while (true) {
+    // check for root level ethpm sources
     var file_path = path.join(
       installDir,
       "_ethpm_packages",
@@ -96,20 +93,17 @@ EPM.prototype.require = function(import_path, _search_path) {
       break;
     } catch (err) {}
 
-    if (parent_name !== undefined) {
-      file_path = path.join(
-        installDir,
-        "_ethpm_packages",
-        parent_name,
-        "_ethpm_packages",
-        package_name,
-        "_src",
-        import_path
-      );
-      try {
-        body = fs.readFileSync(file_path, { encoding: "utf8" });
-        break;
-      } catch (err) {}
+    // DOES NOT SUPPORT DUPLICATE IMPORT PATHS W/IN AGGREGATED PKGS
+    if (matches.length > 0) {
+      if (matches.length === 1) {
+        try {
+          body = fs.readFileSync(
+            path.join(installDir, "_ethpm_packages", matches[0]),
+            { encoding: "utf8" }
+          );
+          break;
+        } catch (err) {}
+      }
     }
 
     // Recurse outwards until impossible

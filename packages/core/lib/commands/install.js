@@ -3,10 +3,10 @@ const command = {
   description: "Install a package from the Ethereum Package Registry",
   builder: {},
   help: {
-    usage: "truffle install <ethpm_uri>",
+    usage: "truffle install <ethpmUri>",
     options: [
       {
-        option: "package_name",
+        option: "ethpmUri",
         description: "ethPM URI for the target package to install. (required)"
       }
     ]

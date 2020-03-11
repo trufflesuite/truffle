@@ -15,7 +15,6 @@ const Migrate = require("@truffle/migrate");
 
 const INSTALL_PROVIDER_URI =
   "https://mainnet.infura.io/v3/7707850c2fb7465ebe6f150d67182e22";
-//const INFURA_KEY = "b2679bb624354d1b9a2586154651b51f";
 const INFURA_KEY = "7707850c2fb7465ebe6f150d67182e22";
 
 describe("EthPM install", function() {

@@ -10,7 +10,7 @@ const { isAddress } = require("web3-utils");
 const path = require("path");
 const fs = require("fs");
 const ENSJS = require("ethereum-ens");
-const TruffleContractSchema = require("@truffle/contract-schema");
+//const TruffleContractSchema = require("@truffle/contract-schema");
 
 SUPPORTED_CHAIN_IDS = {
   1: "mainnet",
@@ -34,6 +34,7 @@ const Package = {
       expect.options(options, [
         "ethpm", // default ethpm settings
         "ethpmUri", // target uri to install
+        "ens",
         "logger",
         "working_directory",
         "contracts_build_directory"
@@ -91,7 +92,7 @@ const Package = {
         );
       }
       try {
-        const ensjs = new ENSJS(provider, options.ens.registry.address);
+        const ensjs = new ENSJS(provider, options.ens.registryAddress);
         ethpmUri.address = await ensjs.resolver(ethpmUri.address).addr();
       } catch (err) {
         done(new TruffleError(`Unable to resolve uri: ${err.message}`));
@@ -177,7 +178,6 @@ const Package = {
         ] = value;
       });
     }
-
     for (let contractType in ethpmPackage.contractTypes) {
       const contractData = ethpmPackage.contractTypes[contractType];
       const contractDeployments = {};
@@ -193,42 +193,18 @@ const Package = {
           }
         }
       }
-      // WORKS BUT HAS INCORRECT PROVIDER?
-      const validContractSchema = {
-        ...(contractData.abi && { abi: contractData.abi }),
-        ...(contractData.contractName && {
-          contractName: contractData.contractName
-        }),
-        ...(contractData.compiler && {
-          compiler: {
-            ...(contractData.compiler.name && {
-              name: contractData.compiler.name
-            }),
-            ...(contractData.compiler.version && {
-              version: contractData.compiler.version
-            })
-          }
-        }),
-        // idt these support linkrefs
-        ...(contractData.runtimeBytecode &&
-          contractData.runtimeBytecode.bytecode && {
-            deployedBytecode: contractData.runtimeBytecode.bytecode
-          }),
-        ...(contractData.deploymentBytecode &&
-          contractData.deploymentBytecode.bytecode && {
-            bytecode: contractData.deploymentBytecode.bytecode
-          }),
-        ...(contractDeployments && { networks: contractDeployments })
-        // source: sources?
-        // contract-schema doesn't define devdoc/userdoc but artifacts have it - can we include?
-      };
+      const contractSchema = convertContractTypeToContractSchema(
+        contractData,
+        contractDeployments
+      );
+
       // seems like abi validation is too strict / outdated?
-      try {
-        await TruffleContractSchema.validate(validContractSchema);
-      } catch (err) {
-        done(new TruffleError(`ethPM package import error: ${err.message}`));
-      }
-      await artifactor.save(validContractSchema);
+      //try {
+      //await TruffleContractSchema.validate(contractSchema);
+      //} catch (err) {
+      //done(new TruffleError(`ethPM package import error: ${err.message}`));
+      //}
+      await artifactor.save(contractSchema);
     }
     options.logger.log("Saved artifacts.");
     done();
@@ -249,23 +225,22 @@ const Package = {
         "ipfsHost",
         "ipfsPort",
         "ipfsProtocol",
-        "registry",
+        "registryUri",
         "infuraKey"
       ]);
     } catch (err) {
       done(new TruffleError(err.message));
     }
 
-    const registryURI = new EthpmURI(options.ethpm.registry);
-    const registryProviderURI = getInfuraEndpointForChainId(
-      registryURI.chainId,
+    const registryUri = new EthpmURI(options.ethpm.registryUri);
+    const registryProviderUri = getInfuraEndpointForChainId(
+      registryUri.chainId,
       options.ethpm.infuraKey
     );
-    registryProvider = new Web3.providers.HttpProvider(registryProviderURI, {
+    registryProvider = new Web3.providers.HttpProvider(registryProviderUri, {
       keepAlive: true
     });
 
-    options.logger.log("Gathering contracts..."); // incorrect place
     let ethpm;
     try {
       ethpm = await EthPM.configure({
@@ -273,8 +248,8 @@ const Package = {
         storage: "ethpm/storage/ipfs",
         registries: "ethpm/registries/web3"
       }).connect({
-        provider: registryProvider, // bad hardcoded provider
-        registryAddress: registryURI.address,
+        provider: registryProvider,
+        registryAddress: registryUri.address,
         ipfs: {
           host: options.ethpm.ipfsHost,
           port: options.ethpm.ipfsPort,
@@ -332,70 +307,46 @@ const Package = {
     const targetConfig = Object.assign(ethpmFields, ethpmConfig);
     const pkg = await ethpm.manifests.read(JSON.stringify(targetConfig));
     const manifest = await ethpm.manifests.write(pkg);
-    const manifestURI = await ethpm.storage.write(manifest);
+    const manifestUri = await ethpm.storage.write(manifest);
 
-    options.logger.log(`Publishing package to ${options.ethpm.registry}`);
+    options.logger.log(`Publishing package to registry...`);
     try {
       const w3 = new Web3(options.provider);
-      const encoded = ethpm.registries.registry.methods
+      const encodedTxData = ethpm.registries.registry.methods
         .release(
           ethpmConfig.package_name,
           ethpmConfig.version,
-          manifestURI.href
+          manifestUri.href
         )
         .encodeABI();
       const tx = await w3.eth.signTransaction({
         from: options.provider.addresses[0],
-        to: registryURI.address,
+        to: registryUri.address,
         gas: 4712388,
         gasPrice: 100000000000,
-        data: encoded
+        data: encodedTxData
       });
       await w3.eth.sendSignedTransaction(tx.raw);
     } catch (err) {
-      done(new TruffleError(`Error publishing package: ${err}`));
+      done(
+        new TruffleError(
+          `Error publishing package: ${err}.\nDoes ${
+            ethpmConfig.package_name
+          }@${ethpmConfig.version} already exist on registry: ${
+            registryUri.raw
+          }?`
+        )
+      );
     }
     done(
       options.logger.log(
         `Published ${ethpmConfig.package_name}@${ethpmConfig.version} to ${
-          options.ethpm.registry
-        }` // add link to explorer?
+          registryUri.raw
+        }`
       )
     );
-    //return JSON.parse(manifest); // remove this
   }
 };
-
-function validateSupportedChainId(chainId) {
-  if (!(chainId in SUPPORTED_CHAIN_IDS)) {
-    throw new TruffleError(
-      `Detected chain ID: ${chainId} is not a supported chain id. Supported values include ${Object.keys(
-        SUPPORTED_CHAIN_IDS
-      )}`
-    );
-  }
-}
-
-function getInfuraEndpointForChainId(chainId, infuraKey) {
-  validateSupportedChainId(chainId);
-  return `https://${SUPPORTED_CHAIN_IDS[chainId]}.infura.io/v3/${infuraKey}`;
-}
-
-async function convertNetworkIdToBlockchainUri(networkId, infuraKey) {
-  // mock value for ganache dev chains
-  if (networkId > 100) {
-    return "blockchain://329ff0a289d0ffba148c495b9cffd078d2f5a272538616b1b412c75f268134a4/block/46ef23590d0c99840621ac95b503ed569f79c65be452acd50478bfe721205ce1";
-  }
-  validateSupportedChainId(networkId); // chain id vs network id
-  const infuraUri = getInfuraEndpointForChainId(networkId, infuraKey);
-  const w3 = new Web3(new Web3.providers.HttpProvider(infuraUri));
-  const genesisBlock = await w3.eth.getBlock(0);
-  const latestBlock = await w3.eth.getBlock("latest");
-  return `blockchain://${genesisBlock.hash.replace(
-    "0x",
-    ""
-  )}/block/${latestBlock.hash.replace("0x", "")}`;
-}
 
 // Returns a list of publishable artifacts
 // aka contract_types and deployments found in all artifacts
@@ -466,23 +417,23 @@ async function getPublishableArtifacts(options, ethpm) {
   };
 }
 
-// handles sources installed via ethpm
-async function resolveSources(sourcePaths, contractsDirectory, ethpm) {
-  const sources = {};
-  // TODO! how do we include installed pkgs in the publishing process?
-  // just add as build dependencies? probably
-  // flatten and include in pkg? probably not
-  for (let sourcePath of Object.keys(sourcePaths)) {
-    if (sourcePath !== "undefined") {
-      const ipfsHash = await ethpm.storage.write(sourcePaths[sourcePath]);
-      // resolve all sources (including ethpm) to absolute contracts dir
-      const absolute = path.resolve(contractsDirectory, sourcePath);
-      // resolve all sources to relative path
-      const resolved = path.relative(contractsDirectory, absolute);
-      sources[`./${resolved}`] = ipfsHash.href;
-    }
+//
+// Utils
+//
+
+function validateSupportedChainId(chainId) {
+  if (!(chainId in SUPPORTED_CHAIN_IDS)) {
+    throw new TruffleError(
+      `Detected chain ID: ${chainId} is not a supported chain id. Supported values include ${Object.keys(
+        SUPPORTED_CHAIN_IDS
+      )}`
+    );
   }
-  return sources;
+}
+
+function getInfuraEndpointForChainId(chainId, infuraKey) {
+  validateSupportedChainId(chainId);
+  return `https://${SUPPORTED_CHAIN_IDS[chainId]}.infura.io/v3/${infuraKey}`;
 }
 
 function fetchInstalledBuildDependencies(workingDirectory) {
@@ -502,6 +453,68 @@ function fetchInstalledBuildDependencies(workingDirectory) {
     installedBuildDependencies[key] = ethpmLock[key].resolved_uri;
   });
   return installedBuildDependencies;
+}
+
+function convertContractTypeToContractSchema(
+  contractData,
+  contractDeployments
+) {
+  return {
+    ...(contractData.abi && { abi: contractData.abi }),
+    ...(contractData.contractName && {
+      contractName: contractData.contractName
+    }),
+    ...(contractData.compiler && {
+      compiler: {
+        ...(contractData.compiler.name && {
+          name: contractData.compiler.name
+        }),
+        ...(contractData.compiler.version && {
+          version: contractData.compiler.version
+        })
+      }
+    }),
+    // idt these support linkrefs
+    ...(contractData.runtimeBytecode &&
+      contractData.runtimeBytecode.bytecode && {
+        deployedBytecode: contractData.runtimeBytecode.bytecode
+      }),
+    ...(contractData.deploymentBytecode &&
+      contractData.deploymentBytecode.bytecode && {
+        bytecode: contractData.deploymentBytecode.bytecode
+      }),
+    ...(contractDeployments && { networks: contractDeployments })
+    // source: sources?
+    // contract-schema doesn't define devdoc/userdoc but artifacts have it - can we include?
+  };
+}
+
+async function convertNetworkIdToBlockchainUri(networkId, infuraKey) {
+  validateSupportedChainId(networkId);
+  const infuraUri = getInfuraEndpointForChainId(networkId, infuraKey);
+  const w3 = new Web3(new Web3.providers.HttpProvider(infuraUri));
+  const genesisBlock = await w3.eth.getBlock(0);
+  const latestBlock = await w3.eth.getBlock("latest");
+  return `blockchain://${genesisBlock.hash.replace(
+    "0x",
+    ""
+  )}/block/${latestBlock.hash.replace("0x", "")}`;
+}
+
+// handles sources installed via ethpm
+async function resolveSources(sourcePaths, contractsDirectory, ethpm) {
+  const sources = {};
+  for (let sourcePath of Object.keys(sourcePaths)) {
+    if (sourcePath !== "undefined") {
+      const ipfsHash = await ethpm.storage.write(sourcePaths[sourcePath]);
+      // resolve all sources (including ethpm) to absolute contracts dir
+      const absolute = path.resolve(contractsDirectory, sourcePath);
+      // resolve all sources to relative path
+      const resolved = path.relative(contractsDirectory, absolute);
+      sources[`./${resolved}`] = ipfsHash.href;
+    }
+  }
+  return sources;
 }
 
 module.exports = Package;
