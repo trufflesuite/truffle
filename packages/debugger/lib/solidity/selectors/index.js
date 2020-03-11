@@ -33,7 +33,8 @@ function getSourceRange(instruction = {}) {
 function contextRequiresPhantomStackframes(context) {
   debug("context: %O", context);
   return (
-    context.compiler &&
+    context.compiler !== undefined && //(do NOT just put context.compiler here,
+    //we need this to be a boolean, not undefined, because it gets put in the state)
     semver.satisfies(context.compiler.version, ">=0.5.1", {
       includePrerelease: true
     })
@@ -142,7 +143,7 @@ let solidity = createSelectorTree({
     sources: createLeaf(
       ["/info/sources", evm.current.context],
       (sources, context) =>
-        context ? sources[context.compilationId].byId : null
+        context ? (sources[context.compilationId] || { byId: null }).byId : null
     ),
 
     /**
@@ -196,7 +197,7 @@ let solidity = createSelectorTree({
       ["./sources", evm.current.context, "./humanReadableSourceMap"],
 
       (sources, context, sourceMap) => {
-        if (!context) {
+        if (!context || !sources) {
           return [];
         }
         let binary = context.binary;
@@ -350,6 +351,9 @@ let solidity = createSelectorTree({
     functionsByProgramCounter: createLeaf(
       ["./instructions", "./sources"],
       (instructions, sources) =>
+        //note: we can skip an explicit null check on sources here because
+        //if sources is null then instructions = [] so the problematic code
+        //will never run
         Object.assign(
           {},
           ...instructions
