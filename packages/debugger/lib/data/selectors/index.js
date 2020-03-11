@@ -662,18 +662,18 @@ const data = createSelectorTree({
         (allocations, compilationId) =>
           Object.assign(
             {},
-            ...Object.entries(allocations[compilationId]).map(
-              ([id, allocation]) => ({
-                [id]: {
-                  members: Object.assign(
-                    {},
-                    ...allocation.members.map(memberAllocation => ({
-                      [memberAllocation.definition.id]: memberAllocation
-                    }))
-                  )
-                }
-              })
-            )
+            ...Object.entries(
+              compilationId ? allocations[compilationId] : {}
+            ).map(([id, allocation]) => ({
+              [id]: {
+                members: Object.assign(
+                  {},
+                  ...allocation.members.map(memberAllocation => ({
+                    [memberAllocation.definition.id]: memberAllocation
+                  }))
+                )
+              }
+            }))
           )
       )
     },

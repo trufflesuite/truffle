@@ -143,7 +143,7 @@ let solidity = createSelectorTree({
     sources: createLeaf(
       ["/info/sources", evm.current.context],
       (sources, context) =>
-        context ? sources[context.compilationId].byId : null
+        context ? (sources[context.compilationId] || { byId: null }).byId : null
     ),
 
     /**
@@ -197,7 +197,7 @@ let solidity = createSelectorTree({
       ["./sources", evm.current.context, "./humanReadableSourceMap"],
 
       (sources, context, sourceMap) => {
-        if (!context) {
+        if (!context || !sources) {
           return [];
         }
         let binary = context.binary;
@@ -351,6 +351,9 @@ let solidity = createSelectorTree({
     functionsByProgramCounter: createLeaf(
       ["./instructions", "./sources"],
       (instructions, sources) =>
+        //note: we can skip an explicit null check on sources here because
+        //if sources is null then instructions = [] so the problematic code
+        //will never run
         Object.assign(
           {},
           ...instructions
