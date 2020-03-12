@@ -223,13 +223,13 @@ describe("truffle unbox [ @standalone ]", () => {
       });
 
       describe("with an invalid git@ ssh", () => {
-        it("logs an error", done => {
+        it("fails", done => {
           CommandRunner.run(
             "unbox git@github.com:truffle-box/bare-boxer",
             config,
             () => {
               const output = logger.contents();
-              assert(output.includes("doesn't exist."));
+              assert(output.includes("Unbox failed!"));
               done();
             }
           );
@@ -296,13 +296,13 @@ describe("truffle unbox [ @standalone ]", () => {
 
     describe("with invalid input", () => {
       describe("invalid full url", () => {
-        it("throws an error", done => {
+        it("fails", done => {
           CommandRunner.run(
             "unbox https://github.com/truffle-box/bare-boxing",
             config,
             () => {
               const output = logger.contents();
-              assert(output.includes("doesn't exist."));
+              assert(output.includes("Unbox failed!"));
               done();
             }
           );
@@ -310,33 +310,33 @@ describe("truffle unbox [ @standalone ]", () => {
       });
 
       describe("invalid origin/master", () => {
-        it("throws an error", done => {
+        it("fails", done => {
           CommandRunner.run("unbox truffle-box/bare-boxer", config, () => {
             const output = logger.contents();
-            assert(output.includes("doesn't exist."));
+            assert(output.includes("Unbox failed!"));
             done();
           });
         }).timeout(20000);
       });
 
       describe("invalid official truffle box", () => {
-        it("throws an error", done => {
+        it("fails", done => {
           CommandRunner.run("unbox barer", config, () => {
             const output = logger.contents();
-            assert(output.includes("doesn't exist."));
+            assert(output.includes("Unbox failed!"));
             done();
           });
         }).timeout(20000);
       });
 
       describe("invalid git@ ssh", () => {
-        it("throws an error", done => {
+        it("fails", done => {
           CommandRunner.run(
             "unbox git@github.com:truffle-box/bare-boxer",
             config,
             () => {
               const output = logger.contents();
-              assert(output.includes("doesn't exist."));
+              assert(output.includes("Unbox failed!"));
               done();
             }
           );
@@ -344,7 +344,7 @@ describe("truffle unbox [ @standalone ]", () => {
       });
 
       describe("absolutePaths", () => {
-        it("throws an error", done => {
+        it("fails", done => {
           CommandRunner.run("unbox bare:/path/to/subDir", config, () => {
             const output = logger.contents();
             assert(output.includes("not allowed!"));
@@ -354,7 +354,7 @@ describe("truffle unbox [ @standalone ]", () => {
       });
 
       describe("invalid box format", () => {
-        it("throws an error", done => {
+        it("fails", done => {
           CommandRunner.run("unbox /bare/", config, () => {
             const output = logger.contents();
             assert(output.includes("invalid format"));

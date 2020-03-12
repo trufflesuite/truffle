@@ -82,7 +82,7 @@ command
         // If a number is returned, exit with that number.
         process.exit(error);
       } else {
-        let error = error.stack || error.message || error.toString();
+        error = error.stack || error.message || error.toString();
         //remove identifying information if error stack is passed to analytics
         if (error === error.stack) {
           let directory = __dirname;
