@@ -111,7 +111,7 @@ elif [ "$COVERAGE" = true ]; then
   sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo add-apt-repository -y ppa:ethereum/ethereum
   sudo apt update
-  sudo apt install -y jq python3.6 python3.6-dev python3.6-venv solc
+  sudo apt install -y jq python3.6 python3.6-dev python3.6-venv libc6 solc
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python3.6 get-pip.py
   sudo pip3 install vyper
