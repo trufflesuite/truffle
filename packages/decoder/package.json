@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@truffle/codec": "^0.4.1",
+    "@truffle/compile-solidity": "^4.2.25",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
     "source-map-support": "^0.5.16",
