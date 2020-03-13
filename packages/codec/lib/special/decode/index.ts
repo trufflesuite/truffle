@@ -124,11 +124,12 @@ export function* decodeMagic(
   }
 }
 
-//NOTE: this is going to change again in 0.6.x!  be ready!
+//NOTE: this is likely going to change again in 0.7.x!  be ready!
 function senderType(
   compiler: Compiler.CompilerVersion
 ): Format.Types.AddressType {
   switch (Compiler.Utils.solidityFamily(compiler)) {
+    case "unknown":
     case "pre-0.5.0":
       return {
         typeClass: "address",
@@ -147,6 +148,7 @@ function externalAddressType(
   compiler: Compiler.CompilerVersion
 ): Format.Types.AddressType {
   switch (Compiler.Utils.solidityFamily(compiler)) {
+    case "unknown":
     case "pre-0.5.0":
       return {
         typeClass: "address",
