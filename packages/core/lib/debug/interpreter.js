@@ -54,8 +54,8 @@ class DebugInterpreter {
       ? currentLocation.source.id
       : null;
     const currentLine =
-      currentSourceId != null //!= is deliberate
-        ? //sourceRange is never null, so we go by whether currentSourceId is null
+      currentSourceId !== null && currentSourceId !== undefined
+        ? //sourceRange is never null, so we go by whether currentSourceId is null/undefined
           currentLocation.sourceRange.lines.start.line
         : null;
     const currentCompilationId = currentLocation.source
@@ -160,8 +160,7 @@ class DebugInterpreter {
     //otherwise, it's a simple line number
     else {
       debug("absolute case");
-      if (currentSourceId == null) {
-        //== is deliberate
+      if (currentSourceId === null || currentSourceId === undefined) {
         this.printer.print("Cannot determine current file.");
         return;
       }
