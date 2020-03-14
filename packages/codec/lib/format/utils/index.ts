@@ -6,3 +6,6 @@ export { Inspect };
 
 import * as Circularity from "./circularity";
 export { Circularity };
+
+import * as Serial from "./serial";
+export { Serial };
