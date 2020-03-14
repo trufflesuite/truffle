@@ -1,8 +1,8 @@
 const debug = require("debug")("decoder:test:decoding-test");
-const assert = require("assert");
-const util = require("util"); // eslint-disable-line no-unused-vars
+const assert = require("chai").assert;
 
 const Decoder = require("../../..");
+const Codec = require("@truffle/codec");
 const { nativizeDecoderVariables } = require("../../../dist/utils");
 
 const DecodingSample = artifacts.require("DecodingSample");
@@ -52,6 +52,21 @@ contract("DecodingSample", _accounts => {
     debug("initialVariables: %O", initialVariables);
 
     assert.equal(initialState.class.typeName, "DecodingSample");
+
+    //Before we test decoding per se, let's test: Does serialization
+    //work? I.e.: Is it reversible?
+    //(I wanted to test that it didn't include any BNs but this
+    //turned not out to be practical)
+
+    const serializedVariables = initialVariables.map(variable => ({
+      ...variable,
+      value: Codec.Format.Utils.Serial.serializeResult(variable.value)
+    }));
+    const deserializedVariables = serializedVariables.map(variable => ({
+      ...variable,
+      value: Codec.Format.Utils.Serial.deserializeResult(variable.value)
+    }));
+    assert.deepEqual(deserializedVariables, initialVariables);
 
     const variables = nativizeDecoderVariables(initialVariables);
 
