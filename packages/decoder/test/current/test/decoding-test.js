@@ -4,6 +4,7 @@ const Ganache = require("ganache-core");
 const path = require("path");
 
 const Decoder = require("../../..");
+const Codec = require("@truffle/codec");
 const { unsafeNativizeDecoderVariables } = require("../../../dist/utils");
 const { prepareContracts } = require("../../helpers");
 
@@ -48,6 +49,21 @@ describe("State variable decoding", function () {
     debug("initialVariables: %O", initialVariables);
 
     assert.equal(initialState.class.typeName, "DecodingSample");
+
+    //Before we test decoding per se, let's test: Does serialization
+    //work? I.e.: Is it reversible?
+    //(I wanted to test that it didn't include any BNs but this
+    //turned not out to be practical)
+
+    const serializedVariables = initialVariables.map(variable => ({
+      ...variable,
+      value: Codec.Format.Utils.Serial.serializeResult(variable.value)
+    }));
+    const deserializedVariables = serializedVariables.map(variable => ({
+      ...variable,
+      value: Codec.Format.Utils.Serial.deserializeResult(variable.value)
+    }));
+    assert.deepEqual(deserializedVariables, initialVariables);
 
     const variables = unsafeNativizeDecoderVariables(initialVariables);
 
