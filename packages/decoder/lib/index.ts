@@ -2,12 +2,11 @@
 # Truffle Decoder
 
 This module provides an interface for decoding contract state, transaction
-calldata, and events.  It's an interface to the same low-level decoding
-functionality that Truffle Debugger uses.  However, it has additional
-functionality that the debugger does not need, and the debugger has additional
-functionality that this interface either does not need or cannot currently
-replicate.  In the future, this interface will also decode return values and
-revert strings.
+calldata, events, and return values and revert strings.  It's an interface to
+the same low-level decoding functionality that Truffle Debugger uses.  However,
+it has additional functionality that the debugger does not need, and the
+debugger has additional functionality that this interface either does not need
+or cannot currently replicate.
 
 The interface is split into three classes: The wire decoder, the contract
 decoder, and the contract instance decoder.  The wire decoder is associated to
@@ -154,6 +153,7 @@ export {
   StateVariable,
   DecodedLog,
   EventOptions,
+  ReturnOptions,
   Transaction,
   Log,
   BlockSpecifier
@@ -384,6 +384,12 @@ export async function forContractInstance(
   );
 }
 
+//Note: this function doesn't actually go in this category, but
+//I don't want an unsightly "Other functions" thing appearing,
+//so I'm hiding it here :)
+/**
+ * @category Provider-based Constructor
+ */
 function infoToCompilations(
   projectInfo: ProjectInfo | Artifact[],
   primaryArtifact?: Artifact

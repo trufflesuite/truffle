@@ -136,7 +136,7 @@ export interface ContractInfo {
 }
 
 /**
- * The type of the options parameter to events().  This type will be expanded in the future
+ * The type of the options parameter to [[WireDecoder.events|events()]].  This type will be expanded in the future
  * as more filtering options are added.
  * @category Inputs
  */
@@ -162,6 +162,25 @@ export interface EventOptions {
    * address as undefined.
    */
   address?: string;
+}
+
+/**
+ * The type of the options parameter to [[ContractDecoder.decodeReturnValue|decodeReturnValue()]].
+ * @category Inputs
+ */
+export interface ReturnOptions {
+  /**
+   * The block in which the call was made.  Defaults to "latest".
+   */
+  block?: BlockSpecifier;
+  /**
+   * If included, tells the decoder to interpret the return data as
+   * the return data from a successful call (if `true` is passed) or
+   * as the return data from a failed call (if `false` is passed). If
+   * omitted or set to `undefined`, the decoder will account for both
+   * possibilities.
+   */
+  status?: boolean | undefined;
 }
 
 /**
