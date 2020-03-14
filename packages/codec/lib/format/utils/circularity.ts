@@ -89,10 +89,15 @@ export function sever(tied: Format.Values.Result): Format.Values.Result {
   switch (tied.type.typeClass) {
     case "array":
     case "struct":
-      return {
-        ...(<Format.Values.ArrayValue | Format.Values.StructValue>tied),
-        value: []
-      };
+      let coerced = <Format.Values.ArrayValue | Format.Values.StructValue>tied;
+      if (coerced.reference !== undefined) {
+        return {
+          ...coerced,
+          value: []
+        };
+      } else {
+        return coerced;
+      }
     default:
       return tied;
   }

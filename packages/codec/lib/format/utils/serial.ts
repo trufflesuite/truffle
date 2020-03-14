@@ -154,38 +154,60 @@ function serializeUntiedResult(
           let coercedValue = <Format.Values.UintValue | Format.Values.IntValue>(
             value
           );
-          return <
-            | Format.Values.UintValue<SerialFormatConfig>
-            | Format.Values.IntValue<SerialFormatConfig>
-          >{
-            ...coercedValue,
-            type: serializedType,
-            value: {
-              asString: coercedValue.value.asBN.toString(),
-              rawAsString: coercedValue.value.rawAsBN
-                ? coercedValue.value.rawAsBN.toString()
-                : undefined
-            }
-          };
+          if (coercedValue.value.rawAsBN) {
+            return <
+              | Format.Values.UintValue<SerialFormatConfig>
+              | Format.Values.IntValue<SerialFormatConfig>
+            >{
+              ...coercedValue,
+              type: serializedType,
+              value: {
+                asString: coercedValue.value.asBN.toString(),
+                rawAsString: coercedValue.value.rawAsBN.toString()
+              }
+            };
+          } else {
+            return <
+              | Format.Values.UintValue<SerialFormatConfig>
+              | Format.Values.IntValue<SerialFormatConfig>
+            >{
+              ...coercedValue,
+              type: serializedType,
+              value: {
+                asString: coercedValue.value.asBN.toString()
+              }
+            };
+          }
         }
         case "fixed":
         case "ufixed": {
           let coercedValue = <
             Format.Values.FixedValue | Format.Values.UfixedValue
           >value;
-          return <
-            | Format.Values.FixedValue<SerialFormatConfig>
-            | Format.Values.UfixedValue<SerialFormatConfig>
-          >{
-            ...coercedValue,
-            type: serializedType,
-            value: {
-              asString: coercedValue.value.asBig.toFixed(),
-              rawAsString: coercedValue.value.rawAsBig
-                ? coercedValue.value.rawAsBig.toFixed()
-                : undefined
-            }
-          };
+          if (coercedValue.value.rawAsBig) {
+            return <
+              | Format.Values.FixedValue<SerialFormatConfig>
+              | Format.Values.UfixedValue<SerialFormatConfig>
+            >{
+              ...coercedValue,
+              type: serializedType,
+              value: {
+                asString: coercedValue.value.asBig.toFixed(),
+                rawAsString: coercedValue.value.rawAsBig.toFixed()
+              }
+            };
+          } else {
+            return <
+              | Format.Values.FixedValue<SerialFormatConfig>
+              | Format.Values.UfixedValue<SerialFormatConfig>
+            >{
+              ...coercedValue,
+              type: serializedType,
+              value: {
+                asString: coercedValue.value.asBig.toFixed()
+              }
+            };
+          }
         }
         case "enum": {
           let coercedValue = <Format.Values.EnumValue>value;
@@ -193,7 +215,7 @@ function serializeUntiedResult(
             ...coercedValue,
             type: <Format.Types.EnumType<SerialFormatConfig>>serializedType,
             value: {
-              ...coercedValue.value,
+              name: coercedValue.value.name,
               numericAsString: coercedValue.value.numericAsBN.toString()
             }
           };
@@ -354,20 +376,18 @@ function serializeUntiedResult(
             type: <Format.Types.BoolType<SerialFormatConfig>>serializedType,
             kind: "error",
             error: {
-              ...value.error,
+              kind: "BoolOutOfRangeError" as const,
               rawAsString: value.error.rawAsBN.toString()
             }
           };
         case "EnumOutOfRangeError":
         case "EnumNotFoundDecodingError":
-          return {
-            type: <Format.Types.EnumType<SerialFormatConfig>>serializedType,
+          return <Format.Errors.EnumErrorResult<SerialFormatConfig>>{
+            type: serializedType,
             kind: "error",
             error: {
-              ...value.error,
-              type: <Format.Types.EnumType<SerialFormatConfig>>(
-                serializeType(value.error.type)
-              ),
+              kind: value.error.kind,
+              type: serializeType(value.error.type),
               rawAsString: value.error.rawAsBN.toString()
             }
           };
@@ -408,17 +428,24 @@ function serializeUntiedResult(
           return <Format.Errors.ErrorResult<SerialFormatConfig>>{
             type: serializedType,
             kind: "error",
-            error: {
-              ...value.error,
-              lengthAsString: value.error.lengthAsBN.toString()
-            }
+            error:
+              value.error.dataLength !== undefined
+                ? {
+                    kind: "OverlongArraysAndStringsNotImplementedError" as const,
+                    dataLength: value.error.dataLength,
+                    lengthAsString: value.error.lengthAsBN.toString()
+                  }
+                : {
+                    kind: "OverlongArraysAndStringsNotImplementedError" as const,
+                    lengthAsString: value.error.lengthAsBN.toString()
+                  }
           };
         case "OverlargePointersNotImplementedError":
           return <Format.Errors.ErrorResult<SerialFormatConfig>>{
             type: serializedType,
             kind: "error",
             error: {
-              ...value.error,
+              kind: "OverlargePointersNotImplementedError" as const,
               pointerAsString: value.error.pointerAsBN.toString()
             }
           };
@@ -621,17 +648,24 @@ function deserializeToUntiedResult(
             | Format.Values.UintValue<SerialFormatConfig>
             | Format.Values.IntValue<SerialFormatConfig>
           >value;
-          return <Format.Values.UintValue | Format.Values.IntValue>{
-            ...coercedValue,
-            type: deserializedType,
-            value: {
-              asBN: new BN(coercedValue.value.asString),
-              rawAsBN:
-                coercedValue.value.rawAsString !== undefined
-                  ? new BN(coercedValue.value.rawAsString)
-                  : undefined
-            }
-          };
+          if (coercedValue.value.rawAsString !== undefined) {
+            return <Format.Values.UintValue | Format.Values.IntValue>{
+              ...coercedValue,
+              type: deserializedType,
+              value: {
+                asBN: new BN(coercedValue.value.asString),
+                rawAsBN: new BN(coercedValue.value.rawAsString)
+              }
+            };
+          } else {
+            return <Format.Values.UintValue | Format.Values.IntValue>{
+              ...coercedValue,
+              type: deserializedType,
+              value: {
+                asBN: new BN(coercedValue.value.asString)
+              }
+            };
+          }
         }
         case "fixed":
         case "ufixed": {
@@ -639,17 +673,24 @@ function deserializeToUntiedResult(
             | Format.Values.FixedValue<SerialFormatConfig>
             | Format.Values.UfixedValue<SerialFormatConfig>
           >value;
-          return <Format.Values.FixedValue | Format.Values.UfixedValue>{
-            ...coercedValue,
-            type: deserializedType,
-            value: {
-              asBig: new Big(coercedValue.value.asString),
-              rawAsBig:
-                coercedValue.value.rawAsString !== undefined
-                  ? new Big(coercedValue.value.rawAsString)
-                  : undefined
-            }
-          };
+          if (coercedValue.value.rawAsString !== undefined) {
+            return <Format.Values.FixedValue | Format.Values.UfixedValue>{
+              ...coercedValue,
+              type: deserializedType,
+              value: {
+                asBig: new Big(coercedValue.value.asString),
+                rawAsBig: new Big(coercedValue.value.rawAsString)
+              }
+            };
+          } else {
+            return <Format.Values.FixedValue | Format.Values.UfixedValue>{
+              ...coercedValue,
+              type: deserializedType,
+              value: {
+                asBig: new Big(coercedValue.value.asString)
+              }
+            };
+          }
         }
         case "enum": {
           let coercedValue = <Format.Values.EnumValue<SerialFormatConfig>>value;
@@ -657,7 +698,7 @@ function deserializeToUntiedResult(
             ...coercedValue,
             type: <Format.Types.EnumType>deserializedType,
             value: {
-              ...coercedValue.value,
+              name: coercedValue.value.name,
               numericAsBN: new BN(coercedValue.value.numericAsString)
             }
           };
@@ -830,18 +871,18 @@ function deserializeToUntiedResult(
             type: <Format.Types.BoolType>deserializedType,
             kind: "error",
             error: {
-              ...value.error,
+              kind: "BoolOutOfRangeError" as const,
               rawAsBN: new BN(value.error.rawAsString)
             }
           };
         case "EnumOutOfRangeError":
         case "EnumNotFoundDecodingError":
-          return {
-            type: <Format.Types.EnumType>deserializedType,
+          return <Format.Errors.EnumErrorResult>{
+            type: deserializedType,
             kind: "error",
             error: {
-              ...value.error,
-              type: <Format.Types.EnumType>deserializeType(value.error.type),
+              kind: value.error.kind,
+              type: deserializeType(value.error.type),
               rawAsBN: new BN(value.error.rawAsString)
             }
           };
@@ -880,17 +921,24 @@ function deserializeToUntiedResult(
           return <Format.Errors.ErrorResult>{
             type: deserializedType,
             kind: "error",
-            error: {
-              ...value.error,
-              lengthAsBN: new BN(value.error.lengthAsString)
-            }
+            error:
+              value.error.dataLength !== undefined
+                ? {
+                    kind: "OverlongArraysAndStringsNotImplementedError" as const,
+                    dataLength: value.error.dataLength,
+                    lengthAsBN: new BN(value.error.lengthAsString)
+                  }
+                : {
+                    kind: "OverlongArraysAndStringsNotImplementedError" as const,
+                    lengthAsBN: new BN(value.error.lengthAsString)
+                  }
           };
         case "OverlargePointersNotImplementedError":
           return <Format.Errors.ErrorResult>{
             type: deserializedType,
             kind: "error",
             error: {
-              ...value.error,
+              kind: "OverlargePointersNotImplementedError" as const,
               pointerAsBN: new BN(value.error.pointerAsString)
             }
           };
