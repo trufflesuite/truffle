@@ -6,7 +6,7 @@ const command = {
     usage: "truffle version",
     options: []
   },
-  run: function(options) {
+  run: async function(options) {
     let config;
     const version = require("../version");
     const { logger } = options;

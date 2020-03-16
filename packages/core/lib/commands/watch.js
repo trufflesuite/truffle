@@ -10,7 +10,7 @@ const command = {
     usage: "truffle watch",
     options: []
   },
-  run: function(options) {
+  run: async function(options) {
     const Config = require("@truffle/config");
     const sane = require("sane");
     const path = require("path");

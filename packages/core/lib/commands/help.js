@@ -12,7 +12,7 @@ var command = {
     ]
   },
   builder: {},
-  run: function(options) {
+  run: async function(options) {
     var commands = require("./index");
     if (options._.length === 0) {
       this.displayCommandHelp("help");

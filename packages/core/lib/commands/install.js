@@ -18,7 +18,7 @@ const command = {
       }
     ]
   },
-  run: function(options) {
+  run: async function(options) {
     const Config = require("@truffle/config");
     const Package = require("../package");
 
