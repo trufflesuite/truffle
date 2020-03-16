@@ -72,7 +72,6 @@ const command = {
     // `--compile`
     if (options.c || options.compile) {
       await Contracts.compile(config);
-      return Require.exec(config.with({ file }));
     }
 
     // Just exec
