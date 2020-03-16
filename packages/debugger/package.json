@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "6.2.0-tezos.0",
+  "version": "6.2.0-tezos.1",
   "main": "dist/debugger.js",
   "scripts": {
     "build": "webpack --config webpack/webpack.config.js",
@@ -39,12 +39,12 @@
     "web3-eth-abi": "1.2.1"
   },
   "devDependencies": {
-    "@truffle/artifactor": "^4.1.0-tezos.0",
+    "@truffle/artifactor": "^4.1.0-tezos.1",
     "@truffle/box": "^1.1.0-tezos.0",
     "@truffle/debug-utils": "^2.2.0-tezos.0",
-    "@truffle/migrate": "^3.2.0-tezos.0",
-    "@truffle/resolver": "^5.2.0-tezos.0",
-    "@truffle/workflow-compile": "^2.2.0-tezos.0",
+    "@truffle/migrate": "^3.2.0-tezos.1",
+    "@truffle/resolver": "^5.2.0-tezos.1",
+    "@truffle/workflow-compile": "^2.2.0-tezos.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
