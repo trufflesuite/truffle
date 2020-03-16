@@ -1,3 +1,4 @@
+import "source-map-support/register";
 import * as bip39 from "bip39";
 import * as EthUtil from "ethereumjs-util";
 import ethJSWallet from "ethereumjs-wallet";

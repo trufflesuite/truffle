@@ -1,3 +1,4 @@
+import "source-map-support/register";
 import Schema from "@truffle/contract-schema";
 import fse from "fs-extra";
 import path from "path";

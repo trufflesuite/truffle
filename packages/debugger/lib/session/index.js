@@ -171,8 +171,8 @@ export default class Session {
           compilation
         );
 
-        let contractId = contractNode.id;
-        let contractKind = contractNode.contractKind;
+        let contractId = contractNode ? contractNode.id : undefined;
+        let contractKind = contractNode ? contractNode.contractKind : undefined;
         abi = Codec.AbiData.Utils.schemaAbiToAbi(abi); //let's handle this up front
 
         debug("contractName %s", contractName);

@@ -1,6 +1,6 @@
 {
   "name": "@truffle/decoder",
-  "version": "4.0.11",
+  "version": "4.0.12",
   "description": "A decoder and encoder for Solidity variables of all sorts",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,9 +14,11 @@
     "test": "cd test/current && npx truffle test && cd ../legacy && npx truffle test"
   },
   "dependencies": {
-    "@truffle/codec": "^0.4.0",
+    "@truffle/codec": "^0.4.1",
+    "@truffle/compile-solidity": "^4.2.25",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
+    "source-map-support": "^0.5.16",
     "web3": "1.2.1"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
@@ -40,15 +42,13 @@
   },
   "devDependencies": {
     "@truffle/contract-schema": "^3.0.23",
-    "@truffle/provider": "^0.2.8",
+    "@truffle/provider": "^0.2.9",
     "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",
-    "@types/lodash.clonedeep": "^4.5.4",
-    "@types/lodash.isequal": "^4.5.4",
-    "@types/lodash.merge": "^4.6.4",
     "@types/utf8": "^2.1.6",
     "@types/web3": "1.0.19",
+    "lodash.clonedeep": "^4.5.0",
     "typescript": "^3.6.3"
   },
   "peerDependencies": {

@@ -1,3 +1,4 @@
+require("source-map-support/register");
 var pkg = require("./package.json");
 
 module.exports = {

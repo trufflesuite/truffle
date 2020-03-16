@@ -364,13 +364,20 @@ function allocateCalldataAndReturndata(
       //search through base contracts, from most derived (left) to most base (right)
       if (contractNode) {
         const linearizedBaseContracts = contractNode.linearizedBaseContracts;
+        debug("linearized: %O", linearizedBaseContracts);
         node = linearizedBaseContracts.reduce(
           (foundNode: Ast.AstNode, baseContractId: number) => {
             if (foundNode !== undefined) {
               return foundNode; //once we've found something, we don't need to keep looking
             }
-            let baseContractNode = referenceDeclarations[baseContractId];
-            if (baseContractNode === undefined) {
+            let baseContractNode =
+              baseContractId === contractNode.id
+                ? contractNode //skip the lookup if we already have the right node! this is to reduce errors from collision
+                : referenceDeclarations[baseContractId];
+            if (
+              baseContractNode === undefined ||
+              baseContractNode.nodeType !== "ContractDefinition"
+            ) {
               return null; //return null rather than undefined so that this will propagate through
               //(i.e. by returning null here we give up the search)
               //(we don't want to continue due to possibility of grabbing the wrong override)
@@ -599,7 +606,10 @@ function allocateEvent(
             return foundNode; //once we've found something, we don't need to keep looking
           }
           let baseContractNode = referenceDeclarations[baseContractId];
-          if (baseContractNode === undefined) {
+          if (
+            baseContractNode === undefined ||
+            baseContractNode.nodeType !== "ContractDefinition"
+          ) {
             debug("can't find base node, bailing!");
             return null; //return null rather than undefined so that this will propagate through
             //(i.e. by returning null here we give up the search)
@@ -980,7 +990,7 @@ export function getEventAllocations(
         for (let baseId of linearizedBaseContractsMinusSelf) {
           debug("checking base baseId: %d", baseId);
           let baseNode = referenceDeclarations[compilationId][baseId];
-          if (!baseNode) {
+          if (!baseNode || baseNode.nodeType !== "ContractDefinition") {
             debug("failed to find node for baseId: %d", baseId);
             break; //not a continue!
             //if we can't find the base node, it's better to stop the loop,
