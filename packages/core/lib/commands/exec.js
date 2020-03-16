@@ -73,29 +73,16 @@ const command = {
 
         // `--compile`
         if (options.c || options.compile) {
-          return Contracts.compile(config, function(err) {
-            if (err) return done(err);
-
-            Require.exec(
-              config.with({
-                file: file
-              }),
-              done
-            );
-          });
+          return Contracts.compile(config);
         }
-
-        // Just exec
-        Require.exec(
-          config.with({
-            file: file
-          }),
-          done
-        );
       })
-      .catch(error => {
-        done(error);
-      });
+      .then(() => {
+        return Require.exec(config.with({ file }));
+      })
+      .then(() => {
+        return done();
+      })
+      .catch(done);
   }
 };
 
