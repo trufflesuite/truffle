@@ -70,7 +70,7 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: async function(options) {
     const Config = require("@truffle/config");
     const { Environment, Develop } = require("@truffle/environment");
     const {
@@ -89,39 +89,30 @@ const command = {
     if (!config.network) {
       config.network = "test";
     } else {
-      Environment.detect(config).catch(done);
+      await Environment.detect(config);
     }
 
     // enables in-test debug() interrupt, forcing compileAll
     if (config.debug) config.compileAll = true;
 
-    let ipcDisconnect, files;
-    try {
-      const { file } = options;
-      const inputArgs = options._;
-      files = determineTestFilesToRun({
-        config,
-        inputArgs,
-        inputFile: file
-      });
-    } catch (error) {
-      return done(error);
-    }
+    let ipcDisconnect;
+    const { file } = options;
+    const inputArgs = options._;
+    files = determineTestFilesToRun({
+      config,
+      inputArgs,
+      inputFile: file
+    });
 
     if (config.networks[config.network]) {
-      Environment.detect(config)
-        .then(() => copyArtifactsToTempDir(config))
-        .then(({ config, temporaryDirectory }) => {
-          return prepareConfigAndRunTests({
-            config,
-            files,
-            temporaryDirectory
-          });
-        })
-        .then(numberOfFailures => {
-          done.call(null, numberOfFailures);
-        })
-        .catch(done);
+      await Environment.detect(config);
+      const { temporaryDirectory } = await copyArtifactsToTempDir(config);
+      const numberOfFailures = await prepareConfigAndRunTests({
+        config,
+        files,
+        temporaryDirectory
+      });
+      return numberOfFailures;
     } else {
       const ipcOptions = { network: "test" };
 
@@ -134,24 +125,20 @@ const command = {
         gasLimit: config.gas,
         time: config.genesis_time
       };
-      Develop.connectOrStart(ipcOptions, ganacheOptions)
-        .then(({ disconnect }) => {
-          ipcDisconnect = disconnect;
-          return Environment.develop(config, ganacheOptions);
-        })
-        .then(() => copyArtifactsToTempDir(config))
-        .then(({ config, temporaryDirectory }) => {
-          return prepareConfigAndRunTests({
-            config,
-            files,
-            temporaryDirectory
-          });
-        })
-        .then(numberOfFailures => {
-          done.call(null, numberOfFailures);
-          ipcDisconnect();
-        })
-        .catch(done);
+      const { disconnect } = await Develop.connectOrStart(
+        ipcOptions,
+        ganacheOptions
+      );
+      ipcDisconnect = disconnect;
+      await Environment.develop(config, ganacheOptions);
+      const { temporaryDirectory } = await copyArtifactsToTempDir(config);
+      const numberOfFailures = await prepareConfigAndRunTests({
+        config,
+        files,
+        temporaryDirectory
+      });
+      ipcDisconnect();
+      return numberOfFailures;
     }
   }
 };
