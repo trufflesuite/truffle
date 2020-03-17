@@ -44,11 +44,6 @@ const Develop = {
     const debugClient = debug("develop:ipc:client");
     const debugRPC = debug("develop:ganache");
 
-    if (typeof options === "function") {
-      callback = options;
-      options = {};
-    }
-
     options.retry = options.retry || false;
     options.log = options.log || false;
     options.network = options.network || "develop";
