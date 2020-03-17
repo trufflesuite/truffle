@@ -16,25 +16,20 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: async function(options) {
     const debugModule = require("debug");
     const debug = debugModule("lib:commands:debug");
 
+    const { CLIDebugger } = require("./cli");
     const { Environment } = require("@truffle/environment");
     const Config = require("@truffle/config");
 
-    const { CLIDebugger } = require("../debug");
+    const config = Config.detect(options);
+    await Environment.detect(config);
 
-    Promise.resolve()
-      .then(async () => {
-        const config = Config.detect(options);
-        await Environment.detect(config);
-
-        const txHash = config._[0]; //may be undefined
-        return await new CLIDebugger(config).run(txHash);
-      })
-      .then(interpreter => interpreter.start(done))
-      .catch(done);
+    const txHash = config._[0]; //may be undefined
+    const interpreter = await new CLIDebugger(config).run(txHash);
+    return interpreter.start();
   }
 };
 
