@@ -15,8 +15,10 @@ import {
   Pointer,
   CalldataDecoding,
   LogDecoding,
+  ReturndataDecoding,
   decodeCalldata,
-  decodeEvent
+  decodeEvent,
+  decodeReturndata
 } from "@truffle/codec";
 import * as Utils from "./utils";
 import * as DecoderTypes from "./types";
@@ -577,7 +579,8 @@ export class WireDecoder {
     return {
       abi: this.allocations.abi,
       storage: this.allocations.storage,
-      state: this.allocations.state
+      state: this.allocations.state,
+      calldata: this.allocations.calldata
     };
   }
 
@@ -621,6 +624,10 @@ export class ContractDecoder {
   private contextHash: string;
 
   private allocations: Codec.Evm.AllocationInfo;
+  private noBytecodeAllocations: {
+    [selector: string]: AbiData.Allocate.CalldataAndReturndataAllocation;
+  };
+  private userDefinedTypes: Format.Types.TypesById;
   private stateVariableReferences: Storage.Allocate.StateVariableAllocation[];
 
   private wireDecoder: WireDecoder;
@@ -633,6 +640,7 @@ export class ContractDecoder {
     this.wireDecoder = wireDecoder;
     this.web3 = wireDecoder.getWeb3();
     this.contexts = wireDecoder.getDeployedContexts();
+    this.userDefinedTypes = this.wireDecoder.getUserDefinedTypes();
     const compilations = wireDecoder.getCompilations();
 
     const deployedBytecode = shimBytecode(artifact.deployedBytecode);
@@ -691,6 +699,7 @@ export class ContractDecoder {
       this.contract,
       this.compilation
     );
+    this.allocations = this.wireDecoder.getAllocations();
 
     //note: ordinarily this.contract.deployedBytecode should equal artifact.deployedBytecode
     //at this point, so it may seem strange that I'm using this longer version (but not
@@ -709,9 +718,36 @@ export class ContractDecoder {
       this.contextHash = unnormalizedContext.context;
       //we now throw away the unnormalized context, instead fetching the correct one from
       //this.contexts (which is normalized) via the context getter below
+    } else {
+      //if there's no bytecode, allocate output data in ABI mode anyway
+      const referenceDeclarations = this.wireDecoder.getReferenceDeclarations();
+      const compiler = this.compilation.compiler || this.contract.compiler;
+      this.noBytecodeAllocations = Object.values(
+        AbiData.Allocate.getCalldataAllocations(
+          [
+            {
+              abi: AbiData.Utils.schemaAbiToAbi(this.contract.abi),
+              compilationId: this.compilation.id,
+              compiler,
+              contractNode: this.contractNode,
+              deployedContext: Utils.makeContext(
+                {
+                  ...this.contract,
+                  deployedBytecode: "0x" //only time this should ever appear in a context!
+                  //note that we immediately discard it!
+                },
+                this.contractNode,
+                compiler
+              )
+            }
+          ],
+          referenceDeclarations,
+          this.userDefinedTypes,
+          this.allocations.abi
+        ).functionAllocations
+      )[0];
     }
 
-    this.allocations = this.wireDecoder.getAllocations();
     if (this.contractNode) {
       //note: there used to be code here to do state allocations for the contract,
       //but now the wire decoder does this all up-front
@@ -737,6 +773,111 @@ export class ContractDecoder {
     this.contractNetwork = (await this.web3.eth.net.getId()).toString();
   }
 
+  private get context(): Contexts.DecoderContext {
+    return this.contexts[this.contextHash];
+  }
+
+  /**
+   * **This method is asynchronous.**
+   *
+   * Decodes the return value of a call.  Return values can be ambiguous, so this so
+   * this function returns an array of [[ReturndataDecoding|ReturndataDecodings]].
+   *
+   * Note that return values are decoded in strict mode, so none of the decodings should
+   * contain errors; if a decoding would contain an error, instead it is simply excluded from the
+   * list of possible decodings.
+   *
+   * If there are multiple possible decodings, they will always be listed in the following order:
+   * 1. The decoded return value from a successful call.
+   * 2. The decoded revert message from a call that reverted with a message.
+   * 3. A decoding indicating that the call reverted with no message.
+   * 4. A decoding indicating that the call self-destructed.
+   *
+   * You can check the kind and field to distinguish between these.
+   *
+   * If no possible decodings are found, the returned array of decodings will be empty.
+   *
+   * Note that different decodings may use different decoding modes.
+   *
+   * Decoding creation calls with this method is not supported.  If you simply
+   * want to decode a revert message from an arbitrary call that you know
+   * failed, you may also want to see the [[decodeRevert]] function in
+   * `@truffle/codec`.
+   *
+   * @param abi The abi entry for the function call whose return value is being decoded.
+   * @param data The data to be decoded, as a hex string (beginning with "0x").
+   * @param options Additional options, such as the block the call occurred in.
+   *   See [[ReturnOptions]] for more information.
+   */
+  public async decodeReturnValue(
+    abi: AbiData.FunctionAbiEntry,
+    data: string,
+    options: DecoderTypes.ReturnOptions = {}
+  ): Promise<ReturndataDecoding[]> {
+    return await this.decodeReturnValueWithAdditionalContexts(
+      abi,
+      data,
+      options
+    );
+  }
+
+  /**
+   * @protected
+   */
+  public async decodeReturnValueWithAdditionalContexts(
+    abi: AbiData.FunctionAbiEntry,
+    data: string,
+    options: DecoderTypes.ReturnOptions = {},
+    additionalContexts: Contexts.DecoderContexts = {},
+    contextHash: string = this.contextHash
+  ): Promise<ReturndataDecoding[]> {
+    abi = {
+      type: "function",
+      ...abi
+    }; //just to be absolutely certain!
+    const block = options.block !== undefined ? options.block : "latest";
+    const blockNumber = await this.regularizeBlock(block);
+    const status = options.status; //true, false, or undefined
+
+    const selector = AbiData.Utils.abiSelector(abi);
+    let allocation: AbiData.Allocate.ReturndataAllocation;
+    if (contextHash !== undefined) {
+      allocation = this.allocations.calldata.functionAllocations[contextHash][
+        selector
+      ].output;
+    } else {
+      allocation = this.noBytecodeAllocations[selector].output;
+    }
+
+    const bytes = Conversion.toBytes(data);
+    const info: Evm.EvmInfo = {
+      state: {
+        storage: {},
+        returndata: bytes
+      },
+      userDefinedTypes: this.userDefinedTypes,
+      allocations: this.allocations,
+      contexts: { ...this.contexts, ...additionalContexts }
+    };
+
+    const decoder = decodeReturndata(info, allocation, status);
+
+    let result = decoder.next();
+    while (result.done === false) {
+      let request = result.value;
+      let response: Uint8Array;
+      switch (request.type) {
+        case "code":
+          response = await this.getCode(request.address, blockNumber);
+          break;
+        //not writing a storage case as it shouldn't occur here!
+      }
+      result = decoder.next(response);
+    }
+    //at this point, result.value holds the final value
+    return result.value;
+  }
+
   /**
    * **This method is asynchronous.**
    *
@@ -748,6 +889,19 @@ export class ContractDecoder {
     let instanceDecoder = new ContractInstanceDecoder(this, address);
     await instanceDecoder.init();
     return instanceDecoder;
+  }
+
+  private async getCode(
+    address: string,
+    block: DecoderTypes.RegularizedBlockSpecifier
+  ): Promise<Uint8Array> {
+    return await this.wireDecoder.getCode(address, block);
+  }
+
+  private async regularizeBlock(
+    block: DecoderTypes.BlockSpecifier
+  ): Promise<DecoderTypes.RegularizedBlockSpecifier> {
+    return await this.wireDecoder.regularizeBlock(block);
   }
 
   /**
@@ -841,15 +995,18 @@ export class ContractDecoder {
  * instance.  Also, decodes transactions and logs.  See below for a method
  * listing.
  *
- * Note that when using this class to decode transactions and logs, it does
- * have one advantage over using the WireDecoder or ContractDecoder.  If the
- * artifact for the class does not have a deployedBytecode field, the
- * WireDecoder (and therefore also the ContractDecoder) will not be able to
- * tell that this instance is of that class, and so will fail to decode
- * transactions sent to it or logs originating from it.  However, the
- * ContractInstanceDecoder has that information and will make use of it, making
- * it possible for it to decode transactions sent to this instance, or logs
- * originating from it, even if the deployedBytecode field is misssing.
+ * Note that when using this class to decode transactions, logs, and return
+ * values, it does have one advantage over using the WireDecoder or
+ * ContractDecoder.  If the artifact for the class does not have a
+ * deployedBytecode field, the WireDecoder (and therefore also the
+ * ContractDecoder) will not be able to tell that this instance is of that
+ * class, and so will fail to decode transactions sent to it or logs
+ * originating from it, and will fall back to ABI mode when decoding return
+ * values received from it.  However, the ContractInstanceDecoder has that
+ * information and will make use of it, making it possible for it to decode
+ * transactions sent to this instance, or logs originating from it, or decode
+ * return values received from it in full mode, even if the deployedBytecode
+ * field is misssing.
  * @category Decoder
  */
 export class ContractInstanceDecoder {
@@ -1379,6 +1536,29 @@ export class ContractInstanceDecoder {
       log,
       {},
       this.additionalContexts
+    );
+  }
+
+  /**
+   * **This method is asynchronous.**
+   *
+   * See [[ContractDecoder.decodeReturnValue]].
+   *
+   * If the contract artifact is missing its bytecode, using this method,
+   * rather than the one in [[ContractDecoder]], can sometimes provide
+   * additional decoding information.
+   */
+  public async decodeReturnValue(
+    abi: AbiData.FunctionAbiEntry,
+    data: string,
+    options: DecoderTypes.ReturnOptions = {}
+  ): Promise<ReturndataDecoding[]> {
+    return await this.contractDecoder.decodeReturnValueWithAdditionalContexts(
+      abi,
+      data,
+      options,
+      this.additionalContexts,
+      this.contextHash
     );
   }
 
