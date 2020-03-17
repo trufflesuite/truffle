@@ -624,6 +624,9 @@ export class ContractDecoder {
   private contextHash: string;
 
   private allocations: Codec.Evm.AllocationInfo;
+  private noBytecodeAllocations: {
+    [selector: string]: AbiData.Allocate.CalldataAndReturndataAllocation;
+  };
   private userDefinedTypes: Format.Types.TypesById;
   private stateVariableReferences: Storage.Allocate.StateVariableAllocation[];
 
@@ -696,6 +699,7 @@ export class ContractDecoder {
       this.contract,
       this.compilation
     );
+    this.allocations = this.wireDecoder.getAllocations();
 
     //note: ordinarily this.contract.deployedBytecode should equal artifact.deployedBytecode
     //at this point, so it may seem strange that I'm using this longer version (but not
@@ -714,9 +718,36 @@ export class ContractDecoder {
       this.contextHash = unnormalizedContext.context;
       //we now throw away the unnormalized context, instead fetching the correct one from
       //this.contexts (which is normalized) via the context getter below
+    } else {
+      //if there's no bytecode, allocate output data in ABI mode anyway
+      const referenceDeclarations = this.wireDecoder.getReferenceDeclarations();
+      const compiler = this.compilation.compiler || this.contract.compiler;
+      this.noBytecodeAllocations = Object.values(
+        AbiData.Allocate.getCalldataAllocations(
+          [
+            {
+              abi: AbiData.Utils.schemaAbiToAbi(this.contract.abi),
+              compilationId: this.compilation.id,
+              compiler,
+              contractNode: this.contractNode,
+              deployedContext: Utils.makeContext(
+                {
+                  ...this.contract,
+                  deployedBytecode: "0x" //only time this should ever appear in a context!
+                  //note that we immediately discard it!
+                },
+                this.contractNode,
+                compiler
+              )
+            }
+          ],
+          referenceDeclarations,
+          this.userDefinedTypes,
+          this.allocations.abi
+        ).functionAllocations
+      )[0];
     }
 
-    this.allocations = this.wireDecoder.getAllocations();
     if (this.contractNode) {
       //note: there used to be code here to do state allocations for the contract,
       //but now the wire decoder does this all up-front
@@ -797,7 +828,8 @@ export class ContractDecoder {
     abi: AbiData.FunctionAbiEntry,
     data: string,
     options: DecoderTypes.ReturnOptions = {},
-    additionalContexts: Contexts.DecoderContexts = {}
+    additionalContexts: Contexts.DecoderContexts = {},
+    contextHash: string = this.contextHash
   ): Promise<ReturndataDecoding[]> {
     abi = {
       type: "function",
@@ -808,9 +840,14 @@ export class ContractDecoder {
     const status = options.status; //true, false, or undefined
 
     const selector = AbiData.Utils.abiSelector(abi);
-    const allocation = this.allocations.calldata.functionAllocations[
-      this.contextHash
-    ][selector].output;
+    let allocation: AbiData.Allocate.ReturndataAllocation;
+    if (contextHash !== undefined) {
+      allocation = this.allocations.calldata.functionAllocations[contextHash][
+        selector
+      ].output;
+    } else {
+      allocation = this.noBytecodeAllocations[selector].output;
+    }
 
     const bytes = Conversion.toBytes(data);
     const info: Evm.EvmInfo = {
@@ -958,15 +995,18 @@ export class ContractDecoder {
  * instance.  Also, decodes transactions and logs.  See below for a method
  * listing.
  *
- * Note that when using this class to decode transactions and logs, it does
- * have one advantage over using the WireDecoder or ContractDecoder.  If the
- * artifact for the class does not have a deployedBytecode field, the
- * WireDecoder (and therefore also the ContractDecoder) will not be able to
- * tell that this instance is of that class, and so will fail to decode
- * transactions sent to it or logs originating from it.  However, the
- * ContractInstanceDecoder has that information and will make use of it, making
- * it possible for it to decode transactions sent to this instance, or logs
- * originating from it, even if the deployedBytecode field is misssing.
+ * Note that when using this class to decode transactions, logs, and return
+ * values, it does have one advantage over using the WireDecoder or
+ * ContractDecoder.  If the artifact for the class does not have a
+ * deployedBytecode field, the WireDecoder (and therefore also the
+ * ContractDecoder) will not be able to tell that this instance is of that
+ * class, and so will fail to decode transactions sent to it or logs
+ * originating from it, and will fall back to ABI mode when decoding return
+ * values received from it.  However, the ContractInstanceDecoder has that
+ * information and will make use of it, making it possible for it to decode
+ * transactions sent to this instance, or logs originating from it, or decode
+ * return values received from it in full mode, even if the deployedBytecode
+ * field is misssing.
  * @category Decoder
  */
 export class ContractInstanceDecoder {
@@ -1503,6 +1543,10 @@ export class ContractInstanceDecoder {
    * **This method is asynchronous.**
    *
    * See [[ContractDecoder.decodeReturnValue]].
+   *
+   * If the contract artifact is missing its bytecode, using this method,
+   * rather than the one in [[ContractDecoder]], can sometimes provide
+   * additional decoding information.
    */
   public async decodeReturnValue(
     abi: AbiData.FunctionAbiEntry,
@@ -1513,7 +1557,8 @@ export class ContractInstanceDecoder {
       abi,
       data,
       options,
-      this.additionalContexts
+      this.additionalContexts,
+      this.contextHash
     );
   }
 

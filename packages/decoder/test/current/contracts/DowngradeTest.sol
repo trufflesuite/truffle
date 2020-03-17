@@ -67,6 +67,10 @@ contract DowngradeTest is DowngradeTestParent {
   function emitParent() public {
     emit Inherited();
   }
+
+  function returnsStuff() public pure returns (Pair memory, Ternary) {
+    return (Pair(107, 683), Ternary.No);
+  }
 }
 
 library DecoyLibrary {
