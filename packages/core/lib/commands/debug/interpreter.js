@@ -9,8 +9,8 @@ const DebugUtils = require("@truffle/debug-utils");
 const selectors = require("@truffle/debugger").selectors;
 const { session, solidity, trace, evm, controller } = selectors;
 
-const analytics = require("../services/analytics");
-const ReplManager = require("../repl");
+const analytics = require("../../services/analytics");
+const ReplManager = require("../../repl");
 
 const { DebugPrinter } = require("./printer");
 
