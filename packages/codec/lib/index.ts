@@ -44,9 +44,8 @@
  * currently does not (although this is planned for the future).
  *
  * There is also functionality for decoding return values and revert messages
- * (currently mostly unused, intended to be hooked up later) as well as some
- * rudimentary encoding functionality, although currently that's just used
- * internally.  A better interface for these things is intended for the future.
+ * that goes beyond what's currently available in @truffle/decoder; this may get
+ * a better interface in the future.
  *
  * ## How to use
  *
@@ -257,6 +256,7 @@ export {
   DecodingMode,
   CalldataDecoding,
   LogDecoding,
+  ReturndataDecoding,
   FunctionDecoding,
   ConstructorDecoding,
   MessageDecoding,
@@ -264,6 +264,12 @@ export {
   UnknownCreationDecoding,
   EventDecoding,
   AnonymousDecoding,
+  ReturnDecoding,
+  BytecodeDecoding,
+  UnknownBytecodeDecoding,
+  SelfDestructDecoding,
+  RevertMessageDecoding,
+  EmptyFailureDecoding,
   AbiArgument,
   DecoderRequest,
   StorageRequest,

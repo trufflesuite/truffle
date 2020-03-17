@@ -369,6 +369,50 @@ contract("DowngradeTest", function(accounts) {
     let selector = web3.eth.abi.encodeFunctionSignature("causeTrouble()");
     assert.strictEqual(decodedFunction.value.selector, selector);
   });
+
+  it("Decodes return values even with no deployedBytecode", async function() {
+    let mangledCompilations = clonedeep(compilations);
+    let downgradeTest = mangledCompilations[0].contracts.find(
+      contract => contract.contractName === "DowngradeTest"
+    );
+    downgradeTest.deployedBytecode = undefined;
+
+    let deployedContract = await DowngradeTest.new();
+    let decoder = await Decoder.forContract(DowngradeTest, {
+      compilations: mangledCompilations
+    });
+
+    let abiEntry = DowngradeTest.abi.find(
+      ({ type, name }) => type === "function" && name === "returnsStuff"
+    );
+    let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+
+    //we need the raw return data, and contract.call() does not exist yet,
+    //so we're going to have to use web3.eth.call()
+
+    let data = await web3.eth.call({
+      to: deployedContract.address,
+      data: selector
+    });
+
+    let decodings = await decoder.decodeReturnValue(abiEntry, data);
+    assert.lengthOf(decodings, 1);
+    let decoding = decodings[0];
+    assert.strictEqual(decoding.kind, "return");
+    assert.strictEqual(decoding.decodingMode, "full");
+    assert.lengthOf(decoding.arguments, 2);
+    assert.deepEqual(
+      Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+      {
+        x: 107,
+        y: 683
+      }
+    );
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.nativize(decoding.arguments[1].value),
+      "DowngradeTest.Ternary.No"
+    );
+  });
 });
 
 async function runEnumTestBody(mangledCompilations) {

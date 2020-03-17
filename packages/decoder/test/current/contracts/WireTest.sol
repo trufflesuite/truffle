@@ -174,6 +174,18 @@ contract WireTest is WireTestParent, WireTestAbstract {
     emit Overridden(107);
     emit WireTestParent.Overridden(683);
   }
+
+  function returnsStuff() public pure returns (Triple memory, Ternary) {
+    return (Triple(-1, 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef, hex"deadbeef"), Ternary.No);
+  }
+
+  receive() external payable {
+  }
+
+  function boom() public returns (uint) {
+    selfdestruct(address(this));
+  }
+
 }
 
 library WireTestLibrary {

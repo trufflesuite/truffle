@@ -48,6 +48,7 @@
     "@types/debug": "^0.0.31",
     "@types/utf8": "^2.1.6",
     "@types/web3": "1.0.19",
+    "chai": "^4.2.0",
     "lodash.clonedeep": "^4.5.0",
     "typescript": "^3.6.3"
   },
