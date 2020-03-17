@@ -50,22 +50,20 @@ describe("config", function() {
     output = "";
   });
 
-  it("retrieves the default migrations directory", function(done) {
-    command.run(
-      {
+  it("retrieves the default migrations directory", function() {
+    return command
+      .run({
         working_directory: config.working_directory,
         _: ["get", "migrations_directory"],
         logger: config.logger
-      },
-      () => {
+      })
+      .then(() => {
         const expected = path.join(config.working_directory, "./migrations");
         assert.equal(output, expected);
-        done();
-      }
-    );
+      });
   });
 
-  it("retrieves an adjusted migrations directory", function(done) {
+  it("retrieves an adjusted migrations directory", function() {
     const configFile = Config.search({
       working_directory: config.working_directory
     });
@@ -75,20 +73,18 @@ describe("config", function() {
       { encoding: "utf8" }
     );
 
-    command.run(
-      {
+    return command
+      .run({
         working_directory: config.working_directory,
         _: ["get", "migrations_directory"],
         logger: config.logger
-      },
-      () => {
+      })
+      .then(() => {
         const expected = path.join(
           config.working_directory,
           "./a-different-dir"
         );
         assert.equal(output, expected);
-        done();
-      }
-    );
+      });
   });
 });
