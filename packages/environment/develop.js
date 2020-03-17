@@ -113,25 +113,31 @@ const Develop = {
     });
   },
 
-  connectOrStart: function(options, ganacheOptions, callback) {
+  connectOrStart: async function(options, ganacheOptions) {
     options.retry = false;
 
     const ipcNetwork = options.network || "develop";
 
     let connectedAlready = false;
 
-    this.connect(options)
+    return this.connect(options)
       .then(disconnect => {
         connectedAlready = true;
-        callback(false, disconnect);
+        return {
+          started: false,
+          disconnect
+        };
       })
       .catch(async () => {
         await this.start(ipcNetwork, ganacheOptions);
         options.retry = true;
-        this.connect(options).then(disconnect => {
+        return this.connect(options).then(disconnect => {
           if (connectedAlready) return;
           connectedAlready = true;
-          callback(true, disconnect);
+          return {
+            started: true,
+            disconnect
+          };
         });
       });
   }
