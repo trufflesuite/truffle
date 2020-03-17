@@ -39,7 +39,7 @@ const Develop = {
     });
   },
 
-  connect: function(options, callback) {
+  connect: function(options) {
     const debugServer = debug("develop:ipc:server");
     const debugClient = debug("develop:ipc:client");
     const debugRPC = debug("develop:ganache");
@@ -97,56 +97,48 @@ const Develop = {
       ipc.disconnect(ipcNetwork);
     };
 
-    ipc.connectTo(ipcNetwork, connectPath, function() {
-      ipc.of[ipcNetwork].on("destroy", function() {
-        callback(new Error("IPC connection destroyed"));
-      });
+    return new Promise((resolve, reject) => {
+      ipc.connectTo(ipcNetwork, connectPath, function() {
+        ipc.of[ipcNetwork].on("destroy", function() {
+          reject(new Error("IPC connection destroyed"));
+        });
 
-      ipc.of[ipcNetwork].on("truffle.ready", function() {
-        callback(null, disconnect);
-      });
+        ipc.of[ipcNetwork].on("truffle.ready", function() {
+          resolve(disconnect);
+        });
 
-      Object.keys(loggers).forEach(function(key) {
-        var log = loggers[key];
-        if (log) {
-          var message = `truffle.${key}.log`;
-          ipc.of[ipcNetwork].on(message, log);
-        }
+        Object.keys(loggers).forEach(function(key) {
+          var log = loggers[key];
+          if (log) {
+            var message = `truffle.${key}.log`;
+            ipc.of[ipcNetwork].on(message, log);
+          }
+        });
       });
     });
   },
 
   connectOrStart: function(options, ganacheOptions, callback) {
-    const self = this;
-
     options.retry = false;
 
     const ipcNetwork = options.network || "develop";
 
     let connectedAlready = false;
 
-    this.connect(
-      options,
-      async function(error, disconnect) {
-        if (error) {
-          await self.start(ipcNetwork, ganacheOptions);
-
-          options.retry = true;
-          self.connect(
-            options,
-            function(error, disconnect) {
-              if (connectedAlready) return;
-
-              connectedAlready = true;
-              callback(true, disconnect);
-            }
-          );
-        } else {
+    this.connect(options)
+      .then(disconnect => {
+        connectedAlready = true;
+        callback(false, disconnect);
+      })
+      .catch(async () => {
+        await this.start(ipcNetwork, ganacheOptions);
+        options.retry = true;
+        this.connect(options).then(disconnect => {
+          if (connectedAlready) return;
           connectedAlready = true;
-          callback(false, disconnect);
-        }
-      }
-    );
+          callback(true, disconnect);
+        });
+      });
   }
 };
 
