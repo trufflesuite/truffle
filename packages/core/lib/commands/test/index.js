@@ -134,27 +134,24 @@ const command = {
         gasLimit: config.gas,
         time: config.genesis_time
       };
-      Develop.connectOrStart(
-        ipcOptions,
-        ganacheOptions,
-        (started, disconnect) => {
+      Develop.connectOrStart(ipcOptions, ganacheOptions)
+        .then(({ disconnect }) => {
           ipcDisconnect = disconnect;
-          Environment.develop(config, ganacheOptions)
-            .then(() => copyArtifactsToTempDir(config))
-            .then(({ config, temporaryDirectory }) => {
-              return prepareConfigAndRunTests({
-                config,
-                files,
-                temporaryDirectory
-              });
-            })
-            .then(numberOfFailures => {
-              done.call(null, numberOfFailures);
-              ipcDisconnect();
-            })
-            .catch(done);
-        }
-      );
+          return Environment.develop(config, ganacheOptions);
+        })
+        .then(() => copyArtifactsToTempDir(config))
+        .then(({ config, temporaryDirectory }) => {
+          return prepareConfigAndRunTests({
+            config,
+            files,
+            temporaryDirectory
+          });
+        })
+        .then(numberOfFailures => {
+          done.call(null, numberOfFailures);
+          ipcDisconnect();
+        })
+        .catch(done);
     }
   }
 };

@@ -105,7 +105,7 @@ const command = {
 
     ganacheOptions.network_id = sanitizeNetworkID(ganacheOptions.network_id);
 
-    Develop.connectOrStart(ipcOptions, ganacheOptions, started => {
+    Develop.connectOrStart(ipcOptions, ganacheOptions).then(({ started }) => {
       const url = `http://${ganacheOptions.host}:${ganacheOptions.port}/`;
 
       if (started) {
