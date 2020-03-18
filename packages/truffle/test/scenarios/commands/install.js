@@ -13,18 +13,11 @@ describe("truffle install [ @standalone ]", () => {
     config.logger = { log: () => {} };
   });
 
-  it("unboxes successfully", done => {
-    CommandRunner.run("install zeppelin", config, error => {
-      if (error) {
-        console.log("%o", error);
-        assert(false, "An error occured while installing");
-      }
-
-      const theInstallDirExists = fse.pathExistsSync(
-        path.join(config.working_directory, "installed_contracts")
-      );
-      assert(theInstallDirExists);
-      done();
-    });
+  it("unboxes successfully", async () => {
+    await CommandRunner.run("install zeppelin", config);
+    const theInstallDirExists = fse.pathExistsSync(
+      path.join(config.working_directory, "installed_contracts")
+    );
+    assert(theInstallDirExists);
   }).timeout(20000);
 });
