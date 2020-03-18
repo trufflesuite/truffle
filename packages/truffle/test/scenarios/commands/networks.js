@@ -23,16 +23,13 @@ describe("truffle networks", () => {
   after(done => Server.stop(done));
 
   describe("when run on a simple project", () => {
-    it("doesn't throw", done => {
-      CommandRunner.run("networks", config, error => {
-        assert(error === undefined, "error should be undefined here");
-        done();
-      });
+    it("doesn't throw", async () => {
+      await CommandRunner.run("networks", config);
     }).timeout(20000);
   });
 
   describe("when run with --clean", () => {
-    it("removes networks with id's not listed in the config", done => {
+    it("removes networks with id's not listed in the config", async () => {
       const workingDirectory = config.working_directory;
       const pathToArtifact = path.join(
         workingDirectory,
@@ -40,18 +37,16 @@ describe("truffle networks", () => {
         "contracts",
         "MetaCoin.json"
       );
-      CommandRunner.run("networks --clean", config, _error => {
-        const artifact = require(pathToArtifact);
-        assert(
-          Object.keys(artifact.networks).length === 1,
-          "It should have deleted 1 network entry"
-        );
-        assert(
-          artifact.networks["4"],
-          "It should have kept the network info for network_id 4"
-        );
-        done();
-      });
+      await CommandRunner.run("networks --clean", config);
+      const artifact = require(pathToArtifact);
+      assert(
+        Object.keys(artifact.networks).length === 1,
+        "It should have deleted 1 network entry"
+      );
+      assert(
+        artifact.networks["4"],
+        "It should have kept the network info for network_id 4"
+      );
     });
   });
 });
