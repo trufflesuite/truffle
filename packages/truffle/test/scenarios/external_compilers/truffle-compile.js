@@ -104,6 +104,7 @@ describe("`truffle compile` as external", function() {
   it("will run tests", async function() {
     this.timeout(70000);
     await CommandRunner.run("test", config);
+    const output = logger.contents();
     assert(output.indexOf("3 passing") >= 0);
   });
 });
