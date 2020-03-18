@@ -1,11 +1,10 @@
 const assert = require("assert");
-const sinon = require("sinon");
 const runHandler = require("../../lib/commands/run/run");
 const pluginLoader = require("../../lib/commands/run/plugin");
 const TruffleError = require("@truffle/error");
 
 describe("run handler", () => {
-  let nonCommandPlugins, commandPlugins, spyDone;
+  let nonCommandPlugins, commandPlugins;
 
   before(() => {
     // plugins that don't support "truffle run stub"
@@ -15,12 +14,7 @@ describe("run handler", () => {
     });
     // plugins that do support "truffle run stub"
     commandPlugins = pluginLoader.load({
-      plugins: [
-        "truffle-stub",
-        "truffle-other-stub",
-        "truffle-cb-stub",
-        "truffle-promise-stub"
-      ],
+      plugins: ["truffle-stub", "truffle-other-stub", "truffle-promise-stub"],
       working_directory: process.cwd()
     });
     // plugins with an absolute file path in truffle-plugin.json
@@ -28,8 +22,6 @@ describe("run handler", () => {
       plugins: ["truffle-other-stub"],
       working_directory: process.cwd()
     });
-    // done() callback
-    spyDone = sinon.spy();
   });
 
   describe("initializeCommand", () => {
@@ -119,14 +111,14 @@ describe("run handler", () => {
       it("throws when passed pluginConfigs that don't support a given command", () => {
         assert.throws(
           () => {
-            runHandler.run(nonCommandPlugins, "stub", null, spyDone);
+            runHandler.run(nonCommandPlugins, "stub", null);
           },
           TruffleError,
           "TruffleError not thrown!"
         );
         assert.throws(
           () => {
-            runHandler.run(commandPlugins, "notStub", null, spyDone);
+            runHandler.run(commandPlugins, "notStub", null);
           },
           TruffleError,
           "TruffleError not thrown!"
@@ -136,7 +128,7 @@ describe("run handler", () => {
       it("throws when passed pluginConfigs containing an absolute file path", () => {
         assert.throws(
           () => {
-            runHandler.run(absolutePathPlugins, "stub", null, spyDone);
+            runHandler.run(absolutePathPlugins, "stub", null);
           },
           TruffleError,
           "TruffleError not thrown!"
@@ -144,19 +136,14 @@ describe("run handler", () => {
       });
     });
 
-    it("runs a third-party command when passed pluginConfigs that do support a given command", () => {
-      runHandler.run(commandPlugins, "stub", null, spyDone);
-      assert.ok(spyDone);
+    it("runs a third-party command when passed pluginConfigs that do support a given command", async () => {
+      const result = await runHandler.run(commandPlugins, "stub", null);
+      assert(result === "Ran fake plugin");
     });
 
-    it("runs a third-party asynchronous command when passed pluginConfigs that do support a given command", () => {
-      runHandler.run(commandPlugins, "cb-stub", null, spyDone);
-      assert.ok(spyDone);
-    });
-
-    it("runs a third-party promise command when passed pluginConfigs that do support a given command", () => {
-      runHandler.run(commandPlugins, "promise-stub", null, spyDone);
-      assert.ok(spyDone);
+    it("runs a third-party promise command when passed pluginConfigs that do support a given command", async () => {
+      const result = await runHandler.run(commandPlugins, "promise-stub", null);
+      assert(result === "Ran promise-stub");
     });
   });
 });

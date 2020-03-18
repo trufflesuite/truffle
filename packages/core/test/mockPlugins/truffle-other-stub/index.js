@@ -1,7 +1,6 @@
 const Stub = {
-  run(config, done) {
+  run() {
     console.log("Running truffle-other-stub!");
-    done();
   }
 };
 

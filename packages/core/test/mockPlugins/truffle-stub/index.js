@@ -1,7 +1,7 @@
 const Stub = {
-  run(config, done) {
+  run() {
     console.log("Running truffle-stub!");
-    done();
+    return "Ran fake plugin";
   }
 };
 
