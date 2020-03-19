@@ -3,7 +3,6 @@ const debug = debugModule("debugger:controller:selectors"); //eslint-disable-lin
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import { isSkippedNodeType } from "lib/helpers";
-import jsonpointer from "json-pointer";
 
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
@@ -22,10 +21,10 @@ function anyNonSkippedInRange(
 ) {
   let sourceEnd = sourceStart + sourceLength;
   return findOverlappingRange(sourceStart, sourceLength).some(
-    ({ range, pointer }) =>
+    ({ range, node }) =>
       sourceStart <= range[0] && //we want to go by starting line
       range[0] < sourceEnd &&
-      !isSkippedNodeType(jsonpointer.get(node, pointer))
+      !isSkippedNodeType(node)
     //NOTE: this doesn't actually catch everything skipped!  But doing better
     //is hard
   );

@@ -56,7 +56,7 @@ function rangeNodes(node, pointer = "") {
       //(to my knowledge this only happens with the externalReferences
       //to an InlineAssembly node, so excluding them just means we find
       //the InlineAssembly node instead, which is fine)
-      results.push({ pointer, range: getRange(node) });
+      results.push({ pointer, node, range: getRange(node) });
     }
 
     return results.concat(
@@ -71,12 +71,17 @@ function rangeNodes(node, pointer = "") {
 
 function findRange(findOverlappingRange, sourceStart, sourceLength) {
   // find nodes that fully contain requested range,
-  // return longest pointer
+  // return one with longest pointer
+  // (note: returns { range, node, pointer }
   let sourceEnd = sourceStart + sourceLength;
   return findOverlappingRange(sourceStart, sourceLength)
     .filter(({ range }) => sourceStart >= range[0] && sourceEnd <= range[1])
-    .map(({ pointer }) => pointer)
-    .reduce((a, b) => (a.length > b.length ? a : b), "");
+    .reduce(
+      (acc, cur) => (cur.pointer.length >= acc.pointer.length ? cur : acc),
+      { pointer: "" }
+    );
+  //note we make sure to bias towards cur (the new value being compared) rather than acc (the old value)
+  //so that we don't actually get {pointer: ""} as our result
 }
 
 //function to create selectors that need both a current and next version
@@ -128,9 +133,9 @@ function createMultistepSelectors(stepSelector) {
     sourceRange: createLeaf(["./instruction"], getSourceRange),
 
     /**
-     * .pointer
+     * .pointerAndNode
      */
-    pointer: createLeaf(
+    pointerAndNode: createLeaf(
       ["./findOverlappingRange", "./sourceRange"],
 
       (findOverlappingRange, range) =>
@@ -140,12 +145,21 @@ function createMultistepSelectors(stepSelector) {
     ),
 
     /**
+     * .pointer
+     */
+    pointer: createLeaf(
+      ["./pointerAndNode"],
+
+      pointerAndNode => (pointerAndNode ? pointerAndNode.pointer : null)
+    ),
+
+    /**
      * .node
      */
     node: createLeaf(
-      ["./source", "./pointer"],
-      ({ ast }, pointer) =>
-        pointer ? jsonpointer.get(ast, pointer) : jsonpointer.get(ast, "")
+      ["./source", "./pointerAndNode"],
+
+      ({ ast }, pointerAndNode) => (pointerAndNode ? pointerAndNode.node : ast)
     )
   };
 }
@@ -417,14 +431,14 @@ let solidity = createSelectorTree({
               let findOverlappingRange = functions[compilationId][sourceId];
               let ast = sources[sourceId].ast;
               let range = getSourceRange(instruction);
-              let pointer = findRange(
+              let { node, pointer } = findRange(
                 findOverlappingRange,
                 range.start,
                 range.length
               );
-              let node = pointer
-                ? jsonpointer.get(ast, pointer)
-                : jsonpointer.get(ast, "");
+              if (!pointer) {
+                node = ast;
+              }
               if (!node || node.nodeType !== "FunctionDefinition") {
                 //filter out JUMPDESTs that aren't function definitions...
                 //except for the designated invalid function
@@ -556,9 +570,9 @@ let solidity = createSelectorTree({
             [compilationId]: sources.map(({ ast }) => {
               let tree = new IntervalTree();
               let ranges = rangeNodes(ast);
-              for (let { range, pointer } of ranges) {
+              for (let { range, node, pointer } of ranges) {
                 let [start, end] = range;
-                tree.insert(start, end, { range, pointer });
+                tree.insert(start, end, { range, node, pointer });
               }
               return (sourceStart, sourceLength) =>
                 tree.search(sourceStart, sourceStart + sourceLength);
