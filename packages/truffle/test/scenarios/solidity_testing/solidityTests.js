@@ -32,13 +32,6 @@ describe("Solidity Tests", function() {
     await fs.copy(from, config.test_directory + `/${file}`);
   }
 
-  function processErr(err, output) {
-    if (err) {
-      console.log(output);
-      throw new Error(err);
-    }
-  }
-
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
@@ -47,32 +40,37 @@ describe("Solidity Tests", function() {
       await initSandbox("TestWithBalance.sol");
     });
 
-    it("will run the test and have the correct balance", function(done) {
+    it("will run the test and have the correct balance", function() {
       this.timeout(70000);
 
-      CommandRunner.run("test", config, function(err) {
-        const output = logger.contents();
-        processErr(err, output);
-        assert(output.includes("1 passing"));
-        done();
-      });
+      return CommandRunner.run("test", config)
+        .then(() => {
+          const output = logger.contents();
+          assert(output.includes("1 passing"));
+        })
+        .catch(error => {
+          assert(false, `An error occurred: ${error}`);
+        });
     });
-  }).timeout(5000);
+  });
 
   describe("tests failing", function() {
     before(async () => {
       await initSandbox("TestFailures.sol");
     });
 
-    it("will throw errors correctly", function(done) {
+    it("will throw errors correctly", function() {
       this.timeout(70000);
 
-      CommandRunner.run("test", config, function(err) {
-        const output = logger.contents();
-        assert(err, `Tests should error. Output: ${output}`);
-        assert(output.includes("2 failing"));
-        done();
-      });
+      return CommandRunner.run("test", config)
+        .then(() => {
+          assert(false, "The tests should have failed.");
+        })
+        .catch(error => {
+          const output = logger.contents();
+          assert(error);
+          assert(output.includes("2 failing"));
+        });
     });
-  }).timeout(5000);
+  });
 });

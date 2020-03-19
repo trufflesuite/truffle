@@ -10,13 +10,6 @@ describe("Typescript Tests", () => {
   let config;
   let options;
 
-  function processErr(err, output) {
-    if (err) {
-      console.log(output);
-      throw new Error(err);
-    }
-  }
-
   before(done => Server.start(done));
   after(done => Server.stop(done));
 
@@ -31,22 +24,16 @@ describe("Typescript Tests", () => {
   });
 
   describe("testing contract behavior", () => {
-    it("will run .ts tests and have the correct behavior", done => {
-      CommandRunner.run("test test/metacoin.ts", config, err => {
-        const output = logger.contents();
-        processErr(err, output);
-        assert(output.includes("3 passing"));
-        done();
-      });
+    it("will run .ts tests and have the correct behavior", async () => {
+      await CommandRunner.run("test test/metacoin.ts", config);
+      const output = logger.contents();
+      assert(output.includes("3 passing"));
     }).timeout(70000);
 
-    it("will detect and run .sol, .ts, & .js test files", done => {
-      CommandRunner.run("test", config, err => {
-        const output = logger.contents();
-        processErr(err, output);
-        assert(output.includes("8 passing"));
-        done();
-      });
+    it("will detect and run .sol, .ts, & .js test files", async () => {
+      await CommandRunner.run("test", config);
+      const output = logger.contents();
+      assert(output.includes("8 passing"));
     }).timeout(70000);
   });
 }).timeout(10000);

@@ -1,6 +1,5 @@
 const MemoryLogger = require("../memorylogger");
-const { promisify } = require("util");
-const RunCommand = promisify(require("../commandrunner").run);
+const CommandRunner = require("../commandrunner");
 const path = require("path");
 const assert = require("assert");
 const Reporter = require("../reporter");
@@ -37,7 +36,7 @@ describe("migrate with [ @fabric-evm ] interface", () => {
 
   it("runs migrations (sync & async/await)", async () => {
     try {
-      await RunCommand("migrate", config);
+      await CommandRunner.run("migrate", config);
     } catch (error) {
       console.log(logger.contents());
       throw new Error(error);
