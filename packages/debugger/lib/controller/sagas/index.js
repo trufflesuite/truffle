@@ -197,16 +197,15 @@ function* stepOver() {
     !finished &&
     // we haven't jumped out
     currentDepth >= startingDepth &&
-    // we haven't changed file
-    currentLocation.source.id === startingLocation.source.id &&
-    currentLocation.source.compilationId ===
-      startingLocation.source.compilationId &&
     // either: function depth is greater than starting (ignore function calls)
     // or, if we're at the same depth, keep stepping until we're on a new
-    // line.
+    // line (which may be in a new file)
     (currentDepth > startingDepth ||
-      currentLocation.sourceRange.lines.start.line ===
-        startingLocation.sourceRange.lines.start.line)
+      (currentLocation.source.id === startingLocation.source.id &&
+        currentLocation.source.compilationId ===
+          startingLocation.source.compilationId &&
+        currentLocation.sourceRange.lines.start.line ===
+          startingLocation.sourceRange.lines.start.line))
   );
 }
 
