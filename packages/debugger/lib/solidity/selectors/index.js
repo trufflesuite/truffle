@@ -450,7 +450,8 @@ let solidity = createSelectorTree({
               let contractNode = jsonpointer.get(ast, contractPointer);
               return {
                 [instruction.pc]: {
-                  source: sourceId,
+                  sourceIndex: sourceId,
+                  compilationId,
                   pointer,
                   node,
                   name: node.name,
