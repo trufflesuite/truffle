@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 import trace from "lib/trace/selectors";
 
-import { getRange } from "lib/ast/map";
+import { getRange } from "lib/helpers";
 
 const __VARIABLES = `
 pragma solidity ^0.6.1;
