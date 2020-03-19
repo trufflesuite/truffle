@@ -39,9 +39,12 @@ describe("truffle run [ @standalone ]", () => {
       });
 
       it("whines about having no plugins configured", async () => {
-        await CommandRunner.run("run mock", config);
-        const output = logger.contents();
-        assert(output.includes("Error: No plugins detected"));
+        try {
+          await CommandRunner.run("run mock", config);
+        } catch (_error) {
+          const output = logger.contents();
+          assert(output.includes("Error: No plugins detected"));
+        }
       }).timeout(10000);
     });
 
