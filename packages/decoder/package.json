@@ -18,6 +18,8 @@
     "@truffle/compile-solidity": "^4.2.25",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
+    "fs-extra": "^9.0.0",
+    "path": "^0.12.7",
     "source-map-support": "^0.5.16",
     "web3": "1.2.1"
   },
@@ -41,6 +43,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "@truffle/config": "^1.2.16",
     "@truffle/contract-schema": "^3.0.23",
     "@truffle/provider": "^0.2.9",
     "@types/big.js": "^4.0.5",
