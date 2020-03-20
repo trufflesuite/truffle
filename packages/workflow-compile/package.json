@@ -10,7 +10,7 @@
     "@truffle/expect": "^0.0.13",
     "@truffle/external-compile": "^1.0.28",
     "@truffle/resolver": "^5.1.6",
-    "fs-extra": "^7.0.1",
+    "fs-extra": "^8.1.0",
     "mkdirp": "^0.5.1"
   },
   "main": "index.js",
