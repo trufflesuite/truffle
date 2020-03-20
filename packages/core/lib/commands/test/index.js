@@ -20,11 +20,16 @@ const command = {
       describe: "Suppress all output except for test runner output.",
       type: "boolean",
       default: false
+    },
+    "bail": {
+      describe: "Bail after first test failure",
+      type: "boolean",
+      default: false
     }
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>]",
+      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail]",
     options: [
       {
         option: "<test_file>",
@@ -67,6 +72,10 @@ const command = {
       {
         option: "--runner-output-only",
         description: "Suppress all output except for test runner output."
+      },
+      {
+        option: "--bail",
+        description: "Bail after first test failure"
       }
     ]
   },
