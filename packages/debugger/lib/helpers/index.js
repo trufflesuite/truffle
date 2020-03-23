@@ -1,6 +1,5 @@
 import * as Codec from "@truffle/codec";
-
-const stringify = require("json-stable-stringify");
+import stringify from "json-stable-stringify";
 
 /** AST node types that are skipped by stepNext() to filter out some noise */
 export function isDeliberatelySkippedNodeType(node) {
@@ -21,6 +20,17 @@ export function isSkippedNodeType(node) {
     (node.typeDescriptions !== undefined && //seems this sometimes happens?
       Codec.Ast.Utils.typeClass(node) === "stringliteral")
   );
+}
+
+export function getRange(node) {
+  // src: "<start>:<length>:<_>"
+  // returns [start, end]
+  let [start, length] = node.src
+    .split(":")
+    .slice(0, 2)
+    .map(i => parseInt(i));
+
+  return [start, start + length];
 }
 
 export function prefixName(prefix, fn) {
