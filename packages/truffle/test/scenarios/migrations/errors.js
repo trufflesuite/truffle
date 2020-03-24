@@ -114,7 +114,7 @@ describe("migration errors", function() {
     }
   });
 
-  it("should error on insufficient funds correctly", async function() {
+  it("should error on insufficient funds correctly [ @ganache ]", async function() {
     this.timeout(70000);
 
     try {
@@ -128,6 +128,23 @@ describe("migration errors", function() {
       assert(output.includes("insufficient funds"));
       assert(output.includes("Account"));
       assert(output.includes("Balance"));
+    }
+  });
+
+  it("should error on insufficient funds correctly [ @geth ]", async function() {
+    this.timeout(70000);
+
+    try {
+      await CommandRunner.run("migrate -f 6", config);
+      assert(false, "This should have thrown.");
+    } catch (_error) {
+      const output = logger.contents();
+      console.log(output);
+      assert(output.includes("6_migrations_funds.js"));
+      assert(output.includes("Deploying 'Example'"));
+      assert(output.includes("generic error from Geth"));
+      assert(output.includes("gas required exceeds allowance"));
+      assert(output.includes("always failing transaction"));
     }
   });
 
