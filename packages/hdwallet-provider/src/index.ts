@@ -168,9 +168,10 @@ class HDWalletProvider {
       ).toLowerCase();
 
       switch (providerProtocol) {
-        case "ws":
-        case "wss":
+        case "ws:":
+        case "wss:":
           subProvider = new Web3.providers.WebsocketProvider(provider);
+          break;
         default:
           // @ts-ignore: Incorrect typings in @types/web3
           subProvider = new Web3.providers.HttpProvider(provider, {
