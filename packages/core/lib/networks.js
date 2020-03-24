@@ -10,7 +10,10 @@ const Networks = {
   deployed: async function(options) {
     let files;
     try {
-      files = fs.readdirSync(options.contracts_build_directory);
+      // Only read JSON files in directory
+      files = fs
+        .readdirSync(options.contracts_build_directory)
+        .filter(fn => fn.endsWith(".json"));
     } catch (error) {
       // We can't read the directory. Act like we found nothing.
       files = [];
@@ -146,7 +149,10 @@ const Networks = {
   },
 
   clean: async function(config) {
-    let files = fs.readdirSync(config.contracts_build_directory);
+    // Only read JSON files in directory
+    let files = fs
+      .readdirSync(config.contracts_build_directory)
+      .filter(fn => fn.endsWith(".json"));
     const configuredNetworks = Object.keys(config.networks);
     const results = [];
 
