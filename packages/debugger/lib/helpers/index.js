@@ -22,17 +22,6 @@ export function isSkippedNodeType(node) {
   );
 }
 
-export function getRange(node) {
-  // src: "<start>:<length>:<_>"
-  // returns [start, end]
-  let [start, length] = node.src
-    .split(":")
-    .slice(0, 2)
-    .map(i => parseInt(i));
-
-  return [start, start + length];
-}
-
 export function prefixName(prefix, fn) {
   Object.defineProperty(fn, "name", {
     value: `${prefix}.${fn.name}`,
