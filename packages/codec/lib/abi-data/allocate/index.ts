@@ -1010,7 +1010,7 @@ export function getEventAllocations(
           if (!baseContractInfo) {
             //similar to above... this failure case can happen when there are
             //two contracts with the same name and you attempt to use the
-            //artifacts (say you have contracts A, B, and B', where A inherits
+            //artifacts; say you have contracts A, B, and B', where A inherits
             //from B, and B and B' have the same name, and B' is the one that
             //gets the artifact; B will end up in reference declarations and so
             //get found above, but it won't appear in contracts, causing the
