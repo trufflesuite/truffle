@@ -76,7 +76,7 @@ export class WireDecoder {
         const deployedBytecode = shimBytecode(contract.deployedBytecode);
         const bytecode = shimBytecode(contract.bytecode);
         if (deployedBytecode && deployedBytecode !== "0x") {
-          deployedContext = Utils.makeContext(contract, node, compiler);
+          deployedContext = Utils.makeContext(contract, node, compilation);
           this.contexts[deployedContext.context] = deployedContext;
           //note that we don't set up deployedContexts until after normalization!
         }
@@ -84,7 +84,7 @@ export class WireDecoder {
           constructorContext = Utils.makeContext(
             contract,
             node,
-            compiler,
+            compilation,
             true
           );
           this.contexts[constructorContext.context] = constructorContext;
@@ -713,7 +713,7 @@ export class ContractDecoder {
       const unnormalizedContext = Utils.makeContext(
         this.contract,
         this.contractNode,
-        this.compilation.compiler || this.contract.compiler
+        this.compilation
       );
       this.contextHash = unnormalizedContext.context;
       //we now throw away the unnormalized context, instead fetching the correct one from
@@ -737,7 +737,7 @@ export class ContractDecoder {
                   //note that we immediately discard it!
                 },
                 this.contractNode,
-                compiler
+                this.compilation
               )
             }
           ],
@@ -1104,7 +1104,7 @@ export class ContractInstanceDecoder {
       const extraContext = Utils.makeContext(
         contractWithCode,
         this.contractNode,
-        this.compiler
+        this.compilation
       );
       this.contextHash = extraContext.context;
       this.additionalContexts = { [extraContext.context]: extraContext };
