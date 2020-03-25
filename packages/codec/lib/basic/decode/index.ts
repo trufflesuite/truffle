@@ -596,14 +596,7 @@ export function decodeInternalFunction(
   }
   let name = functionEntry.name;
   let mutability = functionEntry.mutability;
-  let definedIn: Format.Types.ContractType = {
-    typeClass: "contract" as const,
-    kind: "native" as const,
-    id: functionEntry.contractId.toString(),
-    typeName: functionEntry.contractName,
-    contractKind: functionEntry.contractKind,
-    payable: functionEntry.contractPayable
-  };
+  let definedIn = Evm.Import.functionTableEntryToType(functionEntry);
   return {
     type: dataType,
     kind: "value" as const,
