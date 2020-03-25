@@ -33,8 +33,9 @@ import {
   InvalidAddressError,
   VariableNotFoundError
 } from "./errors";
-//sorry for the untyped import, but...
+//sorry for the untyped imports, but...
 const { shimBytecode } = require("@truffle/compile-solidity/legacy/shims");
+const SolidityUtils = require("@truffle/solidity-utils");
 
 /**
  * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.
@@ -1029,6 +1030,7 @@ export class ContractInstanceDecoder {
   private allocations: Codec.Evm.AllocationInfo;
 
   private stateVariableReferences: Storage.Allocate.StateVariableAllocation[];
+  private internalFunctionsTable: Codec.Evm.InternalFunctions;
 
   private mappingKeys: Storage.Slot[] = [];
 
@@ -1118,6 +1120,36 @@ export class ContractInstanceDecoder {
       //mash these together like I'm about to
       this.contexts = { ...this.contexts, ...this.additionalContexts };
     }
+
+    //finally: set up internal functions table (only if source order is reliable;
+    //otherwise leave as undefined)
+    //unlike the debugger, we don't *demand* an answer, so we won't set up
+    //some sort of fake table if we don't have a source map, or if any ASTs are missing
+    //(if a whole *source* is missing, we'll consider that OK)
+    if (
+      !this.compilation.unreliableSourceOrder &&
+      this.contract.deployedSourceMap &&
+      this.compilation.sources.every(source => !source || source.ast)
+    ) {
+      //WARNING: untyped code in this block!
+      let asts: Ast.AstNode[] = this.compilation.sources.map(
+        source => (source ? source.ast : undefined)
+      );
+      let instructions = SolidityUtils.getProcessedInstructionsForBinary(
+        this.compilation.sources.map(
+          source => (source ? source.source : undefined)
+        ),
+        this.contractCode,
+        SolidityUtils.getHumanReadableSourceMap(this.contract.deployedSourceMap)
+      );
+      let searchFunctions = asts.map(SolidityUtils.makeOverlapFunction);
+      this.internalFunctionsTable = SolidityUtils.getFunctionsByProgramCounter(
+        instructions,
+        asts,
+        searchFunctions,
+        this.compilation.id
+      );
+    }
   }
 
   private get context(): Contexts.DecoderContext {
@@ -1152,7 +1184,8 @@ export class ContractInstanceDecoder {
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
       contexts: this.contexts,
-      currentContext: this.context
+      currentContext: this.context,
+      internalFunctionsTable: this.internalFunctionsTable
     };
     debug("this.contextHash: %s", this.contextHash);
 

@@ -16,6 +16,7 @@
   "dependencies": {
     "@truffle/codec": "^0.4.2",
     "@truffle/compile-solidity": "^4.2.25",
+    "@truffle/solidity-utils": "^1.2.8",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
     "fs-extra": "^8.1.0",

@@ -490,13 +490,16 @@ export interface FunctionInternalValueInfoException {
 }
 
 /**
- * This type is used when decoding internal functions from the high-level
- * decoding interface, which presently doesn't support detailed decoding of
- * internal functions.  (The debugger, however, supports it!  You can get this
- * detailed information in the debugger!)  You'll still get the program counter
- * values, but further information will be absent.  Note you'll get this even
- * if really it should decode to an error, because the decoding interface
- * doesn't have the information to determine that it's an error.
+ * This type is used when decoding internal functions in contexts that don't
+ * support full decoding of such functions.  The high-level decoding interface
+ * can currently only sometimes perform such a full decoding.
+ *
+ * In contexts where such full decoding isn't supported, you'll get one of
+ * these; so you'll still get the program counter values, but further
+ * information will be absent.  Note you'll get this even if really it should
+ * decode to an error, because if there's insufficient information to determine
+ * additional function information, there's necessarily insufficient
+ * information to determine if it should be an error.
  *
  * @Category Function types
  */

@@ -126,8 +126,6 @@ contract("DecodingSample", _accounts => {
     assert.equal(variables.dynamicArrayEnum[0], "DecodingSample.E.EnumValFour");
     assert.equal(variables.dynamicArrayEnum[1], "DecodingSample.E.EnumValTwo");
 
-    // const fixedStructArray = variables.fixedArrayStructS;
-
     assert.equal(variables.varMapping[2], 41);
     assert.equal(variables.varMapping[3], 107);
     assert.equal(variables.varAddressMapping[address], 683);
@@ -141,5 +139,7 @@ contract("DecodingSample", _accounts => {
       variables.functionExternal,
       "DecodingSample(" + address + ").example"
     );
+
+    assert.equal(variables.functionInternal, "DecodingSample.example");
   });
 });
