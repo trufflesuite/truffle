@@ -167,6 +167,9 @@ import { ContractConstructorObject, ContractInstanceObject } from "./types";
 
 import { Compilations } from "@truffle/codec";
 
+import fs from "fs-extra";
+import path from "path";
+
 /**
  * **This function is asynchronous.**
  *
@@ -391,14 +394,14 @@ export async function forContractInstance(
  * @category Provider-based Constructor
  */
 function infoToCompilations(
-  projectInfo: ProjectInfo | Artifact[],
+  info: ProjectInfo | Artifact[],
   primaryArtifact?: Artifact
 ): Compilations.Compilation[] {
-  if (!projectInfo) {
-    projectInfo = [];
+  if (!info) {
+    info = [];
   }
-  if (Array.isArray(projectInfo)) {
-    let artifacts = projectInfo;
+  if (Array.isArray(info)) {
+    let artifacts = info;
     if (
       primaryArtifact &&
       !artifacts.find(
@@ -411,10 +414,29 @@ function infoToCompilations(
     }
     return Compilations.Utils.shimArtifacts(artifacts);
   } else {
+    let projectInfo: ProjectInfo = info;
     if (projectInfo.compilations) {
       return projectInfo.compilations;
     } else if (projectInfo.artifacts) {
       return Compilations.Utils.shimArtifacts(projectInfo.artifacts);
+    } else if (projectInfo.config) {
+      //NOTE: This will be expanded in the future so that it's not just
+      //using the build directory
+      if (projectInfo.config.contracts_build_directory !== undefined) {
+        let files = fs
+          .readdirSync(projectInfo.config.contracts_build_directory)
+          .filter(file => path.extname(file) === ".json");
+        let data = files.map(file =>
+          fs.readFileSync(
+            path.join(projectInfo.config.contracts_build_directory, file),
+            "utf8"
+          )
+        );
+        let artifacts = data.map(json => JSON.parse(json));
+        return Compilations.Utils.shimArtifacts(artifacts);
+      } else {
+        throw new NoProjectInfoError();
+      }
     } else {
       throw new NoProjectInfoError();
     }
