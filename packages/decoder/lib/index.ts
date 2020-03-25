@@ -5,8 +5,7 @@ This module provides an interface for decoding contract state, transaction
 calldata, events, and return values and revert strings.  It's an interface to
 the same low-level decoding functionality that Truffle Debugger uses.  However,
 it has additional functionality that the debugger does not need, and the
-debugger has additional functionality that this interface either does not need
-or cannot currently replicate.
+debugger has additional functionality that this decoder does not need.
 
 The interface is split into three classes: The wire decoder, the contract
 decoder, and the contract instance decoder.  The wire decoder is associated to
@@ -59,9 +58,16 @@ The decoder outputs lossless, machine-readable [[Format.Values.Result]] objects
 containing individual decoded values. See the [[Format|format documentation]]
 for an overview and complete module listing.
 
+Note that for technical reasons, the decoder cannot always fully decode
+internal function pointers, but it will do its best even when information is
+missing, and will still losslessly return what information it can.  If you want
+to make sure to get the full information, see the advice
+[here](../#decoding-modes) about how to make sure "full mode" works; the same
+applies to decoding of internal function pointers.
+
 ### Decoding modes and abification
 
-The decoder runs in either of two modes: full mode or ABI mdoe. Full mode
+The decoder runs in either of two modes: full mode or ABI mode. Full mode
 requires some additional constraints but returns substantially more detailed
 information. Please see the notes on [decoding modes](../#decoding-modes) for
 more about this distinction.
