@@ -61,11 +61,12 @@ which mode was used via the `"decodingMode"` field.
 
 To ensure full mode works:
   * Use Solidity v0.4.12 or higher;
+  * Ensure all contracts in your projects have distinct names;
   * Compile all your contracts at the same time;
   * Ensure all custom data types are declared in a file with at least one contract.
 
 (Our apologies for these technical limitations, but we are working to address
-these last two problems.)
+these last three problems.)
 
 If you can't use full mode or don't want to deal with the distinction,
 the decoder provides
