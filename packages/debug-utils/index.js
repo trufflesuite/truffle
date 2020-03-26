@@ -48,6 +48,8 @@ const truffleColors = {
   periwinkle: chalk.hex("#7F9DD1")
 };
 
+const DEFAULT_TAB_WIDTH = 8;
+
 var DebugUtils = {
   gatherArtifacts: async function(config) {
     // Gather all available contract artifacts
@@ -167,41 +169,67 @@ var DebugUtils = {
     return lines.join(OS.EOL);
   },
 
-  formatLineNumberPrefix: function(line, number, cols, tab) {
-    if (!tab) {
-      tab = "  ";
+  tabsToSpaces: function(inputLine, tabLength = DEFAULT_TAB_WIDTH) {
+    //note: I'm going to assume for these purposes that everything is
+    //basically ASCII and I don't have to worry about astral planes or
+    //grapheme clusters.  Sorry. :-/
+    let line = "";
+    let counter = 0;
+    for (let i = 0; i < inputLine.length; i++) {
+      if (inputLine[i] === "\t") {
+        const remaining = tabLength - counter;
+        line += " ".repeat(remaining);
+        counter = 0;
+      } else if (inputLine[i] === "\n") {
+        line += "\n";
+        counter = 0;
+      } else if (inputLine[i] === "\r" && inputLine[i + 1] === "\n") {
+        line += "\n";
+        counter = 0;
+        i++;
+      } else {
+        line += inputLine[i];
+        counter++;
+        if (counter === tabLength) {
+          counter = 0;
+        }
+      }
     }
-
-    var prefix = number + "";
-    while (prefix.length < cols) {
-      prefix = " " + prefix;
-    }
-
-    prefix += ": ";
-    return prefix + line.replace(/\t/g, tab);
+    return line;
   },
 
-  formatLinePointer: function(line, startCol, endCol, padding, tab) {
-    if (!tab) {
-      tab = "  ";
-    }
+  formatLineNumberPrefix: function(line, number, cols) {
+    const prefix = String(number).padStart(cols) + ": ";
 
-    padding += 2; // account for ": "
-    var prefix = "";
-    while (prefix.length < padding) {
-      prefix += " ";
-    }
+    return prefix + line;
+  },
 
-    var output = "";
-    for (var i = 0; i < line.length; i++) {
-      var pointedAt = i >= startCol && i < endCol;
-      var isTab = line[i] === "\t";
+  formatLinePointer: function(
+    line,
+    startCol,
+    endCol,
+    padding,
+    tabLength = DEFAULT_TAB_WIDTH
+  ) {
+    const prefix = " ".repeat(padding + 2); //account for ": "
 
-      var additional;
-      if (isTab) {
-        additional = tab;
+    let output = "";
+    let counter = 0;
+    for (let i = 0; i < line.length; i++) {
+      let pointedAt = i >= startCol && i < endCol;
+
+      let additional;
+      if (line[i] === "\t") {
+        const remaining = tabLength - counter;
+        additional = " ".repeat(remaining);
+        debug("advancing %d", remaining);
+        counter = 0;
       } else {
         additional = " "; // just a space
+        counter++;
+        if (counter === tabLength) {
+          counter = 0;
+        }
       }
 
       if (pointedAt) {
@@ -216,6 +244,8 @@ var DebugUtils = {
 
   //NOTE: source and uncolorizedSource here have already
   //been split into lines here, they're not the raw text
+  //ALSO: assuming here that colorized source has been detabbed
+  //but that uncolorized source has not
   formatRangeLines: function(
     source,
     range,

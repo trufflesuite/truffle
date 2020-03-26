@@ -1,6 +1,5 @@
 import * as Codec from "@truffle/codec";
-
-const stringify = require("json-stable-stringify");
+import stringify from "json-stable-stringify";
 
 /** AST node types that are skipped by stepNext() to filter out some noise */
 export function isDeliberatelySkippedNodeType(node) {

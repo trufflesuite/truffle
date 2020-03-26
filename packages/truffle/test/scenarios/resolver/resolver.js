@@ -5,7 +5,6 @@ var assert = require("assert");
 var Server = require("../server");
 var Reporter = require("../reporter");
 var sandbox = require("../sandbox");
-var log = console.log;
 
 describe("Solidity Imports [ @standalone ]", function() {
   var config;
@@ -55,24 +54,17 @@ describe("Solidity Imports [ @standalone ]", function() {
       });
     });
 
-    it("resolves solidity imports located outside the working directory", function(done) {
+    it("resolves solidity imports located outside the working directory", async function() {
       this.timeout(30000);
 
-      CommandRunner.run("compile", config, function(err) {
-        const output = logger.contents();
-        if (err) {
-          log(output);
-          return done(err);
-        }
+      await CommandRunner.run("compile", config);
+      const output = logger.contents();
 
-        assert(output.includes("./contracts/Importer.sol"));
-        assert(output.includes("ethpmpkg/EthPMImport.sol"));
-        assert(output.includes("nodepkg/ImportOfImport.sol"));
-        assert(output.includes("nodepkg/LocalNodeImport.sol"));
-        assert(output.includes("nodepkg/NodeImport.sol"));
-
-        done();
-      });
+      assert(output.includes("./contracts/Importer.sol"));
+      assert(output.includes("ethpmpkg/EthPMImport.sol"));
+      assert(output.includes("nodepkg/ImportOfImport.sol"));
+      assert(output.includes("nodepkg/LocalNodeImport.sol"));
+      assert(output.includes("nodepkg/NodeImport.sol"));
     });
   });
 
@@ -89,17 +81,17 @@ describe("Solidity Imports [ @standalone ]", function() {
       });
     });
 
-    it("fails gracefully if an import is not found", function(done) {
+    it("fails gracefully if an import is not found", async function() {
       this.timeout(30000);
 
-      CommandRunner.run("compile", config, function(err) {
+      try {
+        await CommandRunner.run("compile", config);
+      } catch (_error) {
         const output = logger.contents();
-        assert(err);
         assert(output.includes("Error"));
         assert(output.includes("Could not find nodepkg/DoesNotExist.sol"));
         assert(output.includes("Importer.sol"));
-        done();
-      });
+      }
     });
   });
 });

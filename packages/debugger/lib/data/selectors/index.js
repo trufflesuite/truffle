@@ -70,7 +70,8 @@ function debuggerContextToDecoderContext(context) {
     isConstructor,
     abi,
     payable,
-    compiler
+    compiler,
+    compilationId
   } = context;
   return {
     context: contextHash,
@@ -81,7 +82,8 @@ function debuggerContextToDecoderContext(context) {
     isConstructor,
     abi: Codec.AbiData.Utils.computeSelectors(abi),
     payable,
-    compiler
+    compiler,
+    compilationId
   };
 }
 

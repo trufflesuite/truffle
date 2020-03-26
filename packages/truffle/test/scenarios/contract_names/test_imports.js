@@ -7,7 +7,6 @@ var assert = require("assert");
 var Server = require("../server");
 var Reporter = require("../reporter");
 const sandbox = require("../sandbox");
-var log = console.log;
 
 describe("Contract names", function() {
   let config;
@@ -16,13 +15,6 @@ describe("Contract names", function() {
 
   before(done => Server.start(done));
   after(done => Server.stop(done));
-
-  function processErr(err, output) {
-    if (err) {
-      log(output);
-      throw new Error(err);
-    }
-  }
 
   before(async function() {
     this.timeout(10000);
@@ -34,60 +26,51 @@ describe("Contract names", function() {
     };
   });
 
-  it("will compile if file names do not match contract names", function(done) {
+  it("will compile if file names do not match contract names", async function() {
     this.timeout(40000);
 
-    CommandRunner.run("compile", config, function(err) {
-      const output = logger.contents();
-      processErr(err, output);
+    await CommandRunner.run("compile", config);
 
-      // The contract's name is Contract, but the file name is contract.
-      // Not only should we not receive an error, but we should receive contract
-      // artifacts relative to the contract name and not the file name.
-      assert(
-        fs.existsSync(
-          path.join(config.contracts_build_directory, "Contract.json")
-        )
-      );
-
-      done();
-    });
+    // The contract's name is Contract, but the file name is contract.
+    // Not only should we not receive an error, but we should receive contract
+    // artifacts relative to the contract name and not the file name.
+    assert(
+      fs.existsSync(
+        path.join(config.contracts_build_directory, "Contract.json")
+      )
+    );
   });
 
-  it("will migrate when artifacts.require() doesn't have an extension and names do not match", function(done) {
+  it("will migrate when artifacts.require() doesn't have an extension and names do not match", async function() {
     this.timeout(50000);
 
-    CommandRunner.run("migrate", config, async function(err) {
-      const output = logger.contents();
-      processErr(err, output);
+    await CommandRunner.run("migrate", config);
 
-      const contractPath = path.join(
-        config.contracts_build_directory,
-        "Contract.json"
-      );
-      const Contract = contract(require(contractPath));
-      Contract.setProvider(config.provider);
+    const contractPath = path.join(
+      config.contracts_build_directory,
+      "Contract.json"
+    );
+    const Contract = contract(require(contractPath));
+    Contract.setProvider(config.provider);
 
-      const instance = await Contract.deployed();
-      assert.notEqual(
-        instance.address,
-        null,
-        instance.contract_name + " didn't have an address!"
-      );
+    const instance = await Contract.deployed();
+    assert.notEqual(
+      instance.address,
+      null,
+      instance.contract_name + " didn't have an address!"
+    );
 
-      // Now let's interact with our deployed contract JUST to ensure it actually did do
-      // the right thing.
-      const value = await instance.specialValue.call();
-      assert.equal(
-        parseInt(value),
-        1337,
-        "Somehow the wrong contract was deployed, because we don't have the correct value"
-      );
-      done();
-    });
+    // Now let's interact with our deployed contract JUST to ensure it actually did do
+    // the right thing.
+    const value = await instance.specialValue.call();
+    assert.equal(
+      parseInt(value),
+      1337,
+      "Somehow the wrong contract was deployed, because we don't have the correct value"
+    );
   });
 
-  it("will compile and migrate with relative imports (using filename)", function(done) {
+  it("will compile and migrate with relative imports (using filename)", async function() {
     this.timeout(50000);
 
     const contractPath = path.join(
@@ -95,36 +78,29 @@ describe("Contract names", function() {
       "RelativeImport.json"
     );
 
-    CommandRunner.run("compile", config, function(err) {
-      const output = logger.contents();
-      processErr(err, output);
+    await CommandRunner.run("compile", config);
 
-      assert(fs.existsSync(contractPath));
+    assert(fs.existsSync(contractPath));
 
-      CommandRunner.run("migrate", config, async function(err) {
-        const output = logger.contents();
-        processErr(err, output);
+    await CommandRunner.run("migrate", config);
 
-        const RelativeImport = contract(require(contractPath));
-        RelativeImport.setProvider(config.provider);
+    const RelativeImport = contract(require(contractPath));
+    RelativeImport.setProvider(config.provider);
 
-        const instance = await RelativeImport.deployed();
-        assert.notEqual(
-          instance.address,
-          null,
-          instance.contract_name + " didn't have an address!"
-        );
+    const instance = await RelativeImport.deployed();
+    assert.notEqual(
+      instance.address,
+      null,
+      instance.contract_name + " didn't have an address!"
+    );
 
-        // Now let's interact with our deployed contract JUST to ensure it actually did do
-        // the right thing.
-        const value = await instance.specialValue.call();
-        assert.equal(
-          parseInt(value),
-          1337,
-          "Somehow the wrong contract was deployed, because we don't have the correct value"
-        );
-        done();
-      });
-    });
+    // Now let's interact with our deployed contract JUST to ensure it actually did do
+    // the right thing.
+    const value = await instance.specialValue.call();
+    assert.equal(
+      parseInt(value),
+      1337,
+      "Somehow the wrong contract was deployed, because we don't have the correct value"
+    );
   });
 });
