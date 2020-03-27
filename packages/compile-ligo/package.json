@@ -1,12 +1,13 @@
 {
   "name": "@truffle/compile-ligo",
   "version": "0.4.0-tezos.2",
-  "description": "> TODO: description",
+  "description": "Ligo compiler interface for truffle",
   "author": "CruzMolina <7537712+CruzMolina@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "license": "MIT",
   "main": "index.js",
   "directories": {
+    "scripts": "scripts",
     "test": "tests"
   },
   "repository": {
