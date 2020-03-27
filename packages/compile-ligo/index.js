@@ -33,7 +33,7 @@ compile.all = (options, callback) => {
 };
 
 // contracts_directory: String. Directory where .ligo files can be found.
-// build_directory: String. Optional. Directory where .tz files can be found. Only required if `all` is false.
+// build_directory: String. Optional. Directory where .json files can be found. Only required if `all` is false.
 // all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
 //      in the build directory to see what needs to be compiled.
 // quiet: Boolean. Suppress output. Defaults to false.
