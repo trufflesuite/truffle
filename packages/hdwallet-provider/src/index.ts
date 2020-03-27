@@ -164,7 +164,7 @@ class HDWalletProvider {
       // Web3.providers.HttpProvider.prototype.send;
       let subProvider;
       const providerProtocol = (
-        Url.parse(provider).protocol || "http"
+        Url.parse(provider).protocol || "http:"
       ).toLowerCase();
 
       switch (providerProtocol) {
