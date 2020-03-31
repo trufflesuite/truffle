@@ -173,7 +173,7 @@ import { ContractConstructorObject, ContractInstanceObject } from "./types";
 
 import { Compilations } from "@truffle/codec";
 
-import fs from "fs-extra";
+import fs from "fs";
 import path from "path";
 
 /**
