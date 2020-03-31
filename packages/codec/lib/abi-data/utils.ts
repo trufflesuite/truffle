@@ -221,7 +221,7 @@ function abiParameterIsObviouslyIllTyped(
 
 export function abiEntryHasStorageParameters(abiEntry: Abi.AbiEntry): boolean {
   const isStorage = (parameter: Abi.AbiParameter) =>
-    parameter.type.endsWith("storage");
+    parameter.type.endsWith(" storage");
   switch (abiEntry.type) {
     case "fallback":
     case "receive":
