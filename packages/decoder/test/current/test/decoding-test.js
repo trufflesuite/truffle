@@ -142,4 +142,19 @@ contract("DecodingSample", _accounts => {
 
     assert.equal(variables.functionInternal, "DecodingSample.example");
   });
+
+  it("should spawn decoders based on address alone", async function() {
+    const deployedContract = await DecodingSample.deployed();
+    const address = deployedContract.address;
+    const wireDecoder = await Decoder.forProject(
+      DecodingSample.web3.currentProvider,
+      [DecodingSample]
+    );
+    const decoder = await wireDecoder.forAddress(address);
+
+    const initialVariables = await decoder.variables();
+    const variables = nativizeDecoderVariables(initialVariables);
+
+    assert.equal(variables.varString, "two");
+  });
 });
