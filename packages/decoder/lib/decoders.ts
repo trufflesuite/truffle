@@ -436,7 +436,13 @@ export class WireDecoder {
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
-    const { address, name, fromBlock, toBlock } = options;
+    let { address, name, fromBlock, toBlock } = options;
+    if (fromBlock === undefined) {
+      fromBlock = "latest";
+    }
+    if (toBlock === undefined) {
+      toBlock = "latest";
+    }
     const fromBlockNumber = await this.regularizeBlock(fromBlock);
     const toBlockNumber = await this.regularizeBlock(toBlock);
 
@@ -636,16 +642,12 @@ export class WireDecoder {
     const deployedBytecode = Conversion.toHexString(
       await this.getCode(address, blockNumber)
     );
-    const { contract, compilationId } = this.contractsAndContexts.find(
+    const contractAndContexts = this.contractsAndContexts.find(
       ({ deployedContext }) =>
         deployedContext &&
         Contexts.Utils.matchContext(deployedContext, deployedBytecode)
     );
-    const compilation = this.compilations.find(
-      compilation => compilation.id === compilationId
-    );
-
-    if (contract === undefined) {
+    if (!contractAndContexts) {
       throw new ContractNotFoundError(
         undefined,
         undefined,
@@ -653,6 +655,10 @@ export class WireDecoder {
         address
       );
     }
+    const { contract, compilationId } = contractAndContexts;
+    const compilation = this.compilations.find(
+      compilation => compilation.id === compilationId
+    );
     let contractDecoder = new ContractDecoder(contract, compilation, this); //no artifact
     //(artifact is only used for address autodetection, and here we're supplying the
     //address, so this won't cause any problems)
