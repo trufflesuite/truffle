@@ -222,18 +222,11 @@ function abiParameterIsObviouslyIllTyped(
 export function abiEntryHasStorageParameters(abiEntry: Abi.AbiEntry): boolean {
   const isStorage = (parameter: Abi.AbiParameter) =>
     parameter.type.endsWith(" storage");
-  switch (abiEntry.type) {
-    case "fallback":
-    case "receive":
-      return false;
-    case "constructor":
-    case "event":
-      return abiEntry.inputs.some(isStorage);
-    case "function":
-      return (
-        abiEntry.inputs.some(isStorage) || abiEntry.outputs.some(isStorage)
-      );
-    //Note the lack of recursion!  Storage parameters can only occur at
-    //top level so there's no need to recurse here
-  }
+  return (
+    abiEntry.type === "function" &&
+    (abiEntry.inputs.some(isStorage) || abiEntry.outputs.some(isStorage))
+  );
+  //Note the lack of recursion!  Storage parameters can only occur at
+  //top level so there's no need to recurse here
+  //(they can also only occur for functions)
 }
