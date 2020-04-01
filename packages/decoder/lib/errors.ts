@@ -26,16 +26,24 @@ export class ContractNotFoundError extends Error {
   public contractName: string;
   public bytecode: string;
   public deployedBytecode: string;
+  public address: string;
   constructor(
     contractName: string,
     bytecode: string,
-    deployedBytecode: string
+    deployedBytecode: string,
+    address: string
   ) {
-    const message = `Contract ${contractName} could not be found in the project information`;
+    let message;
+    if (contractName) {
+      message = `Contract ${contractName} could not be found in the project information`;
+    } else {
+      message = `Contract at ${address} could not be found in the project information`;
+    }
     super(message);
     this.contractName = contractName;
     this.bytecode = bytecode;
     this.deployedBytecode = deployedBytecode;
+    this.address = address;
     this.name = "ContractNotFoundError";
   }
 }
