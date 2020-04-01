@@ -9,7 +9,7 @@
   "scripts": {},
   "dependencies": {
     "node-emoji": "^1.8.1",
-    "ora": "^3.0.0",
+    "ora": "^4.0.3",
     "web3-utils": "1.2.1"
   },
   "publishConfig": {

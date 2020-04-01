@@ -11,7 +11,7 @@
     "colors": "^1.1.2",
     "debug": "^4.1.0",
     "fs-extra": "^8.1.0",
-    "ora": "^3.0.0",
+    "ora": "^4.0.3",
     "original-require": "^1.0.1",
     "request": "^2.85.0",
     "request-promise": "^4.2.2",

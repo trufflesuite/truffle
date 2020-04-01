@@ -10,6 +10,7 @@
     "access": "public"
   },
   "dependencies": {
-    "emittery": "^0.4.1"
+    "emittery": "^0.4.1",
+    "ora": "^4.0.3"
   }
 }
