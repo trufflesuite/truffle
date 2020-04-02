@@ -318,7 +318,8 @@ export interface MagicValue {
 }
 
 /**
- * A type's value (or error)
+ * A type's value (or error); currently only allows contract types and
+ * enum types
  *
  * @Category Special container types (debugger-only)
  */
@@ -327,17 +328,39 @@ export type TypeResult = TypeValue | Errors.TypeErrorResult;
 /**
  * A type's value -- for now, we consider the value of a contract type to
  * consist of the values of its non-inherited state variables in the current
- * context.  May contain errors.
+ * context, and the value of an enum type to be an array of its possible options
+ * (as Values).  May contain errors.
  *
  * @Category Special container types (debugger-only)
  */
-export interface TypeValue {
-  type: Types.TypeType;
+export type TypeValue = TypeValueContract | TypeValueEnum;
+
+/**
+ * A contract type's value (see [[TypeValue]])
+ *
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeValueContract {
+  type: Types.TypeTypeContract;
   kind: "value";
   /**
    * these must be stored in order!
    */
   value: NameValuePair[];
+}
+
+/**
+ * An enum type's value (see [[TypeValue]])
+ *
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeValueEnum {
+  type: Types.TypeTypeEnum;
+  kind: "value";
+  /**
+   * these must be stored in order!
+   */
+  value: EnumValue[];
 }
 
 /*
