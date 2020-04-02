@@ -58,7 +58,7 @@
     "mocha": "5.2.0",
     "node-emoji": "^1.8.1",
     "node-ipc": "^9.1.1",
-    "ora": "^4.0.3",
+    "ora": "^3.4.0",
     "original-require": "1.0.1",
     "safe-eval": "^0.4.1",
     "sane": "^4.0.2",
