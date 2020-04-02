@@ -48,6 +48,12 @@ All of these functions take a final argument in which information about the
 project is specified; currently only a few methods for specifying project
 information are allowed, but more are planned.
 
+One can also spawn decoders from other decoders by supplying additional
+information.  For instance, the wire decoder has a method
+[[WireDecoder.forAddress|`forAddress`]] that will spawn a contract instance
+decoder from an address.  See the documentation for the individual decoder
+classes for a method listing.
+
 ### Decoder methods
 
 See the documentation for the individual decoder classes for a method listing.
