@@ -758,8 +758,14 @@ function getCalldataAllocationsForContract(
     functionAllocations: {}
   };
   for (let abiEntry of abi) {
-    if (AbiDataUtils.abiEntryIsObviouslyIllTyped(abiEntry)) {
-      //hack workaround!
+    if (
+      AbiDataUtils.abiEntryIsObviouslyIllTyped(abiEntry) ||
+      AbiDataUtils.abiEntryHasStorageParameters(abiEntry)
+    ) {
+      //the first of these conditions is a hack workaround for a Solidity bug.
+      //the second of these is because... seriously? we're not handling these
+      //(at least not for now!) (these only exist prior to Solidity 0.5.6,
+      //thankfully)
       continue;
     }
     switch (abiEntry.type) {
