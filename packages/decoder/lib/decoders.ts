@@ -813,7 +813,10 @@ export class ContractDecoder {
       //NOTE: does this change make this intermediate class essentially pointless?
       //Yes.  But not going to get rid of it now!
 
-      if (this.allocations.state[this.compilation.id][this.contractNode.id]) {
+      if (
+        this.allocations.state[this.compilation.id] &&
+        this.allocations.state[this.compilation.id][this.contractNode.id]
+      ) {
         this.stateVariableReferences = this.allocations.state[
           this.compilation.id
         ][this.contractNode.id].members;
@@ -1200,13 +1203,17 @@ export class ContractInstanceDecoder {
         this.contractCode,
         SolidityUtils.getHumanReadableSourceMap(this.contract.deployedSourceMap)
       );
-      let searchFunctions = asts.map(SolidityUtils.makeOverlapFunction);
-      this.internalFunctionsTable = SolidityUtils.getFunctionsByProgramCounter(
-        instructions,
-        asts,
-        searchFunctions,
-        this.compilation.id
-      );
+      try {
+        //this can fail if some of the source files are missing :(
+        this.internalFunctionsTable = SolidityUtils.getFunctionsByProgramCounter(
+          instructions,
+          asts,
+          asts.map(SolidityUtils.makeOverlapFunction),
+          this.compilation.id
+        );
+      } catch (_) {
+        //just leave the internal functions table undefined
+      }
     }
   }
 
