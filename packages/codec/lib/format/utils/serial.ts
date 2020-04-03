@@ -116,18 +116,26 @@ export function serializeType(
         return <Format.Types.MagicType<SerialFormatConfig>>(<unknown>dataType); //ugh
       }
     case "type":
-      if (dataType.stateVariableTypes !== undefined) {
-        return {
-          ...dataType,
-          stateVariableTypes: dataType.stateVariableTypes.map(
-            ({ name, type: stateVariableType }) => ({
-              name,
-              type: serializeType(stateVariableType)
-            })
-          )
-        };
-      } else {
-        return <Format.Types.TypeType<SerialFormatConfig>>(<unknown>dataType); //fricking TypeScript
+      switch (dataType.type.typeClass) {
+        case "contract":
+          let coercedType = <Format.Types.TypeTypeContract>dataType;
+          if (coercedType.stateVariableTypes !== undefined) {
+            return {
+              ...coercedType,
+              stateVariableTypes: coercedType.stateVariableTypes.map(
+                ({ name, type: stateVariableType }) => ({
+                  name,
+                  type: serializeType(stateVariableType)
+                })
+              )
+            };
+          } else {
+            return <Format.Types.TypeTypeContract<SerialFormatConfig>>(
+              (<unknown>coercedType)
+            ); //fricking TypeScript
+          }
+        case "enum":
+          return <Format.Types.TypeTypeEnum<SerialFormatConfig>>dataType;
       }
     default:
       return dataType;
@@ -270,17 +278,33 @@ function serializeUntiedResult(
           };
         }
         case "type": {
-          //yeah, this works the same as struct/tuple for now, but I think I'll keep it separate...
-          //(will likely expand it later)
-          let coercedValue = <Format.Values.TypeValue>value;
-          return {
-            ...coercedValue,
-            type: <Format.Types.TypeType<SerialFormatConfig>>serializedType,
-            value: coercedValue.value.map(({ name, value: element }) => ({
-              name,
-              value: serializeUntiedResult(element)
-            }))
-          };
+          switch (value.type.type.typeClass) {
+            case "contract": {
+              let coercedValue = <Format.Values.TypeValueContract>value;
+              return {
+                ...coercedValue,
+                type: <Format.Types.TypeTypeContract<SerialFormatConfig>>(
+                  serializedType
+                ),
+                value: coercedValue.value.map(({ name, value: element }) => ({
+                  name,
+                  value: serializeUntiedResult(element)
+                }))
+              };
+            }
+            case "enum": {
+              let coercedValue = <Format.Values.TypeValueEnum>value;
+              return {
+                ...coercedValue,
+                type: <Format.Types.TypeTypeEnum<SerialFormatConfig>>(
+                  serializedType
+                ),
+                value: <Format.Values.EnumValue<SerialFormatConfig>[]>(
+                  coercedValue.value.map(serializeUntiedResult)
+                )
+              };
+            }
+          }
         }
         case "contract": {
           let coercedValue = <Format.Values.ContractValue>value;
@@ -585,18 +609,26 @@ export function deserializeType(
         return <Format.Types.MagicType>(<unknown>dataType); //ugh
       }
     case "type":
-      if (dataType.stateVariableTypes !== undefined) {
-        return {
-          ...dataType,
-          stateVariableTypes: dataType.stateVariableTypes.map(
-            ({ name, type: stateVariableType }) => ({
-              name,
-              type: deserializeType(stateVariableType)
-            })
-          )
-        };
-      } else {
-        return <Format.Types.TypeType>(<unknown>dataType); //fricking TypeScript
+      switch (dataType.type.typeClass) {
+        case "contract":
+          let coercedType = <Format.Types.TypeTypeContract<SerialFormatConfig>>(
+            dataType
+          );
+          if (coercedType.stateVariableTypes !== undefined) {
+            return {
+              ...coercedType,
+              stateVariableTypes: coercedType.stateVariableTypes.map(
+                ({ name, type: stateVariableType }) => ({
+                  name,
+                  type: deserializeType(stateVariableType)
+                })
+              )
+            };
+          } else {
+            return <Format.Types.TypeTypeContract>(<unknown>coercedType); //fricking TypeScript
+          }
+        case "enum":
+          return <Format.Types.TypeTypeEnum>dataType;
       }
     default:
       return dataType;
@@ -739,17 +771,33 @@ function deserializeToUntiedResult(
           };
         }
         case "type": {
-          //yeah, this works the same as struct/tuple for now, but I think I'll keep it separate...
-          //(will likely expand it later)
-          let coercedValue = <Format.Values.TypeValue<SerialFormatConfig>>value;
-          return {
-            ...coercedValue,
-            type: <Format.Types.TypeType>deserializedType,
-            value: coercedValue.value.map(({ name, value: element }) => ({
-              name,
-              value: deserializeToUntiedResult(element)
-            }))
-          };
+          switch (value.type.type.typeClass) {
+            case "contract": {
+              let coercedValue = <
+                Format.Values.TypeValueContract<SerialFormatConfig>
+              >value;
+              return {
+                ...coercedValue,
+                type: <Format.Types.TypeTypeContract>deserializedType,
+                value: coercedValue.value.map(({ name, value: element }) => ({
+                  name,
+                  value: deserializeToUntiedResult(element)
+                }))
+              };
+            }
+            case "enum": {
+              let coercedValue = <
+                Format.Values.TypeValueEnum<SerialFormatConfig>
+              >value;
+              return {
+                ...coercedValue,
+                type: <Format.Types.TypeTypeEnum>deserializedType,
+                value: <Format.Values.EnumValue[]>(
+                  coercedValue.value.map(deserializeToUntiedResult)
+                )
+              };
+            }
+          }
         }
         case "contract": {
           let coercedValue = <Format.Values.ContractValue<SerialFormatConfig>>(
