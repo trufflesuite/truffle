@@ -218,3 +218,15 @@ function abiParameterIsObviouslyIllTyped(
     return baseTypeClassIsObviouslyWrong;
   }
 }
+
+export function abiEntryHasStorageParameters(abiEntry: Abi.AbiEntry): boolean {
+  const isStorage = (parameter: Abi.AbiParameter) =>
+    parameter.type.endsWith(" storage");
+  return (
+    abiEntry.type === "function" &&
+    (abiEntry.inputs.some(isStorage) || abiEntry.outputs.some(isStorage))
+  );
+  //Note the lack of recursion!  Storage parameters can only occur at
+  //top level so there's no need to recurse here
+  //(they can also only occur for functions)
+}

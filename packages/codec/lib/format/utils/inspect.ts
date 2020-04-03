@@ -175,17 +175,24 @@ export class ResultInspector {
             }
           }
           case "type": {
-            //same as struct case but w/o circularity check
-            let coercedResult = <Format.Values.TypeValue>this.result;
-            return util.inspect(
-              Object.assign(
-                {},
-                ...coercedResult.value.map(({ name, value }) => ({
-                  [name]: new ResultInspector(value)
-                }))
-              ),
-              options
-            );
+            switch (this.result.type.type.typeClass) {
+              case "contract":
+                //same as struct case but w/o circularity check
+                return util.inspect(
+                  Object.assign(
+                    {},
+                    ...(<Format.Values.TypeValueContract>this.result).value.map(
+                      ({ name, value }) => ({
+                        [name]: new ResultInspector(value)
+                      })
+                    )
+                  ),
+                  options
+                );
+              case "enum": {
+                return enumTypeName(this.result.type.type);
+              }
+            }
           }
           case "magic":
             return util.inspect(
@@ -475,7 +482,12 @@ function nativizeWithTable(
   seenSoFar: any[]
 ): any {
   if (result.kind === "error") {
-    return undefined;
+    switch (result.error.kind) {
+      case "BoolOutOfRangeError":
+        return true;
+      default:
+        return undefined;
+    }
   }
   //NOTE: for simplicity, only arrays & structs will call nativizeWithTable;
   //other containers will just call nativize because they can get away with it
@@ -571,12 +583,19 @@ function nativizeWithTable(
       }
     }
     case "type":
-      return Object.assign(
-        {},
-        ...(<Format.Values.TypeValue>result).value.map(({ name, value }) => ({
-          [name]: nativize(value)
-        }))
-      );
+      switch (result.type.type.typeClass) {
+        case "contract":
+          return Object.assign(
+            {},
+            ...(<Format.Values.TypeValueContract>result).value.map(
+              ({ name, value }) => ({
+                [name]: nativize(value)
+              })
+            )
+          );
+        case "enum":
+          return (<Format.Values.TypeValueEnum>result).value.map(nativize);
+      }
     case "tuple":
       return (<Format.Values.TupleValue>result).value.map(({ value }) =>
         nativize(value)

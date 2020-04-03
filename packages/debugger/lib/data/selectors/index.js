@@ -70,7 +70,8 @@ function debuggerContextToDecoderContext(context) {
     isConstructor,
     abi,
     payable,
-    compiler
+    compiler,
+    compilationId
   } = context;
   return {
     context: contextHash,
@@ -81,7 +82,8 @@ function debuggerContextToDecoderContext(context) {
     isConstructor,
     abi: Codec.AbiData.Utils.computeSelectors(abi),
     payable,
-    compiler
+    compiler,
+    compilationId
   };
 }
 
@@ -662,18 +664,18 @@ const data = createSelectorTree({
         (allocations, compilationId) =>
           Object.assign(
             {},
-            ...Object.entries(allocations[compilationId]).map(
-              ([id, allocation]) => ({
-                [id]: {
-                  members: Object.assign(
-                    {},
-                    ...allocation.members.map(memberAllocation => ({
-                      [memberAllocation.definition.id]: memberAllocation
-                    }))
-                  )
-                }
-              })
-            )
+            ...Object.entries(
+              compilationId ? allocations[compilationId] : {}
+            ).map(([id, allocation]) => ({
+              [id]: {
+                members: Object.assign(
+                  {},
+                  ...allocation.members.map(memberAllocation => ({
+                    [memberAllocation.definition.id]: memberAllocation
+                  }))
+                )
+              }
+            }))
           )
       )
     },

@@ -50,12 +50,14 @@ class DebugInterpreter {
     const breakpoints = this.session.view(controller.breakpoints);
 
     const currentNode = currentLocation.node ? currentLocation.node.id : null;
-    const currentLine = currentLocation.sourceRange
-      ? currentLocation.sourceRange.lines.start.line
-      : null;
     const currentSourceId = currentLocation.source
       ? currentLocation.source.id
       : null;
+    const currentLine =
+      currentSourceId !== null && currentSourceId !== undefined
+        ? //sourceRange is never null, so we go by whether currentSourceId is null/undefined
+          currentLocation.sourceRange.lines.start.line
+        : null;
     const currentCompilationId = currentLocation.source
       ? currentLocation.source.compilationId
       : null;
@@ -79,11 +81,11 @@ class DebugInterpreter {
     else if (args[0] === "all") {
       if (setOrClear) {
         // only "B all" is legal, not "b all"
-        this.printer.print("Cannot add breakpoint everywhere.\n");
+        this.printer.print("Cannot add breakpoint everywhere.");
         return;
       }
       await this.session.removeAllBreakpoints();
-      this.printer.print("Removed all breakpoints.\n");
+      this.printer.print("Removed all breakpoints.");
       return;
     }
 
@@ -99,7 +101,7 @@ class DebugInterpreter {
       debug("delta %d", delta);
 
       if (isNaN(delta)) {
-        this.printer.print("Offset must be an integer.\n");
+        this.printer.print("Offset must be an integer.");
         return;
       }
 
@@ -119,7 +121,7 @@ class DebugInterpreter {
       //first let's get the line number as usual
       let line = parseInt(lineArg, 10); //want an integer
       if (isNaN(line)) {
-        this.printer.print("Line number must be an integer.\n");
+        this.printer.print("Line number must be an integer.");
         return;
       }
 
@@ -136,7 +138,7 @@ class DebugInterpreter {
       );
 
       if (matchingSources.length === 0) {
-        this.printer.print(`No source file found matching ${sourceArg}.\n`);
+        this.printer.print(`No source file found matching ${sourceArg}.`);
         return;
       } else if (matchingSources.length > 1) {
         this.printer.print(
@@ -158,7 +160,7 @@ class DebugInterpreter {
     //otherwise, it's a simple line number
     else {
       debug("absolute case");
-      if (currentSourceId === null) {
+      if (currentSourceId === null || currentSourceId === undefined) {
         this.printer.print("Cannot determine current file.");
         return;
       }
@@ -166,7 +168,7 @@ class DebugInterpreter {
       debug("line %d", line);
 
       if (isNaN(line)) {
-        this.printer.print("Line number must be an integer.\n");
+        this.printer.print("Line number must be an integer.");
         return;
       }
 
@@ -185,7 +187,7 @@ class DebugInterpreter {
       //add it after that point
       if (breakpoint === null) {
         this.printer.print(
-          "Nowhere to add breakpoint at or beyond that location.\n"
+          "Nowhere to add breakpoint at or beyond that location."
         );
         return;
       }
@@ -235,12 +237,10 @@ class DebugInterpreter {
     //cleared, report back that we can't do that
     if (setOrClear === alreadyExists) {
       if (setOrClear) {
-        this.printer.print(
-          `Breakpoint at ${locationMessage} already exists.\n`
-        );
+        this.printer.print(`Breakpoint at ${locationMessage} already exists.`);
         return;
       } else {
-        this.printer.print(`No breakpoint at ${locationMessage} to remove.\n`);
+        this.printer.print(`No breakpoint at ${locationMessage} to remove.`);
         return;
       }
     }
@@ -249,10 +249,10 @@ class DebugInterpreter {
     //also report back to the user on what happened
     if (setOrClear) {
       await this.session.addBreakpoint(breakpoint);
-      this.printer.print(`Breakpoint added at ${locationMessage}.\n`);
+      this.printer.print(`Breakpoint added at ${locationMessage}.`);
     } else {
       await this.session.removeBreakpoint(breakpoint);
-      this.printer.print(`Breakpoint removed at ${locationMessage}.\n`);
+      this.printer.print(`Breakpoint removed at ${locationMessage}.`);
     }
     return;
   }

@@ -39,8 +39,9 @@ class DebugPrinter {
       this.colorizedSources[compilationId] = {};
       for (const source of compilation.byId) {
         const id = source.id;
-        const uncolorized = source.source;
-        const colorized = DebugUtils.colorize(uncolorized);
+        const raw = source.source;
+        const detabbed = DebugUtils.tabsToSpaces(raw);
+        const colorized = DebugUtils.colorize(detabbed);
         this.colorizedSources[compilationId][id] = colorized;
       }
     }

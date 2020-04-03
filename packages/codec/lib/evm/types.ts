@@ -55,7 +55,8 @@ export interface InternalFunctions {
 }
 
 export interface InternalFunction {
-  source?: number;
+  sourceIndex?: number;
+  compilationId?: string;
   pointer?: string;
   node?: Ast.AstNode;
   name?: string;

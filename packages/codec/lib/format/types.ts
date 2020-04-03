@@ -584,11 +584,19 @@ export interface MagicType<
 }
 
 /**
- * Type of a type!  This is currently only used for contract types, but
- * may expand in the future.
+ * Type of a type!  This is currently only used for contract types and enum
+ * types, but may expand in the future.
  * @Category Special container types (debugger-only)
  */
-export interface TypeType<
+export type TypeType<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> = TypeTypeContract<C> | TypeTypeEnum<C>;
+
+/**
+ * Type of a contract type
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeTypeContract<
   C extends Config.FormatConfig = Config.DefaultFormatConfig
 > {
   typeClass: "type";
@@ -598,6 +606,17 @@ export interface TypeType<
    * **non-inherited** state variables
    */
   stateVariableTypes?: NameTypePair<C>[];
+}
+
+/**
+ * Type of an enum type
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeTypeEnum<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  typeClass: "type";
+  type: EnumType<C>;
 }
 
 /**

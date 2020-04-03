@@ -369,6 +369,71 @@ contract("DowngradeTest", function(accounts) {
     let selector = web3.eth.abi.encodeFunctionSignature("causeTrouble()");
     assert.strictEqual(decodedFunction.value.selector, selector);
   });
+
+  it("Partially decodes internal functions when unreliable order", async function() {
+    let mangledCompilations = clonedeep(compilations);
+    mangledCompilations[0].unreliableSourceOrder = true;
+
+    let deployedContract = await DowngradeTest.new();
+    let decoder = await Decoder.forContractInstance(deployedContract, {
+      compilations: mangledCompilations
+    });
+
+    let decodedFunction = await decoder.variable("canYouReadMe");
+    assert.strictEqual(decodedFunction.type.typeClass, "function");
+    assert.strictEqual(decodedFunction.type.visibility, "internal");
+    assert.strictEqual(decodedFunction.type.mutability, "nonpayable");
+    assert.isEmpty(decodedFunction.type.inputParameterTypes);
+    assert.isEmpty(decodedFunction.type.outputParameterTypes);
+    assert.strictEqual(decodedFunction.kind, "value");
+    assert.strictEqual(decodedFunction.value.kind, "unknown");
+    assert.strictEqual(decodedFunction.value.context.typeName, "DowngradeTest");
+    //we won't bother testing the PC values
+  });
+
+  it("Decodes return values even with no deployedBytecode", async function() {
+    let mangledCompilations = clonedeep(compilations);
+    let downgradeTest = mangledCompilations[0].contracts.find(
+      contract => contract.contractName === "DowngradeTest"
+    );
+    downgradeTest.deployedBytecode = undefined;
+
+    let deployedContract = await DowngradeTest.new();
+    let decoder = await Decoder.forContract(DowngradeTest, {
+      compilations: mangledCompilations
+    });
+
+    let abiEntry = DowngradeTest.abi.find(
+      ({ type, name }) => type === "function" && name === "returnsStuff"
+    );
+    let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+
+    //we need the raw return data, and contract.call() does not exist yet,
+    //so we're going to have to use web3.eth.call()
+
+    let data = await web3.eth.call({
+      to: deployedContract.address,
+      data: selector
+    });
+
+    let decodings = await decoder.decodeReturnValue(abiEntry, data);
+    assert.lengthOf(decodings, 1);
+    let decoding = decodings[0];
+    assert.strictEqual(decoding.kind, "return");
+    assert.strictEqual(decoding.decodingMode, "full");
+    assert.lengthOf(decoding.arguments, 2);
+    assert.deepEqual(
+      Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+      {
+        x: 107,
+        y: 683
+      }
+    );
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.nativize(decoding.arguments[1].value),
+      "DowngradeTest.Ternary.No"
+    );
+  });
 });
 
 async function runEnumTestBody(mangledCompilations) {

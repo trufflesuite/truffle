@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 import trace from "lib/trace/selectors";
 
-import { getRange } from "lib/ast/map";
+import SolidityUtils from "@truffle/solidity-utils";
 
 const __VARIABLES = `
 pragma solidity ^0.6.1;
@@ -81,7 +81,7 @@ describe("AST", function() {
 
         let node = session.view(solidity.current.node);
 
-        let [nodeStart, nodeLength] = getRange(node);
+        let [nodeStart, nodeLength] = SolidityUtils.getRange(node);
         let nodeEnd = nodeStart + nodeLength;
 
         let pointer = session.view(solidity.current.pointer);

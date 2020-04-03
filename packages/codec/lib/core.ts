@@ -696,6 +696,20 @@ export function* decodeReturndata(
   return decodings;
 }
 
+/**
+ * Decodes the return data from a failed call.
+ *
+ * @param returndata The returned data, as a Uint8Array.
+ * @return An array of possible decodings.  At the moment it's
+ *   impossible for there to be more than one.  (If the call didn't actually
+ *   fail, or failed in a nonstandard way, you may get no decodings at all, though!)
+ *
+ *   Decodings can either be decodings of revert messages, or decodings
+ *   indicating that there was no revert message.  If somehow both were to be
+ *   possible, they'd go in that order, although as mentioned, there (at least
+ *   currently) isn't any way for that to occur.
+ * @Category Decoding convenience
+ */
 export function decodeRevert(returndata: Uint8Array): ReturndataDecoding[] {
   //coercing because TS doesn't know it'll finish in one go
   return <ReturndataDecoding[]>decodeReturndata(

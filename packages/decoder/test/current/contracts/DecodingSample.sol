@@ -53,6 +53,7 @@ contract DecodingSample {
   E[]       dynamicArrayEnum;
 
   function() external functionExternal = this.example;
+  function() internal functionInternal;
 
   function example() public {
     functionExternal = this.example;
@@ -126,5 +127,7 @@ contract DecodingSample {
     varEnumMapping[E.EnumValTwo] = 2;
     varEnumMapping[E.EnumValThree] = 3;
     varEnumMapping[E.EnumValFour] = 4;
+
+    functionInternal = example;
   }
 }

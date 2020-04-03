@@ -141,8 +141,6 @@ contract("DecodingSample", _accounts => {
     assert.equal(variables.dynamicArrayEnum[0], "DecodingSample.E.EnumValFour");
     assert.equal(variables.dynamicArrayEnum[1], "DecodingSample.E.EnumValTwo");
 
-    // const fixedStructArray = variables.fixedArrayStructS;
-
     assert.equal(variables.varMapping[2], 41);
     assert.equal(variables.varMapping[3], 107);
     assert.equal(variables.varAddressMapping[address], 683);
@@ -156,5 +154,22 @@ contract("DecodingSample", _accounts => {
       variables.functionExternal,
       "DecodingSample(" + address + ").example"
     );
+
+    assert.equal(variables.functionInternal, "DecodingSample.example");
+  });
+
+  it("should spawn decoders based on address alone", async function() {
+    const deployedContract = await DecodingSample.deployed();
+    const address = deployedContract.address;
+    const wireDecoder = await Decoder.forProject(
+      DecodingSample.web3.currentProvider,
+      [DecodingSample]
+    );
+    const decoder = await wireDecoder.forAddress(address);
+
+    const initialVariables = await decoder.variables();
+    const variables = nativizeDecoderVariables(initialVariables);
+
+    assert.equal(variables.varString, "two");
   });
 });
