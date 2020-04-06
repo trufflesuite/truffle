@@ -409,7 +409,7 @@ const execute = {
           };
 
           params.data = constructor.michelson;
-          params.arguments = args[0] || `0`;
+          params.arguments = args[0];
 
           /*
           params.gas = await execute.getGasEstimate.call(
@@ -428,7 +428,11 @@ const execute = {
           const originateParams = {
             balance: params.value || "0",
             code: JSON.parse(params.data),
-            storage: params.arguments,
+            storage: params.arguments
+              ? params.arguments
+              : constructor.initialStorage
+                ? constructor.initialStorage
+                : `0`,
             fee: params.fee,
             storageLimit: params.storageLimit,
             gasLimit: params.gasLimit || params.gas

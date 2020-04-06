@@ -5,6 +5,7 @@ const externalCompile = require("@truffle/external-compile");
 const solcCompile = require("@truffle/compile-solidity/legacy");
 const vyperCompile = require("@truffle/compile-vyper");
 const ligoCompile = require("@truffle/compile-ligo");
+const smartpyCompile = require("@truffle/compile-smartpy");
 const { prepareConfig, multiPromisify } = require("../utils");
 const {
   reportCompilationStarted,
@@ -16,6 +17,7 @@ const SUPPORTED_COMPILERS = {
   solc: solcCompile,
   vyper: vyperCompile,
   ligo: ligoCompile,
+  smartpy: smartpyCompile,
   external: externalCompile
 };
 

@@ -17,6 +17,10 @@
     "metadata": {
       "$ref": "#/definitions/Metadata"
     },
+    "initialStorage": {
+      "$ref": "#/definitions/InitialStorage",
+      "description": "Initial storage values sent with Tezos contract-creation transaction data"
+    },
     "michelson": {
       "$ref": "#/definitions/Michelson",
       "description": "Michelson sent as Tezos contract-creation transaction data"
@@ -121,6 +125,9 @@
     },
     "Metadata": {
       "type": "string"
+    },
+    "InitialStorage": {
+      "type":  "string"
     },
     "Michelson": {
       "type": "string"

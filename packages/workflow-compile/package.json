@@ -5,6 +5,7 @@
   "dependencies": {
     "@truffle/artifactor": "^4.1.0-tezos.2",
     "@truffle/compile-ligo": "^0.4.0-tezos.2",
+    "@truffle/compile-smartpy": "^0.1.0",
     "@truffle/compile-solidity": "^4.3.0-tezos.2",
     "@truffle/compile-vyper": "^1.1.0-tezos.2",
     "@truffle/config": "^1.3.0-tezos.2",

@@ -81,6 +81,9 @@ var properties = {
   metadata: {
     sources: ["metadata"]
   },
+  initialStorage: {
+    sources: ["initialStorage"]
+  },
   michelson: {
     sources: ["michelson"]
   },

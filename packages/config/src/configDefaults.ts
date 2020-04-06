@@ -54,7 +54,8 @@ export const getInitialConfig = ({
         }
       },
       vyper: {},
-      ligo: {}
+      ligo: {},
+      smartpy: {}
     },
     logger: console
   };

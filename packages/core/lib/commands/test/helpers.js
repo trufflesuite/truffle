@@ -7,7 +7,10 @@ const copyArtifactsToTempDir = async config => {
   // Copy all the built files over to a temporary directory, because we
   // don't want to save any tests artifacts. Only do this if the build directory
   // exists.
-  const temporaryDirectory = temp.mkdirSync("test-");
+  const temporaryDirectory = temp.mkdirSync({
+    prefix: ".test-",
+    dir: config.working_directory
+  });
   try {
     fs.statSync(config.contracts_build_directory);
   } catch (_error) {

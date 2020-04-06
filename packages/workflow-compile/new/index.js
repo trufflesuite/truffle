@@ -21,6 +21,10 @@ const SUPPORTED_COMPILERS = {
     compiler: require("@truffle/compile-ligo"),
     legacy: true
   },
+  smartpy: {
+    compiler: require("@truffle/compile-smartpy"),
+    legacy: true
+  },
   external: {
     compiler: require("@truffle/external-compile"),
     legacy: true
