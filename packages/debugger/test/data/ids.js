@@ -191,8 +191,7 @@ describe("Variable IDs", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -203,8 +202,7 @@ describe("Variable IDs", function() {
 
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   it("Distinguishes between stackframes", async function() {
@@ -213,23 +211,22 @@ describe("Variable IDs", function() {
     let receipt = await instance.factorial(3);
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("break here #1", source)
     });
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("break here #2", source)
     });
 
@@ -252,23 +249,22 @@ describe("Variable IDs", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("BREAK HERE #1", source)
     });
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("BREAK HERE #2", source)
     });
 
@@ -296,19 +292,17 @@ describe("Variable IDs", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("break here #1", source)
     });
     await session.continueUntilBreakpoint();
@@ -321,19 +315,17 @@ describe("Variable IDs", function() {
     let receipt = await instance.runLib();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
     debug("sourceId %d", session.view(solidity.current.source).id);
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("break here #2", source)
     });
     await session.continueUntilBreakpoint();

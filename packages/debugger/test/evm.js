@@ -67,8 +67,7 @@ describe("EVM Debugging", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -79,8 +78,7 @@ describe("EVM Debugging", function() {
 
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   describe("Function Depth", function() {
@@ -91,11 +89,7 @@ describe("EVM Debugging", function() {
       let receipt = await instance.run();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, {
-        provider,
-        files,
-        contracts: artifacts
-      });
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let session = bugger.connect();
       var finished; // is the trace finished?
@@ -116,11 +110,7 @@ describe("EVM Debugging", function() {
       let receipt = await instance.run();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, {
-        provider,
-        files,
-        contracts: artifacts
-      });
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let session = bugger.connect();
 

@@ -113,11 +113,11 @@ describe("CompilerSupplier", function() {
       const localPathOptions = Config.default().merge(options);
 
       const { contracts } = await compile(
-        version5PragmaSource,
+        version6PragmaSource,
         localPathOptions
       );
-      const Version5Pragma = findOne("Version5Pragma", contracts);
-      assert(Version5Pragma.contractName === "Version5Pragma");
+      const Version6Pragma = findOne("Version6Pragma", contracts);
+      assert(Version6Pragma.contractName === "Version6Pragma");
     });
 
     it("caches releases and uses them if available", async function() {

@@ -2,12 +2,10 @@
 # Truffle Decoder
 
 This module provides an interface for decoding contract state, transaction
-calldata, and events.  It's an interface to the same low-level decoding
-functionality that Truffle Debugger uses.  However, it has additional
-functionality that the debugger does not need, and the debugger has additional
-functionality that this interface either does not need or cannot currently
-replicate.  In the future, this interface will also decode return values and
-revert strings.
+calldata, events, and return values and revert strings.  It's an interface to
+the same low-level decoding functionality that Truffle Debugger uses.  However,
+it has additional functionality that the debugger does not need, and the
+debugger has additional functionality that this decoder does not need.
 
 The interface is split into three classes: The wire decoder, the contract
 decoder, and the contract instance decoder.  The wire decoder is associated to
@@ -46,9 +44,15 @@ For a contract instance decoder, use one of the following:
 See the documentation of these functions for details, or below for usage
 examples.
 
-All of these functions presently require a final argument containing all
-artifacts that could potentially be relevant.  It's intended that this argument
-will be optional in the future.
+All of these functions take a final argument in which information about the
+project is specified; currently only a few methods for specifying project
+information are allowed, but more are planned.
+
+One can also spawn decoders from other decoders by supplying additional
+information.  For instance, the wire decoder has a method
+[[WireDecoder.forAddress|`forAddress`]] that will spawn a contract instance
+decoder from an address.  See the documentation for the individual decoder
+classes for a method listing.
 
 ### Decoder methods
 
@@ -60,9 +64,16 @@ The decoder outputs lossless, machine-readable [[Format.Values.Result]] objects
 containing individual decoded values. See the [[Format|format documentation]]
 for an overview and complete module listing.
 
+Note that for technical reasons, the decoder cannot always fully decode
+internal function pointers, but it will do its best even when information is
+missing, and will still losslessly return what information it can.  If you want
+to make sure to get the full information, see the advice
+[here](../#decoding-modes) about how to make sure "full mode" works; the same
+applies to decoding of internal function pointers.
+
 ### Decoding modes and abification
 
-The decoder runs in either of two modes: full mode or ABI mdoe. Full mode
+The decoder runs in either of two modes: full mode or ABI mode. Full mode
 requires some additional constraints but returns substantially more detailed
 information. Please see the notes on [decoding modes](../#decoding-modes) for
 more about this distinction.
@@ -130,6 +141,8 @@ documentation for these individual functions.
  * @module @truffle/decoder
  */ /** */
 
+import "source-map-support/register";
+
 import {
   ContractDecoder,
   ContractInstanceDecoder,
@@ -139,41 +152,57 @@ export { ContractDecoder, ContractInstanceDecoder, WireDecoder };
 
 export {
   ContractBeingDecodedHasNoNodeError,
-  ContractAllocationFailedError
+  ContractNotFoundError,
+  ContractAllocationFailedError,
+  InvalidAddressError,
+  VariableNotFoundError
 } from "./errors";
+import { NoProjectInfoError } from "./errors";
+export { NoProjectInfoError };
 
 export {
   ContractState,
   StateVariable,
   DecodedLog,
   EventOptions,
+  ReturnOptions,
   Transaction,
   Log,
   BlockSpecifier
 } from "./types";
+import { ProjectInfo } from "./types";
+export { ProjectInfo };
 
 import { Provider } from "web3/providers";
 import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import { ContractConstructorObject, ContractInstanceObject } from "./types";
+
+import { Compilations } from "@truffle/codec";
+
+import fs from "fs";
+import path from "path";
 
 /**
  * **This function is asynchronous.**
  *
  * Constructs a wire decoder for the project.
  * @param provider The Web3 provider object to use.
- * @param artifacts A list of contract artifacts for contracts in the project.
+ * @param projectInfo Information about the project or contracts being decoded.
+ *   This may come in several forms; see the [[ProjectInfo]] documentation for
+ *   more information.
  *
- *   Contract constructor objects may be substituted for artifacts, so if
- *   you're not sure which you're dealing with, it's OK.
- *
- *   This parameter is intended to be made optional in the future.
+ *   Alternatively, instead of a [[ProjectInfo]], one may simply pass a list of
+ *   artifacts.  Contract constructor objects may be substituted for artifacts,
+ *   so if you're not sure which you're dealing with, it's OK.  If this parameter
+ *   is omitted, it's treated as if one had passed `[]`.
  * @category Provider-based Constructor
  */
 export async function forProject(
   provider: Provider,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<WireDecoder> {
-  return new WireDecoder(artifacts, provider);
+  let compilations = infoToCompilations(projectInfo);
+  return new WireDecoder(compilations, provider);
 }
 
 /**
@@ -185,29 +214,31 @@ export async function forProject(
  *   A contract constructor object may be substituted for the artifact, so if
  *   you're not sure which you're dealing with, it's OK.
  * @param provider The Web3 provider object to use.
- * @param artifacts A list of artifacts for other contracts in the project that may be relevant
- *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms; see the [[ProjectInfo]] documentation for more
+ *   information.
  *
- *   Contract constructor objects may be substituted for artifacts, so if
- *   you're not sure which you're dealing with, it's OK.
+ *   Alternatively, instead of a [[ProjectInfo]], one may simply pass a list of
+ *   artifacts.  Contract constructor objects may be substituted for artifacts,
+ *   so if you're not sure which you're dealing with, it's OK.
  *
- *   Including the contract itself here is fine; so is excluding it.
+ *   If this latter option is used, one may omit `artifact` itself from the
+ *   list of artifacts and only include the *other* relevant artifacts; note
+ *   that omission this is not allowed when passing a `ProjectInfo`.
  *
- *   This parameter is intended to be made optional in the future.
+ *   If this parameter is omitted, it's treated as if one had passed `[]`.
  * @category Provider-based Constructor
  */
 export async function forArtifact(
   artifact: Artifact,
   provider: Provider,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractDecoder> {
-  artifacts = artifacts.includes(artifact)
-    ? artifacts
-    : [artifact, ...artifacts];
-  let wireDecoder = await forProject(provider, artifacts);
-  let contractDecoder = new ContractDecoder(artifact, wireDecoder);
-  await contractDecoder.init();
-  return contractDecoder;
+  let compilations = infoToCompilations(projectInfo, artifact);
+  let wireDecoder = await forProject(provider, { compilations });
+  return await wireDecoder.forArtifact(artifact);
 }
 
 /**
@@ -217,17 +248,25 @@ export async function forArtifact(
  * @param contract The contract constructor object corresponding to the type of the contract.
  * @param artifacts A list of artifacts for other contracts in the project that may be relevant
  *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
- *
- *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
- *
- *   This parameter is intended to be made optional in the future.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forArtifact]]
+ *   for more detail.
  * @category Truffle Contract-based Constructor
  */
 export async function forContract(
   contract: ContractConstructorObject,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractDecoder> {
-  return await forArtifact(contract, contract.currentProvider, artifacts);
+  return await forArtifact(
+    contract,
+    // @ts-ignore - "Property 'web3' does not exist on type 'string'.",
+    // but it's there!
+    contract.interfaceAdapter.web3,
+    projectInfo
+  );
 }
 
 /**
@@ -239,20 +278,20 @@ export async function forContract(
  *   A contract constructor object may be substituted for the artifact, so if
  *   you're not sure which you're dealing with, it's OK.
  * @param provider The Web3 provider object to use.
- * @param artifacts A list of artifacts for other contracts in the project that may be relevant
- *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
- *
- *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
- *
- *   This parameter is intended to be made optional in the future.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forArtifact]]
+ *   for more detail.
  * @category Provider-based Constructor
  */
 export async function forDeployedArtifact(
   artifact: Artifact,
   provider: Provider,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractInstanceDecoder> {
-  let contractDecoder = await forArtifact(artifact, provider, artifacts);
+  let contractDecoder = await forArtifact(artifact, provider, projectInfo);
   let instanceDecoder = await contractDecoder.forInstance();
   return instanceDecoder;
 }
@@ -262,19 +301,19 @@ export async function forDeployedArtifact(
  *
  * Constructs a contract instance decoder for a deployed contract instance.
  * @param contract The contract constructor object corresponding to the type of the contract.
- * @param artifacts A list of artifacts for other contracts in the project that may be relevant
- *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
- *
- *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
- *
- *   This parameter is intended to be made optional in the future.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forArtifact]]
+ *   for more detail.
  * @category Truffle Contract-based Constructor
  */
 export async function forDeployedContract(
   contract: ContractConstructorObject,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractInstanceDecoder> {
-  let contractDecoder = await forContract(contract, artifacts);
+  let contractDecoder = await forContract(contract, projectInfo);
   let instanceDecoder = await contractDecoder.forInstance();
   return instanceDecoder;
 }
@@ -292,21 +331,21 @@ export async function forDeployedContract(
  *
  *   Address must either be checksummed, or in all one case to circumvent the checksum.
  *   Mixed-case with bad checksum will cause this function to throw an exception.
- * @param artifacts A list of artifacts for other contracts in the project that may be relevant
- *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
- *
- *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
- *
- *   This parameter is intended to be made optional in the future.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forArtifact]]
+ *   for more detail.
  * @category Provider-based Constructor
  */
 export async function forArtifactAt(
   artifact: Artifact,
   provider: Provider,
   address: string,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractInstanceDecoder> {
-  let contractDecoder = await forArtifact(artifact, provider, artifacts);
+  let contractDecoder = await forArtifact(artifact, provider, projectInfo);
   let instanceDecoder = await contractDecoder.forInstance(address);
   return instanceDecoder;
 }
@@ -320,20 +359,20 @@ export async function forArtifactAt(
  *
  *   Address must either be checksummed, or in all one case to circumvent the checksum.
  *   Mixed-case with bad checksum will cause this function to throw an exception.
- * @param artifacts A list of artifacts for other contracts in the project that may be relevant
- *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
- *
- *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
- *
- *   This parameter is intended to be made optional in the future.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forArtifact]]
+ *   for more detail.
  * @category Truffle Contract-based Constructor
  */
 export async function forContractAt(
   contract: ContractConstructorObject,
   address: string,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractInstanceDecoder> {
-  let contractDecoder = await forContract(contract, artifacts);
+  let contractDecoder = await forContract(contract, projectInfo);
   let instanceDecoder = await contractDecoder.forInstance(address);
   return instanceDecoder;
 }
@@ -343,17 +382,77 @@ export async function forContractAt(
  *
  * Constructs a contract instance decoder for a given contract instance.
  * @param contract The contract abstraction object corresponding to the contract instance.
- * @param artifacts A list of artifacts for other contracts in the project that may be relevant
- *   (e.g., providing needed struct or enum definitions, or appearing as a contract type).
- *
- *   See the artifacts parameter documentation on [[forArtifact]] for more detail.
- *
- *   This parameter is intended to be made optional in the future.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forArtifact]]
+ *   for more detail.
  * @category Truffle Contract-based Constructor
  */
 export async function forContractInstance(
   contract: ContractInstanceObject,
-  artifacts: Artifact[]
+  projectInfo?: ProjectInfo | Artifact[]
 ): Promise<ContractInstanceDecoder> {
-  return await forContractAt(contract.constructor, contract.address, artifacts);
+  return await forContractAt(
+    contract.constructor,
+    contract.address,
+    projectInfo
+  );
+}
+
+//Note: this function doesn't actually go in this category, but
+//I don't want an unsightly "Other functions" thing appearing,
+//so I'm hiding it here :)
+/**
+ * @category Provider-based Constructor
+ */
+function infoToCompilations(
+  info: ProjectInfo | Artifact[],
+  primaryArtifact?: Artifact
+): Compilations.Compilation[] {
+  if (!info) {
+    info = [];
+  }
+  if (Array.isArray(info)) {
+    let artifacts = info;
+    if (
+      primaryArtifact &&
+      !artifacts.find(
+        artifact =>
+          artifact === primaryArtifact ||
+          artifact.contractName === primaryArtifact.contractName
+      )
+    ) {
+      artifacts = [primaryArtifact, ...artifacts];
+    }
+    return Compilations.Utils.shimArtifacts(artifacts);
+  } else {
+    let projectInfo: ProjectInfo = info;
+    if (projectInfo.compilations) {
+      return projectInfo.compilations;
+    } else if (projectInfo.artifacts) {
+      return Compilations.Utils.shimArtifacts(projectInfo.artifacts);
+    } else if (projectInfo.config) {
+      //NOTE: This will be expanded in the future so that it's not just
+      //using the build directory
+      if (projectInfo.config.contracts_build_directory !== undefined) {
+        let files = fs
+          .readdirSync(projectInfo.config.contracts_build_directory)
+          .filter(file => path.extname(file) === ".json");
+        let data = files.map(file =>
+          fs.readFileSync(
+            path.join(projectInfo.config.contracts_build_directory, file),
+            "utf8"
+          )
+        );
+        let artifacts = data.map(json => JSON.parse(json));
+        return Compilations.Utils.shimArtifacts(artifacts);
+      } else {
+        throw new NoProjectInfoError();
+      }
+    } else {
+      throw new NoProjectInfoError();
+    }
+  }
 }

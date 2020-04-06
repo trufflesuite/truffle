@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 import trace from "lib/trace/selectors";
 
-import { getRange } from "lib/ast/map";
+import SolidityUtils from "@truffle/solidity-utils";
 
 const __VARIABLES = `
 pragma solidity ^0.6.1;
@@ -50,8 +50,7 @@ describe("AST", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -62,8 +61,7 @@ describe("AST", function() {
 
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   describe("Node pointer", function() {
@@ -73,11 +71,7 @@ describe("AST", function() {
       let receipt = await instance.stack(4);
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, {
-        provider,
-        files,
-        contracts: artifacts
-      });
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
       let session = bugger.connect();
 
@@ -87,7 +81,7 @@ describe("AST", function() {
 
         let node = session.view(solidity.current.node);
 
-        let [nodeStart, nodeLength] = getRange(node);
+        let [nodeStart, nodeLength] = SolidityUtils.getRange(node);
         let nodeEnd = nodeStart + nodeLength;
 
         let pointer = session.view(solidity.current.pointer);

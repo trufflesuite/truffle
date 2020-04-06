@@ -150,18 +150,49 @@ export class ResultInspector {
               options
             );
           }
+          case "tuple": {
+            let coercedResult = <Format.Values.TupleValue>this.result;
+            //if everything is named, do same as with struct.
+            //if not, just do an array.
+            //(good behavior in the mixed case is hard, unfortunately)
+            if (coercedResult.value.every(({ name }) => name)) {
+              return util.inspect(
+                Object.assign(
+                  {},
+                  ...coercedResult.value.map(({ name, value }) => ({
+                    [name]: new ResultInspector(value)
+                  }))
+                ),
+                options
+              );
+            } else {
+              return util.inspect(
+                coercedResult.value.map(
+                  ({ value }) => new ResultInspector(value)
+                ),
+                options
+              );
+            }
+          }
           case "type": {
-            //same as struct case but w/o circularity check
-            let coercedResult = <Format.Values.TypeValue>this.result;
-            return util.inspect(
-              Object.assign(
-                {},
-                ...coercedResult.value.map(({ name, value }) => ({
-                  [name]: new ResultInspector(value)
-                }))
-              ),
-              options
-            );
+            switch (this.result.type.type.typeClass) {
+              case "contract":
+                //same as struct case but w/o circularity check
+                return util.inspect(
+                  Object.assign(
+                    {},
+                    ...(<Format.Values.TypeValueContract>this.result).value.map(
+                      ({ name, value }) => ({
+                        [name]: new ResultInspector(value)
+                      })
+                    )
+                  ),
+                  options
+                );
+              case "enum": {
+                return enumTypeName(this.result.type.type);
+              }
+            }
           }
           case "magic":
             return util.inspect(
@@ -451,7 +482,12 @@ function nativizeWithTable(
   seenSoFar: any[]
 ): any {
   if (result.kind === "error") {
-    return undefined;
+    switch (result.error.kind) {
+      case "BoolOutOfRangeError":
+        return true;
+      default:
+        return undefined;
+    }
   }
   //NOTE: for simplicity, only arrays & structs will call nativizeWithTable;
   //other containers will just call nativize because they can get away with it
@@ -547,12 +583,19 @@ function nativizeWithTable(
       }
     }
     case "type":
-      return Object.assign(
-        {},
-        ...(<Format.Values.TypeValue>result).value.map(({ name, value }) => ({
-          [name]: nativize(value)
-        }))
-      );
+      switch (result.type.type.typeClass) {
+        case "contract":
+          return Object.assign(
+            {},
+            ...(<Format.Values.TypeValueContract>result).value.map(
+              ({ name, value }) => ({
+                [name]: nativize(value)
+              })
+            )
+          );
+        case "enum":
+          return (<Format.Values.TypeValueEnum>result).value.map(nativize);
+      }
     case "tuple":
       return (<Format.Values.TupleValue>result).value.map(({ value }) =>
         nativize(value)
@@ -566,18 +609,8 @@ function nativizeWithTable(
       );
     case "enum":
       return enumFullName(<Format.Values.EnumValue>result);
-    case "contract": {
-      let coercedResult = <Format.Values.ContractValue>result;
-      switch (coercedResult.value.kind) {
-        case "known":
-          return `${coercedResult.value.class.typeName}(${
-            coercedResult.value.address
-          })`;
-        case "unknown":
-          return coercedResult.value.address;
-      }
-      break; //to satisfy typescript
-    }
+    case "contract":
+      return (<Format.Values.ContractValue>result).value.address; //we no longer include additional info
     case "function":
       switch (result.type.visibility) {
         case "external": {

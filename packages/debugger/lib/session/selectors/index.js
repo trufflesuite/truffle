@@ -34,11 +34,11 @@ const session = createSelectorTree({
               if (!context) {
                 return { [address]: { binary } };
               }
-              let { contractName, primarySource } = context;
+              let { contractName, compilationId, primarySource } = context;
 
               let source =
                 primarySource !== undefined
-                  ? sources[primarySource]
+                  ? sources[compilationId].byId[primarySource]
                   : undefined;
 
               return {
@@ -125,15 +125,7 @@ const session = createSelectorTree({
     /*
      * session.status.loaded
      */
-    loaded: createLeaf([trace.loaded], loaded => loaded),
-
-    /*
-     * session.status.projectInfoComputed
-     */
-    projectInfoComputed: createLeaf(
-      ["/state"],
-      state => state.projectInfoComputed
-    )
+    loaded: createLeaf([trace.loaded], loaded => loaded)
   }
 });
 

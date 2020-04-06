@@ -123,8 +123,7 @@ describe("Function Pointer Decoding", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -135,8 +134,7 @@ describe("Function Pointer Decoding", function() {
 
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   it("Decodes external function pointers correctly", async function() {
@@ -146,18 +144,16 @@ describe("Function Pointer Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("BREAK HERE", source)
     });
 
@@ -190,18 +186,16 @@ describe("Function Pointer Decoding", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("BREAK HERE (DEPLOYED)", source)
     });
 
@@ -229,18 +223,16 @@ describe("Function Pointer Decoding", function() {
     let receipt = await abstractions.InternalsTest.new();
     let txHash = receipt.transactionHash;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
 
     let sourceId = session.view(solidity.current.source).id;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
     await session.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("BREAK HERE (CONSTRUCTOR)", source)
     });
 

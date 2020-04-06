@@ -5,6 +5,9 @@ import semver from "semver";
 import { CompilerVersion, SolidityFamily } from "./types";
 
 export function solidityFamily(compiler: CompilerVersion): SolidityFamily {
+  if (!compiler || compiler.name !== "solc") {
+    return "unknown";
+  }
   if (
     semver.satisfies(compiler.version, "~0.5 || >=0.5.0", {
       includePrerelease: true

@@ -7,15 +7,6 @@ const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 const Web3 = require("web3");
 
-const log = console.log;
-
-function processErr(err, output) {
-  if (err) {
-    log(output);
-    throw new Error(err);
-  }
-}
-
 describe("migrate (dry-run)", function() {
   let config;
   let web3;
@@ -41,26 +32,20 @@ describe("migrate (dry-run)", function() {
     networkId = await web3.eth.net.getId();
   });
 
-  it("uses the dry-run option", function(done) {
+  it("uses the dry-run option", async function() {
     this.timeout(70000);
 
-    CommandRunner.run("migrate --dry-run", config, err => {
-      const output = logger.contents();
-      processErr(err, output);
-      console.log(output);
-      assert(output.includes("dry-run"));
-
-      assert(!output.includes("transaction hash"));
-
-      assert(output.includes("Migrations"));
-      assert(output.includes("development-fork"));
-      assert(output.includes("2_migrations_sync.js"));
-      assert(output.includes("Deploying 'UsesExample'"));
-      assert(output.includes("3_migrations_async.js"));
-      assert(output.includes("Replacing 'UsesExample'"));
-      assert(output.includes("Total deployments"));
-
-      done();
-    });
+    await CommandRunner.run("migrate --dry-run", config);
+    const output = logger.contents();
+    console.log(output);
+    assert(output.includes("dry-run"));
+    assert(!output.includes("transaction hash"));
+    assert(output.includes("Migrations"));
+    assert(output.includes("development-fork"));
+    assert(output.includes("2_migrations_sync.js"));
+    assert(output.includes("Deploying 'UsesExample'"));
+    assert(output.includes("3_migrations_async.js"));
+    assert(output.includes("Replacing 'UsesExample'"));
+    assert(output.includes("Total deployments"));
   });
 });

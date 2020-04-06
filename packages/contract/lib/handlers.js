@@ -12,25 +12,28 @@ const handlers = {
   maxConfirmations: 24, // Maximum number of confirmation web3 emits
   defaultTimeoutBlocks: 50, // Maximum number of blocks web3 will wait before abandoning tx
   timeoutMessage: "50 blocks", // Substring of web3 timeout error.
+  defaultWeb3Error: "please check your gas limit", // Substring of default Web3 error
 
   // -----------------------------------  Helpers --------------------------------------------------
 
   /**
-   * Parses error message and determines if we should squash block timeout errors at user's request.
-   * @param  {Object} context execution state
-   * @param  {Object} error   error
+   * Parses error message and determines if we should squash web3 timeout errors at user's request.
+   * @param  {Object} contract contract instance
+   * @param  {Object} message  error message
    * @return {Boolean}
    */
-  ignoreTimeoutError: function(context, error) {
-    const timedOut =
-      error.message && error.message.includes(handlers.timeoutMessage);
+  ignoreTimeoutError({ contract }, { message }) {
+    const timedOut = message && message.includes(handlers.timeoutMessage);
 
     const shouldWait =
-      context.contract &&
-      context.contract.timeoutBlocks &&
-      context.contract.timeoutBlocks > handlers.defaultTimeoutBlocks;
+      contract &&
+      contract.timeoutBlocks &&
+      contract.timeoutBlocks > handlers.defaultTimeoutBlocks;
 
-    return timedOut && shouldWait;
+    const waitForTxPropagation =
+      message && message.includes(handlers.defaultWeb3Error);
+
+    return shouldWait && (timedOut || waitForTxPropagation);
   },
 
   /**

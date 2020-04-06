@@ -32,6 +32,8 @@ contract DowngradeTest is DowngradeTestParent {
 
   function() external doYouSeeMe = this.causeTrouble;
 
+  function() internal canYouReadMe = causeTrouble;
+
   function run(AsymmetricTriple memory at, Ternary t, DowngradeTest dt, address payable ap) public {
     emit TheWorks(at, t, dt, ap);
   }
@@ -66,6 +68,10 @@ contract DowngradeTest is DowngradeTestParent {
 
   function emitParent() public {
     emit Inherited();
+  }
+
+  function returnsStuff() public pure returns (Pair memory, Ternary) {
+    return (Pair(107, 683), Ternary.No);
   }
 }
 

@@ -1,22 +1,25 @@
 {
   "name": "@truffle/decoder",
-  "version": "4.1.0-tezos.2",
+  "version": "4.2.1",
   "description": "A decoder and encoder for Solidity variables of all sorts",
   "main": "dist/index.js",
-  "types": "lib/index.ts",
+  "types": "dist/index.d.ts",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
     "prepare": "yarn build",
-    "build": "node_modules/.bin/tsc",
+    "build": "node_modules/.bin/tsc --declaration",
     "start": "node_modules/.bin/tsc --watch",
-    "test": "cd test/wire && npx truffle test && cd ../storage && npx truffle test"
+    "test": "cd test/current && npx truffle test && cd ../legacy && npx truffle test"
   },
   "dependencies": {
-    "@truffle/codec": "^0.4.0-tezos.0",
+    "@truffle/codec": "^0.4.4",
+    "@truffle/compile-solidity": "^4.3.0-tezos.2",
+    "@truffle/solidity-utils": "^1.3.1",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
+    "source-map-support": "^0.5.16",
     "web3": "1.2.1"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
@@ -39,16 +42,16 @@
     "access": "public"
   },
   "devDependencies": {
+    "@truffle/config": "^1.3.0-tezos.2",
     "@truffle/contract-schema": "^3.1.0-tezos.0",
     "@truffle/provider": "^0.3.0-tezos.2",
     "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",
-    "@types/lodash.clonedeep": "^4.5.4",
-    "@types/lodash.isequal": "^4.5.4",
-    "@types/lodash.merge": "^4.6.4",
     "@types/utf8": "^2.1.6",
     "@types/web3": "1.0.19",
+    "chai": "^4.2.0",
+    "lodash.clonedeep": "^4.5.0",
     "typescript": "^3.6.3"
   },
   "peerDependencies": {

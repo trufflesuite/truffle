@@ -149,7 +149,7 @@ contract("WireTest", function(_accounts) {
     assert.strictEqual(moreStuffDecoding.arguments[0].name, "notThis");
     assert.strictEqual(
       Codec.Format.Utils.Inspect.nativize(moreStuffDecoding.arguments[0].value),
-      `WireTest(${moreStuffArgs[0]})`
+      moreStuffArgs[0]
     );
     assert.strictEqual(moreStuffDecoding.arguments[1].name, "bunchOfInts");
     assert.deepEqual(
@@ -381,7 +381,7 @@ contract("WireTest", function(_accounts) {
       Codec.Format.Utils.Inspect.nativize(
         moreStuffEventDecoding.arguments[0].value
       ),
-      `WireTest(${moreStuffArgs[0]})`
+      moreStuffArgs[0]
     );
     assert.strictEqual(moreStuffEventDecoding.arguments[1].name, "data");
     assert.deepEqual(
@@ -603,7 +603,8 @@ contract("WireTest", function(_accounts) {
     const decoder = await Decoder.forProject(web3.currentProvider, [
       WireTest,
       WireTestParent,
-      WireTestLibrary
+      WireTestLibrary,
+      WireTestAbstract
     ]);
 
     //HACK HACK -- we're going to repeatedly apply the hack from above
@@ -747,7 +748,8 @@ contract("WireTest", function(_accounts) {
     const decoder = await Decoder.forProject(web3.currentProvider, [
       WireTest,
       WireTestParent,
-      WireTestLibrary
+      WireTestLibrary,
+      WireTestAbstract
     ]);
 
     //thankfully, ethers ignores anonymous events,
@@ -889,5 +891,70 @@ contract("WireTest", function(_accounts) {
       ),
       [1, 2, 3, 4]
     );
+  });
+
+  it("Decodes return values", async function() {
+    let deployedContract = await WireTest.deployed();
+
+    const decoder = await Decoder.forContract(WireTest, [
+      WireTest,
+      WireTestParent,
+      WireTestLibrary,
+      WireTestAbstract
+    ]);
+
+    let abiEntry = WireTest.abi.find(
+      ({ type, name }) => type === "function" && name === "returnsStuff"
+    );
+    let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+
+    //we need the raw return data, and contract.call() does not exist yet,
+    //so we're going to have to use web3.eth.call()
+
+    let data = await web3.eth.call({
+      to: deployedContract.address,
+      data: selector
+    });
+
+    let decodings = await decoder.decodeReturnValue(abiEntry, data);
+    assert.lengthOf(decodings, 1);
+    let decoding = decodings[0];
+    assert.strictEqual(decoding.kind, "return");
+    assert.strictEqual(decoding.decodingMode, "full");
+    assert.lengthOf(decoding.arguments, 2);
+    assert.deepEqual(
+      Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+      {
+        x: -1,
+        y: "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        z: "0xdeadbeef"
+      }
+    );
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.nativize(decoding.arguments[1].value),
+      "WireTest.Ternary.No"
+    );
+
+    //now: let's try decoding a self-destruct :)
+    let sdAbiEntry = WireTest.abi.find(
+      ({ type, name }) => type === "function" && name === "boom"
+    );
+    let sdSelector = web3.eth.abi.encodeFunctionSignature(sdAbiEntry);
+
+    //we need the raw return data, and contract.call() does not exist yet,
+    //so we're going to have to use web3.eth.call()
+
+    let sdData = await web3.eth.call({
+      to: deployedContract.address,
+      data: sdSelector
+    });
+
+    let sdDecodings = await decoder.decodeReturnValue(sdAbiEntry, sdData, {
+      status: true
+    });
+
+    assert.lengthOf(sdDecodings, 1);
+    assert.strictEqual(sdDecodings[0].kind, "selfdestruct");
+    assert.strictEqual(sdDecodings[0].decodingMode, "full");
   });
 });

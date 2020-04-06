@@ -8,6 +8,20 @@ const ShadowBase = artifacts.require("ShadowBase");
 const ShadowDerived = artifacts.require("ShadowDerived");
 
 contract("ShadowDerived", function(_accounts) {
+  it("Includes shadowed storage variables in variables", async function() {
+    let deployedContract = await ShadowDerived.deployed();
+    let decoder = await Decoder.forContractInstance(deployedContract, [
+      ShadowBase
+    ]);
+
+    let variables = await decoder.variables();
+
+    assert.equal(variables[0].class.typeName, "ShadowBase");
+    assert.equal(variables[1].class.typeName, "ShadowBase");
+    assert.equal(variables[2].class.typeName, "ShadowDerived");
+    assert.equal(variables[3].class.typeName, "ShadowDerived");
+  });
+
   it("Fetches variables by name or qualified name", async function() {
     let deployedContract = await ShadowDerived.deployed();
     let decoder = await Decoder.forContractInstance(deployedContract, [

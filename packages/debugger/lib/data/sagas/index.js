@@ -18,16 +18,16 @@ import sum from "lodash.sum";
 import * as Codec from "@truffle/codec";
 import BN from "bn.js";
 
-export function* scope(nodeId, pointer, parentId, sourceId) {
-  yield put(actions.scope(nodeId, pointer, parentId, sourceId));
+export function* scope(nodeId, pointer, parentId, sourceId, compilationId) {
+  yield put(actions.scope(nodeId, pointer, parentId, sourceId, compilationId));
 }
 
-export function* declare(node) {
-  yield put(actions.declare(node));
+export function* declare(node, compilationId) {
+  yield put(actions.declare(node, compilationId));
 }
 
-export function* defineType(node) {
-  yield put(actions.defineType(node));
+export function* defineType(node, compilationId) {
+  yield put(actions.defineType(node, compilationId));
 }
 
 function* tickSaga() {
@@ -35,7 +35,7 @@ function* tickSaga() {
   yield* trace.signalTickSagaCompletion();
 }
 
-export function* decode(definition, ref) {
+export function* decode(definition, ref, compilationId) {
   let userDefinedTypes = yield select(data.views.userDefinedTypes);
   let state = yield select(data.current.state);
   let mappingKeys = yield select(data.views.mappingKeys);
@@ -51,15 +51,20 @@ export function* decode(definition, ref) {
   let ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
   let NO_CODE = new Uint8Array(); //empty array
 
-  let decoder = Codec.decodeVariable(definition, ref, {
-    userDefinedTypes,
-    state,
-    mappingKeys,
-    allocations,
-    contexts,
-    currentContext,
-    internalFunctionsTable
-  });
+  let decoder = Codec.decodeVariable(
+    definition,
+    ref,
+    {
+      userDefinedTypes,
+      state,
+      mappingKeys,
+      allocations,
+      contexts,
+      currentContext,
+      internalFunctionsTable
+    },
+    compilationId
+  );
 
   debug("beginning decoding");
   let result = decoder.next();
@@ -107,16 +112,18 @@ export function* decode(definition, ref) {
 
 function* variablesAndMappingsSaga() {
   let node = yield select(data.current.node);
-  let scopes = yield select(data.views.scopes.inlined);
-  let referenceDeclarations = yield select(data.views.referenceDeclarations);
-  let allocations = yield select(data.info.allocations.storage.byId);
+  let scopes = yield select(data.current.scopes.inlined);
+  let allocations = yield select(data.current.allocations.state);
+  let storageAllocations = yield select(data.info.allocations.storage);
+  let userDefinedTypes = yield select(data.views.userDefinedTypes);
   let currentAssignments = yield select(data.proc.assignments);
   let mappedPaths = yield select(data.proc.mappedPaths);
   let currentDepth = yield select(data.current.functionDepth);
   let modifierDepth = yield select(data.current.modifierDepth);
   let inModifier = yield select(data.current.inModifier);
-  let address = yield select(data.current.address);
-  //storage address, not code address
+  let address = yield select(data.current.address); //storage address, not code address
+  let compilationId = yield select(data.current.compilationId);
+  let compiler = yield select(data.current.compiler);
 
   let stack = yield select(data.next.state.stack); //note the use of next!
   //in this saga we are interested in the *results* of the current instruction
@@ -174,6 +181,7 @@ function* variablesAndMappingsSaga() {
     let adjustment = sum(parametersLeft.map(Codec.Ast.Utils.stackSize));
     debug("adjustment %d", adjustment);
     preambleAssignments = assignParameters(
+      compilationId,
       parameters,
       top + adjustment,
       currentDepth,
@@ -208,6 +216,7 @@ function* variablesAndMappingsSaga() {
 
       //we can skip preambleAssignments here, that isn't used in this case
       assignments = assignParameters(
+        compilationId,
         parameters,
         top,
         currentDepth,
@@ -230,7 +239,7 @@ function* variablesAndMappingsSaga() {
       assignments = {};
       for (let id in allocation.members) {
         id = Number(id); //not sure why we're getting them as strings, but...
-        let idObj = { astId: id, address };
+        let idObj = { compilationId, astId: id, address };
         let fullId = stableKeccak256(idObj);
         //we don't use makeAssignment here as we had to compute the ID anyway
         assignment = {
@@ -276,8 +285,10 @@ function* variablesAndMappingsSaga() {
       //variable is already a contract variable.
 
       if (
-        currentAssignments.byAstId[varId] !== undefined &&
-        currentAssignments.byAstId[varId].some(
+        currentAssignments.byCompilationId[compilationId] &&
+        currentAssignments.byCompilationId[compilationId].byAstId[varId] !==
+          undefined &&
+        currentAssignments.byCompilationId[compilationId].byAstId[varId].some(
           id => currentAssignments.byId[id].address !== undefined
         )
       ) {
@@ -288,8 +299,13 @@ function* variablesAndMappingsSaga() {
       //otherwise, go ahead and make the assignment
       assignment = makeAssignment(
         inModifier
-          ? { astId: varId, stackframe: currentDepth, modifierDepth }
-          : { astId: varId, stackframe: currentDepth },
+          ? {
+              compilationId,
+              astId: varId,
+              stackframe: currentDepth,
+              modifierDepth
+            }
+          : { compilationId, astId: varId, stackframe: currentDepth },
         {
           location: "stack",
           from: top - Codec.Ast.Utils.stackSize(node) + 1,
@@ -316,6 +332,7 @@ function* variablesAndMappingsSaga() {
       assignments = {
         ...preambleAssignments,
         ...literalAssignments(
+          compilationId,
           node,
           alternateStack,
           currentDepth,
@@ -372,6 +389,7 @@ function* variablesAndMappingsSaga() {
       //it into an actual path.
       if (indexValue != null && indexValue.value) {
         path = fetchBasePath(
+          compilationId,
           baseExpression,
           mappedPaths,
           currentAssignments,
@@ -386,12 +404,14 @@ function* variablesAndMappingsSaga() {
           case "array":
             slot.hashPath = Codec.Ast.Utils.isDynamicArray(baseExpression);
             slot.offset = indexValue.value.asBN.muln(
-              //HACK: the allocation format here is wrong (object rather than
-              //array), but it doesn't matter because we're not using that here
               Codec.Storage.Allocate.storageSize(
-                node,
-                referenceDeclarations,
-                allocations
+                Codec.Ast.Import.definitionToType(
+                  node,
+                  compilationId,
+                  compiler
+                ),
+                userDefinedTypes,
+                storageAllocations
               ).words
             );
             break;
@@ -431,6 +451,7 @@ function* variablesAndMappingsSaga() {
       assignments = {
         ...preambleAssignments,
         ...literalAssignments(
+          compilationId,
           node,
           alternateStack,
           currentDepth,
@@ -460,6 +481,7 @@ function* variablesAndMappingsSaga() {
 
       //but if it is a storage struct, we have to map the path as well
       path = fetchBasePath(
+        compilationId,
         baseExpression,
         mappedPaths,
         currentAssignments,
@@ -468,9 +490,17 @@ function* variablesAndMappingsSaga() {
 
       slot = { path };
 
-      let structId = Codec.Ast.Utils.typeId(baseExpression);
-      let memberAllocation =
-        allocations[structId].members[node.referencedDeclaration];
+      let structType = Codec.Ast.Import.definitionToType(
+        baseExpression,
+        compilationId,
+        compiler
+      );
+      let memberAllocations = storageAllocations[structType.id].members;
+      //members of a given struct have unique names so it's safe to look up the member by name
+      let memberName = scopes[node.referencedDeclaration].definition.name;
+      let memberAllocation = memberAllocations.find(
+        member => member.name === memberName
+      );
 
       slot.offset = memberAllocation.pointer.range.from.slot.offset.clone();
 
@@ -498,6 +528,7 @@ function* variablesAndMappingsSaga() {
       assignments = {
         ...preambleAssignments,
         ...literalAssignments(
+          compilationId,
           node,
           stack,
           currentDepth,
@@ -518,7 +549,8 @@ function* decodeMappingKeySaga(indexDefinition, keyDefinition) {
 }
 
 function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
-  let scopes = yield select(data.views.scopes.inlined);
+  let scopes = yield select(data.current.scopes.inlined);
+  let compilationId = yield select(data.current.compilationId);
   let currentAssignments = yield select(data.proc.assignments);
   let currentDepth = yield select(data.current.functionDepth);
 
@@ -527,7 +559,11 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
   while (true) {
     let indexId = indexDefinition.id;
     //indices need to be identified by stackframe
-    let indexIdObj = { astId: indexId, stackframe: currentDepth };
+    let indexIdObj = {
+      compilationId,
+      astId: indexId,
+      stackframe: currentDepth
+    };
     let fullIndexId = stableKeccak256(indexIdObj);
 
     const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
@@ -542,10 +578,14 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
       //so looking for a prior assignment will read the wrong value.
       //so instead it's preferable to use the constant directly.
       debug("about to decode simple literal");
-      return yield* decode(keyDefinition, {
-        location: "definition",
-        definition: indexDefinition
-      });
+      return yield* decode(
+        keyDefinition,
+        {
+          location: "definition",
+          definition: indexDefinition
+        },
+        compilationId
+      );
     } else if (indexReference) {
       //if a prior assignment is found
       let splicedDefinition;
@@ -564,7 +604,7 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
         splicedDefinition = keyDefinition;
       }
       debug("about to decode");
-      return yield* decode(splicedDefinition, indexReference);
+      return yield* decode(splicedDefinition, indexReference, compilationId);
     } else if (
       indexDefinition.referencedDeclaration &&
       scopes[indexDefinition.referencedDeclaration]
@@ -582,10 +622,14 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
         //next line filters out constants we don't know how to handle
         if (Codec.Ast.Utils.isSimpleConstant(indexConstantDefinition)) {
           debug("about to decode simple constant");
-          return yield* decode(keyDefinition, {
-            location: "definition",
-            definition: indexConstantDeclaration.value
-          });
+          return yield* decode(
+            keyDefinition,
+            {
+              location: "definition",
+              definition: indexConstantDeclaration.value
+            },
+            compilationId
+          );
         } else {
           return null; //can't decode; see below for more explanation
         }
@@ -631,30 +675,39 @@ export function* reset() {
 }
 
 export function* recordAllocations() {
-  const contracts = yield select(
-    data.views.userDefinedTypes.contractDefinitions
-  );
+  const contracts = yield select(data.views.contractAllocationInfo);
   debug("contracts %O", contracts);
   const referenceDeclarations = yield select(data.views.referenceDeclarations);
   const userDefinedTypes = yield select(data.views.userDefinedTypes);
   debug("referenceDeclarations %O", referenceDeclarations);
   const storageAllocations = Codec.Storage.Allocate.getStorageAllocations(
-    referenceDeclarations,
-    contracts
+    userDefinedTypes
   );
   debug("storageAllocations %O", storageAllocations);
   const memoryAllocations = Codec.Memory.Allocate.getMemoryAllocations(
-    referenceDeclarations
+    userDefinedTypes
   );
   const calldataAllocations = Codec.AbiData.Allocate.getAbiAllocations(
     userDefinedTypes
   );
+  const stateAllocations = Codec.Storage.Allocate.getStateAllocations(
+    contracts,
+    referenceDeclarations,
+    userDefinedTypes,
+    storageAllocations
+  );
   yield put(
-    actions.allocate(storageAllocations, memoryAllocations, calldataAllocations)
+    actions.allocate(
+      storageAllocations,
+      memoryAllocations,
+      calldataAllocations,
+      stateAllocations
+    )
   );
 }
 
 function literalAssignments(
+  compilationId,
   node,
   stack,
   currentDepth,
@@ -683,8 +736,13 @@ function literalAssignments(
 
   let assignment = makeAssignment(
     inModifier
-      ? { astId: node.id, stackframe: currentDepth, modifierDepth }
-      : { astId: node.id, stackframe: currentDepth },
+      ? {
+          compilationId,
+          astId: node.id,
+          stackframe: currentDepth,
+          modifierDepth
+        }
+      : { compilationId, astId: node.id, stackframe: currentDepth },
     { location: "stackliteral", literal }
   );
 
@@ -693,6 +751,7 @@ function literalAssignments(
 
 //takes a parameter list as given in the AST
 function assignParameters(
+  compilationId,
   parameters,
   top,
   functionDepth,
@@ -715,8 +774,13 @@ function assignParameters(
     };
     let assignment = makeAssignment(
       forModifier
-        ? { astId: parameter.id, stackframe: functionDepth, modifierDepth }
-        : { astId: parameter.id, stackframe: functionDepth },
+        ? {
+            compilationId,
+            astId: parameter.id,
+            stackframe: functionDepth,
+            modifierDepth
+          }
+        : { compilationId, astId: parameter.id, stackframe: functionDepth },
       pointer
     );
     assignments[assignment.id] = assignment;
@@ -726,12 +790,14 @@ function assignParameters(
 }
 
 function fetchBasePath(
+  compilationId,
   baseNode,
   mappedPaths,
   currentAssignments,
   currentDepth
 ) {
   let fullId = stableKeccak256({
+    compilationId,
     astId: baseNode.id,
     stackframe: currentDepth
   });

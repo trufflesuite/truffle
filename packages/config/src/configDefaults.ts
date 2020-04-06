@@ -1,4 +1,4 @@
-import _ from "lodash";
+import assignIn from "lodash.assignin";
 import * as path from "path";
 import Provider from "@truffle/provider";
 import TruffleConfig from "./";
@@ -148,7 +148,7 @@ export const configProps = ({
           config = {};
         }
 
-        config = _.extend({}, defaultTXValues, config);
+        config = assignIn({}, defaultTXValues, config);
 
         return config;
       },

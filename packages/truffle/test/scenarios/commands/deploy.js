@@ -22,11 +22,12 @@ describe("truffle deploy (alias for migrate)", () => {
   after(done => Server.stop(done));
 
   describe("when run on the most basic truffle project", () => {
-    it("doesn't throw", done => {
-      CommandRunner.run("deploy", config, error => {
-        assert(error === undefined, "error should be undefined here");
-        done();
-      });
+    it("doesn't throw", async () => {
+      try {
+        await CommandRunner.run("deploy", config);
+      } catch (error) {
+        assert(fail, `An error: ${error}`);
+      }
     }).timeout(20000);
   });
 });

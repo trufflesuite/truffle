@@ -13,6 +13,7 @@ const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
+const Codec = require("@truffle/codec");
 const debug = require("debug")("lib:test");
 
 let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
@@ -110,13 +111,18 @@ const Test = {
       runner
     );
 
+    const debuggerCompilations = Codec.Compilations.Utils.shimArtifacts(
+      compilations.solc.contracts,
+      compilations.solc.sourceIndexes
+    );
+
     await this.setJSTestGlobals({
       config,
       interfaceAdapter,
       accounts,
       testResolver,
       runner,
-      compilation: compilations.solc
+      compilations: debuggerCompilations
     });
 
     // Finally, run mocha.
@@ -135,6 +141,9 @@ const Test = {
   createMocha: function(config) {
     // Allow people to specify config.mocha in their config.
     const mochaConfig = config.mocha || {};
+
+    // Propagate --bail option to mocha
+    mochaConfig.bail = config.bail;
 
     // If the command line overrides color usage, use that.
     if (config.colors != null) mochaConfig.useColors = config.colors;
@@ -204,7 +213,7 @@ const Test = {
     accounts,
     testResolver,
     runner,
-    compilation
+    compilations
   }) {
     global.web3 = interfaceAdapter.web3 ? interfaceAdapter.web3 : undefined;
     global.tezos = interfaceAdapter.tezos ? interfaceAdapter.tezos : undefined;
@@ -230,7 +239,7 @@ const Test = {
 
       // note: this.mochaRunner will be available by the time debug()
       // is invoked
-      const hook = new CLIDebugHook(config, compilation, this.mochaRunner);
+      const hook = new CLIDebugHook(config, compilations, this.mochaRunner);
 
       return await hook.debug(operation);
     };

@@ -1,6 +1,5 @@
 import * as Codec from "@truffle/codec";
-
-const stringify = require("json-stable-stringify");
+import stringify from "json-stable-stringify";
 
 /** AST node types that are skipped by stepNext() to filter out some noise */
 export function isDeliberatelySkippedNodeType(node) {
@@ -30,16 +29,6 @@ export function prefixName(prefix, fn) {
   });
 
   return fn;
-}
-
-/*
- * extract the primary source from a source map
- * (i.e., the source for the first instruction, found
- * between the second and third colons)
- * (this is something of a HACK)
- */
-export function extractPrimarySource(sourceMap) {
-  return parseInt(sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]);
 }
 
 /**

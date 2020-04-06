@@ -184,6 +184,9 @@ function prepareCompilerInput({ sources, targets, settings }) {
       evmVersion: settings.evmVersion,
       optimizer: settings.optimizer,
       remappings: settings.remappings,
+      debug: settings.debug,
+      metadata: settings.metadata,
+      libraries: settings.libraries,
       // Specify compilation targets. Each target uses defaultSelectors,
       // defaulting to single target `*` if targets are unspecified
       outputSelection: prepareOutputSelection({ targets })

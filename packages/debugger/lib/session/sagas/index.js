@@ -46,7 +46,7 @@ export function* saga() {
   yield* recordContexts(...contexts);
 
   debug("recording contract sources");
-  yield* recordSources(...sources);
+  yield* recordSources(sources);
 
   debug("normalizing contexts");
   yield* evm.normalizeContexts();
@@ -145,17 +145,8 @@ function* recordContexts(...contexts) {
   }
 }
 
-function* recordSources(...sources) {
-  for (let sourceData of sources) {
-    if (sourceData !== undefined && sourceData !== null) {
-      yield* solidity.addSource(
-        sourceData.source,
-        sourceData.sourcePath,
-        sourceData.ast,
-        sourceData.compiler
-      );
-    }
-  }
+function* recordSources(sources) {
+  yield* solidity.addSources(sources);
 }
 
 function* recordInstance(address, binary) {

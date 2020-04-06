@@ -64,6 +64,9 @@ function shimBytecode(bytecode) {
   if (!bytecode) {
     return undefined;
   }
+  if (typeof bytecode === "object") {
+    return bytecode;
+  }
 
   const linkReferences = [];
 

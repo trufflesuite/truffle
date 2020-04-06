@@ -31,6 +31,7 @@ export interface DecoderContext {
     receive: AbiData.ReceiveAbiEntry | null; //set to null if none
   };
   compiler?: Compiler.CompilerVersion;
+  compilationId?: string;
 }
 
 export interface DebuggerContext {
@@ -46,5 +47,6 @@ export interface DebuggerContext {
   sourceMap?: string;
   primarySource?: number;
   compiler?: Compiler.CompilerVersion;
+  compilationId?: string;
   payable?: boolean;
 }

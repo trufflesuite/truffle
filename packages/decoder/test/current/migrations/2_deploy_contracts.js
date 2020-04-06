@@ -4,6 +4,7 @@ const WireTest = artifacts.require("WireTest");
 const WireTestLibrary = artifacts.require("WireTestLibrary");
 const ReceiveTest = artifacts.require("ReceiveTest");
 const FallbackTest = artifacts.require("FallbackTest");
+const DecodingSample = artifacts.require("DecodingSample");
 
 module.exports = function(deployer) {
   deployer.deploy(DecoyLibrary);
@@ -13,4 +14,5 @@ module.exports = function(deployer) {
   deployer.deploy(WireTest, false, "0x", 0);
   deployer.deploy(ReceiveTest);
   deployer.deploy(FallbackTest);
+  deployer.deploy(DecodingSample);
 };

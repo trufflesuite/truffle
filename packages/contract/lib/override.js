@@ -3,6 +3,7 @@ const handlers = require("./handlers");
 
 const override = {
   timeoutMessage: "not mined within", // Substring of timeout err fired by web3
+  defaultWeb3Error: "please check your gas limit", // Substring of default Web3 error
   defaultMaxBlocks: 50, // Max # of blocks web3 will wait for a tx
   pollingInterval: 1000,
 
@@ -38,14 +39,9 @@ const override = {
     const constructor = this;
     const { web3 } = constructor.interfaceAdapter;
     let currentBlock = override.defaultMaxBlocks;
-    const maxBlocks = constructor.timeoutBlocks;
-
-    const timedOut =
-      web3Error.message && web3Error.message.includes(override.timeoutMessage);
-    const shouldWait = maxBlocks > currentBlock;
 
     // Reject after attempting to get reason string if we shouldn't be waiting.
-    if (!timedOut || !shouldWait) {
+    if (!handlers.ignoreTimeoutError(context, web3Error)) {
       // We might have been routed here in web3 >= beta.34 by their own status check
       // error. We want to extract the receipt, emit a receipt event
       // and reject it ourselves.
@@ -80,6 +76,8 @@ const override = {
         .then(result => {
           if (!result) return;
 
+          // make sure reporter receives tx receipt promievent
+          handlers.receipt(context, result);
           result.contractAddress
             ? constructor
                 .at(result.contractAddress)

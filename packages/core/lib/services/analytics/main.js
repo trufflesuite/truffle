@@ -1,3 +1,4 @@
+require("source-map-support/register");
 const analytics = require("./google.js");
 
 const PROCESS_TIMEOUT = 5000; // ms

@@ -11,7 +11,7 @@
   "version": "4.2.0-tezos.2",
   "main": "index.js",
   "scripts": {
-    "compile": "sh -c \"mkdir -p ./dist\" && browserify ./index.js -o ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
+    "compile": "sh -c \"mkdir -p ./dist\" && browserify --debug ./index.js | exorcist ./dist/truffle-contract.js.map > ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
     "prepare": "yarn compile",
     "publish:next": "node ../truffle/scripts/prereleaseVersion.js next next",
     "test": "./scripts/test.sh",
@@ -28,6 +28,8 @@
     "bignumber.js": "^7.2.1",
     "ethereum-ens": "^0.8.0",
     "ethers": "^4.0.0-beta.1",
+    "exorcist": "^1.0.1",
+    "source-map-support": "^0.5.16",
     "web3": "1.2.1",
     "web3-core-promievent": "1.2.1",
     "web3-eth-abi": "1.2.1",

@@ -36,8 +36,7 @@ describe("Reset Button", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -48,8 +47,7 @@ describe("Reset Button", function() {
 
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   it("Correctly resets after finishing", async function() {
@@ -57,21 +55,22 @@ describe("Reset Button", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     let session = bugger.connect();
     let sourceId = session.view(solidity.current.source).id;
+    let compilationId = session.view(solidity.current.source).compilationId;
     let source = session.view(solidity.current.source).source;
 
     let variables = [];
     variables[0] = []; //collected during 1st run
     variables[1] = []; //collected during 2nd run
 
-    await session.addBreakpoint({ sourceId, line: lineOf("BREAK", source) });
+    await session.addBreakpoint({
+      sourceId,
+      compilationId,
+      line: lineOf("BREAK", source)
+    });
 
     variables[0].push(
       Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
@@ -91,7 +90,11 @@ describe("Reset Button", function() {
     variables[1].push(
       Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
     );
-    await session.addBreakpoint({ sourceId, line: lineOf("BREAK", source) });
+    await session.addBreakpoint({
+      sourceId,
+      compilationId,
+      line: lineOf("BREAK", source)
+    });
     await session.continueUntilBreakpoint(); //advance to line 10
     variables[1].push(
       Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
