@@ -103,6 +103,7 @@ var properties = {
       return value;
     }
   },
+  immutableReferences: {},
   sourceMap: {
     sources: ["sourceMap", "srcmap", "evm.bytecode.sourceMap"]
   },
