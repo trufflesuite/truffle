@@ -57,8 +57,10 @@ elif [ "$QUORUM" = true ]; then
 elif [ "$TEZOS" = true ]; then
 
   truffle version
-  mkdir tezos-tests && cd tezos-tests && truffle unbox tezos-example
+  mkdir tezos-ligo-box && cd tezos-ligo-box && truffle unbox tezos-example
   npm run start-sandbox
+  truffle compile && truffle migrate && truffle test
+  mkdir ../tezos-smartpy-box && cd ../tezos-smartpy-box && truffle unbox tezos-smartpy-example
   truffle compile && truffle migrate && truffle test
 
 elif [ "$COLONY" = true ]; then
