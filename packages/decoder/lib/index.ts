@@ -40,6 +40,7 @@ For a contract instance decoder, use one of the following:
 * [[forArtifactAt|`forArtifactAt`]]
 * [[forContractAt|`forContractAt`]]
 * [[forContractInstance|`forContractInstance`]]
+* [[forAddress|`forAddress`]]
 
 See the documentation of these functions for details, or below for usage
 examples.
@@ -49,10 +50,8 @@ project is specified; currently only a few methods for specifying project
 information are allowed, but more are planned.
 
 One can also spawn decoders from other decoders by supplying additional
-information.  For instance, the wire decoder has a method
-[[WireDecoder.forAddress|`forAddress`]] that will spawn a contract instance
-decoder from an address.  See the documentation for the individual decoder
-classes for a method listing.
+information.  See the documentation for the individual decoder classes for a
+method listing.
 
 ### Decoder methods
 
@@ -251,7 +250,7 @@ export async function forArtifact(
  * @param projectInfo Information about the project being decoded, or just the
  *   contracts relevant to the contract being decoded (e.g., by providing struct
  *   or enum definitions, or even just appearing as a contract type).  This may
- *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   come in several forms. See the [[ProjectInfo]] documentation for more
  *   information.  See the projectInfo parameter documentation on [[forArtifact]]
  *   for more detail.
  * @category Truffle Contract-based Constructor
@@ -399,6 +398,33 @@ export async function forContractInstance(
     contract.address,
     projectInfo
   );
+}
+
+/**
+ * **This function is asynchronous.**
+ *
+ * Constructs a contract instance decoder for a given instance of a contract in this
+ * project.  Unlike the other functions, this method doesn't require giving an
+ * artifact for the address itself; however, the address had better correspond to
+ * a contract of a type given in the project info, or you'll get an exception.
+ * @param address The address of the contract instance to decode.
+ *   If an invalid address is provided, this method will throw an exception.
+ * @param provider The Web3 provider object to use.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. See the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forProject]]
+ *   for more detail.
+ * @category Provider-based Constructor
+ */
+export async function forAddress(
+  address: string,
+  provider: Provider,
+  projectInfo: ProjectInfo | Artifact[]
+): Promise<ContractInstanceDecoder> {
+  let wireDecoder = await forProject(provider, projectInfo);
+  return await wireDecoder.forAddress(address);
 }
 
 //Note: this function doesn't actually go in this category, but
