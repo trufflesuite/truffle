@@ -4,9 +4,7 @@
  * - a github `org/repo` string
  * - a string containing a repo under the `truffle-box` org
  */
-function normalizeURL(
-  url = "https://github.com/trufflesuite/truffle-init-default"
-) {
+function normalizeURL(url = "https://github.com/truffle-box/tezos-bare-box") {
   // full URL already
   if (url.includes("://") || url.includes("git@")) {
     return url;
