@@ -4,14 +4,16 @@ import * as AbiData from "@truffle/codec/abi-data/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecodingMode } from "@truffle/codec/types";
+import { ImmutableReferences } from "@truffle/contract-schema/spec";
 import * as Format from "@truffle/codec/format";
 
-//for passing to calldata/event/contract allocation functions
+//for passing to calldata/event/state allocation functions
 export interface ContractAllocationInfo {
   abi?: AbiData.Abi; //needed for events & calldata
   contractNode: Ast.AstNode; //needed for all 3
   deployedContext?: Contexts.DecoderContext; //needed for events & calldata
   constructorContext?: Contexts.DecoderContext; //needed for calldata
+  immutableReferences?: ImmutableReferences; //needed for state
   compiler: Compiler.CompilerVersion; //needed for all 3
   compilationId?: string; //needed for all 3
 }

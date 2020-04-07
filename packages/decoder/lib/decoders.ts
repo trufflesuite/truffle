@@ -132,7 +132,7 @@ export class WireDecoder {
 
     const allocationInfo: AbiData.Allocate.ContractAllocationInfo[] = this.contractsAndContexts.map(
       ({
-        contract: { abi, compiler },
+        contract: { abi, compiler, immutableReferences },
         compilationId,
         node,
         deployedContext,
@@ -143,7 +143,8 @@ export class WireDecoder {
         compiler,
         contractNode: node,
         deployedContext,
-        constructorContext
+        constructorContext,
+        immutableReferences
       })
     );
 

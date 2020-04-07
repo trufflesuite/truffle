@@ -7,6 +7,7 @@ import * as Common from "@truffle/codec/common";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Utils from "@truffle/codec/storage/utils";
 import * as Ast from "@truffle/codec/ast";
+import * as Pointer from "@truffle/codec/pointer";
 import {
   StorageAllocation,
   StorageAllocations,
@@ -16,6 +17,7 @@ import {
   StateVariableAllocation
 } from "./types";
 import { ContractAllocationInfo } from "@truffle/codec/abi-data/allocate";
+import { ImmutableReferences } from "@truffle/contract-schema/spec";
 import * as Evm from "@truffle/codec/evm";
 import * as Format from "@truffle/codec/format";
 import BN from "bn.js";
@@ -101,10 +103,16 @@ export function getStateAllocations(
 ): StateAllocations {
   let allocations = existingAllocations;
   for (const contractInfo of contracts) {
-    let { contractNode: contract, compiler, compilationId } = contractInfo;
+    let {
+      contractNode: contract,
+      immutableReferences,
+      compiler,
+      compilationId
+    } = contractInfo;
     try {
       allocations = allocateContractState(
         contract,
+        immutableReferences,
         compilationId,
         compiler,
         referenceDeclarations[compilationId],
@@ -266,6 +274,7 @@ function getStateVariables(contractNode: Ast.AstNode): Ast.AstNode[] {
 
 function allocateContractState(
   contract: Ast.AstNode,
+  immutableReferences: ImmutableReferences,
   compilationId: string,
   compiler: Compiler.CompilerVersion,
   referenceDeclarations: Ast.AstNodes,
@@ -282,6 +291,9 @@ function allocateContractState(
       })
     )
   );
+  if (!immutableReferences) {
+    immutableReferences = {}; //also, let's set this up for convenience
+  }
 
   //base contracts are listed from most derived to most base, so we
   //have to reverse before processing, but reverse() is in place, so we
@@ -309,10 +321,22 @@ function allocateContractState(
     })
   );
 
-  //now: we split the variables into storage variables and constants.
-  let [constantVariables, storageVariables] = partition(
+  //now: we split the variables into storage, constant, and code
+  let [constantVariables, variableVariables] = partition(
     variables,
     variable => variable.definition.constant
+  );
+
+  //why use this function instead of just checking
+  //definition.immutable?
+  //because of a bug in Solidity 0.6.5 that causes the immutable flag
+  //not to exist.  So, we also have to check against immutableReferences.
+  const isImmutable = (definition: Ast.AstNode) =>
+    definition.immutable || definition.id.toString() in immutableReferences;
+
+  let [immutableVariables, storageVariables] = partition(
+    variableVariables,
+    variable => isImmutable(variable.definition)
   );
 
   //transform storage variables into data types
@@ -344,7 +368,32 @@ function allocateContractState(
     })
   );
 
-  //let's also create allocations for the constants
+  //now let's create allocations for the immutables
+  let immutableVariableAllocations = immutableVariables.map(
+    ({ definition, definedIn }) => {
+      let references = immutableReferences[definition.id.toString()] || [];
+      let pointer: Pointer.CodeFormPointer;
+      if (references.length === 0) {
+        pointer = {
+          location: "nowhere" as const
+        };
+      } else {
+        pointer = {
+          location: "code" as const,
+          start: references[0].start,
+          length: references[0].length
+        };
+      }
+      return {
+        definition,
+        definedIn,
+        compilationId,
+        pointer
+      };
+    }
+  );
+
+  //and let's create allocations for the constants
   let constantVariableAllocations = constantVariables.map(
     ({ definition, definedIn }) => ({
       definition,
@@ -357,12 +406,14 @@ function allocateContractState(
     })
   );
 
-  //now, reweave the two together
+  //now, reweave the three together
   let contractAllocation: StateVariableAllocation[] = [];
   for (let variable of variables) {
     let arrayToGrabFrom = variable.definition.constant
       ? constantVariableAllocations
-      : storageVariableAllocations;
+      : isImmutable(variable.definition)
+        ? immutableVariableAllocations
+        : storageVariableAllocations;
     contractAllocation.push(arrayToGrabFrom.shift()); //note that push and shift both modify!
   }
 

@@ -6,11 +6,10 @@ export type DataPointer =
   | MemoryPointer
   | StoragePointer
   | AbiDataPointer
-  | CodePointer
+  | CodeFormPointer
   | ConstantDefinitionPointer
   | SpecialPointer
-  | EventTopicPointer
-  | UnreadablePointer;
+  | EventTopicPointer;
 
 export type StackFormPointer = StackPointer | StackLiteralPointer;
 export type AbiPointer = AbiDataPointer | GenericAbiPointer;
@@ -19,6 +18,7 @@ export type AbiDataPointer =
   | ReturndataPointer
   | EventDataPointer;
 export type BytesPointer = MemoryPointer | AbiDataPointer | CodePointer;
+export type CodeFormPointer = CodePointer | UnreadablePointer;
 
 export interface StackPointer {
   location: "stack";
