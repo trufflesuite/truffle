@@ -16,7 +16,7 @@ const __IMMUTABLE = `
 pragma solidity ^0.6.5;
 
 contract Base {
-  uint8 immutable base = 37;
+  int8 immutable base = -37;
 }
 
 contract ImmutableTest is Base {
@@ -39,7 +39,7 @@ contract ImmutableTest is Base {
     emit Done(); //BREAK CONSTRUCTOR
   }
 
-  event Number(uint8);
+  event Number(int8);
   event Enum(Color);
   event Bool(bool);
   event Address(address);
@@ -105,7 +105,7 @@ describe("Immutable state variables", function() {
     );
 
     const expectedResult = {
-      base: 37,
+      base: -37,
       background: "ImmutableTest.Color.Blue",
       truth: true,
       self: address,
@@ -141,7 +141,7 @@ describe("Immutable state variables", function() {
     );
 
     const expectedResult = {
-      base: 37,
+      base: -37,
       background: "ImmutableTest.Color.Blue",
       truth: true,
       self: address,
