@@ -22,7 +22,7 @@ describe("truffle unbox [ @standalone ]", () => {
   });
 
   describe("when run without arguments", () => {
-    it("unboxes truffle-init-default", async () => {
+    it.skip("unboxes truffle-init-default", async () => {
       await CommandRunner.run("unbox --force", config);
       assert(
         fse.pathExistsSync(
