@@ -681,30 +681,93 @@ const data = createSelectorTree({
        * format (more convenient for debugger) where members are stored by ID
        * in an object instead of by index in an array; also only holds things
        * from the current compilation
-       * also strips out code pointers if we're in a constructor
+       * ALSO: if we're in a constructor, replaces all code pointers by appropriate
+       * memory pointers :)
        */
       state: createLeaf(
-        ["/info/allocations/state", "../compilationId", evm.current.context],
-        (allocations, compilationId, { isConstructor }) =>
-          Object.assign(
+        [
+          "/info/allocations/state",
+          "/views/userDefinedTypes",
+          "../compilationId",
+          evm.current.context
+        ],
+        (
+          allAllocations,
+          userDefinedTypes,
+          compilationId,
+          { isConstructor, compiler }
+        ) => {
+          const allocations = compilationId
+            ? allAllocations[compilationId]
+            : {};
+          //several-deep clone
+          let transformedAllocations = Object.assign(
             {},
-            ...Object.entries(
-              compilationId ? allocations[compilationId] : {}
-            ).map(([id, allocation]) => ({
+            ...Object.entries(allocations).map(([id, allocation]) => ({
               [id]: {
-                members: Object.assign(
-                  {},
-                  ...allocation.members.map(
-                    memberAllocation =>
-                      !isConstructor ||
-                      memberAllocation.pointer.location !== "code"
-                        ? { [memberAllocation.definition.id]: memberAllocation }
-                        : {} //if we're in a constructor, and it's a code pointer, filter it out
-                  )
-                )
+                members: allocation.members.map(member => ({ ...member }))
               }
             }))
-          )
+          );
+          //if we're not in a constructor, we don't need to actually transform it.
+          //if we are...
+          if (isConstructor) {
+            //...we must transform code pointers!
+            for (const id in transformedAllocations) {
+              const allocation = transformedAllocations[id];
+              //here, the magic number 4 is the number of reserved memory slots
+              //at the start of memory.  immutables go immediately afterward.
+              let start = 4 * Codec.Evm.Utils.WORD_SIZE;
+              for (const member of allocation.members) {
+                //if it's not a code pointer, leave it alone
+                if (
+                  member.pointer.location === "code" ||
+                  member.pointer.location === "nowhere"
+                ) {
+                  //if it is, transform it
+                  const dataType = Codec.Ast.Import.definitionToType(
+                    member.definition,
+                    compilationId,
+                    compiler,
+                    "memory" //FWIW :P
+                  );
+                  //HACK: immutables are *left* aligned, so we'll use
+                  //the *storage* size for the length
+                  const length = Codec.Storage.Utils.storageLengthToBytes(
+                    Codec.Storage.Allocate.storageSize(
+                      dataType,
+                      userDefinedTypes
+                      //we skip the allocations argument; no structs here
+                    )
+                  );
+                  member.pointer = {
+                    location: "memory",
+                    start,
+                    length
+                  };
+                  start += Codec.Evm.Utils.WORD_SIZE;
+                }
+              }
+            }
+          }
+          //having now transformed code pointers if needed,
+          //we now index by ID
+          return Object.assign(
+            {},
+            ...Object.entries(transformedAllocations).map(
+              ([id, allocation]) => ({
+                [id]: {
+                  members: Object.assign(
+                    {},
+                    ...allocation.members.map(memberAllocation => ({
+                      [memberAllocation.definition.id]: memberAllocation
+                    }))
+                  )
+                }
+              })
+            )
+          );
+        }
       )
     },
 
