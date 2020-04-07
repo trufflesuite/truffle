@@ -758,6 +758,17 @@ const data = createSelectorTree({
       node => node && node.nodeType === "ModifierDefinition"
     ),
 
+    /*
+     * data.current.inFunctionOrModifier
+     */
+    inFunctionOrModifier: createLeaf(
+      ["./function"],
+      node =>
+        node &&
+        (node.nodeType === "FunctionDefinition" ||
+          node.nodeType === "ModifierDefinition")
+    ),
+
     /**
      * data.current.functionDepth
      */
