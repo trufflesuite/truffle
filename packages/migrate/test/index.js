@@ -62,6 +62,51 @@ describe("Migrate", () => {
           .catch(done);
       });
     });
+
+    describe("when force is set to true", () => {
+      before(() => {
+        options.force = true;
+      });
+
+      beforeEach(() => {
+        sinon.stub(Migrate, "runAll");
+      });
+      afterEach(() => {
+        Migrate.runAll.restore();
+      });
+
+      it("calls runAll then the callback", done => {
+        Migrate.run(options)
+          .then(() => {
+            assert(Migrate.runAll.calledWith(options));
+            done();
+          })
+          .catch(done);
+      });
+    });
+
+    describe("when force is not true", () => {
+      beforeEach(() => {
+        options.force = undefined;
+        sinon
+          .stub(Migrate, "lastCompletedMigration")
+          .returns(Promise.resolve(666));
+        sinon.stub(Migrate, "runFrom");
+      });
+      afterEach(() => {
+        Migrate.lastCompletedMigration.restore();
+        Migrate.runFrom.restore();
+      });
+
+      it("calls runFrom with the proper migration number", done => {
+        Migrate.run(options)
+          .then(() => {
+            assert(Migrate.runFrom.calledWith(667));
+            done();
+          })
+          .catch(done);
+      });
+    });
   });
 
   describe("runMigrations(migrations, options)", () => {

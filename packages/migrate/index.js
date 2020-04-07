@@ -75,7 +75,7 @@ const Migrate = {
         "from" // address doing deployment
       ]);
 
-      if (options.reset === true) {
+      if (options.reset === true || options.force === true) {
         await this.runAll(options);
         if (callbackPassed) return callback();
         return;
@@ -191,7 +191,18 @@ const Migrate = {
     };
 
     // Two possible Migrations.sol's (lintable/unlintable)
-    const lastCompletedMigration = migrationsInstance => {
+    const lastCompletedMigration = async migrationsInstance => {
+      const { tezos } = migrationsInstance.constructor.interfaceAdapter;
+      if (tezos) {
+        try {
+          const {
+            last_completed_migration
+          } = await migrationsInstance.storage();
+          return last_completed_migration;
+        } catch (error) {
+          throw error;
+        }
+      }
       try {
         return migrationsInstance.last_completed_migration.call();
       } catch (error) {
@@ -213,7 +224,8 @@ const Migrate = {
 
   needsMigrating: function(options) {
     return new Promise((resolve, reject) => {
-      if (options.reset === true) return resolve(true);
+      if (options.reset === true || options.force === true)
+        return resolve(true);
 
       return this.lastCompletedMigration(options)
         .then(number => {

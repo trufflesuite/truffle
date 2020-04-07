@@ -71,6 +71,7 @@ class Migration {
    * @param  {Object}   interfaceAdapter interfaceAdapter
    */
   async _deploy(options, deployer, resolver, migrateFn, interfaceAdapter) {
+    const { web3, tezos } = interfaceAdapter;
     try {
       await deployer.start();
 
@@ -92,7 +93,7 @@ class Migration {
         // do nothing, Migrations contract optional
       }
 
-      if (Migrations && Migrations.isDeployed()) {
+      if (Migrations && Migrations.isDeployed() && options.force === false) {
         const message = `Saving migration to chain.`;
 
         if (!this.dryRun) {
@@ -101,15 +102,16 @@ class Migration {
         }
 
         const migrations = await Migrations.deployed();
-        const receipt = await migrations.setCompleted(this.number);
+
+        let receipt;
+        if (web3) receipt = await migrations.setCompleted(this.number);
+        if (tezos) receipt = await migrations.main(this.number);
 
         if (!this.dryRun) {
           const data = { receipt, message };
           await this.emitter.emit("endTransaction", data);
         }
       }
-
-      const { web3, tezos } = interfaceAdapter;
 
       if (web3) await this.emitter.emit("postEvmMigrate", this.isLast);
       if (tezos) await this.emitter.emit("postTezosMigrate", this.isLast);
