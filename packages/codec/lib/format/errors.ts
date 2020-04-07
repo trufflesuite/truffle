@@ -680,7 +680,8 @@ export type ReadError =
   | UnsupportedConstantError
   | ReadErrorStack
   | ReadErrorBytes
-  | ReadErrorStorage;
+  | ReadErrorStorage
+  | UnusedImmutableError;
 /**
  * An error resulting from overlarge length or pointer values
  *
@@ -747,7 +748,12 @@ export interface ReadErrorStack {
 /**
  * A byte-based location
  */
-export type BytesLocation = "memory" | "calldata" | "eventdata" | "returndata";
+export type BytesLocation =
+  | "memory"
+  | "calldata"
+  | "eventdata"
+  | "returndata"
+  | "code";
 
 /**
  * Read error in a byte-based location (memory, calldata, etc)
@@ -769,6 +775,15 @@ export interface ReadErrorBytes {
 export interface ReadErrorStorage {
   kind: "ReadErrorStorage";
   range: Storage.Range;
+}
+
+/**
+ * Attempting to read an immutable that is never stored anywhere
+ *
+ * @Category Generic errors
+ */
+export interface UnusedImmutableError {
+  kind: "UnusedImmutableError";
 }
 
 /**

@@ -549,6 +549,13 @@ const data = createSelectorTree({
       ),
 
       /**
+       * data.current.state.code
+       */
+      code: createLeaf([evm.current.context], ({ binary }) =>
+        Codec.Conversion.toBytes(binary)
+      ),
+
+      /**
        * data.current.state.calldata
        */
       calldata: createLeaf(

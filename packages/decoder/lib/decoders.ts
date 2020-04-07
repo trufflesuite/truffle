@@ -1243,7 +1243,8 @@ export class ContractInstanceDecoder {
   ): Promise<DecoderTypes.StateVariable> {
     const info: Codec.Evm.EvmInfo = {
       state: {
-        storage: {}
+        storage: {},
+        code: Conversion.toBytes(this.contractCode)
       },
       mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,

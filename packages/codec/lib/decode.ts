@@ -60,13 +60,17 @@ function* decodeDispatch(
       return yield* Topic.Decode.decodeTopic(dataType, pointer, info, options);
 
     case "memory":
-      //NOTE: this case should never actually occur, but I'm including it
-      //anyway as a fallback
       return yield* Memory.Decode.decodeMemory(
         dataType,
         pointer,
         info,
         options
       );
+
+    case "code":
+    case "nowhere":
+      //currently only basic types can go in code, so we'll dispatch directly to decodeBasic
+      //(if it's a nowhere pointer, this will return an error result, of course)
+      return yield* Basic.Decode.decodeBasic(dataType, pointer, info);
   }
 }

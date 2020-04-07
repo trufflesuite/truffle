@@ -1,9 +1,28 @@
 import * as Evm from "@truffle/codec/evm";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecodingError } from "@truffle/codec/errors";
+import { DecoderRequest } from "@truffle/codec/types";
 
-export function readBytes(pointer: Pointer.BytesPointer, state: Evm.EvmState) {
-  const sourceBytes = state[pointer.location];
+export function* readCode(
+  pointer: Pointer.CodePointer,
+  state: Evm.EvmState
+): Generator<DecoderRequest, Uint8Array, Uint8Array> {
+  let code = state.code;
+  if (!code) {
+    code = yield {
+      type: "code",
+      address: Evm.Utils.toAddress(state.specials.this)
+    };
+  }
+  return readBytes(pointer, { ...state, code });
+}
+
+export function readBytes(
+  pointer: Pointer.BytesPointer,
+  state: Evm.EvmState
+): Uint8Array {
+  let sourceBytes = state[pointer.location];
+
   const { start: offset, length } = pointer;
   if (!Number.isSafeInteger(offset + length)) {
     throw new DecodingError({

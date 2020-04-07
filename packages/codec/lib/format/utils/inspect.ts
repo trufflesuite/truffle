@@ -371,6 +371,7 @@ export class ResultInspector {
             return `Pointer is too large (value ${errorResult.error.pointerAsBN.toString()}); decoding is not supported`;
           case "UserDefinedTypeNotFoundError":
           case "UnsupportedConstantError":
+          case "UnusedImmutableError":
           case "ReadErrorStack":
           case "ReadErrorStorage":
           case "ReadErrorBytes":
