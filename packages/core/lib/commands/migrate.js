@@ -6,6 +6,12 @@ const command = {
       type: "boolean",
       default: false
     },
+    "force": {
+      describe:
+        "Force migrations (disable and ignore on-chain migrations tracking)",
+      type: "boolean",
+      default: false
+    },
     "compile-all": {
       describe: "recompile all contracts",
       type: "boolean",
@@ -46,13 +52,18 @@ const command = {
       "                                " + // spacing to align with previous line
       "[--compile-all] [--verbose-rpc] [--interactive] [--dry-run]\n" +
       "                                " + // spacing to align with previous line
-      "[--skip-dry-run] [--describe-json]",
+      "[--skip-dry-run] [--describe-json] [--force]",
     options: [
       {
         option: "--reset",
         description:
           "Run all migrations from the beginning, instead of running from the last " +
           "completed migration."
+      },
+      {
+        option: "--force",
+        description:
+          "Force migrations (disable and ignore on-chain migrations tracking)"
       },
       {
         option: "--f <number>",

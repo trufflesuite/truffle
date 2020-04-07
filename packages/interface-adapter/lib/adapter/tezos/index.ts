@@ -48,8 +48,8 @@ export class TezosAdapter implements InterfaceAdapter {
   }
 
   public async getCode(address: string) {
-    //   return this.web3.eth.getCode(address);
-    return "0";
+    const storage = await this.tezos.contract.getStorage(address);
+    return storage as string;
   }
 
   public async getAccounts(config: Config) {
