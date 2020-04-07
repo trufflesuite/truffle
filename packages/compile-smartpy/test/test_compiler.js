@@ -1,5 +1,4 @@
 const path = require("path");
-const { mkdirSync } = require("fs");
 const assert = require("assert");
 const Config = require("@truffle/config");
 const compile = require("../index");
@@ -13,7 +12,6 @@ describe("smartpy compiler", () => {
     _: []
   };
   const config = new Config().merge(defaultSettings);
-  mkdirSync(defaultSettings.contracts_build_directory);
 
   it("compiles smartpy contracts", done => {
     compile.all(config, (err, contracts, paths) => {

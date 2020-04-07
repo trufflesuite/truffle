@@ -1,6 +1,8 @@
 const path = require("path");
 const { exec, spawn } = require("child_process");
 const fs = require("fs");
+const { promisify } = require("util");
+const promisifiedMkdirp = promisify(require("mkdirp"));
 const colors = require("colors");
 const minimatch = require("minimatch");
 const find_contracts = require("@truffle/contract-sources");
@@ -108,6 +110,9 @@ function execSmartPy(sourcePath, entryPoint, options) {
     const extension = path.extname(sourcePath);
     const basename = path.basename(sourcePath, extension);
     const contractName = basename;
+
+    if (!fs.existsSync(options.contracts_build_directory))
+      promisifiedMkdirp(options.contracts_build_directory);
 
     // Use spawn() instead of exec() here so that the OS can take care of escaping args.
     let docker = spawn("docker", [
