@@ -8,13 +8,13 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "1.1.0-tezos.0",
+  "version": "1.1.0-tezos.1",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/contract-schema": "^3.1.0-tezos.0",
+    "@truffle/contract-schema": "^3.2.0-tezos.0",
     "@truffle/expect": "^0.1.0-tezos.0",
     "debug": "^4.1.0",
     "glob": "^7.1.2",
