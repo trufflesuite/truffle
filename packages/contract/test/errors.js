@@ -231,7 +231,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
     // NB: this error is different than the `invalid` opcode error
     // produced when the vmErrors flag is on.
     it("errors with OOG on internal OOG", async function() {
-      this.timeout(40000);
+      this.timeout(50000);
 
       const example = await Example.new(1);
       try {

@@ -216,7 +216,7 @@ describe("Deployments", function() {
 
     // Constructor in this test consumes ~6388773 (ganache) vs blockLimit of 6721975.
     it("should not multiply past the blockLimit", async function() {
-      this.timeout(50000);
+      this.timeout(60000);
       let iterations = 6000; // # of times to set a uint in a loop, consuming gas.
 
       const estimate = await Example.new.estimateGas(iterations);
