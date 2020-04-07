@@ -141,6 +141,7 @@ export default class Session {
           sourceMap,
           deployedBytecode: deployedBinary,
           deployedSourceMap,
+          immutableReferences,
           abi,
           compiler,
           primarySourceId
@@ -201,6 +202,7 @@ export default class Session {
             binary: deployedBinary,
             sourceMap: deployedSourceMap,
             primarySource: primarySourceIndex,
+            immutableReferences,
             abi,
             compiler,
             compilationId: compilation.id,
