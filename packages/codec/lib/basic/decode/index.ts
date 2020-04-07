@@ -17,7 +17,11 @@ export function* decodeBasic(
   options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   const { state } = info;
-  const { permissivePadding, strictAbiMode: strict } = options; //if these are undefined they'll still be falsy so OK
+  const {
+    permissivePadding,
+    strictAbiMode: strict,
+    forceZeroPadding
+  } = options; //if these are undefined they'll still be falsy so OK
 
   let bytes: Uint8Array;
   let rawBytes: Uint8Array;
@@ -100,9 +104,15 @@ export function* decodeBasic(
       };
     case "int":
       //first, check padding (if needed)
-      if (!permissivePadding && !checkPaddingSigned(bytes, dataType.bits / 8)) {
+      if (
+        !permissivePadding &&
+        !checkPaddingSigned(bytes, dataType.bits / 8, forceZeroPadding)
+      ) {
         let error = {
           kind: "IntPaddingError" as const,
+          expectedPaddingType: forceZeroPadding
+            ? ("zero" as const)
+            : ("signed" as const),
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {
@@ -344,9 +354,15 @@ export function* decodeBasic(
     //will have to split these once we actually support fixed-point
     case "fixed": {
       //first, check padding (if needed)
-      if (!permissivePadding && !checkPaddingSigned(bytes, dataType.bits / 8)) {
+      if (
+        !permissivePadding &&
+        !checkPaddingSigned(bytes, dataType.bits / 8, forceZeroPadding)
+      ) {
         let error = {
           kind: "FixedPaddingError" as const,
+          expectedPaddingType: forceZeroPadding
+            ? ("zero" as const)
+            : ("signed" as const),
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {
@@ -623,7 +639,14 @@ export function checkPaddingLeft(bytes: Uint8Array, length: number): boolean {
   return padding.every(paddingByte => paddingByte === 0);
 }
 
-function checkPaddingSigned(bytes: Uint8Array, length: number): boolean {
+function checkPaddingSigned(
+  bytes: Uint8Array,
+  length: number,
+  forceZeroPadding: boolean
+): boolean {
+  if (forceZeroPadding) {
+    return checkPaddingLeft(bytes, length);
+  }
   let padding = bytes.slice(0, -length); //padding is all but the last length bytes
   let value = bytes.slice(-length); //meanwhile the actual value is those last length bytes
   let signByte = value[0] & 0x80 ? 0xff : 0x00;

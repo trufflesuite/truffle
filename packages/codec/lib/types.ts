@@ -491,6 +491,7 @@ export interface CodeRequest {
 
 export interface DecoderOptions {
   permissivePadding?: boolean; //allows incorrect padding on certain data types
+  forceZeroPadding?: boolean; //forces zero-padding even on signed types
   strictAbiMode?: boolean; //throw errors instead of returning; check array & string lengths (crudely)
   allowRetry?: boolean; //turns on error-throwing for retry-allowed errors only
   abiPointerBase?: number; //what relative pointers should be considered relative to

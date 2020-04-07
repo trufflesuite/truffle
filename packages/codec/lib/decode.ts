@@ -71,6 +71,9 @@ function* decodeDispatch(
     case "nowhere":
       //currently only basic types can go in code, so we'll dispatch directly to decodeBasic
       //(if it's a nowhere pointer, this will return an error result, of course)
-      return yield* Basic.Decode.decodeBasic(dataType, pointer, info);
+      //also: we force zero-padding!
+      return yield* Basic.Decode.decodeBasic(dataType, pointer, info, {
+        forceZeroPadding: true
+      });
   }
 }

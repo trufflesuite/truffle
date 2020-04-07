@@ -147,6 +147,7 @@ export interface IntPaddingError {
    * hex string
    */
   raw: string;
+  expectedPaddingType: "zero" | "signed";
   kind: "IntPaddingError";
 }
 
@@ -314,6 +315,7 @@ export interface FixedPaddingError {
    * hex string
    */
   raw: string;
+  expectedPaddingType: "zero" | "signed";
   kind: "FixedPaddingError";
 }
 
