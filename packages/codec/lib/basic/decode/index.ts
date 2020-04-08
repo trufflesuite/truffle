@@ -53,6 +53,7 @@ export function* decodeBasic(
       if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "BoolPaddingError" as const,
+          paddingType: getPaddingType(dataType, paddingMode),
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {
@@ -101,6 +102,7 @@ export function* decodeBasic(
       if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "UintPaddingError" as const,
+          paddingType: getPaddingType(dataType, paddingMode),
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {
@@ -127,6 +129,7 @@ export function* decodeBasic(
       if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "IntPaddingError" as const,
+          paddingType: getPaddingType(dataType, paddingMode),
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {
@@ -153,6 +156,7 @@ export function* decodeBasic(
       if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "AddressPaddingError" as const,
+          paddingType: getPaddingType(dataType, paddingMode),
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {
@@ -178,6 +182,7 @@ export function* decodeBasic(
       if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "ContractPaddingError" as const,
+          paddingType: getPaddingType(dataType, paddingMode),
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {
@@ -210,6 +215,7 @@ export function* decodeBasic(
       if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "BytesPaddingError" as const,
+          paddingType: getPaddingType(dataType, paddingMode),
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {
@@ -238,6 +244,7 @@ export function* decodeBasic(
           if (!checkPadding(bytes, dataType, paddingMode)) {
             let error = {
               kind: "FunctionExternalNonStackPaddingError" as const,
+              paddingType: getPaddingType(dataType, paddingMode),
               raw: Conversion.toHexString(bytes)
             };
             if (strict) {
@@ -274,6 +281,7 @@ export function* decodeBasic(
               kind: "error" as const,
               error: {
                 kind: "FunctionInternalPaddingError" as const,
+                paddingType: getPaddingType(dataType, paddingMode),
                 raw: Conversion.toHexString(bytes)
               }
             };
@@ -323,6 +331,7 @@ export function* decodeBasic(
         let error = {
           kind: "EnumPaddingError" as const,
           type: fullType,
+          paddingType,
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {
@@ -381,6 +390,7 @@ export function* decodeBasic(
       if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "FixedPaddingError" as const,
+          paddingType: getPaddingType(dataType, paddingMode),
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {
@@ -418,6 +428,7 @@ export function* decodeBasic(
       if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "UfixedPaddingError" as const,
+          paddingType: getPaddingType(dataType, paddingMode),
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {

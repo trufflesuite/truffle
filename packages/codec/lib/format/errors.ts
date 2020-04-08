@@ -11,6 +11,7 @@ import BN from "bn.js";
 import * as Types from "./types";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Storage from "@truffle/codec/storage/types";
+import { PaddingType } from "@truffle/codec/types";
 
 /*
  * SECTION 1: Generic types for values in general (including errors).
@@ -117,6 +118,7 @@ export interface UintPaddingError {
    */
   raw: string;
   kind: "UintPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -148,6 +150,7 @@ export interface IntPaddingError {
    */
   raw: string;
   kind: "IntPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -189,6 +192,7 @@ export interface BoolPaddingError {
    */
   raw: string;
   kind: "BoolPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -220,6 +224,7 @@ export interface BytesPaddingError {
    */
   raw: string;
   kind: "BytesPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -269,6 +274,7 @@ export interface AddressPaddingError {
    */
   raw: string;
   kind: "AddressPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -328,6 +334,7 @@ export interface FixedPaddingError {
    */
   raw: string;
   kind: "FixedPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -348,6 +355,7 @@ export interface UfixedPaddingError {
    */
   raw: string;
   kind: "UfixedPaddingError";
+  paddingType: PaddingType;
 }
 
 /*
@@ -398,6 +406,7 @@ export interface EnumPaddingError {
   raw: string;
   type: Types.EnumType;
   kind: "EnumPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -440,6 +449,7 @@ export interface ContractPaddingError {
    */
   raw: string;
   kind: "ContractPaddingError";
+  paddingType: PaddingType;
 }
 
 /*
@@ -590,6 +600,7 @@ export interface FunctionExternalNonStackPaddingError {
    */
   raw: string;
   kind: "FunctionExternalNonStackPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -646,6 +657,7 @@ export interface FunctionInternalPaddingError {
    */
   raw: string;
   kind: "FunctionInternalPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
