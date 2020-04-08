@@ -307,6 +307,10 @@ export class ResultInspector {
             })`;
           case "BoolOutOfRangeError":
             return `Invalid boolean (numeric value ${errorResult.error.rawAsBN.toString()})`;
+          case "BoolPaddingError":
+            return `Boolean has extra leading bytes (padding error) (raw value ${
+              errorResult.error.raw
+            })`;
           case "BytesPaddingError":
             return `Bytestring has extra trailing bytes (padding error) (raw value ${
               errorResult.error.raw
@@ -319,6 +323,12 @@ export class ResultInspector {
             return `Invalid ${enumTypeName(
               errorResult.error.type
             )} (numeric value ${errorResult.error.rawAsBN.toString()})`;
+          case "EnumPaddingError":
+            return `Enum ${enumTypeName(
+              errorResult.error.type
+            )} extra leading bytes (padding error) (raw value ${
+              errorResult.error.raw
+            })`;
           case "EnumNotFoundDecodingError":
             return `Unknown enum type ${enumTypeName(
               errorResult.error.type
@@ -483,6 +493,7 @@ function nativizeWithTable(
   seenSoFar: any[]
 ): any {
   if (result.kind === "error") {
+    debug("ErrorResult: %O", result);
     switch (result.error.kind) {
       case "BoolOutOfRangeError":
         return true;

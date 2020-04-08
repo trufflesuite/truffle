@@ -695,7 +695,7 @@ const data = createSelectorTree({
           allAllocations,
           userDefinedTypes,
           compilationId,
-          { isConstructor, compiler }
+          { isConstructor }
         ) => {
           const allocations = compilationId
             ? allAllocations[compilationId]
@@ -725,25 +725,10 @@ const data = createSelectorTree({
                   member.pointer.location === "nowhere"
                 ) {
                   //if it is, transform it
-                  const dataType = Codec.Ast.Import.definitionToType(
-                    member.definition,
-                    compilationId,
-                    compiler,
-                    "memory" //FWIW :P
-                  );
-                  //HACK: immutables are *left* aligned, so we'll use
-                  //the *storage* size for the length
-                  const length = Codec.Storage.Utils.storageLengthToBytes(
-                    Codec.Storage.Allocate.storageSize(
-                      dataType,
-                      userDefinedTypes
-                      //we skip the allocations argument; no structs here
-                    )
-                  );
                   member.pointer = {
                     location: "memory",
                     start,
-                    length
+                    length: Codec.Evm.Utils.WORD_SIZE
                   };
                   start += Codec.Evm.Utils.WORD_SIZE;
                 }

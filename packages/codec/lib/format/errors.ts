@@ -147,7 +147,6 @@ export interface IntPaddingError {
    * hex string
    */
   raw: string;
-  expectedPaddingType: "zero" | "signed";
   kind: "IntPaddingError";
 }
 
@@ -167,7 +166,7 @@ export interface BoolErrorResult {
  *
  * @Category Elementary types
  */
-export type BoolError = BoolOutOfRangeError;
+export type BoolError = BoolOutOfRangeError | BoolPaddingError;
 
 /**
  * The bool is neither 0 nor 1
@@ -177,6 +176,19 @@ export type BoolError = BoolOutOfRangeError;
 export interface BoolOutOfRangeError {
   rawAsBN: BN;
   kind: "BoolOutOfRangeError";
+}
+
+/**
+ * A padding error for a boolean
+ *
+ * @Category Elementary types
+ */
+export interface BoolPaddingError {
+  /**
+   * hex string
+   */
+  raw: string;
+  kind: "BoolPaddingError";
 }
 
 /**
@@ -315,7 +327,6 @@ export interface FixedPaddingError {
    * hex string
    */
   raw: string;
-  expectedPaddingType: "zero" | "signed";
   kind: "FixedPaddingError";
 }
 
@@ -359,7 +370,10 @@ export interface EnumErrorResult {
  *
  * @Category User-defined elementary types
  */
-export type EnumError = EnumOutOfRangeError | EnumNotFoundDecodingError;
+export type EnumError =
+  | EnumOutOfRangeError
+  | EnumPaddingError
+  | EnumNotFoundDecodingError;
 
 /**
  * The enum is out of range
@@ -370,6 +384,20 @@ export interface EnumOutOfRangeError {
   kind: "EnumOutOfRangeError";
   type: Types.EnumType;
   rawAsBN: BN;
+}
+
+/**
+ * A padding error for an enum
+ *
+ * @Category Elementary types
+ */
+export interface EnumPaddingError {
+  /**
+   * hex string
+   */
+  raw: string;
+  type: Types.EnumType;
+  kind: "EnumPaddingError";
 }
 
 /**

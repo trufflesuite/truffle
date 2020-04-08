@@ -6,9 +6,15 @@ import * as Conversion from "@truffle/codec/conversion";
 import * as Format from "@truffle/codec/format";
 import * as Contexts from "@truffle/codec/contexts";
 import * as Pointer from "@truffle/codec/pointer";
-import { DecoderRequest, DecoderOptions } from "@truffle/codec/types";
+import {
+  DecoderRequest,
+  DecoderOptions,
+  PaddingMode,
+  PaddingType
+} from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
 import { DecodingError, StopDecodingError } from "@truffle/codec/errors";
+import { byteLength } from "@truffle/codec/basic/allocate";
 
 export function* decodeBasic(
   dataType: Format.Types.Type,
@@ -17,11 +23,8 @@ export function* decodeBasic(
   options: DecoderOptions = {}
 ): Generator<DecoderRequest, Format.Values.Result, Uint8Array> {
   const { state } = info;
-  const {
-    permissivePadding,
-    strictAbiMode: strict,
-    forceZeroPadding
-  } = options; //if these are undefined they'll still be falsy so OK
+  const { strictAbiMode: strict } = options; //if this is undefined it'll still be falsy so it's OK
+  const paddingMode: PaddingMode = options.paddingMode || "default";
 
   let bytes: Uint8Array;
   let rawBytes: Uint8Array;
@@ -47,6 +50,23 @@ export function* decodeBasic(
 
   switch (dataType.typeClass) {
     case "bool": {
+      if (!checkPadding(bytes, dataType, paddingMode)) {
+        let error = {
+          kind: "BoolPaddingError" as const,
+          raw: Conversion.toHexString(bytes)
+        };
+        if (strict) {
+          throw new StopDecodingError(error);
+        }
+        return {
+          type: dataType,
+          kind: "error" as const,
+          error
+        };
+      }
+      bytes = removePadding(bytes, dataType, paddingMode);
+      //note: the use of the BN is a little silly here,
+      //but, kind of stuck with it for now
       const numeric = Conversion.toBN(bytes);
       if (numeric.eqn(0)) {
         return {
@@ -78,7 +98,7 @@ export function* decodeBasic(
 
     case "uint":
       //first, check padding (if needed)
-      if (!permissivePadding && !checkPaddingLeft(bytes, dataType.bits / 8)) {
+      if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "UintPaddingError" as const,
           raw: Conversion.toHexString(bytes)
@@ -92,8 +112,8 @@ export function* decodeBasic(
           error
         };
       }
-      //now, truncate to appropriate length (keeping the bytes on the right)
-      bytes = bytes.slice(-dataType.bits / 8);
+      //now, truncate to appropriate length
+      bytes = removePadding(bytes, dataType, paddingMode);
       return {
         type: dataType,
         kind: "value" as const,
@@ -104,15 +124,9 @@ export function* decodeBasic(
       };
     case "int":
       //first, check padding (if needed)
-      if (
-        !permissivePadding &&
-        !checkPaddingSigned(bytes, dataType.bits / 8, forceZeroPadding)
-      ) {
+      if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "IntPaddingError" as const,
-          expectedPaddingType: forceZeroPadding
-            ? ("zero" as const)
-            : ("signed" as const),
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {
@@ -125,7 +139,7 @@ export function* decodeBasic(
         };
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
-      bytes = bytes.slice(-dataType.bits / 8);
+      bytes = removePadding(bytes, dataType, paddingMode);
       return {
         type: dataType,
         kind: "value" as const,
@@ -136,10 +150,7 @@ export function* decodeBasic(
       };
 
     case "address":
-      if (
-        !permissivePadding &&
-        !checkPaddingLeft(bytes, Evm.Utils.ADDRESS_SIZE)
-      ) {
+      if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "AddressPaddingError" as const,
           raw: Conversion.toHexString(bytes)
@@ -153,6 +164,7 @@ export function* decodeBasic(
           error
         };
       }
+      bytes = removePadding(bytes, dataType, paddingMode);
       return {
         type: dataType,
         kind: "value" as const,
@@ -163,10 +175,7 @@ export function* decodeBasic(
       };
 
     case "contract":
-      if (
-        !permissivePadding &&
-        !checkPaddingLeft(bytes, Evm.Utils.ADDRESS_SIZE)
-      ) {
+      if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "ContractPaddingError" as const,
           raw: Conversion.toHexString(bytes)
@@ -180,6 +189,7 @@ export function* decodeBasic(
           error
         };
       }
+      bytes = removePadding(bytes, dataType, paddingMode);
       const fullType = <Format.Types.ContractType>(
         Format.Types.fullType(dataType, info.userDefinedTypes)
       );
@@ -197,10 +207,7 @@ export function* decodeBasic(
       let coercedDataType = <Format.Types.BytesTypeStatic>dataType;
 
       //first, check padding (if needed)
-      if (
-        !permissivePadding &&
-        !checkPaddingRight(bytes, coercedDataType.length)
-      ) {
+      if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "BytesPaddingError" as const,
           raw: Conversion.toHexString(bytes)
@@ -215,7 +222,7 @@ export function* decodeBasic(
         };
       }
       //now, truncate to appropriate length
-      bytes = bytes.slice(0, coercedDataType.length);
+      bytes = removePadding(bytes, dataType, paddingMode);
       return {
         type: coercedDataType,
         kind: "value" as const,
@@ -228,12 +235,7 @@ export function* decodeBasic(
     case "function":
       switch (dataType.visibility) {
         case "external":
-          if (
-            !checkPaddingRight(
-              bytes,
-              Evm.Utils.ADDRESS_SIZE + Evm.Utils.SELECTOR_SIZE
-            )
-          ) {
+          if (!checkPadding(bytes, dataType, paddingMode)) {
             let error = {
               kind: "FunctionExternalNonStackPaddingError" as const,
               raw: Conversion.toHexString(bytes)
@@ -247,6 +249,7 @@ export function* decodeBasic(
               error
             };
           }
+          bytes = removePadding(bytes, dataType, paddingMode);
           const address = bytes.slice(0, Evm.Utils.ADDRESS_SIZE);
           const selector = bytes.slice(
             Evm.Utils.ADDRESS_SIZE,
@@ -265,7 +268,7 @@ export function* decodeBasic(
               kind: "InternalFunctionInABIError" as const
             });
           }
-          if (!checkPaddingLeft(bytes, 2 * Evm.Utils.PC_SIZE)) {
+          if (!checkPadding(bytes, dataType, paddingMode)) {
             return {
               type: dataType,
               kind: "error" as const,
@@ -275,6 +278,7 @@ export function* decodeBasic(
               }
             };
           }
+          bytes = removePadding(bytes, dataType, paddingMode);
           const deployedPc = bytes.slice(-Evm.Utils.PC_SIZE);
           const constructorPc = bytes.slice(
             -Evm.Utils.PC_SIZE * 2,
@@ -290,7 +294,7 @@ export function* decodeBasic(
       break; //to satisfy TypeScript
 
     case "enum": {
-      const numeric = Conversion.toBN(bytes);
+      let numeric = Conversion.toBN(bytes);
       const fullType = <Format.Types.EnumType>(
         Format.Types.fullType(dataType, info.userDefinedTypes)
       );
@@ -310,8 +314,28 @@ export function* decodeBasic(
           error
         };
       }
+      //note: I'm doing the padding checks a little more manually on this one
+      //so that we can have the right type of error
       const numOptions = fullType.options.length;
       const numBytes = Math.ceil(Math.log2(numOptions) / 8);
+      const paddingType = getPaddingType(dataType, paddingMode);
+      if (!checkPaddingDirect(bytes, numBytes, paddingType)) {
+        let error = {
+          kind: "EnumPaddingError" as const,
+          type: fullType,
+          raw: Conversion.toHexString(bytes)
+        };
+        if (strict) {
+          throw new StopDecodingError(error);
+        }
+        return {
+          type: dataType,
+          kind: "error" as const,
+          error
+        };
+      }
+      bytes = removePaddingDirect(bytes, numBytes, paddingType);
+      numeric = Conversion.toBN(bytes); //alter numeric!
       if (numeric.ltn(numOptions)) {
         const name = fullType.options[numeric.toNumber()];
         //NOTE: despite the use of toNumber(), I'm NOT catching exceptions here and returning an
@@ -331,8 +355,8 @@ export function* decodeBasic(
           type: fullType,
           rawAsBN: numeric
         };
-        if (strict && !checkPaddingLeft(bytes, numBytes)) {
-          //note that second condition -- even in strict mode,
+        if (strict) {
+          //note:
           //if the enum is merely out of range rather than out of the ABI range,
           //we do NOT throw an error here!  instead we simply return an error value,
           //which we normally avoid doing in strict mode.  (the error will be caught
@@ -351,18 +375,12 @@ export function* decodeBasic(
         };
       }
     }
-    //will have to split these once we actually support fixed-point
+
     case "fixed": {
       //first, check padding (if needed)
-      if (
-        !permissivePadding &&
-        !checkPaddingSigned(bytes, dataType.bits / 8, forceZeroPadding)
-      ) {
+      if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "FixedPaddingError" as const,
-          expectedPaddingType: forceZeroPadding
-            ? ("zero" as const)
-            : ("signed" as const),
           raw: Conversion.toHexString(bytes)
         };
         if (strict) {
@@ -375,7 +393,7 @@ export function* decodeBasic(
         };
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
-      bytes = bytes.slice(-dataType.bits / 8);
+      bytes = removePadding(bytes, dataType, paddingMode);
       let asBN = Conversion.toSignedBN(bytes);
       let rawAsBN = Conversion.toSignedBN(rawBytes);
       let asBig = Conversion.shiftBigDown(
@@ -397,7 +415,7 @@ export function* decodeBasic(
     }
     case "ufixed": {
       //first, check padding (if needed)
-      if (!permissivePadding && !checkPaddingLeft(bytes, dataType.bits / 8)) {
+      if (!checkPadding(bytes, dataType, paddingMode)) {
         let error = {
           kind: "UfixedPaddingError" as const,
           raw: Conversion.toHexString(bytes)
@@ -412,7 +430,7 @@ export function* decodeBasic(
         };
       }
       //now, truncate to appropriate length (keeping the bytes on the right)
-      bytes = bytes.slice(-dataType.bits / 8);
+      bytes = removePadding(bytes, dataType, paddingMode);
       let asBN = Conversion.toBN(bytes);
       let rawAsBN = Conversion.toBN(rawBytes);
       let asBig = Conversion.shiftBigDown(
@@ -628,6 +646,102 @@ export function decodeInternalFunction(
   };
 }
 
+function checkPadding(
+  bytes: Uint8Array,
+  dataType: Format.Types.Type,
+  paddingMode: PaddingMode,
+  userDefinedTypes?: Format.Types.TypesById
+): boolean {
+  const length = byteLength(dataType, userDefinedTypes);
+  let paddingType = getPaddingType(dataType, paddingMode);
+  if (paddingMode === "permissive") {
+    switch (dataType.typeClass) {
+      case "bool":
+      case "enum":
+      case "function":
+        //these three types are checked even in permissive mode
+        return checkPaddingDirect(bytes, length, paddingType);
+      default:
+        return true;
+    }
+  } else {
+    return checkPaddingDirect(bytes, length, paddingType);
+  }
+}
+
+function removePadding(
+  bytes: Uint8Array,
+  dataType: Format.Types.Type,
+  paddingMode: PaddingMode,
+  userDefinedTypes?: Format.Types.TypesById
+): Uint8Array {
+  const length = byteLength(dataType, userDefinedTypes);
+  const paddingType = getPaddingType(dataType, paddingMode);
+  return removePaddingDirect(bytes, length, paddingType);
+}
+
+function removePaddingDirect(
+  bytes: Uint8Array,
+  length: number,
+  paddingType: PaddingType
+) {
+  switch (paddingType) {
+    case "left":
+    case "signed":
+      return bytes.slice(-length);
+    case "right":
+      return bytes.slice(0, length);
+  }
+}
+
+function checkPaddingDirect(
+  bytes: Uint8Array,
+  length: number,
+  paddingType: PaddingType
+) {
+  switch (paddingType) {
+    case "left":
+      return checkPaddingLeft(bytes, length);
+    case "right":
+      return checkPaddingRight(bytes, length);
+    case "signed":
+      return checkPaddingSigned(bytes, length);
+  }
+}
+
+function getPaddingType(
+  dataType: Format.Types.Type,
+  paddingMode: PaddingMode
+): PaddingType {
+  switch (paddingMode) {
+    case "right":
+      return "right";
+    case "default":
+    case "permissive":
+      return defaultPaddingType(dataType);
+    case "zero":
+      let defaultType = defaultPaddingType(dataType);
+      return defaultType === "signed" ? "left" : defaultType;
+  }
+}
+
+function defaultPaddingType(dataType: Format.Types.Type): PaddingType {
+  switch (dataType.typeClass) {
+    case "bytes":
+      return "right";
+    case "int":
+    case "fixed":
+      return "signed";
+    case "function":
+      if (dataType.visibility === "external") {
+        return "right";
+      }
+    //otherwise, fall through to default
+    default:
+      return "left";
+  }
+}
+
 function checkPaddingRight(bytes: Uint8Array, length: number): boolean {
   let padding = bytes.slice(length); //cut off the first length bytes
   return padding.every(paddingByte => paddingByte === 0);
@@ -639,14 +753,7 @@ export function checkPaddingLeft(bytes: Uint8Array, length: number): boolean {
   return padding.every(paddingByte => paddingByte === 0);
 }
 
-function checkPaddingSigned(
-  bytes: Uint8Array,
-  length: number,
-  forceZeroPadding: boolean
-): boolean {
-  if (forceZeroPadding) {
-    return checkPaddingLeft(bytes, length);
-  }
+function checkPaddingSigned(bytes: Uint8Array, length: number): boolean {
   let padding = bytes.slice(0, -length); //padding is all but the last length bytes
   let value = bytes.slice(-length); //meanwhile the actual value is those last length bytes
   let signByte = value[0] & 0x80 ? 0xff : 0x00;

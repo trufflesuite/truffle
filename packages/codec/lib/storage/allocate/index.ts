@@ -4,6 +4,7 @@ const debug = debugModule("codec:storage:allocate");
 import { DecodingError } from "@truffle/codec/errors";
 import * as Compiler from "@truffle/codec/compiler";
 import * as Common from "@truffle/codec/common";
+import * as Basic from "@truffle/codec/basic";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Utils from "@truffle/codec/storage/utils";
 import * as Ast from "@truffle/codec/ast";
@@ -444,49 +445,18 @@ function storageSizeAndAllocate(
   userDefinedTypes?: Format.Types.TypesById,
   existingAllocations?: StorageAllocations
 ): StorageAllocationInfo {
+  //we'll only directly handle reference types here;
+  //direct types will be handled by dispatching to Basic.Allocate.byteLength
+  //in the default case
   switch (dataType.typeClass) {
-    case "bool":
-      return {
-        size: { bytes: 1 },
-        allocations: existingAllocations
-      };
-
-    case "address":
-    case "contract":
-      return {
-        size: { bytes: Evm.Utils.ADDRESS_SIZE },
-        allocations: existingAllocations
-      };
-
-    case "int":
-    case "uint":
-    case "fixed":
-    case "ufixed":
-      return {
-        size: { bytes: dataType.bits / 8 },
-        allocations: existingAllocations
-      };
-
-    case "enum": {
-      const storedType = <Format.Types.EnumType>userDefinedTypes[dataType.id];
-      if (!storedType.options) {
-        throw new Common.UnknownUserDefinedTypeError(
-          dataType.id,
-          Format.Types.typeString(dataType)
-        );
-      }
-      const numValues = storedType.options.length;
-      return {
-        size: { bytes: Math.ceil(Math.log2(numValues) / 8) },
-        allocations: existingAllocations
-      };
-    }
-
     case "bytes": {
       switch (dataType.kind) {
         case "static":
+          //really a basic type :)
           return {
-            size: { bytes: dataType.length },
+            size: {
+              bytes: Basic.Allocate.byteLength(dataType, userDefinedTypes)
+            }, //doing the function call for consistency :P
             allocations: existingAllocations
           };
         case "dynamic":
@@ -503,22 +473,6 @@ function storageSizeAndAllocate(
         size: { words: 1 },
         allocations: existingAllocations
       };
-
-    case "function": {
-      //this case is also really two different cases
-      switch (dataType.visibility) {
-        case "internal":
-          return {
-            size: { bytes: Evm.Utils.PC_SIZE * 2 },
-            allocations: existingAllocations
-          };
-        case "external":
-          return {
-            size: { bytes: Evm.Utils.ADDRESS_SIZE + Evm.Utils.SELECTOR_SIZE },
-            allocations: existingAllocations
-          };
-      }
-    }
 
     case "array": {
       switch (dataType.kind) {
@@ -588,5 +542,12 @@ function storageSizeAndAllocate(
         allocations
       };
     }
+
+    default:
+      //otherwise, it's a direct type
+      return {
+        size: { bytes: Basic.Allocate.byteLength(dataType, userDefinedTypes) },
+        allocations: existingAllocations
+      };
   }
 }
