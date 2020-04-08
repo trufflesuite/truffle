@@ -76,6 +76,7 @@ var DebugUtils = {
       sourceMap: contract.sourceMap,
       sourcePath: contract.sourcePath,
       bytecode: contract.bytecode,
+      immutableReferences: contract.immutableReferences,
       abi: contract.abi,
       ast: contract.ast,
       deployedBytecode: contract.deployedBytecode,

@@ -12,6 +12,7 @@ import * as Types from "./types";
 import * as Config from "./config";
 import * as Storage from "./storage";
 import * as Ast from "@truffle/codec/ast/types";
+import { PaddingType } from "@truffle/codec/types";
 
 /*
  * SECTION 1: Generic types for values in general (including errors).
@@ -132,6 +133,7 @@ export interface UintPaddingError<
    */
   raw: string;
   kind: "UintPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -167,6 +169,7 @@ export interface IntPaddingError<C> {
    */
   raw: string;
   kind: "IntPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -189,7 +192,7 @@ export interface BoolErrorResult<
  */
 export type BoolError<
   C extends Config.FormatConfig = Config.DefaultFormatConfig
-> = BoolOutOfRangeError<C>;
+> = BoolOutOfRangeError<C> | BoolPaddingError<C>;
 
 /**
  * The bool is neither 0 nor 1
@@ -211,6 +214,22 @@ interface RawIntegerFields {
   string: {
     rawAsString: string;
   };
+}
+
+/**
+ * A padding error for a boolean
+ *
+ * @Category Elementary types
+ */
+export interface BoolPaddingError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  /**
+   * hex string
+   */
+  raw: string;
+  kind: "BoolPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -244,6 +263,7 @@ export interface BytesPaddingError<C> {
    */
   raw: string;
   kind: "BytesPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -303,6 +323,7 @@ export interface AddressPaddingError<
    */
   raw: string;
   kind: "AddressPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -374,6 +395,7 @@ export interface FixedPaddingError<
    */
   raw: string;
   kind: "FixedPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -398,6 +420,7 @@ export interface UfixedPaddingError<
    */
   raw: string;
   kind: "UfixedPaddingError";
+  paddingType: PaddingType;
 }
 
 /*
@@ -424,7 +447,7 @@ export interface EnumErrorResult<
  */
 export type EnumError<
   C extends Config.FormatConfig = Config.DefaultFormatConfig
-> = EnumOutOfRangeError<C> | EnumNotFoundDecodingError<C>;
+> = EnumOutOfRangeError<C> | EnumPaddingError<C> | EnumNotFoundDecodingError<C>;
 
 /**
  * The enum is out of range
@@ -440,6 +463,23 @@ interface EnumOutOfRangeErrorBaseFields<
 > {
   kind: "EnumOutOfRangeError";
   type: Types.EnumType<C>;
+}
+
+/**
+ * A padding error for an enum
+ *
+ * @Category Elementary types
+ */
+export interface EnumPaddingError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  /**
+   * hex string
+   */
+  raw: string;
+  type: Types.EnumType<C>;
+  kind: "EnumPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -493,6 +533,7 @@ export interface ContractPaddingError<
    */
   raw: string;
   kind: "ContractPaddingError";
+  paddingType: PaddingType;
 }
 
 /*
@@ -673,6 +714,7 @@ export interface FunctionExternalNonStackPaddingError<
    */
   raw: string;
   kind: "FunctionExternalNonStackPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -737,6 +779,7 @@ export interface FunctionInternalPaddingError<
    */
   raw: string;
   kind: "FunctionInternalPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -800,6 +843,7 @@ export type GenericError<
   | UserDefinedTypeNotFoundError<C>
   | IndexedReferenceTypeError<C>
   | ReadError<C>;
+
 /**
  * A read error
  *
@@ -811,7 +855,9 @@ export type ReadError<
   | UnsupportedConstantError<C>
   | ReadErrorStack<C>
   | ReadErrorBytes<C>
-  | ReadErrorStorage<C>;
+  | ReadErrorStorage<C>
+  | UnusedImmutableError<C>;
+
 /**
  * An error resulting from overlarge length or pointer values
  *
@@ -890,7 +936,12 @@ export interface ReadErrorStack<
 /**
  * A byte-based location
  */
-export type BytesLocation = "memory" | "calldata" | "eventdata" | "returndata";
+export type BytesLocation =
+  | "memory"
+  | "calldata"
+  | "eventdata"
+  | "returndata"
+  | "code";
 
 /**
  * Read error in a byte-based location (memory, calldata, etc)
@@ -916,6 +967,17 @@ export interface ReadErrorStorage<
 > {
   kind: "ReadErrorStorage";
   range: Storage.Range<C>;
+}
+
+/**
+ * Attempting to read an immutable that is never stored anywhere
+ *
+ * @Category Generic errors
+ */
+export interface UnusedImmutableError<
+  C extends Config.FormatConfig = Config.DefaultFormatConfig
+> {
+  kind: "UnusedImmutableError";
 }
 
 /**

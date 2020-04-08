@@ -23,6 +23,7 @@ export function shimArtifacts(
       sourceMap,
       deployedBytecode,
       deployedSourceMap,
+      immutableReferences,
       sourcePath,
       source,
       ast,
@@ -47,6 +48,7 @@ export function shimArtifacts(
       sourceMap,
       deployedBytecode,
       deployedSourceMap,
+      immutableReferences,
       abi,
       compiler
     };

@@ -6,6 +6,7 @@ import * as TopicRead from "@truffle/codec/topic/read";
 import * as SpecialRead from "@truffle/codec/special/read";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
+import { DecodingError } from "@truffle/codec/errors";
 import * as Evm from "@truffle/codec/evm";
 
 export default function* read(
@@ -25,6 +26,10 @@ export default function* read(
     case "returndata":
       return BytesRead.readBytes(pointer, state);
 
+    case "code":
+      //keeping this separate
+      return yield* BytesRead.readCode(pointer, state);
+
     case "stackliteral":
       return StackRead.readStackLiteral(pointer);
 
@@ -36,5 +41,10 @@ export default function* read(
 
     case "eventtopic":
       return TopicRead.readTopic(pointer, state);
+
+    case "nowhere":
+      throw new DecodingError({
+        kind: "UnusedImmutableError" as const
+      });
   }
 }

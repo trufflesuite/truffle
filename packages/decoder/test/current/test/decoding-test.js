@@ -93,6 +93,8 @@ contract("DecodingSample", _accounts => {
       ["4", "2", 3, "4", "8", "12"]
     ]);
 
+    assert.equal(variables.immutableUint.toString(), "16");
+
     assert.equal(variables.fixedArrayUint[0].toString(), "16");
     assert.equal(variables.fixedArrayUint[1].toString(), "17");
     assert.equal(variables.fixedArrayString[0].toString(), "hello");
@@ -161,11 +163,11 @@ contract("DecodingSample", _accounts => {
   it("should spawn decoders based on address alone", async function() {
     const deployedContract = await DecodingSample.deployed();
     const address = deployedContract.address;
-    const wireDecoder = await Decoder.forProject(
+    const decoder = await Decoder.forAddress(
+      address,
       DecodingSample.web3.currentProvider,
       [DecodingSample]
     );
-    const decoder = await wireDecoder.forAddress(address);
 
     const initialVariables = await decoder.variables();
     const variables = nativizeDecoderVariables(initialVariables);
