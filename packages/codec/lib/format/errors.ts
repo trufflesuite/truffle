@@ -11,6 +11,7 @@ import BN from "bn.js";
 import * as Types from "./types";
 import * as Ast from "@truffle/codec/ast/types";
 import * as Storage from "@truffle/codec/storage/types";
+import { PaddingType } from "@truffle/codec/types";
 
 /*
  * SECTION 1: Generic types for values in general (including errors).
@@ -117,6 +118,7 @@ export interface UintPaddingError {
    */
   raw: string;
   kind: "UintPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -148,6 +150,7 @@ export interface IntPaddingError {
    */
   raw: string;
   kind: "IntPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -166,7 +169,7 @@ export interface BoolErrorResult {
  *
  * @Category Elementary types
  */
-export type BoolError = BoolOutOfRangeError;
+export type BoolError = BoolOutOfRangeError | BoolPaddingError;
 
 /**
  * The bool is neither 0 nor 1
@@ -176,6 +179,20 @@ export type BoolError = BoolOutOfRangeError;
 export interface BoolOutOfRangeError {
   rawAsBN: BN;
   kind: "BoolOutOfRangeError";
+}
+
+/**
+ * A padding error for a boolean
+ *
+ * @Category Elementary types
+ */
+export interface BoolPaddingError {
+  /**
+   * hex string
+   */
+  raw: string;
+  kind: "BoolPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -207,6 +224,7 @@ export interface BytesPaddingError {
    */
   raw: string;
   kind: "BytesPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -256,6 +274,7 @@ export interface AddressPaddingError {
    */
   raw: string;
   kind: "AddressPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -315,6 +334,7 @@ export interface FixedPaddingError {
    */
   raw: string;
   kind: "FixedPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -335,6 +355,7 @@ export interface UfixedPaddingError {
    */
   raw: string;
   kind: "UfixedPaddingError";
+  paddingType: PaddingType;
 }
 
 /*
@@ -357,7 +378,10 @@ export interface EnumErrorResult {
  *
  * @Category User-defined elementary types
  */
-export type EnumError = EnumOutOfRangeError | EnumNotFoundDecodingError;
+export type EnumError =
+  | EnumOutOfRangeError
+  | EnumPaddingError
+  | EnumNotFoundDecodingError;
 
 /**
  * The enum is out of range
@@ -368,6 +392,21 @@ export interface EnumOutOfRangeError {
   kind: "EnumOutOfRangeError";
   type: Types.EnumType;
   rawAsBN: BN;
+}
+
+/**
+ * A padding error for an enum
+ *
+ * @Category Elementary types
+ */
+export interface EnumPaddingError {
+  /**
+   * hex string
+   */
+  raw: string;
+  type: Types.EnumType;
+  kind: "EnumPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -410,6 +449,7 @@ export interface ContractPaddingError {
    */
   raw: string;
   kind: "ContractPaddingError";
+  paddingType: PaddingType;
 }
 
 /*
@@ -560,6 +600,7 @@ export interface FunctionExternalNonStackPaddingError {
    */
   raw: string;
   kind: "FunctionExternalNonStackPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -616,6 +657,7 @@ export interface FunctionInternalPaddingError {
    */
   raw: string;
   kind: "FunctionInternalPaddingError";
+  paddingType: PaddingType;
 }
 
 /**
@@ -680,7 +722,8 @@ export type ReadError =
   | UnsupportedConstantError
   | ReadErrorStack
   | ReadErrorBytes
-  | ReadErrorStorage;
+  | ReadErrorStorage
+  | UnusedImmutableError;
 /**
  * An error resulting from overlarge length or pointer values
  *
@@ -747,7 +790,12 @@ export interface ReadErrorStack {
 /**
  * A byte-based location
  */
-export type BytesLocation = "memory" | "calldata" | "eventdata" | "returndata";
+export type BytesLocation =
+  | "memory"
+  | "calldata"
+  | "eventdata"
+  | "returndata"
+  | "code";
 
 /**
  * Read error in a byte-based location (memory, calldata, etc)
@@ -769,6 +817,15 @@ export interface ReadErrorBytes {
 export interface ReadErrorStorage {
   kind: "ReadErrorStorage";
   range: Storage.Range;
+}
+
+/**
+ * Attempting to read an immutable that is never stored anywhere
+ *
+ * @Category Generic errors
+ */
+export interface UnusedImmutableError {
+  kind: "UnusedImmutableError";
 }
 
 /**

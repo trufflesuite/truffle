@@ -1,6 +1,9 @@
 import * as Compiler from "@truffle/codec/compiler";
 import * as Ast from "@truffle/codec/ast";
-import { Abi as SchemaAbi } from "@truffle/contract-schema/spec";
+import {
+  Abi as SchemaAbi,
+  ImmutableReferences
+} from "@truffle/contract-schema/spec";
 
 //Note to other people passing in compilations:
 //Please include all fields you can that aren't
@@ -101,6 +104,11 @@ export interface Contract {
    * The contract's ABI.
    */
   abi: SchemaAbi;
+  /**
+   * The contract's immutable references object as output by Solidity 0.6.5
+   * or later.
+   */
+  immutableReferences?: ImmutableReferences;
   /**
    * This field is a compatibility hack only inteded for internal use.
    * (It allows the compiler to be set on a source if none is set on the

@@ -35,7 +35,8 @@ function shimContract(contract) {
     deployedBytecode,
     compiler,
     devdoc,
-    userdoc
+    userdoc,
+    immutableReferences
   } = contract;
 
   return {
@@ -52,7 +53,8 @@ function shimContract(contract) {
     deployedBytecode: shimBytecode(deployedBytecode),
     compiler,
     devdoc,
-    userdoc
+    userdoc,
+    immutableReferences
   };
 }
 

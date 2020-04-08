@@ -21,6 +21,8 @@ export function message(error: Format.Errors.ErrorForThrowing): string {
       return `Unsupported constant type ${Ast.Utils.typeClass(
         error.definition
       )}`;
+    case "UnusedImmutableError":
+      return "Cannot read unused immutable";
     case "ReadErrorStack":
       return `Can't read stack from position ${error.from} to ${error.to}`;
     case "ReadErrorBytes":

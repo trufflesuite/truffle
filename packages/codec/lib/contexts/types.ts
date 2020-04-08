@@ -1,6 +1,7 @@
 import * as AbiData from "@truffle/codec/abi-data/types";
 import * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
+import { ImmutableReferences } from "@truffle/contract-schema/spec";
 
 export type Contexts = DecoderContexts | DebuggerContexts;
 
@@ -20,6 +21,7 @@ export interface DecoderContext {
   //in place of link references or other variable parts; this will probably
   //change in the future
   isConstructor: boolean;
+  immutableReferences?: ImmutableReferences; //never included for a constructor
   contractName?: string;
   contractId?: number;
   contractKind?: Common.ContractKind; //note: should never be "interface"
@@ -40,6 +42,7 @@ export interface DebuggerContext {
   //in place of link references or other variable parts; this will probably
   //change in the future
   isConstructor: boolean;
+  immutableReferences?: ImmutableReferences; //never included for a constructor
   contractName?: string;
   contractId?: number;
   contractKind?: Common.ContractKind; //note: should never be "interface"

@@ -80,6 +80,9 @@
     },
     "userdoc": {
       "$ref": "#/definitions/NatSpec"
+    },
+    "immutableReferences": {
+      "$ref": "#/definitions/ImmutableReferences"
     }
   },
   "required": [
@@ -124,6 +127,29 @@
     "Bytecode": {
       "type": "string",
       "pattern": "^0x0$|^0x([a-fA-F0-9]{2}|__.{38})+$"
+    },
+    "ImmutableReferences": {
+      "type": "object",
+      "patternProperties": {
+        "[1-9][0-9]*": {
+         "type": "array",
+         "items": {
+           "type": "object",
+           "properties": {
+             "start": {
+               "type": "integer",
+               "minimum": 0
+             },
+             "length": {
+               "type": "integer",
+               "minimum": 0
+             }
+           },
+           "additionalProperties": false
+         }
+        }
+      },
+      "additionalProperties": false
     },
     "Source": {
       "type": "string"

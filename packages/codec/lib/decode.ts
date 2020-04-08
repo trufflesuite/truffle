@@ -59,14 +59,21 @@ function* decodeDispatch(
     case "eventtopic":
       return yield* Topic.Decode.decodeTopic(dataType, pointer, info, options);
 
+    case "code":
+    case "nowhere":
+      //currently only basic types can go in code, so we'll dispatch directly to decodeBasic
+      //(if it's a nowhere pointer, this will return an error result, of course)
+      //also: we force zero-padding!
+      return yield* Basic.Decode.decodeBasic(dataType, pointer, info, {
+        paddingMode: "zero"
+      });
+
     case "memory":
-      //NOTE: this case should never actually occur, but I'm including it
-      //anyway as a fallback
-      return yield* Memory.Decode.decodeMemory(
-        dataType,
-        pointer,
-        info,
-        options
-      );
+      //this case -- decoding something that resides *directly* in memory,
+      //rather than located via a pointer -- only comes up when decoding immutables
+      //in a constructor.  thus, we turn on the forceRightPadding option.
+      return yield* Memory.Decode.decodeMemory(dataType, pointer, info, {
+        paddingMode: "right"
+      });
   }
 }

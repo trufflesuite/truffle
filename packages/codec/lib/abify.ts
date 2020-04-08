@@ -141,6 +141,7 @@ export function abifyResult(
                 kind: "error",
                 error: {
                   kind: "AddressPaddingError",
+                  paddingType: coercedResult.error.paddingType,
                   raw: coercedResult.error.raw
                 }
               };
@@ -212,43 +213,61 @@ export function abifyResult(
       let numericValue: BN;
       switch (coercedResult.kind) {
         case "value":
-          numericValue = coercedResult.value.numericAsBN.clone();
-          break;
+          return {
+            type: uintType,
+            kind: "value",
+            value: {
+              asBN: coercedResult.value.numericAsBN.clone()
+            }
+          };
         case "error":
           switch (coercedResult.error.kind) {
             case "EnumOutOfRangeError":
+              return {
+                type: uintType,
+                kind: "value",
+                value: {
+                  asBN: coercedResult.error.rawAsBN.clone()
+                }
+              };
+            case "EnumPaddingError":
+              return {
+                type: uintType,
+                kind: "error",
+                error: {
+                  kind: "UintPaddingError",
+                  paddingType: coercedResult.error.paddingType,
+                  raw: coercedResult.error.raw
+                }
+              };
             case "EnumNotFoundDecodingError":
-              //group these together
-              numericValue = coercedResult.error.rawAsBN.clone();
-              break;
+              let numericValue = coercedResult.error.rawAsBN.clone();
+              if (numericValue.bitLength() <= uintType.bits) {
+                return {
+                  type: uintType,
+                  kind: "value",
+                  value: {
+                    asBN: numericValue
+                  }
+                };
+              } else {
+                return {
+                  type: uintType,
+                  kind: "error",
+                  error: {
+                    kind: "UintPaddingError",
+                    paddingType: "left", //we're dealing with ABI-encoded things so we can assume this
+                    raw: Conversion.toHexString(numericValue)
+                  }
+                };
+              }
             default:
-              let typeToDisplay = Format.Types.typeString(result.type);
-              throw new Common.UnknownUserDefinedTypeError(
-                coercedResult.type.id,
-                typeToDisplay
-              );
+              return {
+                type: uintType,
+                kind: "error",
+                error: coercedResult.error
+              };
           }
-          break;
-      }
-      //now: is it within range or not?
-      if (numericValue.bitLength() <= uintType.bits) {
-        return {
-          type: uintType,
-          kind: "value",
-          value: {
-            asBN: numericValue
-          }
-        };
-      } else {
-        //note: if we started with a value we had better not end up with an error :P
-        return {
-          type: uintType,
-          kind: "error",
-          error: {
-            kind: "UintPaddingError",
-            raw: Conversion.toHexString(numericValue)
-          }
-        };
       }
     }
     case "array": {
