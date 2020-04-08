@@ -594,7 +594,12 @@ function nativizeWithTable(
             )
           );
         case "enum":
-          return (<Format.Values.TypeValueEnum>result).value.map(nativize);
+          return Object.assign(
+            {},
+            ...(<Format.Values.TypeValueEnum>result).value.map(enumValue => ({
+              [enumValue.value.name]: nativize(enumValue)
+            }))
+          );
       }
     case "tuple":
       return (<Format.Values.TupleValue>result).value.map(({ value }) =>
