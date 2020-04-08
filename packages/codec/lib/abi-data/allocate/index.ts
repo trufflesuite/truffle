@@ -421,9 +421,11 @@ function allocateCalldataAndReturndata(
   switch (abiEntry.type) {
     case "function":
       outputParametersAbi = abiEntry.outputs;
+      break;
     case "constructor":
       //we just leave this empty for constructors
       outputParametersAbi = [];
+      break;
   }
   //now: do the allocation!
   let {
