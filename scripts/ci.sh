@@ -62,8 +62,6 @@ elif [ "$TEZOS" = true ]; then
   truffle compile && truffle migrate && truffle test
   mkdir ../tezos-smartpy-box && cd ../tezos-smartpy-box && truffle unbox tezos-smartpy-example
   truffle compile && truffle migrate && truffle test
-  mkdir ../tezos-bare-box && cd ../tezos-bare-box && truffle init
-  truffle compile && truffle migrate && truffle test
 
 elif [ "$COLONY" = true ]; then
 
