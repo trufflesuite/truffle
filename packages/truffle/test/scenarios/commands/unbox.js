@@ -22,25 +22,13 @@ describe("truffle unbox [ @standalone ]", () => {
   });
 
   describe("when run without arguments", () => {
-    it.skip("unboxes truffle-init-default", async () => {
+    it("unboxes tezos-bare-box", async () => {
       await CommandRunner.run("unbox --force", config);
       assert(
         fse.pathExistsSync(
-          path.join(tempDir.name, "contracts", "ConvertLib.sol")
+          path.join(tempDir.name, "contracts", "Migrations.ligo")
         ),
-        "ConvertLib.sol does not exist"
-      );
-      assert(
-        fse.pathExistsSync(
-          path.join(tempDir.name, "contracts", "Migrations.sol")
-        ),
-        "Migrations.sol does not exist"
-      );
-      assert(
-        fse.pathExistsSync(
-          path.join(tempDir.name, "contracts", "MetaCoin.sol")
-        ),
-        "MetaCoin.sol does not exist"
+        "Migrations.ligo does not exist"
       );
     }).timeout(20000);
   });
