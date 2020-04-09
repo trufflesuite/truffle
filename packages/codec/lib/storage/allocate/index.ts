@@ -322,18 +322,22 @@ function allocateContractState(
     })
   );
 
+  //just in case the constant field ever gets removed
+  const isConstant = (definition: Ast.AstNode) =>
+    definition.constant || definition.mutability === "constant";
+
   //now: we split the variables into storage, constant, and code
-  let [constantVariables, variableVariables] = partition(
-    variables,
-    variable => variable.definition.constant
+  let [constantVariables, variableVariables] = partition(variables, variable =>
+    isConstant(variable.definition)
   );
 
   //why use this function instead of just checking
-  //definition.immutable?
-  //because of a bug in Solidity 0.6.5 that causes the immutable flag
+  //definition.mutability?
+  //because of a bug in Solidity 0.6.5 that causes the mutability field
   //not to exist.  So, we also have to check against immutableReferences.
   const isImmutable = (definition: Ast.AstNode) =>
-    definition.immutable || definition.id.toString() in immutableReferences;
+    definition.mutability === "immutable" ||
+    definition.id.toString() in immutableReferences;
 
   let [immutableVariables, storageVariables] = partition(
     variableVariables,
@@ -410,7 +414,7 @@ function allocateContractState(
   //now, reweave the three together
   let contractAllocation: StateVariableAllocation[] = [];
   for (let variable of variables) {
-    let arrayToGrabFrom = variable.definition.constant
+    let arrayToGrabFrom = isConstant(variable.definition)
       ? constantVariableAllocations
       : isImmutable(variable.definition)
         ? immutableVariableAllocations
