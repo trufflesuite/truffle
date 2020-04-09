@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __IMMUTABLE = `
-pragma solidity ^0.6.5;
+pragma solidity ^0.6.6;
 
 contract Base {
   int8 immutable base = -37;
