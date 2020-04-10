@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __IMMUTABLE = `
-pragma solidity ^0.6.5;
+pragma solidity ^0.6.6;
 
 contract Base {
   int8 immutable base = -37;
@@ -28,6 +28,7 @@ contract ImmutableTest is Base {
   bool immutable truth;
   address immutable self;
   byte immutable secret;
+  uint8 immutable trulySecret;
 
   event Done();
 
@@ -36,6 +37,7 @@ contract ImmutableTest is Base {
     truth = true;
     self = address(this);
     secret = 0x88;
+    trulySecret = 23;
     emit Done(); //BREAK CONSTRUCTOR
   }
 
@@ -113,6 +115,10 @@ describe("Immutable state variables", function() {
     };
 
     assert.deepInclude(variables, expectedResult);
+
+    const trulySecret = await session.variable("trulySecret");
+    assert.strictEqual(trulySecret.kind, "error");
+    assert.strictEqual(trulySecret.error.kind, "UnusedImmutableError");
   });
 
   it("Decodes immutables properly in constructor", async function() {
@@ -145,7 +151,8 @@ describe("Immutable state variables", function() {
       background: "ImmutableTest.Color.Blue",
       truth: true,
       self: address,
-      secret: "0x88"
+      secret: "0x88",
+      trulySecret: 23
     };
 
     assert.deepInclude(variables, expectedResult);
