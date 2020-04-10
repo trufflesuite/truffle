@@ -483,24 +483,28 @@ const evm = createSelectorTree({
       create2Address: createLeaf(
         ["./isCreate2", "./createBinary", "../call", "../state/stack"],
         (isCreate2, binary, { storageAddress }, stack) =>
-          Codec.Evm.Utils.toAddress(
-            "0x" +
-              keccak256({
-                type: "bytes",
-                value:
-                  //slice 2's are for cutting off initial "0x" where we've prepended this
-                  //0xff, then address, then salt, then code hash
-                  "0xff" +
-                  storageAddress.slice(2) +
-                  stack[stack.length - 4] +
-                  keccak256({ type: "bytes", value: binary }).slice(2)
-              }).slice(
-                2 +
-                  2 * (Codec.Evm.Utils.WORD_SIZE - Codec.Evm.Utils.ADDRESS_SIZE)
+          isCreate2
+            ? Codec.Evm.Utils.toAddress(
+                "0x" +
+                  keccak256({
+                    type: "bytes",
+                    value:
+                      //slice 2's are for cutting off initial "0x" where we've prepended this
+                      //0xff, then address, then salt, then code hash
+                      "0xff" +
+                      storageAddress.slice(2) +
+                      stack[stack.length - 4] +
+                      keccak256({ type: "bytes", value: binary }).slice(2)
+                  }).slice(
+                    2 +
+                      2 *
+                        (Codec.Evm.Utils.WORD_SIZE -
+                          Codec.Evm.Utils.ADDRESS_SIZE)
+                  )
+                //slice off initial 0x and initial 12 bytes (note we've re-prepended the
+                //0x at the beginning)
               )
-            //slice off initial 0x and initial 12 bytes (note we've re-prepended the
-            //0x at the beginning)
-          )
+            : null
       ),
 
       /**
