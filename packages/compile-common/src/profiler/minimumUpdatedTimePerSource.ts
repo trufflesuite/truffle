@@ -1,5 +1,12 @@
-const minimumUpdatedTimePerSource = sourceFilesArtifacts => {
-  let sourceFilesArtifactsUpdatedTimes = {};
+import {
+  SourceFilesArtifacts,
+  SourceFilesArtifactsUpdatedTimes
+} from "./types";
+
+export const minimumUpdatedTimePerSource = (
+  sourceFilesArtifacts: SourceFilesArtifacts
+) => {
+  let sourceFilesArtifactsUpdatedTimes: SourceFilesArtifactsUpdatedTimes = {};
   // Get the minimum updated time for all of a source file's artifacts
   // (note: one source file might have multiple artifacts).
   Object.keys(sourceFilesArtifacts).forEach(sourceFile => {
@@ -25,8 +32,4 @@ const minimumUpdatedTimePerSource = sourceFilesArtifacts => {
     }
   });
   return sourceFilesArtifactsUpdatedTimes;
-};
-
-module.exports = {
-  minimumUpdatedTimePerSource
 };

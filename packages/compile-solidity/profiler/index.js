@@ -8,9 +8,6 @@ const findContracts = require("@truffle/contract-sources");
 const semver = require("semver");
 const debug = require("debug")("compile:profiler");
 const Common = require("@truffle/compile-common");
-const {
-  minimumUpdatedTimePerSource
-} = require("./minimumUpdatedTimePerSource");
 const { getImports } = require("./getImports");
 
 module.exports = {
@@ -37,7 +34,7 @@ module.exports = {
         sourceFiles,
         contracts_build_directory
       );
-      sourceFilesArtifactsUpdatedTimes = minimumUpdatedTimePerSource(
+      sourceFilesArtifactsUpdatedTimes = Common.Profiler.minimumUpdatedTimePerSource(
         sourceFilesArtifacts
       );
       const updatedFiles = Common.Profiler.findUpdatedFiles(
