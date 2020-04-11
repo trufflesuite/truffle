@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": ["es2017"],
+    "paths": {
+    },
+    "rootDir": ".",
+    "typeRoots": [
+      "../../node_modules/@types/fs-extra"
+    ]
+  },
+  "include": [
+    "./src/**/*.ts"
+  ]
+}

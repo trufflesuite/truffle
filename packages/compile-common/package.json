@@ -1,0 +1,16 @@
+{
+  "name": "@truffle/compile-common",
+  "version": "0.3.0",
+  "description": "Common compiler integration support infrastructure for Truffle",
+  "main": "dist/src/index.js",
+  "repository": "https://github.com/trufflesuite/truffle/tree/develop/packages/compile-common",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "watch": "tsc -w"
+  },
+  "devDependencies": {
+    "typescript": "^3.8.3"
+  }
+}
