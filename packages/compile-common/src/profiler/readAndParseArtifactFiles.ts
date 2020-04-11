@@ -1,14 +1,20 @@
-const fse = require("fs-extra");
-const path = require("path");
+import * as path from "path";
+import * as fse from "fs-extra";
 
-const readAndParseArtifactFiles = (sourceFiles, contracts_build_directory) => {
-  let sourceFilesArtifacts = {};
+import { ContractObject } from "@truffle/contract-schema/spec";
+import { SourceFilesArtifacts } from "./types";
+
+export function readAndParseArtifactFiles(
+  sourceFiles: string[],
+  contracts_build_directory: string
+): SourceFilesArtifacts {
+  const sourceFilesArtifacts: SourceFilesArtifacts = {};
   // Get all the source files and create an object out of them.
   sourceFiles.forEach(sourceFile => {
     sourceFilesArtifacts[sourceFile] = [];
   });
   // Get all the artifact files, and read them, parsing them as JSON
-  let buildFiles;
+  let buildFiles: string[];
   try {
     buildFiles = fse.readdirSync(contracts_build_directory);
   } catch (error) {
@@ -32,7 +38,7 @@ const readAndParseArtifactFiles = (sourceFiles, contracts_build_directory) => {
 
   for (let i = 0; i < jsonData.length; i++) {
     try {
-      const data = JSON.parse(jsonData[i].body);
+      const data: ContractObject = JSON.parse(jsonData[i].body);
 
       // In case there are artifacts from other source locations.
       if (sourceFilesArtifacts[data.sourcePath] == null) {
@@ -50,8 +56,4 @@ const readAndParseArtifactFiles = (sourceFiles, contracts_build_directory) => {
     }
   }
   return sourceFilesArtifacts;
-};
-
-module.exports = {
-  readAndParseArtifactFiles
-};
+}

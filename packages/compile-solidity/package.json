@@ -14,6 +14,7 @@
     "test": "./scripts/test.sh"
   },
   "dependencies": {
+    "@truffle/compile-common": "^0.3.0",
     "@truffle/config": "^1.2.22",
     "@truffle/contract-sources": "^0.1.7",
     "@truffle/error": "^0.0.8",

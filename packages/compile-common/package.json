@@ -12,5 +12,8 @@
   },
   "devDependencies": {
     "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@truffle/contract-schema": "^3.2.2"
   }
 }

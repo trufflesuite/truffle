@@ -7,7 +7,7 @@ const expect = require("@truffle/expect");
 const findContracts = require("@truffle/contract-sources");
 const semver = require("semver");
 const debug = require("debug")("compile:profiler");
-const { readAndParseArtifactFiles } = require("./readAndParseArtifactFiles");
+const Common = require("@truffle/compile-common");
 const {
   minimumUpdatedTimePerSource
 } = require("./minimumUpdatedTimePerSource");
@@ -35,7 +35,7 @@ module.exports = {
 
     try {
       const sourceFiles = await getFiles();
-      sourceFilesArtifacts = readAndParseArtifactFiles(
+      sourceFilesArtifacts = Common.Profiler.readAndParseArtifactFiles(
         sourceFiles,
         contracts_build_directory
       );
