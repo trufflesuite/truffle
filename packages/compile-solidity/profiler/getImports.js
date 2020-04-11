@@ -1,4 +1,4 @@
-const { isExplicitlyRelative } = require("./isExplicitlyRelative");
+const Common = require("@truffle/compile-common");
 const Parser = require("../parser");
 const path = require("path");
 
@@ -12,11 +12,10 @@ const getImports = (file, { body, source }, solc, parserSolc) => {
   else imports = Parser.parseImports(body, solc);
 
   // Convert explicitly relative dependencies of modules back into module paths.
-  return imports.map(
-    dependencyPath =>
-      isExplicitlyRelative(dependencyPath)
-        ? source.resolveDependencyPath(file, dependencyPath)
-        : dependencyPath
+  return imports.map(dependencyPath =>
+    Common.Profiler.isExplicitlyRelative(dependencyPath)
+      ? source.resolveDependencyPath(file, dependencyPath)
+      : dependencyPath
   );
 };
 

@@ -11,7 +11,6 @@ const Common = require("@truffle/compile-common");
 const {
   minimumUpdatedTimePerSource
 } = require("./minimumUpdatedTimePerSource");
-const { isExplicitlyRelative } = require("./isExplicitlyRelative");
 const { getImports } = require("./getImports");
 
 module.exports = {
@@ -265,7 +264,7 @@ module.exports = {
       if (path.isAbsolute(p)) return p;
 
       // If it's not explicitly relative, then leave it alone (i.e., it's a module).
-      if (!isExplicitlyRelative(p)) return p;
+      if (!Common.Profiler.isExplicitlyRelative(p)) return p;
 
       // Path must be explicitly releative, therefore make it absolute.
       return path.resolve(path.join(base, p));
