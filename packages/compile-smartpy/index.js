@@ -185,13 +185,6 @@ async function compileAll(options, callback) {
         const michelsonAsRawData = fs.readFileSync(currentFilePath);
         const michelsonJson = JSON.parse(michelsonAsRawData);
 
-        // this is a HACK to workaround current @taquito/michelson-encoder limitations:
-        // the encoder currently expects the `parameter` code to be at index 0, `storage`
-        // at index 1, & `code` to be at index 2.
-        const michelsonJsonStorage = michelsonJson[0];
-        const michelsonJsonParameter = michelsonJson[1];
-        michelsonJson[0] = michelsonJsonParameter;
-        michelsonJson[1] = michelsonJsonStorage;
         michelson = JSON.stringify(michelsonJson);
         return fs.unlinkSync(currentFilePath);
       }
