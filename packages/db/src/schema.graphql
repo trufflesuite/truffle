@@ -108,11 +108,11 @@ type Bytecode {
 }
 
 type Instruction {
-  opcode: Int!,
-  programCounter: String!,
+  opcode: String!,
+  programCounter: Int!,
   meta: InstructionMeta,
   sourceRange: SourceRange,
-  pushData: String
+  pushData: Bytes
 }
 
 type InstructionMeta {
