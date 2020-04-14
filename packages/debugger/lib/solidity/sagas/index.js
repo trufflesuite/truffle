@@ -41,10 +41,8 @@ function* functionDepthSaga() {
     } else {
       yield put(actions.jump(jumpDirection));
     }
-  } else if (
-    (yield select(solidity.current.willCall)) ||
-    (yield select(solidity.current.willCreate))
-  ) {
+  } else if (yield select(solidity.current.willCall)) {
+    //note: includes creations
     debug("checking if guard needed");
     let guard = yield select(solidity.current.callRequiresPhantomFrame);
     yield put(actions.externalCall(guard));

@@ -298,13 +298,12 @@ let solidity = createSelectorTree({
 
     /**
      * solidity.current.willCall
+     * note: includes creations
      */
-    willCall: createLeaf([evm.current.step.isCall], x => x),
-
-    /**
-     * solidity.current.willCreate
-     */
-    willCreate: createLeaf([evm.current.step.isCreate], x => x),
+    willCall: createLeaf(
+      [evm.current.step.isCall, evm.current.step.isCreate],
+      (isCall, isCreate) => isCall || isCreate
+    ),
 
     /**
      * solidity.current.willCallOrCreateButInstantlyReturn
