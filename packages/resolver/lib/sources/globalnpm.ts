@@ -1,10 +1,11 @@
-const path = require("path");
-const fs = require("fs");
-const detectInstalled = require("detect-installed");
-const get_installed_path = require("get-installed-path");
+import path from "path";
+import fs from "fs";
+const detectInstalled: any = require("detect-installed");
+const get_installed_path: any = require("get-installed-path");
+
 function GlobalNPM() {}
 
-GlobalNPM.prototype.require = function(import_path) {
+GlobalNPM.prototype.require = function(import_path: string) {
   if (import_path.indexOf(".") === 0 || path.isAbsolute(import_path)) {
     return null;
   }
@@ -32,7 +33,10 @@ GlobalNPM.prototype.require = function(import_path) {
   }
 };
 
-GlobalNPM.prototype.resolve = async function(import_path, _imported_from) {
+GlobalNPM.prototype.resolve = async function(
+  import_path: string,
+  _imported_from: string
+) {
   let [package_name] = import_path.split("/", 1);
   let body;
   if (detectInstalled.sync(package_name)) {
@@ -56,8 +60,8 @@ GlobalNPM.prototype.resolve = async function(import_path, _imported_from) {
 // we're going to resolve it to some_module/contracts/AnotherContract.sol, ensuring
 // that when this path is evaluated this source is used again.
 GlobalNPM.prototype.resolve_dependency_path = function(
-  import_path,
-  dependency_path
+  import_path: string,
+  dependency_path: string
 ) {
   var dirname = path.dirname(import_path);
   return path.join(dirname, dependency_path);

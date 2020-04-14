@@ -4,7 +4,10 @@ const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
 const sources = require("./sources");
 
-function Resolver(options) {
+type Source = any;
+type Callback = any;
+
+function Resolver(options: any) {
   expect.options(options, ["working_directory", "contracts_build_directory"]);
 
   this.options = options;
@@ -12,9 +15,12 @@ function Resolver(options) {
 }
 
 // This function might be doing too much. If so, too bad (for now).
-Resolver.prototype.require = function(import_path, search_path) {
+Resolver.prototype.require = function(
+  import_path: string,
+  search_path: string
+) {
   let abstraction;
-  this.sources.forEach(source => {
+  this.sources.forEach((source: Source) => {
     const result = source.require(import_path, search_path);
     if (result) {
       abstraction = contract(result);
@@ -27,7 +33,11 @@ Resolver.prototype.require = function(import_path, search_path) {
   );
 };
 
-Resolver.prototype.resolve = function(import_path, imported_from, callback) {
+Resolver.prototype.resolve = function(
+  import_path: string,
+  imported_from: string,
+  callback: Callback
+) {
   var self = this;
 
   if (typeof imported_from === "function") {
@@ -35,20 +45,20 @@ Resolver.prototype.resolve = function(import_path, imported_from, callback) {
     imported_from = null;
   }
 
-  var resolved_body = null;
-  var resolved_path = null;
-  var source;
+  var resolved_body: string | null = null;
+  var resolved_path: string | null = null;
+  var source: Source;
   var current_index = 0;
 
   whilst(
     function() {
       return !resolved_body && current_index <= self.sources.length - 1;
     },
-    function(next) {
+    function(next: any) {
       source = self.sources[current_index];
       source
         .resolve(import_path, imported_from)
-        .then(result => {
+        .then((result: { body: string; filePath: string }) => {
           if (result.body) {
             resolved_body = result.body;
             resolved_path = result.filePath;
@@ -58,7 +68,7 @@ Resolver.prototype.resolve = function(import_path, imported_from, callback) {
         })
         .catch(next);
     },
-    function(err) {
+    function(err: any) {
       if (err) return callback(err);
 
       if (!resolved_body) {

@@ -1,12 +1,14 @@
-var path = require("path");
-var fs = require("fs");
+import path from "path";
+import fs from "fs";
 
-function EPM(working_directory, contracts_build_directory) {
+import { ContractObject } from "@truffle/contract-schema/spec";
+
+function EPM(working_directory: string, contracts_build_directory: string) {
   this.working_directory = working_directory;
   this.contracts_build_directory = contracts_build_directory;
 }
 
-EPM.prototype.require = function(import_path, _search_path) {
+EPM.prototype.require = function(import_path: string, _search_path: string) {
   if (import_path.indexOf(".") === 0 || import_path.indexOf("/") === 0) {
     return null;
   }
@@ -22,7 +24,7 @@ EPM.prototype.require = function(import_path, _search_path) {
     this.working_directory,
     "installed_contracts"
   );
-  var lockfile = path.join(install_directory, package_name, "lock.json");
+  var lockfile: any = path.join(install_directory, package_name, "lock.json");
 
   try {
     lockfile = fs.readFileSync(lockfile, "utf8");
@@ -32,7 +34,7 @@ EPM.prototype.require = function(import_path, _search_path) {
 
   lockfile = JSON.parse(lockfile);
 
-  var json = {
+  var json: Partial<ContractObject> = {
     contract_name: contract_name,
     networks: {}
   };
@@ -68,7 +70,10 @@ EPM.prototype.require = function(import_path, _search_path) {
   return json;
 };
 
-(EPM.prototype.resolve = async function(import_path, _imported_from) {
+(EPM.prototype.resolve = async function(
+  import_path: string,
+  _imported_from: string
+) {
   var separator = import_path.indexOf("/");
   var package_name = import_path.substring(0, separator);
   var internal_path = import_path.substring(separator + 1);
@@ -113,8 +118,8 @@ EPM.prototype.require = function(import_path, _search_path) {
   // we're going to resolve it to some_module/contracts/AnotherContract.sol, ensuring
   // that when this path is evaluated this source is used again.
   (EPM.prototype.resolve_dependency_path = function(
-    import_path,
-    dependency_path
+    import_path: string,
+    dependency_path: string
   ) {
     var dirname = path.dirname(import_path);
     var resolved_dependency_path = path.join(dirname, dependency_path);

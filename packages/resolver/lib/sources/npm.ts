@@ -1,10 +1,11 @@
-var path = require("path");
-var fs = require("fs");
-function NPM(working_directory) {
+import path from "path";
+import fs from "fs";
+
+function NPM(working_directory: string) {
   this.working_directory = working_directory;
 }
 
-NPM.prototype.require = function(import_path, search_path) {
+NPM.prototype.require = function(import_path: string, search_path: string) {
   if (import_path.indexOf(".") === 0 || import_path.indexOf("/") === 0) {
     return null;
   }
@@ -31,9 +32,12 @@ NPM.prototype.require = function(import_path, search_path) {
   }
 };
 
-NPM.prototype.resolve = async function(import_path, _imported_from) {
+NPM.prototype.resolve = async function(
+  import_path: string,
+  _imported_from: string
+) {
   // If nothing's found, body returns `undefined`
-  var body;
+  var body: string | undefined;
   var modulesDir = this.working_directory;
 
   while (true) {
@@ -59,7 +63,10 @@ NPM.prototype.resolve = async function(import_path, _imported_from) {
 // i.e., if some_module/contracts/MyContract.sol imported "./AnotherContract.sol",
 // we're going to resolve it to some_module/contracts/AnotherContract.sol, ensuring
 // that when this path is evaluated this source is used again.
-NPM.prototype.resolve_dependency_path = function(import_path, dependency_path) {
+NPM.prototype.resolve_dependency_path = function(
+  import_path: string,
+  dependency_path: string
+) {
   var dirname = path.dirname(import_path);
   return path.join(dirname, dependency_path);
 };
