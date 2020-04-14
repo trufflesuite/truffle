@@ -1,9 +1,16 @@
 import { ContractObject } from "@truffle/contract-schema/spec";
 
 export interface SourceFilesArtifacts {
-  [sourceFile: string]: ContractObject[];
+  [filePath: string]: ContractObject[];
 }
 
 export interface SourceFilesArtifactsUpdatedTimes {
-  [sourceFile: string]: number; // ms since epoch
+  [filePath: string]: number; // ms since epoch
+}
+
+export interface ResolvedSourcesMapping {
+  [filePath: string]: {
+    body: string;
+    filePath: string;
+  };
 }

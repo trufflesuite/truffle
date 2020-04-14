@@ -1,11 +1,6 @@
 import { Resolver } from "@truffle/resolver";
 
-interface Mapping {
-  [filePath: string]: {
-    body: string;
-    filePath: string;
-  };
-}
+import { ResolvedSourcesMapping } from "./types";
 
 // Resolves sources in several async passes. For each resolved set it detects unknown
 // imports from external packages and adds them to the set of files to resolve.
@@ -13,8 +8,8 @@ export async function resolveAllSources(
   resolver: Resolver,
   initialPaths: { file: string; parent: string }[],
   getImports: any
-) {
-  const mapping: Mapping = {};
+): Promise<ResolvedSourcesMapping> {
+  const mapping: ResolvedSourcesMapping = {};
   const allPaths = initialPaths.slice();
 
   // Begin generateMapping
