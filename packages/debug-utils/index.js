@@ -76,12 +76,51 @@ var DebugUtils = {
       sourceMap: contract.sourceMap,
       sourcePath: contract.sourcePath,
       bytecode: contract.bytecode,
+      immutableReferences: contract.immutableReferences,
       abi: contract.abi,
       ast: contract.ast,
       deployedBytecode: contract.deployedBytecode,
       deployedSourceMap: contract.deployedSourceMap,
       compiler: contract.compiler
     }));
+  },
+
+  //attempts to test whether a given compilation is a real compilation,
+  //i.e., was compiled all at once.
+  //if it is real, it will definitely pass this test, barring a Solidity bug.
+  //(anyway worst case failing it just results in a recompilation)
+  //if it isn't real, but passes this test anyway... well, I'm hoping it should
+  //still be usable all the same!
+  isUsableCompilation: function(compilation) {
+    //check #1: is the source order reliable?
+    if (compilation.unreliableSourceOrder) {
+      return false;
+    }
+
+    //check #2: are there any AST ID collisions?
+    let astIds = new Set();
+
+    let allIDsUnseenSoFar = node => {
+      if (Array.isArray(node)) {
+        return node.every(allIDsUnseenSoFar);
+      } else if (node !== null && typeof node === "object") {
+        if (node.id !== undefined) {
+          if (astIds.has(node.id)) {
+            return false;
+          } else {
+            astIds.add(node.id);
+          }
+        }
+        return Object.values(node).every(allIDsUnseenSoFar);
+      } else {
+        return true;
+      }
+    };
+
+    //now: walk each AST
+    return compilation.sources.every(
+      source => (source ? allIDsUnseenSoFar(source.ast) : true)
+    );
   },
 
   formatStartMessage: function(withTransaction) {

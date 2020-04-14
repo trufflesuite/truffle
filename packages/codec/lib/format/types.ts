@@ -708,6 +708,8 @@ export function typeStringWithoutLocation(dataType: Type): string {
         block: "block"
       };
       return variableNames[dataType.variable];
+    case "type":
+      return `type(${typeString(dataType.type)})`;
     case "function":
       let visibilityString: string;
       switch (dataType.visibility) {

@@ -36,6 +36,8 @@ contract DecodingSample {
   mapping(DecodingSample => uint) varContractMapping;
   mapping(E => uint) varEnumMapping;
 
+  uint immutable immutableUint;
+
   uint[2]    fixedArrayUint;
   string[2]  fixedArrayString;
   bool[2]    fixedArrayBool;
@@ -81,6 +83,8 @@ contract DecodingSample {
     varStructS.structS2.structTwoDynamicArrayUint[0] = 4;
     varStructS.structS2.structTwoDynamicArrayUint[1] = 8;
     varStructS.structS2.structTwoDynamicArrayUint[2] = 12;
+
+    immutableUint = 16;
 
     fixedArrayUint[0] = 0x10;
     fixedArrayUint[1] = 0x11;
@@ -129,5 +133,9 @@ contract DecodingSample {
     varEnumMapping[E.EnumValFour] = 4;
 
     functionInternal = example;
+  }
+
+  function spill() public view returns (uint) {
+    return immutableUint;
   }
 }

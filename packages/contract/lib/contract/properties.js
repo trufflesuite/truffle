@@ -382,5 +382,13 @@ module.exports = {
     set: function(_networkType) {
       this._json.networkType = _networkType;
     }
+  },
+  immutableReferences: {
+    get: function() {
+      return this._json.immutableReferences;
+    },
+    set: function(refs) {
+      this._json.immutableReferences = refs;
+    }
   }
 };

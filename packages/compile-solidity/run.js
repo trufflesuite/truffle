@@ -217,9 +217,12 @@ function prepareOutputSelection({ targets = [] }) {
       "abi",
       "metadata",
       "evm.bytecode.object",
+      "evm.bytecode.linkReferences",
       "evm.bytecode.sourceMap",
       "evm.deployedBytecode.object",
+      "evm.deployedBytecode.linkReferences",
       "evm.deployedBytecode.sourceMap",
+      "evm.deployedBytecode.immutableReferences",
       "userdoc",
       "devdoc"
     ]
@@ -363,6 +366,7 @@ function processContracts({
               deployedBytecode: {
                 sourceMap: deployedSourceMap,
                 linkReferences: deployedLinkReferences,
+                immutableReferences,
                 object: deployedBytecode
               }
             },
@@ -397,6 +401,8 @@ function processContracts({
             bytes: deployedBytecode,
             linkReferences: formatLinkReferences(deployedLinkReferences)
           }),
+          immutableReferences, //ideally this would be part of the deployedBytecode object,
+          //but compatibility makes that impossible
           compiler: {
             name: "solc",
             version: solcVersion

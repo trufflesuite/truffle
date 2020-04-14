@@ -132,7 +132,7 @@ export class WireDecoder {
 
     const allocationInfo: AbiData.Allocate.ContractAllocationInfo[] = this.contractsAndContexts.map(
       ({
-        contract: { abi, compiler },
+        contract: { abi, compiler, immutableReferences },
         compilationId,
         node,
         deployedContext,
@@ -143,7 +143,8 @@ export class WireDecoder {
         compiler,
         contractNode: node,
         deployedContext,
-        constructorContext
+        constructorContext,
+        immutableReferences
       })
     );
 
@@ -1243,7 +1244,8 @@ export class ContractInstanceDecoder {
   ): Promise<DecoderTypes.StateVariable> {
     const info: Codec.Evm.EvmInfo = {
       state: {
-        storage: {}
+        storage: {},
+        code: Conversion.toBytes(this.contractCode)
       },
       mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,

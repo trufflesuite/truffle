@@ -4,9 +4,11 @@ const debug = debugModule("codec:storage:allocate");
 import { DecodingError } from "@truffle/codec/errors";
 import * as Compiler from "@truffle/codec/compiler";
 import * as Common from "@truffle/codec/common";
+import * as Basic from "@truffle/codec/basic";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Utils from "@truffle/codec/storage/utils";
 import * as Ast from "@truffle/codec/ast";
+import * as Pointer from "@truffle/codec/pointer";
 import {
   StorageAllocation,
   StorageAllocations,
@@ -16,6 +18,7 @@ import {
   StateVariableAllocation
 } from "./types";
 import { ContractAllocationInfo } from "@truffle/codec/abi-data/allocate";
+import { ImmutableReferences } from "@truffle/contract-schema/spec";
 import * as Evm from "@truffle/codec/evm";
 import * as Format from "@truffle/codec/format";
 import BN from "bn.js";
@@ -101,10 +104,16 @@ export function getStateAllocations(
 ): StateAllocations {
   let allocations = existingAllocations;
   for (const contractInfo of contracts) {
-    let { contractNode: contract, compiler, compilationId } = contractInfo;
+    let {
+      contractNode: contract,
+      immutableReferences,
+      compiler,
+      compilationId
+    } = contractInfo;
     try {
       allocations = allocateContractState(
         contract,
+        immutableReferences,
         compilationId,
         compiler,
         referenceDeclarations[compilationId],
@@ -266,6 +275,7 @@ function getStateVariables(contractNode: Ast.AstNode): Ast.AstNode[] {
 
 function allocateContractState(
   contract: Ast.AstNode,
+  immutableReferences: ImmutableReferences,
   compilationId: string,
   compiler: Compiler.CompilerVersion,
   referenceDeclarations: Ast.AstNodes,
@@ -282,6 +292,9 @@ function allocateContractState(
       })
     )
   );
+  if (!immutableReferences) {
+    immutableReferences = {}; //also, let's set this up for convenience
+  }
 
   //base contracts are listed from most derived to most base, so we
   //have to reverse before processing, but reverse() is in place, so we
@@ -309,10 +322,26 @@ function allocateContractState(
     })
   );
 
-  //now: we split the variables into storage variables and constants.
-  let [constantVariables, storageVariables] = partition(
-    variables,
-    variable => variable.definition.constant
+  //just in case the constant field ever gets removed
+  const isConstant = (definition: Ast.AstNode) =>
+    definition.constant || definition.mutability === "constant";
+
+  //now: we split the variables into storage, constant, and code
+  let [constantVariables, variableVariables] = partition(variables, variable =>
+    isConstant(variable.definition)
+  );
+
+  //why use this function instead of just checking
+  //definition.mutability?
+  //because of a bug in Solidity 0.6.5 that causes the mutability field
+  //not to exist.  So, we also have to check against immutableReferences.
+  const isImmutable = (definition: Ast.AstNode) =>
+    definition.mutability === "immutable" ||
+    definition.id.toString() in immutableReferences;
+
+  let [immutableVariables, storageVariables] = partition(
+    variableVariables,
+    variable => isImmutable(variable.definition)
   );
 
   //transform storage variables into data types
@@ -344,7 +373,32 @@ function allocateContractState(
     })
   );
 
-  //let's also create allocations for the constants
+  //now let's create allocations for the immutables
+  let immutableVariableAllocations = immutableVariables.map(
+    ({ definition, definedIn }) => {
+      let references = immutableReferences[definition.id.toString()] || [];
+      let pointer: Pointer.CodeFormPointer;
+      if (references.length === 0) {
+        pointer = {
+          location: "nowhere" as const
+        };
+      } else {
+        pointer = {
+          location: "code" as const,
+          start: references[0].start,
+          length: references[0].length
+        };
+      }
+      return {
+        definition,
+        definedIn,
+        compilationId,
+        pointer
+      };
+    }
+  );
+
+  //and let's create allocations for the constants
   let constantVariableAllocations = constantVariables.map(
     ({ definition, definedIn }) => ({
       definition,
@@ -357,12 +411,14 @@ function allocateContractState(
     })
   );
 
-  //now, reweave the two together
+  //now, reweave the three together
   let contractAllocation: StateVariableAllocation[] = [];
   for (let variable of variables) {
-    let arrayToGrabFrom = variable.definition.constant
+    let arrayToGrabFrom = isConstant(variable.definition)
       ? constantVariableAllocations
-      : storageVariableAllocations;
+      : isImmutable(variable.definition)
+        ? immutableVariableAllocations
+        : storageVariableAllocations;
     contractAllocation.push(arrayToGrabFrom.shift()); //note that push and shift both modify!
   }
 
@@ -393,49 +449,18 @@ function storageSizeAndAllocate(
   userDefinedTypes?: Format.Types.TypesById,
   existingAllocations?: StorageAllocations
 ): StorageAllocationInfo {
+  //we'll only directly handle reference types here;
+  //direct types will be handled by dispatching to Basic.Allocate.byteLength
+  //in the default case
   switch (dataType.typeClass) {
-    case "bool":
-      return {
-        size: { bytes: 1 },
-        allocations: existingAllocations
-      };
-
-    case "address":
-    case "contract":
-      return {
-        size: { bytes: Evm.Utils.ADDRESS_SIZE },
-        allocations: existingAllocations
-      };
-
-    case "int":
-    case "uint":
-    case "fixed":
-    case "ufixed":
-      return {
-        size: { bytes: dataType.bits / 8 },
-        allocations: existingAllocations
-      };
-
-    case "enum": {
-      const storedType = <Format.Types.EnumType>userDefinedTypes[dataType.id];
-      if (!storedType.options) {
-        throw new Common.UnknownUserDefinedTypeError(
-          dataType.id,
-          Format.Types.typeString(dataType)
-        );
-      }
-      const numValues = storedType.options.length;
-      return {
-        size: { bytes: Math.ceil(Math.log2(numValues) / 8) },
-        allocations: existingAllocations
-      };
-    }
-
     case "bytes": {
       switch (dataType.kind) {
         case "static":
+          //really a basic type :)
           return {
-            size: { bytes: dataType.length },
+            size: {
+              bytes: Basic.Allocate.byteLength(dataType, userDefinedTypes)
+            }, //doing the function call for consistency :P
             allocations: existingAllocations
           };
         case "dynamic":
@@ -452,22 +477,6 @@ function storageSizeAndAllocate(
         size: { words: 1 },
         allocations: existingAllocations
       };
-
-    case "function": {
-      //this case is also really two different cases
-      switch (dataType.visibility) {
-        case "internal":
-          return {
-            size: { bytes: Evm.Utils.PC_SIZE * 2 },
-            allocations: existingAllocations
-          };
-        case "external":
-          return {
-            size: { bytes: Evm.Utils.ADDRESS_SIZE + Evm.Utils.SELECTOR_SIZE },
-            allocations: existingAllocations
-          };
-      }
-    }
 
     case "array": {
       switch (dataType.kind) {
@@ -537,5 +546,12 @@ function storageSizeAndAllocate(
         allocations
       };
     }
+
+    default:
+      //otherwise, it's a direct type
+      return {
+        size: { bytes: Basic.Allocate.byteLength(dataType, userDefinedTypes) },
+        allocations: existingAllocations
+      };
   }
 }

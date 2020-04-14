@@ -61,6 +61,9 @@ export function makeContext(
     binary,
     contractId: node ? node.id : undefined,
     contractKind: contractKind(contract, node),
+    immutableReferences: isConstructor
+      ? undefined
+      : contract.immutableReferences,
     isConstructor,
     abi: Codec.AbiData.Utils.computeSelectors(abi),
     payable: Codec.AbiData.Utils.abiHasPayableFallback(abi),

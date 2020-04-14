@@ -1147,10 +1147,10 @@
   dependencies:
     source-map-support "^0.5.16"
 
-"@truffle/compile-solidity@^4.2.27":
-  version "4.2.27"
-  resolved "https://registry.yarnpkg.com/@truffle/compile-solidity/-/compile-solidity-4.2.27.tgz#3d028f14075e15d9db274b4e146eb1546fea96f3"
-  integrity sha512-Z9tuxQJY0Gh0HkyQ1vReACaMJzMe6Soop/KWPNM4zp4nVUEUiH6n77krCyYTSX1RpRqJNAZ+Iev4gwMwiBjyvg==
+"@truffle/compile-solidity@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@truffle/compile-solidity/-/compile-solidity-4.3.0.tgz#31710b39bec9667a812a7f06df0d0673e4e86c1a"
+  integrity sha512-Ew7WSPp/k34HLRQyZS61vZUve9gefz7EzPGomss92mPZzIwwVN9MBBPAW8VPQ9icNDUat5Lsb5SWj1oPYeNDfA==
   dependencies:
     "@truffle/config" "^1.2.17"
     "@truffle/contract-sources" "^0.1.7"
@@ -7553,10 +7553,10 @@ highlight.js@^9.12.0, highlight.js@^9.15.8:
   dependencies:
     handlebars "^4.5.3"
 
-highlightjs-solidity@^1.0.11:
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/highlightjs-solidity/-/highlightjs-solidity-1.0.11.tgz#06449d7746960c7143f0af4d66bc4f1d48c77e95"
-  integrity sha512-NVilLoFVM/y/KqXdUMCqdCdaagLBb3Kw+pU8nTGiecwNYDodlGZPscdaK2dtXZQvKovP9rq9dZAjPDf0T0el4A==
+highlightjs-solidity@^1.0.12:
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/highlightjs-solidity/-/highlightjs-solidity-1.0.12.tgz#74c481916873cf2ca9b036f6173535ad1abd824b"
+  integrity sha512-kx91S0PiprCTjMtFhl1lNphjDu8ZL75N/4tHxUJiY0j+DDJjQ0UtV8TXYoU9hg8UDZ5pKaKUxhynjfVWWPxMsg==
 
 hmac-drbg@^1.0.0:
   version "1.0.1"

@@ -489,8 +489,16 @@ export interface CodeRequest {
   address: string;
 }
 
+export type PaddingMode = "default" | "permissive" | "zero" | "right";
+//default: check padding; the type of padding is determined by the type
+//permissive: like default, but turns off the check on certain types
+//zero: forces zero-padding even on signed types
+//right: forces right-padding on all types
+
+export type PaddingType = "left" | "right" | "signed";
+
 export interface DecoderOptions {
-  permissivePadding?: boolean; //allows incorrect padding on certain data types
+  paddingMode?: PaddingMode;
   strictAbiMode?: boolean; //throw errors instead of returning; check array & string lengths (crudely)
   allowRetry?: boolean; //turns on error-throwing for retry-allowed errors only
   abiPointerBase?: number; //what relative pointers should be considered relative to

@@ -78,6 +78,8 @@ contract("DecodingSample", _accounts => {
       ["4", "2", 3, "4", "8", "12"]
     ]);
 
+    assert.equal(variables.immutableUint.toString(), "16");
+
     assert.equal(variables.fixedArrayUint[0].toString(), "16");
     assert.equal(variables.fixedArrayUint[1].toString(), "17");
     assert.equal(variables.fixedArrayString[0].toString(), "hello");
