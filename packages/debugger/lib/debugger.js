@@ -11,6 +11,7 @@ import traceSelector from "./trace/selectors";
 import evmSelector from "./evm/selectors";
 import soliditySelector from "./solidity/selectors";
 import sessionSelector from "./session/selectors";
+import stacktraceSelector from "./stacktrace/selectors";
 import controllerSelector from "./controller/selectors";
 
 import { Compilations } from "@truffle/codec";
@@ -45,11 +46,19 @@ export default class Debugger {
    * @return {Debugger} instance
    */
   static async forTx(txHash, options = {}) {
-    let { contracts, files, provider, compilations } = options;
+    let {
+      contracts,
+      files,
+      provider,
+      compilations,
+      stacktrace,
+      noData
+    } = options;
+    let moduleOptions = { stacktrace, noData };
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
     }
-    let session = new Session(compilations, provider, txHash);
+    let session = new Session(compilations, provider, moduleOptions, txHash);
 
     try {
       await session.ready();
@@ -69,11 +78,19 @@ export default class Debugger {
    * @return {Debugger} instance
    */
   static async forProject(options = {}) {
-    let { contracts, files, provider, compilations } = options;
+    let {
+      contracts,
+      files,
+      provider,
+      compilations,
+      stacktrace,
+      noData
+    } = options;
+    let moduleOptions = { stacktrace, noData };
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
     }
-    let session = new Session(compilations, provider);
+    let session = new Session(compilations, provider, moduleOptions);
 
     await session.ready();
 
@@ -110,6 +127,7 @@ export default class Debugger {
       trace: traceSelector,
       evm: evmSelector,
       solidity: soliditySelector,
+      stacktrace: stacktraceSelector,
       session: sessionSelector,
       controller: controllerSelector
     });

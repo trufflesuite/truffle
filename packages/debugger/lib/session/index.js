@@ -29,11 +29,13 @@ export default class Session {
    * txHash parameter is now optional!
    * @private
    */
-  constructor(compilations, provider, txHash) {
+  constructor(compilations, provider, moduleOptions, txHash) {
     /**
      * @private
      */
-    let { store, sagaMiddleware } = configureStore(reducer, rootSaga);
+    let { store, sagaMiddleware } = configureStore(reducer, rootSaga, [
+      moduleOptions
+    ]);
     this._store = store;
     this._sagaMiddleware = sagaMiddleware;
 
