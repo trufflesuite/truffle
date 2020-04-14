@@ -258,19 +258,22 @@ describe("create", function() {
         const files = glob.sync(`${config.migrations_directory}${path.sep}*`);
 
         const found = false;
-        const expectedSuffix = "_my_new_migration.js";
+        let prefixCounter = 1;
 
-        for (let file of files) {
-          if (
-            file.indexOf(expectedSuffix) ===
-            file.length - expectedSuffix.length
-          ) {
-            const fileData = fse.readFileSync(file, { encoding: "utf8" });
-            assert.isNotNull(fileData, "File's data is null");
-            assert.notEqual(fileData, "", "File's data is blank");
+        for (const file of files) {
+          const fileData = fse.readFileSync(file, { encoding: "utf8" });
+          const fileBasename = path.basename(file);
+          assert(
+            parseInt(fileBasename) === prefixCounter,
+            `migration prefix incorrect, should be ${prefixCounter} instead of ${parseInt(
+              fileBasename
+            )}`
+          );
+          assert.isNotNull(fileData, "File's data is null");
+          assert.notEqual(fileData, "", "File's data is blank");
+          prefixCounter++;
 
-            return done();
-          }
+          return done();
         }
 
         if (found === false) {

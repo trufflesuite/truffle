@@ -97,12 +97,12 @@ const Create = {
     });
   },
 
-  test: (directory, _smartContractType, contractName, options, callback) => {
+  test: (directory, _smartContractType, testName, options, callback) => {
     if (typeof options === "function") {
       callback = options;
     }
 
-    let underscored = toUnderscoreFromCamel(contractName);
+    let underscored = toUnderscoreFromCamel(testName);
     underscored = underscored.replace(/\./g, "_");
     const from = templates.test.filename;
     const to = join(directory, underscored + ".js");
@@ -116,7 +116,7 @@ const Create = {
     copyFile(from, to, err => {
       if (err) return callback(err);
 
-      replaceContents(to, templates.contract.name, contractName, err => {
+      replaceContents(to, templates.contract.name, testName, err => {
         if (err) return callback(err);
         replaceContents(to, templates.contract.variable, underscored, callback);
       });
@@ -126,7 +126,7 @@ const Create = {
   migration: (
     directory,
     _smartContractType,
-    contractName,
+    migrationsName,
     options,
     callback
   ) => {
@@ -134,12 +134,14 @@ const Create = {
       callback = options;
     }
 
-    let underscored = toUnderscoreFromCamel(contractName || "");
+    let underscored = toUnderscoreFromCamel(migrationsName || "");
     underscored = underscored.replace(/\./g, "_");
     const from = templates.migration.filename;
-    let filename = (new Date().getTime() / 1000) | 0; // Only do seconds.
+    const currentMigrationsDirectory = fs.readdirSync(directory);
+    const migrationsPrefix = currentMigrationsDirectory.length + 1;
+    let filename = migrationsPrefix;
 
-    if (contractName != null && contractName !== "") {
+    if (migrationsName != null && migrationsName !== "") {
       filename += "_" + underscored;
     }
 
