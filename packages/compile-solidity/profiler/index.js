@@ -64,6 +64,8 @@ module.exports = {
     supplier
       .load()
       .then(async ({ solc, parserSolc }) => {
+        const parserCompiler = parserSolc || solc;
+
         const {
           allSources,
           compilationTargets
@@ -72,15 +74,14 @@ module.exports = {
           basePath: options.base_path,
           findContracts: () => findContracts(options.contracts_directory),
           resolveAllSources: allPaths =>
-            this.resolveAllSources(resolver, allPaths, solc, parserSolc),
+            this.resolveAllSources(resolver, allPaths, parserCompiler),
           shouldIncludePath: file => path.extname(file) !== ".vy",
           getImports: async (currentFile, resolvedFile) => {
             try {
               return await getImports(
                 currentFile,
                 resolvedFile,
-                solc,
-                parserSolc
+                parserCompiler
               );
             } catch (err) {
               err.message = `Error parsing ${currentFile}: ${err.message}`;
@@ -98,14 +99,14 @@ module.exports = {
 
   // Resolves sources in several async passes. For each resolved set it detects unknown
   // imports from external packages and adds them to the set of files to resolve.
-  async resolveAllSources(resolver, initialPaths, solc, parserSolc) {
+  async resolveAllSources(resolver, initialPaths, parserCompiler) {
     return await Common.Profiler.resolveAllSources(
       resolver,
       initialPaths,
       async (filePath, result) => {
         // Inspect the imports
         try {
-          return await getImports(filePath, result, solc, parserSolc);
+          return await getImports(filePath, result, parserCompiler);
         } catch (err) {
           if (err.message.includes("requires different compiler version")) {
             const contractSolcPragma = err.message.match(
