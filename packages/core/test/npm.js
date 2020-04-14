@@ -72,35 +72,31 @@ describe("NPM integration", function() {
     });
   });
 
-  it("successfully finds the correct source via Sources lookup", function(done) {
-    config.resolver.resolve(
+  it("successfully finds the correct source via Sources lookup", async function() {
+    const { body } = await config.resolver.resolve(
       "fake_source/contracts/Module.sol",
-      config.sources,
-      function(err, body) {
-        if (err) return done(err);
-
-        assert.equal(body, moduleSource);
-        done();
-      }
+      config.sources
     );
+    assert.equal(body, moduleSource);
   });
 
-  it("errors when module does not exist from any source", function(done) {
-    config.resolver.resolve(
-      "some_source/contracts/SourceDoesNotExist.sol",
-      config.sources,
-      function(err) {
-        if (!err) {
-          return assert.fail("Source lookup should have errored but didn't");
-        }
+  it("errors when module does not exist from any source", async function() {
+    try {
+      await config.resolver.resolve(
+        "some_source/contracts/SourceDoesNotExist.sol",
+        config.sources
+      );
+    } catch (err) {
+      assert.equal(
+        err.message,
+        "Could not find some_source/contracts/SourceDoesNotExist.sol from any sources"
+      );
 
-        assert.equal(
-          err.message,
-          "Could not find some_source/contracts/SourceDoesNotExist.sol from any sources"
-        );
-        done();
-      }
-    );
+      return;
+    }
+
+    // should not be reached
+    assert.fail("Source lookup should have errored but didn't");
   });
 
   it("contract compiliation successfully picks up modules and their dependencies", function(done) {

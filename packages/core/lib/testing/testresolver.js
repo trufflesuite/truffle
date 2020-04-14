@@ -1,42 +1,39 @@
 const path = require("path");
 
-function TestResolver(resolver, source, search_path) {
-  this.resolver = resolver;
-  this.source = source;
-  this.search_path = search_path;
+module.exports = class TestResolver {
+  constructor(resolver, source, searchPath) {
+    this.resolver = resolver;
+    this.source = source;
+    this.searchPath = searchPath;
 
-  this.seen = [];
-  this.require_cache = {};
-  this.cache_on = true;
-}
-
-TestResolver.prototype.require = function(import_path) {
-  if (this.cache_on && this.require_cache[import_path]) {
-    return this.require_cache[import_path];
+    this.seen = [];
+    this.require_cache = {};
+    this.cache_on = true;
   }
 
-  // For Windows: Allow import paths to be either path separator ('\' or '/')
-  // by converting all '/' to the default (path.sep);
-  import_path = import_path.replace(/\//g, path.sep);
+  require(import_path) {
+    if (this.cache_on && this.require_cache[import_path]) {
+      return this.require_cache[import_path];
+    }
 
-  // Remember: This throws if not found.
-  var result = this.resolver.require(import_path, this.search_path);
+    // For Windows: Allow import paths to be either path separator ('\' or '/')
+    // by converting all '/' to the default (path.sep);
+    import_path = import_path.replace(/\//g, path.sep);
 
-  this.require_cache[import_path] = result;
+    // Remember: This throws if not found.
+    var result = this.resolver.require(import_path, this.searchPath);
 
-  return result;
+    this.require_cache[import_path] = result;
+
+    return result;
+  }
+
+  async resolve(importPath, importedFrom) {
+    const result = await this.source.resolve(importPath);
+    if (result && result.body) {
+      return result;
+    }
+
+    return await this.resolver.resolve(importPath, importedFrom);
+  }
 };
-
-TestResolver.prototype.resolve = function(importPath, importedFrom, callback) {
-  var self = this;
-  this.source
-    .resolve(importPath)
-    .then(result => {
-      if (result && result.body)
-        return callback(null, result.body, result.resolvedPath);
-      self.resolver.resolve(importPath, importedFrom, callback);
-    })
-    .catch(callback);
-};
-
-module.exports = TestResolver;
