@@ -5,7 +5,6 @@ const path = require("path");
 const CompilerSupplier = require("../compilerSupplier");
 const expect = require("@truffle/expect");
 const findContracts = require("@truffle/contract-sources");
-const semver = require("semver");
 const debug = require("debug")("compile:profiler");
 const Common = require("@truffle/compile-common");
 const { getImports } = require("./getImports");
@@ -72,22 +71,11 @@ module.exports = {
         } = await Common.Profiler.requiredSources({
           paths: options.paths,
           basePath: options.base_path,
+          resolver,
           findContracts: () => findContracts(options.contracts_directory),
-          resolveAllSources: allPaths =>
-            this.resolveAllSources(resolver, allPaths, parserCompiler),
           shouldIncludePath: file => path.extname(file) !== ".vy",
-          getImports: async (currentFile, resolvedFile) => {
-            try {
-              return await getImports(
-                currentFile,
-                resolvedFile,
-                parserCompiler
-              );
-            } catch (err) {
-              err.message = `Error parsing ${currentFile}: ${err.message}`;
-              throw err;
-            }
-          }
+          getImports: (current, result) =>
+            getImports(current, result, parserCompiler)
         });
 
         callback(null, allSources, compilationTargets);
@@ -95,35 +83,5 @@ module.exports = {
       .catch(error => {
         callback(error);
       });
-  },
-
-  // Resolves sources in several async passes. For each resolved set it detects unknown
-  // imports from external packages and adds them to the set of files to resolve.
-  async resolveAllSources(resolver, initialPaths, parserCompiler) {
-    return await Common.Profiler.resolveAllSources(
-      resolver,
-      initialPaths,
-      async (filePath, result) => {
-        // Inspect the imports
-        try {
-          return await getImports(filePath, result, parserCompiler);
-        } catch (err) {
-          if (err.message.includes("requires different compiler version")) {
-            const contractSolcPragma = err.message.match(
-              /pragma solidity[^;]*/gm
-            );
-            // if there's a match provide the helpful error, otherwise return solc's error output
-            if (contractSolcPragma) {
-              const contractSolcVer = contractSolcPragma[0];
-              const configSolcVer = semver.valid(solc.version());
-              err.message = err.message.concat(
-                `\n\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)\n`
-              );
-            }
-          }
-          throw err;
-        }
-      }
-    );
   }
 };

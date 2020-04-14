@@ -1,15 +1,18 @@
 import { isAbsolute, resolve as resolvePath, join as joinPath } from "path";
 
+import { Resolver } from "@truffle/resolver";
+
 import { ResolvedSourcesMapping } from "./types";
 import { isExplicitlyRelative } from "./isExplicitlyRelative";
+import { resolveAllSources } from "./resolveAllSources";
 
 export interface RequiredSourcesOptions {
   findContracts(): Promise<string[]>;
-  resolveAllSources(allPaths: string[]): Promise<ResolvedSourcesMapping>;
+  resolver: Resolver;
+  getImports: any;
   shouldIncludePath(filePath: string): boolean;
   basePath: string;
   paths: string[];
-  getImports: any;
 }
 
 export interface RequiredSources {
@@ -24,7 +27,7 @@ export async function requiredSources({
   paths,
   basePath,
   findContracts,
-  resolveAllSources,
+  resolver,
   shouldIncludePath,
   getImports
 }: RequiredSourcesOptions): Promise<RequiredSources> {
@@ -46,7 +49,7 @@ export async function requiredSources({
 
   allPaths = convertToAbsolutePaths(allPaths, basePath).sort();
 
-  const resolved = await resolveAllSources(allPaths);
+  const resolved = await resolveAllSources(resolver, allPaths, getImports);
 
   // Generate hash of all sources including external packages - passed to solc inputs.
   const resolvedPaths = Object.keys(resolved);

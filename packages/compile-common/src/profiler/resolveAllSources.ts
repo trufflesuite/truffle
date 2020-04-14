@@ -6,7 +6,7 @@ import { ResolvedSourcesMapping } from "./types";
 // imports from external packages and adds them to the set of files to resolve.
 export async function resolveAllSources(
   resolver: Resolver,
-  initialPaths: { file: string; parent: string }[],
+  initialPaths: ({ file: string; parent: string } | string)[],
   getImports: any
 ): Promise<ResolvedSourcesMapping> {
   const mapping: ResolvedSourcesMapping = {};
