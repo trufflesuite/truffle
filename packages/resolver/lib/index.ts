@@ -1,4 +1,3 @@
-const whilst = require("async/whilst");
 const contract = require("@truffle/contract");
 const expect = require("@truffle/expect");
 const provision = require("@truffle/provisioner");
@@ -40,53 +39,51 @@ class Resolver {
     );
   }
 
-  resolve(import_path: string, imported_from: string, callback: Callback) {
-    var self = this;
-
-    if (typeof imported_from === "function") {
-      callback = imported_from;
-      imported_from = null;
+  resolve(importPath: string, importedFrom: string, callback: Callback) {
+    if (typeof importedFrom === "function") {
+      callback = importedFrom;
+      importedFrom = null;
     }
 
-    var resolved_body: string | null = null;
-    var resolved_path: string | null = null;
-    var source: ResolverSource;
-    var current_index = 0;
+    this._resolve(importPath, importedFrom)
+      .then(({ body, filePath, source }) =>
+        callback(null, body, filePath, source)
+      )
+      .catch(error => callback(error));
+  }
 
-    whilst(
-      function() {
-        return !resolved_body && current_index <= self.sources.length - 1;
-      },
-      function(next: any) {
-        source = self.sources[current_index];
-        source
-          .resolve(import_path, imported_from)
-          .then((result: { body: string; filePath: string }) => {
-            if (result.body) {
-              resolved_body = result.body;
-              resolved_path = result.filePath;
-            }
-            current_index++;
-            next();
-          })
-          .catch(next);
-      },
-      function(err: any) {
-        if (err) return callback(err);
+  private async _resolve(
+    importPath: string,
+    importedFrom: string
+  ): Promise<{ body: string; filePath: string; source: ResolverSource }> {
+    let body: string | null = null;
+    let filePath: string | null = null;
+    let source: ResolverSource | null = null;
 
-        if (!resolved_body) {
-          var message = "Could not find " + import_path + " from any sources";
+    // for (const index = 0; !body && index < this.sources.length; index++) {
+    for (source of this.sources) {
+      ({ body, filePath } = await source.resolve(importPath, importedFrom));
 
-          if (imported_from) {
-            message += "; imported from " + imported_from;
-          }
-
-          return callback(new Error(message));
-        }
-
-        callback(null, resolved_body, resolved_path, source);
+      if (body) {
+        break;
       }
-    );
+    }
+
+    if (!body) {
+      let message = `Could not find ${importPath} from any sources`;
+
+      if (importedFrom) {
+        message += "; imported from " + importedFrom;
+      }
+
+      throw new Error(message);
+    }
+
+    return {
+      body,
+      filePath,
+      source
+    };
   }
 }
 
