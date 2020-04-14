@@ -167,85 +167,31 @@ module.exports = {
   // Resolves sources in several async passes. For each resolved set it detects unknown
   // imports from external packages and adds them to the set of files to resolve.
   async resolveAllSources(resolver, initialPaths, solc, parserSolc) {
-    const mapping = {};
-    const allPaths = initialPaths.slice();
-
-    // Begin generateMapping
-    function generateMapping() {
-      const promises = [];
-
-      // Dequeue all the known paths, generating resolver promises,
-      // We'll add paths if we discover external package imports.
-      while (allPaths.length) {
-        let file;
-        let parent = null;
-
-        const candidate = allPaths.shift();
-
-        // Some paths will have been extracted as imports from a file
-        // and have information about their parent location we need to track.
-        if (typeof candidate === "object") {
-          file = candidate.file;
-          parent = candidate.parent;
-        } else {
-          file = candidate;
-        }
-        promises.push(resolver.resolve(file, parent));
-      }
-
-      // Resolve everything known and add it to the map, then inspect each file's
-      // imports and add those to the list of paths to resolve if we don't have it.
-      return Promise.all(promises).then(async results => {
-        // Generate the sources mapping
-        results.forEach(
-          item => (mapping[item.filePath] = Object.assign({}, item))
-        );
-
-        // Queue unknown imports for the next resolver cycle
-        while (results.length) {
-          const result = results.shift();
-
-          // Inspect the imports
-          let imports;
-          try {
-            imports = await getImports(
-              result.filePath,
-              result,
-              solc,
-              parserSolc
+    return await Common.Profiler.resolveAllSources(
+      resolver,
+      initialPaths,
+      async (filePath, result) => {
+        // Inspect the imports
+        try {
+          return await getImports(filePath, result, solc, parserSolc);
+        } catch (err) {
+          if (err.message.includes("requires different compiler version")) {
+            const contractSolcPragma = err.message.match(
+              /pragma solidity[^;]*/gm
             );
-          } catch (err) {
-            if (err.message.includes("requires different compiler version")) {
-              const contractSolcPragma = err.message.match(
-                /pragma solidity[^;]*/gm
+            // if there's a match provide the helpful error, otherwise return solc's error output
+            if (contractSolcPragma) {
+              const contractSolcVer = contractSolcPragma[0];
+              const configSolcVer = semver.valid(solc.version());
+              err.message = err.message.concat(
+                `\n\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)\n`
               );
-              // if there's a match provide the helpful error, otherwise return solc's error output
-              if (contractSolcPragma) {
-                const contractSolcVer = contractSolcPragma[0];
-                const configSolcVer = semver.valid(solc.version());
-                err.message = err.message.concat(
-                  `\n\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)\n`
-                );
-              }
             }
-            throw err;
           }
-
-          // Detect unknown external packages / add them to the list of files to resolve
-          // Keep track of location of this import because we need to report that.
-          imports.forEach(item => {
-            if (!mapping[item])
-              allPaths.push({ file: item, parent: result.filePath });
-          });
+          throw err;
         }
-      });
-    }
-    // End generateMapping
-
-    while (allPaths.length) {
-      await generateMapping();
-    }
-    return mapping;
+      }
+    );
   },
 
   listsEqual(listA, listB) {
