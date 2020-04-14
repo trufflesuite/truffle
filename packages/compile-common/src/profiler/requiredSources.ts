@@ -2,9 +2,8 @@ import { isAbsolute, resolve as resolvePath, join as joinPath } from "path";
 
 import { Resolver } from "@truffle/resolver";
 
-import { ResolvedSourcesMapping } from "./types";
 import { isExplicitlyRelative } from "./isExplicitlyRelative";
-import { resolveAllSources } from "./resolveAllSources";
+import { resolveAllSources, ResolvedSourcesMapping } from "./resolveAllSources";
 
 export interface RequiredSourcesOptions {
   findContracts(): Promise<string[]>;

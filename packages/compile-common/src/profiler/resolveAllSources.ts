@@ -1,6 +1,11 @@
 import { Resolver } from "@truffle/resolver";
 
-import { ResolvedSourcesMapping } from "./types";
+export interface ResolvedSourcesMapping {
+  [filePath: string]: {
+    body: string;
+    filePath: string;
+  };
+}
 
 // Resolves sources in several async passes. For each resolved set it detects unknown
 // imports from external packages and adds them to the set of files to resolve.
