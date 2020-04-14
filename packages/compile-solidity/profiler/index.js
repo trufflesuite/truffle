@@ -2,12 +2,13 @@
 // determines which .sol files have been updated.
 
 const path = require("path");
+const semver = require("semver");
+const Parser = require("../parser");
 const CompilerSupplier = require("../compilerSupplier");
 const expect = require("@truffle/expect");
 const findContracts = require("@truffle/contract-sources");
 const debug = require("debug")("compile:profiler");
 const Common = require("@truffle/compile-common");
-const { getImports } = require("./getImports");
 
 module.exports = {
   async updated(options, callback) {
@@ -69,10 +70,15 @@ module.exports = {
           allSources,
           compilationTargets
         } = await Common.Profiler.requiredSources({
-          paths: options.paths,
-          basePath: options.base_path,
+          updatedPaths: convertToAbsolutePaths(
+            options.paths,
+            options.base_path
+          ),
           resolver,
-          findContracts: () => findContracts(options.contracts_directory),
+          findContracts: async () => {
+            const allPaths = await findContracts(options.contracts_directory);
+            return convertToAbsolutePaths(allPaths, options.base_path);
+          },
           shouldIncludePath: file => path.extname(file) !== ".vy",
           getImports: (current, result) =>
             getImports(current, result, parserCompiler)
@@ -85,3 +91,55 @@ module.exports = {
       });
   }
 };
+
+function getImports(file, { body, source }, solc) {
+  // No imports in vyper!
+  if (path.extname(file) === ".vy") return [];
+
+  try {
+    const imports = Parser.parseImports(body, solc);
+
+    // Convert explicitly relative dependencies of modules back into module paths.
+    return imports.map(
+      dependencyPath =>
+        isExplicitlyRelative(dependencyPath)
+          ? source.resolveDependencyPath(file, dependencyPath)
+          : dependencyPath
+    );
+  } catch (err) {
+    if (err.message.includes("requires different compiler version")) {
+      const contractSolcPragma = err.message.match(/pragma solidity[^;]*/gm);
+      // if there's a match provide the helpful error, otherwise return solc's error output
+      if (contractSolcPragma) {
+        const contractSolcVer = contractSolcPragma[0];
+        const configSolcVer = semver.valid(solc.version());
+        err.message = err.message.concat(
+          `\n\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)\n`
+        );
+      } else {
+        err.message = `Error parsing ${currentFile}: ${err.message}`;
+      }
+    }
+
+    throw err;
+  }
+}
+
+function convertToAbsolutePaths(paths, base) {
+  return paths
+    .map(p => {
+      // If it's anabsolute paths, leave it alone.
+      if (path.isAbsolute(p)) return p;
+
+      // If it's not explicitly relative, then leave it alone (i.e., it's a module).
+      if (!isExplicitlyRelative(p)) return p;
+
+      // Path must be explicitly releative, therefore make it absolute.
+      return path.resolve(path.join(base, p));
+    })
+    .sort();
+}
+
+function isExplicitlyRelative(importPath) {
+  return importPath.indexOf(".") === 0;
+}

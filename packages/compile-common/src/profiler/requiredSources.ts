@@ -1,8 +1,5 @@
-import { isAbsolute, resolve as resolvePath, join as joinPath } from "path";
-
 import { Resolver } from "@truffle/resolver";
 
-import { isExplicitlyRelative } from "./isExplicitlyRelative";
 import { resolveAllSources, ResolvedSourcesMapping } from "./resolveAllSources";
 
 export interface RequiredSourcesOptions {
@@ -10,8 +7,7 @@ export interface RequiredSourcesOptions {
   resolver: Resolver;
   getImports: any;
   shouldIncludePath(filePath: string): boolean;
-  basePath: string;
-  paths: string[];
+  updatedPaths: string[];
 }
 
 export interface RequiredSources {
@@ -23,14 +19,13 @@ export interface RequiredSources {
 }
 
 export async function requiredSources({
-  paths,
-  basePath,
+  updatedPaths,
   findContracts,
   resolver,
   shouldIncludePath,
   getImports
 }: RequiredSourcesOptions): Promise<RequiredSources> {
-  let allPaths: string[], updates: string[];
+  let allPaths: string[];
   const allSources: RequiredSources["allSources"] = {};
   const compilationTargets: string[] = [];
 
@@ -38,15 +33,11 @@ export async function requiredSources({
   allPaths = await findContracts();
 
   // Solidity test files might have been injected. Include them in the known set.
-  paths.forEach(_path => {
+  updatedPaths.forEach(_path => {
     if (!allPaths.includes(_path)) {
       allPaths.push(_path);
     }
   });
-
-  updates = convertToAbsolutePaths(paths, basePath).sort();
-
-  allPaths = convertToAbsolutePaths(allPaths, basePath).sort();
 
   const resolved = await resolveAllSources(resolver, allPaths, getImports);
 
@@ -59,12 +50,12 @@ export async function requiredSources({
   }
 
   // Exit w/out minimizing if we've been asked to compile everything, or nothing.
-  if (listsEqual(paths, allPaths)) {
+  if (listsEqual(updatedPaths, allPaths)) {
     return {
       allSources,
       compilationTargets: []
     };
-  } else if (!paths.length) {
+  } else if (!updatedPaths.length) {
     return {
       allSources: {},
       compilationTargets: []
@@ -72,7 +63,7 @@ export async function requiredSources({
   }
 
   // Seed compilationTargets with known updates
-  for (const update of updates) {
+  for (const update of updatedPaths) {
     compilationTargets.push(update);
   }
 
@@ -80,8 +71,8 @@ export async function requiredSources({
   // and search the entire file corpus to find any sources that import it.
   // Those sources are added to list of compilation targets as well as
   // the update queue because their own ancestors need to be discovered.
-  while (updates.length > 0) {
-    const currentUpdate = updates.shift();
+  while (updatedPaths.length > 0) {
+    const currentUpdate = updatedPaths.shift();
     const files = allPaths.slice();
 
     // While files: dequeue and inspect their imports
@@ -98,7 +89,7 @@ export async function requiredSources({
       // If file imports a compilation target, add it
       // to list of updates and compilation targets
       if (imports.includes(currentUpdate)) {
-        updates.push(currentFile);
+        updatedPaths.push(currentFile);
         compilationTargets.push(currentFile);
       }
     }
@@ -115,17 +106,4 @@ function listsEqual<T>(listA: T[], listB: T[]): boolean {
   const b = listB.sort();
 
   return JSON.stringify(a) === JSON.stringify(b);
-}
-
-function convertToAbsolutePaths(paths: string[], base: string): string[] {
-  return paths.map(p => {
-    // If it's anabsolute paths, leave it alone.
-    if (isAbsolute(p)) return p;
-
-    // If it's not explicitly relative, then leave it alone (i.e., it's a module).
-    if (!isExplicitlyRelative(p)) return p;
-
-    // Path must be explicitly releative, therefore make it absolute.
-    return resolvePath(joinPath(base, p));
-  });
 }
