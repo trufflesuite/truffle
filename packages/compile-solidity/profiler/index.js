@@ -13,6 +13,7 @@ const { getImports } = require("./getImports");
 module.exports = {
   async updated(options, callback) {
     const callbackPassed = typeof callback === "function";
+
     expect.options(options, ["resolver"]);
 
     const { contracts_directory, contracts_build_directory } = options;
@@ -25,22 +26,12 @@ module.exports = {
       }
     }
 
-    let sourceFilesArtifacts = {};
-    let sourceFilesArtifactsUpdatedTimes = {};
-
     try {
-      const sourceFiles = await getFiles();
-      sourceFilesArtifacts = Common.Profiler.readAndParseArtifactFiles(
-        sourceFiles,
-        contracts_build_directory
-      );
-      sourceFilesArtifactsUpdatedTimes = Common.Profiler.minimumUpdatedTimePerSource(
-        sourceFilesArtifacts
-      );
-      const updatedFiles = Common.Profiler.findUpdatedFiles(
-        sourceFilesArtifacts,
-        sourceFilesArtifactsUpdatedTimes
-      );
+      const updatedFiles = await Common.Profiler.updated({
+        getFiles,
+        contractsBuildDirectory: contracts_build_directory
+      });
+
       if (callbackPassed) {
         callback(null, updatedFiles);
       } else {
