@@ -4,7 +4,7 @@ import fs from "fs";
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { ResolverSource } from "../source";
 
-class EthPMv1 implements ResolverSource {
+export class EthPMv1 implements ResolverSource {
   workingDirectory: string;
 
   constructor(workingDirectory: string) {
@@ -130,5 +130,3 @@ class EthPMv1 implements ResolverSource {
     return resolved_dependency_path;
   }
 }
-
-module.exports = EthPMv1;

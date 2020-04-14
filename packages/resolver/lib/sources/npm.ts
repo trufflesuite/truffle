@@ -3,7 +3,7 @@ import fs from "fs";
 
 import { ResolverSource } from "../source";
 
-class NPM implements ResolverSource {
+export class NPM implements ResolverSource {
   workingDirectory: string;
 
   constructor(workingDirectory: string) {
@@ -70,5 +70,3 @@ class NPM implements ResolverSource {
     return path.join(dirname, dependency_path);
   }
 }
-
-module.exports = NPM;

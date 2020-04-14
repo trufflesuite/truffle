@@ -5,7 +5,7 @@ const get_installed_path: any = require("get-installed-path");
 
 import { ResolverSource } from "../source";
 
-class GlobalNPM implements ResolverSource {
+export class GlobalNPM implements ResolverSource {
   require(importPath: string) {
     if (importPath.indexOf(".") === 0 || path.isAbsolute(importPath)) {
       return null;
@@ -62,5 +62,3 @@ class GlobalNPM implements ResolverSource {
     return path.join(dirname, dependencyPath);
   }
 }
-
-module.exports = GlobalNPM;

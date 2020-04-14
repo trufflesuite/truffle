@@ -3,7 +3,7 @@ import fs from "fs";
 
 import { ResolverSource } from "../source";
 
-class FS implements ResolverSource {
+export class FS implements ResolverSource {
   workingDirectory: string;
   contractsBuildDirectory: string;
 
@@ -85,5 +85,3 @@ class FS implements ResolverSource {
     return path.resolve(path.join(dirname, dependencyPath));
   }
 }
-
-module.exports = FS;

@@ -6,7 +6,7 @@ import path from "path";
 import fs from "fs";
 import { describe, it } from "mocha";
 
-const GlobalNPM = require("../lib/sources/globalnpm");
+import { GlobalNPM } from "../lib/sources/globalnpm";
 const global_npm = new GlobalNPM();
 
 describe("globalnpm", () => {
@@ -99,7 +99,7 @@ describe("globalnpm", () => {
       get_installed_path_sync_stub.restore();
     });
 
-    it("should return the contents of solidity file if the import_path exists", () => {
+    it("should return the contents of solidity file if the import_path exists", async () => {
       sync_stub.withArgs("package").returns(true);
       get_installed_path_sync_stub
         .withArgs("package")
@@ -107,24 +107,15 @@ describe("globalnpm", () => {
           path.resolve(__dirname, "fixtures/globalnpm/node_modules/package")
         );
 
-      const callback = (
-        err: Error | null,
-        body: string,
-        import_path: string
-      ) => {
-        assert.strictEqual(err, null);
-        assert.strictEqual(body, "contract Test {}\n");
-        assert.strictEqual(import_path, "package/contracts/Test.sol");
-      };
-
-      global_npm.resolve(
-        "package/contracts/Test.sol",
-        "imported_from",
-        callback
+      const { body, filePath } = await global_npm.resolve(
+        "package/contracts/Test.sol"
       );
+
+      assert.strictEqual(body, "contract Test {}\n");
+      assert.strictEqual(filePath, "package/contracts/Test.sol");
     });
 
-    it("should return undefined body if the package does not exist", () => {
+    it("should return undefined body if the package does not exist", async () => {
       sync_stub.withArgs("package").returns(false);
       get_installed_path_sync_stub
         .withArgs("package")
@@ -132,24 +123,15 @@ describe("globalnpm", () => {
           path.resolve(__dirname, "fixtures/globalnpm/node_modules/package")
         );
 
-      const callback = (
-        err: Error | null,
-        body: string,
-        import_path: string
-      ) => {
-        assert.strictEqual(err, null);
-        assert.strictEqual(body, undefined);
-        assert.strictEqual(import_path, "package/contracts/Test.sol");
-      };
-
-      global_npm.resolve(
-        "package/contracts/Test.sol",
-        "imported_from",
-        callback
+      const { body, filePath } = await global_npm.resolve(
+        "package/contracts/Test.sol"
       );
+
+      assert.strictEqual(body, undefined);
+      assert.strictEqual(filePath, "package/contracts/Test.sol");
     });
 
-    it("should return undefined body if readFileSync throws Error", () => {
+    it("should return undefined body if readFileSync throws Error", async () => {
       const read_file_sync_stub = sinon.stub(fs, "readFileSync");
 
       sync_stub.withArgs("package").returns(true);
@@ -160,21 +142,12 @@ describe("globalnpm", () => {
         );
       read_file_sync_stub.throws("some error");
 
-      const callback = (
-        err: Error | null,
-        body: string,
-        import_path: string
-      ) => {
-        assert.strictEqual(err, null);
-        assert.strictEqual(body, undefined);
-        assert.strictEqual(import_path, "package/contracts/Test.sol");
-      };
-
-      global_npm.resolve(
-        "package/contracts/Test.sol",
-        "imported_from",
-        callback
+      const { body, filePath } = await global_npm.resolve(
+        "package/contracts/Test.sol"
       );
+
+      assert.strictEqual(body, undefined);
+      assert.strictEqual(filePath, "package/contracts/Test.sol");
 
       read_file_sync_stub.restore();
     });
