@@ -384,7 +384,7 @@ export function definitionToStoredType(
         let contractDefinition = Object.values(referenceDeclarations).find(
           node =>
             node.nodeType === "ContractDefinition" &&
-            node.nodes.some((subNode: AstNode) => subNode.id.toString() === id)
+            node.nodes.some((subNode: AstNode) => subNode.id === definition.id)
         );
         if (contractDefinition) {
           definingContract = <Format.Types.ContractTypeNative>(
@@ -429,9 +429,7 @@ export function definitionToStoredType(
         let contractDefinition = Object.values(referenceDeclarations).find(
           node =>
             node.nodeType === "ContractDefinition" &&
-            node.nodes.some(
-              (subNode: AstNode) => makeTypeId(subNode.id, compilationId) === id
-            )
+            node.nodes.some((subNode: AstNode) => subNode.id === definition.id)
         );
         if (contractDefinition) {
           definingContract = <Format.Types.ContractTypeNative>(
