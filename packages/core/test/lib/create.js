@@ -24,84 +24,214 @@ describe("create", function() {
     });
   });
 
-  it("creates a new contract", function(done) {
-    Create.contract(config.contracts_directory, "MyNewContract", function(err) {
-      if (err) return done(err);
+  it("creates a new solidity contract (by default)", function(done) {
+    Create.contract(
+      config.contracts_directory,
+      undefined,
+      "MyNewContract",
+      function(err) {
+        if (err) return done(err);
 
-      const expectedFile = path.join(
-        config.contracts_directory,
-        "MyNewContract.sol"
-      );
-      assert.isTrue(
-        fse.existsSync(expectedFile),
-        `Contract to be created doesns't exist, ${expectedFile}`
-      );
+        const expectedFile = path.join(
+          config.contracts_directory,
+          "MyNewContract.sol"
+        );
+        assert.isTrue(
+          fse.existsSync(expectedFile),
+          `Contract to be created doesns't exist, ${expectedFile}`
+        );
 
-      const fileData = fse.readFileSync(expectedFile, { encoding: "utf8" });
-      assert.isNotNull(fileData, "File's data is null");
-      assert.notEqual(fileData, "", "File's data is blank");
-      assert.isTrue(
-        fileData.includes("pragma solidity >= 0.5.0 < 0.7.0;"),
-        "File's solidity version does not match >= 0.5.0 < 0.7.0"
-      );
-      done();
-    });
+        const fileData = fse.readFileSync(expectedFile, { encoding: "utf8" });
+        assert.isNotNull(fileData, "File's data is null");
+        assert.notEqual(fileData, "", "File's data is blank");
+        assert.isTrue(
+          fileData.includes("pragma solidity >= 0.5.0 < 0.7.0;"),
+          "File's solidity version does not match >= 0.5.0 < 0.7.0"
+        );
+        done();
+      }
+    );
+  });
+
+  it("can create a new smartpy contract", function(done) {
+    Create.contract(
+      config.contracts_directory,
+      "smartpy",
+      "MyNewContract",
+      function(err) {
+        if (err) return done(err);
+
+        const expectedFile = path.join(
+          config.contracts_directory,
+          "MyNewContract.py"
+        );
+        assert.isTrue(
+          fse.existsSync(expectedFile),
+          `Contract to be created doesns't exist, ${expectedFile}`
+        );
+
+        const fileData = fse.readFileSync(expectedFile, { encoding: "utf8" });
+        assert.isNotNull(fileData, "File's data is null");
+        assert.notEqual(fileData, "", "File's data is blank");
+        assert.isTrue(
+          fileData.includes("import smartpy as sp"),
+          "Smartpy contract not created correctly"
+        );
+        done();
+      }
+    );
+  });
+
+  it("can create a new reasonligo contract", function(done) {
+    Create.contract(
+      config.contracts_directory,
+      "reasonligo",
+      "MyNewContract",
+      function(err) {
+        if (err) return done(err);
+
+        const expectedFile = path.join(
+          config.contracts_directory,
+          "MyNewContract.religo"
+        );
+        assert.isTrue(
+          fse.existsSync(expectedFile),
+          `Contract to be created doesns't exist, ${expectedFile}`
+        );
+
+        const fileData = fse.readFileSync(expectedFile, { encoding: "utf8" });
+        assert.isNotNull(fileData, "File's data is null");
+        assert.notEqual(fileData, "", "File's data is blank");
+        assert.isTrue(
+          fileData.includes("let main = "),
+          "Reasonligo contract not created correctly"
+        );
+        done();
+      }
+    );
+  });
+
+  it("can create a new cameligo contract", function(done) {
+    Create.contract(
+      config.contracts_directory,
+      "cameligo",
+      "MyNewContract",
+      function(err) {
+        if (err) return done(err);
+
+        const expectedFile = path.join(
+          config.contracts_directory,
+          "MyNewContract.mligo"
+        );
+        assert.isTrue(
+          fse.existsSync(expectedFile),
+          `Contract to be created doesns't exist, ${expectedFile}`
+        );
+
+        const fileData = fse.readFileSync(expectedFile, { encoding: "utf8" });
+        assert.isNotNull(fileData, "File's data is null");
+        assert.notEqual(fileData, "", "File's data is blank");
+        assert.isTrue(
+          fileData.includes("let main("),
+          "Cameligo contract not created correctly"
+        );
+        done();
+      }
+    );
+  });
+
+  it("can create a new pascaligo contract", function(done) {
+    Create.contract(
+      config.contracts_directory,
+      "pascaligo",
+      "MyNewContract",
+      function(err) {
+        if (err) return done(err);
+
+        const expectedFile = path.join(
+          config.contracts_directory,
+          "MyNewContract.ligo"
+        );
+        assert.isTrue(
+          fse.existsSync(expectedFile),
+          `Contract to be created doesns't exist, ${expectedFile}`
+        );
+
+        const fileData = fse.readFileSync(expectedFile, { encoding: "utf8" });
+        assert.isNotNull(fileData, "File's data is null");
+        assert.notEqual(fileData, "", "File's data is blank");
+        assert.isTrue(
+          fileData.includes("function main("),
+          "Pascaligo contract not created correctly"
+        );
+        done();
+      }
+    );
   });
 
   it("will not overwrite an existing contract (by default)", function(done) {
-    Create.contract(config.contracts_directory, "MyNewContract2", function(
-      err
-    ) {
-      if (err) return done(err);
+    Create.contract(
+      config.contracts_directory,
+      undefined,
+      "MyNewContract2",
+      function(err) {
+        if (err) return done(err);
 
-      const expectedFile = path.join(
-        config.contracts_directory,
-        "MyNewContract2.sol"
-      );
-      assert.isTrue(
-        fse.existsSync(expectedFile),
-        `Contract to be created doesns't exist, ${expectedFile}`
-      );
+        const expectedFile = path.join(
+          config.contracts_directory,
+          "MyNewContract2.sol"
+        );
+        assert.isTrue(
+          fse.existsSync(expectedFile),
+          `Contract to be created doesns't exist, ${expectedFile}`
+        );
 
-      Create.contract(config.contracts_directory, "MyNewContract2", function(
-        err
-      ) {
-        assert(err.message.includes("file exists"));
-        done();
-      });
-    });
+        Create.contract(
+          config.contracts_directory,
+          undefined,
+          "MyNewContract2",
+          function(err) {
+            assert(err.message.includes("file exists"));
+            done();
+          }
+        );
+      }
+    );
   });
 
   it("will overwrite an existing contract if the force option is enabled", function(done) {
-    Create.contract(config.contracts_directory, "MyNewContract3", function(
-      err
-    ) {
-      if (err) return done(err);
+    Create.contract(
+      config.contracts_directory,
+      undefined,
+      "MyNewContract3",
+      function(err) {
+        if (err) return done(err);
 
-      const expectedFile = path.join(
-        config.contracts_directory,
-        "MyNewContract3.sol"
-      );
-      assert.isTrue(
-        fse.existsSync(expectedFile),
-        `Contract to be created doesns't exist, ${expectedFile}`
-      );
+        const expectedFile = path.join(
+          config.contracts_directory,
+          "MyNewContract3.sol"
+        );
+        assert.isTrue(
+          fse.existsSync(expectedFile),
+          `Contract to be created doesns't exist, ${expectedFile}`
+        );
 
-      const options = { force: true };
-      Create.contract(
-        config.contracts_directory,
-        "MyNewContract3",
-        options,
-        function(err) {
-          assert(err === null);
-          done();
-        }
-      );
-    });
+        const options = { force: true };
+        Create.contract(
+          config.contracts_directory,
+          "MyNewContract3",
+          options,
+          function(err) {
+            assert(err === null);
+            done();
+          }
+        );
+      }
+    );
   });
 
   it("creates a new test", function(done) {
-    Create.test(config.test_directory, "MyNewTest", function(err) {
+    Create.test(config.test_directory, undefined, "MyNewTest", function(err) {
       if (err) return done(err);
 
       const expectedFile = path.join(config.test_directory, "my_new_test.js");
@@ -116,34 +246,37 @@ describe("create", function() {
 
       done();
     });
-  }); // it
+  });
 
   it("creates a new migration", function(done) {
-    Create.migration(config.migrations_directory, "MyNewMigration", function(
-      err
-    ) {
-      if (err) return done(err);
-      const files = glob.sync(`${config.migrations_directory}${path.sep}*`);
+    Create.migration(
+      config.migrations_directory,
+      undefined,
+      "MyNewMigration",
+      function(err) {
+        if (err) return done(err);
+        const files = glob.sync(`${config.migrations_directory}${path.sep}*`);
 
-      const found = false;
-      const expectedSuffix = "_my_new_migration.js";
+        const found = false;
+        const expectedSuffix = "_my_new_migration.js";
 
-      for (let file of files) {
-        if (
-          file.indexOf(expectedSuffix) ===
-          file.length - expectedSuffix.length
-        ) {
-          const fileData = fse.readFileSync(file, { encoding: "utf8" });
-          assert.isNotNull(fileData, "File's data is null");
-          assert.notEqual(fileData, "", "File's data is blank");
+        for (let file of files) {
+          if (
+            file.indexOf(expectedSuffix) ===
+            file.length - expectedSuffix.length
+          ) {
+            const fileData = fse.readFileSync(file, { encoding: "utf8" });
+            assert.isNotNull(fileData, "File's data is null");
+            assert.notEqual(fileData, "", "File's data is blank");
 
-          return done();
+            return done();
+          }
+        }
+
+        if (found === false) {
+          assert.fail("Could not find a file that matched expected name");
         }
       }
-
-      if (found === false) {
-        assert.fail("Could not find a file that matched expected name");
-      }
-    });
-  }); // it
+    );
+  });
 }).timeout(10000);

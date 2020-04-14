@@ -1,38 +1,36 @@
-const copy = require("../../copy");
-const path = require("path");
+const { file: copyFile } = require("../../copy");
+const { join } = require("path");
 const fs = require("fs");
 
 const templates = {
   test: {
-    filename: path.join(__dirname, "templates", "example.js"),
+    filename: join(__dirname, "templates", "example.js"),
     variable: "example"
   },
   contract: {
-    filename: path.join(__dirname, "templates", "Example.sol"),
+    filename: join(__dirname, "templates", "Example"),
     name: "Example",
     variable: "example"
   },
   migration: {
-    filename: path.join(__dirname, "templates", "migration.js")
+    filename: join(__dirname, "templates", "migration.js")
   }
 };
 
-var processFile = function(file_path, processfn, callback) {
-  fs.readFile(file_path, { encoding: "utf8" }, function(err, data) {
-    if (err != null) {
-      callback(err);
-      return;
-    }
-
-    var result = processfn(data);
-    fs.writeFile(file_path, result, { encoding: "utf8" }, callback);
-  });
+const processFile = (filePath, processFn, callback) => {
+  try {
+    const data = fs.readFileSync(filePath, { encoding: "utf8" });
+    const result = processFn(data);
+    fs.writeFile(filePath, result, { encoding: "utf8" }, callback);
+  } catch (error) {
+    return callback(error);
+  }
 };
 
-var replaceContents = function(file_path, find, replacement, callback) {
+const replaceContents = (filePath, find, replacement, callback) => {
   processFile(
-    file_path,
-    function(data) {
+    filePath,
+    data => {
       if (typeof find === "string") {
         find = new RegExp(find, "g");
       }
@@ -42,49 +40,72 @@ var replaceContents = function(file_path, find, replacement, callback) {
   );
 };
 
-var toUnderscoreFromCamel = function(string) {
-  string = string.replace(/([A-Z])/g, function($1) {
+const toUnderscoreFromCamel = string => {
+  let transformedString = string.replace(/([A-Z])/g, $1 => {
     return "_" + $1.toLowerCase();
   });
 
-  if (string[0] === "_") {
-    string = string.substring(1);
+  if (transformedString[0] === "_") {
+    transformedString = transformedString.substring(1);
   }
 
-  return string;
+  return transformedString;
 };
 
-var Create = {
-  contract: function(directory, name, options, callback) {
+const Create = {
+  contract: (directory, smartContractType, contractName, options, callback) => {
+    let from;
+    let to;
+
     if (typeof options === "function") {
       callback = options;
     }
 
-    var from = templates.contract.filename;
-    var to = path.join(directory, name + ".sol");
+    const smartContractFileExtensions = {
+      pascaligo: ".ligo",
+      cameligo: ".mligo",
+      reasonligo: ".religo",
+      smartpy: ".py"
+    };
 
-    if (!options.force && fs.existsSync(to)) {
-      return callback(
-        new Error("Can not create " + name + ".sol: file exists")
-      );
+    const smartContractFileExtension =
+      smartContractFileExtensions[smartContractType];
+    if (smartContractFileExtension) {
+      from = templates.contract.filename + smartContractFileExtension;
+      to = join(directory, contractName + smartContractFileExtension);
+      if (!options.force && fs.existsSync(to)) {
+        return callback(
+          new Error(
+            `Can not create ${contractName}${smartContractFileExtension}: file exists`
+          )
+        );
+      }
+    } else {
+      from = templates.contract.filename + ".sol";
+      to = join(directory, contractName + ".sol");
+      if (!options.force && fs.existsSync(to)) {
+        return callback(
+          new Error(`Can not create ${contractName}.sol: file exists`)
+        );
+      }
     }
 
-    copy.file(from, to, function(err) {
+    copyFile(from, to, err => {
       if (err) return callback(err);
 
-      replaceContents(to, templates.contract.name, name, callback);
+      replaceContents(to, templates.contract.name, contractName, callback);
     });
   },
 
-  test: function(directory, name, options, callback) {
+  test: (directory, _smartContractType, contractName, options, callback) => {
     if (typeof options === "function") {
       callback = options;
     }
 
-    var underscored = toUnderscoreFromCamel(name);
+    let underscored = toUnderscoreFromCamel(contractName);
     underscored = underscored.replace(/\./g, "_");
-    var from = templates.test.filename;
-    var to = path.join(directory, underscored + ".js");
+    const from = templates.test.filename;
+    const to = join(directory, underscored + ".js");
 
     if (!options.force && fs.existsSync(to)) {
       return callback(
@@ -92,32 +113,38 @@ var Create = {
       );
     }
 
-    copy.file(from, to, function(err) {
+    copyFile(from, to, err => {
       if (err) return callback(err);
 
-      replaceContents(to, templates.contract.name, name, function(err) {
+      replaceContents(to, templates.contract.name, contractName, err => {
         if (err) return callback(err);
         replaceContents(to, templates.contract.variable, underscored, callback);
       });
     });
   },
 
-  migration: function(directory, name, options, callback) {
+  migration: (
+    directory,
+    _smartContractType,
+    contractName,
+    options,
+    callback
+  ) => {
     if (typeof options === "function") {
       callback = options;
     }
 
-    var underscored = toUnderscoreFromCamel(name || "");
+    let underscored = toUnderscoreFromCamel(contractName || "");
     underscored = underscored.replace(/\./g, "_");
-    var from = templates.migration.filename;
-    var filename = (new Date().getTime() / 1000) | 0; // Only do seconds.
+    const from = templates.migration.filename;
+    let filename = (new Date().getTime() / 1000) | 0; // Only do seconds.
 
-    if (name != null && name !== "") {
+    if (contractName != null && contractName !== "") {
       filename += "_" + underscored;
     }
 
     filename += ".js";
-    var to = path.join(directory, filename);
+    const to = join(directory, filename);
 
     if (!options.force && fs.existsSync(to)) {
       return callback(
@@ -125,7 +152,7 @@ var Create = {
       );
     }
 
-    copy.file(from, to, callback);
+    copyFile(from, to, callback);
   }
 };
 
