@@ -63,9 +63,4 @@ GlobalNPM.prototype.resolve_dependency_path = function(
   return path.join(dirname, dependency_path);
 };
 
-GlobalNPM.prototype.provision_contracts = function(callback) {
-  // TODO: Fill this out!
-  callback(null, {});
-};
-
 module.exports = GlobalNPM;
