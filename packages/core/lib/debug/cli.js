@@ -38,11 +38,7 @@ class CLIDebugger {
     let artifacts = await DebugUtils.gatherArtifacts(config);
     let shimmedCompilations = Codec.Compilations.Utils.shimArtifacts(artifacts);
     //if they were compiled simultaneously, yay, we can use it!
-    if (
-      shimmedCompilations.every(
-        compilation => !compilation.unreliableSourceOrder
-      )
-    ) {
+    if (shimmedCompilations.every(DebugUtils.isUsableCompilation)) {
       return shimmedCompilations;
     }
     //if not, we have to recompile
