@@ -1,7 +1,9 @@
 import path from "path";
 import fs from "fs";
 
-class FS {
+import { ResolverSource } from "../source";
+
+class FS implements ResolverSource {
   workingDirectory: string;
   contractsBuildDirectory: string;
 

@@ -3,7 +3,9 @@ const NPMSource = require("./npm");
 const GlobalNPMSource = require("./globalnpm");
 const FSSource = require("./fs");
 
-module.exports = (options: any) => {
+import { ResolverSource } from "../source";
+
+module.exports = (options: any): ResolverSource[] => {
   return [
     new EthPMv1Source(
       options.working_directory,
