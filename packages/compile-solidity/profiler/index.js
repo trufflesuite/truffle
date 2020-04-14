@@ -11,7 +11,6 @@ const Common = require("@truffle/compile-common");
 const {
   minimumUpdatedTimePerSource
 } = require("./minimumUpdatedTimePerSource");
-const { findUpdatedFiles } = require("./findUpdatedFiles");
 const { isExplicitlyRelative } = require("./isExplicitlyRelative");
 const { getImports } = require("./getImports");
 
@@ -42,7 +41,7 @@ module.exports = {
       sourceFilesArtifactsUpdatedTimes = minimumUpdatedTimePerSource(
         sourceFilesArtifacts
       );
-      const updatedFiles = findUpdatedFiles(
+      const updatedFiles = Common.Profiler.findUpdatedFiles(
         sourceFilesArtifacts,
         sourceFilesArtifactsUpdatedTimes
       );

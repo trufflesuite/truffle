@@ -1,14 +1,19 @@
-const fse = require("fs-extra");
+import * as fse from "fs-extra";
 
-const findUpdatedFiles = (
-  sourceFilesArtifacts,
-  sourceFilesArtifactsUpdatedTimes
-) => {
+import {
+  SourceFilesArtifacts,
+  SourceFilesArtifactsUpdatedTimes
+} from "./types";
+
+export function findUpdatedFiles(
+  sourceFilesArtifacts: SourceFilesArtifacts,
+  sourceFilesArtifactsUpdatedTimes: SourceFilesArtifactsUpdatedTimes
+): string[] {
   // Stat all the source files, getting there updated times, and comparing them to
   // the artifact updated times.
   const sourceFiles = Object.keys(sourceFilesArtifacts);
 
-  let sourceFileStats;
+  let sourceFileStats: (fse.Stats | null)[];
   sourceFileStats = sourceFiles.map(file => {
     try {
       return fse.statSync(file);
@@ -36,8 +41,4 @@ const findUpdatedFiles = (
       if (sourceFileUpdatedTime > artifactsUpdatedTime) return sourceFile;
     })
     .filter(file => file);
-};
-
-module.exports = {
-  findUpdatedFiles
-};
+}

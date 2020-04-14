@@ -11,9 +11,11 @@
     "watch": "tsc -w"
   },
   "devDependencies": {
+    "@types/fs-extra": "^8.1.0",
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@truffle/contract-schema": "^3.2.2"
+    "@truffle/contract-schema": "^3.2.2",
+    "fs-extra": "^8.1.0"
   }
 }
