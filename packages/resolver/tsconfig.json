@@ -11,13 +11,14 @@
     "lib": ["es2017"],
     "paths": {
     },
-    "rootDir": "lib",
+    "rootDir": ".",
     "typeRoots": [
       "../../node_modules/@types/mocha",
       "../../node_modules/@types/node"
     ]
   },
   "include": [
-    "./lib/**/*.ts"
+    "./lib/**/*.ts",
+    "./test/**/*.ts"
   ]
 }

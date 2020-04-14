@@ -1,6 +1,8 @@
-const assert = require("assert");
-const NPM = require("../dist/sources/npm");
+import assert from "assert";
+
+const NPM = require("../lib/sources/npm");
 const npm = new NPM();
+
 describe("npm", function() {
   describe("#require()", function() {
     it("reads package name", function() {

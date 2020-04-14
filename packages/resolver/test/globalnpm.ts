@@ -1,16 +1,18 @@
-const assert = require("assert");
-const GlobalNPM = require("../dist/sources/globalnpm");
+import assert from "assert";
+const detectInstalled: any = require("detect-installed");
+const get_installed_path: any = require("get-installed-path");
+import * as sinon from "sinon";
+import path from "path";
+import fs from "fs";
+import { describe, it } from "mocha";
+
+const GlobalNPM = require("../lib/sources/globalnpm");
 const global_npm = new GlobalNPM();
-const detectInstalled = require("detect-installed");
-const get_installed_path = require("get-installed-path");
-const sinon = require("sinon");
-const path = require("path");
-const fs = require("fs");
 
 describe("globalnpm", () => {
   describe("require function", () => {
-    let sync_stub;
-    let get_installed_path_sync_stub;
+    let sync_stub: sinon.SinonStub;
+    let get_installed_path_sync_stub: sinon.SinonStub;
 
     beforeEach(() => {
       sync_stub = sinon.stub(detectInstalled, "sync");
@@ -81,8 +83,8 @@ describe("globalnpm", () => {
   });
 
   describe("resolve function", () => {
-    let sync_stub;
-    let get_installed_path_sync_stub;
+    let sync_stub: sinon.SinonStub;
+    let get_installed_path_sync_stub: sinon.SinonStub;
 
     beforeEach(() => {
       sync_stub = sinon.stub(detectInstalled, "sync");
@@ -105,7 +107,11 @@ describe("globalnpm", () => {
           path.resolve(__dirname, "fixtures/globalnpm/node_modules/package")
         );
 
-      const callback = (err, body, import_path) => {
+      const callback = (
+        err: Error | null,
+        body: string,
+        import_path: string
+      ) => {
         assert.strictEqual(err, null);
         assert.strictEqual(body, "contract Test {}\n");
         assert.strictEqual(import_path, "package/contracts/Test.sol");
@@ -126,7 +132,11 @@ describe("globalnpm", () => {
           path.resolve(__dirname, "fixtures/globalnpm/node_modules/package")
         );
 
-      const callback = (err, body, import_path) => {
+      const callback = (
+        err: Error | null,
+        body: string,
+        import_path: string
+      ) => {
         assert.strictEqual(err, null);
         assert.strictEqual(body, undefined);
         assert.strictEqual(import_path, "package/contracts/Test.sol");
@@ -150,7 +160,11 @@ describe("globalnpm", () => {
         );
       read_file_sync_stub.throws("some error");
 
-      const callback = (err, body, import_path) => {
+      const callback = (
+        err: Error | null,
+        body: string,
+        import_path: string
+      ) => {
         assert.strictEqual(err, null);
         assert.strictEqual(body, undefined);
         assert.strictEqual(import_path, "package/contracts/Test.sol");
