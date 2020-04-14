@@ -30,6 +30,7 @@
     "json-stable-stringify": "^1.0.1",
     "lodash.flatten": "^4.4.0",
     "lodash.sum": "^4.0.2",
+    "lodash.zipwith": "^4.2.0",
     "redux": "^3.7.2",
     "redux-cli-logger": "^2.0.1",
     "redux-saga": "1.0.0",
