@@ -80,8 +80,8 @@ module.exports = {
             return convertToAbsolutePaths(allPaths, options.base_path);
           },
           shouldIncludePath: file => path.extname(file) !== ".vy",
-          getImports: (current, result) =>
-            getImports(current, result, parserCompiler)
+          getImports: ({ filePath, body, source }) =>
+            getImports(filePath, { body, source }, parserCompiler)
         });
 
         callback(null, allSources, compilationTargets);

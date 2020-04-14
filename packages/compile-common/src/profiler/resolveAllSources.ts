@@ -1,10 +1,13 @@
-import { Resolver } from "@truffle/resolver";
+import { Resolver, ResolverSource } from "@truffle/resolver";
 
 export interface ResolvedSourcesMapping {
-  [filePath: string]: {
-    body: string;
-    filePath: string;
-  };
+  [filePath: string]: ResolvedSource;
+}
+
+export interface ResolvedSource {
+  filePath: string;
+  body: string;
+  source: ResolverSource;
 }
 
 // Resolves sources in several async passes. For each resolved set it detects unknown
@@ -12,7 +15,7 @@ export interface ResolvedSourcesMapping {
 export async function resolveAllSources(
   resolver: Resolver,
   initialPaths: ({ file: string; parent: string } | string)[],
-  getImports: any
+  getImports: (resolvedSource: ResolvedSource) => Promise<string[]>
 ): Promise<ResolvedSourcesMapping> {
   const mapping: ResolvedSourcesMapping = {};
   const allPaths = initialPaths.slice();
@@ -52,7 +55,7 @@ export async function resolveAllSources(
       while (results.length) {
         const result = results.shift();
 
-        const imports = await getImports(result.filePath, result);
+        const imports = await getImports(result);
 
         // Detect unknown external packages / add them to the list of files to resolve
         // Keep track of location of this import because we need to report that.

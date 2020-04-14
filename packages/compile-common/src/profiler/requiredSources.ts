@@ -1,11 +1,15 @@
 import { Resolver } from "@truffle/resolver";
 
-import { resolveAllSources, ResolvedSourcesMapping } from "./resolveAllSources";
+import {
+  resolveAllSources,
+  ResolvedSource,
+  ResolvedSourcesMapping
+} from "./resolveAllSources";
 
 export interface RequiredSourcesOptions {
   findContracts(): Promise<string[]>;
   resolver: Resolver;
-  getImports: any;
+  getImports(resolvedSource: ResolvedSource): Promise<string[]>;
   shouldIncludePath(filePath: string): boolean;
   updatedPaths: string[];
 }
@@ -84,7 +88,7 @@ export async function requiredSources({
         continue;
       }
 
-      const imports = await getImports(currentFile, resolved[currentFile]);
+      const imports = await getImports(resolved[currentFile]);
 
       // If file imports a compilation target, add it
       // to list of updates and compilation targets
