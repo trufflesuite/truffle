@@ -11,8 +11,6 @@ import * as trace from "lib/trace/sagas";
 import stacktrace from "../selectors";
 
 function* tickSaga() {
-  debug("got TICK");
-
   yield* stacktraceSaga();
   yield* trace.signalTickSagaCompletion();
 }
@@ -25,6 +23,7 @@ function* stacktraceSaga() {
   } = yield select(stacktrace.current.location);
   const source = { id, compilationId, sourcePath }; //leave out everything else
   const currentLocation = { source, sourceRange }; //leave out the node
+  let returnedRightNow = false;
   if (yield select(stacktrace.current.willJumpIn)) {
     const nextLocation = yield select(stacktrace.next.location);
     yield put(actions.jumpIn(currentLocation, nextLocation.node)); //in this case we only want the node
@@ -41,14 +40,27 @@ function* stacktraceSaga() {
     yield put(actions.externalCall(currentLocation, skipInReports));
   } else if (yield select(stacktrace.current.willReturn)) {
     const status = yield select(stacktrace.current.returnStatus);
+    debug("returning!");
     yield put(actions.externalReturn(currentLocation, status));
-  } else if (yield select(stacktrace.current.positionChanged)) {
+    returnedRightNow = true;
+  }
+  //the following checks are separate and happen even if one of the above
+  //branches was taken (so, we may have up to 3 actions, sorry)
+  //(note that shouldn't actually happen, realistically you'll only have 1,
+  //but notionally it could be up to 3)
+  if (!returnedRightNow && (yield select(stacktrace.current.justReturned))) {
+    debug("location: %o", currentLocation);
+    if (currentLocation.source.id !== undefined) {
+      //if we're in unmapped code, don't mark yet
+      yield put(actions.markReturnPosition(currentLocation));
+    }
+  }
+  if (yield select(stacktrace.current.positionWillChange)) {
+    debug("executing!");
+    debug("location: %o", yield select(stacktrace.next.location));
+    debug("marked: %o", yield select(stacktrace.current.markedPosition));
     const returnCounter = yield select(stacktrace.current.returnCounter);
     yield put(actions.executeReturn(returnCounter));
-  } else if (yield select(stacktrace.current.justReturned)) {
-    yield put(actions.markReturnPosition(currentLocation));
-  } else {
-    yield put(actions.clearReturnMarker());
   }
 }
 

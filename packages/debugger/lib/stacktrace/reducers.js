@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("debugger:stacktrace:reducers");
+
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
@@ -76,7 +79,7 @@ function returnCounter(state = 0, action) {
 function markedPosition(state = null, action) {
   switch (action.type) {
     case actions.MARK_RETURN_POSITION:
-      return actions.location;
+      return action.location;
     case actions.EXECUTE_RETURN:
     case actions.RESET:
     case actions.UNLOAD_TRANSACTION:
@@ -112,8 +115,17 @@ function innerReturnStatus(state = null, action) {
   }
 }
 
-function justReturned(_state = false, action) {
-  return action.type === actions.EXTERNAL_RETURN;
+function justReturned(state = false, action) {
+  switch (action.type) {
+    case actions.EXTERNAL_RETURN:
+      debug("setting returned flag");
+      return true;
+    case actions.MARK_RETURN_POSITION:
+      debug("clearing returned flag");
+      return false;
+    default:
+      return state;
+  }
 }
 
 const proc = combineReducers({

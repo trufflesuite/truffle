@@ -45,14 +45,17 @@ let stacktrace = createSelectorTree({
      * stacktrace.current.callstack
      */
     callstack: createLeaf(["/state"], state => state.proc.callstack),
+
     /**
      * stacktrace.current.returnCounter
      */
     returnCounter: createLeaf(["/state"], state => state.proc.returnCounter),
+
     /**
      * stacktrace.current.markedPosition
      */
     markedPosition: createLeaf(["/state"], state => state.proc.markedPosition),
+
     /**
      * stacktrace.current.innerReturnPosition
      */
@@ -60,6 +63,7 @@ let stacktrace = createSelectorTree({
       ["/state"],
       state => state.proc.innerReturnPosition
     ),
+
     /**
      * stacktrace.current.innerReturnStatus
      */
@@ -67,11 +71,14 @@ let stacktrace = createSelectorTree({
       ["/state"],
       state => state.proc.innerReturnStatus
     ),
+
     /**
      * stacktrace.current.justReturned
      */
     justReturned: createLeaf(["/state"], state => state.proc.justReturned),
+
     ...createMultistepSelectors(solidity.current),
+
     /**
      * stacktrace.current.willJumpIn
      */
@@ -79,6 +86,7 @@ let stacktrace = createSelectorTree({
       [solidity.current.willJump, solidity.current.jumpDirection],
       (willJump, jumpDirection) => willJump && jumpDirection === "i"
     ),
+
     /**
      * stacktrace.current.willJumpOut
      */
@@ -86,11 +94,13 @@ let stacktrace = createSelectorTree({
       [solidity.current.willJump, solidity.current.jumpDirection],
       (willJump, jumpDirection) => willJump && jumpDirection === "o"
     ),
+
     /**
      * stacktrace.current.willCall
      * note: includes creations!
      */
     willCall: createLeaf([solidity.current.willCall], identity),
+
     /**
      * stacktrace.current.nextFrameIsSkippedInReports
      */
@@ -98,10 +108,12 @@ let stacktrace = createSelectorTree({
       [solidity.current.nextFrameIsPhantom],
       identity
     ),
+
     /**
      * stacktrace.current.willReturn
      */
     willReturn: createLeaf([solidity.current.willReturn], identity),
+
     /**
      * stacktrace.current.returnStatus
      */
@@ -109,22 +121,23 @@ let stacktrace = createSelectorTree({
       ["./willReturn", solidity.current.willFail],
       (returns, failing) => (returns ? !failing : null)
     ),
+
     /**
-     * stacktrace.current.positionChanged
+     * stacktrace.current.positionWillChange
      */
-    positionChanged: createLeaf(
-      ["./location", "./markedPosition"],
-      (currentLocation, markedLocation) =>
+    positionWillChange: createLeaf(
+      ["/next/location", "./markedPosition"],
+      (nextLocation, markedLocation) =>
         Boolean(markedLocation) && //if there's no marked position, we don't need this check
-        Boolean(currentLocation) && //if current location is unmapped, we consider ourselves to have not moved
-        (currentLocation.source.compilationId !==
+        Boolean(nextLocation.source) &&
+        nextLocation.source.id !== undefined && //if next location is unmapped, we consider ourselves to have not moved
+        (nextLocation.source.compilationId !==
           markedLocation.source.compilationId ||
-          currentLocation.source.id !== markedLocation.source.id ||
-          currentLocation.sourceRange.start !==
-            markedLocation.sourceRange.start ||
-          currentLocation.sourceRange.length !==
-            markedLocation.sourceRange.length)
+          nextLocation.source.id !== markedLocation.source.id ||
+          nextLocation.sourceRange.start !== markedLocation.sourceRange.start ||
+          nextLocation.sourceRange.length !== markedLocation.sourceRange.length)
     ),
+
     /**
      * stacktrace.current.report
      * Contains the report object for outside consumption.

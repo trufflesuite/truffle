@@ -48,14 +48,6 @@ export function markReturnPosition(location) {
   };
 }
 
-//note: no reducer explicitly listens for this, but justReturned depends on it
-export const CLEAR_RETURN_MARKER = "CLEAR_RETURN_MARKER";
-export function clearReturnMarker() {
-  return {
-    type: CLEAR_RETURN_MARKER
-  };
-}
-
 export const RESET = "STACKTRACE_RESET";
 export function reset() {
   return {
