@@ -151,8 +151,13 @@ let stacktrace = createSelectorTree({
      * Still needs to be processed into a string, mind you.
      */
     report: createLeaf(
-      ["./callstack", "./innerReturnPosition", "./innerReturnStatus"],
-      (rawStack, finalLocation, status) => {
+      [
+        "./callstack",
+        "./innerReturnPosition",
+        "./innerReturnStatus",
+        "./lastPosition"
+      ],
+      (rawStack, finalLocation, status, backupLocation) => {
         //step 1: process skipped frames
         let callstack = [];
         //we're doing a C-style loop here!
@@ -181,7 +186,13 @@ let stacktrace = createSelectorTree({
         let locations = callstack.map(frame => frame.calledFromLocation);
         //remove initial null, add final location on end
         locations.shift();
-        locations.push(finalLocation);
+        if (finalLocation) {
+          locations.push(finalLocation);
+        } else {
+          //used for if someone wants a stacktrace during execution
+          //rather than at the end.
+          locations.push(backupLocation);
+        }
         debug("locations: %O", locations);
         const names = callstack.map(frame => frame.name);
         debug("names: %O", names);
@@ -190,7 +201,9 @@ let stacktrace = createSelectorTree({
           name
         }));
         //finally: set the status in the top frame
-        report[report.length - 1].status = status;
+        if (status !== null) {
+          report[report.length - 1].status = status;
+        }
         return report;
       }
     )
