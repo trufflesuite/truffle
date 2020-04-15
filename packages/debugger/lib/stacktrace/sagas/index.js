@@ -19,7 +19,11 @@ function* tickSaga() {
 
 function* stacktraceSaga() {
   //different possible outcomes:
-  const { source, sourceRange } = yield select(stacktrace.current.location);
+  const {
+    source: { id, compilationId, sourcePath },
+    sourceRange
+  } = yield select(stacktrace.current.location);
+  const source = { id, compilationId, sourcePath }; //leave out everything else
   const currentLocation = { source, sourceRange }; //leave out the node
   if (yield select(stacktrace.current.willJumpIn)) {
     const nextLocation = yield select(stacktrace.next.location);
