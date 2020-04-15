@@ -46,19 +46,11 @@ export default class Debugger {
    * @return {Debugger} instance
    */
   static async forTx(txHash, options = {}) {
-    let {
-      contracts,
-      files,
-      provider,
-      compilations,
-      stacktrace,
-      noData
-    } = options;
-    let moduleOptions = { stacktrace, noData };
+    let { contracts, files, provider, compilations, lightMode } = options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
     }
-    let session = new Session(compilations, provider, moduleOptions, txHash);
+    let session = new Session(compilations, provider, { lightMode }, txHash);
 
     try {
       await session.ready();
@@ -78,19 +70,11 @@ export default class Debugger {
    * @return {Debugger} instance
    */
   static async forProject(options = {}) {
-    let {
-      contracts,
-      files,
-      provider,
-      compilations,
-      stacktrace,
-      noData
-    } = options;
-    let moduleOptions = { stacktrace, noData };
+    let { contracts, files, provider, compilations, lightMode } = options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
     }
-    let session = new Session(compilations, provider, moduleOptions);
+    let session = new Session(compilations, provider, { lightMode });
 
     await session.ready();
 

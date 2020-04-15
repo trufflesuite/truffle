@@ -57,7 +57,7 @@ export function* saga(moduleOptions) {
   let { txHash, provider } = yield take(actions.START);
   debug("starting");
 
-  if (!moduleOptions.noData) {
+  if (!moduleOptions.lightMode) {
     debug("visiting ASTs");
     // visit asts
     yield* ast.visitAll();
@@ -96,14 +96,11 @@ export default prefixName("session", saga);
 function* forkListeners(moduleOptions) {
   yield fork(listenerSaga); //session listener; this one is separate, sorry
   //(I didn't want to mess w/ the existing structure of defaults)
-  let mainApps = [evm, solidity];
-  let otherApps = [trace, controller, web3];
-  if (!moduleOptions.noData) {
+  let mainApps = [evm, solidity, stacktrace];
+  if (!moduleOptions.lightMode) {
     mainApps.push(data);
   }
-  if (moduleOptions.stacktrace) {
-    mainApps.push(stacktrace);
-  }
+  let otherApps = [trace, controller, web3];
   const submoduleCount = mainApps.length;
   //I'm being lazy, so I'll just pass the submodule count to all of
   //them even though only trace cares :P
