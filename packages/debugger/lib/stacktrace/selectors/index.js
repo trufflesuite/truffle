@@ -133,16 +133,23 @@ let stacktrace = createSelectorTree({
      * stacktrace.current.positionWillChange
      */
     positionWillChange: createLeaf(
-      ["/next/location", "./lastPosition"],
-      (nextLocation, lastLocation) =>
-        Boolean(lastLocation) && //if there's no last position, we don't need this check
-        Boolean(nextLocation.source) &&
-        nextLocation.source.id !== undefined && //if next location is unmapped, we consider ourselves to have not moved
-        (nextLocation.source.compilationId !==
-          lastLocation.source.compilationId ||
-          nextLocation.source.id !== lastLocation.source.id ||
-          nextLocation.sourceRange.start !== lastLocation.sourceRange.start ||
-          nextLocation.sourceRange.length !== lastLocation.sourceRange.length)
+      ["/next/location", "/current/location", "./lastPosition"],
+      (nextLocation, currentLocation, lastLocation) => {
+        let oldLocation =
+          currentLocation.source.id !== undefined
+            ? currentLocation
+            : lastLocation;
+        return (
+          Boolean(oldLocation) && //if there's no current or last position, we don't need this check
+          Boolean(nextLocation.source) &&
+          nextLocation.source.id !== undefined && //if next location is unmapped, we consider ourselves to have not moved
+          (nextLocation.source.compilationId !==
+            oldLocation.source.compilationId ||
+            nextLocation.source.id !== oldLocation.source.id ||
+            nextLocation.sourceRange.start !== oldLocation.sourceRange.start ||
+            nextLocation.sourceRange.length !== oldLocation.sourceRange.length)
+        );
+      }
     ),
 
     /**
