@@ -1,49 +1,52 @@
 export const JUMP_IN = "STACKTRACE_JUMP_IN";
-export function jumpIn(from, functionNode) {
+export function jumpIn(location, functionNode) {
   return {
     type: JUMP_IN,
-    from,
+    location,
     functionNode
   };
 }
 
 export const JUMP_OUT = "STACKTRACE_JUMP_OUT";
-export function jumpOut() {
+export function jumpOut(location) {
   return {
-    type: JUMP_OUT
+    type: JUMP_OUT,
+    location
   };
 }
 
 export const EXTERNAL_CALL = "STACKTRACE_EXTERNAL_CALL";
-export function externalCall(from, skippedInReports) {
+export function externalCall(location, skippedInReports) {
   return {
     type: EXTERNAL_CALL,
-    from,
+    location,
     skippedInReports
   };
 }
 
 export const EXTERNAL_RETURN = "STACKTRACE_EXTERNAL_RETURN";
-export function externalReturn(from, status) {
+export function externalReturn(from, status, location) {
   return {
     type: EXTERNAL_RETURN,
     from,
-    status
+    status,
+    location
   };
 }
 
 export const EXECUTE_RETURN = "EXECUTE_RETURN";
-export function executeReturn(counter) {
+export function executeReturn(counter, location) {
   return {
     type: EXECUTE_RETURN,
-    counter
+    counter,
+    location
   };
 }
 
-export const MARK_RETURN_POSITION = "MARK_RETURN_POSITION";
-export function markReturnPosition(location) {
+export const UPDATE_POSITION = "UPDATE_POSITION";
+export function updatePosition(location) {
   return {
-    type: MARK_RETURN_POSITION,
+    type: UPDATE_POSITION,
     location
   };
 }

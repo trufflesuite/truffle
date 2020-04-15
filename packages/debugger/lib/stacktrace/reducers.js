@@ -10,10 +10,10 @@ function callstack(state = [], action) {
   let newFrame;
   switch (action.type) {
     case actions.JUMP_IN:
-      let { from, functionNode } = action;
+      let { location, functionNode } = action;
       newFrame = {
         type: "internal",
-        calledFromPosition: from,
+        calledFromLocation: location,
         name:
           functionNode && functionNode.nodeType === "FunctionDefinition"
             ? functionNode.name
@@ -35,7 +35,7 @@ function callstack(state = [], action) {
     case actions.EXTERNAL_CALL:
       newFrame = {
         type: "external",
-        calledFromPosition: action.from,
+        calledFromLocation: action.location,
         skippedInReports: action.skippedInReports,
         name: undefined
       };
@@ -76,11 +76,20 @@ function returnCounter(state = 0, action) {
   }
 }
 
-function markedPosition(state = null, action) {
+function lastPosition(state = null, action) {
   switch (action.type) {
-    case actions.MARK_RETURN_POSITION:
-      return action.location;
+    case actions.JUMP_IN:
+    case actions.JUMP_OUT:
+    case actions.ETERNAL_CALL:
+    case actions.EXTERNAL_RETURN:
+    case actions.UPDATE_POSITION:
     case actions.EXECUTE_RETURN:
+      const { location } = action;
+      if (location.source.id === undefined) {
+        //don't update for unmapped!
+        return state;
+      }
+      return location;
     case actions.RESET:
     case actions.UNLOAD_TRANSACTION:
       return null;
@@ -92,7 +101,9 @@ function markedPosition(state = null, action) {
 function innerReturnPosition(state = null, action) {
   switch (action.type) {
     case actions.EXTERNAL_RETURN:
-      return action.from;
+      //we want the innermost return, so don't update
+      //this if it's not presently null
+      return state || action.from;
     case actions.EXECUTE_RETURN:
     case actions.RESET:
     case actions.UNLOAD_TRANSACTION:
@@ -105,7 +116,9 @@ function innerReturnPosition(state = null, action) {
 function innerReturnStatus(state = null, action) {
   switch (action.type) {
     case actions.EXTERNAL_RETURN:
-      return action.status;
+      //we want the innermost return, so don't update
+      //this if it's not presently null
+      return state === null ? action.status : state;
     case actions.EXECUTE_RETURN:
     case actions.RESET:
     case actions.UNLOAD_TRANSACTION:
@@ -115,26 +128,12 @@ function innerReturnStatus(state = null, action) {
   }
 }
 
-function justReturned(state = false, action) {
-  switch (action.type) {
-    case actions.EXTERNAL_RETURN:
-      debug("setting returned flag");
-      return true;
-    case actions.MARK_RETURN_POSITION:
-      debug("clearing returned flag");
-      return false;
-    default:
-      return state;
-  }
-}
-
 const proc = combineReducers({
   callstack,
   returnCounter,
-  markedPosition,
+  lastPosition,
   innerReturnPosition,
-  innerReturnStatus,
-  justReturned
+  innerReturnStatus
 });
 
 const reducer = combineReducers({

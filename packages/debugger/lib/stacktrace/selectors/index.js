@@ -52,9 +52,9 @@ let stacktrace = createSelectorTree({
     returnCounter: createLeaf(["/state"], state => state.proc.returnCounter),
 
     /**
-     * stacktrace.current.markedPosition
+     * stacktrace.current.lastPosition
      */
-    markedPosition: createLeaf(["/state"], state => state.proc.markedPosition),
+    lastPosition: createLeaf(["/state"], state => state.proc.lastPosition),
 
     /**
      * stacktrace.current.innerReturnPosition
@@ -71,11 +71,6 @@ let stacktrace = createSelectorTree({
       ["/state"],
       state => state.proc.innerReturnStatus
     ),
-
-    /**
-     * stacktrace.current.justReturned
-     */
-    justReturned: createLeaf(["/state"], state => state.proc.justReturned),
 
     ...createMultistepSelectors(solidity.current),
 
@@ -105,7 +100,7 @@ let stacktrace = createSelectorTree({
      * stacktrace.current.nextFrameIsSkippedInReports
      */
     nextFrameIsSkippedInReports: createLeaf(
-      [solidity.current.nextFrameIsPhantom],
+      [solidity.current.callRequiresPhantomFrame],
       identity
     ),
 
@@ -115,27 +110,39 @@ let stacktrace = createSelectorTree({
     willReturn: createLeaf([solidity.current.willReturn], identity),
 
     /**
+     * stacktrace.current.willFail
+     */
+    willFail: createLeaf([solidity.current.willFail], identity),
+
+    /**
+     * stacktrace.current.willReturnOrFail
+     */
+    willReturnOrFail: createLeaf(
+      ["./willReturn", "./willFail"],
+      (willReturn, willFail) => willReturn || willFail
+    ),
+
+    /**
      * stacktrace.current.returnStatus
      */
-    returnStatus: createLeaf(
-      ["./willReturn", solidity.current.willFail],
-      (returns, failing) => (returns ? !failing : null)
+    returnStatus: createLeaf(["./willReturn", "./willFail"], (returns, fails) =>
+      returns ? true : fails ? false : null
     ),
 
     /**
      * stacktrace.current.positionWillChange
      */
     positionWillChange: createLeaf(
-      ["/next/location", "./markedPosition"],
-      (nextLocation, markedLocation) =>
-        Boolean(markedLocation) && //if there's no marked position, we don't need this check
+      ["/next/location", "./lastPosition"],
+      (nextLocation, lastLocation) =>
+        Boolean(lastLocation) && //if there's no last position, we don't need this check
         Boolean(nextLocation.source) &&
         nextLocation.source.id !== undefined && //if next location is unmapped, we consider ourselves to have not moved
         (nextLocation.source.compilationId !==
-          markedLocation.source.compilationId ||
-          nextLocation.source.id !== markedLocation.source.id ||
-          nextLocation.sourceRange.start !== markedLocation.sourceRange.start ||
-          nextLocation.sourceRange.length !== markedLocation.sourceRange.length)
+          lastLocation.source.compilationId ||
+          nextLocation.source.id !== lastLocation.source.id ||
+          nextLocation.sourceRange.start !== lastLocation.sourceRange.start ||
+          nextLocation.sourceRange.length !== lastLocation.sourceRange.length)
     ),
 
     /**
@@ -159,7 +166,7 @@ let stacktrace = createSelectorTree({
           ) {
             const combinedFrame = {
               //only including the relevant info here
-              calledFromPosition: frame.calledFromPosition,
+              calledFromLocation: frame.calledFromLocation,
               name: rawStack[i + 1].name
             };
             callstack.push(combinedFrame);
@@ -171,7 +178,7 @@ let stacktrace = createSelectorTree({
         }
         debug("callstack: %O", callstack);
         //step 2: shift everything over by 1 and recombine :)
-        let locations = callstack.map(frame => frame.calledFromPosition);
+        let locations = callstack.map(frame => frame.calledFromLocation);
         //remove initial null, add final location on end
         locations.shift();
         locations.push(finalLocation);

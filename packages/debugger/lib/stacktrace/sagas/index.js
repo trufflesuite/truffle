@@ -23,12 +23,16 @@ function* stacktraceSaga() {
   } = yield select(stacktrace.current.location);
   const source = { id, compilationId, sourcePath }; //leave out everything else
   const currentLocation = { source, sourceRange }; //leave out the node
+  const lastLocation = yield select(stacktrace.current.lastPosition); //get this upfront due to sequencing issues
   let returnedRightNow = false;
+  let positionUpdated = false;
   if (yield select(stacktrace.current.willJumpIn)) {
     const nextLocation = yield select(stacktrace.next.location);
     yield put(actions.jumpIn(currentLocation, nextLocation.node)); //in this case we only want the node
+    positionUpdated = true;
   } else if (yield select(stacktrace.current.willJumpOut)) {
-    yield put(actions.jumpOut());
+    yield put(actions.jumpOut(currentLocation));
+    positionUpdated = true;
   } else if (yield select(stacktrace.current.willCall)) {
     //an external frame marked "skip in reports" will be, for reporting
     //purposes, combined with the frame above, unless that also is a
@@ -38,29 +42,31 @@ function* stacktraceSaga() {
       stacktrace.current.nextFrameIsSkippedInReports
     );
     yield put(actions.externalCall(currentLocation, skipInReports));
-  } else if (yield select(stacktrace.current.willReturn)) {
+    positionUpdated = true;
+  } else if (yield select(stacktrace.current.willReturnOrFail)) {
     const status = yield select(stacktrace.current.returnStatus);
     debug("returning!");
-    yield put(actions.externalReturn(currentLocation, status));
+    yield put(actions.externalReturn(lastLocation, status, currentLocation));
     returnedRightNow = true;
+    positionUpdated = true;
   }
-  //the following checks are separate and happen even if one of the above
-  //branches was taken (so, we may have up to 3 actions, sorry)
-  //(note that shouldn't actually happen, realistically you'll only have 1,
-  //but notionally it could be up to 3)
-  if (!returnedRightNow && (yield select(stacktrace.current.justReturned))) {
-    debug("location: %o", currentLocation);
-    if (currentLocation.source.id !== undefined) {
-      //if we're in unmapped code, don't mark yet
-      yield put(actions.markReturnPosition(currentLocation));
-    }
-  }
-  if (yield select(stacktrace.current.positionWillChange)) {
+  //we'll handle this next case separately of the above,
+  //so notionally 2 actions could fire, but it's pretty unlikely
+  if (
+    !returnedRightNow && //otherwise this will trigger in an inconsistent state
+    (yield select(stacktrace.current.returnCounter)) > 0 &&
+    (yield select(stacktrace.current.positionWillChange))
+  ) {
     debug("executing!");
     debug("location: %o", yield select(stacktrace.next.location));
-    debug("marked: %o", yield select(stacktrace.current.markedPosition));
+    debug("marked: %o", yield select(stacktrace.current.lastPosition));
     const returnCounter = yield select(stacktrace.current.returnCounter);
-    yield put(actions.executeReturn(returnCounter));
+    yield put(actions.executeReturn(returnCounter, currentLocation));
+    positionUpdated = true;
+  }
+  if (!positionUpdated) {
+    //finally, if no other action updated the position, do so here
+    yield put(actions.updatePosition(currentLocation));
   }
 }
 
