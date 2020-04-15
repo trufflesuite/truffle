@@ -4,17 +4,16 @@ import * as fse from "fs-extra";
 import { ContractObject } from "@truffle/contract-schema/spec";
 
 export interface UpdatedOptions {
-  getFiles(): Promise<string[]>;
+  paths: string[];
   contractsBuildDirectory: string;
 }
 
 export async function updated({
-  getFiles,
+  paths,
   contractsBuildDirectory
 }: UpdatedOptions): Promise<string[]> {
-  const sourceFiles = await getFiles();
   const sourceFilesArtifacts = readAndParseArtifactFiles(
-    sourceFiles,
+    paths,
     contractsBuildDirectory
   );
   const sourceFilesArtifactsUpdatedTimes = minimumUpdatedTimePerSource(
@@ -35,12 +34,12 @@ interface SourceFilesArtifactsUpdatedTimes {
 }
 
 function readAndParseArtifactFiles(
-  sourceFiles: string[],
+  paths: string[],
   contracts_build_directory: string
 ): SourceFilesArtifacts {
   const sourceFilesArtifacts: SourceFilesArtifacts = {};
   // Get all the source files and create an object out of them.
-  sourceFiles.forEach(sourceFile => {
+  paths.forEach(sourceFile => {
     sourceFilesArtifacts[sourceFile] = [];
   });
   // Get all the artifact files, and read them, parsing them as JSON

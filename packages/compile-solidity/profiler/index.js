@@ -28,7 +28,7 @@ module.exports = {
 
     try {
       const updatedFiles = await Common.Profiler.updated({
-        getFiles,
+        paths: await getFiles(),
         contractsBuildDirectory: contracts_build_directory
       });
 
