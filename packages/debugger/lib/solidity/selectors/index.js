@@ -161,10 +161,8 @@ let solidity = createSelectorTree({
     /**
      * solidity.current.humanReadableSourceMap
      */
-    humanReadableSourceMap: createLeaf(
-      ["./sourceMap"],
-      sourceMap =>
-        sourceMap ? SolidityUtils.getHumanReadableSourceMap(sourceMap) : null
+    humanReadableSourceMap: createLeaf(["./sourceMap"], sourceMap =>
+      sourceMap ? SolidityUtils.getHumanReadableSourceMap(sourceMap) : null
     ),
 
     /**
@@ -298,19 +296,15 @@ let solidity = createSelectorTree({
 
     /**
      * solidity.current.willCall
-     * note: includes creations
+     * note: includes creations, does *not* include instareturns
      */
     willCall: createLeaf(
-      [evm.current.step.isCall, evm.current.step.isCreate],
-      (isCall, isCreate) => isCall || isCreate
-    ),
-
-    /**
-     * solidity.current.willCallOrCreateButInstantlyReturn
-     */
-    willCallOrCreateButInstantlyReturn: createLeaf(
-      [evm.current.step.isInstantCallOrCreate],
-      x => x
+      [
+        evm.current.step.isCall,
+        evm.current.step.isCreate,
+        evm.current.step.isInstantCallOrCreate
+      ],
+      (isCall, isCreate, isInstant) => (isCall || isCreate) && !isInstant
     ),
 
     /**
