@@ -2,16 +2,17 @@ import { Resolver } from "@truffle/resolver";
 
 import {
   resolveAllSources,
-  ResolvedSource,
-  ResolvedSourcesMapping
+  ResolveAllSourcesOptions
 } from "./resolveAllSources";
 
 export interface RequiredSourcesOptions {
-  findContracts(): Promise<string[]>;
-  resolver: Resolver;
-  getImports(resolvedSource: ResolvedSource): Promise<string[]>;
-  shouldIncludePath(filePath: string): boolean;
+  allPaths: string[];
   updatedPaths: string[];
+
+  resolve: ResolveAllSourcesOptions["resolve"];
+  getImports: ResolveAllSourcesOptions["getImports"];
+
+  shouldIncludePath(filePath: string): boolean;
 }
 
 export interface RequiredSources {
@@ -23,18 +24,14 @@ export interface RequiredSources {
 }
 
 export async function requiredSources({
+  allPaths,
   updatedPaths,
-  findContracts,
-  resolver,
+  resolve,
   shouldIncludePath,
   getImports
 }: RequiredSourcesOptions): Promise<RequiredSources> {
-  let allPaths: string[];
   const allSources: RequiredSources["allSources"] = {};
   const compilationTargets: string[] = [];
-
-  // Fetch the whole contract set
-  allPaths = await findContracts();
 
   // Solidity test files might have been injected. Include them in the known set.
   updatedPaths.forEach(_path => {
@@ -43,10 +40,13 @@ export async function requiredSources({
     }
   });
 
-  const resolved = await resolveAllSources(resolver, allPaths, getImports);
+  const resolved = await resolveAllSources({
+    resolve,
+    getImports,
+    paths: allPaths
+  });
 
   // Generate hash of all sources including external packages - passed to solc inputs.
-  const resolvedPaths = Object.keys(resolved);
   for (const file of Object.keys(resolved)) {
     if (shouldIncludePath(file)) {
       allSources[file] = resolved[file].body;

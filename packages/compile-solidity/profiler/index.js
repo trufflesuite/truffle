@@ -74,11 +74,12 @@ module.exports = {
             options.paths,
             options.base_path
           ),
-          resolver,
-          findContracts: async () => {
-            const allPaths = await findContracts(options.contracts_directory);
-            return convertToAbsolutePaths(allPaths, options.base_path);
-          },
+          resolve: ({ filePath, importedFrom }) =>
+            resolver.resolve(filePath, importedFrom),
+          allPaths: convertToAbsolutePaths(
+            await findContracts(options.contracts_directory),
+            options.base_path
+          ),
           shouldIncludePath: file => path.extname(file) !== ".vy",
           getImports: ({ filePath, body, source }) =>
             getImports(filePath, { body, source }, parserCompiler)

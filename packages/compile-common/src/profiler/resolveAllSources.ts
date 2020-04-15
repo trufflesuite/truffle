@@ -1,7 +1,18 @@
 import { Resolver, ResolverSource } from "@truffle/resolver";
 
+export interface ResolveAllSourcesOptions {
+  paths: string[];
+  resolve(source: UnresolvedSource): Promise<ResolvedSource>;
+  getImports(source: ResolvedSource): Promise<string[]>;
+}
+
 export interface ResolvedSourcesMapping {
   [filePath: string]: ResolvedSource;
+}
+
+export interface UnresolvedSource {
+  filePath: string;
+  importedFrom?: string;
 }
 
 export interface ResolvedSource {
@@ -12,13 +23,13 @@ export interface ResolvedSource {
 
 // Resolves sources in several async passes. For each resolved set it detects unknown
 // imports from external packages and adds them to the set of files to resolve.
-export async function resolveAllSources(
-  resolver: Resolver,
-  initialPaths: ({ file: string; parent: string } | string)[],
-  getImports: (resolvedSource: ResolvedSource) => Promise<string[]>
-): Promise<ResolvedSourcesMapping> {
+export async function resolveAllSources({
+  resolve,
+  paths,
+  getImports
+}: ResolveAllSourcesOptions): Promise<ResolvedSourcesMapping> {
   const mapping: ResolvedSourcesMapping = {};
-  const allPaths = initialPaths.slice();
+  const allPaths: (UnresolvedSource | string)[] = paths.slice();
 
   // Begin generateMapping
   function generateMapping() {
@@ -27,20 +38,20 @@ export async function resolveAllSources(
     // Dequeue all the known paths, generating resolver promises,
     // We'll add paths if we discover external package imports.
     while (allPaths.length) {
-      let file;
-      let parent = null;
+      let filePath;
+      let importedFrom = null;
 
       const candidate = allPaths.shift();
 
       // Some paths will have been extracted as imports from a file
       // and have information about their parent location we need to track.
       if (typeof candidate === "object") {
-        file = candidate.file;
-        parent = candidate.parent;
+        filePath = candidate.filePath;
+        importedFrom = candidate.importedFrom;
       } else {
-        file = candidate;
+        filePath = candidate;
       }
-      promises.push(resolver.resolve(file, parent));
+      promises.push(resolve({ filePath, importedFrom }));
     }
 
     // Resolve everything known and add it to the map, then inspect each file's
@@ -61,7 +72,7 @@ export async function resolveAllSources(
         // Keep track of location of this import because we need to report that.
         for (const item of imports) {
           if (!mapping[item]) {
-            allPaths.push({ file: item, parent: result.filePath });
+            allPaths.push({ filePath: item, importedFrom: result.filePath });
           }
         }
       }
