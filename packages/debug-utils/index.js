@@ -31,7 +31,8 @@ const commandReference = {
   "q": "quit",
   "r": "reset",
   "t": "load new transaction",
-  "T": "unload transaction"
+  "T": "unload transaction",
+  "s": "print stacktrace"
 };
 
 const truffleColors = {
@@ -51,6 +52,8 @@ const truffleColors = {
 const DEFAULT_TAB_WIDTH = 8;
 
 var DebugUtils = {
+  truffleColors, //make these externally available
+
   gatherArtifacts: async function(config) {
     // Gather all available contract artifacts
     let files = await dir.promiseFiles(config.contracts_build_directory);
@@ -118,8 +121,8 @@ var DebugUtils = {
     };
 
     //now: walk each AST
-    return compilation.sources.every(
-      source => (source ? allIDsUnseenSoFar(source.ast) : true)
+    return compilation.sources.every(source =>
+      source ? allIDsUnseenSoFar(source.ast) : true
     );
   },
 
@@ -188,10 +191,11 @@ var DebugUtils = {
     ];
 
     var commandSections = [
+      //TODO
       ["o", "i", "u", "n"],
       [";"],
       ["p"],
-      ["l", "h"],
+      ["l", "s", "h"],
       ["q", "r", "t", "T"],
       ["b", "B", "c"],
       ["+", "-"],
@@ -552,6 +556,42 @@ var DebugUtils = {
       .join(OS.EOL);
   },
 
+  formatStacktrace: function(stacktrace, final = true, indent = 2) {
+    //we want to print inner to outer, so first, let's
+    //reverse
+    stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
+    let lines = stacktrace.map(({ name, location }) => {
+      let functionName = name ? `function ${name}` : "unknown function";
+      if (location) {
+        let {
+          source: { sourcePath },
+          sourceRange: {
+            lines: {
+              start: { line, column }
+            }
+          }
+        } = location;
+        return `at ${functionName} (${sourcePath}:${line + 1}:${column + 1})`; //add 1 to account for 0-indexing
+      } else {
+        return `at ${functionName} (unknown location)`;
+      }
+    });
+    if (final) {
+      let status = stacktrace[0].status;
+      if (status != undefined) {
+        lines.unshift(
+          status
+            ? "Error: Improper return (may be an unexpected self-destruct)"
+            : "Error: Revert or exceptional halt"
+        );
+      }
+    }
+    let indented = lines.map((line, index) =>
+      index === 0 ? line : " ".repeat(indent) + line
+    );
+    return indented.join(OS.EOL);
+  },
+
   colorize: function(code) {
     //I'd put these outside the function
     //but then it gives me errors, because
@@ -698,9 +738,8 @@ var DebugUtils = {
   cleanThis: function(variables, replacement) {
     return Object.assign(
       {},
-      ...Object.entries(variables).map(
-        ([variable, value]) =>
-          variable === "this" ? { [replacement]: value } : { [variable]: value }
+      ...Object.entries(variables).map(([variable, value]) =>
+        variable === "this" ? { [replacement]: value } : { [variable]: value }
       )
     );
   }

@@ -8,7 +8,15 @@ const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
 
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, controller, data, evm } = selectors;
+const {
+  session,
+  solidity,
+  trace,
+  controller,
+  data,
+  evm,
+  stacktrace
+} = selectors;
 
 class DebugPrinter {
   constructor(config, session) {
@@ -231,7 +239,9 @@ class DebugPrinter {
   }
 
   printRevertMessage() {
-    this.config.logger.log("Transaction halted with a RUNTIME ERROR.");
+    this.config.logger.log(
+      DebugUtils.truffleColors.red("Transaction halted with a RUNTIME ERROR.")
+    );
     this.config.logger.log("");
     let rawRevertMessage = this.session.view(evm.current.step.returnValue);
     let revertDecodings = Codec.decodeRevert(
@@ -284,6 +294,16 @@ class DebugPrinter {
     }
     this.config.logger.log(
       "Please inspect your transaction parameters and contract code to determine the meaning of this error."
+    );
+  }
+
+  printStacktrace(final) {
+    this.config.logger.log("Stacktrace:");
+    this.config.logger.log(
+      DebugUtils.formatStacktrace(
+        this.session.view(stacktrace.current.report),
+        final
+      )
     );
   }
 

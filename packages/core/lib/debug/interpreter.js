@@ -432,6 +432,8 @@ class DebugInterpreter {
       //check if transaction failed
       if (!this.session.view(evm.transaction.status)) {
         this.printer.printRevertMessage();
+        this.printer.print("");
+        this.printer.printStacktrace(true); //final stacktrace
       } else {
         //case if transaction succeeded
         this.printer.print("Transaction completed successfully.");
@@ -521,6 +523,9 @@ class DebugInterpreter {
         await this.printer.printWatchExpressionsResults(
           this.enabledExpressions
         );
+        break;
+      case "s":
+        this.printer.printStacktrace(false); //intermediate stacktrace
         break;
       case "o":
       case "i":
