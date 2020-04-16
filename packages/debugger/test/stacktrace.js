@@ -117,6 +117,7 @@ describe("Stack tracing", function() {
   });
 
   it("Generates correct stack trace on a revert", async function() {
+    this.timeout(12000);
     let instance = await abstractions.StacktraceTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
     //the resulting exception (there is supposed to be a non-hacky way but it
@@ -150,6 +151,7 @@ describe("Stack tracing", function() {
   });
 
   it("Generates correct stack trace on paying an unpayable contract", async function() {
+    this.timeout(12000);
     let instance = await abstractions.StacktraceTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
     //the resulting exception (there is supposed to be a non-hacky way but it
@@ -190,6 +192,7 @@ describe("Stack tracing", function() {
   });
 
   it("Generates correct stack trace on calling an invalid internal function", async function() {
+    this.timeout(12000);
     let instance = await abstractions.StacktraceTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
     //the resulting exception (there is supposed to be a non-hacky way but it
@@ -230,6 +233,7 @@ describe("Stack tracing", function() {
   });
 
   it("Generates correct stack trace on unexpected self-destruct", async function() {
+    this.timeout(12000);
     let instance = await abstractions.StacktraceTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
     //the resulting exception (there is supposed to be a non-hacky way but it
