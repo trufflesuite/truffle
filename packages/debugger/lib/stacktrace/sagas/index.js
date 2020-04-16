@@ -23,9 +23,32 @@ function* stacktraceSaga() {
   } = yield select(stacktrace.current.location);
   const source = { id, compilationId, sourcePath }; //leave out everything else
   const currentLocation = { source, sourceRange }; //leave out the node
-  const lastLocation = yield select(stacktrace.current.lastPosition); //get this upfront due to sequencing issues
-  let returnedRightNow = false;
+  const lastLocation = yield select(stacktrace.current.lastPosition);
   let positionUpdated = false;
+  //first: are we returning?
+  if (yield select(stacktrace.current.willReturnOrFail)) {
+    const status = yield select(stacktrace.current.returnStatus);
+    debug("returning!");
+    yield put(actions.externalReturn(lastLocation, status, currentLocation));
+    positionUpdated = true;
+  } else if (
+    //next: are we *executing* a return?
+    //note this needs to be an else if or else this could execute
+    //in an inconsistent state
+    (yield select(stacktrace.current.returnCounter)) > 0 &&
+    (yield select(stacktrace.current.positionWillChange))
+  ) {
+    debug("executing!");
+    debug("location: %o", yield select(stacktrace.next.location));
+    debug("marked: %o", lastLocation);
+    const returnCounter = yield select(stacktrace.current.returnCounter);
+    yield put(actions.executeReturn(returnCounter, currentLocation));
+    positionUpdated = true;
+  }
+  //we now process the other possibilities.
+  //technically, an EXECUTE_RETURN could happen as well as those below,
+  //resulting in 2 actions instead of just one, but it's pretty unlikely.
+  //(an EXTERNAL_RETURN, OTOH, is obviously exclusive of the possibilities below)
   if (yield select(stacktrace.current.willJumpIn)) {
     const nextLocation = yield select(stacktrace.next.location);
     yield put(actions.jumpIn(currentLocation, nextLocation.node)); //in this case we only want the node
@@ -43,29 +66,9 @@ function* stacktraceSaga() {
     );
     yield put(actions.externalCall(currentLocation, skipInReports));
     positionUpdated = true;
-  } else if (yield select(stacktrace.current.willReturnOrFail)) {
-    const status = yield select(stacktrace.current.returnStatus);
-    debug("returning!");
-    yield put(actions.externalReturn(lastLocation, status, currentLocation));
-    returnedRightNow = true;
-    positionUpdated = true;
   }
-  //we'll handle this next case separately of the above,
-  //so notionally 2 actions could fire, but it's pretty unlikely
-  if (
-    !returnedRightNow && //otherwise this will trigger in an inconsistent state
-    (yield select(stacktrace.current.returnCounter)) > 0 &&
-    (yield select(stacktrace.current.positionWillChange))
-  ) {
-    debug("executing!");
-    debug("location: %o", yield select(stacktrace.next.location));
-    debug("marked: %o", yield select(stacktrace.current.lastPosition));
-    const returnCounter = yield select(stacktrace.current.returnCounter);
-    yield put(actions.executeReturn(returnCounter, currentLocation));
-    positionUpdated = true;
-  }
+  //finally, if no other action updated the position, do so here
   if (!positionUpdated) {
-    //finally, if no other action updated the position, do so here
     yield put(actions.updatePosition(currentLocation));
   }
 }
