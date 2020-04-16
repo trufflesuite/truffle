@@ -1,0 +1,270 @@
+import debugModule from "debug";
+const debug = debugModule("test:stacktrace"); // eslint-disable-line no-unused-vars
+
+import { assert } from "chai";
+
+import Ganache from "ganache-core";
+
+import { prepareContracts, lineOf } from "./helpers";
+import Debugger from "lib/debugger";
+
+import solidity from "lib/solidity/selectors";
+import stacktrace from "lib/stacktrace/selectors";
+
+const __STACKTRACE = `
+pragma solidity ^0.6.6;
+
+contract StacktraceTest {
+
+  Boom boom = new Boom();
+  event Num(uint);
+  function(bool) internal run0;
+
+  function run(uint fnId) public {
+    function(bool) internal[4] memory run0s = [
+      runRequire, runPay, runInternal, runBoom
+    ];
+    if(fnId < run0s.length) {
+      run0 = run0s[fnId];
+      this.run2(true);
+      this.run3(false);
+    }
+    emit Num(1);
+  }
+
+  constructor() public payable {
+  }
+
+  function run3(bool succeed) public {
+    run2(succeed);
+  }
+
+  function run2(bool succeed) public {
+    this.run1(succeed);
+  }
+
+  function run1(bool succeed) public {
+    run0(succeed); //CALL
+  }
+
+  function runRequire(bool succeed) public {
+    require(succeed); //REQUIRE
+    emit Num(1);
+  }
+
+  function runPay(bool succeed) public {
+    if(!succeed) {
+      payable(address(this)).transfer(1); //PAY
+    }
+  }
+
+  function runBoom(bool succeed) public {
+    if(!succeed) {
+      emit Num(boom.boom()); //UHOH
+    }
+  }
+
+  function runInternal(bool succeed) public {
+    function() internal garbage;
+    if(!succeed) {
+      garbage(); //GARBAGE
+    }
+  }
+}
+
+contract Boom {
+  function boom() public returns (uint) {
+    selfdestruct(address(this)); //BOOM
+  }
+
+  receive() external payable{
+  }
+}
+`;
+
+let sources = {
+  "StacktraceTest.sol": __STACKTRACE
+};
+
+const __MIGRATION = `
+let StacktraceTest = artifacts.require("StacktraceTest");
+
+module.exports = function(deployer) {
+  deployer.deploy(StacktraceTest, { value: 1 });
+};
+`;
+
+let migrations = {
+  "2_deploy_contracts.js": __MIGRATION
+};
+
+describe("Stack tracing", function() {
+  var provider;
+
+  var abstractions;
+  var compilations;
+
+  before("Create Provider", async function() {
+    provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
+  });
+
+  before("Prepare contracts and artifacts", async function() {
+    this.timeout(30000);
+
+    let prepared = await prepareContracts(provider, sources, migrations);
+    abstractions = prepared.abstractions;
+    compilations = prepared.compilations;
+  });
+
+  it("Generates correct stack trace on a revert", async function() {
+    let instance = await abstractions.StacktraceTest.deployed();
+    //HACK: because this transaction fails, we have to extract the hash from
+    //the resulting exception (there is supposed to be a non-hacky way but it
+    //does not presently work)
+    let txHash;
+    try {
+      await instance.run(0); //this will throw because of the revert
+    } catch (error) {
+      txHash = error.hashes[0]; //it's the only hash involved
+    }
+
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+
+    let session = bugger.connect();
+
+    let source = session.view(solidity.current.source);
+    let failLine = lineOf("REQUIRE", source.source);
+    let callLine = lineOf("CALL", source.source);
+
+    await session.continueUntilBreakpoint(); //run till end
+
+    let report = session.view(stacktrace.current.report);
+    let names = report.map(({ name }) => name);
+    assert.deepEqual(names, ["run", "run3", "run2", "run1", "runRequire"]);
+    let status = report[report.length - 1].status;
+    assert.isFalse(status);
+    let location = report[report.length - 1].location;
+    let prevLocation = report[report.length - 2].location;
+    assert.strictEqual(location.sourceRange.lines.start.line, failLine);
+    assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
+  });
+
+  it("Generates correct stack trace on paying an unpayable contract", async function() {
+    let instance = await abstractions.StacktraceTest.deployed();
+    //HACK: because this transaction fails, we have to extract the hash from
+    //the resulting exception (there is supposed to be a non-hacky way but it
+    //does not presently work)
+    let txHash;
+    try {
+      await instance.run(1); //this will throw because of the revert
+    } catch (error) {
+      txHash = error.hashes[0]; //it's the only hash involved
+    }
+
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+
+    let session = bugger.connect();
+
+    let source = session.view(solidity.current.source);
+    let failLine = lineOf("PAY", source.source);
+    let callLine = lineOf("CALL", source.source);
+
+    await session.continueUntilBreakpoint(); //run till end
+
+    let report = session.view(stacktrace.current.report);
+    let names = report.map(({ name }) => name);
+    assert.deepEqual(names, [
+      "run",
+      "run3",
+      "run2",
+      "run1",
+      "runPay",
+      undefined
+    ]);
+    let status = report[report.length - 1].status;
+    assert.isFalse(status);
+    let location = report[report.length - 2].location; //note, -2 because of undefined on top
+    let prevLocation = report[report.length - 3].location; //similar
+    assert.strictEqual(location.sourceRange.lines.start.line, failLine);
+    assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
+  });
+
+  it("Generates correct stack trace on calling an invalid internal function", async function() {
+    let instance = await abstractions.StacktraceTest.deployed();
+    //HACK: because this transaction fails, we have to extract the hash from
+    //the resulting exception (there is supposed to be a non-hacky way but it
+    //does not presently work)
+    let txHash;
+    try {
+      await instance.run(2); //this will throw because of the revert
+    } catch (error) {
+      txHash = error.hashes[0]; //it's the only hash involved
+    }
+
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+
+    let session = bugger.connect();
+
+    let source = session.view(solidity.current.source);
+    let failLine = lineOf("GARBAGE", source.source);
+    let callLine = lineOf("CALL", source.source);
+
+    await session.continueUntilBreakpoint(); //run till end
+
+    let report = session.view(stacktrace.current.report);
+    let names = report.map(({ name }) => name);
+    assert.deepEqual(names, [
+      "run",
+      "run3",
+      "run2",
+      "run1",
+      "runInternal",
+      undefined
+    ]);
+    let status = report[report.length - 1].status;
+    assert.isFalse(status);
+    let location = report[report.length - 2].location; //note, -2 because of undefined on top
+    let prevLocation = report[report.length - 3].location; //similar
+    assert.strictEqual(location.sourceRange.lines.start.line, failLine);
+    assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
+  });
+
+  it("Generates correct stack trace on unexpected self-destruct", async function() {
+    let instance = await abstractions.StacktraceTest.deployed();
+    //HACK: because this transaction fails, we have to extract the hash from
+    //the resulting exception (there is supposed to be a non-hacky way but it
+    //does not presently work)
+    let txHash;
+    try {
+      await instance.run(3); //this will throw because of the revert
+    } catch (error) {
+      txHash = error.hashes[0]; //it's the only hash involved
+    }
+
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+
+    let session = bugger.connect();
+
+    let source = session.view(solidity.current.source);
+    let failLine = lineOf("BOOM", source.source);
+    let callLine = lineOf("UHOH", source.source);
+    let prevCallLine = lineOf("CALL", source.source);
+
+    await session.continueUntilBreakpoint(); //run till end
+
+    let report = session.view(stacktrace.current.report);
+    let names = report.map(({ name }) => name);
+    assert.deepEqual(names, ["run", "run3", "run2", "run1", "runBoom", "boom"]);
+    let status = report[report.length - 1].status;
+    assert.isTrue(status);
+    let location = report[report.length - 1].location;
+    let prevLocation = report[report.length - 2].location;
+    let prev2Location = report[report.length - 3].location;
+    assert.strictEqual(location.sourceRange.lines.start.line, failLine);
+    assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
+    assert.strictEqual(
+      prev2Location.sourceRange.lines.start.line,
+      prevCallLine
+    );
+  });
+});
