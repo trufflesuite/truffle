@@ -588,7 +588,8 @@ class DebugInterpreter {
       cmd !== "r" &&
       cmd !== "-" &&
       cmd !== "t" &&
-      cmd !== "T"
+      cmd !== "T" &&
+      cmd !== "s"
     ) {
       this.lastCommand = cmd;
     }
