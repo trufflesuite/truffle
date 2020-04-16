@@ -16,15 +16,11 @@ function* tickSaga() {
 }
 
 function* stacktraceSaga() {
-  //different possible outcomes:
-  const {
-    source: { id, compilationId, sourcePath },
-    sourceRange
-  } = yield select(stacktrace.current.location);
-  const source = { id, compilationId, sourcePath }; //leave out everything else
-  const currentLocation = { source, sourceRange }; //leave out the node
+  const currentLocation = yield select(stacktrace.current.strippedLocation);
   const lastLocation = yield select(stacktrace.current.lastPosition);
+  const returnCounter = yield select(stacktrace.current.returnCounter);
   let positionUpdated = false;
+  //different possible outcomes:
   //first: are we returning?
   if (yield select(stacktrace.current.willReturnOrFail)) {
     const status = yield select(stacktrace.current.returnStatus);
@@ -35,13 +31,12 @@ function* stacktraceSaga() {
     //next: are we *executing* a return?
     //note this needs to be an else if or else this could execute
     //in an inconsistent state
-    (yield select(stacktrace.current.returnCounter)) > 0 &&
+    returnCounter > 0 &&
     (yield select(stacktrace.current.positionWillChange))
   ) {
     debug("executing!");
     debug("location: %o", yield select(stacktrace.next.location));
     debug("marked: %o", lastLocation);
-    const returnCounter = yield select(stacktrace.current.returnCounter);
     yield put(actions.executeReturn(returnCounter, currentLocation));
     positionUpdated = true;
   }
@@ -58,9 +53,14 @@ function* stacktraceSaga() {
     positionUpdated = true;
   } else if (yield select(stacktrace.current.willCall)) {
     //an external frame marked "skip in reports" will be, for reporting
-    //purposes, combined with the frame above, unless that also is a
-    //marker frame (combined in the appropriate sense)
+    //purposes, combined with the frame above, unless that also is an
+    //external frame (combined in the appropriate sense)
     //note: includes creations
+    //note: does *not* include calls that insta-return.  logically speaking,
+    //such calls should be a call + a return in one, right? and we could do that,
+    //making a call while also incrementing the return counter.  but the stacktraces
+    //this would generate would, I think, be more confusing than helpful, so I'm
+    //deliberately not doing that.
     const skipInReports = yield select(
       stacktrace.current.nextFrameIsSkippedInReports
     );

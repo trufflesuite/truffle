@@ -556,7 +556,7 @@ var DebugUtils = {
       .join(OS.EOL);
   },
 
-  formatStacktrace: function(stacktrace, final = true, indent = 2) {
+  formatStacktrace: function(stacktrace, indent = 2) {
     //we want to print inner to outer, so first, let's
     //reverse
     stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
@@ -576,15 +576,13 @@ var DebugUtils = {
         return `at ${functionName} (unknown location)`;
       }
     });
-    if (final) {
-      let status = stacktrace[0].status;
-      if (status != undefined) {
-        lines.unshift(
-          status
-            ? "Error: Improper return (may be an unexpected self-destruct)"
-            : "Error: Revert or exceptional halt"
-        );
-      }
+    let status = stacktrace[0].status;
+    if (status != undefined) {
+      lines.unshift(
+        status
+          ? "Error: Improper return (may be an unexpected self-destruct)"
+          : "Error: Revert or exceptional halt"
+      );
     }
     let indented = lines.map((line, index) =>
       index === 0 ? line : " ".repeat(indent) + line

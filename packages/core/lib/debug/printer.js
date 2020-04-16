@@ -299,12 +299,10 @@ class DebugPrinter {
 
   printStacktrace(final) {
     this.config.logger.log("Stacktrace:");
-    this.config.logger.log(
-      DebugUtils.formatStacktrace(
-        this.session.view(stacktrace.current.report),
-        final
-      )
-    );
+    let report = final
+      ? this.session.view(stacktrace.current.finalReport)
+      : this.session.view(stacktrace.current.report);
+    this.config.logger.log(DebugUtils.formatStacktrace(report));
   }
 
   async printWatchExpressionsResults(expressions) {

@@ -48,8 +48,8 @@ contract StacktraceTest {
   }
 
   function runRequire(bool succeed) public {
+    emit Num(1); //EMIT
     require(succeed); //REQUIRE
-    emit Num(1);
   }
 
   function runPay(bool succeed) public {
@@ -139,7 +139,7 @@ describe("Stack tracing", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    let report = session.view(stacktrace.current.report);
+    let report = session.view(stacktrace.current.finalReport);
     let names = report.map(({ name }) => name);
     assert.deepEqual(names, ["run", "run3", "run2", "run1", "runRequire"]);
     let status = report[report.length - 1].status;
@@ -147,6 +147,57 @@ describe("Stack tracing", function() {
     let location = report[report.length - 1].location;
     let prevLocation = report[report.length - 2].location;
     assert.strictEqual(location.sourceRange.lines.start.line, failLine);
+    assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
+  });
+
+  it("Generates correct stack trace at an intermediate state", async function() {
+    this.timeout(12000);
+    let instance = await abstractions.StacktraceTest.deployed();
+    //HACK: because this transaction fails, we have to extract the hash from
+    //the resulting exception (there is supposed to be a non-hacky way but it
+    //does not presently work)
+    let txHash;
+    try {
+      await instance.run(0); //this will throw because of the revert
+    } catch (error) {
+      txHash = error.hashes[0]; //it's the only hash involved
+    }
+
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+
+    let session = bugger.connect();
+
+    let source = session.view(solidity.current.source);
+    let breakLine = lineOf("EMIT", source.source);
+    let callLine = lineOf("CALL", source.source);
+    let breakpoint = {
+      sourceId: source.id,
+      compilationId: source.compilationId,
+      line: breakLine
+    };
+    await session.addBreakpoint(breakpoint);
+    await session.continueUntilBreakpoint(); //run till EMIT
+
+    let report = session.view(stacktrace.current.report);
+    let names = report.map(({ name }) => name);
+    assert.deepEqual(names, ["run", "run2", "run1", "runRequire"]);
+    let status = report[report.length - 1].status;
+    assert.isUndefined(status);
+    let location = report[report.length - 1].location;
+    let prevLocation = report[report.length - 2].location;
+    assert.strictEqual(location.sourceRange.lines.start.line, breakLine);
+    assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
+
+    await session.continueUntilBreakpoint(); //run till EMIT again
+
+    report = session.view(stacktrace.current.report);
+    names = report.map(({ name }) => name);
+    assert.deepEqual(names, ["run", "run3", "run2", "run1", "runRequire"]);
+    status = report[report.length - 1].status;
+    assert.isUndefined(status);
+    location = report[report.length - 1].location;
+    prevLocation = report[report.length - 2].location;
+    assert.strictEqual(location.sourceRange.lines.start.line, breakLine);
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
   });
 
@@ -173,7 +224,7 @@ describe("Stack tracing", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    let report = session.view(stacktrace.current.report);
+    let report = session.view(stacktrace.current.finalReport);
     let names = report.map(({ name }) => name);
     assert.deepEqual(names, [
       "run",
@@ -214,7 +265,7 @@ describe("Stack tracing", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    let report = session.view(stacktrace.current.report);
+    let report = session.view(stacktrace.current.finalReport);
     let names = report.map(({ name }) => name);
     assert.deepEqual(names, [
       "run",
@@ -256,7 +307,7 @@ describe("Stack tracing", function() {
 
     await session.continueUntilBreakpoint(); //run till end
 
-    let report = session.view(stacktrace.current.report);
+    let report = session.view(stacktrace.current.finalReport);
     let names = report.map(({ name }) => name);
     assert.deepEqual(names, ["run", "run3", "run2", "run1", "runBoom", "boom"]);
     let status = report[report.length - 1].status;

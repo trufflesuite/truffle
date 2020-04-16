@@ -525,7 +525,12 @@ class DebugInterpreter {
         );
         break;
       case "s":
-        this.printer.printStacktrace(false); //intermediate stacktrace
+        if (this.session.view(selectors.session.status.loaded)) {
+          this.printer.printStacktrace(
+            this.session.view(trace.finished) //print final report if finished,
+            //intermediate if not
+          );
+        }
         break;
       case "o":
       case "i":

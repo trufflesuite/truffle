@@ -2,11 +2,11 @@ import debugModule from "debug";
 const debug = debugModule("debugger:stacktrace:reducers");
 
 import { combineReducers } from "redux";
+import { popNWhere } from "lib/helpers";
 
 import * as actions from "./actions";
 
 function callstack(state = [], action) {
-  let top;
   let newFrame;
   switch (action.type) {
     case actions.JUMP_IN:
@@ -26,7 +26,7 @@ function callstack(state = [], action) {
       };
       return [...state, newFrame];
     case actions.JUMP_OUT:
-      top = state[state.length - 1];
+      let top = state[state.length - 1];
       if (top && top.type === "internal") {
         return state.slice(0, -1);
       } else {
@@ -41,17 +41,11 @@ function callstack(state = [], action) {
       };
       return [...state, newFrame];
     case actions.EXECUTE_RETURN:
-      let newState = state.slice(); //clone the state
-      //I'm going to write this the C way, hope you don't mind :P
-      let counter = action.counter;
-      while (counter > 0 && newState.length > 0) {
-        top = newState[newState.length - 1];
-        if (top.type === "external") {
-          counter--;
-        }
-        newState.pop();
-      }
-      return newState;
+      return popNWhere(
+        state,
+        action.counter,
+        frame => frame.type === "external"
+      );
     case actions.RESET:
       return [state[0]];
     case actions.UNLOAD_TRANSACTION:
