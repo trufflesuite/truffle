@@ -6,7 +6,7 @@ export function addSources(compilations) {
   };
 }
 
-export const JUMP = "JUMP";
+export const JUMP = "SOLIDITY_JUMP";
 export function jump(jumpDirection) {
   return {
     type: JUMP,
@@ -14,17 +14,17 @@ export function jump(jumpDirection) {
   };
 }
 
-export const EXTERNAL_CALL = "EXTERNAL_CALL";
+export const EXTERNAL_CALL = "SOLIDITY_EXTERNAL_CALL";
 export function externalCall(guard) {
   return { type: EXTERNAL_CALL, guard };
 }
 
-export const EXTERNAL_RETURN = "EXTERNAL_RETURN";
+export const EXTERNAL_RETURN = "SOLIDITY_EXTERNAL_RETURN";
 export function externalReturn() {
   return { type: EXTERNAL_RETURN };
 }
 
-export const CLEAR_PHANTOM_GUARD = "CLEAR_PHANTOM_GUARD";
+export const CLEAR_PHANTOM_GUARD = "SOLIDITY_CLEAR_PHANTOM_GUARD";
 export function clearPhantomGuard() {
   return { type: CLEAR_PHANTOM_GUARD };
 }

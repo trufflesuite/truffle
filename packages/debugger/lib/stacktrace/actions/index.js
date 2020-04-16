@@ -34,7 +34,7 @@ export function externalReturn(from, status, location) {
   };
 }
 
-export const EXECUTE_RETURN = "EXECUTE_RETURN";
+export const EXECUTE_RETURN = "STACKTRACE_EXECUTE_RETURN";
 export function executeReturn(counter, location) {
   return {
     type: EXECUTE_RETURN,
@@ -43,7 +43,7 @@ export function executeReturn(counter, location) {
   };
 }
 
-export const UPDATE_POSITION = "UPDATE_POSITION";
+export const UPDATE_POSITION = "STACKTRACE_UPDATE_POSITION";
 export function updatePosition(location) {
   return {
     type: UPDATE_POSITION,
