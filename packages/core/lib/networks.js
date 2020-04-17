@@ -56,19 +56,22 @@ const Networks = {
 
   display: async function(config) {
     const networks = await this.deployed(config);
-    let networkNames = Object.keys(networks).sort();
-
-    const starNetworks = networkNames.filter(networkName => {
-      return (
-        config.networks[networkName] != null &&
-        config.networks[networkName].network_id === "*"
+    const { networkNames, starNetworks } = Object.keys(networks)
+      .sort()
+      .reduce(
+        (acc, networkName) => {
+          if (
+            config.networks[networkName] &&
+            config.networks[networkName].network_id === "*"
+          ) {
+            acc.starNetworks.push(networkName);
+          } else {
+            acc.networkNames.push(networkName);
+          }
+          return acc;
+        },
+        { networkNames: [], starNetworks: [] }
       );
-    });
-
-    // Remove * networks from network names.
-    networkNames = networkNames.filter(networkName => {
-      return starNetworks.indexOf(networkName) < 0;
-    });
 
     const unknownNetworks = networkNames.filter(networkName => {
       const configuredNetworks = Object.keys(config.networks);
