@@ -41,7 +41,8 @@ listeners.forEach(listener => process.removeListener("warning", listener));
 let options = { logger: console };
 
 const inputArguments = process.argv.slice(2);
-const userWantsGeneralHelp = inputArguments.length && ['help', '--help'].includes(inputArguments[0]);
+const userWantsGeneralHelp = 
+  inputArguments.length === 1 && ['help', '--help'].includes(inputArguments[0]);
 
 if (userWantsGeneralHelp) {
   command.displayGeneralHelp();
