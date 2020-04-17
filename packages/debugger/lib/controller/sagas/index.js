@@ -9,6 +9,7 @@ import * as trace from "lib/trace/sagas";
 import * as data from "lib/data/sagas";
 import * as evm from "lib/evm/sagas";
 import * as solidity from "lib/solidity/sagas";
+import * as stacktrace from "lib/stacktrace/sagas";
 
 import * as actions from "../actions";
 
@@ -275,10 +276,12 @@ function* continueUntilBreakpoint(action) {
 
 /**
  * reset -- reset the state of the debugger
+ * (we'll just reset all submodules regardless of which are in use)
  */
 export function* reset() {
   yield* data.reset();
   yield* evm.reset();
   yield* solidity.reset();
   yield* trace.reset();
+  yield* stacktrace.reset();
 }

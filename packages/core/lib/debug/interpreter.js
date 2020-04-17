@@ -432,6 +432,8 @@ class DebugInterpreter {
       //check if transaction failed
       if (!this.session.view(evm.transaction.status)) {
         this.printer.printRevertMessage();
+        this.printer.print("");
+        this.printer.printStacktrace(true); //final stacktrace
       } else {
         //case if transaction succeeded
         this.printer.print("Transaction completed successfully.");
@@ -522,6 +524,14 @@ class DebugInterpreter {
           this.enabledExpressions
         );
         break;
+      case "s":
+        if (this.session.view(selectors.session.status.loaded)) {
+          this.printer.printStacktrace(
+            this.session.view(trace.finished) //print final report if finished,
+            //intermediate if not
+          );
+        }
+        break;
       case "o":
       case "i":
       case "u":
@@ -578,7 +588,8 @@ class DebugInterpreter {
       cmd !== "r" &&
       cmd !== "-" &&
       cmd !== "t" &&
-      cmd !== "T"
+      cmd !== "T" &&
+      cmd !== "s"
     ) {
       this.lastCommand = cmd;
     }

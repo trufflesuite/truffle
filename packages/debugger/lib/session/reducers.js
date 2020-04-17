@@ -8,6 +8,7 @@ import evm from "lib/evm/reducers";
 import solidity from "lib/solidity/reducers";
 import trace from "lib/trace/reducers";
 import controller from "lib/controller/reducers";
+import stacktrace from "lib/stacktrace/reducers";
 
 import * as actions from "./actions";
 
@@ -85,6 +86,7 @@ const reduceState = combineReducers({
   data,
   evm,
   solidity,
+  stacktrace,
   trace,
   controller
 });

@@ -32,6 +32,25 @@ export function prefixName(prefix, fn) {
 }
 
 /**
+ * returns a new array which is a copy of array but with
+ * elements popped from the top until numToRemove elements
+ * satisfying the predicate have been removed (or until the
+ * array is empty)
+ */
+export function popNWhere(array, numToRemove, predicate) {
+  let newArray = array.slice();
+  //I'm going to write this the C way, hope you don't mind :P
+  while (numToRemove > 0 && newArray.length > 0) {
+    let top = newArray[newArray.length - 1];
+    if (predicate(top)) {
+      numToRemove--;
+    }
+    newArray.pop();
+  }
+  return newArray;
+}
+
+/**
  * @return 0x-prefix string of keccak256 hash
  */
 export function keccak256(...args) {
