@@ -46,7 +46,8 @@ function* stacktraceSaga() {
   //(an EXTERNAL_RETURN, OTOH, is obviously exclusive of the possibilities below)
   if (yield select(stacktrace.current.willJumpIn)) {
     const nextLocation = yield select(stacktrace.next.location);
-    yield put(actions.jumpIn(currentLocation, nextLocation.node)); //in this case we only want the node
+    const nextParent = yield select(stacktrace.next.contractNode);
+    yield put(actions.jumpIn(currentLocation, nextLocation.node, nextParent));
     positionUpdated = true;
   } else if (yield select(stacktrace.current.willJumpOut)) {
     yield put(actions.jumpOut(currentLocation));
@@ -64,7 +65,10 @@ function* stacktraceSaga() {
     const skipInReports = yield select(
       stacktrace.current.nextFrameIsSkippedInReports
     );
-    yield put(actions.externalCall(currentLocation, skipInReports));
+    const nextLocation = yield select(stacktrace.next.location);
+    yield put(
+      actions.externalCall(currentLocation, nextLocation.node, skipInReports)
+    );
     positionUpdated = true;
   }
   //finally, if no other action updated the position, do so here
@@ -83,9 +87,10 @@ export function* unload() {
 
 export function* begin() {
   const skipInReports = yield select(
-    stacktrace.current.nextFrameIsSkippedInReports
+    stacktrace.transaction.bottomFrameIsSkippedInReports
   );
-  yield put(actions.externalCall(null, skipInReports));
+  const currentLocation = yield select(stacktrace.current.location);
+  yield put(actions.externalCall(null, currentLocation.node, skipInReports));
 }
 
 export function* saga() {

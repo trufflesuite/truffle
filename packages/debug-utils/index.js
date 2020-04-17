@@ -560,8 +560,15 @@ var DebugUtils = {
     //we want to print inner to outer, so first, let's
     //reverse
     stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
-    let lines = stacktrace.map(({ name, location }) => {
-      let functionName = name ? `function ${name}` : "unknown function";
+    let lines = stacktrace.map(({ functionName, contractName, location }) => {
+      let name;
+      if (contractName && functionName) {
+        name = `${contractName}.${functionName}`;
+      } else if (contractName) {
+        name = contractName;
+      } else {
+        name = "unknown function";
+      }
       if (location) {
         let {
           source: { sourcePath },
@@ -571,9 +578,9 @@ var DebugUtils = {
             }
           }
         } = location;
-        return `at ${functionName} (${sourcePath}:${line + 1}:${column + 1})`; //add 1 to account for 0-indexing
+        return `at ${name} (${sourcePath}:${line + 1}:${column + 1})`; //add 1 to account for 0-indexing
       } else {
-        return `at ${functionName} (unknown location)`;
+        return `at ${name} (unknown location)`;
       }
     });
     let status = stacktrace[0].status;

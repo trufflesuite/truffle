@@ -140,8 +140,16 @@ describe("Stack tracing", function() {
     await session.continueUntilBreakpoint(); //run till end
 
     let report = session.view(stacktrace.current.finalReport);
-    let names = report.map(({ name }) => name);
-    assert.deepEqual(names, ["run", "run3", "run2", "run1", "runRequire"]);
+    let functionNames = report.map(({ functionName }) => functionName);
+    assert.deepEqual(functionNames, [
+      "run",
+      "run3",
+      "run2",
+      "run1",
+      "runRequire"
+    ]);
+    let contractNames = report.map(({ contractName }) => contractName);
+    assert(contractNames.every(name => name === "StacktraceTest"));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 1].location;
@@ -179,8 +187,10 @@ describe("Stack tracing", function() {
     await session.continueUntilBreakpoint(); //run till EMIT
 
     let report = session.view(stacktrace.current.report);
-    let names = report.map(({ name }) => name);
-    assert.deepEqual(names, ["run", "run2", "run1", "runRequire"]);
+    let functionNames = report.map(({ functionName }) => functionName);
+    assert.deepEqual(functionNames, ["run", "run2", "run1", "runRequire"]);
+    let contractNames = report.map(({ contractName }) => contractName);
+    assert(contractNames.every(name => name === "StacktraceTest"));
     let status = report[report.length - 1].status;
     assert.isUndefined(status);
     let location = report[report.length - 1].location;
@@ -191,8 +201,16 @@ describe("Stack tracing", function() {
     await session.continueUntilBreakpoint(); //run till EMIT again
 
     report = session.view(stacktrace.current.report);
-    names = report.map(({ name }) => name);
-    assert.deepEqual(names, ["run", "run3", "run2", "run1", "runRequire"]);
+    functionNames = report.map(({ functionName }) => functionName);
+    assert.deepEqual(functionNames, [
+      "run",
+      "run3",
+      "run2",
+      "run1",
+      "runRequire"
+    ]);
+    contractNames = report.map(({ contractName }) => contractName);
+    assert(contractNames.every(name => name === "StacktraceTest"));
     status = report[report.length - 1].status;
     assert.isUndefined(status);
     location = report[report.length - 1].location;
@@ -225,8 +243,8 @@ describe("Stack tracing", function() {
     await session.continueUntilBreakpoint(); //run till end
 
     let report = session.view(stacktrace.current.finalReport);
-    let names = report.map(({ name }) => name);
-    assert.deepEqual(names, [
+    let functionNames = report.map(({ functionName }) => functionName);
+    assert.deepEqual(functionNames, [
       "run",
       "run3",
       "run2",
@@ -234,6 +252,8 @@ describe("Stack tracing", function() {
       "runPay",
       undefined
     ]);
+    let contractNames = report.map(({ contractName }) => contractName);
+    assert(contractNames.every(name => name === "StacktraceTest"));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 2].location; //note, -2 because of undefined on top
@@ -266,8 +286,8 @@ describe("Stack tracing", function() {
     await session.continueUntilBreakpoint(); //run till end
 
     let report = session.view(stacktrace.current.finalReport);
-    let names = report.map(({ name }) => name);
-    assert.deepEqual(names, [
+    let functionNames = report.map(({ functionName }) => functionName);
+    assert.deepEqual(functionNames, [
       "run",
       "run3",
       "run2",
@@ -275,6 +295,10 @@ describe("Stack tracing", function() {
       "runInternal",
       undefined
     ]);
+    let contractNames = report.map(({ contractName }) => contractName);
+    assert.isUndefined(contractNames[contractNames.length - 1]);
+    contractNames.pop();
+    assert(contractNames.every(name => name === "StacktraceTest"));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 2].location; //note, -2 because of undefined on top
@@ -308,8 +332,19 @@ describe("Stack tracing", function() {
     await session.continueUntilBreakpoint(); //run till end
 
     let report = session.view(stacktrace.current.finalReport);
-    let names = report.map(({ name }) => name);
-    assert.deepEqual(names, ["run", "run3", "run2", "run1", "runBoom", "boom"]);
+    let functionNames = report.map(({ functionName }) => functionName);
+    assert.deepEqual(functionNames, [
+      "run",
+      "run3",
+      "run2",
+      "run1",
+      "runBoom",
+      "boom"
+    ]);
+    let contractNames = report.map(({ contractName }) => contractName);
+    assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
+    contractNames.pop();
+    assert(contractNames.every(name => name === "StacktraceTest"));
     let status = report[report.length - 1].status;
     assert.isTrue(status);
     let location = report[report.length - 1].location;

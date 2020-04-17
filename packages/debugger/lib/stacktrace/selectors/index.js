@@ -5,6 +5,7 @@ import { createSelectorTree, createLeaf } from "reselect-tree";
 
 import solidity from "lib/solidity/selectors";
 
+import jsonpointer from "json-pointer";
 import zipWith from "lodash.zipwith";
 import { popNWhere } from "lib/helpers";
 
@@ -23,9 +24,8 @@ function generateReport(rawStack, location, status) {
       rawStack[i + 1].type === "internal"
     ) {
       const combinedFrame = {
-        //only including the relevant info here
-        calledFromLocation: frame.calledFromLocation,
-        name: rawStack[i + 1].name
+        ...rawStack[i + 1],
+        calledFromLocation: frame.calledFromLocation
       };
       callstack.push(combinedFrame);
       i++; //!! SKIP THE NEXT FRAME!
@@ -41,11 +41,14 @@ function generateReport(rawStack, location, status) {
   locations.shift();
   locations.push(location);
   debug("locations: %O", locations);
-  const names = callstack.map(frame => frame.name);
+  const names = callstack.map(({ functionName, contractName }) => ({
+    functionName,
+    contractName
+  }));
   debug("names: %O", names);
-  let report = zipWith(locations, names, (location, name) => ({
-    location,
-    name
+  let report = zipWith(locations, names, (location, nameInfo) => ({
+    ...nameInfo,
+    location
   }));
   //finally: set the status in the top frame
   if (status !== null) {
@@ -71,7 +74,11 @@ function createMultistepSelectors(stepSelector) {
       /**
        * .node
        */
-      node: createLeaf([stepSelector.node], identity)
+      node: createLeaf([stepSelector.node], identity),
+      /**
+       * .pointer
+       */
+      pointer: createLeaf([stepSelector.pointer], identity)
     },
 
     /**
@@ -83,6 +90,24 @@ function createMultistepSelectors(stepSelector) {
         source: { id, compilationId, sourcePath },
         sourceRange
       })
+    ),
+
+    /**
+     * .contractNode
+     * WARNING: ad-hoc selector only meant to be used
+     * when you're on a function node!
+     * should probably be replaced by something better;
+     * the data submodule handles these things a better way
+     */
+    contractNode: createLeaf(
+      ["./location/source", "./location/pointer"],
+      ({ ast }, pointer) =>
+        pointer
+          ? jsonpointer.get(
+              ast,
+              pointer.replace(/\/nodes\/\d+$/, "") //cut off end
+            )
+          : ast
     )
   };
 }
@@ -92,6 +117,19 @@ let stacktrace = createSelectorTree({
    * stacktrace.state
    */
   state: state => state.stacktrace,
+
+  /**
+   * stacktrace.transaction
+   */
+  transaction: {
+    /**
+     * stacktrace.transaction.bottomFrameIsSkippedInReports
+     */
+    bottomFrameIsSkippedInReports: createLeaf(
+      [solidity.transaction.bottomStackframeRequiresPhantomFrame],
+      identity
+    )
+  },
 
   /**
    * stacktrace.current

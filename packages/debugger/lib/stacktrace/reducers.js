@@ -10,13 +10,17 @@ function callstack(state = [], action) {
   let newFrame;
   switch (action.type) {
     case actions.JUMP_IN:
-      let { location, functionNode } = action;
+      let { location, functionNode, contractNode } = action;
       newFrame = {
         type: "internal",
         calledFromLocation: location,
-        name:
+        functionName:
           functionNode && functionNode.nodeType === "FunctionDefinition"
             ? functionNode.name
+            : undefined,
+        contractName:
+          contractNode && contractNode.nodeType === "ContractDefinition"
+            ? contractNode.name
             : undefined,
         //note we don't currently account for getters because currently
         //we can't; fallback, receive, constructors, & modifiers also remain
@@ -37,7 +41,12 @@ function callstack(state = [], action) {
         type: "external",
         calledFromLocation: action.location,
         skippedInReports: action.skippedInReports,
-        name: undefined
+        functionName: undefined,
+        contractName:
+          action.contractNode &&
+          action.contractNode.nodeType === "ContractDefinition"
+            ? action.contractNode.name
+            : undefined
       };
       return [...state, newFrame];
     case actions.EXECUTE_RETURN:

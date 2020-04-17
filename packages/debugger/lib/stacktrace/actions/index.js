@@ -1,9 +1,10 @@
 export const JUMP_IN = "STACKTRACE_JUMP_IN";
-export function jumpIn(location, functionNode) {
+export function jumpIn(location, functionNode, contractNode) {
   return {
     type: JUMP_IN,
     location,
-    functionNode
+    functionNode,
+    contractNode
   };
 }
 
@@ -16,10 +17,11 @@ export function jumpOut(location) {
 }
 
 export const EXTERNAL_CALL = "STACKTRACE_EXTERNAL_CALL";
-export function externalCall(location, skippedInReports) {
+export function externalCall(location, contractNode, skippedInReports) {
   return {
     type: EXTERNAL_CALL,
     location,
+    contractNode,
     skippedInReports
   };
 }
