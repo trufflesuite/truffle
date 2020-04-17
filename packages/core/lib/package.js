@@ -230,7 +230,7 @@ const Package = {
     const callbackPassed = typeof callback === "function";
     // Filter out "test" and "development" networks.
     const ifReservedNetworks = new Set(['test', 'development']);
-    var deployed_networks = Object.keys(options.networks).filter(ifReservedNetworks.has);
+    var deployed_networks = Object.keys(options.networks).filter(name => !ifReservedNetworks.has(name));
 
     // Now get the URIs of each network that's been deployed to.
     Networks.asURIs(options, deployed_networks, function(err, result) {
