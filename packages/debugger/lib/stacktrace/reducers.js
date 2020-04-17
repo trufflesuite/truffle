@@ -21,12 +21,11 @@ function callstack(state = [], action) {
         contractName:
           contractNode && contractNode.nodeType === "ContractDefinition"
             ? contractNode.name
-            : undefined,
+            : undefined
         //note we don't currently account for getters because currently
         //we can't; fallback, receive, constructors, & modifiers also remain
         //unaccounted for at present
         //(none of these things have associated jump-in markings!)
-        skippedInReports: false
       };
       return [...state, newFrame];
     case actions.JUMP_OUT:
@@ -40,13 +39,8 @@ function callstack(state = [], action) {
       newFrame = {
         type: "external",
         calledFromLocation: action.location,
-        skippedInReports: action.skippedInReports,
         functionName: undefined,
-        contractName:
-          action.contractNode &&
-          action.contractNode.nodeType === "ContractDefinition"
-            ? action.contractNode.name
-            : undefined
+        contractName: action.context.contractName
       };
       return [...state, newFrame];
     case actions.EXECUTE_RETURN:

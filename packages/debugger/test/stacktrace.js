@@ -142,9 +142,12 @@ describe("Stack tracing", function() {
     let report = session.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
+      undefined,
       "run",
+      undefined,
       "run3",
       "run2",
+      undefined,
       "run1",
       "runRequire"
     ]);
@@ -188,7 +191,15 @@ describe("Stack tracing", function() {
 
     let report = session.view(stacktrace.current.report);
     let functionNames = report.map(({ functionName }) => functionName);
-    assert.deepEqual(functionNames, ["run", "run2", "run1", "runRequire"]);
+    assert.deepEqual(functionNames, [
+      undefined,
+      "run",
+      undefined,
+      "run2",
+      undefined,
+      "run1",
+      "runRequire"
+    ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
     let status = report[report.length - 1].status;
@@ -203,9 +214,12 @@ describe("Stack tracing", function() {
     report = session.view(stacktrace.current.report);
     functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
+      undefined,
       "run",
+      undefined,
       "run3",
       "run2",
+      undefined,
       "run1",
       "runRequire"
     ]);
@@ -245,9 +259,12 @@ describe("Stack tracing", function() {
     let report = session.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
+      undefined,
       "run",
+      undefined,
       "run3",
       "run2",
+      undefined,
       "run1",
       "runPay",
       undefined
@@ -288,9 +305,12 @@ describe("Stack tracing", function() {
     let report = session.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
+      undefined,
       "run",
+      undefined,
       "run3",
       "run2",
+      undefined,
       "run1",
       "runInternal",
       undefined
@@ -334,22 +354,29 @@ describe("Stack tracing", function() {
     let report = session.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
+      undefined,
       "run",
+      undefined,
       "run3",
       "run2",
+      undefined,
       "run1",
       "runBoom",
+      undefined,
       "boom"
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
-    contractNames.pop();
+    contractNames.pop(); //top frame
+    assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
+    contractNames.pop(); //second-top frame
     assert(contractNames.every(name => name === "StacktraceTest"));
     let status = report[report.length - 1].status;
     assert.isTrue(status);
     let location = report[report.length - 1].location;
-    let prevLocation = report[report.length - 2].location;
-    let prev2Location = report[report.length - 3].location;
+    //skip a frame for the junk frame
+    let prevLocation = report[report.length - 3].location;
+    let prev2Location = report[report.length - 4].location;
     assert.strictEqual(location.sourceRange.lines.start.line, failLine);
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
     assert.strictEqual(
