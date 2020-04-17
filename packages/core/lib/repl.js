@@ -53,9 +53,7 @@ ReplManager.prototype.start = function(options) {
         if (ctx.done) fns.push(ctx.done);
         return fns;
       }, []);
-      async.series(doneFunctions, function() {
-        process.exit();
-      });
+      async.series(doneFunctions, process.exit);
     });
   }
 
