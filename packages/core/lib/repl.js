@@ -49,13 +49,10 @@ ReplManager.prototype.start = function(options) {
       // If we exit for some reason, call done functions for good measure
       // then ensure the process is completely killed. Once the repl exits,
       // the process is in a bad state and can't be recovered (e.g., stdin is closed).
-      var doneFunctions = self.contexts.map(function(context) {
-        return context.done
-          ? function() {
-              context.done();
-            }
-          : function() {};
-      });
+      const doneFunctions = self.contexts.reduce((fns, ctx) => {
+        if (ctx.done) fns.push(ctx.done);
+        return fns;
+      }, []);
       async.series(doneFunctions, function() {
         process.exit();
       });
