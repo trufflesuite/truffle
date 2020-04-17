@@ -16,7 +16,8 @@ function contextRequiresPhantomStackframes(context) {
     //we need this to be a boolean, not undefined, because it gets put in the state)
     semver.satisfies(context.compiler.version, ">=0.5.1", {
       includePrerelease: true
-    })
+    }) &&
+    !context.isConstructor //constructors should not get a phantom stackframe!
   );
 }
 
@@ -161,8 +162,10 @@ let solidity = createSelectorTree({
     /**
      * solidity.current.humanReadableSourceMap
      */
-    humanReadableSourceMap: createLeaf(["./sourceMap"], sourceMap =>
-      sourceMap ? SolidityUtils.getHumanReadableSourceMap(sourceMap) : null
+    humanReadableSourceMap: createLeaf(
+      ["./sourceMap"],
+      sourceMap =>
+        sourceMap ? SolidityUtils.getHumanReadableSourceMap(sourceMap) : null
     ),
 
     /**
