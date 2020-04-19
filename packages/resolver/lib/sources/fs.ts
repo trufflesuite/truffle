@@ -14,7 +14,6 @@ export class FS implements ResolverSource {
 
   require(importPath: string, searchPath = this.contractsBuildDirectory) {
     const normalizedImportPath = path.normalize(importPath);
-    const contractName = this.getContractName(normalizedImportPath, searchPath);
 
     // If we have an absolute path, only check the file if it's a child of the workingDirectory.
     if (path.isAbsolute(normalizedImportPath)) {
@@ -23,38 +22,71 @@ export class FS implements ResolverSource {
       }
     }
 
-    try {
-      const result = fs.readFileSync(
-        path.join(searchPath, `${contractName}.json`),
-        "utf8"
-      );
-      return JSON.parse(result);
-    } catch (e) {
-      return null;
-    }
+    const result = this.searchForArtifact(normalizedImportPath, searchPath);
+    return result;
   }
 
-  getContractName(
+  searchForArtifact(
     sourcePath: string,
     searchPath = this.contractsBuildDirectory
   ) {
+    // most cases we can use the `{name}.sol -> {name}.json` convention
+    const likelyFileBasename = path.basename(sourcePath, ".sol");
+    const likelyArtifactString = fs.readFileSync(
+      path.join(searchPath, `${likelyFileBasename}.json`),
+      "utf8"
+    );
+
+    let likelyArtifact;
+    try {
+      if (likelyArtifactString) {
+        likelyArtifact = JSON.parse(likelyArtifactString);
+      }
+    } catch (e) {
+      // do nothing, we'll handle this by doing a deeper search
+    }
+
+    if (
+      likelyArtifact &&
+      path.basename(likelyArtifact.sourcePath, ".sol") ===
+        path.basename(sourcePath, ".sol")
+    ) {
+      return likelyArtifact;
+    }
+
+    // we couldn't use the `{name}.sol --> {name}.json` convention, let's search
+
     const contractsBuildDirFiles = fs.readdirSync(searchPath);
     const filteredBuildArtifacts = contractsBuildDirFiles.filter(
-      (file: string) => file.match(".json") != null
+      // we don't care about files that don't have the json extension
+      // we also don't care about the file we already tried
+      (file: string) =>
+        file.match(".json") != null && file !== `${likelyFileBasename}.json`
     );
 
     for (const buildArtifact of filteredBuildArtifacts) {
-      const artifact = JSON.parse(
-        fs.readFileSync(path.resolve(searchPath, buildArtifact)).toString()
+      const artifactString = fs.readFileSync(
+        path.resolve(searchPath, buildArtifact),
+        { encoding: "utf8" }
       );
+      try {
+        if (artifactString) {
+          const artifact = JSON.parse(artifactString);
 
-      if (artifact.sourcePath === sourcePath) {
-        return artifact.contractName;
+          if (
+            path.basename(artifact.sourcePath, ".sol") ===
+            path.basename(sourcePath, ".sol")
+          ) {
+            return artifact;
+          }
+        }
+      } catch (e) {
+        // do nothing, keep searching
       }
     }
 
-    // fallback
-    return path.basename(sourcePath, ".sol");
+    // we didn't find anything valid here
+    return null;
   }
 
   async resolve(importPath: string, importedFrom: string) {
