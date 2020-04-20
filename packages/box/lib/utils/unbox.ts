@@ -1,6 +1,6 @@
 import fse from "fs-extra";
 import path from "path";
-import ghdownload from "github-download";
+import download from "download-git-repo";
 import rp from "request-promise-native";
 import vcsurl from "vcsurl";
 import { parse as parseURL } from "url";
@@ -37,12 +37,15 @@ async function verifyURL(url: string) {
 }
 
 function fetchRepository(url: string, dir: string) {
-  return new Promise((accept, reject) =>
-    // Download the package from github.
-    ghdownload(url, dir)
-      .on("err", reject)
-      .on("end", accept)
-  );
+  return new Promise((accept, reject) => {
+    // Download the package from github - download(url, dir, options, cb)
+    download(url, dir, error => {
+      if (error) {
+        reject(error);
+      }
+      accept();
+    });
+  });
 }
 
 function prepareToCopyFiles(tempDir: string, { ignore }: boxConfig) {

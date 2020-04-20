@@ -116,7 +116,7 @@ const Box = {
     const tmpDir = tmp.dirSync({ unsafeCleanup });
     const unboxOptions = { logger, force };
     await Box.unbox(
-      `https://github.com/trufflesuite/truffle-init-${name}`,
+      `https://github.com:trufflesuite/truffle-init-${name}`,
       tmpDir.name,
       unboxOptions,
       config

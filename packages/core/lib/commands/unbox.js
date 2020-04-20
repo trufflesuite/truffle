@@ -5,16 +5,27 @@
  * - a string containing a repo under the `truffle-box` org
  */
 function normalizeURL(
-  url = "https://github.com/trufflesuite/truffle-init-default"
+  url = "https://github.com:trufflesuite/truffle-init-default"
 ) {
+  // remove the .git from the repo specifier
+  if (url.includes(".git")) {
+    url = url.replace(/.git$/, "");
+    url = url.replace(/.git#/, "#");
+    url = url.replace(/.git:/, ":");
+  }
+
   // full URL already
-  if (url.includes("://") || url.includes("git@")) {
+  if (url.includes("://")) {
     return url;
+  }
+
+  if (url.includes("git@")) {
+    return url.replace("git@", "https://");
   }
 
   if (url.split("/").length === 2) {
     // `org/repo`
-    return `https://github.com/${url}`;
+    return `https://github.com:${url}`;
   }
 
   if (!url.includes("/")) {
@@ -28,7 +39,7 @@ function normalizeURL(
         url = `${url.substr(0, index)}-box${url.substr(index)}`;
       }
     }
-    return `https://github.com/truffle-box/${url}`;
+    return `https://github.com:truffle-box/${url}`;
   }
   throw new Error("Box specified in invalid format");
 }
@@ -46,6 +57,7 @@ function normalizeInput([url, subDir]) {
   try {
     // attempts to parse url from :path/to/subDir
     parsedUrl = url.match(/(.*):/)[1];
+
     // handles instance where full url is being passed w/o a path in url
     if (parsedUrl.includes("http") && !parsedUrl.includes("//")) {
       return { url, destination };
@@ -106,6 +118,7 @@ const command = {
     const config = Config.default().with({ logger: console });
 
     let { url, destination } = normalizeInput(options._);
+
     url = normalizeURL(url);
 
     const normalizedDestination = normalizeDestination(
