@@ -27,14 +27,14 @@ const command = {
     const { Environment } = require("@truffle/environment");
 
     const commands = require("./index");
-    const excluded = ["console", "develop", "unbox", "init"];
+    const excluded = new Set(["console", "develop", "unbox", "init"]);
 
     const availableCommands = Object.keys(commands).filter(
-      name => !excluded.includes(name)
+      name => !excluded.has(name)
     );
 
     const consoleCommands = availableCommands.reduce(
-      (acc, name) => Object.assign({}, acc, { [name]: commands[name] }),
+      (acc, name) => Object.assign(acc, { [name]: commands[name] }),
       {}
     );
 
