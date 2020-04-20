@@ -5,14 +5,16 @@ import {
   ResolveAllSourcesOptions
 } from "./resolveAllSources";
 
+import { getImports } from "./getImports";
+
 export interface RequiredSourcesOptions {
   allPaths: string[];
   updatedPaths: string[];
 
   resolve: ResolveAllSourcesOptions["resolve"];
-  getImports: ResolveAllSourcesOptions["getImports"];
+  parseImports: ResolveAllSourcesOptions["parseImports"];
 
-  shouldIncludePath(filePath: string): boolean;
+  shouldIncludePath: ResolveAllSourcesOptions["shouldIncludePath"];
 }
 
 export interface RequiredSources {
@@ -28,7 +30,7 @@ export async function requiredSources({
   updatedPaths,
   resolve,
   shouldIncludePath,
-  getImports
+  parseImports
 }: RequiredSourcesOptions): Promise<RequiredSources> {
   const allSources: RequiredSources["allSources"] = {};
   const compilationTargets: string[] = [];
@@ -42,7 +44,8 @@ export async function requiredSources({
 
   const resolved = await resolveAllSources({
     resolve,
-    getImports,
+    parseImports,
+    shouldIncludePath,
     paths: allPaths
   });
 
@@ -88,7 +91,13 @@ export async function requiredSources({
         continue;
       }
 
-      const imports = await getImports(resolved[currentFile]);
+      const imports = shouldIncludePath(currentFile)
+        ? await getImports({
+            source: resolved[currentFile],
+            parseImports,
+            shouldIncludePath
+          })
+        : [];
 
       // If file imports a compilation target, add it
       // to list of updates and compilation targets

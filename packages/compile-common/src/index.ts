@@ -1,2 +1,2 @@
-import * as Profiler from "./profiler";
+import { Profiler } from "./profiler";
 export { Profiler };

@@ -1,9 +1,12 @@
 import { Resolver, ResolverSource } from "@truffle/resolver";
 
+import { getImports, ResolvedSource } from "./getImports";
+
 export interface ResolveAllSourcesOptions {
   paths: string[];
   resolve(source: UnresolvedSource): Promise<ResolvedSource>;
-  getImports(source: ResolvedSource): Promise<string[]>;
+  parseImports(body: string): Promise<string[]>;
+  shouldIncludePath(filePath: string): boolean;
 }
 
 export interface ResolvedSourcesMapping {
@@ -15,18 +18,13 @@ export interface UnresolvedSource {
   importedFrom?: string;
 }
 
-export interface ResolvedSource {
-  filePath: string;
-  body: string;
-  source: ResolverSource;
-}
-
 // Resolves sources in several async passes. For each resolved set it detects unknown
 // imports from external packages and adds them to the set of files to resolve.
 export async function resolveAllSources({
   resolve,
   paths,
-  getImports
+  shouldIncludePath,
+  parseImports
 }: ResolveAllSourcesOptions): Promise<ResolvedSourcesMapping> {
   const mapping: ResolvedSourcesMapping = {};
   const allPaths: (UnresolvedSource | string)[] = paths.slice();
@@ -64,15 +62,17 @@ export async function resolveAllSources({
 
       // Queue unknown imports for the next resolver cycle
       while (results.length) {
-        const result = results.shift();
+        const source = results.shift();
 
-        const imports = await getImports(result);
+        const imports = shouldIncludePath(source.filePath)
+          ? await getImports({ source, parseImports, shouldIncludePath })
+          : [];
 
         // Detect unknown external packages / add them to the list of files to resolve
         // Keep track of location of this import because we need to report that.
         for (const item of imports) {
           if (!mapping[item]) {
-            allPaths.push({ filePath: item, importedFrom: result.filePath });
+            allPaths.push({ filePath: item, importedFrom: source.filePath });
           }
         }
       }

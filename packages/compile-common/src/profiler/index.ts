@@ -1,3 +1,1 @@
-export { resolveAllSources } from "./resolveAllSources";
-export { requiredSources } from "./requiredSources";
-export { updated } from "./updated";
+export { Profiler } from "./profiler";
