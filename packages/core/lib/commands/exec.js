@@ -47,12 +47,11 @@ const command = {
     const config = Config.detect(options);
 
     let file = options.file;
-
-    if (file == null && options._.length > 0) {
-      file = options._[0];
-    }
-
+    
     if (file == null) {
+      if (options._.length > 0) {
+        file = options._[0];
+      }
       done(
         new ConfigurationError(
           "Please specify a file, passing the path of the script you'd like the run. Note that all scripts *must* call process.exit() when finished."
