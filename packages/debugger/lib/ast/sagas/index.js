@@ -16,25 +16,11 @@ function* walk(compilationId, sourceId, node, pointer = "", parentId = null) {
 
   if (node instanceof Array) {
     for (let [i, child] of node.entries()) {
-      yield call(
-        walk,
-        compilationId,
-        sourceId,
-        child,
-        `${pointer}/${i}`,
-        parentId
-      );
+      yield* walk(compilationId, sourceId, child, `${pointer}/${i}`, parentId);
     }
   } else if (node instanceof Object) {
     for (let [key, child] of Object.entries(node)) {
-      yield call(
-        walk,
-        compilationId,
-        sourceId,
-        child,
-        `${pointer}/${key}`,
-        node.id
-      );
+      yield* walk(compilationId, sourceId, child, `${pointer}/${key}`, node.id);
     }
   }
 
@@ -68,9 +54,7 @@ function* handleEnter(compilationId, sourceId, node, pointer, parentId) {
 }
 
 function* handleExit(compilationId, sourceId, node, pointer) {
-  if (mystery.has(sourceId) && pointer.includes("AST")) {
-    debug("exiting %d %s", sourceId, pointer);
-  }
+  debug("exiting %d %s", sourceId, pointer);
 
   // no-op right now
 }
