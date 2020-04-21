@@ -17,12 +17,11 @@ export function jumpOut(location) {
 }
 
 export const EXTERNAL_CALL = "STACKTRACE_EXTERNAL_CALL";
-export function externalCall(location, contractNode, skippedInReports) {
+export function externalCall(location, context) {
   return {
     type: EXTERNAL_CALL,
     location,
-    contractNode,
-    skippedInReports
+    context
   };
 }
 

@@ -3,6 +3,7 @@ const debug = debugModule("debugger:stacktrace:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 
+import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
 import jsonpointer from "json-pointer";
@@ -11,31 +12,8 @@ import { popNWhere } from "lib/helpers";
 
 const identity = x => x;
 
-function generateReport(rawStack, location, status) {
-  //step 1: process skipped frames
-  let callstack = [];
-  //we're doing a C-style loop here!
-  //because we want to skip some items <grin>
-  for (let i = 0; i < rawStack.length; i++) {
-    const frame = rawStack[i];
-    if (
-      frame.skippedInReports &&
-      i < rawStack.length - 1 &&
-      rawStack[i + 1].type === "internal"
-    ) {
-      const combinedFrame = {
-        ...rawStack[i + 1],
-        calledFromLocation: frame.calledFromLocation
-      };
-      callstack.push(combinedFrame);
-      i++; //!! SKIP THE NEXT FRAME!
-    } else {
-      //ordinary case: just push the frame
-      callstack.push(frame);
-    }
-  }
-  debug("callstack: %O", callstack);
-  //step 2: shift everything over by 1 and recombine :)
+function generateReport(callstack, location, status) {
+  //step 1: shift everything over by 1 and recombine :)
   let locations = callstack.map(frame => frame.calledFromLocation);
   //remove initial null, add final location on end
   locations.shift();
@@ -119,19 +97,6 @@ let stacktrace = createSelectorTree({
   state: state => state.stacktrace,
 
   /**
-   * stacktrace.transaction
-   */
-  transaction: {
-    /**
-     * stacktrace.transaction.bottomFrameIsSkippedInReports
-     */
-    bottomFrameIsSkippedInReports: createLeaf(
-      [solidity.transaction.bottomStackframeRequiresPhantomFrame],
-      identity
-    )
-  },
-
-  /**
    * stacktrace.current
    */
   current: {
@@ -191,12 +156,14 @@ let stacktrace = createSelectorTree({
     willCall: createLeaf([solidity.current.willCall], identity),
 
     /**
-     * stacktrace.current.nextFrameIsSkippedInReports
+     * stacktrace.current.context
      */
-    nextFrameIsSkippedInReports: createLeaf(
-      [solidity.current.callRequiresPhantomFrame],
-      identity
-    ),
+    context: createLeaf([evm.current.context], identity),
+
+    /**
+     * stacktrace.current.callContext
+     */
+    callContext: createLeaf([evm.current.step.callContext], identity),
 
     /**
      * stacktrace.current.willReturn
@@ -219,8 +186,9 @@ let stacktrace = createSelectorTree({
     /**
      * stacktrace.current.returnStatus
      */
-    returnStatus: createLeaf(["./willReturn", "./willFail"], (returns, fails) =>
-      returns ? true : fails ? false : null
+    returnStatus: createLeaf(
+      ["./willReturn", "./willFail"],
+      (returns, fails) => (returns ? true : fails ? false : null)
     ),
 
     /**

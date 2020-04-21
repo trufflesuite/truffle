@@ -15,6 +15,11 @@ function* tickSaga() {
   yield* trace.signalTickSagaCompletion();
 }
 
+//NOTE: we deliberately *don't* do any phantom-checking in this
+//submodule.  yes, it will result in some junk stackframes, but
+//I really don't want a fallback or constructor frame skipped over
+//due to phantom checking
+
 function* stacktraceSaga() {
   const currentLocation = yield select(stacktrace.current.strippedLocation);
   const lastLocation = yield select(stacktrace.current.lastPosition);
@@ -62,13 +67,10 @@ function* stacktraceSaga() {
     //making a call while also incrementing the return counter.  but the stacktraces
     //this would generate would, I think, be more confusing than helpful, so I'm
     //deliberately not doing that.
-    const skipInReports = yield select(
-      stacktrace.current.nextFrameIsSkippedInReports
-    );
-    const nextLocation = yield select(stacktrace.next.location);
-    yield put(
-      actions.externalCall(currentLocation, nextLocation.node, skipInReports)
-    );
+    //NOTE: we can't use stacktrace.next.location here as that
+    //doesn't work across call contexts!
+    const nextContext = yield select(stacktrace.current.callContext);
+    yield put(actions.externalCall(currentLocation, nextContext));
     positionUpdated = true;
   }
   //finally, if no other action updated the position, do so here
@@ -86,11 +88,8 @@ export function* unload() {
 }
 
 export function* begin() {
-  const skipInReports = yield select(
-    stacktrace.transaction.bottomFrameIsSkippedInReports
-  );
-  const currentLocation = yield select(stacktrace.current.location);
-  yield put(actions.externalCall(null, currentLocation.node, skipInReports));
+  const context = yield select(stacktrace.current.context);
+  yield put(actions.externalCall(null, context));
 }
 
 export function* saga() {
