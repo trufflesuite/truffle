@@ -28,8 +28,7 @@ class DebugPrinter {
       try {
         selector = expr
           .split(".")
-          .filter(next => next.length > 0)
-          .reduce((sel, next) => sel[next], selectors);
+          .reduce((sel, next) => next.length ? sel[next] : sel, selectors);
       } catch (_) {
         throw new Error("Unknown selector: %s", expr);
       }
@@ -336,17 +335,16 @@ class DebugPrinter {
 
     debug("variables %o", variables);
 
+    const variableKeys = Object.keys(variables);
+
     // Get the length of the longest name.
-    const longestNameLength = Math.max.apply(
-      null,
-      Object.keys(variables).map(function(name) {
-        return name.length;
-      })
-    );
+    const longestNameLength = variableKeys.reduce((longest, name) => {
+      return name.length > longest ? name.length : longest;
+    }, -Infinity);
 
     this.config.logger.log();
 
-    Object.keys(variables).forEach(name => {
+    variableKeys.forEach(name => {
       let paddedName = name + ":";
 
       while (paddedName.length <= longestNameLength) {
