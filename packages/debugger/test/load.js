@@ -57,7 +57,10 @@ describe("Loading and unloading transactions", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forProject({ provider, compilations });
+    let bugger = await Debugger.forProject({
+      provider,
+      compilations
+    });
 
     let session = bugger.connect();
 
@@ -81,7 +84,10 @@ describe("Loading and unloading transactions", function() {
     let receipt2 = await instance2.run();
     let txHash2 = receipt2.tx;
 
-    let bugger = await Debugger.forTx(txHash1, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash1, {
+      provider,
+      compilations
+    });
 
     let session = bugger.connect();
 
@@ -105,7 +111,11 @@ describe("Loading and unloading transactions", function() {
   });
 
   it("Doesn't crash getting location when transactionless", async function() {
-    let bugger = await Debugger.forProject({ provider, compilations });
+    let bugger = await Debugger.forProject({
+      provider,
+      compilations,
+      lightMode: true
+    });
 
     let session = bugger.connect();
 

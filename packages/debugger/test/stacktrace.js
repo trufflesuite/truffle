@@ -129,7 +129,11 @@ describe("Stack tracing", function() {
       txHash = error.hashes[0]; //it's the only hash involved
     }
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
 
     let session = bugger.connect();
 
@@ -174,7 +178,11 @@ describe("Stack tracing", function() {
       txHash = error.hashes[0]; //it's the only hash involved
     }
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
 
     let session = bugger.connect();
 
@@ -246,7 +254,11 @@ describe("Stack tracing", function() {
       txHash = error.hashes[0]; //it's the only hash involved
     }
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
 
     let session = bugger.connect();
 
@@ -292,7 +304,11 @@ describe("Stack tracing", function() {
       txHash = error.hashes[0]; //it's the only hash involved
     }
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
 
     let session = bugger.connect();
 
@@ -340,7 +356,11 @@ describe("Stack tracing", function() {
       txHash = error.hashes[0]; //it's the only hash involved
     }
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
 
     let session = bugger.connect();
 

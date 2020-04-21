@@ -117,7 +117,11 @@ describe("Contexts", function() {
 
     let txHash = result.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
     debug("debugger ready");
 
     let session = bugger.connect();
@@ -155,7 +159,11 @@ describe("Contexts", function() {
 
     let txHash = result.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
     debug("debugger ready");
 
     let session = bugger.connect();

@@ -71,7 +71,11 @@ describe("AST", function() {
       let receipt = await instance.stack(4);
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, { provider, compilations });
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        compilations,
+        lightMode: true
+      });
 
       let session = bugger.connect();
 

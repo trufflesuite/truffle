@@ -159,7 +159,11 @@ describe("Solidity Debugging", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
 
     let session = bugger.connect();
 
@@ -192,7 +196,8 @@ describe("Solidity Debugging", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      compilations
+      compilations,
+      lightMode: true
     });
 
     let session = bugger.connect();
@@ -220,7 +225,8 @@ describe("Solidity Debugging", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      compilations
+      compilations,
+      lightMode: true
     });
 
     let session = bugger.connect();
@@ -266,7 +272,8 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        compilations
+        compilations,
+        lightMode: true
       });
 
       let session = bugger.connect();
@@ -291,7 +298,8 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        compilations
+        compilations,
+        lightMode: true
       });
 
       let session = bugger.connect();
@@ -322,7 +330,8 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        compilations
+        compilations,
+        lightMode: true
       });
 
       let session = bugger.connect();
@@ -343,7 +352,8 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        compilations
+        compilations,
+        lightMode: true
       });
 
       let session = bugger.connect();
@@ -378,7 +388,8 @@ describe("Solidity Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        compilations
+        compilations,
+        lightMode: true
       });
 
       let session = bugger.connect();

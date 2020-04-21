@@ -80,7 +80,8 @@ describe("Precompiled Contracts", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      compilations
+      compilations,
+      lightMode: true
     });
 
     let session = bugger.connect();

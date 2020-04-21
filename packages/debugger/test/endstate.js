@@ -9,7 +9,6 @@ import { prepareContracts } from "./helpers";
 import Debugger from "lib/debugger";
 
 import evm from "lib/evm/selectors";
-import data from "lib/data/selectors";
 
 import * as Codec from "@truffle/codec";
 
@@ -69,7 +68,11 @@ describe("End State", function() {
       txHash = error.hashes[0]; //it's the only hash involved
     }
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
 
     let session = bugger.connect();
 
@@ -81,15 +84,14 @@ describe("End State", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations
+    });
 
     let session = bugger.connect();
 
     await session.continueUntilBreakpoint(); //no breakpoints set so advances to end
-
-    debug("DCI %O", session.view(data.current.identifiers));
-    debug("DCIR %O", session.view(data.current.identifiers.refs));
-    debug("proc.assignments %O", session.view(data.proc.assignments));
 
     assert.ok(session.view(evm.transaction.status));
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
