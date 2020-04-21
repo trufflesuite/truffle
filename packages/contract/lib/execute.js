@@ -114,7 +114,7 @@ const execute = {
     const constructor = this;
 
     return function() {
-      let defaultBlock = "latest";
+      let defaultBlock = constructor.web3.eth.defaultBlock || "latest";
       const args = Array.prototype.slice.call(arguments);
       const lastArg = args[args.length - 1];
       const promiEvent = PromiEvent();
