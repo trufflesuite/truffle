@@ -1,4 +1,3 @@
-const { assert } = require("chai");
 const CommandRunner = require("../commandrunner");
 const sandbox = require("../sandbox");
 const Server = require("../server");
@@ -23,11 +22,7 @@ describe("truffle deploy (alias for migrate)", () => {
 
   describe("when run on the most basic truffle project", () => {
     it("doesn't throw", async () => {
-      try {
-        await CommandRunner.run("deploy", config);
-      } catch (error) {
-        assert(fail, `An error: ${error}`);
-      }
+      await CommandRunner.run("deploy", config);
     }).timeout(20000);
   });
 });
