@@ -50,9 +50,14 @@ const Build = {
     const contracts_build_directory = options.contracts_build_directory;
 
     // Clean first.
-    del([destination + "/*", "!" + contracts_build_directory]).then(() => {
-      mkdirp(destination, callback);
-    });
+    del([destination + "/*", "!" + contracts_build_directory])
+      .then(() => {
+        return mkdirp(destination);
+      })
+      .then(() => {
+        callback();
+      })
+      .catch(callback);
   },
 
   build: function(options, callback) {
