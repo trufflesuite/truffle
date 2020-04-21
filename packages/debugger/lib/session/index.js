@@ -120,7 +120,6 @@ export default class Session {
       let compiler = compilation.compiler; //note: we'll prefer one listed on contract or source
       sources[compilation.id] = [];
       for (let index in compilation.sources) {
-        debug("adding index: %d", index);
         //not the recommended way to iterate over an array,
         //but the order doesn't matter here so it's safe
         let source = compilation.sources[index];
@@ -135,7 +134,6 @@ export default class Session {
         };
       }
 
-      debug("sources: %o", sources[compilation.id]);
       for (let contract of compilation.contracts) {
         let {
           contractName,
@@ -161,7 +159,7 @@ export default class Session {
         if (primarySourceId !== undefined) {
           //I'm assuming this finds it! it had better!
           primarySourceIndex = compilation.sources.findIndex(
-            source => source.id === primarySourceId
+            source => source && source.id === primarySourceId
           );
         }
         //otherwise leave it undefined
