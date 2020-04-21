@@ -21,8 +21,7 @@
     "@truffle/expect": "^0.0.13",
     "@truffle/external-compile": "^1.0.29",
     "@truffle/resolver": "^5.1.10",
-    "fs-extra": "^8.1.0",
-    "mkdirp": "1.0.4"
+    "fs-extra": "^8.1.0"
   },
   "devDependencies": {
     "debug": "^4.1.1",

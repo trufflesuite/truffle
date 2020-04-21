@@ -3,7 +3,7 @@ var Box = require("@truffle/box");
 var fs = require("fs-extra");
 var glob = require("glob");
 var path = require("path");
-var mkdirp = require("mkdirp");
+var fse = require("fs-extra");
 var async = require("async");
 var Resolver = require("@truffle/resolver");
 var Artifactor = require("@truffle/artifactor");
@@ -46,7 +46,7 @@ describe("NPM integration", function() {
 
     async.series(
       [
-        mkdirp.bind(mkdirp, fake_source_path),
+        fse.ensureDir.bind(fse.ensureDir, fake_source_path),
         fs.writeFile.bind(
           fs,
           path.join(fake_source_path, "Module.sol"),

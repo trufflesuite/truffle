@@ -1,5 +1,5 @@
 const debug = require("debug")("workflow-compile");
-const mkdirp = require("mkdirp");
+const fse = require("fs-extra");
 const externalCompile = require("@truffle/external-compile");
 const solcCompile = require("@truffle/compile-solidity/legacy");
 const vyperCompile = require("@truffle/compile-vyper");
@@ -114,7 +114,7 @@ const Contracts = {
   reportNothingToCompile,
 
   writeContracts: async (contracts, options) => {
-    await mkdirp(options.contracts_build_directory);
+    fse.ensureDirSync(options.contracts_build_directory);
     await options.artifactor.saveAll(contracts);
   }
 };
