@@ -57,7 +57,9 @@ const Build = {
       .then(() => {
         callback();
       })
-      .catch(callback);
+      .catch(error => {
+        callback(error);
+      });
   },
 
   build: function(options, callback) {
