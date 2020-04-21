@@ -174,13 +174,7 @@ import { ContractConstructorObject, ContractInstanceObject } from "./types";
 
 import { Compilations } from "@truffle/codec";
 
-let fs: any; //sorry
-try {
-  fs = require("fs"); //if this fails (say, in a web context)... then whatever! too bad!
-  //(sorry about the resulting untyped import :-/)
-} catch (_) {
-  //no alternative, just let fs be undefined
-}
+import fs from "fs";
 import path from "path";
 
 /**
@@ -465,10 +459,8 @@ function infoToCompilations(
       if (projectInfo.config.contracts_build_directory !== undefined) {
         let files = fs
           .readdirSync(projectInfo.config.contracts_build_directory)
-          .filter((file: any) => path.extname(file) === ".json"); //sorry about the any, I had to import fs untyped
-        let data: string[] = files.map((
-          file: any //same :-/
-        ) =>
+          .filter(file => path.extname(file) === ".json");
+        let data = files.map(file =>
           fs.readFileSync(
             path.join(projectInfo.config.contracts_build_directory, file),
             "utf8"
