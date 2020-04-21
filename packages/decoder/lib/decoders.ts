@@ -1333,7 +1333,7 @@ export class ContractInstanceDecoder {
    * See the documentation of the [[DecodedVariable]] type for more.
    *
    * Note that variable decoding can only operate in full mode; if the decoder wasn't able to
-   * start up in full mode, this method will throw an exception.
+   * start up in full mode, this method will throw a [[ContractAllocationFailedError]].
    *
    * Note that decoding mappings requires first watching mapping keys in order to get any results;
    * see the documentation for [[watchMappingKey]].
