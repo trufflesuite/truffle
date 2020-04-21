@@ -30,10 +30,9 @@ const command = {
     const excluded = new Set(["console", "init", "watch", "develop"]);
 
     const consoleCommands = Object.keys(commands).reduce((acc, name) => {
-      if (!excluded.has(name)) {
-        acc[name] = commands[name];
-      }
-      return acc;
+      return !excluded.has(name)
+        ? Object.assign(acc, { [name]: commands[name] })
+        : acc;
     }, {});
 
     Environment.detect(config)
