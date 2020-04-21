@@ -210,6 +210,10 @@ var SolidityUtils = {
           let sourceId = instruction.file;
           let findOverlappingRange = overlapFunctions[sourceId];
           let ast = asts[sourceId];
+          if (!ast) {
+            //if we can't get the ast... filter it out I guess
+            return {};
+          }
           let range = SolidityUtils.getSourceRange(instruction);
           let { node, pointer } = SolidityUtils.findRange(
             findOverlappingRange,
