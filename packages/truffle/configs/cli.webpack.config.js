@@ -1,8 +1,8 @@
 const path = require("path");
-const outputDir = path.join(__dirname, "build");
+const outputDir = path.join(__dirname, "../", "build");
 const rootDir = path.join(__dirname, "../..");
 const webpack = require("webpack");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const pkg = require("../package.json");
 
@@ -52,7 +52,10 @@ module.exports = {
   ],
   plugins: [
     new webpack.DefinePlugin({
-      BUNDLE_VERSION: JSON.stringify(pkg.version)
+      BUNDLE_VERSION: JSON.stringify(pkg.version),
+      BUNDLE_CHAIN_FILENAME: JSON.stringify("chain.bundled.js"),
+      BUNDLE_ANALYTICS_FILENAME: JSON.stringify("analytics.bundled.js"),
+      BUNDLE_LIBRARY_FILENAME: JSON.stringify("library.bundled.js")
     }),
 
     // Put the shebang back on.
@@ -252,7 +255,7 @@ module.exports = {
       }
     ]),
 
-    new CleanWebpackPlugin(["build"]),
+    new CleanWebpackPlugin(),
 
     // Make web3 1.0 packable
     new webpack.IgnorePlugin(/^electron$/)

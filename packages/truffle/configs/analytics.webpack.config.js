@@ -1,7 +1,8 @@
 const path = require("path");
-const outputDir = path.join(__dirname, "build");
+const outputDir = path.join(__dirname, "../", "build");
 const rootDir = path.join(__dirname, "../..");
 const webpack = require("webpack");
+const pkg = require("../package.json");
 
 module.exports = {
   mode: "production",
@@ -52,7 +53,10 @@ module.exports = {
   ],
   plugins: [
     new webpack.DefinePlugin({
-      BUNDLE_CHAIN_FILENAME: JSON.stringify("chain.bundled.js")
+      BUNDLE_VERSION: JSON.stringify(pkg.version),
+      BUNDLE_CHAIN_FILENAME: JSON.stringify("chain.bundled.js"),
+      BUNDLE_ANALYTICS_FILENAME: JSON.stringify("analytics.bundled.js"),
+      BUNDLE_LIBRARY_FILENAME: JSON.stringify("library.bundled.js")
     }),
 
     // Put the shebang back on.
