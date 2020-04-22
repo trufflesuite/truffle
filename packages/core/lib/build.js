@@ -1,4 +1,4 @@
-const mkdirp = require("mkdirp");
+const fse = require("fs-extra");
 const del = require("del");
 const Contracts = require("@truffle/workflow-compile");
 const BuildError = require("./errors/builderror");
@@ -50,9 +50,14 @@ const Build = {
     const contracts_build_directory = options.contracts_build_directory;
 
     // Clean first.
-    del([destination + "/*", "!" + contracts_build_directory]).then(() => {
-      mkdirp(destination, callback);
-    });
+    del([destination + "/*", "!" + contracts_build_directory])
+      .then(() => {
+        fse.ensureDirSync(destination);
+        callback();
+      })
+      .catch(error => {
+        callback(error);
+      });
   },
 
   build: function(options, callback) {
