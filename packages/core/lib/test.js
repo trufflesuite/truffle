@@ -18,6 +18,7 @@ const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
 const Codec = require("@truffle/codec");
 const debug = require("debug")("lib:test");
+const Debugger = require("@truffle/debugger");
 
 let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
@@ -126,6 +127,17 @@ const Test = {
       compilations.solc.sourceIndexes
     );
 
+    //for stack traces, we'll need to set up a light-mode debugger...
+    let bugger;
+    if (config.stacktrace) {
+      debug("stacktraces on!");
+      bugger = await Debugger.forProject({
+        compilations: debuggerCompilations,
+        provider: config.provider,
+        lightMode: true
+      });
+    }
+
     await this.setJSTestGlobals({
       config,
       web3,
@@ -133,7 +145,8 @@ const Test = {
       accounts,
       testResolver,
       runner,
-      compilations: debuggerCompilations
+      compilations: debuggerCompilations,
+      bugger
     });
 
     // Finally, run mocha.
@@ -225,14 +238,21 @@ const Test = {
     accounts,
     testResolver,
     runner,
-    compilations
+    compilations,
+    bugger //for stacktracing
   }) {
     global.interfaceAdapter = interfaceAdapter;
     global.web3 = web3;
     global.assert = chai.assert;
     global.expect = chai.expect;
     global.artifacts = {
-      require: import_path => testResolver.require(import_path)
+      require: import_path => {
+        let contract = testResolver.require(import_path);
+        if (bugger) {
+          contract.debugger = bugger;
+        }
+        return contract;
+      }
     };
 
     global[config.debugGlobal] = async operation => {

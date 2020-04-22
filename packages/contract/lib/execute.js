@@ -117,7 +117,7 @@ const execute = {
       let defaultBlock = constructor.web3.eth.defaultBlock || "latest";
       const args = Array.prototype.slice.call(arguments);
       const lastArg = args[args.length - 1];
-      const promiEvent = PromiEvent();
+      const promiEvent = new PromiEvent();
 
       // Extract defaultBlock parameter
       if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
@@ -166,7 +166,7 @@ const execute = {
 
     return function() {
       let deferred;
-      const promiEvent = PromiEvent();
+      const promiEvent = new PromiEvent(false, constructor.debugger);
 
       execute
         .prepareCall(constructor, methodABI, arguments)
@@ -199,7 +199,9 @@ const execute = {
             return;
           }
 
-          deferred = web3.eth.sendTransaction(params);
+          deferred = web3.eth
+            .sendTransaction(params)
+            .once("transactionHash", promiEvent.setTransactionHash); //for stacktracing
           deferred.catch(override.start.bind(constructor, context));
           handlers.setup(deferred, context);
         })
@@ -220,7 +222,7 @@ const execute = {
 
     return function() {
       let deferred;
-      const promiEvent = PromiEvent();
+      const promiEvent = new PromiEvent(false, constructor.debugger);
 
       execute
         .prepareCall(constructor, constructorABI, arguments)
@@ -258,7 +260,9 @@ const execute = {
             contract: constructor
           });
 
-          deferred = web3.eth.sendTransaction(params);
+          deferred = web3.eth
+            .sendTransaction(params)
+            .once("transactionHash", promiEvent.setTransactionHash); //for stacktracing
           handlers.setup(deferred, context);
 
           try {
