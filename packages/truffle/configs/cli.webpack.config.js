@@ -1,72 +1,48 @@
 const path = require("path");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
-const webpack = require("webpack");
-const pkg = require("./package.json");
-const rootDir = path.join(__dirname, "../..");
 const outputDir = path.join(__dirname, "build");
+const rootDir = path.join(__dirname, "../..");
+const webpack = require("webpack");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const pkg = require("../package.json");
 
 module.exports = {
-  entry: {
-    cli: path.join(
-      __dirname,
-      "../..",
-      "node_modules",
-      "@truffle/core",
-      "cli.js"
-    ),
-    chain: path.join(
-      __dirname,
-      "../..",
-      "node_modules",
-      "@truffle/environment",
-      "chain.js"
-    ),
-    analytics: path.join(
-      __dirname,
-      "../..",
-      "node_modules",
-      "@truffle/core",
-      "lib",
-      "services",
-      "analytics",
-      "main.js"
-    ),
-    library: path.join(
-      __dirname,
-      "../..",
-      "node_modules",
-      "@truffle/core",
-      "index.js"
-    )
-  },
+  mode: "production",
+  entry: path.join(
+    __dirname,
+    "../../..",
+    "node_modules",
+    "@truffle/core",
+    "cli.js"
+  ),
   target: "node",
+  context: rootDir,
+  devtool: "source-map",
   node: {
     // For this option, see here: https://github.com/webpack/webpack/issues/1599
     __dirname: false,
     __filename: false
   },
-  context: rootDir,
   output: {
     path: outputDir,
-    filename: "[name].bundled.js",
+    filename: "cli.bundled.js",
     library: "",
     libraryTarget: "commonjs"
   },
-  devtool: "source-map",
   module: {
     rules: [
       // ignores "#!/bin..." lines inside files
       {
         test: /\.js$/,
         include: [
-          path.resolve(__dirname, "../core"),
-          path.resolve(__dirname, "../environment")
+          path.resolve(__dirname, "../../core"),
+          path.resolve(__dirname, "../../environment")
         ],
         use: "shebang-loader"
       }
     ]
   },
+
   externals: [
     // truffle-config uses the original-require module.
     // Here, we leave it as an external, and use the original-require
@@ -76,10 +52,7 @@ module.exports = {
   ],
   plugins: [
     new webpack.DefinePlugin({
-      BUNDLE_VERSION: JSON.stringify(pkg.version),
-      BUNDLE_CHAIN_FILENAME: JSON.stringify("chain.bundled.js"),
-      BUNDLE_ANALYTICS_FILENAME: JSON.stringify("analytics.bundled.js"),
-      BUNDLE_LIBRARY_FILENAME: JSON.stringify("library.bundled.js")
+      BUNDLE_VERSION: JSON.stringify(pkg.version)
     }),
 
     // Put the shebang back on.
@@ -90,7 +63,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -101,7 +74,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -112,7 +85,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -123,7 +96,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -134,7 +107,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -145,7 +118,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -156,7 +129,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -167,7 +140,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -178,7 +151,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -189,7 +162,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -200,7 +173,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -211,7 +184,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -222,7 +195,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -233,7 +206,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -244,7 +217,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -255,7 +228,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -266,7 +239,7 @@ module.exports = {
       {
         from: path.join(
           __dirname,
-          "../..",
+          "../../..",
           "node_modules",
           "@truffle/core",
           "lib",
@@ -289,7 +262,7 @@ module.exports = {
       "ws": path.join(__dirname, "./nil.js"),
       "bn.js": path.join(
         __dirname,
-        "../..",
+        "../../..",
         "node_modules",
         "bn.js",
         "lib",
