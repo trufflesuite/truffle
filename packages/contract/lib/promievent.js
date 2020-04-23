@@ -2,7 +2,7 @@ const debug = require("debug")("contract:promievent");
 const DebugUtils = require("@truffle/debug-utils");
 const Web3PromiEvent = require("web3-core-promievent");
 
-function PromiEvent(justPromise, bugger, selectors) {
+function PromiEvent(justPromise, bugger) {
   //selectors are passed in separately because when I
   //try to import Debugger here I get a compile error
   const { resolve, reject, eventEmitter } = new Web3PromiEvent(justPromise);
@@ -20,9 +20,11 @@ function PromiEvent(justPromise, bugger, selectors) {
           let session = bugger.connect();
           await session.load(this.txHash);
           await session.continueUntilBreakpoint();
-          const report = session.view(selectors.stacktrace.current.finalReport);
+          const report = session.view(
+            bugger.constructor.selectors.stacktrace.current.finalReport
+          );
           const rawMessage = session.view(
-            selectors.evm.current.step.returnValue
+            bugger.constructor.selectors.evm.current.step.returnValue
           );
           await session.unload();
           //attempt to decode (not gonna try and use Truffle Codec in here, we don't

@@ -250,7 +250,6 @@ const Test = {
         let contract = testResolver.require(import_path);
         if (bugger) {
           contract.debugger = bugger;
-          contract.debugSelectors = Debugger.selectors;
         }
         return contract;
       }
