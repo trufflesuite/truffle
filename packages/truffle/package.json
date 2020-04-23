@@ -14,11 +14,7 @@
   },
   "scripts": {
     "analyze": "./scripts/analyze.sh",
-    "build": "yarn build-cli && yarn build-chain && yarn build-analytics && yarn build-library",
-    "build-analytics": "webpack --config ./configs/analytics.webpack.config.js",
-    "build-cli": "NODE_OPTIONS='--max-old-space-size=4096' webpack --config ./configs/cli.webpack.config.js",
-    "build-chain": "webpack --config ./configs/chain.webpack.config.js",
-    "build-library": "webpack --config ./configs/library.webpack.config.js",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' webpack --config ./webpack.config.js",
     "postinstall": "node ./scripts/postinstall.js",
     "prepare": "yarn build",
     "publish:byoc": "node ./scripts/prereleaseVersion.js byoc-safe byoc",
