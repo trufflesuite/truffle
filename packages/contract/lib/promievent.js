@@ -38,14 +38,25 @@ function PromiEvent(justPromise, bugger, selectors) {
       debug("solidityStackTrace: %s", solidityStackTrace);
       try {
         let stackTrace = originalStackTrace.replace(
-          /^.*/, //multi-line mode; . does not include \n
+          /^.*\n.*\n.*/, //replace first 3 lines; note that . does not include \n
+          //we replace not just the first line but also the next 2 as they contain
+          //useless stuff users shouldn't see
           e.stack.split("\n")[0]
         );
         if (solidityStackTrace) {
+          //let's split the solidity stack trace into first line & rest
+          let [
+            _,
+            solidityFirstLine,
+            solidityRemaining
+          ] = solidityStackTrace.match(/^(.*?)\r?\n((.|\r|\n)*)$/);
+
           stackTrace = stackTrace.replace(
-            /^.*/, //multi-line mode; . does not include \n
-            solidityStackTrace //note: this does not end in \n, so no modification needed
+            /^.*/, //note that . does not include \n
+            solidityRemaining //note: this does not end in \n, so no modification needed
           );
+          e.hijackedMessage = e.message;
+          e.message = solidityFirstLine;
         }
 
         e.hijackedStack = e.stack;
