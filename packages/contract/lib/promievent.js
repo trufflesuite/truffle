@@ -58,6 +58,9 @@ function PromiEvent(justPromise, bugger) {
   this.resolve = resolve;
   this.reject = rejectHijacker;
   this.eventEmitter = eventEmitter;
+  if (bugger) {
+    this.debug = true;
+  }
 }
 
 PromiEvent.resolve = Web3PromiEvent.resolve;
