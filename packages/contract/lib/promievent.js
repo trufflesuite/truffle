@@ -1,7 +1,10 @@
 const debug = require("debug")("contract:promievent");
+const DebugUtils = require("@truffle/debug-utils");
 const Web3PromiEvent = require("web3-core-promievent");
 
-function PromiEvent(justPromise, bugger) {
+function PromiEvent(justPromise, bugger, selectors) {
+  //selectors are passed in separately because when I
+  //try to import Debugger here I get a compile error
   const { resolve, reject, eventEmitter } = new Web3PromiEvent(justPromise);
 
   originalStackTrace = new Error().stack;
@@ -11,14 +14,13 @@ function PromiEvent(justPromise, bugger) {
     debug("hash: %s", this.txHash);
     let getSolidityStackTrace;
     if (bugger && this.txHash) {
+      debug("debugging time!");
       getSolidityStackTrace = async () => {
         try {
           let session = bugger.connect();
           await session.load(this.txHash);
           await session.continueUntilBreakpoint();
-          const report = session.view(
-            session.selectors.stacktrace.current.finalReport
-          );
+          const report = session.view(selectors.stacktrace.current.finalReport);
           await session.unload();
           return DebugUtils.formatStacktrace(report, 4); //indent 4 to match node's stacktraces
         } catch (_) {
@@ -33,6 +35,7 @@ function PromiEvent(justPromise, bugger) {
     getSolidityStackTrace().then(solidityStackTrace => {
       debug("e.stack: %s", e.stack);
       debug("originalStackTrace: %s", originalStackTrace);
+      debug("solidityStackTrace: %s", solidityStackTrace);
       try {
         let stackTrace = originalStackTrace.replace(
           /^.*/, //multi-line mode; . does not include \n

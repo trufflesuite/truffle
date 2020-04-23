@@ -167,7 +167,11 @@ const execute = {
 
     return function() {
       let deferred;
-      const promiEvent = new PromiEvent(false, constructor.debugger);
+      const promiEvent = new PromiEvent(
+        false,
+        constructor.debugger,
+        constructor.debugSelectors
+      );
 
       execute
         .prepareCall(constructor, methodABI, arguments)
@@ -220,7 +224,11 @@ const execute = {
 
     return function() {
       let deferred;
-      const promiEvent = new PromiEvent(false, constructor.debugger);
+      const promiEvent = new PromiEvent(
+        false,
+        constructor.debugger,
+        constructor.debugSelectors
+      );
 
       execute
         .prepareCall(constructor, constructorABI, arguments)
