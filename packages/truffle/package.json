@@ -26,8 +26,6 @@
   },
   "dependencies": {
     "app-module-path": "^2.2.0",
-    "clean-webpack-plugin": "^3.0.0",
-    "copy-webpack-plugin": "^5.1.1",
     "mocha": "5.2.0",
     "original-require": "1.0.1"
   },
@@ -37,6 +35,8 @@
     "@truffle/core": "^5.1.22",
     "@truffle/debugger": "^7.1.1",
     "@truffle/interface-adapter": "^0.4.6",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.1.1",
     "eslint": "^5.7.0",
     "fs-extra": "^8.1.0",
     "ganache-core": "2.10.2",
