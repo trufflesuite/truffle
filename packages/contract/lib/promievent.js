@@ -21,8 +21,25 @@ function PromiEvent(justPromise, bugger, selectors) {
           await session.load(this.txHash);
           await session.continueUntilBreakpoint();
           const report = session.view(selectors.stacktrace.current.finalReport);
+          const rawMessage = session.view(
+            selectors.evm.current.step.returnValue
+          );
           await session.unload();
-          return DebugUtils.formatStacktrace(report, 4); //indent 4 to match node's stacktraces
+          //attempt to decode (not gonna try and use Truffle Codec in here, we don't
+          //need anything that fancy here anyway)
+          let message;
+          const errorStringHash = "0x08c379a0";
+          if (rawMessage.startsWith(errorStringHash)) {
+            try {
+              message = web3.eth.abi.decodeParameter(
+                "string",
+                rawMessage.slice(10) //10 = 2 + 2*4
+              );
+            } catch (_) {
+              //if error, leave message undefined
+            }
+          }
+          return DebugUtils.formatStacktrace(report, message, 4); //indent 4 to match node's stacktraces
         } catch (_) {
           //ignore errors
           return undefined;

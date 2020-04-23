@@ -568,7 +568,7 @@ var DebugUtils = {
       .join(OS.EOL);
   },
 
-  formatStacktrace: function(stacktrace, indent = 2) {
+  formatStacktrace: function(stacktrace, message, indent = 2) {
     //we want to print inner to outer, so first, let's
     //reverse
     stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
@@ -600,7 +600,9 @@ var DebugUtils = {
       lines.unshift(
         status
           ? "Error: Improper return (may be an unexpected self-destruct)"
-          : "Error: Revert or exceptional halt"
+          : message !== undefined
+            ? `Error: Revert; message: ${message}`
+            : "Error: Revert or exceptional halt"
       );
     }
     let indented = lines.map(
