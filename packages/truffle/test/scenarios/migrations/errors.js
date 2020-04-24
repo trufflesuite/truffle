@@ -142,9 +142,9 @@ describe("migration errors", function() {
       console.log(output);
       assert(output.includes("6_migrations_funds.js"));
       assert(output.includes("Deploying 'Example'"));
-      assert(output.includes("insufficient funds"));
-      assert(output.includes("Account"));
-      assert(output.includes("Balance"));
+      assert(output.includes("generic error from Geth"));
+      assert(output.includes("gas required exceeds allowance"));
+      assert(output.includes("always failing transaction"));
     }
   });
 
