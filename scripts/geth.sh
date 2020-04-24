@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-docker pull ethereum/client-go:latest
+docker pull ethereum/client-go:v1.9.12
 
 docker run \
     -v /$PWD/scripts:/scripts \
