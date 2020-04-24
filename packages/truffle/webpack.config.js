@@ -1,6 +1,6 @@
 const path = require("path");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const webpack = require("webpack");
 const pkg = require("./package.json");
 const rootDir = path.join(__dirname, "../..");
@@ -40,6 +40,7 @@ module.exports = {
       "index.js"
     )
   },
+
   target: "node",
   node: {
     // For this option, see here: https://github.com/webpack/webpack/issues/1599
@@ -47,6 +48,7 @@ module.exports = {
     __filename: false
   },
   context: rootDir,
+
   output: {
     path: outputDir,
     filename: "[name].bundled.js",
@@ -54,6 +56,7 @@ module.exports = {
     libraryTarget: "commonjs"
   },
   devtool: "source-map",
+
   module: {
     rules: [
       // ignores "#!/bin..." lines inside files
@@ -67,6 +70,7 @@ module.exports = {
       }
     ]
   },
+
   externals: [
     // truffle-config uses the original-require module.
     // Here, we leave it as an external, and use the original-require
@@ -74,6 +78,7 @@ module.exports = {
     /^original-require$/,
     /^mocha$/
   ],
+
   plugins: [
     new webpack.DefinePlugin({
       BUNDLE_VERSION: JSON.stringify(pkg.version),
@@ -279,11 +284,12 @@ module.exports = {
       }
     ]),
 
-    new CleanWebpackPlugin(["build"]),
+    new CleanWebpackPlugin(),
 
     // Make web3 1.0 packable
     new webpack.IgnorePlugin(/^electron$/)
   ],
+
   resolve: {
     alias: {
       "ws": path.join(__dirname, "./nil.js"),
@@ -299,6 +305,7 @@ module.exports = {
       "scrypt": "js-scrypt"
     }
   },
+
   stats: {
     warnings: false
   }
