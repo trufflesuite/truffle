@@ -53,7 +53,7 @@ ReplManager.prototype.start = function(options) {
           if (context.done) await context.done();
         }
       } catch (error) {
-        console.log(error);
+        throw error;
       } finally {
         process.exit();
       }
