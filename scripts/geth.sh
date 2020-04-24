@@ -8,7 +8,7 @@ docker run \
     -p 8545:8545 \
     -p 8546:8546 \
     -p 30303:30303 \
-    ethereum/client-go:latest \
+    ethereum/client-go:v1.9.12 \
     --rpc \
     --rpcaddr '0.0.0.0' \
     --rpcport 8545 \
