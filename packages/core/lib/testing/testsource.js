@@ -101,7 +101,7 @@ module.exports = class TestSource {
     }
   }
 
-  resolve_dependency_path(importPath, dependencyPath) {
+  resolveDependencyPath(importPath, dependencyPath) {
     return dependencyPath;
   }
 };

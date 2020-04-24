@@ -80,7 +80,7 @@ export class FS implements ResolverSource {
   }
 
   // Here we're resolving from local files to local files, all absolute.
-  resolve_dependency_path(importPath: string, dependencyPath: string) {
+  resolveDependencyPath(importPath: string, dependencyPath: string) {
     const dirname = path.dirname(importPath);
     return path.resolve(path.join(dirname, dependencyPath));
   }
