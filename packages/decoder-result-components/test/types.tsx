@@ -1,3 +1,4 @@
+import { describe, it } from "mocha";
 import * as React from "react";
 import BN from "bn.js";
 import ResultComponent from "../src/ResultComponent";

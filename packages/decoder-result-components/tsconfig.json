@@ -1,17 +1,22 @@
 {
   "compilerOptions": {
-    "skipLibCheck": true,
-    "experimentalDecorators": true,
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "ES2020",
+    "declaration": true,
+    "target": "es6",
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
-    "lib": ["ESNext"],
-    "incremental": true,
-    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "lib": ["es2017"],
+    "paths": {
+    },
+    "rootDir": ".",
+    "typeRoots": [
+      "../../node_modules/@types/mocha",
+      "../../node_modules/@types/node"
+    ],
     "jsx": "react"
   },
   "include": [
