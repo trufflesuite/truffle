@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "ES2020",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "lib": ["ESNext"],
+    "incremental": true,
+    "resolveJsonModule": true,
+    "jsx": "react"
+  },
+  "include": [
+    "./index.ts",
+    "./typings/**/*.d.ts", "typings/uWebsockets.js.ts"
+  ]
+}
