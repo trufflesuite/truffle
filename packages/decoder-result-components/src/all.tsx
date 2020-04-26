@@ -1,7 +1,6 @@
 import * as React from "react";
-import codec from "../../codec";
 import { ResultComponentOptions } from "./types/ResultComponentProps";
-import { Result } from "../../codec/dist/lib/format/values";
+import { Format } from "@truffle/codec";
 import ResultComponent from "./ResultComponent";
 
 type ContractComponentOptions = ResultComponentOptions & {
@@ -12,7 +11,7 @@ type ContractComponentProps = {
   options?: ContractComponentOptions;
   name: string;
   results: {
-    [name: string]: Result
+    [name: string]: Format.Values.Result
   };
 }
 

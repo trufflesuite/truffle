@@ -1,12 +1,12 @@
 import * as React from "react";
-import { Result } from "../../codec/dist/lib/format/values";
+import { Format } from "@truffle/codec";
 import { ResultComponentProps, ResultComponentOptions } from "./types/ResultComponentProps";
 
 /**
  * The GenericComponent simple renders `props.name`, `props.children`, and `props.result.type.typeClass`
  * in that order.
  */
-export default class GenericComponent<T extends Result> extends React.Component<ResultComponentProps<T>> {
+export default class GenericComponent<T extends Format.Values.Result> extends React.Component<ResultComponentProps<T>> {
   render() {
     const options = this.props.options || {} as ResultComponentOptions;
     const result = this.props.result;
@@ -21,7 +21,7 @@ export default class GenericComponent<T extends Result> extends React.Component<
         : ""
       }
       <span className={`${classPrefix}_spacer`}> </span>
-      <span className={`${classPrefix}_value`}>{this.props.children}</span> 
+      <span className={`${classPrefix}_value`}>{this.props.children}</span>
       <span className={`${classPrefix}_spacer`}> </span>
       <span className={`${classPrefix}_type`}>({ result.type.typeClass })</span>
     </ContainerElement>

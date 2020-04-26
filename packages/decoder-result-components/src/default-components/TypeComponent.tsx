@@ -1,9 +1,9 @@
 import * as React from "react";
 import { ResultComponentProps, ResultComponentOptions } from "../types/ResultComponentProps";
-import { TypeResult, Result } from "../../../codec/dist/lib/format/values";
+import { Format } from "@truffle/codec";
 import IDefaultComponent from "../types/IDefaultComponent";
 
-export default class TypeComponent extends IDefaultComponent<TypeResult> {
+export default class TypeComponent extends IDefaultComponent<Format.Values.TypeResult> {
   render() {
     const options = this.props.options || {} as ResultComponentOptions;
     const ContainerElement = options.container || "li";
@@ -12,7 +12,7 @@ export default class TypeComponent extends IDefaultComponent<TypeResult> {
     </ContainerElement>);
   }
 
-  public static isType = (props: ResultComponentProps<Result>): props is ResultComponentProps<TypeResult> => {
+  public static isType = (props: ResultComponentProps<Format.Values.Result>): props is ResultComponentProps<Format.Values.TypeResult> => {
     return props.result.type.typeClass === "type";
   }
 }

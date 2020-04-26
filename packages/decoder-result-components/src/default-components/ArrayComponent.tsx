@@ -1,16 +1,15 @@
 
 import * as React from "react";
+import { Format } from "@truffle/codec";
 import { ResultComponentProps, ResultComponentOptions } from "../types/ResultComponentProps";
-import { ArrayResult, Result, ArrayValue } from "../../../codec/dist/lib/format/values";
-import { Errors } from "../../../codec/dist/lib/format";
 import IDefaultComponent from "../types/IDefaultComponent";
 import ResultComponent from "../ResultComponent";
 
-export default class ArrayComponent extends IDefaultComponent<ArrayResult> {
+export default class ArrayComponent extends IDefaultComponent<Format.Values.ArrayResult> {
   public state = {
     collapsed: false
   };
-  constructor(props: Readonly<ResultComponentProps<ArrayResult>>){
+  constructor(props: Readonly<ResultComponentProps<Format.Values.ArrayResult>>){
     super(props);
   }
   expandSection = () => {
@@ -21,7 +20,7 @@ export default class ArrayComponent extends IDefaultComponent<ArrayResult> {
     const ContainerElement = options.container || "li";
     const result = this.props.result;
     if ("value" in result) {
-      const resultValue = result as ArrayValue;
+      const resultValue = result as Format.Values.ArrayValue;
       return (<ContainerElement>
         <strong>{this.props.name}</strong>
         {
@@ -38,12 +37,12 @@ export default class ArrayComponent extends IDefaultComponent<ArrayResult> {
       </ContainerElement>);
     } else {
       return (<ContainerElement>
-        <span>{(this.props.result as Errors.ArrayErrorResult).error}</span>;
+        <span>{(this.props.result as Format.Errors.ArrayErrorResult).error}</span>;
       </ContainerElement>);
     }
   }
 
-  public static isType = (props: ResultComponentProps<Result>): props is ResultComponentProps<ArrayResult> => {
+  public static isType = (props: ResultComponentProps<Format.Values.Result>): props is ResultComponentProps<Format.Values.ArrayResult> => {
     return props.result.type.typeClass === "array";
   }
 }

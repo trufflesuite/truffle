@@ -1,9 +1,9 @@
 import * as React from "react";
 import { ResultComponentProps, ResultComponentOptions } from "../types/ResultComponentProps";
-import { TupleResult, Result } from "../../../codec/dist/lib/format/values";
+import { Format } from "@truffle/codec";
 import IDefaultComponent from "../types/IDefaultComponent";
 
-export default class TupleComponent extends IDefaultComponent<TupleResult> {
+export default class TupleComponent extends IDefaultComponent<Format.Values.TupleResult> {
   render() {
     const options = this.props.options || {} as ResultComponentOptions;
     const ContainerElement = options.container || "li";
@@ -12,7 +12,7 @@ export default class TupleComponent extends IDefaultComponent<TupleResult> {
     </ContainerElement>);
   }
 
-  public static isType = (props: ResultComponentProps<Result>): props is ResultComponentProps<TupleResult> => {
+  public static isType = (props: ResultComponentProps<Format.Values.Result>): props is ResultComponentProps<Format.Values.TupleResult> => {
     return props.result.type.typeClass === "tuple";
   }
 }

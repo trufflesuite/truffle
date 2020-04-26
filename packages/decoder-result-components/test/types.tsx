@@ -1,7 +1,7 @@
 import * as React from "react";
 import BN from "bn.js";
 import ResultComponent from "../src/ResultComponent";
-import { UintValue, UintResult, ArrayResult, IntResult } from "../../codec/dist/lib/format/values";
+import { Format } from "@truffle/codec";
 import { renderToString } from "react-dom/server";
 import assert from "assert";
 import ContractComponent from "../src/all";
@@ -21,7 +21,7 @@ describe("test", () => {
         asBN: new BN(46574321),
         rawAsBN: new BN(46574321),
       }
-    } as UintResult;
+    } as Format.Values.UintResult;
     const result2 = {
       type: {
         typeClass: "int",
@@ -33,7 +33,7 @@ describe("test", () => {
         asBN: new BN(-7894654),
         rawAsBN: new BN(-7894654),
       }
-    } as IntResult;
+    } as Format.Values.IntResult;
     const arrayResult = {
       type: {
         typeClass: "array",
@@ -54,8 +54,8 @@ describe("test", () => {
         result2,
         result
       ]
-    } as ArrayResult;
-    
+    } as Format.Values.ArrayResult;
+
     const results = {
       someArray: arrayResult,
       aThing: result,
