@@ -13,17 +13,20 @@
   "license": "MIT",
   "dependencies": {
     "lodash.clonedeep": "^4.5.0",
+    "mini-create-react-context": "^0.4.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "source-map-support": "^0.5.19"
   },
   "devDependencies": {
+    "@truffle/codec": "0.5.1",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "13.13.2",
     "@types/react": "^16.9.34",
     "@types/react-dom": "^16.9.6",
-    "@truffle/codec": "0.5.1",
-    "@types/node": "13.13.2",
-    "@types/mocha": "^5.2.6",
+    "@types/react-test-renderer": "^16.9.2",
     "mocha": "^6.0.2",
+    "react-test-renderer": "^16.13.1",
     "ts-node": "8.9.0",
     "typescript": "3.8.3"
   }

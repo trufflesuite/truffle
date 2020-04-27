@@ -9,7 +9,7 @@ import ContractComponent from "../src/all";
 
 
 describe("test", () => {
-  it("tests", () => {
+  it.skip("tests", () => {
     const name = "name";
     const result = {
       type: {
