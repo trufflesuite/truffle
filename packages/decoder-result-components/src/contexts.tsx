@@ -102,16 +102,16 @@ export class GenericValueComponent<V extends Format.Values.Value = Format.Values
   }
 };
 
-export class GenericTypeComponent<T extends Format.Types.Type = Format.Types.Type> extends React.PureComponent<HasTypeProp<T>> {
+export class GenericTypeComponent extends React.PureComponent<HasTypeProp<Format.Types.Type>> {
   render () {
-    const { typeClass } = this.props.type;
-    switch (typeClass) {
+    const { type } = this.props;
+    switch (type.typeClass) {
       case "uint":
       case "int":
-        const { bits } = this.props.type as any;
-        return <span>{`${typeClass}${bits}`}</span>;
+        const { bits } = type;
+        return <span>{`${type.typeClass}${bits}`}</span>;
       default:
-        return <span>{typeClass}</span>;
+        return <span>{type.typeClass}</span>;
     }
   }
 };
@@ -173,7 +173,7 @@ export class Value extends React.PureComponent {
                     if (React.isValidElement(Component)) {
                       return React.cloneElement(Component);
                     }
-                    return <Component type={type} value={value} />
+                    return <Component value={value} />
                   }
                   return <GenericValueComponent value={value} />
                 }}
