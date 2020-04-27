@@ -110,12 +110,12 @@ export class GenericTypeComponent<T extends Format.Types.Type = Format.Types.Typ
 };
 
 export type TypeComponents = {
-  [T in keyof TypeClasses]?:
+  [T in keyof TypeClasses]:
     React.ComponentClass<HasTypeProp<TypeClasses[T]["type"]>>
 };
 
 export type ValueComponents = {
-  [T in keyof TypeClasses]?:
+  [T in keyof TypeClasses]:
     React.ComponentClass<HasValueProp<TypeClasses[T]["value"]>>
 }
 
@@ -173,9 +173,7 @@ export class Type extends React.PureComponent {
           <ComponentsContext.Consumer>
             {(components: Components) => {
               const Component: any = components.types[type.typeClass];
-              if (Component) {
-                return <Component type={type} />
-              }
+              return <Component type={type} />;
             }}
           </ComponentsContext.Consumer>
         )}
