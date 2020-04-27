@@ -44,8 +44,8 @@ describe("example usage", () => {
     const testRenderer = TestRenderer.create(component);
     const rendered = renderToString(component);
     console.debug("rendered %o", rendered);
-
   });
+
   it("allows override to hide typeclass", () => {
     const component = (
       <Result result={UINT_RESULT}>

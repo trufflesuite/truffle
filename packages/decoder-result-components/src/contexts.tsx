@@ -8,7 +8,6 @@ export const ValueContext = createContext<Format.Values.Value["value"] | null>(n
 export const ErrorContext = createContext<Format.Errors.ErrorResult["error"] | null>(null);
 
 export interface HasValueProp<V extends Format.Values.Value = Format.Values.Value> {
-  type: V["type"],
   value: V["value"]
 }
 
@@ -118,12 +117,12 @@ export class GenericTypeComponent<T extends Format.Types.Type = Format.Types.Typ
 };
 
 export type TypeComponents = {
-  [T in keyof TypeClasses]:
-    React.ComponentClass<HasTypeProp<TypeClasses[T]["type"]>>
+  [T in keyof TypeClasses]?:
+    React.Component<HasTypeProp<TypeClasses[T]["type"]>>
 };
 
 export type ValueComponents = {
-  [T in keyof TypeClasses]:
+  [T in keyof TypeClasses]?: React.ReactElement<{}> |
     React.ComponentClass<HasValueProp<TypeClasses[T]["value"]>>
 }
 
@@ -134,42 +133,9 @@ export interface Components {
 
 export const ComponentsContext = createContext<Components>({
   types: {
-    address: GenericTypeComponent,
-    array: GenericTypeComponent,
-    bool: GenericTypeComponent,
-    bytes: GenericTypeComponent,
-    contract: GenericTypeComponent,
-    enum: GenericTypeComponent,
-    fixed: GenericTypeComponent,
-    function: GenericTypeComponent,
-    int: GenericTypeComponent,
-    magic: GenericTypeComponent,
-    mapping: GenericTypeComponent,
-    string: GenericTypeComponent,
-    struct: GenericTypeComponent,
-    tuple: GenericTypeComponent,
-    type: GenericTypeComponent,
-    ufixed: GenericTypeComponent,
-    uint: GenericTypeComponent,
   },
   values: {
-    address: GenericValueComponent,
-    array: GenericValueComponent,
-    bool: GenericValueComponent,
-    bytes: GenericValueComponent,
-    contract: GenericValueComponent,
-    enum: GenericValueComponent,
-    fixed: GenericValueComponent,
-    function: GenericValueComponent,
-    int: GenericValueComponent,
-    magic: GenericValueComponent,
-    mapping: GenericValueComponent,
-    string: GenericValueComponent,
-    struct: GenericValueComponent,
-    tuple: GenericValueComponent,
-    type: GenericValueComponent,
-    ufixed: GenericValueComponent,
-    uint: UintValueComponent,
+    uint: UintValueComponent
   }
 });
 
@@ -180,8 +146,11 @@ export class Type extends React.PureComponent {
         {({ type }) => (
           <ComponentsContext.Consumer>
             {(components: Components) => {
-              const Component: any = components.types[type.typeClass];
-              return <Component type={type} />;
+              if (type.typeClass in components.types) {
+                const component = components.types[type.typeClass] as any;
+                return React.cloneElement(component)
+              }
+              return <GenericTypeComponent type={type} />;
             }}
           </ComponentsContext.Consumer>
         )}
@@ -199,10 +168,14 @@ export class Value extends React.PureComponent {
             {(value) => (
               <ComponentsContext.Consumer>
                 {(components: Components) => {
-                  const Component: any = components.values[type.typeClass];
-                  if (Component) {
+                  if (type.typeClass in components.values) {
+                    const Component = components.values[type.typeClass] as any;
+                    if (React.isValidElement(Component)) {
+                      return React.cloneElement(Component);
+                    }
                     return <Component type={type} value={value} />
                   }
+                  return <GenericValueComponent value={value} />
                 }}
               </ComponentsContext.Consumer>
             )}
