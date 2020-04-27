@@ -9,6 +9,7 @@
     "start": "node_modules/.bin/tsc --watch",
     "test": "mocha --colors --require ts-node/register --require source-map-support/register 'test/**.tsx'"
   },
+  "author": "g. nicholas d'andrea and David Murdoch",
   "license": "MIT",
   "dependencies": {
     "lodash.clonedeep": "^4.5.0",
