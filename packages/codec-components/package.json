@@ -1,5 +1,5 @@
 {
-  "name": "@truffle/decoder-result-components",
+  "name": "@truffle/codec-components",
   "version": "0.1.0",
   "description": "",
   "main": "dist/src/index.js",
@@ -9,7 +9,6 @@
     "start": "node_modules/.bin/tsc --watch",
     "test": "mocha --colors --require ts-node/register --require source-map-support/register 'test/**.tsx'"
   },
-  "author": "",
   "license": "MIT",
   "dependencies": {
     "lodash.clonedeep": "^4.5.0",
