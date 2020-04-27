@@ -16,6 +16,77 @@ export interface HasTypeProp<T extends Format.Types.Type = Format.Types.Type> {
   type: T
 }
 
+export interface TypeClasses {
+  address: {
+    type: Format.Types.AddressType,
+    value: Format.Values.AddressValue
+  },
+  array: {
+    type: Format.Types.ArrayType,
+    value: Format.Values.ArrayValue
+  }
+  bool: {
+    type: Format.Types.BoolType,
+    value: Format.Values.BoolValue,
+  },
+  bytes: {
+    type: Format.Types.BytesType,
+    value: Format.Values.BytesValue,
+  },
+  contract: {
+    type: Format.Types.ContractType,
+    value: Format.Values.ContractValue,
+  },
+  enum: {
+    type: Format.Types.EnumType,
+    value: Format.Values.EnumValue,
+  },
+  fixed: {
+    type: Format.Types.FixedType,
+    value: Format.Values.FixedValue,
+  },
+  function: {
+    type: Format.Types.FunctionExternalType | Format.Types.FunctionInternalType,
+    value: Format.Values.FunctionExternalValue | Format.Values.FunctionInternalValue,
+  },
+  int: {
+    type: Format.Types.IntType,
+    value: Format.Values.IntValue,
+  },
+  magic: {
+    type: Format.Types.MagicType,
+    value: Format.Values.MagicValue,
+  },
+  mapping: {
+    type: Format.Types.MappingType,
+    value: Format.Values.MappingValue,
+  },
+  string: {
+    type: Format.Types.StringType,
+    value: Format.Values.StringValue,
+  },
+  struct: {
+    type: Format.Types.StructType,
+    value: Format.Values.StructValue,
+  },
+  tuple: {
+    type: Format.Types.TupleType,
+    value: Format.Values.TupleValue,
+  },
+  type: {
+    type: Format.Types.TypeType,
+    value: Format.Values.TypeValue,
+  },
+  ufixed: {
+    type: Format.Types.UfixedType,
+    value: Format.Values.UfixedValue,
+  },
+  uint: {
+    type: Format.Types.UintType,
+    value: Format.Values.UintValue,
+  }
+}
+
 export class UintValueComponent extends React.PureComponent<
   HasValueProp<Format.Values.UintValue>
 > {
@@ -38,43 +109,14 @@ export class GenericTypeComponent<T extends Format.Types.Type = Format.Types.Typ
   }
 };
 
-export interface TypeComponents {
-  address?: React.ComponentClass<HasTypeProp<Format.Types.AddressType>>,
-  array?: React.ComponentClass<HasTypeProp<Format.Types.ArrayType>>,
-  bool?: React.ComponentClass<HasTypeProp<Format.Types.BoolType>>,
-  bytes?: React.ComponentClass<HasTypeProp<Format.Types.BytesType>>,
-  contract?: React.ComponentClass<HasTypeProp<Format.Types.ContractType>>,
-  enum?: React.ComponentClass<HasTypeProp<Format.Types.EnumType>>,
-  fixed?: React.ComponentClass<HasTypeProp<Format.Types.FixedType>>,
-  function?: React.ComponentClass<HasTypeProp<Format.Types.FunctionExternalType | Format.Types.FunctionInternalType>>,
-  int?: React.ComponentClass<HasTypeProp<Format.Types.IntType>>,
-  magic?: React.ComponentClass<HasTypeProp<Format.Types.MagicType>>,
-  mapping?: React.ComponentClass<HasTypeProp<Format.Types.MappingType>>,
-  string?: React.ComponentClass<HasTypeProp<Format.Types.StringType>>,
-  struct?: React.ComponentClass<HasTypeProp<Format.Types.StructType>>,
-  tuple?: React.ComponentClass<HasTypeProp<Format.Types.TupleType>>,
-  type?: React.ComponentClass<HasTypeProp<Format.Types.TypeType>>,
-  ufixed?: React.ComponentClass<HasTypeProp<Format.Types.UfixedType>>,
-  uint?: React.ComponentClass<HasTypeProp<Format.Types.UintType>>,
-}
-export interface ValueComponents {
-  address?: React.ComponentClass<HasValueProp<Format.Values.AddressValue>>,
-  array?: React.ComponentClass<HasValueProp<Format.Values.ArrayValue>>,
-  bool?: React.ComponentClass<HasValueProp<Format.Values.BoolValue>>,
-  bytes?: React.ComponentClass<HasValueProp<Format.Values.BytesValue>>,
-  contract?: React.ComponentClass<HasValueProp<Format.Values.ContractValue>>,
-  enum?: React.ComponentClass<HasValueProp<Format.Values.EnumValue>>,
-  fixed?: React.ComponentClass<HasValueProp<Format.Values.FixedValue>>,
-  function?: React.ComponentClass<HasValueProp<Format.Values.FunctionExternalValue | Format.Values.FunctionInternalValue>>,
-  int?: React.ComponentClass<HasValueProp<Format.Values.IntValue>>,
-  magic?: React.ComponentClass<HasValueProp<Format.Values.MagicValue>>,
-  mapping?: React.ComponentClass<HasValueProp<Format.Values.MappingValue>>,
-  string?: React.ComponentClass<HasValueProp<Format.Values.StringValue>>,
-  struct?: React.ComponentClass<HasValueProp<Format.Values.StructValue>>,
-  tuple?: React.ComponentClass<HasValueProp<Format.Values.TupleValue>>,
-  type?: React.ComponentClass<HasValueProp<Format.Values.TypeValue>>,
-  ufixed?: React.ComponentClass<HasValueProp<Format.Values.UfixedValue>>,
-  uint?: React.ComponentClass<HasValueProp<Format.Values.UintValue>>,
+export type TypeComponents = {
+  [T in keyof TypeClasses]?:
+    React.ComponentClass<HasTypeProp<TypeClasses[T]["type"]>>
+};
+
+export type ValueComponents = {
+  [T in keyof TypeClasses]?:
+    React.ComponentClass<HasValueProp<TypeClasses[T]["value"]>>
 }
 
 export interface Components {
