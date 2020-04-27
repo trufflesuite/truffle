@@ -203,7 +203,6 @@ var DebugUtils = {
     ];
 
     var commandSections = [
-      //TODO
       ["o", "i", "u", "n"],
       [";"],
       ["p"],
@@ -568,7 +567,9 @@ var DebugUtils = {
       .join(OS.EOL);
   },
 
-  formatStacktrace: function(stacktrace, message, indent = 2) {
+  formatStacktrace: function(stacktrace, indent = 2) {
+    //get message from stacktrace
+    const message = stacktrace[0].message;
     //we want to print inner to outer, so first, let's
     //reverse
     stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
@@ -599,9 +600,11 @@ var DebugUtils = {
     if (status != undefined) {
       lines.unshift(
         status
-          ? "Error: Improper return (may be an unexpected self-destruct)"
+          ? message !== undefined
+            ? "Error: Improper return (may be an unexpected self-destruct)"
+            : `Error: Improper return (caused message: ${message})`
           : message !== undefined
-            ? `Error: Revert; message: ${message}`
+            ? `Error: Revert (message: ${message})`
             : "Error: Revert or exceptional halt"
       );
     }

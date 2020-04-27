@@ -3,8 +3,6 @@ const DebugUtils = require("@truffle/debug-utils");
 const Web3PromiEvent = require("web3-core-promievent");
 
 function PromiEvent(justPromise, bugger) {
-  //selectors are passed in separately because when I
-  //try to import Debugger here I get a compile error
   const { resolve, reject, eventEmitter } = new Web3PromiEvent(justPromise);
 
   originalStackTrace = new Error().stack;
@@ -20,28 +18,9 @@ function PromiEvent(justPromise, bugger) {
           let session = bugger.connect();
           await session.load(this.txHash);
           await session.continueUntilBreakpoint();
-          const report = session.view(
-            bugger.constructor.selectors.stacktrace.current.finalReport
-          );
-          const rawMessage = session.view(
-            bugger.constructor.selectors.evm.current.step.returnValue
-          );
+          const report = session.stacktrace();
           await session.unload();
-          //attempt to decode (not gonna try and use Truffle Codec in here, we don't
-          //need anything that fancy here anyway)
-          let message;
-          const errorStringHash = "0x08c379a0";
-          if (rawMessage.startsWith(errorStringHash)) {
-            try {
-              message = web3.eth.abi.decodeParameter(
-                "string",
-                rawMessage.slice(10) //10 = 2 + 2*4
-              );
-            } catch (_) {
-              //if error, leave message undefined
-            }
-          }
-          return DebugUtils.formatStacktrace(report, message, 4); //indent 4 to match node's stacktraces
+          return DebugUtils.formatStacktrace(report, 4); //indent 4 to match node's stacktraces
         } catch (_) {
           //ignore errors
           return undefined;

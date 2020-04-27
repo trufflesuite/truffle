@@ -9,10 +9,11 @@ import solidity from "lib/solidity/selectors";
 import jsonpointer from "json-pointer";
 import zipWith from "lodash.zipwith";
 import { popNWhere } from "lib/helpers";
+import * as Codec from "@truffle/codec";
 
 const identity = x => x;
 
-function generateReport(callstack, location, status) {
+function generateReport(callstack, location, status, message) {
   //step 1: shift everything over by 1 and recombine :)
   let locations = callstack.map(frame => frame.calledFromLocation);
   //remove initial null, add final location on end
@@ -29,8 +30,12 @@ function generateReport(callstack, location, status) {
     location
   }));
   //finally: set the status in the top frame
+  //and the message in the bottom
   if (status !== null) {
     report[report.length - 1].status = status;
+  }
+  if (message !== undefined) {
+    report[0].message = message;
   }
   return report;
 }
@@ -192,6 +197,40 @@ let stacktrace = createSelectorTree({
     ),
 
     /**
+     * stacktrace.current.revertString
+     * Crudely decodes the current revert string.
+     * Not meant to account for crazy things, just there to produce
+     * a simple string.
+     */
+    revertString: createLeaf(
+      [evm.current.step.returnValue],
+      rawRevertMessage => {
+        let revertDecodings = Codec.decodeRevert(
+          Codec.Conversion.toBytes(rawRevertMessage)
+        );
+        if (
+          revertDecodings.length === 1 &&
+          revertDecodings[0].kind === "revert"
+        ) {
+          let revertStringInfo = revertDecodings[0].arguments[0].value.value;
+          switch (revertStringInfo.kind) {
+            case "valid":
+              return revertStringInfo.asString;
+            case "malformed":
+              //turn into a JS string while smoothing over invalid UTF-8
+              //slice 2 to remove 0x prefix
+              return Buffer.from(
+                revertStringInfo.asHex.slice(2),
+                "hex"
+              ).toString();
+          }
+        } else {
+          return undefined;
+        }
+      }
+    ),
+
+    /**
      * stacktrace.current.positionWillChange
      */
     positionWillChange: createLeaf(
@@ -220,9 +259,13 @@ let stacktrace = createSelectorTree({
      * Still needs to be processed into a string, mind you.
      */
     finalReport: createLeaf(
-      ["./callstack", "./innerReturnPosition", "./innerReturnStatus"],
-      (callstack, finalLocation, status) =>
-        generateReport(callstack, finalLocation, status)
+      [
+        "./callstack",
+        "./innerReturnPosition",
+        "./innerReturnStatus",
+        "./revertString"
+      ],
+      generateReport
     ),
 
     /**
@@ -247,7 +290,8 @@ let stacktrace = createSelectorTree({
             frame => frame.type === "external"
           ),
           currentLocation || lastPosition,
-          null
+          null,
+          undefined
         )
     )
   },

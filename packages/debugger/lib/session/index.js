@@ -8,6 +8,7 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import stacktrace from "lib/stacktrace/selectors";
 import session from "lib/session/selectors";
 import * as dataSagas from "lib/data/sagas";
 import * as controllerSagas from "lib/controller/sagas";
@@ -378,5 +379,19 @@ export default class Session {
       }
     }
     return decoded;
+  }
+
+  callstack() {
+    if (!this.view(session.status.loaded)) {
+      return null;
+    }
+    return this.view(stacktrace.current.report);
+  }
+
+  stacktrace() {
+    if (!this.view(session.status.loaded)) {
+      return null;
+    }
+    return this.view(stacktrace.current.finalReport);
   }
 }

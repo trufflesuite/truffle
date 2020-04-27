@@ -301,28 +301,7 @@ class DebugPrinter {
     let report = final
       ? this.session.view(stacktrace.current.finalReport)
       : this.session.view(stacktrace.current.report);
-    let rawRevertMessage = this.session.view(evm.current.step.returnValue);
-    let revertDecodings = Codec.decodeRevert(
-      Codec.Conversion.toBytes(rawRevertMessage)
-    );
-    let message = undefined;
-    if (revertDecodings.length === 1 && revertDecodings[0].kind === "revert") {
-      let revertStringInfo = revertDecodings[0].arguments[0].value.value;
-      switch (revertStringInfo.kind) {
-        case "valid":
-          message = revertStringInfo.asString;
-          break;
-        case "malformed":
-          //turn into a JS string while smoothing over invalid UTF-8
-          //slice 2 to remove 0x prefix
-          message = Buffer.from(
-            revertStringInfo.asHex.slice(2),
-            "hex"
-          ).toString();
-          break;
-      }
-    }
-    this.config.logger.log(DebugUtils.formatStacktrace(report, message));
+    this.config.logger.log(DebugUtils.formatStacktrace(report));
   }
 
   async printWatchExpressionsResults(expressions) {
