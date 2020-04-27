@@ -124,11 +124,7 @@ describe("Contexts", function() {
     });
     debug("debugger ready");
 
-    let session = bugger.connect();
-
-    let affectedInstances = session.view(
-      sessionSelector.info.affectedInstances
-    );
+    let affectedInstances = bugger.view(sessionSelector.info.affectedInstances);
     debug("affectedInstances: %o", affectedInstances);
 
     let affectedAddresses = Object.keys(affectedInstances);
@@ -166,11 +162,7 @@ describe("Contexts", function() {
     });
     debug("debugger ready");
 
-    let session = bugger.connect();
-
-    let affectedInstances = session.view(
-      sessionSelector.info.affectedInstances
-    );
+    let affectedInstances = bugger.view(sessionSelector.info.affectedInstances);
     debug("affectedInstances: %o", affectedInstances);
 
     assert.property(affectedInstances, address);

@@ -15,11 +15,10 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
       debug("debugging time!");
       getSolidityStackTrace = async () => {
         try {
-          let session = bugger.connect();
-          await session.load(this.txHash);
-          await session.continueUntilBreakpoint();
-          const report = session.stacktrace();
-          await session.unload();
+          await bugger.load(this.txHash);
+          await bugger.continueUntilBreakpoint();
+          const report = bugger.stacktrace();
+          await bugger.unload();
           return DebugUtils.formatStacktrace(report, 4); //indent 4 to match node's stacktraces
         } catch (_) {
           //ignore errors

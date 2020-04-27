@@ -135,15 +135,13 @@ describe("Stack tracing", function() {
       lightMode: true
     });
 
-    let session = bugger.connect();
-
-    let source = session.view(solidity.current.source);
+    let source = bugger.view(solidity.current.source);
     let failLine = lineOf("REQUIRE", source.source);
     let callLine = lineOf("CALL", source.source);
 
-    await session.continueUntilBreakpoint(); //run till end
+    await bugger.continueUntilBreakpoint(); //run till end
 
-    let report = session.view(stacktrace.current.finalReport);
+    let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
       undefined,
@@ -184,9 +182,7 @@ describe("Stack tracing", function() {
       lightMode: true
     });
 
-    let session = bugger.connect();
-
-    let source = session.view(solidity.current.source);
+    let source = bugger.view(solidity.current.source);
     let breakLine = lineOf("EMIT", source.source);
     let callLine = lineOf("CALL", source.source);
     let breakpoint = {
@@ -194,10 +190,10 @@ describe("Stack tracing", function() {
       compilationId: source.compilationId,
       line: breakLine
     };
-    await session.addBreakpoint(breakpoint);
-    await session.continueUntilBreakpoint(); //run till EMIT
+    await bugger.addBreakpoint(breakpoint);
+    await bugger.continueUntilBreakpoint(); //run till EMIT
 
-    let report = session.view(stacktrace.current.report);
+    let report = bugger.view(stacktrace.current.report);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
       undefined,
@@ -217,9 +213,9 @@ describe("Stack tracing", function() {
     assert.strictEqual(location.sourceRange.lines.start.line, breakLine);
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
 
-    await session.continueUntilBreakpoint(); //run till EMIT again
+    await bugger.continueUntilBreakpoint(); //run till EMIT again
 
-    report = session.view(stacktrace.current.report);
+    report = bugger.view(stacktrace.current.report);
     functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
       undefined,
@@ -260,15 +256,13 @@ describe("Stack tracing", function() {
       lightMode: true
     });
 
-    let session = bugger.connect();
-
-    let source = session.view(solidity.current.source);
+    let source = bugger.view(solidity.current.source);
     let failLine = lineOf("PAY", source.source);
     let callLine = lineOf("CALL", source.source);
 
-    await session.continueUntilBreakpoint(); //run till end
+    await bugger.continueUntilBreakpoint(); //run till end
 
-    let report = session.view(stacktrace.current.finalReport);
+    let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
       undefined,
@@ -310,15 +304,13 @@ describe("Stack tracing", function() {
       lightMode: true
     });
 
-    let session = bugger.connect();
-
-    let source = session.view(solidity.current.source);
+    let source = bugger.view(solidity.current.source);
     let failLine = lineOf("GARBAGE", source.source);
     let callLine = lineOf("CALL", source.source);
 
-    await session.continueUntilBreakpoint(); //run till end
+    await bugger.continueUntilBreakpoint(); //run till end
 
-    let report = session.view(stacktrace.current.finalReport);
+    let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
       undefined,
@@ -362,16 +354,14 @@ describe("Stack tracing", function() {
       lightMode: true
     });
 
-    let session = bugger.connect();
-
-    let source = session.view(solidity.current.source);
+    let source = bugger.view(solidity.current.source);
     let failLine = lineOf("BOOM", source.source);
     let callLine = lineOf("UHOH", source.source);
     let prevCallLine = lineOf("CALL", source.source);
 
-    await session.continueUntilBreakpoint(); //run till end
+    await bugger.continueUntilBreakpoint(); //run till end
 
-    let report = session.view(stacktrace.current.finalReport);
+    let report = bugger.view(stacktrace.current.finalReport);
     let functionNames = report.map(({ functionName }) => functionName);
     assert.deepEqual(functionNames, [
       undefined,

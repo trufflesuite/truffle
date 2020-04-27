@@ -74,9 +74,7 @@ describe("End State", function() {
       lightMode: true
     });
 
-    let session = bugger.connect();
-
-    assert.ok(!session.view(evm.transaction.status));
+    assert.ok(!bugger.view(evm.transaction.status));
   });
 
   it("Gets vars at end of successful contract (and marks it successful)", async function() {
@@ -89,13 +87,11 @@ describe("End State", function() {
       compilations
     });
 
-    let session = bugger.connect();
+    await bugger.continueUntilBreakpoint(); //no breakpoints set so advances to end
 
-    await session.continueUntilBreakpoint(); //no breakpoints set so advances to end
-
-    assert.ok(session.view(evm.transaction.status));
+    assert.ok(bugger.view(evm.transaction.status));
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
     assert.include(variables, { x: 107 });
   });

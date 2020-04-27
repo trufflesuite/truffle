@@ -165,10 +165,8 @@ describe("Solidity Debugging", function() {
       lightMode: true
     });
 
-    let session = bugger.connect();
-
     // at `second();`
-    let source = session.view(solidity.current.source);
+    let source = bugger.view(solidity.current.source);
     let breakLine = lineOf("BREAK", source.source);
     let breakpoint = {
       sourceId: source.id,
@@ -176,16 +174,16 @@ describe("Solidity Debugging", function() {
       line: breakLine
     };
 
-    await session.addBreakpoint(breakpoint);
+    await bugger.addBreakpoint(breakpoint);
 
     do {
-      await session.continueUntilBreakpoint();
+      await bugger.continueUntilBreakpoint();
 
-      if (!session.view(trace.finished)) {
-        let range = session.view(solidity.current.sourceRange);
+      if (!bugger.view(trace.finished)) {
+        let range = bugger.view(solidity.current.sourceRange);
         assert.equal(range.lines.start.line, breakLine);
       }
-    } while (!session.view(trace.finished));
+    } while (!bugger.view(trace.finished));
   });
 
   it("exposes functionality to stop at specified breakpoints", async function() {
@@ -200,21 +198,19 @@ describe("Solidity Debugging", function() {
       lightMode: true
     });
 
-    let session = bugger.connect();
-
     // at `second();`
-    let source = session.view(solidity.current.source);
+    let source = bugger.view(solidity.current.source);
     let breakLine = lineOf("BREAK", source.source);
     let breakpoint = { sourceId: source.id, line: breakLine };
 
     do {
-      await session.continueUntilBreakpoint([breakpoint]);
+      await bugger.continueUntilBreakpoint([breakpoint]);
 
-      if (!session.view(trace.finished)) {
-        let range = session.view(solidity.current.sourceRange);
+      if (!bugger.view(trace.finished)) {
+        let range = bugger.view(solidity.current.sourceRange);
         assert.equal(range.lines.start.line, breakLine);
       }
-    } while (!session.view(trace.finished));
+    } while (!bugger.view(trace.finished));
   });
 
   it("correctly resolves breakpoints", async function() {
@@ -229,10 +225,8 @@ describe("Solidity Debugging", function() {
       lightMode: true
     });
 
-    let session = bugger.connect();
-
-    let resolver = session.view(controller.breakpoints.resolver);
-    let source = session.view(solidity.current.source);
+    let resolver = bugger.view(controller.breakpoints.resolver);
+    let source = bugger.view(solidity.current.source);
 
     let breakpoints = [];
     let expectedResolutions = [];
@@ -276,14 +270,13 @@ describe("Solidity Debugging", function() {
         lightMode: true
       });
 
-      let session = bugger.connect();
       var finished;
 
       do {
-        await session.stepNext();
-        finished = session.view(trace.finished);
+        await bugger.stepNext();
+        finished = bugger.view(trace.finished);
 
-        let actual = session.view(solidity.current.functionDepth);
+        let actual = bugger.view(solidity.current.functionDepth);
 
         assert.isAtMost(actual, maxExpected);
       } while (!finished);
@@ -302,13 +295,11 @@ describe("Solidity Debugging", function() {
         lightMode: true
       });
 
-      let session = bugger.connect();
-
-      while (!session.view(trace.finished)) {
-        let depth = session.view(solidity.current.functionDepth);
+      while (!bugger.view(trace.finished)) {
+        let depth = bugger.view(solidity.current.functionDepth);
         assert.equal(depth, numExpected);
 
-        await session.stepNext();
+        await bugger.stepNext();
       }
     });
 
@@ -334,13 +325,11 @@ describe("Solidity Debugging", function() {
         lightMode: true
       });
 
-      let session = bugger.connect();
-
-      while (!session.view(trace.finished)) {
-        let depth = session.view(solidity.current.functionDepth);
+      while (!bugger.view(trace.finished)) {
+        let depth = bugger.view(solidity.current.functionDepth);
         assert.equal(depth, numExpected);
 
-        await session.stepNext();
+        await bugger.stepNext();
       }
     });
 
@@ -356,20 +345,18 @@ describe("Solidity Debugging", function() {
         lightMode: true
       });
 
-      let session = bugger.connect();
-
       // follow functionDepth values in list
       // see source above
       let expectedDepthSequence = [0, 1, 2, 1, 0, 1, 0];
-      let actualSequence = [session.view(solidity.current.functionDepth)];
+      let actualSequence = [bugger.view(solidity.current.functionDepth)];
 
       var finished;
 
       do {
-        await session.stepNext();
-        finished = session.view(trace.finished);
+        await bugger.stepNext();
+        finished = bugger.view(trace.finished);
 
-        let currentDepth = session.view(solidity.current.functionDepth);
+        let currentDepth = bugger.view(solidity.current.functionDepth);
         let lastKnown = actualSequence[actualSequence.length - 1];
 
         if (currentDepth !== lastKnown) {
@@ -392,28 +379,26 @@ describe("Solidity Debugging", function() {
         lightMode: true
       });
 
-      let session = bugger.connect();
-
-      let source = session.view(solidity.current.source);
+      let source = bugger.view(solidity.current.source);
       let breakLine1 = lineOf("BREAK #1", source.source);
       let breakpoint1 = {
         sourceId: source.id,
         compilationId: source.compilationId,
         line: breakLine1
       };
-      await session.addBreakpoint(breakpoint1);
+      await bugger.addBreakpoint(breakpoint1);
       let breakLine2 = lineOf("BREAK #2", source.source);
       let breakpoint2 = {
         sourceId: source.id,
         compilationId: source.compilationId,
         line: breakLine2
       };
-      await session.addBreakpoint(breakpoint2);
+      await bugger.addBreakpoint(breakpoint2);
 
-      await session.continueUntilBreakpoint();
-      let depthBefore = session.view(solidity.current.functionDepth);
-      await session.continueUntilBreakpoint();
-      let depthAfter = session.view(solidity.current.functionDepth);
+      await bugger.continueUntilBreakpoint();
+      let depthBefore = bugger.view(solidity.current.functionDepth);
+      await bugger.continueUntilBreakpoint();
+      let depthAfter = bugger.view(solidity.current.functionDepth);
 
       assert.equal(depthAfter, depthBefore);
     });

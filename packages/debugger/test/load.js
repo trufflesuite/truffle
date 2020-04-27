@@ -62,14 +62,12 @@ describe("Loading and unloading transactions", function() {
       compilations
     });
 
-    let session = bugger.connect();
-
-    assert.isFalse(session.view(trace.loaded));
-    await session.load(txHash);
-    assert.isTrue(session.view(trace.loaded));
-    await session.continueUntilBreakpoint(); //continue to end
+    assert.isFalse(bugger.view(trace.loaded));
+    await bugger.load(txHash);
+    assert.isTrue(bugger.view(trace.loaded));
+    await bugger.continueUntilBreakpoint(); //continue to end
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
     const expected = { x: 1 };
     assert.deepInclude(variables, expected);
@@ -89,22 +87,20 @@ describe("Loading and unloading transactions", function() {
       compilations
     });
 
-    let session = bugger.connect();
-
-    assert.isTrue(session.view(trace.loaded));
-    await session.continueUntilBreakpoint(); //continue to end
+    assert.isTrue(bugger.view(trace.loaded));
+    await bugger.continueUntilBreakpoint(); //continue to end
     let variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
     let expected = { x: 1 };
     assert.deepInclude(variables, expected);
-    await session.unload();
-    assert.isFalse(session.view(trace.loaded));
-    await session.load(txHash2);
-    assert.isTrue(session.view(trace.loaded));
-    await session.continueUntilBreakpoint(); //continue to end
+    await bugger.unload();
+    assert.isFalse(bugger.view(trace.loaded));
+    await bugger.load(txHash2);
+    assert.isTrue(bugger.view(trace.loaded));
+    await bugger.continueUntilBreakpoint(); //continue to end
     variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
     expected = { y: 2 };
     assert.deepInclude(variables, expected);
@@ -117,8 +113,6 @@ describe("Loading and unloading transactions", function() {
       lightMode: true
     });
 
-    let session = bugger.connect();
-
-    assert.isDefined(session.view(controller.current.location));
+    assert.isDefined(bugger.view(controller.current.location));
   });
 });
