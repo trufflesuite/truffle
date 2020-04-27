@@ -105,7 +105,15 @@ export class GenericValueComponent<V extends Format.Values.Value = Format.Values
 
 export class GenericTypeComponent<T extends Format.Types.Type = Format.Types.Type> extends React.PureComponent<HasTypeProp<T>> {
   render () {
-    return <span>{this.props.type.typeClass}</span>
+    const { typeClass } = this.props.type;
+    switch (typeClass) {
+      case "uint":
+      case "int":
+        const { bits } = this.props.type as any;
+        return <span>{`${typeClass}${bits}`}</span>;
+      default:
+        return <span>{typeClass}</span>;
+    }
   }
 };
 

@@ -29,7 +29,7 @@ describe("example usage", () => {
     const testRenderer = TestRenderer.create(component);
     const testInstance = testRenderer.root;
 
-    assert(testInstance.findByProps({ children: "uint" }));
+    assert(testInstance.findByProps({ children: "uint256" }));
   });
 
   it("allows custom display", () => {
@@ -56,7 +56,7 @@ describe("example usage", () => {
     const testRenderer = TestRenderer.create(component);
     const testInstance = testRenderer.root;
 
-    assert.throws(() => testInstance.findByProps({ children: "uint" }));
+    assert.throws(() => testInstance.findByProps({ children: "uint256" }));
   });
 
   /* it("allows zero-config usage", () => { */
