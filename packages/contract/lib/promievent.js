@@ -2,7 +2,7 @@ const debug = require("debug")("contract:promievent");
 const DebugUtils = require("@truffle/debug-utils");
 const Web3PromiEvent = require("web3-core-promievent");
 
-function PromiEvent(justPromise, bugger) {
+function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
   const { resolve, reject, eventEmitter } = new Web3PromiEvent(justPromise);
 
   originalStackTrace = new Error().stack;
@@ -34,11 +34,15 @@ function PromiEvent(justPromise, bugger) {
       debug("e.stack: %s", e.stack);
       debug("originalStackTrace: %s", originalStackTrace);
       debug("solidityStackTrace: %s", solidityStackTrace);
+      const initialLinesRegexp = isDeploy
+        ? /^.*\n.*\n.*\n.*/ //first 4 lines (note . does not include \n)
+        : /^.*\n.*\n.*/; //first 3 lines
+      //we replace not just the first line but also the next 2 as they contain
+      //useless stuff users shouldn't see; in case of deployments there's one
+      //additional to remove
       try {
         let stackTrace = originalStackTrace.replace(
-          /^.*\n.*\n.*/, //replace first 3 lines; note that . does not include \n
-          //we replace not just the first line but also the next 2 as they contain
-          //useless stuff users shouldn't see
+          initialLinesRegexp,
           e.stack.split("\n")[0]
         );
         if (solidityStackTrace) {
