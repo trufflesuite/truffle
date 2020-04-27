@@ -16,36 +16,15 @@ import controllerSelector from "./controller/selectors";
 
 import { Compilations } from "@truffle/codec";
 
-/**
- * @example
- * let session = Debugger
- *   .forTx(<txHash>, {
- *     contracts: [<contract obj>, ...],
- *     provider: <provider instance>
- *   })
- *   .connect();
- */
-export default class Debugger {
+const Debugger = {
   /**
-   * @param {Session} session - debugger session
-   * @private
-   */
-  constructor(session) {
-    /**
-     * @private
-     */
-    this._session = session;
-  }
-
-  /**
-   /**
    * Instantiates a Debugger for a given transaction hash.
    *
    * @param {String} txHash - transaction hash with leading "0x"
    * @param {{contracts: Array<Artifact>, files: Array<String>, provider: Web3Provider, compilations: Array<Compilation>}} options -
    * @return {Debugger} instance
    */
-  static async forTx(txHash, options = {}) {
+  forTx: async function(txHash, options = {}) {
     let { contracts, files, provider, compilations, lightMode } = options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
@@ -60,8 +39,8 @@ export default class Debugger {
       session.unload();
     }
 
-    return new this(session);
-  }
+    return session;
+  },
 
   /*
    * Instantiates a Debugger for a given project (with no transaction loaded)
@@ -69,7 +48,7 @@ export default class Debugger {
    * @param {{contracts: Array<Artifact>, files: Array<String>, provider: Web3Provider, compilations: Array<Compilation>}} options -
    * @return {Debugger} instance
    */
-  static async forProject(options = {}) {
+  forProject: async function(options = {}) {
     let { contracts, files, provider, compilations, lightMode } = options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
@@ -78,17 +57,8 @@ export default class Debugger {
 
     await session.ready();
 
-    return new this(session);
-  }
-
-  /**
-   * Connects to the instantiated Debugger.
-   *
-   * @return {Session} session instance
-   */
-  connect() {
-    return this._session;
-  }
+    return session;
+  },
 
   /**
    * Exported selectors
@@ -104,16 +74,16 @@ export default class Debugger {
    * @example
    * Debugger.selectors.trace.steps
    */
-  static get selectors() {
-    return createNestedSelector({
-      ast: astSelector,
-      data: dataSelector,
-      trace: traceSelector,
-      evm: evmSelector,
-      solidity: soliditySelector,
-      stacktrace: stacktraceSelector,
-      session: sessionSelector,
-      controller: controllerSelector
-    });
-  }
-}
+  selectors: createNestedSelector({
+    ast: astSelector,
+    data: dataSelector,
+    trace: traceSelector,
+    evm: evmSelector,
+    solidity: soliditySelector,
+    stacktrace: stacktraceSelector,
+    session: sessionSelector,
+    controller: controllerSelector
+  })
+};
+
+export default Debugger;
