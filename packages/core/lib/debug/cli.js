@@ -75,16 +75,14 @@ class CLIDebugger {
             compilations
           });
 
-    const session = bugger.connect();
-
     // check for error
-    if (session.view(Debugger.selectors.session.status.isError)) {
+    if (bugger.view(Debugger.selectors.session.status.isError)) {
       startSpinner.fail();
     } else {
       startSpinner.succeed();
     }
 
-    return session;
+    return bugger;
   }
 
   async buildInterpreter(session, txHash) {

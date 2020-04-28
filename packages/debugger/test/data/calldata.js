@@ -126,21 +126,19 @@ describe("Calldata Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("break multi", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -160,21 +158,19 @@ describe("Calldata Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("break simple", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -192,21 +188,19 @@ describe("Calldata Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("break stringBox", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -229,21 +223,19 @@ describe("Calldata Decoding", function() {
       compilations
     });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("break static", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -264,21 +256,19 @@ describe("Calldata Decoding", function() {
       compilations
     });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("break delegate", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {

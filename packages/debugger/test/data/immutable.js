@@ -89,21 +89,19 @@ describe("Immutable state variables", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK DEPLOYED", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -116,7 +114,7 @@ describe("Immutable state variables", function() {
 
     assert.deepInclude(variables, expectedResult);
 
-    const trulySecret = await session.variable("trulySecret");
+    const trulySecret = await bugger.variable("trulySecret");
     assert.strictEqual(trulySecret.kind, "error");
     assert.strictEqual(trulySecret.error.kind, "UnusedImmutableError");
   });
@@ -129,21 +127,19 @@ describe("Immutable state variables", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK CONSTRUCTOR", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {

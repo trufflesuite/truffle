@@ -28,7 +28,7 @@ class DebugPrinter {
       try {
         selector = expr
           .split(".")
-          .reduce((sel, next) => next.length ? sel[next] : sel, selectors);
+          .reduce((sel, next) => (next.length ? sel[next] : sel), selectors);
       } catch (_) {
         throw new Error("Unknown selector: %s", expr);
       }

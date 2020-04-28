@@ -61,6 +61,7 @@
     "original-require": "1.0.1",
     "safe-eval": "^0.4.1",
     "sane": "^4.0.2",
+    "semver": "^6.3.0",
     "source-map-support": "^0.5.16",
     "spawn-args": "^0.1.0",
     "temp": "^0.8.3",

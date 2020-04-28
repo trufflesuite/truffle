@@ -527,8 +527,9 @@ class DebugInterpreter {
       case "s":
         if (this.session.view(selectors.session.status.loaded)) {
           this.printer.printStacktrace(
-            this.session.view(trace.finished) //print final report if finished,
-            //intermediate if not
+            //print final report if finished & failed, intermediate if not
+            this.session.view(trace.finished) &&
+              !this.session.view(evm.transaction.status)
           );
         }
         break;

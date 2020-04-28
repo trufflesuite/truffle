@@ -117,14 +117,14 @@ describe("Contexts", function() {
 
     let txHash = result.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
     debug("debugger ready");
 
-    let session = bugger.connect();
-
-    let affectedInstances = session.view(
-      sessionSelector.info.affectedInstances
-    );
+    let affectedInstances = bugger.view(sessionSelector.info.affectedInstances);
     debug("affectedInstances: %o", affectedInstances);
 
     let affectedAddresses = Object.keys(affectedInstances);
@@ -155,14 +155,14 @@ describe("Contexts", function() {
 
     let txHash = result.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
     debug("debugger ready");
 
-    let session = bugger.connect();
-
-    let affectedInstances = session.view(
-      sessionSelector.info.affectedInstances
-    );
+    let affectedInstances = bugger.view(sessionSelector.info.affectedInstances);
     debug("affectedInstances: %o", affectedInstances);
 
     assert.property(affectedInstances, address);

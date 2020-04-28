@@ -213,18 +213,17 @@ describe("Variable IDs", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-    debug("sourceId %d", session.view(solidity.current.source).id);
+    debug("sourceId %d", bugger.view(solidity.current.source).id);
 
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("break here #1", source)
     });
-    await session.addBreakpoint({
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("break here #2", source)
@@ -232,12 +231,12 @@ describe("Variable IDs", function() {
 
     var values = [];
 
-    await session.continueUntilBreakpoint();
-    while (!session.view(trace.finished)) {
+    await bugger.continueUntilBreakpoint();
+    while (!bugger.view(trace.finished)) {
       values.push(
-        Codec.Format.Utils.Inspect.nativize(await session.variable("nbang"))
+        Codec.Format.Utils.Inspect.nativize(await bugger.variable("nbang"))
       );
-      await session.continueUntilBreakpoint();
+      await bugger.continueUntilBreakpoint();
     }
 
     assert.deepEqual(values, [3, 2, 1, 0, 1, 1, 2, 6]);
@@ -251,18 +250,17 @@ describe("Variable IDs", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-    debug("sourceId %d", session.view(solidity.current.source).id);
+    debug("sourceId %d", bugger.view(solidity.current.source).id);
 
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK HERE #1", source)
     });
-    await session.addBreakpoint({
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK HERE #2", source)
@@ -271,15 +269,15 @@ describe("Variable IDs", function() {
     var xValues = [];
     var tempValues = [];
 
-    await session.continueUntilBreakpoint();
-    while (!session.view(trace.finished)) {
+    await bugger.continueUntilBreakpoint();
+    while (!bugger.view(trace.finished)) {
       xValues.push(
-        Codec.Format.Utils.Inspect.nativize(await session.variable("x"))
+        Codec.Format.Utils.Inspect.nativize(await bugger.variable("x"))
       );
       tempValues.push(
-        Codec.Format.Utils.Inspect.nativize(await session.variable("temp"))
+        Codec.Format.Utils.Inspect.nativize(await bugger.variable("temp"))
       );
-      await session.continueUntilBreakpoint();
+      await bugger.continueUntilBreakpoint();
     }
 
     assert.deepEqual(xValues, [3, 5, 5, 3]);
@@ -294,19 +292,18 @@ describe("Variable IDs", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-    debug("sourceId %d", session.view(solidity.current.source).id);
+    debug("sourceId %d", bugger.view(solidity.current.source).id);
 
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("break here #1", source)
     });
-    await session.continueUntilBreakpoint();
-    assert.property(await session.variables(), "flag");
+    await bugger.continueUntilBreakpoint();
+    assert.property(await bugger.variables(), "flag");
   });
 
   it("Stays at correct stackframe after library call", async function() {
@@ -317,18 +314,17 @@ describe("Variable IDs", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-    debug("sourceId %d", session.view(solidity.current.source).id);
+    debug("sourceId %d", bugger.view(solidity.current.source).id);
 
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("break here #2", source)
     });
-    await session.continueUntilBreakpoint();
-    assert.property(await session.variables(), "flag");
+    await bugger.continueUntilBreakpoint();
+    assert.property(await bugger.variables(), "flag");
   });
 });

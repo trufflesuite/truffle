@@ -62,13 +62,11 @@ async function prepareDebugger(testName, sources) {
 
   let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-  let session = bugger.connect();
-
   let source = sources[fileName(testName)];
 
   //we'll need the debugger-internal ID of this source
   let debuggerSources = flatten(
-    Object.values(session.view(solidity.info.sources)).map(({ byId }) => byId)
+    Object.values(bugger.view(solidity.info.sources)).map(({ byId }) => byId)
   );
   let matchingSources = debuggerSources.filter(sourceObject =>
     sourceObject.sourcePath.includes(contractName(testName))
@@ -82,11 +80,11 @@ async function prepareDebugger(testName, sources) {
     line: lastStatementLine(source)
   };
 
-  await session.addBreakpoint(breakpoint);
+  await bugger.addBreakpoint(breakpoint);
 
-  await session.continueUntilBreakpoint();
+  await bugger.continueUntilBreakpoint();
 
-  return session;
+  return bugger;
 }
 
 async function decode(name) {

@@ -25,11 +25,21 @@ const command = {
       describe: "Bail after first test failure",
       type: "boolean",
       default: false
+    },
+    "stacktrace": {
+      describe: "Produce Solidity stacktraces",
+      type: "boolean",
+      default: false
+    },
+    "stacktrace-extra": {
+      describe: "Produce Solidity stacktraces and compile in debug mode",
+      type: "boolean",
+      default: false
     }
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail]",
+      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail] [--stacktrace[-extra]]",
     options: [
       {
         option: "<test_file>",
@@ -76,6 +86,19 @@ const command = {
       {
         option: "--bail",
         description: "Bail after first test failure"
+      },
+      {
+        option: "--stacktrace",
+        description:
+          "Allows for mixed JS/Solidity stacktraces when a Truffle Contract transaction " +
+          "or deployment\n                    reverts.  Does not apply to calls or gas estimates.  " +
+          "Implies --compile-all."
+      },
+      {
+        option: "--stacktrace-extra",
+        description:
+          "Like --stacktrace, but compiles contracts in debug mode for additional revert info.  " +
+          "May cause\n                    errors on large contracts."
       }
     ]
   },
@@ -101,8 +124,13 @@ const command = {
       Environment.detect(config).catch(done);
     }
 
-    // enables in-test debug() interrupt, forcing compileAll
-    if (config.debug) config.compileAll = true;
+    if (config.stacktraceExtra) {
+      config.stacktrace = true;
+    }
+    // enables in-test debug() interrupt, or stacktraces, forcing compileAll
+    if (config.debug || config.stacktrace) {
+      config.compileAll = true;
+    }
 
     let ipcDisconnect, files;
     try {
