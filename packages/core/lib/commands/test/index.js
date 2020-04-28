@@ -92,7 +92,7 @@ const command = {
         description:
           "Allows for mixed JS/Solidity stacktraces when a Truffle Contract transaction " +
           "or deployment\n                    reverts.  Does not apply to calls or gas estimates.  " +
-          "Implies --compile-all."
+          "Implies --compile-all.  Experimental."
       },
       {
         option: "--stacktrace-extra",
