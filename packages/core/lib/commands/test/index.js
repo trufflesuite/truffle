@@ -30,11 +30,16 @@ const command = {
       describe: "Produce Solidity stacktraces",
       type: "boolean",
       default: false
+    },
+    "stacktrace-extra": {
+      describe: "Produce Solidity stacktraces and compile in debug mode",
+      type: "boolean",
+      default: false
     }
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail] [--stacktrace]",
+      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail] [--stacktrace[-extra]]",
     options: [
       {
         option: "<test_file>",
@@ -88,6 +93,12 @@ const command = {
           "Allows for mixed JS/Solidity stacktraces when a Truffle Contract transaction " +
           "or deployment\n                    reverts.  Does not apply to calls or gas estimates.  " +
           "Implies --compile-all."
+      },
+      {
+        option: "--stacktrace-extra",
+        description:
+          "Like --stacktrace, but compiles contracts in debug mode for additional revert info.  " +
+          "May cause\n                    errors on large contracts."
       }
     ]
   },
@@ -113,6 +124,9 @@ const command = {
       Environment.detect(config).catch(done);
     }
 
+    if (config.stacktraceExtra) {
+      config.stacktrace = true;
+    }
     // enables in-test debug() interrupt, or stacktraces, forcing compileAll
     if (config.debug || config.stacktrace) {
       config.compileAll = true;

@@ -19,6 +19,7 @@ const originalrequire = require("original-require");
 const Codec = require("@truffle/codec");
 const debug = require("debug")("lib:test");
 const Debugger = require("@truffle/debugger");
+const semver = require("semver");
 
 let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
@@ -196,14 +197,45 @@ const Test = {
     const updated =
       (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
 
-    const compileConfig = config.with({
+    let compileConfig = config.with({
       all: config.compileAll === true,
       files: updated.concat(solidityTestFiles),
       resolver: testResolver,
       quiet: config.runnerOutputOnly || config.quiet,
       quietWrite: true
     });
-
+    if (config.stacktraceExtra) {
+      let versionString = ((compileConfig.compilers || {}).solc || {}).version;
+      //note: I'm relying here on the fact that the current
+      //default version, 0.5.16, is <0.6.3
+      //the following line works with prereleases
+      const satisfies = semver.satisfies(versionString, ">=0.6.3", {
+        includePrerelease: true
+      });
+      //the following line doesn't, despite the flag, but does work with version ranges
+      const intersects =
+        versionString !== undefined &&
+        semver.intersects(versionString, ">=0.6.3", {
+          includePrerelease: true
+        }); //intersects will throw if given undefined so must ward against
+      if (satisfies || intersects) {
+        compileConfig = compileConfig.merge({
+          compilers: {
+            solc: {
+              settings: {
+                debug: {
+                  revertStrings: "debug"
+                }
+              }
+            }
+          }
+        });
+      } else {
+        config.logger.log(
+          "Warning: --stacktrace-extra acts like --stacktrace on Solidity <0.6.3"
+        );
+      }
+    }
     // Compile project contracts and test contracts
     const { contracts, compilations } = await Contracts.compile(compileConfig);
 
