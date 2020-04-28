@@ -56,7 +56,12 @@ module.exports = {
     library: "",
     libraryTarget: "commonjs"
   },
-  devtool: "eval",
+  devtool: "source-map",
+
+  optimization: {
+    minimize: false
+  },
+
   module: {
     rules: [
       // ignores "#!/bin..." lines inside files
