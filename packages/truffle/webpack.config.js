@@ -7,6 +7,7 @@ const rootDir = path.join(__dirname, "../..");
 const outputDir = path.join(__dirname, "build");
 
 module.exports = {
+  mode: "production",
   entry: {
     cli: path.join(
       __dirname,
@@ -55,8 +56,7 @@ module.exports = {
     library: "",
     libraryTarget: "commonjs"
   },
-  devtool: "source-map",
-
+  devtool: "eval",
   module: {
     rules: [
       // ignores "#!/bin..." lines inside files
@@ -78,6 +78,26 @@ module.exports = {
     /^original-require$/,
     /^mocha$/
   ],
+
+  resolve: {
+    alias: {
+      "ws": path.join(__dirname, "./nil.js"),
+      "bn.js": path.join(
+        __dirname,
+        "../..",
+        "node_modules",
+        "bn.js",
+        "lib",
+        "bn.js"
+      ),
+      "original-fs": path.join(__dirname, "./nil.js"),
+      "scrypt": "js-scrypt"
+    }
+  },
+
+  stats: {
+    warnings: false
+  },
 
   plugins: [
     new webpack.DefinePlugin({
@@ -288,25 +308,5 @@ module.exports = {
 
     // Make web3 1.0 packable
     new webpack.IgnorePlugin(/^electron$/)
-  ],
-
-  resolve: {
-    alias: {
-      "ws": path.join(__dirname, "./nil.js"),
-      "bn.js": path.join(
-        __dirname,
-        "../..",
-        "node_modules",
-        "bn.js",
-        "lib",
-        "bn.js"
-      ),
-      "original-fs": path.join(__dirname, "./nil.js"),
-      "scrypt": "js-scrypt"
-    }
-  },
-
-  stats: {
-    warnings: false
-  }
+  ]
 };
