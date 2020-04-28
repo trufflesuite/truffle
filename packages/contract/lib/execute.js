@@ -166,7 +166,6 @@ const execute = {
     const web3 = constructor.web3;
 
     return function() {
-      let deferred;
       const promiEvent = new PromiEvent(false, constructor.debugger);
 
       execute
@@ -200,8 +199,15 @@ const execute = {
             return;
           }
 
-          deferred = execute.sendTransaction(web3, params, promiEvent, context); //the crazy things we do for stacktracing...
-          deferred.catch(override.start.bind(constructor, context));
+          execute
+            .sendTransaction(web3, params, promiEvent, context) //the crazy things we do for stacktracing...
+            .then(receipt => {
+              if (promiEvent.debug) {
+                promiEvent.resolve(receipt);
+              }
+              //otherwise, just let the handlers handle things
+            })
+            .catch(override.start.bind(constructor, context));
         })
         .catch(promiEvent.reject);
 
@@ -490,11 +496,11 @@ const execute = {
     //note: to head off any potential problems with Webpack (contract *has* to
     //work on web!), I'm going to resort to manual promise creation rather than
     //using util.promisify :-/
+    debug("executing manually!");
     const send = rpc =>
       new Promise((accept, reject) =>
-        web3.currentProvider.send(
-          rpc,
-          (err, result) => (err ? reject(err) : accept(result))
+        web3.currentProvider.send(rpc, (err, result) =>
+          err ? reject(err) : accept(result)
         )
       );
     //let's clone params
@@ -511,10 +517,9 @@ const execute = {
     const account = web3.eth.accounts.wallet[transaction.from];
     let rpcPromise;
     if (account) {
-      const rawTx = (await web3.eth.accounts.sign(
-        transaction,
-        account.privateKey
-      )).rawTransaction;
+      const rawTx = (
+        await web3.eth.accounts.sign(transaction, account.privateKey)
+      ).rawTransaction;
       rpcPromise = send({
         jsonrpc: "2.0",
         id: Date.now(),
@@ -534,6 +539,7 @@ const execute = {
     }
     const rpcReturn = await rpcPromise;
     const txHash = rpcReturn.result; //note: this should work even in Ganache default mode!
+    debug("txHash: %s", txHash);
     //this is unlike for calls, where default mode poses more of a problem
     promiEvent.setTransactionHash(txHash); //this here is why I wrote this function @_@
     const receipt = await web3.eth.getTransactionReceipt(txHash);
