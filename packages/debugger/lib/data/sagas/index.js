@@ -381,7 +381,9 @@ function* variablesAndMappingsSaga() {
           baseExpression,
           mappedPaths,
           currentAssignments,
-          currentDepth
+          currentDepth,
+          modifierDepth,
+          inModifier
         );
 
         let slot = { path };
@@ -473,7 +475,9 @@ function* variablesAndMappingsSaga() {
         baseExpression,
         mappedPaths,
         currentAssignments,
-        currentDepth
+        currentDepth,
+        modifierDepth,
+        inModifier
       );
 
       slot = { path };
@@ -541,17 +545,22 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
   let compilationId = yield select(data.current.compilationId);
   let currentAssignments = yield select(data.proc.assignments);
   let currentDepth = yield select(data.current.functionDepth);
+  let modifierDepth = yield select(data.current.modifierDepth);
+  let inModifier = yield select(data.current.inModifier);
 
   //why the loop? see the end of the block it heads for an explanatory
   //comment
   while (true) {
     let indexId = indexDefinition.id;
     //indices need to be identified by stackframe
-    let indexIdObj = {
-      compilationId,
-      astId: indexId,
-      stackframe: currentDepth
-    };
+    let indexIdObj = inModifier
+      ? {
+          compilationId,
+          astId: indexId,
+          stackframe: currentDepth,
+          modifierDepth
+        }
+      : { compilationId, astId: indexId, stackframe: currentDepth };
     let fullIndexId = stableKeccak256(indexIdObj);
 
     const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
@@ -782,13 +791,24 @@ function fetchBasePath(
   baseNode,
   mappedPaths,
   currentAssignments,
-  currentDepth
+  currentDepth,
+  modifierDepth,
+  inModifier
 ) {
-  let fullId = stableKeccak256({
-    compilationId,
-    astId: baseNode.id,
-    stackframe: currentDepth
-  });
+  let fullId = stableKeccak256(
+    inModifier
+      ? {
+          compilationId,
+          astId: baseNode.id,
+          stackframe: currentDepth,
+          modifierDepth
+        }
+      : {
+          compilationId,
+          astId: baseNode.id,
+          stackframe: currentDepth
+        }
+  );
   debug("astId: %d", baseNode.id);
   debug("stackframe: %d", currentDepth);
   debug("fullId: %s", fullId);
