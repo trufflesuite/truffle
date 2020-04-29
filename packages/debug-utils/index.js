@@ -133,8 +133,8 @@ var DebugUtils = {
     };
 
     //now: walk each AST
-    return compilation.sources.every(source =>
-      source ? allIDsUnseenSoFar(source.ast) : true
+    return compilation.sources.every(
+      source => (source ? allIDsUnseenSoFar(source.ast) : true)
     );
   },
 
@@ -255,7 +255,7 @@ var DebugUtils = {
   formatLineNumberPrefix: function(line, number, cols) {
     const prefix = String(number).padStart(cols) + ": ";
 
-    return prefix + line;
+    return prefix + line.trimRight();
   },
 
   formatLinePointer: function(
@@ -604,12 +604,12 @@ var DebugUtils = {
             ? `Error: Improper return (caused message: ${message})`
             : "Error: Improper return (may be an unexpected self-destruct)"
           : message !== undefined
-          ? `Error: Revert (message: ${message})`
-          : "Error: Revert or exceptional halt"
+            ? `Error: Revert (message: ${message})`
+            : "Error: Revert or exceptional halt"
       );
     }
-    let indented = lines.map((line, index) =>
-      index === 0 ? line : " ".repeat(indent) + line
+    let indented = lines.map(
+      (line, index) => (index === 0 ? line : " ".repeat(indent) + line)
     );
     return indented.join(OS.EOL);
   },
@@ -760,8 +760,9 @@ var DebugUtils = {
   cleanThis: function(variables, replacement) {
     return Object.assign(
       {},
-      ...Object.entries(variables).map(([variable, value]) =>
-        variable === "this" ? { [replacement]: value } : { [variable]: value }
+      ...Object.entries(variables).map(
+        ([variable, value]) =>
+          variable === "this" ? { [replacement]: value } : { [variable]: value }
       )
     );
   }
