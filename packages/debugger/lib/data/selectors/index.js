@@ -650,6 +650,11 @@ const data = createSelectorTree({
     sourceId: createLeaf([solidity.current.source], ({ id }) => id),
 
     /**
+     * data.current.root
+     */
+    root: createLeaf([solidity.current.source], ({ ast }) => ast),
+
+    /**
      * data.current.scopes (namespace)
      */
     scopes: {
@@ -1300,6 +1305,11 @@ const data = createSelectorTree({
      * data.next.node
      */
     node: createLeaf([solidity.next.node], identity),
+
+    /**
+     * data.next.pointer
+     */
+    pointer: createLeaf([solidity.next.pointer], identity),
 
     /**
      * data.next.modifierInvocation

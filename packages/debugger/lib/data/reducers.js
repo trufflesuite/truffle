@@ -247,7 +247,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
       debug("action.type %O", action.type);
       debug("action.assignments %O", action.assignments);
       return Object.values(action.assignments).reduce((acc, assignment) => {
-        let { id, astId, sourceId, pointer, compilationId } = assignment;
+        let { id, astId, sourceAndPointer, compilationId } = assignment;
         //we assume for now that only ordinary variables will be assigned this
         //way, and not globals; globals are handled in DEFAULT_ASSIGNMENTS
         if (astId !== undefined) {
@@ -265,9 +265,8 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
                   ...(acc.byCompilationId[compilationId] || {}).byAstId,
                   [astId]: [
                     ...new Set([
-                      ...((
-                        acc.byCompilationId[compilationId] || { byAstId: {} }
-                      ).byAstId[astId] || []),
+                      ...(((acc.byCompilationId[compilationId] || {}).byAstId ||
+                        {})[astId] || []),
                       id
                     ])
                   ]
@@ -276,7 +275,6 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
             }
           };
         } else {
-          let sourceAndPointer = sourceId + ":" + pointer;
           return {
             ...acc,
             byId: {
@@ -292,11 +290,8 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
                     .bySourceAndPointer,
                   [sourceAndPointer]: [
                     ...new Set([
-                      ...((
-                        acc.byCompilationId[compilationId] || {
-                          bySourceAndPointer: {}
-                        }
-                      ).bySourceAndPointer[sourceAndPointer] || []),
+                      ...(((acc.byCompilationId[compilationId] || {})
+                        .bySourceAndPointer || {})[sourceAndPointer] || []),
                       id
                     ])
                   ]
