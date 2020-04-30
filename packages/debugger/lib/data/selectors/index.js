@@ -21,6 +21,9 @@ function findAncestorOfType(node, types, scopes) {
   //note: I'm not including any protection against null in this function.
   //You are advised to include "SourceUnit" as a fallback type.
   while (node && !types.includes(node.nodeType)) {
+    if (node.id === undefined) {
+      return null;
+    }
     node = scopes[scopes[node.id].parentId].definition;
   }
   return node;
@@ -244,13 +247,18 @@ const data = createSelectorTree({
        *
        * the raw scopes data, just with intermediate
        * layers cut out
+       *
+       * ...and Solidity and Yul grouped together, HACK
        */
       raw: createLeaf(["/info/scopes"], scopes =>
         Object.assign(
           {},
           ...Object.entries(scopes.byCompilationId).map(
-            ([compilationId, { byId: nodes }]) => ({
-              [compilationId]: nodes
+            ([
+              compilationId,
+              { byId: nodes, bySourceAndPointer: yulNodes }
+            ]) => ({
+              [compilationId]: { ...nodes, ...yulNodes }
             })
           )
         )
@@ -637,6 +645,11 @@ const data = createSelectorTree({
     ),
 
     /**
+     * data.current.sourceId
+     */
+    sourceId: createLeaf([solidity.current.source], ({ id }) => id),
+
+    /**
      * data.current.scopes (namespace)
      */
     scopes: {
@@ -767,6 +780,11 @@ const data = createSelectorTree({
     node: createLeaf([solidity.current.node], identity),
 
     /**
+     * data.current.pointer
+     */
+    pointer: createLeaf([solidity.current.pointer], identity),
+
+    /**
      * data.current.scope
      * old alias for data.current.node (deprecated)
      */
@@ -881,9 +899,13 @@ const data = createSelectorTree({
         if (
           isContextChange ||
           !node ||
+          node.id === undefined ||
           !next ||
+          next.id === undefined ||
           !invocation ||
-          !nextInvocation
+          invocation.id === undefined ||
+          !nextInvocation ||
+          nextInvocation.id === undefined
         ) {
           return false;
         }
@@ -951,7 +973,7 @@ const data = createSelectorTree({
     modifierArgumentIndex: createLeaf(
       ["./scopes", "./node", "./modifierInvocation"],
       (scopes, node, invocation) => {
-        if (invocation.nodeType === "SourceUnit") {
+        if (!invocation || invocation.nodeType === "SourceUnit") {
           return undefined;
         }
 
@@ -959,7 +981,7 @@ const data = createSelectorTree({
         let invocationPointer = scopes[invocation.id].pointer;
 
         //slice the invocation pointer off the beginning
-        let difference = pointer.replace(invocationPointer, "");
+        let difference = pointer.slice(invocationPointer.length);
         debug("difference %s", difference);
         let rawIndex = difference.match(/^\/arguments\/(\d+)/);
         //note that that \d+ is greedy
@@ -995,31 +1017,51 @@ const data = createSelectorTree({
        * data.current.identifiers (selector)
        *
        * returns identifers and corresponding definition node ID or builtin name
-       * (object entries look like [name]: {astId: id} or like [name]: {builtin: name}
+       * (object entries look like [name]: {astId: id}, [name]: {builtin: name},
+       * or [name]: {sourceAndPointer: sourceId + ":" + pointer})
        */
       _: createLeaf(
-        ["/current/scopes/inlined", "/current/node"],
+        [
+          "/current/scopes/inlined",
+          "/current/node",
+          "/current/pointer",
+          "/current/sourceId"
+        ],
 
-        (scopes, scope) => {
+        (scopes, scope, pointer, sourceId) => {
           let variables = {};
           if (scope !== undefined) {
-            let cur = scope.id;
+            let cur =
+              scope.id !== undefined ? scope.id : sourceId + ":" + pointer;
 
-            do {
+            while (cur !== null && scopes[cur]) {
               variables = Object.assign(
                 variables,
                 ...(scopes[cur].variables || [])
-                  .filter(v => v.name !== "") //exclude anonymous output params
-                  .filter(v => variables[v.name] == undefined)
-                  .map(v => ({ [v.name]: { astId: v.id } }))
+                  .filter(variable => variable.name !== "") //exclude anonymous output params
+                  .filter(variable => variables[variable.name] == undefined) //don't add shadowed vars
+                  .map(variable => ({
+                    [variable.name]:
+                      variable.id !== undefined
+                        ? { astId: variable.id }
+                        : { sourceAndPointer: variable.sourceAndPointer }
+                  }))
               );
               //NOTE: because these assignments are processed in order, that means
               //that if a base class and derived class have variables with the same
               //name, the derived version will be processed later and therefore overwrite --
               //which is exactly what we want, so yay
 
-              cur = scopes[cur].parentId;
-            } while (cur != null);
+              if (scopes[cur].parentId !== undefined) {
+                cur = scopes[cur].parentId; //may be null!
+                //(undefined means we don't know what's up,
+                //null means there's nothing)
+              } else {
+                //in this case, cur must be a source-and-pointer, so we'll step
+                //up that way (skipping over any arrays)
+                cur = cur.replace(/\/[^/]*(\/\d+)?$/, "");
+              }
+            }
           }
 
           let builtins = {
@@ -1047,11 +1089,27 @@ const data = createSelectorTree({
           (scopes, identifiers, thisDefinition) => {
             let variables = Object.assign(
               {},
-              ...Object.entries(identifiers).map(([identifier, { astId }]) => {
-                if (astId !== undefined) {
-                  //will be undefined for builtins
-                  let { definition } = scopes[astId];
+              ...Object.entries(identifiers).map(([identifier, variable]) => {
+                if (variable.astId !== undefined) {
+                  let { definition } = scopes[variable.astId];
                   return { [identifier]: definition };
+                } else if (variable.sourceAndPointer !== undefined) {
+                  let { definition } = scopes[variable.sourceAndPointer];
+                  //for Yul variables
+                  let splicedDefinition = {
+                    ...definition,
+                    id: -1,
+                    nodeType: "VariableDeclaration",
+                    //NOTE: the actual only-existing type in Yul at the moment is u256,
+                    //which officially corresponds to uint256, not bytes32.
+                    //However, I think it makes more sense at the moment to treat it as
+                    //bytes32 despite that, so that's what I'm doing.
+                    typeDescriptions: {
+                      typeIdentifier: "t_bytes32",
+                      typeString: "bytes32"
+                    }
+                  };
+                  return { [identifier]: splicedDefinition };
                 } else {
                   return {}; //skip over builtins; we'll handle those separately
                 }
@@ -1117,45 +1175,65 @@ const data = createSelectorTree({
           Object.assign(
             {},
             ...Object.entries(identifiers).map(
-              ([identifier, { astId, builtin }]) => {
+              ([identifier, { astId, sourceAndPointer, builtin }]) => {
                 let id;
+                debug("astId: %d", astId);
+                debug("builtin: %s", builtin);
 
                 //is this an ordinary variable or a builtin?
-                if (astId !== undefined) {
+                if (astId !== undefined || sourceAndPointer !== undefined) {
                   //if not a builtin, first check if it's a contract var
-                  debug("assignments: %O", assignments);
-                  debug("compilation: %s", compilationId);
-                  let matchIds = (
-                    (
-                      assignments.byCompilationId[compilationId] || {
-                        byAstId: {}
-                      }
-                    ).byAstId[astId] || []
-                  ).filter(
+                  let compilationAssignments =
+                    assignments.byCompilationId[compilationId] || {};
+                  let solidityAssignments =
+                    compilationAssignments.byAstId || {};
+                  let yulAssignments =
+                    compilationAssignments.bySourcAndPointer || {};
+                  id = (
+                    solidityAssignments[astId] ||
+                    yulAssignments[sourceAndPointer] ||
+                    []
+                  ).find(
                     idHash => assignments.byId[idHash].address === address
                   );
-                  if (matchIds.length > 0) {
-                    id = matchIds[0]; //there should only be one!
-                  }
+                  debug("id after global: %s", id);
 
                   //if not contract, it's local, so identify by stackframe
                   if (id === undefined) {
                     //if we're in a modifier, include modifierDepth
                     if (inModifier) {
-                      id = stableKeccak256({
-                        astId,
-                        compilationId,
-                        stackframe: currentDepth,
-                        modifierDepth
-                      });
+                      if (astId !== undefined) {
+                        id = stableKeccak256({
+                          astId,
+                          compilationId,
+                          stackframe: currentDepth,
+                          modifierDepth
+                        });
+                      } else {
+                        id = stableKeccak256({
+                          sourceAndPointer,
+                          compilationId,
+                          stackframe: currentDepth,
+                          modifierDepth
+                        });
+                      }
                     } else {
-                      id = stableKeccak256({
-                        astId,
-                        compilationId,
-                        stackframe: currentDepth
-                      });
+                      if (astId !== undefined) {
+                        id = stableKeccak256({
+                          astId,
+                          compilationId,
+                          stackframe: currentDepth
+                        });
+                      } else {
+                        id = stableKeccak256({
+                          sourceAndPointer,
+                          compilationId,
+                          stackframe: currentDepth
+                        });
+                      }
                     }
                   }
+                  debug("id after local: %s", id);
                 } else {
                   //otherwise, it's a builtin
                   //NOTE: for now we assume there is only one assignment per
@@ -1164,6 +1242,7 @@ const data = createSelectorTree({
                 }
 
                 //if we still didn't find it, oh well
+                debug("id: %s", id);
 
                 let { ref } = assignments.byId[id] || {};
                 if (!ref) {
@@ -1220,7 +1299,7 @@ const data = createSelectorTree({
         //don't attempt this at a context change!
         //(also don't attempt this if we can't find the node for whatever
         //reason)
-        if (invalid || !node) {
+        if (invalid) {
           return undefined;
         }
         const types = [

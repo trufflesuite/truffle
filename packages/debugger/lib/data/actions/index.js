@@ -19,6 +19,24 @@ export function declare(node, compilationId) {
   };
 }
 
+export const YUL_DECLARE = "DATA_YUL_DECLARE";
+export function yulDeclare(
+  node,
+  pointer,
+  scopePointer,
+  sourceId,
+  compilationId
+) {
+  return {
+    type: YUL_DECLARE,
+    node,
+    pointer,
+    scopePointer,
+    sourceId,
+    compilationId
+  };
+}
+
 export const ASSIGN = "DATA_ASSIGN";
 export function assign(assignments) {
   return {

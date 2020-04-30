@@ -26,6 +26,22 @@ export function* declare(node, compilationId) {
   yield put(actions.declare(node, compilationId));
 }
 
+export function* yulScope(pointer, sourceId, compilationId, parentId) {
+  yield put(actions.scope(null, pointer, parentId, sourceId, compilationId));
+}
+
+export function* yulDeclare(
+  node,
+  pointer,
+  scopePointer,
+  sourceId,
+  compilationId
+) {
+  yield put(
+    actions.yulDeclare(node, pointer, scopePointer, sourceId, compilationId)
+  );
+}
+
 export function* defineType(node, compilationId) {
   yield put(actions.defineType(node, compilationId));
 }
@@ -112,6 +128,7 @@ export function* decode(definition, ref, compilationId) {
 
 function* variablesAndMappingsSaga() {
   let node = yield select(data.current.node);
+  let pointer = yield select(data.current.pointer);
   let scopes = yield select(data.current.scopes.inlined);
   let allocations = yield select(data.current.allocations.state);
   let storageAllocations = yield select(data.info.allocations.storage);
@@ -124,6 +141,7 @@ function* variablesAndMappingsSaga() {
   let inFunctionOrModifier = yield select(data.current.inFunctionOrModifier);
   let address = yield select(data.current.address); //storage address, not code address
   let compilationId = yield select(data.current.compilationId);
+  let sourceId = yield select(data.current.sourceId);
   let compiler = yield select(data.current.compiler);
 
   let stack = yield select(data.next.state.stack); //note the use of next!
@@ -297,6 +315,33 @@ function* variablesAndMappingsSaga() {
         {
           location: "stack",
           from: top - Codec.Ast.Utils.stackSize(node) + 1,
+          to: top
+        }
+      );
+      assignments = { [assignment.id]: assignment };
+      //this case doesn't need preambleAssignments either
+      debug("assignments: %O", assignments);
+      yield put(actions.assign(assignments));
+      break;
+
+    case "YulTypedName":
+      //yul variable declaration
+      debug("Yul variable declaration case");
+
+      let sourceAndPointer = sourceId + ":" + pointer;
+
+      assignment = makeAssignment(
+        inModifier
+          ? {
+              compilationId,
+              sourceAndPointer,
+              stackframe: currentDepth,
+              modifierDepth
+            }
+          : { compilationId, sourceAndPointer, stackframe: currentDepth },
+        {
+          location: "stack",
+          from: top, //all Yul variables are size 1
           to: top
         }
       );
@@ -509,7 +554,7 @@ function* variablesAndMappingsSaga() {
       break;
 
     default:
-      if (node.typeDescriptions == undefined) {
+      if (node.id === undefined || node.typeDescriptions == undefined) {
         break;
       }
 
