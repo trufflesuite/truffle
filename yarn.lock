@@ -7649,10 +7649,10 @@ highlight.js@^9.12.0, highlight.js@^9.15.8:
   dependencies:
     handlebars "^4.5.3"
 
-highlightjs-solidity@^1.0.12:
-  version "1.0.12"
-  resolved "https://registry.yarnpkg.com/highlightjs-solidity/-/highlightjs-solidity-1.0.12.tgz#74c481916873cf2ca9b036f6173535ad1abd824b"
-  integrity sha512-kx91S0PiprCTjMtFhl1lNphjDu8ZL75N/4tHxUJiY0j+DDJjQ0UtV8TXYoU9hg8UDZ5pKaKUxhynjfVWWPxMsg==
+highlightjs-solidity@^1.0.13:
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/highlightjs-solidity/-/highlightjs-solidity-1.0.13.tgz#b1031ed8f104ada27d963fccf03c02cffc26dc9c"
+  integrity sha512-VBqLA0VbdlFqdo7T32Z8nFDQlW0otLdjas+mtEWHLMiv8457+gzcZb3yOghC1n+Tgvoq5P7yUh35e3zlH0fZMA==
 
 hmac-drbg@^1.0.0:
   version "1.0.1"
@@ -16046,6 +16046,7 @@ websocket@1.0.29, "websocket@github:web3-js/WebSocket-Node#polyfill/globalThis":
   dependencies:
     debug "^2.2.0"
     es5-ext "^0.10.50"
+    gulp "^4.0.2"
     nan "^2.14.0"
     typedarray-to-buffer "^3.1.5"
     yaeti "^0.0.6"
