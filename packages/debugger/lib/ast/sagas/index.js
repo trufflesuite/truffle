@@ -170,6 +170,10 @@ function* handleYulEnter(
 ) {
   debug("entering %d %s", sourceId, pointer);
 
+  if (!node) {
+    return;
+  }
+
   if (node.src !== undefined) {
     debug("scoping!");
     yield* data.yulScope(pointer, sourceId, compilationId, parentId);

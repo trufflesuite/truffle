@@ -1052,6 +1052,11 @@ const data = createSelectorTree({
               //name, the derived version will be processed later and therefore overwrite --
               //which is exactly what we want, so yay
 
+              if (scopes[cur].definition.nodeType === "YulFunctionDefinition") {
+                //Yul functions make the outside invisible
+                break;
+              }
+
               if (scopes[cur].parentId !== undefined) {
                 cur = scopes[cur].parentId; //may be null!
                 //(undefined means we don't know what's up,
@@ -1071,6 +1076,14 @@ const data = createSelectorTree({
             this: { builtin: "this" },
             now: { builtin: "now" }
           };
+
+          if (
+            scope.nodeType.startsWith("Yul") ||
+            scope.nodeType === "InlineAssembly"
+          ) {
+            //builtins aren't visible in Yul
+            return variables;
+          }
 
           return { ...variables, ...builtins };
         }
