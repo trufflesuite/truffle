@@ -209,18 +209,6 @@ const Package = {
   },
 
   digest: function(options, callback) {
-    // async.parallel({
-    //   contracts: provision.bind(provision, options, false),
-    //   files: dir.files.bind(dir, options.contracts_directory)
-    // }, function(err, results) {
-    //   if (err) return callback(err);
-    //
-    //   results.contracts = results.contracts.map(function(contract) {
-    //     return contract.contract_name;
-    //   });
-    //
-    //   callback(null, results);
-    // });
     callback(new Error("Not yet implemented"));
   },
 
