@@ -17,14 +17,22 @@ import * as Codec from "@truffle/codec";
  */
 const identity = x => x;
 
-function findAncestorOfType(node, types, scopes) {
-  //note: I'm not including any protection against null in this function.
-  //You are advised to include "SourceUnit" as a fallback type.
+function findAncestorOfType(node, types, scopes, pointer = null, root = null) {
+  //note: you may want to include "SourceUnit" as a fallback type when using
+  //this function for convenience.
+  //you only need to pass pointer and root if you want this function to work
+  //from Yul.  Otherwise you can omit those and you'll get null if you happen
+  //to be in Yul.
   while (node && !types.includes(node.nodeType)) {
-    if (node.id === undefined) {
-      return null;
+    if (node.id !== undefined) {
+      node = scopes[scopes[node.id].parentId].definition;
+    } else {
+      if (pointer === null || root === null) {
+        return null;
+      }
+      pointer = pointer.replace(/\/[^/]*$/, ""); //chop off end
+      node = jsonpointer.get(root, pointer);
     }
-    node = scopes[scopes[node.id].parentId].definition;
   }
   return node;
 }
@@ -800,26 +808,32 @@ const data = createSelectorTree({
      * warning: may return null or similar, even though SourceUnit is included
      * as fallback
      */
-    contract: createLeaf(["./node", "./scopes/inlined"], (node, scopes) => {
-      const types = ["ContractDefinition", "SourceUnit"];
-      //SourceUnit included as fallback
-      return findAncestorOfType(node, types, scopes);
-    }),
+    contract: createLeaf(
+      ["./node", "./scopes/inlined", "./pointer", "./root"],
+      (node, scopes, pointer, root) => {
+        const types = ["ContractDefinition", "SourceUnit"];
+        //SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes, pointer, root);
+      }
+    ),
 
     /*
      * data.current.function
      * may be modifier rather than function!
      */
-    function: createLeaf(["./node", "./scopes/inlined"], (node, scopes) => {
-      const types = [
-        "FunctionDefinition",
-        "ModifierDefinition",
-        "ContractDefinition",
-        "SourceUnit"
-      ];
-      //SourceUnit included as fallback
-      return findAncestorOfType(node, types, scopes);
-    }),
+    function: createLeaf(
+      ["./node", "./scopes/inlined", "./pointer", "./root"],
+      (node, scopes, pointer, root) => {
+        const types = [
+          "FunctionDefinition",
+          "ModifierDefinition",
+          "ContractDefinition",
+          "SourceUnit"
+        ];
+        //SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes, pointer, root);
+      }
+    ),
 
     /*
      * data.current.inModifier
