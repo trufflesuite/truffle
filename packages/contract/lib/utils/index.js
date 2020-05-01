@@ -121,28 +121,6 @@ const Utils = {
     return merged;
   },
 
-  parallel(arr, callback = () => {}) {
-    if (!arr.length) {
-      return callback(null, []);
-    }
-    let index = 0;
-    const results = new Array(arr.length);
-    arr.forEach((fn, position) => {
-      fn((err, result) => {
-        if (err) {
-          callback(err);
-          callback = () => {};
-        } else {
-          index++;
-          results[position] = result;
-          if (index >= arr.length) {
-            callback(null, results);
-          }
-        }
-      });
-    });
-  },
-
   linkBytecode(bytecode, links) {
     Object.keys(links).forEach(library_name => {
       const library_address = links[library_name];
@@ -290,38 +268,32 @@ const Utils = {
   },
 
   // parses known contract instance networks
-  parseKnownNetworks(
+  async parseKnownNetworks(
     { networks, currentProvider, setNetwork, network_id },
     gasLimit
   ) {
-    // wrap uri matching in a promise to allow provider.send time to resolve
-    // (.send call happens in BlockchainUtils.matches)
-    return new Promise((accept, reject) => {
-      // go through all the networks that are listed as
-      // blockchain uris and see if they match
-      const uris = Object.keys(networks).filter(
-        network => network.indexOf("blockchain://") === 0
-      );
-      const matches = uris.map(uri =>
-        BlockchainUtils.matches.bind(BlockchainUtils, uri, currentProvider)
-      );
+    // go through all the networks that are listed as
+    // blockchain uris and see if they match
+    const uris = Object.keys(networks).filter(
+      network => network.indexOf("blockchain://") === 0
+    );
 
-      Utils.parallel(matches, (err, results) => {
-        if (err) reject(err);
+    const results = [];
+    for (const uri of uris) {
+      results.push(await BlockchainUtils.matches(uri, currentProvider));
+    }
 
-        for (let i = 0; i < results.length; i++) {
-          if (results[i]) {
-            setNetwork(uris[i]);
-            accept({
-              id: network_id,
-              blockLimit: gasLimit
-            });
-          }
-        }
-        // no match found!
-        accept(false);
-      });
-    });
+    for (let i = 0; i < results.length; i++) {
+      if (results[i]) {
+        setNetwork(uris[i]);
+        return {
+          id: network_id,
+          blockLimit: gasLimit
+        };
+      }
+    }
+    // no match found!
+    return false;
   },
 
   // sets a contract instance network ID

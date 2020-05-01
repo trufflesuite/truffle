@@ -254,7 +254,7 @@ const Networks = {
       const currentNetworkID = await interfaceAdapter.getNetworkId();
       if (first === currentNetworkID) return callback(null, true);
       if (isFirstANumber === false)
-        BlockchainUtils.matches(first, provider, callback);
+        await BlockchainUtils.matches(first, provider);
       else {
         // Nothing else to compare.
         return callback(null, false);
