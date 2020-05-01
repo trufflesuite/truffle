@@ -51,31 +51,33 @@ const Blockchain = {
     return parsed;
   },
 
-  asURI(provider: Provider, callback: Callback<any>) {
-    let genesis: any, latest;
+  asURI(provider: Provider) {
+    return new Promise((resolve, reject) => {
+      let genesis: any, latest;
 
-    this.getBlockByNumber(
-      "0x0",
-      provider,
-      (err: Error, { result }: JsonRPCResponse) => {
-        if (err) return callback(err);
-        genesis = result;
+      this.getBlockByNumber(
+        "0x0",
+        provider,
+        (err: Error, { result }: JsonRPCResponse) => {
+          if (err) return reject(err);
+          genesis = result;
 
-        this.getBlockByNumber(
-          "latest",
-          provider,
-          (err: Error, { result }: JsonRPCResponse) => {
-            if (err) return callback(err);
-            latest = result;
-            const url = `blockchain://${genesis.hash.replace(
-              "0x",
-              ""
-            )}/block/${latest.hash.replace("0x", "")}`;
-            callback(null, url);
-          }
-        );
-      }
-    );
+          this.getBlockByNumber(
+            "latest",
+            provider,
+            (err: Error, { result }: JsonRPCResponse) => {
+              if (err) return reject(err);
+              latest = result;
+              const url = `blockchain://${genesis.hash.replace(
+                "0x",
+                ""
+              )}/block/${latest.hash.replace("0x", "")}`;
+              resolve(url);
+            }
+          );
+        }
+      );
+    });
   },
 
   matches(uri: string, provider: Provider) {
