@@ -184,6 +184,9 @@ function prepareCompilerInput({ sources, targets, settings }) {
       evmVersion: settings.evmVersion,
       optimizer: settings.optimizer,
       remappings: settings.remappings,
+      debug: settings.debug,
+      metadata: settings.metadata,
+      libraries: settings.libraries,
       // Specify compilation targets. Each target uses defaultSelectors,
       // defaulting to single target `*` if targets are unspecified
       outputSelection: prepareOutputSelection({ targets })
@@ -214,9 +217,12 @@ function prepareOutputSelection({ targets = [] }) {
       "abi",
       "metadata",
       "evm.bytecode.object",
+      "evm.bytecode.linkReferences",
       "evm.bytecode.sourceMap",
       "evm.deployedBytecode.object",
+      "evm.deployedBytecode.linkReferences",
       "evm.deployedBytecode.sourceMap",
+      "evm.deployedBytecode.immutableReferences",
       "userdoc",
       "devdoc"
     ]
@@ -360,6 +366,7 @@ function processContracts({
               deployedBytecode: {
                 sourceMap: deployedSourceMap,
                 linkReferences: deployedLinkReferences,
+                immutableReferences,
                 object: deployedBytecode
               }
             },
@@ -394,6 +401,8 @@ function processContracts({
             bytes: deployedBytecode,
             linkReferences: formatLinkReferences(deployedLinkReferences)
           }),
+          immutableReferences, //ideally this would be part of the deployedBytecode object,
+          //but compatibility makes that impossible
           compiler: {
             name: "solc",
             version: solcVersion

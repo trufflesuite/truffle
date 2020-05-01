@@ -1,4 +1,4 @@
-export const SAVE_STEPS = "SAVE_STEPS";
+export const SAVE_STEPS = "TRACE_SAVE_STEPS";
 export function saveSteps(steps) {
   return {
     type: SAVE_STEPS,
@@ -6,22 +6,22 @@ export function saveSteps(steps) {
   };
 }
 
-export const NEXT = "NEXT";
+export const NEXT = "TRACE_NEXT";
 export function next() {
   return { type: NEXT };
 }
 
-export const TICK = "TICK";
+export const TICK = "TRACE_TICK";
 export function tick() {
   return { type: TICK };
 }
 
-export const TOCK = "TOCK";
+export const TOCK = "TRACE_TOCK";
 export function tock() {
   return { type: TOCK };
 }
 
-export const END_OF_TRACE = "EOT";
+export const END_OF_TRACE = "TRACE_EOT";
 export function endTrace() {
   return { type: END_OF_TRACE };
 }
@@ -36,7 +36,7 @@ export function unloadTransaction() {
   return { type: UNLOAD_TRANSACTION };
 }
 
-export const BACKTICK = "BACKTICK";
+export const BACKTICK = "TRACE_BACKTICK";
 export function backtick() {
   return { type: BACKTICK };
 }

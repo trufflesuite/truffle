@@ -4,6 +4,7 @@ export function addContext({
   binary,
   sourceMap,
   primarySource,
+  immutableReferences,
   compiler,
   compilationId,
   abi,
@@ -17,6 +18,7 @@ export function addContext({
     binary,
     sourceMap,
     primarySource,
+    immutableReferences,
     compiler,
     compilationId,
     abi,
@@ -41,7 +43,7 @@ export function addInstance(address, context, binary) {
   };
 }
 
-export const SAVE_GLOBALS = "SAVE_GLOBALS";
+export const SAVE_GLOBALS = "EVM_SAVE_GLOBALS";
 export function saveGlobals(origin, gasprice, block) {
   return {
     type: SAVE_GLOBALS,
@@ -51,7 +53,7 @@ export function saveGlobals(origin, gasprice, block) {
   };
 }
 
-export const SAVE_STATUS = "SAVE_STATUS";
+export const SAVE_STATUS = "EVM_SAVE_STATUS";
 export function saveStatus(status) {
   return {
     type: SAVE_STATUS,
@@ -59,7 +61,7 @@ export function saveStatus(status) {
   };
 }
 
-export const CALL = "CALL";
+export const CALL = "EVM_CALL";
 export function call(address, data, storageAddress, sender, value) {
   return {
     type: CALL,
@@ -71,7 +73,7 @@ export function call(address, data, storageAddress, sender, value) {
   };
 }
 
-export const CREATE = "CREATE";
+export const CREATE = "EVM_CREATE";
 export function create(binary, storageAddress, sender, value) {
   return {
     type: CREATE,
@@ -82,14 +84,14 @@ export function create(binary, storageAddress, sender, value) {
   };
 }
 
-export const RETURN_CALL = "RETURN_CALL";
+export const RETURN_CALL = "EVM_RETURN_CALL";
 export function returnCall() {
   return {
     type: RETURN_CALL
   };
 }
 
-export const RETURN_CREATE = "RETURN_CREATE";
+export const RETURN_CREATE = "EVM_RETURN_CREATE";
 export function returnCreate(address, code, context) {
   return {
     type: RETURN_CREATE,
@@ -99,14 +101,14 @@ export function returnCreate(address, code, context) {
   };
 }
 
-export const FAIL = "FAIL";
+export const FAIL = "EVM_FAIL";
 export function fail() {
   return {
     type: FAIL
   };
 }
 
-export const STORE = "STORE";
+export const STORE = "EVM_STORE";
 export function store(address, slot, value) {
   return {
     type: STORE,
@@ -116,7 +118,7 @@ export function store(address, slot, value) {
   };
 }
 
-export const LOAD = "LOAD";
+export const LOAD = "EVM_LOAD";
 export function load(address, slot, value) {
   return {
     type: LOAD,

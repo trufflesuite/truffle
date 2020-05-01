@@ -5,9 +5,6 @@ const Migrate = require("@truffle/migrate");
 const TestResolver = require("./testresolver");
 const TestSource = require("./testsource");
 const expect = require("@truffle/expect");
-const contract = require("@truffle/contract");
-const path = require("path");
-const fs = require("fs-extra");
 const util = require("util");
 const debug = require("debug")("lib:testing:testrunner");
 const Decoder = require("@truffle/decoder");
@@ -67,21 +64,9 @@ TestRunner.prototype.initialize = async function() {
     await this.resetState();
   }
 
-  let files = fs
-    .readdirSync(this.config.contracts_build_directory)
-    .filter(file => path.extname(file) === ".json");
-
-  let data = files.map(file =>
-    fs.readFileSync(
-      path.join(this.config.contracts_build_directory, file),
-      "utf8"
-    )
-  );
-
-  let contracts = data.map(JSON.parse).map(json => contract(json));
-
-  //NOTE: in future should get rid of contracts argument
-  this.decoder = await Decoder.forProject(this.provider, contracts);
+  this.decoder = await Decoder.forProject(this.provider, {
+    config: this.config
+  });
 };
 
 TestRunner.prototype.deploy = async function() {
@@ -176,7 +161,7 @@ TestRunner.prototype.endTest = async function(mocha) {
   });
 
   const userDefinedEventLogs = logs.filter(log => {
-    return log.decodings.every(decoding => decoding.abi.name !== "TestEvent")
+    return log.decodings.every(decoding => decoding.abi.name !== "TestEvent");
   });
 
   if (userDefinedEventLogs.length === 0) {

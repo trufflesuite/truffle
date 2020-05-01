@@ -22,17 +22,6 @@ export function isSkippedNodeType(node) {
   );
 }
 
-export function getRange(node) {
-  // src: "<start>:<length>:<_>"
-  // returns [start, end]
-  let [start, length] = node.src
-    .split(":")
-    .slice(0, 2)
-    .map(i => parseInt(i));
-
-  return [start, start + length];
-}
-
 export function prefixName(prefix, fn) {
   Object.defineProperty(fn, "name", {
     value: `${prefix}.${fn.name}`,
@@ -40,6 +29,25 @@ export function prefixName(prefix, fn) {
   });
 
   return fn;
+}
+
+/**
+ * returns a new array which is a copy of array but with
+ * elements popped from the top until numToRemove elements
+ * satisfying the predicate have been removed (or until the
+ * array is empty)
+ */
+export function popNWhere(array, numToRemove, predicate) {
+  let newArray = array.slice();
+  //I'm going to write this the C way, hope you don't mind :P
+  while (numToRemove > 0 && newArray.length > 0) {
+    let top = newArray[newArray.length - 1];
+    if (predicate(top)) {
+      numToRemove--;
+    }
+    newArray.pop();
+  }
+  return newArray;
 }
 
 /**

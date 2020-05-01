@@ -20,7 +20,7 @@ var command = {
     let inputPath;
     if (options._ && options._.length > 0) {
       inputPath = options._[0];
-      if (!fse.existsSync(inputPath)) fse.ensureDirSync(inputPath);
+      fse.ensureDirSync(inputPath);
     }
 
     // defer to `truffle unbox` command with "bare" box as arg

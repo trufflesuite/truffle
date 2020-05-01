@@ -33,8 +33,9 @@ import {
   InvalidAddressError,
   VariableNotFoundError
 } from "./errors";
-//sorry for the untyped import, but...
+//sorry for the untyped imports, but...
 const { shimBytecode } = require("@truffle/compile-solidity/legacy/shims");
+const SolidityUtils = require("@truffle/solidity-utils");
 
 /**
  * The WireDecoder class.  Decodes transactions and logs.  See below for a method listing.
@@ -48,6 +49,7 @@ export class WireDecoder {
   private compilations: Compilations.Compilation[];
   private contexts: Contexts.DecoderContexts = {}; //all contexts
   private deployedContexts: Contexts.DecoderContexts = {};
+  private contractsAndContexts: DecoderTypes.ContractAndContexts[] = [];
 
   private referenceDeclarations: { [compilationId: string]: Ast.AstNodes };
   private userDefinedTypes: Format.Types.TypesById;
@@ -62,8 +64,6 @@ export class WireDecoder {
     this.web3 = new Web3(provider);
     this.compilations = compilations;
 
-    let contractsAndContexts: DecoderTypes.ContractAndContexts[] = [];
-
     for (const compilation of this.compilations) {
       for (const contract of compilation.contracts) {
         const node: Ast.AstNode = Compilations.Utils.getContractNode(
@@ -76,7 +76,7 @@ export class WireDecoder {
         const deployedBytecode = shimBytecode(contract.deployedBytecode);
         const bytecode = shimBytecode(contract.bytecode);
         if (deployedBytecode && deployedBytecode !== "0x") {
-          deployedContext = Utils.makeContext(contract, node, compiler);
+          deployedContext = Utils.makeContext(contract, node, compilation);
           this.contexts[deployedContext.context] = deployedContext;
           //note that we don't set up deployedContexts until after normalization!
         }
@@ -84,12 +84,12 @@ export class WireDecoder {
           constructorContext = Utils.makeContext(
             contract,
             node,
-            compiler,
+            compilation,
             true
           );
           this.contexts[constructorContext.context] = constructorContext;
         }
-        contractsAndContexts.push({
+        this.contractsAndContexts.push({
           contract,
           node,
           deployedContext,
@@ -111,7 +111,7 @@ export class WireDecoder {
       )
     );
 
-    for (const contractAndContexts of contractsAndContexts) {
+    for (const contractAndContexts of this.contractsAndContexts) {
       //change everything to normalized version
       if (contractAndContexts.deployedContext) {
         contractAndContexts.deployedContext = this.contexts[
@@ -130,9 +130,9 @@ export class WireDecoder {
       types: this.userDefinedTypes
     } = this.collectUserDefinedTypes());
 
-    const allocationInfo: AbiData.Allocate.ContractAllocationInfo[] = contractsAndContexts.map(
+    const allocationInfo: AbiData.Allocate.ContractAllocationInfo[] = this.contractsAndContexts.map(
       ({
-        contract: { abi, compiler },
+        contract: { abi, compiler, immutableReferences },
         compilationId,
         node,
         deployedContext,
@@ -143,7 +143,8 @@ export class WireDecoder {
         compiler,
         contractNode: node,
         deployedContext,
-        constructorContext
+        constructorContext,
+        immutableReferences
       })
     );
 
@@ -436,7 +437,13 @@ export class WireDecoder {
     options: DecoderTypes.EventOptions = {},
     additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<DecoderTypes.DecodedLog[]> {
-    const { address, name, fromBlock, toBlock } = options;
+    let { address, name, fromBlock, toBlock } = options;
+    if (fromBlock === undefined) {
+      fromBlock = "latest";
+    }
+    if (toBlock === undefined) {
+      toBlock = "latest";
+    }
     const fromBlockNumber = await this.regularizeBlock(fromBlock);
     const toBlockNumber = await this.regularizeBlock(toBlock);
 
@@ -524,11 +531,66 @@ export class WireDecoder {
    *   A contract constructor object may be substituted for the artifact, so if
    *   you're not sure which you're dealing with, it's OK.
    *
-   *   Note: The artifact must be one of the ones used to initialize the wire
-   *   decoder; otherwise you will have problems.
+   *   Note: The artifact must be for a contract that the decoder knows about;
+   *   otherwise you will have problems.
    */
+
   public async forArtifact(artifact: Artifact): Promise<ContractDecoder> {
-    let contractDecoder = new ContractDecoder(artifact, this);
+    const deployedBytecode = shimBytecode(artifact.deployedBytecode);
+    const bytecode = shimBytecode(artifact.bytecode);
+
+    const { compilation, contract } = this.compilations.reduce(
+      (foundSoFar: DecoderTypes.CompilationAndContract, compilation) => {
+        if (foundSoFar) {
+          return foundSoFar;
+        }
+        const contractFound = compilation.contracts.find(contract => {
+          if (bytecode) {
+            return (
+              shimBytecode(contract.bytecode) === bytecode &&
+              contract.contractName ===
+                (artifact.contractName || <string>artifact.contract_name)
+            );
+          } else if (deployedBytecode) {
+            //I'll just go by one of bytecode or deployedBytecode;
+            //no real need to check both
+            return (
+              shimBytecode(contract.deployedBytecode) === deployedBytecode &&
+              contract.contractName ===
+                (artifact.contractName || <string>artifact.contract_name)
+            );
+          } else {
+            //WARNING: better hope we don't end up here!
+            return (
+              contract.contractName ===
+              (artifact.contractName || <string>artifact.contract_name)
+            );
+          }
+        });
+        if (contractFound) {
+          return { compilation, contract: contractFound };
+        } else {
+          return undefined;
+        }
+      },
+      undefined
+    );
+
+    if (contract === undefined) {
+      throw new ContractNotFoundError(
+        artifact.contractName,
+        bytecode,
+        deployedBytecode,
+        undefined
+      );
+    }
+
+    let contractDecoder = new ContractDecoder(
+      contract,
+      compilation,
+      this,
+      artifact
+    );
     await contractDecoder.init();
     return contractDecoder;
   }
@@ -543,9 +605,9 @@ export class WireDecoder {
    *   A contract constructor object may be substituted for the artifact, so if
    *   you're not sure which you're dealing with, it's OK.
    *
-   *   Note: The artifact must be one of the ones used to initialize the wire
-   *   decoder; otherwise you will have problems.
-   * @param address The address of the contract instance decode.  If left out, it will be autodetected.
+   *   Note: The artifact must be for a contract that the decoder knows about;
+   *   otherwise you will have problems.
+   * @param address The address of the contract instance to decode.  If left out, it will be autodetected.
    *   If an invalid address is provided, this method will throw an exception.
    */
   public async forInstance(
@@ -553,6 +615,55 @@ export class WireDecoder {
     address?: string
   ): Promise<ContractInstanceDecoder> {
     let contractDecoder = await this.forArtifact(artifact);
+    return await contractDecoder.forInstance(address);
+  }
+
+  /**
+   * **This method is asynchronous.**
+   *
+   * Constructs a contract instance decoder for a given instance of a contract in this
+   * project.  Unlike [[forInstance]], this method doesn't require an artifact; it
+   * will automatically detect the class of the given contract.  If it's not in
+   * the project, or the decoder can't identify it, you'll get an exception.
+   * @param address The address of the contract instance to decode.
+   *   If an invalid address is provided, this method will throw an exception.
+   * @param block You can include this argument to specify that this should be
+   *   based on the addresses content's at a specific block (if say the contract
+   *   has since self-destructed).
+   */
+  public async forAddress(
+    address: string,
+    block: DecoderTypes.BlockSpecifier = "latest"
+  ): Promise<ContractInstanceDecoder> {
+    if (!Web3.utils.isAddress(address)) {
+      throw new InvalidAddressError(address);
+    }
+    address = Web3.utils.toChecksumAddress(address);
+    const blockNumber = await this.regularizeBlock(block);
+    const deployedBytecode = Conversion.toHexString(
+      await this.getCode(address, blockNumber)
+    );
+    const contractAndContexts = this.contractsAndContexts.find(
+      ({ deployedContext }) =>
+        deployedContext &&
+        Contexts.Utils.matchContext(deployedContext, deployedBytecode)
+    );
+    if (!contractAndContexts) {
+      throw new ContractNotFoundError(
+        undefined,
+        undefined,
+        deployedBytecode,
+        address
+      );
+    }
+    const { contract, compilationId } = contractAndContexts;
+    const compilation = this.compilations.find(
+      compilation => compilation.id === compilationId
+    );
+    let contractDecoder = new ContractDecoder(contract, compilation, this); //no artifact
+    //(artifact is only used for address autodetection, and here we're supplying the
+    //address, so this won't cause any problems)
+    await contractDecoder.init();
     return await contractDecoder.forInstance(address);
   }
 
@@ -597,13 +708,6 @@ export class WireDecoder {
   public getDeployedContexts(): Contexts.DecoderContexts {
     return this.deployedContexts;
   }
-
-  /**
-   * @protected
-   */
-  public getCompilations(): Compilations.Compilation[] {
-    return this.compilations;
-  }
 }
 
 /**
@@ -635,65 +739,19 @@ export class ContractDecoder {
   /**
    * @protected
    */
-  constructor(artifact: Artifact, wireDecoder: WireDecoder, address?: string) {
-    this.artifact = artifact;
+  constructor(
+    contract: Compilations.Contract,
+    compilation: Compilations.Compilation,
+    wireDecoder: WireDecoder,
+    artifact?: Artifact
+  ) {
+    this.artifact = artifact; //may be undefined; only used for address autodetection in instance decoder
+    this.contract = contract;
+    this.compilation = compilation;
     this.wireDecoder = wireDecoder;
     this.web3 = wireDecoder.getWeb3();
     this.contexts = wireDecoder.getDeployedContexts();
     this.userDefinedTypes = this.wireDecoder.getUserDefinedTypes();
-    const compilations = wireDecoder.getCompilations();
-
-    const deployedBytecode = shimBytecode(artifact.deployedBytecode);
-    const bytecode = shimBytecode(artifact.bytecode);
-
-    //set this.compilation and this.contract
-    ({
-      compilation: this.compilation,
-      contract: this.contract
-    } = compilations.reduce(
-      (foundSoFar: DecoderTypes.CompilationAndContract, compilation) => {
-        if (foundSoFar) {
-          return foundSoFar;
-        }
-        const contractFound = compilation.contracts.find(contract => {
-          if (bytecode) {
-            return (
-              shimBytecode(contract.bytecode) === bytecode &&
-              contract.contractName ===
-                (artifact.contractName || <string>artifact.contract_name)
-            );
-          } else if (deployedBytecode) {
-            //I'll just go by one of bytecode or deployedBytecode;
-            //no real need to check both
-            return (
-              shimBytecode(contract.deployedBytecode) === deployedBytecode &&
-              contract.contractName ===
-                (artifact.contractName || <string>artifact.contract_name)
-            );
-          } else {
-            //WARNING: better hope we don't end up here!
-            return (
-              contract.contractName ===
-              (artifact.contractName || <string>artifact.contract_name)
-            );
-          }
-        });
-        if (contractFound) {
-          return { compilation, contract: contractFound };
-        } else {
-          return undefined;
-        }
-      },
-      undefined
-    ));
-
-    if (this.contract === undefined) {
-      throw new ContractNotFoundError(
-        artifact.contractName,
-        bytecode,
-        deployedBytecode
-      );
-    }
 
     this.contractNode = Compilations.Utils.getContractNode(
       this.contract,
@@ -713,7 +771,7 @@ export class ContractDecoder {
       const unnormalizedContext = Utils.makeContext(
         this.contract,
         this.contractNode,
-        this.compilation.compiler || this.contract.compiler
+        this.compilation
       );
       this.contextHash = unnormalizedContext.context;
       //we now throw away the unnormalized context, instead fetching the correct one from
@@ -737,7 +795,7 @@ export class ContractDecoder {
                   //note that we immediately discard it!
                 },
                 this.contractNode,
-                compiler
+                this.compilation
               )
             }
           ],
@@ -756,7 +814,10 @@ export class ContractDecoder {
       //NOTE: does this change make this intermediate class essentially pointless?
       //Yes.  But not going to get rid of it now!
 
-      if (this.allocations.state[this.compilation.id][this.contractNode.id]) {
+      if (
+        this.allocations.state[this.compilation.id] &&
+        this.allocations.state[this.compilation.id][this.contractNode.id]
+      ) {
         this.stateVariableReferences = this.allocations.state[
           this.compilation.id
         ][this.contractNode.id].members;
@@ -1029,6 +1090,7 @@ export class ContractInstanceDecoder {
   private allocations: Codec.Evm.AllocationInfo;
 
   private stateVariableReferences: Storage.Allocate.StateVariableAllocation[];
+  private internalFunctionsTable: Codec.Evm.InternalFunctions;
 
   private mappingKeys: Storage.Slot[] = [];
 
@@ -1045,10 +1107,10 @@ export class ContractInstanceDecoder {
     this.wireDecoder = this.contractDecoder.getWireDecoder();
     this.web3 = this.wireDecoder.getWeb3();
     if (address !== undefined) {
-      if (!this.web3.utils.isAddress(address)) {
+      if (!Web3.utils.isAddress(address)) {
         throw new InvalidAddressError(address);
       }
-      this.contractAddress = this.web3.utils.toChecksumAddress(address);
+      this.contractAddress = Web3.utils.toChecksumAddress(address);
     }
 
     this.referenceDeclarations = this.wireDecoder.getReferenceDeclarations();
@@ -1067,6 +1129,8 @@ export class ContractInstanceDecoder {
     this.allocations = this.contractDecoder.getAllocations();
     this.stateVariableReferences = this.contractDecoder.getStateVariableReferences();
 
+    //note that if we're in the null artifact case, this.contractAddress should have
+    //been set by now, so we shouldn't end up here
     if (this.contractAddress === undefined) {
       this.contractAddress = artifact.networks[this.contractNetwork].address;
     }
@@ -1104,7 +1168,7 @@ export class ContractInstanceDecoder {
       const extraContext = Utils.makeContext(
         contractWithCode,
         this.contractNode,
-        this.compiler
+        this.compilation
       );
       this.contextHash = extraContext.context;
       this.additionalContexts = { [extraContext.context]: extraContext };
@@ -1117,6 +1181,40 @@ export class ContractInstanceDecoder {
       //again, since the code did not have unresolved link references, it is safe to just
       //mash these together like I'm about to
       this.contexts = { ...this.contexts, ...this.additionalContexts };
+    }
+
+    //finally: set up internal functions table (only if source order is reliable;
+    //otherwise leave as undefined)
+    //unlike the debugger, we don't *demand* an answer, so we won't set up
+    //some sort of fake table if we don't have a source map, or if any ASTs are missing
+    //(if a whole *source* is missing, we'll consider that OK)
+    if (
+      !this.compilation.unreliableSourceOrder &&
+      this.contract.deployedSourceMap &&
+      this.compilation.sources.every(source => !source || source.ast)
+    ) {
+      //WARNING: untyped code in this block!
+      let asts: Ast.AstNode[] = this.compilation.sources.map(
+        source => (source ? source.ast : undefined)
+      );
+      let instructions = SolidityUtils.getProcessedInstructionsForBinary(
+        this.compilation.sources.map(
+          source => (source ? source.source : undefined)
+        ),
+        this.contractCode,
+        SolidityUtils.getHumanReadableSourceMap(this.contract.deployedSourceMap)
+      );
+      try {
+        //this can fail if some of the source files are missing :(
+        this.internalFunctionsTable = SolidityUtils.getFunctionsByProgramCounter(
+          instructions,
+          asts,
+          asts.map(SolidityUtils.makeOverlapFunction),
+          this.compilation.id
+        );
+      } catch (_) {
+        //just leave the internal functions table undefined
+      }
     }
   }
 
@@ -1146,13 +1244,15 @@ export class ContractInstanceDecoder {
   ): Promise<DecoderTypes.StateVariable> {
     const info: Codec.Evm.EvmInfo = {
       state: {
-        storage: {}
+        storage: {},
+        code: Conversion.toBytes(this.contractCode)
       },
       mappingKeys: this.mappingKeys,
       userDefinedTypes: this.userDefinedTypes,
       allocations: this.allocations,
       contexts: this.contexts,
-      currentContext: this.context
+      currentContext: this.context,
+      internalFunctionsTable: this.internalFunctionsTable
     };
     debug("this.contextHash: %s", this.contextHash);
 
@@ -1233,7 +1333,7 @@ export class ContractInstanceDecoder {
    * See the documentation of the [[DecodedVariable]] type for more.
    *
    * Note that variable decoding can only operate in full mode; if the decoder wasn't able to
-   * start up in full mode, this method will throw an exception.
+   * start up in full mode, this method will throw a [[ContractAllocationFailedError]].
    *
    * Note that decoding mappings requires first watching mapping keys in order to get any results;
    * see the documentation for [[watchMappingKey]].

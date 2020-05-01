@@ -32,7 +32,7 @@ export function nativizeDecoderVariables(
 export function makeContext(
   contract: Codec.Compilations.Contract,
   node: Codec.Ast.AstNode | undefined,
-  compiler: Codec.Compiler.CompilerVersion,
+  compilation: Codec.Compilations.Compilation,
   isConstructor = false
 ): Codec.Contexts.DecoderContext {
   const abi = Codec.AbiData.Utils.schemaAbiToAbi(contract.abi);
@@ -61,11 +61,15 @@ export function makeContext(
     binary,
     contractId: node ? node.id : undefined,
     contractKind: contractKind(contract, node),
+    immutableReferences: isConstructor
+      ? undefined
+      : contract.immutableReferences,
     isConstructor,
     abi: Codec.AbiData.Utils.computeSelectors(abi),
     payable: Codec.AbiData.Utils.abiHasPayableFallback(abi),
     fallbackAbi: { fallback, receive },
-    compiler: compiler || contract.compiler
+    compiler: compilation.compiler || contract.compiler,
+    compilationId: compilation.id
   };
 }
 

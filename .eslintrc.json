@@ -10,7 +10,7 @@
   "rules": {
     "no-unused-vars": [
       "error",
-      { "argsIgnorePattern": "^_", "varsIgnorePattern": "debug" }
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^debug$|^_" }
     ],
     "quote-props": [ "error", "consistent" ],
     "semi": [ "error", "always" ],

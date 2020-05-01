@@ -421,9 +421,11 @@ function allocateCalldataAndReturndata(
   switch (abiEntry.type) {
     case "function":
       outputParametersAbi = abiEntry.outputs;
+      break;
     case "constructor":
       //we just leave this empty for constructors
       outputParametersAbi = [];
+      break;
   }
   //now: do the allocation!
   let {
@@ -758,8 +760,14 @@ function getCalldataAllocationsForContract(
     functionAllocations: {}
   };
   for (let abiEntry of abi) {
-    if (AbiDataUtils.abiEntryIsObviouslyIllTyped(abiEntry)) {
-      //hack workaround!
+    if (
+      AbiDataUtils.abiEntryIsObviouslyIllTyped(abiEntry) ||
+      AbiDataUtils.abiEntryHasStorageParameters(abiEntry)
+    ) {
+      //the first of these conditions is a hack workaround for a Solidity bug.
+      //the second of these is because... seriously? we're not handling these
+      //(at least not for now!) (these only exist prior to Solidity 0.5.6,
+      //thankfully)
       continue;
     }
     switch (abiEntry.type) {
@@ -971,6 +979,7 @@ export function getEventAllocations(
         allocationTemporary,
         compilationId
       } = individualAllocations[contextOrId][selector];
+      debug("allocationTemporary: %O", allocationTemporary);
       let allocationsTemporary = allocationTemporary.allocation
         ? [allocationTemporary]
         : []; //filter out undefined allocations
@@ -988,7 +997,7 @@ export function getEventAllocations(
         let linearizedBaseContractsMinusSelf = contractNode.linearizedBaseContracts.slice();
         linearizedBaseContractsMinusSelf.shift(); //remove contract itself; only want ancestors
         for (let baseId of linearizedBaseContractsMinusSelf) {
-          debug("checking base baseId: %d", baseId);
+          debug("checking baseId: %d", baseId);
           let baseNode = referenceDeclarations[compilationId][baseId];
           if (!baseNode || baseNode.nodeType !== "ContractDefinition") {
             debug("failed to find node for baseId: %d", baseId);
@@ -1000,18 +1009,30 @@ export function getEventAllocations(
           //we're just checking for whether we can *find* it
           //why? because if we couldn't find it, that means that events defined in
           //base contracts *weren't* skipped earlier, and so we shouldn't now add them in
-          debug("baseId: %d", baseId);
-          let baseContext = contracts.find(
+          let baseContractInfo = contracts.find(
             contractAllocationInfo =>
               contractAllocationInfo.compilationId === compilationId &&
               contractAllocationInfo.contractNode &&
               contractAllocationInfo.contractNode.id === baseId
-          ).deployedContext;
+          );
+          if (!baseContractInfo) {
+            //similar to above... this failure case can happen when there are
+            //two contracts with the same name and you attempt to use the
+            //artifacts; say you have contracts A, B, and B', where A inherits
+            //from B, and B and B' have the same name, and B' is the one that
+            //gets the artifact; B will end up in reference declarations and so
+            //get found above, but it won't appear in contracts, causing the
+            //problem here.  Unfortunately I don't know any great way to handle this,
+            //so, uh, we treat it as a failure same as above.
+            debug("failed to find contract info for baseId: %d", baseId);
+            break;
+          }
+          let baseContext = baseContractInfo.deployedContext;
           let baseKey = makeContractKey(baseContext, baseId, compilationId);
           if (individualAllocations[baseKey][selector] !== undefined) {
             let baseAllocation =
               individualAllocations[baseKey][selector].allocationTemporary;
-            debug("pushing inherited alloc from baseId: %d", baseId);
+            debug("(probably) pushing inherited alloc from baseId: %d", baseId);
             if (baseAllocation.allocation) {
               //don't push undefined!
               groupedAllocations[contextOrId][

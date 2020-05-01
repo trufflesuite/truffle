@@ -18,9 +18,7 @@ export function* advance() {
   debug("TOCK taken");
 }
 
-const SUBMODULE_COUNT = 3; //data, evm, solidity
-
-function* next() {
+function* next(submoduleCount) {
   let remaining = yield select(trace.stepsRemaining);
   debug("remaining: %o", remaining);
   let steps = yield select(trace.steps);
@@ -30,7 +28,7 @@ function* next() {
   if (remaining > 0) {
     debug("putting TICK");
     // updates state for current step
-    waitingForSubmodules = SUBMODULE_COUNT;
+    waitingForSubmodules = submoduleCount;
     yield put(actions.tick());
     debug("put TICK");
 
@@ -94,8 +92,8 @@ export function* unload() {
   yield put(actions.unloadTransaction());
 }
 
-export function* saga() {
-  yield takeEvery(actions.NEXT, next);
+export function* saga(submoduleCount) {
+  yield takeEvery(actions.NEXT, next, submoduleCount);
 }
 
 export default prefixName("trace", saga);

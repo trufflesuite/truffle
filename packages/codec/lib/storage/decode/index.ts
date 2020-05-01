@@ -262,7 +262,6 @@ export function* decodeStorageReference(
         };
       }
 
-      debug("data %O", data);
       let lengthByte = data[Evm.Utils.WORD_SIZE - 1];
 
       if (lengthByte % 2 == 0) {
@@ -410,6 +409,7 @@ export function* decodeStorageReference(
         valueSize = storageSize(valueType, info.userDefinedTypes, allocations);
       } catch (error) {
         //error: DecodingError
+        debug("couldn't get value size! error: %o", error);
         return {
           type: dataType,
           kind: "error" as const,

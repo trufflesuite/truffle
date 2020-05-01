@@ -13,3 +13,11 @@ export {
    */
   Encode
 };
+
+import * as Allocate from "./allocate";
+export {
+  /**
+   * @protected
+   */
+  Allocate
+};

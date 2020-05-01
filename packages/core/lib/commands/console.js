@@ -27,16 +27,13 @@ const command = {
 
     // This require a smell?
     const commands = require("./index");
-    const excluded = ["console", "init", "watch", "develop"];
+    const excluded = new Set(["console", "init", "watch", "develop"]);
 
-    const availableCommands = Object.keys(commands).filter(name => {
-      return excluded.indexOf(name) === -1;
-    });
-
-    const consoleCommands = {};
-    availableCommands.forEach(name => {
-      consoleCommands[name] = commands[name];
-    });
+    const consoleCommands = Object.keys(commands).reduce((acc, name) => {
+      return !excluded.has(name)
+        ? Object.assign(acc, { [name]: commands[name] })
+        : acc;
+    }, {});
 
     Environment.detect(config)
       .then(() => {

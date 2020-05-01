@@ -156,7 +156,7 @@ const Package = {
     });
     var host = options.ethpm.ipfs_host;
 
-    if (host instanceof EthPM.hosts.IPFS === false) {
+    if (!(host instanceof EthPM.hosts.IPFS)) {
       host = new EthPM.hosts.IPFS(
         options.ethpm.ipfs_host,
         options.ethpm.ipfs_port,
@@ -229,11 +229,10 @@ const Package = {
   publishable_artifacts: function(options, callback) {
     const callbackPassed = typeof callback === "function";
     // Filter out "test" and "development" networks.
-    var deployed_networks = Object.keys(options.networks).filter(function(
-      network_name
-    ) {
-      return network_name !== "test" && network_name !== "development";
-    });
+    const ifReservedNetworks = new Set(["test", "development"]);
+    var deployed_networks = Object.keys(options.networks).filter(
+      name => !ifReservedNetworks.has(name)
+    );
 
     // Now get the URIs of each network that's been deployed to.
     Networks.asURIs(options, deployed_networks, function(err, result) {
@@ -262,7 +261,7 @@ const Package = {
       }
 
       var files = fs.readdirSync(options.contracts_build_directory);
-      files = files.filter(file => file.includes(".json"));
+      files = files.filter(file => file.endsWith(".json"));
 
       if (!files.length) {
         const message =
@@ -276,25 +275,26 @@ const Package = {
         throw new Error(message);
       }
 
-      var promises = files.map(function(file) {
-        return new Promise(function(accept, reject) {
-          fs.readFile(
-            path.join(options.contracts_build_directory, file),
-            "utf8",
-            function(err, body) {
-              if (err) return reject(err);
+      var promises = files.map(
+        file =>
+          new Promise((resolve, reject) => {
+            fs.readFile(
+              path.join(options.contracts_build_directory, file),
+              "utf8",
+              function(err, body) {
+                if (err) return reject(err);
 
-              try {
-                body = JSON.parse(body);
-              } catch (e) {
-                return reject(e);
+                try {
+                  body = JSON.parse(body);
+                } catch (e) {
+                  return reject(e);
+                }
+
+                resolve(body);
               }
-
-              accept(body);
-            }
-          );
-        });
-      });
+            );
+          })
+      );
 
       var contract_types = {};
       var deployments = {};

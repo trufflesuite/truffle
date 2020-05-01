@@ -370,6 +370,27 @@ contract("DowngradeTest", function(accounts) {
     assert.strictEqual(decodedFunction.value.selector, selector);
   });
 
+  it("Partially decodes internal functions when unreliable order", async function() {
+    let mangledCompilations = clonedeep(compilations);
+    mangledCompilations[0].unreliableSourceOrder = true;
+
+    let deployedContract = await DowngradeTest.new();
+    let decoder = await Decoder.forContractInstance(deployedContract, {
+      compilations: mangledCompilations
+    });
+
+    let decodedFunction = await decoder.variable("canYouReadMe");
+    assert.strictEqual(decodedFunction.type.typeClass, "function");
+    assert.strictEqual(decodedFunction.type.visibility, "internal");
+    assert.strictEqual(decodedFunction.type.mutability, "nonpayable");
+    assert.isEmpty(decodedFunction.type.inputParameterTypes);
+    assert.isEmpty(decodedFunction.type.outputParameterTypes);
+    assert.strictEqual(decodedFunction.kind, "value");
+    assert.strictEqual(decodedFunction.value.kind, "unknown");
+    assert.strictEqual(decodedFunction.value.context.typeName, "DowngradeTest");
+    //we won't bother testing the PC values
+  });
+
   it("Decodes return values even with no deployedBytecode", async function() {
     let mangledCompilations = clonedeep(compilations);
     let downgradeTest = mangledCompilations[0].contracts.find(

@@ -187,6 +187,6 @@ export function* decodeLiteral(
   //option so that errors won't result due to values with bad padding
   //(of numeric or bytesN type, anyway)
   return yield* Basic.Decode.decodeBasic(dataType, pointer, info, {
-    permissivePadding: true
+    paddingMode: "permissive"
   });
 }

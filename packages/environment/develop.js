@@ -120,26 +120,24 @@ const Develop = {
 
     let connectedAlready = false;
 
-    return this.connect(options)
-      .then(disconnect => {
-        connectedAlready = true;
-        return {
-          started: false,
-          disconnect
-        };
-      })
-      .catch(async () => {
-        await this.start(ipcNetwork, ganacheOptions);
-        options.retry = true;
-        return this.connect(options).then(disconnect => {
-          if (connectedAlready) return;
-          connectedAlready = true;
-          return {
-            started: true,
-            disconnect
-          };
-        });
-      });
+    try {
+      const disconnect = await this.connect(options);
+      connectedAlready = true;
+      return {
+        started: false,
+        disconnect
+      };
+    } catch (_error) {
+      await this.start(ipcNetwork, ganacheOptions);
+      options.retry = true;
+      const disconnect = await this.connect(options);
+      if (connectedAlready) return;
+      connectedAlready = true;
+      return {
+        started: true,
+        disconnect
+      };
+    }
   }
 };
 

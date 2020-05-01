@@ -76,7 +76,13 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   debug("normalizing contexts");
 
   //first, let's clone the input
-  let newContexts: Contexts = { ...contexts };
+  //(let's do a 2-deep clone because we'll be altering binary)
+  let newContexts: Contexts = Object.assign(
+    {},
+    ...Object.entries(contexts).map(([contextHash, context]) => ({
+      [contextHash]: { ...context }
+    }))
+  );
 
   debug("contexts cloned");
   debug("cloned contexts: %O", newContexts);
@@ -141,6 +147,26 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   }
 
   debug("extra library replacements complete");
+
+  //one last step: let's handle immutable references
+  //(these are much nicer due to not having to deal with the old format)
+  for (let context of Object.values(newContexts)) {
+    if (context.immutableReferences) {
+      for (let variable of Object.values(context.immutableReferences)) {
+        for (let { start, length } of <{ start: number; length: number }[]>(
+          variable
+        )) {
+          //Goddammit TS
+          let lowerStringIndex = 2 + 2 * start;
+          let upperStringIndex = 2 + 2 * (start + length);
+          context.binary =
+            context.binary.slice(0, lowerStringIndex) +
+            "..".repeat(length) +
+            context.binary.slice(upperStringIndex);
+        }
+      }
+    }
+  }
 
   //finally, return this mess!
   return newContexts;

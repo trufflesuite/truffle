@@ -1,34 +1,33 @@
 {
   "name": "@truffle/workflow-compile",
-  "version": "2.1.26",
   "description": "Core workflow behavior for `truffle compile` command",
-  "dependencies": {
-    "@truffle/artifactor": "^4.0.52",
-    "@truffle/compile-solidity": "^4.2.25",
-    "@truffle/compile-vyper": "^1.0.49",
-    "@truffle/config": "^1.2.16",
-    "@truffle/expect": "^0.0.13",
-    "@truffle/external-compile": "^1.0.28",
-    "@truffle/resolver": "^5.1.6",
-    "fs-extra": "^7.0.1",
-    "mkdirp": "^0.5.1"
+  "license": "MIT",
+  "author": "Truffle Suite <inquiry@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/workflow-compile#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/workflow-compile",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
   },
+  "version": "2.1.32",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/workflow-compile",
-  "author": "Truffle Suite <inquiry@trufflesuite.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/workflow-compile#readme",
-  "publishConfig": {
-    "access": "public"
+  "dependencies": {
+    "@truffle/artifactor": "^4.0.58",
+    "@truffle/compile-solidity": "^4.3.3",
+    "@truffle/compile-vyper": "^1.0.53",
+    "@truffle/config": "^1.2.17",
+    "@truffle/expect": "^0.0.13",
+    "@truffle/external-compile": "^1.0.29",
+    "@truffle/resolver": "^5.1.12",
+    "fs-extra": "^8.1.0"
   },
   "devDependencies": {
     "debug": "^4.1.1",
     "mocha": "5.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

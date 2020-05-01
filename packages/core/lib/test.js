@@ -18,6 +18,8 @@ const Profiler = require("@truffle/compile-solidity/profiler");
 const originalrequire = require("original-require");
 const Codec = require("@truffle/codec");
 const debug = require("debug")("lib:test");
+const Debugger = require("@truffle/debugger");
+const semver = require("semver");
 
 let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
@@ -126,6 +128,17 @@ const Test = {
       compilations.solc.sourceIndexes
     );
 
+    //for stack traces, we'll need to set up a light-mode debugger...
+    let bugger;
+    if (config.stacktrace) {
+      debug("stacktraces on!");
+      bugger = await Debugger.forProject({
+        compilations: debuggerCompilations,
+        provider: config.provider,
+        lightMode: true
+      });
+    }
+
     await this.setJSTestGlobals({
       config,
       web3,
@@ -133,7 +146,8 @@ const Test = {
       accounts,
       testResolver,
       runner,
-      compilations: debuggerCompilations
+      compilations: debuggerCompilations,
+      bugger
     });
 
     // Finally, run mocha.
@@ -152,6 +166,9 @@ const Test = {
   createMocha: function(config) {
     // Allow people to specify config.mocha in their config.
     const mochaConfig = config.mocha || {};
+
+    // Propagate --bail option to mocha
+    mochaConfig.bail = config.bail;
 
     // If the command line overrides color usage, use that.
     if (config.colors != null) mochaConfig.useColors = config.colors;
@@ -180,14 +197,45 @@ const Test = {
     const updated =
       (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
 
-    const compileConfig = config.with({
+    let compileConfig = config.with({
       all: config.compileAll === true,
       files: updated.concat(solidityTestFiles),
       resolver: testResolver,
       quiet: config.runnerOutputOnly || config.quiet,
       quietWrite: true
     });
-
+    if (config.stacktraceExtra) {
+      let versionString = ((compileConfig.compilers || {}).solc || {}).version;
+      //note: I'm relying here on the fact that the current
+      //default version, 0.5.16, is <0.6.3
+      //the following line works with prereleases
+      const satisfies = semver.satisfies(versionString, ">=0.6.3", {
+        includePrerelease: true
+      });
+      //the following line doesn't, despite the flag, but does work with version ranges
+      const intersects =
+        versionString !== undefined &&
+        semver.intersects(versionString, ">=0.6.3", {
+          includePrerelease: true
+        }); //intersects will throw if given undefined so must ward against
+      if (satisfies || intersects) {
+        compileConfig = compileConfig.merge({
+          compilers: {
+            solc: {
+              settings: {
+                debug: {
+                  revertStrings: "debug"
+                }
+              }
+            }
+          }
+        });
+      } else {
+        config.logger.log(
+          "Warning: --stacktrace-extra acts like --stacktrace on Solidity <0.6.3"
+        );
+      }
+    }
     // Compile project contracts and test contracts
     const { contracts, compilations } = await Contracts.compile(compileConfig);
 
@@ -222,14 +270,21 @@ const Test = {
     accounts,
     testResolver,
     runner,
-    compilations
+    compilations,
+    bugger //for stacktracing
   }) {
     global.interfaceAdapter = interfaceAdapter;
     global.web3 = web3;
     global.assert = chai.assert;
     global.expect = chai.expect;
     global.artifacts = {
-      require: import_path => testResolver.require(import_path)
+      require: import_path => {
+        let contract = testResolver.require(import_path);
+        if (bugger) {
+          contract.debugger = bugger;
+        }
+        return contract;
+      }
     };
 
     global[config.debugGlobal] = async operation => {

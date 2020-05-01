@@ -3,33 +3,11 @@ const debug = debugModule("debugger:solidity:selectors");
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import SolidityUtils from "@truffle/solidity-utils";
-import CodeUtils from "@truffle/code-utils";
-import * as Codec from "@truffle/codec";
 
-import IntervalTree from "node-interval-tree";
-import jsonpointer from "json-pointer";
 import semver from "semver";
-import { getRange } from "lib/helpers";
 
 import evm from "lib/evm/selectors";
 import trace from "lib/trace/selectors";
-
-function getSourceRange(instruction = {}) {
-  return {
-    start: instruction.start || 0,
-    length: instruction.length || 0,
-    lines: instruction.range || {
-      start: {
-        line: 0,
-        column: 0
-      },
-      end: {
-        line: 0,
-        column: 0
-      }
-    }
-  };
-}
 
 function contextRequiresPhantomStackframes(context) {
   debug("context: %O", context);
@@ -38,50 +16,9 @@ function contextRequiresPhantomStackframes(context) {
     //we need this to be a boolean, not undefined, because it gets put in the state)
     semver.satisfies(context.compiler.version, ">=0.5.1", {
       includePrerelease: true
-    })
+    }) &&
+    !context.isConstructor //constructors should not get a phantom stackframe!
   );
-}
-
-function rangeNodes(node, pointer = "") {
-  if (node instanceof Array) {
-    return [].concat(
-      ...node.map((sub, i) => rangeNodes(sub, `${pointer}/${i}`))
-    );
-  } else if (node instanceof Object) {
-    let results = [];
-
-    if (node.src !== undefined && node.id !== undefined) {
-      //there are some "pseudo-nodes" with a src but no id.
-      //these will cause problems, so we want to exclude them.
-      //(to my knowledge this only happens with the externalReferences
-      //to an InlineAssembly node, so excluding them just means we find
-      //the InlineAssembly node instead, which is fine)
-      results.push({ pointer, node, range: getRange(node) });
-    }
-
-    return results.concat(
-      ...Object.keys(node).map(key =>
-        rangeNodes(node[key], `${pointer}/${key}`)
-      )
-    );
-  } else {
-    return [];
-  }
-}
-
-function findRange(findOverlappingRange, sourceStart, sourceLength) {
-  // find nodes that fully contain requested range,
-  // return one with longest pointer
-  // (note: returns { range, node, pointer }
-  let sourceEnd = sourceStart + sourceLength;
-  return findOverlappingRange(sourceStart, sourceLength)
-    .filter(({ range }) => sourceStart >= range[0] && sourceEnd <= range[1])
-    .reduce(
-      (acc, cur) => (cur.pointer.length >= acc.pointer.length ? cur : acc),
-      { pointer: "" }
-    );
-  //note we make sure to bias towards cur (the new value being compared) rather than acc (the old value)
-  //so that we don't actually get {pointer: ""} as our result
 }
 
 //function to create selectors that need both a current and next version
@@ -130,7 +67,7 @@ function createMultistepSelectors(stepSelector) {
     /**
      * .sourceRange
      */
-    sourceRange: createLeaf(["./instruction"], getSourceRange),
+    sourceRange: createLeaf(["./instruction"], SolidityUtils.getSourceRange),
 
     /**
      * .pointerAndNode
@@ -140,7 +77,11 @@ function createMultistepSelectors(stepSelector) {
 
       (findOverlappingRange, range) =>
         findOverlappingRange
-          ? findRange(findOverlappingRange, range.start, range.length)
+          ? SolidityUtils.findRange(
+              findOverlappingRange,
+              range.start,
+              range.length
+            )
           : null
     ),
 
@@ -260,104 +201,15 @@ let solidity = createSelectorTree({
       ["./sources", evm.current.context, "./humanReadableSourceMap"],
 
       (sources, context, sourceMap) => {
-        if (!context || !sources) {
-          return [];
-        }
-        let binary = context.binary;
-        if (!binary) {
+        if (!context) {
           return [];
         }
 
-        let numInstructions;
-        if (sourceMap) {
-          numInstructions = sourceMap.length;
-        } else {
-          //HACK
-          numInstructions = (binary.length - 2) / 2;
-          //this is actually an overestimate, but that's OK
-        }
-
-        //because we might be dealing with a constructor with arguments, we do
-        //*not* remove metadata manually
-        let instructions = CodeUtils.parseCode(binary, numInstructions);
-
-        if (!sourceMap) {
-          // HACK
-          // Let's create a source map to use since none exists. This source
-          // map maps just as many ranges as there are instructions (or
-          // possibly more), and marks them all as being Solidity-internal and
-          // not jumps.
-          sourceMap = new Array(instructions.length);
-          sourceMap.fill({
-            start: 0,
-            length: 0,
-            file: -1,
-            jump: "-",
-            modifierDepth: "0"
-          });
-        }
-
-        var lineAndColumnMappings = Object.assign(
-          {},
-          ...Object.entries(sources).map(([id, { source }]) => ({
-            [id]: SolidityUtils.getCharacterOffsetToLineAndColumnMapping(
-              source || ""
-            )
-          }))
+        return SolidityUtils.getProcessedInstructionsForBinary(
+          (sources || []).map(({ source }) => source),
+          context.binary,
+          sourceMap
         );
-
-        let primaryFile;
-        if (sourceMap[0]) {
-          primaryFile = sourceMap[0].file;
-        }
-        debug("primaryFile %o", primaryFile);
-
-        return instructions
-          .map((instruction, index) => {
-            // lookup source map by index and add `index` property to
-            // instruction
-            //
-
-            const instructionSourceMap = sourceMap[index] || {};
-
-            return {
-              instruction: { ...instruction, index },
-              instructionSourceMap
-            };
-          })
-          .map(({ instruction, instructionSourceMap }) => {
-            // add source map information to instruction, or defaults
-
-            const {
-              jump,
-              start = 0,
-              length = 0,
-              file = primaryFile,
-              modifierDepth = 0
-            } = instructionSourceMap;
-            const lineAndColumnMapping = lineAndColumnMappings[file] || {};
-            const range = {
-              start: lineAndColumnMapping[start] || {
-                line: null,
-                column: null
-              },
-              end: lineAndColumnMapping[start + length] || {
-                line: null,
-                column: null
-              }
-            };
-
-            return {
-              ...instruction,
-
-              jump,
-              start,
-              length,
-              file,
-              range,
-              modifierDepth
-            };
-          });
       }
     ),
 
@@ -416,70 +268,13 @@ let solidity = createSelectorTree({
       ],
       (instructions, sources, functions, { compilationId }) =>
         //note: we can skip an explicit null check on sources here because
-        //if sources is null then instructions = [] so the problematic code
-        //will never run
-        Object.assign(
-          {},
-          ...instructions
-            .filter(instruction => instruction.name === "JUMPDEST")
-            .filter(instruction => instruction.file !== -1)
-            //note that the designated invalid function *does* have an associated
-            //file, so it *is* safe to just filter out the ones that don't
-            .map(instruction => {
-              debug("instruction %O", instruction);
-              let sourceId = instruction.file;
-              let findOverlappingRange = functions[compilationId][sourceId];
-              let ast = sources[sourceId].ast;
-              let range = getSourceRange(instruction);
-              let { node, pointer } = findRange(
-                findOverlappingRange,
-                range.start,
-                range.length
-              );
-              if (!pointer) {
-                node = ast;
-              }
-              if (!node || node.nodeType !== "FunctionDefinition") {
-                //filter out JUMPDESTs that aren't function definitions...
-                //except for the designated invalid function
-                let nextInstruction = instructions[instruction.index + 1] || {};
-                if (nextInstruction.name === "INVALID") {
-                  //designated invalid, include it
-                  return {
-                    [instruction.pc]: {
-                      isDesignatedInvalid: true
-                    }
-                  };
-                } else {
-                  //not designated invalid, filter it out
-                  return {};
-                }
-              }
-              //otherwise, we're good to go, so let's find the contract node and
-              //put it all together
-              //to get the contract node, we go up twice from the function node;
-              //the path from one to the other should have a very specific form,
-              //so this is easy
-              let contractPointer = pointer.replace(/\/nodes\/\d+$/, "");
-              let contractNode = jsonpointer.get(ast, contractPointer);
-              return {
-                [instruction.pc]: {
-                  sourceIndex: sourceId,
-                  compilationId,
-                  pointer,
-                  node,
-                  name: node.name,
-                  id: node.id,
-                  mutability: Codec.Ast.Utils.mutability(node),
-                  contractPointer,
-                  contractNode,
-                  contractName: contractNode.name,
-                  contractId: contractNode.id,
-                  contractKind: contractNode.contractKind,
-                  isDesignatedInvalid: false
-                }
-              };
-            })
+        //if sources is null then instructions = [] so the problematic map
+        //never occurs
+        SolidityUtils.getFunctionsByProgramCounter(
+          instructions,
+          sources.map(({ ast }) => ast),
+          functions[compilationId],
+          compilationId
         )
     ),
 
@@ -504,20 +299,15 @@ let solidity = createSelectorTree({
 
     /**
      * solidity.current.willCall
+     * note: includes creations, does *not* include instareturns
      */
-    willCall: createLeaf([evm.current.step.isCall], x => x),
-
-    /**
-     * solidity.current.willCreate
-     */
-    willCreate: createLeaf([evm.current.step.isCreate], x => x),
-
-    /**
-     * solidity.current.willCallOrCreateButInstantlyReturn
-     */
-    willCallOrCreateButInstantlyReturn: createLeaf(
-      [evm.current.step.isInstantCallOrCreate],
-      x => x
+    willCall: createLeaf(
+      [
+        evm.current.step.isCall,
+        evm.current.step.isCreate,
+        evm.current.step.isInstantCallOrCreate
+      ],
+      (isCall, isCreate, isInstant) => (isCall || isCreate) && !isInstant
     ),
 
     /**
@@ -567,16 +357,9 @@ let solidity = createSelectorTree({
         {},
         ...Object.entries(compilations).map(
           ([compilationId, { byId: sources }]) => ({
-            [compilationId]: sources.map(({ ast }) => {
-              let tree = new IntervalTree();
-              let ranges = rangeNodes(ast);
-              for (let { range, node, pointer } of ranges) {
-                let [start, end] = range;
-                tree.insert(start, end, { range, node, pointer });
-              }
-              return (sourceStart, sourceLength) =>
-                tree.search(sourceStart, sourceStart + sourceLength);
-            })
+            [compilationId]: sources.map(({ ast }) =>
+              SolidityUtils.makeOverlapFunction(ast)
+            )
           })
         )
       )

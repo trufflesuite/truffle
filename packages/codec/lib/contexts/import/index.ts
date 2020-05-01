@@ -6,7 +6,7 @@ export function contextToType(context: Context): Format.Types.ContractType {
     return {
       typeClass: "contract",
       kind: "native",
-      id: context.contractId.toString(),
+      id: makeTypeId(context.contractId, context.compilationId),
       typeName: context.contractName,
       contractKind: context.contractKind,
       payable: context.payable
@@ -20,4 +20,12 @@ export function contextToType(context: Context): Format.Types.ContractType {
       payable: context.payable
     };
   }
+}
+
+//NOTE: I am exporting this for use in other import functions, but please don't
+//use this elsewhere!
+//If you have to make a type ID, instead make the type and then
+//take its ID.
+export function makeTypeId(astId: number, compilationId: string): string {
+  return `${compilationId}:${astId}`;
 }

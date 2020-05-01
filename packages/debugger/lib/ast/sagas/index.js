@@ -10,31 +10,17 @@ import ast from "../selectors";
 import flatten from "lodash.flatten";
 
 function* walk(compilationId, sourceId, node, pointer = "", parentId = null) {
-  debug("walking %o %o", pointer, node);
+  debug("walking %d %o %o", sourceId, pointer, node);
 
   yield* handleEnter(compilationId, sourceId, node, pointer, parentId);
 
   if (node instanceof Array) {
     for (let [i, child] of node.entries()) {
-      yield call(
-        walk,
-        compilationId,
-        sourceId,
-        child,
-        `${pointer}/${i}`,
-        parentId
-      );
+      yield* walk(compilationId, sourceId, child, `${pointer}/${i}`, parentId);
     }
   } else if (node instanceof Object) {
     for (let [key, child] of Object.entries(node)) {
-      yield call(
-        walk,
-        compilationId,
-        sourceId,
-        child,
-        `${pointer}/${key}`,
-        node.id
-      );
+      yield* walk(compilationId, sourceId, child, `${pointer}/${key}`, node.id);
     }
   }
 
@@ -42,11 +28,11 @@ function* walk(compilationId, sourceId, node, pointer = "", parentId = null) {
 }
 
 function* handleEnter(compilationId, sourceId, node, pointer, parentId) {
+  debug("entering %d %s", sourceId, pointer);
+
   if (!(node instanceof Object)) {
     return;
   }
-
-  debug("entering %s", pointer);
 
   if (node.id !== undefined) {
     debug("%s recording scope %s", pointer, node.id);
@@ -61,20 +47,20 @@ function* handleEnter(compilationId, sourceId, node, pointer, parentId) {
     case "ContractDefinition":
     case "StructDefinition":
     case "EnumDefinition":
+      debug("%s recording type %o", pointer, node);
       yield* data.defineType(node, compilationId);
       break;
   }
 }
 
 function* handleExit(compilationId, sourceId, node, pointer) {
-  debug("exiting %s", pointer);
+  debug("exiting %d %s", sourceId, pointer);
 
   // no-op right now
 }
 
 export function* visitAll() {
   let compilations = yield select(ast.views.sources);
-  debug("compilations: %O", compilations);
 
   let sources = flatten(
     Object.values(compilations).map(({ byId }) => byId)

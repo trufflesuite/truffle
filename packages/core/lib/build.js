@@ -1,4 +1,4 @@
-const mkdirp = require("mkdirp");
+const fse = require("fs-extra");
 const del = require("del");
 const Contracts = require("@truffle/workflow-compile");
 const BuildError = require("./errors/builderror");
@@ -6,7 +6,6 @@ const { spawn } = require("child_process");
 const spawnargs = require("spawn-args");
 const _ = require("lodash");
 const expect = require("@truffle/expect");
-const { promisify } = require("util");
 
 function CommandBuilder(command) {
   this.command = command;
@@ -54,7 +53,7 @@ const Build = {
 
     // Clean first.
     await del([destination + "/*", "!" + contracts_build_directory]);
-    return promisify(mkdirp)(destination);
+    fse.ensureDirSync(destination);
   },
 
   build: async function(options) {
