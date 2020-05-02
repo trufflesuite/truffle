@@ -38,7 +38,6 @@
     "@truffle/resolver": "^5.1.12",
     "@truffle/workflow-compile": "^2.1.32",
     "app-module-path": "^2.2.0",
-    "async": "2.6.1",
     "bip39": "^2.2.0",
     "chai": "4.2.0",
     "colors": "^1.1.2",
