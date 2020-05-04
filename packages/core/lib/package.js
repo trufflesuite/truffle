@@ -321,24 +321,23 @@ const Package = {
       });
     });
 
-    Promise.all(matchingPromises)
-      .then(() => {
-        const toReturn = {
-          contract_types: contract_types,
-          deployments: deployments
-        };
-        if (callbackPassed) {
-          callback(null, toReturn);
-          return;
-        }
-        return toReturn;
-      })
-      .catch(error => {
-        if (callbackPassed) {
-          return callback(error);
-        }
-        throw error;
-      });
+    try {
+      await Promise.all(matchingPromises);
+      const toReturn = {
+        contract_types: contract_types,
+        deployments: deployments
+      };
+      if (callbackPassed) {
+        callback(null, toReturn);
+        return;
+      }
+      return toReturn;
+    } catch (error) {
+      if (callbackPassed) {
+        return callback(error);
+      }
+      throw error;
+    }
   }
 };
 
