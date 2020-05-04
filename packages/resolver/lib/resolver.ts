@@ -5,13 +5,6 @@ const provision = require("@truffle/provisioner");
 import { ResolverSource } from "./source";
 import { constructSources } from "./sources";
 
-type Callback = (
-  err: Error | null,
-  body?: string,
-  filePath?: string,
-  source?: ResolverSource
-) => void;
-
 export class Resolver {
   options: any;
   sources: ResolverSource[];
@@ -39,20 +32,7 @@ export class Resolver {
     );
   }
 
-  resolve(importPath: string, importedFrom: string, callback: Callback) {
-    if (typeof importedFrom === "function") {
-      callback = importedFrom;
-      importedFrom = null;
-    }
-
-    this._resolve(importPath, importedFrom)
-      .then(({ body, filePath, source }) =>
-        callback(null, body, filePath, source)
-      )
-      .catch(error => callback(error));
-  }
-
-  private async _resolve(
+  async resolve(
     importPath: string,
     importedFrom: string
   ): Promise<{ body: string; filePath: string; source: ResolverSource }> {
