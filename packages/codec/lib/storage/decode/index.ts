@@ -11,7 +11,7 @@ import * as Utils from "@truffle/codec/storage/utils";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecoderRequest } from "@truffle/codec/types";
 import * as Evm from "@truffle/codec/evm";
-import { storageSizeForType } from "@truffle/codec/storage/allocate";
+import { storageSize } from "@truffle/codec/storage/allocate";
 import BN from "bn.js";
 import { DecodingError } from "@truffle/codec/errors";
 
@@ -51,7 +51,7 @@ export function* decodeStorageReferenceByAddress(
   const startOffset = Conversion.toBN(rawValue);
   let rawSize: Storage.StorageLength;
   try {
-    rawSize = storageSizeForType(dataType, info.userDefinedTypes, allocations);
+    rawSize = storageSize(dataType, info.userDefinedTypes, allocations);
   } catch (error) {
     //error: DecodingError
     return <Format.Errors.ErrorResult>{
@@ -140,7 +140,7 @@ export function* decodeStorageReference(
       debug("about to determine baseSize");
       let baseSize: Storage.StorageLength;
       try {
-        baseSize = storageSizeForType(
+        baseSize = storageSize(
           dataType.baseType,
           info.userDefinedTypes,
           allocations
@@ -262,7 +262,6 @@ export function* decodeStorageReference(
         };
       }
 
-      debug("data %O", data);
       let lengthByte = data[Evm.Utils.WORD_SIZE - 1];
 
       if (lengthByte % 2 == 0) {
@@ -326,7 +325,7 @@ export function* decodeStorageReference(
 
     case "struct": {
       const typeId = dataType.id;
-      const structAllocation = allocations[parseInt(typeId)];
+      const structAllocation = allocations[typeId];
       if (!structAllocation) {
         return {
           type: dataType,
@@ -367,7 +366,6 @@ export function* decodeStorageReference(
           }
         };
 
-        let memberName = memberAllocation.definition.name;
         let storedType = <Format.Types.StructType>info.userDefinedTypes[typeId];
         if (!storedType) {
           return {
@@ -386,7 +384,7 @@ export function* decodeStorageReference(
         );
 
         decodedMembers.push({
-          name: memberName,
+          name: memberAllocation.name,
           value: yield* decodeStorage(
             memberType,
             { location: "storage" as const, range: childRange },
@@ -408,13 +406,10 @@ export function* decodeStorageReference(
       const valueType = dataType.valueType;
       let valueSize: Storage.StorageLength;
       try {
-        valueSize = storageSizeForType(
-          valueType,
-          info.userDefinedTypes,
-          allocations
-        );
+        valueSize = storageSize(valueType, info.userDefinedTypes, allocations);
       } catch (error) {
         //error: DecodingError
+        debug("couldn't get value size! error: %o", error);
         return {
           type: dataType,
           kind: "error" as const,

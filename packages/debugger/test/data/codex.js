@@ -93,8 +93,7 @@ describe("Codex", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -105,8 +104,7 @@ describe("Codex", function() {
 
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   it("Tracks storage across call boundaries", async function() {
@@ -115,20 +113,14 @@ describe("Codex", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
-
-    let session = bugger.connect();
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     debug("starting stepping");
-    await session.continueUntilBreakpoint(); //run till end
+    await bugger.continueUntilBreakpoint(); //run till end
     debug("made it to end of transaction");
 
     const surface = Codec.Format.Utils.Inspect.nativize(
-      await session.variable("surface")
+      await bugger.variable("surface")
     );
 
     assert.equal(surface["ping"], 1);
@@ -140,17 +132,11 @@ describe("Codex", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
+    await bugger.continueUntilBreakpoint(); //run till end
 
-    await session.continueUntilBreakpoint(); //run till end
-
-    const x = Codec.Format.Utils.Inspect.nativize(await session.variable("x"));
+    const x = Codec.Format.Utils.Inspect.nativize(await bugger.variable("x"));
 
     assert.equal(x, 1);
   });
@@ -161,17 +147,11 @@ describe("Codex", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
+    await bugger.continueUntilBreakpoint(); //run till end
 
-    await session.continueUntilBreakpoint(); //run till end
-
-    const x = Codec.Format.Utils.Inspect.nativize(await session.variable("x"));
+    const x = Codec.Format.Utils.Inspect.nativize(await bugger.variable("x"));
 
     assert.equal(x, 1);
   });

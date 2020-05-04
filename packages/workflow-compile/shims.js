@@ -35,7 +35,8 @@ function shimContract(contract) {
     deployedBytecode,
     compiler,
     devdoc,
-    userdoc
+    userdoc,
+    immutableReferences
   } = contract;
 
   return {
@@ -52,13 +53,17 @@ function shimContract(contract) {
     deployedBytecode: shimBytecode(deployedBytecode),
     compiler,
     devdoc,
-    userdoc
+    userdoc,
+    immutableReferences
   };
 }
 
 function shimBytecode(bytecode) {
   if (!bytecode) {
     return undefined;
+  }
+  if (typeof bytecode === "object") {
+    return bytecode;
   }
 
   const linkReferences = [];

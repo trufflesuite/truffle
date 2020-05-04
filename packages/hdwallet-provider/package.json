@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "1.0.31",
+  "version": "1.0.34",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -24,6 +24,7 @@
     "ethereumjs-tx": "^1.0.0",
     "ethereumjs-util": "^6.1.0",
     "ethereumjs-wallet": "^0.6.3",
+    "source-map-support": "^0.5.16",
     "web3": "1.2.1",
     "web3-provider-engine": "https://github.com/trufflesuite/provider-engine#web3-one"
   },
@@ -33,6 +34,7 @@
     "@types/ethereumjs-tx": "^1.0.1",
     "@types/ethereumjs-util": "^5.2.0",
     "@types/mocha": "^5.2.7",
+    "@types/web3": "^1.0.20",
     "@types/web3-provider-engine": "^14.0.0",
     "ganache-core": "2.10.2",
     "mocha": "6.2.0",

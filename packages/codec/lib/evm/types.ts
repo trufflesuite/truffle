@@ -1,7 +1,10 @@
 import * as Common from "@truffle/codec/common";
 import * as Storage from "@truffle/codec/storage/types";
 import * as Ast from "@truffle/codec/ast";
-import { StorageAllocations } from "@truffle/codec/storage/allocate/types";
+import {
+  StorageAllocations,
+  StateAllocations
+} from "@truffle/codec/storage/allocate/types";
 import { MemoryAllocations } from "@truffle/codec/memory/allocate/types";
 import {
   AbiAllocations,
@@ -16,6 +19,7 @@ export interface EvmState {
   stack?: Uint8Array[];
   memory?: Uint8Array;
   calldata?: Uint8Array;
+  code?: Uint8Array;
   specials?: {
     [builtin: string]: Uint8Array; //sorry
   };
@@ -44,6 +48,7 @@ export interface AllocationInfo {
   abi?: AbiAllocations;
   calldata?: CalldataAllocations;
   event?: EventAllocations;
+  state?: StateAllocations;
 }
 
 export interface InternalFunctions {
@@ -51,7 +56,8 @@ export interface InternalFunctions {
 }
 
 export interface InternalFunction {
-  source?: number;
+  sourceIndex?: number;
+  compilationId?: string;
   pointer?: string;
   node?: Ast.AstNode;
   name?: string;

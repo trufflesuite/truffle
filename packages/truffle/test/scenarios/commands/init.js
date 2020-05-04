@@ -18,39 +18,28 @@ describe("truffle init [ @standalone ]", () => {
     tempDir.removeCallback();
   });
 
-  it("does not error", done => {
-    CommandRunner.run("init", config, error => {
-      if (error) done(error);
-      assert(typeof error === "undefined");
-      done();
-    });
+  it("does not error", async () => {
+    await CommandRunner.run("init", config);
   }).timeout(30000);
 
-  it("unboxes a project with a truffle config", done => {
-    CommandRunner.run("init", config, () => {
-      assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-      done();
-    });
+  it("unboxes a project with a truffle config", async () => {
+    await CommandRunner.run("init", config);
+    assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
   }).timeout(20000);
 
   describe("when a path is provided", () => {
-    it("initializes with a relative path", done => {
+    it("initializes with a relative path", async () => {
       const myPath = "./my/favorite/folder/structure";
-      CommandRunner.run(`init ${myPath}`, config, error => {
-        if (error) done(error);
-        assert(
-          fse.existsSync(path.join(tempDir.name, myPath, "truffle-config.js"))
-        );
-        done();
-      });
+      await CommandRunner.run(`init ${myPath}`, config);
+      assert(
+        fse.existsSync(path.join(tempDir.name, myPath, "truffle-config.js"))
+      );
     }).timeout(20000);
-    it("initializes with an absolute path", done => {
+
+    it("initializes with an absolute path", async () => {
       const myPath = path.join(tempDir.name, "somethingElse");
-      CommandRunner.run(`init ${myPath}`, config, error => {
-        if (error) done(error);
-        assert(fse.existsSync(path.join(myPath, "truffle-config.js")));
-        done();
-      });
+      await CommandRunner.run(`init ${myPath}`, config);
+      assert(fse.existsSync(path.join(myPath, "truffle-config.js")));
     }).timeout(20000);
   });
 });

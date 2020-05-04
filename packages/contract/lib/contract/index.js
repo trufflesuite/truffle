@@ -32,6 +32,9 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
     instance.transactionHash = contract.transactionHash;
     instance.contract = contract;
 
+    //for stacktracing in tests
+    instance.debugger = constructor.debugger;
+
     // User defined methods, overloaded methods, events
     instance.abi.forEach(function(item) {
       switch (item.type) {

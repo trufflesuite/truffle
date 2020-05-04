@@ -1,3 +1,4 @@
+import "source-map-support/register";
 import opcodes from "./opcodes";
 import { opcodeObject } from "typings";
 

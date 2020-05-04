@@ -31,91 +31,66 @@ describe("Happy path (truffle unbox)", function() {
     };
   });
 
-  it("will compile", function(done) {
+  it("will compile", async function() {
     this.timeout(20000);
 
-    CommandRunner.run("compile", config, function(err) {
-      var output = logger.contents();
-      if (err) {
-        console.log(output);
-        return done(err);
-      }
+    await CommandRunner.run("compile", config);
 
-      assert(
-        fs.existsSync(
-          path.join(config.contracts_build_directory, "MetaCoin.json")
-        )
-      );
-      assert(
-        fs.existsSync(
-          path.join(config.contracts_build_directory, "ConvertLib.json")
-        )
-      );
-      assert(
-        fs.existsSync(
-          path.join(config.contracts_build_directory, "Migrations.json")
-        )
-      );
-
-      done();
-    });
+    assert(
+      fs.existsSync(
+        path.join(config.contracts_build_directory, "MetaCoin.json")
+      )
+    );
+    assert(
+      fs.existsSync(
+        path.join(config.contracts_build_directory, "ConvertLib.json")
+      )
+    );
+    assert(
+      fs.existsSync(
+        path.join(config.contracts_build_directory, "Migrations.json")
+      )
+    );
   });
 
-  it("will migrate", function(done) {
+  it("will migrate", async function() {
     this.timeout(50000);
 
-    CommandRunner.run("migrate", config, function(err) {
-      var output = logger.contents();
-      if (err) {
-        console.log(output);
-        return done(err);
-      }
+    await CommandRunner.run("migrate", config);
 
-      var MetaCoin = contract(
-        require(path.join(config.contracts_build_directory, "MetaCoin.json"))
-      );
-      var ConvertLib = contract(
-        require(path.join(config.contracts_build_directory, "ConvertLib.json"))
-      );
-      var Migrations = contract(
-        require(path.join(config.contracts_build_directory, "Migrations.json"))
-      );
+    var MetaCoin = contract(
+      require(path.join(config.contracts_build_directory, "MetaCoin.json"))
+    );
+    var ConvertLib = contract(
+      require(path.join(config.contracts_build_directory, "ConvertLib.json"))
+    );
+    var Migrations = contract(
+      require(path.join(config.contracts_build_directory, "Migrations.json"))
+    );
 
-      var promises = [];
+    var promises = [];
 
-      [MetaCoin, ConvertLib, Migrations].forEach(function(abstraction) {
-        abstraction.setProvider(config.provider);
+    [MetaCoin, ConvertLib, Migrations].forEach(function(abstraction) {
+      abstraction.setProvider(config.provider);
 
-        promises.push(
-          abstraction.deployed().then(function(instance) {
-            assert.notEqual(
-              instance.address,
-              null,
-              instance.contract_name + " didn't have an address!"
-            );
-          })
-        );
-      });
-
-      Promise.all(promises)
-        .then(function() {
-          done();
+      promises.push(
+        abstraction.deployed().then(function(instance) {
+          assert.notEqual(
+            instance.address,
+            null,
+            instance.contract_name + " didn't have an address!"
+          );
         })
-        .catch(done);
+      );
     });
+    await Promise.all(promises);
   });
 
-  it("will run tests", function(done) {
+  it("will run tests", async function() {
     this.timeout(70000);
-    CommandRunner.run("test", config, function(err) {
-      var output = logger.contents();
-      if (err) {
-        console.log(output);
-        return done(err);
-      }
+    await CommandRunner.run("test", config);
+    var output = logger.contents();
 
-      assert(output.indexOf("5 passing") >= 0);
-      done();
-    });
+    assert(output.indexOf("5 passing") >= 0);
   });
-}).timeout(10000);
+});

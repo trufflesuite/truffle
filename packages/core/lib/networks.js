@@ -10,7 +10,10 @@ const Networks = {
   deployed: async function(options) {
     let files;
     try {
-      files = fs.readdirSync(options.contracts_build_directory);
+      // Only read JSON files in directory
+      files = fs
+        .readdirSync(options.contracts_build_directory)
+        .filter(fn => fn.endsWith(".json"));
     } catch (error) {
       // We can't read the directory. Act like we found nothing.
       files = [];
@@ -53,19 +56,22 @@ const Networks = {
 
   display: async function(config) {
     const networks = await this.deployed(config);
-    let networkNames = Object.keys(networks).sort();
-
-    const starNetworks = networkNames.filter(networkName => {
-      return (
-        config.networks[networkName] != null &&
-        config.networks[networkName].network_id === "*"
+    const { networkNames, starNetworks } = Object.keys(networks)
+      .sort()
+      .reduce(
+        (acc, networkName) => {
+          if (
+            config.networks[networkName] &&
+            config.networks[networkName].network_id === "*"
+          ) {
+            acc.starNetworks.push(networkName);
+          } else {
+            acc.networkNames.push(networkName);
+          }
+          return acc;
+        },
+        { networkNames: [], starNetworks: [] }
       );
-    });
-
-    // Remove * networks from network names.
-    networkNames = networkNames.filter(networkName => {
-      return starNetworks.indexOf(networkName) < 0;
-    });
 
     const unknownNetworks = networkNames.filter(networkName => {
       const configuredNetworks = Object.keys(config.networks);
@@ -146,7 +152,10 @@ const Networks = {
   },
 
   clean: async function(config) {
-    let files = fs.readdirSync(config.contracts_build_directory);
+    // Only read JSON files in directory
+    let files = fs
+      .readdirSync(config.contracts_build_directory)
+      .filter(fn => fn.endsWith(".json"));
     const configuredNetworks = Object.keys(config.networks);
     const results = [];
 

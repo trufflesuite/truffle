@@ -8,6 +8,7 @@ import evm from "lib/evm/reducers";
 import solidity from "lib/solidity/reducers";
 import trace from "lib/trace/reducers";
 import controller from "lib/controller/reducers";
+import stacktrace from "lib/stacktrace/reducers";
 
 import * as actions from "./actions";
 
@@ -20,15 +21,6 @@ function ready(state = false, action) {
     case actions.WAIT:
       return false;
 
-    default:
-      return state;
-  }
-}
-
-function projectInfoComputed(state = false, action) {
-  switch (action.type) {
-    case actions.PROJECT_INFO_COMPUTED:
-      return true;
     default:
       return state;
   }
@@ -84,7 +76,6 @@ function block(state = {}, action) {
 const session = combineReducers({
   ready,
   lastLoadingError,
-  projectInfoComputed,
   transaction,
   receipt,
   block
@@ -95,6 +86,7 @@ const reduceState = combineReducers({
   data,
   evm,
   solidity,
+  stacktrace,
   trace,
   controller
 });

@@ -3,31 +3,24 @@ import { combineReducers } from "redux";
 import * as actions from "./actions";
 
 const DEFAULT_SOURCES = {
-  byId: {}
+  byCompilationId: {} //by compilation, then in an array
 };
 
 function sources(state = DEFAULT_SOURCES, action) {
   switch (action.type) {
     /*
-     * Adding a new source
+     * Adding new sources
      */
-    case actions.ADD_SOURCE:
-      let { ast, source, sourcePath, compiler } = action;
-
-      let id = Object.keys(state.byId).length;
-
+    case actions.ADD_SOURCES:
       return {
-        byId: {
-          ...state.byId,
-
-          [id]: {
-            id,
-            ast,
-            source,
-            sourcePath,
-            compiler
-          }
-        }
+        byCompilationId: Object.assign(
+          {},
+          ...Object.entries(action.compilations).map(([id, compilation]) => ({
+            [id]: {
+              byId: compilation
+            }
+          }))
+        )
       };
 
     /*

@@ -104,7 +104,7 @@ class VersionRange extends LoadingStrategy {
       attemptNumber: index + 1
     });
     try {
-      const response = await request.get(url);
+      const response = await request.get(url, { gzip: true, timeout: 30000 });
       events.emit("downloadCompiler:succeed");
       this.addFileToCache(response, fileName);
       return this.compilerFromString(response);
@@ -150,7 +150,7 @@ class VersionRange extends LoadingStrategy {
       compilerRoots[compilerRoots.length] === "/"
         ? `${compilerRoots[index]}list.json`
         : `${compilerRoots[index]}/list.json`;
-    return request(url)
+    return request(url, { gzip: true, timeout: 30000 })
       .then(list => {
         events.emit("fetchSolcList:succeed");
         return JSON.parse(list);

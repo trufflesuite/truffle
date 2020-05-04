@@ -1,29 +1,29 @@
-export const ADVANCE = "ADVANCE";
+export const ADVANCE = "CONTROLLER_ADVANCE";
 export function advance(count) {
   return { type: ADVANCE, count };
 }
 
-export const STEP_NEXT = "STEP_NEXT";
+export const STEP_NEXT = "CONTROLLER_STEP_NEXT";
 export function stepNext() {
   return { type: STEP_NEXT };
 }
 
-export const STEP_OVER = "STEP_OVER";
+export const STEP_OVER = "CONTROLLER_STEP_OVER";
 export function stepOver() {
   return { type: STEP_OVER };
 }
 
-export const STEP_INTO = "STEP_INTO";
+export const STEP_INTO = "CONTROLLER_STEP_INTO";
 export function stepInto() {
   return { type: STEP_INTO };
 }
 
-export const STEP_OUT = "STEP_OUT";
+export const STEP_OUT = "CONTROLLER_STEP_OUT";
 export function stepOut() {
   return { type: STEP_OUT };
 }
 
-export const RESET = "RESET";
+export const RESET = "CONTROLLER_RESET";
 export function reset() {
   return { type: RESET };
 }
@@ -33,7 +33,7 @@ export function interrupt() {
   return { type: INTERRUPT };
 }
 
-export const CONTINUE = "CONTINUE";
+export const CONTINUE = "CONTROLLER_CONTINUE";
 export function continueUntilBreakpoint(breakpoints) {
   //"continue" is not a legal name
   return {
@@ -42,7 +42,7 @@ export function continueUntilBreakpoint(breakpoints) {
   };
 }
 
-export const ADD_BREAKPOINT = "ADD_BREAKPOINT";
+export const ADD_BREAKPOINT = "CONTROLLER_ADD_BREAKPOINT";
 export function addBreakpoint(breakpoint) {
   return {
     type: ADD_BREAKPOINT,
@@ -50,7 +50,7 @@ export function addBreakpoint(breakpoint) {
   };
 }
 
-export const REMOVE_BREAKPOINT = "REMOVE_BREAKPOINT";
+export const REMOVE_BREAKPOINT = "CONTROLLER_REMOVE_BREAKPOINT";
 export function removeBreakpoint(breakpoint) {
   return {
     type: REMOVE_BREAKPOINT,
@@ -58,21 +58,21 @@ export function removeBreakpoint(breakpoint) {
   };
 }
 
-export const REMOVE_ALL_BREAKPOINTS = "REMOVE_ALL_BREAKPOINTS";
+export const REMOVE_ALL_BREAKPOINTS = "CONTROLLER_REMOVE_ALL_BREAKPOINTS";
 export function removeAllBreakpoints() {
   return {
     type: REMOVE_ALL_BREAKPOINTS
   };
 }
 
-export const START_STEPPING = "START_STEPPING";
+export const START_STEPPING = "CONTROLLER_START_STEPPING";
 export function startStepping() {
   return {
     type: START_STEPPING
   };
 }
 
-export const DONE_STEPPING = "DONE_STEPPING";
+export const DONE_STEPPING = "CONTROLLER_DONE_STEPPING";
 export function doneStepping() {
   return {
     type: DONE_STEPPING

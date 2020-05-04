@@ -1,6 +1,6 @@
 {
   "name": "@truffle/events",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Event system for Truffle",
   "main": "index.js",
   "keywords": [],
@@ -10,6 +10,7 @@
     "access": "public"
   },
   "dependencies": {
-    "emittery": "^0.4.1"
+    "emittery": "^0.4.1",
+    "ora": "^3.4.0"
   }
 }

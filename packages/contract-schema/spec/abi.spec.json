@@ -102,6 +102,22 @@
       "additionalProperties": false
     },
 
+    "ReceiveFunction": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["receive"]
+        },
+        "stateMutability": {
+          "type": "string",
+          "enum": ["payable"]
+        }
+      },
+      "required": ["type", "stateMutability"],
+      "additionalProperties": false
+    },
+
     "Event": {
       "type": "object",
       "properties": {

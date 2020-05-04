@@ -61,11 +61,12 @@ which mode was used via the `"decodingMode"` field.
 
 To ensure full mode works:
   * Use Solidity v0.4.12 or higher;
+  * Ensure all contracts in your projects have distinct names;
   * Compile all your contracts at the same time;
   * Ensure all custom data types are declared in a file with at least one contract.
 
 (Our apologies for these technical limitations, but we are working to address
-these last two problems.)
+these last three problems.)
 
 If you can't use full mode or don't want to deal with the distinction,
 the decoder provides
@@ -85,12 +86,30 @@ which accept decodings in either mode and always return ABI mode.
   multiple decodings (e.g. [[DecodedLog]]) may contain decodings in different
   modes.
 
-- You can only decode storage variables in full mode. If full mode fails
-  while decoding a storage variable, it will throw an exception.
+- You can only decode state variables in full mode. If full mode fails
+  while decoding a state variable, it will throw an exception.
 
 - If a contract `Base` declares an event `Event` and a contract `Derived`
   inheriting from `Base` overrides `Event`, if `Derived` then emits
   `Base.Event`, ABI mode may not be able to decode it.
+
+#### Additional notes on decoding state variables
+
+- While internal function pointers can only be decoded in full mode,
+  full mode still may not be able to determine all the information about
+  them.  Thus, for internal function pointers, you may get a bare-bones
+  decoding, or you may get a decoding with more information.
+
+- Solidity 0.6.5 contains a bug that may cause some state variables to
+  decode incorrectly if there is an immutable state variable which is
+  written to but never read from.
+
+- In any version of Solidity, it is impossible to decode an immutable
+  state variable which is written to but never read from; these will
+  decode to an error.
+
+- Not all constant state variables can presently be decoded; some of
+  these may simply decode to an error.
 
 ---
 

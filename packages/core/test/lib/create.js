@@ -3,7 +3,7 @@ const path = require("path");
 const fse = require("fs-extra");
 const glob = require("glob");
 const Box = require("@truffle/box");
-const Create = require("../../lib/create");
+const Create = require("../../lib/commands/create/helpers");
 const Resolver = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
 

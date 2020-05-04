@@ -1,5 +1,6 @@
 import fse from "fs-extra";
-import _ from "lodash";
+import merge from "lodash.merge";
+import assign from "lodash.assign";
 import { ContractObject } from "@truffle/contract-schema";
 
 export function writeArtifact(
@@ -18,12 +19,12 @@ export function finalizeArtifact(
   normalizedExistingArtifact: ContractObject,
   normalizedNewArtifact: ContractObject
 ) {
-  const knownNetworks = _.merge(
+  const knownNetworks = merge(
     {},
     normalizedExistingArtifact.networks,
     normalizedNewArtifact.networks
   );
-  const completeArtifact = _.assign(
+  const completeArtifact = assign(
     {},
     normalizedExistingArtifact,
     normalizedNewArtifact,

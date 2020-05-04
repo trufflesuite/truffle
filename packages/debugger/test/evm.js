@@ -67,8 +67,7 @@ describe("EVM Debugging", function() {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
   before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
@@ -79,8 +78,7 @@ describe("EVM Debugging", function() {
 
     let prepared = await prepareContracts(provider, sources, migrations);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
   describe("Function Depth", function() {
@@ -93,18 +91,17 @@ describe("EVM Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        files,
-        contracts: artifacts
+        compilations,
+        lightMode: true
       });
 
-      let session = bugger.connect();
       var finished; // is the trace finished?
 
       do {
-        await session.stepNext();
-        finished = session.view(trace.finished);
+        await bugger.stepNext();
+        finished = bugger.view(trace.finished);
 
-        let actual = session.view(evm.current.callstack).length;
+        let actual = bugger.view(evm.current.callstack).length;
 
         assert.isAtMost(actual, maxExpected);
       } while (!finished);
@@ -118,24 +115,22 @@ describe("EVM Debugging", function() {
 
       let bugger = await Debugger.forTx(txHash, {
         provider,
-        files,
-        contracts: artifacts
+        compilations,
+        lightMode: true
       });
-
-      let session = bugger.connect();
 
       // follow callstack length values in list
       // see source above
       let expectedDepthSequence = [1, 2, 1];
-      let actualSequence = [session.view(evm.current.callstack).length];
+      let actualSequence = [bugger.view(evm.current.callstack).length];
 
       var finished; // is the trace finished?
 
       do {
-        await session.stepNext();
-        finished = session.view(trace.finished);
+        await bugger.stepNext();
+        finished = bugger.view(trace.finished);
 
-        let currentDepth = session.view(evm.current.callstack).length;
+        let currentDepth = bugger.view(evm.current.callstack).length;
         let lastKnown = actualSequence[actualSequence.length - 1];
 
         if (currentDepth !== lastKnown) {

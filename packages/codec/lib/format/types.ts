@@ -215,7 +215,9 @@ export type ElementaryType =
   | FixedType
   | UfixedType
   | AddressType
-  | StringType;
+  | StringType
+  | EnumType
+  | ContractType;
 
 /**
  * Type of a mapping
@@ -381,14 +383,14 @@ export interface TupleType {
  *
  * Enums may be local (defined in a contract) or global (defined outside of any contract)
  *
- * @Category Other user-defined types
+ * @Category User-defined elementary types
  */
 export type EnumType = EnumTypeLocal | EnumTypeGlobal;
 
 /**
  * Local enum (defined in a contract)
  *
- * @Category Other user-defined types
+ * @Category User-defined elementary types
  */
 export interface EnumTypeLocal {
   typeClass: "enum";
@@ -409,7 +411,7 @@ export interface EnumTypeLocal {
 /**
  * Global enum
  *
- * @Category Other user-defined types
+ * @Category User-defined elementary types
  */
 export interface EnumTypeGlobal {
   typeClass: "enum";
@@ -431,14 +433,14 @@ export interface EnumTypeGlobal {
  *
  * Contract types may be native (has Solidity info) or foreign (lacking Solidity info).
  *
- * @Category Other user-defined types
+ * @Category User-defined elementary types
  */
 export type ContractType = ContractTypeNative | ContractTypeForeign;
 
 /**
  * Type of a contract with full Solidity info -- may be used for actual variables
  *
- * @Category Other user-defined types
+ * @Category User-defined elemntary types
  */
 export interface ContractTypeNative {
   typeClass: "contract";
@@ -460,7 +462,7 @@ export interface ContractTypeNative {
 /**
  * Type of a contract w/o full Solidity info -- not used for actual variables
  *
- * @Category Other user-defined types
+ * @Category User-defined elementary types
  */
 export interface ContractTypeForeign {
   typeClass: "contract";
@@ -495,11 +497,17 @@ export interface MagicType {
 }
 
 /**
- * Type of a type!  This is currently only used for contract types, but
- * may expand in the future.
+ * Type of a type!  This is currently only used for contract types and enum
+ * types, but may expand in the future.
  * @Category Special container types (debugger-only)
  */
-export interface TypeType {
+export type TypeType = TypeTypeContract | TypeTypeEnum;
+
+/**
+ * Type of a contract type
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeTypeContract {
   typeClass: "type";
   type: ContractTypeNative;
   /**
@@ -507,6 +515,15 @@ export interface TypeType {
    * **non-inherited** state variables
    */
   stateVariableTypes?: NameTypePair[];
+}
+
+/**
+ * Type of an enum type
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeTypeEnum {
+  typeClass: "type";
+  type: EnumType;
 }
 
 /**
@@ -691,6 +708,8 @@ export function typeStringWithoutLocation(dataType: Type): string {
         block: "block"
       };
       return variableNames[dataType.variable];
+    case "type":
+      return `type(${typeString(dataType.type)})`;
     case "function":
       let visibilityString: string;
       switch (dataType.visibility) {

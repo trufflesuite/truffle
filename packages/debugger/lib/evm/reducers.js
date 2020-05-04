@@ -4,7 +4,7 @@ const debug = debugModule("debugger:evm:reducers");
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
-import { keccak256, extractPrimarySource } from "lib/helpers";
+import { keccak256 } from "lib/helpers";
 import * as Codec from "@truffle/codec";
 
 import BN from "bn.js";
@@ -23,7 +23,10 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
         contractName,
         binary,
         sourceMap,
+        primarySource,
+        immutableReferences,
         compiler,
+        compilationId,
         abi,
         contractId,
         contractKind,
@@ -33,11 +36,6 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
       //NOTE: we take hash as *string*, not as bytes, because the binary may
       //contain link references!
       const context = keccak256({ type: "string", value: binary });
-      let primarySource;
-      if (sourceMap !== undefined) {
-        primarySource = extractPrimarySource(sourceMap);
-      }
-      //otherwise leave it undefined
 
       return {
         ...state,
@@ -49,7 +47,9 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
             binary,
             sourceMap,
             primarySource,
+            immutableReferences,
             compiler,
+            compilationId,
             abi,
             contractId,
             contractKind,

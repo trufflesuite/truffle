@@ -11,7 +11,11 @@ var command = {
     var Package = require("../package");
 
     var config = Config.detect(options);
-    Package.publish(config, done);
+    Package.publish(config)
+      .then(() => {
+        return done();
+      })
+      .catch(done);
   }
 };
 

@@ -173,3 +173,60 @@ export function topicsCount(abiEntry: Abi.EventAbiEntry): number {
     abiEntry.inputs.filter(({ indexed }) => indexed).length + selectorCount
   );
 }
+
+export function abiEntryIsObviouslyIllTyped(abiEntry: Abi.AbiEntry): boolean {
+  switch (abiEntry.type) {
+    case "fallback":
+    case "receive":
+      return false;
+    case "constructor":
+    case "event":
+      return abiEntry.inputs.some(abiParameterIsObviouslyIllTyped);
+    case "function":
+      return (
+        abiEntry.inputs.some(abiParameterIsObviouslyIllTyped) ||
+        abiEntry.outputs.some(abiParameterIsObviouslyIllTyped)
+      );
+  }
+}
+
+function abiParameterIsObviouslyIllTyped(
+  abiParameter: Abi.AbiParameter
+): boolean {
+  const legalBaseTypeClasses = [
+    "uint",
+    "int",
+    "fixed",
+    "ufixed",
+    "bool",
+    "address",
+    "bytes",
+    "string",
+    "function",
+    "tuple"
+  ];
+  const baseTypeClass = abiParameter.type.match(/^([a-z]*)/)[1];
+  const baseTypeClassIsObviouslyWrong = !legalBaseTypeClasses.includes(
+    baseTypeClass
+  );
+  if (abiParameter.components) {
+    return (
+      abiParameter.components.some(abiParameterIsObviouslyIllTyped) ||
+      baseTypeClassIsObviouslyWrong
+    );
+  } else {
+    return baseTypeClassIsObviouslyWrong;
+  }
+}
+
+export function abiEntryHasStorageParameters(abiEntry: Abi.AbiEntry): boolean {
+  const isStorage = (parameter: Abi.AbiParameter) =>
+    parameter.type.endsWith(" storage");
+  return (
+    abiEntry.type === "function" &&
+    (abiEntry.inputs.some(isStorage) || abiEntry.outputs.some(isStorage))
+  );
+  //Note the lack of recursion!  Storage parameters can only occur at
+  //top level so there's no need to recurse here
+  //(they can also only occur for functions)
+}

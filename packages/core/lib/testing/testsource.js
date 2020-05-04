@@ -26,19 +26,19 @@ TestSource.prototype.resolve = async function(importPath) {
 
     const mapping = {};
 
-    const blacklist = ["Assert", "DeployedAddresses"];
+    const blacklist = new Set(["Assert", "DeployedAddresses"]);
 
     // Ensure we have a mapping for source files and abstraction files
     // to prevent any compile errors in tests.
     sourceFiles.forEach(file => {
       const name = path.basename(file, ".sol");
-      if (blacklist.indexOf(name) >= 0) return;
+      if (blacklist.has(name)) return;
       mapping[name] = false;
     });
 
     abstractionFiles.forEach(file => {
       const name = path.basename(file, ".json");
-      if (blacklist.indexOf(name) >= 0) return;
+      if (blacklist.has(name)) return;
       mapping[name] = false;
     });
 
@@ -61,7 +61,7 @@ TestSource.prototype.resolve = async function(importPath) {
     addresses.forEach((address, i) => {
       const name = path.basename(abstractionFiles[i], ".json");
 
-      if (blacklist.indexOf(name) >= 0) return;
+      if (blacklist.has(name)) return;
 
       mapping[name] = address;
     });

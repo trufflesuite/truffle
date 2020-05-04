@@ -7,7 +7,7 @@ export function start(provider, txHash) {
   };
 }
 
-export const LOAD_TRANSACTION = "LOAD_TRANSACTION";
+export const LOAD_TRANSACTION = "SESSION_LOAD_TRANSACTION";
 export function loadTransaction(txHash) {
   return {
     type: LOAD_TRANSACTION,
@@ -20,7 +20,7 @@ export function interrupt() {
   return { type: INTERRUPT };
 }
 
-export const UNLOAD_TRANSACTION = "UNLOAD_TRANSACTION";
+export const UNLOAD_TRANSACTION = "SESSION_UNLOAD_TRANSACTION";
 export function unloadTransaction() {
   return {
     type: UNLOAD_TRANSACTION
@@ -49,14 +49,7 @@ export function error(error) {
   };
 }
 
-export const CLEAR_ERROR = "CLEAR_ERROR";
-export function clearError() {
-  return {
-    type: CLEAR_ERROR
-  };
-}
-
-export const RECORD_CONTRACTS = "RECORD_CONTRACTS";
+export const RECORD_CONTRACTS = "SESSION_RECORD_CONTRACTS";
 export function recordContracts(contexts, sources) {
   return {
     type: RECORD_CONTRACTS,
@@ -65,7 +58,7 @@ export function recordContracts(contexts, sources) {
   };
 }
 
-export const SAVE_TRANSACTION = "SAVE_TRANSACTION";
+export const SAVE_TRANSACTION = "SESSION_SAVE_TRANSACTION";
 export function saveTransaction(transaction) {
   return {
     type: SAVE_TRANSACTION,
@@ -73,7 +66,7 @@ export function saveTransaction(transaction) {
   };
 }
 
-export const SAVE_RECEIPT = "SAVE_RECEIPT";
+export const SAVE_RECEIPT = "SESSION_SAVE_RECEIPT";
 export function saveReceipt(receipt) {
   return {
     type: SAVE_RECEIPT,
@@ -81,7 +74,7 @@ export function saveReceipt(receipt) {
   };
 }
 
-export const SAVE_BLOCK = "SAVE_BLOCK";
+export const SAVE_BLOCK = "SESSION_SAVE_BLOCK";
 export function saveBlock(block) {
   return {
     type: SAVE_BLOCK,

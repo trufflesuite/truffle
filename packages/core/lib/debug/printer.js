@@ -8,7 +8,15 @@ const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
 
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, controller, data, evm } = selectors;
+const {
+  session,
+  solidity,
+  trace,
+  controller,
+  data,
+  evm,
+  stacktrace
+} = selectors;
 
 class DebugPrinter {
   constructor(config, session) {
@@ -20,8 +28,7 @@ class DebugPrinter {
       try {
         selector = expr
           .split(".")
-          .filter(next => next.length > 0)
-          .reduce((sel, next) => sel[next], selectors);
+          .reduce((sel, next) => (next.length ? sel[next] : sel), selectors);
       } catch (_) {
         throw new Error("Unknown selector: %s", expr);
       }
@@ -33,13 +40,17 @@ class DebugPrinter {
     };
 
     this.colorizedSources = {};
-    for (const source of Object.values(
+    for (const [compilationId, compilation] of Object.entries(
       this.session.view(solidity.info.sources)
     )) {
-      const id = source.id;
-      const uncolorized = source.source;
-      const colorized = DebugUtils.colorize(uncolorized);
-      this.colorizedSources[id] = colorized;
+      this.colorizedSources[compilationId] = {};
+      for (const source of compilation.byId) {
+        const id = source.id;
+        const raw = source.source;
+        const detabbed = DebugUtils.tabsToSpaces(raw);
+        const colorized = DebugUtils.colorize(detabbed);
+        this.colorizedSources[compilationId][id] = colorized;
+      }
     }
 
     this.printouts = new Set(["sta"]);
@@ -97,7 +108,9 @@ class DebugPrinter {
   }
 
   printState(contextBefore = 2, contextAfter = 0) {
-    const { id: sourceId, source } = this.session.view(solidity.current.source);
+    const { id: sourceId, source, compilationId } = this.session.view(
+      solidity.current.source
+    );
 
     if (sourceId === undefined) {
       this.config.logger.log();
@@ -106,7 +119,7 @@ class DebugPrinter {
       return;
     }
 
-    const colorizedSource = this.colorizedSources[sourceId];
+    const colorizedSource = this.colorizedSources[compilationId][sourceId];
 
     const range = this.session.view(solidity.current.sourceRange);
     debug("range: %o", range);
@@ -193,13 +206,17 @@ class DebugPrinter {
   }
 
   printBreakpoints() {
+    let sources = this.session.view(solidity.info.sources);
     let sourceNames = Object.assign(
       {},
-      ...Object.values(this.session.view(solidity.info.sources)).map(
-        ({ id, sourcePath }) => ({
-          [id]: path.basename(sourcePath)
-        })
-      )
+      ...Object.entries(sources).map(([compilationId, compilation]) => ({
+        [compilationId]: Object.assign(
+          {},
+          ...Object.values(compilation.byId).map(({ id, sourcePath }) => ({
+            [id]: path.basename(sourcePath)
+          }))
+        )
+      }))
     );
     let breakpoints = this.session.view(controller.breakpoints);
     if (breakpoints.length > 0) {
@@ -209,6 +226,7 @@ class DebugPrinter {
           breakpoint,
           currentLocation.node !== undefined &&
             breakpoint.node === currentLocation.node.id,
+          currentLocation.source.compilationId,
           currentLocation.source.id,
           sourceNames
         );
@@ -220,7 +238,9 @@ class DebugPrinter {
   }
 
   printRevertMessage() {
-    this.config.logger.log("Transaction halted with a RUNTIME ERROR.");
+    this.config.logger.log(
+      DebugUtils.truffleColors.red("Transaction halted with a RUNTIME ERROR.")
+    );
     this.config.logger.log("");
     let rawRevertMessage = this.session.view(evm.current.step.returnValue);
     let revertDecodings = Codec.decodeRevert(
@@ -276,6 +296,14 @@ class DebugPrinter {
     );
   }
 
+  printStacktrace(final) {
+    this.config.logger.log("Stacktrace:");
+    let report = final
+      ? this.session.view(stacktrace.current.finalReport)
+      : this.session.view(stacktrace.current.report);
+    this.config.logger.log(DebugUtils.formatStacktrace(report));
+  }
+
   async printWatchExpressionsResults(expressions) {
     debug("expressions %o", expressions);
     for (let expression of expressions) {
@@ -307,17 +335,16 @@ class DebugPrinter {
 
     debug("variables %o", variables);
 
+    const variableKeys = Object.keys(variables);
+
     // Get the length of the longest name.
-    const longestNameLength = Math.max.apply(
-      null,
-      Object.keys(variables).map(function(name) {
-        return name.length;
-      })
-    );
+    const longestNameLength = variableKeys.reduce((longest, name) => {
+      return name.length > longest ? name.length : longest;
+    }, -Infinity);
 
     this.config.logger.log();
 
-    Object.keys(variables).forEach(name => {
+    variableKeys.forEach(name => {
       let paddedName = name + ":";
 
       while (paddedName.length <= longestNameLength) {
