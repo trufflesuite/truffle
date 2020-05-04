@@ -2,11 +2,13 @@ import "source-map-support/register";
 import Schema from "@truffle/contract-schema";
 import fse from "fs-extra";
 import path from "path";
+import OS from "os";
 import { writeArtifact, finalizeArtifact } from "./utils";
 const debug = require("debug")("artifactor");
 
 class Artifactor {
   destination: string;
+
   constructor(destination: string) {
     this.destination = destination;
   }
@@ -47,6 +49,14 @@ class Artifactor {
       const tmpArtifactArray = artifactObjects;
 
       tmpArtifactArray.forEach(artifactObj => {
+        if (newArtifactObjects[artifactObj.contract_name]) {
+          console.warn(
+            `${OS.EOL}> Duplicate contract names found for ${
+              artifactObj.contract_name
+            }.${OS.EOL}` +
+              `> This can cause errors and unknown behavior. Please rename one of your contracts.`
+          );
+        }
         newArtifactObjects[artifactObj.contract_name] = artifactObj;
       });
     } else {
