@@ -264,13 +264,22 @@ const Package = {
       throw new Error(message);
     }
 
-    const contracts = files.map(file => {
-      const body = fs.readFileSync(
-        path.join(options.contracts_build_directory, file),
-        "utf8"
-      );
-      return JSON.parse(body);
+    const promises = files.map(file => {
+      return new Promise((resolve, reject) => {
+        fs.readFile(
+          path.join(options.contracts_build_directory, file),
+          "utf8",
+          (error, data) => {
+            if (error) {
+              reject(error);
+            }
+            resolve(JSON.parse(data));
+          }
+        );
+      });
     });
+
+    const contracts = await Promise.all(promises);
 
     var contract_types = {};
     var deployments = {};
