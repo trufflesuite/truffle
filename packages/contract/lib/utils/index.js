@@ -274,8 +274,8 @@ const Utils = {
   ) {
     // go through all the networks that are listed as
     // blockchain uris and see if they match
-    const uris = Object.keys(networks).filter(
-      network => network.indexOf("blockchain://") === 0
+    const uris = Object.keys(networks).filter(network =>
+      network.startsWith("blockchain://")
     );
 
     const results = [];
