@@ -200,9 +200,9 @@ class DebugPrinter {
     }
 
     this.config.logger.log("");
-    expressions.forEach(function(expression) {
+    for (const expression of expressions) {
       this.config.logger.log("  " + expression);
-    });
+    }
   }
 
   printBreakpoints() {
