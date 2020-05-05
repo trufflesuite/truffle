@@ -8,7 +8,7 @@
     "chalk": "^2.4.2",
     "debug": "^4.1.0",
     "highlight.js": "^9.15.8",
-    "highlightjs-solidity": "^1.0.13",
+    "highlightjs-solidity": "^1.0.14",
     "node-dir": "0.1.17"
   },
   "main": "index.js",
