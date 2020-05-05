@@ -183,7 +183,11 @@ class HDWalletProvider {
     } else {
       this.engine.addProvider(new ProviderSubprovider(provider));
     }
-    this.engine.start(); // Required by the provider engine.
+
+    // Required by the provider engine.
+    this.engine.start(err => {
+      if (err) throw err;
+    });
   }
 
   public send(

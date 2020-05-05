@@ -101,7 +101,7 @@ class Console extends EventEmitter {
       const unfilteredFiles = fse.readdirSync(
         this.options.contracts_build_directory
       );
-      files = unfilteredFiles.filter(file => file.match(".json") !== null);
+      files = unfilteredFiles.filter(file => file.endsWith(".json"));
     } catch (error) {
       // Error reading the build directory? Must mean it doesn't exist or we don't have access to it.
       // Couldn't provision the contracts if we wanted. It's possible we're hiding very rare FS
