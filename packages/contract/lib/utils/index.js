@@ -274,14 +274,13 @@ const Utils = {
   ) {
     // go through all the networks that are listed as
     // blockchain uris and see if they match
-    const uris = Object.keys(networks).filter(network =>
-      network.startsWith("blockchain://")
-    );
-
-    const results = [];
-    for (const uri of uris) {
-      results.push(await BlockchainUtils.matches(uri, currentProvider));
-    }
+    const promises = [];
+    Object.keys(networks).forEach(network => {
+      if (network.startsWith("blockchain://")) {
+        promises.push(BlockchainUtils.matches(network, currentProvider));
+      }
+    });
+    const results = await Promise.all(promises);
 
     for (let i = 0; i < results.length; i++) {
       if (results[i]) {
