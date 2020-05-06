@@ -33,7 +33,7 @@
     "detect-installed": "^2.0.4",
     "get-installed-path": "^4.0.8",
     "glob": "^7.1.6",
-    "source-map-support": "^0.5.16",
+    "source-map-support": "^0.5.19",
     "supports-color": "^7.1.0"
   },
   "devDependencies": {

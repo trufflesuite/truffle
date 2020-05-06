@@ -17,7 +17,7 @@
     "fs-extra": "^8.1.0",
     "lodash.assign": "^4.2.0",
     "lodash.merge": "^4.6.2",
-    "source-map-support": "^0.5.16"
+    "source-map-support": "^0.5.19"
   },
   "devDependencies": {
     "@truffle/contract": "^4.2.3",

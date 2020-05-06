@@ -43,7 +43,7 @@
     "lodash.merge": "^4.6.2",
     "module": "^1.2.5",
     "original-require": "1.0.1",
-    "source-map-support": "^0.5.16"
+    "source-map-support": "^0.5.19"
   },
   "publishConfig": {
     "access": "public"
