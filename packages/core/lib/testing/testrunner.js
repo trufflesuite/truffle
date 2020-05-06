@@ -104,15 +104,16 @@ TestRunner.prototype.endTest = async function(mocha) {
     return;
   }
 
-  function indent(unindented, indentation, initialPrefix = "") {
-    return unindented
-      .split("\n")
-      .map((line, index) =>
-        index === 0
-          ? initialPrefix + " ".repeat(indentation - initialPrefix) + line
-          : " ".repeat(indentation) + line
+  function indent(unindented, indentation, initialPrefix = "", split = "\n") {
+    const dedent = split === "\n" ? unindented.split(split) : unindented;
+    return dedent
+      .map(
+        (line, index) =>
+          index === 0
+            ? initialPrefix + " ".repeat(indentation - initialPrefix) + line
+            : " ".repeat(indentation) + line
       )
-      .join("\n");
+      .join(split);
   }
 
   function printEvent(decoding, indentation = 0, initialPrefix = "") {
@@ -122,28 +123,26 @@ TestRunner.prototype.endTest = async function(mocha) {
       : decoding.class.typeName;
     const eventName = decoding.abi.name;
     const fullEventName = anonymousPrefix + `${className}.${eventName}`;
-    const eventArgs = decoding.arguments
-      .map(({ name, indexed, value }) => {
-        let namePrefix = name ? `${name}: ` : "";
-        let indexedPrefix = indexed ? "<indexed> " : "";
-        let displayValue = util.inspect(
-          new Codec.Format.Utils.Inspect.ResultInspector(value),
-          {
-            depth: null,
-            colors: true,
-            maxArrayLength: null,
-            breakLength: 80 - indentation //should this include prefix lengths as well?
-          }
-        );
-        let typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
-          value.type
-        )})`;
-        return namePrefix + indexedPrefix + displayValue + typeString;
-      })
-      .join(",\n");
+    const eventArgs = decoding.arguments.map(({ name, indexed, value }) => {
+      let namePrefix = name ? `${name}: ` : "";
+      let indexedPrefix = indexed ? "<indexed> " : "";
+      let displayValue = util.inspect(
+        new Codec.Format.Utils.Inspect.ResultInspector(value),
+        {
+          depth: null,
+          colors: true,
+          maxArrayLength: null,
+          breakLength: 80 - indentation //should this include prefix lengths as well?
+        }
+      );
+      let typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
+        value.type
+      )})`;
+      return namePrefix + indexedPrefix + displayValue + typeString;
+    });
     if (decoding.arguments.length > 0) {
       return indent(
-        `${fullEventName}(\n${indent(eventArgs, 2)}\n)`,
+        `${fullEventName}(\n${indent(eventArgs, 2, "", ",\n")}\n)`,
         indentation,
         initialPrefix
       );
