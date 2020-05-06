@@ -50,14 +50,12 @@ module.exports = class TestSource {
         );
       });
 
-      const addresses = filesData
-        .map(data => JSON.parse(data))
-        .map(json => contract(json))
-        .map(c => {
-          c.setNetwork(self.config.network_id);
-          if (c.isDeployed()) return c.address;
-          return null;
-        });
+      const addresses = filesData.map(data => {
+        const c = contract(JSON.parse(data));
+        c.setNetwork(self.config.network_id);
+        if (c.isDeployed()) return c.address;
+        return null;
+      });
 
       addresses.forEach((address, i) => {
         const name = path.basename(abstractionFiles[i], ".json");
