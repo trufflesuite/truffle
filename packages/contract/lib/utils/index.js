@@ -272,22 +272,23 @@ const Utils = {
     { networks, currentProvider, setNetwork, network_id },
     gasLimit
   ) {
+    if (!networks && Object.keys(networks).length === 0) {
+      return false;
+    }
     // go through all the networks that are listed as
     // blockchain uris and see if they match
-    if (networks && Object.keys(networks).length !== 0) {
-      for (const network of networks) {
-        if (network.startsWith("blockchain://")) {
-          const networkMatches = await BlockchainUtils.matches(
-            network,
-            currentProvider
-          );
-          if (networkMatches) {
-            setNetwork(network);
-            return {
-              id: network_id,
-              blockLimit: gasLimit
-            };
-          }
+    for (const network in networks) {
+      if (network.startsWith("blockchain://")) {
+        const networkMatches = await BlockchainUtils.matches(
+          network,
+          currentProvider
+        );
+        if (networkMatches) {
+          setNetwork(network);
+          return {
+            id: network_id,
+            blockLimit: gasLimit
+          };
         }
       }
     }
