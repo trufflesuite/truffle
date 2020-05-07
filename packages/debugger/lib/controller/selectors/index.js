@@ -22,12 +22,20 @@ function anyNonSkippedInRange(
   let sourceEnd = sourceStart + sourceLength;
   return findOverlappingRange(sourceStart, sourceLength).some(
     ({ range, node }) =>
-      sourceStart <= range[0] && //we want to go by starting line
-      range[0] < sourceEnd &&
-      !isSkippedNodeType(node)
+      isOldStyleAssembly(node) ||
+      (sourceStart <= range[0] && //we want to go by starting line
+        range[0] < sourceEnd &&
+        !isSkippedNodeType(node))
     //NOTE: this doesn't actually catch everything skipped!  But doing better
     //is hard
   );
+}
+
+//catches InlineAssembly nodes from before 0.6.0.
+//We want to be able to place breakpoints if something merely *overlaps*
+//one of these, because, well, we can't really look inside and do better.
+function isOldStyleAssembly(node) {
+  return node.nodeType === "InlineAssembly" && !node.AST;
 }
 
 /**
