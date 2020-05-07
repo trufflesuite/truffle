@@ -104,16 +104,19 @@ TestRunner.prototype.endTest = async function(mocha) {
     return;
   }
 
-  function indent(unindented, indentation, initialPrefix = "", split = "\n") {
-    const dedent = split === "\n" ? unindented.split(split) : unindented;
-    return dedent
+  function indent(input, indentation, initialPrefix = "", delimiter = "\n") {
+    // Note: delimiter is used to `split` only when input is a string.
+    // However, It is always used to `join`.
+    const unindented =
+      typeof input === "string" ? input.split(delimiter) : input;
+    return unindented
       .map(
         (line, index) =>
           index === 0
             ? initialPrefix + " ".repeat(indentation - initialPrefix) + line
             : " ".repeat(indentation) + line
       )
-      .join(split);
+      .join(delimiter);
   }
 
   function printEvent(decoding, indentation = 0, initialPrefix = "") {
