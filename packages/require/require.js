@@ -96,7 +96,11 @@ const Require = {
     return m.exports;
   },
 
-  exec: async function(options) {
+  exec: async function(options, callback) {
+    let callbackPassed;
+    if (typeof callback === "function") {
+      callbackPassed = true;
+    }
     expect.options(options, [
       "contracts_build_directory",
       "file",
@@ -120,7 +124,11 @@ const Require = {
       context: { web3, interfaceAdapter },
       resolver: options.resolver
     });
-    await fn();
+    if (callbackPassed) {
+      fn(callback);
+    } else {
+      return await fn();
+    }
   }
 };
 
