@@ -278,31 +278,33 @@ function* variablesAndMappingsSaga() {
       const parameterSuffixes = (node.parameters || []).map(
         (_, index) => `/parameters/${index}`
       );
-      //HACK: we *also* need to account for any bare lets (ones w/no value
-      //given) at the beginning of the function body because these will throw
-      //off our count otherwise
-      let bareLetSuffixes = [];
-      let outerIndex = 0;
-      for (const declaration of node.body.statements) {
-        if (
-          declaration.nodeType !== "YulVariableDeclaration" ||
-          declaration.value != null
-        ) {
-          //deliberate != for future Solidity versions
-          break;
+      //HACK: prior to 0.6.8, we *also* need to account for any bare lets (ones
+      //w/no value given) at the beginning of the function body because these
+      //will throw off our count otherwise
+      let bareLetSuffixes = []; //when hack is not invoked, we just leave this empty
+      if (!(yield select(data.current.bareLetsInYulAreHit))) {
+        let outerIndex = 0;
+        for (const declaration of node.body.statements) {
+          if (
+            declaration.nodeType !== "YulVariableDeclaration" ||
+            declaration.value != null
+          ) {
+            //deliberate != for future Solidity versions
+            break;
+          }
+          for (
+            let innerIndex = 0;
+            innerIndex < declaration.variables.length;
+            innerIndex++
+          ) {
+            //we want to process from top to bottom, so we'll put the earlier
+            //variables last
+            bareLetSuffixes.unshift(
+              `/body/statements/${outerIndex}/variables/${innerIndex}`
+            );
+          }
+          outerIndex++;
         }
-        for (
-          let innerIndex = 0;
-          innerIndex < declaration.variables.length;
-          innerIndex++
-        ) {
-          //we want to process from top to bottom, so we'll put the earlier
-          //variables last
-          bareLetSuffixes.unshift(
-            `/body/statements/${outerIndex}/variables/${innerIndex}`
-          );
-        }
-        outerIndex++;
       }
       //both outputs and inputs in the appropriate order (top to bottom)
       //(well, and those lets...)
@@ -417,7 +419,7 @@ function* variablesAndMappingsSaga() {
         //if we're moving inside the function call itself, ignore it
         break;
       }
-    //DELIBERATE FALL-THROUGH
+    //NOTE: DELIBERATE FALL-THROUGH
     case "YulLiteral":
     case "YulIdentifier":
       //yul variable declaration, maybe
@@ -430,9 +432,10 @@ function* variablesAndMappingsSaga() {
       ) {
         break;
       }
-      node = parent; //note: we mutate here for convenience!
+      node = parent;
       pointer = parentPointer;
-
+    //NOTE: DELIBERATE FALL-THROUGH
+    case "YulVariableDeclaration":
       const sourceAndPointer = sourceId + ":" + pointer;
       debug("sourceAndPointer: %s", sourceAndPointer);
       assignments = {};

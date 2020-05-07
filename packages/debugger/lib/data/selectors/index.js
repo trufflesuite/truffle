@@ -4,6 +4,7 @@ const debug = debugModule("debugger:data:selectors");
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
 import flatten from "lodash.flatten";
+import semver from "semver";
 
 import { stableKeccak256 } from "lib/helpers";
 
@@ -786,6 +787,18 @@ const data = createSelectorTree({
      * data.current.compiler
      */
     compiler: createLeaf([evm.current.context], ({ compiler }) => compiler),
+
+    /**
+     * data.current.bareLetsInYulAreHit
+     */
+    bareLetsInYulAreHit: createLeaf(
+      ["./compiler"],
+      compiler =>
+        compiler !== undefined && //if no compiler we'll assume the old way I guess??
+        semver.satisfies(compiler.version, ">=0.6.8", {
+          includePrerelease: true
+        })
+    ),
 
     /**
      * data.current.node
