@@ -1,6 +1,5 @@
 var repl = require("repl");
 var expect = require("@truffle/expect");
-var async = require("async");
 var EventEmitter = require("events");
 var inherits = require("util").inherits;
 
@@ -45,15 +44,19 @@ ReplManager.prototype.start = function(options) {
       eval: this.interpret.bind(this)
     });
 
-    this.repl.on("exit", function() {
+    this.repl.on("exit", async function() {
       // If we exit for some reason, call done functions for good measure
       // then ensure the process is completely killed. Once the repl exits,
       // the process is in a bad state and can't be recovered (e.g., stdin is closed).
-      const doneFunctions = self.contexts.reduce((functions, context) => {
-        if (context.done) functions.push(context.done);
-        return functions;
-      }, []);
-      async.series(doneFunctions, process.exit);
+      try {
+        for (const context of self.contexts) {
+          if (context.done) await context.done();
+        }
+      } catch (error) {
+        throw error;
+      } finally {
+        process.exit();
+      }
     });
   }
 

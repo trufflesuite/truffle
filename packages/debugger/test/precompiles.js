@@ -80,10 +80,10 @@ describe("Precompiled Contracts", function() {
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      compilations
+      compilations,
+      lightMode: true
     });
 
-    let session = bugger.connect();
     var finished; // is the trace finished?
 
     do {
@@ -91,7 +91,7 @@ describe("Precompiled Contracts", function() {
         let stepResult;
 
         try {
-          stepResult = { value: session.view(selector) };
+          stepResult = { value: bugger.view(selector) };
         } catch (e) {
           stepResult = { error: e };
         }
@@ -99,8 +99,8 @@ describe("Precompiled Contracts", function() {
         results[name].push(stepResult);
       }
 
-      await session.advance();
-      finished = session.view(trace.finished);
+      await bugger.advance();
+      finished = bugger.view(trace.finished);
     } while (!finished);
   });
 

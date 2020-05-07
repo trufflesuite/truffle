@@ -10,7 +10,9 @@ const reason = {
    * @param  {InterfaceAdapter}      interfaceAdapter a new helpful friend
    * @return {String|Undefined}      decoded reason string
    */
-  _extract: function(res, web3, interfaceAdapter) {
+  _extract: function(res, web3, _interfaceAdapter) {
+    //I'm not sure why interfaceAdapter is here if it's not used,
+    //so I just put an underscore in front of its name for now...
     if (!res || (!res.error && !res.result)) return;
 
     const errorStringHash = "0x08c379a0";
@@ -25,13 +27,21 @@ const reason = {
       const hash = Object.keys(data)[0];
 
       if (data[hash].return && data[hash].return.includes(errorStringHash)) {
-        return web3.eth.abi.decodeParameter(
-          "string",
-          data[hash].return.slice(10)
-        );
+        try {
+          return web3.eth.abi.decodeParameter(
+            "string",
+            data[hash].return.slice(10)
+          );
+        } catch (_) {
+          return undefined;
+        }
       }
     } else if (isString && res.result.includes(errorStringHash)) {
-      return web3.eth.abi.decodeParameter("string", res.result.slice(10));
+      try {
+        return web3.eth.abi.decodeParameter("string", res.result.slice(10));
+      } catch (_) {
+        return undefined;
+      }
     }
   },
 

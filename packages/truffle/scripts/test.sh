@@ -13,5 +13,5 @@ elif [ "$COVERAGE" == true ]; then
 elif [ "$INTEGRATION" == true ]; then
   mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
 else
-  yarn build-cli && mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
+  yarn build && mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
 fi

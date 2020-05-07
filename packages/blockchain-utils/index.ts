@@ -51,63 +51,67 @@ const Blockchain = {
     return parsed;
   },
 
-  asURI(provider: Provider, callback: Callback<any>) {
-    let genesis: any, latest;
+  asURI(provider: Provider) {
+    return new Promise((resolve, reject) => {
+      let genesis: any, latest;
 
-    this.getBlockByNumber(
-      "0x0",
-      provider,
-      (err: Error, { result }: JsonRPCResponse) => {
-        if (err) return callback(err);
-        genesis = result;
+      this.getBlockByNumber(
+        "0x0",
+        provider,
+        (err: Error, { result }: JsonRPCResponse) => {
+          if (err) return reject(err);
+          genesis = result;
 
-        this.getBlockByNumber(
-          "latest",
-          provider,
-          (err: Error, { result }: JsonRPCResponse) => {
-            if (err) return callback(err);
-            latest = result;
-            const url = `blockchain://${genesis.hash.replace(
-              "0x",
-              ""
-            )}/block/${latest.hash.replace("0x", "")}`;
-            callback(null, url);
-          }
-        );
-      }
-    );
+          this.getBlockByNumber(
+            "latest",
+            provider,
+            (err: Error, { result }: JsonRPCResponse) => {
+              if (err) return reject(err);
+              latest = result;
+              const url = `blockchain://${genesis.hash.replace(
+                "0x",
+                ""
+              )}/block/${latest.hash.replace("0x", "")}`;
+              resolve(url);
+            }
+          );
+        }
+      );
+    });
   },
 
-  matches(uri: string, provider: Provider, callback: Callback<any>) {
-    const parsedUri = this.parse(uri);
+  matches(uri: string, provider: Provider) {
+    return new Promise((resolve, reject) => {
+      const parsedUri = this.parse(uri);
 
-    const expected_genesis = parsedUri.genesis_hash;
-    const expected_block = parsedUri.block_hash;
+      const expected_genesis = parsedUri.genesis_hash;
+      const expected_block = parsedUri.block_hash;
 
-    this.getBlockByNumber(
-      "0x0",
-      provider,
-      (err: Error, { result }: JsonRPCResponse) => {
-        if (err) return callback(err);
-        const block = result;
-        if (block.hash !== expected_genesis) return callback(null, false);
+      this.getBlockByNumber(
+        "0x0",
+        provider,
+        (err: Error, { result }: JsonRPCResponse) => {
+          if (err) return reject(err);
+          const block = result;
+          if (block.hash !== expected_genesis) return resolve(false);
 
-        this.getBlockByHash(
-          expected_block,
-          provider,
-          (err: Error, { result }: JsonRPCResponse) => {
-            // Treat an error as if the block didn't exist. This is because
-            // some clients respond differently.
-            const block = result;
-            if (err || block == null) {
-              return callback(null, false);
+          this.getBlockByHash(
+            expected_block,
+            provider,
+            (err: Error, { result }: JsonRPCResponse) => {
+              // Treat an error as if the block didn't exist. This is because
+              // some clients respond differently.
+              const block = result;
+              if (err || block == null) {
+                return resolve(false);
+              }
+
+              resolve(true);
             }
-
-            callback(null, true);
-          }
-        );
-      }
-    );
+          );
+        }
+      );
+    });
   }
 };
 

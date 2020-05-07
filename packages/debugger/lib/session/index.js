@@ -8,11 +8,17 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import stacktrace from "lib/stacktrace/selectors";
 import session from "lib/session/selectors";
 import * as dataSagas from "lib/data/sagas";
 import * as controllerSagas from "lib/controller/sagas";
 import * as sagas from "./sagas";
 import controllerSelector from "lib/controller/selectors";
+
+import ast from "lib/ast/selectors";
+import trace from "lib/trace/selectors";
+import evm from "lib/evm/selectors";
+import solidity from "lib/solidity/selectors";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
@@ -378,5 +384,36 @@ export default class Session {
       }
     }
     return decoded;
+  }
+
+  callstack() {
+    if (!this.view(session.status.loaded)) {
+      return null;
+    }
+    return this.view(stacktrace.current.report);
+  }
+
+  stacktrace() {
+    if (!this.view(session.status.loaded)) {
+      return null;
+    }
+    return this.view(stacktrace.current.finalReport);
+  }
+
+  connect() {
+    return this; //for compatibility
+  }
+
+  get selectors() {
+    return createNestedSelector({
+      ast,
+      data,
+      trace,
+      evm,
+      solidity,
+      stacktrace,
+      session,
+      controller: controllerSelector
+    });
   }
 }

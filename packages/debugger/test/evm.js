@@ -89,16 +89,19 @@ describe("EVM Debugging", function() {
       let receipt = await instance.run();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, { provider, compilations });
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        compilations,
+        lightMode: true
+      });
 
-      let session = bugger.connect();
       var finished; // is the trace finished?
 
       do {
-        await session.stepNext();
-        finished = session.view(trace.finished);
+        await bugger.stepNext();
+        finished = bugger.view(trace.finished);
 
-        let actual = session.view(evm.current.callstack).length;
+        let actual = bugger.view(evm.current.callstack).length;
 
         assert.isAtMost(actual, maxExpected);
       } while (!finished);
@@ -110,22 +113,24 @@ describe("EVM Debugging", function() {
       let receipt = await instance.run();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, { provider, compilations });
-
-      let session = bugger.connect();
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        compilations,
+        lightMode: true
+      });
 
       // follow callstack length values in list
       // see source above
       let expectedDepthSequence = [1, 2, 1];
-      let actualSequence = [session.view(evm.current.callstack).length];
+      let actualSequence = [bugger.view(evm.current.callstack).length];
 
       var finished; // is the trace finished?
 
       do {
-        await session.stepNext();
-        finished = session.view(trace.finished);
+        await bugger.stepNext();
+        finished = bugger.view(trace.finished);
 
-        let currentDepth = session.view(evm.current.callstack).length;
+        let currentDepth = bugger.view(evm.current.callstack).length;
         let lastKnown = actualSequence[actualSequence.length - 1];
 
         if (currentDepth !== lastKnown) {
