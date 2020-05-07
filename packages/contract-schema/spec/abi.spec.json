@@ -8,6 +8,7 @@
     { "$ref": "#/definitions/Event" },
     { "$ref": "#/definitions/ConstructorFunction" },
     { "$ref": "#/definitions/FallbackFunction" },
+    { "$ref": "#/definitions/ReceiveFunction" },
     { "$ref": "#/definitions/NormalFunction" }
   ]},
 
@@ -102,6 +103,22 @@
         },
         "constant": { "type": "boolean" },
         "payable": { "type": "boolean", "default": false }
+      },
+      "required": ["type", "stateMutability"],
+      "additionalProperties": false
+    },
+
+    "ReceiveFunction": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["receive"]
+        },
+        "stateMutability": {
+          "type": "string",
+          "enum": ["payable"]
+        }
       },
       "required": ["type", "stateMutability"],
       "additionalProperties": false

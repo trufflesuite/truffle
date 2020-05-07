@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-docker pull ethereum/client-go:latest
+docker pull ethereum/client-go:stable
 
 docker run \
     -v /$PWD/scripts:/scripts \
@@ -8,7 +8,7 @@ docker run \
     -p 8545:8545 \
     -p 8546:8546 \
     -p 30303:30303 \
-    ethereum/client-go:latest \
+    ethereum/client-go:stable \
     --rpc \
     --rpcaddr '0.0.0.0' \
     --rpcport 8545 \

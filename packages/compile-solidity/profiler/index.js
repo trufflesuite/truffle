@@ -195,19 +195,16 @@ module.exports = {
         } else {
           file = candidate;
         }
-        const promise = new Promise((accept, reject) => {
-          resolver.resolve(file, parent, (err, body, absolutePath, source) => {
-            err ? reject(err) : accept({ file: absolutePath, body, source });
-          });
-        });
-        promises.push(promise);
+        promises.push(resolver.resolve(file, parent));
       }
 
       // Resolve everything known and add it to the map, then inspect each file's
       // imports and add those to the list of paths to resolve if we don't have it.
       return Promise.all(promises).then(async results => {
         // Generate the sources mapping
-        results.forEach(item => (mapping[item.file] = Object.assign({}, item)));
+        results.forEach(
+          item => (mapping[item.filePath] = Object.assign({}, item))
+        );
 
         // Queue unknown imports for the next resolver cycle
         while (results.length) {
@@ -216,7 +213,12 @@ module.exports = {
           // Inspect the imports
           let imports;
           try {
-            imports = await getImports(result.file, result, solc, parserSolc);
+            imports = await getImports(
+              result.filePath,
+              result,
+              solc,
+              parserSolc
+            );
           } catch (err) {
             if (err.message.includes("requires different compiler version")) {
               const contractSolcPragma = err.message.match(
@@ -238,7 +240,7 @@ module.exports = {
           // Keep track of location of this import because we need to report that.
           imports.forEach(item => {
             if (!mapping[item])
-              allPaths.push({ file: item, parent: result.file });
+              allPaths.push({ file: item, parent: result.filePath });
           });
         }
       });

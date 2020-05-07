@@ -23,7 +23,7 @@ declare class Web3ProviderEngine implements Provider {
   ): void;
   addProvider(provider: any): void;
   // start block polling
-  start(callback?: () => void): void;
+  start(callback?: (error?: Error) => void): void;
   // stop block polling
   stop(): void;
 }

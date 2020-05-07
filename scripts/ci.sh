@@ -10,7 +10,7 @@ run_geth() {
     -p 8545:8545 \
     -p 8546:8546 \
     -p 30303:30303 \
-    ethereum/client-go:latest \
+    ethereum/client-go:stable \
     --rpc \
     --rpcaddr '0.0.0.0' \
     --rpcport 8545 \
@@ -23,7 +23,6 @@ run_geth() {
     --dev.period 0 \
     --allow-insecure-unlock \
     --targetgaslimit '7000000' \
-    --override.istanbul '0' \
     js ./scripts/geth-accounts.js \
     > /dev/null &
 }
@@ -36,7 +35,7 @@ if [ "$INTEGRATION" = true ]; then
 elif [ "$GETH" = true ]; then
 
   sudo apt install -y jq
-  docker pull ethereum/client-go:latest
+  docker pull ethereum/client-go:stable
   run_geth
   sleep 30
   lerna run --scope truffle test --stream -- --exit
@@ -51,7 +50,7 @@ elif [ "$QUORUM" = true ]; then
   git clone https://github.com/jpmorganchase/quorum-examples
   cd quorum-examples
   docker-compose up -d
-  sleep 90
+  sleep 60
   lerna run --scope truffle test --stream -- --exit
 
 elif [ "$COLONY" = true ]; then

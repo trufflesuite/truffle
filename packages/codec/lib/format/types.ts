@@ -497,11 +497,17 @@ export interface MagicType {
 }
 
 /**
- * Type of a type!  This is currently only used for contract types, but
- * may expand in the future.
+ * Type of a type!  This is currently only used for contract types and enum
+ * types, but may expand in the future.
  * @Category Special container types (debugger-only)
  */
-export interface TypeType {
+export type TypeType = TypeTypeContract | TypeTypeEnum;
+
+/**
+ * Type of a contract type
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeTypeContract {
   typeClass: "type";
   type: ContractTypeNative;
   /**
@@ -509,6 +515,15 @@ export interface TypeType {
    * **non-inherited** state variables
    */
   stateVariableTypes?: NameTypePair[];
+}
+
+/**
+ * Type of an enum type
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeTypeEnum {
+  typeClass: "type";
+  type: EnumType;
 }
 
 /**
@@ -693,6 +708,8 @@ export function typeStringWithoutLocation(dataType: Type): string {
         block: "block"
       };
       return variableNames[dataType.variable];
+    case "type":
+      return `type(${typeString(dataType.type)})`;
     case "function":
       let visibilityString: string;
       switch (dataType.visibility) {

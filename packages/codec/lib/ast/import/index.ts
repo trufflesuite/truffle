@@ -7,6 +7,7 @@ import * as Common from "@truffle/codec/common";
 import * as Compiler from "@truffle/codec/compiler";
 import * as Utils from "@truffle/codec/ast/utils";
 import { AstNode, AstNodes } from "@truffle/codec/ast/types";
+import { makeTypeId } from "@truffle/codec/contexts/import";
 
 //NOTE: the following function will *not* work for arbitrary nodes! It will,
 //however, work well enough for what we need.  I.e., it will:
@@ -383,7 +384,9 @@ export function definitionToStoredType(
         let contractDefinition = Object.values(referenceDeclarations).find(
           node =>
             node.nodeType === "ContractDefinition" &&
-            node.nodes.some((subNode: AstNode) => subNode.id.toString() === id)
+            node.nodes.some(
+              (subNode: AstNode) => makeTypeId(subNode.id, compilationId) === id
+            )
         );
         if (contractDefinition) {
           definingContract = <Format.Types.ContractTypeNative>(
@@ -475,11 +478,4 @@ export function definitionToStoredType(
       };
     }
   }
-}
-
-//I am deliberately *NOT* exporting this.
-//If you have to make a type ID, instead make the type and then
-//take its ID.
-function makeTypeId(astId: number, compilationId: string): string {
-  return `${compilationId}:${astId}`;
 }

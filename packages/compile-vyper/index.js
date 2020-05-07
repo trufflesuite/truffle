@@ -1,8 +1,6 @@
 const path = require("path");
 const exec = require("child_process").exec;
 const fs = require("fs");
-
-const async = require("async");
 const colors = require("colors");
 const minimatch = require("minimatch");
 
@@ -120,44 +118,45 @@ function compileAll(options, callback) {
 
   compile.display(options.paths, options);
 
-  async.map(
-    options.paths,
-    function(source_path, c) {
-      execVyper(options, source_path, function(err, compiled_contract) {
-        if (err) return c(err);
+  const promises = [];
+  options.paths.forEach(sourcePath => {
+    promises.push(
+      new Promise((resolve, reject) => {
+        execVyper(options, sourcePath, function(error, compiledContract) {
+          if (error) return reject(error);
 
-        // remove first extension from filename
-        const extension = path.extname(source_path);
-        const basename = path.basename(source_path, extension);
+          // remove first extension from filename
+          const extension = path.extname(sourcePath);
+          const basename = path.basename(sourcePath, extension);
 
-        // if extension is .py, remove second extension from filename
-        const contract_name =
-          extension !== ".py"
-            ? basename
-            : path.basename(basename, path.extname(basename));
+          // if extension is .py, remove second extension from filename
+          const contractName =
+            extension !== ".py"
+              ? basename
+              : path.basename(basename, path.extname(basename));
 
-        const source_buffer = fs.readFileSync(source_path);
-        const source_contents = source_buffer.toString();
+          const sourceBuffer = fs.readFileSync(sourcePath);
+          const sourceContents = sourceBuffer.toString();
 
-        const contract_definition = {
-          contract_name: contract_name,
-          sourcePath: source_path,
-          source: source_contents,
-          abi: compiled_contract.abi,
-          bytecode: compiled_contract.bytecode,
-          deployedBytecode: compiled_contract.bytecode_runtime,
-          sourceMap: compiled_contract.source_map,
+          const contractDefinition = {
+            contract_name: contractName,
+            sourcePath: sourcePath,
+            source: sourceContents,
+            abi: compiledContract.abi,
+            bytecode: compiledContract.bytecode,
+            deployedBytecode: compiledContract.bytecode_runtime,
+            sourceMap: compiledContract.source_map,
+            compiler: compiler
+          };
 
-          compiler: compiler
-        };
-
-        c(null, contract_definition);
-      });
-    },
-    function(err, contracts) {
-      if (err) return callback(err);
-
-      const result = contracts.reduce(function(result, contract) {
+          resolve(contractDefinition);
+        });
+      })
+    );
+  });
+  Promise.all(promises)
+    .then(contracts => {
+      const result = contracts.reduce((result, contract) => {
         result[contract.contract_name] = contract;
 
         return result;
@@ -166,8 +165,8 @@ function compileAll(options, callback) {
       const compilerInfo = { name: "vyper", version: compiler.version };
 
       callback(null, result, options.paths, compilerInfo);
-    }
-  );
+    })
+    .catch(callback);
 }
 
 // Check that vyper is available then forward to internal compile function

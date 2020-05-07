@@ -318,7 +318,8 @@ export interface MagicValue {
 }
 
 /**
- * A type's value (or error)
+ * A type's value (or error); currently only allows contract types and
+ * enum types
  *
  * @Category Special container types (debugger-only)
  */
@@ -327,17 +328,39 @@ export type TypeResult = TypeValue | Errors.TypeErrorResult;
 /**
  * A type's value -- for now, we consider the value of a contract type to
  * consist of the values of its non-inherited state variables in the current
- * context.  May contain errors.
+ * context, and the value of an enum type to be an array of its possible options
+ * (as Values).  May contain errors.
  *
  * @Category Special container types (debugger-only)
  */
-export interface TypeValue {
-  type: Types.TypeType;
+export type TypeValue = TypeValueContract | TypeValueEnum;
+
+/**
+ * A contract type's value (see [[TypeValue]])
+ *
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeValueContract {
+  type: Types.TypeTypeContract;
   kind: "value";
   /**
    * these must be stored in order!
    */
   value: NameValuePair[];
+}
+
+/**
+ * An enum type's value (see [[TypeValue]])
+ *
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeValueEnum {
+  type: Types.TypeTypeEnum;
+  kind: "value";
+  /**
+   * these must be stored in order!
+   */
+  value: EnumValue[];
 }
 
 /*
@@ -490,13 +513,16 @@ export interface FunctionInternalValueInfoException {
 }
 
 /**
- * This type is used when decoding internal functions from the high-level
- * decoding interface, which presently doesn't support detailed decoding of
- * internal functions.  (The debugger, however, supports it!  You can get this
- * detailed information in the debugger!)  You'll still get the program counter
- * values, but further information will be absent.  Note you'll get this even
- * if really it should decode to an error, because the decoding interface
- * doesn't have the information to determine that it's an error.
+ * This type is used when decoding internal functions in contexts that don't
+ * support full decoding of such functions.  The high-level decoding interface
+ * can currently only sometimes perform such a full decoding.
+ *
+ * In contexts where such full decoding isn't supported, you'll get one of
+ * these; so you'll still get the program counter values, but further
+ * information will be absent.  Note you'll get this even if really it should
+ * decode to an error, because if there's insufficient information to determine
+ * additional function information, there's necessarily insufficient
+ * information to determine if it should be an error.
  *
  * @Category Function types
  */

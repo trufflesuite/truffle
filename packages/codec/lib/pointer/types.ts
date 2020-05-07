@@ -6,6 +6,7 @@ export type DataPointer =
   | MemoryPointer
   | StoragePointer
   | AbiDataPointer
+  | CodeFormPointer
   | ConstantDefinitionPointer
   | SpecialPointer
   | EventTopicPointer;
@@ -16,7 +17,8 @@ export type AbiDataPointer =
   | CalldataPointer
   | ReturndataPointer
   | EventDataPointer;
-export type BytesPointer = MemoryPointer | AbiDataPointer;
+export type BytesPointer = MemoryPointer | AbiDataPointer | CodePointer;
+export type CodeFormPointer = CodePointer | UnreadablePointer;
 
 export interface StackPointer {
   location: "stack";
@@ -59,6 +61,12 @@ export interface GenericAbiPointer {
   length: number;
 }
 
+export interface CodePointer {
+  location: "code";
+  start: number;
+  length: number;
+}
+
 export interface StoragePointer {
   location: "storage";
   range: Storage.Range;
@@ -77,4 +85,8 @@ export interface ConstantDefinitionPointer {
 export interface SpecialPointer {
   location: "special";
   special: string; //sorry
+}
+
+export interface UnreadablePointer {
+  location: "nowhere";
 }

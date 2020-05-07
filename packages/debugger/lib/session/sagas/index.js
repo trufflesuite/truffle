@@ -8,6 +8,7 @@ import { prefixName } from "lib/helpers";
 import * as ast from "lib/ast/sagas";
 import * as controller from "lib/controller/sagas";
 import * as solidity from "lib/solidity/sagas";
+import * as stacktrace from "lib/stacktrace/sagas";
 import * as evm from "lib/evm/sagas";
 import * as trace from "lib/trace/sagas";
 import * as data from "lib/data/sagas";
@@ -34,9 +35,9 @@ function* listenerSaga() {
   }
 }
 
-export function* saga() {
+export function* saga(moduleOptions) {
   debug("starting listeners");
-  yield* forkListeners();
+  yield* forkListeners(moduleOptions);
 
   // receiving & saving contracts into state
   debug("waiting for contract information");
@@ -56,13 +57,15 @@ export function* saga() {
   let { txHash, provider } = yield take(actions.START);
   debug("starting");
 
-  debug("visiting ASTs");
-  // visit asts
-  yield* ast.visitAll();
+  if (!moduleOptions.lightMode) {
+    debug("visiting ASTs");
+    // visit asts
+    yield* ast.visitAll();
 
-  //save allocation table
-  debug("saving allocation table");
-  yield* data.recordAllocations();
+    //save allocation table
+    debug("saving allocation table");
+    yield* data.recordAllocations();
+  }
 
   //initialize web3 adapter
   yield* web3.init(provider);
@@ -90,15 +93,19 @@ export function* processTransaction(txHash) {
 
 export default prefixName("session", saga);
 
-function* forkListeners() {
+function* forkListeners(moduleOptions) {
   yield fork(listenerSaga); //session listener; this one is separate, sorry
   //(I didn't want to mess w/ the existing structure of defaults)
-  return yield all(
-    [controller, data, evm, solidity, trace, web3].map(
-      app => fork(app.saga)
-      //ast no longer has a listener
-    )
-  );
+  let mainApps = [evm, solidity, stacktrace];
+  if (!moduleOptions.lightMode) {
+    mainApps.push(data);
+  }
+  let otherApps = [trace, controller, web3];
+  const submoduleCount = mainApps.length;
+  //I'm being lazy, so I'll just pass the submodule count to all of
+  //them even though only trace cares :P
+  const apps = mainApps.concat(otherApps);
+  return yield all(apps.map(app => fork(app.saga, submoduleCount)));
 }
 
 function* fetchTx(txHash) {
@@ -135,8 +142,9 @@ function* fetchTx(txHash) {
   );
 
   debug("sending initial call");
-  yield* evm.begin(result);
-  yield* solidity.begin(); //note: these must occur in this order
+  yield* evm.begin(result); //note: this must occur *before* the other two
+  yield* solidity.begin();
+  yield* stacktrace.begin();
 }
 
 function* recordContexts(...contexts) {
@@ -161,12 +169,14 @@ function* error(err) {
   yield put(actions.error(err));
 }
 
+//we'll just unload all modules regardless of which ones are currently present...
 export function* unload() {
   debug("unloading");
   yield* data.reset();
   yield* solidity.unload();
   yield* evm.unload();
   yield* trace.unload();
+  yield* stacktrace.unload();
   yield put(actions.unloadTransaction());
 }
 

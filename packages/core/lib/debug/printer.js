@@ -8,7 +8,15 @@ const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
 
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, controller, data, evm } = selectors;
+const {
+  session,
+  solidity,
+  trace,
+  controller,
+  data,
+  evm,
+  stacktrace
+} = selectors;
 
 class DebugPrinter {
   constructor(config, session) {
@@ -20,8 +28,7 @@ class DebugPrinter {
       try {
         selector = expr
           .split(".")
-          .filter(next => next.length > 0)
-          .reduce((sel, next) => sel[next], selectors);
+          .reduce((sel, next) => (next.length ? sel[next] : sel), selectors);
       } catch (_) {
         throw new Error("Unknown selector: %s", expr);
       }
@@ -39,8 +46,9 @@ class DebugPrinter {
       this.colorizedSources[compilationId] = {};
       for (const source of compilation.byId) {
         const id = source.id;
-        const uncolorized = source.source;
-        const colorized = DebugUtils.colorize(uncolorized);
+        const raw = source.source;
+        const detabbed = DebugUtils.tabsToSpaces(raw);
+        const colorized = DebugUtils.colorize(detabbed);
         this.colorizedSources[compilationId][id] = colorized;
       }
     }
@@ -192,9 +200,9 @@ class DebugPrinter {
     }
 
     this.config.logger.log("");
-    expressions.forEach(function(expression) {
+    for (const expression of expressions) {
       this.config.logger.log("  " + expression);
-    });
+    }
   }
 
   printBreakpoints() {
@@ -230,7 +238,9 @@ class DebugPrinter {
   }
 
   printRevertMessage() {
-    this.config.logger.log("Transaction halted with a RUNTIME ERROR.");
+    this.config.logger.log(
+      DebugUtils.truffleColors.red("Transaction halted with a RUNTIME ERROR.")
+    );
     this.config.logger.log("");
     let rawRevertMessage = this.session.view(evm.current.step.returnValue);
     let revertDecodings = Codec.decodeRevert(
@@ -286,6 +296,14 @@ class DebugPrinter {
     );
   }
 
+  printStacktrace(final) {
+    this.config.logger.log("Stacktrace:");
+    let report = final
+      ? this.session.view(stacktrace.current.finalReport)
+      : this.session.view(stacktrace.current.report);
+    this.config.logger.log(DebugUtils.formatStacktrace(report));
+  }
+
   async printWatchExpressionsResults(expressions) {
     debug("expressions %o", expressions);
     for (let expression of expressions) {
@@ -317,17 +335,16 @@ class DebugPrinter {
 
     debug("variables %o", variables);
 
+    const variableKeys = Object.keys(variables);
+
     // Get the length of the longest name.
-    const longestNameLength = Math.max.apply(
-      null,
-      Object.keys(variables).map(function(name) {
-        return name.length;
-      })
-    );
+    const longestNameLength = variableKeys.reduce((longest, name) => {
+      return name.length > longest ? name.length : longest;
+    }, -Infinity);
 
     this.config.logger.log();
 
-    Object.keys(variables).forEach(name => {
+    variableKeys.forEach(name => {
       let paddedName = name + ":";
 
       while (paddedName.length <= longestNameLength) {

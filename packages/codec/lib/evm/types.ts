@@ -19,6 +19,7 @@ export interface EvmState {
   stack?: Uint8Array[];
   memory?: Uint8Array;
   calldata?: Uint8Array;
+  code?: Uint8Array;
   specials?: {
     [builtin: string]: Uint8Array; //sorry
   };
@@ -55,7 +56,8 @@ export interface InternalFunctions {
 }
 
 export interface InternalFunction {
-  source?: number;
+  sourceIndex?: number;
+  compilationId?: string;
   pointer?: string;
   node?: Ast.AstNode;
   name?: string;

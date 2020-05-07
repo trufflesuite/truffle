@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import solidity from "lib/solidity/selectors";
 import trace from "lib/trace/selectors";
 
-import { getRange } from "lib/ast/map";
+import SolidityUtils from "@truffle/solidity-utils";
 
 const __VARIABLES = `
 pragma solidity ^0.6.1;
@@ -71,20 +71,22 @@ describe("AST", function() {
       let receipt = await instance.stack(4);
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, { provider, compilations });
-
-      let session = bugger.connect();
+      let bugger = await Debugger.forTx(txHash, {
+        provider,
+        compilations,
+        lightMode: true
+      });
 
       do {
-        let { start, length } = session.view(solidity.current.sourceRange);
+        let { start, length } = bugger.view(solidity.current.sourceRange);
         let end = start + length;
 
-        let node = session.view(solidity.current.node);
+        let node = bugger.view(solidity.current.node);
 
-        let [nodeStart, nodeLength] = getRange(node);
+        let [nodeStart, nodeLength] = SolidityUtils.getRange(node);
         let nodeEnd = nodeStart + nodeLength;
 
-        let pointer = session.view(solidity.current.pointer);
+        let pointer = bugger.view(solidity.current.pointer);
 
         assert.isAtMost(
           nodeStart,
@@ -97,8 +99,8 @@ describe("AST", function() {
           `Node ${pointer} should not end after source`
         );
 
-        await session.stepNext();
-      } while (!session.view(trace.finished));
+        await bugger.stepNext();
+      } while (!bugger.view(trace.finished));
     });
   });
 });

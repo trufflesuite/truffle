@@ -2,12 +2,10 @@
 # Truffle Decoder
 
 This module provides an interface for decoding contract state, transaction
-calldata, and events.  It's an interface to the same low-level decoding
-functionality that Truffle Debugger uses.  However, it has additional
-functionality that the debugger does not need, and the debugger has additional
-functionality that this interface either does not need or cannot currently
-replicate.  In the future, this interface will also decode return values and
-revert strings.
+calldata, events, and return values and revert strings.  It's an interface to
+the same low-level decoding functionality that Truffle Debugger uses.  However,
+it has additional functionality that the debugger does not need, and the
+debugger has additional functionality that this decoder does not need.
 
 The interface is split into three classes: The wire decoder, the contract
 decoder, and the contract instance decoder.  The wire decoder is associated to
@@ -42,6 +40,7 @@ For a contract instance decoder, use one of the following:
 * [[forArtifactAt|`forArtifactAt`]]
 * [[forContractAt|`forContractAt`]]
 * [[forContractInstance|`forContractInstance`]]
+* [[forAddress|`forAddress`]]
 
 See the documentation of these functions for details, or below for usage
 examples.
@@ -49,6 +48,10 @@ examples.
 All of these functions take a final argument in which information about the
 project is specified; currently only a few methods for specifying project
 information are allowed, but more are planned.
+
+One can also spawn decoders from other decoders by supplying additional
+information.  See the documentation for the individual decoder classes for a
+method listing.
 
 ### Decoder methods
 
@@ -60,12 +63,15 @@ The decoder outputs lossless, machine-readable [[Format.Values.Result]] objects
 containing individual decoded values. See the [[Format|format documentation]]
 for an overview and complete module listing.
 
-### Decoding modes and abification
+### Decoding modes, abification, and caveats
 
-The decoder runs in either of two modes: full mode or ABI mdoe. Full mode
+The decoder runs in either of two modes: full mode or ABI mode. Full mode
 requires some additional constraints but returns substantially more detailed
 information. Please see the notes on [decoding modes](../#decoding-modes) for
 more about this distinction.
+
+See also the notes about [decoding state variables](../#additional-notes-on-decoding-state-variables) for additional
+caveats about what may or may not be fully decodable.
 
 ### Basic usage examples
 
@@ -154,6 +160,7 @@ export {
   StateVariable,
   DecodedLog,
   EventOptions,
+  ReturnOptions,
   Transaction,
   Log,
   BlockSpecifier
@@ -166,6 +173,9 @@ import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
 import { ContractConstructorObject, ContractInstanceObject } from "./types";
 
 import { Compilations } from "@truffle/codec";
+
+import fs from "fs";
+import path from "path";
 
 /**
  * **This function is asynchronous.**
@@ -236,7 +246,7 @@ export async function forArtifact(
  * @param projectInfo Information about the project being decoded, or just the
  *   contracts relevant to the contract being decoded (e.g., by providing struct
  *   or enum definitions, or even just appearing as a contract type).  This may
- *   come in several forms. see the [[ProjectInfo]] documentation for more
+ *   come in several forms. See the [[ProjectInfo]] documentation for more
  *   information.  See the projectInfo parameter documentation on [[forArtifact]]
  *   for more detail.
  * @category Truffle Contract-based Constructor
@@ -384,15 +394,48 @@ export async function forContractInstance(
   );
 }
 
+/**
+ * **This function is asynchronous.**
+ *
+ * Constructs a contract instance decoder for a given instance of a contract in this
+ * project.  Unlike the other functions, this method doesn't require giving an
+ * artifact for the address itself; however, the address had better correspond to
+ * a contract of a type given in the project info, or you'll get an exception.
+ * @param address The address of the contract instance to decode.
+ *   If an invalid address is provided, this method will throw an exception.
+ * @param provider The Web3 provider object to use.
+ * @param projectInfo Information about the project being decoded, or just the
+ *   contracts relevant to the contract being decoded (e.g., by providing struct
+ *   or enum definitions, or even just appearing as a contract type).  This may
+ *   come in several forms. See the [[ProjectInfo]] documentation for more
+ *   information.  See the projectInfo parameter documentation on [[forProject]]
+ *   for more detail.
+ * @category Provider-based Constructor
+ */
+export async function forAddress(
+  address: string,
+  provider: Provider,
+  projectInfo: ProjectInfo | Artifact[]
+): Promise<ContractInstanceDecoder> {
+  let wireDecoder = await forProject(provider, projectInfo);
+  return await wireDecoder.forAddress(address);
+}
+
+//Note: this function doesn't actually go in this category, but
+//I don't want an unsightly "Other functions" thing appearing,
+//so I'm hiding it here :)
+/**
+ * @category Provider-based Constructor
+ */
 function infoToCompilations(
-  projectInfo: ProjectInfo | Artifact[],
+  info: ProjectInfo | Artifact[],
   primaryArtifact?: Artifact
 ): Compilations.Compilation[] {
-  if (!projectInfo) {
-    projectInfo = [];
+  if (!info) {
+    info = [];
   }
-  if (Array.isArray(projectInfo)) {
-    let artifacts = projectInfo;
+  if (Array.isArray(info)) {
+    let artifacts = info;
     if (
       primaryArtifact &&
       !artifacts.find(
@@ -405,10 +448,29 @@ function infoToCompilations(
     }
     return Compilations.Utils.shimArtifacts(artifacts);
   } else {
+    let projectInfo: ProjectInfo = info;
     if (projectInfo.compilations) {
       return projectInfo.compilations;
     } else if (projectInfo.artifacts) {
       return Compilations.Utils.shimArtifacts(projectInfo.artifacts);
+    } else if (projectInfo.config) {
+      //NOTE: This will be expanded in the future so that it's not just
+      //using the build directory
+      if (projectInfo.config.contracts_build_directory !== undefined) {
+        let files = fs
+          .readdirSync(projectInfo.config.contracts_build_directory)
+          .filter(file => path.extname(file) === ".json");
+        let data = files.map(file =>
+          fs.readFileSync(
+            path.join(projectInfo.config.contracts_build_directory, file),
+            "utf8"
+          )
+        );
+        let artifacts = data.map(json => JSON.parse(json));
+        return Compilations.Utils.shimArtifacts(artifacts);
+      } else {
+        throw new NoProjectInfoError();
+      }
     } else {
       throw new NoProjectInfoError();
     }

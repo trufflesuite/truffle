@@ -1,17 +1,17 @@
 {
   "name": "@truffle/compile-solidity",
   "description": "Compiler helper and artifact manager for Solidity files",
-  "version": "4.2.25",
+  "version": "4.3.3",
   "main": "index.js",
   "dependencies": {
-    "@truffle/config": "^1.2.16",
+    "@truffle/config": "^1.2.17",
     "@truffle/contract-sources": "^0.1.7",
     "@truffle/error": "^0.0.8",
     "@truffle/expect": "^0.0.13",
     "colors": "^1.1.2",
     "debug": "^4.1.0",
-    "fs-extra": "^8.0.1",
-    "ora": "^3.0.0",
+    "fs-extra": "^8.1.0",
+    "ora": "^3.4.0",
     "original-require": "^1.0.1",
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
@@ -20,7 +20,7 @@
     "solc": "^0.6.0"
   },
   "devDependencies": {
-    "@truffle/resolver": "^5.1.6",
+    "@truffle/resolver": "^5.1.12",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",

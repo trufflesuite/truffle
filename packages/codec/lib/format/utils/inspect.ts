@@ -175,17 +175,24 @@ export class ResultInspector {
             }
           }
           case "type": {
-            //same as struct case but w/o circularity check
-            let coercedResult = <Format.Values.TypeValue>this.result;
-            return util.inspect(
-              Object.assign(
-                {},
-                ...coercedResult.value.map(({ name, value }) => ({
-                  [name]: new ResultInspector(value)
-                }))
-              ),
-              options
-            );
+            switch (this.result.type.type.typeClass) {
+              case "contract":
+                //same as struct case but w/o circularity check
+                return util.inspect(
+                  Object.assign(
+                    {},
+                    ...(<Format.Values.TypeValueContract>this.result).value.map(
+                      ({ name, value }) => ({
+                        [name]: new ResultInspector(value)
+                      })
+                    )
+                  ),
+                  options
+                );
+              case "enum": {
+                return enumTypeName(this.result.type.type);
+              }
+            }
           }
           case "magic":
             return util.inspect(
@@ -283,35 +290,45 @@ export class ResultInspector {
         let errorResult = <Format.Errors.ErrorResult>this.result; //the hell?? why couldn't it make this inference??
         switch (errorResult.error.kind) {
           case "UintPaddingError":
-            return `Uint has extra leading bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Uint has incorrect padding (expected padding: ${
+              errorResult.error.paddingType
+            }) (raw value ${errorResult.error.raw})`;
           case "IntPaddingError":
-            return `Int out of range (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Int has incorrect padding (expected padding: ${
+              errorResult.error.paddingType
+            }) (raw value ${errorResult.error.raw})`;
           case "UintPaddingError":
-            return `Ufixed has extra leading bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Ufixed has (expected padding: ${
+              errorResult.error.paddingType
+            }) (raw value ${errorResult.error.raw})`;
           case "FixedPaddingError":
-            return `Fixed out of range (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Fixed has incorrect padding (expected padding: ${
+              errorResult.error.paddingType
+            }) (raw value ${errorResult.error.raw})`;
           case "BoolOutOfRangeError":
             return `Invalid boolean (numeric value ${errorResult.error.rawAsBN.toString()})`;
+          case "BoolPaddingError":
+            return `Boolean has incorrect padding (expected padding: ${
+              errorResult.error.paddingType
+            }) (raw value ${errorResult.error.raw})`;
           case "BytesPaddingError":
             return `Bytestring has extra trailing bytes (padding error) (raw value ${
               errorResult.error.raw
             })`;
           case "AddressPaddingError":
-            return `Address has extra leading bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Address has incorrect padding (expected padding: ${
+              errorResult.error.paddingType
+            }) (raw value ${errorResult.error.raw})`;
           case "EnumOutOfRangeError":
             return `Invalid ${enumTypeName(
               errorResult.error.type
             )} (numeric value ${errorResult.error.rawAsBN.toString()})`;
+          case "EnumPaddingError":
+            return `Enum ${enumTypeName(
+              errorResult.error.type
+            )} has incorrect padding (expected padding: ${
+              errorResult.error.paddingType
+            }) (raw value ${errorResult.error.raw})`;
           case "EnumNotFoundDecodingError":
             return `Unknown enum type ${enumTypeName(
               errorResult.error.type
@@ -319,21 +336,21 @@ export class ResultInspector {
               errorResult.error.type.id
             } (numeric value ${errorResult.error.rawAsBN.toString()})`;
           case "ContractPaddingError":
-            return `Contract address has extra leading bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Contract address has incorrect padding (expected padding: ${
+              errorResult.error.paddingType
+            }) (raw value ${errorResult.error.raw})`;
           case "FunctionExternalNonStackPaddingError":
-            return `External function has extra trailing bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `External function has incorrect padding (expected padding: ${
+              errorResult.error.paddingType
+            }) (raw value ${errorResult.error.raw})`;
           case "FunctionExternalStackPaddingError":
             return `External function address or selector has extra leading bytes (padding error) (raw address ${
               errorResult.error.rawAddress
             }, raw selector ${errorResult.error.rawSelector})`;
           case "FunctionInternalPaddingError":
-            return `Internal function has extra leading bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Internal function has incorrect padding (expected padding: ${
+              errorResult.error.paddingType
+            }) (raw value ${errorResult.error.raw})`;
           case "NoSuchInternalFunctionError":
             return `Invalid function (Deployed PC=${
               errorResult.error.deployedProgramCounter
@@ -364,6 +381,7 @@ export class ResultInspector {
             return `Pointer is too large (value ${errorResult.error.pointerAsBN.toString()}); decoding is not supported`;
           case "UserDefinedTypeNotFoundError":
           case "UnsupportedConstantError":
+          case "UnusedImmutableError":
           case "ReadErrorStack":
           case "ReadErrorStorage":
           case "ReadErrorBytes":
@@ -475,6 +493,7 @@ function nativizeWithTable(
   seenSoFar: any[]
 ): any {
   if (result.kind === "error") {
+    debug("ErrorResult: %O", result);
     switch (result.error.kind) {
       case "BoolOutOfRangeError":
         return true;
@@ -576,12 +595,24 @@ function nativizeWithTable(
       }
     }
     case "type":
-      return Object.assign(
-        {},
-        ...(<Format.Values.TypeValue>result).value.map(({ name, value }) => ({
-          [name]: nativize(value)
-        }))
-      );
+      switch (result.type.type.typeClass) {
+        case "contract":
+          return Object.assign(
+            {},
+            ...(<Format.Values.TypeValueContract>result).value.map(
+              ({ name, value }) => ({
+                [name]: nativize(value)
+              })
+            )
+          );
+        case "enum":
+          return Object.assign(
+            {},
+            ...(<Format.Values.TypeValueEnum>result).value.map(enumValue => ({
+              [enumValue.value.name]: nativize(enumValue)
+            }))
+          );
+      }
     case "tuple":
       return (<Format.Values.TupleValue>result).value.map(({ value }) =>
         nativize(value)

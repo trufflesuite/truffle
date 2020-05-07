@@ -1,5 +1,6 @@
 import BN from "bn.js";
 import { ContractObject as Artifact } from "@truffle/contract-schema/spec";
+import TruffleConfig from "@truffle/config";
 import {
   Format,
   Ast,
@@ -16,8 +17,8 @@ import Web3 from "web3";
  * be passed in various ways; this type is given here as an interface rahter
  * than a union, but note that really you only need to include one of these
  * fields.  (The `compilations` field will be used if present, then `artifacts`
- * if not, etc.)  Additional, more convenient options for how to specify project
- * information are intended to be added in the future.
+ * if not, etc.)  Further options for how to specify project information are
+ * intended to be added in the future.
  * @category Inputs
  */
 export interface ProjectInfo {
@@ -33,6 +34,14 @@ export interface ProjectInfo {
    * you're not sure which you're dealing with, it's OK.
    */
   artifacts?: Artifact[];
+  /**
+   * The project's config object.  If present, and it has the
+   * `contracts_build_directory` property, the decoder will automatically read
+   * all the artifacts from there and use those as the project information.
+   * Further, smarter use of the config object are intended to be added in
+   * the future.
+   */
+  config?: TruffleConfig;
 }
 
 /**
@@ -136,7 +145,7 @@ export interface ContractInfo {
 }
 
 /**
- * The type of the options parameter to events().  This type will be expanded in the future
+ * The type of the options parameter to [[WireDecoder.events|events()]].  This type will be expanded in the future
  * as more filtering options are added.
  * @category Inputs
  */
@@ -162,6 +171,25 @@ export interface EventOptions {
    * address as undefined.
    */
   address?: string;
+}
+
+/**
+ * The type of the options parameter to [[ContractDecoder.decodeReturnValue|decodeReturnValue()]].
+ * @category Inputs
+ */
+export interface ReturnOptions {
+  /**
+   * The block in which the call was made.  Defaults to "latest".
+   */
+  block?: BlockSpecifier;
+  /**
+   * If included, tells the decoder to interpret the return data as
+   * the return data from a successful call (if `true` is passed) or
+   * as the return data from a failed call (if `false` is passed). If
+   * omitted or set to `undefined`, the decoder will account for both
+   * possibilities.
+   */
+  status?: boolean | undefined;
 }
 
 /**

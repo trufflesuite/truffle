@@ -44,21 +44,37 @@ contract InnerContract {
 }
 `;
 
+const __IMMUTABLE = `
+pragma solidity ^0.6.5;
+
+contract ImmutableTest {
+  uint immutable x = 35;
+  function run() public {
+    TestLibrary.shout(x);
+  }
+}
+
+library TestLibrary {
+  event Shout(uint);
+  function shout(uint x) external {
+    emit Shout(x);
+  }
+}
+`;
+
 const __MIGRATION = `
 let OuterContract = artifacts.require("OuterContract");
 let InnerContract = artifacts.require("InnerContract");
+let ImmutableTest = artifacts.require("ImmutableTest");
+let TestLibrary = artifacts.require("TestLibrary");
 
-module.exports = function(deployer) {
-  return deployer
-    .then(function() {
-      return deployer.deploy(InnerContract);
-    })
-    .then(function() {
-      return InnerContract.deployed();
-    })
-    .then(function(inner) {
-      return deployer.deploy(OuterContract, inner.address);
-    });
+module.exports = async function(deployer) {
+  await deployer.deploy(InnerContract);
+  const inner = await InnerContract.deployed();
+  await deployer.deploy(OuterContract, inner.address);
+  await deployer.deploy(TestLibrary);
+  await deployer.link(TestLibrary, ImmutableTest);
+  await deployer.deploy(ImmutableTest);
 };
 `;
 
@@ -68,7 +84,8 @@ let migrations = {
 
 let sources = {
   "OuterLibrary.sol": __OUTER,
-  "InnerContract.sol": __INNER
+  "InnerContract.sol": __INNER,
+  "ImmutableTest.sol": __IMMUTABLE
 };
 
 describe("Contexts", function() {
@@ -96,18 +113,18 @@ describe("Contexts", function() {
     // run outer contract method
     let result = await outer.run();
 
-    assert.equal(result.receipt.rawLogs.length, 2, "There should be two logs");
+    assert.lengthOf(result.receipt.rawLogs, 2, "There should be two logs");
 
     let txHash = result.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
     debug("debugger ready");
 
-    let session = bugger.connect();
-
-    let affectedInstances = session.view(
-      sessionSelector.info.affectedInstances
-    );
+    let affectedInstances = bugger.view(sessionSelector.info.affectedInstances);
     debug("affectedInstances: %o", affectedInstances);
 
     let affectedAddresses = Object.keys(affectedInstances);
@@ -125,5 +142,32 @@ describe("Contexts", function() {
       inner.address,
       "InnerContract should be an affected address"
     );
+  });
+
+  it("correctly identifies context in presence of libraries and immutables", async function() {
+    let ImmutableTest = await abstractions.ImmutableTest.deployed();
+    let address = ImmutableTest.address;
+    let TestLibrary = await abstractions.TestLibrary.deployed();
+    let libraryAddress = TestLibrary.address;
+
+    // run outer contract method
+    let result = await ImmutableTest.run();
+
+    let txHash = result.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
+    debug("debugger ready");
+
+    let affectedInstances = bugger.view(sessionSelector.info.affectedInstances);
+    debug("affectedInstances: %o", affectedInstances);
+
+    assert.property(affectedInstances, address);
+    assert.equal(affectedInstances[address].contractName, "ImmutableTest");
+    assert.property(affectedInstances, libraryAddress);
+    assert.equal(affectedInstances[libraryAddress].contractName, "TestLibrary");
   });
 });

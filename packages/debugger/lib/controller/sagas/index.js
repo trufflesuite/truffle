@@ -9,6 +9,7 @@ import * as trace from "lib/trace/sagas";
 import * as data from "lib/data/sagas";
 import * as evm from "lib/evm/sagas";
 import * as solidity from "lib/solidity/sagas";
+import * as stacktrace from "lib/stacktrace/sagas";
 
 import * as actions from "../actions";
 
@@ -197,16 +198,15 @@ function* stepOver() {
     !finished &&
     // we haven't jumped out
     currentDepth >= startingDepth &&
-    // we haven't changed file
-    currentLocation.source.id === startingLocation.source.id &&
-    currentLocation.source.compilationId ===
-      startingLocation.source.compilationId &&
     // either: function depth is greater than starting (ignore function calls)
     // or, if we're at the same depth, keep stepping until we're on a new
-    // line.
+    // line (which may be in a new file)
     (currentDepth > startingDepth ||
-      currentLocation.sourceRange.lines.start.line ===
-        startingLocation.sourceRange.lines.start.line)
+      (currentLocation.source.id === startingLocation.source.id &&
+        currentLocation.source.compilationId ===
+          startingLocation.source.compilationId &&
+        currentLocation.sourceRange.lines.start.line ===
+          startingLocation.sourceRange.lines.start.line))
   );
 }
 
@@ -276,10 +276,12 @@ function* continueUntilBreakpoint(action) {
 
 /**
  * reset -- reset the state of the debugger
+ * (we'll just reset all submodules regardless of which are in use)
  */
 export function* reset() {
   yield* data.reset();
   yield* evm.reset();
   yield* solidity.reset();
   yield* trace.reset();
+  yield* stacktrace.reset();
 }

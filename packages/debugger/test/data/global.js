@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __GLOBAL = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.6.2;
 
 contract GlobalTest {
 
@@ -56,7 +56,7 @@ contract GlobalTest {
   }
 
   function runRun(uint x) public payable {
-    this.run.value(msg.value / 2)(x);
+    this.run{value: msg.value / 2}(x);
   }
 
   function staticTest(uint x) public view returns (uint) {
@@ -84,7 +84,16 @@ contract GlobalTest {
   }
 
   function runCreate(uint x) public payable {
-    (new CreationTest).value(msg.value / 2)(x);
+    new CreationTest{value: msg.value / 2}(x, true);
+  }
+
+  function runFailedCreate2(uint x) public payable {
+    try new CreationTest{
+      value: msg.value / 2,
+      salt: 0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+    }(x, false) {
+    } catch (bytes memory) {
+    }
   }
 }
 
@@ -97,14 +106,15 @@ contract CreationTest {
 
   event Done(uint x);
 
-  constructor(uint x) public payable {
+  constructor(uint x, bool succeed) public payable {
     _this = this;
     _now = now;
     _msg = GlobalTest.Msg(msg.data, msg.sender, msg.sig, msg.value);
     _tx = GlobalTest.Tx(tx.origin, tx.gasprice);
     _block = GlobalTest.Block(block.coinbase, block.difficulty,
       block.gaslimit, block.number, block.timestamp);
-    emit Done(x); //BREAK CREATE
+    require(succeed); //BREAK CREATE
+    emit Done(x);
   }
 }
 
@@ -173,12 +183,10 @@ describe("Globally-available variables", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    await session.continueUntilBreakpoint(); //run till end
+    await bugger.continueUntilBreakpoint(); //run till end
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     assert.equal(variables.this, variables._this);
@@ -196,20 +204,18 @@ describe("Globally-available variables", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK SIMPLE", source)
     });
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     assert.equal(variables.this, variables._this);
@@ -227,20 +233,18 @@ describe("Globally-available variables", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK STATIC", source)
     });
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     assert.equal(variables.this, variables.__this);
@@ -258,20 +262,18 @@ describe("Globally-available variables", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK LIBRARY", source)
     });
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     assert.deepEqual(variables.msg, variables.__msg);
@@ -287,12 +289,10 @@ describe("Globally-available variables", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    await session.continueUntilBreakpoint(); //run till end
+    await bugger.continueUntilBreakpoint(); //run till end
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     assert.equal(variables.this, variables._this);
@@ -310,20 +310,47 @@ describe("Globally-available variables", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK CREATE", source)
     });
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
+    );
+
+    assert.equal(variables.this, variables._this);
+    assert.deepEqual(variables.msg, variables._msg);
+    assert.deepEqual(variables.tx, variables._tx);
+    assert.deepEqual(variables.block, variables._block);
+    assert.equal(variables.now, variables._now);
+  });
+
+  it("Gets globals correctly in failed CREATE2", async function() {
+    this.timeout(12000);
+    let instance = await abstractions.GlobalTest.deployed();
+    let receipt = await instance.runFailedCreate2(9, { value: 100 });
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
+      sourceId,
+      compilationId,
+      line: lineOf("BREAK CREATE", source)
+    });
+    await bugger.continueUntilBreakpoint();
+
+    const variables = Codec.Format.Utils.Inspect.nativizeVariables(
+      await bugger.variables()
     );
 
     assert.equal(variables.this, variables._this);

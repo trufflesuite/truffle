@@ -164,13 +164,14 @@ class HDWalletProvider {
       // Web3.providers.HttpProvider.prototype.send;
       let subProvider;
       const providerProtocol = (
-        Url.parse(provider).protocol || "http"
+        Url.parse(provider).protocol || "http:"
       ).toLowerCase();
 
       switch (providerProtocol) {
-        case "ws":
-        case "wss":
+        case "ws:":
+        case "wss:":
           subProvider = new Web3.providers.WebsocketProvider(provider);
+          break;
         default:
           // @ts-ignore: Incorrect typings in @types/web3
           subProvider = new Web3.providers.HttpProvider(provider, {
@@ -182,7 +183,11 @@ class HDWalletProvider {
     } else {
       this.engine.addProvider(new ProviderSubprovider(provider));
     }
-    this.engine.start(); // Required by the provider engine.
+
+    // Required by the provider engine.
+    this.engine.start(err => {
+      if (err) throw err;
+    });
   }
 
   public send(

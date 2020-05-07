@@ -3,14 +3,16 @@ const path = require("path");
 const OS = require("os");
 const BlockchainUtils = require("@truffle/blockchain-utils");
 const Provider = require("@truffle/provider");
-const async = require("async");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 
 const Networks = {
   deployed: async function(options) {
     let files;
     try {
-      files = fs.readdirSync(options.contracts_build_directory);
+      // Only read JSON files in directory
+      files = fs
+        .readdirSync(options.contracts_build_directory)
+        .filter(fn => fn.endsWith(".json"));
     } catch (error) {
       // We can't read the directory. Act like we found nothing.
       files = [];
@@ -53,19 +55,22 @@ const Networks = {
 
   display: async function(config) {
     const networks = await this.deployed(config);
-    let networkNames = Object.keys(networks).sort();
-
-    const starNetworks = networkNames.filter(networkName => {
-      return (
-        config.networks[networkName] != null &&
-        config.networks[networkName].network_id === "*"
+    const { networkNames, starNetworks } = Object.keys(networks)
+      .sort()
+      .reduce(
+        (acc, networkName) => {
+          if (
+            config.networks[networkName] &&
+            config.networks[networkName].network_id === "*"
+          ) {
+            acc.starNetworks.push(networkName);
+          } else {
+            acc.networkNames.push(networkName);
+          }
+          return acc;
+        },
+        { networkNames: [], starNetworks: [] }
       );
-    });
-
-    // Remove * networks from network names.
-    networkNames = networkNames.filter(networkName => {
-      return starNetworks.indexOf(networkName) < 0;
-    });
 
     const unknownNetworks = networkNames.filter(networkName => {
       const configuredNetworks = Object.keys(config.networks);
@@ -146,7 +151,10 @@ const Networks = {
   },
 
   clean: async function(config) {
-    let files = fs.readdirSync(config.contracts_build_directory);
+    // Only read JSON files in directory
+    let files = fs
+      .readdirSync(config.contracts_build_directory)
+      .filter(fn => fn.endsWith(".json"));
     const configuredNetworks = Object.keys(config.networks);
     const results = [];
 
@@ -190,68 +198,52 @@ const Networks = {
   },
 
   // Try to connect to every named network except for "test" and "development"
-  asURIs: function(options, networks, callback) {
-    if (typeof networks === "function") {
-      callback = networks;
-      networks = Object.keys(options.networks);
-    }
-
+  asURIs: async function(options, networks) {
     const result = {
       uris: {},
       failed: []
     };
 
-    async.each(
-      networks,
-      (network_name, finished) => {
-        const provider = Provider.create(options.networks[network_name]);
-        BlockchainUtils.asURI(provider, (err, uri) => {
-          if (err) {
-            result.failed.push(network_name);
-          } else {
-            result.uris[network_name] = uri;
-          }
-          finished();
-        });
-      },
-      error => {
-        if (error) return callback(error);
-        callback(null, result);
+    for (const networkName of networks) {
+      const provider = Provider.create(options.networks[networkName]);
+      try {
+        const uri = await BlockchainUtils.asURI(provider);
+        result.uris[networkName] = uri;
+      } catch (error) {
+        result.failed.push(networkName);
       }
-    );
+    }
+
+    return result;
   },
 
-  matchesNetwork: async function(network_id, network_options, callback) {
+  matchesNetwork: async function(network_id, network_options) {
     const provider = Provider.create(network_options);
 
     const first = network_id + "";
     const second = network_options.network_id + "";
 
-    if (first === second) return callback(null, true);
+    if (first === second) return true;
 
     const isFirstANumber = isNaN(parseInt(network_id)) === false;
     const isSecondANumber =
       isNaN(parseInt(network_options.network_id)) === false;
 
     // If both network ids are numbers, then they don't match, and we should quit.
-    if (isFirstANumber && isSecondANumber) return callback(null, false);
+    if (isFirstANumber && isSecondANumber) return false;
 
     const interfaceAdapter = createInterfaceAdapter({
       provider,
       networkType: network_options.type
     });
 
-    try {
-      const currentNetworkID = await interfaceAdapter.getNetworkId();
-      if (first === currentNetworkID) return callback(null, true);
-      if (isFirstANumber === false)
-        BlockchainUtils.matches(first, provider, callback);
-      else {
-        // Nothing else to compare.
-        return callback(null, false);
-      }
-    } catch (error) {
-      return callback(error);
+    const currentNetworkID = await interfaceAdapter.getNetworkId();
+    if (first === currentNetworkID) return true;
+    if (isFirstANumber === false)
+      await BlockchainUtils.matches(first, provider);
+    else {
+      // Nothing else to compare.
+      return false;
     }
   }
 };

@@ -38,11 +38,7 @@ class CLIDebugger {
     let artifacts = await DebugUtils.gatherArtifacts(config);
     let shimmedCompilations = Codec.Compilations.Utils.shimArtifacts(artifacts);
     //if they were compiled simultaneously, yay, we can use it!
-    if (
-      shimmedCompilations.every(
-        compilation => !compilation.unreliableSourceOrder
-      )
-    ) {
+    if (shimmedCompilations.every(DebugUtils.isUsableCompilation)) {
       return shimmedCompilations;
     }
     //if not, we have to recompile
@@ -79,16 +75,14 @@ class CLIDebugger {
             compilations
           });
 
-    const session = bugger.connect();
-
     // check for error
-    if (session.view(Debugger.selectors.session.status.isError)) {
+    if (bugger.view(Debugger.selectors.session.status.isError)) {
       startSpinner.fail();
     } else {
       startSpinner.succeed();
     }
 
-    return session;
+    return bugger;
   }
 
   async buildInterpreter(session, txHash) {

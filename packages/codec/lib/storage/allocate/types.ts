@@ -40,5 +40,8 @@ export interface StateVariableAllocation {
   definition: Ast.AstNode;
   definedIn: Ast.AstNode;
   compilationId: string;
-  pointer: Pointer.StoragePointer | Pointer.ConstantDefinitionPointer;
+  pointer:
+    | Pointer.StoragePointer
+    | Pointer.ConstantDefinitionPointer
+    | Pointer.CodeFormPointer;
 }

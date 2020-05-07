@@ -70,7 +70,8 @@ function debuggerContextToDecoderContext(context) {
     isConstructor,
     abi,
     payable,
-    compiler
+    compiler,
+    compilationId
   } = context;
   return {
     context: contextHash,
@@ -81,7 +82,8 @@ function debuggerContextToDecoderContext(context) {
     isConstructor,
     abi: Codec.AbiData.Utils.computeSelectors(abi),
     payable,
-    compiler
+    compiler,
+    compilationId
   };
 }
 
@@ -348,22 +350,38 @@ const data = createSelectorTree({
       [
         "/info/userDefinedTypes",
         "/views/scopes/inlined",
-        solidity.info.sources
+        solidity.info.sources,
+        evm.info.contexts
       ],
-      (userDefinedTypes, scopes, sources) =>
+      (userDefinedTypes, scopes, sources, contexts) =>
         Object.values(userDefinedTypes)
           .filter(
             ({ compilationId, id }) =>
               scopes[compilationId][id].definition.nodeType ===
               "ContractDefinition"
           )
-          .map(({ compilationId, id }) => ({
-            contractNode: scopes[compilationId][id].definition,
-            compilationId,
-            compiler:
-              sources[compilationId].byId[scopes[compilationId][id].sourceId]
-                .compiler
-          }))
+          .map(({ compilationId, id }) => {
+            debug("id: %O", id);
+            debug("compilationId: %O", compilationId);
+            let deployedContext = Object.values(contexts).find(
+              context =>
+                !context.isConstructor &&
+                context.compilationId === compilationId &&
+                context.contractId === id
+            );
+            let immutableReferences = deployedContext
+              ? deployedContext.immutableReferences
+              : undefined;
+            return {
+              contractNode: scopes[compilationId][id].definition,
+              compilationId,
+              immutableReferences,
+              //we don't just use deployedContext because it might not exist!
+              compiler:
+                sources[compilationId].byId[scopes[compilationId][id].sourceId]
+                  .compiler
+            };
+          })
     ),
 
     /*
@@ -547,6 +565,13 @@ const data = createSelectorTree({
       ),
 
       /**
+       * data.current.state.code
+       */
+      code: createLeaf([evm.current.context], ({ binary }) =>
+        Codec.Conversion.toBytes(binary)
+      ),
+
+      /**
        * data.current.state.calldata
        */
       calldata: createLeaf(
@@ -656,25 +681,78 @@ const data = createSelectorTree({
        * format (more convenient for debugger) where members are stored by ID
        * in an object instead of by index in an array; also only holds things
        * from the current compilation
+       * ALSO: if we're in a constructor, replaces all code pointers by appropriate
+       * memory pointers :)
        */
       state: createLeaf(
-        ["/info/allocations/state", "../compilationId"],
-        (allocations, compilationId) =>
-          Object.assign(
+        [
+          "/info/allocations/state",
+          "/views/userDefinedTypes",
+          "../compilationId",
+          evm.current.context
+        ],
+        (
+          allAllocations,
+          userDefinedTypes,
+          compilationId,
+          { isConstructor }
+        ) => {
+          const allocations = compilationId
+            ? allAllocations[compilationId]
+            : {};
+          //several-deep clone
+          let transformedAllocations = Object.assign(
             {},
-            ...Object.entries(
-              compilationId ? allocations[compilationId] : {}
-            ).map(([id, allocation]) => ({
+            ...Object.entries(allocations).map(([id, allocation]) => ({
               [id]: {
-                members: Object.assign(
-                  {},
-                  ...allocation.members.map(memberAllocation => ({
-                    [memberAllocation.definition.id]: memberAllocation
-                  }))
-                )
+                members: allocation.members.map(member => ({ ...member }))
               }
             }))
-          )
+          );
+          //if we're not in a constructor, we don't need to actually transform it.
+          //if we are...
+          if (isConstructor) {
+            //...we must transform code pointers!
+            for (const id in transformedAllocations) {
+              const allocation = transformedAllocations[id];
+              //here, the magic number 4 is the number of reserved memory slots
+              //at the start of memory.  immutables go immediately afterward.
+              let start = 4 * Codec.Evm.Utils.WORD_SIZE;
+              for (const member of allocation.members) {
+                //if it's not a code pointer, leave it alone
+                if (
+                  member.pointer.location === "code" ||
+                  member.pointer.location === "nowhere"
+                ) {
+                  //if it is, transform it
+                  member.pointer = {
+                    location: "memory",
+                    start,
+                    length: Codec.Evm.Utils.WORD_SIZE
+                  };
+                  start += Codec.Evm.Utils.WORD_SIZE;
+                }
+              }
+            }
+          }
+          //having now transformed code pointers if needed,
+          //we now index by ID
+          return Object.assign(
+            {},
+            ...Object.entries(transformedAllocations).map(
+              ([id, allocation]) => ({
+                [id]: {
+                  members: Object.assign(
+                    {},
+                    ...allocation.members.map(memberAllocation => ({
+                      [memberAllocation.definition.id]: memberAllocation
+                    }))
+                  )
+                }
+              })
+            )
+          );
+        }
       )
     },
 
@@ -726,6 +804,17 @@ const data = createSelectorTree({
     inModifier: createLeaf(
       ["./function"],
       node => node && node.nodeType === "ModifierDefinition"
+    ),
+
+    /*
+     * data.current.inFunctionOrModifier
+     */
+    inFunctionOrModifier: createLeaf(
+      ["./function"],
+      node =>
+        node &&
+        (node.nodeType === "FunctionDefinition" ||
+          node.nodeType === "ModifierDefinition")
     ),
 
     /**

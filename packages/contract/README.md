@@ -303,7 +303,7 @@ However, we can *get* the value using `getValue()`, using `.call()`. Calls are a
 
 ```javascript
 instance.getValue.call().then(function(val) {
-  // val reprsents the `value` storage object in the solidity contract
+  // val represents the `value` storage object in the solidity contract
   // since the contract returns that value.
 });
 ```

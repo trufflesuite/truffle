@@ -11,13 +11,6 @@ describe("Genesis time config for truffle test, option undefined [ @standalone ]
   const logger = new MemoryLogger();
   let config;
 
-  function processErr(err, output) {
-    if (err) {
-      console.log(output);
-      throw new Error(err);
-    }
-  }
-
   before("set up the server", function(done) {
     Server.start(done);
   });
@@ -47,14 +40,11 @@ describe("Genesis time config for truffle test, option undefined [ @standalone ]
       await fs.ensureDir(config.test_directory);
     });
 
-    it("will run test and not whine about invalid date", function(done) {
+    it("will run test and not whine about invalid date", async function() {
       this.timeout(90000);
-      CommandRunner.run("test", config, function(err) {
-        const output = logger.contents();
-        processErr(err, output);
-        assert(!output.includes("Invalid Date passed to genesis-time"));
-        done();
-      });
+      await CommandRunner.run("test", config);
+      const output = logger.contents();
+      assert(!output.includes("Invalid Date passed to genesis-time"));
     });
   });
 });

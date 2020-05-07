@@ -2,17 +2,33 @@ import debugModule from "debug";
 const debug = debugModule("debugger:controller:selectors"); //eslint-disable-line no-unused-vars
 
 import { createSelectorTree, createLeaf } from "reselect-tree";
+import { isSkippedNodeType } from "lib/helpers";
 
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 import trace from "lib/trace/selectors";
 
-import { anyNonSkippedInRange } from "lib/ast/map";
-
 /**
  * @private
  */
 const identity = x => x;
+
+function anyNonSkippedInRange(
+  findOverlappingRange,
+  node,
+  sourceStart,
+  sourceLength
+) {
+  let sourceEnd = sourceStart + sourceLength;
+  return findOverlappingRange(sourceStart, sourceLength).some(
+    ({ range, node }) =>
+      sourceStart <= range[0] && //we want to go by starting line
+      range[0] < sourceEnd &&
+      !isSkippedNodeType(node)
+    //NOTE: this doesn't actually catch everything skipped!  But doing better
+    //is hard
+  );
+}
 
 /**
  * controller
@@ -111,45 +127,55 @@ const controller = createSelectorTree({
      * actually somewhere to break.  if no such line exists beyond that point, it
      * returns null instead.
      */
-    resolver: createLeaf([solidity.info.sources], sources => breakpoint => {
-      let adjustedBreakpoint;
-      if (breakpoint.node === undefined) {
-        let line = breakpoint.line;
-        debug("breakpoint: %O", breakpoint);
-        debug("sources: %o", sources);
-        let { source, ast } = sources[breakpoint.compilationId].byId[
-          breakpoint.sourceId
-        ];
-        let lineLengths = source.split("\n").map(line => line.length);
-        //why does neither JS nor lodash have a scan function like Haskell??
-        //guess we'll have to do our scan manually
-        let lineStarts = [0];
-        for (let length of lineLengths) {
-          lineStarts.push(lineStarts[lineStarts.length - 1] + length + 1);
-          //+1 for the /n itself
-        }
-        debug(
-          "line: %s",
-          source.slice(lineStarts[line], lineStarts[line] + lineLengths[line])
-        );
-        while (
-          line < lineLengths.length &&
-          !anyNonSkippedInRange(ast, lineStarts[line], lineLengths[line])
-        ) {
-          debug("incrementing");
-          line++;
-        }
-        if (line >= lineLengths.length) {
-          adjustedBreakpoint = null;
+    resolver: createLeaf(
+      [solidity.info.sources, solidity.views.findOverlappingRange],
+      (sources, functions) => breakpoint => {
+        let adjustedBreakpoint;
+        if (breakpoint.node === undefined) {
+          let line = breakpoint.line;
+          debug("breakpoint: %O", breakpoint);
+          debug("sources: %o", sources);
+          let { source, ast } = sources[breakpoint.compilationId].byId[
+            breakpoint.sourceId
+          ];
+          let findOverlappingRange =
+            functions[breakpoint.compilationId][breakpoint.sourceId];
+          let lineLengths = source.split("\n").map(line => line.length);
+          //why does neither JS nor lodash have a scan function like Haskell??
+          //guess we'll have to do our scan manually
+          let lineStarts = [0];
+          for (let length of lineLengths) {
+            lineStarts.push(lineStarts[lineStarts.length - 1] + length + 1);
+            //+1 for the /n itself
+          }
+          debug(
+            "line: %s",
+            source.slice(lineStarts[line], lineStarts[line] + lineLengths[line])
+          );
+          while (
+            line < lineLengths.length &&
+            !anyNonSkippedInRange(
+              findOverlappingRange,
+              ast,
+              lineStarts[line],
+              lineLengths[line]
+            )
+          ) {
+            debug("incrementing");
+            line++;
+          }
+          if (line >= lineLengths.length) {
+            adjustedBreakpoint = null;
+          } else {
+            adjustedBreakpoint = { ...breakpoint, line };
+          }
         } else {
-          adjustedBreakpoint = { ...breakpoint, line };
+          debug("node-based breakpoint");
+          adjustedBreakpoint = breakpoint;
         }
-      } else {
-        debug("node-based breakpoint");
-        adjustedBreakpoint = breakpoint;
+        return adjustedBreakpoint;
       }
-      return adjustedBreakpoint;
-    })
+    )
   },
 
   /**

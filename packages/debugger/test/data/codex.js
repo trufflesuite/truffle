@@ -115,14 +115,12 @@ describe("Codex", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
     debug("starting stepping");
-    await session.continueUntilBreakpoint(); //run till end
+    await bugger.continueUntilBreakpoint(); //run till end
     debug("made it to end of transaction");
 
     const surface = Codec.Format.Utils.Inspect.nativize(
-      await session.variable("surface")
+      await bugger.variable("surface")
     );
 
     assert.equal(surface["ping"], 1);
@@ -136,11 +134,9 @@ describe("Codex", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
+    await bugger.continueUntilBreakpoint(); //run till end
 
-    await session.continueUntilBreakpoint(); //run till end
-
-    const x = Codec.Format.Utils.Inspect.nativize(await session.variable("x"));
+    const x = Codec.Format.Utils.Inspect.nativize(await bugger.variable("x"));
 
     assert.equal(x, 1);
   });
@@ -153,11 +149,9 @@ describe("Codex", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
+    await bugger.continueUntilBreakpoint(); //run till end
 
-    await session.continueUntilBreakpoint(); //run till end
-
-    const x = Codec.Format.Utils.Inspect.nativize(await session.variable("x"));
+    const x = Codec.Format.Utils.Inspect.nativize(await bugger.variable("x"));
 
     assert.equal(x, 1);
   });

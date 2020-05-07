@@ -337,21 +337,19 @@ describe("Further Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("break here", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -379,21 +377,19 @@ describe("Further Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("break here", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
     debug("variables %O", variables);
 
@@ -423,21 +419,19 @@ describe("Further Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("break here", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -462,13 +456,11 @@ describe("Further Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
     //we're only testing storage so run till end
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -488,15 +480,15 @@ describe("Further Decoding", function() {
     assert.deepInclude(variables, expectedResult);
 
     //let's get the ID of the current contract to use as an index
-    let contractId = session.view(evm.current.context).contractId;
+    let contractId = bugger.view(evm.current.context).contractId;
 
     //get offsets of top-level variables for this contract
     //converting to numbers for convenience
     const startingOffsets = Object.values(
-      session.view(data.current.allocations.state)[contractId].members
+      bugger.view(data.current.allocations.state)[contractId].members
     ).map(({ pointer }) => pointer.range.from.slot.offset);
 
-    const mappingKeys = session.view(data.views.mappingKeys);
+    const mappingKeys = bugger.view(data.views.mappingKeys);
     for (let slot of mappingKeys) {
       while (slot.path !== undefined) {
         slot = slot.path;
@@ -523,12 +515,10 @@ describe("Further Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    await session.continueUntilBreakpoint(); //run till end
+    await bugger.continueUntilBreakpoint(); //run till end
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
     debug("variables %O", variables);
 
@@ -548,12 +538,10 @@ describe("Further Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    await session.continueUntilBreakpoint(); //run till end
+    await bugger.continueUntilBreakpoint(); //run till end
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
     debug("variables %O", variables);
 
@@ -574,21 +562,19 @@ describe("Further Decoding", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK HERE", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const circular = Codec.Format.Utils.Inspect.nativize(
-      await session.variable("circular")
+      await bugger.variable("circular")
     );
 
     assert.strictEqual(circular.x, 3);
@@ -605,21 +591,19 @@ describe("Further Decoding", function() {
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-      let session = bugger.connect();
-
-      let sourceId = session.view(solidity.current.source).id;
-      let compilationId = session.view(solidity.current.source).compilationId;
-      let source = session.view(solidity.current.source).source;
-      await session.addBreakpoint({
+      let sourceId = bugger.view(solidity.current.source).id;
+      let compilationId = bugger.view(solidity.current.source).compilationId;
+      let source = bugger.view(solidity.current.source).source;
+      await bugger.addBreakpoint({
         sourceId,
         compilationId,
         line: lineOf("BREAK UNSIGNED", source)
       });
 
-      await session.continueUntilBreakpoint();
+      await bugger.continueUntilBreakpoint();
 
       const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-        await session.variables()
+        await bugger.variables()
       );
       debug("variables %O", variables);
 
@@ -639,21 +623,19 @@ describe("Further Decoding", function() {
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-      let session = bugger.connect();
-
-      let sourceId = session.view(solidity.current.source).id;
-      let compilationId = session.view(solidity.current.source).compilationId;
-      let source = session.view(solidity.current.source).source;
-      await session.addBreakpoint({
+      let sourceId = bugger.view(solidity.current.source).id;
+      let compilationId = bugger.view(solidity.current.source).compilationId;
+      let source = bugger.view(solidity.current.source).source;
+      await bugger.addBreakpoint({
         sourceId,
         compilationId,
         line: lineOf("BREAK SIGNED", source)
       });
 
-      await session.continueUntilBreakpoint();
+      await bugger.continueUntilBreakpoint();
 
       const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-        await session.variables()
+        await bugger.variables()
       );
       debug("variables %O", variables);
 
@@ -673,21 +655,19 @@ describe("Further Decoding", function() {
 
       let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-      let session = bugger.connect();
-
-      let sourceId = session.view(solidity.current.source).id;
-      let compilationId = session.view(solidity.current.source).compilationId;
-      let source = session.view(solidity.current.source).source;
-      await session.addBreakpoint({
+      let sourceId = bugger.view(solidity.current.source).id;
+      let compilationId = bugger.view(solidity.current.source).compilationId;
+      let source = bugger.view(solidity.current.source).source;
+      await bugger.addBreakpoint({
         sourceId,
         compilationId,
         line: lineOf("BREAK RAW", source)
       });
 
-      await session.continueUntilBreakpoint();
+      await bugger.continueUntilBreakpoint();
 
       const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-        await session.variables()
+        await bugger.variables()
       );
       debug("variables %O", variables);
 
