@@ -1,10 +1,8 @@
 var assert = require("chai").assert;
 var Box = require("@truffle/box");
-var fs = require("fs-extra");
 var glob = require("glob");
 var path = require("path");
 var fse = require("fs-extra");
-var async = require("async");
 var Resolver = require("@truffle/resolver");
 var Artifactor = require("@truffle/artifactor");
 var Contracts = require("@truffle/workflow-compile");
@@ -29,45 +27,36 @@ describe("NPM integration", function() {
     };
     config.network = "development";
 
-    fs.writeFileSync(
+    fse.writeFileSync(
       path.join(config.contracts_directory, "Parent.sol"),
       parentContractSource,
       { encoding: "utf8" }
     );
   });
 
-  before("Create a fake npm source", function(done) {
-    var fake_source_path = path.join(
+  before("Create a fake npm source", () => {
+    const fakeSourcePath = path.join(
       config.working_directory,
       "node_modules",
       "fake_source",
       "contracts"
     );
 
-    async.series(
-      [
-        fse.ensureDir.bind(fse.ensureDir, fake_source_path),
-        fs.writeFile.bind(
-          fs,
-          path.join(fake_source_path, "Module.sol"),
-          moduleSource,
-          { encoding: "utf8" }
-        ),
-        fs.writeFile.bind(
-          fs,
-          path.join(fake_source_path, "ModuleDependency.sol"),
-          moduleDependencySource,
-          { encoding: "utf8" }
-        )
-      ],
-      done
+    fse.ensureDirSync(fakeSourcePath);
+    fse.writeFileSync(path.join(fakeSourcePath, "Module.sol"), moduleSource, {
+      encoding: "utf8"
+    });
+    fse.writeFileSync(
+      path.join(fakeSourcePath, "ModuleDependency.sol"),
+      moduleDependencySource,
+      { encoding: "utf8" }
     );
   });
 
   after("Cleanup tmp files", function(done) {
     glob("tmp-*", (err, files) => {
       if (err) done(err);
-      files.forEach(file => fs.removeSync(file));
+      files.forEach(file => fse.removeSync(file));
       done();
     });
   });
