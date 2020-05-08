@@ -27,11 +27,13 @@ const command = {
       default: false
     },
     "bail": {
+      alias: "b",
       describe: "Bail after first test failure",
       type: "boolean",
       default: false
     },
     "stacktrace": {
+      alias: "t",
       describe: "Produce Solidity stacktraces",
       type: "boolean",
       default: false
@@ -96,14 +98,14 @@ const command = {
       },
       {
         option: "--bail",
-        description: "Bail after first test failure"
+        description: "Bail after first test failure.  Alias: -b"
       },
       {
         option: "--stacktrace",
         description:
           "Allows for mixed JS/Solidity stacktraces when a Truffle Contract transaction " +
           "or deployment\n                    reverts.  Does not apply to calls or gas estimates.  " +
-          "Implies --compile-all.  Experimental."
+          "Implies --compile-all.  Experimental.  Alias: -t"
       },
       {
         option: "--stacktrace-extra",
