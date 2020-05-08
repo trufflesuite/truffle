@@ -204,8 +204,10 @@ const Test = {
       quiet: config.runnerOutputOnly || config.quiet,
       quietWrite: true
     });
-    if (config.stacktraceExtra) {
-      let versionString = ((compileConfig.compilers || {}).solc || {}).version;
+    if (config.compileAllDebug) {
+      let versionString =
+        ((compileConfig.compilers || {}).solc || {}).version ||
+        ((compileConfig.compilers || {}).solc || {}).docker;
       //note: I'm relying here on the fact that the current
       //default version, 0.5.16, is <0.6.3
       //the following line works with prereleases
@@ -214,7 +216,7 @@ const Test = {
       });
       //the following line doesn't, despite the flag, but does work with version ranges
       const intersects =
-        versionString !== undefined &&
+        semver.validRange(versionString) &&
         semver.intersects(versionString, ">=0.6.3", {
           includePrerelease: true
         }); //intersects will throw if given undefined so must ward against
@@ -232,7 +234,7 @@ const Test = {
         });
       } else {
         config.logger.log(
-          "Warning: --stacktrace-extra acts like --stacktrace on Solidity <0.6.3"
+          "Warning: Extra revert strings unavailable on Solidity <0.6.3"
         );
       }
     }

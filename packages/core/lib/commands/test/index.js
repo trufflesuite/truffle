@@ -7,6 +7,11 @@ const command = {
       type: "boolean",
       default: false
     },
+    "compile-all-debug": {
+      describe: "Compile in debug mode",
+      type: "boolean",
+      default: false
+    },
     "debug": {
       describe: "Enable in-test debugging",
       type: "boolean",
@@ -39,7 +44,7 @@ const command = {
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail] [--stacktrace[-extra]]",
+      "truffle test [<test_file>] [--compile-all[-debug]] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail] [--stacktrace[-extra]]",
     options: [
       {
         option: "<test_file>",
@@ -52,6 +57,12 @@ const command = {
         description:
           "Compile all contracts instead of intelligently choosing which contracts need " +
           "to be compiled."
+      },
+      {
+        option: "--compile-all-debug",
+        description:
+          "Compile all contracts and do so in debug mode for extra revert info.  May " +
+          "cause errors on large\n                    contracts."
       },
       {
         option: "--network <name>",
@@ -96,9 +107,7 @@ const command = {
       },
       {
         option: "--stacktrace-extra",
-        description:
-          "Like --stacktrace, but compiles contracts in debug mode for additional revert info.  " +
-          "May cause\n                    errors on large contracts."
+        description: "Shortcut for --stacktrace --compile-all-debug."
       }
     ]
   },
@@ -126,9 +135,10 @@ const command = {
 
     if (config.stacktraceExtra) {
       config.stacktrace = true;
+      config.compileAllDebug = true;
     }
     // enables in-test debug() interrupt, or stacktraces, forcing compileAll
-    if (config.debug || config.stacktrace) {
+    if (config.debug || config.stacktrace || config.compileAllDebug) {
       config.compileAll = true;
     }
 
