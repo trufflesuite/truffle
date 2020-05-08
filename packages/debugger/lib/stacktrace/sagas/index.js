@@ -27,7 +27,7 @@ function* stacktraceSaga() {
   let positionUpdated = false;
   //different possible outcomes:
   //first: are we returning?
-  if (yield select(stacktrace.current.willReturnOrFail)) {
+  if (yield select(stacktrace.current.willReturn)) {
     const status = yield select(stacktrace.current.returnStatus);
     debug("returning!");
     yield put(actions.externalReturn(lastLocation, status, currentLocation));
