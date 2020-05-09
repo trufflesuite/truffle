@@ -176,25 +176,9 @@ let stacktrace = createSelectorTree({
     willReturn: createLeaf([solidity.current.willReturn], identity),
 
     /**
-     * stacktrace.current.willFail
-     */
-    willFail: createLeaf([solidity.current.willFail], identity),
-
-    /**
-     * stacktrace.current.willReturnOrFail
-     */
-    willReturnOrFail: createLeaf(
-      ["./willReturn", "./willFail"],
-      (willReturn, willFail) => willReturn || willFail
-    ),
-
-    /**
      * stacktrace.current.returnStatus
      */
-    returnStatus: createLeaf(
-      ["./willReturn", "./willFail"],
-      (returns, fails) => (returns ? true : fails ? false : null)
-    ),
+    returnStatus: createLeaf([evm.current.step.returnStatus], identity),
 
     /**
      * stacktrace.current.revertString
