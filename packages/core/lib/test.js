@@ -234,7 +234,9 @@ const Test = {
         });
       } else {
         config.logger.log(
-          "Warning: Extra revert strings unavailable on Solidity <0.6.3"
+          `\n${colors.bold(
+            "Warning:"
+          )} Extra revert string info requires Solidity v0.6.3 or higher. For more\n  information, see release notes <https://github.com/ethereum/solidity/releases/tag/v0.6.3>`
         );
       }
     }
