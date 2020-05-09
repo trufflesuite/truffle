@@ -5,11 +5,20 @@ const command = {
   builder: {
     _: {
       type: "string"
+    },
+    network: {
+      describe: "Network to connect to",
+      type: "string",
+      default: "development"
     }
   },
   help: {
-    usage: "truffle debug [<transaction_hash>]",
+    usage: "truffle debug [--network <network>] [<transaction_hash>]",
     options: [
+      {
+        option: "--network",
+        description: "Network to connect to.  Default: development"
+      },
       {
         option: "<transaction_hash>",
         description: "Transaction ID to use for debugging."
