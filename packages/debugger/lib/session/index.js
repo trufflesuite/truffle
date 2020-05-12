@@ -386,6 +386,15 @@ export default class Session {
     return decoded;
   }
 
+  async returnValue() {
+    if (!this.view(session.status.loaded)) {
+      //note: will also return null if not on a trace step that
+      //is returning due to how decodeReturnValue works
+      return null;
+    }
+    return await this._runSaga(dataSagas.decodeReturnValue);
+  }
+
   callstack() {
     if (!this.view(session.status.loaded)) {
       return null;

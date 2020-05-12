@@ -369,6 +369,12 @@ const data = createSelectorTree({
                 context.compilationId === compilationId &&
                 context.contractId === id
             );
+            let constructorContext = Object.values(contexts).find(
+              context =>
+                context.isConstructor &&
+                context.compilationId === compilationId &&
+                context.contractId === id
+            );
             let immutableReferences = deployedContext
               ? deployedContext.immutableReferences
               : undefined;
@@ -376,10 +382,14 @@ const data = createSelectorTree({
               contractNode: scopes[compilationId][id].definition,
               compilationId,
               immutableReferences,
-              //we don't just use deployedContext because it might not exist!
+              //we don't just use deployedContext to get compiler because it might not exist!
               compiler:
                 sources[compilationId].byId[scopes[compilationId][id].sourceId]
-                  .compiler
+                  .compiler,
+              //the following three are only needed for decoding return values
+              abi: (deployedContext || {}).abi,
+              deployedContext,
+              constructorContext
             };
           })
     ),
@@ -496,7 +506,12 @@ const data = createSelectorTree({
       /*
        * data.info.allocations.abi
        */
-      abi: createLeaf(["/state"], state => state.info.allocations.abi)
+      abi: createLeaf(["/state"], state => state.info.allocations.abi),
+
+      /*
+       * data.info.allocations.calldata
+       */
+      calldata: createLeaf(["/state"], state => state.info.allocations.calldata)
     },
 
     /**
@@ -837,7 +852,7 @@ const data = createSelectorTree({
 
     address: createLeaf([evm.current.call], call => call.storageAddress),
 
-    /*
+    /**
      * data.current.functionsByProgramCounter
      */
     functionsByProgramCounter: createLeaf(
@@ -845,7 +860,7 @@ const data = createSelectorTree({
       functions => functions
     ),
 
-    /*
+    /**
      * data.current.context
      */
     context: createLeaf([evm.current.context], debuggerContextToDecoderContext),
@@ -1177,7 +1192,46 @@ const data = createSelectorTree({
             )
           )
       )
-    }
+    },
+
+    /**
+     * data.current.returnStatus
+     */
+    returnStatus: createLeaf(
+      [evm.current.step.returnStatus],
+      status => (status === null ? undefined : status) //convert null to undefined to be safe
+    ),
+
+    /**
+     * data.current.returnAllocation
+     */
+    returnAllocation: createLeaf(
+      [evm.current.call, "/current/context", "/info/allocations/calldata"],
+      (
+        { data: calldata },
+        { context, isConstructor },
+        { constructorAllocations, functionAllocations }
+      ) => {
+        if (isConstructor) {
+          //we're in a constructor call
+          let allocation = constructorAllocations[context];
+          if (!allocation) {
+            return null;
+          }
+          return allocation.output;
+        } else {
+          //usual case
+          let selector = calldata.slice(0, 2 + 4 * 2); //extract first 4 bytes of hex string
+          debug("selector: %s", selector);
+          debug("bySelector: %o", functionAllocations[context]);
+          let allocation = (functionAllocations[context] || {})[selector];
+          if (!allocation) {
+            return null;
+          }
+          return allocation.output;
+        }
+      }
+    )
   },
 
   /**
@@ -1197,6 +1251,16 @@ const data = createSelectorTree({
         [evm.next.state.stack],
 
         words => (words || []).map(word => Codec.Conversion.toBytes(word))
+      ),
+
+      /**
+       * data.next.state.returndata
+       * NOTE: this is only for use by returnValue(); this is *not*
+       * an accurate reflection of the current contents of returndata!
+       * we don't track that at the moment
+       */
+      returndata: createLeaf([evm.current.step.returnValue], data =>
+        Codec.Conversion.toBytes(data)
       )
     },
 
