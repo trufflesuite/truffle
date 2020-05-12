@@ -74,16 +74,18 @@ const Debugger = {
    * @example
    * Debugger.selectors.trace.steps
    */
-  selectors: createNestedSelector({
-    ast: astSelector,
-    data: dataSelector,
-    trace: traceSelector,
-    evm: evmSelector,
-    solidity: soliditySelector,
-    stacktrace: stacktraceSelector,
-    session: sessionSelector,
-    controller: controllerSelector
-  })
+  get selectors() {
+    return createNestedSelector({
+      ast: astSelector,
+      data: dataSelector,
+      trace: traceSelector,
+      evm: evmSelector,
+      solidity: soliditySelector,
+      stacktrace: stacktraceSelector,
+      session: sessionSelector,
+      controller: controllerSelector
+    });
+  }
 };
 
 export default Debugger;
