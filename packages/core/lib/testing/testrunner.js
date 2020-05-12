@@ -104,11 +104,8 @@ TestRunner.prototype.endTest = async function(mocha) {
     return;
   }
 
-  function indent(input, indentation, initialPrefix = "", delimiter = "\n") {
-    // Note: delimiter is used to `split` only when input is a string.
-    // However, It is always used to `join`.
-    const unindented =
-      typeof input === "string" ? input.split(delimiter) : input;
+  function indent(input, indentation, initialPrefix = "") {
+    const unindented = typeof input === "string" ? input.split("\n") : input;
     return unindented
       .map(
         (line, index) =>
@@ -116,7 +113,7 @@ TestRunner.prototype.endTest = async function(mocha) {
             ? initialPrefix + " ".repeat(indentation - initialPrefix) + line
             : " ".repeat(indentation) + line
       )
-      .join(delimiter);
+      .join("\n");
   }
 
   function printEvent(decoding, indentation = 0, initialPrefix = "") {
@@ -141,11 +138,15 @@ TestRunner.prototype.endTest = async function(mocha) {
       let typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
         value.type
       )})`;
-      return namePrefix + indexedPrefix + displayValue + typeString;
+      return namePrefix + indexedPrefix + displayValue + typeString + ",";
     });
+    {
+      const len = eventArgs.length - 1;
+      eventArgs[len] = eventArgs[len].slice(0, -1); // remove the final comma
+    }
     if (decoding.arguments.length > 0) {
       return indent(
-        `${fullEventName}(\n${indent(eventArgs, 2, "", ",\n")}\n)`,
+        `${fullEventName}(\n${indent(eventArgs, 2)}\n)`,
         indentation,
         initialPrefix
       );
