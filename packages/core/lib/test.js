@@ -69,7 +69,7 @@ const Test = {
       }
     };
 
-    const mocha = this.createMocha(config);
+    const solidityMocha = this.createMocha(config);
 
     const jsTests = config.test_files.filter(file => {
       return path.extname(file) !== ".sol";
@@ -77,17 +77,6 @@ const Test = {
 
     const solTests = config.test_files.filter(file => {
       return path.extname(file) === ".sol";
-    });
-
-    // Add Javascript tests because there's nothing we need to do with them.
-    // Solidity tests will be handled later.
-    jsTests.forEach(file => {
-      // There's an idiosyncracy in Mocha where the same file can't be run twice
-      // unless we delete the `require` cache.
-      // https://github.com/mochajs/mocha/issues/995
-      delete originalrequire.cache[file];
-
-      mocha.addFile(file);
     });
 
     const accounts = await this.getAccounts(interfaceAdapter);
@@ -117,7 +106,7 @@ const Test = {
     await this.performInitialDeploy(config, testResolver);
 
     await this.defineSolidityTests(
-      mocha,
+      solidityMocha,
       testContracts,
       compilations.solc.sourceIndexes,
       runner
@@ -150,17 +139,44 @@ const Test = {
       bugger
     });
 
-    // Finally, run mocha.
     process.on("unhandledRejection", reason => {
       throw reason;
     });
 
-    return new Promise(resolve => {
-      this.mochaRunner = mocha.run(failures => {
-        config.logger.warn = warn;
-        resolve(failures);
+    // Run Mocha.
+    // Returns number of failures as result of a Mocha run.
+    const runMocha = async mochaToRun => {
+      // First, initialize the runner, which may reset the state
+      // by using EVM_SNAPSHOT/EVM_REVERT, or redeploying
+      // contracts if snapshots are unavailable
+      await runner.initialize();
+
+      // Set the mocha runner and run, returning the number of failures.
+      return await new Promise(resolve => {
+        this.mochaRunner = mochaToRun.run(failures => {
+          config.logger.warn = warn;
+          resolve(failures);
+        });
       });
-    });
+    };
+
+    // We run each test in its own Mocha instance to ensure runs
+    // are isolated between test suites.
+
+    // First, run solidity tests, if any.
+    let solidityFailures = await runMocha(solidityMocha);
+    let jsFailures = 0;
+
+    // Run each js test file
+    for (const jsTestFile of jsTests) {
+      const mocha = this.createMocha(config);
+      mocha.addFile(jsTestFile);
+      jsFailures += await runMocha(mocha);
+      delete originalrequire.cache[jsTestFile];
+    }
+
+    // Return the total number of test failures.
+    return solidityFailures + jsFailures;
   },
 
   createMocha: function(config) {
@@ -317,7 +333,6 @@ const Test = {
 
       before("prepare suite", async function() {
         this.timeout(runner.BEFORE_TIMEOUT);
-        await runner.initialize();
       });
 
       beforeEach("before test", async function() {
