@@ -387,9 +387,10 @@ export default class Session {
   }
 
   async returnValue() {
-    if (!this.view(session.status.loaded)) {
-      //note: will also return null if not on a trace step that
-      //is returning due to how decodeReturnValue works
+    if (
+      !this.view(session.status.loaded) ||
+      !this.view(evm.current.step.isHalting)
+    ) {
       return null;
     }
     return await this._runSaga(dataSagas.decodeReturnValue);
