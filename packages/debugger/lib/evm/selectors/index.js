@@ -208,7 +208,13 @@ function createStepSelectors(step, state = null) {
           const offset = parseInt(stack[stack.length - 2], 16) * 2;
           const length = parseInt(stack[stack.length - 3], 16) * 2;
 
-          return "0x" + memory.join("").substring(offset, offset + length);
+          return (
+            "0x" +
+            memory
+              .join("")
+              .substring(offset, offset + length)
+              .padEnd(length, "00")
+          );
         }
       ),
 
@@ -234,7 +240,13 @@ function createStepSelectors(step, state = null) {
           const offset = parseInt(stack[stack.length - 4 + argOffset], 16) * 2;
           const length = parseInt(stack[stack.length - 5 + argOffset], 16) * 2;
 
-          return "0x" + memory.join("").substring(offset, offset + length);
+          return (
+            "0x" +
+            memory
+              .join("")
+              .substring(offset, offset + length)
+              .padEnd(length, "00")
+          );
         }
       ),
 
@@ -599,7 +611,13 @@ const evm = createSelectorTree({
           const offset = parseInt(stack[stack.length - 1], 16) * 2;
           const length = parseInt(stack[stack.length - 2], 16) * 2;
 
-          return "0x" + memory.join("").substring(offset, offset + length);
+          return (
+            "0x" +
+            memory
+              .join("")
+              .substring(offset, offset + length)
+              .padEnd(length, "00")
+          );
         }
       )
     },
