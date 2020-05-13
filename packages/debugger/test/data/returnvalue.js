@@ -139,22 +139,6 @@ describe("Return value decoding", function() {
     assert.strictEqual(decoding.address, instance.address);
   });
 
-  it("Decodes constructor selfdestruct", async function() {
-    this.timeout(30000);
-
-    let instance = await abstractions.ReturnValues.new(true); //web3 doesn't cause a problem here, huh
-    let txHash = instance.transactionHash;
-
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
-
-    await bugger.continueUntilBreakpoint(); //run till end
-
-    const decodings = await bugger.returnValue();
-    assert.lengthOf(decodings, 2);
-    assert.strictEqual(decodings[0].kind, "selfdestruct");
-    assert.strictEqual(decodings[1].kind, "unknownbytecode"); //technically empty return could be unknown bytecode :P
-  });
-
   it("Decodes messageless revert", async function() {
     this.timeout(9000);
 
