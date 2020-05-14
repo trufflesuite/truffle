@@ -282,8 +282,15 @@ const Test = {
     global.assert = chai.assert;
     global.expect = chai.expect;
     global.artifacts = {
-      require: import_path => {
-        let contract = testResolver.require(import_path);
+      require: importPath => {
+        let contract = testResolver.require(importPath);
+        //HACK: both of the following should go by means
+        //of the provisioner, but I'm not sure how to make
+        //that work at the moment
+        contract.reloadJson = function() {
+          const reloaded = testResolver.require(importPath);
+          this._json = reloaded._json;
+        };
         if (bugger) {
           contract.debugger = bugger;
         }
