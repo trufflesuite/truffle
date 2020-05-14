@@ -11,6 +11,7 @@ var Deployed = {
 
     var source = "";
     source +=
+      "//SPDX-License-Identifier: MIT\n" +
       "pragma solidity >= 0.5.0 < 0.7.0; \n\n library DeployedAddresses {" +
       "\n";
 
