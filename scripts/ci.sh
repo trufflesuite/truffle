@@ -50,7 +50,7 @@ elif [ "$QUORUM" = true ]; then
   git clone https://github.com/jpmorganchase/quorum-examples
   cd quorum-examples
   docker-compose up -d
-  sleep 60
+  sleep 90
   lerna run --scope truffle test --stream -- --exit
 
 elif [ "$COLONY" = true ]; then
