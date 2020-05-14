@@ -386,6 +386,16 @@ export default class Session {
     return decoded;
   }
 
+  async returnValue() {
+    if (
+      !this.view(session.status.loaded) ||
+      !this.view(evm.current.step.isHalting)
+    ) {
+      return null;
+    }
+    return await this._runSaga(dataSagas.decodeReturnValue);
+  }
+
   callstack() {
     if (!this.view(session.status.loaded)) {
       return null;

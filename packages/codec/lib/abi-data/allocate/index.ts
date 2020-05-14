@@ -759,6 +759,10 @@ function getCalldataAllocationsForContract(
     //(if it doesn't then it will remain as default)
     functionAllocations: {}
   };
+  if (!abi) {
+    //if no ABI, can't do much!
+    return allocations;
+  }
   for (let abiEntry of abi) {
     if (
       AbiDataUtils.abiEntryIsObviouslyIllTyped(abiEntry) ||
