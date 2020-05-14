@@ -27,6 +27,8 @@ describe("migrate with [ @quorum ] interface", () => {
     });
     web3 = new Web3(provider);
     networkId = await web3.eth.net.getId();
+    const accounts = await web3.eth.getAccounts();
+    await web3.eth.personal.unlockAccount(accounts[0], "", 8000);
   });
 
   it("runs migrations (sync & async/await)", async () => {

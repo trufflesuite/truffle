@@ -105,32 +105,26 @@ describe("Deployments", function() {
         .catch(() => null);
     });
 
-    it("Errors with gas limit error if constructor reverts", async function() {
+    it("Errors with always failing transaction error if constructor reverts", async function() {
       try {
         await Example.new(13); // 13 fails a require gate
         assert.fail();
       } catch (e) {
-        const errorCorrect =
-          e.message.includes("gas required exceeds allowance") ||
-          e.message.includes("intrinsic gas too low");
+        const errorCorrect = e.message.includes("always failing transaction");
 
-        assert(errorCorrect, "Expected gas limit error");
+        assert(errorCorrect, "Expected always failing transaction error");
         assert(e.receipt === undefined, "Expected no receipt");
       }
     });
 
-    // This example contains a reason string when run with ganache but no
-    // reason strings when run vs geth.
-    it("Handles absence of reason string gracefully", async function() {
+    it(".new(): revert with reasonstring", async function() {
       try {
         await Example.new(2001); // 2001 fails a require gate
         assert.fail();
       } catch (e) {
-        const errorCorrect =
-          e.message.includes("gas required exceeds allowance") ||
-          e.message.includes("intrinsic gas too low");
+        const errorCorrect = e.message.includes("reasonstring");
 
-        assert(errorCorrect, "Expected gas limit error");
+        assert(errorCorrect, "Expected reason string");
         assert(e.receipt === undefined, "Expected no receipt");
       }
     });
