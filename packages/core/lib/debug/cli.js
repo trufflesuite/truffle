@@ -45,20 +45,30 @@ class CLIDebugger {
       ).start();
       const {
         compilations: allCompilations,
-        failures
+        badAddresses,
+        badFetchers
       } = new DebugExternalHandler(
         this.config,
         compilations,
         this.txHash
       ).getAllCompilations();
-      if (failures.length === 0) {
+      if (badAddresses.length === 0 && badFetchers.length === 0) {
         fetchSpinner.succeed();
       } else {
-        fetchspinner.warn(
-          `Errors occurred while fetching sources for addresses ${failures.join(
-            ", "
-          )}`
-        );
+        let warningStrings;
+        if (badFetchers.length > 0) {
+          warningStrings.push(
+            `Errors occurred connecting to ${badFetchers.join(", ")}$.`
+          );
+        }
+        if (badAddresses.length > 0) {
+          warningStrings.push(
+            `Errors occurred while getting sources for addresses ${badAddresses.join(
+              ", "
+            )}.`
+          );
+        }
+        fetchSpinner.warn(warningStrings.join("  "));
       }
       return allCompilations;
     }

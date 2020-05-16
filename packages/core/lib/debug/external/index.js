@@ -22,44 +22,78 @@ class DebugExternalHandler {
   }
 
   async getAllCompilations() {
-    let finalCompilations = Object.assign({}, compilations);
-    let failures = [];
-    //spin up a light-mode debugger
-    const bugger = await Debugger.forTx(txHash, {
-      provider: config.provider,
-      compilations,
-      lightMode: true
-    });
-    //get the unrecognized addresses from it
-    const instances = bugger.view(
-      Debugger.selectors.session.info.affectedInstances
-    );
-    let unknownAddresses = new Set(
-      Object.entries(instances)
-        .filter(([_, { contractName }]) => contractName === undefined)
-        .map(([address, _]) => address)
-    );
-    //(we can now discard the initial debugger; yay garbage collection)
+    let allCompilations = Object.assign({}, compilations);
+    let badAddresses = []; //for reporting errors back
+    let badFetchers = []; //similar
+    let sourcelessAddresses = new Set(); //addresses we know we can't get source for
+    //note: this should always be a subset of unknownAddresses! [see below]
     //get the network id
     const networkId = await new Web3(config.provider).eth.net.getId(); //note: this is a number
     //make fetcher instances
-    const fetchers = Fetchers.map(Fetcher => new Fetcher(networkId));
-    for (const fetcher of fetchers) {
-      //skip ones that don't support this network
-      if (!fetcher.isNetworkValid()) {
-        continue;
+    const allFetchers = Fetchers.map(Fetcher => new Fetcher(networkId));
+    let fetchers;
+    //filter out ones that don't support this network
+    //(and note ones that yielded errors)
+    for (const fetcher of allFetchers) {
+      let isValid;
+      let failure = false;
+      try {
+        isValid = fetcher.isNetworkValid();
+      } catch (_) {
+        isValid = false;
+        failure = true;
       }
-      const addresses = new Set(unknownAddresses); //make copy for iterating over,
-      //since we'll want to delete things from unknownAddresses
-      for (const address of addresses) {
-        if (fetcher.hasAddress(address)) {
+      if (isValid) {
+        fetchers.push(fetcher);
+      }
+      if (failure) {
+        badFetchers.push(fetcher.name);
+      }
+    }
+    //now: the main loop!
+    while (true) {
+      //spin up a light-mode debugger
+      const bugger = await Debugger.forTx(txHash, {
+        provider: config.provider,
+        allCompilations, //note we use *all* compilations made so far!
+        lightMode: true
+      });
+      //get the unrecognized addresses from it
+      const instances = bugger.view(
+        Debugger.selectors.session.info.affectedInstances
+      );
+      const unknownAddresses = Object.entries(instances)
+        .filter(([_, { contractName }]) => contractName === undefined)
+        .map(([address, _]) => address);
+      //(we can now discard the debugger; yay garbage collection)
+      //now: are there any unknown addresses we can maybe find source for?
+      const address = unknownAddresses.find(
+        address => !sourcelessAddresses.has(address)
+      );
+      //if not, the loop is done
+      if (address === undefined) {
+        break;
+      }
+      //otherwise, let's go try to fetch source for that address
+      let found = false;
+      let failure = false; //set in case something goes wrong while getting source
+      //(not set if there is no source)
+      for (const fetcher of fetchers) {
+        let hasAddress;
+        try {
+          hasAddress = fetcher.hasAddress(address);
+        } catch (_) {
+          failure = true;
+          continue;
+        }
+        if (hasAddress) {
           //now comes all the hard parts!
           //get our sources
           let sources;
           try {
             sources = fetcher.fetchSourcesForAddress(address);
           } catch (_) {
-            failures.push(address);
+            failure = true;
             continue;
           }
           //make a temporary directory to store our downloads in
@@ -86,13 +120,23 @@ class DebugExternalHandler {
             compilationId
           );
           //assign it!
-          Object.assign(finalCompilations, newCompilations); //mutates!
-          //finally, this address is no longer unknown, so later fetchers can ignore it
-          unknownAddresses.delete(address);
+          Object.assign(allCompilations, newCompilations); //mutates!
+          //break out of the fetcher loop -- we got what we want
+          found = true;
+          break;
+        }
+      }
+      if (found === false) {
+        //if we couldn't find it, add it to the list of sourceless addresses
+        sourcelessAddresses.add(address);
+        //if we couldn't find it *and* there was a network problem, add it to
+        //the failures list
+        if (failure === true) {
+          badAddresses.push(address);
         }
       }
     }
-    return { compilations: finalCompilations, failures };
+    return { compilations: allCompilations, badAddresses, badFetchers };
   }
 }
 
