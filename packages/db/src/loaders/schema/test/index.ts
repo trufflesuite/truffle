@@ -204,17 +204,13 @@ const GetWorkspaceContract = gql`
         callBytecode {
           bytes
         }
-        sourceContract {
+        processedSource {
           source {
             contents
             sourcePath
           }
           ast {
             json
-          }
-          source {
-            contents
-            sourcePath
           }
         }
         compilation {
@@ -226,8 +222,7 @@ const GetWorkspaceContract = gql`
             contents
             sourcePath
           }
-          contracts {
-            name
+          processedSources {
             source {
               contents
               sourcePath
@@ -247,8 +242,7 @@ const GetWorkspaceCompilation: boolean = gql`
           name
           version
         }
-        contracts {
-          name
+        processedSources {
           source {
             contents
             sourcePath
@@ -579,8 +573,8 @@ describe("Compilation", () => {
     solcCompilation.sources.map((source, index) => {
       expect(source.id).toEqual(sourceIds[index].id);
       expect(source["contents"]).toEqual(artifacts[index].source);
-      expect(solcCompilation.contracts[index].name).toEqual(
-        artifacts[index].contractName
+      expect(solcCompilation.processedSources[index].source.contents).toEqual(
+        artifacts[index].source
       );
       expect(solcCompilation.sourceMaps[index].json).toEqual(
         artifacts[index].sourceMap
@@ -594,8 +588,8 @@ describe("Compilation", () => {
     expect(vyperCompilation.sources.length).toEqual(1);
     expect(vyperCompilation.sources[0].id).toEqual(sourceIds[3].id);
     expect(vyperCompilation.sources[0].contents).toEqual(artifacts[3].source);
-    expect(vyperCompilation.contracts[0].name).toEqual(
-      artifacts[3].contractName
+    expect(vyperCompilation.processedSources[0].source.contents).toEqual(
+      artifacts[3].source
     );
   });
 
@@ -636,7 +630,7 @@ describe("Compilation", () => {
       let expectedId = generateId({
         name: artifacts[index].contractName,
         abi: { json: JSON.stringify(artifacts[index].abi) },
-        sourceContract: {
+        processedSource: {
           index: artifacts[index].compiler.name === "solc" ? +index : 0
         },
         compilation: {
@@ -675,7 +669,7 @@ describe("Compilation", () => {
             contract: {
               id,
               name,
-              sourceContract: {
+              processedSource: {
                 source: { contents }
               },
               compilation: {

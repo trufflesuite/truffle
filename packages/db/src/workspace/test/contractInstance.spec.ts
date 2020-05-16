@@ -38,7 +38,7 @@ describe("Contract Instance", () => {
           id: generateId({
             name: Migrations.contractName,
             abi: { json: JSON.stringify(Migrations.abi) },
-            sourceContract: { index: 0 },
+            processedSource: { index: 0 },
             compilation: {
               id:
                 "0x7f91bdeb02ae5fd772f829f41face7250ce9eada560e3e7fa7ed791c40d926bd"

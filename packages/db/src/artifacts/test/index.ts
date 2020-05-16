@@ -37,8 +37,7 @@ const GetContract = `
     artifacts {
       contract(name: $name) {
         name
-        sourceContract {
-          name
+        processedSource {
           source {
             contents
             sourcePath
@@ -59,7 +58,7 @@ const GetContractBytecodes = `
     artifacts {
       contract(name: $name) {
         name
-        sourceContract {
+        processedSource {
           name
           source {
             contents
@@ -121,15 +120,14 @@ describe("Artifacts queries", () => {
 
     const { contract } = artifacts;
     expect(contract).toHaveProperty("name");
-    expect(contract).toHaveProperty("sourceContract");
+    expect(contract).toHaveProperty("processedSource");
 
-    const { name, sourceContract, abi } = contract;
+    const { name, processedSource, abi } = contract;
     expect(name).toEqual(Migrations.contractName);
-    expect(sourceContract).toHaveProperty("name");
-    expect(sourceContract).toHaveProperty("ast");
-    expect(sourceContract).toHaveProperty("source");
+    expect(processedSource).toHaveProperty("ast");
+    expect(processedSource).toHaveProperty("source");
 
-    const { ast, source } = sourceContract;
+    const { ast, source } = processedSource;
     expect(source).toHaveProperty("contents");
     expect(source).toHaveProperty("sourcePath");
 
@@ -150,13 +148,13 @@ describe("Artifacts queries", () => {
     const { contract } = artifacts;
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("abi");
-    expect(contract).toHaveProperty("sourceContract");
+    expect(contract).toHaveProperty("processedSource");
     expect(contract).toHaveProperty("createBytecode");
     expect(contract).toHaveProperty("callBytecode");
 
     const {
       name,
-      sourceContract,
+      processedSource,
       abi,
       createBytecode,
       callBytecode
@@ -165,9 +163,8 @@ describe("Artifacts queries", () => {
     expect(createBytecode).toEqual(shimBytecode(Migrations.bytecode));
     expect(callBytecode).toEqual(shimBytecode(Migrations.deployedBytecode));
 
-    expect(sourceContract).toHaveProperty("name");
-    expect(sourceContract).toHaveProperty("source");
-    const { source } = sourceContract;
+    expect(processedSource).toHaveProperty("source");
+    const { source } = processedSource;
     expect(source).not.toEqual(null);
   });
 
@@ -187,7 +184,7 @@ describe("Artifacts queries", () => {
           }
           contract {
             name
-            sourceContract {
+            processedSource {
               name
               source {
                 contents
@@ -223,15 +220,14 @@ describe("Artifacts queries", () => {
     const { contract, callBytecode } = contractInstance;
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("abi");
-    expect(contract).toHaveProperty("sourceContract");
+    expect(contract).toHaveProperty("processedSource");
 
-    const { name, sourceContract, abi } = contract;
+    const { name, processedSource, abi } = contract;
     expect(name).toEqual(Migrations.contractName);
-    expect(sourceContract).toHaveProperty("name");
-    expect(sourceContract).toHaveProperty("ast");
-    expect(sourceContract).toHaveProperty("source");
+    expect(processedSource).toHaveProperty("ast");
+    expect(processedSource).toHaveProperty("source");
 
-    const { ast, source } = sourceContract;
+    const { ast, source } = processedSource;
     expect(source).toHaveProperty("contents");
     expect(source).toHaveProperty("sourcePath");
     expect(name).toEqual(Migrations.contractName);

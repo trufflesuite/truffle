@@ -49,7 +49,7 @@ type Contract implements Named {
   source: Source
   abi: ABI
   compilation: Compilation
-  sourceContract: SourceContract
+  processedSource: ProcessedSource
   createBytecode: Bytecode
   callBytecode: Bytecode
 }
@@ -64,9 +64,8 @@ type AbiItem {
   type: String
 }
 
-type SourceContract {
-  name: String
-  source: Source
+type ProcessedSource {
+  source: Source!
   ast: AST
 }
 
@@ -144,7 +143,7 @@ type SourceMap {
 type Compilation {
   compiler: Compiler!
   sources: [Source]!
-  contracts: [SourceContract]!
+  processedSources: [ProcessedSource]!
   sourceMaps: [SourceMap]
 }
 

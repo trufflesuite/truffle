@@ -67,19 +67,18 @@ describe("Contract", () => {
 
     expect(contract).toHaveProperty("id");
     expect(contract).toHaveProperty("name");
-    expect(contract).toHaveProperty("sourceContract");
+    expect(contract).toHaveProperty("processedSource");
 
-    const { sourceContract } = contract;
-    expect(sourceContract).toHaveProperty("name");
-    expect(sourceContract).toHaveProperty("source");
-    expect(sourceContract).toHaveProperty("ast");
+    const { processedSource } = contract;
+    expect(processedSource).toHaveProperty("source");
+    expect(processedSource).toHaveProperty("ast");
   });
 
   test("can be queried", async () => {
     expectedId = generateId({
       name: Migrations.contractName,
       abi: { json: JSON.stringify(Migrations.abi) },
-      sourceContract: { index: 0 },
+      processedSource: { index: 0 },
       compilation: { id: compilationId }
     });
 
@@ -91,7 +90,7 @@ describe("Contract", () => {
 
     const { contract } = getContractResult;
     expect(contract).toHaveProperty("name");
-    expect(contract).toHaveProperty("sourceContract");
+    expect(contract).toHaveProperty("processedSource");
     expect(contract).toHaveProperty("abi");
   });
 
@@ -106,11 +105,11 @@ describe("Contract", () => {
     const firstContract = contracts[0];
 
     expect(firstContract).toHaveProperty("name");
-    expect(firstContract).toHaveProperty("sourceContract");
+    expect(firstContract).toHaveProperty("processedSource");
     expect(firstContract).toHaveProperty("abi");
     expect(firstContract).toHaveProperty("abi.json");
     expect(firstContract).toHaveProperty("compilation");
     expect(firstContract).toHaveProperty("compilation.compiler.version");
-    expect(firstContract).toHaveProperty("sourceContract.source.sourcePath");
+    expect(firstContract).toHaveProperty("processedSource.source.sourcePath");
   });
 });

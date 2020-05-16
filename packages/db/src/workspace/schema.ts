@@ -115,7 +115,7 @@ export const schema = mergeSchemas({
       id: ID!
     }
 
-    input ContractSourceContractInput {
+    input ContractProcessedSourceInput {
       index: FileIndex
     }
 
@@ -127,7 +127,7 @@ export const schema = mergeSchemas({
       name: String!
       abi: AbiInput
       compilation: ContractCompilationInput
-      sourceContract: ContractSourceContractInput
+      processedSource: ContractProcessedSourceInput
       createBytecode: ContractBytecodeInput
       callBytecode: ContractBytecodeInput
     }
@@ -150,18 +150,18 @@ export const schema = mergeSchemas({
       id: ID!
     }
 
-    input CompilationSourceContractSourceInput {
+    input CompilationProcessedSourceSourceInput {
       id: ID!
     }
 
-    input CompilationSourceContractAstInput {
+    input CompilationProcessedSourceAstInput {
       json: String!
     }
 
-    input CompilationSourceContractInput {
+    input CompilationProcessedSourceInput {
       name: String
-      source: CompilationSourceContractSourceInput
-      ast: CompilationSourceContractAstInput
+      source: CompilationProcessedSourceSourceInput
+      ast: CompilationProcessedSourceAstInput
     }
 
     input CompilationSourceMapInput {
@@ -170,7 +170,7 @@ export const schema = mergeSchemas({
 
     input CompilationInput {
       compiler: CompilerInput!
-      contracts: [CompilationSourceContractInput!]
+      processedSources: [CompilationProcessedSourceInput!]
       sources: [CompilationSourceInput!]!
       sourceMaps: [CompilationSourceMapInput]
     }
@@ -516,14 +516,12 @@ export const schema = mergeSchemas({
         resolve: ({ compilation }, _, { workspace }) =>
           workspace.compilation(compilation)
       },
-      sourceContract: {
+      processedSource: {
         fragment: `... on Contract { compilation { id } }`,
-        resolve: async ({ sourceContract, compilation }, _, { workspace }) => {
-          const { contracts: sourceContracts } = await workspace.compilation(
-            compilation
-          );
+        resolve: async ({ processedSource, compilation }, _, { workspace }) => {
+          const { processedSources } = await workspace.compilation(compilation);
 
-          return sourceContracts[sourceContract.index];
+          return processedSources[processedSource.index];
         }
       },
       createBytecode: {
@@ -587,7 +585,7 @@ export const schema = mergeSchemas({
         }
       }
     },
-    SourceContract: {
+    ProcessedSource: {
       source: {
         resolve: ({ source }, _, { workspace }) => workspace.source(source)
       }

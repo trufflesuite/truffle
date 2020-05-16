@@ -216,7 +216,7 @@ export class ArtifactsLoader {
         compilation: {
           id: compilationId
         },
-        sourceContract: {
+        processedSource: {
           index: index
         },
         createBytecode: {
@@ -309,7 +309,7 @@ export class ArtifactsLoader {
     return sources.map(({ id }) => ({ id }));
   }
 
-  async compilationSourceContracts(
+  async compilationProcessedSources(
     compilation: Array<ContractObject>,
     sourceIds: Array<IdObject>
   ) {
@@ -322,7 +322,7 @@ export class ArtifactsLoader {
 
   async setCompilation(organizedCompilation: Array<ContractObject>) {
     const sourceIds = await this.loadCompilationSources(organizedCompilation);
-    const sourceContracts = await this.compilationSourceContracts(
+    const processedSources = await this.compilationProcessedSources(
       organizedCompilation,
       sourceIds
     );
@@ -332,7 +332,7 @@ export class ArtifactsLoader {
         name: organizedCompilation[0]["compiler"]["name"],
         version: organizedCompilation[0]["compiler"]["version"]
       },
-      contracts: sourceContracts,
+      processedSources,
       sources: sourceIds
     };
 

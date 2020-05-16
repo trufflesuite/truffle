@@ -43,7 +43,7 @@ export type WorkspaceCollections = {
 export const definitions: Definitions<WorkspaceCollections> = {
   contracts: {
     createIndexes: [],
-    idFields: ["name", "abi", "sourceContract", "compilation"]
+    idFields: ["name", "abi", "processedSource", "compilation"]
   },
   sources: {
     createIndexes: [],

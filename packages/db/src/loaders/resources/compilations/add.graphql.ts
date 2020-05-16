@@ -11,11 +11,11 @@ export const AddCompilations = gql`
     id: ID!
   }
 
-  input CompilationSourceContractSourceInput {
+  input CompilationProcessedSourceSourceInput {
     id: ID!
   }
 
-  input CompilationSourceContractAstInput {
+  input CompilationProcessedSourceAstInput {
     json: String!
   }
 
@@ -23,16 +23,16 @@ export const AddCompilations = gql`
     json: String!
   }
 
-  input CompilationSourceContractInput {
+  input CompilationProcessedSourceInput {
     name: String
-    source: CompilationSourceContractSourceInput
-    ast: CompilationSourceContractAstInput
+    source: CompilationProcessedSourceSourceInput
+    ast: CompilationProcessedSourceAstInput
   }
 
   input CompilationInput {
     compiler: CompilerInput!
-    contracts: [CompilationSourceContractInput!]
     sources: [CompilationSourceInput!]!
+    processedSources: [CompilationProcessedSourceInput!]
     sourceMaps: [CompilationSourceMapInput]
   }
   input CompilationsAddInput {
@@ -48,8 +48,7 @@ export const AddCompilations = gql`
             name
             version
           }
-          contracts {
-            name
+          processedSources {
             source {
               contents
               sourcePath

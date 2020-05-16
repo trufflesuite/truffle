@@ -7,7 +7,7 @@ export const GetContract = gql`
       abi {
         json
       }
-      sourceContract {
+      processedSource {
         source {
           contents
         }
@@ -23,7 +23,7 @@ export const GetAllContracts = gql`
   query getAllContracts {
     contracts {
       name
-      sourceContract {
+      processedSource {
         name
       }
       source {
@@ -37,7 +37,7 @@ export const GetAllContracts = gql`
           version
         }
       }
-      sourceContract {
+      processedSource {
         source {
           sourcePath
         }
@@ -60,7 +60,7 @@ export const AddContracts = gql`
             name: $contractName
             abi: { json: $abi }
             compilation: { id: $compilationId }
-            sourceContract: { index: 0 }
+            processedSource: { index: 0 }
             constructor: { createBytecode: { bytecode: { id: $bytecodeId } } }
           }
         ]
@@ -69,7 +69,7 @@ export const AddContracts = gql`
       contracts {
         id
         name
-        sourceContract {
+        processedSource {
           name
           source {
             contents
