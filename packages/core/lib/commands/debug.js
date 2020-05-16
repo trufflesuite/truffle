@@ -10,18 +10,30 @@ const command = {
       describe: "Network to connect to",
       type: "string",
       default: "development"
+    },
+    external: {
+      describe: "Allow debugging of external contracts",
+      alias: "x",
+      type: "boolean",
+      default: false
     }
   },
   help: {
-    usage: "truffle debug [--network <network>] [<transaction_hash>]",
+    usage:
+      "truffle debug [--network <network>] [--external] [<transaction_hash>]",
     options: [
       {
         option: "--network",
         description: "Network to connect to.  Default: development"
       },
       {
+        option: "--external",
+        description: "Allows debugging of external contracts.  Alias: -x"
+      },
+      {
         option: "<transaction_hash>",
-        description: "Transaction ID to use for debugging."
+        description:
+          "Transaction ID to use for debugging.  Mandatory if --external is passed."
       }
     ]
   },
@@ -40,7 +52,12 @@ const command = {
         await Environment.detect(config);
 
         const txHash = config._[0]; //may be undefined
-        return await new CLIDebugger(config).run(txHash);
+        if (config.external && txHash === undefined) {
+          throw new Error(
+            "External mode requires a specific transaction to debug"
+          );
+        }
+        return await new CLIDebugger(config, { txHash }).run();
       })
       .then(interpreter => interpreter.start(done))
       .catch(done);

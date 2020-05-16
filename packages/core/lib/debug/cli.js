@@ -9,15 +9,16 @@ const Codec = require("@truffle/codec");
 
 const { DebugInterpreter } = require("./interpreter");
 const { DebugCompiler } = require("./compiler");
+const { DebugExternalHandler } = require("./external");
 
 class CLIDebugger {
-  constructor(config, { compilations } = {}) {
+  constructor(config, { compilations, txHash } = {}) {
     this.config = config;
     this.compilations = compilations;
+    this.txHash = txHash;
   }
 
-  //note: txHash is optional
-  async run(txHash) {
+  async run() {
     this.config.logger.log("Starting Truffle Debugger...");
 
     // get compilations (either by shimming compiled artifacts,
@@ -26,16 +27,45 @@ class CLIDebugger {
       this.compilations || (await this.getCompilations(this.config));
 
     // invoke @truffle/debugger
-    const session = await this.startDebugger(compilations, txHash);
+    const session = await this.startDebugger(compilations, this.txHash);
 
     // initialize prompt/breakpoints/ui logic
-    const interpreter = await this.buildInterpreter(session, txHash);
+    const interpreter = await this.buildInterpreter(session, this.txHash);
 
     return interpreter;
   }
 
-  async getCompilations(config) {
-    let artifacts = await DebugUtils.gatherArtifacts(config);
+  async getCompilations() {
+    const compilations = this.getProjectCompilations(this.config);
+    if (!this.config.external) {
+      return compilations;
+    } else {
+      const fetchSpinner = ora(
+        "Getting and compiling external sources..."
+      ).start();
+      const {
+        compilations: allCompilations,
+        failures
+      } = new DebugExternalHandler(
+        this.config,
+        compilations,
+        this.txHash
+      ).getAllCompilations();
+      if (failures.length === 0) {
+        fetchSpinner.succeed();
+      } else {
+        fetchspinner.warn(
+          `Errors occurred while fetching sources for addresses ${failures.join(
+            ", "
+          )}`
+        );
+      }
+      return allCompilations;
+    }
+  }
+
+  async getProjectCompilations() {
+    let artifacts = await DebugUtils.gatherArtifacts(this.config);
     let shimmedCompilations = Codec.Compilations.Utils.shimArtifacts(artifacts);
     //if they were compiled simultaneously, yay, we can use it!
     if (shimmedCompilations.every(DebugUtils.isUsableCompilation)) {
@@ -60,13 +90,15 @@ class CLIDebugger {
     };
   }
 
-  async startDebugger(compilations, txHash) {
-    const startMessage = DebugUtils.formatStartMessage(txHash !== undefined);
+  async startDebugger(compilations) {
+    const startMessage = DebugUtils.formatStartMessage(
+      this.txHash !== undefined
+    );
     const startSpinner = ora(startMessage).start();
 
     const bugger =
-      txHash !== undefined
-        ? await Debugger.forTx(txHash, {
+      this.txHash !== undefined
+        ? await Debugger.forTx(this.txHash, {
             provider: this.config.provider,
             compilations
           })
@@ -85,8 +117,8 @@ class CLIDebugger {
     return bugger;
   }
 
-  async buildInterpreter(session, txHash) {
-    return new DebugInterpreter(this.config, session, txHash);
+  async buildInterpreter(session) {
+    return new DebugInterpreter(this.config, session, this.txHash);
   }
 }
 

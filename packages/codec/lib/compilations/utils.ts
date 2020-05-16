@@ -8,7 +8,8 @@ import { Compilation, Contract, Source } from "./types";
 
 export function shimArtifacts(
   artifacts: Artifact[],
-  files?: string[]
+  files?: string[],
+  shimmedCompilationId = "shimmedcompilation"
 ): Compilation[] {
   //note: always returns a one-element array (a single fictional compilation)
   let contracts: Contract[] = [];
@@ -110,7 +111,7 @@ export function shimArtifacts(
 
   return [
     {
-      id: "shimmedcompilation",
+      id: shimmedCompilationId,
       unreliableSourceOrder,
       sources,
       contracts,

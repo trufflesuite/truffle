@@ -36,6 +36,7 @@ class DebugInterpreter {
   constructor(config, session, txHash) {
     this.session = session;
     this.network = config.network;
+    this.external = config.external;
     this.printer = new DebugPrinter(config, session);
     this.txHash = txHash;
     this.lastCommand = "n";
@@ -416,13 +417,19 @@ class DebugInterpreter {
       }
     }
     if (cmd === "T") {
-      if (this.session.view(selectors.session.status.loaded)) {
-        await this.session.unload();
-        this.printer.print("Transaction unloaded.");
-        this.setPrompt(DebugUtils.formatPrompt(this.network));
+      if (!this.external) {
+        if (this.session.view(selectors.session.status.loaded)) {
+          await this.session.unload();
+          this.printer.print("Transaction unloaded.");
+          this.setPrompt(DebugUtils.formatPrompt(this.network));
+        } else {
+          this.printer.print("No transaction to unload.");
+          this.printer.print("");
+        }
       } else {
-        this.printer.print("No transaction to unload.");
-        this.printer.print("");
+        this.printer.print(
+          "Cannot change transactions in external mode.  Please quit and restart the debugger instead."
+        );
       }
     }
 
