@@ -9,6 +9,8 @@ declare namespace DataModel {
   type ICompilation = any;
   type ICompilationInput = any;
   type ICompilationProcessedSourceInput = any;
+  type ICompilationSourceMapInput = any;
+  type ICompilationSourceInput = any;
   type ICompilationsAddInput = any;
   type ICompilationsAddPayload = any;
   type ICompiler = any;

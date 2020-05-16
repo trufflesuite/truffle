@@ -1,8 +1,7 @@
 import {
   CompiledContract,
-  ContractBytecodes,
+  LoadedBytecodes,
   IdObject,
-  toIdObject,
   WorkspaceRequest,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
@@ -10,22 +9,31 @@ import {
 import { AddContracts } from "./add.graphql";
 export { AddContracts };
 
-/**
- * @dev pre-condition: indexes of array arguments must align
- *   (i.e., contractBytecodes[i] are bytecodes for the i-th compiledContract)
- */
+export interface LoadableContract {
+  contract: CompiledContract;
+  path: { sourceIndex: number; contractIndex: number };
+  bytecodes: LoadedBytecodes;
+  compilation: IdObject<DataModel.ICompilation>;
+}
+
 export function* generateContractsLoad(
-  compiledContracts: CompiledContract[],
-  contractBytecodes: ContractBytecodes[],
-  compilation: IdObject<DataModel.ICompilation>
+  loadableContracts: LoadableContract[]
 ): Generator<
   WorkspaceRequest,
   DataModel.IContract[],
   WorkspaceResponse<"contractsAdd", DataModel.IContractsAddPayload>
 > {
-  const contracts = compiledContracts.map((contract, index) => {
-    const { contractName: name, abi: abiObject } = contract;
-    const { createBytecode, callBytecode } = contractBytecodes[index];
+  const contracts = loadableContracts.map(loadableContract => {
+    const {
+      contract: { contractName: name, abi: abiObject },
+      path: { sourceIndex, contractIndex },
+      bytecodes,
+      compilation
+    } = loadableContract;
+
+    const { createBytecode, callBytecode } = bytecodes.sources[
+      sourceIndex
+    ].contracts[contractIndex];
 
     return {
       name,
@@ -33,9 +41,9 @@ export function* generateContractsLoad(
         json: JSON.stringify(abiObject)
       },
       compilation,
-      processedSource: { index },
-      createBytecode: toIdObject(createBytecode),
-      callBytecode: toIdObject(callBytecode)
+      processedSource: { index: sourceIndex },
+      createBytecode: createBytecode,
+      callBytecode: callBytecode
     };
   });
 

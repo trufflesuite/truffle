@@ -44,26 +44,6 @@ export const AddCompilations = gql`
       compilationsAdd(input: { compilations: $compilations }) {
         compilations {
           id
-          compiler {
-            name
-            version
-          }
-          processedSources {
-            source {
-              contents
-              sourcePath
-            }
-            ast {
-              json
-            }
-          }
-          sources {
-            contents
-            sourcePath
-          }
-          sourceMaps {
-            json
-          }
         }
       }
     }

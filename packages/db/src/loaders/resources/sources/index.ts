@@ -1,6 +1,7 @@
 import {
-  CompiledContract,
   CompilationData,
+  LoadedSources,
+  toIdObject,
   WorkspaceRequest,
   WorkspaceResponse
 } from "@truffle/db/loaders/types";
@@ -8,37 +9,30 @@ import {
 import { AddSources } from "./add.graphql";
 export { AddSources };
 
-const contractSourceInput = ({
-  contract: { sourcePath, source: contents }
-}: {
-  contract: CompiledContract;
-}): DataModel.ISourceInput => ({
-  contents,
-  sourcePath
-});
-
-const compilationSourceInputs = ({
-  compilation: { contracts }
-}: {
-  compilation: CompilationData;
-}): DataModel.ISourceInput[] =>
-  contracts.map(contract => contractSourceInput({ contract }));
-
 // returns list of IDs
 export function* generateSourcesLoad(
   compilation: CompilationData
 ): Generator<
   WorkspaceRequest,
-  DataModel.ISource[],
+  LoadedSources,
   WorkspaceResponse<"sourcesAdd", DataModel.ISourcesAddPayload>
 > {
   // for each compilation, we need to load sources for each of the contracts
-  const sources = compilationSourceInputs({ compilation });
+  const inputs = compilation.sources.map(({ input }) => input);
 
   const result = yield {
     request: AddSources,
-    variables: { sources }
+    variables: { sources: inputs }
   };
 
-  return result.data.workspace.sourcesAdd.sources;
+  const { sources } = result.data.workspace.sourcesAdd;
+
+  // return source IDs mapped by sourcePath
+  return sources.reduce(
+    (obj, source) => ({
+      ...obj,
+      [source.sourcePath]: toIdObject(source)
+    }),
+    {}
+  );
 }

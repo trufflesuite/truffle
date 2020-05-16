@@ -20,13 +20,34 @@ export interface CompiledContract {
 }
 
 export interface CompilationData {
-  sourceIndexes: string[];
+  compiler: {
+    name: string;
+    version: string;
+  };
+  sources: SourceData[]; // ordered by index
+}
+
+export interface SourceData {
+  index: number;
+  input: DataModel.ISourceInput;
   contracts: CompiledContract[];
 }
 
-export interface ContractBytecodes {
-  createBytecode: DataModel.IBytecode;
-  callBytecode: DataModel.IBytecode;
+export interface LoadedSources {
+  [sourcePath: string]: IdObject<DataModel.ISource>;
+}
+
+// we track loaded bytecodes using the same structure as CompilationData:
+// - order sources
+// - order contracts for each source
+// - capture bytecodes for each contract
+export interface LoadedBytecodes {
+  sources: {
+    contracts: {
+      createBytecode: IdObject<DataModel.IBytecode>;
+      callBytecode: IdObject<DataModel.IBytecode>;
+    }[];
+  }[];
 }
 
 type Resource = {
@@ -59,6 +80,11 @@ export type WorkspaceResponse<N extends string = string, R = any> = {
  * Output format of @truffle/workflow-compile/new
  */
 export interface WorkflowCompileResult {
-  compilations: { [compilerName: string]: CompilationData };
+  compilations: {
+    [compilerName: string]: {
+      sourceIndexes: string[];
+      contracts: CompiledContract[];
+    };
+  };
   contracts: { [contractName: string]: ContractObject };
 }
