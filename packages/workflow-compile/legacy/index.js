@@ -76,7 +76,7 @@ const Contracts = {
       return result;
     } catch (error) {
       if (callbackPassed) return callback(error);
-      throw new Error(error);
+      throw error;
     }
   },
 

@@ -15,7 +15,7 @@ const getImports = (file, { body, source }, solc, parserSolc) => {
   return imports.map(
     dependencyPath =>
       isExplicitlyRelative(dependencyPath)
-        ? source.resolve_dependency_path(file, dependencyPath)
+        ? source.resolveDependencyPath(file, dependencyPath)
         : dependencyPath
   );
 };

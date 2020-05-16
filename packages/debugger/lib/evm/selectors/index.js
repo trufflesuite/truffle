@@ -14,8 +14,7 @@ import {
   isShortCallMnemonic,
   isDelegateCallMnemonicBroad,
   isDelegateCallMnemonicStrict,
-  isStaticCallMnemonic,
-  isNormalHaltingMnemonic
+  isStaticCallMnemonic
 } from "lib/helpers";
 
 const ZERO_WORD = "00".repeat(Codec.Evm.Utils.WORD_SIZE);
@@ -132,18 +131,6 @@ function createStepSelectors(step, state = null) {
      */
     isCreate2: createLeaf(["./trace"], step => step.op === "CREATE2"),
 
-    /**
-     * .isHalting
-     *
-     * whether the instruction halts or returns from a calling context
-     * NOTE: this covers only ordinary halts, not exceptional halts;
-     * but it doesn't check the return status, so any normal halting
-     * instruction will qualify here
-     */
-    isHalting: createLeaf(["./trace"], step =>
-      isNormalHaltingMnemonic(step.op)
-    ),
-
     /*
      * .isStore
      */
@@ -221,7 +208,13 @@ function createStepSelectors(step, state = null) {
           const offset = parseInt(stack[stack.length - 2], 16) * 2;
           const length = parseInt(stack[stack.length - 3], 16) * 2;
 
-          return "0x" + memory.join("").substring(offset, offset + length);
+          return (
+            "0x" +
+            memory
+              .join("")
+              .substring(offset, offset + length)
+              .padEnd(length, "00")
+          );
         }
       ),
 
@@ -247,7 +240,13 @@ function createStepSelectors(step, state = null) {
           const offset = parseInt(stack[stack.length - 4 + argOffset], 16) * 2;
           const length = parseInt(stack[stack.length - 5 + argOffset], 16) * 2;
 
-          return "0x" + memory.join("").substring(offset, offset + length);
+          return (
+            "0x" +
+            memory
+              .join("")
+              .substring(offset, offset + length)
+              .padEnd(length, "00")
+          );
         }
       ),
 
@@ -513,14 +512,13 @@ const evm = createSelectorTree({
        * are we doing a call or create for which there are no trace steps?
        * This can happen if:
        * 1. we call a precompile
-       * 2. we call an externally-owned account
+       * 2. we call an externally-owned account (or other account w/no code)
        * 3. we do a call or create but the call stack is exhausted
        * 4. we attempt to transfer more ether than we have
        */
       isInstantCallOrCreate: createLeaf(
-        ["./isCall", "./isCreate", "/current/state/depth", "/next/state/depth"],
-        (calls, creates, currentDepth, nextDepth) =>
-          (calls || creates) && currentDepth === nextDepth
+        ["./isCall", "./isCreate", "./isContextChange"],
+        (calls, creates, contextChange) => (calls || creates) && !contextChange
       ),
 
       /**
@@ -533,26 +531,38 @@ const evm = createSelectorTree({
       ),
 
       /**
+       * .isNormalHalting
+       */
+      isNormalHalting: createLeaf(
+        ["./isHalting", "./returnStatus"],
+        (isHalting, status) => isHalting && status
+      ),
+
+      /**
+       * .isHalting
+       *
+       * whether the instruction halts or returns from a calling context
+       * NOTE: this covers only ordinary halts, not exceptional halts;
+       * but it doesn't check the return status, so any normal halting
+       * instruction will qualify here
+       */
+      isHalting: createLeaf(
+        ["/current/state/depth", "/next/state/depth"],
+        (currentDepth, nextDepth) => nextDepth < currentDepth
+      ),
+
+      /**
        * evm.current.step.isExceptionalHalting
        */
       isExceptionalHalting: createLeaf(
-        [
-          "./isHalting",
-          "/current/state/depth",
-          "/next/state/depth",
-          "./returnStatus"
-        ],
-        (halting, currentDepth, nextDepth, status) =>
-          halting
-            ? !status //if deliberately halting, check the return status
-            : nextDepth < currentDepth //if not on a deliberate halt, any halt
-        //is an exceptional halt
+        ["./isHalting", "./returnStatus"],
+        (isHalting, status) => isHalting && !status
       ),
 
       /**
        * evm.current.step.returnStatus
-       * checks the return status of the *current* halting instruction (for
-       * normal halts only)
+       * checks the return status of the *current* halting instruction
+       * returns null if not halting
        * (returns a boolean -- true for success, false for failure)
        */
       returnStatus: createLeaf(
@@ -601,7 +611,13 @@ const evm = createSelectorTree({
           const offset = parseInt(stack[stack.length - 1], 16) * 2;
           const length = parseInt(stack[stack.length - 2], 16) * 2;
 
-          return "0x" + memory.join("").substring(offset, offset + length);
+          return (
+            "0x" +
+            memory
+              .join("")
+              .substring(offset, offset + length)
+              .padEnd(length, "00")
+          );
         }
       )
     },

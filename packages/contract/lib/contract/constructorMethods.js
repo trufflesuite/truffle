@@ -76,6 +76,9 @@ module.exports = Contract => ({
   },
 
   async deployed() {
+    if (this.reloadJson) {
+      this.reloadJson(); //truffle test monkey-patches in this method
+    }
     utils.checkProvider(this);
     await this.detectNetwork();
     utils.checkNetworkArtifactMatch(this);

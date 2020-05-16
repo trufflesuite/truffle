@@ -104,9 +104,9 @@ TestRunner.prototype.endTest = async function(mocha) {
     return;
   }
 
-  function indent(unindented, indentation, initialPrefix = "") {
+  function indent(input, indentation, initialPrefix = "") {
+    const unindented = typeof input === "string" ? input.split("\n") : input;
     return unindented
-      .split("\n")
       .map(
         (line, index) =>
           index === 0
@@ -123,25 +123,27 @@ TestRunner.prototype.endTest = async function(mocha) {
       : decoding.class.typeName;
     const eventName = decoding.abi.name;
     const fullEventName = anonymousPrefix + `${className}.${eventName}`;
-    const eventArgs = decoding.arguments
-      .map(({ name, indexed, value }) => {
-        let namePrefix = name ? `${name}: ` : "";
-        let indexedPrefix = indexed ? "<indexed> " : "";
-        let displayValue = util.inspect(
-          new Codec.Format.Utils.Inspect.ResultInspector(value),
-          {
-            depth: null,
-            colors: true,
-            maxArrayLength: null,
-            breakLength: 80 - indentation //should this include prefix lengths as well?
-          }
-        );
-        let typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
-          value.type
-        )})`;
-        return namePrefix + indexedPrefix + displayValue + typeString;
-      })
-      .join(",\n");
+    const eventArgs = decoding.arguments.map(({ name, indexed, value }) => {
+      let namePrefix = name ? `${name}: ` : "";
+      let indexedPrefix = indexed ? "<indexed> " : "";
+      let displayValue = util.inspect(
+        new Codec.Format.Utils.Inspect.ResultInspector(value),
+        {
+          depth: null,
+          colors: true,
+          maxArrayLength: null,
+          breakLength: 80 - indentation //should this include prefix lengths as well?
+        }
+      );
+      let typeString = ` (type: ${Codec.Format.Types.typeStringWithoutLocation(
+        value.type
+      )})`;
+      return namePrefix + indexedPrefix + displayValue + typeString + ",";
+    });
+    {
+      const len = eventArgs.length - 1;
+      eventArgs[len] = eventArgs[len].slice(0, -1); // remove the final comma
+    }
     if (decoding.arguments.length > 0) {
       return indent(
         `${fullEventName}(\n${indent(eventArgs, 2)}\n)`,

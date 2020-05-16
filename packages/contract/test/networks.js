@@ -13,7 +13,6 @@ var debug = require("debug")("ganache-core");
 var Ganache = require("ganache-core");
 var BlockchainUtils = require("@truffle/blockchain-utils");
 var contract = require("../");
-var times = require("async/times");
 
 var log = {
   log: debug
@@ -347,139 +346,109 @@ describe("Different networks: ", function() {
       });
   });
 
-  it("detects the network when a blockchain uri is specified", function(done) {
-    BlockchainUtils.asURI(network_two, function(err, uri) {
-      if (err) return done(err);
+  it("detects the network when a blockchain uri is specified", async () => {
+    const uri = await BlockchainUtils.asURI(network_two);
 
-      var json = {
-        contractName: "NetworkExample",
-        abi: ExampleOne.abi,
-        bytecode: ExampleOne.binary,
-        networks: {}
-      };
+    var json = {
+      contractName: "NetworkExample",
+      abi: ExampleOne.abi,
+      bytecode: ExampleOne.binary,
+      networks: {}
+    };
 
-      json.networks[uri] = {
-        address: "0x1234567890123456789012345678901234567890" // fake
-      };
+    json.networks[uri] = {
+      address: "0x1234567890123456789012345678901234567890" // fake
+    };
 
-      var NetworkExample = contract(json);
+    var NetworkExample = contract(json);
 
-      NetworkExample.setProvider(network_two);
+    NetworkExample.setProvider(network_two);
 
-      NetworkExample.defaults({
-        from: ExampleTwo.defaults().from // Borrow the address from this one.
-      });
-
-      NetworkExample.deployed()
-        .then(instance => {
-          assert.equal(NetworkExample.network_id, uri);
-          assert.equal(instance.address, json.networks[uri].address);
-          done();
-        })
-        .catch(done);
+    NetworkExample.defaults({
+      from: ExampleTwo.defaults().from // Borrow the address from this one.
     });
+
+    const instance = await NetworkExample.deployed();
+    assert.equal(NetworkExample.network_id, uri);
+    assert.equal(instance.address, json.networks[uri].address);
   });
 
-  it("resolve networks artifacts when two matching but unequal blockchain uris are passed in", function(done) {
-    BlockchainUtils.asURI(network_two, function(err, uri) {
-      if (err) return done(err);
+  it("resolve networks artifacts when two matching but unequal blockchain uris are passed in", async () => {
+    const uri = await BlockchainUtils.asURI(network_two);
 
-      var json = {
-        contractName: "NetworkExampleTwo",
-        abi: ExampleOne.abi,
-        bytecode: ExampleOne.binary,
-        networks: {}
-      };
+    var json = {
+      contractName: "NetworkExampleTwo",
+      abi: ExampleOne.abi,
+      bytecode: ExampleOne.binary,
+      networks: {}
+    };
 
-      json.networks[uri] = {
-        address: "0x1234567890123456789012345678901234567890" // fake
-      };
+    json.networks[uri] = {
+      address: "0x1234567890123456789012345678901234567890" // fake
+    };
 
-      var NetworkExample = contract(json);
+    var NetworkExample = contract(json);
 
-      NetworkExample.setProvider(network_two);
+    NetworkExample.setProvider(network_two);
 
-      NetworkExample.defaults({
-        from: ExampleTwo.defaults().from // Borrow the address from this one.
-      });
-
-      // This is what makes this test different than others. We're going to set
-      // the network id to a number, but we're still going to expect it to resolve
-      // to the correct set of artifacts identified by the blockchain uri, even
-      // when the network id has been explicitly set.
-      NetworkExample.setNetwork(network_two_id);
-
-      NetworkExample.deployed()
-        .then(instance => {
-          assert.equal(NetworkExample.network_id, uri);
-          assert.equal(instance.address, json.networks[uri].address);
-          done();
-        })
-        .catch(done);
+    NetworkExample.defaults({
+      from: ExampleTwo.defaults().from // Borrow the address from this one.
     });
+
+    // This is what makes this test different than others. We're going to set
+    // the network id to a number, but we're still going to expect it to resolve
+    // to the correct set of artifacts identified by the blockchain uri, even
+    // when the network id has been explicitly set.
+    NetworkExample.setNetwork(network_two_id);
+
+    const instance = await NetworkExample.deployed();
+    assert.equal(NetworkExample.network_id, uri);
+    assert.equal(instance.address, json.networks[uri].address);
   });
 
   // TODO: Rewrite this as a promise chain
-  it("resolve network artifacts when two equal but different network identifiers are passed in", function(done) {
-    BlockchainUtils.asURI(network_two, function(err, uri) {
-      if (err) return done(err);
+  it("resolve network artifacts when two equal but different network identifiers are passed in", async () => {
+    const uri = await BlockchainUtils.asURI(network_two);
 
-      var json = {
-        contractName: "NetworkExampleThree",
-        abi: ExampleOne.abi,
-        bytecode: ExampleOne.binary,
-        networks: {}
-      };
+    var json = {
+      contractName: "NetworkExampleThree",
+      abi: ExampleOne.abi,
+      bytecode: ExampleOne.binary,
+      networks: {}
+    };
 
-      json.networks[uri] = {
-        address: "0x1234567890123456789012345678901234567890" // fake
-      };
+    json.networks[uri] = {
+      address: "0x1234567890123456789012345678901234567890" // fake
+    };
 
-      var NetworkExample = contract(json);
+    var NetworkExample = contract(json);
 
-      // Now send two transactions that, when finished, will ensure
-      // we've mined two more blocks. We'll use ExampleTwo for this
-      // that's hooked up to the same network.
-      times(
-        2,
-        function(n, finished) {
-          ExampleTwo.new(1, { gas: 3141592 })
-            .then(function() {
-              finished();
-            })
-            .catch(finished);
-        },
-        function(err) {
-          if (err) return done(err);
+    // Now send two transactions that, when finished, will ensure
+    // we've mined two more blocks. We'll use ExampleTwo for this
+    // that's hooked up to the same network.
 
-          // Now get the blockchain URI again
-          BlockchainUtils.asURI(network_two, function(err, new_uri) {
-            if (err) return done(err);
+    await ExampleTwo.new(1, { gas: 3141592 });
+    await ExampleTwo.new(1, { gas: 3141592 });
 
-            assert.notEqual(new_uri, uri);
+    // Now get the blockchain URI again
+    const newURI = await BlockchainUtils.asURI(network_two);
 
-            NetworkExample = contract(json);
-            NetworkExample.setProvider(network_two);
+    assert.notEqual(newURI, uri);
 
-            NetworkExample.defaults({
-              from: ExampleTwo.defaults().from // Borrow the address from this one.
-            });
+    NetworkExample = contract(json);
+    NetworkExample.setProvider(network_two);
 
-            // We're setting the id to a URI that matches the same network as an already set URI
-            // (but the URIs aren't equal).
-            // We should get the address that's been saved as the URIs should match.
-            NetworkExample.setNetwork(new_uri);
-
-            NetworkExample.deployed()
-              .then(instance => {
-                assert.equal(NetworkExample.network_id, uri);
-                assert.equal(instance.address, json.networks[uri].address);
-                done();
-              })
-              .catch(done);
-          });
-        }
-      );
+    NetworkExample.defaults({
+      from: ExampleTwo.defaults().from // Borrow the address from this one.
     });
+
+    // We're setting the id to a URI that matches the same network as an already set URI
+    // (but the URIs aren't equal).
+    // We should get the address that's been saved as the URIs should match.
+    NetworkExample.setNetwork(newURI);
+
+    const newInstance = await NetworkExample.deployed();
+    assert.equal(NetworkExample.network_id, uri);
+    assert.equal(newInstance.address, json.networks[uri].address);
   });
 });
