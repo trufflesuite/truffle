@@ -66,6 +66,7 @@ type AbiItem {
 
 type ProcessedSource {
   source: Source!
+  contracts: [Contract]!
   ast: AST
 }
 

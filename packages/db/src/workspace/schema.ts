@@ -509,6 +509,14 @@ export const schema = mergeSchemas({
       sources: {
         resolve: ({ sources }, _, { workspace }) =>
           Promise.all(sources.map(source => workspace.source(source)))
+      },
+      processedSources: {
+        resolve: ({ id, processedSources }, _, { workspace }) =>
+          processedSources.map((processedSource, index) => ({
+            ...processedSource,
+            compilation: { id },
+            index
+          }))
       }
     },
     Contract: {
@@ -588,6 +596,15 @@ export const schema = mergeSchemas({
     ProcessedSource: {
       source: {
         resolve: ({ source }, _, { workspace }) => workspace.source(source)
+      },
+      contracts: {
+        resolve: ({ compilation, index }, _, { workspace }) =>
+          workspace.databases.find("contracts", {
+            selector: {
+              "compilation.id": compilation.id,
+              "processedSource.index": index
+            }
+          })
       }
     }
   }

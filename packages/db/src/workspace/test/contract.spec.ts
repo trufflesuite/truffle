@@ -3,7 +3,10 @@ import { shimBytecode } from "@truffle/workflow-compile/shims";
 
 import { AddSource } from "./source.graphql";
 import { AddBytecode } from "./bytecode.graphql";
-import { AddCompilation } from "./compilation.graphql";
+import {
+  AddCompilation,
+  GetCompilationWithContracts
+} from "./compilation.graphql";
 import { AddContracts, GetContract, GetAllContracts } from "./contract.graphql";
 
 describe("Contract", () => {
@@ -92,6 +95,31 @@ describe("Contract", () => {
     expect(contract).toHaveProperty("name");
     expect(contract).toHaveProperty("processedSource");
     expect(contract).toHaveProperty("abi");
+  });
+
+  test("can be queried via compilation", async () => {
+    expectedId = generateId({
+      name: Migrations.contractName,
+      abi: { json: JSON.stringify(Migrations.abi) },
+      processedSource: { index: 0 },
+      compilation: { id: compilationId }
+    });
+
+    const result = await wsClient.execute(GetCompilationWithContracts, {
+      id: compilationId
+    });
+
+    expect(result).toHaveProperty("compilation.processedSources");
+    const { processedSources } = result.compilation;
+    expect(processedSources).toHaveLength(1);
+
+    const processedSource = processedSources[0];
+    expect(processedSource).toHaveProperty("contracts");
+
+    const { contracts } = processedSource;
+    expect(contracts).toHaveLength(1);
+
+    expect(contracts[0].id).toEqual(expectedId);
   });
 
   test("can retrieve all contracts", async () => {
