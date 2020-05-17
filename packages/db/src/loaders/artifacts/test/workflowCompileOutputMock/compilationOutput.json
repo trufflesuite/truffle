@@ -16089,7 +16089,7 @@
         },
         "vyper": {
           "sourceIndexes": [
-            "/Users/fainashalts/solidity-magic-square/contracts/VyperStorage.sol"
+            "/Users/fainashalts/truffle-six/testing2/contracts/VyperStorage.vy"
           ],
           "contracts": [
             {
