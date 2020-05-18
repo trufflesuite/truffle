@@ -58,7 +58,12 @@ tmp.setGracefulCleanup();
 // minimal config
 const config = {
   contracts_build_directory: fixturesDirectory,
-  working_directory: tempDir.name
+  working_directory: tempDir.name,
+  db: {
+    adapter: {
+      name: "memory"
+    }
+  }
 };
 
 const compilationConfig = {
@@ -469,10 +474,6 @@ describe("Compilation", () => {
     let previousContract = {
       name: "Migrations",
       abi: { json: JSON.stringify(artifacts[1].abi) },
-      sourceContract: { index: 0 },
-      compilation: {
-        id: expectedSolcCompilationId
-      },
       createBytecode: bytecodeIds[0],
       callBytecode: callBytecodeIds[0]
     };
@@ -483,11 +484,7 @@ describe("Compilation", () => {
 
     previousContractExpectedId = generateId({
       name: "Migrations",
-      abi: { json: JSON.stringify(artifacts[1].abi) },
-      sourceContract: { index: 0 },
-      compilation: {
-        id: expectedSolcCompilationId
-      }
+      abi: { json: JSON.stringify(artifacts[1].abi) }
     });
 
     previousContractNameRecord = {
@@ -522,7 +519,7 @@ describe("Compilation", () => {
 
     const loader = new ArtifactsLoader(db, compilationConfig);
     await loader.load();
-  });
+  }, 10000);
 
   afterAll(async () => {
     await Promise.all(
