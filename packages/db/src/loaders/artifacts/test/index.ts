@@ -469,10 +469,6 @@ describe("Compilation", () => {
     let previousContract = {
       name: "Migrations",
       abi: { json: JSON.stringify(artifacts[1].abi) },
-      sourceContract: { index: 0 },
-      compilation: {
-        id: expectedSolcCompilationId
-      },
       createBytecode: bytecodeIds[0],
       callBytecode: callBytecodeIds[0]
     };
@@ -483,11 +479,7 @@ describe("Compilation", () => {
 
     previousContractExpectedId = generateId({
       name: "Migrations",
-      abi: { json: JSON.stringify(artifacts[1].abi) },
-      sourceContract: { index: 0 },
-      compilation: {
-        id: expectedSolcCompilationId
-      }
+      abi: { json: JSON.stringify(artifacts[1].abi) }
     });
 
     previousContractNameRecord = {
