@@ -414,6 +414,15 @@ export default class Session {
     return this; //for compatibility
   }
 
+  async addCompilations(compilations) {
+    let { contexts, sources } = Session.normalize(compilations);
+    return await this.dispatch(actions.addCompilation(sources, contexts));
+  }
+
+  async startFullMode() {
+    return await this.dispatch(actions.startFullMode());
+  }
+
   get selectors() {
     return createNestedSelector({
       ast,

@@ -92,7 +92,17 @@ let trace = createSelectorTree({
   nextOfSameDepth: createLeaf(["./steps", "./index"], (steps, index) => {
     let depth = steps[index].depth;
     return steps.slice(index + 1).find(step => step.depth === depth);
-  })
+  }),
+
+  /**
+   * trace.application
+   */
+  application: {
+    /**
+     * trace.application.submoduleCount
+     */
+    submoduleCount: state => state.trace.application.submoduleCount
+  }
 });
 
 export default trace;

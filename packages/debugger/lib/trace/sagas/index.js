@@ -10,6 +10,15 @@ import * as actions from "../actions";
 
 import trace from "../selectors";
 
+export function* setSubmoduleCount(count) {
+  yield put(actions.setSubmoduleCount(count));
+}
+
+export function* addSubmoduleToCount() {
+  let count = yield select(trace.application.submoduleCount);
+  yield put(actions.setSubmoduleCount(count + 1));
+}
+
 export function* advance() {
   yield put(actions.next());
 
@@ -18,7 +27,7 @@ export function* advance() {
   debug("TOCK taken");
 }
 
-function* next(submoduleCount) {
+function* next() {
   let remaining = yield select(trace.stepsRemaining);
   debug("remaining: %o", remaining);
   let steps = yield select(trace.steps);
@@ -28,7 +37,7 @@ function* next(submoduleCount) {
   if (remaining > 0) {
     debug("putting TICK");
     // updates state for current step
-    waitingForSubmodules = submoduleCount;
+    waitingForSubmodules = yield select(trace.application.submoduleCount);
     yield put(actions.tick());
     debug("put TICK");
 
@@ -64,13 +73,14 @@ export function* processTrace(steps) {
   let addresses = [
     ...new Set(
       steps
-        .map(({ op, stack }) =>
-          isCallMnemonic(op)
-            ? //if it's a call, just fetch the address off the stack
-              Codec.Evm.Utils.toAddress(stack[stack.length - 2])
-            : //if it's not a call, just return undefined (we've gone back to
-              //skipping creates)
-              undefined
+        .map(
+          ({ op, stack }) =>
+            isCallMnemonic(op)
+              ? //if it's a call, just fetch the address off the stack
+                Codec.Evm.Utils.toAddress(stack[stack.length - 2])
+              : //if it's not a call, just return undefined (we've gone back to
+                //skipping creates)
+                undefined
         )
         //filter out zero addresses from failed creates (as well as undefineds)
         .filter(
@@ -91,8 +101,8 @@ export function* unload() {
   yield put(actions.unloadTransaction());
 }
 
-export function* saga(submoduleCount) {
-  yield takeEvery(actions.NEXT, next, submoduleCount);
+export function* saga() {
+  yield takeEvery(actions.NEXT, next);
 }
 
 export default prefixName("trace", saga);

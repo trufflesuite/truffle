@@ -81,3 +81,23 @@ export function saveBlock(block) {
     block
   };
 }
+
+export const SET_LIGHT_MODE = "SESSION_SET_LIGHT_MODE";
+export function setLightMode() {
+  return { type: SET_LIGHT_MODE };
+}
+
+export const SET_FULL_MODE = "SESSION_SET_FULL_MODE";
+export function setFullMode() {
+  return { type: SET_FULL_MODE };
+}
+
+export const START_FULL_MODE = "SESSION_START_FULL_MODE";
+export function startFullMode() {
+  return { type: START_FULL_MODE };
+}
+
+export const ADD_COMPILATIONS = "SESSION_START_FULL_MODE";
+export function addCompilations() {
+  return { type: ADD_COMPILATIONS };
+}

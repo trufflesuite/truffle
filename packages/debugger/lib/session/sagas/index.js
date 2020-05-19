@@ -16,9 +16,14 @@ import * as web3 from "lib/web3/sagas";
 
 import * as actions from "../actions";
 
+import * as session from "../selectors";
+
 const LOAD_SAGAS = {
-  [actions.LOAD_TRANSACTION]: load
+  [actions.LOAD_TRANSACTION]: load,
   //will also add reconstruct action/saga once it exists
+  //the following ones don't really relate to loading, but, oh well
+  [actions.ADD_COMPILATIONS]: addCompilations,
+  [actions.START_FULL_MODE]: startFullmode
 };
 
 function* listenerSaga() {
@@ -65,6 +70,8 @@ export function* saga(moduleOptions) {
     //save allocation table
     debug("saving allocation table");
     yield* data.recordAllocations();
+  } else {
+    yield put(actions.SET_LIGHT_MODE);
   }
 
   //initialize web3 adapter
@@ -79,6 +86,37 @@ export function* saga(moduleOptions) {
   debug("readying");
   // signal that commands can begin
   yield* ready();
+}
+
+//please only use in light mode!
+export function* addCompilations(sources, contexts) {
+  debug("recording contract binaries");
+  yield* recordContexts(...contexts);
+
+  debug("recording contract sources");
+  yield* recordSources(sources);
+
+  debug("re-normalizing contexts");
+  yield* evm.normalizeContexts();
+
+  yield* trace.addSubmodule();
+}
+
+export function* startFullMode() {
+  let lightMode = yield select(session.lightMode);
+  if (!lightMode) {
+    //better not start this twice!
+    return;
+  }
+  debug("visiting ASTs");
+  // visit asts
+  yield* ast.visitAll();
+
+  //save allocation table
+  debug("saving allocation table");
+  yield* data.recordAllocations();
+
+  yield* trace.addSubmoduleToCount();
 }
 
 export function* processTransaction(txHash) {
@@ -102,10 +140,9 @@ function* forkListeners(moduleOptions) {
   }
   let otherApps = [trace, controller, web3];
   const submoduleCount = mainApps.length;
-  //I'm being lazy, so I'll just pass the submodule count to all of
-  //them even though only trace cares :P
   const apps = mainApps.concat(otherApps);
-  return yield all(apps.map(app => fork(app.saga, submoduleCount)));
+  yield* trace.setSubmoduleCount(submoduleCount);
+  return yield all(apps.map(app => fork(app.saga)));
 }
 
 function* fetchTx(txHash) {

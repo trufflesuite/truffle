@@ -45,6 +45,15 @@ function steps(state = null, action) {
   }
 }
 
+function submoduleCount(state = 0, action) {
+  switch (action.type) {
+    case action.SET_SUBMODULE_COUNT:
+      return action.count;
+    default:
+      return state;
+  }
+}
+
 const transaction = combineReducers({
   steps
 });
@@ -54,9 +63,14 @@ const proc = combineReducers({
   finished
 });
 
+const application = combineReducers({
+  submoduleCount
+});
+
 const reducer = combineReducers({
   transaction,
-  proc
+  proc,
+  application
 });
 
 export default reducer;

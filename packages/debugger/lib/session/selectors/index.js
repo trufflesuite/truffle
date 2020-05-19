@@ -125,7 +125,12 @@ const session = createSelectorTree({
     /*
      * session.status.loaded
      */
-    loaded: createLeaf([trace.loaded], loaded => loaded)
+    loaded: createLeaf([trace.loaded], loaded => loaded),
+
+    /**
+     * session.status.lightMode
+     */
+    lightMode: createLeaf(["/state"], state => state.lightMode)
   }
 });
 
