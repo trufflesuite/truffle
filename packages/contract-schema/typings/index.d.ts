@@ -3,7 +3,11 @@ declare module "@truffle/contract-schema" {
   export { ContractObject } from "@truffle/contract-schema/spec";
 
   namespace Schema {
-    export function normalize(dirtyObj: object, opts?: object): ContractObject;
+    export function validate(contractObject: ContractObject): ContractObject;
+    export function normalize(
+      objDirty: object,
+      options?: object
+    ): ContractObject;
   }
 
   export default Schema;
