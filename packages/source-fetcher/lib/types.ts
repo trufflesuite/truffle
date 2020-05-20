@@ -5,16 +5,15 @@ export interface FetcherConstructor {
 export interface Fetcher {
   readonly name: string;
   isNetworkValid(): boolean;
-  hasAddress(address: string): boolean;
-  fetchSourcesForAddress(
-    address: string
-  ): {
-    sources: SourcesByName;
-    options: SolcOptions;
-  };
+  fetchSourcesForAddress(address: string): SourceInfo | null;
 }
 
-interface SourcesByName {
+interface SourceInfo {
+  sources: SourcesByPath;
+  options: SolcOptions;
+}
+
+interface SourcesByPath {
   [sourcePath: string]: string;
 }
 

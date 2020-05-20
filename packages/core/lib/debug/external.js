@@ -56,57 +56,54 @@ class DebugExternalHandler {
       let failure = false; //set in case something goes wrong while getting source
       //(not set if there is no source)
       for (const fetcher of fetchers) {
-        let hasAddress;
+        //now comes all the hard parts!
+        //get our sources
+        let result;
         try {
-          hasAddress = fetcher.hasAddress(address);
+          result = fetcher.fetchSourcesForAddress(address);
         } catch (_) {
           failure = true;
           continue;
         }
-        if (hasAddress) {
-          //now comes all the hard parts!
-          //get our sources
-          let sources, options;
-          try {
-            ({ sources, options } = fetcher.fetchSourcesForAddress(address));
-          } catch (_) {
-            failure = true;
-            continue;
+        if (result === null) {
+          //null means they don't have that address
+          continue;
+        }
+        //if we do have it, extract sources & options
+        const { sources, options } = result;
+        //make a temporary directory to store our downloads in
+        const sourceDirectory = temp.mkdirSync("tmp-");
+        //save the sources to the temporary directory
+        await Promise.all(
+          Object.entries(sources).map(async ([sourcePath, source]) => {
+            const temporaryPath = path.join(sourceDirectory, sourcePath);
+            await fs.outputFile(temporaryPath, source);
+          })
+        );
+        //compile the sources
+        const temporaryConfig = config.with({
+          contracts_directory: sourceDirectory,
+          compilers: {
+            solc: options
           }
-          //make a temporary directory to store our downloads in
-          const sourceDirectory = temp.mkdirSync("tmp-");
-          //save the sources to the temporary directory
-          await Promise.all(
-            Object.entries(sources).map(async ([sourcePath, source]) => {
-              const temporaryPath = path.join(sourceDirectory, sourcePath);
-              await fs.outputFile(temporaryPath, source);
-            })
-          );
-          //compile the sources
-          const temporaryConfig = config.with({
-            contracts_directory: sourceDirectory,
-            compilers: {
-              solc: options
-            }
-          });
-          const { contracts, sourceIndexes: files } = await new DebugCompiler(
-            temporaryConfig
-          ).compile();
-          //shim the result
-          const compilationId = `externalFor${address}Via${fetcher.name}`;
-          const newCompilations = Codec.Compilations.Utils.shimArtifacts(
-            contracts,
-            files,
-            compilationId
-          );
-          //add it!
-          await this.bugger.addCompilations(newCompilations);
-          //check: did this actually help?
-          if (!getUnknownAddresses(this.bugger).includes(address)) {
-            found = true;
-            //break out of the fetcher loop -- we got what we want
-            break;
-          }
+        });
+        const { contracts, sourceIndexes: files } = await new DebugCompiler(
+          temporaryConfig
+        ).compile();
+        //shim the result
+        const compilationId = `externalFor${address}Via${fetcher.name}`;
+        const newCompilations = Codec.Compilations.Utils.shimArtifacts(
+          contracts,
+          files,
+          compilationId
+        );
+        //add it!
+        await this.bugger.addCompilations(newCompilations);
+        //check: did this actually help?
+        if (!getUnknownAddresses(this.bugger).includes(address)) {
+          found = true;
+          //break out of the fetcher loop -- we got what we want
+          break;
         }
       }
       if (found === false) {
