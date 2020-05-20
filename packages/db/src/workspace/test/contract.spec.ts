@@ -3,7 +3,10 @@ import { shimBytecode } from "@truffle/workflow-compile/shims";
 
 import { AddSource } from "./source.graphql";
 import { AddBytecode } from "./bytecode.graphql";
-import { AddCompilation } from "./compilation.graphql";
+import {
+  AddCompilation,
+  GetCompilationWithContracts
+} from "./compilation.graphql";
 import { AddContracts, GetContract, GetAllContracts } from "./contract.graphql";
 
 describe("Contract", () => {
@@ -67,19 +70,18 @@ describe("Contract", () => {
 
     expect(contract).toHaveProperty("id");
     expect(contract).toHaveProperty("name");
-    expect(contract).toHaveProperty("sourceContract");
+    expect(contract).toHaveProperty("processedSource");
 
-    const { sourceContract } = contract;
-    expect(sourceContract).toHaveProperty("name");
-    expect(sourceContract).toHaveProperty("source");
-    expect(sourceContract).toHaveProperty("ast");
+    const { processedSource } = contract;
+    expect(processedSource).toHaveProperty("source");
+    expect(processedSource).toHaveProperty("ast");
   });
 
   test("can be queried", async () => {
     expectedId = generateId({
       name: Migrations.contractName,
       abi: { json: JSON.stringify(Migrations.abi) },
-      sourceContract: { index: 0 },
+      processedSource: { index: 0 },
       compilation: { id: compilationId }
     });
 
@@ -91,8 +93,33 @@ describe("Contract", () => {
 
     const { contract } = getContractResult;
     expect(contract).toHaveProperty("name");
-    expect(contract).toHaveProperty("sourceContract");
+    expect(contract).toHaveProperty("processedSource");
     expect(contract).toHaveProperty("abi");
+  });
+
+  test("can be queried via compilation", async () => {
+    expectedId = generateId({
+      name: Migrations.contractName,
+      abi: { json: JSON.stringify(Migrations.abi) },
+      processedSource: { index: 0 },
+      compilation: { id: compilationId }
+    });
+
+    const result = await wsClient.execute(GetCompilationWithContracts, {
+      id: compilationId
+    });
+
+    expect(result).toHaveProperty("compilation.processedSources");
+    const { processedSources } = result.compilation;
+    expect(processedSources).toHaveLength(1);
+
+    const processedSource = processedSources[0];
+    expect(processedSource).toHaveProperty("contracts");
+
+    const { contracts } = processedSource;
+    expect(contracts).toHaveLength(1);
+
+    expect(contracts[0].id).toEqual(expectedId);
   });
 
   test("can retrieve all contracts", async () => {
@@ -106,11 +133,11 @@ describe("Contract", () => {
     const firstContract = contracts[0];
 
     expect(firstContract).toHaveProperty("name");
-    expect(firstContract).toHaveProperty("sourceContract");
+    expect(firstContract).toHaveProperty("processedSource");
     expect(firstContract).toHaveProperty("abi");
     expect(firstContract).toHaveProperty("abi.json");
     expect(firstContract).toHaveProperty("compilation");
     expect(firstContract).toHaveProperty("compilation.compiler.version");
-    expect(firstContract).toHaveProperty("sourceContract.source.sourcePath");
+    expect(firstContract).toHaveProperty("processedSource.source.sourcePath");
   });
 });

@@ -126,19 +126,18 @@ export const schema = mergeSchemas({
       name: {
         fragment: `... on ContractObject { name: contractName }`
       },
-      sourceContract: {
+      processedSource: {
         fragment: `... on ContractObject {
           ast { json }
           source { contents, sourcePath }
         }`,
         resolve: obj => {
-          const { name, source, ast } = obj;
-          const sourceContract = {
-            name: name,
+          const { source, ast } = obj;
+          const processedSource = {
             source: source,
             ast: ast
           };
-          return sourceContract;
+          return processedSource;
         }
       },
       createBytecode: {

@@ -43,7 +43,7 @@ describe("Compilation", () => {
     for (let compilation of compilations) {
       expect(compilation).toHaveProperty("compiler");
       expect(compilation).toHaveProperty("sources");
-      const { compiler, sources, contracts, sourceMaps } = compilation;
+      const { compiler, sources, processedSources, sourceMaps } = compilation;
 
       expect(compiler).toHaveProperty("name");
 
@@ -52,12 +52,11 @@ describe("Compilation", () => {
         expect(source).toHaveProperty("contents");
       }
 
-      expect(contracts).toHaveLength(1);
+      expect(processedSources).toHaveLength(1);
 
-      for (let contract of contracts) {
-        expect(contract).toHaveProperty("source");
-        expect(contract).toHaveProperty("name");
-        expect(contract).toHaveProperty("ast");
+      for (let processedSource of processedSources) {
+        expect(processedSource).toHaveProperty("source");
+        expect(processedSource).toHaveProperty("ast");
       }
     }
   });

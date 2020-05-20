@@ -10,7 +10,7 @@ export const AddContracts = gql`
     id: ID!
   }
 
-  input ContractSourceContractInput {
+  input ContractProcessedSourceInput {
     index: FileIndex
   }
 
@@ -27,7 +27,7 @@ export const AddContracts = gql`
     name: String
     abi: AbiInput
     compilation: ContractCompilationInput
-    sourceContract: ContractSourceContractInput
+    processedSource: ContractProcessedSourceInput
     createBytecode: ContractBytecodeInput
     callBytecode: ContractBytecodeInput
   }
@@ -41,8 +41,7 @@ export const AddContracts = gql`
           abi {
             json
           }
-          sourceContract {
-            name
+          processedSource {
             source {
               contents
               sourcePath

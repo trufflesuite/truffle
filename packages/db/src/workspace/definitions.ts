@@ -42,8 +42,12 @@ export type WorkspaceCollections = {
 
 export const definitions: Definitions<WorkspaceCollections> = {
   contracts: {
-    createIndexes: [],
-    idFields: ["name", "abi", "sourceContract", "compilation"]
+    createIndexes: [
+      {
+        fields: ["compilation.id", "processedSource.index"]
+      }
+    ],
+    idFields: ["name", "abi", "processedSource", "compilation"]
   },
   sources: {
     createIndexes: [],

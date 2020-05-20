@@ -14,7 +14,7 @@ export const AddCompilation = gql`
           {
             compiler: { name: $compilerName, version: $compilerVersion }
             sourceMaps: [{ json: $sourceMap }]
-            contracts: [
+            processedSources: [
               {
                 name: "testing"
                 ast: { json: $abi }
@@ -37,7 +37,7 @@ export const AddCompilation = gql`
         sourceMaps {
           json
         }
-        contracts {
+        processedSources {
           source {
             contents
             sourcePath
@@ -45,7 +45,6 @@ export const AddCompilation = gql`
           ast {
             json
           }
-          name
         }
       }
     }
@@ -64,7 +63,31 @@ export const GetCompilation = gql`
         id
         contents
       }
-      contracts {
+      processedSources {
+        source {
+          contents
+        }
+      }
+    }
+  }
+`;
+
+export const GetCompilationWithContracts = gql`
+  query GetCompilation($id: ID!) {
+    compilation(id: $id) {
+      id
+      compiler {
+        name
+        version
+      }
+      sources {
+        id
+        contents
+      }
+      processedSources {
+        contracts {
+          id
+        }
         source {
           contents
         }
