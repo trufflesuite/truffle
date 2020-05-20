@@ -1,6 +1,6 @@
 import gql from "graphql-tag";
 
-export const AddCompilation = gql`
+export const AddCompilations = gql`
   input CompilerInput {
     name: String
     version: String
@@ -39,7 +39,7 @@ export const AddCompilation = gql`
     compilations: [CompilationInput!]!
   }
 
-  mutation AddCompilation($compilations: [CompilationInput!]!) {
+  mutation AddCompilations($compilations: [CompilationInput!]!) {
     workspace {
       compilationsAdd(input: { compilations: $compilations }) {
         compilations {

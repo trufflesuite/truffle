@@ -8,18 +8,18 @@ import Config from "@truffle/config";
 import { Environment } from "@truffle/environment";
 import Web3 from "web3";
 
+import { AddBytecodes } from "@truffle/db/loaders/resources/bytecodes";
+import { AddCompilations } from "@truffle/db/loaders/resources/compilations";
+import { AddContractInstances } from "@truffle/db/loaders/resources/contractInstances";
+import { AddContracts } from "@truffle/db/loaders/resources/contracts";
+import { AddNameRecords } from "@truffle/db/loaders/resources/nameRecords";
+import { AddNetworks } from "@truffle/db/loaders/resources/networks";
 import {
-  AddBytecodes,
-  AddSources,
-  AddCompilation,
-  AddContracts,
-  AddContractInstances,
-  AddNameRecords,
-  AddNetworks,
   AddProjects,
-  ResolveProjectName,
-  AssignProjectNames
-} from "../queries";
+  AssignProjectNames,
+  ResolveProjectName
+} from "@truffle/db/loaders/resources/projects";
+import { AddSources } from "@truffle/db/loaders/resources/sources";
 
 type WorkflowCompileResult = {
   compilations: {
@@ -528,7 +528,7 @@ export class ArtifactsLoader {
         })
     );
 
-    const compilations = await this.db.query(AddCompilation, {
+    const compilations = await this.db.query(AddCompilations, {
       compilations: compilationObjects
     });
 
