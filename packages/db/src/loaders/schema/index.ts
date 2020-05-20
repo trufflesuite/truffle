@@ -7,7 +7,6 @@ const tmp = require("tmp");
 import { makeExecutableSchema } from "@gnd/graphql-tools";
 import { gql } from "apollo-server";
 
-//dummy query here because of known issue with Apollo mutation-only schemas
 const typeDefs = gql`
   type ArtifactsLoadPayload {
     success: Boolean
