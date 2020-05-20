@@ -1,0 +1,43 @@
+{
+  "name": "@truffle/source-fetcher",
+  "version": "0.1.0",
+  "description": "Fetches verified source code from services such as Etherscan",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "prepare": "yarn build",
+    "build": "node_modules/.bin/tsc --declaration",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ethereum",
+    "solidity",
+    "etherscan",
+    "verify-source",
+    "ipfs"
+  ],
+  "author": "Harry Altman <harry@trufflesuite.com>",
+  "license": "MIT",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/source-fetcher",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.5",
+    "typescript": "^3.6.3"
+  },
+  "dependencies": {
+    "debug": "^4.1.1",
+    "source-map-support": "^0.5.19"
+  }
+}

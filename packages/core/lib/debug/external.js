@@ -7,11 +7,9 @@ const fs = require("fs-extra");
 const path = require("path");
 
 const Codec = require("@truffle/codec");
+const Fetchers = require("@truffle/source-fetcher");
 
 const { DebugCompiler } = require("./compiler");
-
-const { EtherscanFetcher } = require("./etherscan");
-const Fetchers = [EtherscanFetcher];
 
 class DebugExternalHandler {
   constructor(bugger, config) {
