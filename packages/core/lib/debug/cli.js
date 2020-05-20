@@ -9,7 +9,7 @@ const Codec = require("@truffle/codec");
 
 const { DebugInterpreter } = require("./interpreter");
 const { DebugCompiler } = require("./compiler");
-const { DebugExternalHandler } = require("./external");
+const { DebugExternalFetcher } = require("./external");
 
 class CLIDebugger {
   constructor(config, { compilations, txHash } = {}) {
@@ -23,58 +23,46 @@ class CLIDebugger {
 
     // get compilations (either by shimming compiled artifacts,
     // or by doing a recompile)
-    const compilations =
-      this.compilations || (await this.getCompilations(this.config));
+    const compilations = this.compilations || (await this.getCompilations());
 
     // invoke @truffle/debugger
-    const session = await this.startDebugger(compilations, this.txHash);
+    const session = await this.startDebugger(compilations);
 
     // initialize prompt/breakpoints/ui logic
-    const interpreter = await this.buildInterpreter(session, this.txHash);
+    const interpreter = await this.buildInterpreter(session);
 
     return interpreter;
   }
 
-  async getCompilations() {
-    const compilations = this.getProjectCompilations(this.config);
-    if (!this.config.external) {
-      return compilations;
+  async fetchExternalSources(bugger) {
+    const fetchSpinner = ora(
+      "Getting and compiling external sources..."
+    ).start();
+    const { badAddresses, badFetchers } = await new DebugExternalFetcher(
+      bugger,
+      this.config
+    ).fetch(); //note: mutates bugger!
+    if (badAddresses.length === 0 && badFetchers.length === 0) {
+      fetchSpinner.succeed();
     } else {
-      const fetchSpinner = ora(
-        "Getting and compiling external sources..."
-      ).start();
-      const {
-        compilations: allCompilations,
-        badAddresses,
-        badFetchers
-      } = new DebugExternalHandler(
-        this.config,
-        compilations,
-        this.txHash
-      ).getAllCompilations();
-      if (badAddresses.length === 0 && badFetchers.length === 0) {
-        fetchSpinner.succeed();
-      } else {
-        let warningStrings;
-        if (badFetchers.length > 0) {
-          warningStrings.push(
-            `Errors occurred connecting to ${badFetchers.join(", ")}$.`
-          );
-        }
-        if (badAddresses.length > 0) {
-          warningStrings.push(
-            `Errors occurred while getting sources for addresses ${badAddresses.join(
-              ", "
-            )}.`
-          );
-        }
-        fetchSpinner.warn(warningStrings.join("  "));
+      let warningStrings;
+      if (badFetchers.length > 0) {
+        warningStrings.push(
+          `Errors occurred connecting to ${badFetchers.join(", ")}$.`
+        );
       }
-      return allCompilations;
+      if (badAddresses.length > 0) {
+        warningStrings.push(
+          `Errors occurred while getting sources for addresses ${badAddresses.join(
+            ", "
+          )}.`
+        );
+      }
+      fetchSpinner.warn(warningStrings.join("  "));
     }
   }
 
-  async getProjectCompilations() {
+  async getCompilations() {
     let artifacts = await DebugUtils.gatherArtifacts(this.config);
     let shimmedCompilations = Codec.Compilations.Utils.shimArtifacts(artifacts);
     //if they were compiled simultaneously, yay, we can use it!
@@ -101,27 +89,43 @@ class CLIDebugger {
   }
 
   async startDebugger(compilations) {
-    const startMessage = DebugUtils.formatStartMessage(
-      this.txHash !== undefined
-    );
-    const startSpinner = ora(startMessage).start();
+    let startSpinner;
+    if (!this.config.external) {
+      const startMessage = DebugUtils.formatStartMessage(
+        this.txHash !== undefined
+      );
+      startSpinner = ora(startMessage).start();
+    }
 
     const bugger =
       this.txHash !== undefined
         ? await Debugger.forTx(this.txHash, {
             provider: this.config.provider,
-            compilations
+            compilations,
+            lightMode: this.config.external
           })
         : await Debugger.forProject({
             provider: this.config.provider,
-            compilations
+            compilations,
+            lightMode: this.config.external
           });
 
-    // check for error
-    if (bugger.view(Debugger.selectors.session.status.isError)) {
-      startSpinner.fail();
+    if (!this.config.external) {
+      // check for error
+      if (bugger.view(Debugger.selectors.session.status.isError)) {
+        startSpinner.fail();
+      } else {
+        startSpinner.succeed();
+      }
     } else {
-      startSpinner.succeed();
+      await this.fetchExternalSources(bugger); //note: mutates bugger!
+      startSpinner = ora(startMessage).start();
+      await bugger.startFullMode();
+      if (bugger.view(Debugger.selectors.session.status.isError)) {
+        startSpinner.fail();
+      } else {
+        startSpinner.succeed();
+      }
     }
 
     return bugger;

@@ -6,7 +6,6 @@ const temp = require("temp").track();
 const fs = require("fs-extra");
 const path = require("path");
 
-const Debugger = require("@truffle/debugger");
 const Codec = require("@truffle/codec");
 
 const { DebugCompiler } = require("./compiler");
@@ -15,22 +14,22 @@ const { EtherscanFetcher } = require("./etherscan");
 const Fetchers = [EtherscanFetcher];
 
 class DebugExternalHandler {
-  constructor(config, compilations, txHash) {
+  constructor(bugger, config) {
     this.config = config;
-    this.compilations = compilations;
-    this.txHash = txHash;
+    this.bugger = bugger;
   }
 
-  async getAllCompilations() {
-    let allCompilations = Object.assign({}, compilations);
+  async fetch() {
     let badAddresses = []; //for reporting errors back
     let badFetchers = []; //similar
-    let sourcelessAddresses = new Set(); //addresses we know we can't get source for
+    let addressesToSkip = new Set(); //addresses we know we can't get source for
     //note: this should always be a subset of unknownAddresses! [see below]
     //get the network id
     const networkId = await new Web3(config.provider).eth.net.getId(); //note: this is a number
     //make fetcher instances
-    const allFetchers = Fetchers.map(Fetcher => new Fetcher(networkId));
+    const allFetchers = Fetchers.map(Fetcher =>
+      Fetcher.forNetworkId(networkId)
+    );
     let fetchers;
     //filter out ones that don't support this network
     //(and note ones that yielded errors)
@@ -51,30 +50,10 @@ class DebugExternalHandler {
       }
     }
     //now: the main loop!
-    while (true) {
-      //spin up a light-mode debugger
-      const bugger = await Debugger.forTx(txHash, {
-        provider: config.provider,
-        allCompilations, //note we use *all* compilations made so far!
-        lightMode: true
-      });
-      //get the unrecognized addresses from it
-      const instances = bugger.view(
-        Debugger.selectors.session.info.affectedInstances
-      );
-      const unknownAddresses = Object.entries(instances)
-        .filter(([_, { contractName }]) => contractName === undefined)
-        .map(([address, _]) => address);
-      //(we can now discard the debugger; yay garbage collection)
-      //now: are there any unknown addresses we can maybe find source for?
-      const address = unknownAddresses.find(
-        address => !sourcelessAddresses.has(address)
-      );
-      //if not, the loop is done
-      if (address === undefined) {
-        break;
-      }
-      //otherwise, let's go try to fetch source for that address
+    while (
+      (address = getAnUnknownAddress(this.bugger, addressesToSkip)) !==
+      undefined
+    ) {
       let found = false;
       let failure = false; //set in case something goes wrong while getting source
       //(not set if there is no source)
@@ -89,9 +68,9 @@ class DebugExternalHandler {
         if (hasAddress) {
           //now comes all the hard parts!
           //get our sources
-          let sources;
+          let sources, options;
           try {
-            sources = fetcher.fetchSourcesForAddress(address);
+            ({ sources, options } = fetcher.fetchSourcesForAddress(address));
           } catch (_) {
             failure = true;
             continue;
@@ -107,28 +86,34 @@ class DebugExternalHandler {
           );
           //compile the sources
           const temporaryConfig = config.with({
-            contracts_directory: sourceDirectory
+            contracts_directory: sourceDirectory,
+            compilers: {
+              solc: options
+            }
           });
           const { contracts, sourceIndexes: files } = await new DebugCompiler(
             temporaryConfig
           ).compile();
           //shim the result
-          const compilationId = `externalFor${address}`;
+          const compilationId = `externalFor${address}Via${fetcher.name}`;
           const newCompilations = Codec.Compilations.Utils.shimArtifacts(
             contracts,
             files,
             compilationId
           );
-          //assign it!
-          Object.assign(allCompilations, newCompilations); //mutates!
-          //break out of the fetcher loop -- we got what we want
-          found = true;
-          break;
+          //add it!
+          await this.bugger.addCompilations(newCompilations);
+          //check: did this actually help?
+          if (!getUnknownAddresses(this.bugger).includes(address)) {
+            found = true;
+            //break out of the fetcher loop -- we got what we want
+            break;
+          }
         }
       }
       if (found === false) {
-        //if we couldn't find it, add it to the list of sourceless addresses
-        sourcelessAddresses.add(address);
+        //if we couldn't find it, add it to the list of addresses to skip
+        addressesToSkip.add(address);
         //if we couldn't find it *and* there was a network problem, add it to
         //the failures list
         if (failure === true) {
@@ -138,6 +123,21 @@ class DebugExternalHandler {
     }
     return { compilations: allCompilations, badAddresses, badFetchers };
   }
+}
+
+function getUnknownAddresses(bugger) {
+  const instances = bugger.view(
+    bugger.selectors.session.info.affectedInstances
+  );
+  return Object.entries(instances)
+    .filter(([_, { contractName }]) => contractName === undefined)
+    .map(([address, _]) => address);
+}
+
+function getAnUnknownAddress(bugger, addressesToSkip) {
+  return getUnknownAddresses(bugger).find(
+    address => !addressesToSkip.has(address)
+  );
 }
 
 module.exports = {
