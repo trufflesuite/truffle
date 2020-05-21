@@ -34,10 +34,12 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.5",
+    "@types/request-promise-native": "^1.0.17",
     "typescript": "^3.6.3"
   },
   "dependencies": {
     "debug": "^4.1.1",
+    "request-promise-native": "^1.0.8",
     "source-map-support": "^0.5.19"
   }
 }
