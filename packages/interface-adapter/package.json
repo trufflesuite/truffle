@@ -9,14 +9,15 @@
   },
   "version": "0.4.7",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --declaration",
     "prepare": "yarn build",
     "test": "mocha --exit -r ts-node/register test/**/*.test.ts",
-    "watch": "tsc -w"
+    "watch": "tsc -w --declaration"
   },
   "dependencies": {
     "bn.js": "^4.11.8",

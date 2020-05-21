@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --declaration",
     "prepare": "yarn build",
     "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts"
   },

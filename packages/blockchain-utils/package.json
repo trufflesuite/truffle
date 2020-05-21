@@ -11,7 +11,7 @@
   "version": "0.0.19",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --declaration",
     "prepare": "yarn build",
     "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
   },

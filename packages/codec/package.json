@@ -10,8 +10,8 @@
   "scripts": {
     "docs": "./scripts/generate-docs",
     "prepare": "yarn build",
-    "build": "node_modules/.bin/ttsc",
-    "start": "node_modules/.bin/ttsc --watch"
+    "build": "ttsc --declaration",
+    "start": "ttsc --watch --declaration"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
   "keywords": [
