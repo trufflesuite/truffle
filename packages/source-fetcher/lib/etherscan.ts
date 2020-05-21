@@ -102,7 +102,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       },
       options: {
         version: result.CompilerVersion,
-        settings: this.extractSettings(result, [filename])
+        settings: this.extractSettings(result)
       }
     };
   }
@@ -115,7 +115,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       sources: this.processSources(sources),
       options: {
         version: result.CompilerVersion,
-        settings: this.extractSettings(result, Object.keys(sources))
+        settings: this.extractSettings(result)
       }
     };
   }
@@ -128,7 +128,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       sources: this.processSources(jsonInput.sources),
       options: {
         version: result.CompilerVersion,
-        settings: jsonInput.settings
+        settings: this.removeLibraries(jsonInput.settings)
       }
     };
   }
@@ -144,43 +144,33 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     );
   }
 
-  private static extractSettings(
-    result: EtherscanResult,
-    paths: string[]
-  ): Types.SolcSettings {
+  private static extractSettings(result: EtherscanResult): Types.SolcSettings {
     const evmVersion: string =
       result.EVMVersion === "Default" ? undefined : result.EVMVersion;
     const optimizer = {
       enabled: result.OptimizationUsed === "1",
       runs: parseInt(result.Runs)
     };
-    //we'll have to do custom parsing for the Library variable; it's not JSON
-    //(fortunately it's very simple)
-    const libraries: Types.Libraries = Object.assign(
-      {},
-      ...result.Library.split(";").map(libraryAndAddress => {
-        const [library, address] = libraryAndAddress.split(":");
-        return {
-          [library]: address
-        };
-      })
-    );
-    const librariesRepeated = Object.assign(
-      {},
-      ...paths.map(path => ({ [path]: libraries }))
-    );
+    //old version got libraries here, but we don't actually want that!
     if (evmVersion !== undefined) {
       return {
         optimizer,
-        evmVersion,
-        libraries: librariesRepeated
+        evmVersion
       };
     } else {
       return {
-        optimizer,
-        libraries: librariesRepeated
+        optimizer
       };
     }
+  }
+
+  //we *don't* want to pass library info!  unlinked bytecode is better!
+  private static removeLibraries(
+    settings: Types.SolcSettings
+  ): Types.SolcSettings {
+    let copySettings: Types.SolcSettings = { ...settings };
+    delete copySettings.libraries;
+    return copySettings;
   }
 };
 
@@ -209,7 +199,7 @@ interface EtherscanResult {
   Runs: string; //really: a number
   ConstructorArguments: string; //ignored
   EVMVersion: string;
-  Library: string; //represents an object but not in JSON
+  Library: string; //represents an object but not in JSON (we'll actually ignore this)
   LicenseType: string; //ignored
   Proxy: string; //no clue what this is [ignored]
   Implementation: string; //or this [ignored]

@@ -34,7 +34,7 @@ export interface SolcSettings {
   evmVersion?: string; //not gonna enumerate these
   debug?: DebugSettings;
   metadata?: MetadataSettings;
-  libraries?: LibrarySettings;
+  libraries?: LibrarySettings; //note: we don't actually want to pass this!
 }
 
 export interface SolcSources {
