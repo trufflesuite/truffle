@@ -31,16 +31,31 @@ export interface SolcOptions {
 export interface SolcSettings {
   remappings?: string[];
   optimizer?: OptimizerSettings;
-  evmVersion: string; //not gonna enumerate these
+  evmVersion?: string; //not gonna enumerate these
   debug?: DebugSettings;
   metadata?: MetadataSettings;
   libraries: LibrarySettings;
 }
 
-export interface LibrarySettings {
-  [contractPath: string]: {
-    [libraryName: string]: string;
+export interface SolcSources {
+  [sourcePath: string]: {
+    content: string;
   };
+}
+
+export interface SolcInput {
+  language: "Solidity";
+  sources: SolcSources;
+  settings: SolcSettings;
+  //there's also outputSelection, but, frankly, we don't care about this
+}
+
+export interface LibrarySettings {
+  [contractPath: string]: Libraries;
+}
+
+export interface Libraries {
+  [libraryName: string]: string;
 }
 
 export interface MetadataSettings {
