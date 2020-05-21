@@ -25,8 +25,8 @@ class DebugExternalHandler {
     //get the network id
     const networkId = await new Web3(config.provider).eth.net.getId(); //note: this is a number
     //make fetcher instances
-    const allFetchers = Fetchers.map(Fetcher =>
-      Fetcher.forNetworkId(networkId)
+    const allFetchers = await Promise.all(
+      Fetchers.map(async Fetcher => await Fetcher.forNetworkId(networkId))
     );
     let fetchers;
     //filter out ones that don't support this network
@@ -35,7 +35,7 @@ class DebugExternalHandler {
       let isValid;
       let failure = false;
       try {
-        isValid = fetcher.isNetworkValid();
+        isValid = await fetcher.isNetworkValid();
       } catch (_) {
         isValid = false;
         failure = true;
@@ -60,7 +60,7 @@ class DebugExternalHandler {
         //get our sources
         let result;
         try {
-          result = fetcher.fetchSourcesForAddress(address);
+          result = await fetcher.fetchSourcesForAddress(address);
         } catch (_) {
           failure = true;
           continue;

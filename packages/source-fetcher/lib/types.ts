@@ -1,30 +1,34 @@
 export interface FetcherConstructor {
-  forNetworkId(networkId: number): Fetcher;
+  forNetworkId(networkId: number): Promise<Fetcher>;
 }
 
 export interface Fetcher {
   readonly name: string;
-  isNetworkValid(): boolean;
-  fetchSourcesForAddress(address: string): SourceInfo | null;
+  isNetworkValid(): Promise<boolean>;
+  /**
+   * returns null if no Solidity sources for address
+   * (address not in system, sources are Vyper, whatever)
+   */
+  fetchSourcesForAddress(address: string): Promise<SourceInfo | null>;
 }
 
-interface SourceInfo {
+export interface SourceInfo {
   sources: SourcesByPath;
   options: SolcOptions;
 }
 
-interface SourcesByPath {
+export interface SourcesByPath {
   [sourcePath: string]: string;
 }
 
 //apologies if reinventing the wheel here
-interface SolcOptions {
+export interface SolcOptions {
   version: string;
   settings: SolcSettings;
 }
 
 //only including settings that would alter compiled result
-interface SolcSettings {
+export interface SolcSettings {
   remappings?: string[];
   optimizer?: OptimizerSettings;
   evmVersion: string; //not gonna enumerate these
@@ -33,28 +37,28 @@ interface SolcSettings {
   libraries: LibrarySettings;
 }
 
-interface LibrarySettings {
+export interface LibrarySettings {
   [contractPath: string]: {
     [libraryName: string]: string;
   };
 }
 
-interface MetadataSettings {
+export interface MetadataSettings {
   useLiteralContent?: boolean;
   bytecodeHash?: "none" | "ipfs" | "bzzr1";
 }
 
-interface DebugSettings {
+export interface DebugSettings {
   revertStrings?: "default" | "strip" | "debug" | "verboseDebug";
 }
 
-interface OptimizerSettings {
+export interface OptimizerSettings {
   enabled?: boolean;
   runs?: number;
   details?: OptimizerDetails;
 }
 
-interface OptimizerDetails {
+export interface OptimizerDetails {
   peephole?: boolean;
   jumpdestRemover?: boolean;
   orderLiterals?: boolean;
@@ -65,7 +69,7 @@ interface OptimizerDetails {
   yulDetails?: YulDetails;
 }
 
-interface YulDetails {
+export interface YulDetails {
   stackAllocation?: boolean;
   optimizerSteps?: string;
 }
