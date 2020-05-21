@@ -267,6 +267,7 @@ export function regularizeTypeIdentifier(identifier: string): string {
   return identifier.replace(
     /(_(storage|memory|calldata))((_slice)?_ptr)?$/,
     "$1_ptr" //this used to use lookbehind for clarity, but Firefox...
+    //(see: https://github.com/trufflesuite/truffle/issues/3068 )
   );
 }
 
