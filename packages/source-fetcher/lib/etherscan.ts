@@ -37,6 +37,13 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   async fetchSourcesForAddress(
     address: string
   ): Promise<Types.SourceInfo | null> {
+    const response = await this.getSuccessfulResponse(address);
+    return EtherscanFetcher.processResult(response.result[0]);
+  }
+
+  private async getSuccessfulResponse(
+    address: string
+  ): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
     const response: EtherscanResponse = await request({
       uri: `https://api.etherscan${this.suffix}.io/api`,
@@ -49,9 +56,10 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       json: true //turns on auto-parsing :)
     });
     if (response.status === "0") {
+      //no retry logic for now; will add later
       throw new Error(response.result);
     }
-    return EtherscanFetcher.processResult(response.result[0]);
+    return response;
   }
 
   private static processResult(
