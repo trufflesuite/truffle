@@ -2,20 +2,21 @@ version: 2.1
 orbs:
   node: circleci/node@2.1.1
 jobs:
-  build-and-test:
+  build-and-test-COLONY:
     executor:
       name: node/default
+      tag: '10.20'
     steps:
       - checkout
-      - run: npm i -g yarn
+      - setup_remote_docker
       - run: yarn bootstrap
-      - run: truffle obtain --solc=0.5.16
+      - run: npx truffle obtain --solc=0.5.16
       - run: COLONY=true yarn ci
 
 workflows:
   colony:
     jobs:
-      - build-and-test:
+      - build-and-test-COLONY:
           filters:
             branches:
               only:
