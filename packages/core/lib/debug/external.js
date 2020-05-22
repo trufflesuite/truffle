@@ -71,6 +71,12 @@ class DebugExternalHandler {
         }
         //if we do have it, extract sources & options
         const { sources, options } = result;
+        if (options.language !== "Solidity") {
+          //if it's not Solidity, bail out now
+          addressesToSkip.add(address);
+          //break out of the fetcher loop, since *no* fetcher will work here
+          break;
+        }
         //make a temporary directory to store our downloads in
         const sourceDirectory = temp.mkdirSync("tmp-");
         //save the sources to the temporary directory

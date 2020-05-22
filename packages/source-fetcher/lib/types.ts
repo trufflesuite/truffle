@@ -14,7 +14,7 @@ export interface Fetcher {
 
 export interface SourceInfo {
   sources: SourcesByPath;
-  options: SolcOptions;
+  options: CompilerOptions;
 }
 
 export interface SourcesByPath {
@@ -22,7 +22,8 @@ export interface SourcesByPath {
 }
 
 //apologies if reinventing the wheel here
-export interface SolcOptions {
+export interface CompilerOptions {
+  language: "Solidity" | "Vyper"; //note: only Solidity really supported atm
   version: string;
   settings: SolcSettings;
 }

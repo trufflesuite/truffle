@@ -82,7 +82,16 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     }
     //case 2: it's a Vyper contract
     if (result.CompilerVersion.startsWith("vyper")) {
-      return null;
+      //return nothing useful, just something saying it's
+      //vyper so we can't do anything
+      return {
+        sources: {},
+        options: {
+          language: "Vyper",
+          version: "",
+          settings: {}
+        }
+      };
     }
     let sourceJson: Types.SolcSources | Types.SolcInput;
     try {
@@ -116,6 +125,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
         [filename]: result.SourceCode
       },
       options: {
+        language: "Solidity",
         version: result.CompilerVersion,
         settings: this.extractSettings(result)
       }
@@ -129,6 +139,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     return {
       sources: this.processSources(sources),
       options: {
+        language: "Solidity",
         version: result.CompilerVersion,
         settings: this.extractSettings(result)
       }
@@ -142,6 +153,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     return {
       sources: this.processSources(jsonInput.sources),
       options: {
+        language: "Solidity",
         version: result.CompilerVersion,
         settings: this.removeLibraries(jsonInput.settings)
       }
