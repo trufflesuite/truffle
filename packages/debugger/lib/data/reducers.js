@@ -126,6 +126,7 @@ function allocations(state = DEFAULT_ALLOCATIONS, action) {
       storage: action.storage,
       memory: action.memory,
       abi: action.abi,
+      calldata: action.calldata,
       state: action.state
     };
   } else {

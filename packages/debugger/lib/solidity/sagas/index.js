@@ -23,7 +23,7 @@ function* tickSaga() {
 }
 
 function* functionDepthSaga() {
-  if (yield select(solidity.current.willFail)) {
+  if (yield select(solidity.current.willReturn)) {
     //we do this case first so we can be sure we're not failing in any of the
     //other cases below!
     yield put(actions.externalReturn());
@@ -41,8 +41,6 @@ function* functionDepthSaga() {
     debug("checking if guard needed");
     let guard = yield select(solidity.current.callRequiresPhantomFrame);
     yield put(actions.externalCall(guard));
-  } else if (yield select(solidity.current.willReturn)) {
-    yield put(actions.externalReturn());
   }
 }
 

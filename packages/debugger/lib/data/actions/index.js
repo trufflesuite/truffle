@@ -62,12 +62,13 @@ export function defineType(node, compilationId) {
 }
 
 export const ALLOCATE = "DATA_ALLOCATE";
-export function allocate(storage, memory, abi, state) {
+export function allocate(storage, memory, abi, calldata, state) {
   return {
     type: ALLOCATE,
     storage,
     memory,
     abi,
+    calldata,
     state
   };
 }

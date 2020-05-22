@@ -75,6 +75,12 @@ function* tickSaga() {
   yield* trace.signalTickSagaCompletion();
 }
 
+//NOTE: We don't account here for multiple simultaneous returns.
+//Such a case is *vanishingly* unlikely to come up in real code
+//so it's simply not worth the trouble.  Such a case will screw
+//up the debugger pretty good as a result.
+//(...but I might go back and do it later. :P )
+
 export function* callstackAndCodexSaga() {
   if (yield select(evm.current.step.isExceptionalHalting)) {
     //let's handle this case first so we can be sure everything else is *not*
@@ -121,7 +127,7 @@ export function* callstackAndCodexSaga() {
 
     yield put(actions.create(binary, createdAddress, sender, value));
     //as above, storageAddress handles when calling from a creation call
-  } else if (yield select(evm.current.step.isHalting)) {
+  } else if (yield select(evm.current.step.isNormalHalting)) {
     debug("got return");
 
     let { binary, storageAddress } = yield select(evm.current.call);

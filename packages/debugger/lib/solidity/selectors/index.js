@@ -312,16 +312,13 @@ let solidity = createSelectorTree({
 
     /**
      * solidity.current.willReturn
+     *
+     * covers both normal returns & failures
      */
     willReturn: createLeaf(
       [evm.current.step.isHalting],
       isHalting => isHalting
     ),
-
-    /**
-     * solidity.current.willFail
-     */
-    willFail: createLeaf([evm.current.step.isExceptionalHalting], x => x),
 
     /**
      * solidity.current.nextMapped
