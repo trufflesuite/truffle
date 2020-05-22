@@ -9,8 +9,8 @@
   },
   "scripts": {
     "prepare": "yarn build",
-    "build": "node_modules/.bin/tsc --declaration",
-    "start": "node_modules/.bin/tsc --watch",
+    "build": "tsc",
+    "start": "tsc --watch",
     "test": "cd test/current && npx truffle test && cd ../legacy && npx truffle test"
   },
   "dependencies": {
