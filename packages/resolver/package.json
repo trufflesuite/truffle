@@ -8,7 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc --declaration",
+    "build": "tsc",
     "prepare": "yarn build",
     "test": "mocha -r ts-node/register test/*.ts"
   },

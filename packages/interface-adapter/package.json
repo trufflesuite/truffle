@@ -14,10 +14,10 @@
     "lib": "lib"
   },
   "scripts": {
-    "build": "tsc --declaration",
+    "build": "tsc",
     "prepare": "yarn build",
     "test": "mocha --exit -r ts-node/register test/**/*.test.ts",
-    "watch": "tsc -w --declaration"
+    "watch": "tsc -w"
   },
   "dependencies": {
     "bn.js": "^4.11.8",

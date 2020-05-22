@@ -7,7 +7,7 @@
   "version": "1.0.60",
   "main": "dist/box.js",
   "scripts": {
-    "build": "tsc --declaration",
+    "build": "tsc",
     "prepare": "yarn build",
     "test": "mocha --timeout 10000"
   },

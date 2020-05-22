@@ -11,7 +11,7 @@
   "version": "1.0.35",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc --declaration",
+    "build": "tsc",
     "prepare": "yarn build",
     "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts"
   },
