@@ -1,6 +1,6 @@
 import { Fetcher, FetcherConstructor } from "./types";
 import * as Types from "./types";
-import { networksById } from "./common";
+import { networksById, makeFilename } from "./common";
 import request from "request-promise-native";
 
 const apiKey: string = ""; //don't check in the real key!
@@ -103,7 +103,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   private static processSingleResult(
     result: EtherscanResult
   ): Types.SourceInfo {
-    const filename = result.ContractName || "Contract.sol"; //just to be sure it's not empty
+    const filename = makeFilename(result.ContractName);
     return {
       sources: {
         [filename]: result.SourceCode
@@ -147,7 +147,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     return Object.assign(
       {},
       ...Object.entries(sources).map(([path, { content: source }]) => ({
-        [path]: source
+        [makeFilename(path)]: source
       }))
     );
   }

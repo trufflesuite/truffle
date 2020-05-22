@@ -5,3 +5,14 @@ export const networksById: { [id: number]: string } = {
   5: "goerli",
   42: "kovan"
 };
+
+export function makeFilename(name: string, extension: string = ".sol"): string {
+  if (!name) {
+    return "Contract" + extension;
+  }
+  if (name.endsWith(extension)) {
+    return name;
+  } else {
+    return name + extension;
+  }
+}
