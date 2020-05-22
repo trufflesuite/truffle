@@ -224,7 +224,7 @@ const data = createSelectorTree({
                   )
                   .filter(
                     variable =>
-                      inlined[compilationId][variable.id].definition
+                      inlined[compilationId][variable.idOrPath].definition
                         .visibility !== "private"
                     //filter out private variables from the base classes
                   )
@@ -236,7 +236,7 @@ const data = createSelectorTree({
                     //how to read.  they'll just clutter things up.
                     debug("variable %O", variable);
                     let definition =
-                      inlined[compilationId][variable.id].definition;
+                      inlined[compilationId][variable.idOrPath].definition;
                     return (
                       !definition.constant ||
                       Codec.Ast.Utils.isSimpleConstant(definition.value)
@@ -256,18 +256,13 @@ const data = createSelectorTree({
        *
        * the raw scopes data, just with intermediate
        * layers cut out
-       *
-       * ...and Solidity and Yul grouped together, HACK
        */
       raw: createLeaf(["/info/scopes"], scopes =>
         Object.assign(
           {},
           ...Object.entries(scopes.byCompilationId).map(
-            ([
-              compilationId,
-              { byId: nodes, bySourceAndPointer: yulNodes }
-            ]) => ({
-              [compilationId]: { ...nodes, ...yulNodes }
+            ([compilationId, { byIdOrPath: nodes }]) => ({
+              [compilationId]: { ...nodes }
             })
           )
         )
@@ -1049,8 +1044,7 @@ const data = createSelectorTree({
        * data.current.identifiers (selector)
        *
        * returns identifers and corresponding definition node ID or builtin name
-       * (object entries look like [name]: {astId: id}, [name]: {builtin: name},
-       * or [name]: {sourceAndPointer: sourceId + ":" + pointer})
+       * (object entries look like [name]: {idOrPath: idOrPath}, [name]: {builtin: name})
        */
       _: createLeaf(
         [
@@ -1073,10 +1067,7 @@ const data = createSelectorTree({
                   .filter(variable => variable.name !== "") //exclude anonymous output params
                   .filter(variable => variables[variable.name] == undefined) //don't add shadowed vars
                   .map(variable => ({
-                    [variable.name]:
-                      variable.id !== undefined
-                        ? { astId: variable.id }
-                        : { sourceAndPointer: variable.sourceAndPointer }
+                    [variable.name]: { idOrPath: variable.idOrPath }
                   }))
               );
               //NOTE: because these assignments are processed in order, that means
@@ -1135,26 +1126,11 @@ const data = createSelectorTree({
             let variables = Object.assign(
               {},
               ...Object.entries(identifiers).map(([identifier, variable]) => {
-                if (variable.astId !== undefined) {
-                  let { definition } = scopes[variable.astId];
+                if (variable.idOrPath !== undefined) {
+                  let { definition } = scopes[variable.idOrPath];
                   return { [identifier]: definition };
-                } else if (variable.sourceAndPointer !== undefined) {
-                  let { definition } = scopes[variable.sourceAndPointer];
-                  //for Yul variables
-                  let splicedDefinition = {
-                    ...definition,
-                    id: -1,
-                    nodeType: "VariableDeclaration",
-                    //NOTE: the actual only-existing type in Yul at the moment is u256,
-                    //which officially corresponds to uint256, not bytes32.
-                    //However, I think it makes more sense at the moment to treat it as
-                    //bytes32 despite that, so that's what I'm doing.
-                    typeDescriptions: {
-                      typeIdentifier: "t_bytes32",
-                      typeString: "bytes32"
-                    }
-                  };
-                  return { [identifier]: splicedDefinition };
+                  //there used to be separate code for Yul variables here,
+                  //but now that's handled in definitionToType
                 } else {
                   return {}; //skip over builtins; we'll handle those separately
                 }
@@ -1220,25 +1196,18 @@ const data = createSelectorTree({
           Object.assign(
             {},
             ...Object.entries(identifiers).map(
-              ([identifier, { astId, sourceAndPointer, builtin }]) => {
+              ([identifier, { idOrPath, builtin }]) => {
                 let id;
-                debug("astId: %d", astId);
+                debug("idOrPath: %o", idOrPath);
                 debug("builtin: %s", builtin);
 
                 //is this an ordinary variable or a builtin?
-                if (astId !== undefined || sourceAndPointer !== undefined) {
+                if (idOrPath !== undefined) {
                   //if not a builtin, first check if it's a contract var
                   let compilationAssignments =
-                    assignments.byCompilationId[compilationId] || {};
-                  let solidityAssignments =
-                    compilationAssignments.byAstId || {};
-                  let yulAssignments =
-                    compilationAssignments.bySourcAndPointer || {};
-                  id = (
-                    solidityAssignments[astId] ||
-                    yulAssignments[sourceAndPointer] ||
-                    []
-                  ).find(
+                    (assignments.byCompilationId[compilationId] || {})
+                      .byIdOrPath || {};
+                  id = (compilationAssignments[idOrPath] || []).find(
                     idHash => assignments.byId[idHash].address === address
                   );
                   debug("id after global: %s", id);
@@ -1247,35 +1216,18 @@ const data = createSelectorTree({
                   if (id === undefined) {
                     //if we're in a modifier, include modifierDepth
                     if (inModifier) {
-                      if (astId !== undefined) {
-                        id = stableKeccak256({
-                          astId,
-                          compilationId,
-                          stackframe: currentDepth,
-                          modifierDepth
-                        });
-                      } else {
-                        id = stableKeccak256({
-                          sourceAndPointer,
-                          compilationId,
-                          stackframe: currentDepth,
-                          modifierDepth
-                        });
-                      }
+                      id = stableKeccak256({
+                        idOrPath,
+                        compilationId,
+                        stackframe: currentDepth,
+                        modifierDepth
+                      });
                     } else {
-                      if (astId !== undefined) {
-                        id = stableKeccak256({
-                          astId,
-                          compilationId,
-                          stackframe: currentDepth
-                        });
-                      } else {
-                        id = stableKeccak256({
-                          sourceAndPointer,
-                          compilationId,
-                          stackframe: currentDepth
-                        });
-                      }
+                      id = stableKeccak256({
+                        idOrPath,
+                        compilationId,
+                        stackframe: currentDepth
+                      });
                     }
                   }
                   debug("id after local: %s", id);
@@ -1283,6 +1235,7 @@ const data = createSelectorTree({
                   //otherwise, it's a builtin
                   //NOTE: for now we assume there is only one assignment per
                   //builtin, but this will change in the future
+                  debug("builtin: %s", builtin);
                   id = assignments.byBuiltin[builtin][0];
                 }
 

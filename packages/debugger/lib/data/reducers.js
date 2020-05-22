@@ -19,145 +19,66 @@ function scopes(state = DEFAULT_SCOPES, action) {
 
   switch (action.type) {
     case actions.SCOPE: {
-      let { compilationId, id, sourceId, parentId, pointer } = action;
-      if (id !== null) {
-        newState = {
-          byCompilationId: {
-            ...state.byCompilationId,
-            [compilationId]: {
-              ...state.byCompilationId[compilationId] //just setting this up to avoid errors later
-            }
-          }
-        };
+      const { compilationId, id, sourceId, parentId, pointer } = action;
+      const idOrPath = id !== undefined ? id : sourceId + ":" + pointer;
 
-        //apologies for this multi-stage setup, but JS is like that...
-
-        newState.byCompilationId[compilationId] = {
-          ...newState.byCompilationId[compilationId],
-          byId: {
-            ...newState.byCompilationId[compilationId].byId
-          }
-        };
-
-        scope = newState.byCompilationId[compilationId].byId[id];
-
-        newState.byCompilationId[compilationId].byId[id] = {
-          ...scope,
-          id,
-          sourceId,
-          parentId, //may be null
-          pointer,
-          compilationId
-        };
-
-        return newState;
-      } else {
-        debug("scoping by pointer!");
-        newState = {
-          byCompilationId: {
-            ...state.byCompilationId,
-            [compilationId]: {
-              ...state.byCompilationId[compilationId] //just setting this up to avoid errors later
-            }
-          }
-        };
-
-        //apologies for this multi-stage setup, but JS is like that...
-
-        newState.byCompilationId[compilationId] = {
-          ...newState.byCompilationId[compilationId],
-          bySourceAndPointer: {
-            ...newState.byCompilationId[compilationId].bySourceAndPointer
-          }
-        };
-
-        let sourceAndPointer = sourceId + ":" + pointer;
-        debug("sourceAndPointer: %s", sourceAndPointer);
-
-        scope =
-          newState.byCompilationId[compilationId].bySourceAndPointer[
-            sourceAndPointer
-          ];
-
-        newState.byCompilationId[compilationId].bySourceAndPointer[
-          sourceAndPointer
-        ] = {
-          ...scope,
-          parentId, //is usually undefined
-          sourceId,
-          pointer,
-          compilationId
-        };
-
-        return newState;
-      }
-    }
-
-    case actions.DECLARE: {
-      let { compilationId, node } = action;
-
-      //note: we can assume the compilation already exists!
-      scope =
-        state.byCompilationId[compilationId].byId[action.node.scope] || {};
-      variables = scope.variables || [];
-
-      return {
+      newState = {
         byCompilationId: {
           ...state.byCompilationId,
           [compilationId]: {
-            ...state.byCompilationId[compilationId],
-            byId: {
-              ...state.byCompilationId[compilationId].byId,
-
-              [node.scope]: {
-                ...scope,
-
-                variables: [
-                  ...variables,
-
-                  {
-                    name: node.name,
-                    id: node.id,
-                    compilationId
-                  }
-                ]
-              }
-            }
+            ...state.byCompilationId[compilationId] //just setting this up to avoid errors later
           }
         }
       };
+
+      //apologies for this multi-stage setup, but JS is like that...
+
+      newState.byCompilationId[compilationId] = {
+        ...newState.byCompilationId[compilationId],
+        byIdOrPath: {
+          ...newState.byCompilationId[compilationId].byIdOrPath
+        }
+      };
+
+      scope = newState.byCompilationId[compilationId].byIdOrPath[idOrPath];
+
+      newState.byCompilationId[compilationId].byIdOrPath[idOrPath] = {
+        ...scope,
+        id,
+        sourceId,
+        parentId, //may be null or undefined
+        pointer,
+        compilationId
+      };
+
+      return newState;
     }
 
-    case actions.YUL_DECLARE: {
-      debug("yul declaration!");
-      let { node, pointer, scopePointer, sourceId, compilationId } = action;
+    case actions.DECLARE: {
+      let { compilationId, name, idOrPath, scopeIdOrPath } = action;
 
       //note: we can assume the compilation already exists!
-      let sourceAndPointer = sourceId + ":" + scopePointer;
       scope =
-        state.byCompilationId[compilationId].bySourceAndPointer[
-          sourceAndPointer
-        ] || {};
+        state.byCompilationId[compilationId].byIdOrPath[scopeIdOrPath] || {};
       variables = scope.variables || [];
-      debug("node: %o", node);
 
       return {
         byCompilationId: {
           ...state.byCompilationId,
           [compilationId]: {
             ...state.byCompilationId[compilationId],
-            bySourceAndPointer: {
-              ...state.byCompilationId[compilationId].bySourceAndPointer,
+            byIdOrPath: {
+              ...state.byCompilationId[compilationId].byIdOrPath,
 
-              [sourceAndPointer]: {
+              [scopeIdOrPath]: {
                 ...scope,
 
                 variables: [
                   ...variables,
 
                   {
-                    name: node.name,
-                    sourceAndPointer: sourceId + ":" + pointer,
+                    name,
+                    idOrPath,
                     compilationId
                   }
                 ]
@@ -247,59 +168,32 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
       debug("action.type %O", action.type);
       debug("action.assignments %O", action.assignments);
       return Object.values(action.assignments).reduce((acc, assignment) => {
-        let { id, astId, sourceAndPointer, compilationId } = assignment;
+        let { id, idOrPath, compilationId } = assignment;
         //we assume for now that only ordinary variables will be assigned this
         //way, and not globals; globals are handled in DEFAULT_ASSIGNMENTS
-        if (astId !== undefined) {
-          return {
-            ...acc,
-            byId: {
-              ...acc.byId,
-              [id]: assignment
-            },
-            byCompilationId: {
-              ...acc.byCompilationId,
-              [compilationId]: {
-                ...acc.byCompilationId[compilationId],
-                byAstId: {
-                  ...(acc.byCompilationId[compilationId] || {}).byAstId,
-                  [astId]: [
-                    ...new Set([
-                      ...(((acc.byCompilationId[compilationId] || {}).byAstId ||
-                        {})[astId] || []),
-                      id
-                    ])
-                  ]
-                }
+        return {
+          ...acc,
+          byId: {
+            ...acc.byId,
+            [id]: assignment
+          },
+          byCompilationId: {
+            ...acc.byCompilationId,
+            [compilationId]: {
+              ...acc.byCompilationId[compilationId],
+              byIdOrPath: {
+                ...(acc.byCompilationId[compilationId] || {}).byIdOrPath,
+                [idOrPath]: [
+                  ...new Set([
+                    ...(((acc.byCompilationId[compilationId] || {})
+                      .byIdOrPath || {})[idOrPath] || []),
+                    id
+                  ])
+                ]
               }
             }
-          };
-        } else {
-          return {
-            ...acc,
-            byId: {
-              ...acc.byId,
-              [id]: assignment
-            },
-            byCompilationId: {
-              ...acc.byCompilationId,
-              [compilationId]: {
-                ...acc.byCompilationId[compilationId],
-                bySourceAndPointer: {
-                  ...(acc.byCompilationId[compilationId] || {})
-                    .bySourceAndPointer,
-                  [sourceAndPointer]: [
-                    ...new Set([
-                      ...(((acc.byCompilationId[compilationId] || {})
-                        .bySourceAndPointer || {})[sourceAndPointer] || []),
-                      id
-                    ])
-                  ]
-                }
-              }
-            }
-          };
-        }
+          }
+        };
       }, state);
 
     case actions.RESET:

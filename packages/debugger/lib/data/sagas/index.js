@@ -24,11 +24,13 @@ export function* scope(nodeId, pointer, parentId, sourceId, compilationId) {
 }
 
 export function* declare(node, compilationId) {
-  yield put(actions.declare(node, compilationId));
+  yield put(actions.declare(node.name, node.id, node.scope, compilationId));
 }
 
 export function* yulScope(pointer, sourceId, compilationId, parentId) {
-  yield put(actions.scope(null, pointer, parentId, sourceId, compilationId));
+  yield put(
+    actions.scope(undefined, pointer, parentId, sourceId, compilationId)
+  );
 }
 
 export function* yulDeclare(
@@ -39,7 +41,12 @@ export function* yulDeclare(
   compilationId
 ) {
   yield put(
-    actions.yulDeclare(node, pointer, scopePointer, sourceId, compilationId)
+    actions.declare(
+      node.name,
+      sourceId + ":" + pointer,
+      sourceId + ":" + scopePointer,
+      compilationId
+    )
   );
 }
 
@@ -322,11 +329,15 @@ function* variablesAndMappingsSaga() {
           inModifier
             ? {
                 compilationId,
-                sourceAndPointer,
+                idOrPath: sourceAndPointer,
                 stackframe: currentDepth,
                 modifierDepth
               }
-            : { compilationId, sourceAndPointer, stackframe: currentDepth },
+            : {
+                compilationId,
+                idOrPath: sourceAndPointer,
+                stackframe: currentDepth
+              },
           {
             location: "stack",
             from: position, //all Yul variables are size 1
@@ -348,7 +359,7 @@ function* variablesAndMappingsSaga() {
       assignments = {};
       for (let id in allocation.members) {
         id = Number(id); //not sure why we're getting them as strings, but...
-        let idObj = { compilationId, astId: id, address };
+        let idObj = { compilationId, idOrPath: id, address };
         let fullId = stableKeccak256(idObj);
         //we don't use makeAssignment here as we had to compute the ID anyway
         assignment = {
@@ -397,11 +408,11 @@ function* variablesAndMappingsSaga() {
         inModifier
           ? {
               compilationId,
-              astId: varId,
+              idOrPath: varId,
               stackframe: currentDepth,
               modifierDepth
             }
-          : { compilationId, astId: varId, stackframe: currentDepth },
+          : { compilationId, idOrPath: varId, stackframe: currentDepth },
         {
           location: "stack",
           from: top - Codec.Ast.Utils.stackSize(node) + 1,
@@ -448,13 +459,13 @@ function* variablesAndMappingsSaga() {
           inModifier
             ? {
                 compilationId,
-                sourceAndPointer: variableSourceAndPointer,
+                idOrPath: variableSourceAndPointer,
                 stackframe: currentDepth,
                 modifierDepth
               }
             : {
                 compilationId,
-                sourceAndPointer: variableSourceAndPointer,
+                idOrPath: variableSourceAndPointer,
                 stackframe: currentDepth
               },
           {
@@ -721,11 +732,11 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
     let indexIdObj = inModifier
       ? {
           compilationId,
-          astId: indexId,
+          idOrPath: indexId,
           stackframe: currentDepth,
           modifierDepth
         }
-      : { compilationId, astId: indexId, stackframe: currentDepth };
+      : { compilationId, idOrPath: indexId, stackframe: currentDepth };
     let fullIndexId = stableKeccak256(indexIdObj);
 
     const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
@@ -900,11 +911,11 @@ function literalAssignments(
     inModifier
       ? {
           compilationId,
-          astId: node.id,
+          idOrPath: node.id,
           stackframe: currentDepth,
           modifierDepth
         }
-      : { compilationId, astId: node.id, stackframe: currentDepth },
+      : { compilationId, idOrPath: node.id, stackframe: currentDepth },
     { location: "stackliteral", literal }
   );
 
@@ -938,11 +949,11 @@ function assignParameters(
       forModifier
         ? {
             compilationId,
-            astId: parameter.id,
+            idOrPath: parameter.id,
             stackframe: functionDepth,
             modifierDepth
           }
-        : { compilationId, astId: parameter.id, stackframe: functionDepth },
+        : { compilationId, idOrPath: parameter.id, stackframe: functionDepth },
       pointer
     );
     assignments[assignment.id] = assignment;
@@ -964,13 +975,13 @@ function fetchBasePath(
     inModifier
       ? {
           compilationId,
-          astId: baseNode.id,
+          idOrPath: baseNode.id,
           stackframe: currentDepth,
           modifierDepth
         }
       : {
           compilationId,
-          astId: baseNode.id,
+          idOrPath: baseNode.id,
           stackframe: currentDepth
         }
   );

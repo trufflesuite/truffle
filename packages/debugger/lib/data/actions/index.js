@@ -11,28 +11,12 @@ export function scope(id, pointer, parentId, sourceId, compilationId) {
 }
 
 export const DECLARE = "DATA_DECLARE_VARIABLE";
-export function declare(node, compilationId) {
+export function declare(name, idOrPath, scopeIdOrPath, compilationId) {
   return {
     type: DECLARE,
-    node,
-    compilationId
-  };
-}
-
-export const YUL_DECLARE = "DATA_YUL_DECLARE";
-export function yulDeclare(
-  node,
-  pointer,
-  scopePointer,
-  sourceId,
-  compilationId
-) {
-  return {
-    type: YUL_DECLARE,
-    node,
-    pointer,
-    scopePointer,
-    sourceId,
+    name,
+    idOrPath,
+    scopeIdOrPath,
     compilationId
   };
 }
