@@ -382,13 +382,13 @@ function* variablesAndMappingsSaga() {
           inModifier
             ? {
                 compilationId,
-                idOrPath: sourceAndPointer,
+                astRef: sourceAndPointer,
                 stackframe: currentDepth,
                 modifierDepth
               }
             : {
                 compilationId,
-                idOrPath: sourceAndPointer,
+                astRef: sourceAndPointer,
                 stackframe: currentDepth
               },
           {
@@ -412,7 +412,7 @@ function* variablesAndMappingsSaga() {
       assignments = {};
       for (let id in allocation.members) {
         id = Number(id); //not sure why we're getting them as strings, but...
-        let idObj = { compilationId, idOrPath: id, address };
+        let idObj = { compilationId, astRef: id, address };
         let fullId = stableKeccak256(idObj);
         //we don't use makeAssignment here as we had to compute the ID anyway
         assignment = {
@@ -461,11 +461,11 @@ function* variablesAndMappingsSaga() {
         inModifier
           ? {
               compilationId,
-              idOrPath: varId,
+              astRef: varId,
               stackframe: currentDepth,
               modifierDepth
             }
-          : { compilationId, idOrPath: varId, stackframe: currentDepth },
+          : { compilationId, astRef: varId, stackframe: currentDepth },
         {
           location: "stack",
           from: top - Codec.Ast.Utils.stackSize(node) + 1,
@@ -512,13 +512,13 @@ function* variablesAndMappingsSaga() {
           inModifier
             ? {
                 compilationId,
-                idOrPath: variableSourceAndPointer,
+                astRef: variableSourceAndPointer,
                 stackframe: currentDepth,
                 modifierDepth
               }
             : {
                 compilationId,
-                idOrPath: variableSourceAndPointer,
+                astRef: variableSourceAndPointer,
                 stackframe: currentDepth
               },
           {
@@ -785,11 +785,11 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
     let indexIdObj = inModifier
       ? {
           compilationId,
-          idOrPath: indexId,
+          astRef: indexId,
           stackframe: currentDepth,
           modifierDepth
         }
-      : { compilationId, idOrPath: indexId, stackframe: currentDepth };
+      : { compilationId, astRef: indexId, stackframe: currentDepth };
     let fullIndexId = stableKeccak256(indexIdObj);
 
     const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
@@ -971,11 +971,11 @@ function literalAssignments(
     inModifier
       ? {
           compilationId,
-          idOrPath: node.id,
+          astRef: node.id,
           stackframe: currentDepth,
           modifierDepth
         }
-      : { compilationId, idOrPath: node.id, stackframe: currentDepth },
+      : { compilationId, astRef: node.id, stackframe: currentDepth },
     { location: "stackliteral", literal }
   );
 
@@ -1009,11 +1009,11 @@ function assignParameters(
       forModifier
         ? {
             compilationId,
-            idOrPath: parameter.id,
+            astRef: parameter.id,
             stackframe: functionDepth,
             modifierDepth
           }
-        : { compilationId, idOrPath: parameter.id, stackframe: functionDepth },
+        : { compilationId, astRef: parameter.id, stackframe: functionDepth },
       pointer
     );
     assignments[assignment.id] = assignment;
@@ -1035,13 +1035,13 @@ function fetchBasePath(
     inModifier
       ? {
           compilationId,
-          idOrPath: baseNode.id,
+          astRef: baseNode.id,
           stackframe: currentDepth,
           modifierDepth
         }
       : {
           compilationId,
-          idOrPath: baseNode.id,
+          astRef: baseNode.id,
           stackframe: currentDepth
         }
   );

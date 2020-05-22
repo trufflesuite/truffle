@@ -20,7 +20,11 @@ function scopes(state = DEFAULT_SCOPES, action) {
   switch (action.type) {
     case actions.SCOPE: {
       const { compilationId, id, sourceId, parentId, pointer } = action;
-      const idOrPath = id !== undefined ? id : makePath(sourceId, pointer);
+      const astRef = id !== undefined ? id : makePath(sourceId, pointer);
+      //astRef is used throughout the data saga.
+      //it identifies an AST node within a given compilation either by:
+      //1. its ast ID, if it has one, or
+      //2. a combination of its source index and its JSON pointer if not
 
       newState = {
         byCompilationId: {
@@ -35,14 +39,14 @@ function scopes(state = DEFAULT_SCOPES, action) {
 
       newState.byCompilationId[compilationId] = {
         ...newState.byCompilationId[compilationId],
-        byIdOrPath: {
-          ...newState.byCompilationId[compilationId].byIdOrPath
+        byAstRef: {
+          ...newState.byCompilationId[compilationId].byAstRef
         }
       };
 
-      scope = newState.byCompilationId[compilationId].byIdOrPath[idOrPath];
+      scope = newState.byCompilationId[compilationId].byAstRef[astRef];
 
-      newState.byCompilationId[compilationId].byIdOrPath[idOrPath] = {
+      newState.byCompilationId[compilationId].byAstRef[astRef] = {
         ...scope,
         id,
         sourceId,
@@ -55,11 +59,10 @@ function scopes(state = DEFAULT_SCOPES, action) {
     }
 
     case actions.DECLARE: {
-      let { compilationId, name, idOrPath, scopeIdOrPath } = action;
+      let { compilationId, name, astRef, scopeAstRef } = action;
 
       //note: we can assume the compilation already exists!
-      scope =
-        state.byCompilationId[compilationId].byIdOrPath[scopeIdOrPath] || {};
+      scope = state.byCompilationId[compilationId].byAstRef[scopeAstRef] || {};
       variables = scope.variables || [];
 
       return {
@@ -67,10 +70,10 @@ function scopes(state = DEFAULT_SCOPES, action) {
           ...state.byCompilationId,
           [compilationId]: {
             ...state.byCompilationId[compilationId],
-            byIdOrPath: {
-              ...state.byCompilationId[compilationId].byIdOrPath,
+            byAstRef: {
+              ...state.byCompilationId[compilationId].byAstRef,
 
-              [scopeIdOrPath]: {
+              [scopeAstRef]: {
                 ...scope,
 
                 variables: [
@@ -78,7 +81,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
 
                   {
                     name,
-                    idOrPath,
+                    astRef,
                     compilationId
                   }
                 ]
@@ -169,7 +172,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
       debug("action.type %O", action.type);
       debug("action.assignments %O", action.assignments);
       return Object.values(action.assignments).reduce((acc, assignment) => {
-        let { id, idOrPath, compilationId } = assignment;
+        let { id, astRef, compilationId } = assignment;
         //we assume for now that only ordinary variables will be assigned this
         //way, and not globals; globals are handled in DEFAULT_ASSIGNMENTS
         return {
@@ -182,12 +185,12 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
             ...acc.byCompilationId,
             [compilationId]: {
               ...acc.byCompilationId[compilationId],
-              byIdOrPath: {
-                ...(acc.byCompilationId[compilationId] || {}).byIdOrPath,
-                [idOrPath]: [
+              byAstRef: {
+                ...(acc.byCompilationId[compilationId] || {}).byAstRef,
+                [astRef]: [
                   ...new Set([
-                    ...(((acc.byCompilationId[compilationId] || {})
-                      .byIdOrPath || {})[idOrPath] || []),
+                    ...(((acc.byCompilationId[compilationId] || {}).byAstRef ||
+                      {})[astRef] || []),
                     id
                   ])
                 ]

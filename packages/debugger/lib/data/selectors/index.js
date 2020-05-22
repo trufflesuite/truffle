@@ -224,7 +224,7 @@ const data = createSelectorTree({
                   )
                   .filter(
                     variable =>
-                      inlined[compilationId][variable.idOrPath].definition
+                      inlined[compilationId][variable.astRef].definition
                         .visibility !== "private"
                     //filter out private variables from the base classes
                   )
@@ -236,7 +236,7 @@ const data = createSelectorTree({
                     //how to read.  they'll just clutter things up.
                     debug("variable %O", variable);
                     let definition =
-                      inlined[compilationId][variable.idOrPath].definition;
+                      inlined[compilationId][variable.astRef].definition;
                     return (
                       !definition.constant ||
                       Codec.Ast.Utils.isSimpleConstant(definition.value)
@@ -261,7 +261,7 @@ const data = createSelectorTree({
         Object.assign(
           {},
           ...Object.entries(scopes.byCompilationId).map(
-            ([compilationId, { byIdOrPath: nodes }]) => ({
+            ([compilationId, { byAstRef: nodes }]) => ({
               [compilationId]: { ...nodes }
             })
           )
@@ -1059,7 +1059,7 @@ const data = createSelectorTree({
        * data.current.identifiers (selector)
        *
        * returns identifers and corresponding definition node ID or builtin name
-       * (object entries look like [name]: {idOrPath: idOrPath}, [name]: {builtin: name})
+       * (object entries look like [name]: {astRef: astRef}, [name]: {builtin: name})
        */
       _: createLeaf(
         [
@@ -1082,7 +1082,7 @@ const data = createSelectorTree({
                   .filter(variable => variable.name !== "") //exclude anonymous output params
                   .filter(variable => variables[variable.name] == undefined) //don't add shadowed vars
                   .map(variable => ({
-                    [variable.name]: { idOrPath: variable.idOrPath }
+                    [variable.name]: { astRef: variable.astRef }
                   }))
               );
               //NOTE: because these assignments are processed in order, that means
@@ -1141,8 +1141,8 @@ const data = createSelectorTree({
             let variables = Object.assign(
               {},
               ...Object.entries(identifiers).map(([identifier, variable]) => {
-                if (variable.idOrPath !== undefined) {
-                  let { definition } = scopes[variable.idOrPath];
+                if (variable.astRef !== undefined) {
+                  let { definition } = scopes[variable.astRef];
                   return { [identifier]: definition };
                   //there used to be separate code for Yul variables here,
                   //but now that's handled in definitionToType
@@ -1211,18 +1211,18 @@ const data = createSelectorTree({
           Object.assign(
             {},
             ...Object.entries(identifiers).map(
-              ([identifier, { idOrPath, builtin }]) => {
+              ([identifier, { astRef, builtin }]) => {
                 let id;
-                debug("idOrPath: %o", idOrPath);
+                debug("astRef: %o", astRef);
                 debug("builtin: %s", builtin);
 
                 //is this an ordinary variable or a builtin?
-                if (idOrPath !== undefined) {
+                if (astRef !== undefined) {
                   //if not a builtin, first check if it's a contract var
                   let compilationAssignments =
                     (assignments.byCompilationId[compilationId] || {})
-                      .byIdOrPath || {};
-                  id = (compilationAssignments[idOrPath] || []).find(
+                      .byAstRef || {};
+                  id = (compilationAssignments[astRef] || []).find(
                     idHash => assignments.byId[idHash].address === address
                   );
                   debug("id after global: %s", id);
@@ -1232,14 +1232,14 @@ const data = createSelectorTree({
                     //if we're in a modifier, include modifierDepth
                     if (inModifier) {
                       id = stableKeccak256({
-                        idOrPath,
+                        astRef,
                         compilationId,
                         stackframe: currentDepth,
                         modifierDepth
                       });
                     } else {
                       id = stableKeccak256({
-                        idOrPath,
+                        astRef,
                         compilationId,
                         stackframe: currentDepth
                       });
