@@ -13,7 +13,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __IMMUTABLE = `
-pragma solidity ^0.6.5;
+pragma solidity ^0.6.6;
 
 contract Base {
   int8 immutable base = -37;
@@ -28,6 +28,7 @@ contract ImmutableTest is Base {
   bool immutable truth;
   address immutable self;
   byte immutable secret;
+  uint8 immutable trulySecret;
 
   event Done();
 
@@ -36,6 +37,7 @@ contract ImmutableTest is Base {
     truth = true;
     self = address(this);
     secret = 0x88;
+    trulySecret = 23;
     emit Done(); //BREAK CONSTRUCTOR
   }
 
@@ -87,21 +89,19 @@ describe("Immutable state variables", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK DEPLOYED", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -113,6 +113,10 @@ describe("Immutable state variables", function() {
     };
 
     assert.deepInclude(variables, expectedResult);
+
+    const trulySecret = await bugger.variable("trulySecret");
+    assert.strictEqual(trulySecret.kind, "error");
+    assert.strictEqual(trulySecret.error.kind, "UnusedImmutableError");
   });
 
   it("Decodes immutables properly in constructor", async function() {
@@ -123,21 +127,19 @@ describe("Immutable state variables", function() {
 
     let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK CONSTRUCTOR", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -145,7 +147,8 @@ describe("Immutable state variables", function() {
       background: "ImmutableTest.Color.Blue",
       truth: true,
       self: address,
-      secret: "0x88"
+      secret: "0x88",
+      trulySecret: 23
     };
 
     assert.deepInclude(variables, expectedResult);

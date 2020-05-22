@@ -8,11 +8,17 @@ import configureStore from "lib/store";
 import * as controller from "lib/controller/actions";
 import * as actions from "./actions";
 import data from "lib/data/selectors";
+import stacktrace from "lib/stacktrace/selectors";
 import session from "lib/session/selectors";
 import * as dataSagas from "lib/data/sagas";
 import * as controllerSagas from "lib/controller/sagas";
 import * as sagas from "./sagas";
 import controllerSelector from "lib/controller/selectors";
+
+import ast from "lib/ast/selectors";
+import trace from "lib/trace/selectors";
+import evm from "lib/evm/selectors";
+import solidity from "lib/solidity/selectors";
 
 import rootSaga from "./sagas";
 import reducer from "./reducers";
@@ -29,11 +35,13 @@ export default class Session {
    * txHash parameter is now optional!
    * @private
    */
-  constructor(compilations, provider, txHash) {
+  constructor(compilations, provider, moduleOptions, txHash) {
     /**
      * @private
      */
-    let { store, sagaMiddleware } = configureStore(reducer, rootSaga);
+    let { store, sagaMiddleware } = configureStore(reducer, rootSaga, [
+      moduleOptions
+    ]);
     this._store = store;
     this._sagaMiddleware = sagaMiddleware;
 
@@ -118,7 +126,6 @@ export default class Session {
       let compiler = compilation.compiler; //note: we'll prefer one listed on contract or source
       sources[compilation.id] = [];
       for (let index in compilation.sources) {
-        debug("adding index: %d", index);
         //not the recommended way to iterate over an array,
         //but the order doesn't matter here so it's safe
         let source = compilation.sources[index];
@@ -133,7 +140,6 @@ export default class Session {
         };
       }
 
-      debug("sources: %o", sources[compilation.id]);
       for (let contract of compilation.contracts) {
         let {
           contractName,
@@ -159,7 +165,7 @@ export default class Session {
         if (primarySourceId !== undefined) {
           //I'm assuming this finds it! it had better!
           primarySourceIndex = compilation.sources.findIndex(
-            source => source.id === primarySourceId
+            source => source && source.id === primarySourceId
           );
         }
         //otherwise leave it undefined
@@ -378,5 +384,46 @@ export default class Session {
       }
     }
     return decoded;
+  }
+
+  async returnValue() {
+    if (
+      !this.view(session.status.loaded) ||
+      !this.view(evm.current.step.isHalting)
+    ) {
+      return null;
+    }
+    return await this._runSaga(dataSagas.decodeReturnValue);
+  }
+
+  callstack() {
+    if (!this.view(session.status.loaded)) {
+      return null;
+    }
+    return this.view(stacktrace.current.report);
+  }
+
+  stacktrace() {
+    if (!this.view(session.status.loaded)) {
+      return null;
+    }
+    return this.view(stacktrace.current.finalReport);
+  }
+
+  connect() {
+    return this; //for compatibility
+  }
+
+  get selectors() {
+    return createNestedSelector({
+      ast,
+      data,
+      trace,
+      evm,
+      solidity,
+      stacktrace,
+      session,
+      controller: controllerSelector
+    });
   }
 }

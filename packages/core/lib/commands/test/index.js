@@ -7,6 +7,11 @@ const command = {
       type: "boolean",
       default: false
     },
+    "compile-all-debug": {
+      describe: "Compile in debug mode",
+      type: "boolean",
+      default: false
+    },
     "debug": {
       describe: "Enable in-test debugging",
       type: "boolean",
@@ -22,14 +27,26 @@ const command = {
       default: false
     },
     "bail": {
+      alias: "b",
       describe: "Bail after first test failure",
+      type: "boolean",
+      default: false
+    },
+    "stacktrace": {
+      alias: "t",
+      describe: "Produce Solidity stacktraces",
+      type: "boolean",
+      default: false
+    },
+    "stacktrace-extra": {
+      describe: "Produce Solidity stacktraces and compile in debug mode",
       type: "boolean",
       default: false
     }
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail]",
+      "truffle test [<test_file>] [--compile-all[-debug]] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail] [--stacktrace[-extra]]",
     options: [
       {
         option: "<test_file>",
@@ -42,6 +59,12 @@ const command = {
         description:
           "Compile all contracts instead of intelligently choosing which contracts need " +
           "to be compiled."
+      },
+      {
+        option: "--compile-all-debug",
+        description:
+          "Compile all contracts and do so in debug mode for extra revert info.  May " +
+          "cause errors on large\n                    contracts."
       },
       {
         option: "--network <name>",
@@ -75,7 +98,18 @@ const command = {
       },
       {
         option: "--bail",
-        description: "Bail after first test failure"
+        description: "Bail after first test failure.  Alias: -b"
+      },
+      {
+        option: "--stacktrace",
+        description:
+          "Allows for mixed JS/Solidity stacktraces when a Truffle Contract transaction " +
+          "or deployment\n                    reverts.  Does not apply to calls or gas estimates.  " +
+          "Implies --compile-all.  Experimental.  Alias: -t"
+      },
+      {
+        option: "--stacktrace-extra",
+        description: "Shortcut for --stacktrace --compile-all-debug."
       }
     ]
   },
@@ -101,8 +135,14 @@ const command = {
       Environment.detect(config).catch(done);
     }
 
-    // enables in-test debug() interrupt, forcing compileAll
-    if (config.debug) config.compileAll = true;
+    if (config.stacktraceExtra) {
+      config.stacktrace = true;
+      config.compileAllDebug = true;
+    }
+    // enables in-test debug() interrupt, or stacktraces, forcing compileAll
+    if (config.debug || config.stacktrace || config.compileAllDebug) {
+      config.compileAll = true;
+    }
 
     let ipcDisconnect, files;
     try {

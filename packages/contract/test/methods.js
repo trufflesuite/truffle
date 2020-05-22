@@ -486,7 +486,7 @@ describe("Methods", function() {
       }
     });
 
-    it("errors with a revert reason", async function() {
+    it.skip("errors with a revert reason", async function() {
       const example = await Example.new(1);
       try {
         // At the moment, this test can't rely on @truffle/contract's

@@ -431,10 +431,13 @@ class DebugInterpreter {
       this.printer.print("");
       //check if transaction failed
       if (!this.session.view(evm.transaction.status)) {
-        this.printer.printRevertMessage();
+        await this.printer.printRevertMessage();
+        this.printer.print("");
+        this.printer.printStacktrace(true); //final stacktrace
       } else {
         //case if transaction succeeded
         this.printer.print("Transaction completed successfully.");
+        await this.printer.printReturnValue();
       }
     }
 
@@ -460,6 +463,9 @@ class DebugInterpreter {
         break;
       case "v":
         await this.printer.printVariables();
+        if (this.session.view(trace.finished)) {
+          await this.printer.printReturnValue();
+        }
         break;
       case ":":
         watchExpressionAnalytics(cmdArgs);
@@ -522,6 +528,15 @@ class DebugInterpreter {
           this.enabledExpressions
         );
         break;
+      case "s":
+        if (this.session.view(selectors.session.status.loaded)) {
+          this.printer.printStacktrace(
+            //print final report if finished & failed, intermediate if not
+            this.session.view(trace.finished) &&
+              !this.session.view(evm.transaction.status)
+          );
+        }
+        break;
       case "o":
       case "i":
       case "u":
@@ -578,7 +593,8 @@ class DebugInterpreter {
       cmd !== "r" &&
       cmd !== "-" &&
       cmd !== "t" &&
-      cmd !== "T"
+      cmd !== "T" &&
+      cmd !== "s"
     ) {
       this.lastCommand = cmd;
     }

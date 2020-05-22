@@ -36,22 +36,19 @@ function* tickSaga() {
 }
 
 export function* decode(definition, ref, compilationId) {
-  let userDefinedTypes = yield select(data.views.userDefinedTypes);
-  let state = yield select(data.current.state);
-  let mappingKeys = yield select(data.views.mappingKeys);
-  let allocations = yield select(data.info.allocations);
-  let instances = yield select(data.views.instances);
-  let contexts = yield select(data.views.contexts);
-  let currentContext = yield select(data.current.context);
-  let internalFunctionsTable = yield select(
+  const userDefinedTypes = yield select(data.views.userDefinedTypes);
+  const state = yield select(data.current.state);
+  const mappingKeys = yield select(data.views.mappingKeys);
+  const allocations = yield select(data.info.allocations);
+  const contexts = yield select(data.views.contexts);
+  const currentContext = yield select(data.current.context);
+  const internalFunctionsTable = yield select(
     data.current.functionsByProgramCounter
   );
-  let blockNumber = yield select(data.views.blockNumber);
 
-  let ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
-  let NO_CODE = new Uint8Array(); //empty array
+  const ZERO_WORD = new Uint8Array(Codec.Evm.Utils.WORD_SIZE); //automatically filled with zeroes
 
-  let decoder = Codec.decodeVariable(
+  const decoder = Codec.decodeVariable(
     definition,
     ref,
     {
@@ -79,24 +76,7 @@ export function* decode(definition, ref, compilationId) {
         response = ZERO_WORD;
         break;
       case "code":
-        let address = request.address;
-        if (address in instances) {
-          response = instances[address];
-        } else if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
-          //HACK: to avoid displaying the zero address to the user as an
-          //affected address just because they decoded a contract or external
-          //function variable that hadn't been initialized yet, we give the
-          //zero address's codelessness its own private cache :P
-          response = NO_CODE;
-        } else {
-          //I don't want to write a new web3 saga, so let's just use
-          //obtainBinaries with a one-element array
-          debug("fetching binary");
-          let binary = (yield* web3.obtainBinaries([address], blockNumber))[0];
-          debug("adding instance");
-          yield* evm.addInstance(address, binary);
-          response = Codec.Conversion.toBytes(binary);
-        }
+        response = yield* requestCode(request.address);
         break;
       default:
         debug("unrecognized request type!");
@@ -108,6 +88,74 @@ export function* decode(definition, ref, compilationId) {
   debug("done decoding");
   debug("decoded value: %O", result.value);
   return result.value;
+}
+
+export function* decodeReturnValue() {
+  const userDefinedTypes = yield select(data.views.userDefinedTypes);
+  const state = yield select(data.next.state); //next state has the return data
+  const allocations = yield select(data.info.allocations);
+  const contexts = yield select(data.views.contexts);
+  const status = yield select(data.current.returnStatus); //may be undefined
+  const returnAllocation = yield select(data.current.returnAllocation); //may be null
+
+  const decoder = Codec.decodeReturndata(
+    {
+      userDefinedTypes,
+      state,
+      allocations,
+      contexts
+    },
+    returnAllocation,
+    status
+  );
+
+  debug("beginning decoding");
+  let result = decoder.next();
+  while (!result.done) {
+    debug("request received");
+    let request = result.value;
+    let response;
+    switch (request.type) {
+      //skip storage case, it won't happen here
+      case "code":
+        response = yield* requestCode(request.address);
+        break;
+      default:
+        debug("unrecognized request type!");
+    }
+    debug("sending response");
+    result = decoder.next(response);
+  }
+  //at this point, result.value holds the final value
+  debug("done decoding");
+  return result.value;
+}
+
+//NOTE: calling this *can* add a new instance, which will not
+//go away on a reset!  Yes, this is a little weird, but we
+//decided this is OK for now
+function* requestCode(address) {
+  const NO_CODE = new Uint8Array(); //empty array
+  const blockNumber = yield select(data.views.blockNumber);
+  const instances = yield select(data.views.instances);
+
+  if (address in instances) {
+    return instances[address];
+  } else if (address === Codec.Evm.Utils.ZERO_ADDRESS) {
+    //HACK: to avoid displaying the zero address to the user as an
+    //affected address just because they decoded a contract or external
+    //function variable that hadn't been initialized yet, we give the
+    //zero address's codelessness its own private cache :P
+    return NO_CODE;
+  } else {
+    //I don't want to write a new web3 saga, so let's just use
+    //obtainBinaries with a one-element array
+    debug("fetching binary");
+    let binary = (yield* web3.obtainBinaries([address], blockNumber))[0];
+    debug("adding instance");
+    yield* evm.addInstance(address, binary);
+    return Codec.Conversion.toBytes(binary);
+  }
 }
 
 function* variablesAndMappingsSaga() {
@@ -381,7 +429,9 @@ function* variablesAndMappingsSaga() {
           baseExpression,
           mappedPaths,
           currentAssignments,
-          currentDepth
+          currentDepth,
+          modifierDepth,
+          inModifier
         );
 
         let slot = { path };
@@ -473,7 +523,9 @@ function* variablesAndMappingsSaga() {
         baseExpression,
         mappedPaths,
         currentAssignments,
-        currentDepth
+        currentDepth,
+        modifierDepth,
+        inModifier
       );
 
       slot = { path };
@@ -541,17 +593,22 @@ function* decodeMappingKeyCore(indexDefinition, keyDefinition) {
   let compilationId = yield select(data.current.compilationId);
   let currentAssignments = yield select(data.proc.assignments);
   let currentDepth = yield select(data.current.functionDepth);
+  let modifierDepth = yield select(data.current.modifierDepth);
+  let inModifier = yield select(data.current.inModifier);
 
   //why the loop? see the end of the block it heads for an explanatory
   //comment
   while (true) {
     let indexId = indexDefinition.id;
     //indices need to be identified by stackframe
-    let indexIdObj = {
-      compilationId,
-      astId: indexId,
-      stackframe: currentDepth
-    };
+    let indexIdObj = inModifier
+      ? {
+          compilationId,
+          astId: indexId,
+          stackframe: currentDepth,
+          modifierDepth
+        }
+      : { compilationId, astId: indexId, stackframe: currentDepth };
     let fullIndexId = stableKeccak256(indexIdObj);
 
     const indexReference = (currentAssignments.byId[fullIndexId] || {}).ref;
@@ -675,8 +732,14 @@ export function* recordAllocations() {
   const memoryAllocations = Codec.Memory.Allocate.getMemoryAllocations(
     userDefinedTypes
   );
-  const calldataAllocations = Codec.AbiData.Allocate.getAbiAllocations(
+  const abiAllocations = Codec.AbiData.Allocate.getAbiAllocations(
     userDefinedTypes
+  );
+  const calldataAllocations = Codec.AbiData.Allocate.getCalldataAllocations(
+    contracts,
+    referenceDeclarations,
+    userDefinedTypes,
+    abiAllocations
   );
   const stateAllocations = Codec.Storage.Allocate.getStateAllocations(
     contracts,
@@ -688,6 +751,7 @@ export function* recordAllocations() {
     actions.allocate(
       storageAllocations,
       memoryAllocations,
+      abiAllocations,
       calldataAllocations,
       stateAllocations
     )
@@ -782,13 +846,24 @@ function fetchBasePath(
   baseNode,
   mappedPaths,
   currentAssignments,
-  currentDepth
+  currentDepth,
+  modifierDepth,
+  inModifier
 ) {
-  let fullId = stableKeccak256({
-    compilationId,
-    astId: baseNode.id,
-    stackframe: currentDepth
-  });
+  let fullId = stableKeccak256(
+    inModifier
+      ? {
+          compilationId,
+          astId: baseNode.id,
+          stackframe: currentDepth,
+          modifierDepth
+        }
+      : {
+          compilationId,
+          astId: baseNode.id,
+          stackframe: currentDepth
+        }
+  );
   debug("astId: %d", baseNode.id);
   debug("stackframe: %d", currentDepth);
   debug("fullId: %s", fullId);

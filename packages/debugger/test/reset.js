@@ -55,53 +55,55 @@ describe("Reset Button", function() {
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations
+    });
 
-    let session = bugger.connect();
-    let sourceId = session.view(solidity.current.source).id;
-    let compilationId = session.view(solidity.current.source).compilationId;
-    let source = session.view(solidity.current.source).source;
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
 
     let variables = [];
     variables[0] = []; //collected during 1st run
     variables[1] = []; //collected during 2nd run
 
-    await session.addBreakpoint({
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK", source)
     });
 
     variables[0].push(
-      Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
+      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
     );
-    await session.continueUntilBreakpoint(); //advance to line 10
+    await bugger.continueUntilBreakpoint(); //advance to line 10
     variables[0].push(
-      Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
+      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
     );
-    await session.continueUntilBreakpoint(); //advance to the end
+    await bugger.continueUntilBreakpoint(); //advance to the end
     variables[0].push(
-      Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
+      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
     );
 
     //now, reset and do it again
-    await session.reset();
+    await bugger.reset();
 
     variables[1].push(
-      Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
+      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
     );
-    await session.addBreakpoint({
+    await bugger.addBreakpoint({
       sourceId,
       compilationId,
       line: lineOf("BREAK", source)
     });
-    await session.continueUntilBreakpoint(); //advance to line 10
+    await bugger.continueUntilBreakpoint(); //advance to line 10
     variables[1].push(
-      Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
+      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
     );
-    await session.continueUntilBreakpoint(); //advance to the end
+    await bugger.continueUntilBreakpoint(); //advance to the end
     variables[1].push(
-      Codec.Format.Utils.Inspect.nativizeVariables(await session.variables())
+      Codec.Format.Utils.Inspect.nativizeVariables(await bugger.variables())
     );
 
     assert.deepEqual(variables[1], variables[0]);

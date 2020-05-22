@@ -7,6 +7,7 @@ const Reason = require("./reason");
 const handlers = require("./handlers");
 const override = require("./override");
 const reformat = require("./reformat");
+const { formatters } = require("web3-core-helpers"); //used for reproducing web3's behavior
 
 const execute = {
   // -----------------------------------  Helpers --------------------------------------------------
@@ -114,10 +115,10 @@ const execute = {
     const constructor = this;
 
     return function() {
-      let defaultBlock = "latest";
+      let defaultBlock = constructor.web3.eth.defaultBlock || "latest";
       const args = Array.prototype.slice.call(arguments);
       const lastArg = args[args.length - 1];
-      const promiEvent = PromiEvent();
+      const promiEvent = new PromiEvent();
 
       // Extract defaultBlock parameter
       if (execute.hasDefaultBlock(args, lastArg, methodABI.inputs)) {
@@ -165,8 +166,7 @@ const execute = {
     const web3 = constructor.web3;
 
     return function() {
-      let deferred;
-      const promiEvent = PromiEvent();
+      const promiEvent = new PromiEvent(false, constructor.debugger);
 
       execute
         .prepareCall(constructor, methodABI, arguments)
@@ -199,9 +199,15 @@ const execute = {
             return;
           }
 
-          deferred = web3.eth.sendTransaction(params);
-          deferred.catch(override.start.bind(constructor, context));
-          handlers.setup(deferred, context);
+          execute
+            .sendTransaction(web3, params, promiEvent, context) //the crazy things we do for stacktracing...
+            .then(receipt => {
+              if (promiEvent.debug) {
+                promiEvent.resolve(receipt);
+              }
+              //otherwise, just let the handlers handle things
+            })
+            .catch(override.start.bind(constructor, context));
         })
         .catch(promiEvent.reject);
 
@@ -220,7 +226,7 @@ const execute = {
 
     return function() {
       let deferred;
-      const promiEvent = PromiEvent();
+      const promiEvent = new PromiEvent(false, constructor.debugger, true);
 
       execute
         .prepareCall(constructor, constructorABI, arguments)
@@ -258,8 +264,7 @@ const execute = {
             contract: constructor
           });
 
-          deferred = web3.eth.sendTransaction(params);
-          handlers.setup(deferred, context);
+          deferred = execute.sendTransaction(web3, params, promiEvent, context); //the crazy things we do for stacktracing...
 
           try {
             const receipt = await deferred;
@@ -463,6 +468,111 @@ const execute = {
         );
         return instance.deploy(options).estimateGas(res.params);
       });
+  },
+
+  //our own custom sendTransaction function, made to mimic web3's,
+  //while also being able to do things, like, say, store the transaction
+  //hash even in case of failure.  it's not as powerful in some ways,
+  //as it just returns an ordinary Promise rather than web3's PromiEvent,
+  //but it's more suited to our purposes (we're not using that PromiEvent
+  //functionality here anyway)
+  //input works the same as input to web3.sendTransaction
+  //(well, OK, it's lacking some things there too, but again, good enough
+  //for our purposes)
+  sendTransaction: function(web3, params, promiEvent, context) {
+    //first off: if we don't need the debugger, let's not risk any errors on our part,
+    //and just have web3 do everything
+    if (!promiEvent || !promiEvent.debug) {
+      const deferred = web3.eth.sendTransaction(params);
+      handlers.setup(deferred, context);
+      return deferred;
+    }
+    //otherwise, do things manually!
+    //(and skip the PromiEvent stuff :-/ )
+    return execute.sendTransactionManual(web3, params, promiEvent);
+  },
+
+  sendTransactionManual: async function(web3, params, promiEvent) {
+    //note: to head off any potential problems with Webpack (contract *has* to
+    //work on web!), I'm going to resort to manual promise creation rather than
+    //using util.promisify :-/
+    debug("executing manually!");
+    const send = rpc =>
+      new Promise((accept, reject) =>
+        web3.currentProvider.send(
+          rpc,
+          (err, result) => (err ? reject(err) : accept(result))
+        )
+      );
+    //let's clone params
+    let transaction = {};
+    for (let key in params) {
+      transaction[key] = params[key];
+    }
+    transaction.from =
+      transaction.from != undefined
+        ? transaction.from
+        : web3.eth.defaultAccount;
+    //now: if the from address is in the wallet, web3 will sign the transaction before
+    //sending, so we have to account for that
+    const account = web3.eth.accounts.wallet[transaction.from];
+    let rpcPromise;
+    if (account) {
+      const rawTx = (await web3.eth.accounts.sign(
+        transaction,
+        account.privateKey
+      )).rawTransaction;
+      rpcPromise = send({
+        jsonrpc: "2.0",
+        id: Date.now(),
+        method: "eth_sendRawTransaction",
+        params: [rawTx]
+      });
+    } else {
+      //in this case, web3 hasn't checked the validity of our inputs, so we'd better
+      //have it do that before the send
+      transaction = formatters.inputTransactionFormatter(transaction); //warning, not a pure fn
+      rpcPromise = send({
+        jsonrpc: "2.0",
+        id: Date.now(),
+        method: "eth_sendTransaction",
+        params: [transaction]
+      });
+    }
+    const rpcReturn = await rpcPromise;
+    const txHash = rpcReturn.result; //note: this should work even in Ganache default mode!
+    debug("txHash: %s", txHash);
+    //this is unlike for calls, where default mode poses more of a problem
+    promiEvent.setTransactionHash(txHash); //this here is why I wrote this function @_@
+    const receipt = await web3.eth.getTransactionReceipt(txHash);
+    if (rpcReturn.error) {
+      //appears to be how web3 handles errors in Ganache's default mode??
+      throw new Error("Returned error: " + rpcReturn.error.message);
+    }
+    if (receipt.status) {
+      if (!transaction.to) {
+        //in the deployment case, web3 might error even when technically successful @_@
+        if ((await web3.eth.getCode(receipt.contractAddress)) === "0x") {
+          throw new Error(
+            "The contract code couldn't be stored, please check your gas limit."
+          );
+        }
+      }
+      return receipt;
+    } else {
+      //otherwise: we have to mimic web3's errors @_@
+      if (!transaction.to) {
+        //deployment case
+        throw new Error(
+          "The contract code couldn't be stored, please check your gas limit."
+        );
+      }
+      throw new Error(
+        "Transaction has been reverted by the EVM:" +
+          "\n" +
+          JSON.stringify(receipt)
+      );
+    }
   }
 };
 

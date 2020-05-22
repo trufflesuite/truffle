@@ -1,6 +1,6 @@
 {
   "name": "@truffle/codec",
-  "version": "0.4.4",
+  "version": "0.5.3",
   "description": "Library for encoding and decoding smart contract data",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -10,8 +10,8 @@
   "scripts": {
     "docs": "./scripts/generate-docs",
     "prepare": "yarn build",
-    "build": "node_modules/.bin/ttsc",
-    "start": "node_modules/.bin/ttsc --watch"
+    "build": "ttsc",
+    "start": "ttsc --watch"
   },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
   "keywords": [
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@gnd/typedoc": "0.15.0-0",
-    "@truffle/contract-schema": "^3.0.23",
+    "@truffle/contract-schema": "^3.1.0",
     "@trufflesuite/typedoc-default-themes": "^0.6.1",
     "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",
@@ -60,7 +60,7 @@
     "lodash.partition": "^4.6.0",
     "lodash.sum": "^4.0.2",
     "semver": "^6.3.0",
-    "source-map-support": "^0.5.16",
+    "source-map-support": "^0.5.19",
     "utf8": "^3.0.0",
     "web3-utils": "1.2.1"
   },

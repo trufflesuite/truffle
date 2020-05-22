@@ -23,15 +23,10 @@ function* tickSaga() {
 }
 
 function* functionDepthSaga() {
-  if (yield select(solidity.current.willFail)) {
+  if (yield select(solidity.current.willReturn)) {
     //we do this case first so we can be sure we're not failing in any of the
     //other cases below!
     yield put(actions.externalReturn());
-  } else if (
-    yield select(solidity.current.willCallOrCreateButInstantlyReturn)
-  ) {
-    //do nothing
-    //again, we put this second so we can be sure the other cases are not this
   } else if (yield select(solidity.current.willJump)) {
     let jumpDirection = yield select(solidity.current.jumpDirection);
     debug("checking guard");
@@ -41,15 +36,11 @@ function* functionDepthSaga() {
     } else {
       yield put(actions.jump(jumpDirection));
     }
-  } else if (
-    (yield select(solidity.current.willCall)) ||
-    (yield select(solidity.current.willCreate))
-  ) {
+  } else if (yield select(solidity.current.willCall)) {
+    //note: includes creations; does not include insta-returns
     debug("checking if guard needed");
     let guard = yield select(solidity.current.callRequiresPhantomFrame);
     yield put(actions.externalCall(guard));
-  } else if (yield select(solidity.current.willReturn)) {
-    yield put(actions.externalReturn());
   }
 }
 

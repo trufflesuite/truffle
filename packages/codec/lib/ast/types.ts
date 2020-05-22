@@ -7,7 +7,7 @@ export interface TypeDescriptions {
 
 export interface AstNode {
   constant?: boolean;
-  immutable?: boolean;
+  mutability?: "mutable" | "immutable" | "constant"; //variable, not function, mutability!
   id: number;
   name: string;
   canonicalName?: string;
