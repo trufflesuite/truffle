@@ -46,7 +46,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   ): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
     const response: EtherscanResponse = await request({
-      uri: `https://api.etherscan${this.suffix}.io/api`,
+      uri: `https://api${this.suffix}.etherscan.io/api`,
       qs: {
         module: "contract",
         action: "getsourcecode",
