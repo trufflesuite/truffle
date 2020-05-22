@@ -1,3 +1,7 @@
+//these imports aren't actually necessary, but why not :)
+import util from "util";
+import { setTimeout } from "timers";
+
 export const networksById: { [id: number]: string } = {
   1: "mainnet",
   3: "ropsten",
@@ -16,3 +20,7 @@ export function makeFilename(name: string, extension: string = ".sol"): string {
     return name + extension;
   }
 }
+
+export const makeTimer: (
+  milliseconds: number
+) => Promise<void> = util.promisify(setTimeout);

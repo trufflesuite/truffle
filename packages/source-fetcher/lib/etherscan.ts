@@ -1,10 +1,7 @@
 import { Fetcher, FetcherConstructor } from "./types";
 import * as Types from "./types";
-import { networksById, makeFilename } from "./common";
+import { networksById, makeFilename, makeTimer } from "./common";
 import request from "request-promise-native";
-
-const apiKey: string = ""; //don't check in the real key!
-//note: fake keys don't work but missing keys do for now it seems...?
 
 //this looks awkward but the TS docs actually suggest this :P
 const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
@@ -16,6 +13,12 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   static async forNetworkId(id: number): Promise<EtherscanFetcher> {
     return new EtherscanFetcher(id);
   }
+
+  private readonly apiKey: string;
+  private readonly timeout: number; //minimum # of ms to wait between requests
+
+  private ready: Promise<void>; //always await this timer before making a request.
+  //then, afterwards, start a new timer.
 
   constructor(networkId: number) {
     const networkName = networksById[networkId];
@@ -32,6 +35,9 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       this.validNetwork = true;
       this.suffix = networkName === "mainnet" ? "" : `-${networkName}`;
     }
+    this.apiKey = ""; //leaving out apiKey for now
+    this.timeout = this.apiKey ? 200 : 334; //etherscan permits 5 requests/sec w/a key, 3/sec w/o
+    this.ready = makeTimer(0); //at start, it's ready to go immediately
   }
 
   private validNetwork: boolean;
@@ -51,6 +57,26 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   private async getSuccessfulResponse(
     address: string
   ): Promise<EtherscanSuccess> {
+    const allowedAttempts = 2; //for now, we'll just retry once if it fails
+    let lastError;
+    for (let attempt = 0; attempt < allowedAttempts; attempt++) {
+      await this.ready;
+      const responsePromise = this.makeRequest(address);
+      this.ready = makeTimer(this.timeout);
+      //for now, we're just going to retry once if it fails
+      try {
+        return await responsePromise;
+      } catch (error) {
+        lastError = error;
+        //just go back to the top of the loop to retry
+      }
+    }
+    //if we've made it this far with no successful response, just
+    //throw the last error
+    throw lastError;
+  }
+
+  private async makeRequest(address: string): Promise<EtherscanSuccess> {
     //not putting a try/catch around this; if it throws, we throw
     const response: EtherscanResponse = await request({
       uri: `https://api${this.suffix}.etherscan.io/api`,
@@ -58,7 +84,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
         module: "contract",
         action: "getsourcecode",
         address,
-        apikey: apiKey
+        apikey: this.apiKey
       },
       json: true //turns on auto-parsing :)
     });
