@@ -6,7 +6,7 @@ import jsonpointer from "json-pointer";
 import flatten from "lodash.flatten";
 import semver from "semver";
 
-import { stableKeccak256 } from "lib/helpers";
+import { stableKeccak256, makePath } from "lib/helpers";
 
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
@@ -1058,7 +1058,7 @@ const data = createSelectorTree({
           let variables = {};
           if (scope !== undefined) {
             let cur =
-              scope.id !== undefined ? scope.id : sourceId + ":" + pointer;
+              scope.id !== undefined ? scope.id : makePath(sourceId, pointer);
 
             while (cur !== null && scopes[cur]) {
               variables = Object.assign(

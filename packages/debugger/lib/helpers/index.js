@@ -42,6 +42,10 @@ export function prefixName(prefix, fn) {
   return fn;
 }
 
+export function makePath(sourceId, pointer) {
+  return `${sourceId}:${pointer}`;
+}
+
 /**
  * returns a new array which is a copy of array but with
  * elements popped from the top until numToRemove elements

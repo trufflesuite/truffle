@@ -3,7 +3,12 @@ const debug = debugModule("debugger:data:sagas");
 
 import { put, takeEvery, select } from "redux-saga/effects";
 
-import { prefixName, stableKeccak256, makeAssignment } from "lib/helpers";
+import {
+  prefixName,
+  stableKeccak256,
+  makeAssignment,
+  makePath
+} from "lib/helpers";
 
 import { TICK } from "lib/trace/actions";
 import * as actions from "../actions";
@@ -43,8 +48,8 @@ export function* yulDeclare(
   yield put(
     actions.declare(
       node.name,
-      sourceId + ":" + pointer,
-      sourceId + ":" + scopePointer,
+      makePath(sourceId, pointer),
+      makePath(sourceId, scopePointer),
       compilationId
     )
   );
@@ -324,7 +329,7 @@ function* variablesAndMappingsSaga() {
       position = top; //because that's how we'll process things
       for (const suffix of suffixes) {
         //we only care about the pointer, not the variable
-        const sourceAndPointer = `${sourceId}:${pointer}` + suffix;
+        const sourceAndPointer = makePath(sourceId, pointer + suffix);
         assignment = makeAssignment(
           inModifier
             ? {
@@ -447,7 +452,7 @@ function* variablesAndMappingsSaga() {
       pointer = parentPointer;
     //NOTE: DELIBERATE FALL-THROUGH
     case "YulVariableDeclaration":
-      const sourceAndPointer = sourceId + ":" + pointer;
+      const sourceAndPointer = makePath(sourceId, pointer);
       debug("sourceAndPointer: %s", sourceAndPointer);
       assignments = {};
       //variables go on from bottom to top, so process from top to bottom

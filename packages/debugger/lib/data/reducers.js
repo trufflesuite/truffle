@@ -6,7 +6,7 @@ import { combineReducers } from "redux";
 import * as actions from "./actions";
 
 import * as Codec from "@truffle/codec";
-import { makeAssignment } from "lib/helpers";
+import { makeAssignment, makePath } from "lib/helpers";
 
 const DEFAULT_SCOPES = {
   byCompilationId: {}
@@ -20,7 +20,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
   switch (action.type) {
     case actions.SCOPE: {
       const { compilationId, id, sourceId, parentId, pointer } = action;
-      const idOrPath = id !== undefined ? id : sourceId + ":" + pointer;
+      const idOrPath = id !== undefined ? id : makePath(sourceId, pointer);
 
       newState = {
         byCompilationId: {
