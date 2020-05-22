@@ -18,8 +18,15 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   }
 
   constructor(networkId: number) {
-    let networkName = networksById[networkId];
-    if (networkName === undefined) {
+    const networkName = networksById[networkId];
+    const supportedNetworks = [
+      "mainnet",
+      "ropsten",
+      "kovan",
+      "rinkeby",
+      "goerli"
+    ];
+    if (networkName === undefined || !supportedNetworks.includes(networkName)) {
       this.validNetwork = false;
     } else {
       this.validNetwork = true;
