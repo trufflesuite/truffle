@@ -119,8 +119,18 @@ contract AdjustTest {
   function run() public returns (uint) {
     //input 0
     uint[] memory c;
+    {
+      assembly {
+        let x
+      }
+    }
 
     uint w = 35; //output 0, input 1, output 1
+
+    assembly {
+      let x //input 3
+      pop(x) //output 3
+    }
 
     return w + c.length;
   } //input 2
@@ -231,7 +241,7 @@ describe("Solidity Debugging", function() {
     let breakpoints = [];
     let expectedResolutions = [];
 
-    const NUM_TESTS = 3;
+    const NUM_TESTS = 4;
 
     for (let i = 0; i < NUM_TESTS; i++) {
       let inputLine = lineOf("input " + i, source.source);
