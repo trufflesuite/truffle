@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.0.40",
+  "version": "2.0.41",
   "main": "require.js",
   "scripts": {
     "test": "mocha"
@@ -16,7 +16,7 @@
   "dependencies": {
     "@truffle/config": "^1.2.18",
     "@truffle/expect": "^0.0.13",
-    "@truffle/interface-adapter": "^0.4.7",
+    "@truffle/interface-adapter": "^0.4.8",
     "original-require": "1.0.1",
     "web3": "1.2.1"
   },
