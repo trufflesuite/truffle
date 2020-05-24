@@ -9,6 +9,8 @@ declare namespace DataModel {
   type ICompilation = any;
   type ICompilationInput = any;
   type ICompilationProcessedSourceInput = any;
+  type ICompilationSourceMapInput = any;
+  type ICompilationSourceInput = any;
   type ICompilationsAddInput = any;
   type ICompilationsAddPayload = any;
   type ICompiler = any;
@@ -24,17 +26,21 @@ declare namespace DataModel {
   type IInstruction = any;
   type INameRecord = any;
   type INameRecordsAddInput = any;
+  type INameRecordsAddPayload = any;
   type INetwork = any;
   type INetworkInput = any;
   type INetworksAddInput = any;
   type IProject = any;
   type IProjectsAddInput = any;
+  type IProjectsAddPayload = any;
   type IProjectName = any;
   type IProjectNameInput = any;
+  type IProjectNamesAssignPayload = any;
   type ISource = any;
   type ISourceInput = any;
   type ISourceRange = any;
   type ISourcesAddInput = any;
+  type ISourcesAddPayload = any;
 
   interface IWorkspaceQuery {
     [key: string]: any;

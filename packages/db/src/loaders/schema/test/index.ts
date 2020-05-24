@@ -576,9 +576,12 @@ describe("Compilation", () => {
       expect(solcCompilation.processedSources[index].source.contents).toEqual(
         artifacts[index].source
       );
-      expect(solcCompilation.sourceMaps[index].json).toEqual(
-        artifacts[index].sourceMap
-      );
+
+      expect(
+        solcCompilation.sourceMaps.find(
+          ({ json }) => json === artifacts[index].sourceMap
+        )
+      ).toBeDefined();
     });
 
     const vyperCompilation = compilationsQuery[1].data.workspace.compilation;
@@ -730,7 +733,7 @@ describe("Compilation", () => {
   });
 
   it("loads contract instances", async () => {
-    for (let index in migratedArtifacts) {
+    for (const contractInstanceId of contractInstanceIds) {
       let {
         data: {
           workspace: {
@@ -750,27 +753,29 @@ describe("Compilation", () => {
             }
           }
         }
-      } = await db.query(
-        GetWorkspaceContractInstance,
-        contractInstanceIds[index]
+      } = await db.query(GetWorkspaceContractInstance, contractInstanceId);
+
+      const contractInstance = contractInstances.find(
+        contractInstance => name === contractInstance.contract.name
       );
 
-      expect(name).toEqual(contractInstances[index].contract.name);
-      expect(networkId).toEqual(contractInstances[index].network.networkId);
-      expect(address).toEqual(contractInstances[index].address);
+      expect(contractInstance).toBeDefined();
+
+      expect(name).toEqual(contractInstance.contract.name);
+      expect(networkId).toEqual(contractInstance.network.networkId);
+      expect(address).toEqual(contractInstance.address);
       expect(transactionHash).toEqual(
-        contractInstances[index].creation.transactionHash
+        contractInstance.creation.transactionHash
       );
       expect(bytes).toEqual(
-        contractInstances[index].creation.constructor.createBytecode.bytecode
-          .bytes
+        contractInstance.creation.constructor.createBytecode.bytecode.bytes
       );
       expect(linkReferences).toEqual(
-        contractInstances[index].creation.constructor.createBytecode.bytecode
+        contractInstance.creation.constructor.createBytecode.bytecode
           .linkReferences
       );
       expect(bytecode.bytes).toEqual(
-        contractInstances[index].callBytecode.bytecode.bytes
+        contractInstance.callBytecode.bytecode.bytes
       );
     }
   });
