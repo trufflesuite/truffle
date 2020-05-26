@@ -227,7 +227,7 @@ module.exports = Contract => ({
         // email, password, mnemonic, & secret are all REQUIRED.
         if (Array.isArray(mnemonic)) mnemonic = mnemonic.join(" ");
         try {
-          await tezos.importKey(email, password, mnemonic, secret);
+          return await tezos.importKey(email, password, mnemonic, secret);
         } catch (error) {
           throw Error(`Faucet account invalid or incorrectly imported.`);
         }
@@ -235,7 +235,7 @@ module.exports = Contract => ({
 
       if (secretKey) {
         try {
-          await tezos.importKey(secretKey);
+          return await tezos.importKey(secretKey);
         } catch (error) {
           throw Error(`Secret key invalid or incorrectly imported.`);
         }
