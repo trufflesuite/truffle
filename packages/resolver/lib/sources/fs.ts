@@ -65,9 +65,8 @@ export class FS implements ResolverSource {
     ];
 
     let body, filePath;
-    for (let i = 0; i < possiblePaths.length; i++) {
+    for (const possiblePath of possiblePaths) {
       try {
-        const possiblePath = possiblePaths[i];
         const resolvedSource = fs.readFileSync(possiblePath, {
           encoding: "utf8"
         });
@@ -78,7 +77,7 @@ export class FS implements ResolverSource {
       } catch (error) {
         // do nothing
       }
-    });
+    }
     
     throw new Error(`Path resolving failed for ${importPath}`);
   }
