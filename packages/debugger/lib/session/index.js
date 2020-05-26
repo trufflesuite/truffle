@@ -416,7 +416,7 @@ export default class Session {
 
   async addCompilations(compilations) {
     let { contexts, sources } = Session.normalize(compilations);
-    return await this.dispatch(actions.addCompilation(sources, contexts));
+    return await this.dispatch(actions.addCompilations(sources, contexts));
   }
 
   async startFullMode() {

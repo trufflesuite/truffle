@@ -89,7 +89,7 @@ export function* saga(moduleOptions) {
 }
 
 //please only use in light mode!
-export function* addCompilations(sources, contexts) {
+export function* addCompilations({ sources, contexts }) {
   debug("recording contract binaries");
   yield* recordContexts(...contexts);
 
