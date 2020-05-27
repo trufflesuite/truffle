@@ -23,7 +23,7 @@ const LOAD_SAGAS = {
   //will also add reconstruct action/saga once it exists
   //the following ones don't really relate to loading, but, oh well
   [actions.ADD_EXTERNAL_COMPILATIONS]: addExternalCompilations,
-  [actions.START_FULL_MODE]: startFullmode
+  [actions.START_FULL_MODE]: startFullMode
 };
 
 function* listenerSaga() {
@@ -89,7 +89,7 @@ export function* saga(moduleOptions) {
 }
 
 //please only use in light mode!
-export function* addExternalCompilations({ sources, contexts }) {
+function* addExternalCompilations({ sources, contexts }) {
   debug("recording contract binaries");
   yield* recordExternalContexts(contexts);
 
@@ -102,7 +102,7 @@ export function* addExternalCompilations({ sources, contexts }) {
   yield* trace.addSubmodule();
 }
 
-export function* startFullMode() {
+function* startFullMode() {
   let lightMode = yield select(session.lightMode);
   if (!lightMode) {
     //better not start this twice!
