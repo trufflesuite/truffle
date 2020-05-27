@@ -2,8 +2,8 @@
   "name": "@truffle/source-fetcher",
   "version": "0.1.0-0",
   "description": "Fetches verified source code from services such as Etherscan",
-  "main": "dist/lib/index.js",
-  "types": "dist/lib/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],

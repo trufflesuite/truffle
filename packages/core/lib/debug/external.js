@@ -7,7 +7,7 @@ const fs = require("fs-extra");
 const path = require("path");
 
 const Codec = require("@truffle/codec");
-const Fetchers = require("@truffle/source-fetcher");
+const Fetchers = require("@truffle/source-fetcher").default;
 
 const { DebugCompiler } = require("./compiler");
 
@@ -23,12 +23,13 @@ class DebugExternalHandler {
     let addressesToSkip = new Set(); //addresses we know we can't get source for
     //note: this should always be a subset of unknownAddresses! [see below]
     //get the network id
-    const networkId = await new Web3(config.provider).eth.net.getId(); //note: this is a number
+    const networkId = await new Web3(this.config.provider).eth.net.getId(); //note: this is a number
     //make fetcher instances
+    debug("Fetchers: %o", Fetchers);
     const allFetchers = await Promise.all(
       Fetchers.map(async Fetcher => await Fetcher.forNetworkId(networkId))
     );
-    let fetchers;
+    let fetchers = [];
     //filter out ones that don't support this network
     //(and note ones that yielded errors)
     for (const fetcher of allFetchers) {
@@ -48,6 +49,7 @@ class DebugExternalHandler {
       }
     }
     //now: the main loop!
+    let address;
     while (
       (address = getAnUnknownAddress(this.bugger, addressesToSkip)) !==
       undefined
@@ -60,19 +62,24 @@ class DebugExternalHandler {
         //get our sources
         let result;
         try {
+          debug("getting sources for %s via %s", address, fetcher.name);
           result = await fetcher.fetchSourcesForAddress(address);
-        } catch (_) {
+        } catch (error) {
+          debug("error in getting sources! %o", error);
           failure = true;
           continue;
         }
         if (result === null) {
+          debug("no sources found");
           //null means they don't have that address
           continue;
         }
         //if we do have it, extract sources & options
+        debug("got sources!");
         const { sources, options } = result;
         if (options.language !== "Solidity") {
           //if it's not Solidity, bail out now
+          debug("not Solidity, bailing out!");
           addressesToSkip.add(address);
           //break out of the fetcher loop, since *no* fetcher will work here
           break;
@@ -87,7 +94,7 @@ class DebugExternalHandler {
           })
         );
         //compile the sources
-        const temporaryConfig = config.with({
+        const temporaryConfig = this.config.with({
           contracts_directory: sourceDirectory,
           compilers: {
             solc: options
@@ -106,11 +113,18 @@ class DebugExternalHandler {
         //add it!
         await this.bugger.addExternalCompilations(newCompilations);
         //check: did this actually help?
+        debug("checking result");
         if (!getUnknownAddresses(this.bugger).includes(address)) {
+          debug(
+            "address %s successfully recognized via %s",
+            address,
+            fetcher.name
+          );
           found = true;
           //break out of the fetcher loop -- we got what we want
           break;
         }
+        debug("address %s still unrecognized", address);
       }
       if (found === false) {
         //if we couldn't find it, add it to the list of addresses to skip
@@ -122,14 +136,17 @@ class DebugExternalHandler {
         }
       }
     }
-    return { compilations: allCompilations, badAddresses, badFetchers };
+    return { badAddresses, badFetchers }; //main result is that we've mutated bugger,
+    //not the return value!
   }
 }
 
 function getUnknownAddresses(bugger) {
+  debug("getting unknown addresses");
   const instances = bugger.view(
     bugger.selectors.session.info.affectedInstances
   );
+  debug("got instances");
   return Object.entries(instances)
     .filter(([_, { contractName }]) => contractName === undefined)
     .map(([address, _]) => address);

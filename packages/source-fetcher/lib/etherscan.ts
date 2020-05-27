@@ -89,7 +89,6 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       json: true //turns on auto-parsing :)
     });
     if (response.status === "0") {
-      //no retry logic for now; will add later
       throw new Error(response.result);
     }
     return response;

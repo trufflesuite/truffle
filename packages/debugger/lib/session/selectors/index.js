@@ -36,6 +36,10 @@ const session = createSelectorTree({
               }
               let { contractName, compilationId, primarySource } = context;
 
+              debug("primarySource: %o", primarySource);
+              debug("compilationId: %s", compilationId);
+              debug("sources: %o", sources);
+
               let source =
                 primarySource !== undefined
                   ? sources[compilationId].byId[primarySource]

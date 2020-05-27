@@ -9,7 +9,7 @@ const Codec = require("@truffle/codec");
 
 const { DebugInterpreter } = require("./interpreter");
 const { DebugCompiler } = require("./compiler");
-const { DebugExternalFetcher } = require("./external");
+const { DebugExternalHandler } = require("./external");
 
 class CLIDebugger {
   constructor(config, { compilations, txHash } = {}) {
@@ -38,14 +38,14 @@ class CLIDebugger {
     const fetchSpinner = ora(
       "Getting and compiling external sources..."
     ).start();
-    const { badAddresses, badFetchers } = await new DebugExternalFetcher(
+    const { badAddresses, badFetchers } = await new DebugExternalHandler(
       bugger,
       this.config
     ).fetch(); //note: mutates bugger!
     if (badAddresses.length === 0 && badFetchers.length === 0) {
       fetchSpinner.succeed();
     } else {
-      let warningStrings;
+      let warningStrings = [];
       if (badFetchers.length > 0) {
         warningStrings.push(
           `Errors occurred connecting to ${badFetchers.join(", ")}$.`
@@ -89,14 +89,20 @@ class CLIDebugger {
   }
 
   async startDebugger(compilations) {
+    const startMessage = DebugUtils.formatStartMessage(
+      this.txHash !== undefined
+    );
+    debug("starting debugger");
     let startSpinner;
     if (!this.config.external) {
-      const startMessage = DebugUtils.formatStartMessage(
-        this.txHash !== undefined
-      );
+      //in external mode spinner is handled below
       startSpinner = ora(startMessage).start();
     }
 
+    //note that in external mode we start in light mode
+    //and only wake up to full mode later!
+    //note: if we are in external mode, txHash had better be defined!
+    //(this is ensured by commands/debug.js, so we don't check it ourselves)
     const bugger =
       this.txHash !== undefined
         ? await Debugger.forTx(this.txHash, {
@@ -106,9 +112,10 @@ class CLIDebugger {
           })
         : await Debugger.forProject({
             provider: this.config.provider,
-            compilations,
-            lightMode: this.config.external
+            compilations
           });
+
+    debug("debugger started");
 
     if (!this.config.external) {
       // check for error
@@ -118,6 +125,7 @@ class CLIDebugger {
         startSpinner.succeed();
       }
     } else {
+      debug("about to fetch external sources");
       await this.fetchExternalSources(bugger); //note: mutates bugger!
       startSpinner = ora(startMessage).start();
       await bugger.startFullMode();

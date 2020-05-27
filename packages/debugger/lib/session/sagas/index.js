@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { call, all, fork, take, put, race } from "redux-saga/effects";
+import { call, all, fork, take, put, race, select } from "redux-saga/effects";
 
 import { prefixName } from "lib/helpers";
 
@@ -16,7 +16,7 @@ import * as web3 from "lib/web3/sagas";
 
 import * as actions from "../actions";
 
-import * as session from "../selectors";
+import session from "../selectors";
 
 const LOAD_SAGAS = {
   [actions.LOAD_TRANSACTION]: load,
@@ -70,11 +70,14 @@ export function* saga(moduleOptions) {
     //save allocation table
     debug("saving allocation table");
     yield* data.recordAllocations();
+    //note: we don't need to explicitly set full mode, it's the default
   } else {
-    yield put(actions.SET_LIGHT_MODE);
+    debug("setting light mode");
+    yield put(actions.setLightMode());
   }
 
   //initialize web3 adapter
+  debug("initializing adapter");
   yield* web3.init(provider);
 
   //process transaction (if there is one)
@@ -98,12 +101,11 @@ function* addExternalCompilations({ sources, contexts }) {
 
   debug("re-normalizing contexts");
   yield* evm.normalizeContexts();
-
-  yield* trace.addSubmodule();
 }
 
 function* startFullMode() {
-  let lightMode = yield select(session.lightMode);
+  debug("session: %O", session);
+  let lightMode = yield select(session.status.lightMode);
   if (!lightMode) {
     //better not start this twice!
     return;
@@ -117,6 +119,8 @@ function* startFullMode() {
   yield* data.recordAllocations();
 
   yield* trace.addSubmoduleToCount();
+
+  yield put(actions.setFullMode());
 }
 
 export function* processTransaction(txHash) {

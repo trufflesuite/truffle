@@ -12,17 +12,21 @@ function sources(state = DEFAULT_SOURCES, action) {
      * Adding new sources
      */
     case actions.ADD_SOURCES:
+      //NOTE: this code assumes that we are only ever adding compilations
+      //wholesale, and never adding to existing ones!
       return {
-        byCompilationId: Object.assign(
-          {},
-          ...Object.entries(action.compilations).map(([id, compilation]) => ({
-            [id]: {
-              byId: compilation
-            }
-          }))
-        )
+        byCompilationId: {
+          ...state.byCompilationId,
+          ...Object.assign(
+            {},
+            ...Object.entries(action.compilations).map(([id, compilation]) => ({
+              [id]: {
+                byId: compilation
+              }
+            }))
+          )
+        }
       };
-
     /*
      * Default case
      */

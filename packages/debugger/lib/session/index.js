@@ -15,6 +15,8 @@ import * as controllerSagas from "lib/controller/sagas";
 import * as sagas from "./sagas";
 import controllerSelector from "lib/controller/selectors";
 
+import { createNestedSelector } from "reselect-tree";
+
 import ast from "lib/ast/selectors";
 import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
