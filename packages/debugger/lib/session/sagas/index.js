@@ -22,7 +22,7 @@ const LOAD_SAGAS = {
   [actions.LOAD_TRANSACTION]: load,
   //will also add reconstruct action/saga once it exists
   //the following ones don't really relate to loading, but, oh well
-  [actions.ADD_COMPILATIONS]: addCompilations,
+  [actions.ADD_EXTERNAL_COMPILATIONS]: addExternalCompilations,
   [actions.START_FULL_MODE]: startFullmode
 };
 
@@ -49,7 +49,7 @@ export function* saga(moduleOptions) {
   let { contexts, sources } = yield take(actions.RECORD_CONTRACTS);
 
   debug("recording contract binaries");
-  yield* recordContexts(...contexts);
+  yield* recordContexts(contexts);
 
   debug("recording contract sources");
   yield* recordSources(sources);
@@ -89,9 +89,9 @@ export function* saga(moduleOptions) {
 }
 
 //please only use in light mode!
-export function* addCompilations({ sources, contexts }) {
+export function* addExternalCompilations({ sources, contexts }) {
   debug("recording contract binaries");
-  yield* recordContexts(...contexts);
+  yield* recordExternalContexts(contexts);
 
   debug("recording contract sources");
   yield* recordSources(sources);
@@ -184,9 +184,19 @@ function* fetchTx(txHash) {
   yield* stacktrace.begin();
 }
 
-function* recordContexts(...contexts) {
+function* recordContexts(contexts) {
   for (let context of contexts) {
     yield* evm.addContext(context);
+  }
+}
+
+function* recordExternalContexts(contexts) {
+  for (let context of contexts) {
+    let externalContext = {
+      ...context,
+      externalSolidity: true
+    };
+    yield* evm.addContext(externalContext);
   }
 }
 

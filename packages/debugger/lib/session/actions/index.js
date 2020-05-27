@@ -97,10 +97,10 @@ export function startFullMode() {
   return { type: START_FULL_MODE };
 }
 
-export const ADD_COMPILATIONS = "SESSION_ADD_COMPILATIONS";
-export function addCompilations(sources, contexts) {
+export const ADD_EXTERNAL_COMPILATIONS = "SESSION_ADD_EXTERNAL_COMPILATIONS";
+export function addExternalCompilations(sources, contexts) {
   return {
-    type: ADD_COMPILATIONS,
+    type: ADD_EXTERNAL_COMPILATIONS,
     sources,
     contexts
   };

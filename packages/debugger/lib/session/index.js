@@ -414,9 +414,11 @@ export default class Session {
     return this; //for compatibility
   }
 
-  async addCompilations(compilations) {
+  async addExternalCompilations(compilations) {
     let { contexts, sources } = Session.normalize(compilations);
-    return await this.dispatch(actions.addCompilations(sources, contexts));
+    return await this.dispatch(
+      actions.addExternalCompilations(sources, contexts)
+    );
   }
 
   async startFullMode() {

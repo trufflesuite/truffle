@@ -104,7 +104,7 @@ class DebugExternalHandler {
           compilationId
         );
         //add it!
-        await this.bugger.addCompilations(newCompilations);
+        await this.bugger.addExternalCompilations(newCompilations);
         //check: did this actually help?
         if (!getUnknownAddresses(this.bugger).includes(address)) {
           found = true;
