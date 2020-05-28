@@ -15,7 +15,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   }
 
   private readonly apiKey: string;
-  private readonly timeout: number; //minimum # of ms to wait between requests
+  private readonly delay: number; //minimum # of ms to wait between requests
 
   private ready: Promise<void>; //always await this timer before making a request.
   //then, afterwards, start a new timer.
@@ -36,7 +36,9 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       this.suffix = networkName === "mainnet" ? "" : `-${networkName}`;
     }
     this.apiKey = ""; //leaving out apiKey for now
-    this.timeout = this.apiKey ? 200 : 334; //etherscan permits 5 requests/sec w/a key, 3/sec w/o
+    const baseDelay = this.apiKey ? 200 : 3000; //etherscan permits 5 requests/sec w/a key, 1/3sec w/o
+    const safetyFactor = 1; //no safety factor atm
+    this.delay = baseDelay * safetyFactor;
     this.ready = makeTimer(0); //at start, it's ready to go immediately
   }
 
@@ -62,7 +64,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     for (let attempt = 0; attempt < allowedAttempts; attempt++) {
       await this.ready;
       const responsePromise = this.makeRequest(address);
-      this.ready = makeTimer(this.timeout);
+      this.ready = makeTimer(this.delay);
       //for now, we're just going to retry once if it fails
       try {
         return await responsePromise;
