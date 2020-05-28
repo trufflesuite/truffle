@@ -10,7 +10,8 @@ export function addContext({
   abi,
   contractId,
   contractKind,
-  isConstructor
+  isConstructor,
+  externalSolidity
 }) {
   return {
     type: ADD_CONTEXT,
@@ -24,7 +25,8 @@ export function addContext({
     abi,
     contractId,
     contractKind,
-    isConstructor
+    isConstructor,
+    externalSolidity
   };
 }
 
@@ -40,6 +42,15 @@ export function addInstance(address, context, binary) {
     address,
     context,
     binary
+  };
+}
+
+export const REFRESH_INSTANCE = "EVM_REFRESH_INSTANCE";
+export function refreshInstances(address, context) {
+  return {
+    type: REFRESH_INSTANCE,
+    address,
+    context
   };
 }
 

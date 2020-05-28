@@ -30,7 +30,8 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
         abi,
         contractId,
         contractKind,
-        isConstructor
+        isConstructor,
+        externalSolidity
       } = action;
       debug("action %O", action);
       //NOTE: we take hash as *string*, not as bytes, because the binary may
@@ -54,6 +55,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
             contractId,
             contractKind,
             isConstructor,
+            externalSolidity,
             payable: Codec.AbiData.Utils.abiHasPayableFallback(abi)
           }
         }

@@ -38,13 +38,25 @@ export function* normalizeContexts() {
  * @return {string} ID (0x-prefixed keccak of binary)
  */
 export function* addInstance(address, binary) {
-  let search = yield select(evm.info.binaries.search);
-  let context = search(binary);
+  const search = yield select(evm.info.binaries.search);
+  const context = search(binary);
 
   //now, whether we needed a new context or not, add the instance
   yield put(actions.addInstance(address, context, binary));
 
   return context;
+}
+
+//goes through all instances and re-adds them with their new
+//context (used if new contexts have been added -- something
+//that currently only happens when adding external compilations)
+export function* refreshInstances() {
+  const instances = yield select(evm.current.codex.instances);
+  for (let [address, { binary }] of Object.entries(instances)) {
+    const search = yield select(evm.info.binaries.search);
+    const context = search(binary);
+    yield put(actions.addInstance(address, context, binary));
+  }
 }
 
 export function* begin({

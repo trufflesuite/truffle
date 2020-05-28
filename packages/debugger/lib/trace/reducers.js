@@ -47,7 +47,7 @@ function steps(state = null, action) {
 
 function submoduleCount(state = 0, action) {
   switch (action.type) {
-    case action.SET_SUBMODULE_COUNT:
+    case actions.SET_SUBMODULE_COUNT:
       return action.count;
     default:
       return state;

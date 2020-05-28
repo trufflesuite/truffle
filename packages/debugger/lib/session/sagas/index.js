@@ -101,6 +101,9 @@ function* addExternalCompilations({ sources, contexts }) {
 
   debug("re-normalizing contexts");
   yield* evm.normalizeContexts();
+
+  debug("refreshing instances");
+  yield* evm.refreshInstances();
 }
 
 function* startFullMode() {
@@ -110,6 +113,9 @@ function* startFullMode() {
     //better not start this twice!
     return;
   }
+  debug("turning on data listener");
+  yield fork(data.saga);
+
   debug("visiting ASTs");
   // visit asts
   yield* ast.visitAll();
