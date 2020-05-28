@@ -86,6 +86,7 @@ class DebugExternalHandler {
         }
         //make a temporary directory to store our downloads in
         const sourceDirectory = temp.mkdirSync("tmp-");
+        debug("tempdir: %s", sourceDirectory);
         //save the sources to the temporary directory
         await Promise.all(
           Object.entries(sources).map(async ([sourcePath, source]) => {
@@ -103,8 +104,10 @@ class DebugExternalHandler {
         const { contracts, sourceIndexes: files } = await new DebugCompiler(
           temporaryConfig
         ).compile();
+        debug("contracts: %o", contracts);
+        debug("files: %O", files);
         //shim the result
-        const compilationId = `externalFor${address}Via${fetcher.name}`;
+        const compilationId = `externalFor(${address})Via(${fetcher.name})`;
         const newCompilations = Codec.Compilations.Utils.shimArtifacts(
           contracts,
           files,
