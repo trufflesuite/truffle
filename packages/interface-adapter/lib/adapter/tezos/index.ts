@@ -69,7 +69,10 @@ export class TezosAdapter implements InterfaceAdapter {
     return level;
   }
 
-  public setProvider({ provider, config }: TezosAdapterOptions) {
+  public setProvider({
+    provider,
+    config = { confirmationPollingIntervalSecond: 1 }
+  }: TezosAdapterOptions) {
     // @ts-ignore: Property 'host' does not exist on type 'Provider'.
     const { host } = provider;
     let currentHost;
