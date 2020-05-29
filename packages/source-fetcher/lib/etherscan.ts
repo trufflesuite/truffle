@@ -1,3 +1,6 @@
+import debugModule from "debug";
+const debug = debugModule("source-fetcher:etherscan");
+
 import { Fetcher, FetcherConstructor } from "./types";
 import * as Types from "./types";
 import { networksById, makeFilename, makeTimer } from "./common";
@@ -120,27 +123,39 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
         }
       };
     }
-    let sourceJson: Types.SolcSources | Types.SolcInput;
+    let multifileJson: Types.SolcSources;
     try {
-      sourceJson = JSON.parse(result.SourceCode);
+      //try to parse the source JSON.  if it succeeds,
+      //we're in the multi-file case.
+      multifileJson = JSON.parse(result.SourceCode);
     } catch (_) {
-      //case 3: single source
+      //otherwise, we could be single-file or we could be full JSON.
+      //for full JSON input, etherscan will stick an extra pair of braces around it
+      if (
+        result.SourceCode.startsWith("{") &&
+        result.SourceCode.endsWith("}")
+      ) {
+        const trimmedSource = result.SourceCode.slice(1).slice(0, -1); //remove braces
+        let fullJson: Types.SolcInput;
+        try {
+          fullJson = JSON.parse(result.SourceCode);
+        } catch (_) {
+          //if it still doesn't parse, it's single-source I guess?
+          //(note: we shouldn't really end up here?)
+          debug("single-file input??");
+          return this.processSingleResult(result);
+        }
+        //case 5: full JSON input
+        debug("json input");
+        return this.processJsonResult(result, fullJson);
+      }
+      //case 3 (the way it should happen): single source
+      debug("single-file input");
       return this.processSingleResult(result);
     }
-    //now: do we have a multi-result or a JSON-result?
-    if (this.isFullJson(sourceJson)) {
-      //case 5: full JSON input
-      return this.processJsonResult(result, sourceJson);
-    } else {
-      //case 4: multiple sources
-      return this.processMultiResult(result, sourceJson);
-    }
-  }
-
-  private static isFullJson(
-    sourceJson: Types.SolcSources | Types.SolcInput
-  ): sourceJson is Types.SolcInput {
-    return (<Types.SolcInput>sourceJson).language === "Solidity";
+    //case 4: multiple sources
+    debug("multi-file input");
+    return this.processMultiResult(result, multifileJson);
   }
 
   private static processSingleResult(
