@@ -18,7 +18,7 @@ const getNetworkTypeClass = (networkType = "ethereum") => {
 export const createInterfaceAdapter = (
   options: InterfaceAdapterOptions
 ): InterfaceAdapter => {
-  const { provider, networkType } = options;
+  const { provider, networkType, config } = options;
 
   switch (getNetworkTypeClass(networkType)) {
     case "evm-like": {
@@ -29,7 +29,8 @@ export const createInterfaceAdapter = (
     }
     case "tezos": {
       return new TezosAdapter({
-        provider
+        provider,
+        config
       });
     }
     default:

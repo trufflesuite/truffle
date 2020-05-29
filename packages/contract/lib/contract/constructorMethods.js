@@ -4,27 +4,31 @@ const execute = require("../execute");
 const bootstrap = require("./bootstrap");
 
 module.exports = Contract => ({
-  configureNetwork({ networkType, provider } = {}) {
+  configureNetwork({ networkType, provider, config } = {}) {
     // otherwise use existing value as default (at most one of these)
     networkType = networkType || this.networkType;
     provider = provider || this.currentProvider;
 
     // recreate interfaceadapter
-    this.interfaceAdapter = createInterfaceAdapter({ networkType, provider });
+    this.interfaceAdapter = createInterfaceAdapter({
+      networkType,
+      provider,
+      config
+    });
 
     // save properties
     this.currentProvider = provider;
     this.networkType = networkType;
   },
 
-  setProvider(provider) {
+  setProvider(provider, config) {
     if (!provider) {
       throw new Error(
         `Invalid provider passed to setProvider(); provider is ${provider}`
       );
     }
 
-    this.configureNetwork({ provider });
+    this.configureNetwork({ provider, config });
   },
 
   new() {

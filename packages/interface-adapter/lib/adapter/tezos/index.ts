@@ -1,16 +1,17 @@
 import { InterfaceAdapter, BlockType } from "../types";
 import Config from "@truffle/config";
 import { Provider } from "web3/providers";
-import { TezosToolkit, Tezos } from "@taquito/taquito";
+import { TezosToolkit, Tezos, SetProviderOptions } from "@taquito/taquito";
 
 export interface TezosAdapterOptions {
   provider?: Provider;
   networkType?: string;
+  config?: SetProviderOptions["config"];
 }
 
 export class TezosAdapter implements InterfaceAdapter {
   public tezos: TezosToolkit;
-  constructor({ provider }: TezosAdapterOptions) {
+  constructor({ provider, config }: TezosAdapterOptions) {
     this.tezos = Tezos;
     if (provider) this.setProvider(provider);
   }
@@ -68,7 +69,10 @@ export class TezosAdapter implements InterfaceAdapter {
     return level;
   }
 
-  public setProvider(provider: Provider) {
+  public setProvider(
+    provider: Provider,
+    config?: SetProviderOptions["config"]
+  ) {
     // @ts-ignore: Property 'host' does not exist on type 'Provider'.
     const { host } = provider;
     let currentHost;
@@ -78,7 +82,7 @@ export class TezosAdapter implements InterfaceAdapter {
       currentHost = provider;
     }
 
-    return this.tezos.setProvider({ rpc: currentHost });
+    return this.tezos.setProvider({ rpc: currentHost, config });
   }
 
   public async setWallet(config: Config) {

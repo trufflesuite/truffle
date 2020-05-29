@@ -5,6 +5,7 @@ import { InterfaceAdapter, EvmBlockType, Transaction } from "../types";
 export interface Web3InterfaceAdapterOptions {
   provider?: Provider;
   networkType?: string;
+  config?: any;
 }
 
 export class Web3InterfaceAdapter implements InterfaceAdapter {
