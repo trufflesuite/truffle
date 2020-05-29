@@ -93,7 +93,7 @@ class DebugPrinter {
       this.config.logger.log(
         `${colors.bold(
           "Warning:"
-        )} this transaction has no trace steps. This may happen if you are attempting to debug a transaction sent to an externally-owned accounts, or if the node you are connecting to failed to produce a trace for some reason. Please check your configuration and try again.`
+        )} this transaction has no trace steps. This may happen if you are attempting to debug a transaction sent to an externally-owned account, or if the node you are connecting to failed to produce a trace for some reason. Please check your configuration and try again.`
       );
     }
   }
