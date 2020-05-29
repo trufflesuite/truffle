@@ -9,12 +9,19 @@ import request from "request-promise-native";
 //this looks awkward but the TS docs actually suggest this :P
 const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   implements Fetcher {
-  get name(): string {
+  get fetcherName(): string {
+    return "etherscan";
+  }
+  static get fetcherName(): string {
     return "etherscan";
   }
 
-  static async forNetworkId(id: number): Promise<EtherscanFetcher> {
-    return new EtherscanFetcher(id);
+  static async forNetworkId(
+    id: number,
+    options?: Types.FetcherOptions
+  ): Promise<EtherscanFetcher> {
+    debug("options: %O", options);
+    return new EtherscanFetcher(id, options ? options.apiKey : "");
   }
 
   private readonly apiKey: string;
@@ -23,7 +30,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
   private ready: Promise<void>; //always await this timer before making a request.
   //then, afterwards, start a new timer.
 
-  constructor(networkId: number) {
+  constructor(networkId: number, apiKey: string = "") {
     const networkName = networksById[networkId];
     const supportedNetworks = [
       "mainnet",
@@ -38,7 +45,8 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       this.validNetwork = true;
       this.suffix = networkName === "mainnet" ? "" : `-${networkName}`;
     }
-    this.apiKey = ""; //leaving out apiKey for now
+    debug("apiKey: %s", apiKey);
+    this.apiKey = apiKey;
     const baseDelay = this.apiKey ? 200 : 3000; //etherscan permits 5 requests/sec w/a key, 1/3sec w/o
     const safetyFactor = 1; //no safety factor atm
     this.delay = baseDelay * safetyFactor;
@@ -115,11 +123,9 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       //return nothing useful, just something saying it's
       //vyper so we can't do anything
       return {
-        sources: {},
+        sources: {}, //not even going to bother processing the single source
         options: {
-          language: "Vyper",
-          version: "",
-          settings: {}
+          language: "Vyper"
         }
       };
     }
@@ -138,7 +144,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
         const trimmedSource = result.SourceCode.slice(1).slice(0, -1); //remove braces
         let fullJson: Types.SolcInput;
         try {
-          fullJson = JSON.parse(result.SourceCode);
+          fullJson = JSON.parse(trimmedSource);
         } catch (_) {
           //if it still doesn't parse, it's single-source I guess?
           //(note: we shouldn't really end up here?)

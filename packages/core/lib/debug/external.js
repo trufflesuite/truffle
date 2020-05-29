@@ -27,7 +27,13 @@ class DebugExternalHandler {
     //make fetcher instances
     debug("Fetchers: %o", Fetchers);
     const allFetchers = await Promise.all(
-      Fetchers.map(async Fetcher => await Fetcher.forNetworkId(networkId))
+      Fetchers.map(
+        async Fetcher =>
+          await Fetcher.forNetworkId(
+            networkId,
+            this.config[Fetcher.fetcherName]
+          )
+      )
     );
     let fetchers = [];
     //filter out ones that don't support this network
@@ -45,7 +51,7 @@ class DebugExternalHandler {
         fetchers.push(fetcher);
       }
       if (failure) {
-        badFetchers.push(fetcher.name);
+        badFetchers.push(fetcher.fetcherName);
       }
     }
     //now: the main loop!
@@ -62,7 +68,7 @@ class DebugExternalHandler {
         //get our sources
         let result;
         try {
-          debug("getting sources for %s via %s", address, fetcher.name);
+          debug("getting sources for %s via %s", address, fetcher.fetcherName);
           result = await fetcher.fetchSourcesForAddress(address);
         } catch (error) {
           debug("error in getting sources! %o", error);
@@ -107,7 +113,9 @@ class DebugExternalHandler {
         debug("contracts: %o", contracts);
         debug("files: %O", files);
         //shim the result
-        const compilationId = `externalFor(${address})Via(${fetcher.name})`;
+        const compilationId = `externalFor(${address})Via(${
+          fetcher.fetcherName
+        })`;
         const newCompilations = Codec.Compilations.Utils.shimArtifacts(
           contracts,
           files,
@@ -121,7 +129,7 @@ class DebugExternalHandler {
           debug(
             "address %s successfully recognized via %s",
             address,
-            fetcher.name
+            fetcher.fetcherName
           );
           found = true;
           //break out of the fetcher loop -- we got what we want
