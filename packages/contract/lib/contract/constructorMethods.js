@@ -21,8 +21,8 @@ module.exports = Contract => ({
     this.networkType = networkType;
   },
 
-  setProvider(provider, config) {
-    if (!provider) {
+  setProvider({ provider, config }) {
+    if (!provider && !this.currentProvider) {
       throw new Error(
         `Invalid provider passed to setProvider(); provider is ${provider}`
       );

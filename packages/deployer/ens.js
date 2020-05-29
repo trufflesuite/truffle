@@ -30,7 +30,7 @@ class ENS {
   async deployNewDevENSRegistry(from) {
     const ENSRegistryArtifact = require("@ensdomains/ens").ENSRegistry;
     const ENSRegistry = contract(ENSRegistryArtifact);
-    ENSRegistry.setProvider(this.provider);
+    ENSRegistry.setProvider({ provider: this.provider });
     const ensRegistry = await ENSRegistry.new({ from });
     this.ensSettings.registryAddress = ensRegistry.address;
     this.devRegistry = ensRegistry;
@@ -67,7 +67,7 @@ class ENS {
       const PublicResolverArtifact = require("@ensdomains/resolver")
         .PublicResolver;
       const PublicResolver = contract(PublicResolverArtifact);
-      PublicResolver.setProvider(this.provider);
+      PublicResolver.setProvider({ provider: this.provider });
 
       let registryAddress = this.determineENSRegistryAddress();
 

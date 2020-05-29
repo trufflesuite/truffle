@@ -1,12 +1,7 @@
-import { Web3InterfaceAdapter, Web3InterfaceAdapterOptions } from "./web3";
-import { TezosAdapter, TezosAdapterOptions } from "./tezos";
+import { Web3InterfaceAdapter } from "./web3";
+import { TezosAdapter } from "./tezos";
 
-import { InterfaceAdapter } from "./types";
-
-// type union of supported network types
-export type InterfaceAdapterOptions =
-  | Web3InterfaceAdapterOptions
-  | TezosAdapterOptions;
+import { InterfaceAdapter, InterfaceAdapterOptions } from "./types";
 
 const getNetworkTypeClass = (networkType = "ethereum") => {
   const supportedEvmNetworks = ["ethereum", "fabric-evm", "quorum", "web3js"];

@@ -13,7 +13,7 @@ export class TezosAdapter implements InterfaceAdapter {
   public tezos: TezosToolkit;
   constructor({ provider, config }: TezosAdapterOptions) {
     this.tezos = Tezos;
-    if (provider) this.setProvider(provider);
+    this.setProvider({ provider, config });
   }
 
   public async getNetworkId() {
@@ -69,10 +69,7 @@ export class TezosAdapter implements InterfaceAdapter {
     return level;
   }
 
-  public setProvider(
-    provider: Provider,
-    config?: SetProviderOptions["config"]
-  ) {
+  public setProvider({ provider, config }: TezosAdapterOptions) {
     // @ts-ignore: Property 'host' does not exist on type 'Provider'.
     const { host } = provider;
     let currentHost;

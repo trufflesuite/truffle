@@ -165,7 +165,7 @@ const Migrate = {
     return {
       require: function(import_path, search_path) {
         const abstraction = resolver.require(import_path, search_path);
-        abstraction.setProvider(provider);
+        abstraction.setProvider({ provider });
         return abstraction;
       },
       resolve: resolver.resolve

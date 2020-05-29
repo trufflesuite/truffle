@@ -51,7 +51,7 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
     return this.web3.eth.getBlockNumber();
   }
 
-  public setProvider(provider: Provider) {
+  public setProvider({ provider }: Web3InterfaceAdapterOptions) {
     return this.web3.setProvider(provider);
   }
 }

@@ -2,7 +2,7 @@ var provision = function(abstraction, options) {
   var self = this; // eslint-disable-line no-unused-vars
 
   if (options.provider) {
-    abstraction.setProvider(options.provider);
+    abstraction.setProvider({ provider: options.provider });
   }
 
   if (options.network_id) {
