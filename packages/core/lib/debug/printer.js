@@ -91,9 +91,9 @@ class DebugPrinter {
   warnIfNoSteps() {
     if (this.session.view(trace.steps).length === 0) {
       this.config.logger.log(
-        colors.bold(
-          "Warning: this transaction has no trace steps. This may happen if you are attempting to debug a transaction sent to an externally-owned accounts, or if the node you are connecting to failed to produce a trace for some reason. Please check your configuration and try again."
-        )
+        `${colors.bold(
+          "Warning:"
+        )} this transaction has no trace steps. This may happen if you are attempting to debug a transaction sent to an externally-owned accounts, or if the node you are connecting to failed to produce a trace for some reason. Please check your configuration and try again.`
       );
     }
   }
@@ -288,7 +288,9 @@ class DebugPrinter {
                 ).toString();
                 this.config.logger.log(`Revert message: ${revertString}`);
                 this.config.logger.log(
-                  colors.bold("Warning: This message contained invalid UTF-8.")
+                  `${colors.bold(
+                    "Warning:"
+                  )} This message contained invalid UTF-8.`
                 );
                 break;
             }

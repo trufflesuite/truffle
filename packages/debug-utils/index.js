@@ -182,9 +182,9 @@ var DebugUtils = {
     if (!hasAllSource) {
       lines.push("");
       lines.push(
-        chalk.bold(
-          "Warning: The source code for one or more contracts could not be found."
-        )
+        `${chalk.bold(
+          "Warning:"
+        )} The source code for one or more contracts could not be found.`
       );
     }
 
