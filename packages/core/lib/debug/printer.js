@@ -6,6 +6,7 @@ const safeEval = require("safe-eval");
 
 const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
+const colors = require("colors");
 
 const selectors = require("@truffle/debugger").selectors;
 const {
@@ -63,6 +64,7 @@ class DebugPrinter {
 
   printSessionLoaded() {
     this.printAddressesAffected();
+    this.warnIfNoSteps();
     this.printHelp();
     debug("Help printed");
     this.printFile();
@@ -84,6 +86,16 @@ class DebugPrinter {
     this.config.logger.log(
       DebugUtils.formatAffectedInstances(affectedInstances)
     );
+  }
+
+  warnIfNoSteps() {
+    if (this.session.view(trace.steps).length === 0) {
+      this.config.logger.log(
+        `${colors.bold(
+          "Warning:"
+        )} this transaction has no trace steps. This may happen if you are attempting to debug a transaction sent to an externally-owned account, or if the node you are connecting to failed to produce a trace for some reason. Please check your configuration and try again.`
+      );
+    }
   }
 
   printHelp() {
@@ -276,7 +288,9 @@ class DebugPrinter {
                 ).toString();
                 this.config.logger.log(`Revert message: ${revertString}`);
                 this.config.logger.log(
-                  "Warning: This message contained invalid UTF-8."
+                  `${colors.bold(
+                    "Warning:"
+                  )} This message contained invalid UTF-8.`
                 );
                 break;
             }

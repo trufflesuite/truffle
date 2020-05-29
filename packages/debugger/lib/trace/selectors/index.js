@@ -64,10 +64,13 @@ let trace = createSelectorTree({
    * trace.step
    *
    * current trace step
+   * HACK: if no steps,
+   * we will return a spoofed "past end" step
    */
   step: createLeaf(
     ["./steps", "./index"],
-    (steps, index) => (steps ? steps[index] : null) //null if no tx loaded
+    (steps, index) =>
+      steps ? (steps.length > 0 ? steps[index] : PAST_END_OF_TRACE) : null //null if no tx loaded
   ),
 
   /**
