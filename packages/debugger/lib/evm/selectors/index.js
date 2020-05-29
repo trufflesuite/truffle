@@ -542,13 +542,14 @@ const evm = createSelectorTree({
        * .isHalting
        *
        * whether the instruction halts or returns from a calling context
-       * NOTE: this covers only ordinary halts, not exceptional halts;
-       * but it doesn't check the return status, so any normal halting
-       * instruction will qualify here
+       * HACK: the check for stepsRemainining === 0 is a hack to cover
+       * the special case when there are no trace steps; normally this
+       * is unnecessary because the spoofed step past the end covers it
        */
       isHalting: createLeaf(
-        ["/current/state/depth", "/next/state/depth"],
-        (currentDepth, nextDepth) => nextDepth < currentDepth
+        ["/current/state/depth", "/next/state/depth", trace.stepsRemaining],
+        (currentDepth, nextDepth, stepsRemaining) =>
+          nextDepth < currentDepth || stepsRemaining === 0
       ),
 
       /**

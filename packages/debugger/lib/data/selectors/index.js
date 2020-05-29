@@ -1116,8 +1116,9 @@ const data = createSelectorTree({
           };
 
           if (
-            scope.nodeType.startsWith("Yul") ||
-            scope.nodeType === "InlineAssembly"
+            scope &&
+            (scope.nodeType.startsWith("Yul") ||
+              scope.nodeType === "InlineAssembly")
           ) {
             //builtins aren't visible in Yul
             return variables;

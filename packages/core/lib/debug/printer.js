@@ -63,6 +63,7 @@ class DebugPrinter {
 
   printSessionLoaded() {
     this.printAddressesAffected();
+    this.warnIfNoSteps();
     this.printHelp();
     debug("Help printed");
     this.printFile();
@@ -84,6 +85,12 @@ class DebugPrinter {
     this.config.logger.log(
       DebugUtils.formatAffectedInstances(affectedInstances)
     );
+  }
+
+  warnIfNoSteps() {
+    if (this.session.view(trace.steps).length === 0) {
+      this.config.logger.log("Warning: This transaction has no trace steps.");
+    }
   }
 
   printHelp() {
