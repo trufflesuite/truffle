@@ -397,22 +397,31 @@ class DebugInterpreter {
       }
     }
     if (cmd === "t") {
-      if (!this.session.view(selectors.session.status.loaded)) {
-        let txSpinner = ora(DebugUtils.formatTransactionStartMessage()).start();
-        await this.session.load(cmdArgs);
-        //if load succeeded
-        if (this.session.view(selectors.session.status.success)) {
-          txSpinner.succeed();
-          //if successful, change prompt
-          this.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
+      if (!this.external) {
+        if (!this.session.view(selectors.session.status.loaded)) {
+          let txSpinner = ora(
+            DebugUtils.formatTransactionStartMessage()
+          ).start();
+          await this.session.load(cmdArgs);
+          //if load succeeded
+          if (this.session.view(selectors.session.status.success)) {
+            txSpinner.succeed();
+            //if successful, change prompt
+            this.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
+          } else {
+            txSpinner.fail();
+            loadFailed = true;
+          }
         } else {
-          txSpinner.fail();
           loadFailed = true;
+          this.printer.print(
+            "Please unload the current transaction before loading a new one."
+          );
         }
       } else {
         loadFailed = true;
         this.printer.print(
-          "Please unload the current transaction before loading a new one."
+          "Cannot change transactions in external mode.  Please quit and restart the debugger instead."
         );
       }
     }
