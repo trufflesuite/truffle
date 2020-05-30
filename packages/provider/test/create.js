@@ -31,6 +31,32 @@ describe("Provider", function() {
     }
   });
 
+  it("accepts url", async () => {
+    const provider = Provider.create({ url: `http://${host}:${port}` });
+    assert(provider);
+
+    try {
+      await Provider.testConnection({ provider });
+    } catch (error) {
+      assert.fail(error.message);
+    }
+  });
+
+  it("accepts uses url before host/port", async () => {
+    const provider = Provider.create({
+      url: `http://${host}:${port}`,
+      host: "invalidhost",
+      port: 42
+    });
+    assert(provider);
+
+    try {
+      await Provider.testConnection({ provider });
+    } catch (error) {
+      assert.fail(error.message);
+    }
+  });
+
   it("fails to connect to the wrong port", async () => {
     const provider = Provider.create({ host, port: "54321" });
 
