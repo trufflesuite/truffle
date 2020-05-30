@@ -1,6 +1,6 @@
 {
   "name": "@truffle/debug-utils",
-  "version": "4.1.4",
+  "version": "4.1.5",
   "description": "Integration utils for truffle/debugger",
   "dependencies": {
     "@truffle/codec": "^0.5.4",
