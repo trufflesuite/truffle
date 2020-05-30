@@ -1,6 +1,6 @@
 {
   "name": "@truffle/decoder",
-  "version": "4.3.1-tezos.2",
+  "version": "4.3.1-tezos.3",
   "description": "A decoder and encoder for Solidity variables of all sorts",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@truffle/codec": "^0.5.1-tezos.0",
-    "@truffle/compile-solidity": "^4.3.0-tezos.5",
+    "@truffle/compile-solidity": "^4.3.0-tezos.6",
     "@truffle/solidity-utils": "^1.3.2-tezos.1",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",
@@ -42,9 +42,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "@truffle/config": "^1.4.0-tezos.4",
+    "@truffle/config": "^1.4.0-tezos.5",
     "@truffle/contract-schema": "^3.2.0-tezos.1",
-    "@truffle/provider": "^0.3.0-tezos.7",
+    "@truffle/provider": "^0.3.0-tezos.8",
     "@types/big.js": "^4.0.5",
     "@types/bn.js": "^4.11.2",
     "@types/debug": "^0.0.31",

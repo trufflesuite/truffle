@@ -9,14 +9,14 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.2-tezos.6",
+  "version": "0.2.2-tezos.7",
   "main": "index.js",
   "dependencies": {
-    "@truffle/artifactor": "^4.2.0-tezos.6",
+    "@truffle/artifactor": "^4.2.0-tezos.7",
     "@truffle/error": "^0.1.0-tezos.0",
     "@truffle/expect": "^0.1.0-tezos.0",
-    "@truffle/interface-adapter": "^0.6.0-tezos.0",
-    "@truffle/resolver": "^5.2.0-tezos.9",
+    "@truffle/interface-adapter": "^0.6.0-tezos.1",
+    "@truffle/resolver": "^5.2.0-tezos.10",
     "ganache-core": "2.10.2",
     "node-ipc": "^9.1.1",
     "source-map-support": "^0.5.16",
