@@ -188,7 +188,63 @@ function* requestCode(address) {
 }
 
 function* variablesAndMappingsSaga() {
+  // stack is only ready for interpretation after the last step of each
+  // source range
+  //
+  // the data module always looks at the result of a particular opcode
+  // (i.e., the following trace step's stack/memory/storage), so this
+  // asserts that the _current_ operation is the final one before
+  // proceeding
+  if (!(yield select(data.views.atLastInstructionForSourceRange))) {
+    return;
+  }
+
   let node = yield select(data.current.node);
+
+  if (!node) {
+    return;
+  }
+
+  //set up stack; see default case for what normally goes on
+  let stack;
+  switch (node.nodeType) {
+    case "IndexAccess":
+    case "MemberAccess":
+      stack = yield select(data.nextMapped.state.stack);
+      //HACK: unfortunately, in some cases, data.next.state.stack gets the wrong
+      //results due to unmapped instructions intervening.  So, we get the stack at
+      //the next *mapped* stack instead.  This is something of a hack and won't
+      //work if we're about to change context, but it should work in the cases that
+      //need it.
+      break;
+    case "YulFunctionCall":
+      stack = yield select(data.nextOfSameDepth.state.stack);
+      //if the step we're on is a CALL (or similar), as can happen with Yul,
+      //we don't want to look at the stack on the *next* step, but rather
+      //the step when it returns; hence this
+      break;
+    default:
+      stack = yield select(data.next.state.stack); //note the use of next!
+      //in this saga we are interested in the *results* of the current instruction
+      //note that the decoder is still based on data.current.state; that's fine
+      //though.  There's already a delay between when we record things off the
+      //stack and when we decode them, after all.  Basically, nothing serious
+      //should happen after an index node but before the index access node that
+      //would cause storage, memory, or calldata to change, meaning that even if
+      //the literal we recorded was a pointer, it will still be valid at the time
+      //we use it.  (The other literals we make use of, for the base expressions,
+      //are not decoded, so no potential mismatch there would be relevant anyway.)
+      break;
+  }
+
+  if (!stack) {
+    //note: should only happen in YulFunctionCall case
+    return;
+  }
+
+  let top = stack.length - 1;
+
+  //set up other variables
   let pointer = yield select(data.current.pointer);
   let nextPointer = yield select(data.next.pointer);
   let scopes = yield select(data.current.scopes.inlined);
@@ -206,51 +262,13 @@ function* variablesAndMappingsSaga() {
   let sourceId = yield select(data.current.sourceId);
   let compiler = yield select(data.current.compiler);
 
-  let stack = yield select(data.next.state.stack); //note the use of next!
-  //in this saga we are interested in the *results* of the current instruction
-  //note that the decoder is still based on data.current.state; that's fine
-  //though.  There's already a delay between when we record things off the
-  //stack and when we decode them, after all.  Basically, nothing serious
-  //should happen after an index node but before the index access node that
-  //would cause storage, memory, or calldata to change, meaning that even if
-  //the literal we recorded was a pointer, it will still be valid at the time
-  //we use it.  (The other literals we make use of, for the base expressions,
-  //are not decoded, so no potential mismatch there would be relevant anyway.)
-
-  let alternateStack = yield select(data.nextMapped.state.stack);
-  //HACK: unfortunately, in some cases, data.next.state.stack gets the wrong
-  //results due to unmapped instructions intervening.  So, we get the stack at
-  //the next *mapped* stack instead.  This is something of a hack and won't
-  //work if we're about to change context, but it should work in the cases that
-  //need it.
-
-  if (!stack) {
-    return;
-  }
-
-  let top = stack.length - 1;
-  var assignment,
+  let assignment,
     assignments,
     preambleAssignments,
     baseExpression,
     slot,
     path,
     position;
-
-  if (!node) {
-    return;
-  }
-
-  // stack is only ready for interpretation after the last step of each
-  // source range
-  //
-  // the data module always looks at the result of a particular opcode
-  // (i.e., the following trace step's stack/memory/storage), so this
-  // asserts that the _current_ operation is the final one before
-  // proceeding
-  if (!(yield select(data.views.atLastInstructionForSourceRange))) {
-    return;
-  }
 
   //HACK: modifier preamble
   //modifier definitions are typically skipped (this includes constructor
@@ -504,7 +522,7 @@ function* variablesAndMappingsSaga() {
       debug("sourceAndPointer: %s", sourceAndPointer);
       assignments = {};
       //variables go on from bottom to top, so process from top to bottom
-      position = top;
+      position = top; //NOTE: remember that which stack we use depends on our node type!
       for (let index = node.variables.length - 1; index >= 0; index--) {
         //we only care about the pointer, not the variable
         const variableSourceAndPointer = `${sourceAndPointer}/variables/${index}`;
@@ -551,7 +569,7 @@ function* variablesAndMappingsSaga() {
         ...literalAssignments(
           compilationId,
           node,
-          alternateStack,
+          stack,
           currentDepth,
           modifierDepth,
           inModifier
@@ -672,7 +690,7 @@ function* variablesAndMappingsSaga() {
         ...literalAssignments(
           compilationId,
           node,
-          alternateStack,
+          stack,
           currentDepth,
           modifierDepth,
           inModifier
