@@ -8,6 +8,7 @@ import semver from "semver";
 
 import { stableKeccak256, makePath } from "lib/helpers";
 
+import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
@@ -1420,6 +1421,31 @@ const data = createSelectorTree({
 
         step =>
           ((step || {}).stack || []).map(word => Codec.Conversion.toBytes(word))
+      )
+    }
+  },
+
+  /**
+   * data.nextOfSameDepth
+   */
+  nextOfSameDepth: {
+    /**
+     * data.nextOfSameDepth.state
+     * Yes, I'm just repeating the code for data.current.state.stack here but
+     * with an extra guard... *still* not worth the trouble to factor out
+     * HOWEVER, this one also returns null if there is no nextOfSameDepth
+     */
+    state: {
+      /**
+       * data.nextOfSameDepth.state.stack
+       */
+      stack: createLeaf(
+        [trace.nextOfSameDepth],
+
+        step =>
+          step
+            ? (step.stack || []).map(word => Codec.Conversion.toBytes(word))
+            : null
       )
     }
   }

@@ -23,6 +23,7 @@ contract AssemblyTest {
       let v := u
       let w := add(u, 3)
       let z := outside
+      let result := staticcall(gas(), 0, 0, 0, 0, 0) //identity fn
       if sgt(z, 0) {
         let k := shl(1, z)
         log1(0, 0, k) //BREAK #1
@@ -113,6 +114,7 @@ describe("Assembly decoding", function() {
       v: 3,
       w: 6,
       z: 8,
+      result: 1,
       k: 16
     };
 
@@ -149,6 +151,7 @@ describe("Assembly decoding", function() {
       v: 3,
       w: 6,
       z: 8,
+      result: 1,
       n: 27,
       m: 5
     };
