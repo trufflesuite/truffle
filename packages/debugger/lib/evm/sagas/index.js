@@ -17,18 +17,16 @@ import * as trace from "lib/trace/sagas";
  * @return {string} ID (0x-prefixed keccak of binary)
  */
 export function* addContext(context) {
-  const contextHash = keccak256({ type: "string", value: context.binary });
+  //get context hash if context doesn't already have it
+  const contextHash =
+    context.context || keccak256({ type: "string", value: context.binary });
   //NOTE: we take hash as *string*, not as bytes, because the binary may
   //contain link references!
 
   debug("context %O", context);
-  yield put(actions.addContext(context));
+  yield put(actions.addContext({ ...context, context: contextHash }));
 
   return contextHash;
-}
-
-export function* normalizeContexts() {
-  yield put(actions.normalizeContexts());
 }
 
 /**

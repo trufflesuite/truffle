@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:session");
 
 import * as Codec from "@truffle/codec";
+import { keccak256 } from "lib/helpers";
 
 import configureStore from "lib/store";
 
@@ -200,6 +201,7 @@ export default class Session {
             compilationId: compilation.id,
             contractId,
             contractKind,
+            externalSolidity: compilation.externalSolidity,
             isConstructor: true
           });
         }
@@ -216,11 +218,34 @@ export default class Session {
             compilationId: compilation.id,
             contractId,
             contractKind,
+            externalSolidity: compilation.externalSolidity,
             isConstructor: false
           });
         }
       }
     }
+
+    //now: turn contexts from array into object
+    contexts = Object.assign(
+      {},
+      ...contexts.map(context => {
+        const contextHash = keccak256({
+          type: "string",
+          value: context.binary
+        });
+        //NOTE: we take hash as *string*, not as bytes, because the binary may
+        //contain link references!
+        return {
+          [contextHash]: {
+            ...context,
+            context: contextHash
+          }
+        };
+      })
+    );
+
+    //normalize contexts
+    contexts = Codec.Contexts.Utils.normalizeContexts(contexts);
 
     return { contexts, sources };
   }
@@ -418,9 +443,7 @@ export default class Session {
 
   async addExternalCompilations(compilations) {
     let { contexts, sources } = Session.normalize(compilations);
-    return await this.dispatch(
-      actions.addExternalCompilations(sources, contexts)
-    );
+    return await this.dispatch(actions.addCompilations(sources, contexts));
   }
 
   async startFullMode() {

@@ -1,5 +1,6 @@
 export const ADD_CONTEXT = "EVM_ADD_CONTEXT";
 export function addContext({
+  context,
   contractName,
   binary,
   sourceMap,
@@ -15,6 +16,7 @@ export function addContext({
 }) {
   return {
     type: ADD_CONTEXT,
+    context,
     contractName,
     binary,
     sourceMap,
@@ -28,11 +30,6 @@ export function addContext({
     isConstructor,
     externalSolidity
   };
-}
-
-export const NORMALIZE_CONTEXTS = "EVM_NORMALIZE_CONTEXTS";
-export function normalizeContexts() {
-  return { type: NORMALIZE_CONTEXTS };
 }
 
 export const ADD_INSTANCE = "EVM_ADD_INSTANCE";
