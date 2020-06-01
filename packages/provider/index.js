@@ -20,13 +20,13 @@ module.exports = {
       provider = options.provider();
     } else if (options.provider) {
       provider = options.provider;
-    } else if (options.websockets) {
+    } else if (options.websockets || /^wss?:\/\//.test(options.url)) {
       provider = new Web3.providers.WebsocketProvider(
-        "ws://" + options.host + ":" + options.port
+        options.url || "ws://" + options.host + ":" + options.port
       );
     } else {
       provider = new Web3.providers.HttpProvider(
-        `http://${options.host}:${options.port}`,
+        options.url || `http://${options.host}:${options.port}`,
         { keepAlive: false }
       );
     }

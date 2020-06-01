@@ -80,7 +80,6 @@ export async function createSandbox() {
     name: "default"
   });
   config.resolver = new Resolver(config);
-  config.resolver = new Resolver(config);
   config.artifactor = new Artifactor(config.contracts_build_directory);
   config.networks = {};
 

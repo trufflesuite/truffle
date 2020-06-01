@@ -23,6 +23,10 @@ export function typeString(definition: AstNode): string {
  * @category Definition Reading
  */
 export function typeStringWithoutLocation(definition: AstNode): string {
+  if (definition.nodeType === "YulTypedName") {
+    //for handling Yul variables
+    return "bytes32";
+  }
   return typeString(definition).replace(
     / (storage|memory|calldata)( slice)?$/,
     ""
@@ -37,6 +41,10 @@ export function typeStringWithoutLocation(definition: AstNode): string {
  * @category Definition Reading
  */
 export function typeClass(definition: AstNode): string {
+  if (definition.nodeType === "YulTypedName") {
+    //for handling Yul variables
+    return "bytes";
+  }
   return typeIdentifier(definition).match(/t_([^$_0-9]+)/)[1];
 }
 
@@ -85,6 +93,9 @@ export function visibility(definition: AstNode): Common.Visibility {
  * @category Definition Reading
  */
 export function specifiedSize(definition: AstNode): number {
+  if (definition.nodeType === "YulTypedName") {
+    return 32; //for handling Yul variables
+  }
   let specified = typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/);
 
   if (!specified) {
@@ -265,8 +276,9 @@ export function spliceLocation(
  */
 export function regularizeTypeIdentifier(identifier: string): string {
   return identifier.replace(
-    /(?<=_(storage|memory|calldata))((_slice)?_ptr)?$/,
-    "_ptr"
+    /(_(storage|memory|calldata))((_slice)?_ptr)?$/,
+    "$1_ptr" //this used to use lookbehind for clarity, but Firefox...
+    //(see: https://github.com/trufflesuite/truffle/issues/3068 )
   );
 }
 

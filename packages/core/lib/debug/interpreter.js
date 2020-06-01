@@ -519,9 +519,14 @@ class DebugInterpreter {
           temporaryPrintouts.add(location);
         }
         if (this.session.view(selectors.session.status.loaded)) {
-          this.printer.printInstruction(temporaryPrintouts);
-          this.printer.printFile();
-          this.printer.printState();
+          if (this.session.view(trace.steps).length > 0) {
+            this.printer.printInstruction(temporaryPrintouts);
+            this.printer.printFile();
+            this.printer.printState();
+          } else {
+            //if there are no trace steps, let's just print a warning message
+            this.printer.print("No trace steps to inspect.");
+          }
         }
         //finally, print watch expressions
         await this.printer.printWatchExpressionsResults(
@@ -572,6 +577,7 @@ class DebugInterpreter {
       case "r":
         if (this.session.view(selectors.session.status.loaded)) {
           this.printer.printAddressesAffected();
+          this.printer.warnIfNoSteps();
           this.printer.printFile();
           this.printer.printState();
         }
@@ -579,6 +585,7 @@ class DebugInterpreter {
       case "t":
         if (!loadFailed) {
           this.printer.printAddressesAffected();
+          this.printer.warnIfNoSteps();
           this.printer.printFile();
           this.printer.printState();
         } else if (this.session.view(selectors.session.status.isError)) {

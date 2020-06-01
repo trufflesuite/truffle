@@ -7,8 +7,9 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.4.7",
+  "version": "0.4.9",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "directories": {
     "lib": "lib"
   },
@@ -25,7 +26,7 @@
     "web3": "1.2.1"
   },
   "devDependencies": {
-    "@truffle/provider": "^0.2.10",
+    "@truffle/provider": "^0.2.12",
     "@types/bn.js": "^4.11.4",
     "@types/mocha": "^5.2.6",
     "@types/web3": "1.0.19",

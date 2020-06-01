@@ -7913,10 +7913,10 @@ highlight.js@^9.12.0, highlight.js@^9.15.8:
   dependencies:
     handlebars "^4.5.3"
 
-highlightjs-solidity@^1.0.14:
-  version "1.0.14"
-  resolved "https://registry.yarnpkg.com/highlightjs-solidity/-/highlightjs-solidity-1.0.14.tgz#a8b9778bd95f3754752fed51f8bb40ab7eb1cd2f"
-  integrity sha512-NhU/f45QKrdJzX9+rw6AC9oUvBdl9QBzsVHya74yJ8FEl1BpZwkT+0u9u5qg3zta3Ofh4quVmr+aLR1Mrvzvcg==
+highlightjs-solidity@^1.0.15:
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/highlightjs-solidity/-/highlightjs-solidity-1.0.15.tgz#a5977220bef8d22dd49b3a5f4f05168300a85355"
+  integrity sha512-ZC9mcL7vLOD8aqy3+EVaX9FgQceSVYFMzrmjsMI0l1f9yCEcbcFqEf+G+DtmLcathOmMnNP5l+UdnrZ4zJJ8rQ==
 
 hmac-drbg@^1.0.0:
   version "1.0.1"

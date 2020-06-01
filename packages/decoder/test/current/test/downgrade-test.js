@@ -4,7 +4,7 @@ const Big = require("big.js");
 const clonedeep = require("lodash.clonedeep");
 
 const Decoder = require("../../..");
-const Codec = require("../../../../codec");
+const Codec = require("@truffle/codec");
 
 const DowngradeTest = artifacts.require("DowngradeTest");
 const DowngradeTestParent = artifacts.require("DowngradeTestParent");
