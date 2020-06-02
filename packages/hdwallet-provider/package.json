@@ -36,7 +36,7 @@
     "@types/mocha": "^5.2.7",
     "@types/web3": "^1.0.20",
     "@types/web3-provider-engine": "^14.0.0",
-    "ganache-core": "2.10.2",
+    "ganache-core": "2.11.0-tezos.1",
     "mocha": "6.2.0",
     "ts-node": "^8.4.1",
     "typescript": "^3.6.3"

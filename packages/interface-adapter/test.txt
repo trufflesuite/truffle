@@ -1,0 +1,8 @@
+LICENSE
+dist
+lib
+node_modules
+package.json
+test
+test.txt
+tsconfig.json
