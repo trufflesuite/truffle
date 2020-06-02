@@ -331,7 +331,9 @@ var SolidityUtils = {
     } else if (node instanceof Object) {
       let results = [];
 
-      if (node.src !== undefined) {
+      if (node.src !== undefined && node.nodeType !== undefined) {
+        //don't add "pseudo-nodes" (i.e.: outside variable references
+        //in assembly) with no nodeType
         results.push({ pointer, node, range: SolidityUtils.getRange(node) });
       }
 
