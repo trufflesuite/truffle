@@ -66,7 +66,9 @@ const Environment = {
       network_id: ganacheOptions.network_id,
       provider: function() {
         return new Web3.providers.HttpProvider(url, { keepAlive: false });
-      }
+      },
+      type: ganacheOptions.flavor,
+      develop: true
     };
 
     config.network = network;
