@@ -1,6 +1,6 @@
 {
   "name": "@truffle/compile-ligo",
-  "version": "0.4.0-tezos.8",
+  "version": "0.4.0-tezos.9",
   "description": "Ligo compiler interface for truffle",
   "author": "CruzMolina <7537712+CruzMolina@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
@@ -24,11 +24,11 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "devDependencies": {
-    "@truffle/config": "^1.4.0-tezos.5",
+    "@truffle/config": "^1.4.0-tezos.6",
     "mocha": "5.2.0"
   },
   "dependencies": {
-    "@truffle/compile-solidity": "^4.3.0-tezos.6",
+    "@truffle/compile-solidity": "^4.3.0-tezos.7",
     "@truffle/contract-sources": "^0.3.0-tezos.0",
     "async": "^3.1.0",
     "colors": "^1.4.0",
