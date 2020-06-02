@@ -208,7 +208,7 @@ class GanacheMixin {
   // start Ganache and capture promise that resolves when ready
   start(_supervisor) {
     this.ready = new Promise((accept, reject) => {
-      this.ganache.listen(options.port, options.hostname, (err, state) => {
+      this.ganache.listen(options.port, options.host, (err, state) => {
         if (err) {
           reject(err);
         }
