@@ -12,8 +12,7 @@
   },
   "scripts": {
     "prepare": "yarn build",
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc"
   },
   "keywords": [
     "ethereum",
