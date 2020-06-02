@@ -80,6 +80,8 @@ const command = {
     ]
   },
   run: function(options, done) {
+    const { sync: globSync } = require("glob");
+    const { join: pathJoin } = require("path");
     const Config = require("@truffle/config");
     const { Environment, Develop } = require("@truffle/environment");
     const {
@@ -133,16 +135,34 @@ const command = {
         .catch(done);
     } else {
       const ipcOptions = { network: "test" };
+      let ganacheOptions;
 
-      const ganacheOptions = {
-        host: "127.0.0.1",
-        port: 7545,
-        network_id: 4447,
-        mnemonic:
-          "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-        gasLimit: config.gas,
-        time: config.genesis_time
-      };
+      const TEZOS_PATTERN = "**/*.{ligo,mligo,religo,py}";
+      const tezosProject = globSync(
+        pathJoin(config.contracts_directory, TEZOS_PATTERN),
+        { follow: true }
+      );
+
+      if (tezosProject.length) {
+        ganacheOptions = {
+          host: "127.0.0.1",
+          port: 8732,
+          network_id: "*",
+          seed: "alice",
+          flavor: "tezos"
+        };
+      } else {
+        ganacheOptions = {
+          host: "127.0.0.1",
+          port: 7545,
+          network_id: 4447,
+          mnemonic:
+            "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
+          gasLimit: config.gas,
+          time: config.genesis_time
+        };
+      }
+
       Develop.connectOrStart(ipcOptions, ganacheOptions)
         .then(({ disconnect }) => {
           ipcDisconnect = disconnect;
