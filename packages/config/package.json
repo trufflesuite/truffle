@@ -1,6 +1,6 @@
 {
   "name": "@truffle/config",
-  "version": "1.4.0-tezos.5",
+  "version": "1.4.0-tezos.6",
   "description": "Utility for interacting with truffle-config.js files",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,7 +36,7 @@
   "dependencies": {
     "@truffle/error": "^0.1.0-tezos.0",
     "@truffle/events": "^0.1.0-tezos.1",
-    "@truffle/provider": "^0.3.0-tezos.8",
+    "@truffle/provider": "^0.3.0-tezos.9",
     "configstore": "^4.0.0",
     "find-up": "^2.1.0",
     "lodash.assignin": "^4.2.0",
