@@ -2,9 +2,7 @@ const debug = require("debug")("solidity-utils");
 const CodeUtils = require("@truffle/code-utils");
 const Codec = require("@truffle/codec");
 const jsonpointer = require("json-pointer");
-//NOTE: for some reason using the default export isn't working??
-//so we're going to do this the "advanced usage" way...
-const { IntervalTree } = require("node-interval-tree");
+const IntervalTree = require("node-interval-tree").default;
 
 var SolidityUtils = {
   getCharacterOffsetToLineAndColumnMapping: function(source) {
@@ -308,16 +306,10 @@ var SolidityUtils = {
     let ranges = SolidityUtils.rangeNodes(ast);
     for (let { range, node, pointer } of ranges) {
       let [start, end] = range;
-      //NOTE: we are doing this the "advanced usage" way because the
-      //other way isn't working for some reason
-      tree.insert({ low: start, high: end, data: { range, node, pointer } });
+      tree.insert(start, end, { range, node, pointer });
     }
     return (sourceStart, sourceLength) =>
-      //because we're doing this the "advanced usage" way, we have
-      //to extract data afterward
-      tree
-        .search(sourceStart, sourceStart + sourceLength)
-        .map(({ data }) => data);
+      tree.search(sourceStart, sourceStart + sourceLength);
   },
 
   //for use by makeOverlapFunction
