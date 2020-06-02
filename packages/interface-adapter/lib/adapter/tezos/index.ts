@@ -89,6 +89,10 @@ export class TezosAdapter implements InterfaceAdapter {
     const { networks, network } = config;
     let { mnemonic, secretKey } = networks[network];
 
+    if (network === "test" && networks.test.develop) {
+      secretKey = `edsk3QoqBuvdamxouPhin7swCvkQNgq4jP5KZPbwWNnwdZpSpJiEbq`;
+    }
+
     if (mnemonic) {
       // here we import user's faucet account:
       // email, password, mnemonic, & secret are all REQUIRED.
