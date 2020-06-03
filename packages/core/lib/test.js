@@ -205,20 +205,20 @@ const Test = {
       quietWrite: true
     });
     if (config.compileAllDebug) {
-      let versionString =
-        ((compileConfig.compilers || {}).solc || {}).version ||
-        ((compileConfig.compilers || {}).solc || {}).docker;
+      let versionString = ((compileConfig.compilers || {}).solc || {}).version;
       //note: I'm relying here on the fact that the current
       //default version, 0.5.16, is <0.6.3
       //the following line works with prereleases
       const satisfies = semver.satisfies(versionString, ">=0.6.3", {
-        includePrerelease: true
+        includePrerelease: true,
+        loose: true
       });
       //the following line doesn't, despite the flag, but does work with version ranges
       const intersects =
         semver.validRange(versionString) &&
         semver.intersects(versionString, ">=0.6.3", {
-          includePrerelease: true
+          includePrerelease: true,
+          loose: true
         }); //intersects will throw if given undefined so must ward against
       if (satisfies || intersects) {
         compileConfig = compileConfig.merge({
