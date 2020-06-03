@@ -15,7 +15,7 @@ const command = {
     }
   },
   help: {
-    usage: "truffle exec <script.js> [--network <name>]",
+    usage: "truffle exec <script.js> [--network <name>] [--compile]",
     options: [
       {
         option: "<script.js>",
