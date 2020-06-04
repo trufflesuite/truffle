@@ -377,6 +377,22 @@ class DebugPrinter {
           `Returned bytecode for a ${contractKind} ${decoding.class.typeName}.`
         );
       }
+      if (decoding.immutables && decoding.immutables.length > 0) {
+        this.config.logger.log("Immutable values:");
+        const prefixes = decoding.immutables.map(
+          ({ name, class: { typeName } }) => `${typeName}.${name}: `
+        );
+        const maxLength = Math.max(...prefixes.map(prefix => prefix.length));
+        const paddedPrefixes = prefixes.map(prefix =>
+          prefix.padStart(maxLength)
+        );
+        for (let index = 0; index < decoding.immutables.length; index++) {
+          const { value } = decoding.immutables[index];
+          const prefix = paddedPrefixes[index];
+          const formatted = DebugUtils.formatValue(value, maxLength);
+          this.config.logger.log(prefix + formatted);
+        }
+      }
       this.config.logger.log("");
     } else if (decodings[0].kind === "revert") {
       //case 9: revert (with message)
