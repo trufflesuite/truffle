@@ -18,6 +18,7 @@ import {
   LogDecoding,
   DecoderOptions
 } from "@truffle/codec/types";
+import { ConstructorReturndataAllocation } from "@truffle/codec/abi-data/allocate";
 import * as Evm from "@truffle/codec/evm";
 import * as Contexts from "@truffle/codec/contexts";
 import { abifyType, abifyResult } from "@truffle/codec/abify";
@@ -533,7 +534,7 @@ export function* decodeReturndata(
     if (allocation.kind === "bytecode") {
       //bytecode is special and can't really be integrated with the other cases.
       //so it gets its own function.
-      const decoding = yield* decodeBytecode(info, allocation);
+      const decoding = yield* decodeBytecode(info);
       decodings.push(decoding);
       continue;
     }
@@ -661,26 +662,32 @@ export function* decodeReturndata(
   return decodings;
 }
 
+//note: requires the bytecode to be in returndata, not code
 function* decodeBytecode(
-  info: Evm.EvmInfo,
-  allocation: AbiData.Allocate.ConstructorReturndataAllocation
+  info: Evm.EvmInfo
 ): Generator<
   DecoderRequest,
   BytecodeDecoding | UnknownBytecodeDecoding,
   Uint8Array
 > {
-  let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
+  let decodingMode: DecodingMode = "full"; //as always, degrade as necessary
   const bytecode = Conversion.toHexString(info.state.returndata);
   const context = Contexts.Utils.findDecoderContext(info.contexts, bytecode);
   if (!context) {
     return {
       kind: "unknownbytecode" as const,
       status: true as const,
-      decodingMode,
+      decodingMode: "full" as const,
       bytecode
     };
   }
   const contractType = Contexts.Import.contextToType(context);
+  //now: ignore original allocation (which we didn't even pass :) )
+  //and lookup allocation by context
+  const allocation = <ConstructorReturndataAllocation>(
+    info.allocations.calldata.constructorAllocations[context.context].output
+  );
+  debug("bytecode allocation: %O", allocation);
   //now: add immutables if applicable
   let immutables: StateVariable[] | undefined;
   if (allocation.immutables) {

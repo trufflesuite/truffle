@@ -60,12 +60,12 @@ export interface CalldataAllocations {
 }
 
 export interface CalldataConstructorAllocations {
-  [contextHash: string]: CalldataAndReturndataAllocation;
+  [contextHash: string]: CalldataAndReturndataAllocation; //note: just constructor ones
 }
 
 export interface CalldataFunctionAllocations {
   [contextHash: string]: {
-    [selector: string]: CalldataAndReturndataAllocation;
+    [selector: string]: CalldataAndReturndataAllocation; //note: just function ones
   };
 }
 

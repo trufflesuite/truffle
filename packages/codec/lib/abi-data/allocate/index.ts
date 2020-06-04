@@ -770,6 +770,7 @@ function getCalldataAllocationsForContract(
           constructorContext,
           deployedContext
         );
+        debug("constructor alloc: %O", allocations.constructorAllocation);
         break;
       case "function":
         allocations.functionAllocations[
@@ -799,6 +800,7 @@ function getCalldataAllocationsForContract(
       referenceDeclarations,
       deployedContext
     );
+    debug("default constructor alloc: %O", allocations.constructorAllocation);
   }
   return allocations;
 }
@@ -855,6 +857,7 @@ function constructorOutputAllocation(
   let immutables: ReturnImmutableAllocation[] | undefined;
   if (allocationMode === "full" && immutableReferences) {
     if (contractNode) {
+      debug("allocating immutables");
       immutables = [];
       for (const [id, references] of Object.entries(immutableReferences)) {
         if (references.length === 0) {
@@ -868,7 +871,8 @@ function constructorOutputAllocation(
           node => node.id === astId,
           contractNode
         );
-        if (!definition || definition.nodeType !== "VariableDefinition") {
+        if (!definition || definition.nodeType !== "VariableDeclaration") {
+          debug("didn't find definition for %d!", astId);
           allocationMode = "abi";
           immutables = undefined;
           break;
@@ -894,8 +898,11 @@ function constructorOutputAllocation(
       }
     } else if (Object.entries(immutableReferences).length > 0) {
       //if there are immutables, but no contract mode, go to abi mode
+      debug("immutables but no node!");
       allocationMode = "abi";
     }
+  } else {
+    debug("no immutables");
   }
   //now, is there a delegatecall guard?
   let delegatecallGuard: boolean = false;
@@ -949,6 +956,10 @@ export function getCalldataAllocations(
     if (contract.deployedContext) {
       allocations.functionAllocations[contract.deployedContext.context] =
         contractAllocations.functionAllocations;
+      //set this up under both constructor *and* deployed! this is to handle
+      //constructor returndata decoding
+      allocations.constructorAllocations[contract.deployedContext.context] =
+        contractAllocations.constructorAllocation;
     }
   }
   return allocations;
@@ -1222,6 +1233,7 @@ function findNodeAndContract(
       if (foundNodeAndContract !== undefined) {
         return foundNodeAndContract; //once we've found something, we don't need to keep looking
       }
+      debug("searching contract %d", baseContractId);
       let baseContractNode =
         derivedContractNode && baseContractId === derivedContractNode.id
           ? derivedContractNode //skip the lookup if we already have the right node! this is to reduce errors from collision
@@ -1230,12 +1242,14 @@ function findNodeAndContract(
         baseContractNode === undefined ||
         baseContractNode.nodeType !== "ContractDefinition"
       ) {
+        debug("bad contract node!");
         return null; //return null rather than undefined so that this will propagate through
         //(i.e. by returning null here we give up the search)
         //(we don't want to continue due to possibility of grabbing the wrong override)
       }
       const node = baseContractNode.nodes.find(condition); //may be undefined! that's OK!
       if (node) {
+        debug("found node: %o", node);
         return {
           node,
           contract: baseContractNode
