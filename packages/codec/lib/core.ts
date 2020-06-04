@@ -535,7 +535,9 @@ export function* decodeReturndata(
       //bytecode is special and can't really be integrated with the other cases.
       //so it gets its own function.
       const decoding = yield* decodeBytecode(info);
-      decodings.push(decoding);
+      if (decoding) {
+        decodings.push(decoding);
+      }
       continue;
     }
     let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
@@ -667,7 +669,7 @@ function* decodeBytecode(
   info: Evm.EvmInfo
 ): Generator<
   DecoderRequest,
-  BytecodeDecoding | UnknownBytecodeDecoding,
+  BytecodeDecoding | UnknownBytecodeDecoding | null,
   Uint8Array
 > {
   let decodingMode: DecodingMode = "full"; //as always, degrade as necessary
@@ -709,6 +711,9 @@ function* decodeBytecode(
           decodingMode = "abi";
           immutables = undefined;
           break;
+        } else {
+          //otherwise, this isn't a valid decoding I guess
+          return null;
         }
       }
       immutables.push({
