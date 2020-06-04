@@ -8,9 +8,11 @@ import * as Bytes from "@truffle/codec/bytes";
 import * as Pointer from "@truffle/codec/pointer";
 import {
   DecoderRequest,
+  StateVariable,
   CalldataDecoding,
   ReturndataDecoding,
   BytecodeDecoding,
+  UnknownBytecodeDecoding,
   DecodingMode,
   AbiArgument,
   LogDecoding,
@@ -528,51 +530,14 @@ export function* decodeReturndata(
         }
       }
     }
-    let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     if (allocation.kind === "bytecode") {
       //bytecode is special and can't really be integrated with the other cases.
-      //so it gets its own code here.
-      const bytecode = Conversion.toHexString(info.state.returndata);
-      const context = Contexts.Utils.findDecoderContext(
-        info.contexts,
-        bytecode
-      );
-      if (!context) {
-        decodings.push({
-          kind: "unknownbytecode" as const,
-          status: true as const,
-          decodingMode,
-          bytecode
-        });
-        continue; //skip the rest of the code in the allocation loop!
-      }
-      const contractType = Contexts.Import.contextToType(context);
-      let decoding: BytecodeDecoding = {
-        kind: "bytecode" as const,
-        status: true as const,
-        decodingMode,
-        bytecode,
-        class: contractType
-      };
-      if (contractType.contractKind === "library") {
-        //note: I am relying on this being present!
-        //(also this part is a bit HACKy)
-        const pushAddressInstruction = (
-          0x60 +
-          Evm.Utils.ADDRESS_SIZE -
-          1
-        ).toString(16); //"73"
-        const delegateCallGuardString =
-          "0x" + pushAddressInstruction + "..".repeat(Evm.Utils.ADDRESS_SIZE);
-        if (context.binary.startsWith(delegateCallGuardString)) {
-          decoding.address = Web3Utils.toChecksumAddress(
-            bytecode.slice(4, 4 + 2 * Evm.Utils.ADDRESS_SIZE) //4 = "0x73".length
-          );
-        }
-      }
+      //so it gets its own function.
+      const decoding = yield* decodeBytecode(info, allocation);
       decodings.push(decoding);
-      continue; //skip the rest of the code in the allocation loop!
+      continue;
     }
+    let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];
     for (const argumentAllocation of allocation.arguments) {
@@ -694,6 +659,73 @@ export function* decodeReturndata(
     decodings.push(decoding);
   }
   return decodings;
+}
+
+function* decodeBytecode(
+  info: Evm.EvmInfo,
+  allocation: AbiData.Allocate.ConstructorReturndataAllocation
+): Generator<
+  DecoderRequest,
+  BytecodeDecoding | UnknownBytecodeDecoding,
+  Uint8Array
+> {
+  let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
+  const bytecode = Conversion.toHexString(info.state.returndata);
+  const context = Contexts.Utils.findDecoderContext(info.contexts, bytecode);
+  if (!context) {
+    return {
+      kind: "unknownbytecode" as const,
+      status: true as const,
+      decodingMode,
+      bytecode
+    };
+  }
+  const contractType = Contexts.Import.contextToType(context);
+  //now: add immutables if applicable
+  let immutables: StateVariable[] | undefined;
+  if (allocation.immutables) {
+    immutables = [];
+    //NOTE: if we're in here, we can assume decodingMode === "full"
+    for (const variable of allocation.immutables) {
+      const dataType = variable.type; //we don't conditioning on decodingMode here because we know it
+      let value: Format.Values.Result;
+      try {
+        value = yield* decode(dataType, variable.pointer, info, {
+          allowRetry: true, //we know we're in full mode
+          strictAbiMode: true,
+          paddingMode: "zero" //force zero-padding!
+        });
+      } catch (error) {
+        if (error instanceof StopDecodingError && error.allowRetry) {
+          //we "retry" by... not bothering with immutables :P
+          //(but we do set the mode to ABI)
+          decodingMode = "abi";
+          immutables = undefined;
+          break;
+        }
+      }
+      immutables.push({
+        name: variable.name,
+        class: variable.definedIn,
+        value
+      });
+    }
+  }
+  let decoding: BytecodeDecoding = {
+    kind: "bytecode" as const,
+    status: true as const,
+    decodingMode,
+    bytecode,
+    immutables,
+    class: contractType
+  };
+  //finally: add address if applicable
+  if (allocation.delegatecallGuard) {
+    decoding.address = Web3Utils.toChecksumAddress(
+      bytecode.slice(4, 4 + 2 * Evm.Utils.ADDRESS_SIZE) //4 = "0x73".length
+    );
+  }
+  return decoding;
 }
 
 /**

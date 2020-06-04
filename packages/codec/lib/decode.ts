@@ -65,6 +65,7 @@ function* decodeDispatch(
       //(if it's a nowhere pointer, this will return an error result, of course)
       //also: we force zero-padding!
       return yield* Basic.Decode.decodeBasic(dataType, pointer, info, {
+        ...options,
         paddingMode: "zero"
       });
 
@@ -73,6 +74,7 @@ function* decodeDispatch(
       //rather than located via a pointer -- only comes up when decoding immutables
       //in a constructor.  thus, we turn on the forceRightPadding option.
       return yield* Memory.Decode.decodeMemory(dataType, pointer, info, {
+        ...options,
         paddingMode: "right"
       });
   }

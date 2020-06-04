@@ -129,23 +129,40 @@ export interface EventArgumentAllocation {
 }
 
 //now let's go back ands fill in returndata
-type ReturndataKind =
-  | "return"
-  | "revert"
-  | "failure"
-  | "selfdestruct"
-  | "bytecode";
+type ReturndataKind = FunctionReturndataKind | ConstructorReturndataKind;
 
-export interface ReturndataAllocation {
+type FunctionReturndataKind = "return" | "revert" | "failure" | "selfdestruct";
+type ConstructorReturndataKind = "bytecode";
+
+export type ReturndataAllocation =
+  | FunctionReturndataAllocation
+  | ConstructorReturndataAllocation;
+
+export interface FunctionReturndataAllocation {
+  kind: FunctionReturndataKind;
   selector: Uint8Array;
-  arguments: ReturndataArgumentAllocation[]; //ignored if kind="bytecode"
+  arguments: ReturndataArgumentAllocation[];
   allocationMode: DecodingMode;
-  kind: ReturndataKind;
+}
+
+export interface ConstructorReturndataAllocation {
+  kind: ConstructorReturndataKind;
+  selector: Uint8Array; //must be empty, but is required for type niceness
+  immutables?: ReturnImmutableAllocation[];
+  delegatecallGuard: boolean;
+  allocationMode: DecodingMode;
 }
 
 export interface ReturndataArgumentAllocation {
   name: string;
   type: Format.Types.Type;
+  pointer: Pointer.ReturndataPointer;
+}
+
+export interface ReturnImmutableAllocation {
+  name: string;
+  type: Format.Types.Type;
+  definedIn: Format.Types.ContractType;
   pointer: Pointer.ReturndataPointer;
 }
 
