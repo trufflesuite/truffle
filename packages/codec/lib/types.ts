@@ -503,4 +503,5 @@ export interface DecoderOptions {
   allowRetry?: boolean; //turns on error-throwing for retry-allowed errors only
   abiPointerBase?: number; //what relative pointers should be considered relative to
   memoryVisited?: number[]; //for circularity detection
+  lengthOverride?: BN; //if present, causes the ABI decoder to use this length instead of reading it from the data
 }
