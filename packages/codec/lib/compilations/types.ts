@@ -44,7 +44,8 @@ export interface Compilation {
   /**
    * A flag intended for internal use to indicate that this compilation is not
    * part of the user's Truffle project but rather is compiled from
-   * temporarily-downloaded external sources.
+   * temporarily-downloaded external Solidity sources.  Again, this should only
+   * be used for Solidity compilations; it may cause irregularities otherwise.
    */
   externalSolidity?: boolean;
 }

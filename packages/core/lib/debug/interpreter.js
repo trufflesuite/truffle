@@ -36,7 +36,7 @@ class DebugInterpreter {
   constructor(config, session, txHash) {
     this.session = session;
     this.network = config.network;
-    this.external = config.external;
+    this.fetchExternal = config.fetchExternal;
     this.printer = new DebugPrinter(config, session);
     this.txHash = txHash;
     this.lastCommand = "n";
@@ -397,7 +397,7 @@ class DebugInterpreter {
       }
     }
     if (cmd === "t") {
-      if (!this.external) {
+      if (!this.fetchExternal) {
         if (!this.session.view(selectors.session.status.loaded)) {
           let txSpinner = ora(
             DebugUtils.formatTransactionStartMessage()
@@ -421,12 +421,12 @@ class DebugInterpreter {
       } else {
         loadFailed = true;
         this.printer.print(
-          "Cannot change transactions in external mode.  Please quit and restart the debugger instead."
+          "Cannot change transactions in fetch-external mode.  Please quit and restart the debugger instead."
         );
       }
     }
     if (cmd === "T") {
-      if (!this.external) {
+      if (!this.fetchExternal) {
         if (this.session.view(selectors.session.status.loaded)) {
           await this.session.unload();
           this.printer.print("Transaction unloaded.");
@@ -437,7 +437,7 @@ class DebugInterpreter {
         }
       } else {
         this.printer.print(
-          "Cannot change transactions in external mode.  Please quit and restart the debugger instead."
+          "Cannot change transactions in fetch-external mode.  Please quit and restart the debugger instead."
         );
       }
     }

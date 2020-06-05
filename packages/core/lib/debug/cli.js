@@ -94,7 +94,7 @@ class CLIDebugger {
     );
     debug("starting debugger");
     let startSpinner;
-    if (!this.config.external) {
+    if (!this.config.fetchExternal) {
       //in external mode spinner is handled below
       startSpinner = ora(startMessage).start();
     }
@@ -108,7 +108,7 @@ class CLIDebugger {
         ? await Debugger.forTx(this.txHash, {
             provider: this.config.provider,
             compilations,
-            lightMode: this.config.external
+            lightMode: this.config.fetchExternal
           })
         : await Debugger.forProject({
             provider: this.config.provider,
@@ -117,7 +117,7 @@ class CLIDebugger {
 
     debug("debugger started");
 
-    if (!this.config.external) {
+    if (!this.config.fetchExternal) {
       // check for error
       if (bugger.view(Debugger.selectors.session.status.isError)) {
         startSpinner.fail();
