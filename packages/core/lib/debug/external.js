@@ -35,10 +35,20 @@ class DebugExternalHandler {
           )
       )
     );
+    const userFetcherNames = this.config.sourceFetchers;
+    //sort/filter fetchers by user's order, if given; otherwise use default order
+    let sortedFetchers;
+    if (userFetcherNames) {
+      sortedFetchers = userFetcherNames
+        .map(name => allFetchers.find(Fetcher => Fetcher.fetcherName === name))
+        .filter(Fetcher => Fetcher !== undefined); //kind of a stupid way of writing this, but we're talking about *tiny* lists here
+    } else {
+      sortedFetchers = allFetchers;
+    }
+    //to get the final list, we'll filter out ones that don't support this
+    //network (and note ones that yielded errors)
     let fetchers = [];
-    //filter out ones that don't support this network
-    //(and note ones that yielded errors)
-    for (const fetcher of allFetchers) {
+    for (const fetcher of sortedFetchers) {
       let isValid;
       let failure = false;
       try {
