@@ -17,18 +17,16 @@ import * as trace from "lib/trace/sagas";
  * @return {string} ID (0x-prefixed keccak of binary)
  */
 export function* addContext(context) {
-  const contextHash = keccak256({ type: "string", value: context.binary });
+  //get context hash if context doesn't already have it
+  const contextHash =
+    context.context || keccak256({ type: "string", value: context.binary });
   //NOTE: we take hash as *string*, not as bytes, because the binary may
   //contain link references!
 
   debug("context %O", context);
-  yield put(actions.addContext(context));
+  yield put(actions.addContext({ ...context, context: contextHash }));
 
   return contextHash;
-}
-
-export function* normalizeContexts() {
-  yield put(actions.normalizeContexts());
 }
 
 /**
@@ -38,13 +36,25 @@ export function* normalizeContexts() {
  * @return {string} ID (0x-prefixed keccak of binary)
  */
 export function* addInstance(address, binary) {
-  let search = yield select(evm.info.binaries.search);
-  let context = search(binary);
+  const search = yield select(evm.info.binaries.search);
+  const context = search(binary);
 
   //now, whether we needed a new context or not, add the instance
   yield put(actions.addInstance(address, context, binary));
 
   return context;
+}
+
+//goes through all instances and re-adds them with their new
+//context (used if new contexts have been added -- something
+//that currently only happens when adding external compilations)
+export function* refreshInstances() {
+  const instances = yield select(evm.current.codex.instances);
+  for (let [address, { binary }] of Object.entries(instances)) {
+    const search = yield select(evm.info.binaries.search);
+    const context = search(binary);
+    yield put(actions.addInstance(address, context, binary));
+  }
 }
 
 export function* begin({

@@ -1,5 +1,6 @@
 export const ADD_CONTEXT = "EVM_ADD_CONTEXT";
 export function addContext({
+  context,
   contractName,
   binary,
   sourceMap,
@@ -10,10 +11,12 @@ export function addContext({
   abi,
   contractId,
   contractKind,
-  isConstructor
+  isConstructor,
+  externalSolidity
 }) {
   return {
     type: ADD_CONTEXT,
+    context,
     contractName,
     binary,
     sourceMap,
@@ -24,13 +27,9 @@ export function addContext({
     abi,
     contractId,
     contractKind,
-    isConstructor
+    isConstructor,
+    externalSolidity
   };
-}
-
-export const NORMALIZE_CONTEXTS = "EVM_NORMALIZE_CONTEXTS";
-export function normalizeContexts() {
-  return { type: NORMALIZE_CONTEXTS };
 }
 
 export const ADD_INSTANCE = "EVM_ADD_INSTANCE";
@@ -40,6 +39,15 @@ export function addInstance(address, context, binary) {
     address,
     context,
     binary
+  };
+}
+
+export const REFRESH_INSTANCE = "EVM_REFRESH_INSTANCE";
+export function refreshInstances(address, context) {
+  return {
+    type: REFRESH_INSTANCE,
+    address,
+    context
   };
 }
 

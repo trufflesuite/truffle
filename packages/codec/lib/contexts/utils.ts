@@ -131,7 +131,7 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   }
 
   debug("short replacements complete");
-  //but there's one more step -- libraries' deployedBytecode will include
+  //now we must handle the delegatecall guard -- libraries' deployedBytecode will include
   //0s in place of their own address instead of a link reference at the
   //beginning, so we need to account for that too
   const pushAddressInstruction = (0x60 + Evm.Utils.ADDRESS_SIZE - 1).toString(
@@ -148,8 +148,8 @@ export function normalizeContexts(contexts: Contexts): Contexts {
 
   debug("extra library replacements complete");
 
-  //one last step: let's handle immutable references
-  //(these are much nicer due to not having to deal with the old format)
+  //now let's handle immutable references
+  //(these are much nicer than link references due to not having to deal with the old format)
   for (let context of Object.values(newContexts)) {
     if (context.immutableReferences) {
       for (let variable of Object.values(context.immutableReferences)) {
@@ -165,6 +165,39 @@ export function normalizeContexts(contexts: Contexts): Contexts {
             context.binary.slice(upperStringIndex);
         }
       }
+    }
+  }
+
+  //one last step: if externalSolidity is set, we'll allow the CBOR to vary,
+  //aside from the length (note: ideally here we would *only* dot-out the
+  //metadata hash part of the CBOR, but, well, it's not worth the trouble
+  //to detect that; doing that could potentially get pretty involved)
+  //NOTE: this will cause a problem with Solidity versions 0.4.6 and earlier,
+  //but it's not worth the trouble to detect that either, because we really
+  //don't support Solidity versions that old
+  //note that the externalSolidity option should *only* be set for Solidity contracts!
+  for (let context of Object.values(newContexts)) {
+    if (context.externalSolidity) {
+      //last two bytes contain the cbor length
+      const lastTwoBytes = context.binary.slice(2).slice(-2 * 2); //2 bytes * 2 for hex
+      //the slice(2) there may seem unnecessary; it's to handle the possibility that the contract
+      //has less than two bytes in its bytecode (that won't happen with Solidity, but let's be
+      //certain)
+      if (lastTwoBytes.length < 2 * 2) {
+        continue; //don't try to handle this case!
+      }
+      const cborLength: number = parseInt(lastTwoBytes, 16);
+      const cborEnd = context.binary.length - 2 * 2;
+      const cborStart = cborEnd - cborLength * 2;
+      //sanity check
+      if (cborStart < 2) {
+        //"0x"
+        continue; //don't try to handle this case!
+      }
+      context.binary =
+        context.binary.slice(0, cborStart) +
+        "..".repeat(cborLength) +
+        context.binary.slice(cborEnd);
     }
   }
 

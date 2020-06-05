@@ -36,6 +36,7 @@ class DebugInterpreter {
   constructor(config, session, txHash) {
     this.session = session;
     this.network = config.network;
+    this.fetchExternal = config.fetchExternal;
     this.printer = new DebugPrinter(config, session);
     this.txHash = txHash;
     this.lastCommand = "n";
@@ -396,33 +397,48 @@ class DebugInterpreter {
       }
     }
     if (cmd === "t") {
-      if (!this.session.view(selectors.session.status.loaded)) {
-        let txSpinner = ora(DebugUtils.formatTransactionStartMessage()).start();
-        await this.session.load(cmdArgs);
-        //if load succeeded
-        if (this.session.view(selectors.session.status.success)) {
-          txSpinner.succeed();
-          //if successful, change prompt
-          this.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
+      if (!this.fetchExternal) {
+        if (!this.session.view(selectors.session.status.loaded)) {
+          let txSpinner = ora(
+            DebugUtils.formatTransactionStartMessage()
+          ).start();
+          await this.session.load(cmdArgs);
+          //if load succeeded
+          if (this.session.view(selectors.session.status.success)) {
+            txSpinner.succeed();
+            //if successful, change prompt
+            this.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
+          } else {
+            txSpinner.fail();
+            loadFailed = true;
+          }
         } else {
-          txSpinner.fail();
           loadFailed = true;
+          this.printer.print(
+            "Please unload the current transaction before loading a new one."
+          );
         }
       } else {
         loadFailed = true;
         this.printer.print(
-          "Please unload the current transaction before loading a new one."
+          "Cannot change transactions in fetch-external mode.  Please quit and restart the debugger instead."
         );
       }
     }
     if (cmd === "T") {
-      if (this.session.view(selectors.session.status.loaded)) {
-        await this.session.unload();
-        this.printer.print("Transaction unloaded.");
-        this.setPrompt(DebugUtils.formatPrompt(this.network));
+      if (!this.fetchExternal) {
+        if (this.session.view(selectors.session.status.loaded)) {
+          await this.session.unload();
+          this.printer.print("Transaction unloaded.");
+          this.setPrompt(DebugUtils.formatPrompt(this.network));
+        } else {
+          this.printer.print("No transaction to unload.");
+          this.printer.print("");
+        }
       } else {
-        this.printer.print("No transaction to unload.");
-        this.printer.print("");
+        this.printer.print(
+          "Cannot change transactions in fetch-external mode.  Please quit and restart the debugger instead."
+        );
       }
     }
 

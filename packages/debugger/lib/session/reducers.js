@@ -73,12 +73,24 @@ function block(state = {}, action) {
   }
 }
 
+function lightMode(state = false, action) {
+  switch (action.type) {
+    case actions.SET_LIGHT_MODE:
+      return true;
+    case actions.SET_FULL_MODE:
+      return false;
+    default:
+      return state;
+  }
+}
+
 const session = combineReducers({
   ready,
   lastLoadingError,
   transaction,
   receipt,
-  block
+  block,
+  lightMode
 });
 
 const reduceState = combineReducers({

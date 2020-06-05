@@ -1,7 +1,7 @@
 import debugModule from "debug";
 const debug = debugModule("debugger:session:sagas");
 
-import { call, all, fork, take, put, race } from "redux-saga/effects";
+import { call, all, fork, take, put, race, select } from "redux-saga/effects";
 
 import { prefixName } from "lib/helpers";
 
@@ -16,9 +16,14 @@ import * as web3 from "lib/web3/sagas";
 
 import * as actions from "../actions";
 
+import session from "../selectors";
+
 const LOAD_SAGAS = {
-  [actions.LOAD_TRANSACTION]: load
+  [actions.LOAD_TRANSACTION]: load,
   //will also add reconstruct action/saga once it exists
+  //the following ones don't really relate to loading, but, oh well
+  [actions.ADD_COMPILATIONS]: addCompilations,
+  [actions.START_FULL_MODE]: startFullMode
 };
 
 function* listenerSaga() {
@@ -44,13 +49,10 @@ export function* saga(moduleOptions) {
   let { contexts, sources } = yield take(actions.RECORD_CONTRACTS);
 
   debug("recording contract binaries");
-  yield* recordContexts(...contexts);
+  yield* recordContexts(contexts);
 
   debug("recording contract sources");
   yield* recordSources(sources);
-
-  debug("normalizing contexts");
-  yield* evm.normalizeContexts();
 
   debug("waiting for start");
   // wait for start signal
@@ -65,9 +67,14 @@ export function* saga(moduleOptions) {
     //save allocation table
     debug("saving allocation table");
     yield* data.recordAllocations();
+    //note: we don't need to explicitly set full mode, it's the default
+  } else {
+    debug("setting light mode");
+    yield put(actions.setLightMode());
   }
 
   //initialize web3 adapter
+  debug("initializing adapter");
   yield* web3.init(provider);
 
   //process transaction (if there is one)
@@ -79,6 +86,41 @@ export function* saga(moduleOptions) {
   debug("readying");
   // signal that commands can begin
   yield* ready();
+}
+
+//please only use in light mode!
+function* addCompilations({ sources, contexts }) {
+  debug("recording contract binaries");
+  yield* recordContexts(contexts);
+
+  debug("recording contract sources");
+  yield* recordSources(sources);
+
+  debug("refreshing instances");
+  yield* evm.refreshInstances();
+}
+
+function* startFullMode() {
+  debug("session: %O", session);
+  let lightMode = yield select(session.status.lightMode);
+  if (!lightMode) {
+    //better not start this twice!
+    return;
+  }
+  debug("turning on data listener");
+  yield fork(data.saga);
+
+  debug("visiting ASTs");
+  // visit asts
+  yield* ast.visitAll();
+
+  //save allocation table
+  debug("saving allocation table");
+  yield* data.recordAllocations();
+
+  yield* trace.addSubmoduleToCount();
+
+  yield put(actions.setFullMode());
 }
 
 export function* processTransaction(txHash) {
@@ -102,10 +144,9 @@ function* forkListeners(moduleOptions) {
   }
   let otherApps = [trace, controller, web3];
   const submoduleCount = mainApps.length;
-  //I'm being lazy, so I'll just pass the submodule count to all of
-  //them even though only trace cares :P
   const apps = mainApps.concat(otherApps);
-  return yield all(apps.map(app => fork(app.saga, submoduleCount)));
+  yield* trace.setSubmoduleCount(submoduleCount);
+  return yield all(apps.map(app => fork(app.saga)));
 }
 
 function* fetchTx(txHash) {
@@ -147,8 +188,8 @@ function* fetchTx(txHash) {
   yield* stacktrace.begin();
 }
 
-function* recordContexts(...contexts) {
-  for (let context of contexts) {
+function* recordContexts(contexts) {
+  for (let context of Object.values(contexts)) {
     yield* evm.addContext(context);
   }
 }

@@ -36,6 +36,10 @@ const session = createSelectorTree({
               }
               let { contractName, compilationId, primarySource } = context;
 
+              debug("primarySource: %o", primarySource);
+              debug("compilationId: %s", compilationId);
+              debug("sources: %o", sources);
+
               let source =
                 primarySource !== undefined
                   ? sources[compilationId].byId[primarySource]
@@ -125,7 +129,12 @@ const session = createSelectorTree({
     /*
      * session.status.loaded
      */
-    loaded: createLeaf([trace.loaded], loaded => loaded)
+    loaded: createLeaf([trace.loaded], loaded => loaded),
+
+    /**
+     * session.status.lightMode
+     */
+    lightMode: createLeaf(["/state"], state => state.lightMode)
   }
 });
 

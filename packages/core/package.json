@@ -36,6 +36,7 @@
     "@truffle/provisioner": "^0.2.0",
     "@truffle/require": "^2.0.42",
     "@truffle/resolver": "^6.0.3",
+    "@truffle/source-fetcher": "^0.1.0-0",
     "@truffle/workflow-compile": "^2.1.36",
     "app-module-path": "^2.2.0",
     "bip39": "^2.2.0",
