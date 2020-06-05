@@ -73,19 +73,7 @@ var DebugUtils = {
       contracts.map(abstraction => abstraction.detectNetwork())
     );
 
-    return contracts.map(contract => ({
-      contractName: contract.contractName,
-      source: contract.source,
-      sourceMap: contract.sourceMap,
-      sourcePath: contract.sourcePath,
-      bytecode: contract.bytecode,
-      immutableReferences: contract.immutableReferences,
-      abi: contract.abi,
-      ast: contract.ast,
-      deployedBytecode: contract.deployedBytecode,
-      deployedSourceMap: contract.deployedSourceMap,
-      compiler: contract.compiler
-    }));
+    return contracts;
   },
 
   //attempts to test whether a given compilation is a real compilation,

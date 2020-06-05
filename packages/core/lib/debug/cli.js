@@ -63,13 +63,27 @@ class CLIDebugger {
   }
 
   async getCompilations() {
-    let artifacts = await DebugUtils.gatherArtifacts(this.config);
-    let shimmedCompilations = Codec.Compilations.Utils.shimArtifacts(artifacts);
-    //if they were compiled simultaneously, yay, we can use it!
-    if (shimmedCompilations.every(DebugUtils.isUsableCompilation)) {
-      return shimmedCompilations;
+    let artifacts;
+    try {
+      artifacts = await DebugUtils.gatherArtifacts(this.config);
+    } catch (error) {
+      //leave artifacts undefined if build directory doesn't exist
+      //(HACK, sorry for doing it this way!)
+      if (!error.message.startsWith("ENOENT")) {
+        //avoid swallowing other errors
+        throw error;
+      }
     }
-    //if not, we have to recompile
+    if (artifacts) {
+      let shimmedCompilations = Codec.Compilations.Utils.shimArtifacts(
+        artifacts
+      );
+      //if they were compiled simultaneously, yay, we can use it!
+      if (shimmedCompilations.every(DebugUtils.isUsableCompilation)) {
+        return shimmedCompilations;
+      }
+    }
+    //if not, or if build directory doens't exist, we have to recompile
     let { contracts, files } = await this.compileSources();
     return Codec.Compilations.Utils.shimArtifacts(contracts, files);
   }
