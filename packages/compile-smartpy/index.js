@@ -10,7 +10,7 @@ const Profiler = require("@truffle/compile-solidity/profiler");
 
 const compiler = {
   name: "smartpy",
-  version: "trufflesuite/smartpy-basic:0.0.1"
+  version: "trufflesuite/smartpy-basic:0.0.2"
 };
 
 const SMARTPY_PATTERN = "**/*.py";
