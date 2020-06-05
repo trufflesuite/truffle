@@ -37,11 +37,16 @@ class DebugExternalHandler {
     );
     const userFetcherNames = this.config.sourceFetchers;
     //sort/filter fetchers by user's order, if given; otherwise use default order
-    let sortedFetchers;
+    let sortedFetchers = [];
     if (userFetcherNames) {
-      sortedFetchers = userFetcherNames
-        .map(name => allFetchers.find(Fetcher => Fetcher.fetcherName === name))
-        .filter(Fetcher => Fetcher !== undefined); //kind of a stupid way of writing this, but we're talking about *tiny* lists here
+      for (let name of userFetcherNames) {
+        let Fetcher = allFetchers.find(Fetcher => Fetcher.fetcherName === name);
+        if (Fetcher) {
+          sortedFetchers.push(Fetcher);
+        } else {
+          throw new Error(`Unknown external source service ${name}.`);
+        }
+      }
     } else {
       sortedFetchers = allFetchers;
     }

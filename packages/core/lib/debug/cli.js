@@ -48,7 +48,7 @@ class CLIDebugger {
       let warningStrings = [];
       if (badFetchers.length > 0) {
         warningStrings.push(
-          `Errors occurred connecting to ${badFetchers.join(", ")}$.`
+          `Errors occurred connecting to ${badFetchers.join(", ")}.`
         );
       }
       if (badAddresses.length > 0) {
