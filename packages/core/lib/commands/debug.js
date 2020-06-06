@@ -1,7 +1,6 @@
 const command = {
   command: "debug",
-  description:
-    "Interactively debug any transaction on the blockchain (experimental)",
+  description: "Interactively debug any transaction on the blockchain",
   builder: {
     "_": {
       type: "string"
