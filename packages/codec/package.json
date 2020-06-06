@@ -1,6 +1,6 @@
 {
   "name": "@truffle/codec",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Library for encoding and decoding smart contract data",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
