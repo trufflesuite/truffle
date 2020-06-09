@@ -1421,7 +1421,10 @@ const data = createSelectorTree({
         [solidity.current.nextMapped],
 
         step =>
-          ((step || {}).stack || []).map(word => Codec.Conversion.toBytes(word))
+          //padding is there to handle Besu
+          ((step || {}).stack || []).map(word =>
+            Codec.Conversion.toBytes(word, Codec.Evm.Utils.WORD_SIZE)
+          )
       )
     }
   },
@@ -1445,7 +1448,10 @@ const data = createSelectorTree({
 
         step =>
           step
-            ? (step.stack || []).map(word => Codec.Conversion.toBytes(word))
+            ? //padding is there to handle Besu
+              (step.stack || []).map(word =>
+                Codec.Conversion.toBytes(word, Codec.Evm.Utils.WORD_SIZE)
+              )
             : null
       )
     }
