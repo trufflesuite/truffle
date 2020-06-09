@@ -429,6 +429,14 @@ class DebugPrinter {
     this.config.logger.log(DebugUtils.formatStacktrace(report));
   }
 
+  printUndefinedStorageWarning() {
+    this.config.logger.log(
+      `${colors.bold(
+        "Warning:"
+      )} The client is not reporting values of storage slots that have only been read from.  This may cause values to erroneously display as zero even after they have been read from, or cause zero to be tracked as a mapping key instead of the correct key.`
+    );
+  }
+
   async printWatchExpressionsResults(expressions) {
     debug("expressions %o", expressions);
     for (let expression of expressions) {

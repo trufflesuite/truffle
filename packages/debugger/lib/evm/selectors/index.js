@@ -661,7 +661,15 @@ const evm = createSelectorTree({
           )
         )
       )
-    }
+    },
+
+    /**
+     * evm.current.undefinedStorage
+     * for warning the user
+     */
+    undefinedStorage: createLeaf(["./codex/storage"], storage =>
+      Object.values(storage).includes(undefined)
+    )
   },
 
   /**

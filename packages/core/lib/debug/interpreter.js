@@ -43,6 +43,8 @@ class DebugInterpreter {
 
     this.repl = config.repl || new ReplManager(config);
     this.enabledExpressions = new Set();
+
+    this.undefinedStorageWarningPrinted = false;
   }
 
   async setOrClearBreakpoint(args, setOrClear) {
@@ -391,6 +393,7 @@ class DebugInterpreter {
       //(but not if nothing is loaded)
       if (this.session.view(selectors.session.status.loaded)) {
         await this.session.reset();
+        this.undefinedStorageWarningPrinted = false;
       } else {
         this.printer.print("No transaction loaded.");
         this.printer.print("");
@@ -408,6 +411,8 @@ class DebugInterpreter {
             txSpinner.succeed();
             //if successful, change prompt
             this.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
+            //...and reset the undefined storage warning
+            this.undefinedStorageWarningPrinted = false;
           } else {
             txSpinner.fail();
             loadFailed = true;
@@ -440,6 +445,15 @@ class DebugInterpreter {
           "Cannot change transactions in fetch-external mode.  Please quit and restart the debugger instead."
         );
       }
+    }
+
+    //check if we need to warn about undefined storage
+    if (
+      this.session.view(evm.current.undefinedStorage) &&
+      !this.undefinedStorageWarningPrinted
+    ) {
+      this.printer.printUndefinedStorageWarning();
+      this.undefinedStorageWarningPrinted = true;
     }
 
     // Check if execution has (just now) stopped.
