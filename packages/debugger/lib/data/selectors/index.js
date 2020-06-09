@@ -618,7 +618,8 @@ const data = createSelectorTree({
           Object.assign(
             {},
             ...Object.entries(mapping).map(([address, word]) => ({
-              [`0x${address}`]: Codec.Conversion.toBytes(word)
+              [`0x${address}`]:
+                word !== undefined ? Codec.Conversion.toBytes(word) : undefined
             }))
           )
       ),
