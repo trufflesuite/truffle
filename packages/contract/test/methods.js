@@ -431,15 +431,15 @@ describe("Methods", function() {
       });
     });
 
-    it("errors with failed tx message", async function() {
+    it("errors with execution reverted message", async function() {
       const example = await Example.new(1);
       try {
         await example.triggerRequireError();
         assert.fail();
       } catch (e) {
         assert(
-          e.message.includes("failing transaction"),
-          "should return failed tx message!"
+          e.message.includes("execution reverted"),
+          "should return execution reverted tx message!"
         );
         assert(e.receipt === undefined, "Expected no receipt");
       }
