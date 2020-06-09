@@ -49,8 +49,8 @@ elif [ "$QUORUM" = true ]; then
   sudo mv docker-compose /usr/local/bin
   git clone https://github.com/jpmorganchase/quorum-examples
   cd quorum-examples
-  docker-compose up -d
-  sleep 90
+  QUORUM_GETH_ARGS="-allow-insecure-unlock" docker-compose up -d
+  node ../scripts/wait-for-quorum-network.js
   lerna run --scope truffle test --stream -- --exit
 
 elif [ "$COLONY" = true ]; then

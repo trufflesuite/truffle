@@ -105,14 +105,14 @@ describe("Deployments", function() {
         .catch(() => null);
     });
 
-    it("Errors with always failing transaction error if constructor reverts", async function() {
+    it("Errors with exeuction reverted transaction error if constructor reverts", async function() {
       try {
         await Example.new(13); // 13 fails a require gate
         assert.fail();
       } catch (e) {
-        const errorCorrect = e.message.includes("always failing transaction");
+        const errorCorrect = e.message.includes("execution reverted");
 
-        assert(errorCorrect, "Expected always failing transaction error");
+        assert(errorCorrect, "Expected execution reverted transaction error");
         assert(e.receipt === undefined, "Expected no receipt");
       }
     });
