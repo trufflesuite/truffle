@@ -460,7 +460,8 @@ var DebugUtils = {
     //note: we can use the default sort here; it will do the righ thing
     let slots = Object.keys(storage)
       .slice()
-      .sort();
+      .sort()
+      .filter(slot => storage[slot]); //remove undefined
 
     let formatted = slots.map((slot, index) => {
       if (
