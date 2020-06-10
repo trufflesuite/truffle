@@ -78,8 +78,14 @@ class Migration {
       // Migrate without saving
       if (options.save === false) return;
 
-      // Write migrations record to chain
-      const Migrations = resolver.require("Migrations");
+      let Migrations;
+
+      // Attempt to write migrations record to chain
+      try {
+        Migrations = resolver.require("Migrations");
+      } catch (error) {
+        // do nothing, Migrations contract optional
+      }
 
       if (Migrations && Migrations.isDeployed()) {
         const message = `Saving migration to chain.`;
