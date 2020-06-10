@@ -19,19 +19,6 @@ import {
 
 const ZERO_WORD = "00".repeat(Codec.Evm.Utils.WORD_SIZE);
 
-//HACK
-function padHex(hexStringArray) {
-  if (!Array.isArray(hexStringArray)) {
-    return hexStringArray;
-  }
-  return hexStringArray.map(
-    //do not change this to 00, because Besu reports things truncated to
-    //the nybble, not to the byte
-    hexString =>
-      "0x" + hexString.slice(2).padStart(2 * Codec.Evm.Utils.WORD_SIZE, "0")
-  );
-}
-
 function determineFullContext(
   { address, binary },
   instances,
@@ -455,7 +442,7 @@ const evm = createSelectorTree({
     state: Object.assign(
       {},
       ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
-        [param]: createLeaf([trace.step], step => padHex(step[param]))
+        [param]: createLeaf([trace.step], step => step[param])
       }))
     ),
 
@@ -697,7 +684,7 @@ const evm = createSelectorTree({
     state: Object.assign(
       {},
       ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
-        [param]: createLeaf([trace.next], step => padHex(step[param]))
+        [param]: createLeaf([trace.next], step => step[param])
       }))
     ),
 
@@ -719,9 +706,7 @@ const evm = createSelectorTree({
     state: Object.assign(
       {},
       ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
-        [param]: createLeaf([trace.nextOfSameDepth], step =>
-          padHex(step[param])
-        )
+        [param]: createLeaf([trace.nextOfSameDepth], step => step[param])
       }))
     )
   }
