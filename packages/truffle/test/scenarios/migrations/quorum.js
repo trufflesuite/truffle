@@ -62,5 +62,5 @@ describe("migrate with [ @quorum ] interface", () => {
     assert(output.includes(network.address));
 
     console.log(output);
-  }).timeout(70000);
+  }).timeout(90000);
 }).timeout(10000);
