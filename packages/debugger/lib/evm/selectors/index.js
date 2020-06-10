@@ -19,7 +19,7 @@ import {
 
 const ZERO_WORD = "00".repeat(Codec.Evm.Utils.WORD_SIZE);
 
-//HACK; for dealing with Besu
+//HACK
 function padHex(hexStringArray) {
   if (!Array.isArray(hexStringArray)) {
     return hexStringArray;
@@ -28,9 +28,7 @@ function padHex(hexStringArray) {
     //do not change this to 00, because Besu reports things truncated to
     //the nybble, not to the byte
     hexString =>
-      hexString.startsWith("0x")
-        ? hexString.slice(2).padStart(2 * Codec.Evm.Utils.WORD_SIZE, "0") //for Besu; do not put 0x on front!
-        : hexString //for Geth and Ganache, there is no 0x on front and no padding is needed
+      "0x" + hexString.slice(2).padStart(2 * Codec.Evm.Utils.WORD_SIZE, "0")
   );
 }
 
