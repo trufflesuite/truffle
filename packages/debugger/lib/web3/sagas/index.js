@@ -21,6 +21,25 @@ import * as Codec from "@truffle/codec";
 
 import Web3Adapter from "../adapter";
 
+//the following two functions are for Besu compatibility
+function padStackAndMemory(steps) {
+  return steps.map(step => ({
+    ...step,
+    stack: step.stack.map(padHexString),
+    memory: step.memory.map(padHexString)
+  }));
+}
+
+//turns Besu-style (begins with 0x, may be shorter than 64 hexdigits)
+//to Geth/Ganache-style (no 0x, always 64 hexdigits)
+//(I say 64 hexdigits rather than 32 bytes because Besu-style will use
+//non-whole numbers of bytes!)
+function padHexString(hexString) {
+  return hexString.startsWith("0x") //Besu-style or Geth/Ganache-style?
+    ? hexString.slice(2).padStart(2 * Codec.Evm.Utils.WORD_SIZE, "0") //convert Besu to Geth/Ganache
+    : hexString; //leave Geth/Ganache style alone
+}
+
 function* fetchTransactionInfo(adapter, { txHash }) {
   debug("inspecting transaction");
   var trace;
@@ -33,6 +52,7 @@ function* fetchTransactionInfo(adapter, { txHash }) {
   }
 
   debug("got trace");
+  trace = padStackAndMemory(trace); //for Besu compatibility
   yield put(actions.receiveTrace(trace));
 
   let tx = yield apply(adapter, adapter.getTransaction, [txHash]);
