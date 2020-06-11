@@ -173,6 +173,20 @@ function createStepSelectors(step, state = null) {
       ),
 
       /**
+       * .valueStored
+       * the storage written, as determined by looking at the stack
+       * rather than at storage (since valueLoaded is now being done
+       * this way, may as well do valueStored this way as well and
+       * completely remove our dependence on the storage field!)
+       */
+      valueStored: createLeaf(["./isStore", state], (isStore, { stack }) => {
+        if (!isStore) {
+          return null;
+        }
+        return stack[stack.length - 2];
+      }),
+
+      /**
        * .callAddress
        *
        * address transferred to by call operation
@@ -586,7 +600,7 @@ const evm = createSelectorTree({
         }
       ),
 
-      /*
+      /**
        * evm.current.step.returnValue
        *
        * for a [successful] RETURN or REVERT instruction, the value returned;
@@ -619,6 +633,23 @@ const evm = createSelectorTree({
               .substring(offset, offset + length)
               .padEnd(length, "00")
           );
+        }
+      ),
+
+      /**
+       * evm.current.step.valueLoaded
+       * the storage loaded on an SLOAD. determined by examining
+       * the next stack, rather than storage (we're avoiding
+       * relying on storage to support old versions of Geth and Besu)
+       * we do not include an initial "0x"
+       */
+      valueLoaded: createLeaf(
+        ["./isLoad", "/next/state"],
+        (isLoad, { stack }) => {
+          if (!isLoad) {
+            return null;
+          }
+          return stack[stack.length - 1];
         }
       )
     },

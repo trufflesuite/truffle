@@ -154,19 +154,16 @@ export function* callstackAndCodexSaga() {
     } else {
       yield put(actions.returnCall());
     }
-  } else if (yield select(evm.current.step.touchesStorage)) {
+  } else if (yield select(evm.current.step.isStore)) {
     let storageAddress = (yield select(evm.current.call)).storageAddress;
     let slot = yield select(evm.current.step.storageAffected);
-    //note we get next storage, since we're updating to that
-    let storage = yield select(evm.next.state.storage);
-    //normally we'd need a 0 fallback for this next line, but in this case we
-    //can be sure the value will be there, since we're touching that storage
-    if (yield select(evm.current.step.isStore)) {
-      yield put(actions.store(storageAddress, slot, storage[slot]));
-    } else {
-      //otherwise, it's a load
-      yield put(actions.load(storageAddress, slot, storage[slot]));
-    }
+    let storedValue = yield select(evm.current.step.valueStored);
+    yield put(actions.store(storageAddress, slot, storedValue));
+  } else if (yield select(evm.current.step.isLoad)) {
+    let storageAddress = (yield select(evm.current.call)).storageAddress;
+    let slot = yield select(evm.current.step.storageAffected);
+    let loadedValue = yield select(evm.current.step.valueLoaded);
+    yield put(actions.load(storageAddress, slot, loadedValue));
   }
 }
 
