@@ -1,0 +1,38 @@
+{
+  "name": "@truffle/preserve-to-ipfs",
+  "version": "0.1.0-0",
+  "description": "Truffle `preserve` command support for IPFS",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
+    "test": "jest --verbose --detectOpenHandles"
+  },
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/preserve-to-ipfs",
+  "author": "g. nicholas d'andrea <gnidan@trufflesuite.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/bl": "^2.1.0",
+    "@types/jest": "^26.0.0",
+    "@types/node": "^14.0.13",
+    "ipfs": "^0.43",
+    "ipfsd-ctl": "^4.1.1",
+    "it-concat": "^1.0.0",
+    "jest": "^26.0.1",
+    "ts-jest": "^26.1.0",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@truffle/preserve": "^0.1.0-0",
+    "cids": "^0.8.3",
+    "ipfs-http-client": "^44.3.0",
+    "iter-tools": "^7.0.0-rc.0"
+  }
+}
