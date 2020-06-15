@@ -7,8 +7,7 @@ const command = {
     },
     "network": {
       describe: "Network to connect to",
-      type: "string",
-      default: "development"
+      type: "string"
     },
     "fetch-external": {
       describe: "Allow debugging of external contracts",
@@ -23,7 +22,7 @@ const command = {
     options: [
       {
         option: "--network",
-        description: "Network to connect to.  Default: development"
+        description: "Network to connect to."
       },
       {
         option: "--fetch-external",
