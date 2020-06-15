@@ -2,7 +2,7 @@ const { isExplicitlyRelative } = require("./isExplicitlyRelative");
 const Parser = require("../parser");
 const path = require("path");
 
-const getImports = (file, { body, source }, solc, parserSolc) => {
+const getImports = (file, { body, source } = {}, solc, parserSolc) => {
   let imports;
 
   // No imports in non-sol files (yet)!
