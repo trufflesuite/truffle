@@ -61,7 +61,7 @@
     "express": "^4.16.2",
     "faker": "^4.1.0",
     "fs-extra": "^8.1.0",
-    "ganache-core": "2.11.0-tezos.1",
+    "ganache-core": "2.11.0-tezos.2",
     "istanbul-instrumenter-loader": "^3.0.1",
     "mocha": "5.2.0",
     "mocha-webpack": "^1.1.0",

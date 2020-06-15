@@ -7028,10 +7028,10 @@ ganache-cli@^6.1.0:
     source-map-support "0.5.12"
     yargs "13.2.4"
 
-ganache-core@2.11.0-tezos.1:
-  version "2.11.0-tezos.1"
-  resolved "https://registry.yarnpkg.com/ganache-core/-/ganache-core-2.11.0-tezos.1.tgz#464a75db0b14b1269a73c51b4346f754e2584a93"
-  integrity sha512-lm4YmvRlTuauYr/naaF3rMN+ykwbogrcEnKUl33D4isLK4IGJH5dnyLfxWPpxicEVt7kUWH3pPPbI+YSiG6F1w==
+ganache-core@2.11.0-tezos.2, ganache-core@^2.11.0-tezos.2:
+  version "2.11.0-tezos.2"
+  resolved "https://registry.yarnpkg.com/ganache-core/-/ganache-core-2.11.0-tezos.2.tgz#90127e7905245b555487966ecac74d5e02c2ca68"
+  integrity sha512-9g8iDktwgsIL47KIjR1IilXIvx5du06B0wH6OAZLnZ+dPy7V7kQJgD4CSp+0UjTeT5p7Sg9JgpTeJxhmed1jjQ==
   dependencies:
     abstract-leveldown "3.0.0"
     async "2.6.2"
