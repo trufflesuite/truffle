@@ -99,6 +99,9 @@ TestRunner.prototype.startTest = async function() {
 };
 
 TestRunner.prototype.endTest = async function(mocha) {
+  // Tezos currently doesn't support events!
+  if (this.config.networks[this.config.network].type === "tezos") return;
+
   // Skip logging if test passes and `show-events` option is not true
   if (mocha.currentTest.state !== "failed" && !this.config["show-events"]) {
     return;
