@@ -54,7 +54,9 @@ export interface SolcSettings {
 
 export interface SolcSources {
   [sourcePath: string]: {
-    content: string;
+    keccak256?: string;
+    content?: string; //for Etherscan we assume this exists
+    urls?: string;
   };
 }
 
@@ -63,6 +65,17 @@ export interface SolcInput {
   sources: SolcSources;
   settings: SolcSettings;
   //there's also outputSelection, but, frankly, we don't care about this
+}
+
+export interface SolcMetadata {
+  language: "Solidity" | "Yul";
+  compiler: {
+    version: string;
+  };
+  settings: SolcSettings;
+  sources: SolcSources;
+  version: number;
+  //there's also output, but we don't care about that
 }
 
 export interface LibrarySettings {

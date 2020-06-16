@@ -3,7 +3,12 @@ const debug = debugModule("source-fetcher:etherscan");
 
 import { Fetcher, FetcherConstructor } from "./types";
 import * as Types from "./types";
-import { networksById, makeFilename, makeTimer } from "./common";
+import {
+  networksById,
+  makeFilename,
+  makeTimer,
+  removeLibraries
+} from "./common";
 import request from "request-promise-native";
 
 //this looks awkward but the TS docs actually suggest this :P
@@ -76,7 +81,6 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       await this.ready;
       const responsePromise = this.makeRequest(address);
       this.ready = makeTimer(this.delay);
-      //for now, we're just going to retry once if it fails
       try {
         return await responsePromise;
       } catch (error) {
@@ -203,7 +207,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
       options: {
         language: jsonInput.language,
         version: result.CompilerVersion,
-        settings: this.removeLibraries(jsonInput.settings)
+        settings: removeLibraries(jsonInput.settings) //we *don't* want to pass library info!  unlinked bytecode is better!
       }
     };
   }
@@ -237,15 +241,6 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
         optimizer
       };
     }
-  }
-
-  //we *don't* want to pass library info!  unlinked bytecode is better!
-  private static removeLibraries(
-    settings: Types.SolcSettings
-  ): Types.SolcSettings {
-    let copySettings: Types.SolcSettings = { ...settings };
-    delete copySettings.libraries;
-    return copySettings;
   }
 };
 
