@@ -5,6 +5,7 @@ import { EthereumDefinition } from "./overloads/ethereum";
 import { QuorumDefinition } from "./overloads/quorum";
 import { FabricEvmDefinition } from "./overloads/fabric-evm";
 import { Web3JsDefinition } from "./overloads/web3js";
+import { ConfluxDefinition } from "./overloads/conflux";
 
 const initInterface = async (web3Shim: Web3Shim) => {
   const networkTypes: NetworkTypesConfig = new Map(
@@ -12,7 +13,8 @@ const initInterface = async (web3Shim: Web3Shim) => {
       web3js: Web3JsDefinition,
       ethereum: EthereumDefinition,
       quorum: QuorumDefinition,
-      "fabric-evm": FabricEvmDefinition
+      "fabric-evm": FabricEvmDefinition,
+      conflux: ConfluxDefinition
     })
   );
 
@@ -57,6 +59,7 @@ export type NetworkTypesConfig = Map<NetworkType, NetworkTypeDefinition>;
 // sane and organized manner.
 export class Web3Shim extends Web3 {
   public networkType: NetworkType;
+  cfx: any;
 
   constructor(options?: Web3ShimOptions) {
     super();
