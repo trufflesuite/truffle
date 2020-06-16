@@ -33,7 +33,7 @@ export interface SourcesByPath {
 export type CompilerOptions = SolcOptions | VyperOptions; //note: only Solidity really supported atm
 
 export interface SolcOptions {
-  language: "Solidity";
+  language: "Solidity" | "Yul"; //again, only Solidity really supported atm
   version: string;
   settings: SolcSettings;
 }

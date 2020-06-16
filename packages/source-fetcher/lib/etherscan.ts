@@ -201,7 +201,7 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     return {
       sources: this.processSources(jsonInput.sources),
       options: {
-        language: "Solidity",
+        language: jsonInput.language,
         version: result.CompilerVersion,
         settings: this.removeLibraries(jsonInput.settings)
       }
