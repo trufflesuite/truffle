@@ -9,7 +9,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.2-tezos.11",
+  "version": "0.2.2-tezos.12",
   "main": "index.js",
   "dependencies": {
     "@truffle/artifactor": "^4.2.0-tezos.11",

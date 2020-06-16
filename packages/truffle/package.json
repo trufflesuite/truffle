@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.4.0-tezos.4",
+  "version": "5.4.0-tezos.5",
   "main": "./build/library.bundled.js",
   "bin": {
     "truffle": "./build/cli.bundled.js"
@@ -34,7 +34,7 @@
   "devDependencies": {
     "@truffle/box": "^1.1.0-tezos.4",
     "@truffle/contract": "^5.0.0-tezos.5",
-    "@truffle/core": "^5.4.0-tezos.3",
+    "@truffle/core": "^5.4.0-tezos.4",
     "@truffle/debugger": "^7.1.1-tezos.9",
     "@truffle/interface-adapter": "^0.6.0-tezos.4",
     "clean-webpack-plugin": "^0.1.16",

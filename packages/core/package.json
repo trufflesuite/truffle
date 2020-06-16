@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.4.0-tezos.3",
+  "version": "5.4.0-tezos.4",
   "bin": {
     "truffle": "./cli.js",
     "truffle-exec": "./exec.js"
@@ -27,7 +27,7 @@
     "@truffle/debugger": "^7.1.1-tezos.9",
     "@truffle/decoder": "^4.3.1-tezos.7",
     "@truffle/deployer": "^3.2.0-tezos.14",
-    "@truffle/environment": "^0.2.2-tezos.11",
+    "@truffle/environment": "^0.2.2-tezos.12",
     "@truffle/error": "^0.1.0-tezos.0",
     "@truffle/expect": "^0.1.0-tezos.0",
     "@truffle/interface-adapter": "^0.6.0-tezos.4",
