@@ -16,34 +16,8 @@ const postinstallObtain = () => {
   }
 };
 
-const postInstallTezosGanache = () => {
-  let response;
-  try {
-    statSync(bundledCLI);
-    console.log(`\n- Fetching ganache-core@tezos...`);
-    try {
-      response = execSync(`npm list ganache-core`);
-    } catch (_error) {
-      // ganache-core wasn't found, download it!
-      console.log(`- Post-installing ganache-core@tezos...`);
-      execSync(`npm i ganache-core@tezos`);
-      console.log(`- Success!`);
-      return;
-    }
-    if (!response.includes("tezos")) {
-      console.log(`- Post-installing ganache-core@tezos...`);
-      execSync(`npm i ganache-core@tezos`);
-    }
-    console.log(`- Success!`);
-  } catch (error) {
-    if (error.message.includes("no such file")) return;
-    throw new Error(error);
-  }
-};
-
 try {
   postinstallObtain();
-  postInstallTezosGanache();
 } catch (error) {
   console.error(error);
 }
