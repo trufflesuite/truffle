@@ -4,8 +4,15 @@ const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
 const Resolver = require("@truffle/resolver");
 const Artifactor = require("@truffle/artifactor");
-const Ganache = require("ganache-core/public-exports");
 const Provider = require("@truffle/provider");
+try {
+  var Ganache = require("ganache-core/public-exports");
+} catch (_error) {
+  console.log("");
+  throw new Error(
+    `ganache-core not detected. Please run 'npm install -g ganache-core@tezos'.`
+  );
+}
 
 const Environment = {
   // It's important config is a Config object and not a vanilla object
