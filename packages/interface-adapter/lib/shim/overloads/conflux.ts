@@ -65,7 +65,7 @@ const overrides = {
     const newMethod = async function(block: any): Promise<any> {
       console.log("getBock block num: ", block);
       if (block == "latest") {
-        block = "latest_mined";
+        block = "latest_state";
       }
       // TODO map other tags
       let blockInfo = await web3.cfx.getBlockByEpochNumber(block);
