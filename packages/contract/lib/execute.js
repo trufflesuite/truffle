@@ -466,7 +466,9 @@ const execute = {
           constructor.abi,
           res.params
         );
-        return instance.deploy(options).estimateGas(res.params);
+        // return instance.deploy(options).estimateGas(res.params);
+        console.log(instance, options);
+        return Promise.resolve(1000000);
       });
   },
 
@@ -499,8 +501,9 @@ const execute = {
     debug("executing manually!");
     const send = rpc =>
       new Promise((accept, reject) =>
-        web3.currentProvider.send(rpc, (err, result) =>
-          err ? reject(err) : accept(result)
+        web3.currentProvider.send(
+          rpc,
+          (err, result) => (err ? reject(err) : accept(result))
         )
       );
     //let's clone params
@@ -517,9 +520,10 @@ const execute = {
     const account = web3.eth.accounts.wallet[transaction.from];
     let rpcPromise;
     if (account) {
-      const rawTx = (
-        await web3.eth.accounts.sign(transaction, account.privateKey)
-      ).rawTransaction;
+      const rawTx = (await web3.eth.accounts.sign(
+        transaction,
+        account.privateKey
+      )).rawTransaction;
       rpcPromise = send({
         jsonrpc: "2.0",
         id: Date.now(),

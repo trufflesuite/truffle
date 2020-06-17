@@ -6,6 +6,7 @@ import { QuorumDefinition } from "./overloads/quorum";
 import { FabricEvmDefinition } from "./overloads/fabric-evm";
 import { Web3JsDefinition } from "./overloads/web3js";
 import { ConfluxDefinition } from "./overloads/conflux";
+import { Conflux } from "js-conflux-sdk";
 
 const initInterface = async (web3Shim: Web3Shim) => {
   const networkTypes: NetworkTypesConfig = new Map(
@@ -59,7 +60,7 @@ export type NetworkTypesConfig = Map<NetworkType, NetworkTypeDefinition>;
 // sane and organized manner.
 export class Web3Shim extends Web3 {
   public networkType: NetworkType;
-  cfx: any;
+  cfx: Conflux;
 
   constructor(options?: Web3ShimOptions) {
     super();
