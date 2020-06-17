@@ -52,8 +52,11 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     const sources: Types.SourcesByPath = Object.assign(
       {},
       ...(await Promise.all(
-        Object.keys(metadata.sources).map(
-          async sourcePath => await this.getSource(address, sourcePath)
+        Object.entries(metadata.sources).map(
+          async ([sourcePath, { content: source }]) =>
+            source !== undefined
+              ? source //sourcify doesn't support this yet but they're planning it
+              : await this.getSource(address, sourcePath)
         )
       ))
     );
