@@ -466,7 +466,9 @@ const execute = {
           constructor.abi,
           res.params
         );
-        return instance.deploy(options).estimateGas(res.params);
+        // return instance.deploy(options).estimateGas(res.params);
+        console.log(instance, options);
+        return Promise.resolve(1000000);
       });
   },
 
