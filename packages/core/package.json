@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.1.30",
+  "version": "5.1.31",
   "bin": {
     "truffle": "./cli.js",
     "truffle-exec": "./exec.js"
@@ -24,7 +24,7 @@
     "@truffle/contract": "^4.2.9",
     "@truffle/contract-sources": "^0.1.7",
     "@truffle/debug-utils": "^4.1.6",
-    "@truffle/debugger": "^7.5.1",
+    "@truffle/debugger": "^7.5.2",
     "@truffle/decoder": "^4.3.7",
     "@truffle/deployer": "^3.1.25",
     "@truffle/environment": "^0.2.11",
