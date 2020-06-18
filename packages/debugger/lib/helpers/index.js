@@ -69,7 +69,10 @@ export function popNWhere(array, numToRemove, predicate) {
  * @return 0x-prefix string of keccak256 hash
  */
 export function keccak256(...args) {
-  return Codec.Conversion.toHexString(Codec.Evm.Utils.keccak256(...args));
+  return Codec.Conversion.toHexString(
+    Codec.Evm.Utils.keccak256(...args),
+    Codec.Evm.Utils.WORD_SIZE
+  );
 }
 
 /**
