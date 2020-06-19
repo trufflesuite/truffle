@@ -7,7 +7,7 @@ const Reason = require("./reason");
 const handlers = require("./handlers");
 const override = require("./override");
 const reformat = require("./reformat");
-const { formatters } = require("web3-core-helpers"); //used for reproducing web3's behavior
+// const { formatters } = require("web3-core-helpers"); //used for reproducing web3's behavior
 
 const execute = {
   // -----------------------------------  Helpers --------------------------------------------------
@@ -287,6 +287,11 @@ const execute = {
             );
             web3Instance.transactionHash = context.transactionHash;
 
+            // PA tmp add
+            if (!web3Instance.transactionHash) {
+              web3Instance.transactionHash = promiEvent.transactionHash;
+            }
+
             context.promiEvent.resolve(new constructor(web3Instance));
           } catch (web3Error) {
             // Manage web3's 50 blocks' timeout error.
@@ -467,7 +472,11 @@ const execute = {
           res.params
         );
         // return instance.deploy(options).estimateGas(res.params);
-        console.log(instance, options);
+        console.log(
+          "Deployment execute estimate: ",
+          instance._address,
+          options
+        );
         return Promise.resolve(1000000);
       });
   },
@@ -501,10 +510,16 @@ const execute = {
     debug("executing manually!");
     const send = rpc =>
       new Promise((accept, reject) =>
-        web3.currentProvider.send(rpc, (err, result) =>
-          err ? reject(err) : accept(result)
+        web3.currentProvider.send(
+          rpc,
+          (err, result) => (err ? reject(err) : accept(result))
         )
       );
+
+    const cSend = (tx, pwd) => {
+      let hashPromi = web3.cfx.sendTransaction(tx, pwd);
+      return hashPromi;
+    };
     //let's clone params
     let transaction = {};
     for (let key in params) {
@@ -514,14 +529,21 @@ const execute = {
       transaction.from != undefined
         ? transaction.from
         : web3.eth.defaultAccount;
+
+    // PA add
+    if (!transaction.value) {
+      transaction.value = "0x0"; // set default value
+    }
+
     //now: if the from address is in the wallet, web3 will sign the transaction before
     //sending, so we have to account for that
     const account = web3.eth.accounts.wallet[transaction.from];
     let rpcPromise;
     if (account) {
-      const rawTx = (
-        await web3.eth.accounts.sign(transaction, account.privateKey)
-      ).rawTransaction;
+      const rawTx = (await web3.eth.accounts.sign(
+        transaction,
+        account.privateKey
+      )).rawTransaction;
       rpcPromise = send({
         jsonrpc: "2.0",
         id: Date.now(),
@@ -531,20 +553,36 @@ const execute = {
     } else {
       //in this case, web3 hasn't checked the validity of our inputs, so we'd better
       //have it do that before the send
-      transaction = formatters.inputTransactionFormatter(transaction); //warning, not a pure fn
+      /* transaction = formatters.inputTransactionFormatter(transaction); //warning, not a pure fn
       rpcPromise = send({
         jsonrpc: "2.0",
         id: Date.now(),
         method: "eth_sendTransaction",
-        params: [transaction]
-      });
+        params: [transaction, "123456"]
+      }); */
+      rpcPromise = cSend(transaction, "123456"); // TODO password hardcode
     }
     const rpcReturn = await rpcPromise;
-    const txHash = rpcReturn.result; //note: this should work even in Ganache default mode!
+    // const txHash = rpcReturn.result; //note: this should work even in Ganache default mode!
+    const txHash = rpcReturn;
+    // PA tmp add
+    promiEvent.eventEmitter.emit("transactionHash", txHash);
+
     debug("txHash: %s", txHash);
     //this is unlike for calls, where default mode poses more of a problem
     promiEvent.setTransactionHash(txHash); //this here is why I wrote this function @_@
-    const receipt = await web3.eth.getTransactionReceipt(txHash);
+
+    // PA edit
+    let receipt;
+    while (true) {
+      console.log("Loop get receipt for tx: ", txHash);
+      receipt = await web3.eth.getTransactionReceipt(txHash);
+      if (receipt) break;
+      await new Promise(function(resolve) {
+        setTimeout(() => resolve(), 1000);
+      }); // wait for one second
+    }
+
     if (rpcReturn.error) {
       //appears to be how web3 handles errors in Ganache's default mode??
       throw new Error("Returned error: " + rpcReturn.error.message);
@@ -558,6 +596,8 @@ const execute = {
           );
         }
       }
+      // PA tmp add
+      promiEvent.eventEmitter.emit("receipt", receipt);
       return receipt;
     } else {
       //otherwise: we have to mimic web3's errors @_@

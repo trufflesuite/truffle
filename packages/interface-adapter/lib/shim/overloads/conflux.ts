@@ -1,6 +1,7 @@
 import { Web3Shim } from "..";
 import { Callback } from "web3/types";
 import { Conflux } from "js-conflux-sdk";
+// import { Conflux } from "/Users/pana/Projects/conflux/js-conflux-sdk";
 import { TxHash, Transaction, TransactionReceipt } from "lib/adapter/types";
 
 // We simply return plain ol' Web3.js
@@ -22,9 +23,9 @@ export const ConfluxDefinition = {
 const overrides = {
   initCfx: (web3: Web3Shim, options?: any) => {
     const cfx = new Conflux({
-      url: "http://localhost:12537"
+      url: "http://localhost:12537",
       // @ts-ignore
-      // logger: console
+      logger: console
     });
     web3.cfx = cfx;
   },
@@ -100,9 +101,16 @@ const overrides = {
    * outcomeStatus -> status
    */
   getTransactionReceipt: (web3: Web3Shim) => {
-    const newMethod = function(tx: TxHash): Promise<TransactionReceipt> {
-      let transReceipt = web3.cfx.getTransactionReceipt();
-      return transReceipt;
+    const newMethod = async function(tx: TxHash): Promise<TransactionReceipt> {
+      let txReceipt = await web3.cfx.getTransactionReceipt(tx);
+      if (txReceipt) {
+        txReceipt.contractAddress = txReceipt.contractCreated;
+        txReceipt.blockNumber = txReceipt.epochNumber;
+        txReceipt.transactionIndex = txReceipt.index;
+        txReceipt.status = txReceipt.outcomeStatus === 0 ? 1 : 0; // conflux和以太坊状态相反
+        txReceipt.gasUsed = "0x" + txReceipt.gasUsed.toString(16);
+      }
+      return Promise.resolve(txReceipt);
     };
     web3.eth.getTransactionReceipt = newMethod;
   },
