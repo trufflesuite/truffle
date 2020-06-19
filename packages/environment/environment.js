@@ -14,6 +14,7 @@ const Environment = {
 
     helpers.setUpConfig(config);
     helpers.validateNetworkConfig(config);
+    console.log("config info", config.networks, config.network);
 
     const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
@@ -123,6 +124,7 @@ const helpers = {
     }
   },
 
+  // setup resolver, artifactor, network, ens
   setUpConfig: config => {
     if (!config.resolver) {
       config.resolver = new Resolver(config);

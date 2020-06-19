@@ -22,9 +22,9 @@ export const ConfluxDefinition = {
 const overrides = {
   initCfx: (web3: Web3Shim, options?: any) => {
     const cfx = new Conflux({
-      url: "http://localhost:12537",
+      url: "http://localhost:12537"
       // @ts-ignore
-      logger: console
+      // logger: console
     });
     web3.cfx = cfx;
   },
@@ -81,6 +81,9 @@ const overrides = {
     web3.eth.getBlock = newMethod;
   },
 
+  /**
+   * main difference is 'blockNumber'
+   */
   getTransaction: (web3: Web3Shim) => {
     const newMethod = function(tx: TxHash): Promise<Transaction> {
       let trans = web3.cfx.getTransactionByHash(tx);
@@ -89,6 +92,13 @@ const overrides = {
     web3.eth.getTransaction = newMethod;
   },
 
+  /**
+   * index -> transactionIndex
+   * blockNumber?
+   * cumulativeGasUsed?
+   * contractAddress? contractCreated
+   * outcomeStatus -> status
+   */
   getTransactionReceipt: (web3: Web3Shim) => {
     const newMethod = function(tx: TxHash): Promise<TransactionReceipt> {
       let transReceipt = web3.cfx.getTransactionReceipt();
