@@ -460,6 +460,7 @@ const execute = {
     return execute
       .prepareCall(constructor, constructorABI, arguments)
       .then(res => {
+        // eslint-disable-next-line no-unused-vars
         const options = {
           data: constructor.binary,
           arguments: res.args
@@ -467,11 +468,13 @@ const execute = {
 
         delete res.params["data"]; // Is this necessary?
 
+        // eslint-disable-next-line no-unused-vars
         const instance = new constructor.web3.eth.Contract(
           constructor.abi,
           res.params
         );
         // return instance.deploy(options).estimateGas(res.params);
+        // console.log(instance, options);
         console.log(
           "Deployment execute estimate: ",
           instance._address,

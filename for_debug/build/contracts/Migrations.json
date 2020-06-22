@@ -1084,16 +1084,11 @@
       "links": {},
       "address": "0xa9cDEA8741AA7ad2Bf69376e3d6575909E2FcA93",
       "transactionHash": "0x82273314732e885b2c7c02d5fdefd3e6bacaa343e9eb20b38540ba9394139f48"
-    },
-    "1592304361448": {
-      "events": {},
-      "links": {},
-      "address": "0x36036b22f91A3b9016c23558137fCf2744C3a0E4",
-      "transactionHash": "0xb73a1bf43a4279764c9aebb195f0384f97c244345ef536fb4b3b8fbfa3d963f3"
     }
   },
   "schemaVersion": "3.2.0",
-  "updatedAt": "2020-06-17T04:04:44.235Z",
+  "updatedAt": "2020-06-19T10:53:11.610Z",
+  "networkType": "conflux",
   "devdoc": {
     "methods": {}
   },
