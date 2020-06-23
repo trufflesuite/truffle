@@ -6,17 +6,17 @@ import { Tx as web3Tx } from "web3/eth/types";
 import { EventEmitter } from "events";
 import Eth from "web3/eth";
 import {
-  Conflux,
+  // Conflux,
   TransactionReceipt as cfxTxReceipt,
   Transaction as cfxTx,
   TransactionConfig
 } from "js-conflux-sdk";
-// import { Conflux } from "/Users/pana/Projects/conflux/js-conflux-sdk";
+import { Conflux } from "/Users/pana/Projects/conflux/js-conflux-sdk";
 
 // We simply return plain ol' Web3.js
 export const ConfluxDefinition = {
   async initNetworkType(web3: Web3Shim) {
-    console.log("init network by conflux type");
+    // console.log("init network by conflux type");
     overrides.initCfx(web3);
     overrides.getBlockNumber(web3);
     overrides.getNetworkId(web3);
@@ -35,7 +35,8 @@ const overrides = {
   initCfx: (web3: Web3Shim, options?: any) => {
     // save cfx object
     const cfx = new Conflux({
-      url: "http://localhost:12537" // TODO get network config from web3 object
+      // @ts-ignore
+      url: web3.currentProvider.host // TODO get network config from web3 object
       // @ts-ignore
       // logger: console
     });
@@ -179,7 +180,7 @@ const overrides = {
       // @ts-ignore
       cfxTx.gasPrice = tx.gasPrice;
       // @ts-ignore
-      let password = "hello";
+      let password = "123456";
 
       // cfxTx = {
       //   from: "0x12be576f8eb81046c6f29f1801f39b75390fd760",
@@ -328,6 +329,7 @@ export class cfxPromiEvent implements PromiEvent<web3TxReceipt> {
       });
     });
   }
+
   public catch<TResult = never>(
     onrejected?: (reason: any) => TResult | PromiseLike<TResult>
   ): Promise<web3TxReceipt | TResult> {
