@@ -1,1 +1,1 @@
-declare module "web3-provider-engine/subproviders/filters";
+declare module "@trufflesuite/web3-provider-engine/subproviders/filters";
