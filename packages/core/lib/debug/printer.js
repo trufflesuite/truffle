@@ -98,9 +98,9 @@ class DebugPrinter {
     }
   }
 
-  printHelp() {
+  printHelp(lastCommand) {
     this.config.logger.log("");
-    this.config.logger.log(DebugUtils.formatHelp());
+    this.config.logger.log(DebugUtils.formatHelp(lastCommand));
   }
 
   printFile() {
