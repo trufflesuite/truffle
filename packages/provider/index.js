@@ -3,6 +3,7 @@ const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
+const HttpProviderProxy = require("web3-provider-proxy");
 
 module.exports = {
   wrap: function(provider, options) {
@@ -25,10 +26,18 @@ module.exports = {
         options.url || "ws://" + options.host + ":" + options.port
       );
     } else {
-      provider = new Web3.providers.HttpProvider(
-        options.url || `http://${options.host}:${options.port}`,
-        { keepAlive: false }
-      );
+      if (options.type == "conflux") {
+        // P+ use custom provider proxy if type is conflux
+        provider = new HttpProviderProxy(
+          options.url || `http://${options.host}:${options.port}`,
+          { keepAlive: false }
+        );
+      } else {
+        provider = new Web3.providers.HttpProvider(
+          options.url || `http://${options.host}:${options.port}`,
+          { keepAlive: false }
+        );
+      }
     }
     return provider;
   },
