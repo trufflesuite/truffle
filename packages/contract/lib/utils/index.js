@@ -34,6 +34,7 @@ const Utils = {
       fee: true,
       gasPrice: true,
       amount: true,
+      mutez: true,
       value: true,
       data: true,
       nonce: true,
