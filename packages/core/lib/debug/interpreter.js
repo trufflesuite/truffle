@@ -597,12 +597,10 @@ class DebugInterpreter {
         //nothing to print
         break;
       default:
-        this.printer.printHelp();
+        this.printer.printHelp(this.lastCommand);
     }
 
     if (
-      cmd !== "i" &&
-      cmd !== "u" &&
       cmd !== "b" &&
       cmd !== "B" &&
       cmd !== "v" &&

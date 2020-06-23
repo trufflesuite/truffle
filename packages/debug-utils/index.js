@@ -35,6 +35,30 @@ const commandReference = {
   "s": "print stacktrace"
 };
 
+const shortCommandReference = {
+  "o": "step over",
+  "i": "step into",
+  "u": "step out",
+  "n": "step next",
+  ";": "step instruction",
+  "p": "print state",
+  "l": "print context",
+  "h": "print help",
+  "v": "print variables",
+  ":": "evaluate",
+  "+": "add watch",
+  "-": "remove watch",
+  "?": "list watches & breakpoints",
+  "b": "add breakpoint",
+  "B": "remove breakpoint",
+  "c": "continue",
+  "q": "quit",
+  "r": "reset",
+  "t": "load",
+  "T": "unload",
+  "s": "stacktrace"
+};
+
 const truffleColors = {
   mint: chalk.hex("#3FE0C5"),
   orange: chalk.hex("#E4A663"),
@@ -179,16 +203,12 @@ var DebugUtils = {
     return lines.join(OS.EOL);
   },
 
-  formatHelp: function(lastCommand) {
-    if (!lastCommand) {
-      lastCommand = "n";
-    }
-
+  formatHelp: function(lastCommand = "n") {
     var prefix = [
       "Commands:",
       truffleColors.mint("(enter)") +
         " last command entered (" +
-        commandReference[lastCommand] +
+        shortCommandReference[lastCommand] +
         ")"
     ];
 
