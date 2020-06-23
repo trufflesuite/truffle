@@ -8,6 +8,8 @@ import { Web3JsDefinition } from "./overloads/web3js";
 import { ConfluxDefinition } from "./overloads/conflux";
 import { Conflux } from "js-conflux-sdk";
 
+// const Conflux = require("js-conflux-sdk").Conflux
+
 const initInterface = async (web3Shim: Web3Shim) => {
   const networkTypes: NetworkTypesConfig = new Map(
     Object.entries({
