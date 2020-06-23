@@ -1,8 +1,9 @@
 import { Web3Shim } from "..";
 import { Callback } from "web3/types";
-import { Conflux } from "js-conflux-sdk";
-// import { Conflux } from "/Users/pana/Projects/conflux/js-conflux-sdk";
+// import { Conflux } from "js-conflux-sdk";
+import { Conflux } from "/Users/pana/Projects/conflux/js-conflux-sdk";
 import { TxHash, Transaction, TransactionReceipt } from "lib/adapter/types";
+// import HttpProvider from "/Users/pana/Projects/conflux/web3-provider-proxy-conflux";
 
 // We simply return plain ol' Web3.js
 export const ConfluxDefinition = {
@@ -22,17 +23,22 @@ export const ConfluxDefinition = {
 
 const overrides = {
   initCfx: (web3: Web3Shim, options?: any) => {
+    // use custom provider
+    // const provider = new HttpProvider("http://localhost:12537");
+    // web3.setProvider(provider);
+
+    // save cfx object
     const cfx = new Conflux({
-      url: "http://localhost:12537",
+      url: "http://localhost:12537" // TODO get network config from web3 object
       // @ts-ignore
-      logger: console
+      // logger: console
     });
     web3.cfx = cfx;
   },
 
   getBlockNumber: (web3: Web3Shim) => {
     const newMethod = function(cbk?: Callback<number>): Promise<number> {
-      let _promise = web3.cfx.getEpochNumber("latest_state");
+      let _promise = web3.cfx.getEpochNumber("latest_state"); // TODO hardcode
       return _promise;
     };
     web3.eth.getBlockNumber = newMethod;
@@ -40,7 +46,7 @@ const overrides = {
 
   getNetworkId: (web3: Web3Shim) => {
     const newMethod = function(cb?: Callback<number>): Promise<number> {
-      return Promise.resolve(1592304361448); // fake id 4 is rinkerby id
+      return Promise.resolve(1592304361448); // TODO hardcode
     };
     web3.eth.net.getId = newMethod;
   },
@@ -70,14 +76,13 @@ const overrides = {
    */
   getBlock: (web3: Web3Shim) => {
     const newMethod = async function(epochNum: any): Promise<any> {
-      console.log("getBock block num: ", epochNum);
       if (epochNum == "latest") {
         epochNum = "latest_state";
       }
       // TODO map other tags
-      // let blockInfo = await web3.cfx.getBlockByEpochNumber(epochNum);
-      // blockInfo.number = blockInfo.epochNumber;
-      return web3.cfx.getBlockByEpochNumber(epochNum);
+      let blockInfo = await web3.cfx.getBlockByEpochNumber(epochNum);
+      blockInfo.number = blockInfo.epochNumber;
+      return Promise.resolve(blockInfo);
     };
     web3.eth.getBlock = newMethod;
   },
@@ -108,7 +113,7 @@ const overrides = {
         txReceipt.blockNumber = txReceipt.epochNumber;
         txReceipt.transactionIndex = txReceipt.index;
         txReceipt.status = txReceipt.outcomeStatus === 0 ? 1 : 0; // conflux和以太坊状态相反
-        txReceipt.gasUsed = "0x" + txReceipt.gasUsed.toString(16);
+        txReceipt.gasUsed = `0x${txReceipt.gasUsed.toString(16)}`;
       }
       return Promise.resolve(txReceipt);
     };
