@@ -6,12 +6,12 @@ import { Tx as web3Tx } from "web3/eth/types";
 import { EventEmitter } from "events";
 import Eth from "web3/eth";
 import {
-  // Conflux,
+  Conflux,
   TransactionReceipt as cfxTxReceipt,
   Transaction as cfxTx,
   TransactionConfig
 } from "js-conflux-sdk";
-import { Conflux } from "/Users/pana/Projects/conflux/js-conflux-sdk";
+// import { Conflux } from "/Users/pana/Projects/conflux/js-conflux-sdk";
 
 // We simply return plain ol' Web3.js
 export const ConfluxDefinition = {
