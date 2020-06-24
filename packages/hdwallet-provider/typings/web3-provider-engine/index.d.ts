@@ -28,8 +28,3 @@ declare class Web3ProviderEngine implements Provider {
   stop(): void;
 }
 export default Web3ProviderEngine;
-
-declare module "web3-provider-engine/subproviders/provider";
-declare module "web3-provider-engine/subproviders/hooked-wallet";
-declare module "web3-provider-engine/subproviders/nonce-tracker";
-declare module "web3-provider-engine/subproviders/filters";

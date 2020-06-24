@@ -4,11 +4,12 @@ import * as EthUtil from "ethereumjs-util";
 import ethJSWallet from "ethereumjs-wallet";
 import EthereumHDKey from "ethereumjs-wallet/hdkey";
 import Transaction from "ethereumjs-tx";
-import ProviderEngine from "web3-provider-engine";
-import FiltersSubprovider from "web3-provider-engine/subproviders/filters";
-import NonceSubProvider from "web3-provider-engine/subproviders/nonce-tracker";
-import HookedSubprovider from "web3-provider-engine/subproviders/hooked-wallet";
-import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
+// @ts-ignore
+import ProviderEngine from "@trufflesuite/web3-provider-engine";
+import FiltersSubprovider from "@trufflesuite/web3-provider-engine/subproviders/filters";
+import NonceSubProvider from "@trufflesuite/web3-provider-engine/subproviders/nonce-tracker";
+import HookedSubprovider from "@trufflesuite/web3-provider-engine/subproviders/hooked-wallet";
+import ProviderSubprovider from "@trufflesuite/web3-provider-engine/subproviders/provider";
 import Url from "url";
 import Web3 from "web3";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
@@ -185,7 +186,7 @@ class HDWalletProvider {
     }
 
     // Required by the provider engine.
-    this.engine.start(err => {
+    this.engine.start((err: any) => {
       if (err) throw err;
     });
   }
