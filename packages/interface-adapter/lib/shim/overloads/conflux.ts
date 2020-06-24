@@ -14,7 +14,6 @@ import {
   TransactionConfig
   // @ts-ignore
 } from "js-conflux-sdk";
-import Web3 from "web3";
 
 // We simply return plain ol' Web3.js
 export const ConfluxDefinition = {
