@@ -108,13 +108,14 @@ const command = {
 
     let ipcDisconnect, files;
     try {
-      const { file } = options;
-      const inputArgs = options._;
+      const { file } = config;
+      const inputArgs = config._;
       files = determineTestFilesToRun({
         config,
         inputArgs,
         inputFile: file
       });
+      config._ = [];
     } catch (error) {
       return done(error);
     }
