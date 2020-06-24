@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.4.0-tezos.5",
+  "version": "5.4.0-tezos.6",
   "bin": {
     "truffle": "./cli.js",
     "truffle-exec": "./exec.js"
