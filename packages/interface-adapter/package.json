@@ -24,7 +24,8 @@
     "ethers": "^4.0.32",
     "js-conflux-sdk": "^0.10.0-alpha",
     "source-map-support": "^0.5.19",
-    "web3": "1.2.1"
+    "web3": "1.2.1",
+    "web3-core-promievent": "^1.2.9"
   },
   "devDependencies": {
     "@truffle/provider": "^0.2.12",
