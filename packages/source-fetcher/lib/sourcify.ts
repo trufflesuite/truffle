@@ -3,7 +3,7 @@ const debug = debugModule("source-fetcher:sourcify");
 
 import { Fetcher, FetcherConstructor } from "./types";
 import * as Types from "./types";
-import { removeLibraries } from "./common";
+import { networksById, removeLibraries } from "./common";
 import request from "request-promise-native";
 
 //this looks awkward but the TS docs actually suggest this :P
@@ -25,21 +25,30 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     return new SourcifyFetcher(id);
   }
 
-  private networkId: number;
+  private readonly networkId: number;
+  private readonly networkName: string; //not really used as a class member atm
+  //but may be in the future
+  private readonly validNetwork: boolean;
 
-  private domain: string = "contractrepo.komputing.org";
+  private readonly domain: string = "contractrepo.komputing.org";
 
   constructor(networkId: number) {
-    //we'll just treat all network IDs as valid;
-    //that wouldn't work very well if we were using the IPFS interface,
-    //which goes by network name, but it'll work fine for the HTTP interface
-    //(no idea why they're different)
-    //(technically it should be chain ID but realistically it won't matter)
     this.networkId = networkId;
+    this.networkName = networksById[networkId];
+    const supportedNetworks = [
+      "mainnet",
+      "ropsten",
+      "kovan",
+      "rinkeby",
+      "goerli"
+    ];
+    this.validNetwork =
+      this.networkName !== undefined &&
+      supportedNetworks.includes(this.networkName);
   }
 
   async isNetworkValid(): Promise<boolean> {
-    return true;
+    return this.validNetwork;
   }
 
   async fetchSourcesForAddress(

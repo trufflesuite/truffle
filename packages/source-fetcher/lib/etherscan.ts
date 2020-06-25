@@ -58,8 +58,8 @@ const EtherscanFetcher: FetcherConstructor = class EtherscanFetcher
     this.ready = makeTimer(0); //at start, it's ready to go immediately
   }
 
-  private validNetwork: boolean;
-  private suffix: string;
+  private readonly validNetwork: boolean;
+  private readonly suffix: string;
 
   async isNetworkValid(): Promise<boolean> {
     return this.validNetwork;
