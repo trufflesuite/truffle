@@ -1,6 +1,6 @@
 {
   "name": "@truffle/source-fetcher",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Fetches verified source code from services such as Etherscan",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
