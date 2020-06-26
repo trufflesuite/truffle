@@ -15,7 +15,9 @@ function callstack(state = [], action) {
         type: "internal",
         calledFromLocation: location,
         functionName:
-          functionNode && functionNode.nodeType === "FunctionDefinition"
+          functionNode &&
+          (functionNode.nodeType === "FunctionDefinition" ||
+            functionNode.nodeType === "YulFunctionDefinition")
             ? functionNode.name
             : undefined,
         contractName:
