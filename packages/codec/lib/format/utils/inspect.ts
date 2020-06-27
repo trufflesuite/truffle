@@ -452,9 +452,13 @@ export function nativizeVariables(variables: {
 }): { [name: string]: any } {
   return Object.assign(
     {},
-    ...Object.entries(variables).map(([name, value]) => ({
-      [name]: nativize(value)
-    }))
+    ...Object.entries(variables).map(([name, value]) => {
+      try {
+        return { [name]: nativize(value) };
+      } catch (_) {
+        return undefined; //I guess??
+      }
+    })
   );
 }
 
