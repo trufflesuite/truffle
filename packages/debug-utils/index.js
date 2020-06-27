@@ -589,6 +589,8 @@ var DebugUtils = {
         name = `${contractName}.${functionName}`;
       } else if (contractName) {
         name = contractName;
+      } else if (functionName) {
+        name = functionName;
       } else {
         name = "unknown function";
       }
