@@ -83,20 +83,21 @@ class Migration {
 
       if (Migrations && Migrations.isDeployed()) {
         const message = `Saving migration to chain.`;
+
         if (!this.dryRun) {
           const data = { message: message };
           await this.emitter.emit("startTransaction", data);
         }
 
         const migrations = await Migrations.deployed();
-        const receipt = await migrations.setCompleted(this.number); // 节约调用 setCompleted 还未调通，如果运行的话，可先注释掉
-        // const receipt = {};
+        const receipt = await migrations.setCompleted(this.number);
 
         if (!this.dryRun) {
           const data = { receipt: receipt, message: message };
           await this.emitter.emit("endTransaction", data);
         }
       }
+
       await this.emitter.emit("postMigrate", this.isLast);
 
       // Save artifacts to local filesystem

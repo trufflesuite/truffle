@@ -1,19 +1,11 @@
 import { Web3Shim } from "..";
-import PromiEvent from "web3/promiEvent";
 // @ts-ignore
 import PromiEventImpl from "web3-core-promievent"
-import { Callback, TransactionReceipt as web3TxReceipt } from "web3/types";
+import { TransactionReceipt as web3TxReceipt } from "web3/types";
 import { TxHash, Transaction, TransactionReceipt } from "lib/adapter/types";
 import { Tx as web3Tx } from "web3/eth/types";
-import { EventEmitter } from "events";
-import Eth from "web3/eth";
-import {
-  Conflux,
-  TransactionReceipt as cfxTxReceipt,
-  Transaction as cfxTx,
-  TransactionConfig
-  // @ts-ignore
-} from "js-conflux-sdk";
+// @ts-ignore
+import { Conflux } from "js-conflux-sdk";
 
 // We simply return plain ol' Web3.js
 export const ConfluxDefinition = {
@@ -33,36 +25,39 @@ export const ConfluxDefinition = {
   }
 };
 
+var cfx: Conflux
+
 const overrides = {
-  initCfx: (web3: Web3Shim, options?: any) => {
+  initCfx: (web3: Web3Shim) => {
     // save cfx object
-    const cfx = new Conflux({
+    cfx = new Conflux({
       // @ts-ignore
       url: web3.currentProvider.host // TODO get network config from web3 object
       // @ts-ignore
       // logger: console
     });
+    // @ts-ignore
     web3.cfx = cfx;
   },
 
   getBlockNumber: (web3: Web3Shim) => {
-    const newMethod = function (cbk?: Callback<number>): Promise<number> {
-      let _promise = web3.cfx.getEpochNumber("latest_state"); // TODO hardcode
+    const newMethod = function (): Promise<number> {
+      let _promise = cfx.getEpochNumber("latest_state"); // TODO hardcode
       return _promise;
     };
     web3.eth.getBlockNumber = newMethod;
   },
 
   getNetworkId: (web3: Web3Shim) => {
-    const newMethod = function (cb?: Callback<number>): Promise<number> {
+    const newMethod = function (): Promise<number> {
       return Promise.resolve(1592304361448); // TODO hardcode
     };
     web3.eth.net.getId = newMethod;
   },
 
   getAccounts: (web3: Web3Shim) => {
-    const newMethod = function (cb?: Callback<string[]>): Promise<string[]> {
-      return web3.cfx.provider.call("accounts");
+    const newMethod = function (): Promise<string[]> {
+      return cfx.provider.call("accounts");
     };
     web3.eth.getAccounts = newMethod;
   },
@@ -89,7 +84,7 @@ const overrides = {
         epochNum = "latest_state";
       }
       // TODO map other tags
-      let blockInfo = await web3.cfx.getBlockByEpochNumber(epochNum);
+      let blockInfo = await cfx.getBlockByEpochNumber(epochNum);
       blockInfo.number = blockInfo.epochNumber;
       return Promise.resolve(blockInfo);
     };
@@ -101,7 +96,7 @@ const overrides = {
    */
   getTransaction: (web3: Web3Shim) => {
     const newMethod = async function (tx: TxHash): Promise<Transaction> {
-      let trans = await web3.cfx.getTransactionByHash(tx);
+      let trans = await cfx.getTransactionByHash(tx);
       // @ts-ignore
       trans.blockNumber = trans.epochHeight;
       return trans;
@@ -118,7 +113,7 @@ const overrides = {
    */
   getTransactionReceipt: (web3: Web3Shim) => {
     const newMethod = async function (tx: TxHash): Promise<TransactionReceipt> {
-      let txReceipt = await web3.cfx.getTransactionReceipt(tx);
+      let txReceipt = await cfx.getTransactionReceipt(tx);
       if (txReceipt) {
         // @ts-ignore
         txReceipt.contractAddress = txReceipt.contractCreated;
@@ -137,7 +132,7 @@ const overrides = {
 
   getBalance: (web3: Web3Shim) => {
     const newMethod = async function (address: string): Promise<string> {
-      let balance = await web3.cfx.getBalance(address, "latest_state");
+      let balance = await cfx.getBalance(address, "latest_state");
       return balance.toString();
     };
     web3.eth.getBalance = newMethod;
@@ -146,7 +141,7 @@ const overrides = {
   getCode: (web3: Web3Shim) => {
     const newMethod = async function (address: string): Promise<string> {
       try {
-        let code = await web3.cfx.getCode(address);
+        let code = await cfx.getCode(address);
         return code;
       } catch {
         return "0x";
@@ -157,7 +152,7 @@ const overrides = {
 
   estimateGas: (web3: Web3Shim) => {
     const newMethod = async function (txConfig: Transaction): Promise<number> {
-      let result = await web3.cfx.estimateGasAndCollateral(txConfig);
+      let result = await cfx.estimateGasAndCollateral(txConfig);
       // @ts-ignore
       return Promise.resolve(result.gasUsed);
     };
@@ -167,10 +162,8 @@ const overrides = {
   sendTransaction: (web3: Web3Shim) => {
     // @ts-ignore
     let newMethod = function (
-      tx: web3Tx,
-      cb?: Callback<string>
-      // @ts-ignore
-    ): cfxPromiEvent<web3TxReceipt> {
+      tx: web3Tx      // @ts-ignore
+    ) {
       // console.trace("\n-----------sendTransaction");
       let cfxTx: any = {};
       cfxTx.from = tx.from;
@@ -182,7 +175,7 @@ const overrides = {
       // @ts-ignore
       cfxTx.gasPrice = tx.gasPrice;
       // @ts-ignore
-      let password = "12345";
+      let password = "hello";
       // cfxTx = {
       //   from: "0x12be576f8eb81046c6f29f1801f39b75390fd760",
       //   to: "0x1A655f04d03f522e34f22e976A30294F4C83dEAd",
@@ -207,17 +200,17 @@ const overrides = {
 function createCfxPromiEvent(web3: Web3Shim, tx: any, password: string) {
   let promiEvent = PromiEventImpl(false)
 
-  let fireError = function (err:string, _promiEvent:any) {
+  let fireError = function (err: string, _promiEvent: any) {
     _promiEvent.eventEmitter.emit("error", err)
     if (_promiEvent.reject) {
       _promiEvent.reject(err)
     }
   }
 
-  let start = async function (_promiEvent:any) {
+  let start = async function (_promiEvent: any) {
     try {
       console.log("start cfx promise event");
-      let txhash = await web3.cfx.sendTransaction(tx, password);
+      let txhash = await cfx.sendTransaction(tx, password);
 
       console.log("get txhash done.", txhash);
 

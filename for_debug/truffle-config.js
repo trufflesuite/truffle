@@ -1,3 +1,4 @@
+const HttpProviderProxy = require("web3-provider-proxy");
 /**
  * Use this file to configure your truffle project. It's seeded with some
  * common settings for different networks and features like migrations,
@@ -49,8 +50,12 @@ module.exports = {
     },
 
     conflux: {
-      host: "127.0.0.1", // Localhost (default: none)
-      port: 12537, // Standard Ethereum port (default: none)
+      provider: ()=> new HttpProviderProxy(
+        "http://127.0.0.1:12537",
+        { keepAlive: false }
+      ),
+      // host: "127.0.0.1", // Localhost (default: none)
+      // port: 12537, // Standard Ethereum port (default: none)
       network_id: "*", // Any network (default: none)
       type: "conflux"
     }

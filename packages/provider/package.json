@@ -17,8 +17,7 @@
   "dependencies": {
     "@truffle/error": "^0.0.8",
     "@truffle/interface-adapter": "^0.4.9",
-    "web3": "1.2.1",
-    "web3-provider-proxy": "^0.0.1"
+    "web3": "1.2.1"
   },
   "devDependencies": {
     "ganache-core": "2.10.2",
