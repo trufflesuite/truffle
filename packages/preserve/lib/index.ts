@@ -6,6 +6,10 @@ export { Target } from "./targets";
 import * as Targets from "./targets";
 export { Targets };
 
+export { Recipe } from "./recipes";
+import * as Recipes from "./recipes";
+export { Recipes };
+
 // type Config = {
 //   target: {
 //     kinds: IKind;
