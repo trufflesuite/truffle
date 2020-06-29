@@ -1,0 +1,20 @@
+{
+  "name": "web3-providers-http-proxy",
+  "version": "0.0.2",
+  "description": "",
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "web3-core-helpers": "^1.2.9",
+    "web3-providers-http": "^1.2.9",
+    "xhr2-cookies": "^1.1.0"
+  },
+  "devDependencies": {
+    "web3": "^1.2.9"
+  }
+}
