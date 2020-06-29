@@ -271,6 +271,7 @@ export {
   RevertMessageDecoding,
   EmptyFailureDecoding,
   AbiArgument,
+  StateVariable,
   DecoderRequest,
   StorageRequest,
   CodeRequest

@@ -14,6 +14,9 @@ const __RETURNVALUES = `
 pragma solidity ^0.6.6;
 
 contract ReturnValues {
+
+  int8 immutable minus = -1;
+
   constructor(bool fail) public {
     if(fail) {
       selfdestruct(tx.origin);
@@ -29,21 +32,31 @@ contract ReturnValues {
   }
 
   function pair() public returns (int x, int) {
-    return (-1, -2);
+    return (minus, -2);
   }
 }
 
 library ReturnLibrary {
+}
+
+contract Default {
+  int8 immutable minus = -1;
+  event Int(int8);
+  function run() public {
+    emit Int(minus);
+  }
 }
 `;
 
 const __MIGRATION = `
 var ReturnValues = artifacts.require("ReturnValues");
 var ReturnLibrary = artifacts.require("ReturnLibrary");
+var Default = artifacts.require("Default");
 
 module.exports = function(deployer) {
   deployer.deploy(ReturnValues, false);
   deployer.deploy(ReturnLibrary);
+  deployer.deploy(Default);
 };
 `;
 
@@ -116,6 +129,14 @@ describe("Return value decoding", function() {
     const decoding = decodings[0];
     assert.strictEqual(decoding.kind, "bytecode");
     assert.strictEqual(decoding.class.typeName, "ReturnValues");
+    const immutables = decoding.immutables;
+    assert.lengthOf(immutables, 1);
+    assert.strictEqual(immutables[0].name, "minus");
+    assert.strictEqual(immutables[0].class.typeName, "ReturnValues");
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.nativize(immutables[0].value),
+      -1
+    );
   });
 
   it("Decodes library bytecode", async function() {
@@ -137,6 +158,34 @@ describe("Return value decoding", function() {
     assert.strictEqual(decoding.kind, "bytecode");
     assert.strictEqual(decoding.class.typeName, "ReturnLibrary");
     assert.strictEqual(decoding.address, instance.address);
+  });
+
+  it("Decodes bytecode from a default constructor", async function() {
+    this.timeout(12000);
+
+    let instance = await abstractions.Default.new();
+    let txHash = instance.transactionHash;
+    debug("txHash: %s", txHash);
+
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
+
+    debug("about to run!");
+    await bugger.continueUntilBreakpoint(); //run till end
+    debug("ran!");
+
+    const decodings = await bugger.returnValue();
+    assert.lengthOf(decodings, 1);
+    const decoding = decodings[0];
+    assert.strictEqual(decoding.kind, "bytecode");
+    assert.strictEqual(decoding.class.typeName, "Default");
+    const immutables = decoding.immutables;
+    assert.lengthOf(immutables, 1);
+    assert.strictEqual(immutables[0].name, "minus");
+    assert.strictEqual(immutables[0].class.typeName, "Default");
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.nativize(immutables[0].value),
+      -1
+    );
   });
 
   it("Decodes messageless revert", async function() {
