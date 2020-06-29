@@ -14,7 +14,6 @@ const Environment = {
 
     helpers.setUpConfig(config);
     helpers.validateNetworkConfig(config);
-    console.log("config info", config.networks, config.network);
 
     const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
