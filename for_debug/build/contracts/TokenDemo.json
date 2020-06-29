@@ -9846,12 +9846,12 @@
         }
       },
       "links": {},
-      "address": "0x8b4160e2453716342141BE9F3c72D4c2BE1B9655",
-      "transactionHash": "0x1f6237d2bd6c4871500f84dff94d9af98cd53fefeb7146047da66950370dfd30"
+      "address": "0x841dafeA02CaBD130D745dd9E9Acd59A77923979",
+      "transactionHash": "0xea041e789f5c50ab0450e4c524ee1e46ace9e5f02161a26d170a82489338c166"
     }
   },
   "schemaVersion": "3.2.0",
-  "updatedAt": "2020-06-28T07:29:35.673Z",
+  "updatedAt": "2020-06-29T03:47:36.068Z",
   "networkType": "conflux",
   "devdoc": {
     "methods": {}
