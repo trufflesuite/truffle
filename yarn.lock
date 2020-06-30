@@ -1154,10 +1154,10 @@
     lunr "^2.3.6"
     underscore "^1.9.1"
 
-"@trufflesuite/web3-provider-engine@14.0.6":
-  version "14.0.6"
-  resolved "https://registry.yarnpkg.com/@trufflesuite/web3-provider-engine/-/web3-provider-engine-14.0.6.tgz#024d192cde9534a778e5d2436be1caf3c553a2e0"
-  integrity sha512-nBLwJYCmEDtABIDib9VpwbtwsNRlDZ3Slsu0F2HsOf8MnFUXF4/7ysSH/Q9SXLeAyp0HvsMv4v123PpPwrv4Hg==
+"@trufflesuite/web3-provider-engine@14.0.7":
+  version "14.0.7"
+  resolved "https://registry.yarnpkg.com/@trufflesuite/web3-provider-engine/-/web3-provider-engine-14.0.7.tgz#8ffa31148d68cfdd4da067e5df30e03871ec8a74"
+  integrity sha512-+OCKZOF1aVCOW9gWIXdK1l/SQnRPVcve56LpSGZQ+LZ6OKT6xVoLNNF+wKVvFxIis1JAZvnVKJFbUYbKEZ5aPQ==
   dependencies:
     async "^2.5.0"
     backoff "^2.5.0"
@@ -16227,7 +16227,6 @@ websocket@1.0.29, "websocket@github:web3-js/WebSocket-Node#polyfill/globalThis":
   dependencies:
     debug "^2.2.0"
     es5-ext "^0.10.50"
-    gulp "^4.0.2"
     nan "^2.14.0"
     typedarray-to-buffer "^3.1.5"
     yaeti "^0.0.6"
