@@ -1088,12 +1088,12 @@
     "1592304361448": {
       "events": {},
       "links": {},
-      "address": "0x8BC3277ED6D691D245Cb7aBCD04106F749761CD0",
-      "transactionHash": "0x15dadc20213d64597d7637f193fee2eed94ff84c97058a23dc85ac3c435125cf"
+      "address": "0x80fE819988d9c9305e4B14714F805c97C5ce8d27",
+      "transactionHash": "0x0b69a0f9f3b6072e40c0253abea9b1fd76febd605d9e254ec3568fedf9e35759"
     }
   },
   "schemaVersion": "3.2.0",
-  "updatedAt": "2020-06-29T03:47:36.042Z",
+  "updatedAt": "2020-06-30T02:42:45.859Z",
   "networkType": "conflux",
   "devdoc": {
     "methods": {}

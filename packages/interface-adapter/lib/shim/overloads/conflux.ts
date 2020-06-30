@@ -6,6 +6,8 @@ import { TxHash, Transaction, TransactionReceipt } from "lib/adapter/types";
 import { Tx as web3Tx } from "web3/eth/types";
 // @ts-ignore
 import { Conflux } from "js-conflux-sdk";
+// @ts-ignore
+import format from "js-conflux-sdk/src/util/format";
 
 // We simply return plain ol' Web3.js
 export const ConfluxDefinition = {
@@ -207,10 +209,61 @@ function createCfxPromiEvent(web3: Web3Shim, tx: any, password: string) {
     }
   }
 
+  let cfxSendTransaction = (async function (options: any, password: string) {
+    if (options.nonce === undefined) {
+      options.nonce = await this.getNextNonce(options.from);
+    }
+
+    if (options.gasPrice === undefined) {
+      options.gasPrice = this.defaultGasPrice;
+    }
+    if (options.gasPrice === undefined) {
+      options.gasPrice = await this.getGasPrice() || 1; // MIN_GAS_PRICE
+    }
+
+    if (options.gas === undefined) {
+      options.gas = this.defaultGas;
+    }
+
+    if (options.storageLimit === undefined) {
+      options.storageLimit = this.defaultStorageLimit;
+    }
+
+    if (options.gas === undefined || options.storageLimit === undefined) {
+      const { gasUsed, storageCollateralized } = await this.estimateGasAndCollateral(options);
+
+      if (options.gas === undefined) {
+        options.gas = gasUsed;
+      }
+
+      if (options.storageLimit === undefined) {
+        options.storageLimit = storageCollateralized;
+      }
+    }
+
+    if (options.epochHeight === undefined) {
+      options.epochHeight = await this.getEpochNumber();
+    }
+
+    if (options.chainId === undefined) {
+      options.chainId = this.defaultChainId;
+    }
+    if (options.chainId === undefined) {
+      const status = await this.getStatus();
+      options.chainId = status.chainId;
+    }
+
+    const fmtOption = format.sendTx(options)
+    fmtOption.epochHeight = "0x" + fmtOption.epochHeight.toString(16)
+    fmtOption.chainId = "0x" + fmtOption.chainId.toString(16)
+    return this.provider.call('send_transaction', fmtOption, password);
+  }
+  ).bind(cfx)
+
   let start = async function (_promiEvent: any) {
     try {
       console.log("start cfx promise event");
-      let txhash = await cfx.sendTransaction(tx, password);
+      let txhash = await cfxSendTransaction(tx, password);
 
       console.log("get txhash done.", txhash);
 
