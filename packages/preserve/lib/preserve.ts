@@ -27,19 +27,10 @@ export async function* preserve(
     request.settings = new Map([]);
   }
 
-  if (!loaders.has(request.loader)) {
-    throw new Error(
-      `Unknown loader with name ${request.loader}. ` +
-        `Possible choices: [${Array.from(loaders.keys()).join(", ")}]`
-    );
-  }
-
-  if (!recipes.has(request.recipe)) {
-    throw new Error(
-      `Unknown recipe with name ${request.recipe}. ` +
-        `Possible choices: [${Array.from(recipes.keys()).join(", ")}]`
-    );
-  }
+  assertLoaderExists({
+    name: request.loader,
+    modules: loaders
+  });
 
   /*
    * setup
@@ -63,6 +54,11 @@ export async function* preserve(
   const plan: Recipe[] = [];
   while (queue.length > 0) {
     const current: Recipe = recipes.get(queue.shift());
+
+    assertRecipeExists({
+      name: current.name,
+      modules: recipes
+    });
 
     plan.unshift(current);
 
@@ -98,3 +94,30 @@ export async function* preserve(
     };
   }
 }
+
+type AssertModuleExistsOptions<T extends Loader | Recipe> = {
+  name: string;
+  kind?: string;
+  modules: Map<string, T>;
+};
+
+const assertModuleExists = <T extends Loader | Recipe>(
+  options: AssertModuleExistsOptions<T>
+): void => {
+  const { name, kind = "module", modules } = options;
+
+  if (!modules.has(name)) {
+    throw new Error(
+      `Unknown ${kind} with name ${name}. ` +
+        `Possible choices: [${Array.from(modules.keys()).join(", ")}]`
+    );
+  }
+};
+
+const assertLoaderExists = (
+  options: Omit<AssertModuleExistsOptions<Loader>, "kind">
+): void => assertModuleExists({ ...options, kind: "loader" });
+
+const assertRecipeExists = (
+  options: Omit<AssertModuleExistsOptions<Recipe>, "kind">
+): void => assertModuleExists({ ...options, kind: "recipe" });
