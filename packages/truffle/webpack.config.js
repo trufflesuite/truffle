@@ -96,7 +96,8 @@ module.exports = {
         "bn.js"
       ),
       "original-fs": path.join(__dirname, "./nil.js"),
-      "scrypt": "js-scrypt"
+      "scrypt": "js-scrypt",
+      "jsbi": path.join(__dirname, '../..', 'node_modules', 'jsbi', 'dist', 'jsbi-cjs.js'),
     }
   },
 
@@ -111,6 +112,7 @@ module.exports = {
       BUNDLE_ANALYTICS_FILENAME: JSON.stringify("analytics.bundled.js"),
       BUNDLE_LIBRARY_FILENAME: JSON.stringify("library.bundled.js")
     }),
+    new webpack.DefinePlugin({ "global.GENTLY": false }),
 
     // Put the shebang back on.
     new webpack.BannerPlugin({ banner: "#!/usr/bin/env node\n", raw: true }),
