@@ -11,6 +11,8 @@ export interface LoadOptions {
 }
 
 export class Loader implements Preserve.Targets.Loader {
+  name = "@truffle/preserve-fs";
+
   async load(options: LoadOptions): Promise<Preserve.Target> {
     const { path } = options;
     return await targetPath({ path });

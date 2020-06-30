@@ -9,5 +9,7 @@ export interface Constructor {
 export interface LoadOptions {}
 
 export interface Loader {
+  name: string;
+
   load(options: LoadOptions): Promise<Target>;
 }
