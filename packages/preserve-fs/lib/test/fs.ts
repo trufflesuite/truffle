@@ -3,7 +3,7 @@ import path from "path";
 import tmp from "tmp-promise";
 
 import * as Preserve from "@truffle/preserve";
-import { targetPath } from "../fs";
+import { Loader } from "..";
 
 interface File {
   path: string;
@@ -117,7 +117,7 @@ const writeFile = async (fullPath: string, content: string): Promise<void> => {
   await fs.promises.writeFile(fullPath, content);
 };
 
-describe("targetPath", () => {
+describe("Loader", () => {
   let workspace: tmp.DirectoryResult;
 
   beforeAll(async () => {
@@ -140,7 +140,10 @@ describe("targetPath", () => {
 
       it("returns correct target", async () => {
         const fullPath = path.join(workspace.path, name, targeted);
-        const target = await targetPath({
+
+        const loader = new Loader();
+
+        const target = await loader.load({
           path: fullPath
         });
 
