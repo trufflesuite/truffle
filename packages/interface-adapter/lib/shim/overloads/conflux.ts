@@ -1,7 +1,6 @@
 import { Web3Shim } from "..";
 // @ts-ignore
 import PromiEventImpl from "web3-core-promievent"
-import { TransactionReceipt as web3TxReceipt } from "web3/types";
 import { TxHash, Transaction, TransactionReceipt } from "lib/adapter/types";
 import { Tx as web3Tx } from "web3/eth/types";
 // @ts-ignore
@@ -79,7 +78,7 @@ const overrides = {
    * 3. 字段的缺失?
    */
   getBlock: (web3: Web3Shim) => {
-    const newMethod = async function (epochNum: any): Promise<any> {
+    const newMethod = async function(epochNum: any): Promise<any> {
       if (epochNum == "latest") {
         epochNum = "latest_state";
       }
@@ -139,7 +138,7 @@ const overrides = {
   },
 
   getCode: (web3: Web3Shim) => {
-    const newMethod = async function (address: string): Promise<string> {
+    const newMethod = async function(address: string): Promise<string> {
       try {
         let code = await cfx.getCode(address);
         return code;
@@ -188,24 +187,23 @@ const overrides = {
       //   return promiEvent
       // }
 
-      let promiEvent = createCfxPromiEvent(web3, cfxTx, password)
-      return promiEvent.eventEmitter
+      let promiEvent = createCfxPromiEvent(web3, cfxTx, password);
+      return promiEvent.eventEmitter;
     };
 
     web3.eth.sendTransaction = newMethod;
   }
 };
 
-
 function createCfxPromiEvent(web3: Web3Shim, tx: any, password: string) {
-  let promiEvent = PromiEventImpl(false)
+  let promiEvent = PromiEventImpl(false);
 
   let fireError = function (err: string, _promiEvent: any) {
     _promiEvent.eventEmitter.emit("error", err)
     if (_promiEvent.reject) {
-      _promiEvent.reject(err)
+      _promiEvent.reject(err);
     }
-  }
+  };
 
   let start = async function (_promiEvent: any) {
     try {
@@ -215,7 +213,7 @@ function createCfxPromiEvent(web3: Web3Shim, tx: any, password: string) {
       console.log("get txhash done.", txhash);
 
       //use async due to emit is synchronize action. and truffle will get stuck for unkown reasons.
-      (async function () {
+      (async function() {
         _promiEvent.eventEmitter.emit("transactionHash", txhash);
       })();
 
@@ -228,26 +226,28 @@ function createCfxPromiEvent(web3: Web3Shim, tx: any, password: string) {
 
           //@ts-ignore
           if (receipt) {
-            console.log(`tx is packed, get receipt ${receipt}`)
+            console.log(`tx is packed, get receipt ${receipt}`);
             clearInterval(loopForTxRpt);
             _promiEvent.eventEmitter.emit("receipt", receipt);
-            _promiEvent.eventEmitter.emit("confirmation", receipt.blockNumber, receipt);
-            _promiEvent.resolve(receipt)
+            _promiEvent.eventEmitter.emit(
+              "confirmation",
+              receipt.blockNumber,
+              receipt
+            );
+            _promiEvent.resolve(receipt);
           }
         } catch (e) {
-          fireError(e, _promiEvent)
+          fireError(e, _promiEvent);
         }
       }, 1000);
     } catch (err) {
-      console.log(`start cfx promise event err:${err}`)
-      fireError(err, _promiEvent)
+      console.log(`start cfx promise event err:${err}`);
+      fireError(err, _promiEvent);
     }
-  }
-  start(promiEvent)
+  };
+  start(promiEvent);
   return promiEvent;
 }
-
-
 
 // export class cfxPromiEvent implements PromiEvent<web3TxReceipt> {
 //   emiter: EventEmitter;

@@ -25,7 +25,8 @@
     "js-conflux-sdk": "^0.10.0-alpha",
     "source-map-support": "^0.5.19",
     "web3": "1.2.1",
-    "web3-core-promievent": "^1.2.9"
+    "web3-core-promievent": "^1.2.9",
+    "web3-provider-proxy": "^0.0.1"
   },
   "devDependencies": {
     "@truffle/provider": "^0.2.12",
