@@ -46,9 +46,10 @@ const bridge = {
   eth_estimateGas: {
     method: "cfx_estimateGasAndCollateral",
     input: formatInput,
-    output: function(result) {
-      if (result && result.gasUsed) {
-        return result.gasUsed;
+    output: function (response) {
+      if (response && response.result && response.result.gasUsed) {
+        response.result = response.result.gasUsed;
+        return response;
       }
     }
   }
