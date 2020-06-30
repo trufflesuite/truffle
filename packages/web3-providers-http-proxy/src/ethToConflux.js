@@ -49,8 +49,8 @@ const bridge = {
     output: function (response) {
       if (response && response.result && response.result.gasUsed) {
         response.result = response.result.gasUsed;
-        return response;
       }
+      return response;
     }
   }
 };
