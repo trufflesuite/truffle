@@ -21,11 +21,11 @@ export interface ConstructorOptions
   filecoin: {
     address: string;
   };
-  getIPFSCidForTarget: IPFSCidGetter;
 }
 
 export interface PreserveOptions extends Preserve.Recipes.PreserveOptions {
   target: Preserve.Target;
+  labels: Map<string, any>;
 }
 
 export class Recipe implements Preserve.Recipe {
@@ -34,22 +34,20 @@ export class Recipe implements Preserve.Recipe {
   dependencies: string[] = ["@truffle/preserve-to-ipfs"];
 
   private address: string;
-  private getIPFSCidForTarget: IPFSCidGetter;
 
   constructor(options: ConstructorOptions) {
     this.address = options.filecoin.address;
-    this.getIPFSCidForTarget = options.getIPFSCidForTarget;
   }
 
   async preserve(options: PreserveOptions): Promise<FilecoinStorageResult> {
-    const { target } = options;
+    const { target, labels } = options;
 
     return await preserveToFilecoin({
       target,
       filecoin: {
         address: this.address
       },
-      getIPFSCidForTarget: this.getIPFSCidForTarget
+      getIPFSCidForTarget: () => labels.get("@truffle/preserve-to-ipfs")
     });
   }
 }
