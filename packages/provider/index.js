@@ -55,20 +55,25 @@ module.exports = {
           "networks[networkName].networkCheckTimeout property to do this.";
         throw new Error(errorMessage);
       }, networkCheckTimeout);
-      interfaceAdapter
-        .getBlockNumber()
-        .then(() => {
-          clearTimeout(noResponseFromNetworkCall);
-          resolve(true);
-        })
-        .catch(error => {
-          console.log(
-            "> Something went wrong while attempting to connect " +
-              "to the network. Check your network configuration."
-          );
-          clearTimeout(noResponseFromNetworkCall);
-          reject(error);
-        });
+
+      const networkCheck = setInterval(() => {
+        interfaceAdapter
+          .getBlockNumber()
+          .then(() => {
+            clearTimeout(noResponseFromNetworkCall);
+            clearInterval(networkCheck);
+            resolve(true);
+          })
+          .catch(error => {
+            console.log(
+              "> Something went wrong while attempting to connect " +
+                "to the network. Check your network configuration."
+            );
+            clearTimeout(noResponseFromNetworkCall);
+            clearInterval(networkCheck);
+            reject(error);
+          });
+      });
     });
   }
 };
