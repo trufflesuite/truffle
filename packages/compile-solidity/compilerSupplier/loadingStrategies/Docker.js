@@ -6,6 +6,10 @@ const semver = require("semver");
 const LoadingStrategy = require("./LoadingStrategy");
 const VersionRange = require("./VersionRange");
 
+// Set a sensible limit for maxBuffer
+// See https://github.com/nodejs/node/pull/23027
+const maxBuffer = 1024 * 1024 * 10;
+
 class Docker extends LoadingStrategy {
   async load() {
     const versionString = await this.validateAndGetSolcVersion();
@@ -16,7 +20,7 @@ class Docker extends LoadingStrategy {
 
     try {
       return {
-        compile: options => String(execSync(command, { input: options })),
+        compile: options => String(execSync(command, { input: options, maxBuffer })),
         version: () => versionString
       };
     } catch (error) {
