@@ -31,7 +31,7 @@ class LoadingStrategy {
   }
 
   errors(kind, input, error) {
-    const info = "Run `truffle compile --list` to see available versions.";
+    const info = "Run `cfxtruffle compile --list` to see available versions.";
 
     const kinds = {
       noPath: "Could not find compiler at: " + input,

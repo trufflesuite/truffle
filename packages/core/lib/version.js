@@ -31,7 +31,7 @@ const logTruffle = (logger = console, versionInformation) => {
   const bundle = versionInformation.bundle
     ? `v${versionInformation.bundle}`
     : "(unbundled)";
-  logger.log(`Truffle ${bundle} (core: ${versionInformation.core})`);
+  logger.log(`Conflux-Truffle ${bundle} (core: ${versionInformation.core})`);
 };
 
 const logNode = (logger = console) => {

@@ -304,6 +304,7 @@ function detectErrors({
         `configuring Truffle to use a specific solc compiler version.)`
       ].join("")
     );
+    errors = errors.replace("/truffle/g","cfxtruffle").replace("/Truffle/g","Conflux-Truffle");
   }
 
   return { warnings, errors };

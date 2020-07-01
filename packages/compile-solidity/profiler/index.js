@@ -231,6 +231,7 @@ module.exports = {
                 err.message = err.message.concat(
                   `\n\nError: Truffle is currently using solc ${configSolcVer}, but one or more of your contracts specify "${contractSolcVer}".\nPlease update your truffle config or pragma statement(s).\n(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration for information on\nconfiguring Truffle to use a specific solc compiler version.)\n`
                 );
+                err.message = err.message.replace("/truffle/g", "cfxtruffle").replace("/Truffle/g", "Conflux-Truffle");
               }
             }
             throw err;

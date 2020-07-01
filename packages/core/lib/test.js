@@ -304,7 +304,7 @@ const Test = {
           `${colors.bold(
             "Warning:"
           )} Invoked in-test debugger without --debug flag. ` +
-            `Try: \`truffle test --debug\``
+            `Try: \`cfxtruffle test --debug\``
         );
         return operation;
       }

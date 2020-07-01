@@ -33,7 +33,7 @@ Conflux-Truffle comes bundled with a local development blockchain server that la
 
 <!-- +  [ganache-cli](https://github.com/trufflesuite/ganache-cli): a command-line version of Conflux-Truffle's blockchain server.
 +  [ganache](http://truffleframework.com/ganache/): A GUI for the server that displays your transaction history and chain state. -->
-[conflux-rust-docker](https://github.com/Pana/conflux-docker-new/blob/master)
+[conflux-rust-docker](https://hub.docker.com/r/confluxchain/conflux-rust)
 
 ### Documentation
 
