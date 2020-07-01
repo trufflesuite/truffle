@@ -1,21 +1,35 @@
 const TaskError = require("./errors/taskerror");
 const yargs = require("yargs/yargs");
-const { bundled, core } = require("../lib/version").info();
+const { bundle, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
 const { extractFlags } = require("./utils/utils"); // Contains utility methods
 
 class Command {
+
   constructor(commands) {
     this.commands = commands;
+    Command.chain = "Conflux";
+    Command.bin = "cfxtruffle";
 
     let args = yargs();
 
-    Object.keys(this.commands).forEach(function(command) {
+    Object.keys(this.commands).forEach(function (command) {
+      Command.replaceEthToCfx(commands[command]);
       args = args.command(commands[command]);
     });
 
     this.args = args;
+  }
+
+  static replaceEthToCfx(input) {
+    if (typeof input == "object") {
+      for (const key in input) {
+        if (key == "description" && typeof input[key] == "string")
+          input[key] = input[key].replace(/ethereum/i, Command.chain);
+        this.replaceEthToCfx(input[key]);
+      }
+    }
   }
 
   getCommand(inputStrings, noAliases) {
@@ -126,7 +140,7 @@ class Command {
           const log = options.logger.log || options.logger.debug;
           log(
             "> Warning: possible unsupported (undocumented in help) command line option: " +
-              invalidOptions
+            invalidOptions
           );
         }
       }
@@ -137,7 +151,7 @@ class Command {
       analytics.send({
         command: result.name ? result.name : "other",
         args: result.argv._,
-        version: bundled || "(unbundled) " + core
+        version: bundle || "(unbundled) " + core
       });
     } catch (err) {
       callback(err);
@@ -147,12 +161,12 @@ class Command {
   displayGeneralHelp() {
     this.args
       .usage(
-        "Truffle v" +
-          (bundled || core) +
-          " - a development framework for Ethereum" +
-          OS.EOL +
-          OS.EOL +
-          "Usage: truffle <command> [options]"
+        Command.chain + "-" + "Truffle v" +
+        (bundle || core) +
+        " - a development framework for " + Command.chain +
+        OS.EOL +
+        OS.EOL +
+        "Usage: " + Command.bin + " < command > [options]"
       )
       .epilog("See more at http://truffleframework.com/docs")
       .showHelp();

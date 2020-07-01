@@ -1,16 +1,15 @@
 {
-  "name": "truffle",
-  "description": "Truffle - Simple development framework for Ethereum",
-  "author": "consensys.net",
-  "homepage": "https://github.com/trufflesuite/truffle/",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/truffle",
+  "name": "conflux-truffle",
+  "description": "Coflux-Truffle - Simple development framework for Conflux",
+  "author": "conflux-chain",
+  "homepage": "https://confluxnetwork.org/",
+  "repository": "https://github.com/Conflux-Chain/conflux-truffle/tree/conflux/packages/truffle",
   "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.1.29",
+  "version": "0.0.2",
   "main": "./build/library.bundled.js",
   "bin": {
-    "truffle": "./build/cli.bundled.js"
+    "cfxtruffle": "./build/cli.bundled.js"
   },
   "scripts": {
     "analyze": "./scripts/analyze.sh",
