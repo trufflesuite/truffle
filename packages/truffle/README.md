@@ -1,6 +1,7 @@
 Conflux-Truffle
------------------------
 
+<img src="https://raw.githubusercontent.com/Pana/conflux-101/master/images/conflux&truffle.png" width="200">
+-----------------------
 
 Conflux-Truffle is a development environment, testing framework and asset pipeline for Conflux, aiming to make life as an Conflux developer easier. With Conflux-Truffle, you get:
 
@@ -29,15 +30,17 @@ $ cfxtruffle init
 
 From there, you can run `cfxtruffle compile`, `cfxtruffle migrate` and `cfxtruffle test` to compile your contracts, deploy those contracts to the network, and run their associated unit tests.
 
-Conflux-Truffle comes bundled with a local development blockchain server that launches automatically when you invoke the commands  above. If you'd like to [configure a more advanced development environment](http://truffleframework.com/docs/advanced/configuration) we recommend you install the blockchain server separately by running `docker pull pana/conflux-rust` at the command line.
+Conflux-Truffle comes bundled with a local development blockchain server that launches automatically when you invoke the commands  above. If you'd like to [configure a more advanced development environment](http://truffleframework.com/docs/advanced/configuration) we recommend you install the conflux-rust docker separately by running `docker pull pana/conflux-rust` at the command line.
 
 <!-- +  [ganache-cli](https://github.com/trufflesuite/ganache-cli): a command-line version of Conflux-Truffle's blockchain server.
 +  [ganache](http://truffleframework.com/ganache/): A GUI for the server that displays your transaction history and chain state. -->
+
 [conflux-rust-docker](https://hub.docker.com/r/confluxchain/conflux-rust)
+
 
 ### Documentation
 
-Please see the [Official Conflux-Truffle Documentation](http://truffleframework.com/docs/) for guides, tips, and examples.
+Please see the [Conflux-Truffle Documentation](https://github.com/Pana/conflux-101/blob/master/docs/conflux-truffle.md) for guides, tips, and examples.
 
 
 ### License
