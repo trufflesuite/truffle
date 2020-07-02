@@ -28,7 +28,8 @@ class Command {
       for (const key in input) {
         if ((key == "description" || key == "usage" || key == "describe") && typeof input[key] == "string")
           input[key] = input[key].replace(/ethereum/ig, Command.chain)
-            .replace(/truffle/g, Command.bin)
+            .replace(/^truffle/g, Command.bin)
+            .replace(/ truffle/g, " " + Command.bin)
             .replace(/^Truffle/g, Command.npmPack)
             .replace(/ Truffle/g, " " + Command.npmPack);
         Command.replaceEthToCfx(input[key]);
@@ -170,7 +171,7 @@ class Command {
         " - a development framework for " + Command.chain +
         OS.EOL +
         OS.EOL +
-        "Usage: " + Command.bin + " < command > [options]"
+        "Usage: " + Command.bin + " <command> [options]"
       )
       .epilog("See more at http://truffleframework.com/docs")
       .showHelp();

@@ -18,18 +18,19 @@ inherits(ProviderError, TruffleError);
 const buildMessage = options => {
   const { host, port, network_id } = options;
   let message;
+  networkType = options.type || "Conflux";
   if (host) {
     message =
-      "\nCould not connect to your Ethereum client with the following parameters:\n" +
-      `    - host       > ${host}\n` +
-      `    - port       > ${port}\n` +
-      `    - network_id > ${network_id}\n`;
+      "\nCould not connect to your " + networkType + " client with the following parameters: \n" +
+        `    - host       > ${host}\n` +
+        `    - port       > ${port}\n` +
+        `    - network_id > ${network_id}\n`;
   } else {
-    message = "\nCould not connect to your Ethereum client.\n";
+    message = "\nCould not connect to your " + networkType + " client.\n";
   }
 
   message +=
-    "Please check that your Ethereum client:\n" +
+    "Please check that your " + networkType + " client:\n" +
     "    - is running\n" +
     '    - is accepting RPC connections (i.e., "--rpc" option is used in geth)\n' +
     "    - is accessible over the network\n" +

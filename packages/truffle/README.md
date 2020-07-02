@@ -30,7 +30,7 @@ $ cfxtruffle init
 
 From there, you can run `cfxtruffle compile`, `cfxtruffle migrate` and `cfxtruffle test` to compile your contracts, deploy those contracts to the network, and run their associated unit tests.
 
-Conflux-Truffle comes bundled with a local development blockchain server that launches automatically when you invoke the commands  above. If you'd like to [configure a more advanced development environment](http://truffleframework.com/docs/advanced/configuration) we recommend you install the conflux-rust docker separately by running `docker pull pana/conflux-rust` at the command line.
+Conflux-Truffle comes bundled with a local development blockchain server that launches automatically when you invoke the commands  above. If you'd like to [configure a more advanced development environment](http://truffleframework.com/docs/advanced/configuration) we recommend you install the conflux-rust docker separately by running `docker pull confluxchain/conflux-rust` at the command line.
 
 <!-- +  [ganache-cli](https://github.com/trufflesuite/ganache-cli): a command-line version of Conflux-Truffle's blockchain server.
 +  [ganache](http://truffleframework.com/ganache/): A GUI for the server that displays your transaction history and chain state. -->

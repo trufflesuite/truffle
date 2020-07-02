@@ -6,7 +6,7 @@
   "repository": "https://github.com/Conflux-Chain/conflux-truffle/tree/conflux/packages/truffle",
   "bugs": {
   },
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "./build/library.bundled.js",
   "bin": {
     "cfxtruffle": "./build/cli.bundled.js"
@@ -56,6 +56,11 @@
     "webpack-cli": "^3.3.11",
     "yargs": "^8.0.2"
   },
+  "keywords": [
+    "blockchain",
+    "conflux",
+    "truffle"
+  ],
   "publishConfig": {
     "access": "public"
   },
