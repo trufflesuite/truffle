@@ -3,18 +3,19 @@ const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
+const providerProxy = require("web3-providers-http-proxy");
 
 module.exports = {
-  wrap: function(provider, options) {
+  wrap: function (provider, options) {
     return wrapper.wrap(provider, options);
   },
 
-  create: function(options) {
+  create: function (options) {
     const provider = this.getProvider(options);
     return this.wrap(provider, options);
   },
 
-  getProvider: function(options) {
+  getProvider: function (options) {
     let provider;
     if (options.provider && typeof options.provider === "function") {
       provider = options.provider();
@@ -24,16 +25,25 @@ module.exports = {
       provider = new Web3.providers.WebsocketProvider(
         options.url || "ws://" + options.host + ":" + options.port
       );
-    } else {
+    } else if (options.type && options.type != "conflux") {
       provider = new Web3.providers.HttpProvider(
         options.url || `http://${options.host}:${options.port}`,
         { keepAlive: false }
+      );
+    } else {
+      // P+ use custom provider proxy if type is conflux
+      provider = new providerProxy.HttpProvider(
+        options.url || `http://${options.host}:${options.port}`,
+        {
+          keepAlive: false,
+          chainAdaptor: providerProxy.ethToConflux
+        }
       );
     }
     return provider;
   },
 
-  testConnection: function(options) {
+  testConnection: function (options) {
     let networkCheckTimeout, networkType;
     const { networks, network } = options;
     if (networks && networks[network]) {
@@ -64,7 +74,7 @@ module.exports = {
         .catch(error => {
           console.log(
             "> Something went wrong while attempting to connect " +
-              "to the network. Check your network configuration."
+            "to the network. Check your network configuration."
           );
           clearTimeout(noResponseFromNetworkCall);
           reject(error);

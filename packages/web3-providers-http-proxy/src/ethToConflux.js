@@ -56,12 +56,12 @@ const bridge = {
 };
 
 function ethToConflux(payload) {
-  const oldMethod = payload.method;
+  // const oldMethod = payload.method;
   const handler = bridge[payload.method];
   if (!handler) {
     return emptyFn;
   }
-  console.log(`Mapping "${oldMethod}" to "${handler.method}"`);
+  // console.log(`Mapping "${oldMethod}" to "${handler.method}"`);
   payload.method = handler.method;
   payload.params = handler.input(payload.params);
   return handler.output;

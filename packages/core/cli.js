@@ -16,7 +16,7 @@ if (!semver.satisfies(process.version, ">=" + minimumNodeVersion)) {
   console.log(
     "Error: Node version not supported. You are currently using version " +
       process.version.slice(1) +
-      " of Node. Truffle requires Node v" +
+      " of Node. Conflux-Truffle requires Node v" +
       minimumNodeVersion +
       " or higher."
   );
@@ -62,7 +62,7 @@ command.run(inputArguments, options, function(err) {
     } else {
       if (err instanceof TruffleError) {
         analytics.send({
-          exception: "TruffleError - missing configuration file",
+          exception: "Conflux-TruffleError - missing configuration file",
           version: versionInfo.bundle
             ? versionInfo.bundle
             : "(unbundled) " + versionInfo.core

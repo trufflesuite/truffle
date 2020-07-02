@@ -20,7 +20,7 @@ class ENS {
       return this.ensjs.registryPromise._rejectionHandler0._address;
     } else {
       const message =
-        `Truffle could not locate the address of the ENS ` +
+        `Conflux-Truffle could not locate the address of the ENS ` +
         `registry for the network you are using. You must either be on a` +
         `known network or a development blockchain.`;
       throw new Error(message);

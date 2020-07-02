@@ -29,7 +29,7 @@ try {
   options = JSON.parse(optionsString);
 } catch (e) {
   throw new Error(
-    "Fatal: Error parsing arguments; please contact the Truffle developers for help."
+    "Fatal: Error parsing arguments; please contact the Conflux-Truffle developers for help."
   );
 }
 

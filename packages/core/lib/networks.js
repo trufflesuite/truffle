@@ -108,7 +108,7 @@ const Networks = {
 
       config.logger.log(
         OS.EOL +
-          "Closely inspect the deployed networks below, and use `truffle networks --clean` to remove any networks that don't match your configuration. You should not use the wildcard configuration ('*') for staging and production networks for which you intend to deploy your application."
+          "Closely inspect the deployed networks below, and use `cfxtruffle networks --clean` to remove any networks that don't match your configuration. You should not use the wildcard configuration ('*') for staging and production networks for which you intend to deploy your application."
       );
     }
 

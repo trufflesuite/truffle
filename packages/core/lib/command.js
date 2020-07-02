@@ -11,6 +11,7 @@ class Command {
     this.commands = commands;
     Command.chain = "Conflux";
     Command.bin = "cfxtruffle";
+    Command.npmPack = "Conflux-Truffle";
 
     let args = yargs();
 
@@ -25,9 +26,12 @@ class Command {
   static replaceEthToCfx(input) {
     if (typeof input == "object") {
       for (const key in input) {
-        if (key == "description" && typeof input[key] == "string")
-          input[key] = input[key].replace(/ethereum/i, Command.chain);
-        this.replaceEthToCfx(input[key]);
+        if ((key == "description" || key == "usage" || key == "describe") && typeof input[key] == "string")
+          input[key] = input[key].replace(/ethereum/ig, Command.chain)
+            .replace(/truffle/g, Command.bin)
+            .replace(/^Truffle/g, Command.npmPack)
+            .replace(/ Truffle/g, " " + Command.npmPack);
+        Command.replaceEthToCfx(input[key]);
       }
     }
   }

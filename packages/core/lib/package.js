@@ -257,7 +257,7 @@ const Package = {
         "Could not locate any publishable artifacts in " +
         options.contracts_build_directory +
         ". " +
-        "Run `truffle compile` before publishing.";
+        "Run `cfxtruffle compile` before publishing.";
       if (callbackPassed) {
         return callback(new Error(message));
       }
