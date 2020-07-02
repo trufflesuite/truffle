@@ -17,7 +17,7 @@ const processInput = input => {
   const inputComponents = input.trim().split(" ");
   if (inputComponents.length === 0) return input;
 
-  if (inputComponents[0] === "truffle"||inputComponents[0] === "cfxtruffle") {
+  if (inputComponents[0] === "truffle" || inputComponents[0] === "cfxtruffle") {
     return inputComponents.slice(1).join(" ");
   }
   return input.trim();
@@ -77,6 +77,7 @@ class Console extends EventEmitter {
         this.repl.start({
           prompt: "cfxtruffle(" + this.options.network + ")> ",
           context: {
+            cfx: this.web3.cfx,
             web3: this.web3,
             interfaceAdapter: this.interfaceAdapter,
             accounts: fetchedAccounts
@@ -204,7 +205,7 @@ class Console extends EventEmitter {
       // Strange indentation keeps column offset correct in stack traces
       source = `(async function() { try { ${
         assign ? `global.${RESULT} =` : "return"
-      } (
+        } (
   ${expression.trim()}
   ); } catch(e) { global.ERROR = e; throw e; } }())`;
 
