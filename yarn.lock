@@ -1144,6 +1144,14 @@
     strip-indent "^2.0.0"
     super-split "^1.1.0"
 
+"@trufflesuite/eth-sig-util@^1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@trufflesuite/eth-sig-util/-/eth-sig-util-1.4.2.tgz#b529e2f38ac08e652116f48981132a26242a4f08"
+  integrity sha512-+GyfN6b0LNW77hbQlH3ufZ/1eCON7mMrGym6tdYf7xiNw9Vv3jBO72bmmos1EId2NgBvPMhmYYm6DSLQFTmzrA==
+  dependencies:
+    ethereumjs-abi "^0.6.8"
+    ethereumjs-util "^5.1.1"
+
 "@trufflesuite/typedoc-default-themes@^0.6.1":
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/@trufflesuite/typedoc-default-themes/-/typedoc-default-themes-0.6.1.tgz#6b733ee896519476f6721d0db3effa2ca3bff7ce"
@@ -1154,11 +1162,12 @@
     lunr "^2.3.6"
     underscore "^1.9.1"
 
-"@trufflesuite/web3-provider-engine@14.0.7":
-  version "14.0.7"
-  resolved "https://registry.yarnpkg.com/@trufflesuite/web3-provider-engine/-/web3-provider-engine-14.0.7.tgz#8ffa31148d68cfdd4da067e5df30e03871ec8a74"
-  integrity sha512-+OCKZOF1aVCOW9gWIXdK1l/SQnRPVcve56LpSGZQ+LZ6OKT6xVoLNNF+wKVvFxIis1JAZvnVKJFbUYbKEZ5aPQ==
+"@trufflesuite/web3-provider-engine@15.0.0-0":
+  version "15.0.0-0"
+  resolved "https://registry.yarnpkg.com/@trufflesuite/web3-provider-engine/-/web3-provider-engine-15.0.0-0.tgz#2ef8e895c14e360d0ee9551251cbc04546700678"
+  integrity sha512-jafk5stmB6n8NvZTJehqiICaVE+NEMV9w/wnIMkM7psgSOT8IS68K0g5C4jtmq0fRrg9mJBdX6BOkQ+BlDxNIw==
   dependencies:
+    "@trufflesuite/eth-sig-util" "^1.4.2"
     async "^2.5.0"
     backoff "^2.5.0"
     clone "^2.0.0"
@@ -1167,7 +1176,6 @@
     eth-json-rpc-filters "^4.0.2"
     eth-json-rpc-infura "^3.1.0"
     eth-json-rpc-middleware "^4.1.1"
-    eth-sig-util "^1.4.2"
     ethereumjs-block "^1.2.2"
     ethereumjs-tx "^1.2.0"
     ethereumjs-util "^5.1.5"
@@ -5919,7 +5927,7 @@ ethereumjs-abi@0.6.7:
     bn.js "^4.11.8"
     ethereumjs-util "^6.0.0"
 
-"ethereumjs-abi@git+https://github.com/ethereumjs/ethereumjs-abi.git":
+ethereumjs-abi@^0.6.8, "ethereumjs-abi@git+https://github.com/ethereumjs/ethereumjs-abi.git":
   version "0.6.8"
   resolved "git+https://github.com/ethereumjs/ethereumjs-abi.git#1cfbb13862f90f0b391d8a699544d5fe4dfb8c7b"
   dependencies:
