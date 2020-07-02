@@ -50,17 +50,17 @@ module.exports = {
     },
 
     conflux: {
-      provider: () => new providerProxy.HttpProvider(
-        "http://127.0.0.1:12537",
-        {
-          keepAlive: false,
-          chainAdaptor: providerProxy.ethToConflux
-        }
-      ),
-      // host: "127.0.0.1", // Localhost (default: none)
-      // port: 12537, // Standard Ethereum port (default: none)
+      // provider: () => new providerProxy.HttpProvider(
+      //   "http://127.0.0.1:12537",
+      //   {
+      //     keepAlive: false,
+      //     chainAdaptor: providerProxy.ethToConflux
+      //   }
+      // ),
+      host: "127.0.0.1", // Localhost (default: none)
+      port: 12537, // Standard Ethereum port (default: none)
       network_id: "*", // Any network (default: none)
-      type: "conflux"
+      // type: "conflux"
     }
     // Another network with more advanced options...
     // advanced: {

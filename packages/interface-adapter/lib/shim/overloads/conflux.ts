@@ -61,6 +61,7 @@ const overrides = {
       return cfx.provider.call("accounts");
     };
     web3.eth.getAccounts = newMethod;
+    cfx.getAccounts = newMethod;
   },
 
   /**
