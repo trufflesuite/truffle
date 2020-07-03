@@ -35,13 +35,29 @@ function formatInput(params) {
 const bridge = {
   eth_blockNumber: {
     method: "cfx_epochNumber",
-    input: emptyFn,
-    output: emptyFn
+  },
+  eth_getBlockByNumber: {
+    method: "cfx_getBlockByEpochNumber",
+    input: function (params) {
+      if (params.length > 0) {
+        params[0] = tagMapper[params[0]] || params[0];
+      }
+    },
   },
   eth_call: {
     method: "cfx_call",
     input: formatInput,
-    output: emptyFn
+  },
+  eth_getCode: {
+    method: "cfx_getCode",
+    input: formatInput,
+    output: function (response) {
+      if (response && response.error && response.error.code == -32016) {
+        response.error = null;
+        response.result = "0x";
+      }
+      return response;
+    }
   },
   eth_estimateGas: {
     method: "cfx_estimateGasAndCollateral",
@@ -52,19 +68,45 @@ const bridge = {
       }
       return response;
     }
+  },
+  eth_sendTransaction: {
+    method: "send_transaction",
+    // todo: set storagelimit and gas
+    input: function (params) {
+      if (params.length > 0) {
+        params[0].gasPrice = params.gasPrice || "0x" + 1e9.toString(16);
+        params[0].gas = params.gas || "0x1000000";
+        params[0].storageLimit = params.storageLimit || "0x1000000";
+        // simple handle
+        params[0].to = "0x1" + params[0].to.slice(3);
+        if (params[0].data) {
+          let len = params[0].data.length;
+          len = (len - 6) % 32;
+          if (len == 0)
+            params[0].to[2] = "0x8" + params[0].to.slice(3);
+        }
+      }
+      if (params.length == 1) {
+        params.push("123456");
+      }
+      return params;
+    }
   }
 };
 
 function ethToConflux(payload) {
-  // const oldMethod = payload.method;
+  const oldMethod = payload.method;
   const handler = bridge[payload.method];
+  console.log(`Mapping "${oldMethod}" to "${handler && handler.method}"`);
   if (!handler) {
     return emptyFn;
   }
-  // console.log(`Mapping "${oldMethod}" to "${handler.method}"`);
+
+  let inputFn = handler.input || emptyFn;
+  payload.params = inputFn(payload.params);
   payload.method = handler.method;
-  payload.params = handler.input(payload.params);
-  return handler.output;
+  console.log("cfx payload:", payload);
+  return handler.output || emptyFn;
 }
 
 module.exports = ethToConflux;
