@@ -13,6 +13,8 @@ import * as Preserve from "@truffle/preserve";
 
 export type IPFSCidGetter = (target: Preserve.Target) => Promise<CID>;
 
+export const defaultAddress: string = "ws://localhost:7777/0/node/rpc/v0";
+
 // Do to some import issues with jest + @filecoin-shipyard/lotus-client-schema/prototype/testnet-v3
 // I decided to just create the schema for all methods used by preserve-to-filecoin.
 // The schema is required by the LotusRPC library, and is no more than a list of method names
@@ -80,7 +82,7 @@ export const preserveToFilecoin = async (
     );
   }
 
-  const wsUrl = options.filecoin.address;
+  const wsUrl = options.filecoin.address || defaultAddress;
   const client = createLotusClient({ wsUrl });
   const cid = await options.getIPFSCidForTarget(options.target);
 
