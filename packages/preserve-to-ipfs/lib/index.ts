@@ -22,6 +22,8 @@ export interface PreserveOptions extends Preserve.Recipes.PreserveOptions {
 export class Recipe implements Preserve.Recipe {
   name = "@truffle/preserve-to-ipfs";
 
+  static help = "Preserve to IPFS";
+
   dependencies: [] = [];
 
   private address: string;

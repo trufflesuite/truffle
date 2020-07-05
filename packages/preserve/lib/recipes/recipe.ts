@@ -3,6 +3,7 @@ import { Target } from "../targets";
 export interface ConstructorOptions {}
 
 export interface Constructor {
+  help?: string;
   new (options: ConstructorOptions): Recipe;
 }
 
