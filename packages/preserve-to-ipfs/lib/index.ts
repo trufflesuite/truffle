@@ -12,9 +12,7 @@ export { preserveToIpfs };
 
 export interface ConstructorOptions
   extends Preserve.Recipes.ConstructorOptions {
-  ipfs: {
-    address: string;
-  };
+  address: string;
 }
 
 export interface PreserveOptions extends Preserve.Recipes.PreserveOptions {
@@ -29,7 +27,7 @@ export class Recipe implements Preserve.Recipe {
   private address: string;
 
   constructor(options: ConstructorOptions) {
-    this.address = options.ipfs.address;
+    this.address = options.address;
   }
 
   async preserve(options: PreserveOptions): Promise<Label> {
