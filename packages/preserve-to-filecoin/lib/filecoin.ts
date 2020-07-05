@@ -27,7 +27,7 @@ export interface PreserveToFilecoinOptions {
   filecoin: {
     address: string;
   };
-  getIPFSCidForTarget: IPFSCidGetter;
+  labels: Map<string, any>;
 }
 
 export interface CreateLotusClientOptions {
@@ -84,7 +84,7 @@ export const preserveToFilecoin = async (
 
   const wsUrl = options.filecoin.address || defaultAddress;
   const client = createLotusClient({ wsUrl });
-  const cid = await options.getIPFSCidForTarget(options.target);
+  const { cid } = options.labels.get("@truffle/preserve-to-ipfs");
 
   const miners = await client.stateListMiners([]);
   const defaultWalletAddress = await client.walletDefaultAddress();

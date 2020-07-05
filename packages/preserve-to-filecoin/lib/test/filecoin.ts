@@ -9,8 +9,6 @@ import {
   getDealState
 } from "../filecoin";
 
-import { fetch } from "../../test/fetch";
-
 interface Test {
   name: string;
   target: Preserve.Target;
@@ -159,9 +157,7 @@ describe("preserveToFilecoin", () => {
           filecoin: {
             address: address
           },
-          getIPFSCidForTarget: async target => {
-            return cid;
-          }
+          labels: new Map([["@truffle/preserve-to-ipfs", { cid }]])
         });
 
         const state = await getDealState(proposalResult["/"], client);
