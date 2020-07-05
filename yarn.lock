@@ -515,6 +515,21 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
+"@filecoin-shipyard/lotus-client-provider-browser@^0.0.14":
+  version "0.0.14"
+  resolved "https://registry.yarnpkg.com/@filecoin-shipyard/lotus-client-provider-browser/-/lotus-client-provider-browser-0.0.14.tgz#28268cd1a940627b08e06378527f5f34fea0db75"
+  integrity sha512-rFH2aUA65fa9C+3d8JoKxL/UGYPbEqIjhJ9ZMJS50aKFELMA1FJ/l10Tpgkx0p6KrdygfIytHneITvpgcumR4g==
+
+"@filecoin-shipyard/lotus-client-rpc@^0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@filecoin-shipyard/lotus-client-rpc/-/lotus-client-rpc-0.0.11.tgz#60d6953dee4ff583ca982aae45d57e05a68ad89b"
+  integrity sha512-7ZgT7tyB+5fp5mC9yC4Da9vj3M8PiVPNuxFkFAaDRu8blDuKg/tNh4OMZr5pqs/uuwjRZuXslGl8dOb2Iz+rZg==
+
+"@filecoin-shipyard/lotus-client-schema@0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@filecoin-shipyard/lotus-client-schema/-/lotus-client-schema-0.0.9.tgz#03bcb733de66e02d7e07fa3d617caa9f7b69d8e1"
+  integrity sha512-xHchzR91GZB98D70+n63HUD8+Lof7o1iMCRtuQc8HQ41R4fmWGGLT3f1dyfwt5y6tTlPQyZPbFJYD9jTrkWh/g==
+
 "@gnd/typedoc@0.15.0-0":
   version "0.15.0-0"
   resolved "https://registry.yarnpkg.com/@gnd/typedoc/-/typedoc-0.15.0-0.tgz#bb2fd8f316e496cabab0f33966f5f1581e974f86"
@@ -11491,6 +11506,11 @@ isobject@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/isobject/-/isobject-4.0.0.tgz#3f1c9155e73b192022a80819bacd0343711697b0"
   integrity sha512-S/2fF5wH8SJA/kmwr6HYhK/RI/OkhD84k8ntalo0iJjZikgq1XFvR5M8NPT1x5F7fBwCG3qHfnzeP/Vh/ZxCUA==
+
+isomorphic-ws@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/isomorphic-ws/-/isomorphic-ws-4.0.1.tgz#55fd4cd6c5e6491e76dc125938dd863f5cd4f2dc"
+  integrity sha512-BhBvN2MBpWTaSHdWRb/bwdZJ1WaehQ2L1KngkCkfLUGF0mAWAT1sQUQacEmQ0jXkFw/czDXPNQSL5u2/Krsz1w==
 
 isstream@~0.1.2:
   version "0.1.2"

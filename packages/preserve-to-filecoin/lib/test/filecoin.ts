@@ -1,20 +1,15 @@
-import { asyncToArray } from "iter-tools";
-const IpfsdCtl: any = require("ipfsd-ctl");
 const IpfsHttpClient: any = require("ipfs-http-client");
 
 import * as Preserve from "@truffle/preserve";
-import { preserveToIpfs } from "../ipfs";
+import { preserveToIpfs } from "../../../preserve-to-ipfs";
+import {
+  preserveToFilecoin,
+  createLotusClient,
+  LotusClient,
+  getDealState
+} from "../filecoin";
 
 import { fetch } from "../../test/fetch";
-
-const IPFS_BIN = "./node_modules/.bin/jsipfs";
-
-interface IpfsNode {
-  apiAddr: {
-    toString(): string;
-  };
-  stop(): Promise<void>;
-}
 
 interface Test {
   name: string;
@@ -22,12 +17,13 @@ interface Test {
 }
 
 const tests: Test[] = [
-  {
-    name: "single-source",
-    target: {
-      source: "a"
-    }
-  },
+  // Not supported yet!
+  // {
+  //   name: "single-source",
+  //   target: {
+  //     source: "a"
+  //   }
+  // },
   {
     name: "two-sources",
     target: {
@@ -108,50 +104,69 @@ const tests: Test[] = [
   }
 ];
 
-describe("preserveToIpfs", () => {
-  let node: IpfsNode;
+describe("preserveToFilecoin", () => {
+  let IPFSConfig: {
+    host: string;
+    port: string;
+    protocol: string;
+    apiPath: string;
+  };
   let address: string;
 
   beforeAll(async () => {
-    jest.setTimeout(20000);
-
-    node = await IpfsdCtl.createController({
-      type: "js",
-      ipfsBin: IPFS_BIN,
-      test: true,
-      disposable: true,
-      ipfsHttpModule: IpfsHttpClient
-    });
-
-    address = node.apiAddr.toString();
+    // Configured for Textile's powergate devnet
+    // https://docs.textile.io/powergate/devnet/
+    IPFSConfig = {
+      host: "localhost",
+      port: "5001",
+      protocol: "http",
+      apiPath: "/api/v0"
+    };
+    address = "ws://localhost:7777/0/node/rpc/v0";
   });
 
-  afterAll(async () => {
-    await node.stop();
-  });
+  afterAll(async () => {});
 
   for (const { name, target } of tests) {
     // separate describe block for each test case
     describe(`test: ${name}`, () => {
       let ipfs: any; // client
+      let client: LotusClient;
 
       beforeAll(async () => {
-        ipfs = IpfsHttpClient(address);
+        ipfs = IpfsHttpClient(IPFSConfig);
+        client = createLotusClient({ wsUrl: address });
       });
 
-      it("saves correctly to IPFS", async () => {
+      it("stores to Filecoin correctly", async () => {
+        jest.setTimeout(200000);
+
         const { cid } = await preserveToIpfs({
           target,
           ipfs: {
-            address
+            address:
+              IPFSConfig.protocol +
+              "://" +
+              IPFSConfig.host +
+              ":" +
+              IPFSConfig.port +
+              IPFSConfig.apiPath
           }
         });
 
-        const retrieved = await fetch({ cid, ipfs });
+        const proposalResult = await preserveToFilecoin({
+          target: target,
+          filecoin: {
+            address: address
+          },
+          getIPFSCidForTarget: async target => {
+            return cid;
+          }
+        });
 
-        expect(await Preserve.Targets.thunk(retrieved)).toEqual(
-          await Preserve.Targets.thunk(target)
-        );
+        const state = await getDealState(proposalResult["/"], client);
+
+        expect(state).toEqual("Active");
       });
     });
   }

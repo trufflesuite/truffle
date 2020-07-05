@@ -8,6 +8,8 @@ import { Label, preserveToIpfs } from "./ipfs";
 
 export { Label };
 
+export { preserveToIpfs };
+
 export interface ConstructorOptions
   extends Preserve.Recipes.ConstructorOptions {
   ipfs: {

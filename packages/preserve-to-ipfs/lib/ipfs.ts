@@ -35,7 +35,9 @@ export const preserveToIpfs = async (
   const data = search({ source });
 
   // add to IPFS
-  const results = ipfs.add(data);
+  const results = ipfs.add(data, {
+    wrapWithDirectory: Preserve.Targets.Sources.isContainer(source)
+  });
 
   // take the last result, which will be the parent container
   return await asyncLast(results);
