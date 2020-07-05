@@ -43,7 +43,7 @@ module.exports = {
 
     const plugins = Plugin.list(config, defaultPlugins);
 
-    const { tags, constructors } = loadConstructors(plugins);
+    const { tags, modules, constructors } = loadConstructors(plugins);
 
     const environment = (config.environments || {}).development || {};
 
@@ -66,12 +66,14 @@ module.exports = {
           `${chalk.gray(">")} Preserving ${path} to ${tag.toUpperCase()}...`
         );
 
+        const recipe = modules.recipes.get(tag);
+
         const results = preserve({
           loaders,
           recipes,
           request: {
             loader: "@truffle/preserve-fs",
-            recipe: "@truffle/preserve-to-ipfs",
+            recipe,
             settings: new Map([["@truffle/preserve-fs", { path: config._[0] }]])
           }
         });
