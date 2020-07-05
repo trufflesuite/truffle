@@ -94,7 +94,7 @@ class Command {
     // Check unsupported command line flag according to the option list in help
     const help =
       typeof result.command.help === "function"
-        ? await result.command.help()
+        ? await result.command.help(options)
         : result.command.help;
 
     // while in `console` & `develop`, input is passed as a string, not as an array

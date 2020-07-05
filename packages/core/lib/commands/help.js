@@ -17,13 +17,13 @@ var command = {
   run: callbackify(async function(options) {
     var commands = require("./index");
     if (options._.length === 0) {
-      await this.displayCommandHelp("help");
+      await this.displayCommandHelp("help", options);
       return;
     }
     var selectedCommand = options._[0];
 
     if (commands[selectedCommand]) {
-      await this.displayCommandHelp(selectedCommand);
+      await this.displayCommandHelp(selectedCommand, options);
       return;
     } else {
       console.log(`\n  Cannot find the given command '${selectedCommand}'`);
@@ -35,12 +35,12 @@ var command = {
       return;
     }
   }),
-  displayCommandHelp: async selectedCommand => {
+  displayCommandHelp: async (selectedCommand, options) => {
     var commands = require("./index");
     var commandHelp = commands[selectedCommand].help;
 
     if (typeof commandHelp === "function") {
-      commandHelp = await commandHelp();
+      commandHelp = await commandHelp(options);
     }
 
     console.log(`\n  Usage:        ${commandHelp.usage}`);
