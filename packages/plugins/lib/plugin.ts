@@ -2,22 +2,57 @@ const TruffleError: any = require("@truffle/error");
 const originalRequire = require("original-require");
 import path from "path";
 
+export type ConfigPlugins = ConfigPlugin[];
+export type ConfigPlugin = string | PluginConfig;
+export interface PluginConfig {
+  tag?: string;
+  module: string;
+}
+
+export const normalizeConfigPlugins = (
+  plugins: ConfigPlugins,
+  defaultPlugins: string[]
+): PluginConfig[] => {
+  const map: Map<string, PluginConfig> = new Map([]);
+
+  const normalized = plugins.map((plugin: ConfigPlugin) =>
+    typeof plugin === "string" ? { module: plugin } : plugin
+  );
+
+  for (const plugin of normalized) {
+    map.set(plugin.module, plugin);
+  }
+
+  for (const plugin of defaultPlugins) {
+    if (!map.has(plugin)) {
+      map.set(plugin, { module: plugin });
+    }
+  }
+
+  return [...map.values()];
+};
+
 export class Plugin {
   /**
    * Given a truffle-config-like, find and return all configured plugins
    */
-  static list(options: any): Plugin[] {
-    const plugins = Plugin.checkPluginModules(options);
+  static list(options: any, defaultPlugins: string[] = []): Plugin[] {
+    const plugins = Plugin.checkPluginModules(options, defaultPlugins);
     const definitions = Plugin.loadPluginDefinitions(plugins);
 
     return Object.entries(definitions).map(
-      ([pluginModule, definition]) => new Plugin({ pluginModule, definition })
+      ([module, definition]) => new Plugin({ module, definition })
     );
   }
 
-  private constructor({ pluginModule, definition }: PluginConstructorOptions) {
-    this.pluginModule = pluginModule;
+  private constructor({ module, definition }: PluginConstructorOptions) {
+    this.module = module;
     this.definition = definition;
+  }
+
+  public module: string;
+  get tag(): string {
+    return this.definition.tag || this.module;
   }
 
   /*
@@ -37,7 +72,7 @@ export class Plugin {
     const commandLocalPath = this.definition.commands[commandName];
     if (!commandLocalPath) {
       throw new TruffleError(
-        `Plugin ${this.pluginModule} does not define command ${commandName}`
+        `Plugin ${this.module} does not define command ${commandName}`
       );
     }
 
@@ -45,10 +80,41 @@ export class Plugin {
   }
 
   /*
+   * `truffle preserve` support
+   */
+
+  definesRecipe(): boolean {
+    return !!(this.definition.preserve && this.definition.preserve.recipe);
+  }
+
+  definesLoader(): boolean {
+    return !!(this.definition.preserve && this.definition.preserve.loader);
+  }
+
+  loadRecipe(): any {
+    if (!this.definesRecipe()) {
+      throw new TruffleError(
+        `Plugin ${this.module} does not define a \`truffle preserve\` recipe.`
+      );
+    }
+
+    return this.loadModule(this.definition.preserve.recipe).Recipe;
+  }
+
+  loadLoader(): any {
+    if (!this.definesLoader()) {
+      throw new TruffleError(
+        `Plugin ${this.module} does not define a \`truffle preserve\` loader.`
+      );
+    }
+
+    return this.loadModule(this.definition.preserve.loader).Loader;
+  }
+
+  /*
    * internals
    */
 
-  private pluginModule: string;
   private definition: PluginDefinition;
 
   private loadModule(localPath: string): any {
@@ -58,13 +124,13 @@ export class Plugin {
       );
     }
 
-    const pluginPath = originalRequire.resolve(this.pluginModule);
+    const pluginPath = originalRequire.resolve(this.module);
     const modulePath = path.resolve(path.dirname(pluginPath), localPath);
 
     return originalRequire(pluginPath);
   }
 
-  private static checkPluginModules(options: any): string[] {
+  private static checkPluginModules(options: any, defaultPlugins: string[]) {
     originalRequire("app-module-path").addPath(
       path.resolve(options.working_directory, "node_modules")
     );
@@ -76,39 +142,52 @@ export class Plugin {
     //
     // and then make originalRequire handle `path.resolve(..., "node_modules")`
 
-    for (const plugin of options.plugins) {
+    const plugins = normalizeConfigPlugins(
+      options.plugins || [],
+      defaultPlugins
+    );
+
+    for (const { module } of plugins) {
       try {
-        originalRequire.resolve(plugin);
+        originalRequire.resolve(module);
       } catch (_) {
         throw new TruffleError(
-          `\nError: ${plugin} listed as a plugin, but not found in global or local node modules!\n`
+          `\nError: ${module} listed as a plugin, but not found in global or local node modules!\n`
         );
       }
     }
 
-    return options.plugins;
+    return plugins;
   }
 
-  private static loadPluginDefinitions(plugins: any): PluginDefinitions {
-    let pluginConfigs: any = {};
-    plugins.forEach((plugin: any) => {
+  private static loadPluginDefinitions(
+    plugins: PluginConfig[]
+  ): PluginDefinitions {
+    let pluginConfigs: PluginDefinitions = {};
+
+    for (const { tag, module } of plugins) {
       try {
-        pluginConfigs[plugin] = originalRequire(
-          `${plugin}/truffle-plugin.json`
-        );
+        const required: any = originalRequire(`${module}/truffle-plugin.json`);
+
+        required.tag =
+          tag ||
+          (required.preserve && required.preserve.defaultTag) ||
+          undefined;
+
+        pluginConfigs[module] = required;
       } catch (_) {
         throw new TruffleError(
-          `\nError: truffle-plugin.json not found in the ${plugin} plugin package!\n`
+          `\nError: truffle-plugin.json not found in the ${module} plugin package!\n`
         );
       }
-    });
+    }
 
     return pluginConfigs;
   }
 }
 
 interface PluginConstructorOptions {
-  pluginModule: string; // specified in truffle-config.js; will be require()'d
+  module: string; // specified in truffle-config.js; will be require()'d
   definition: PluginDefinition; // loaded from truffle-plugin.json
 }
 
@@ -117,10 +196,14 @@ interface PluginDefinitions {
 }
 
 interface PluginDefinition {
+  tag?: string;
+
   preserve?: {
+    defaultTag?: string;
     recipe?: string;
     loader?: string;
   };
+
   commands?: {
     [commandName: string]: string;
   };
