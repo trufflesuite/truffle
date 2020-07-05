@@ -22,6 +22,7 @@
     "@types/bl": "^2.1.0",
     "@types/jest": "^26.0.0",
     "@types/node": "^14.0.13",
+    "@types/ws": "^7.2.6",
     "ipfs": "^0.43",
     "ipfsd-ctl": "^4.1.1",
     "it-concat": "^1.0.0",
