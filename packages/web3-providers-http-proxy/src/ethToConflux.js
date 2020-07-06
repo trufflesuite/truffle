@@ -108,8 +108,67 @@ const bridge = {
       }
       return params;
     }
+  },
+  eth_getStorageAt: {
+    method: "cfx_getStorageAt",
+    input: function(params) {
+      mapParamsTagAtIndex(params, 2);
+    }
+  },
+  eth_getBlockByHash: {
+    method: "cfx_getBlockByHash",
+    output: function(response) {
+      formatBlock(response.result);
+      return response;
+    }
+  },
+  eth_getBlockByNumber: {
+    method: "cfx_getBlockByEpochNumber",
+    input: function(params) {
+      mapParamsTagAtIndex(params, 0);
+    },
+    output: function(response) {
+      formatBlock(response.result);
+      return response;
+    }
+  },
+  eth_getTransactionByHash: {
+    method: "cfx_getTransactionByHash",
+    output: function(response) {
+      formatTx(response.result);
+      return response;
+    }
   }
 };
+
+function formatBlock(block) {
+  block.number = block.epochNumber;
+  // sha3Uncles?
+  // logsBloom?
+  block.stateRoot = block.deferredStateRoot;
+  block.receiptsRoot = block.deferredReceiptsRoot;
+  // totalDifficulty?
+  // extraData?
+  // gasUsed?
+  block.uncles = block.refereeHashes; // check?
+  // format tx object
+  if (
+    block.tranactions &&
+    block.tranactions.length > 0 &&
+    typeof block.tranactions[0] === "object"
+  ) {
+    for (let tx of block.tranactions) {
+      formatTx(tx);
+    }
+  }
+  return block;
+}
+
+function formatTx(tx) {
+  // blockNumber?   TODO maybe cause big problem
+  tx.input = tx.data;
+  return tx;
+}
 
 function mapTag(tag) {
   return TAG_MAP[tag] || tag;
