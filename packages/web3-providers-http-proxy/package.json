@@ -16,6 +16,7 @@
     "xhr2-cookies": "^1.1.0"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
     "web3": "^1.2.9"
   }
 }

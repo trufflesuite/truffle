@@ -27,8 +27,5 @@ web3.setProvider(provider);
 2. eth_call -> cfx_call
 
 
-### rpc that can't handle by this proxy
+### How to test this provider
 
-1. which conflux doesn't have respond rpc
-2. parameter not compatible
-3. response not compatible

@@ -11,8 +11,8 @@ class Web3HttpProviderProxy extends Web3HttpProvider {
   send(payload, callback) {
     const adaptFn = this.chainAdaptor(payload);
     // const self = this;
-    super.send(payload, function (err, result) {
-      // console.log("send payload:", payload.method, "provider is:", self.host);
+    super.send(payload, function(err, result) {
+      // console.log(`RPC method: ${payload.method}, params: ${JSON.stringify(payload.params, null, '\t')}`);
       if (err) {
         callback(err);
       } else {

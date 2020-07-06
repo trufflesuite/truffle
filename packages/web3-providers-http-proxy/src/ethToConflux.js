@@ -31,6 +31,7 @@ const bridge = {
     method: "cfx_epochNumber",
     input: function(params) {
       mapParamsTagAtIndex(params, 0);
+      return params;
     }
   },
   eth_sendRawTransaction: {
@@ -40,12 +41,7 @@ const bridge = {
     method: "cfx_getBalance",
     input: function(params) {
       mapParamsTagAtIndex(params, 1);
-    }
-  },
-  eth_getBlockByNumber: {
-    method: "cfx_getBlockByEpochNumber",
-    input: function(params) {
-      mapParamsTagAtIndex(params, 0);
+      return params;
     }
   },
   eth_call: {
@@ -62,12 +58,14 @@ const bridge = {
     method: "cfx_getNextNonce", // NOT right
     input: function(params) {
       mapParamsTagAtIndex(params, 1);
+      return params;
     }
   },
   eth_getCode: {
     method: "cfx_getCode",
     input: function(params) {
       mapParamsTagAtIndex(params, 1);
+      return params;
     },
     output: function(response) {
       if (response && response.error && response.error.code == -32016) {
@@ -113,6 +111,7 @@ const bridge = {
     method: "cfx_getStorageAt",
     input: function(params) {
       mapParamsTagAtIndex(params, 2);
+      return params;
     }
   },
   eth_getBlockByHash: {
@@ -126,6 +125,7 @@ const bridge = {
     method: "cfx_getBlockByEpochNumber",
     input: function(params) {
       mapParamsTagAtIndex(params, 0);
+      return params;
     },
     output: function(response) {
       formatBlock(response.result);
