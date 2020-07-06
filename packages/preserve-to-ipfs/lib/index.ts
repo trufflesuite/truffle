@@ -2,13 +2,14 @@
  * @module @truffle/preserve-to-ipfs
  */ /** */
 
+import chalk from "chalk";
 import * as Preserve from "@truffle/preserve";
 
-import { Label, preserveToIpfs } from "./ipfs";
+import { Label, preserve } from "./ipfs";
 
 export { Label };
 
-export { preserveToIpfs };
+export { preserveToIpfs } from "./ipfs";
 
 export interface ConstructorOptions
   extends Preserve.Recipes.ConstructorOptions {
@@ -32,11 +33,9 @@ export class Recipe implements Preserve.Recipe {
     this.address = options.address;
   }
 
-  async preserve(options: PreserveOptions): Promise<Label> {
-    const { target } = options;
-
-    return await preserveToIpfs({
-      target,
+  async *preserve(options: PreserveOptions) {
+    return yield* preserve({
+      ...options,
       ipfs: {
         address: this.address
       }

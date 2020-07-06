@@ -1,6 +1,8 @@
 import { Loader } from "./targets";
 import { Recipe } from "./recipes";
 
+import { Event, createController } from "./recipes/logs";
+
 export interface Request {
   loader: string; // package name
   recipe: string; // package name
@@ -20,7 +22,7 @@ export interface PreserveResult {
 
 export async function* preserve(
   options: PreserveOptions
-): AsyncIterable<PreserveResult> {
+): AsyncIterable<Event> {
   const { request, loaders, recipes } = options;
 
   if (!("settings" in request)) {
@@ -80,18 +82,42 @@ export async function* preserve(
   for (const recipe of plan) {
     const settings = request.settings.get(recipe.name);
 
-    const label = await recipe.preserve({
-      target,
-      labels,
-      settings
-    });
+    // for the result
+    let label: any;
+
+    const { begin, succeed, fail, controls } = createController(recipe.name);
+
+    yield* begin();
+
+    try {
+      const preserves = recipe.preserve({
+        target,
+        labels,
+        settings,
+        ...controls
+      });
+
+      while (true) {
+        const { done, value } = await preserves.next();
+
+        if (done) {
+          label = value;
+          break;
+        }
+
+        yield value;
+      }
+    } catch (error) {
+      yield* fail({ error });
+
+      return;
+    }
+
+    // to handle recipes that don't clean up after themselves
+    // (will only do anything if still in active state)
+    yield* succeed({ label });
 
     labels.set(recipe.name, label);
-
-    yield {
-      name: recipe.name,
-      label
-    };
   }
 }
 

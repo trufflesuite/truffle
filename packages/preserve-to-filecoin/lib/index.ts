@@ -8,13 +8,9 @@
 
 import * as Preserve from "@truffle/preserve";
 
-import {
-  preserveToFilecoin,
-  IPFSCidGetter,
-  FilecoinStorageResult
-} from "./filecoin";
+import { preserve, FilecoinStorageResult } from "./filecoin";
 
-export { preserveToFilecoin, IPFSCidGetter };
+export { preserveToFilecoin } from "./filecoin";
 
 export interface ConstructorOptions
   extends Preserve.Recipes.ConstructorOptions {
@@ -39,12 +35,9 @@ export class Recipe implements Preserve.Recipe {
     this.address = options.address;
   }
 
-  async preserve(options: PreserveOptions): Promise<FilecoinStorageResult> {
-    const { target, labels } = options;
-
-    return await preserveToFilecoin({
-      target,
-      labels,
+  async *preserve(options: PreserveOptions) {
+    return yield* preserve({
+      ...options,
       filecoin: {
         address: this.address
       }

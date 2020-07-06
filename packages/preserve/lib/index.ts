@@ -11,6 +11,7 @@ import * as Recipes from "./recipes";
 export { Recipes };
 
 export * from "./preserve";
+export * from "./console";
 
 // type Config = {
 //   target: {

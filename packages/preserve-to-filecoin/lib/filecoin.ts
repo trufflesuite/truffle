@@ -11,8 +11,6 @@ import CID from "cids";
 
 import * as Preserve from "@truffle/preserve";
 
-export type IPFSCidGetter = (target: Preserve.Target) => Promise<CID>;
-
 export const defaultAddress: string = "ws://localhost:7777/0/node/rpc/v0";
 
 // Do to some import issues with jest + @filecoin-shipyard/lotus-client-schema/prototype/testnet-v3
@@ -22,7 +20,8 @@ type FilecoinMethodSchema = {
   methods: { [key: string]: object };
 };
 
-export interface PreserveToFilecoinOptions {
+export interface PreserveToFilecoinOptions
+  extends Preserve.Recipes.PreserveOptions {
   target: Preserve.Target;
   filecoin: {
     address: string;
@@ -74,19 +73,51 @@ export const createLotusClient = (
 };
 
 export const preserveToFilecoin = async (
-  options: PreserveToFilecoinOptions
+  options: Omit<
+    PreserveToFilecoinOptions,
+    "log" | "declare" | "step" | "settings"
+  >
 ): Promise<FilecoinStorageResult> => {
+  const { controls } = Preserve.Recipes.Logs.createController(
+    "@truffle/preserve-to-filecoin"
+  );
+
+  const preserves = preserve({
+    ...options,
+    ...controls,
+    settings: undefined
+  });
+
+  while (true) {
+    const { done, value } = await preserves.next();
+
+    if (done) {
+      return value as FilecoinStorageResult;
+    }
+  }
+};
+
+export async function* preserve(
+  options: PreserveToFilecoinOptions
+): Preserve.Recipes.Preserves<FilecoinStorageResult> {
   if (Preserve.Targets.Sources.isContent(options.target.source)) {
     throw new Error(
       "@truffle/preserve-to-filecoin only supports preserving directories at this time."
     );
   }
 
+  const { log, declare } = options;
+
+  yield* log({ message: "Preserving to Filecoin..." });
+
   const wsUrl = options.filecoin.address || defaultAddress;
   const client = createLotusClient({ wsUrl });
   const { cid } = options.labels.get("@truffle/preserve-to-ipfs");
 
+  const getMiners = yield* declare({ identifier: "Retrieving miners..." });
   const miners = await client.stateListMiners([]);
+  yield* getMiners.resolve({ label: miners });
+
   const defaultWalletAddress = await client.walletDefaultAddress();
 
   // TODO: Make some of these values configurable
@@ -105,14 +136,18 @@ export const preserveToFilecoin = async (
     MinBlocksDuration: 300
   };
 
+  const startDeal = yield* declare({ identifier: "Proposing storage deal..." });
   const proposalResult: FilecoinStorageResult = await client.clientStartDeal(
     storageProposal
   );
+  yield* startDeal.resolve({ label: proposalResult });
 
-  return waitForDealToFinish(proposalResult["/"], client).then(() => {
-    return proposalResult;
-  });
-};
+  const wait = yield* declare({ identifier: "Waiting for deal to finish..." });
+  await waitForDealToFinish(proposalResult["/"], client);
+  yield* wait.resolve({ label: undefined });
+
+  return proposalResult;
+}
 
 export async function getDealState(
   dealCid: string,

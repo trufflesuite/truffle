@@ -1,7 +1,16 @@
-import { asyncToArray } from "iter-tools";
+import {
+  execPipe,
+  filter,
+  toArray,
+  pipe,
+  map,
+  reduce,
+  asyncToArray
+} from "iter-tools";
 
 import { Target, Loader, thunk } from "../targets";
-import { Recipe } from "../recipes";
+import { Preserves, Recipe } from "../recipes";
+import { Scopes, Unknown } from "../recipes/logs";
 import { PreserveOptions, preserve } from "../preserve";
 
 const simpleTarget: Target = {
@@ -21,7 +30,9 @@ const vowelsRecipe: Recipe = {
 
   dependencies: [],
 
-  async preserve({ target }): Promise<{ vowels: string }> {
+  async *preserve({ target, log }): Preserves<{ vowels: string }> {
+    yield* log({ message: "Filtering vowels..." });
+
     const vowels = new Set(["a", "e", "i", "o", "u"]);
 
     // for testing purposes, this only handles the case of a Content target
@@ -42,8 +53,34 @@ const vowelsCounterRecipe: Recipe = {
 
   dependencies: [vowelsRecipe.name],
 
-  async preserve({ labels }): Promise<{ count: number }> {
+  async *preserve({ labels, log, declare }): Preserves<{ count: number }> {
+    yield* log({ message: "Counting vowels..." });
+
+    const allVowels = ["a", "e", "i", "o", "u"];
+
+    const unknowns: { [vowel: string]: Unknown } = {};
+    for (const vowel of allVowels) {
+      unknowns[vowel] = yield* declare({
+        identifier: vowel,
+        message: `# of ${vowel}'s`
+      });
+    }
+
     const { vowels } = labels.get(vowelsRecipe.name) as { vowels: string };
+
+    const counts = allVowels
+      .map(vowel => ({ [vowel]: { count: 0 } }))
+      .reduce((a, b) => ({ ...a, ...b }), {});
+
+    for (const vowel of vowels) {
+      counts[vowel].count++;
+    }
+
+    for (const [vowel, unknown] of Object.entries(unknowns)) {
+      yield* unknown.resolve({
+        label: counts[vowel]
+      });
+    }
 
     return {
       count: vowels.length
@@ -62,7 +99,7 @@ const recipes: PreserveOptions["recipes"] = mapByName([
 ]);
 
 it("preserves via a single recipe", async () => {
-  const jars = await asyncToArray(
+  const preserves = await asyncToArray(
     preserve({
       request: {
         loader: simpleLoader.name,
@@ -73,19 +110,28 @@ it("preserves via a single recipe", async () => {
     })
   );
 
-  expect(jars).toHaveLength(1);
-  const jar = jars[0];
-
-  expect(jar).toEqual({
-    name: vowelsRecipe.name,
-    label: {
-      vowels: "eoo"
+  expect(preserves).toEqual([
+    {
+      type: "begin",
+      scope: ["vowels-recipe"]
+    },
+    {
+      type: "update",
+      scope: ["vowels-recipe"],
+      message: "Filtering vowels..."
+    },
+    {
+      type: "succeed",
+      scope: ["vowels-recipe"],
+      label: {
+        vowels: "eoo"
+      }
     }
-  });
+  ]);
 });
 
 it("preserves via a recipe that depends on another recipe", async () => {
-  const jars = await asyncToArray(
+  const preserves = await asyncToArray(
     preserve({
       request: {
         loader: simpleLoader.name,
@@ -96,29 +142,107 @@ it("preserves via a recipe that depends on another recipe", async () => {
     })
   );
 
-  expect(jars).toHaveLength(2);
+  // const foundScopes = collectScopes(preserves);
 
-  {
-    // vowels-recipe
-    const jar = jars[0];
+  // expect(foundScopes).toEqual([
+  //   ["vowels-recipe"],
+  //   ["vowels-counter-recipe"]
+  // ]);
 
-    expect(jar).toEqual({
-      name: vowelsRecipe.name,
+  const events = execPipe(
+    preserves,
+    filter(({ scope }) => scope[0] === "vowels-counter-recipe"),
+    toArray
+  );
+
+  expect(events).toEqual([
+    {
+      type: "begin",
+      scope: ["vowels-counter-recipe"]
+    },
+    {
+      type: "update",
+      scope: ["vowels-counter-recipe"],
+      message: "Counting vowels..."
+    },
+    {
+      type: "declare",
+      scope: ["vowels-counter-recipe", "a"],
+      message: "# of a's"
+    },
+    {
+      type: "declare",
+      scope: ["vowels-counter-recipe", "e"],
+      message: "# of e's"
+    },
+    {
+      type: "declare",
+      scope: ["vowels-counter-recipe", "i"],
+      message: "# of i's"
+    },
+    {
+      type: "declare",
+      scope: ["vowels-counter-recipe", "o"],
+      message: "# of o's"
+    },
+    {
+      type: "declare",
+      scope: ["vowels-counter-recipe", "u"],
+      message: "# of u's"
+    },
+    {
+      type: "succeed",
+      scope: ["vowels-counter-recipe", "a"],
       label: {
-        vowels: "eoo"
+        count: 0
       }
-    });
-  }
-
-  {
-    // vowels-counter-recipe
-    const jar = jars[1];
-
-    expect(jar).toEqual({
-      name: vowelsCounterRecipe.name,
+    },
+    {
+      type: "succeed",
+      scope: ["vowels-counter-recipe", "e"],
+      label: {
+        count: 1
+      }
+    },
+    {
+      type: "succeed",
+      scope: ["vowels-counter-recipe", "i"],
+      label: {
+        count: 0
+      }
+    },
+    {
+      type: "succeed",
+      scope: ["vowels-counter-recipe", "o"],
+      label: {
+        count: 2
+      }
+    },
+    {
+      type: "succeed",
+      scope: ["vowels-counter-recipe", "u"],
+      label: {
+        count: 0
+      }
+    },
+    {
+      type: "succeed",
+      scope: ["vowels-counter-recipe"],
       label: {
         count: 3
       }
-    });
-  }
+    }
+  ]);
 });
+
+const collectScopes = pipe(
+  pipe(
+    map(({ scope }) => scope),
+    map(Scopes.toKey),
+    reduce(new Set([]), (keys, key) => keys.add(key))
+  ),
+
+  map(Scopes.fromKey),
+
+  toArray
+);

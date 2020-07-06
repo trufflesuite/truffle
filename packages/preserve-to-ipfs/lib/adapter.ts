@@ -9,11 +9,12 @@ export interface FileObject {
 
 export interface Label {
   cid: CID;
+  path: string;
 }
 
 export interface IpfsClient {
   add(
-    files: AsyncIterable<FileObject>,
+    files: AsyncIterable<FileObject> | Iterable<FileObject>,
     options?: {
       wrapWithDirectory?: boolean;
     }

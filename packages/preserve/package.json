@@ -26,5 +26,8 @@
     "ts-jest": "^26.1.0",
     "typedoc": "^0.17.0-3",
     "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "spinnies": "^0.5.1"
   }
 }

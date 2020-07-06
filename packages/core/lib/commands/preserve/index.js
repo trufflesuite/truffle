@@ -32,16 +32,15 @@ module.exports = {
     }
 
     return {
-      usage: "truffle preserve [<target-descriptor>...] [--<recipe-tag>...]",
+      usage: "truffle preserve <target-path>... --<recipe-tag>",
       options: flags
     };
   },
   run: callbackify(async options => {
-    const chalk = require("chalk");
     const Config = require("@truffle/config");
     const { Plugin } = require("@truffle/plugins");
     const { loadConstructors, constructPlugins } = require("./plugins");
-    const { preserve } = require("@truffle/preserve");
+    const { consolePreserve } = require("@truffle/preserve");
 
     const config = Config.detect(options);
 
@@ -57,41 +56,25 @@ module.exports = {
       environment
     });
 
-    for (const path of config._) {
-      for (const tag of tags.recipes.values()) {
-        // check for tag in options (instead of config, for maybe extra safety)
-        if (!(tag in options)) {
-          continue;
-        }
+    // check for tag in options (instead of config, for maybe extra safety)
+    const tag = [...tags.recipes.values()].find(tag => tag in options);
 
-        config.logger.log("");
+    const recipe = modules.recipes.get(tag);
 
-        config.logger.log(
-          `${chalk.gray(">")} Preserving ${path} to ${tag.toUpperCase()}...`
-        );
-
-        const recipe = modules.recipes.get(tag);
-
-        const results = preserve({
-          loaders,
-          recipes,
-          request: {
-            loader: "@truffle/preserve-fs",
-            recipe,
-            settings: new Map([["@truffle/preserve-fs", { path: config._[0] }]])
-          }
-        });
-
-        config.logger.log("");
-
-        for await (const { label } of results) {
-          config.logger.log(
-            `  ${chalk.gray("-")} Root CID: ${chalk.bold(label.cid.toString())}`
-          );
-        }
-      }
+    if (!recipe) {
+      throw new Error("No recipe specified");
     }
 
-    config.logger.log("");
+    for (const path of config._) {
+      await consolePreserve({
+        recipes,
+        loaders,
+        console: config.logger,
+        request: {
+          path,
+          recipe
+        }
+      });
+    }
   })
 };
