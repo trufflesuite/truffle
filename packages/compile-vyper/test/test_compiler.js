@@ -4,7 +4,7 @@ const Config = require("@truffle/config");
 const compile = require("../index");
 
 describe("vyper compiler", function() {
-  this.timeout(10000);
+  this.timeout(20000);
 
   const defaultSettings = {
     contracts_directory: path.join(__dirname, "./sources/"),

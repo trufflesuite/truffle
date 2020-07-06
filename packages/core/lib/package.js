@@ -224,7 +224,7 @@ const Package = {
     // Now get the URIs of each network that's been deployed to.
     let result;
     try {
-      await Networks.asURIs(options, deployed_networks);
+      result = await Networks.asURIs(options, deployed_networks);
     } catch (error) {
       if (callbackPassed) {
         return callback(err);
