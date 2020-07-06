@@ -34,7 +34,9 @@ const bridge = {
       return params;
     }
   },
-
+  eth_sendRawTransaction: {
+    method: "cfx_sendRawTransaction"
+  },
   eth_getBalance: {
     method: "cfx_getBalance",
     input: function(params) {
@@ -42,7 +44,6 @@ const bridge = {
       return params;
     }
   },
-
   eth_call: {
     method: "cfx_call",
     input: formatInput
@@ -60,7 +61,6 @@ const bridge = {
       return params;
     }
   },
-
   eth_getCode: {
     method: "cfx_getCode",
     input: function(params) {
@@ -75,7 +75,6 @@ const bridge = {
       return response;
     }
   },
-
   eth_estimateGas: {
     method: "cfx_estimateGasAndCollateral",
     input: formatInput,
@@ -86,7 +85,6 @@ const bridge = {
       return response;
     }
   },
-
   eth_sendTransaction: {
     method: "send_transaction",
     // todo: set storagelimit and gas
@@ -95,7 +93,8 @@ const bridge = {
         const txInput = params[0];
         txInput.gasPrice = txInput.gasPrice || "0x" + (1e9).toString(16);
         txInput.gas = txInput.gas || "0x1000000";
-        // TODO：must get by estimate or throw error, because the default value will be set to 0xfffffffffffff, it must lead to fail.
+        // TODO：must get by estimate or throw error, 
+        // because the default value will be set to 0xfffffffffffff, it must lead to fail.
         txInput.storageLimit = txInput.storageLimit || "0x100";
 
         // simple handle
@@ -152,15 +151,12 @@ const bridge = {
   eth_chainId: {
     method: "cfx_getStatus",
     output: function(response) {
-      if (response.result && response.result.chain_id)
+      if (response.result) {
         response.result = response.result.chain_id;
+      }
       return response;
     }
   },
-  eth_sendRawTransaction: {
-    method: "cfx_sendRawTransaction"
-  },
-
   eth_getTransactionReceipt: {
     method: "cfx_getTransactionReceipt",
     output: function(response) {
@@ -175,7 +171,6 @@ const bridge = {
       return response;
     }
   },
-
   eth_getLogs: {
     method: "cfx_getLogs",
     input: function(params) {
@@ -236,10 +231,10 @@ function ethToConflux(payload) {
   // eslint-disable-next-line no-unused-vars
   const oldMethod = payload.method;
   const handler = bridge[payload.method];
-  debug(`Mapping "${oldMethod}" to "${handler && handler.method}"`);
   if (!handler) {
     return emptyFn;
   }
+  debug(`Mapping "${oldMethod}" to "${handler.method}"`);
 
   let inputFn = handler.input || emptyFn;
   payload.params = inputFn(payload.params);

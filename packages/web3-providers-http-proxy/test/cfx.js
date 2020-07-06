@@ -1,9 +1,13 @@
 const { HttpProvider, ethToConflux } = require("../src/");
-const { MigrateByteCode, genRPCPayload, BlockKeys, TxKeys } = require("./");
+const { genRPCPayload, BlockKeys, TxKeys, DefalutValue } = require("./");
 const URL = "http://127.0.0.1:12537";
 const promisify = require("util").promisify;
 // eslint-disable-next-line no-unused-vars
 const should = require("chai").should();
+const {
+  bytecode: MigrateByteCode,
+  last_completed_migration_data: CallData
+} = require("./contract.json");
 
 // Notice: multi sendTransaction from same account, maybe will have nonce issue
 
@@ -11,6 +15,7 @@ describe("Cfx", function() {
   let promiseSend;
   let getAccounts;
   let accounts;
+  let contractAddress = "";
 
   before(async function() {
     let ethProvider = new HttpProvider(URL, {
@@ -110,7 +115,7 @@ describe("Cfx", function() {
       let txInfo = {
         from: accounts[1],
         to: accounts[0],
-        value: "0x100",
+        value: DefalutValue,
         gasPrice: "0x2540be400"
       };
       let payload = genRPCPayload("eth_sendTransaction", [txInfo]);
@@ -128,35 +133,12 @@ describe("Cfx", function() {
     });
   });
 
-  describe("#cfx_call", function() {
-    it("eth_call", async function() {
-      // TODO
-    });
-  });
-
-  describe("#cfx_getCode", function() {
-    it("getCode", async function() {
-      let payload = genRPCPayload("eth_getTransactionCount", [accounts[0]]);
-      let nonce = await promiseSend(payload);
-      let txInfo = {
-        from: accounts[0],
-        data: MigrateByteCode, // a simple coin contract bytecode
-        gas: "0x100000",
-        nonce,
-        value: "0x0"
-      };
-      payload = genRPCPayload("eth_sendTransaction", [txInfo]);
-      let tx = await promiseSend(payload);
-      tx.should.be.a("string");
-    });
-  });
-
   describe("#cfx_estimateGas", function() {
     it("estimateGas", async function() {
       let txInfo = {
         from: accounts[0],
         to: accounts[1],
-        value: "0x100"
+        value: DefalutValue
       };
       let payload = genRPCPayload("eth_estimateGas", [txInfo]);
       let estimate = await promiseSend(payload);
@@ -179,12 +161,53 @@ describe("Cfx", function() {
       payload = genRPCPayload("eth_sendTransaction", [txInfo]);
       let txHash = await promiseSend(payload);
       txHash.should.be.a("string");
+      console.log("tx", txHash);
+    });
+  });
+
+  describe("#cfx_call", function() {
+    it("eth_call", async function() {
+      let payload = genRPCPayload("eth_call", [
+        {
+          data: CallData,
+          to: contractAddress
+        },
+        "latest"
+      ]);
+      let result = await promiseSend(payload);
+      result.should.be.a("string");
+    });
+  });
+
+  describe("#cfx_getCode", function() {
+    it("getCode", async function() {
+      let payload = genRPCPayload("eth_getTransactionCount", [accounts[0]]);
+      let nonce = await promiseSend(payload);
+      let txInfo = {
+        from: accounts[0],
+        data: MigrateByteCode, // a simple coin contract bytecode
+        gas: "0x100000",
+        nonce,
+        value: "0x0"
+      };
+      payload = genRPCPayload("eth_sendTransaction", [txInfo]);
+      let txHash = await promiseSend(payload);
+      txHash.should.be.a("string");
+      payload = genRPCPayload("eth_getCode", [contractAddress, "latest"]);
+      let code = await promiseSend(payload);
+      code.should.be.a("string");
     });
   });
 
   describe("#cfx_getStorageAt", function() {
     it("get transaction by hash", async function() {
-      // TODO
+      let payload = genRPCPayload("eth_getStorageAt", [
+        contractAddress,
+        "0x0",
+        "latest"
+      ]);
+      let storage = await promiseSend(payload);
+      storage.should.be.a("string");
     });
   });
 });

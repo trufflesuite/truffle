@@ -1,16 +1,24 @@
 const EthProvider = require("web3-providers-http");
-const { MigrateByteCode, genRPCPayload, BlockKeys, TxKeys } = require("./");
+const { genRPCPayload, BlockKeys, TxKeys, DefalutValue } = require("./");
 const URL = "http://127.0.0.1:7545";
 const promisify = require("util").promisify;
 // eslint-disable-next-line no-unused-vars
 const should = require("chai").should();
+const {
+  bytecode: MigrateByteCode,
+  last_completed_migration_data: CallData
+} = require("./contract.json");
 
-// Notice: run this test on ganache node
+/*
+  Notice: run this test on ganache node
+  The test contract is truffle migration
+*/
 
 describe("Eth", function() {
   let promiseSend;
   let getAccounts;
   let accounts;
+  let contractAddress = "0xf888d08c3d1b296286ea5a8f9f24054bb6a057c8";
 
   before(async function() {
     let ethProvider = new EthProvider(URL);
@@ -81,7 +89,10 @@ describe("Eth", function() {
 
   describe("#eth_getTransactionCount", function() {
     it("should get TransactionCount", async function() {
-      let payload = genRPCPayload("eth_getTransactionCount", [accounts[0]]);
+      let payload = genRPCPayload("eth_getTransactionCount", [
+        accounts[0],
+        "latest"
+      ]);
       let nonce = await promiseSend(payload);
       nonce.should.be.a("string");
     });
@@ -99,12 +110,95 @@ describe("Eth", function() {
     });
   });
 
+  describe("#eth_sendRawTransaction", function() {
+    it("sendRawTx", async function() {
+      // TODO
+    });
+  });
+
+  describe("#eth_estimateGas", function() {
+    it("estimateGas", async function() {
+      let txInfo = {
+        from: accounts[0],
+        to: accounts[1],
+        value: DefalutValue
+      };
+      let payload = genRPCPayload("eth_estimateGas", [txInfo]);
+      let estimate = await promiseSend(payload);
+      estimate.should.be.a("string");
+    });
+  });
+
+  describe("#eth_sendTransaction", function() {
+    it("should send simple tx", async function() {
+      let txInfo = {
+        from: accounts[0],
+        to: accounts[1],
+        value: DefalutValue
+      };
+      let payload = genRPCPayload("eth_sendTransaction", [txInfo]);
+      let txHash = await promiseSend(payload);
+      txHash.should.be.a("string");
+    });
+
+    it("should send tx with nonce", async function() {
+      let txInfo = {
+        from: accounts[0],
+        to: accounts[1],
+        value: DefalutValue
+      };
+      let payload = genRPCPayload("eth_getTransactionCount", [
+        accounts[0],
+        "latest"
+      ]);
+      let nonce = await promiseSend(payload);
+      txInfo.nonce = nonce;
+      payload = genRPCPayload("eth_sendTransaction", [txInfo]);
+      let txHash = await promiseSend(payload);
+      txHash.should.be.a("string");
+    });
+
+    it("should deploy an contract", async function() {
+      let txInfo = {
+        from: accounts[0],
+        value: "0x0",
+        data: MigrateByteCode
+      };
+      let payload = genRPCPayload("eth_estimateGas", [txInfo]);
+      let estimate = await promiseSend(payload);
+      txInfo.gas = estimate;
+      payload = genRPCPayload("eth_sendTransaction", [txInfo]);
+      let txHash = await promiseSend(payload);
+      txHash.should.be.a("string");
+    });
+
+    it("should send with gas and gasPrice", async function() {
+      let txInfo = {
+        from: accounts[0],
+        to: accounts[1],
+        value: DefalutValue
+      };
+      // gas
+      let payload = genRPCPayload("eth_estimateGas", [txInfo]);
+      let estimate = await promiseSend(payload);
+      txInfo.gas = estimate;
+      // gas price
+      payload = genRPCPayload("eth_gasPrice");
+      let price = await promiseSend(payload);
+      txInfo.gasPrice = price;
+      // send tx
+      payload = genRPCPayload("eth_sendTransaction", [txInfo]);
+      let txHash = await promiseSend(payload);
+      txHash.should.be.a("string");
+    });
+  });
+
   describe("#eth_getTransactionByHash", function() {
     it("get transaction by hash", async function() {
       let txInfo = {
         from: accounts[1],
         to: accounts[0],
-        value: "0x100"
+        value: DefalutValue
       };
       let payload = genRPCPayload("eth_sendTransaction", [txInfo]);
       let txHash = await promiseSend(payload);
@@ -115,15 +209,17 @@ describe("Eth", function() {
     });
   });
 
-  describe("#eth_sendRawTransaction", function() {
-    it("sendRawTx", async function() {
-      // TODO
-    });
-  });
-
   describe("#eth_call", function() {
     it("eth_call", async function() {
-      // TODO
+      let payload = genRPCPayload("eth_call", [
+        {
+          data: CallData,
+          to: contractAddress
+        },
+        "latest"
+      ]);
+      let result = await promiseSend(payload);
+      result.should.be.a("string");
     });
   });
 
@@ -138,39 +234,21 @@ describe("Eth", function() {
       let txHash = await promiseSend(payload);
       txHash.should.be.a("string");
       // TODO get contract address from tx receipt
-      // TODO get code
-    });
-  });
-
-  describe("#eth_estimateGas", function() {
-    it("estimateGas", async function() {
-      let txInfo = {
-        from: accounts[0],
-        to: accounts[1],
-        value: "0x100"
-      };
-      let payload = genRPCPayload("eth_estimateGas", [txInfo]);
-      let estimate = await promiseSend(payload);
-      estimate.should.be.a("string");
-    });
-  });
-
-  describe("#eth_sendTransaction", function() {
-    it("sendTx", async function() {
-      let txInfo = {
-        from: accounts[0],
-        to: accounts[1],
-        value: "0x100"
-      };
-      let payload = genRPCPayload("eth_sendTransaction", [txInfo]);
-      let txHash = await promiseSend(payload);
-      txHash.should.be.a("string");
+      payload = genRPCPayload("eth_getCode", [contractAddress, "latest"]);
+      let code = await promiseSend(payload);
+      code.should.be.a("string");
     });
   });
 
   describe("#eth_getStorageAt", function() {
-    it("get transaction by hash", async function() {
-      // TODO
+    it("getStorageAt", async function() {
+      let payload = genRPCPayload("eth_getStorageAt", [
+        contractAddress,
+        "0x0",
+        "latest"
+      ]);
+      let storage = await promiseSend(payload);
+      storage.should.be.a("string");
     });
   });
 });

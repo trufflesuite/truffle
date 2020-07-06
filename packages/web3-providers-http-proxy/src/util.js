@@ -1,7 +1,9 @@
 module.exports = {
   emptyFn: origin => origin,
 
-  defaultAdaptor: _payload => this.emptyFn,
+  defaultAdaptor: function(_payload) {
+    return origin => origin;
+  },
 
   numToHex: num => `0x${num.toString(16)}`
 };
