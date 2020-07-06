@@ -1,6 +1,6 @@
 {
   "name": "@truffle/preserve-fs",
-  "version": "0.1.0-0",
+  "version": "0.1.0-preserves.0",
   "description": "Truffle `preserve` command support for arbitrary files and directories",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -29,6 +29,6 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@truffle/preserve": "^0.1.0-0"
+    "@truffle/preserve": "^0.1.0-preserves.0"
   }
 }
