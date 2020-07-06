@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "debug": "^4.1.1",
     "web3-core-helpers": "^1.2.9",
     "web3-providers-http": "^1.2.9",
     "xhr2-cookies": "^1.1.0"
