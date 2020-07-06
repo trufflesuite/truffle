@@ -1,6 +1,6 @@
 {
   "name": "@truffle/resolver",
-  "version": "6.0.7-preserves.0",
+  "version": "6.0.7-preserves.1",
   "description": "Resolve contract dependencies given multiple configurable dependency sources",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver#readme",
   "dependencies": {
-    "@truffle/contract": "^4.2.11-preserves.0",
+    "@truffle/contract": "^4.2.11-preserves.1",
     "@truffle/expect": "^0.0.13",
     "@truffle/provisioner": "^0.2.0",
     "debug": "^4.1.1",

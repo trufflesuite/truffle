@@ -1,6 +1,6 @@
 {
   "name": "@truffle/decoder",
-  "version": "4.3.9-preserves.0",
+  "version": "4.3.9-preserves.1",
   "description": "A decoder and encoder for Solidity variables of all sorts",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@truffle/codec": "^0.5.5",
-    "@truffle/compile-solidity": "^4.3.11-preserves.0",
+    "@truffle/compile-solidity": "^4.3.11-preserves.1",
     "@truffle/solidity-utils": "^1.3.8",
     "bn.js": "^4.11.8",
     "debug": "^4.1.0",

@@ -1,6 +1,6 @@
 {
   "name": "@truffle/preserve-to-filecoin",
-  "version": "0.1.0-preserves.0",
+  "version": "0.1.0-preserves.1",
   "description": "Truffle `preserve` command support for Filecoin",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
@@ -34,7 +34,7 @@
     "@filecoin-shipyard/lotus-client-provider-browser": "^0.0.14",
     "@filecoin-shipyard/lotus-client-rpc": "^0.0.11",
     "@filecoin-shipyard/lotus-client-schema": "0.0.9",
-    "@truffle/preserve": "^0.1.0-preserves.0",
+    "@truffle/preserve": "^0.1.0-preserves.1",
     "cids": "^0.8.3",
     "ipfs-http-client": "^44.3.0",
     "isomorphic-ws": "^4.0.1",
