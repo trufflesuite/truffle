@@ -16,12 +16,15 @@
     "test": "mocha --exit -r ts-node/register test/**/*.test.ts"
   },
   "types": "./typings/index.d.ts",
+  "dependencies": {
+    "source-map-support": "^0.5.19"
+  },
   "devDependencies": {
     "@types/assert": "^1.4.2",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.12.5",
     "@types/web3": "1.0.19",
-    "mocha": "5.2.0",
+    "mocha": "8.0.1",
     "ts-node": "^8.3.0",
     "typescript": "^3.6.3"
   },
@@ -32,8 +35,5 @@
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "dependencies": {
-    "source-map-support": "^0.5.19"
   }
 }
