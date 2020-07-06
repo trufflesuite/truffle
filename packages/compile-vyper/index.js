@@ -92,7 +92,7 @@ function execVyper(options, source_path, callback) {
   ) {
     formats.push("source_map");
   }
-  const command = `vyper -f${formats.join(",")} ${source_path}`;
+  const command = `vyper -f ${formats.join(",")} ${source_path}`;
 
   exec(command, { maxBuffer: 600 * 1024 }, function(err, stdout, stderr) {
     if (err)
