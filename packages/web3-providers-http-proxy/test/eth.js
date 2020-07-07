@@ -1,5 +1,5 @@
 const EthProvider = require("web3-providers-http");
-const { MigrateByteCode, genRPCPayload } = require("./");
+const { MigrateByteCode, genRPCPayload, BlockKeys, TxKeys } = require("./");
 const URL = "http://127.0.0.1:7545";
 const promisify = require("util").promisify;
 // eslint-disable-next-line no-unused-vars
@@ -12,7 +12,7 @@ describe("Eth", function() {
   let getAccounts;
   let accounts;
 
-  beforeEach(async function() {
+  before(async function() {
     let ethProvider = new EthProvider(URL);
     promiseSend = promisify(function(payload, callback) {
       ethProvider.send(payload, function(err, response) {
@@ -31,7 +31,7 @@ describe("Eth", function() {
   });
 
   describe("#eth_blockNumber", function() {
-    it("eth", async function() {
+    it("should return hex block number", async function() {
       let payload = genRPCPayload("eth_blockNumber");
       let blockNumber = await promiseSend(payload);
       blockNumber.should.be.a("string");
@@ -39,7 +39,7 @@ describe("Eth", function() {
   });
 
   describe("#eth_accounts", function() {
-    it("eth", async function() {
+    it("should return a public address array", async function() {
       let payload = genRPCPayload("eth_accounts");
       let receivedAccounts = await promiseSend(payload);
       receivedAccounts.should.be.a("array");
@@ -47,13 +47,13 @@ describe("Eth", function() {
   });
 
   describe("#eth_getBalance", function() {
-    it("should get balance", async function() {
+    it("should get balance in hex format", async function() {
       let payload = genRPCPayload("eth_getBalance", [accounts[0]]);
       let balance = await promiseSend(payload);
       balance.should.be.a("string");
     });
 
-    it("should get balance with block", async function() {
+    it("should get balance with block tag parameter", async function() {
       let payload = genRPCPayload("eth_getBalance", [accounts[0], "latest"]);
       let balance = await promiseSend(payload);
       balance.should.be.a("string");
@@ -67,6 +67,7 @@ describe("Eth", function() {
       payload = genRPCPayload("eth_getBlockByNumber", [number, false]);
       let block = await promiseSend(payload);
       block.should.be.a("object");
+      block.should.have.keys(BlockKeys);
     });
   });
 
@@ -110,6 +111,7 @@ describe("Eth", function() {
       payload = genRPCPayload("eth_getTransactionByHash", [txHash]);
       let tx = await promiseSend(payload);
       tx.should.be.a("object");
+      tx.should.have.keys(TxKeys);
     });
   });
 
@@ -133,8 +135,10 @@ describe("Eth", function() {
         gas: "0x100000"
       };
       let payload = genRPCPayload("eth_sendTransaction", [txInfo]);
-      let tx = await promiseSend(payload);
-      tx.should.be.a("string");
+      let txHash = await promiseSend(payload);
+      txHash.should.be.a("string");
+      // TODO get contract address from tx receipt
+      // TODO get code
     });
   });
 

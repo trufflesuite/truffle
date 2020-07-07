@@ -94,7 +94,9 @@ const bridge = {
         params[0].gas = params[0].gas || "0x1000000";
         params[0].storageLimit = params[0].storageLimit || "0x1000000";
         // simple handle
-        params[0].to = "0x1" + params[0].to.slice(3);
+        if (params[0].to) {
+          params[0].to = "0x1" + params[0].to.slice(3);
+        }
         if (params[0].data) {
           let len = params[0].data.length;
           len = (len - 6) % 32;
@@ -138,7 +140,20 @@ const bridge = {
       formatTx(response.result);
       return response;
     }
+  },
+  web3_clientVersion: {
+    method: "cfx_clientVersion"
+  },
+  eth_chainId: {
+    method: "cfx_getStatus",
+    output: function(response) {
+      response.result = response.result.chain_id;
+      return response;
+    }
   }
+  // eth_sign: {
+  //   method: 'sign'
+  // }
 };
 
 function formatBlock(block) {
