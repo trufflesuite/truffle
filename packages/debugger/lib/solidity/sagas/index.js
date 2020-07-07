@@ -31,7 +31,11 @@ function* functionDepthSaga() {
     let jumpDirection = yield select(solidity.current.jumpDirection);
     debug("checking guard");
     let guard = yield select(solidity.current.nextFrameIsPhantom);
-    if (jumpDirection === "i" && guard) {
+    let nextSource = yield select(solidity.next.source);
+    if (jumpDirection === "i" && guard && nextSource.id !== undefined) {
+      //note: currently unmapped source will have id undefined, rather than
+      //id -1, in our internal representation.  Might want to change this
+      //later.
       yield put(actions.clearPhantomGuard());
     } else {
       yield put(actions.jump(jumpDirection));
