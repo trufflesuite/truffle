@@ -594,6 +594,7 @@ var DebugUtils = {
       } else {
         name = "unknown function";
       }
+      let locationString;
       if (location) {
         let {
           source: { sourcePath },
@@ -603,10 +604,13 @@ var DebugUtils = {
             }
           }
         } = location;
-        return `at ${name} (${sourcePath}:${line + 1}:${column + 1})`; //add 1 to account for 0-indexing
+        locationString = sourcePath
+          ? `${sourcePath}:${line + 1}:${column + 1}` //add 1 to account for 0-indexing
+          : "unknown location";
       } else {
-        return `at ${name} (unknown location)`;
+        locationString = "unknown location";
       }
+      return `at ${name} (${locationString})`;
     });
     let status = stacktrace[0].status;
     if (status != undefined) {
