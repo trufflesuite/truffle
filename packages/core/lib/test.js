@@ -170,6 +170,14 @@ const Test = {
     // Propagate --bail option to mocha
     mochaConfig.bail = config.bail;
 
+    // If the command line overrides color usage, use that.
+    if (config.colors != null) mochaConfig.colors = config.colors;
+
+    // Default to true if configuration isn't set anywhere.
+    if (mochaConfig.colors == null) {
+      mochaConfig.colors = true;
+    }
+
     Mocha = mochaConfig.package || require("mocha");
     delete mochaConfig.package;
     const mocha = new Mocha(mochaConfig);
