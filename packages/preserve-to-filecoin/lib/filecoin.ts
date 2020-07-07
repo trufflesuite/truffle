@@ -149,7 +149,13 @@ export async function* preserve(
   const wait = yield* step({
     message: "Waiting for deal to finish..."
   });
-  await waitForDealToFinish(proposalResult["/"], client);
+  try {
+    await waitForDealToFinish(proposalResult["/"], client);
+  } catch (error) {
+    yield* wait.fail({ error });
+    return;
+  }
+
   yield* wait.succeed();
 
   return proposalResult;
