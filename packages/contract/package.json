@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.2.11-preserves.2",
+  "version": "4.2.11-preserves.3",
   "main": "index.js",
   "scripts": {
     "compile": "sh -c \"mkdir -p ./dist\" && browserify --debug ./index.js | exorcist ./dist/truffle-contract.js.map > ./dist/truffle-contract.js && uglifyjs ./dist/truffle-contract.js -o ./dist/truffle-contract.min.js",
@@ -36,7 +36,7 @@
     "web3-utils": "1.2.1"
   },
   "devDependencies": {
-    "@truffle/compile-solidity": "^4.3.11-preserves.2",
+    "@truffle/compile-solidity": "^4.3.11-preserves.3",
     "browserify": "^14.0.0",
     "chai": "4.2.0",
     "debug": "^4.1.0",
