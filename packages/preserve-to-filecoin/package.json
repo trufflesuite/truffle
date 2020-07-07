@@ -40,6 +40,7 @@
     "ipfs-http-client": "^44.3.0",
     "isomorphic-ws": "^4.0.1",
     "iter-tools": "^7.0.0-rc.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "ws": "^7.3.1"
   }
 }
