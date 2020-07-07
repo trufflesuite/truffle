@@ -81,6 +81,9 @@ module.exports = {
     // Here, we leave it as an external, and use the original-require
     // module that's a dependency of Truffle instead.
     /^original-require$/,
+    /^@truffle\/preserve-fs/,
+    /^@truffle\/preserve-to-ipfs/,
+    /^@truffle\/preserve-to-filecoin/,
     /^mocha$/
   ],
 

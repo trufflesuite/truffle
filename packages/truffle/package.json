@@ -30,6 +30,11 @@
     "mocha": "5.2.0",
     "original-require": "1.0.1"
   },
+  "optionalDependencies": {
+    "@truffle/preserve-fs": "^0.1.0-preserves.5",
+    "@truffle/preserve-to-filecoin": "^0.1.0-preserves.5",
+    "@truffle/preserve-to-ipfs": "^0.1.0-preserves.5"
+  },
   "devDependencies": {
     "@truffle/box": "^1.0.62",
     "@truffle/contract": "^4.2.11-preserves.5",
