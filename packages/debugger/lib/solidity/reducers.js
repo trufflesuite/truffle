@@ -76,12 +76,6 @@ function nextFrameIsPhantom(state = null, action) {
       return false;
     case actions.EXTERNAL_RETURN:
       return false;
-    case actions.JUMP:
-      if (action.jumpDirection === "o") {
-        return false;
-      } else {
-        return state;
-      }
     case actions.EXTERNAL_CALL:
       return action.guard;
     case actions.RESET:
