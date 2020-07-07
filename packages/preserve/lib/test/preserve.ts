@@ -30,7 +30,7 @@ const vowelsRecipe: Recipe = {
 
   dependencies: [],
 
-  async *preserve({ target, log }): Preserves<{ vowels: string }> {
+  async *preserve({ target, log, step }): Preserves<{ vowels: string }> {
     yield* log({ message: "Filtering vowels..." });
 
     const vowels = new Set(["a", "e", "i", "o", "u"]);
@@ -38,6 +38,13 @@ const vowelsRecipe: Recipe = {
     // for testing purposes, this only handles the case of a Content target
     // (no Containers)
     const source = (await thunk(target)).source as string;
+
+    const finalize = yield* step({
+      identifier: "finalize",
+      message: "Finalizing string..."
+    });
+
+    yield* finalize.succeed();
 
     return {
       vowels: source
@@ -119,6 +126,15 @@ it("preserves via a single recipe", async () => {
       type: "update",
       scope: ["vowels-recipe"],
       message: "Filtering vowels..."
+    },
+    {
+      type: "step",
+      scope: ["vowels-recipe", "finalize"],
+      message: "Finalizing string..."
+    },
+    {
+      type: "succeed",
+      scope: ["vowels-recipe", "finalize"]
     },
     {
       type: "succeed",

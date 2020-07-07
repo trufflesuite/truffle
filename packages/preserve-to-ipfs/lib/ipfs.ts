@@ -52,19 +52,41 @@ export async function* preserve(
     target: rawTarget,
     ipfs: { address },
     log,
+    step,
     declare
   } = options;
 
   yield* log({ message: "Preserving to IPFS..." });
 
+  const connect = yield* step({
+    identifier: "connect",
+    message: `Connecting to IPFS node at ${address}...`
+  });
+
+  // init client
+  const ipfs = IpfsHttpClient(address);
+
+  try {
+    const version = await ipfs.version();
+    yield* connect.succeed({
+      label: version,
+      message: `Connected to IPFS node at ${address}`
+    });
+  } catch (error) {
+    yield* connect.fail({ error });
+    return;
+  }
+
+  const upload = yield* step({
+    identifier: "upload",
+    message: "Uploading..."
+  });
+
   const unknowns: {
     [unknown: string]: Preserve.Recipes.Logs.Unknown;
   } = {
-    root: yield* declare({ identifier: "Root CID" })
+    root: yield* upload.declare({ identifier: "Root CID" })
   };
-
-  // init client
-  const ipfs: IpfsClient = IpfsHttpClient(address);
 
   // normalize target
   const { source } = await Preserve.Targets.normalize(rawTarget);
@@ -84,24 +106,30 @@ export async function* preserve(
   });
 
   let result;
-  for await (result of results) {
-    const { path, cid } = result;
+  try {
+    for await (result of results) {
+      const { path, cid } = result;
 
-    const unknown = unknowns[`./${path}`];
-    if (unknown) {
-      yield* unknown.resolve({
-        label: { cid },
-        message: `./${path}: ${cid.toString()}`
-      });
+      const unknown = unknowns[`./${path}`];
+      if (unknown) {
+        yield* unknown.resolve({
+          label: { cid },
+          payload: cid.toString()
+        });
+      }
     }
+  } catch (error) {
+    yield* upload.fail({ error });
   }
+
+  yield* upload.succeed();
 
   // take the last result, which will be the parent container
   const label = result;
 
   yield* unknowns.root.resolve({
     label,
-    message: `Root CID: ${chalk.bold(label.cid.toString())}`
+    payload: chalk.bold(label.cid.toString())
   });
 
   return label;

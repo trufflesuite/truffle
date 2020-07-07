@@ -20,6 +20,8 @@ export interface IpfsClient {
     }
   ): AsyncIterable<Label>;
 
+  version(): Promise<any>;
+
   get(
     cid: CID | string
   ): AsyncIterable<{

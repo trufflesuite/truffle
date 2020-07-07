@@ -106,7 +106,7 @@ export async function* preserve(
     );
   }
 
-  const { log, declare } = options;
+  const { log, step } = options;
 
   yield* log({ message: "Preserving to Filecoin..." });
 
@@ -114,9 +114,11 @@ export async function* preserve(
   const client = createLotusClient({ wsUrl });
   const { cid } = options.labels.get("@truffle/preserve-to-ipfs");
 
-  const getMiners = yield* declare({ identifier: "Retrieving miners..." });
+  const getMiners = yield* step({
+    message: "Retrieving miners..."
+  });
   const miners = await client.stateListMiners([]);
-  yield* getMiners.resolve({ label: miners });
+  yield* getMiners.succeed();
 
   const defaultWalletAddress = await client.walletDefaultAddress();
 
@@ -136,15 +138,19 @@ export async function* preserve(
     MinBlocksDuration: 300
   };
 
-  const startDeal = yield* declare({ identifier: "Proposing storage deal..." });
+  const startDeal = yield* step({
+    message: "Proposing storage deal..."
+  });
   const proposalResult: FilecoinStorageResult = await client.clientStartDeal(
     storageProposal
   );
-  yield* startDeal.resolve({ label: proposalResult });
+  yield* startDeal.succeed();
 
-  const wait = yield* declare({ identifier: "Waiting for deal to finish..." });
+  const wait = yield* step({
+    message: "Waiting for deal to finish..."
+  });
   await waitForDealToFinish(proposalResult["/"], client);
-  yield* wait.resolve({ label: undefined });
+  yield* wait.succeed();
 
   return proposalResult;
 }

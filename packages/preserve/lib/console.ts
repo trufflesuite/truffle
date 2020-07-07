@@ -55,6 +55,7 @@ export const consolePreserve = async (
 
         spinners.add(key, {
           succeedColor: "white",
+          failColor: "white",
           indent: scope.length * 2
         });
         break;
@@ -69,7 +70,7 @@ export const consolePreserve = async (
       }
 
       case "succeed": {
-        const { label, message } = event as Events.Succeed;
+        const { message } = event as Events.Succeed;
 
         const options = message ? { text: message } : {};
 
@@ -77,19 +78,74 @@ export const consolePreserve = async (
         break;
       }
 
+      case "resolve": {
+        const { payload } = event as Events.Resolve;
+
+        const { text } = spinners.pick(key);
+
+        const options = payload
+          ? { text: `${chalk.cyan(text)}: ${payload}` }
+          : {};
+
+        spinners.update(key, {
+          ...options,
+          status: "stopped"
+        });
+
+        break;
+      }
+
       case "fail": {
         const { error } = event as Events.Fail;
-        spinners.fail(key, { text: error.toString() });
+
+        // get current text
+        const { text, indent } = spinners.pick(key);
+
+        const options = error
+          ? {
+              text: `${text}\n${" ".repeat(indent)}${chalk.red(
+                error.toString()
+              )}`
+            }
+          : {};
+
+        spinners.fail(key, options);
+
+        break;
+      }
+
+      case "abort": {
+        spinners.fail(key);
+        break;
+      }
+
+      case "remove": {
+        spinners.remove(key);
         break;
       }
 
       case "declare": {
         const { message } = event as Events.Declare;
+
         spinners.add(key, {
           text: message,
           indent: scope.length * 2,
-          succeedColor: "white"
+          succeedColor: "white",
+          failColor: "white"
         });
+        break;
+      }
+
+      case "step": {
+        const { message } = event as Events.Step;
+
+        spinners.add(key, {
+          text: message,
+          indent: scope.length * 2,
+          succeedColor: "white",
+          failColor: "white"
+        });
+
         break;
       }
     }

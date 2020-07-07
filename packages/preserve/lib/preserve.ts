@@ -1,7 +1,7 @@
 import { Loader } from "./targets";
 import { Recipe } from "./recipes";
 
-import { Event, createController } from "./recipes/logs";
+import { Event, State, createController } from "./recipes/logs";
 
 export interface Request {
   loader: string; // package name
@@ -85,7 +85,9 @@ export async function* preserve(
     // for the result
     let label: any;
 
-    const { begin, succeed, fail, controls } = createController(recipe.name);
+    const { begin, succeed, fail, getState, controls } = createController(
+      recipe.name
+    );
 
     yield* begin();
 
@@ -116,6 +118,10 @@ export async function* preserve(
     // to handle recipes that don't clean up after themselves
     // (will only do anything if still in active state)
     yield* succeed({ label });
+
+    if (getState() !== State.Done) {
+      return;
+    }
 
     labels.set(recipe.name, label);
   }

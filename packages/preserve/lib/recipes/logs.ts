@@ -28,9 +28,21 @@ export namespace Options {
     message?: string;
   }
 
+  export interface Resolve {
+    label?: any;
+    payload?: string;
+  }
+
   export interface Fail {
+    cascade?: boolean;
     error?: Error;
   }
+
+  export interface Abort {
+    cascade?: boolean;
+  }
+
+  export interface Remove {}
 
   export interface Declare {
     identifier: string;
@@ -38,7 +50,7 @@ export namespace Options {
   }
 
   export interface Step {
-    identifier: string;
+    identifier?: string;
     message?: string;
   }
 }
@@ -68,10 +80,27 @@ export namespace Events {
     message?: string;
   }
 
+  export interface Resolve {
+    type: "resolve";
+    scope: Scope;
+    label?: any;
+    payload?: string;
+  }
+
   export interface Fail {
     type: "fail";
     scope: Scope;
     error: Error;
+  }
+
+  export interface Abort {
+    type: "abort";
+    scope: Scope;
+  }
+
+  export interface Remove {
+    type: "remove";
+    scope: Scope;
   }
 
   export interface Declare {
@@ -88,9 +117,18 @@ export namespace Events {
 }
 
 export interface Step {
+  readonly state: State;
+
   begin(options?: Options.Begin): Emitter<Events.Begin>;
+
   succeed(options?: Options.Succeed): Emitter<Events.Succeed>;
-  fail(options?: Options.Fail): Emitter<Events.Fail>;
+  resolve(options?: Options.Resolve): Emitter<Events.Resolve>;
+
+  fail(
+    options?: Options.Fail
+  ): Emitter<Events.Fail | Events.Abort | Events.Remove>;
+  abort(options?: Options.Abort): Emitter<Events.Abort | Events.Remove>;
+  remove(options?: Options.Remove): Emitter<Events.Remove>;
 
   update(options: Options.Update): Emitter<Events.Update>;
 
@@ -99,7 +137,10 @@ export interface Step {
 }
 
 export interface Unknown {
-  resolve(options: Options.Succeed): Emitter<Events.Succeed>;
+  resolve(options: Options.Resolve): Emitter<Events.Resolve>;
+  fail(
+    options?: Options.Fail
+  ): Emitter<Events.Fail | Events.Abort | Events.Remove>;
   extend(options: Options.Declare): Emitter<Events.Declare, Unknown>;
 }
 
@@ -109,7 +150,7 @@ export interface Controls {
   step: (options: Options.Step) => Emitter<Events.Step, Step>;
 }
 
-enum State {
+export enum State {
   Pending = "pending",
   Active = "active",
   Done = "done",
@@ -119,15 +160,24 @@ enum State {
 interface StepLogConstructorOptions {
   scope: Scope;
   state?: State;
+  parent?: Step;
 }
 
 class StepLog implements Step {
-  private state: State;
+  public state: State;
   private scope: Scope;
+  private parent?: Step;
+  private children: Step[];
 
-  constructor({ scope, state = State.Pending }: StepLogConstructorOptions) {
+  constructor({
+    scope,
+    parent,
+    state = State.Pending
+  }: StepLogConstructorOptions) {
     this.scope = scope;
     this.state = state;
+    this.parent = parent;
+    this.children = [];
   }
 
   async *begin() {
@@ -158,10 +208,30 @@ class StepLog implements Step {
     this.state = State.Done;
   }
 
-  async *fail({ error }: Options.Fail = {}) {
+  async *resolve({ label, payload }: Options.Resolve = {}) {
     // only meaningful to succeed if we're currently active
     if (this.state !== State.Active) {
       return;
+    }
+
+    yield this.emit<Events.Resolve>({
+      type: "resolve",
+      label,
+      payload
+    });
+
+    this.state = State.Done;
+  }
+
+  async *fail({ error, cascade = true }: Options.Fail = {}) {
+    // only meaningful to fail if we're currently active
+    if (this.state !== State.Active) {
+      return;
+    }
+
+    // stop all children
+    for (const child of this.children) {
+      yield* child.remove();
     }
 
     yield this.emit<Events.Fail>({
@@ -170,6 +240,50 @@ class StepLog implements Step {
     });
 
     this.state = State.Error;
+
+    // propagate to parent
+    if (this.parent && cascade) {
+      yield* this.parent.abort({ cascade });
+    }
+  }
+
+  async *abort({ cascade = true }: Options.Abort = {}) {
+    // only meaningful to stop if we're currently active
+    if (this.state !== State.Active) {
+      return;
+    }
+
+    // stop all children
+    for (const child of this.children) {
+      yield* child.remove();
+    }
+
+    yield this.emit<Events.Abort>({
+      type: "abort"
+    });
+
+    this.state = State.Error;
+
+    // propagate to parent
+    if (this.parent && cascade) {
+      yield* this.parent.abort({ cascade });
+    }
+  }
+
+  async *remove({  }: Options.Remove = {}) {
+    // only meaningful to stop if we're currently active
+    if (this.state !== State.Active) {
+      return;
+    }
+
+    // stop all children
+    for (const child of this.children) {
+      yield* child.remove();
+    }
+
+    yield this.emit<Events.Remove>({
+      type: "remove"
+    });
   }
 
   async *update({ message }: Options.Update) {
@@ -180,10 +294,15 @@ class StepLog implements Step {
   }
 
   async *declare({ identifier, message }: Options.Declare) {
+    const parent: Step = this;
+
     const child = new StepLog({
       scope: [...this.scope, identifier],
+      parent,
       state: State.Active
     });
+
+    this.children.push(child);
 
     yield child.emit<Events.Declare>({
       type: "declare",
@@ -191,8 +310,12 @@ class StepLog implements Step {
     });
 
     return {
-      async *resolve({ label, message }: Options.Succeed) {
-        yield* child.succeed({ label, message });
+      async *resolve({ label, payload }: Options.Resolve) {
+        yield* child.resolve({ label, payload });
+      },
+
+      async *fail({ error }: Options.Fail) {
+        yield* child.fail({ error });
       },
 
       async *extend(options: Options.Declare) {
@@ -202,10 +325,15 @@ class StepLog implements Step {
   }
 
   async *step({ identifier, message }: Options.Step) {
+    const parent: Step = this;
+
     const child = new StepLog({
-      scope: [...this.scope, identifier],
+      scope: [...this.scope, identifier || message],
+      parent,
       state: State.Active
     });
+
+    this.children.push(child);
 
     yield child.emit<Events.Step>({
       type: "step",
@@ -234,6 +362,7 @@ export const createController = (module: string) => {
     begin: step.begin.bind(step),
     succeed: step.succeed.bind(step),
     fail: step.fail.bind(step),
+    getState: () => step.state,
 
     controls: {
       log: step.update.bind(step),

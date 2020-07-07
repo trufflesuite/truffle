@@ -44,13 +44,9 @@ const constructPlugins = ({ tags, environment, constructors }) => {
     const collection = new Map([]);
 
     for (const [module, constructor] of constructors[kind].entries()) {
-      const options = {};
-
       const tag = tags[kind].get(module);
 
-      if (tag in environment) {
-        options[module] = environment[tag];
-      }
+      const options = environment[tag] || {};
 
       const plugin = new constructor(options);
 
