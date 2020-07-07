@@ -9,6 +9,15 @@ export interface PluginConfig {
   module: string;
 }
 
+export const resolves = (module: string) => {
+  try {
+    originalRequire.resolve(module);
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+
 export const normalizeConfigPlugins = (
   plugins: ConfigPlugins,
   defaultPlugins: string[]
@@ -20,12 +29,20 @@ export const normalizeConfigPlugins = (
   );
 
   for (const plugin of normalized) {
+    // fatal error if we can't load a plugin listed in truffle-config.js
+    if (!resolves(plugin.module)) {
+      throw new TruffleError(
+        `\nError: ${module} listed as a plugin, but not found in global or local node modules!\n`
+      );
+    }
+
     map.set(plugin.module, plugin);
   }
 
-  for (const plugin of defaultPlugins) {
-    if (!map.has(plugin)) {
-      map.set(plugin, { module: plugin });
+  for (const module of defaultPlugins) {
+    // silently ignore missing default plugins
+    if (!map.has(module) && resolves(module)) {
+      map.set(module, { module });
     }
   }
 
@@ -146,16 +163,6 @@ export class Plugin {
       options.plugins || [],
       defaultPlugins
     );
-
-    for (const { module } of plugins) {
-      try {
-        originalRequire.resolve(module);
-      } catch (_) {
-        throw new TruffleError(
-          `\nError: ${module} listed as a plugin, but not found in global or local node modules!\n`
-        );
-      }
-    }
 
     return plugins;
   }
