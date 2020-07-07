@@ -1,3 +1,13 @@
+const Config = require("@truffle/config");
+
+const getConfig = options => {
+  try {
+    return Config.detect(options);
+  } catch (_) {
+    return Config.default().with(options);
+  }
+};
+
 const loadConstructors = plugins => {
   const tags = {
     recipes: new Map([]),
@@ -59,4 +69,4 @@ const constructPlugins = ({ tags, environment, constructors }) => {
   return collections;
 };
 
-module.exports = { loadConstructors, constructPlugins };
+module.exports = { getConfig, loadConstructors, constructPlugins };

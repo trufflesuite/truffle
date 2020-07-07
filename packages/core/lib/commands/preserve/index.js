@@ -11,11 +11,11 @@ module.exports = {
   description:
     "Save data to decentralized storage platforms like IPFS and Filecoin",
   help: async options => {
-    const Config = require("@truffle/config");
     const { Plugin } = require("@truffle/plugins");
-    const { loadConstructors } = require("./plugins");
+    const { getConfig, loadConstructors } = require("./plugins");
 
-    const config = Config.detect(options);
+    const config = getConfig(options);
+
     const plugins = Plugin.list(config, defaultPlugins);
 
     const { tags, constructors } = loadConstructors(plugins);
@@ -46,12 +46,15 @@ module.exports = {
   },
   run: callbackify(async options => {
     const TruffleError = require("@truffle/error");
-    const Config = require("@truffle/config");
     const { Plugin } = require("@truffle/plugins");
-    const { loadConstructors, constructPlugins } = require("./plugins");
+    const {
+      getConfig,
+      loadConstructors,
+      constructPlugins
+    } = require("./plugins");
     const { consolePreserve } = require("@truffle/preserve");
 
-    const config = Config.detect(options);
+    const config = getConfig(options);
 
     const plugins = Plugin.list(config, defaultPlugins);
 
