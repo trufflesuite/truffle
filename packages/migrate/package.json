@@ -8,14 +8,14 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.1.27-preserves.4",
+  "version": "3.1.27-preserves.5",
   "main": "index.js",
   "scripts": {
     "test": "mocha ./test/* ./test/**/*"
   },
   "dependencies": {
     "@truffle/config": "^1.2.19",
-    "@truffle/deployer": "^3.1.27-preserves.4",
+    "@truffle/deployer": "^3.1.27-preserves.5",
     "@truffle/expect": "^0.0.13",
     "@truffle/interface-adapter": "^0.4.9",
     "@truffle/reporters": "^1.1.0",
