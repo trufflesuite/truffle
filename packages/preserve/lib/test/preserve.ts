@@ -207,35 +207,35 @@ it("preserves via a recipe that depends on another recipe", async () => {
       message: "# of u's"
     },
     {
-      type: "succeed",
+      type: "resolve",
       scope: ["vowels-counter-recipe", "a"],
       label: {
         count: 0
       }
     },
     {
-      type: "succeed",
+      type: "resolve",
       scope: ["vowels-counter-recipe", "e"],
       label: {
         count: 1
       }
     },
     {
-      type: "succeed",
+      type: "resolve",
       scope: ["vowels-counter-recipe", "i"],
       label: {
         count: 0
       }
     },
     {
-      type: "succeed",
+      type: "resolve",
       scope: ["vowels-counter-recipe", "o"],
       label: {
         count: 2
       }
     },
     {
-      type: "succeed",
+      type: "resolve",
       scope: ["vowels-counter-recipe", "u"],
       label: {
         count: 0
