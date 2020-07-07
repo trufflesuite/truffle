@@ -171,11 +171,11 @@ const Test = {
     mochaConfig.bail = config.bail;
 
     // If the command line overrides color usage, use that.
-    if (config.colors != null) mochaConfig.colors = config.colors;
+    if (config.color != null) mochaConfig.color = config.color;
 
     // Default to true if configuration isn't set anywhere.
-    if (mochaConfig.colors == null) {
-      mochaConfig.colors = true;
+    if (mochaConfig.color == null) {
+      mochaConfig.color = true;
     }
 
     Mocha = mochaConfig.package || require("mocha");
