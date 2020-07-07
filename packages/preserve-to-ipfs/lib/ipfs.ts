@@ -50,7 +50,7 @@ export async function* preserve(
 ): Preserve.Recipes.Preserves<Label> {
   const {
     target: rawTarget,
-    ipfs: { address },
+    ipfs: { address = "http://localhost:5001" },
     log,
     step,
     declare

@@ -46,7 +46,7 @@ const constructPlugins = ({ tags, environment, constructors }) => {
     for (const [module, constructor] of constructors[kind].entries()) {
       const tag = tags[kind].get(module);
 
-      const options = environment[tag] || {};
+      const options = (environment || {})[tag] || {};
 
       const plugin = new constructor(options);
 

@@ -20,7 +20,14 @@ module.exports = {
 
     const { tags, constructors } = loadConstructors(plugins);
 
-    const flags = [];
+    const flags = [
+      {
+        option: "--environment",
+        description:
+          "Environment name, as defined in truffle-config `environments` object"
+      }
+    ];
+
     for (const [module, tag] of tags.recipes.entries()) {
       const option = `--${tag}`;
       const description = constructors.recipes.get(module).help;
@@ -32,11 +39,13 @@ module.exports = {
     }
 
     return {
-      usage: "truffle preserve <target-path>... --<recipe-tag>",
+      usage:
+        "truffle preserve [--environment=<environment>] <target-path>... --<recipe-tag>",
       options: flags
     };
   },
   run: callbackify(async options => {
+    const TruffleError = require("@truffle/error");
     const Config = require("@truffle/config");
     const { Plugin } = require("@truffle/plugins");
     const { loadConstructors, constructPlugins } = require("./plugins");
@@ -48,7 +57,17 @@ module.exports = {
 
     const { tags, modules, constructors } = loadConstructors(plugins);
 
-    const environment = (config.environments || {}).development || {};
+    const environments = config.environments || {};
+
+    if (config.environment && !(config.environment in environments)) {
+      throw new TruffleError(
+        `Unknown environment: ${
+          config.environment
+        }. Check your truffle-config.js?`
+      );
+    }
+
+    const environment = environments[config.environment || "development"];
 
     const { recipes, loaders } = constructPlugins({
       tags,
