@@ -171,7 +171,12 @@ const Test = {
     mochaConfig.bail = config.bail;
 
     // If the command line overrides color usage, use that.
-    if (config.color != null) mochaConfig.color = config.color;
+    if (config.color != null) {
+      mochaConfig.color = config.color;
+    } else if (config.colors != null) {
+      // --colors is a mocha alias for --color
+      mochaConfig.color = config.colors;
+    }
 
     // Default to true if configuration isn't set anywhere.
     if (mochaConfig.color == null) {
