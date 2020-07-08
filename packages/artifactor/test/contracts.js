@@ -2,7 +2,7 @@ const assert = require("chai").assert;
 const Artifactor = require("../");
 const contract = require("@truffle/contract");
 const Schema = require("@truffle/contract-schema");
-const temp = require("temp").track();
+const tmp = require("tmp");
 const path = require("path");
 const fs = require("fs");
 const Config = require("@truffle/config");
@@ -65,14 +65,15 @@ describe("artifactor + require", () => {
     bytecode = compiled.bytecode;
 
     // Setup
-    const dirPath = temp.mkdirSync({
-      dir: path.resolve("./"),
+    tmp.setGracefulCleanup();
+    const tempDir = tmp.dirSync({
+      unsafeCleanup: true,
       prefix: "tmp-test-contract-"
     });
 
-    const expectedFilepath = path.join(dirPath, "Example.json");
+    const expectedFilepath = path.join(tempDir.name, "Example.json");
 
-    artifactor = new Artifactor(dirPath);
+    artifactor = new Artifactor(tempDir.name);
 
     await artifactor
       .save({
@@ -101,11 +102,6 @@ describe("artifactor + require", () => {
       });
     })
   );
-
-  after(done => {
-    temp.cleanupSync();
-    done();
-  });
 
   it("should set the transaction hash of contract instantiation", () =>
     Example.new(1, { gas: 3141592 }).then(({ transactionHash }) => {

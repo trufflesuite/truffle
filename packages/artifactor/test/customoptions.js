@@ -1,6 +1,6 @@
 const assert = require("chai").assert;
 const Artifactor = require("../");
-const temp = require("temp").track();
+const tmp = require("tmp");
 const contract = require("@truffle/contract");
 const path = require("path");
 const requireNoCache = require("require-nocache")(module);
@@ -8,14 +8,15 @@ const requireNoCache = require("require-nocache")(module);
 describe("Custom options", () => {
   it("allows custom options", done => {
     // Setup
-    const dirPath = temp.mkdirSync({
-      dir: path.resolve("./"),
+    tmp.setGracefulCleanup();
+    const tempDir = tmp.dirSync({
+      unsafeCleanup: true,
       prefix: "tmp-test-contract-"
     });
 
-    const expected_filepath = path.join(dirPath, "Example.json");
+    const expected_filepath = path.join(tempDir.name, "Example.json");
 
-    artifactor = new Artifactor(dirPath);
+    artifactor = new Artifactor(tempDir.name);
 
     artifactor
       .save({
