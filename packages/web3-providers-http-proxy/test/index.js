@@ -11,7 +11,8 @@ const provider = new HttpProvider(URL, {
 });
 web3.setProvider(provider);
 
-const address = "0xf888d08C3D1b296286eA5A8F9F24054bb6a057C8";
+const contractAddress = "0xf888d08C3D1b296286eA5A8F9F24054bb6a057C8";
+const account = "0x18b3aF791E23A5e7AcE86DB8Cd97c2879116d9c3";
 
 // eslint-disable-next-line no-unused-vars
 async function testProvider() {
@@ -21,7 +22,11 @@ async function testProvider() {
 
   // set provider for all later instances to use
   Contract.setProvider(provider);
-  let contract = new Contract(require("./abi.json"), address);
+  let contract = new Contract(require("./contract.json").abi, contractAddress);
+
+  await contract.methods.setCompleted(3).send({
+    from: account
+  });
 
   let result = await contract.methods.last_completed_migration().call();
   console.log("result", result);
