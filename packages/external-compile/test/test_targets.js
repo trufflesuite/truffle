@@ -1,9 +1,7 @@
 const debug = require("debug")("test:targets");
-
 const fs = require("fs");
 const path = require("path");
-const { promisify } = require("util");
-const temp = require("temp").track();
+const tmp = require("tmp");
 const assert = require("chai").assert;
 const web3 = {};
 web3.utils = require("web3-utils");
@@ -14,7 +12,8 @@ describe("Compilation Targets", () => {
   let cwd;
 
   before("make temporary directory", async () => {
-    cwd = await promisify(temp.mkdir)("external-targets");
+    tmp.setGracefulCleanup();
+    cwd = tmp.dirSync({ unsafeCleanup: true }).name;
   });
 
   describe("Property outputs", () => {

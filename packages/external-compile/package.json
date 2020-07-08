@@ -23,7 +23,7 @@
   "devDependencies": {
     "chai": "4.2.0",
     "mocha": "5.2.0",
-    "temp": "^0.8.3"
+    "tmp": "^0.2.1"
   },
   "keywords": [
     "ethereum",
