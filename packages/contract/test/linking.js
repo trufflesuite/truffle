@@ -1,7 +1,6 @@
 // Override artifactor
 const Config = require("@truffle/config");
 const { assert } = require("chai");
-const temp = require("temp").track();
 const contract = require("../");
 const Web3 = require("web3");
 const debug = require("debug")("ganache-core");
@@ -44,11 +43,6 @@ describe("Library linking", function() {
     });
 
     LibraryExample.setNetwork(network_id);
-  });
-
-  after(function(done) {
-    temp.cleanupSync();
-    done();
   });
 
   it("leaves binary unlinked initially", function() {
@@ -212,11 +206,6 @@ describe("Library linking with contract objects", function() {
       })
       .then(done)
       .catch(done);
-  });
-
-  after(function(done) {
-    temp.cleanupSync();
-    done();
   });
 
   it("should consume library's events when linked", function(done) {

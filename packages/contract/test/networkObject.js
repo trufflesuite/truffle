@@ -1,12 +1,9 @@
 var assert = require("chai").assert;
-var temp = require("temp").track();
 var util = require("./util");
 
 describe("Network Object [ @geth ]", function() {
   var Example;
   var network_id;
-
-  after(() => temp.cleanupSync());
 
   it("errors when setting an invalid provider", function(done) {
     try {
