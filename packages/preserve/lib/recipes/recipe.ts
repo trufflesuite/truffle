@@ -11,8 +11,8 @@ export interface Constructor {
 
 export interface PreserveOptions extends Controls {
   target: Target;
-  labels: Map<string, any>;
-  settings: any;
+  labels?: Map<string, any>;
+  settings?: any;
 }
 
 export type Label = any;

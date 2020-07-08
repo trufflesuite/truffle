@@ -3,7 +3,7 @@ const IpfsdCtl: any = require("ipfsd-ctl");
 const IpfsHttpClient: any = require("ipfs-http-client");
 
 import * as Preserve from "@truffle/preserve";
-import { preserveToIpfs } from "../ipfs";
+import { preserve } from "../ipfs";
 
 import { fetch } from "../../test/fetch";
 
@@ -108,7 +108,7 @@ const tests: Test[] = [
   }
 ];
 
-describe("preserveToIpfs", () => {
+describe("preserve", () => {
   let node: IpfsNode;
   let address: string;
 
@@ -140,7 +140,7 @@ describe("preserveToIpfs", () => {
       });
 
       it("saves correctly to IPFS", async () => {
-        const { cid } = await preserveToIpfs({
+        const { cid } = await Preserve.run({ preserve })({
           target,
           ipfs: {
             address

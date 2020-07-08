@@ -1,5 +1,6 @@
 import { Loader } from "./targets";
-import { Recipe } from "./recipes";
+import { Recipe, Preserves, Label } from "./recipes";
+import * as Recipes from "./recipes";
 
 import { Event, State, createController } from "./recipes/logs";
 
@@ -19,6 +20,43 @@ export interface PreserveResult {
   name: string; // recipe package name
   label: any; // recipe label
 }
+
+export interface RunOptions<
+  O extends Recipes.PreserveOptions,
+  L extends Label
+> {
+  preserve: PreserveFunc<O, L>;
+  name?: string;
+}
+export type PreserveFunc<O extends Recipes.PreserveOptions, L extends Label> = (
+  options: O
+) => Preserves<L>;
+export type RunFunc<O extends Recipes.PreserveOptions, L extends Label> = (
+  options: Omit<O, "log" | "declare" | "step">
+) => Promise<L>;
+
+export const run = <O extends Recipes.PreserveOptions, L extends Label>(
+  options: RunOptions<O, L>
+): RunFunc<O, L> => {
+  const { preserve, name = "preserve" } = options;
+
+  const { controls } = createController(name);
+
+  return async options => {
+    const preserves = preserve({
+      ...options,
+      ...controls
+    } as O);
+
+    while (true) {
+      const { done, value } = await preserves.next();
+
+      if (done) {
+        return value as L;
+      }
+    }
+  };
+};
 
 export async function* preserve(
   options: PreserveOptions

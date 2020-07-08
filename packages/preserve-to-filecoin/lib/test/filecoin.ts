@@ -1,9 +1,9 @@
 const IpfsHttpClient: any = require("ipfs-http-client");
 
 import * as Preserve from "@truffle/preserve";
-import { preserveToIpfs } from "../../../preserve-to-ipfs";
+import { preserve as preserveToIpfs } from "@truffle/preserve-to-ipfs";
 import {
-  preserveToFilecoin,
+  preserve,
   createLotusClient,
   LotusClient,
   getDealState
@@ -102,7 +102,7 @@ const tests: Test[] = [
   }
 ];
 
-describe("preserveToFilecoin", () => {
+describe("preserve", () => {
   let IPFSConfig: {
     host: string;
     port: string;
@@ -139,7 +139,7 @@ describe("preserveToFilecoin", () => {
       it("stores to Filecoin correctly", async () => {
         jest.setTimeout(200000);
 
-        const { cid } = await preserveToIpfs({
+        const { cid } = await Preserve.run({ preserve: preserveToIpfs })({
           target,
           ipfs: {
             address:
@@ -152,7 +152,7 @@ describe("preserveToFilecoin", () => {
           }
         });
 
-        const proposalResult = await preserveToFilecoin({
+        const proposalResult = await Preserve.run({ preserve })({
           target: target,
           filecoin: {
             address: address

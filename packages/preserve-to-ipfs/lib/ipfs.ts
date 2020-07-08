@@ -19,32 +19,6 @@ export interface Label {
   cid: CID;
 }
 
-export const preserveToIpfs = async (
-  options: Omit<
-    PreserveToIpfsOptions,
-    "log" | "declare" | "step" | "settings" | "labels"
-  >
-): Promise<Label> => {
-  const { controls } = Preserve.Recipes.Logs.createController(
-    "@truffle/preserve-to-ipfs"
-  );
-
-  const preserves = preserve({
-    ...options,
-    ...controls,
-    settings: undefined,
-    labels: new Map([])
-  });
-
-  while (true) {
-    const { done, value } = await preserves.next();
-
-    if (done) {
-      return value as Label;
-    }
-  }
-};
-
 export async function* preserve(
   options: PreserveToIpfsOptions
 ): Preserve.Recipes.Preserves<Label> {

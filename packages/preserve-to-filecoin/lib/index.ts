@@ -10,8 +10,6 @@ import * as Preserve from "@truffle/preserve";
 
 import { preserve, FilecoinStorageResult } from "./filecoin";
 
-export { preserveToFilecoin } from "./filecoin";
-
 export interface ConstructorOptions
   extends Preserve.Recipes.ConstructorOptions {
   address: string;

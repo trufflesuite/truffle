@@ -7,9 +7,7 @@ import * as Preserve from "@truffle/preserve";
 
 import { Label, preserve } from "./ipfs";
 
-export { Label };
-
-export { preserveToIpfs } from "./ipfs";
+export { Label, preserve };
 
 export interface ConstructorOptions
   extends Preserve.Recipes.ConstructorOptions {

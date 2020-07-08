@@ -72,31 +72,6 @@ export const createLotusClient = (
   return new LotusRPC(provider, { schema });
 };
 
-export const preserveToFilecoin = async (
-  options: Omit<
-    PreserveToFilecoinOptions,
-    "log" | "declare" | "step" | "settings"
-  >
-): Promise<FilecoinStorageResult> => {
-  const { controls } = Preserve.Recipes.Logs.createController(
-    "@truffle/preserve-to-filecoin"
-  );
-
-  const preserves = preserve({
-    ...options,
-    ...controls,
-    settings: undefined
-  });
-
-  while (true) {
-    const { done, value } = await preserves.next();
-
-    if (done) {
-      return value as FilecoinStorageResult;
-    }
-  }
-};
-
 export async function* preserve(
   options: PreserveToFilecoinOptions
 ): Preserve.Recipes.Preserves<FilecoinStorageResult> {
