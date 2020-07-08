@@ -9,7 +9,6 @@
   },
   "version": "0.4.10",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "directories": {
     "lib": "lib"
   },
@@ -19,6 +18,7 @@
     "test": "mocha --exit -r ts-node/register test/**/*.test.ts",
     "watch": "tsc -w"
   },
+  "types": "dist/index.d.ts",
   "dependencies": {
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
@@ -31,7 +31,7 @@
     "@types/mocha": "^5.2.6",
     "@types/web3": "1.0.19",
     "ganache-core": "2.10.2",
-    "mocha": "^6.0.2",
+    "mocha": "8.0.1",
     "ts-node": "^8.0.3",
     "typescript": "^3.6.3"
   },

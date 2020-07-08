@@ -1,38 +1,21 @@
 {
   "name": "@truffle/config",
-  "version": "1.2.20",
   "description": "Utility for interacting with truffle-config.js files",
+  "license": "MIT",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/config#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/config",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "1.2.20",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "prepare": "yarn build",
     "test": "yarn build && mocha --exit -r ts-node/register test/**/*.test.ts"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/config",
-  "keywords": [
-    "ethereum",
-    "truffle",
-    "config"
-  ],
-  "author": "Tim Coulter <tim@trufflesuite.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/config#readme",
-  "devDependencies": {
-    "@types/configstore": "^4.0.0",
-    "@types/find-up": "^2.1.0",
-    "@types/lodash.assignin": "^4.2.6",
-    "@types/lodash.merge": "^4.6.6",
-    "@types/node": "^12.12.9",
-    "@types/sinon": "^7.0.13",
-    "mocha": "6.2.0",
-    "sinon": "^7.5.0",
-    "ts-node": "^8.4.1",
-    "typescript": "^3.6.3"
-  },
+  "types": "dist/index.d.ts",
   "dependencies": {
     "@truffle/error": "^0.0.8",
     "@truffle/events": "^0.0.5",
@@ -45,6 +28,23 @@
     "original-require": "1.0.1",
     "source-map-support": "^0.5.19"
   },
+  "devDependencies": {
+    "@types/configstore": "^4.0.0",
+    "@types/find-up": "^2.1.0",
+    "@types/lodash.assignin": "^4.2.6",
+    "@types/lodash.merge": "^4.6.6",
+    "@types/node": "^12.12.9",
+    "@types/sinon": "^7.0.13",
+    "mocha": "8.0.1",
+    "sinon": "^7.5.0",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.3"
+  },
+  "keywords": [
+    "config",
+    "ethereum",
+    "truffle"
+  ],
   "publishConfig": {
     "access": "public"
   }

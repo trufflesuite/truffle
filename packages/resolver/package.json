@@ -1,9 +1,15 @@
 {
   "name": "@truffle/resolver",
-  "version": "6.0.7",
   "description": "Resolve contract dependencies given multiple configurable dependency sources",
+  "license": "MIT",
+  "author": "Tim Coulter <tim@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "6.0.7",
   "main": "dist/lib/index.js",
-  "types": "dist/lib/index.d.ts",
   "files": [
     "dist"
   ],
@@ -12,19 +18,7 @@
     "prepare": "yarn build",
     "test": "mocha -r ts-node/register test/*.ts"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver",
-  "keywords": [
-    "ethereum",
-    "truffle",
-    "dependencies",
-    "resolver"
-  ],
-  "author": "Tim Coulter <tim@trufflesuite.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver#readme",
+  "types": "dist/lib/index.d.ts",
   "dependencies": {
     "@truffle/contract": "^4.2.11",
     "@truffle/expect": "^0.0.13",
@@ -36,17 +30,23 @@
     "source-map-support": "^0.5.19",
     "supports-color": "^7.1.0"
   },
+  "peerDependencies": {
+    "@truffle/contract": "^4.0.13"
+  },
   "devDependencies": {
     "@types/node": "^13.11.1",
     "@types/sinon": "^9.0.0",
-    "mocha": "5.2.0",
+    "mocha": "8.0.1",
     "sinon": "^7.3.1",
     "ts-node": "^8.8.2",
     "typescript": "^3.8.3"
   },
-  "peerDependencies": {
-    "@truffle/contract": "^4.0.13"
-  },
+  "keywords": [
+    "dependencies",
+    "ethereum",
+    "resolver",
+    "truffle"
+  ],
   "publishConfig": {
     "access": "public"
   }
