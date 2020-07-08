@@ -182,7 +182,7 @@ const command = {
     const Contracts = require("@truffle/workflow-compile");
     const { Environment } = require("@truffle/environment");
     const Config = require("@truffle/config");
-    const temp = require("temp").track();
+    const tmp = require("tmp");
     const { promisify } = require("util");
     const promisifiedCopy = promisify(require("../copy"));
 
@@ -224,7 +224,11 @@ const command = {
     async function setupDryRunEnvironmentThenRunMigrations(config) {
       await Environment.fork(config);
       // Copy artifacts to a temporary directory
-      const temporaryDirectory = temp.mkdirSync("migrate-dry-run-");
+      tmp.setGracefulCleanup();
+      const temporaryDirectory = tmp.dirSync({
+        unsafeCleanup: true,
+        prefix: "migrate-dry-run-"
+      }).name;
 
       await promisifiedCopy(
         config.contracts_build_directory,

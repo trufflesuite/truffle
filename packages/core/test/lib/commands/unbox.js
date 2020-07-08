@@ -2,7 +2,7 @@ const assert = require("assert");
 const unbox = require("../../../lib/commands/unbox");
 const Config = require("@truffle/config");
 const sinon = require("sinon");
-const temp = require("temp").track();
+const tmp = require("tmp");
 let tempDir, mockConfig;
 
 describe("commands/unbox.js", () => {
@@ -37,10 +37,13 @@ describe("commands/unbox.js", () => {
 
   describe("run", () => {
     beforeEach(() => {
-      tempDir = temp.mkdirSync();
+      tmp.setGracefulCleanup();
+      tempDir = tmp.dirSync({
+        unsafeCleanup: true
+      });
       mockConfig = Config.default().with({
         logger: { log: () => {} },
-        working_directory: tempDir
+        working_directory: tempDir.name
       });
       mockConfig.events = {
         emit: () => {}

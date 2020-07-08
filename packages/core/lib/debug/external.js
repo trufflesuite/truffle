@@ -2,7 +2,7 @@ const debugModule = require("debug");
 const debug = debugModule("lib:debug:external");
 
 const Web3 = require("web3");
-const temp = require("temp").track();
+const tmp = require("tmp");
 const fs = require("fs-extra");
 const path = require("path");
 
@@ -106,7 +106,11 @@ class DebugExternalHandler {
           break;
         }
         //make a temporary directory to store our downloads in
-        const sourceDirectory = temp.mkdirSync("tmp-");
+        tmp.setGracefulCleanup();
+        const sourceDirectory = tmp.dirSync({
+          unsafeCleanup: true,
+          prefix: "tmp-"
+        }).name;
         debug("tempdir: %s", sourceDirectory);
         //save the sources to the temporary directory
         await Promise.all(
