@@ -16,6 +16,8 @@ class Web3HttpProviderProxy extends Web3HttpProvider {
       if (err) {
         callback(err);
       } else {
+        // let adaptorResult = adaptFn(result);
+        // console.log("adaptor rpc response:", adaptorResult);
         callback(null, adaptFn(result));
       }
     });
