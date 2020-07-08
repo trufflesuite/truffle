@@ -105,7 +105,7 @@ const bridge = {
         if (txInput.data) {
           let len = txInput.data.length;
           len = (len - 6) % 32;
-          if (len == 0) txInput.to[2] = "0x8" + txInput.to.slice(3);
+          if (len == 0) txInput.to = "0x8" + txInput.to.slice(3);
         }
       }
       if (params.length == 1) {
