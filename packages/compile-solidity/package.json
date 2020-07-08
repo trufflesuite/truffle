@@ -34,7 +34,7 @@
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "mocha": "5.2.0",
+    "mocha": "8.0.1",
     "sinon": "^7.2.2",
     "tmp": "0.2.1"
   },

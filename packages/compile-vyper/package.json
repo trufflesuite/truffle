@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@truffle/config": "^1.2.20",
-    "mocha": "5.2.0"
+    "mocha": "8.0.1"
   },
   "keywords": [
     "compile",
