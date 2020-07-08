@@ -1,6 +1,6 @@
 import { Web3Shim } from "..";
 // @ts-ignore
-import PromiEventImpl from "web3-core-promievent"
+import PromiEventImpl from "web3-core-promievent";
 import { TxHash, Transaction, TransactionReceipt } from "lib/adapter/types";
 import { Tx as web3Tx } from "web3/eth/types";
 // @ts-ignore
@@ -26,7 +26,7 @@ export const ConfluxDefinition = {
   }
 };
 
-var cfx: Conflux
+var cfx: Conflux;
 
 const overrides = {
   initCfx: (web3: Web3Shim) => {
@@ -42,7 +42,7 @@ const overrides = {
   },
 
   getBlockNumber: (web3: Web3Shim) => {
-    const newMethod = function (): Promise<number> {
+    const newMethod = function(): Promise<number> {
       let _promise = cfx.getEpochNumber("latest_state"); // TODO hardcode
       return _promise;
     };
@@ -50,14 +50,14 @@ const overrides = {
   },
 
   getNetworkId: (web3: Web3Shim) => {
-    const newMethod = function (): Promise<number> {
+    const newMethod = function(): Promise<number> {
       return Promise.resolve(1592304361448); // TODO hardcode
     };
     web3.eth.net.getId = newMethod;
   },
 
   getAccounts: (web3: Web3Shim) => {
-    const newMethod = function (): Promise<string[]> {
+    const newMethod = function(): Promise<string[]> {
       return cfx.provider.call("accounts");
     };
     web3.eth.getAccounts = newMethod;
@@ -81,7 +81,7 @@ const overrides = {
    * 3. 字段的缺失?
    */
   getBlock: (web3: Web3Shim) => {
-    const newMethod = async function (epochNum: any): Promise<any> {
+    const newMethod = async function(epochNum: any): Promise<any> {
       if (epochNum == "latest") {
         epochNum = "latest_state";
       }
@@ -97,7 +97,7 @@ const overrides = {
    * main difference is 'blockNumber'
    */
   getTransaction: (web3: Web3Shim) => {
-    const newMethod = async function (tx: TxHash): Promise<Transaction> {
+    const newMethod = async function(tx: TxHash): Promise<Transaction> {
       let trans = await cfx.getTransactionByHash(tx);
       // @ts-ignore
       trans.blockNumber = trans.epochHeight;
@@ -114,7 +114,7 @@ const overrides = {
    * outcomeStatus -> status
    */
   getTransactionReceipt: (web3: Web3Shim) => {
-    const newMethod = async function (tx: TxHash): Promise<TransactionReceipt> {
+    const newMethod = async function(tx: TxHash): Promise<TransactionReceipt> {
       let txReceipt = await cfx.getTransactionReceipt(tx);
       if (txReceipt) {
         // @ts-ignore
@@ -125,7 +125,7 @@ const overrides = {
         txReceipt.transactionIndex = txReceipt.index;
         // @ts-ignore
         txReceipt.status = txReceipt.outcomeStatus === 0 ? 1 : 0; // conflux和以太坊状态相反
-        txReceipt.gasUsed = `0x${txReceipt.gasUsed.toString(16)}`;
+        // txReceipt.gasUsed = `0x${txReceipt.gasUsed.toString(16)}`;
       }
       return Promise.resolve(txReceipt);
     };
@@ -133,7 +133,7 @@ const overrides = {
   },
 
   getBalance: (web3: Web3Shim) => {
-    const newMethod = async function (address: string): Promise<string> {
+    const newMethod = async function(address: string): Promise<string> {
       let balance = await cfx.getBalance(address, "latest_state");
       return balance.toString();
     };
@@ -141,7 +141,7 @@ const overrides = {
   },
 
   getCode: (web3: Web3Shim) => {
-    const newMethod = async function (address: string): Promise<string> {
+    const newMethod = async function(address: string): Promise<string> {
       try {
         let code = await cfx.getCode(address);
         return code;
@@ -153,7 +153,7 @@ const overrides = {
   },
 
   estimateGas: (web3: Web3Shim) => {
-    const newMethod = async function (txConfig: Transaction): Promise<number> {
+    const newMethod = async function(txConfig: Transaction): Promise<number> {
       let result = await cfx.estimateGasAndCollateral(txConfig);
       // @ts-ignore
       return Promise.resolve(result.gasUsed);
@@ -163,8 +163,8 @@ const overrides = {
 
   sendTransaction: (web3: Web3Shim) => {
     // @ts-ignore
-    let newMethod = function (
-      tx: web3Tx      // @ts-ignore
+    let newMethod = function(
+      tx: web3Tx // @ts-ignore
     ) {
       // console.trace("\n-----------sendTransaction");
       let cfxTx: any = {};
@@ -190,23 +190,22 @@ const overrides = {
 function createCfxPromiEvent(web3: Web3Shim, tx: any, password: string) {
   let promiEvent = PromiEventImpl(false);
 
-  let fireError = function (err: string, _promiEvent: any) {
+  let fireError = function(err: string, _promiEvent: any) {
     console.trace(`cfx promise event err:${err}`);
-    _promiEvent.eventEmitter.emit("error", err)
+    _promiEvent.eventEmitter.emit("error", err);
     if (_promiEvent.reject) {
       _promiEvent.reject(err);
     }
   };
 
-
-  let start = async function (_promiEvent: any) {
+  let start = async function(_promiEvent: any) {
     try {
       // console.log("\tstart cfx promise event");
       let txhash = await cfxSendTransaction.call(cfx, tx, password);
       // console.log("\tget txhash done.", txhash);
 
       //use async due to emit is synchronize action. and truffle will get stuck for unkown reasons.
-      (async function () {
+      (async function() {
         _promiEvent.eventEmitter.emit("transactionHash", txhash);
       })();
 
@@ -222,7 +221,11 @@ function createCfxPromiEvent(web3: Web3Shim, tx: any, password: string) {
             // console.log(`\ttx is packed, get receipt ${receipt}`);
             clearInterval(loopForTxRpt);
             _promiEvent.eventEmitter.emit("receipt", receipt);
-            _promiEvent.eventEmitter.emit("confirmation", receipt.blockNumber, receipt);
+            _promiEvent.eventEmitter.emit(
+              "confirmation",
+              receipt.blockNumber,
+              receipt
+            );
             _promiEvent.resolve(receipt);
           }
         } catch (e) {
@@ -237,8 +240,6 @@ function createCfxPromiEvent(web3: Web3Shim, tx: any, password: string) {
   return promiEvent;
 }
 
-
-
 async function cfxSendTransaction(options: any, password: string) {
   if (options.nonce === undefined) {
     options.nonce = await this.getNextNonce(options.from);
@@ -248,7 +249,7 @@ async function cfxSendTransaction(options: any, password: string) {
     options.gasPrice = this.defaultGasPrice;
   }
   if (options.gasPrice === undefined) {
-    options.gasPrice = await this.getGasPrice() || 1; // MIN_GAS_PRICE
+    options.gasPrice = (await this.getGasPrice()) || 1; // MIN_GAS_PRICE
   }
 
   if (options.gas === undefined) {
@@ -260,7 +261,10 @@ async function cfxSendTransaction(options: any, password: string) {
   }
 
   if (options.gas === undefined || options.storageLimit === undefined) {
-    const { gasUsed, storageCollateralized } = await this.estimateGasAndCollateral(options);
+    const {
+      gasUsed,
+      storageCollateralized
+    } = await this.estimateGasAndCollateral(options);
 
     if (options.gas === undefined) {
       options.gas = gasUsed;
@@ -283,8 +287,8 @@ async function cfxSendTransaction(options: any, password: string) {
     options.chainId = status.chainId;
   }
 
-  const fmtOption = format.sendTx(options)
-  fmtOption.epochHeight = "0x" + fmtOption.epochHeight.toString(16)
-  fmtOption.chainId = "0x" + fmtOption.chainId.toString(16)
-  return this.provider.call('send_transaction', fmtOption, password);
+  const fmtOption = format.sendTx(options);
+  fmtOption.epochHeight = "0x" + fmtOption.epochHeight.toString(16);
+  fmtOption.chainId = "0x" + fmtOption.chainId.toString(16);
+  return this.provider.call("send_transaction", fmtOption, password);
 }
