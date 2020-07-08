@@ -93,7 +93,7 @@ const bridge = {
         const txInput = params[0];
         txInput.gasPrice = txInput.gasPrice || "0x" + (1e9).toString(16);
         txInput.gas = txInput.gas || "0x1000000";
-        // TODO：must get by estimate or throw error, 
+        // TODO：must get by estimate or throw error,
         // because the default value will be set to 0xfffffffffffff, it must lead to fail.
         txInput.storageLimit = txInput.storageLimit || "0x100";
 
@@ -123,7 +123,9 @@ const bridge = {
   eth_getBlockByHash: {
     method: "cfx_getBlockByHash",
     output: function(response) {
-      formatBlock(response.result);
+      if (response.result) {
+        formatBlock(response.result);
+      }
       return response;
     }
   },
@@ -134,7 +136,9 @@ const bridge = {
       return params;
     },
     output: function(response) {
-      formatBlock(response.result);
+      if (response.result) {
+        formatBlock(response.result);
+      }
       return response;
     }
   },
@@ -166,7 +170,16 @@ const bridge = {
         txReceipt.blockNumber = txReceipt.epochNumber;
         txReceipt.transactionIndex = txReceipt.index;
         txReceipt.status = txReceipt.outcomeStatus === 0 ? 1 : 0; // conflux和以太坊状态相反
+        txReceipt.cumulativeGasUsed = txReceipt.gasUsed; // TODO simple set
         // txReceipt.gasUsed = `0x${txReceipt.gasUsed.toString(16)}`;
+        delKeys(txReceipt, [
+          "contractCreated",
+          "epochNumber",
+          "gasFee",
+          "index",
+          "outcomeStatus",
+          "stateRoot"
+        ]);
       }
       return response;
     }
@@ -188,6 +201,25 @@ const bridge = {
   // }
 };
 
+function ethToConflux(payload) {
+  // eslint-disable-next-line no-unused-vars
+  const oldMethod = payload.method;
+  const handler = bridge[payload.method];
+  if (!handler) {
+    return emptyFn;
+  }
+  debug(`Mapping "${oldMethod}" to "${handler.method}"`);
+
+  let inputFn = handler.input || emptyFn;
+  payload.params = inputFn(payload.params);
+  payload.method = handler.method;
+  // debug("cfx payload:", payload);
+  return handler.output || emptyFn;
+}
+
+module.exports = ethToConflux;
+
+// ================= helper methods ================
 function formatBlock(block) {
   block.number = block.epochNumber;
   // sha3Uncles?
@@ -208,12 +240,40 @@ function formatBlock(block) {
       formatTx(tx);
     }
   }
+  delKeys(block, [
+    "adaptive",
+    "blame",
+    "deferredLogsBloomHash",
+    "deferredReceiptsRoot",
+    "deferredStateRoot",
+    "epochNumber",
+    "height",
+    "powQuality",
+    "refereeHashes"
+  ]);
+  setNull(block, [
+    "extraData",
+    "gasUsed",
+    "logsBloom",
+    "mixHash",
+    "sha3Uncles",
+    "totalDifficulty"
+  ]);
   return block;
 }
 
 function formatTx(tx) {
   // blockNumber?   TODO maybe cause big problem
   tx.input = tx.data;
+  delKeys(tx, [
+    "chainId",
+    "contractCreated",
+    "data",
+    "epochHeight",
+    "status",
+    "storageLimit"
+  ]);
+  setNull(tx, ["blockNumber"]);
   return tx;
 }
 
@@ -227,20 +287,14 @@ function mapParamsTagAtIndex(params, index) {
   }
 }
 
-function ethToConflux(payload) {
-  // eslint-disable-next-line no-unused-vars
-  const oldMethod = payload.method;
-  const handler = bridge[payload.method];
-  if (!handler) {
-    return emptyFn;
+function delKeys(object, keys) {
+  for (let key of keys) {
+    delete object[key];
   }
-  debug(`Mapping "${oldMethod}" to "${handler.method}"`);
-
-  let inputFn = handler.input || emptyFn;
-  payload.params = inputFn(payload.params);
-  payload.method = handler.method;
-  debug("cfx payload:", payload);
-  return handler.output || emptyFn;
 }
 
-module.exports = ethToConflux;
+function setNull(object, keys) {
+  for (let key of keys) {
+    object[key] = null;
+  }
+}

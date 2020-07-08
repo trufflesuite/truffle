@@ -1,6 +1,7 @@
 const Web3HttpProvider = require("web3-providers-http");
 const defaultAdaptor = require("./util").defaultAdaptor;
 const ethToConflux = require("./ethToConflux");
+const debug = require("debug")("provider-proxy");
 
 class Web3HttpProviderProxy extends Web3HttpProvider {
   constructor(host, options) {
@@ -10,9 +11,8 @@ class Web3HttpProviderProxy extends Web3HttpProvider {
 
   send(payload, callback) {
     const adaptFn = this.chainAdaptor(payload);
-    // const self = this;
     super.send(payload, function(err, response) {
-      console.log(
+      debug(
         `RPC method: ${payload.method}, params: ${JSON.stringify(
           payload.params,
           null,

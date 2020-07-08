@@ -1,7 +1,12 @@
 const EthProvider = require("web3-providers-http");
-const { genRPCPayload, BlockKeys, TxKeys, DefalutValue } = require("./");
+const {
+  genRPCPayload,
+  BlockKeys,
+  TxKeys,
+  DefalutValue,
+  ReceiptKeys
+} = require("./");
 const URL = "http://127.0.0.1:7545";
-const promisify = require("util").promisify;
 // eslint-disable-next-line no-unused-vars
 const should = require("chai").should();
 const {
@@ -9,33 +14,49 @@ const {
   last_completed_migration_data: CallData
 } = require("./contract.json");
 
+let ethProvider = new EthProvider(URL);
+
+function promiseSend(payload) {
+  return new Promise(function(resolve, reject) {
+    ethProvider.send(payload, function(err, response) {
+      if (err || response.error) {
+        console.error(response.error);
+        reject(err || response.error);
+      } else {
+        resolve(response.result);
+      }
+    });
+  });
+}
+
+async function getAccounts() {
+  let payload = genRPCPayload("eth_accounts");
+  return await promiseSend(payload);
+}
+
 /*
   Notice: run this test on ganache node
   The test contract is truffle migration
 */
 
-describe("Eth", function() {
-  let promiseSend;
-  let getAccounts;
+describe("ETH", function() {
   let accounts;
-  let contractAddress = "0xf888d08c3d1b296286ea5a8f9f24054bb6a057c8";
+  let contractAddress; // "0xf888d08c3d1b296286ea5a8f9f24054bb6a057c8"
 
   before(async function() {
-    let ethProvider = new EthProvider(URL);
-    promiseSend = promisify(function(payload, callback) {
-      ethProvider.send(payload, function(err, response) {
-        if (err || response.error) {
-          callback(err || response.error);
-        } else {
-          callback(null, response.result);
-        }
-      });
-    });
-    getAccounts = async function() {
-      let payload = genRPCPayload("eth_accounts");
-      return await promiseSend(payload);
-    };
     accounts = await getAccounts();
+
+    // deploy contract and set contract address
+    let txInfo = {
+      from: accounts[0],
+      data: MigrateByteCode, // a simple coin contract bytecode
+      gas: "0x100000"
+    };
+    let payload = genRPCPayload("eth_sendTransaction", [txInfo]);
+    let txHash = await promiseSend(payload);
+    payload = genRPCPayload("eth_getTransactionReceipt", [txHash]);
+    let receipt = await promiseSend(payload);
+    contractAddress = receipt.contractAddress;
   });
 
   describe("#eth_blockNumber", function() {
@@ -100,9 +121,7 @@ describe("Eth", function() {
 
   describe("#eth_getBlockByHash", function() {
     it("get block by hash", async function() {
-      let payload = genRPCPayload("eth_blockNumber");
-      let number = await promiseSend(payload);
-      payload = genRPCPayload("eth_getBlockByNumber", [number, false]);
+      let payload = genRPCPayload("eth_getBlockByNumber", ["latest", false]);
       let block = await promiseSend(payload);
       payload = genRPCPayload("eth_getBlockByHash", [block.hash, true]);
       block = await promiseSend(payload);
@@ -225,16 +244,7 @@ describe("Eth", function() {
 
   describe("#eth_getCode", function() {
     it("getCode", async function() {
-      let txInfo = {
-        from: accounts[0],
-        data: MigrateByteCode, // a simple coin contract bytecode
-        gas: "0x100000"
-      };
-      let payload = genRPCPayload("eth_sendTransaction", [txInfo]);
-      let txHash = await promiseSend(payload);
-      txHash.should.be.a("string");
-      // TODO get contract address from tx receipt
-      payload = genRPCPayload("eth_getCode", [contractAddress, "latest"]);
+      let payload = genRPCPayload("eth_getCode", [contractAddress, "latest"]);
       let code = await promiseSend(payload);
       code.should.be.a("string");
     });
@@ -249,6 +259,35 @@ describe("Eth", function() {
       ]);
       let storage = await promiseSend(payload);
       storage.should.be.a("string");
+    });
+  });
+
+  describe("#eth_getTransactionReceipt", function() {
+    it("should get tx receipt", async function() {
+      let txInfo = {
+        from: accounts[0],
+        data: MigrateByteCode, // a simple coin contract bytecode
+        gas: "0x100000"
+      };
+      let payload = genRPCPayload("eth_sendTransaction", [txInfo]);
+      let txHash = await promiseSend(payload);
+      txHash.should.be.a("string");
+      payload = genRPCPayload("eth_getTransactionReceipt", [txHash]);
+      let receipt = await promiseSend(payload);
+      receipt.should.have.keys(ReceiptKeys);
+      receipt.should.have.property("status", "0x1");
+    });
+  });
+
+  describe("#eth_getLogs", function() {
+    it("should get logs", async function() {
+      let payload = genRPCPayload("eth_getLogs", [
+        {
+          address: contractAddress
+        }
+      ]);
+      let logs = await promiseSend(payload);
+      logs.should.be.a("array");
     });
   });
 });
