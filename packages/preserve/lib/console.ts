@@ -1,8 +1,6 @@
 import chalk from "chalk";
 import Spinnies from "spinnies";
 
-import { Loader } from "./targets";
-import { Recipe } from "./recipes";
 import * as Processes from "./processes";
 import { preserve } from "./preserve";
 

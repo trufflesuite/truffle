@@ -15,5 +15,5 @@ import * as Processes from "./processes";
 export { Processes };
 
 export * from "./preserve";
-export * from "./run";
+export * from "./control";
 export * from "./console";

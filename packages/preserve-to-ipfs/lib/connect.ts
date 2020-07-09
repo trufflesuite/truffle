@@ -3,14 +3,18 @@ const IpfsHttpClient: any = require("ipfs-http-client");
 import * as Preserve from "@truffle/preserve";
 import { IpfsClient } from "./adapter";
 
-export interface ConnectOptions extends Preserve.Controls {
+export interface ConnectOptions {
+  controls: Preserve.Controls;
   address: string;
 }
 
 export async function* connect(
   options: ConnectOptions
 ): Preserve.Process<IpfsClient> {
-  const { address, step } = options;
+  const {
+    address,
+    controls: { step }
+  } = options;
 
   const task = yield* step({
     message: `Connecting to IPFS node at ${address}...`

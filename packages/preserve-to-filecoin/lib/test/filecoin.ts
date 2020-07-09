@@ -145,14 +145,24 @@ describe("preserve", () => {
             IPFSConfig.apiPath
         });
 
-        const { cid } = await Preserve.run(ipfsRecipe, { target });
+        const { cid } = await Preserve.run(
+          {
+            method: ipfsRecipe.preserve.bind(ipfsRecipe)
+          },
+          { target }
+        );
 
         const recipe = new Recipe({ address });
 
-        const { dealCid } = await Preserve.run(recipe, {
-          target: target,
-          labels: new Map([["@truffle/preserve-to-ipfs", { cid }]])
-        });
+        const { dealCid } = await Preserve.run(
+          {
+            method: recipe.preserve.bind(recipe)
+          },
+          {
+            target: target,
+            labels: new Map([["@truffle/preserve-to-ipfs", { cid }]])
+          }
+        );
 
         const state = await getDealState(dealCid, client);
 

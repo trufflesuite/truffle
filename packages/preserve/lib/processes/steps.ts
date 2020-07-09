@@ -96,7 +96,22 @@ export namespace Options {
   }
 }
 
+export interface ControllerConstructorOptions
+  extends Errors.ControllerConstructorOptions {}
+
 export class Controller extends Errors.Controller implements Step {
+  constructor(options: ControllerConstructorOptions) {
+    const { ...superOptions } = options;
+    super(superOptions);
+
+    // so we can pass these around as functions
+    this.begin = this.begin.bind(this);
+    this.succeed = this.succeed.bind(this);
+    this.log = this.log.bind(this);
+    this.declare = this.declare.bind(this);
+    this.step = this.step.bind(this);
+  }
+
   async *begin() {
     // can only begin not begun yet
     if (this.state !== State.Pending) {

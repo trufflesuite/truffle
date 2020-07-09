@@ -102,7 +102,9 @@ module.exports = {
           request: {
             recipe,
             loader: "@truffle/preserve-fs",
-            settings: new Map([["@truffle/preserve-fs", { path }]])
+            settings: new Map([
+              ["@truffle/preserve-fs", { path, verbose: true }]
+            ])
           }
         })
       );

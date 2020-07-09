@@ -4,10 +4,11 @@ import * as Preserve from "@truffle/preserve";
 import { LotusClient } from "./connect";
 import { Miner } from "./miners";
 
-export interface ProposeStorageDealOptions extends Preserve.Controls {
+export interface ProposeStorageDealOptions {
   cid: CID;
   client: LotusClient;
   miners: Miner[];
+  controls: Preserve.Controls;
 }
 
 export interface StorageProposalResult {
@@ -32,7 +33,12 @@ export interface StorageProposal {
 export async function* proposeStorageDeal(
   options: ProposeStorageDealOptions
 ): Preserve.Process<StorageProposalResult> {
-  const { cid, client, miners, step } = options;
+  const {
+    cid,
+    client,
+    miners,
+    controls: { step }
+  } = options;
 
   const task = yield* step({
     message: "Proposing storage deal..."

@@ -4,7 +4,8 @@ import CID from "cids";
 import * as Preserve from "@truffle/preserve";
 import { IpfsClient, FileObject } from "./adapter";
 
-export interface UploadOptions extends Preserve.Controls {
+export interface UploadOptions {
+  controls: Preserve.Controls;
   source: Preserve.Targets.Source;
   data: Iterable<FileObject>;
   ipfs: IpfsClient;
@@ -17,7 +18,12 @@ export interface UploadResult {
 export async function* upload(
   options: UploadOptions
 ): Preserve.Process<UploadResult> {
-  const { source, ipfs, data, step } = options;
+  const {
+    source,
+    ipfs,
+    data,
+    controls: { step }
+  } = options;
 
   const task = yield* step({
     message: "Uploading..."

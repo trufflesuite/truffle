@@ -21,7 +21,7 @@ const simpleTarget: Target = {
 const simpleLoader: Loader = {
   name: "simple-loader",
 
-  async load() {
+  async *load() {
     return simpleTarget;
   }
 };
@@ -31,7 +31,8 @@ const vowelsRecipe: Recipe = {
 
   dependencies: [],
 
-  async *preserve({ target, log, step }): Process<{ vowels: string }> {
+  async *preserve({ target, controls }): Process<{ vowels: string }> {
+    const { log, step } = controls;
     yield* log({ message: "Filtering vowels..." });
 
     const vowels = new Set(["a", "e", "i", "o", "u"]);
@@ -61,7 +62,9 @@ const vowelsCounterRecipe: Recipe = {
 
   dependencies: [vowelsRecipe.name],
 
-  async *preserve({ labels, log, declare }): Process<{ count: number }> {
+  async *preserve({ labels, controls }): Process<{ count: number }> {
+    const { log, declare } = controls;
+
     yield* log({ message: "Counting vowels..." });
 
     const allVowels = ["a", "e", "i", "o", "u"];
@@ -119,6 +122,15 @@ it("preserves via a single recipe", async () => {
   );
 
   expect(preserves).toEqual([
+    {
+      type: "begin",
+      scope: ["simple-loader"]
+    },
+    {
+      type: "succeed",
+      scope: ["simple-loader"],
+      label: { source: "hello, world!" }
+    },
     {
       type: "begin",
       scope: ["vowels-recipe"]

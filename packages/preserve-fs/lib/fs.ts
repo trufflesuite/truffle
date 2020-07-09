@@ -5,71 +5,112 @@ import * as Preserve from "@truffle/preserve";
 
 export interface TargetPathOptions {
   path: string;
+  verbose?: boolean;
+  controls: Preserve.Controls;
 }
 
-export const targetPath = async (
+export async function* targetPath(
   options: TargetPathOptions
-): Promise<Preserve.Target> => {
+): Preserve.Process<Preserve.Target> {
   const { path } = options;
 
   const stats = await fs.promises.stat(path);
 
   if (stats.isFile()) {
     return {
-      source: await pathContent({ path })
+      source: yield* pathContent(options)
     };
   } else if (stats.isDirectory()) {
     return {
-      source: await pathContainer({ path })
+      source: yield* pathContainer(options)
     };
   }
-};
+}
 
-type PathEntryOptions = {
+interface PathEntryOptions {
   path: string;
   parent: string;
-};
+  verbose?: boolean;
+  controls: Preserve.Controls;
+}
 
-const pathEntry = async ({
-  path,
-  parent
-}: PathEntryOptions): Promise<Preserve.Targets.Sources.Entry> => {
+async function* pathEntry(
+  options: PathEntryOptions
+): Preserve.Process<Preserve.Targets.Sources.Entry> {
+  const { path, parent } = options;
+
   const stats = await fs.promises.stat(joinPath(parent, path));
 
   if (stats.isFile()) {
     return {
       path,
-      source: await pathContent({ path: joinPath(parent, path) })
+      source: yield* pathContent({
+        ...options,
+        path: joinPath(parent, path)
+      })
     };
   }
 
   if (stats.isDirectory()) {
     return {
       path,
-      source: await pathContainer({ path: joinPath(parent, path) })
+      source: yield* pathContainer({
+        ...options,
+        path: joinPath(parent, path)
+      })
     };
   }
-};
+}
 
-const pathContent = async ({
-  path
-}: TargetPathOptions): Promise<Preserve.Targets.Sources.Content> => {
-  return fs.createReadStream(path);
-};
+async function* pathContent(
+  options: TargetPathOptions
+): Preserve.Process<Preserve.Targets.Sources.Content> {
+  const { path, verbose, controls } = options;
+  const { step } = controls;
 
-const pathContainer = async ({
-  path
-}: TargetPathOptions): Promise<Preserve.Targets.Sources.Container> => {
+  const task = verbose
+    ? yield* step({ message: `Opening ./${path}...` })
+    : controls;
+
+  const content = fs.createReadStream(path);
+
+  if (verbose) {
+    yield* task.succeed();
+  }
+
+  return content;
+}
+
+async function* pathContainer(
+  options: TargetPathOptions
+): Preserve.Process<Preserve.Targets.Sources.Container> {
+  const { path, verbose, controls } = options;
+
+  const { step } = controls;
+
+  const task = verbose
+    ? yield* step({ message: `Reading directory ${path}...` })
+    : controls;
+
   const directory = await fs.promises.readdir(path);
 
+  const entries: Preserve.Targets.Sources.Entry[] = [];
+  for (const childPath of directory) {
+    const entry = yield* pathEntry({
+      ...options,
+      controls: task,
+      path: childPath,
+      parent: path
+    });
+
+    entries.push(entry);
+  }
+
+  if (verbose) {
+    yield* task.succeed();
+  }
+
   return {
-    entries: (async function*() {
-      for (const childPath of directory) {
-        yield await pathEntry({
-          path: childPath,
-          parent: path
-        });
-      }
-    })()
+    entries
   };
-};
+}

@@ -1,6 +1,7 @@
 import { Loader } from "./targets";
 import { Recipe } from "./recipes";
-import * as Processes from "./processes";
+import { Event } from "./processes";
+import { control } from "./control";
 
 export interface Request {
   loader: string; // package name
@@ -16,7 +17,7 @@ export interface PreserveOptions {
 
 export async function* preserve(
   options: PreserveOptions
-): AsyncIterable<Processes.Event> {
+): AsyncIterable<Event> {
   const { request, loaders, recipes } = options;
 
   if (!("settings" in request)) {
@@ -38,7 +39,14 @@ export async function* preserve(
    * loading
    */
   const loaderSettings = request.settings.get(request.loader);
-  const target = await loader.load(loaderSettings);
+
+  const target = yield* control(
+    {
+      name: loader.name,
+      method: loader.load.bind(loader)
+    },
+    loaderSettings
+  );
 
   /*
    * planning
@@ -77,49 +85,19 @@ export async function* preserve(
     const settings = request.settings.get(recipe.name);
 
     // for the result
-    let label: any;
-
-    const controller = new Processes.Steps.Controller({
-      scope: [recipe.name]
-    });
-
-    yield* controller.begin();
-
-    const controls = {
-      log: controller.log.bind(controller),
-      declare: controller.declare.bind(controller),
-      step: controller.step.bind(controller)
-    };
-
-    try {
-      const preserves = recipe.preserve({
+    const label = yield* control(
+      {
+        name: recipe.name,
+        method: recipe.preserve.bind(recipe)
+      },
+      {
         target,
         labels,
-        settings,
-        ...controls
-      });
-
-      while (true) {
-        const { done, value } = await preserves.next();
-
-        if (done) {
-          label = value;
-          break;
-        }
-
-        yield value;
+        settings
       }
-    } catch (error) {
-      yield* controller.fail({ error });
+    );
 
-      return;
-    }
-
-    // to handle recipes that don't clean up after themselves
-    // (will only do anything if still in active state)
-    yield* controller.succeed({ label });
-
-    if (controller.state !== Processes.State.Done) {
+    if (!label) {
       return;
     }
 

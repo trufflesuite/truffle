@@ -5,8 +5,9 @@ const fetch = require("node-fetch");
 import Websocket from "isomorphic-ws";
 import * as Preserve from "@truffle/preserve";
 
-export interface ConnectOptions extends Preserve.Controls {
+export interface ConnectOptions {
   address: string;
+  controls: Preserve.Controls;
 }
 
 export type LotusClient = any;
@@ -14,7 +15,10 @@ export type LotusClient = any;
 export async function* connect(
   options: ConnectOptions
 ): Preserve.Process<LotusClient> {
-  const { address, step } = options;
+  const {
+    address,
+    controls: { step }
+  } = options;
 
   const task = yield* step({
     message: `Connecting to Filecoin node at ${address}...`

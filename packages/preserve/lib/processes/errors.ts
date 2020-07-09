@@ -70,6 +70,11 @@ export class Controller extends Tasks.Controller implements Task<Config> {
     if (parent) {
       this.parent = parent;
     }
+
+    // so we can pass these around as functions
+    this.fail = this.fail.bind(this);
+    this.abort = this.abort.bind(this);
+    this.stop = this.stop.bind(this);
   }
 
   async *fail({ error, cascade = true }: Options.Fail = {}) {

@@ -8,13 +8,20 @@ import { targetPath } from "./fs";
 
 export interface LoadOptions {
   path: string;
+  controls: Preserve.Controls;
 }
 
 export class Loader implements Preserve.Targets.Loader {
   name = "@truffle/preserve-fs";
 
-  async load(options: LoadOptions): Promise<Preserve.Target> {
-    const { path } = options;
-    return await targetPath({ path });
+  async *load(options: LoadOptions): Preserve.Process<Preserve.Target> {
+    const {
+      path,
+      controls: { log }
+    } = options;
+
+    yield* log({ message: "Loading target..." });
+
+    return yield* targetPath(options);
   }
 }

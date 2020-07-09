@@ -1,7 +1,8 @@
 import * as Preserve from "@truffle/preserve";
 
-export interface GetMinersOptions extends Preserve.Controls {
+export interface GetMinersOptions {
   client: any;
+  controls: Preserve.Controls;
 }
 
 export type Miner = any;
@@ -9,7 +10,10 @@ export type Miner = any;
 export async function* getMiners(
   options: GetMinersOptions
 ): Preserve.Process<Miner[]> {
-  const { client, step } = options;
+  const {
+    client,
+    controls: { step }
+  } = options;
 
   const task = yield* step({
     message: "Retrieving miners..."

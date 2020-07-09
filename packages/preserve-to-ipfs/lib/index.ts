@@ -39,7 +39,7 @@ export class Recipe implements Preserve.Recipe {
   async *preserve(
     options: Preserve.Recipes.PreserveOptions
   ): Preserve.Process<Label> {
-    const { target: rawTarget, ...controls } = options;
+    const { target: rawTarget, controls } = options;
 
     const { log } = controls;
 
@@ -47,7 +47,7 @@ export class Recipe implements Preserve.Recipe {
 
     const ipfs = yield* connect({
       address: this.address,
-      ...controls
+      controls
     });
 
     // normalize target
@@ -60,7 +60,7 @@ export class Recipe implements Preserve.Recipe {
       source,
       data,
       ipfs,
-      ...controls
+      controls
     });
 
     return { cid };

@@ -27,7 +27,19 @@ export interface Unknown extends Task<Config & Errors.Config> {
   extend(options: Options.Declare): Process<Unknown, Events.Declare>;
 }
 
+export interface ControllerConstructorOptions
+  extends Errors.ControllerConstructorOptions {}
+
 export class Controller extends Errors.Controller implements Unknown {
+  constructor(options: ControllerConstructorOptions) {
+    const { ...superOptions } = options;
+    super(superOptions);
+
+    // so we can pass these around as functions
+    this.extend = this.extend.bind(this);
+    this.resolve = this.resolve.bind(this);
+  }
+
   async *resolve({ label, payload }: Options.Resolve = {}) {
     // only meaningful to succeed if we're currently active
     if (this.state !== State.Active) {

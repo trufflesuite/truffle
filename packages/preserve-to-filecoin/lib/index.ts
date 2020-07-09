@@ -40,7 +40,7 @@ export class Recipe implements Preserve.Recipe {
   }
 
   async *preserve(options: PreserveOptions): Preserve.Process<Label> {
-    const { target, labels, ...controls } = options;
+    const { target, labels, controls } = options;
 
     const { log } = controls;
 
@@ -56,25 +56,25 @@ export class Recipe implements Preserve.Recipe {
 
     const client = yield* connect({
       address: this.address,
-      ...controls
+      controls
     });
 
     const miners = yield* getMiners({
       client,
-      ...controls
+      controls
     });
 
     const { dealCid } = yield* proposeStorageDeal({
       cid,
       client,
       miners,
-      ...controls
+      controls
     });
 
     yield* wait({
       client,
       dealCid,
-      ...controls
+      controls
     });
 
     return { dealCid };

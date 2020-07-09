@@ -3,15 +3,20 @@ import * as Preserve from "@truffle/preserve";
 import { StorageProposalResult } from "./storage";
 import { dealstates, terminalStates } from "./dealstates";
 
-export interface WaitOptions extends Preserve.Controls {
+export interface WaitOptions {
   client: any;
   dealCid: CID;
+  controls: Preserve.Controls;
 }
 
 export type Miner = any;
 
 export async function* wait(options: WaitOptions): Preserve.Process<void> {
-  const { client, dealCid, step } = options;
+  const {
+    client,
+    dealCid,
+    controls: { step }
+  } = options;
 
   const wait = yield* step({
     message: "Waiting for deal to finish..."

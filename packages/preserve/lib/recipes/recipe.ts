@@ -1,6 +1,7 @@
 import { Target } from "../targets";
 
-import { Process, Step, Steps, Unknown, Unknowns } from "../processes";
+import { Process } from "../processes";
+import { Controls } from "../control";
 
 export interface ConstructorOptions {}
 
@@ -13,11 +14,7 @@ export interface PreserveOptions {
   target: Target;
   labels?: Map<string, any>;
   settings?: any;
-  log(options: Steps.Options.Log): Process<void, Steps.Events.Log>;
-  declare(
-    options: Unknowns.Options.Declare
-  ): Process<Unknown, Unknowns.Events.Declare>;
-  step(options: Steps.Options.Step): Process<Step, Steps.Events.Step>;
+  controls: Controls;
 }
 
 export type Label = any;

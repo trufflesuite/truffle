@@ -143,9 +143,14 @@ describe("Loader", () => {
 
         const loader = new Loader();
 
-        const target = await loader.load({
-          path: fullPath
-        });
+        const target: Preserve.Target = await Preserve.run(
+          {
+            method: loader.load.bind(loader)
+          },
+          {
+            path: fullPath
+          }
+        );
 
         const thunked = await Preserve.Targets.thunk(target);
 
