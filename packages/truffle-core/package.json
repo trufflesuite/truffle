@@ -13,7 +13,7 @@
     "del": "^2.2.0",
     "diff": "1.4.0",
     "ethpm": "0.0.16",
-    "ethpm-registry": "0.0.10",
+    "ethpm-registry": "0.0.11",
     "finalhandler": "^0.4.0",
     "fs-extra": "6.0.1",
     "ganache-cli": "6.1.8",
