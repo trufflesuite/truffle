@@ -1,0 +1,34 @@
+const IpfsHttpClient: any = require("ipfs-http-client");
+
+import * as Preserve from "@truffle/preserve";
+import { IpfsClient } from "./adapter";
+
+export interface ConnectOptions extends Preserve.Controls {
+  address: string;
+}
+
+export async function* connect(
+  options: ConnectOptions
+): Preserve.Process<IpfsClient> {
+  const { address, step } = options;
+
+  const task = yield* step({
+    message: `Connecting to IPFS node at ${address}...`
+  });
+
+  // init client
+  const ipfs = IpfsHttpClient(address);
+
+  try {
+    const version = await ipfs.version();
+    yield* task.succeed({
+      label: version,
+      message: `Connected to IPFS node at ${address}`
+    });
+  } catch (error) {
+    yield* task.fail({ error });
+    return;
+  }
+
+  return ipfs;
+}

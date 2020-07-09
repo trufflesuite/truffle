@@ -10,7 +10,12 @@ export { Recipe } from "./recipes";
 import * as Recipes from "./recipes";
 export { Recipes };
 
+export { Process } from "./processes";
+import * as Processes from "./processes";
+export { Processes };
+
 export * from "./preserve";
+export * from "./run";
 export * from "./console";
 
 // type Config = {

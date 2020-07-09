@@ -9,8 +9,9 @@ import {
 } from "iter-tools";
 
 import { Target, Loader, thunk } from "../targets";
-import { Preserves, Recipe } from "../recipes";
-import { Scopes, Unknown } from "../recipes/logs";
+import { Recipe } from "../recipes";
+import { Process } from "../processes";
+import * as Processes from "../processes";
 import { PreserveOptions, preserve } from "../preserve";
 
 const simpleTarget: Target = {
@@ -30,7 +31,7 @@ const vowelsRecipe: Recipe = {
 
   dependencies: [],
 
-  async *preserve({ target, log, step }): Preserves<{ vowels: string }> {
+  async *preserve({ target, log, step }): Process<{ vowels: string }> {
     yield* log({ message: "Filtering vowels..." });
 
     const vowels = new Set(["a", "e", "i", "o", "u"]);
@@ -60,12 +61,12 @@ const vowelsCounterRecipe: Recipe = {
 
   dependencies: [vowelsRecipe.name],
 
-  async *preserve({ labels, log, declare }): Preserves<{ count: number }> {
+  async *preserve({ labels, log, declare }): Process<{ count: number }> {
     yield* log({ message: "Counting vowels..." });
 
     const allVowels = ["a", "e", "i", "o", "u"];
 
-    const unknowns: { [vowel: string]: Unknown } = {};
+    const unknowns: { [vowel: string]: Processes.Unknown } = {};
     for (const vowel of allVowels) {
       unknowns[vowel] = yield* declare({
         identifier: vowel,
@@ -123,7 +124,7 @@ it("preserves via a single recipe", async () => {
       scope: ["vowels-recipe"]
     },
     {
-      type: "update",
+      type: "log",
       scope: ["vowels-recipe"],
       message: "Filtering vowels..."
     },
@@ -158,13 +159,6 @@ it("preserves via a recipe that depends on another recipe", async () => {
     })
   );
 
-  // const foundScopes = collectScopes(preserves);
-
-  // expect(foundScopes).toEqual([
-  //   ["vowels-recipe"],
-  //   ["vowels-counter-recipe"]
-  // ]);
-
   const events = execPipe(
     preserves,
     filter(({ scope }) => scope[0] === "vowels-counter-recipe"),
@@ -177,7 +171,7 @@ it("preserves via a recipe that depends on another recipe", async () => {
       scope: ["vowels-counter-recipe"]
     },
     {
-      type: "update",
+      type: "log",
       scope: ["vowels-counter-recipe"],
       message: "Counting vowels..."
     },
@@ -254,11 +248,11 @@ it("preserves via a recipe that depends on another recipe", async () => {
 const collectScopes = pipe(
   pipe(
     map(({ scope }) => scope),
-    map(Scopes.toKey),
+    map(Processes.Scopes.toKey),
     reduce(new Set([]), (keys, key) => keys.add(key))
   ),
 
-  map(Scopes.fromKey),
+  map(Processes.Scopes.fromKey),
 
   toArray
 );

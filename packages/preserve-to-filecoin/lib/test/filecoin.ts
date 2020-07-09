@@ -1,13 +1,11 @@
 const IpfsHttpClient: any = require("ipfs-http-client");
 
 import * as Preserve from "@truffle/preserve";
-import { preserve as preserveToIpfs } from "@truffle/preserve-to-ipfs";
-import {
-  preserve,
-  createLotusClient,
-  LotusClient,
-  getDealState
-} from "../filecoin";
+import * as PreserveToIpfs from "@truffle/preserve-to-ipfs";
+
+import { Recipe } from "..";
+import { LotusClient, createLotusClient } from "../connect";
+import { getDealState } from "../wait";
 
 interface Test {
   name: string;
@@ -128,39 +126,35 @@ describe("preserve", () => {
   for (const { name, target } of tests) {
     // separate describe block for each test case
     describe(`test: ${name}`, () => {
-      let ipfs: any; // client
       let client: LotusClient;
 
       beforeAll(async () => {
-        ipfs = IpfsHttpClient(IPFSConfig);
-        client = createLotusClient({ wsUrl: address });
+        client = createLotusClient({ address });
       });
 
       it("stores to Filecoin correctly", async () => {
         jest.setTimeout(200000);
 
-        const { cid } = await Preserve.run({ preserve: preserveToIpfs })({
-          target,
-          ipfs: {
-            address:
-              IPFSConfig.protocol +
-              "://" +
-              IPFSConfig.host +
-              ":" +
-              IPFSConfig.port +
-              IPFSConfig.apiPath
-          }
+        const ipfsRecipe = new PreserveToIpfs.Recipe({
+          address:
+            IPFSConfig.protocol +
+            "://" +
+            IPFSConfig.host +
+            ":" +
+            IPFSConfig.port +
+            IPFSConfig.apiPath
         });
 
-        const proposalResult = await Preserve.run({ preserve })({
+        const { cid } = await Preserve.run(ipfsRecipe, { target });
+
+        const recipe = new Recipe({ address });
+
+        const { dealCid } = await Preserve.run(recipe, {
           target: target,
-          filecoin: {
-            address: address
-          },
           labels: new Map([["@truffle/preserve-to-ipfs", { cid }]])
         });
 
-        const state = await getDealState(proposalResult["/"], client);
+        const state = await getDealState(dealCid, client);
 
         expect(state).toEqual("Active");
       });

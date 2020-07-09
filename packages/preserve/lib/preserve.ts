@@ -1,8 +1,6 @@
 import { Loader } from "./targets";
-import { Recipe, Preserves, Label } from "./recipes";
-import * as Recipes from "./recipes";
-
-import { Event, State, createController } from "./recipes/logs";
+import { Recipe } from "./recipes";
+import * as Processes from "./processes";
 
 export interface Request {
   loader: string; // package name
@@ -21,46 +19,9 @@ export interface PreserveResult {
   label: any; // recipe label
 }
 
-export interface RunOptions<
-  O extends Recipes.PreserveOptions,
-  L extends Label
-> {
-  preserve: PreserveFunc<O, L>;
-  name?: string;
-}
-export type PreserveFunc<O extends Recipes.PreserveOptions, L extends Label> = (
-  options: O
-) => Preserves<L>;
-export type RunFunc<O extends Recipes.PreserveOptions, L extends Label> = (
-  options: Omit<O, "log" | "declare" | "step">
-) => Promise<L>;
-
-export const run = <O extends Recipes.PreserveOptions, L extends Label>(
-  options: RunOptions<O, L>
-): RunFunc<O, L> => {
-  const { preserve, name = "preserve" } = options;
-
-  const { controls } = createController(name);
-
-  return async options => {
-    const preserves = preserve({
-      ...options,
-      ...controls
-    } as O);
-
-    while (true) {
-      const { done, value } = await preserves.next();
-
-      if (done) {
-        return value as L;
-      }
-    }
-  };
-};
-
 export async function* preserve(
   options: PreserveOptions
-): AsyncIterable<Event> {
+): AsyncIterable<Processes.Event> {
   const { request, loaders, recipes } = options;
 
   if (!("settings" in request)) {
@@ -123,11 +84,17 @@ export async function* preserve(
     // for the result
     let label: any;
 
-    const { begin, succeed, fail, getState, controls } = createController(
-      recipe.name
-    );
+    const controller = new Processes.Steps.Controller({
+      scope: [recipe.name]
+    });
 
-    yield* begin();
+    yield* controller.begin();
+
+    const controls = {
+      log: controller.log.bind(controller),
+      declare: controller.declare.bind(controller),
+      step: controller.step.bind(controller)
+    };
 
     try {
       const preserves = recipe.preserve({
@@ -148,16 +115,16 @@ export async function* preserve(
         yield value;
       }
     } catch (error) {
-      yield* fail({ error });
+      yield* controller.fail({ error });
 
       return;
     }
 
     // to handle recipes that don't clean up after themselves
     // (will only do anything if still in active state)
-    yield* succeed({ label });
+    yield* controller.succeed({ label });
 
-    if (getState() !== State.Done) {
+    if (controller.state !== Processes.State.Done) {
       return;
     }
 

@@ -1,155 +1,149 @@
 import chalk from "chalk";
 import Spinnies from "spinnies";
 
-import { preserve } from "./preserve";
-import { Recipe } from "./recipes";
-import { Scopes, Events } from "./recipes/logs";
 import { Loader } from "./targets";
+import { Recipe } from "./recipes";
+import * as Processes from "./processes";
+import { preserve } from "./preserve";
 
-export interface ConsolePreserveOptions {
-  // only works with @truffle/preserve-fs for now
-  request: {
-    path: string;
-    recipe: string;
-  };
-
-  recipes: Map<string, Recipe>;
-  loaders: Map<string, Loader>;
+interface ConsoleReporterConstructorOptions {
   console: Console;
 }
 
-export const consolePreserve = async (
-  options: ConsolePreserveOptions
-): Promise<void> => {
-  const {
-    recipes,
-    loaders,
-    console,
-    request: { path, recipe }
-  } = options;
+export class ConsoleReporter {
+  private spinners: Spinnies;
+  private console: Console;
 
-  const spinners = new Spinnies();
+  constructor(options: ConsoleReporterConstructorOptions) {
+    this.spinners = new Spinnies();
+    this.console = options.console;
+  }
 
-  console.log();
-  const message = `Preserving target: ${path}`;
-  console.log(message);
-  console.log("=".repeat(message.length));
+  async report(events: AsyncIterable<Processes.Event>) {
+    for await (const event of events) {
+      const { type, scope } = event;
+      const key = Processes.Scopes.toKey(scope);
 
-  const events = preserve({
-    recipes,
-    loaders,
-    request: {
-      recipe,
-      loader: "@truffle/preserve-fs",
-      settings: new Map([["@truffle/preserve-fs", { path }]])
-    }
-  });
-
-  for await (const event of events) {
-    const { type, scope } = event;
-    const key = Scopes.toKey(scope);
-
-    switch (type) {
-      case "begin": {
-        console.log();
-
-        spinners.add(key, {
-          succeedColor: "white",
-          failColor: "white",
-          indent: scope.length * 2
-        });
-        break;
-      }
-
-      case "update": {
-        const { message } = event as Events.Update;
-        spinners.update(key, {
-          text: `${message}`
-        });
-        break;
-      }
-
-      case "succeed": {
-        const { message } = event as Events.Succeed;
-
-        const options = message ? { text: message } : {};
-
-        spinners.succeed(key, options);
-        break;
-      }
-
-      case "resolve": {
-        const { payload } = event as Events.Resolve;
-
-        const { text } = spinners.pick(key);
-
-        const options = payload
-          ? { text: `${chalk.cyan(text)}: ${payload}` }
-          : {};
-
-        spinners.update(key, {
-          ...options,
-          status: "stopped"
-        });
-
-        break;
-      }
-
-      case "fail": {
-        const { error } = event as Events.Fail;
-
-        // get current text
-        const { text, indent } = spinners.pick(key);
-
-        const options = error
-          ? {
-              text: `${text}\n${" ".repeat(indent)}${chalk.red(
-                error.toString()
-              )}`
-            }
-          : {};
-
-        spinners.fail(key, options);
-
-        break;
-      }
-
-      case "abort": {
-        spinners.fail(key);
-        break;
-      }
-
-      case "remove": {
-        spinners.remove(key);
-        break;
-      }
-
-      case "declare": {
-        const { message } = event as Events.Declare;
-
-        spinners.add(key, {
-          text: message,
-          indent: scope.length * 2,
-          succeedColor: "white",
-          failColor: "white"
-        });
-        break;
-      }
-
-      case "step": {
-        const { message } = event as Events.Step;
-
-        spinners.add(key, {
-          text: message,
-          indent: scope.length * 2,
-          succeedColor: "white",
-          failColor: "white"
-        });
-
-        break;
-      }
+      this[type].bind(this)(event);
     }
   }
 
-  console.log();
-};
+  /*
+   * Error events
+   */
+
+  private fail(event: Processes.Errors.Events.Fail) {
+    const { error } = event;
+
+    const { key } = eventProperties(event);
+
+    // get current text
+    const { text, indent } = this.spinners.pick(key);
+
+    const options = error
+      ? {
+          text: `${text}\n${" ".repeat(indent)}${chalk.red(error.toString())}`
+        }
+      : {};
+
+    this.spinners.fail(key, options);
+  }
+
+  private abort(event: Processes.Errors.Events.Abort) {
+    const { key } = eventProperties(event);
+
+    this.spinners.fail(key);
+  }
+
+  private stop(event: Processes.Errors.Events.Stop) {
+    const { key } = eventProperties(event);
+
+    this.spinners.remove(key);
+  }
+
+  /*
+   * Step events
+   */
+
+  private begin(event: Processes.Steps.Events.Begin) {
+    this.console.log();
+
+    const { key, indent } = eventProperties(event);
+
+    this.spinners.add(key, {
+      succeedColor: "white",
+      failColor: "white",
+      indent: indent
+    });
+  }
+
+  private log(event: Processes.Steps.Events.Log) {
+    const { message } = event;
+
+    const { key } = eventProperties(event);
+
+    this.spinners.update(key, {
+      text: `${message}`
+    });
+  }
+
+  private succeed(event: Processes.Steps.Events.Succeed) {
+    const { message } = event;
+
+    const { key } = eventProperties(event);
+
+    const options = message ? { text: message } : {};
+
+    this.spinners.succeed(key, options);
+  }
+
+  private step(event: Processes.Steps.Events.Step) {
+    const { key, indent } = eventProperties(event);
+
+    const { message } = event;
+
+    this.spinners.add(key, {
+      text: message,
+      indent,
+      succeedColor: "white",
+      failColor: "white"
+    });
+  }
+
+  /*
+   * Unknown events
+   */
+
+  private resolve(event: Processes.Unknowns.Events.Resolve) {
+    const { payload } = event;
+
+    const { key } = eventProperties(event);
+
+    const { text } = this.spinners.pick(key);
+
+    const options = payload ? { text: `${chalk.cyan(text)}: ${payload}` } : {};
+
+    this.spinners.update(key, {
+      ...options,
+      status: "stopped"
+    });
+  }
+
+  private declare(event: Processes.Unknowns.Events.Declare) {
+    const { key, indent } = eventProperties(event);
+
+    const { message } = event;
+
+    this.spinners.add(key, {
+      text: message,
+      indent,
+      succeedColor: "white",
+      failColor: "white"
+    });
+  }
+}
+
+const eventProperties = (event: Processes.Event) => ({
+  key: Processes.Scopes.toKey(event.scope),
+  indent: event.scope.length * 2
+});

@@ -3,8 +3,8 @@ const IpfsdCtl: any = require("ipfsd-ctl");
 const IpfsHttpClient: any = require("ipfs-http-client");
 
 import * as Preserve from "@truffle/preserve";
-import { preserve } from "../ipfs";
 
+import { Recipe, Label } from "..";
 import { fetch } from "../../test/fetch";
 
 const IPFS_BIN = "./node_modules/.bin/jsipfs";
@@ -140,12 +140,9 @@ describe("preserve", () => {
       });
 
       it("saves correctly to IPFS", async () => {
-        const { cid } = await Preserve.run({ preserve })({
-          target,
-          ipfs: {
-            address
-          }
-        });
+        const recipe = new Recipe({ address });
+
+        const { cid } = await Preserve.run(recipe, { target });
 
         const retrieved = await fetch({ cid, ipfs });
 

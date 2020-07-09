@@ -52,7 +52,7 @@ module.exports = {
       loadConstructors,
       constructPlugins
     } = require("./plugins");
-    const { consolePreserve } = require("@truffle/preserve");
+    const { preserve, ConsoleReporter } = require("@truffle/preserve");
 
     const config = getConfig(options);
 
@@ -64,9 +64,7 @@ module.exports = {
 
     if (config.environment && !(config.environment in environments)) {
       throw new TruffleError(
-        `Unknown environment: ${
-          config.environment
-        }. Check your truffle-config.js?`
+        `Unknown environment: ${config.environment}. Check your truffle-config.js?`
       );
     }
 
@@ -88,15 +86,28 @@ module.exports = {
     }
 
     for (const path of config._) {
-      await consolePreserve({
-        recipes,
-        loaders,
-        console: config.logger,
-        request: {
-          path,
-          recipe
-        }
+      config.logger.log();
+      const message = `Preserving target: ${path}`;
+      config.logger.log(message);
+      config.logger.log("=".repeat(message.length));
+
+      const reporter = new ConsoleReporter({
+        console: config.logger
       });
+
+      await reporter.report(
+        preserve({
+          recipes,
+          loaders,
+          request: {
+            recipe,
+            loader: "@truffle/preserve-fs",
+            settings: new Map([["@truffle/preserve-fs", { path }]])
+          }
+        })
+      );
+
+      config.logger.log();
     }
   })
 };
