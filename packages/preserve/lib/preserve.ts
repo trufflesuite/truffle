@@ -14,11 +14,6 @@ export interface PreserveOptions {
   recipes: Map<string, Recipe>;
 }
 
-export interface PreserveResult {
-  name: string; // recipe package name
-  label: any; // recipe label
-}
-
 export async function* preserve(
   options: PreserveOptions
 ): AsyncIterable<Processes.Event> {
