@@ -7,6 +7,7 @@ import * as Preserve from "@truffle/preserve";
 
 export interface ConnectOptions {
   address: string;
+  verbose: boolean;
   controls: Preserve.Controls;
 }
 
@@ -15,18 +16,19 @@ export type LotusClient = any;
 export async function* connect(
   options: ConnectOptions
 ): Preserve.Process<LotusClient> {
-  const {
-    address,
-    controls: { step }
-  } = options;
+  const { address, verbose, controls } = options;
 
-  const task = yield* step({
-    message: `Connecting to Filecoin node at ${address}...`
-  });
+  const { step } = controls;
+
+  const task = verbose
+    ? yield* step({ message: `Connecting to Filecoin node at ${address}...` })
+    : controls;
 
   const client = createLotusClient({ address });
 
-  yield* task.succeed();
+  if (verbose) {
+    yield* task.succeed();
+  }
 
   return client;
 }

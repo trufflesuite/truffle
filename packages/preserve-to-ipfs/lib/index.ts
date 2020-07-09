@@ -23,6 +23,14 @@ export interface ConstructorOptions
 
 export const defaultAddress = "http://localhost:5001";
 
+export interface Settings {
+  verbose?: boolean;
+}
+
+export interface PreserveOptions extends Preserve.Recipes.PreserveOptions {
+  settings: Settings;
+}
+
 export class Recipe implements Preserve.Recipe {
   name = "@truffle/preserve-to-ipfs";
 
@@ -36,17 +44,16 @@ export class Recipe implements Preserve.Recipe {
     this.address = options.address || defaultAddress;
   }
 
-  async *preserve(
-    options: Preserve.Recipes.PreserveOptions
-  ): Preserve.Process<Label> {
-    const { target: rawTarget, controls } = options;
-
+  async *preserve(options: PreserveOptions): Preserve.Process<Label> {
+    const { target: rawTarget, settings, controls } = options;
+    const { verbose = false } = settings;
     const { log } = controls;
 
     yield* log({ message: "Preserving to IPFS..." });
 
     const ipfs = yield* connect({
       address: this.address,
+      verbose,
       controls
     });
 
@@ -60,6 +67,7 @@ export class Recipe implements Preserve.Recipe {
       source,
       data,
       ipfs,
+      verbose,
       controls
     });
 
