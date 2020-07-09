@@ -37,7 +37,7 @@
     "@types/sinon": "^7.0.13",
     "mocha": "8.0.1",
     "sinon": "^7.5.0",
-    "ts-node": "^8.4.1",
+    "ts-node": "8.10.2",
     "typescript": "^3.6.3"
   },
   "keywords": [
