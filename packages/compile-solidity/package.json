@@ -8,16 +8,16 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "4.3.11",
+  "version": "4.3.12",
   "main": "index.js",
   "scripts": {
     "test": "./scripts/test.sh"
   },
   "dependencies": {
-    "@truffle/config": "^1.2.20",
+    "@truffle/config": "^1.2.21",
     "@truffle/contract-sources": "^0.1.7",
     "@truffle/error": "^0.0.8",
-    "@truffle/expect": "^0.0.13",
+    "@truffle/expect": "^0.0.14",
     "colors": "^1.1.2",
     "debug": "^4.1.0",
     "fs-extra": "^8.1.0",
@@ -30,7 +30,7 @@
     "solc": "^0.6.0"
   },
   "devDependencies": {
-    "@truffle/resolver": "^6.0.7",
+    "@truffle/resolver": "^6.0.8",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
