@@ -1,7 +1,7 @@
 import { Loader } from "./targets";
 import { Recipe } from "./recipes";
 import { Event } from "./processes";
-import { control } from "./control";
+import { control } from "./controllers";
 
 export interface Request {
   loader: string; // package name

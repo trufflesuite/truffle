@@ -4,7 +4,7 @@ import Spinnies from "spinnies";
 import * as Processes from "./processes";
 import { preserve } from "./preserve";
 
-interface ConsoleReporterConstructorOptions {
+export interface ConsoleReporterConstructorOptions {
   console: Console;
 }
 

@@ -1,7 +1,7 @@
 import { Target } from "../targets";
 
 import { Process } from "../processes";
-import { Controls } from "../control";
+import { Controls } from "../controllers";
 
 export interface ConstructorOptions {}
 

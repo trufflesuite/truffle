@@ -143,7 +143,7 @@ describe("Loader", () => {
 
         const loader = new Loader();
 
-        const target: Preserve.Target = await Preserve.run(
+        const target: Preserve.Target = await Preserve.Controllers.run(
           {
             method: loader.load.bind(loader)
           },

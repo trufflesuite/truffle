@@ -145,7 +145,7 @@ describe("preserve", () => {
             IPFSConfig.apiPath
         });
 
-        const { cid } = await Preserve.run(
+        const { cid } = await Preserve.Controllers.run(
           {
             method: ipfsRecipe.preserve.bind(ipfsRecipe)
           },
@@ -154,7 +154,7 @@ describe("preserve", () => {
 
         const recipe = new Recipe({ address });
 
-        const { dealCid } = await Preserve.run(
+        const { dealCid } = await Preserve.Controllers.run(
           {
             method: recipe.preserve.bind(recipe)
           },

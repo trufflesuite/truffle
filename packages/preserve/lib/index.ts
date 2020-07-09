@@ -14,6 +14,9 @@ export { Process } from "./processes";
 import * as Processes from "./processes";
 export { Processes };
 
+export { Controls } from "./controllers";
+import * as Controllers from "./controllers";
+export { Controllers };
+
 export * from "./preserve";
-export * from "./control";
 export * from "./console";

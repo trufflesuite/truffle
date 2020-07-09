@@ -142,7 +142,7 @@ describe("preserve", () => {
       it("saves correctly to IPFS", async () => {
         const recipe = new Recipe({ address });
 
-        const { cid } = await Preserve.run(
+        const { cid } = await Preserve.Controllers.run(
           {
             method: recipe.preserve.bind(recipe)
           },
