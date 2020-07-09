@@ -268,6 +268,29 @@ function* continueUntilBreakpoint(action) {
 }
 
 /**
+ * HACK warning!  This function modifies the debugger state
+ * and should only be used in light mode!
+ */
+export function* getTransactionSourcesAndReset() {
+  yield* reset();
+  let sources = {};
+  while (!(yield select(controller.current.trace.finished))) {
+    const source = yield select(controller.current.location.source);
+    const { compilationId, id } = source;
+    if (compilationId !== undefined && id !== undefined) {
+      sources[compilationId] = {
+        ...sources[compilationId],
+        [id]: source
+      };
+    }
+    yield* stepNext();
+  }
+  yield* reset();
+  //flatten sources before returning
+  return [].concat(...Object.values(sources).map(Object.values));
+}
+
+/**
  * reset -- reset the state of the debugger
  * (we'll just reset all submodules regardless of which are in use)
  */

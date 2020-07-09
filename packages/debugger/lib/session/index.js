@@ -450,6 +450,18 @@ export default class Session {
     return await this.dispatch(actions.startFullMode());
   }
 
+  /**
+   * HACK warning!  This function modifies the debugger state
+   * and should only be used in light mode!
+   */
+  async getTransactionSourcesBeforeStarting() {
+    if (!this.view(session.status.loaded)) {
+      return null;
+    }
+    //warning! modifies state!
+    return await this._runSaga(controllerSagas.getTransactionSourcesAndReset);
+  }
+
   get selectors() {
     return createNestedSelector({
       ast,
