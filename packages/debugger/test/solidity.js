@@ -266,6 +266,22 @@ describe("Solidity Debugging", function() {
     assert.deepEqual(resolutions, expectedResolutions);
   });
 
+  it("determines used and unused sources", async function() {
+    let instance = await abstractions.SingleCall.deployed();
+    let receipt = await instance.run();
+    let txHash = receipt.tx;
+
+    let bugger = await Debugger.forTx(txHash, {
+      provider,
+      compilations,
+      lightMode: true
+    });
+
+    let sources = await bugger.getTransactionSourcesBeforeStarting();
+    assert.lengthOf(sources, 1);
+    assert(sources[0].sourcePath.endsWith("SingleCall.sol"));
+  });
+
   describe("Function Depth", function() {
     it("remains at 1 in absence of inner function calls", async function() {
       const maxExpected = 1;
