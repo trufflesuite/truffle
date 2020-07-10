@@ -20,7 +20,7 @@
     "@types/node": "^12.6.8",
     "mocha": "8.0.1",
     "ts-node": "8.10.2",
-    "typescript": "^3.6.3"
+    "typescript": "3.9.6"
   },
   "publishConfig": {
     "access": "public"

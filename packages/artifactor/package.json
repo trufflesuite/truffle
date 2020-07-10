@@ -32,8 +32,8 @@
     "mocha": "8.0.1",
     "require-nocache": "^1.0.0",
     "temp": "^0.8.3",
+    "typescript": "3.9.6",
     "ts-node": "8.10.2",
-    "typescript": "^3.6.3",
     "web3": "1.2.1"
   },
   "publishConfig": {

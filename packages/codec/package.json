@@ -1,36 +1,37 @@
 {
   "name": "@truffle/codec",
-  "version": "0.5.7",
   "description": "Library for encoding and decoding smart contract data",
+  "license": "MIT",
+  "author": "",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.5.7",
   "main": "dist/lib/index.js",
-  "types": "dist/lib/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
+    "build": "ttsc",
     "docs": "./scripts/generate-docs",
     "prepare": "yarn build",
-    "build": "ttsc",
     "start": "ttsc --watch"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
-  "keywords": [
-    "ethereum",
-    "solidity",
-    "contract",
-    "state",
-    "decoder",
-    "encoder",
-    "abi"
-  ],
-  "author": "Harry Altman <harry@trufflesuite.com>, g. nicholas d'andrea <gnidan@trufflesuite.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "publishConfig": {
-    "access": "public"
+  "types": "dist/lib/index.d.ts",
+  "dependencies": {
+    "big.js": "^5.2.2",
+    "bn.js": "^4.11.8",
+    "debug": "^4.1.0",
+    "lodash.clonedeep": "^4.5.0",
+    "lodash.escaperegexp": "^4.1.2",
+    "lodash.partition": "^4.6.0",
+    "lodash.sum": "^4.0.2",
+    "semver": "^6.3.0",
+    "source-map-support": "^0.5.19",
+    "utf8": "^3.0.0",
+    "web3-utils": "1.2.1"
   },
   "devDependencies": {
     "@gnd/typedoc": "0.15.0-0",
@@ -49,20 +50,19 @@
     "ttypescript": "^1.5.7",
     "typedoc": "0.15.0",
     "typedoc-plugin-external-module-name": "^2.1.0",
-    "typescript": "^3.6.2"
+    "typescript": "3.9.6"
   },
-  "dependencies": {
-    "big.js": "^5.2.2",
-    "bn.js": "^4.11.8",
-    "debug": "^4.1.0",
-    "lodash.clonedeep": "^4.5.0",
-    "lodash.escaperegexp": "^4.1.2",
-    "lodash.partition": "^4.6.0",
-    "lodash.sum": "^4.0.2",
-    "semver": "^6.3.0",
-    "source-map-support": "^0.5.19",
-    "utf8": "^3.0.0",
-    "web3-utils": "1.2.1"
+  "keywords": [
+    "abi",
+    "contract",
+    "decoder",
+    "encoder",
+    "ethereum",
+    "solidity",
+    "state"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }
