@@ -28,7 +28,7 @@
     "@truffle/workflow-compile": "^2.1.41",
     "ganache-core": "2.10.2",
     "mocha": "8.0.1",
-    "sinon": "^7.3.2",
+    "sinon": "9.0.2",
     "web3": "1.2.1"
   },
   "keywords": [

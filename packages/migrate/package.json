@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "mocha": "8.0.1",
-    "sinon": "^7.3.2"
+    "sinon": "9.0.2"
   },
   "keywords": [
     "deployment",
