@@ -10,31 +10,39 @@ export class NPM implements ResolverSource {
     this.workingDirectory = workingDirectory;
   }
 
-  require(import_path: string, search_path: string) {
-    if (import_path.indexOf(".") === 0 || import_path.indexOf("/") === 0) {
+  require(importPath: string, searchPath: string) {
+    if (importPath.indexOf(".") === 0 || importPath.indexOf("/") === 0) {
       return null;
     }
-    var contract_name = path.basename(import_path, ".sol");
-    var regex = new RegExp(`(.*)/${contract_name}`);
-    let package_name = "";
-    var matched = regex.exec(import_path);
+    const contractName = path.basename(importPath, ".sol");
+    const regex = new RegExp(`(.*)/${contractName}`);
+    let packageName = "";
+    const matched = regex.exec(importPath);
     if (matched) {
-      package_name = matched[1];
+      packageName = matched[1];
     }
-    var expected_path = path.join(
-      search_path || this.workingDirectory,
-      "node_modules",
-      package_name,
-      "build",
-      "contracts",
-      contract_name + ".json"
-    );
-    try {
-      var result = fs.readFileSync(expected_path, "utf8");
-      return JSON.parse(result);
-    } catch (e) {
-      return null;
+    // during testing a temp dir is passed as search path - we need to check the
+    // working dir in case a built contract was not copied over to it
+    for (const basePath of [searchPath, this.workingDirectory]) {
+      if (!basePath) {
+        continue;
+      }
+      const expectedPath = path.join(
+        basePath,
+        "node_modules",
+        packageName,
+        "build",
+        "contracts",
+        contractName + ".json"
+      );
+      try {
+        const result = fs.readFileSync(expectedPath, "utf8");
+        return JSON.parse(result);
+      } catch (e) {
+        continue;
+      }
     }
+    return null;
   }
 
   async resolve(import_path: string, _imported_from: string) {
