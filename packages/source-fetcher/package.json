@@ -1,9 +1,15 @@
 {
   "name": "@truffle/source-fetcher",
-  "version": "0.2.0",
   "description": "Fetches verified source code from services such as Etherscan",
+  "license": "MIT",
+  "author": "Harry Altman <harry@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/source-fetcher",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.2.0",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -11,34 +17,28 @@
     "lib": "lib"
   },
   "scripts": {
-    "prepare": "yarn build",
-    "build": "tsc"
+    "build": "tsc",
+    "prepare": "yarn build"
   },
-  "keywords": [
-    "ethereum",
-    "solidity",
-    "etherscan",
-    "verify-source",
-    "ipfs"
-  ],
-  "author": "Harry Altman <harry@trufflesuite.com>",
-  "license": "MIT",
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/source-fetcher",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "publishConfig": {
-    "access": "public"
-  },
-  "devDependencies": {
-    "@types/debug": "^4.1.5",
-    "@types/request-promise-native": "^1.0.17",
-    "typescript": "^3.6.3"
-  },
+  "types": "dist/index.d.ts",
   "dependencies": {
     "debug": "^4.1.1",
     "request-promise-native": "^1.0.8",
     "source-map-support": "^0.5.19"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/request-promise-native": "^1.0.17",
+    "typescript": "3.9.6"
+  },
+  "keywords": [
+    "ethereum",
+    "etherscan",
+    "ipfs",
+    "solidity",
+    "verify-source"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

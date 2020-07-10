@@ -1,18 +1,25 @@
 {
   "name": "@truffle/decoder",
-  "version": "4.3.10",
   "description": "A decoder and encoder for Solidity variables of all sorts",
+  "license": "MIT",
+  "author": "Mike Seese and Harry Altman",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "4.3.10",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
-    "prepare": "yarn build",
     "build": "tsc",
+    "prepare": "yarn build",
     "start": "tsc --watch",
     "test": "cd test/current && npx truffle test && cd ../legacy && npx truffle test"
   },
+  "types": "dist/index.d.ts",
   "dependencies": {
     "@truffle/codec": "^0.5.7",
     "@truffle/compile-solidity": "^4.3.12",
@@ -22,24 +29,8 @@
     "source-map-support": "^0.5.19",
     "web3": "1.2.1"
   },
-  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/codec",
-  "keywords": [
-    "ethereum",
-    "solidity",
-    "contract",
-    "state",
-    "decoder",
-    "encoder",
-    "abi"
-  ],
-  "author": "Mike Seese and Harry Altman",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/trufflesuite/truffle/issues"
-  },
-  "homepage": "https://github.com/trufflesuite/truffle#readme",
-  "publishConfig": {
-    "access": "public"
+  "peerDependencies": {
+    "truffle": "^5.0.14"
   },
   "devDependencies": {
     "@truffle/config": "^1.2.21",
@@ -51,10 +42,19 @@
     "@types/web3": "1.0.19",
     "chai": "^4.2.0",
     "lodash.clonedeep": "^4.5.0",
-    "typescript": "^3.6.3"
+    "typescript": "3.9.6"
   },
-  "peerDependencies": {
-    "truffle": "^5.0.14"
+  "keywords": [
+    "abi",
+    "contract",
+    "decoder",
+    "encoder",
+    "ethereum",
+    "solidity",
+    "state"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "gitHead": "b207efb3c1409746537293b3e0fc27350029188e"
 }
