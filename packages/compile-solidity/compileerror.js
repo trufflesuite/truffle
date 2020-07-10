@@ -1,17 +1,16 @@
-var colors = require("colors");
-var TruffleError = require("@truffle/error");
-var inherits = require("util").inherits;
+const colors = require("colors");
+const TruffleError = require("@truffle/error");
 
-inherits(CompileError, TruffleError);
+class CompileError extends TruffleError {
+  constructor(message) {
+    // Note we trim() because solc likes to add extra whitespace.
+    const fancyMessage =
+      message.trim() + "\n\n" + colors.red("Compilation failed. See above.");
+    const normalMessage = message.trim();
 
-function CompileError(message) {
-  // Note we trim() because solc likes to add extra whitespace.
-  var fancy_message =
-    message.trim() + "\n\n" + colors.red("Compilation failed. See above.");
-  var normal_message = message.trim();
-
-  CompileError.super_.call(this, normal_message);
-  this.message = fancy_message;
+    CompileError.super_.call(this, normalMessage);
+    this.message = fancyMessage;
+  }
 }
 
 module.exports = CompileError;
