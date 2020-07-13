@@ -1,29 +1,37 @@
-const { emptyFn, numToHex } = require("./util");
+const { emptyFn, numToHex, deepClone, setNull, delKeys } = require("./util");
 const debug = require("debug")("ethToConflux");
+const { Account, Conflux } = require("js-conflux-sdk");
 
 // TODO MAP latest_checkpoint
-const TAG_MAP = {
+const EPOCH_MAP = {
   earliest: "earliest",
   latest: "latest_state",
   pending: "latest_state"
 };
 const DEFAULT_PASSWORD = "123456";
 
-function formatInput(params) {
-  // 1. add nonce parameter to tx object
-  // TODO
-  // 2. block number tag map
-  if (params[0]) {
-    // format tx gas and gasPrice
-    if (params[0].gas && Number.isInteger(params[0].gas)) {
-      params[0].gas = numToHex(params[0].gas);
+let cfx = undefined;
+const accountAddresses = [];
+const accounts = {};
+
+function formatInput(params, coreParamIndex = 0, epochParamIndex = 1) {
+  return function() {
+    // 1. add nonce parameter to tx object
+    // TODO
+    // 2. block number tag map
+    let ci = coreParamIndex;
+    if (params[ci]) {
+      // format tx gas and gasPrice
+      if (params[ci].gas && Number.isInteger(params[ci].gas)) {
+        params[ci].gas = numToHex(params[ci].gas);
+      }
+      if (params[ci].gasPrice && Number.isInteger(params[ci].gasPrice)) {
+        params[ci].gasPrice = numToHex(params[ci].gasPrice);
+      }
     }
-    if (params[0].gasPrice && Number.isInteger(params[0].gasPrice)) {
-      params[0].gasPrice = numToHex(params[0].gasPrice);
-    }
-  }
-  mapParamsTagAtIndex(params, 1);
-  return params;
+    mapParamsTagAtIndex(params, epochParamIndex);
+    return params;
+  };
 }
 
 const bridge = {
@@ -48,12 +56,23 @@ const bridge = {
     method: "cfx_call",
     input: formatInput
   },
+
   eth_gasPrice: {
     method: "cfx_gasPrice"
   },
+
   eth_accounts: {
-    method: "accounts"
+    method: "accounts",
+    output: function(response) {
+      if (accountAddresses && accountAddresses.length > 0) {
+        response.result = Object.keys(accounts);
+        response.error = null;
+      }
+
+      return response;
+    }
   },
+
   eth_getTransactionCount: {
     method: "cfx_getNextNonce", // NOT right
     input: function(params) {
@@ -86,18 +105,18 @@ const bridge = {
     }
   },
   eth_sendTransaction: {
-    method: "send_transaction",
-    // todo: set storagelimit and gas
-    input: function(params) {
+    method: function(params) {
+      if (params.length && accounts[params[0].from]) {
+        return "cfx_sendRawTransaction";
+      }
+      return "send_transaction";
+    },
+
+    input: async function(params) {
       if (params.length > 0) {
         const txInput = params[0];
-        txInput.gasPrice = txInput.gasPrice || "0x" + (1e9).toString(16);
-        txInput.gas = txInput.gas || "0x1000000";
-        // TODO：must get by estimate or throw error,
-        // because the default value will be set to 0xfffffffffffff, it must lead to fail.
-        txInput.storageLimit = txInput.storageLimit || "0x100";
 
-        // simple handle
+        // simple handle txInput.to
         if (txInput.to) {
           txInput.to = "0x1" + txInput.to.slice(3);
         }
@@ -106,13 +125,20 @@ const bridge = {
           len = (len - 6) % 32;
           if (len == 0) txInput.to = "0x8" + txInput.to.slice(3);
         }
+
+        if (accounts[txInput.from]) {
+          await formatTxInput.bind(cfx)(txInput);
+          let signedTx = accounts[txInput.from].signTransaction(txInput);
+          params[0] = "0x" + signedTx.encode(true).toString("hex");
+        } else if (params.length == 1) {
+          params.push(DEFAULT_PASSWORD);
+        }
       }
-      if (params.length == 1) {
-        params.push(DEFAULT_PASSWORD);
-      }
+
       return params;
     }
   },
+
   eth_getStorageAt: {
     method: "cfx_getStorageAt",
     input: function(params) {
@@ -120,6 +146,7 @@ const bridge = {
       return params;
     }
   },
+
   eth_getBlockByHash: {
     method: "cfx_getBlockByHash",
     output: function(response) {
@@ -129,6 +156,7 @@ const bridge = {
       return response;
     }
   },
+
   eth_getBlockByNumber: {
     method: "cfx_getBlockByEpochNumber",
     input: function(params) {
@@ -142,6 +170,7 @@ const bridge = {
       return response;
     }
   },
+
   eth_getTransactionByHash: {
     method: "cfx_getTransactionByHash",
     output: function(response) {
@@ -149,18 +178,27 @@ const bridge = {
       return response;
     }
   },
+
   web3_clientVersion: {
     method: "cfx_clientVersion"
   },
+
   eth_chainId: {
     method: "cfx_getStatus",
     output: function(response) {
-      if (response.result) {
-        response.result = response.result.chain_id;
+      // return hardcode due to not support yet.
+      if (response.error) {
+        response.result = 1592304361448;
+        response.error = undefined;
+        return response;
       }
+
+      if (response.result && response.result.chain_id)
+        response.result = response.result.chain_id;
       return response;
     }
   },
+
   eth_getTransactionReceipt: {
     method: "cfx_getTransactionReceipt",
     output: function(response) {
@@ -196,30 +234,66 @@ const bridge = {
       return params;
     }
   }
+
   // eth_sign: {
   //   method: 'sign'
   // }
 };
 
-function ethToConflux(payload) {
-  // eslint-disable-next-line no-unused-vars
-  const oldMethod = payload.method;
-  const handler = bridge[payload.method];
-  if (!handler) {
-    return emptyFn;
-  }
-  debug(`Mapping "${oldMethod}" to "${handler.method}"`);
+bridge["net_version"] = bridge.eth_chainId;
 
-  let inputFn = handler.input || emptyFn;
-  payload.params = inputFn(payload.params);
-  payload.method = handler.method;
-  // debug("cfx payload:", payload);
-  return handler.output || emptyFn;
+function ethToConflux(options) {
+  // it's better to use class
+  setHost(options.url || `http://${options.host}:${options.port}`);
+  setAccounts(options.privateKeys);
+
+  return async function(payload) {
+    // clone new one to avoid change old payload
+    const newPayload = deepClone(payload);
+    // eslint-disable-next-line no-unused-vars
+    const oldMethod = newPayload.method;
+    const handler = bridge[newPayload.method];
+
+    if (!handler) {
+      debug(`Mapping "${oldMethod}" to nothing`);
+      return {
+        adaptedOutputFn: emptyFn,
+        adaptedPayload: newPayload
+      };
+    }
+
+    let inputFn = handler.input || emptyFn;
+    newPayload.method =
+      (typeof handler.method == "function" &&
+        handler.method(newPayload.params)) ||
+      handler.method;
+    newPayload.params = await inputFn(newPayload.params);
+    debug(`Mapping "${oldMethod}" to "${newPayload.method}"`);
+    return {
+      adaptedOutputFn: handler.output || emptyFn,
+      adaptedPayload: newPayload
+    };
+  };
 }
 
 module.exports = ethToConflux;
 
-// ================= helper methods ================
+// helper methods===============================================
+function formatTx(tx) {
+  // blockNumber?   TODO maybe cause big problem
+  tx.input = tx.data;
+  delKeys(tx, [
+    "chainId",
+    "contractCreated",
+    "data",
+    "epochHeight",
+    "status",
+    "storageLimit"
+  ]);
+  setNull(tx, ["blockNumber"]);
+  return tx;
+}
+
 function formatBlock(block) {
   block.number = block.epochNumber;
   // sha3Uncles?
@@ -262,23 +336,57 @@ function formatBlock(block) {
   return block;
 }
 
-function formatTx(tx) {
-  // blockNumber?   TODO maybe cause big problem
-  tx.input = tx.data;
-  delKeys(tx, [
-    "chainId",
-    "contractCreated",
-    "data",
-    "epochHeight",
-    "status",
-    "storageLimit"
-  ]);
-  setNull(tx, ["blockNumber"]);
-  return tx;
+async function formatTxInput(options) {
+  // debug("this of formatTxInput:", this);
+  if (options.nonce === undefined) {
+    options.nonce = await this.getNextNonce(options.from);
+  }
+
+  if (options.gasPrice === undefined) {
+    options.gasPrice = this.defaultGasPrice;
+  }
+  if (options.gasPrice === undefined) {
+    options.gasPrice = (await this.getGasPrice()) || 1; // MIN_GAS_PRICE
+  }
+
+  if (options.gas === undefined) {
+    options.gas = this.defaultGas;
+  }
+
+  if (options.storageLimit === undefined) {
+    options.storageLimit = this.defaultStorageLimit;
+  }
+
+  if (options.gas === undefined || options.storageLimit === undefined) {
+    const {
+      gasUsed,
+      storageCollateralized
+    } = await this.estimateGasAndCollateral(options);
+
+    if (options.gas === undefined) {
+      options.gas = gasUsed;
+    }
+
+    if (options.storageLimit === undefined) {
+      options.storageLimit = storageCollateralized;
+    }
+  }
+
+  if (options.epochHeight === undefined) {
+    options.epochHeight = await this.getEpochNumber();
+  }
+
+  if (options.chainId === undefined) {
+    options.chainId = this.defaultChainId;
+  }
+  if (options.chainId === undefined) {
+    const status = await this.getStatus();
+    options.chainId = status.chainId;
+  }
 }
 
 function mapTag(tag) {
-  return TAG_MAP[tag] || tag;
+  return EPOCH_MAP[tag] || tag;
 }
 
 function mapParamsTagAtIndex(params, index) {
@@ -287,14 +395,25 @@ function mapParamsTagAtIndex(params, index) {
   }
 }
 
-function delKeys(object, keys) {
-  for (let key of keys) {
-    delete object[key];
+function setAccounts(privateKeys) {
+  if (!privateKeys) return;
+
+  if (typeof privateKeys == "string") {
+    privateKeys = [privateKeys];
   }
+
+  privateKeys
+    .map(key => {
+      let account = new Account(key);
+      accountAddresses.push(account.toString());
+      return account;
+    })
+    .map(account => (accounts[account.toString()] = account));
 }
 
-function setNull(object, keys) {
-  for (let key of keys) {
-    object[key] = null;
-  }
+function setHost(host) {
+  // debug("set host:", host);
+  cfx = new Conflux({
+    url: host
+  });
 }

@@ -10,21 +10,24 @@ class Web3HttpProviderProxy extends Web3HttpProvider {
   }
 
   send(payload, callback) {
-    const adaptFn = this.chainAdaptor(payload);
-    super.send(payload, function(err, response) {
-      debug(
-        `RPC method: ${payload.method}, params: ${JSON.stringify(
-          payload.params,
-          null,
-          "\t"
-        )}`
-      );
-      if (err) {
-        callback(err);
-      } else {
-        callback(null, adaptFn(response));
-      }
-    });
+    const adapted = this.chainAdaptor(payload);
+    let supersend = super.send.bind(this);
+
+    if (adapted.then) adapted.then(execute);
+    else execute(adapted);
+
+    function execute(_adapted) {
+      supersend(_adapted.adaptedPayload, function(err, result) {
+        debug(`Send RPC:`, _adapted.adaptedPayload);
+        if (err) {
+          callback(err);
+        } else {
+          let adaptorResult = _adapted.adaptedOutputFn(result);
+          debug("adaptor rpc response:", adaptorResult);
+          callback(null, adaptorResult);
+        }
+      });
+    }
   }
 }
 
