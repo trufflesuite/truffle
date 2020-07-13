@@ -1,38 +1,29 @@
 const { HttpProvider, ethToConflux } = require("../src/");
-const { MigrateByteCode, genRPCPayload, BlockKeys, TxKeys } = require("./");
-const URL = "http://127.0.0.1:12537";
-const promisify = require("util").promisify;
 // eslint-disable-next-line no-unused-vars
 const should = require("chai").should();
+const {
+  bytecode: MigrateByteCode,
+  last_completed_migration_data: CallData
+} = require("./contract.json");
+const {
+  genRPCPayload,
+  BlockKeys,
+  TxKeys,
+  DefalutValue,
+  // eslint-disable-next-line no-unused-vars
+  wait,
+  ReceiptKeys
+} = require("./");
+const URL = "http://127.0.0.1:12537";
 
-// Notice: multi sendTransaction from same account, maybe will have nonce issue
+let ethProvider = new HttpProvider(URL, {
+  chainAdaptor: ethToConflux
+});
 
-describe("Cfx", function() {
-  let promiseSend;
-  let getAccounts;
+describe("CFX get RPCs", function() {
   let accounts;
 
   before(async function() {
-    let ethProvider = new HttpProvider(URL, {
-      chainAdaptor: ethToConflux
-    });
-    //
-    promiseSend = promisify(function(payload, callback) {
-      ethProvider.send(payload, function(err, response) {
-        if (err || response.error) {
-          console.error(response.error);
-          callback(err || response.error);
-        } else {
-          callback(null, response.result);
-        }
-      });
-    });
-    //
-    getAccounts = async function() {
-      let payload = genRPCPayload("eth_accounts");
-      return await promiseSend(payload);
-    };
-    //
     accounts = await getAccounts();
   });
 
@@ -68,9 +59,7 @@ describe("Cfx", function() {
 
   describe("#cfx_getBlockByNumber", function() {
     it("should getBlockByNumber", async function() {
-      let payload = genRPCPayload("eth_blockNumber");
-      let number = await promiseSend(payload);
-      payload = genRPCPayload("eth_getBlockByNumber", [number, false]);
+      let payload = genRPCPayload("eth_getBlockByNumber", ["latest", false]);
       let block = await promiseSend(payload);
       block.should.be.a("object");
       block.should.have.keys(BlockKeys);
@@ -95,13 +84,99 @@ describe("Cfx", function() {
 
   describe("#cfx_getBlockByHash", function() {
     it("get block by hash", async function() {
-      let payload = genRPCPayload("eth_blockNumber");
-      let number = await promiseSend(payload);
-      payload = genRPCPayload("eth_getBlockByNumber", [number, false]);
+      let payload = genRPCPayload("eth_getBlockByNumber", ["latest", false]);
       let block = await promiseSend(payload);
       payload = genRPCPayload("eth_getBlockByHash", [block.hash, true]);
       block = await promiseSend(payload);
       block.should.be.a("object");
+    });
+  });
+});
+
+describe("CFX TX relate RPCs", function() {
+  let accounts;
+
+  before(async function() {
+    accounts = await getAccounts();
+  });
+
+  describe("#cfx_estimateGas", function() {
+    it("estimateGas", async function() {
+      let txInfo = {
+        from: accounts[0],
+        to: accounts[1],
+        value: DefalutValue
+      };
+      let payload = genRPCPayload("eth_estimateGas", [txInfo]);
+      let estimate = await promiseSend(payload);
+      estimate.should.be.a("string");
+    });
+  });
+
+  describe("#cfx_sendTransaction", function() {
+    it("should send a simple transfer tx", async function() {
+      let payload = genRPCPayload("eth_getTransactionCount", [accounts[0]]);
+      let nonce = await promiseSend(payload);
+      let txInfo = {
+        from: accounts[0],
+        to: accounts[1],
+        value: DefalutValue,
+        nonce
+        // gasPrice: "0x2540be400"
+      };
+      payload = genRPCPayload("eth_sendTransaction", [txInfo]);
+      let txHash = await promiseSend(payload);
+      txHash.should.be.a("string");
+
+      let receipt = await confirmTx(txHash);
+      receipt.should.have.keys(ReceiptKeys);
+      receipt.should.have.property("status", 1);
+    });
+
+    it("should deploy an contract", async function() {
+      let payload = genRPCPayload("eth_getTransactionCount", [accounts[0]]);
+      let nonce = await promiseSend(payload);
+      let txInfo = {
+        from: accounts[0],
+        value: "0x0",
+        nonce,
+        data: MigrateByteCode,
+        gasPrice: "0x10000",
+        storageLimit: "0x10000"
+      };
+      payload = genRPCPayload("eth_estimateGas", [txInfo]);
+      let estimate = await promiseSend(payload);
+      txInfo.gas = estimate + "0";
+      payload = genRPCPayload("eth_sendTransaction", [txInfo]);
+      let txHash = await promiseSend(payload);
+      txHash.should.be.a("string");
+
+      let receipt = await confirmTx(txHash);
+      receipt.should.have.property("status", 1);
+    });
+
+    it("should send an tx with all parameter", async function() {
+      let payload = genRPCPayload("eth_getTransactionCount", [accounts[0]]);
+      let nonce = await promiseSend(payload);
+      let txInfo = {
+        from: accounts[0],
+        to: accounts[1],
+        value: DefalutValue,
+        nonce,
+        gas: "0x10000",
+        gasPrice: "0x10000",
+        storageLimit: "0x10000"
+      };
+      payload = genRPCPayload("eth_blockNumber");
+      let number = await promiseSend(payload);
+      txInfo.epochHeight = number;
+      payload = genRPCPayload("eth_sendTransaction", [txInfo]);
+      let txHash = await promiseSend(payload);
+      txHash.should.be.a("string");
+
+      let receipt = await confirmTx(txHash);
+      receipt.should.have.keys(ReceiptKeys);
+      receipt.should.have.property("status", 1);
     });
   });
 
@@ -110,8 +185,8 @@ describe("Cfx", function() {
       let txInfo = {
         from: accounts[1],
         to: accounts[0],
-        value: "0x100",
-        gasPrice: "0x2540be400"
+        value: DefalutValue
+        // gasPrice: "0x2540be400"
       };
       let payload = genRPCPayload("eth_sendTransaction", [txInfo]);
       let txHash = await promiseSend(payload);
@@ -122,69 +197,132 @@ describe("Cfx", function() {
     });
   });
 
-  describe("#cfx_sendRawTransaction", function() {
+  describe("#cfx_getTransactionReceipt", function() {
+    it("should get tx receipt", async function() {
+      let txInfo = {
+        from: accounts[0],
+        data: MigrateByteCode, // a simple coin contract bytecode
+        gas: "0x100000",
+        value: "0x0"
+      };
+      let payload = genRPCPayload("eth_sendTransaction", [txInfo]);
+      let txHash = await promiseSend(payload);
+      txHash.should.be.a("string");
+      await wait(3);
+      payload = genRPCPayload("eth_getTransactionReceipt", [txHash]);
+      let receipt = await promiseSend(payload);
+      receipt.should.have.keys(ReceiptKeys);
+    });
+  });
+
+  /* describe("#cfx_sendRawTransaction", function() {
     it("sendRawTx", async function() {
-      // TODO
+    });
+  }); */
+});
+
+describe("CFX contract relate RPCs", function() {
+  let accounts;
+  let contractAddress = "";
+
+  before(async function() {
+    accounts = await getAccounts();
+
+    let payload = genRPCPayload("eth_getTransactionCount", [accounts[0]]);
+    let nonce = await promiseSend(payload);
+    let txInfo = {
+      from: accounts[0],
+      value: "0x0",
+      nonce,
+      data: MigrateByteCode,
+      gasPrice: "0x10000",
+      storageLimit: "0x10000"
+    };
+    payload = genRPCPayload("eth_estimateGas", [txInfo]);
+    let estimate = await promiseSend(payload);
+    txInfo.gas = estimate + "0";
+    payload = genRPCPayload("eth_sendTransaction", [txInfo]);
+    let txHash = await promiseSend(payload);
+    let receipt = await confirmTx(txHash);
+    receipt.should.have.property("status", 1);
+    contractAddress = receipt.contractAddress;
+    // console.log('The contract address: ', contractAddress);
+  });
+
+  describe("#cfx_getLogs", function() {
+    it("should get logs", async function() {
+      let payload = genRPCPayload("eth_getLogs", [
+        {
+          address: contractAddress
+        }
+      ]);
+      let logs = await promiseSend(payload);
+      logs.should.be.a("array");
     });
   });
 
   describe("#cfx_call", function() {
-    it("eth_call", async function() {
-      // TODO
+    it("cfx_call", async function() {
+      let payload = genRPCPayload("eth_call", [
+        {
+          data: CallData,
+          to: contractAddress
+        },
+        "latest"
+      ]);
+      let result = await promiseSend(payload);
+      result.should.be.a("string");
     });
   });
 
   describe("#cfx_getCode", function() {
     it("getCode", async function() {
-      let payload = genRPCPayload("eth_getTransactionCount", [accounts[0]]);
-      let nonce = await promiseSend(payload);
-      let txInfo = {
-        from: accounts[0],
-        data: MigrateByteCode, // a simple coin contract bytecode
-        gas: "0x100000",
-        nonce,
-        value: "0x0"
-      };
-      payload = genRPCPayload("eth_sendTransaction", [txInfo]);
-      let tx = await promiseSend(payload);
-      tx.should.be.a("string");
-    });
-  });
-
-  describe("#cfx_estimateGas", function() {
-    it("estimateGas", async function() {
-      let txInfo = {
-        from: accounts[0],
-        to: accounts[1],
-        value: "0x100"
-      };
-      let payload = genRPCPayload("eth_estimateGas", [txInfo]);
-      let estimate = await promiseSend(payload);
-      estimate.should.be.a("string");
-    });
-  });
-
-  describe("#cfx_sendTransaction", function() {
-    it("sendTx", async function() {
-      let payload = genRPCPayload("eth_getTransactionCount", [accounts[0]]);
-      let nonce = await promiseSend(payload);
-      // console.log("nonce", nonce);
-      let txInfo = {
-        from: accounts[0],
-        to: accounts[1],
-        value: "0x100",
-        nonce
-        // gasPrice: "0x2540be400"
-      };
-      payload = genRPCPayload("eth_sendTransaction", [txInfo]);
-      let txHash = await promiseSend(payload);
-      txHash.should.be.a("string");
+      let payload = genRPCPayload("eth_getCode", [contractAddress, "latest"]);
+      let code = await promiseSend(payload);
+      code.should.be.a("string");
     });
   });
 
   describe("#cfx_getStorageAt", function() {
-    it("get transaction by hash", async function() {
-      // TODO
+    it("getStorageAt", async function() {
+      let index = "0".padStart(64, 0); // TODO proxy need support 0x100
+      let payload = genRPCPayload("eth_getStorageAt", [
+        contractAddress,
+        `0x${index}`,
+        "latest"
+      ]);
+      let storage = await promiseSend(payload);
+      storage.should.be.a("string");
     });
   });
 });
+
+function promiseSend(payload) {
+  return new Promise(function(resolve, reject) {
+    ethProvider.send(payload, function(err, response) {
+      if (err || response.error) {
+        console.error(response.error);
+        reject(err || response.error);
+      } else {
+        resolve(response.result);
+      }
+    });
+  });
+}
+
+async function getAccounts() {
+  let payload = genRPCPayload("eth_accounts");
+  return await promiseSend(payload);
+}
+
+async function confirmTx(txHash) {
+  let receipt;
+  while (true) {
+    let payload = genRPCPayload("eth_getTransactionReceipt", [txHash]);
+    receipt = await promiseSend(payload);
+    if (receipt) {
+      return receipt;
+    }
+    await wait(3);
+  }
+}
