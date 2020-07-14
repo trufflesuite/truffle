@@ -79,7 +79,7 @@ export class FS implements ResolverSource {
       }
     }
     
-    throw new Error(`Path resolving failed for ${importPath}`);
+    return { body, filePath };
   }
 
   // Here we're resolving from local files to local files, all absolute.
