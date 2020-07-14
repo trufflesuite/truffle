@@ -16,9 +16,6 @@ const accounts = {};
 
 function formatInput(params, coreParamIndex = 0, epochParamIndex = 1) {
   return function() {
-    // 1. add nonce parameter to tx object
-    // TODO
-    // 2. block number tag map
     let ci = coreParamIndex;
     if (params[ci]) {
       // format tx gas and gasPrice
@@ -109,7 +106,7 @@ const bridge = {
       if (params.length && accounts[params[0].from]) {
         return "cfx_sendRawTransaction";
       }
-      return "send_transaction";
+      return "cfx_sendTransaction";
     },
 
     input: async function(params) {
@@ -186,15 +183,9 @@ const bridge = {
   eth_chainId: {
     method: "cfx_getStatus",
     output: function(response) {
-      // return hardcode due to not support yet.
-      if (response.error) {
-        response.result = 1592304361448;
-        response.error = undefined;
-        return response;
-      }
-
-      if (response.result && response.result.chain_id)
+      if (response.result && response.result.chain_id) {
         response.result = response.result.chain_id;
+      }
       return response;
     }
   },
@@ -207,7 +198,8 @@ const bridge = {
         txReceipt.contractAddress = txReceipt.contractCreated;
         txReceipt.blockNumber = txReceipt.epochNumber;
         txReceipt.transactionIndex = txReceipt.index;
-        txReceipt.status = txReceipt.outcomeStatus === 0 ? 1 : 0; // conflux和以太坊状态相反
+        // txReceipt.status = txReceipt.outcomeStatus === 0 ? 1 : 0; // conflux和以太坊状态相反
+        txReceipt.status = txReceipt.outcomeStatus === "0x0" ? "0x1" : "0x0"; // conflux和以太坊状态相反
         txReceipt.cumulativeGasUsed = txReceipt.gasUsed; // TODO simple set
         // txReceipt.gasUsed = `0x${txReceipt.gasUsed.toString(16)}`;
         delKeys(txReceipt, [
@@ -233,11 +225,15 @@ const bridge = {
       }
       return params;
     }
-  }
+  },
 
-  // eth_sign: {
-  //   method: 'sign'
-  // }
+  eth_sign: {
+    method: "sign",
+    input: function(params) {
+      let newParams = [params[1], params[0], DEFAULT_PASSWORD];
+      return newParams;
+    }
+  }
 };
 
 bridge["net_version"] = bridge.eth_chainId;

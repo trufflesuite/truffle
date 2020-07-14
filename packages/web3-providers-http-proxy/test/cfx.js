@@ -17,7 +17,7 @@ const {
 const URL = "http://127.0.0.1:12537";
 
 let ethProvider = new HttpProvider(URL, {
-  chainAdaptor: ethToConflux
+  chainAdaptor: ethToConflux({ url: URL })
 });
 
 describe("CFX get RPCs", function() {
@@ -204,6 +204,7 @@ describe("CFX TX relate RPCs", function() {
         from: accounts[0],
         data: MigrateByteCode, // a simple coin contract bytecode
         gas: "0x100000",
+        gasPrice: "0x100",
         value: "0x0"
       };
       let payload = genRPCPayload("eth_sendTransaction", [txInfo]);
@@ -302,7 +303,7 @@ function promiseSend(payload) {
   return new Promise(function(resolve, reject) {
     ethProvider.send(payload, function(err, response) {
       if (err || response.error) {
-        console.error(response.error);
+        console.error(response.error, payload.method);
         reject(err || response.error);
       } else {
         resolve(response.result);
