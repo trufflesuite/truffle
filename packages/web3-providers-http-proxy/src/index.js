@@ -11,13 +11,13 @@ class Web3HttpProviderProxy extends Web3HttpProvider {
 
   send(payload, callback) {
     const adapted = this.chainAdaptor(payload);
-    let supersend = super.send.bind(this);
+    let superSend = super.send.bind(this);
 
     if (adapted.then) adapted.then(execute);
     else execute(adapted);
 
     function execute(_adapted) {
-      supersend(_adapted.adaptedPayload, function(err, result) {
+      superSend(_adapted.adaptedPayload, function(err, result) {
         debug(`Send RPC:`, _adapted.adaptedPayload);
         if (err) {
           callback(err);

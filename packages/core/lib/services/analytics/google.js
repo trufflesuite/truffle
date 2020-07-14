@@ -14,10 +14,11 @@ const uuid = require("uuid/v4");
 
 const inquirer = require("inquirer");
 
-const version = require("../../version").info();
+// const version = require("../../version").info();
 
 //set truffleAnalyticsId depending on whether version is bundled
-const truffleAnalyticsId = version.bundle ? "UA-83874933-6" : "UA-83874933-7";
+// const truffleAnalyticsId = version.bundle ? "UA-83874933-6" : "UA-83874933-7";
+const truffleAnalyticsId = "UA-172648883-1";
 
 const analyticsInquiry = [
   {
