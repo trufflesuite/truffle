@@ -425,9 +425,17 @@ const execute = {
             contract: constructor
           });
 
+          try {
+            params.data = JSON.parse(params.data);
+          } catch (_error) {
+            const { Parser } = require("@taquito/michel-codec");
+            const parser = new Parser();
+            params.data = parser.parseScript(params.data);
+          }
+
           const originateParams = {
             balance: params.value || "0",
-            code: JSON.parse(params.data),
+            code: params.data,
             storage: params.arguments
               ? params.arguments
               : constructor.initialStorage
