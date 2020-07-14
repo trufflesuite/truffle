@@ -30,5 +30,10 @@
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "dependencies": {
+    "@truffle/compile-solidity": "^4.3.0-tezos.11",
+    "@truffle/contract-sources": "^0.3.0-tezos.0",
+    "minimatch": "^3.0.4"
   }
 }
