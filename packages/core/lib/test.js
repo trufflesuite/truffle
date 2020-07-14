@@ -300,7 +300,10 @@ const Test = {
           contract.debugger = bugger;
         }
         return contract;
-      }
+      },
+      
+      // convert config into plain object (remove special properties)
+      config: config.normalize(config)
     };
 
     global[config.debugGlobal] = async operation => {
