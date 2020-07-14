@@ -781,6 +781,38 @@ var DebugUtils = {
           variable === "this" ? { [replacement]: value } : { [variable]: value }
       )
     );
+  },
+
+  /**
+   * HACK warning!  This function modifies the debugger state
+   * and should only be used in light mode, at startup, in a very specific way!
+   *
+   * let bugger = await Debugger.forTx(txHash, { lightMode: true, ... });
+   * const sources = await getTransactionSourcesBeforeStarting(bugger);
+   * await bugger.startFullMode();
+   *
+   * Don't go switching transactions after doing this, because there's no
+   * way at the moment to switch back into light mode in order to re-run
+   * this function.  You do *not* want to run this in full mode.
+   */
+  getTransactionSourcesBeforeStarting: async function(bugger) {
+    await bugger.reset();
+    let sources = {};
+    const { controller } = bugger.selectors;
+    while (!bugger.view(controller.current.trace.finished)) {
+      const source = bugger.view(controller.current.location.source);
+      const { compilationId, id } = source;
+      if (compilationId !== undefined && id !== undefined) {
+        sources[compilationId] = {
+          ...sources[compilationId],
+          [id]: source
+        };
+      }
+      await bugger.stepNext();
+    }
+    await bugger.reset();
+    //flatten sources before returning
+    return [].concat(...Object.values(sources).map(Object.values));
   }
 };
 
