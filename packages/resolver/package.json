@@ -34,7 +34,7 @@
     "sinon": "^7.3.1"
   },
   "peerDependencies": {
-    "@truffle/contract": "^4.0.13"
+    "@truffle/contract": "^5.0.0-tezos.6"
   },
   "publishConfig": {
     "access": "public"
