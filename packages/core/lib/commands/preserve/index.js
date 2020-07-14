@@ -25,10 +25,6 @@ module.exports = {
         option: "--environment",
         description:
           "Environment name, as defined in truffle-config `environments` object"
-      },
-      {
-        option: "--verbose",
-        description: "Show additional logging"
       }
     ];
 
@@ -85,8 +81,6 @@ module.exports = {
 
     const recipe = modules.recipes.get(tag);
 
-    const { verbose } = options;
-
     if (!recipe) {
       throw new Error("No recipe specified");
     }
@@ -109,9 +103,7 @@ module.exports = {
             recipe,
             loader: "@truffle/preserve-fs",
             settings: new Map([
-              ["@truffle/preserve-fs", { path, verbose }],
-              ["@truffle/preserve-to-ipfs", { verbose }],
-              ["@truffle/preserve-to-filecoin", { verbose }]
+              ["@truffle/preserve-fs", { path, verbose: true }]
             ])
           }
         })

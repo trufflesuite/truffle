@@ -8,7 +8,6 @@ export interface ProposeStorageDealOptions {
   cid: CID;
   client: LotusClient;
   miners: Miner[];
-  verbose: boolean;
   controls: Preserve.Controls;
 }
 
@@ -34,13 +33,16 @@ export interface StorageProposal {
 export async function* proposeStorageDeal(
   options: ProposeStorageDealOptions
 ): Preserve.Process<StorageProposalResult> {
-  const { cid, client, miners, verbose, controls } = options;
+  const {
+    cid,
+    client,
+    miners,
+    controls: { step }
+  } = options;
 
-  const { step } = controls;
-
-  const task = verbose
-    ? yield* step({ message: "Proposing storage deal..." })
-    : controls;
+  const task = yield* step({
+    message: "Proposing storage deal..."
+  });
 
   const unknown = yield* task.declare({
     identifier: "Deal CID"
@@ -70,9 +72,7 @@ export async function* proposeStorageDeal(
 
   yield* unknown.resolve({ payload: chalk.bold(dealCid.toString()) });
 
-  if (verbose) {
-    yield* task.succeed();
-  }
+  yield* task.succeed();
 
   return { dealCid };
 }

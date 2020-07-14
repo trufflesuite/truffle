@@ -45,7 +45,7 @@ export async function* preserve(
       name: loader.name,
       method: loader.load.bind(loader)
     },
-    { settings: loaderSettings }
+    loaderSettings
   );
 
   /*
@@ -82,7 +82,7 @@ export async function* preserve(
   let labels: Map<string, any> = new Map([]);
 
   for (const recipe of plan) {
-    const settings = request.settings.get(recipe.name) || {};
+    const settings = request.settings.get(recipe.name);
 
     // for the result
     const label = yield* control(

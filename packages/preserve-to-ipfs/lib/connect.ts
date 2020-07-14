@@ -6,29 +6,29 @@ import { IpfsClient } from "./adapter";
 export interface ConnectOptions {
   controls: Preserve.Controls;
   address: string;
-  verbose?: boolean;
 }
 
 export async function* connect(
   options: ConnectOptions
 ): Preserve.Process<IpfsClient> {
-  const { address, verbose = false, controls } = options;
+  const {
+    address,
+    controls: { step }
+  } = options;
 
-  const { step } = controls;
-
-  // for verbose logging, create a separate sub-task
-  const task = verbose
-    ? yield* step({ message: `Connecting to IPFS node at ${address}...` })
-    : controls;
+  const task = yield* step({
+    message: `Connecting to IPFS node at ${address}...`
+  });
 
   // init client
   const ipfs = IpfsHttpClient(address);
 
   try {
     const version = await ipfs.version();
-    if (verbose) {
-      yield* task.succeed({ label: version });
-    }
+    yield* task.succeed({
+      label: version,
+      message: `Connected to IPFS node at ${address}`
+    });
   } catch (error) {
     yield* task.fail({ error });
     return;

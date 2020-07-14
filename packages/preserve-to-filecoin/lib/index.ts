@@ -17,12 +17,9 @@ export interface ConstructorOptions
   address: string;
 }
 
-export interface Settings {
-  verbose?: boolean;
-}
-
 export interface PreserveOptions extends Preserve.Recipes.PreserveOptions {
-  settings: Settings;
+  target: Preserve.Target;
+  labels: Map<string, any>;
 }
 
 export interface Label {
@@ -43,9 +40,7 @@ export class Recipe implements Preserve.Recipe {
   }
 
   async *preserve(options: PreserveOptions): Preserve.Process<Label> {
-    const { target, labels, settings, controls } = options;
-
-    const { verbose = false } = settings;
+    const { target, labels, controls } = options;
 
     const { log } = controls;
 
@@ -61,13 +56,11 @@ export class Recipe implements Preserve.Recipe {
 
     const client = yield* connect({
       address: this.address,
-      verbose,
       controls
     });
 
     const miners = yield* getMiners({
       client,
-      verbose,
       controls
     });
 
@@ -75,7 +68,6 @@ export class Recipe implements Preserve.Recipe {
       cid,
       client,
       miners,
-      verbose,
       controls
     });
 

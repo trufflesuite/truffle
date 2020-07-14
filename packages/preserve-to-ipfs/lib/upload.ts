@@ -9,7 +9,6 @@ export interface UploadOptions {
   source: Preserve.Targets.Source;
   data: Iterable<FileObject>;
   ipfs: IpfsClient;
-  verbose: boolean;
 }
 
 export interface UploadResult {
@@ -19,11 +18,16 @@ export interface UploadResult {
 export async function* upload(
   options: UploadOptions
 ): Preserve.Process<UploadResult> {
-  const { source, ipfs, data, verbose, controls } = options;
+  const {
+    source,
+    ipfs,
+    data,
+    controls: { step }
+  } = options;
 
-  const { step } = controls;
-
-  const task = verbose ? yield* step({ message: "Uploading..." }) : controls;
+  const task = yield* step({
+    message: "Uploading..."
+  });
 
   const unknowns: {
     [unknown: string]: Preserve.Processes.Unknown;
@@ -31,11 +35,9 @@ export async function* upload(
     root: yield* task.declare({ identifier: "Root CID" })
   };
 
-  if (verbose) {
-    for await (const { path } of data) {
-      if (path !== ".") {
-        unknowns[path] = yield* unknowns.root.extend({ identifier: path });
-      }
+  for await (const { path } of data) {
+    if (path !== ".") {
+      unknowns[path] = yield* unknowns.root.extend({ identifier: path });
     }
   }
 
@@ -49,14 +51,12 @@ export async function* upload(
     for await (result of results) {
       const { path, cid } = result;
 
-      if (verbose) {
-        const unknown = unknowns[`./${path}`];
-        if (unknown) {
-          yield* unknown.resolve({
-            label: { cid },
-            payload: cid.toString()
-          });
-        }
+      const unknown = unknowns[`./${path}`];
+      if (unknown) {
+        yield* unknown.resolve({
+          label: { cid },
+          payload: cid.toString()
+        });
       }
     }
   } catch (error) {

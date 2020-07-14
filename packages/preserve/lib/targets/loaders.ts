@@ -11,7 +11,6 @@ export interface Constructor {
 
 export interface LoadOptions {
   controls: Controls;
-  settings: any;
 }
 
 export interface Loader {
