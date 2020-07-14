@@ -89,6 +89,7 @@ describe("CFX get RPCs", function() {
       payload = genRPCPayload("eth_getBlockByHash", [block.hash, true]);
       block = await promiseSend(payload);
       block.should.be.a("object");
+      block.should.have.keys(BlockKeys);
     });
   });
 });

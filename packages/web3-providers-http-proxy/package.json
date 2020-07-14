@@ -13,7 +13,8 @@
     "debug": "^4.1.1",
     "web3-core-helpers": "^1.2.9",
     "web3-providers-http": "^1.2.9",
-    "xhr2-cookies": "^1.1.0"
+    "xhr2-cookies": "^1.1.0",
+    "js-conflux-sdk": "^0.10.0-alpha"
   },
   "devDependencies": {
     "chai": "^4.2.0",

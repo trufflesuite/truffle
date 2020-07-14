@@ -6,16 +6,16 @@ const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
 const providerProxy = require("web3-providers-http-proxy");
 
 module.exports = {
-  wrap: function (provider, options) {
+  wrap: function(provider, options) {
     return wrapper.wrap(provider, options);
   },
 
-  create: function (options) {
+  create: function(options) {
     const provider = this.getProvider(options);
     return this.wrap(provider, options);
   },
 
-  getProvider: function (options) {
+  getProvider: function(options) {
     let provider;
     if (options.provider && typeof options.provider === "function") {
       provider = options.provider();
@@ -28,7 +28,9 @@ module.exports = {
     } else if (options.type && options.type != "conflux") {
       provider = new Web3.providers.HttpProvider(
         options.url || `http://${options.host}:${options.port}`,
-        { keepAlive: false }
+        {
+          keepAlive: false
+        }
       );
     } else {
       // P+ use custom provider proxy if type is conflux
@@ -36,14 +38,14 @@ module.exports = {
         options.url || `http://${options.host}:${options.port}`,
         {
           keepAlive: false,
-          chainAdaptor: providerProxy.ethToConflux
+          chainAdaptor: providerProxy.ethToConflux(options)
         }
       );
     }
     return provider;
   },
 
-  testConnection: function (options) {
+  testConnection: function(options) {
     let networkCheckTimeout, networkType;
     const { networks, network } = options;
     if (networks && networks[network]) {
@@ -74,7 +76,7 @@ module.exports = {
         .catch(error => {
           console.log(
             "> Something went wrong while attempting to connect " +
-            "to the network. Check your network configuration."
+              "to the network. Check your network configuration."
           );
           clearTimeout(noResponseFromNetworkCall);
           reject(error);

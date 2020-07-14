@@ -7,22 +7,26 @@ import { Tx as web3Tx } from "web3/eth/types";
 import { Conflux } from "js-conflux-sdk";
 // @ts-ignore
 import format from "js-conflux-sdk/src/util/format";
+import { ethToConflux, HttpProvider } from "web3-providers-http-proxy";
 
 // We simply return plain ol' Web3.js
 export const ConfluxDefinition = {
   async initNetworkType(web3: Web3Shim) {
     // console.log("init network by conflux type");
+
     overrides.initCfx(web3);
-    overrides.getBlockNumber(web3);
-    overrides.getNetworkId(web3);
-    overrides.getAccounts(web3);
-    overrides.getBlock(web3);
-    overrides.getTransaction(web3);
-    overrides.getTransactionReceipt(web3);
-    overrides.getBalance(web3);
-    overrides.getCode(web3);
-    overrides.estimateGas(web3);
-    overrides.sendTransaction(web3);
+    overrides.setProviderProxy(web3);
+
+    // overrides.getBlockNumber(web3);
+    // overrides.getNetworkId(web3);
+    // // overrides.getAccounts(web3);
+    // overrides.getBlock(web3);
+    // overrides.getTransaction(web3);
+    // overrides.getTransactionReceipt(web3);
+    // overrides.getBalance(web3);
+    // overrides.getCode(web3);
+    // overrides.estimateGas(web3);
+    // overrides.sendTransaction(web3);
   }
 };
 
@@ -39,6 +43,21 @@ const overrides = {
     });
     // @ts-ignore
     web3.cfx = cfx;
+  },
+
+  setProviderProxy: (web3: Web3Shim) => {
+    if (!(web3.currentProvider instanceof HttpProvider)) {
+      let provider = new HttpProvider(
+        // @ts-ignore
+        web3.currentProvider.host,
+        {
+          keepAlive: false,
+          // @ts-ignore
+          chainAdaptor: ethToConflux({ url: web3.currentProvider.host })
+        }
+      );
+      web3.setProvider(provider);
+    }
   },
 
   getBlockNumber: (web3: Web3Shim) => {
