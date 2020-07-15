@@ -17,8 +17,4 @@ jobs:
 workflows:
   colony:
     jobs:
-      - build-and-test-COLONY:
-          filters:
-            branches:
-              only:
-                - colony-circle-config
+      - build-and-test-COLONY
