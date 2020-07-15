@@ -11,22 +11,51 @@ class Web3HttpProviderProxy extends Web3HttpProvider {
 
   send(payload, callback) {
     const adapted = this.chainAdaptor(payload);
-    let superSend = super.send.bind(this);
+    const superSend = super.send.bind(this);
 
-    if (adapted.then) adapted.then(execute);
-    else execute(adapted);
+    const wrappedCallback = function(err, result) {
+      if (err) console.trace(err);
 
-    function execute(_adapted) {
+      if (result.error && result.error.message) {
+        let errData = result.error.data;
+        result.error.message += `\n> raw rpc payload is: ${JSON.stringify(
+          payload
+        )}`;
+        result.error.message += errData ? `\n> error data: ${errData}` : "";
+      }
+      callback(err, result);
+    };
+
+    const execute = function(_adapted) {
+      if (_adapted.adaptedSend) {
+        _adapted.adaptedSend(superSend, payload, wrappedCallback);
+        return;
+      }
+
       superSend(_adapted.adaptedPayload, function(err, result) {
         debug(`Send RPC:`, _adapted.adaptedPayload);
-        if (err) {
-          callback(err);
-        } else {
-          let adaptorResult = _adapted.adaptedOutputFn(result);
-          debug("adaptor rpc response:", adaptorResult);
-          callback(null, adaptorResult);
+
+        let adaptorResult = result && _adapted.adaptedOutputFn(result);
+        debug("adaptor rpc response:", adaptorResult);
+
+        if (adaptorResult.error && adaptorResult.error.message) {
+          adaptorResult.error.message += `\n> adapted payload is: ${JSON.stringify(
+            _adapted.adaptedPayload
+          )}`;
         }
+        debug("adaptorResult:", adaptorResult);
+        wrappedCallback(err, adaptorResult);
       });
+    };
+
+    if (adapted.then) {
+      adapted.then(execute).catch(wrappedCallback);
+    } else {
+      try {
+        execute(adapted);
+      } catch (err) {
+        wrappedCallback(err);
+      }
     }
   }
 }

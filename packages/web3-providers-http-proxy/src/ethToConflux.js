@@ -1,6 +1,6 @@
 const { emptyFn, numToHex, deepClone, setNull, delKeys } = require("./util");
 const debug = require("debug")("ethToConflux");
-const { Account, Conflux } = require("js-conflux-sdk");
+const { Account, Conflux, util } = require("js-conflux-sdk");
 
 // TODO MAP latest_checkpoint
 const EPOCH_MAP = {
@@ -11,11 +11,12 @@ const EPOCH_MAP = {
 const DEFAULT_PASSWORD = "123456";
 
 let cfx = undefined;
+const checksumAddress = util.sign.checksumAddress;
 const accountAddresses = [];
 const accounts = {};
 
-function formatInput(params, coreParamIndex = 0, epochParamIndex = 1) {
-  return function() {
+function formatInput(coreParamIndex = 0, epochParamIndex = 1) {
+  return function(params) {
     let ci = coreParamIndex;
     if (params[ci]) {
       // format tx gas and gasPrice
@@ -25,6 +26,8 @@ function formatInput(params, coreParamIndex = 0, epochParamIndex = 1) {
       if (params[ci].gasPrice && Number.isInteger(params[ci].gasPrice)) {
         params[ci].gasPrice = numToHex(params[ci].gasPrice);
       }
+      if (params[ci].from) params[ci].from = checksumAddress(params[ci].from);
+      if (params[ci].to) params[ci].to = checksumAddress(params[ci].to);
     }
     mapParamsTagAtIndex(params, epochParamIndex);
     return params;
@@ -39,9 +42,11 @@ const bridge = {
       return params;
     }
   },
+
   eth_sendRawTransaction: {
     method: "cfx_sendRawTransaction"
   },
+
   eth_getBalance: {
     method: "cfx_getBalance",
     input: function(params) {
@@ -49,9 +54,10 @@ const bridge = {
       return params;
     }
   },
+
   eth_call: {
     method: "cfx_call",
-    input: formatInput
+    input: formatInput()
   },
 
   eth_gasPrice: {
@@ -62,10 +68,11 @@ const bridge = {
     method: "accounts",
     output: function(response) {
       if (accountAddresses && accountAddresses.length > 0) {
-        response.result = Object.keys(accounts);
+        response.result = accountAddresses;
         response.error = null;
+      } else if (response.result) {
+        response.result = response.result.map(checksumAddress);
       }
-
       return response;
     }
   },
@@ -77,6 +84,7 @@ const bridge = {
       return params;
     }
   },
+
   eth_getCode: {
     method: "cfx_getCode",
     input: function(params) {
@@ -91,9 +99,10 @@ const bridge = {
       return response;
     }
   },
+
   eth_estimateGas: {
     method: "cfx_estimateGasAndCollateral",
-    input: formatInput,
+    input: formatInput(),
     output: function(response) {
       if (response && response.result && response.result.gasUsed) {
         response.result = response.result.gasUsed;
@@ -101,9 +110,10 @@ const bridge = {
       return response;
     }
   },
+
   eth_sendTransaction: {
     method: function(params) {
-      if (params.length && accounts[params[0].from]) {
+      if (params.length && getAccount(params[0].from)) {
         return "cfx_sendRawTransaction";
       }
       return "cfx_sendTransaction";
@@ -112,26 +122,17 @@ const bridge = {
     input: async function(params) {
       if (params.length > 0) {
         const txInput = params[0];
+        const from = getAccount(txInput.from);
 
-        // simple handle txInput.to
-        if (txInput.to) {
-          txInput.to = "0x1" + txInput.to.slice(3);
-        }
-        if (txInput.data) {
-          let len = txInput.data.length;
-          len = (len - 6) % 32;
-          if (len == 0) txInput.to = "0x8" + txInput.to.slice(3);
-        }
-
-        if (accounts[txInput.from]) {
-          await formatTxInput.bind(cfx)(txInput);
-          let signedTx = accounts[txInput.from].signTransaction(txInput);
+        params[0] = await formatTxInput.bind(cfx)(txInput);
+        debug("formated inputTx:", params[0]);
+        if (from) {
+          let signedTx = from.signTransaction(params[0]);
           params[0] = "0x" + signedTx.encode(true).toString("hex");
         } else if (params.length == 1) {
           params.push(DEFAULT_PASSWORD);
         }
       }
-
       return params;
     }
   },
@@ -183,8 +184,20 @@ const bridge = {
   eth_chainId: {
     method: "cfx_getStatus",
     output: function(response) {
-      if (response.result && response.result.chain_id) {
-        response.result = response.result.chain_id;
+      debug("convert cfx_getStatus response:", response);
+      if (response.result && response.result.chainId) {
+        response.result = Number.parseInt(response.result.chainId);
+      }
+      return response;
+    }
+  },
+
+  net_version: {
+    method: "cfx_getStatus",
+    output: function(response) {
+      debug("convert cfx_getStatus response:", response);
+      if (response.result && response.result.chainId) {
+        response.result = Number.parseInt(response.result.chainId) + 10000;
       }
       return response;
     }
@@ -199,7 +212,10 @@ const bridge = {
         txReceipt.blockNumber = txReceipt.epochNumber;
         txReceipt.transactionIndex = txReceipt.index;
         // txReceipt.status = txReceipt.outcomeStatus === 0 ? 1 : 0; // conflux和以太坊状态相反
-        txReceipt.status = txReceipt.outcomeStatus === "0x0" ? "0x1" : "0x0"; // conflux和以太坊状态相反
+        // console.log("txReceipt.outcomeStatus",Number.parseInt(txReceipt.outcomeStatus));
+        txReceipt.status = Number.parseInt(txReceipt.outcomeStatus)
+          ? "0x0"
+          : "0x1"; // conflux和以太坊状态相反
         txReceipt.cumulativeGasUsed = txReceipt.gasUsed; // TODO simple set
         // txReceipt.gasUsed = `0x${txReceipt.gasUsed.toString(16)}`;
         delKeys(txReceipt, [
@@ -214,6 +230,7 @@ const bridge = {
       return response;
     }
   },
+
   eth_getLogs: {
     method: "cfx_getLogs",
     input: function(params) {
@@ -229,14 +246,48 @@ const bridge = {
 
   eth_sign: {
     method: "sign",
-    input: function(params) {
-      let newParams = [params[1], params[0], DEFAULT_PASSWORD];
-      return newParams;
+    // input: function (params) {
+    //   let newParams = [params[1], params[0], DEFAULT_PASSWORD];
+    //   return newParams;
+    // },
+    send: function(orignSend, payload, callback) {
+      // console.trace("execute sign send ", payload, "callback:", callback.toString());
+      payload = deepClone(payload);
+      const address = payload.params[0];
+      const message = payload.params[1];
+      const account = getAccount(address);
+      // console.log("get account done", account);
+
+      if (account) {
+        // console.log("start sign by local");
+        // let signed;
+        const isAddressMatched =
+          message.from && message.from.toLowerCase() == address;
+        let signed = isAddressMatched
+          ? account.signTransaction(message)
+          : account.signMessage(message);
+
+        const response = {
+          jsonrpc: payload.jsonrpc,
+          result: signed,
+          id: payload.id
+        };
+        // console.log("sign callback ", response);
+        callback(null, response);
+      } else {
+        // console.log("start sign by rpc");
+        let newParams = [message, address, DEFAULT_PASSWORD];
+        payload.method = "sign";
+        payload.params = newParams;
+        debug("sign orign send ", payload);
+        orignSend(payload, callback);
+      }
+      // console.log("sign adapt send done");
     }
   }
 };
 
-bridge["net_version"] = bridge.eth_chainId;
+// bridge["net_version"] = bridge.eth_chainId;
 
 function ethToConflux(options) {
   // it's better to use class
@@ -245,29 +296,35 @@ function ethToConflux(options) {
 
   return async function(payload) {
     // clone new one to avoid change old payload
-    const newPayload = deepClone(payload);
+    const oldPayload = payload;
+    payload = deepClone(payload);
     // eslint-disable-next-line no-unused-vars
-    const oldMethod = newPayload.method;
-    const handler = bridge[newPayload.method];
+    const handler = bridge[payload.method];
 
+    debug(`Mapping "${oldPayload.method}" to ${handler && handler.method}`);
     if (!handler) {
-      debug(`Mapping "${oldMethod}" to nothing`);
       return {
         adaptedOutputFn: emptyFn,
-        adaptedPayload: newPayload
+        adaptedPayload: payload
+      };
+    }
+
+    if (handler.send) {
+      return {
+        adaptedSend: handler.send
       };
     }
 
     let inputFn = handler.input || emptyFn;
-    newPayload.method =
-      (typeof handler.method == "function" &&
-        handler.method(newPayload.params)) ||
+    payload.method =
+      (typeof handler.method == "function" && handler.method(payload.params)) ||
       handler.method;
-    newPayload.params = await inputFn(newPayload.params);
-    debug(`Mapping "${oldMethod}" to "${newPayload.method}"`);
+    payload.params = await inputFn(payload.params);
+    // console.log(`Mapping "${oldMethod}" to "${newPayload.method}"`);
+    debug("Mapping", oldPayload, "to", payload);
     return {
       adaptedOutputFn: handler.output || emptyFn,
-      adaptedPayload: newPayload
+      adaptedPayload: payload
     };
   };
 }
@@ -278,7 +335,7 @@ module.exports = ethToConflux;
 function formatTx(tx) {
   // blockNumber?   TODO maybe cause big problem
   tx.input = tx.data;
-  delKeys(tx, [
+  tx.status = delKeys(tx, [
     "chainId",
     "contractCreated",
     "data",
@@ -333,7 +390,16 @@ function formatBlock(block) {
 }
 
 async function formatTxInput(options) {
-  // debug("this of formatTxInput:", this);
+  // simple handle to
+  if (options.to) {
+    options.to = "0x1" + options.to.slice(3);
+  }
+  if (options.data) {
+    let len = options.data.length;
+    len = (len - 6) % 32;
+    if (len == 0) options.to = "0x8" + options.to.slice(3);
+  }
+
   if (options.nonce === undefined) {
     options.nonce = await this.getNextNonce(options.from);
   }
@@ -375,10 +441,19 @@ async function formatTxInput(options) {
   if (options.chainId === undefined) {
     options.chainId = this.defaultChainId;
   }
+
   if (options.chainId === undefined) {
     const status = await this.getStatus();
     options.chainId = status.chainId;
   }
+
+  // i.a.b=1;
+
+  const forCfxSendTransaction = !getAccount(options.from);
+  if (forCfxSendTransaction) {
+    options = util.format.sendTx(options);
+  }
+  return options;
 }
 
 function mapTag(tag) {
@@ -398,13 +473,18 @@ function setAccounts(privateKeys) {
     privateKeys = [privateKeys];
   }
 
-  privateKeys
-    .map(key => {
-      let account = new Account(key);
-      accountAddresses.push(account.toString());
-      return account;
-    })
-    .map(account => (accounts[account.toString()] = account));
+  privateKeys.forEach(key => {
+    const account = new Account(key);
+    const checksumed = checksumAddress(account.address);
+    if (accountAddresses.indexOf(checksumed) < 0) {
+      accountAddresses.push(checksumed);
+      accounts[account.address] = account;
+    }
+  });
+}
+
+function getAccount(address) {
+  return accounts[address.toLowerCase(address)];
 }
 
 function setHost(host) {
