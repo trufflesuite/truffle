@@ -1,6 +1,6 @@
 {
   "name": "@truffle/resolver",
-  "version": "5.2.0-tezos.15",
+  "version": "5.2.0-tezos.16",
   "description": "Resolve contract dependencies given multiple configurable dependency sources",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/resolver#readme",
   "dependencies": {
-    "@truffle/contract": "^5.0.0-tezos.6",
+    "@truffle/contract": "^5.1.0-tezos.0",
     "@truffle/expect": "^0.1.0-tezos.0",
     "@truffle/provisioner": "^0.3.0-tezos.1",
     "debug": "^4.1.1",

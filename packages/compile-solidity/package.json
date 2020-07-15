@@ -1,11 +1,11 @@
 {
   "name": "@truffle/compile-solidity",
   "description": "Compiler helper and artifact manager for Solidity files",
-  "version": "4.3.0-tezos.11",
+  "version": "4.3.0-tezos.12",
   "main": "index.js",
   "dependencies": {
-    "@truffle/config": "^1.4.0-tezos.8",
-    "@truffle/contract-sources": "^0.3.0-tezos.0",
+    "@truffle/config": "^1.5.0-tezos.0",
+    "@truffle/contract-sources": "^0.4.0-tezos.0",
     "@truffle/error": "^0.1.0-tezos.0",
     "@truffle/expect": "^0.1.0-tezos.0",
     "colors": "^1.1.2",
@@ -20,7 +20,7 @@
     "solc": "^0.6.0"
   },
   "devDependencies": {
-    "@truffle/resolver": "^5.2.0-tezos.15",
+    "@truffle/resolver": "^5.2.0-tezos.16",
     "babel-core": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",

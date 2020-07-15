@@ -1,6 +1,6 @@
 {
   "name": "@truffle/compile-michelson",
-  "version": "0.1.0",
+  "version": "0.1.1-tezos.0",
   "description": "Michelson no-op compiler interface for truffle",
   "keywords": [
     "truffle",
@@ -32,12 +32,12 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "dependencies": {
-    "@truffle/compile-solidity": "^4.3.0-tezos.11",
-    "@truffle/contract-sources": "^0.3.0-tezos.0",
+    "@truffle/compile-solidity": "^4.3.0-tezos.12",
+    "@truffle/contract-sources": "^0.4.0-tezos.0",
     "minimatch": "^3.0.4"
   },
   "devDependencies": {
-    "@truffle/config": "1.4.0-tezos.8",
+    "@truffle/config": "^1.5.0-tezos.0",
     "mocha": "5.2.0"
   }
 }
