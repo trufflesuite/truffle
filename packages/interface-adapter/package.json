@@ -20,7 +20,7 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@taquito/taquito": "6.2.0-beta.0",
+    "@taquito/taquito": "6.3.3-beta.0",
     "@truffle/config": "^1.4.0-tezos.8",
     "bn.js": "^4.11.8",
     "ethers": "^4.0.32",
