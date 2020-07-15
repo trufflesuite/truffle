@@ -1223,6 +1223,15 @@
   dependencies:
     source-map-support "^0.5.16"
 
+"@truffle/compile-michelson@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@truffle/compile-michelson/-/compile-michelson-0.1.0.tgz#e5c287b58b135f97e125cd4e5aef3dba65bca566"
+  integrity sha512-2jknKthJ/MlcHFfhY9NcnzXDUXNi6R+emr0AgoBTJ8X6tNTlVCscylx5s8/Kt7/rtoUW45t/Ga8ji6foGq+s3Q==
+  dependencies:
+    "@truffle/compile-solidity" "^4.3.0-tezos.11"
+    "@truffle/contract-sources" "^0.3.0-tezos.0"
+    minimatch "^3.0.4"
+
 "@truffle/compile-solidity@^4.3.0":
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/@truffle/compile-solidity/-/compile-solidity-4.3.0.tgz#31710b39bec9667a812a7f06df0d0673e4e86c1a"
