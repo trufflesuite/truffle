@@ -9,6 +9,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - run: sudo apt-get update && sudo apt-get install python3.6
       - run: yarn bootstrap
       - run: npx truffle obtain --solc=0.5.16
       - run: COLONY=true yarn ci
@@ -20,4 +21,4 @@ workflows:
           filters:
             branches:
               only:
-                - develop
+                - colony-circle-config
