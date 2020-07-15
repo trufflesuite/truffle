@@ -65,17 +65,20 @@ export class FS implements ResolverSource {
     ];
 
     let body, filePath;
-    possiblePaths.forEach(possiblePath => {
+    for (const possiblePath of possiblePaths) {
       try {
         const resolvedSource = fs.readFileSync(possiblePath, {
           encoding: "utf8"
         });
         body = resolvedSource;
         filePath = possiblePath;
+        
+        return { body, filePath };
       } catch (error) {
         // do nothing
       }
-    });
+    }
+    
     return { body, filePath };
   }
 
