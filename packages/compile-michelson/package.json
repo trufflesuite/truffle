@@ -26,7 +26,7 @@
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "./scripts/test.sh"
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
@@ -35,5 +35,9 @@
     "@truffle/compile-solidity": "^4.3.0-tezos.11",
     "@truffle/contract-sources": "^0.3.0-tezos.0",
     "minimatch": "^3.0.4"
+  },
+  "devDependencies": {
+    "@truffle/config": "1.4.0-tezos.8",
+    "mocha": "5.2.0"
   }
 }
