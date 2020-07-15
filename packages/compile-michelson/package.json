@@ -1,0 +1,43 @@
+{
+  "name": "@truffle/compile-michelson",
+  "version": "0.1.0",
+  "description": "Michelson no-op compiler interface for truffle",
+  "keywords": [
+    "truffle",
+    "blockchain",
+    "tezos",
+    "michelson"
+  ],
+  "author": "CruzMolina <7537712+CruzMolina@users.noreply.github.com>",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "license": "MIT",
+  "main": "index.js",
+  "directories": {
+    "tests": "tests"
+  },
+  "files": [
+    "index.js"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle.git"
+  },
+  "scripts": {
+    "test": "./scripts/test.sh"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "dependencies": {
+    "@truffle/compile-solidity": "^4.3.0-tezos.11",
+    "@truffle/contract-sources": "^0.3.0-tezos.0",
+    "minimatch": "^3.0.4"
+  },
+  "devDependencies": {
+    "@truffle/config": "1.4.0-tezos.8",
+    "mocha": "5.2.0"
+  }
+}

@@ -55,7 +55,8 @@ export const getInitialConfig = ({
       },
       vyper: {},
       ligo: {},
-      smartpy: {}
+      smartpy: {},
+      michelson: {}
     },
     logger: console
   };

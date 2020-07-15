@@ -1,0 +1,3 @@
+parameter unit ;
+  storage unit ;
+  code { UNIT ; NIL operation ; PAIR ; DIP { DROP } }

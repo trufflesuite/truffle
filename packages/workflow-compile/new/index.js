@@ -25,6 +25,10 @@ const SUPPORTED_COMPILERS = {
     compiler: require("@truffle/compile-smartpy"),
     legacy: true
   },
+  michelson: {
+    compiler: require("@truffle/compile-michelson"),
+    legacy: true
+  },
   external: {
     compiler: require("@truffle/external-compile"),
     legacy: true
