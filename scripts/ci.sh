@@ -41,18 +41,6 @@ elif [ "$GETH" = true ]; then
   lerna run --scope truffle test --stream -- --exit
   lerna run --scope @truffle/contract test --stream -- --exit
 
-elif [ "$QUORUM" = true ]; then
-
-  sudo rm /usr/local/bin/docker-compose
-  curl -L https://github.com/docker/compose/releases/download/1.21.0/docker-compose-`uname -s`-`uname -m` > docker-compose
-  chmod +x docker-compose
-  sudo mv docker-compose /usr/local/bin
-  git clone https://github.com/jpmorganchase/quorum-examples
-  cd quorum-examples
-  QUORUM_GETH_ARGS="-allow-insecure-unlock" docker-compose up -d
-  node ../scripts/wait-for-quorum-network.js
-  lerna run --scope truffle test --stream -- --exit
-
 elif [ "$COLONY" = true ]; then
 
   git clone https://github.com/JoinColony/colonyNetwork.git
