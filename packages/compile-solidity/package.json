@@ -35,8 +35,8 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "mocha": "8.0.1",
-    "sinon": "9.0.2",
-    "tmp": "0.0.33"
+    "tmp": "0.2.1",
+    "sinon": "9.0.2"
   },
   "keywords": [
     "compile",

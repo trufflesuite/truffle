@@ -1,12 +1,11 @@
 const debug = require("debug")("test:targets");
-
 const fs = require("fs");
 const path = require("path");
-const { promisify } = require("util");
-const temp = require("temp").track();
 const assert = require("chai").assert;
 const web3 = {};
 web3.utils = require("web3-utils");
+const tmp = require("tmp");
+tmp.setGracefulCleanup();
 
 const { processTarget, DEFAULT_ABI } = require("..");
 
@@ -14,7 +13,7 @@ describe("Compilation Targets", () => {
   let cwd;
 
   before("make temporary directory", async () => {
-    cwd = await promisify(temp.mkdir)("external-targets");
+    cwd = tmp.dirSync({ unsafeCleanup: true }).name;
   });
 
   describe("Property outputs", () => {
@@ -25,12 +24,12 @@ describe("Compilation Targets", () => {
 
       const target = {
         properties: {
-          contractName
-        }
+          contractName,
+        },
       };
 
       const expected = {
-        [contractName]: { contractName, abi }
+        [contractName]: { contractName, abi },
       };
 
       const actual = await processTarget(target, cwd);
@@ -47,11 +46,11 @@ describe("Compilation Targets", () => {
 
       const target = {
         properties: {
-          contractName
+          contractName,
         },
         fileProperties: {
-          bytecode: bytecodeFile
-        }
+          bytecode: bytecodeFile,
+        },
       };
 
       const processed = await processTarget(target, cwd);
@@ -68,11 +67,11 @@ describe("Compilation Targets", () => {
 
       const target = {
         properties: {
-          contractName
+          contractName,
         },
         fileProperties: {
-          bytecode: bytecodeFile
-        }
+          bytecode: bytecodeFile,
+        },
       };
 
       const processed = await processTarget(target, cwd);
@@ -89,8 +88,8 @@ describe("Compilation Targets", () => {
 
       const target = {
         fileProperties: {
-          contractName: contractNameFile
-        }
+          contractName: contractNameFile,
+        },
       };
 
       const processed = await processTarget(target, cwd);
@@ -107,11 +106,11 @@ describe("Compilation Targets", () => {
 
       const target = {
         properties: {
-          contractName
+          contractName,
         },
         fileProperties: {
-          bytecode: bytecodeFile
-        }
+          bytecode: bytecodeFile,
+        },
       };
 
       const processed = await processTarget(target, cwd);

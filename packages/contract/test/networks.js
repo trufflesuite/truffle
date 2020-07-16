@@ -1,5 +1,4 @@
 var assert = require("chai").assert;
-var temp = require("temp").track();
 var util = require("./util");
 
 // Clean up after solidity. Only remove solidity's listener,
@@ -86,11 +85,6 @@ describe("Different networks: ", function() {
         done();
       })
       .catch(done);
-  });
-
-  after(function(done) {
-    temp.cleanupSync();
-    done();
   });
 
   it("does not deploy to the same network (eth_getCode)", function(done) {

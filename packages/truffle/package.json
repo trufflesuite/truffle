@@ -50,7 +50,7 @@
     "semver": "^5.6.0",
     "shebang-loader": "0.0.1",
     "stream-buffers": "^3.0.1",
-    "tmp": "0.0.33",
+    "tmp": "0.2.1",
     "web3": "1.2.1",
     "webpack": "^4.43.0",
     "webpack-bundle-analyzer": "^3.0.3",

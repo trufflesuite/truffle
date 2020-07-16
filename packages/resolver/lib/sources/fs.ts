@@ -72,13 +72,13 @@ export class FS implements ResolverSource {
         });
         body = resolvedSource;
         filePath = possiblePath;
-        
+
         return { body, filePath };
       } catch (error) {
         // do nothing
       }
     }
-    
+
     return { body, filePath };
   }
 

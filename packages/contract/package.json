@@ -44,7 +44,6 @@
     "ganache-core": "2.10.2",
     "mocha": "8.0.1",
     "sinon": "9.0.2",
-    "temp": "^0.8.3",
     "uglify-es": "^3.3.9"
   },
   "keywords": [

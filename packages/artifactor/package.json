@@ -31,7 +31,7 @@
     "ganache-core": "2.10.2",
     "mocha": "8.0.1",
     "require-nocache": "^1.0.0",
-    "temp": "^0.8.3",
+    "tmp": "^0.2.1",
     "typescript": "3.9.6",
     "ts-node": "8.10.2",
     "web3": "1.2.1"
