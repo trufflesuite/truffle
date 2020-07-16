@@ -1,5 +1,6 @@
 import "source-map-support/register";
-import * as bip39 from "bip39";
+import * as bip39 from "ethereum-cryptography/bip39";
+import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 import * as EthUtil from "ethereumjs-util";
 import ethJSWallet from "ethereumjs-wallet";
 import EthereumHDKey from "ethereumjs-wallet/hdkey";
@@ -68,10 +69,10 @@ class HDWalletProvider {
     // private helper to check if given mnemonic uses BIP39 passphrase protection
     const checkBIP39Mnemonic = (mnemonic: string) => {
       this.hdwallet = EthereumHDKey.fromMasterSeed(
-        bip39.mnemonicToSeed(mnemonic)
+        bip39.mnemonicToSeedSync(mnemonic)
       );
 
-      if (!bip39.validateMnemonic(mnemonic)) {
+      if (!bip39.validateMnemonic(mnemonic, wordlist)) {
         throw new Error("Mnemonic invalid or undefined");
       }
 
