@@ -309,5 +309,5 @@ async function cfxSendTransaction(options: any, password: string) {
   const fmtOption = format.sendTx(options);
   fmtOption.epochHeight = "0x" + fmtOption.epochHeight.toString(16);
   fmtOption.chainId = "0x" + fmtOption.chainId.toString(16);
-  return this.provider.call("send_transaction", fmtOption, password);
+  return this.provider.call("cfx_sendTransaction", fmtOption, password);
 }

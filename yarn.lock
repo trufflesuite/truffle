@@ -8944,10 +8944,10 @@ jquery@^3.4.1:
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.4.1.tgz#714f1f8d9dde4bdfa55764ba37ef214630d80ef2"
   integrity sha512-36+AdBzCL+y6qjw5Tx7HgzeGCzC81MDDgaUP8ld2zhx58HdqXGoBd+tHdrBMiyjGQs0Hxs/MLZTu/eHNJJuWPw==
 
-js-conflux-sdk@^0.10.0-alpha:
-  version "0.10.0-alpha"
-  resolved "https://registry.yarnpkg.com/js-conflux-sdk/-/js-conflux-sdk-0.10.0-alpha.tgz#c917795c2e52ee6b82cbdbbc9da8a881a9b66cf6"
-  integrity sha512-425GZ7L53y8DgVwYcewDF+/YnpEwoSlUfn4O6UKV3k12vsRQXz9xsoDXQBEU8EfHB73Lipfb5/M4ZbT+5PqeMQ==
+js-conflux-sdk@^0.13.3:
+  version "0.13.3"
+  resolved "https://registry.yarnpkg.com/js-conflux-sdk/-/js-conflux-sdk-0.13.3.tgz#ce2f8eb309ff489b2d214414383f47b40cbfe13d"
+  integrity sha512-Oa3QfZlS721np+IbRTOcRvJ33Y0jZajphLFUrUQIj0hRWfRHrmF5fjpiVR5XOuTBZsZMZRxJleSdEcB2I6I1Ow==
   dependencies:
     "@babel/runtime" "^7.8.4"
     big.js "^5.2.2"
