@@ -144,6 +144,7 @@ const Migrate = {
     });
 
     try {
+      global.artifacts = clone.resolver;
       for (const migration of migrations) {
         await migration.run(clone);
       }
@@ -158,6 +159,8 @@ const Migrate = {
         error: error.toString()
       });
       throw error;
+    } finally {
+      delete global.artifacts;
     }
   },
 
