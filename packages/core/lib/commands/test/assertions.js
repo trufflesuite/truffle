@@ -1,8 +1,8 @@
 const web3Utils = require("web3-utils");
 
-module.exports = function(chai, _utils) {
+module.exports = function (chai, _utils) {
   var assert = chai.assert;
-  chai.Assertion.addProperty("address", function() {
+  chai.Assertion.addProperty("address", function () {
     this.assert(
       this._obj.length === 42,
       "expected #{this} to be a 42 character address (0x...)",
@@ -20,7 +20,7 @@ module.exports = function(chai, _utils) {
       "you shouldn't ever see this."
     );
   });
-  assert.isAddress = function(val, exp, msg) {
+  assert.isAddress = function (val, exp, msg) {
     return new chai.Assertion(val, msg).to.be.address;
   };
 };

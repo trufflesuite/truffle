@@ -7,7 +7,7 @@ module.exports = {
   console: require("./lib/repl"),
   contracts: require("@truffle/workflow-compile"),
   package: require("./lib/package"),
-  test: require("./lib/test"),
+  test: require("./lib/commands/test/test"),
   version: pkg.version,
-  ganache: require("ganache-core/public-exports")
+  ganache: require("ganache-core/public-exports"),
 };

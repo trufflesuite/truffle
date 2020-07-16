@@ -315,7 +315,7 @@ const Test = {
       }
 
       // wrapped inside function so as not to load debugger on every test
-      const { CLIDebugHook } = require("./commands/debug/mocha");
+      const { CLIDebugHook } = require("../debug/mocha");
 
       // note: this.mochaRunner will be available by the time debug()
       // is invoked
@@ -363,4 +363,4 @@ const Test = {
   },
 };
 
-module.exports = Test;
+module.exports = { Test };
