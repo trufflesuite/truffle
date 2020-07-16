@@ -2,9 +2,10 @@ const debugModule = require("debug");
 const debug = debugModule("lib:debug:external");
 
 const Web3 = require("web3");
-const tmp = require("tmp");
 const fs = require("fs-extra");
 const path = require("path");
+const tmp = require("tmp");
+tmp.setGracefulCleanup();
 
 const Codec = require("@truffle/codec");
 const Fetchers = require("@truffle/source-fetcher").default;
@@ -28,7 +29,7 @@ class DebugExternalHandler {
     debug("Fetchers: %o", Fetchers);
     const allFetchers = await Promise.all(
       Fetchers.map(
-        async Fetcher =>
+        async (Fetcher) =>
           await Fetcher.forNetworkId(
             networkId,
             this.config[Fetcher.fetcherName]
@@ -40,7 +41,9 @@ class DebugExternalHandler {
     let sortedFetchers = [];
     if (userFetcherNames) {
       for (let name of userFetcherNames) {
-        let Fetcher = allFetchers.find(Fetcher => Fetcher.fetcherName === name);
+        let Fetcher = allFetchers.find(
+          (Fetcher) => Fetcher.fetcherName === name
+        );
         if (Fetcher) {
           sortedFetchers.push(Fetcher);
         } else {
@@ -106,10 +109,9 @@ class DebugExternalHandler {
           break;
         }
         //make a temporary directory to store our downloads in
-        tmp.setGracefulCleanup();
         const sourceDirectory = tmp.dirSync({
           unsafeCleanup: true,
-          prefix: "tmp-"
+          prefix: "tmp-",
         }).name;
         debug("tempdir: %s", sourceDirectory);
         //save the sources to the temporary directory
@@ -123,8 +125,8 @@ class DebugExternalHandler {
         const temporaryConfig = this.config.with({
           contracts_directory: sourceDirectory,
           compilers: {
-            solc: options
-          }
+            solc: options,
+          },
         });
         const { contracts, sourceIndexes: files } = await new DebugCompiler(
           temporaryConfig
@@ -132,9 +134,7 @@ class DebugExternalHandler {
         debug("contracts: %o", contracts);
         debug("files: %O", files);
         //shim the result
-        const compilationId = `externalFor(${address})Via(${
-          fetcher.fetcherName
-        })`;
+        const compilationId = `externalFor(${address})Via(${fetcher.fetcherName})`;
         const newCompilations = Codec.Compilations.Utils.shimArtifacts(
           contracts,
           files,
@@ -185,10 +185,10 @@ function getUnknownAddresses(bugger) {
 
 function getAnUnknownAddress(bugger, addressesToSkip) {
   return getUnknownAddresses(bugger).find(
-    address => !addressesToSkip.has(address)
+    (address) => !addressesToSkip.has(address)
   );
 }
 
 module.exports = {
-  DebugExternalHandler
+  DebugExternalHandler,
 };

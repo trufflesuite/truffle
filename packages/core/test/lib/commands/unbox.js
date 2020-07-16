@@ -3,6 +3,7 @@ const unbox = require("../../../lib/commands/unbox");
 const Config = require("@truffle/config");
 const sinon = require("sinon");
 const tmp = require("tmp");
+tmp.setGracefulCleanup();
 let tempDir, mockConfig;
 
 describe("commands/unbox.js", () => {
@@ -13,40 +14,39 @@ describe("commands/unbox.js", () => {
     "//truffle-box/bare-box#truffle-test-branch:path/SubDir",
     "/bare/",
     "//bare#truffle-test-branch",
-    "//bare#truffle-test-branch:path/SubDir"
+    "//bare#truffle-test-branch:path/SubDir",
   ];
   const absolutePaths = [
     "https://github.com/truffle-box/bare-box:/path/SubDir",
     "truffle-box/bare-box:/path/subDir",
     "bare:/path/subDir",
-    "git@github.com:truffle-box/bare-box:/path/subDir"
+    "git@github.com:truffle-box/bare-box:/path/subDir",
   ];
   const validBoxInput = [
     "https://github.com/truffle-box/bare-box",
     "truffle-box/bare-box",
     "bare",
     "git@github.com:truffle-box/bare-box",
-    "https://github.com/truffle-box/bare-box#master"
+    "https://github.com/truffle-box/bare-box#master",
   ];
   const relativePaths = [
     "https://github.com/truffle-box/bare-box:path/SubDir",
     "truffle-box/bare-box:path/subDir",
     "bare:path/subDir",
-    "git@github.com:truffle-box/bare-box:path/subDir"
+    "git@github.com:truffle-box/bare-box:path/subDir",
   ];
 
   describe("run", () => {
     beforeEach(() => {
-      tmp.setGracefulCleanup();
       tempDir = tmp.dirSync({
-        unsafeCleanup: true
+        unsafeCleanup: true,
       });
       mockConfig = Config.default().with({
         logger: { log: () => {} },
-        working_directory: tempDir.name
+        working_directory: tempDir.name,
       });
       mockConfig.events = {
-        emit: () => {}
+        emit: () => {},
       };
       sinon.stub(Config, "default").returns({ with: () => mockConfig });
     });
@@ -56,7 +56,7 @@ describe("commands/unbox.js", () => {
 
     describe("Error handling", () => {
       it("throws when passed an invalid box format", () => {
-        invalidBoxFormats.forEach(val => {
+        invalidBoxFormats.forEach((val) => {
           assert.throws(
             () => {
               unbox.run({ _: [`${val}`] });
@@ -68,7 +68,7 @@ describe("commands/unbox.js", () => {
       });
 
       it("throws when passed an absolute unbox path", () => {
-        absolutePaths.forEach(path => {
+        absolutePaths.forEach((path) => {
           assert.throws(
             () => {
               unbox.run({ _: [`${path}`] });
@@ -81,11 +81,11 @@ describe("commands/unbox.js", () => {
     });
 
     describe("successful unboxes", () => {
-      it("runs when passed valid box input", done => {
+      it("runs when passed valid box input", (done) => {
         let promises = [];
-        validBoxInput.forEach(val => {
+        validBoxInput.forEach((val) => {
           promises.push(
-            new Promise(resolve => {
+            new Promise((resolve) => {
               unbox.run({ _: [`${val}`], force: true }, () => resolve());
             })
           );
@@ -93,11 +93,11 @@ describe("commands/unbox.js", () => {
         Promise.all(promises).then(() => done());
       }).timeout(10000);
 
-      it("runs when passed a relative unbox path", done => {
+      it("runs when passed a relative unbox path", (done) => {
         let promises = [];
-        relativePaths.forEach(path => {
+        relativePaths.forEach((path) => {
           promises.push(
-            new Promise(resolve => {
+            new Promise((resolve) => {
               unbox.run({ _: [`${path}`], force: true }, () => resolve());
             })
           );
