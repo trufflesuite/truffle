@@ -3,15 +3,15 @@ const assert = require("chai").assert;
 const BN = require("bn.js");
 
 const Decoder = require("../../..");
-const Codec = require("../../../../codec");
+const Codec = require("@truffle/codec");
 
 const WireTest = artifacts.require("WireTest");
 const WireTestParent = artifacts.require("WireTestParent");
 const WireTestLibrary = artifacts.require("WireTestLibrary");
 const WireTestAbstract = artifacts.require("WireTestAbstract");
 
-contract("WireTest", function(_accounts) {
-  it("should correctly decode transactions and events", async function() {
+contract("WireTest", function (_accounts) {
+  it("should correctly decode transactions and events", async function () {
     let deployedContract = await WireTest.new(true, "0xdeadbeef", 2);
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
@@ -20,7 +20,7 @@ contract("WireTest", function(_accounts) {
       WireTest,
       WireTestParent,
       WireTestLibrary,
-      WireTestAbstract
+      WireTestAbstract,
     ]);
 
     let deployedContractNoConstructor = await WireTestParent.new();
@@ -30,13 +30,13 @@ contract("WireTest", function(_accounts) {
       {
         x: -1,
         y: "0xdeadbeef00000000deadbeef00000000deadbeef00000000deadbeef00000000",
-        z: "0xbababa"
+        z: "0xbababa",
       },
       [
         "0x0000000000000000000000000000000000000001",
-        "0x0000000000000000000000000000000000000002"
+        "0x0000000000000000000000000000000000000002",
       ],
-      ["hello", "hi", "hooblypoob"]
+      ["hello", "hi", "hooblypoob"],
     ];
     let emitStuff = await deployedContract.emitStuff(...emitStuffArgs);
     let emitStuffHash = emitStuff.tx;
@@ -243,35 +243,35 @@ contract("WireTest", function(_accounts) {
 
     let constructorEvents = await decoder.events({
       fromBlock: constructorBlock,
-      toBlock: constructorBlock
+      toBlock: constructorBlock,
     });
     let emitStuffEvents = await decoder.events({
       fromBlock: emitStuffBlock,
-      toBlock: emitStuffBlock
+      toBlock: emitStuffBlock,
     });
     let moreStuffEvents = await decoder.events({
       fromBlock: moreStuffBlock,
-      toBlock: moreStuffBlock
+      toBlock: moreStuffBlock,
     });
     let globalTestEvents = await decoder.events({
       fromBlock: globalTestBlock,
-      toBlock: globalTestBlock
+      toBlock: globalTestBlock,
     });
     let inheritedEvents = await decoder.events({
       fromBlock: inheritedBlock,
-      toBlock: inheritedBlock
+      toBlock: inheritedBlock,
     });
     let indexTestEvents = await decoder.events({
       fromBlock: indexTestBlock,
-      toBlock: indexTestBlock
+      toBlock: indexTestBlock,
     });
     let libraryTestEvents = await decoder.events({
       fromBlock: libraryTestBlock,
-      toBlock: libraryTestBlock
+      toBlock: libraryTestBlock,
     });
     let overrideTestEvents = await decoder.events({
       fromBlock: overrideBlock,
-      toBlock: overrideBlock
+      toBlock: overrideBlock,
     });
     //HACK -- since danger was last, we can just ask for the
     //events from the latest block
@@ -597,14 +597,14 @@ contract("WireTest", function(_accounts) {
     );
   });
 
-  it("disambiguates events when possible and not when impossible", async function() {
+  it("disambiguates events when possible and not when impossible", async function () {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await Decoder.forProject(web3.currentProvider, [
       WireTest,
       WireTestParent,
       WireTestLibrary,
-      WireTestAbstract
+      WireTestAbstract,
     ]);
 
     //HACK HACK -- we're going to repeatedly apply the hack from above
@@ -742,14 +742,14 @@ contract("WireTest", function(_accounts) {
     );
   });
 
-  it("Handles anonymous events", async function() {
+  it("Handles anonymous events", async function () {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await Decoder.forProject(web3.currentProvider, [
       WireTest,
       WireTestParent,
       WireTestLibrary,
-      WireTestAbstract
+      WireTestAbstract,
     ]);
 
     //thankfully, ethers ignores anonymous events,
@@ -758,13 +758,13 @@ contract("WireTest", function(_accounts) {
     let block = anonymousTest.blockNumber;
     let anonymousTestEvents = await decoder.events({
       fromBlock: block,
-      toBlock: block
+      toBlock: block,
     });
     //also, let's do a test with a specified name
     let specifiedNameEvents = await decoder.events({
       name: "AnonUint8s",
       fromBlock: block,
-      toBlock: block
+      toBlock: block,
     });
 
     assert.lengthOf(anonymousTestEvents, 4);
@@ -893,14 +893,14 @@ contract("WireTest", function(_accounts) {
     );
   });
 
-  it("Decodes return values", async function() {
+  it("Decodes return values", async function () {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await Decoder.forContract(WireTest, [
       WireTest,
       WireTestParent,
       WireTestLibrary,
-      WireTestAbstract
+      WireTestAbstract,
     ]);
 
     let abiEntry = WireTest.abi.find(
@@ -913,7 +913,7 @@ contract("WireTest", function(_accounts) {
 
     let data = await web3.eth.call({
       to: deployedContract.address,
-      data: selector
+      data: selector,
     });
 
     let decodings = await decoder.decodeReturnValue(abiEntry, data);
@@ -927,7 +927,7 @@ contract("WireTest", function(_accounts) {
       {
         x: -1,
         y: "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-        z: "0xdeadbeef"
+        z: "0xdeadbeef",
       }
     );
     assert.strictEqual(
@@ -946,11 +946,11 @@ contract("WireTest", function(_accounts) {
 
     let sdData = await web3.eth.call({
       to: deployedContract.address,
-      data: sdSelector
+      data: sdSelector,
     });
 
     let sdDecodings = await decoder.decodeReturnValue(sdAbiEntry, sdData, {
-      status: true
+      status: true,
     });
 
     assert.lengthOf(sdDecodings, 1);

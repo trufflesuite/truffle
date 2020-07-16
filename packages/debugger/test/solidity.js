@@ -119,8 +119,18 @@ contract AdjustTest {
   function run() public returns (uint) {
     //input 0
     uint[] memory c;
+    {
+      assembly {
+        let x
+      }
+    }
 
     uint w = 35; //output 0, input 1, output 1
+
+    assembly {
+      let x //input 3
+      pop(x) //output 3
+    }
 
     return w + c.length;
   } //input 2
@@ -132,20 +142,20 @@ let sources = {
   "NestedCall.sol": __NESTED_CALL,
   "FailedCall.sol": __FAILED_CALL,
   "AdjustTest.sol": __ADJUSTMENT,
-  "BadTransfer.sol": __OVER_TRANSFER
+  "BadTransfer.sol": __OVER_TRANSFER,
 };
 
-describe("Solidity Debugging", function() {
+describe("Solidity Debugging", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -153,7 +163,7 @@ describe("Solidity Debugging", function() {
     compilations = prepared.compilations;
   });
 
-  it("exposes functionality to stop at breakpoints", async function() {
+  it("exposes functionality to stop at breakpoints", async function () {
     // prepare
     let instance = await abstractions.NestedCall.deployed();
     let receipt = await instance.run();
@@ -162,7 +172,7 @@ describe("Solidity Debugging", function() {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       compilations,
-      lightMode: true
+      lightMode: true,
     });
 
     // at `second();`
@@ -171,7 +181,7 @@ describe("Solidity Debugging", function() {
     let breakpoint = {
       sourceId: source.id,
       compilationId: source.compilationId,
-      line: breakLine
+      line: breakLine,
     };
 
     await bugger.addBreakpoint(breakpoint);
@@ -186,7 +196,7 @@ describe("Solidity Debugging", function() {
     } while (!bugger.view(trace.finished));
   });
 
-  it("exposes functionality to stop at specified breakpoints", async function() {
+  it("exposes functionality to stop at specified breakpoints", async function () {
     // prepare
     let instance = await abstractions.NestedCall.deployed();
     let receipt = await instance.run();
@@ -195,7 +205,7 @@ describe("Solidity Debugging", function() {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       compilations,
-      lightMode: true
+      lightMode: true,
     });
 
     // at `second();`
@@ -213,7 +223,7 @@ describe("Solidity Debugging", function() {
     } while (!bugger.view(trace.finished));
   });
 
-  it("correctly resolves breakpoints", async function() {
+  it("correctly resolves breakpoints", async function () {
     // prepare
     let instance = await abstractions.AdjustTest.deployed();
     let receipt = await instance.run();
@@ -222,7 +232,7 @@ describe("Solidity Debugging", function() {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       compilations,
-      lightMode: true
+      lightMode: true,
     });
 
     let resolver = bugger.view(controller.breakpoints.resolver);
@@ -231,14 +241,14 @@ describe("Solidity Debugging", function() {
     let breakpoints = [];
     let expectedResolutions = [];
 
-    const NUM_TESTS = 3;
+    const NUM_TESTS = 4;
 
     for (let i = 0; i < NUM_TESTS; i++) {
       let inputLine = lineOf("input " + i, source.source);
       breakpoints.push({
         compilationId: source.compilationId,
         sourceId: source.id,
-        line: inputLine
+        line: inputLine,
       });
       let outputLine = lineOf("output " + i, source.source);
       expectedResolutions.push(
@@ -246,7 +256,7 @@ describe("Solidity Debugging", function() {
           ? {
               compilationId: source.compilationId,
               sourceId: source.id,
-              line: outputLine
+              line: outputLine,
             }
           : null
       );
@@ -256,8 +266,8 @@ describe("Solidity Debugging", function() {
     assert.deepEqual(resolutions, expectedResolutions);
   });
 
-  describe("Function Depth", function() {
-    it("remains at 1 in absence of inner function calls", async function() {
+  describe("Function Depth", function () {
+    it("remains at 1 in absence of inner function calls", async function () {
       const maxExpected = 1;
 
       let instance = await abstractions.SingleCall.deployed();
@@ -267,7 +277,7 @@ describe("Solidity Debugging", function() {
       let bugger = await Debugger.forTx(txHash, {
         provider,
         compilations,
-        lightMode: true
+        lightMode: true,
       });
 
       var finished;
@@ -282,7 +292,7 @@ describe("Solidity Debugging", function() {
       } while (!finished);
     });
 
-    it("is unaffected by precompiles", async function() {
+    it("is unaffected by precompiles", async function () {
       const numExpected = 0;
 
       let instance = await abstractions.SingleCall.deployed();
@@ -292,7 +302,7 @@ describe("Solidity Debugging", function() {
       let bugger = await Debugger.forTx(txHash, {
         provider,
         compilations,
-        lightMode: true
+        lightMode: true,
       });
 
       while (!bugger.view(trace.finished)) {
@@ -305,7 +315,7 @@ describe("Solidity Debugging", function() {
 
     //NOTE: this is same as previous test except for the transaction run;
     //not bothering to factor for now
-    it("is unaffected by overly large transfers", async function() {
+    it("is unaffected by overly large transfers", async function () {
       const numExpected = 0;
 
       let instance = await abstractions.BadTransferTest.deployed();
@@ -322,7 +332,7 @@ describe("Solidity Debugging", function() {
       let bugger = await Debugger.forTx(txHash, {
         provider,
         compilations,
-        lightMode: true
+        lightMode: true,
       });
 
       while (!bugger.view(trace.finished)) {
@@ -333,7 +343,7 @@ describe("Solidity Debugging", function() {
       }
     });
 
-    it("spelunks correctly", async function() {
+    it("spelunks correctly", async function () {
       // prepare
       let instance = await abstractions.NestedCall.deployed();
       let receipt = await instance.run();
@@ -342,7 +352,7 @@ describe("Solidity Debugging", function() {
       let bugger = await Debugger.forTx(txHash, {
         provider,
         compilations,
-        lightMode: true
+        lightMode: true,
       });
 
       // follow functionDepth values in list
@@ -367,7 +377,7 @@ describe("Solidity Debugging", function() {
       assert.deepEqual(actualSequence, expectedDepthSequence);
     });
 
-    it("unwinds correctly on call failure", async function() {
+    it("unwinds correctly on call failure", async function () {
       // prepare
       let instance = await abstractions.RevertTest.deployed();
       let receipt = await instance.run();
@@ -376,7 +386,7 @@ describe("Solidity Debugging", function() {
       let bugger = await Debugger.forTx(txHash, {
         provider,
         compilations,
-        lightMode: true
+        lightMode: true,
       });
 
       let source = bugger.view(solidity.current.source);
@@ -384,14 +394,14 @@ describe("Solidity Debugging", function() {
       let breakpoint1 = {
         sourceId: source.id,
         compilationId: source.compilationId,
-        line: breakLine1
+        line: breakLine1,
       };
       await bugger.addBreakpoint(breakpoint1);
       let breakLine2 = lineOf("BREAK #2", source.source);
       let breakpoint2 = {
         sourceId: source.id,
         compilationId: source.compilationId,
-        line: breakLine2
+        line: breakLine2,
       };
       await bugger.addBreakpoint(breakpoint2);
 

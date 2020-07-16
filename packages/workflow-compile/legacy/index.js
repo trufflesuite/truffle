@@ -7,17 +7,17 @@ const { prepareConfig, multiPromisify } = require("../utils");
 const {
   reportCompilationStarted,
   reportNothingToCompile,
-  reportCompilationFinished
+  reportCompilationFinished,
 } = require("../reports");
 
 const SUPPORTED_COMPILERS = {
   solc: solcCompile,
   vyper: vyperCompile,
-  external: externalCompile
+  external: externalCompile,
 };
 
 const Contracts = {
-  collectCompilations: async compilations => {
+  collectCompilations: async (compilations) => {
     let result = { outputs: {}, contracts: {} };
 
     for (let compilation of await Promise.all(compilations)) {
@@ -40,7 +40,7 @@ const Contracts = {
   // network_id: network id to link saved contract artifacts.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-  compile: async function(options, callback) {
+  compile: async function (options, callback) {
     const callbackPassed = typeof callback === "function";
     try {
       const config = prepareConfig(options);
@@ -67,7 +67,7 @@ const Contracts = {
       if (config.events) {
         config.events.emit("compile:succeed", {
           contractsBuildDirectory: config.contracts_build_directory,
-          compilersInfo: config.compilersInfo
+          compilersInfo: config.compilersInfo,
         });
       }
 
@@ -76,13 +76,13 @@ const Contracts = {
       return result;
     } catch (error) {
       if (callbackPassed) return callback(error);
-      throw new Error(error);
+      throw error;
     }
   },
 
-  compileSources: async function(config, compilers) {
+  compileSources: async function (config, compilers) {
     return Promise.all(
-      compilers.map(async compiler => {
+      compilers.map(async (compiler) => {
         const compile = SUPPORTED_COMPILERS[compiler];
         if (!compile) throw new Error("Unsupported compiler: " + compiler);
 
@@ -96,7 +96,7 @@ const Contracts = {
 
         if (compilerUsed) {
           config.compilersInfo[compilerUsed.name] = {
-            version: compilerUsed.version
+            version: compilerUsed.version,
           };
         }
 
@@ -116,7 +116,7 @@ const Contracts = {
   writeContracts: async (contracts, options) => {
     fse.ensureDirSync(options.contracts_build_directory);
     await options.artifactor.saveAll(contracts);
-  }
+  },
 };
 
 module.exports = Contracts;

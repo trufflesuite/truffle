@@ -15,7 +15,7 @@ import {
   StorageMemberAllocation,
   StateAllocation,
   StateAllocations,
-  StateVariableAllocation
+  StateVariableAllocation,
 } from "./types";
 import { ContractAllocationInfo } from "@truffle/codec/abi-data/allocate";
 import { ImmutableReferences } from "@truffle/contract-schema/spec";
@@ -30,7 +30,7 @@ export {
   StorageMemberAllocation,
   StateAllocation,
   StateAllocations,
-  StateVariableAllocation
+  StateVariableAllocation,
 };
 
 export class UnknownBaseContractIdError extends Error {
@@ -57,11 +57,6 @@ export class UnknownBaseContractIdError extends Error {
 interface StorageAllocationInfo {
   size: Storage.StorageLength;
   allocations: StorageAllocations;
-}
-
-interface DefinitionPair {
-  definition: Ast.AstNode;
-  definedIn?: Ast.AstNode;
 }
 
 //contracts contains only the contracts to be allocated; any base classes not
@@ -108,7 +103,7 @@ export function getStateAllocations(
       contractNode: contract,
       immutableReferences,
       compiler,
-      compilationId
+      compilationId,
     } = contractInfo;
     try {
       allocations = allocateContractState(
@@ -189,32 +184,32 @@ function allocateMembers(
       range = {
         from: {
           slot: {
-            offset: new BN(offset) //start at the current slot...
+            offset: new BN(offset), //start at the current slot...
           },
-          index: 0 //...at the beginning of the word.
+          index: 0, //...at the beginning of the word.
         },
         to: {
           slot: {
-            offset: new BN(offset + size.words - 1) //end at the current slot plus # of words minus 1...
+            offset: new BN(offset + size.words - 1), //end at the current slot plus # of words minus 1...
           },
-          index: Evm.Utils.WORD_SIZE - 1 //...at the end of the word.
-        }
+          index: Evm.Utils.WORD_SIZE - 1, //...at the end of the word.
+        },
       };
     } else {
       //bytes case
       range = {
         from: {
           slot: {
-            offset: new BN(offset) //start at the current slot...
+            offset: new BN(offset), //start at the current slot...
           },
-          index: index - (size.bytes - 1) //...early enough to fit what's being allocated.
+          index: index - (size.bytes - 1), //...early enough to fit what's being allocated.
         },
         to: {
           slot: {
-            offset: new BN(offset) //end at the current slot...
+            offset: new BN(offset), //end at the current slot...
           },
-          index: index //...at the current position.
-        }
+          index: index, //...at the current position.
+        },
       };
     }
     memberAllocations.push({
@@ -222,8 +217,8 @@ function allocateMembers(
       type: member.type,
       pointer: {
         location: "storage",
-        range
-      }
+        range,
+      },
     });
     //finally, adjust the current position.
     //if it was sized in words, move down that many slots and reset position w/in slot
@@ -258,7 +253,7 @@ function allocateMembers(
   //having made our allocation, let's add it to allocations!
   allocations[parentId] = {
     members: memberAllocations,
-    size: totalSize
+    size: totalSize,
   };
 
   //...and we're done!
@@ -288,7 +283,7 @@ function allocateContractState(
     {},
     ...Object.entries(existingAllocations).map(
       ([compilationId, compilationAllocations]) => ({
-        [compilationId]: { ...compilationAllocations }
+        [compilationId]: { ...compilationAllocations },
       })
     )
   );
@@ -315,9 +310,9 @@ function allocateContractState(
           id
         );
       }
-      return getStateVariables(baseNode).map(definition => ({
+      return getStateVariables(baseNode).map((definition) => ({
         definition,
-        definedIn: baseNode
+        definedIn: baseNode,
       }));
     })
   );
@@ -327,8 +322,9 @@ function allocateContractState(
     definition.constant || definition.mutability === "constant";
 
   //now: we split the variables into storage, constant, and code
-  let [constantVariables, variableVariables] = partition(variables, variable =>
-    isConstant(variable.definition)
+  let [constantVariables, variableVariables] = partition(
+    variables,
+    (variable) => isConstant(variable.definition)
   );
 
   //why use this function instead of just checking
@@ -341,17 +337,17 @@ function allocateContractState(
 
   let [immutableVariables, storageVariables] = partition(
     variableVariables,
-    variable => isImmutable(variable.definition)
+    (variable) => isImmutable(variable.definition)
   );
 
   //transform storage variables into data types
-  let storageVariableTypes = storageVariables.map(variable => ({
+  let storageVariableTypes = storageVariables.map((variable) => ({
     name: variable.definition.name,
     type: Ast.Import.definitionToType(
       variable.definition,
       compilationId,
       compiler
-    )
+    ),
   }));
 
   //let's allocate the storage variables using a fictitious ID
@@ -369,7 +365,7 @@ function allocateContractState(
       definition,
       definedIn,
       compilationId,
-      pointer: storageVariableStorageAllocations.members[index].pointer
+      pointer: storageVariableStorageAllocations.members[index].pointer,
     })
   );
 
@@ -380,20 +376,20 @@ function allocateContractState(
       let pointer: Pointer.CodeFormPointer;
       if (references.length === 0) {
         pointer = {
-          location: "nowhere" as const
+          location: "nowhere" as const,
         };
       } else {
         pointer = {
           location: "code" as const,
           start: references[0].start,
-          length: references[0].length
+          length: references[0].length,
         };
       }
       return {
         definition,
         definedIn,
         compilationId,
-        pointer
+        pointer,
       };
     }
   );
@@ -406,8 +402,8 @@ function allocateContractState(
       compilationId,
       pointer: {
         location: "definition" as const,
-        definition: definition.value
-      }
+        definition: definition.value,
+      },
     })
   );
 
@@ -417,8 +413,8 @@ function allocateContractState(
     let arrayToGrabFrom = isConstant(variable.definition)
       ? constantVariableAllocations
       : isImmutable(variable.definition)
-        ? immutableVariableAllocations
-        : storageVariableAllocations;
+      ? immutableVariableAllocations
+      : storageVariableAllocations;
     contractAllocation.push(arrayToGrabFrom.shift()); //note that push and shift both modify!
   }
 
@@ -427,7 +423,7 @@ function allocateContractState(
     allocations[compilationId] = {};
   }
   allocations[compilationId][contract.id] = {
-    members: contractAllocation
+    members: contractAllocation,
   };
 
   return allocations;
@@ -459,14 +455,14 @@ function storageSizeAndAllocate(
           //really a basic type :)
           return {
             size: {
-              bytes: Basic.Allocate.byteLength(dataType, userDefinedTypes)
+              bytes: Basic.Allocate.byteLength(dataType, userDefinedTypes),
             }, //doing the function call for consistency :P
-            allocations: existingAllocations
+            allocations: existingAllocations,
           };
         case "dynamic":
           return {
             size: { words: 1 },
-            allocations: existingAllocations
+            allocations: existingAllocations,
           };
       }
     }
@@ -475,7 +471,7 @@ function storageSizeAndAllocate(
     case "mapping":
       return {
         size: { words: 1 },
-        allocations: existingAllocations
+        allocations: existingAllocations,
       };
 
     case "array": {
@@ -483,7 +479,7 @@ function storageSizeAndAllocate(
         case "dynamic":
           return {
             size: { words: 1 },
-            allocations: existingAllocations
+            allocations: existingAllocations,
           };
         case "static":
           //static array case
@@ -492,7 +488,7 @@ function storageSizeAndAllocate(
             //in versions of Solidity where it's legal, arrays of length 0 still take up 1 word
             return {
               size: { words: 1 },
-              allocations: existingAllocations
+              allocations: existingAllocations,
             };
           }
           let { size: baseSize, allocations } = storageSizeAndAllocate(
@@ -507,13 +503,13 @@ function storageSizeAndAllocate(
             const numWords = Math.ceil(length / perWord);
             return {
               size: { words: numWords },
-              allocations
+              allocations,
             };
           } else {
             //words case
             return {
               size: { words: baseSize.words * length },
-              allocations
+              allocations,
             };
           }
       }
@@ -543,7 +539,7 @@ function storageSizeAndAllocate(
       //having found our allocation, we can just look up its size
       return {
         size: allocation.size,
-        allocations
+        allocations,
       };
     }
 
@@ -551,7 +547,7 @@ function storageSizeAndAllocate(
       //otherwise, it's a direct type
       return {
         size: { bytes: Basic.Allocate.byteLength(dataType, userDefinedTypes) },
-        allocations: existingAllocations
+        allocations: existingAllocations,
       };
   }
 }

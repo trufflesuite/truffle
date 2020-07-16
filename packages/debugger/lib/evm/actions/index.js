@@ -1,5 +1,6 @@
 export const ADD_CONTEXT = "EVM_ADD_CONTEXT";
 export function addContext({
+  context,
   contractName,
   binary,
   sourceMap,
@@ -10,10 +11,12 @@ export function addContext({
   abi,
   contractId,
   contractKind,
-  isConstructor
+  isConstructor,
+  externalSolidity,
 }) {
   return {
     type: ADD_CONTEXT,
+    context,
     contractName,
     binary,
     sourceMap,
@@ -24,13 +27,9 @@ export function addContext({
     abi,
     contractId,
     contractKind,
-    isConstructor
+    isConstructor,
+    externalSolidity,
   };
-}
-
-export const NORMALIZE_CONTEXTS = "EVM_NORMALIZE_CONTEXTS";
-export function normalizeContexts() {
-  return { type: NORMALIZE_CONTEXTS };
 }
 
 export const ADD_INSTANCE = "EVM_ADD_INSTANCE";
@@ -39,7 +38,16 @@ export function addInstance(address, context, binary) {
     type: ADD_INSTANCE,
     address,
     context,
-    binary
+    binary,
+  };
+}
+
+export const REFRESH_INSTANCE = "EVM_REFRESH_INSTANCE";
+export function refreshInstances(address, context) {
+  return {
+    type: REFRESH_INSTANCE,
+    address,
+    context,
   };
 }
 
@@ -49,7 +57,7 @@ export function saveGlobals(origin, gasprice, block) {
     type: SAVE_GLOBALS,
     origin,
     gasprice,
-    block
+    block,
   };
 }
 
@@ -57,7 +65,7 @@ export const SAVE_STATUS = "EVM_SAVE_STATUS";
 export function saveStatus(status) {
   return {
     type: SAVE_STATUS,
-    status
+    status,
   };
 }
 
@@ -69,7 +77,7 @@ export function call(address, data, storageAddress, sender, value) {
     data,
     storageAddress,
     sender,
-    value
+    value,
   };
 }
 
@@ -80,14 +88,14 @@ export function create(binary, storageAddress, sender, value) {
     binary,
     storageAddress,
     sender,
-    value
+    value,
   };
 }
 
 export const RETURN_CALL = "EVM_RETURN_CALL";
 export function returnCall() {
   return {
-    type: RETURN_CALL
+    type: RETURN_CALL,
   };
 }
 
@@ -97,14 +105,14 @@ export function returnCreate(address, code, context) {
     type: RETURN_CREATE,
     address,
     code,
-    context
+    context,
   };
 }
 
 export const FAIL = "EVM_FAIL";
 export function fail() {
   return {
-    type: FAIL
+    type: FAIL,
   };
 }
 
@@ -114,7 +122,7 @@ export function store(address, slot, value) {
     type: STORE,
     address,
     slot,
-    value
+    value,
   };
 }
 
@@ -124,7 +132,7 @@ export function load(address, slot, value) {
     type: LOAD,
     address,
     slot,
-    value
+    value,
   };
 }
 
@@ -132,13 +140,13 @@ export const RESET = "EVM_RESET";
 export function reset(storageAddress) {
   return {
     type: RESET,
-    storageAddress
+    storageAddress,
   };
 }
 
 export const UNLOAD_TRANSACTION = "EVM_UNLOAD_TRANSACTION";
 export function unloadTransaction() {
   return {
-    type: UNLOAD_TRANSACTION
+    type: UNLOAD_TRANSACTION,
   };
 }

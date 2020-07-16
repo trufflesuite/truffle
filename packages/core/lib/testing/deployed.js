@@ -3,7 +3,7 @@ const semver = require("semver");
 const Native = require("@truffle/compile-solidity/compilerSupplier/loadingStrategies/Native");
 
 var Deployed = {
-  makeSolidityDeployedAddressesLibrary: function(
+  makeSolidityDeployedAddressesLibrary: function (
     mapping,
     { solc: { version } }
   ) {
@@ -11,10 +11,11 @@ var Deployed = {
 
     var source = "";
     source +=
+      "//SPDX-License-Identifier: MIT\n" +
       "pragma solidity >= 0.5.0 < 0.7.0; \n\n library DeployedAddresses {" +
       "\n";
 
-    Object.keys(mapping).forEach(function(name) {
+    Object.keys(mapping).forEach(function (name) {
       var address = mapping[name];
 
       var body = "revert();";
@@ -47,7 +48,7 @@ var Deployed = {
   },
 
   // Pulled from ethereumjs-util, but I don't want all its dependencies at the moment.
-  toChecksumAddress: function(address) {
+  toChecksumAddress: function (address) {
     address = address.toLowerCase().replace("0x", "");
     const hash = web3Utils.sha3(address).replace("0x", "");
     var ret = "0x";
@@ -61,7 +62,7 @@ var Deployed = {
     }
 
     return ret;
-  }
+  },
 };
 
 module.exports = Deployed;

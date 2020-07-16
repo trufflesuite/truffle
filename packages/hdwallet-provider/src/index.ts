@@ -1,14 +1,16 @@
 import "source-map-support/register";
-import * as bip39 from "bip39";
+import * as bip39 from "ethereum-cryptography/bip39";
+import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 import * as EthUtil from "ethereumjs-util";
 import ethJSWallet from "ethereumjs-wallet";
 import EthereumHDKey from "ethereumjs-wallet/hdkey";
 import Transaction from "ethereumjs-tx";
-import ProviderEngine from "web3-provider-engine";
-import FiltersSubprovider from "web3-provider-engine/subproviders/filters";
-import NonceSubProvider from "web3-provider-engine/subproviders/nonce-tracker";
-import HookedSubprovider from "web3-provider-engine/subproviders/hooked-wallet";
-import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
+// @ts-ignore
+import ProviderEngine from "@trufflesuite/web3-provider-engine";
+import FiltersSubprovider from "@trufflesuite/web3-provider-engine/subproviders/filters";
+import NonceSubProvider from "@trufflesuite/web3-provider-engine/subproviders/nonce-tracker";
+import HookedSubprovider from "@trufflesuite/web3-provider-engine/subproviders/hooked-wallet";
+import ProviderSubprovider from "@trufflesuite/web3-provider-engine/subproviders/provider";
 import Url from "url";
 import Web3 from "web3";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
@@ -49,7 +51,7 @@ class HDWalletProvider {
         [
           `Malformed provider URL: '${provider}'`,
           "Please specify a correct URL, using the http, https, ws, or wss protocol.",
-          ""
+          "",
         ].join("\n")
       );
     }
@@ -67,10 +69,10 @@ class HDWalletProvider {
     // private helper to check if given mnemonic uses BIP39 passphrase protection
     const checkBIP39Mnemonic = (mnemonic: string) => {
       this.hdwallet = EthereumHDKey.fromMasterSeed(
-        bip39.mnemonicToSeed(mnemonic)
+        bip39.mnemonicToSeedSync(mnemonic)
       );
 
-      if (!bip39.validateMnemonic(mnemonic)) {
+      if (!bip39.validateMnemonic(mnemonic, wordlist)) {
         throw new Error("Mnemonic invalid or undefined");
       }
 
@@ -149,7 +151,7 @@ class HDWalletProvider {
         },
         signPersonalMessage(...args: any[]) {
           this.signMessage(...args);
-        }
+        },
       })
     );
 
@@ -175,7 +177,7 @@ class HDWalletProvider {
         default:
           // @ts-ignore: Incorrect typings in @types/web3
           subProvider = new Web3.providers.HttpProvider(provider, {
-            keepAlive: false
+            keepAlive: false,
           });
       }
 
@@ -183,7 +185,11 @@ class HDWalletProvider {
     } else {
       this.engine.addProvider(new ProviderSubprovider(provider));
     }
-    this.engine.start(); // Required by the provider engine.
+
+    // Required by the provider engine.
+    this.engine.start((err: any) => {
+      if (err) throw err;
+    });
   }
 
   public send(

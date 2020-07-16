@@ -8,14 +8,17 @@ import * as Bytes from "@truffle/codec/bytes";
 import * as Pointer from "@truffle/codec/pointer";
 import {
   DecoderRequest,
+  StateVariable,
   CalldataDecoding,
   ReturndataDecoding,
   BytecodeDecoding,
+  UnknownBytecodeDecoding,
   DecodingMode,
   AbiArgument,
   LogDecoding,
-  DecoderOptions
+  DecoderOptions,
 } from "@truffle/codec/types";
+import { ConstructorReturndataAllocation } from "@truffle/codec/abi-data/allocate";
 import * as Evm from "@truffle/codec/evm";
 import * as Contexts from "@truffle/codec/contexts";
 import { abifyType, abifyResult } from "@truffle/codec/abify";
@@ -59,13 +62,13 @@ export function* decodeCalldata(
       return {
         kind: "create" as const,
         decodingMode: "full" as const,
-        bytecode: Conversion.toHexString(info.state.calldata)
+        bytecode: Conversion.toHexString(info.state.calldata),
       };
     } else {
       return {
         kind: "unknown" as const,
         decodingMode: "full" as const,
-        data: Conversion.toHexString(info.state.calldata)
+        data: Conversion.toHexString(info.state.calldata),
       };
     }
   }
@@ -85,14 +88,14 @@ export function* decodeCalldata(
       {
         location: "calldata",
         start: 0,
-        length: Evm.Utils.SELECTOR_SIZE
+        length: Evm.Utils.SELECTOR_SIZE,
       },
       info.state
     );
     selector = Conversion.toHexString(rawSelector);
     allocation = (
       allocations.functionAllocations[contextHash][selector] || {
-        input: undefined
+        input: undefined,
       }
     ).input;
   }
@@ -112,7 +115,7 @@ export function* decodeCalldata(
       class: contractType,
       abi: abiEntry,
       data: Conversion.toHexString(info.state.calldata),
-      decodingMode: "full" as const
+      decodingMode: "full" as const,
     };
   }
   let decodingMode: DecodingMode = allocation.allocationMode; //starts out this way, degrades to ABI if necessary
@@ -128,7 +131,7 @@ export function* decodeCalldata(
     try {
       value = yield* decode(dataType, argumentAllocation.pointer, info, {
         abiPointerBase: allocation.offset, //note the use of the offset for decoding pointers!
-        allowRetry: decodingMode === "full"
+        allowRetry: decodingMode === "full",
       });
     } catch (error) {
       if (
@@ -142,9 +145,9 @@ export function* decodeCalldata(
         //1. mark that we're switching to ABI mode;
         decodingMode = "abi";
         //2. abify all previously decoded values;
-        decodedArguments = decodedArguments.map(argumentDecoding => ({
+        decodedArguments = decodedArguments.map((argumentDecoding) => ({
           ...argumentDecoding,
-          value: abifyResult(argumentDecoding.value, info.userDefinedTypes)
+          value: abifyResult(argumentDecoding.value, info.userDefinedTypes),
         }));
         //3. retry this particular decode in ABI mode.
         //(no try/catch on this one because we can't actually handle errors here!
@@ -154,7 +157,7 @@ export function* decodeCalldata(
           argumentAllocation.pointer,
           info,
           {
-            abiPointerBase: allocation.offset
+            abiPointerBase: allocation.offset,
           }
         );
         //4. the remaining parameters will then automatically be decoded in ABI mode due to (1),
@@ -181,7 +184,7 @@ export function* decodeCalldata(
       bytecode: Conversion.toHexString(
         info.state.calldata.slice(0, allocation.offset)
       ),
-      decodingMode
+      decodingMode,
     };
   } else {
     return {
@@ -190,7 +193,7 @@ export function* decodeCalldata(
       abi: <AbiData.FunctionAbiEntry>allocation.abi, //we know it's a function, but typescript doesn't
       arguments: decodedArguments,
       selector,
-      decodingMode
+      decodingMode,
     };
   }
 }
@@ -229,7 +232,7 @@ export function* decodeEvent(
       rawSelector = yield* read(
         {
           location: "eventtopic",
-          topic: 0
+          topic: 0,
         },
         info.state
       );
@@ -237,7 +240,7 @@ export function* decodeEvent(
       if (allocations[topicsCount].bySelector[selector]) {
         ({
           contract: contractAllocations,
-          library: libraryAllocations
+          library: libraryAllocations,
         } = allocations[topicsCount].bySelector[selector]);
       } else {
         debug("no allocations for that selector!");
@@ -252,7 +255,7 @@ export function* decodeEvent(
     //now: let's get our allocations for anonymous events
     ({
       contract: contractAnonymousAllocations,
-      library: libraryAnonymousAllocations
+      library: libraryAnonymousAllocations,
     } = allocations[topicsCount].anonymous);
   } else {
     //if there's not even an allocation for the topics count, we can't
@@ -264,7 +267,7 @@ export function* decodeEvent(
   //now: what contract are we (probably) dealing with? let's get its code to find out
   const codeBytes: Uint8Array = yield {
     type: "code",
-    address
+    address,
   };
   const codeAsHex = Conversion.toHexString(codeBytes);
   const contractContext = Contexts.Utils.findDecoderContext(
@@ -329,7 +332,7 @@ export function* decodeEvent(
       try {
         value = yield* decode(dataType, argumentAllocation.pointer, info, {
           strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
-          allowRetry: decodingMode === "full" //this option is unnecessary but including for clarity
+          allowRetry: decodingMode === "full", //this option is unnecessary but including for clarity
         });
       } catch (error) {
         if (
@@ -341,9 +344,9 @@ export function* decodeEvent(
           //1. mark that we're switching to ABI mode;
           decodingMode = "abi";
           //2. abify all previously decoded values;
-          decodedArguments = decodedArguments.map(argumentDecoding => ({
+          decodedArguments = decodedArguments.map((argumentDecoding) => ({
             ...argumentDecoding,
-            value: abifyResult(argumentDecoding.value, info.userDefinedTypes)
+            value: abifyResult(argumentDecoding.value, info.userDefinedTypes),
           }));
           //3. retry this particular decode in ABI mode.
           try {
@@ -352,7 +355,7 @@ export function* decodeEvent(
               argumentAllocation.pointer,
               info,
               {
-                strictAbiMode: true //turns on STRICT MODE to cause more errors to be thrown
+                strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
                 //retries no longer allowed, not that this has an effect
               }
             );
@@ -380,8 +383,8 @@ export function* decodeEvent(
     //OK, so, having decoded the result, the question is: does it reencode to the original?
     //first, we have to filter out the indexed arguments, and also get rid of the name information
     const nonIndexedValues = decodedArguments
-      .filter(argument => !argument.indexed)
-      .map(argument => argument.value);
+      .filter((argument) => !argument.indexed)
+      .map((argument) => argument.value);
     //now, we can encode!
     const reEncodedData = AbiData.Encode.encodeTupleAbi(
       nonIndexedValues,
@@ -396,8 +399,8 @@ export function* decodeEvent(
     }
     //one last check -- let's check that the indexed arguments match up, too
     const indexedValues = decodedArguments
-      .filter(argument => argument.indexed)
-      .map(argument => argument.value);
+      .filter((argument) => argument.indexed)
+      .map((argument) => argument.value);
     const reEncodedTopics = indexedValues.map(Topic.Encode.encodeTopic);
     const encodedTopics = info.state.eventtopics;
     //now: do *these* match?
@@ -422,7 +425,7 @@ export function* decodeEvent(
         class: emittingContractType,
         abi: allocation.abi,
         arguments: decodedArguments,
-        decodingMode
+        decodingMode,
       });
     } else {
       decodings.push({
@@ -432,7 +435,7 @@ export function* decodeEvent(
         abi: allocation.abi,
         arguments: decodedArguments,
         selector,
-        decodingMode
+        decodingMode,
       });
     }
   }
@@ -442,7 +445,7 @@ export function* decodeEvent(
 const errorSelector: Uint8Array = Conversion.toBytes(
   Web3Utils.soliditySha3({
     type: "string",
-    value: "Error(string)"
+    value: "Error(string)",
   })
 ).subarray(0, Evm.Utils.SELECTOR_SIZE);
 
@@ -457,27 +460,27 @@ const defaultReturnAllocations: AbiData.Allocate.ReturndataAllocation[] = [
         pointer: {
           location: "returndata" as const,
           start: errorSelector.length,
-          length: Evm.Utils.WORD_SIZE
+          length: Evm.Utils.WORD_SIZE,
         },
         type: {
           typeClass: "string" as const,
-          typeHint: "string"
-        }
-      }
-    ]
+          typeHint: "string",
+        },
+      },
+    ],
   },
   {
     kind: "failure" as const,
     allocationMode: "full" as const,
     selector: new Uint8Array(), //empty by default
-    arguments: []
+    arguments: [],
   },
   {
     kind: "selfdestruct" as const,
     allocationMode: "full" as const,
     selector: new Uint8Array(), //empty by default
-    arguments: []
-  }
+    arguments: [],
+  },
 ];
 
 /**
@@ -528,51 +531,16 @@ export function* decodeReturndata(
         }
       }
     }
-    let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     if (allocation.kind === "bytecode") {
       //bytecode is special and can't really be integrated with the other cases.
-      //so it gets its own code here.
-      const bytecode = Conversion.toHexString(info.state.returndata);
-      const context = Contexts.Utils.findDecoderContext(
-        info.contexts,
-        bytecode
-      );
-      if (!context) {
-        decodings.push({
-          kind: "unknownbytecode" as const,
-          status: true as const,
-          decodingMode,
-          bytecode
-        });
-        continue; //skip the rest of the code in the allocation loop!
+      //so it gets its own function.
+      const decoding = yield* decodeBytecode(info);
+      if (decoding) {
+        decodings.push(decoding);
       }
-      const contractType = Contexts.Import.contextToType(context);
-      let decoding: BytecodeDecoding = {
-        kind: "bytecode" as const,
-        status: true as const,
-        decodingMode,
-        bytecode,
-        class: contractType
-      };
-      if (contractType.contractKind === "library") {
-        //note: I am relying on this being present!
-        //(also this part is a bit HACKy)
-        const pushAddressInstruction = (
-          0x60 +
-          Evm.Utils.ADDRESS_SIZE -
-          1
-        ).toString(16); //"73"
-        const delegateCallGuardString =
-          "0x" + pushAddressInstruction + "..".repeat(Evm.Utils.ADDRESS_SIZE);
-        if (context.binary.startsWith(delegateCallGuardString)) {
-          decoding.address = Web3Utils.toChecksumAddress(
-            bytecode.slice(4, 4 + 2 * Evm.Utils.ADDRESS_SIZE) //4 = "0x73".length
-          );
-        }
-      }
-      decodings.push(decoding);
-      continue; //skip the rest of the code in the allocation loop!
+      continue;
     }
+    let decodingMode: DecodingMode = allocation.allocationMode; //starts out here; degrades to abi if necessary
     //you can't map with a generator, so we have to do this map manually
     let decodedArguments: AbiArgument[] = [];
     for (const argumentAllocation of allocation.arguments) {
@@ -588,7 +556,7 @@ export function* decodeReturndata(
         value = yield* decode(dataType, argumentAllocation.pointer, info, {
           abiPointerBase: allocation.selector.length,
           strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
-          allowRetry: decodingMode === "full" //this option is unnecessary but including for clarity
+          allowRetry: decodingMode === "full", //this option is unnecessary but including for clarity
         });
         debug("value on first try: %O", value);
       } catch (error) {
@@ -602,9 +570,9 @@ export function* decodeReturndata(
           //1. mark that we're switching to ABI mode;
           decodingMode = "abi";
           //2. abify all previously decoded values;
-          decodedArguments = decodedArguments.map(argumentDecoding => ({
+          decodedArguments = decodedArguments.map((argumentDecoding) => ({
             ...argumentDecoding,
-            value: abifyResult(argumentDecoding.value, info.userDefinedTypes)
+            value: abifyResult(argumentDecoding.value, info.userDefinedTypes),
           }));
           //3. retry this particular decode in ABI mode.
           try {
@@ -614,7 +582,7 @@ export function* decodeReturndata(
               info,
               {
                 abiPointerBase: allocation.selector.length,
-                strictAbiMode: true //turns on STRICT MODE to cause more errors to be thrown
+                strictAbiMode: true, //turns on STRICT MODE to cause more errors to be thrown
                 //retries no longer allowed, not that this has an effect
               }
             );
@@ -643,7 +611,7 @@ export function* decodeReturndata(
     //first, we have to filter out the indexed arguments, and also get rid of the name information
     debug("decodedArguments: %O", decodedArguments);
     const decodedArgumentValues = decodedArguments.map(
-      argument => argument.value
+      (argument) => argument.value
     );
     const reEncodedData = AbiData.Encode.encodeTupleAbi(
       decodedArgumentValues,
@@ -665,7 +633,7 @@ export function* decodeReturndata(
           kind,
           status: true as const,
           arguments: decodedArguments,
-          decodingMode
+          decodingMode,
         };
         break;
       case "revert":
@@ -673,27 +641,103 @@ export function* decodeReturndata(
           kind,
           status: false as const,
           arguments: decodedArguments,
-          decodingMode
+          decodingMode,
         };
         break;
       case "selfdestruct":
         decoding = {
           kind,
           status: true as const,
-          decodingMode
+          decodingMode,
         };
         break;
       case "failure":
         decoding = {
           kind,
           status: false as const,
-          decodingMode
+          decodingMode,
         };
         break;
     }
     decodings.push(decoding);
   }
   return decodings;
+}
+
+//note: requires the bytecode to be in returndata, not code
+function* decodeBytecode(
+  info: Evm.EvmInfo
+): Generator<
+  DecoderRequest,
+  BytecodeDecoding | UnknownBytecodeDecoding | null,
+  Uint8Array
+> {
+  let decodingMode: DecodingMode = "full"; //as always, degrade as necessary
+  const bytecode = Conversion.toHexString(info.state.returndata);
+  const context = Contexts.Utils.findDecoderContext(info.contexts, bytecode);
+  if (!context) {
+    return {
+      kind: "unknownbytecode" as const,
+      status: true as const,
+      decodingMode: "full" as const,
+      bytecode,
+    };
+  }
+  const contractType = Contexts.Import.contextToType(context);
+  //now: ignore original allocation (which we didn't even pass :) )
+  //and lookup allocation by context
+  const allocation = <ConstructorReturndataAllocation>(
+    info.allocations.calldata.constructorAllocations[context.context].output
+  );
+  debug("bytecode allocation: %O", allocation);
+  //now: add immutables if applicable
+  let immutables: StateVariable[] | undefined;
+  if (allocation.immutables) {
+    immutables = [];
+    //NOTE: if we're in here, we can assume decodingMode === "full"
+    for (const variable of allocation.immutables) {
+      const dataType = variable.type; //we don't conditioning on decodingMode here because we know it
+      let value: Format.Values.Result;
+      try {
+        value = yield* decode(dataType, variable.pointer, info, {
+          allowRetry: true, //we know we're in full mode
+          strictAbiMode: true,
+          paddingMode: "zero", //force zero-padding!
+        });
+      } catch (error) {
+        if (error instanceof StopDecodingError && error.allowRetry) {
+          //we "retry" by... not bothering with immutables :P
+          //(but we do set the mode to ABI)
+          decodingMode = "abi";
+          immutables = undefined;
+          break;
+        } else {
+          //otherwise, this isn't a valid decoding I guess
+          return null;
+        }
+      }
+      immutables.push({
+        name: variable.name,
+        class: variable.definedIn,
+        value,
+      });
+    }
+  }
+  let decoding: BytecodeDecoding = {
+    kind: "bytecode" as const,
+    status: true as const,
+    decodingMode,
+    bytecode,
+    immutables,
+    class: contractType,
+  };
+  //finally: add address if applicable
+  if (allocation.delegatecallGuard) {
+    decoding.address = Web3Utils.toChecksumAddress(
+      bytecode.slice(4, 4 + 2 * Evm.Utils.ADDRESS_SIZE) //4 = "0x73".length
+    );
+  }
+  return decoding;
 }
 
 /**
@@ -717,8 +761,8 @@ export function decodeRevert(returndata: Uint8Array): ReturndataDecoding[] {
       allocations: {},
       state: {
         storage: {},
-        returndata
-      }
+        returndata,
+      },
     },
     null,
     false

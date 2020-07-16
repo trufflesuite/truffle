@@ -5,13 +5,12 @@ const EthPM = require("ethpm");
 const EthPMRegistry = require("ethpm-registry");
 const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
-const async = require("async");
 const path = require("path");
 const fs = require("fs");
 const OS = require("os");
 
 const Package = {
-  install: async function(options, callback) {
+  install: async function (options, callback) {
     const callbackPassed = typeof callback === "function";
     expect.options(options, ["working_directory", "ethpm"]);
 
@@ -24,7 +23,7 @@ const Package = {
     const provider =
       options.ethpm.provider ||
       new Web3.providers.HttpProvider(options.ethpm.install_provider_uri, {
-        keepAlive: false
+        keepAlive: false,
       });
     let host = options.ethpm.ipfs_host;
 
@@ -62,7 +61,7 @@ const Package = {
     const pkg = new EthPM(options.working_directory, host, registry);
 
     if (options.packages) {
-      const promises = options.packages.map(package_name => {
+      const promises = options.packages.map((package_name) => {
         const pieces = package_name.split("@");
         package_name = pieces[0];
 
@@ -78,7 +77,7 @@ const Package = {
         console.log("");
         console.log("Successfully installed the following package(s)...");
         console.log("==================================================");
-        options.packages.forEach(singlePackage => {
+        options.packages.forEach((singlePackage) => {
           console.log(`> ${singlePackage}`);
         });
         console.log("");
@@ -113,7 +112,7 @@ const Package = {
     }
   },
 
-  publish: async function(options, callback) {
+  publish: async function (options, callback) {
     const callbackPassed = typeof callback === "function";
     var self = this;
 
@@ -121,7 +120,7 @@ const Package = {
       "ethpm",
       "working_directory",
       "contracts_directory",
-      "networks"
+      "networks",
     ]);
 
     expect.options(options.ethpm, ["registry", "ipfs_host"]);
@@ -152,7 +151,7 @@ const Package = {
     var provider = options.provider;
     const interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
-      networkType: "ethereum"
+      networkType: "ethereum",
     });
     var host = options.ethpm.ipfs_host;
 
@@ -209,176 +208,146 @@ const Package = {
     }
   },
 
-  digest: function(options, callback) {
-    // async.parallel({
-    //   contracts: provision.bind(provision, options, false),
-    //   files: dir.files.bind(dir, options.contracts_directory)
-    // }, function(err, results) {
-    //   if (err) return callback(err);
-    //
-    //   results.contracts = results.contracts.map(function(contract) {
-    //     return contract.contract_name;
-    //   });
-    //
-    //   callback(null, results);
-    // });
+  digest: function (options, callback) {
     callback(new Error("Not yet implemented"));
   },
 
   // Return a list of publishable artifacts
-  publishable_artifacts: function(options, callback) {
+  publishable_artifacts: async function (options, callback) {
     const callbackPassed = typeof callback === "function";
     // Filter out "test" and "development" networks.
     const ifReservedNetworks = new Set(["test", "development"]);
     var deployed_networks = Object.keys(options.networks).filter(
-      name => !ifReservedNetworks.has(name)
+      (name) => !ifReservedNetworks.has(name)
     );
 
     // Now get the URIs of each network that's been deployed to.
-    Networks.asURIs(options, deployed_networks, function(err, result) {
-      if (err) {
-        if (callbackPassed) {
-          return callback(err);
-        }
-        throw err;
+    let result;
+    try {
+      result = await Networks.asURIs(options, deployed_networks);
+    } catch (error) {
+      if (callbackPassed) {
+        return callback(err);
       }
+      throw err;
+    }
 
-      var uris = result.uris;
+    var uris = result.uris;
 
-      if (result.failed.length > 0) {
-        const message =
-          "Could not connect to the following networks: " +
-          result.failed.join(", ") +
-          ". These networks have deployed " +
-          "artifacts that can't be published as a package without an active " +
-          "and accessible connection. Please ensure clients for each " +
-          "network are up and running prior to publishing, or use the -n " +
-          "option to specify specific networks you'd like published.";
-        if (callbackPassed) {
-          return callback(new Error(message));
-        }
-        throw new Error(message);
+    if (result.failed.length > 0) {
+      const message =
+        "Could not connect to the following networks: " +
+        result.failed.join(", ") +
+        ". These networks have deployed " +
+        "artifacts that can't be published as a package without an active " +
+        "and accessible connection. Please ensure clients for each " +
+        "network are up and running prior to publishing, or use the -n " +
+        "option to specify specific networks you'd like published.";
+      if (callbackPassed) {
+        return callback(new Error(message));
       }
+      throw new Error(message);
+    }
 
-      var files = fs.readdirSync(options.contracts_build_directory);
-      files = files.filter(file => file.endsWith(".json"));
+    var files = fs.readdirSync(options.contracts_build_directory);
+    files = files.filter((file) => file.endsWith(".json"));
 
-      if (!files.length) {
-        const message =
-          "Could not locate any publishable artifacts in " +
-          options.contracts_build_directory +
-          ". " +
-          "Run `truffle compile` before publishing.";
-        if (callbackPassed) {
-          return callback(new Error(message));
-        }
-        throw new Error(message);
+    if (!files.length) {
+      const message =
+        "Could not locate any publishable artifacts in " +
+        options.contracts_build_directory +
+        ". " +
+        "Run `truffle compile` before publishing.";
+      if (callbackPassed) {
+        return callback(new Error(message));
       }
+      throw new Error(message);
+    }
 
-      var promises = files.map(
-        file =>
-          new Promise((resolve, reject) => {
-            fs.readFile(
-              path.join(options.contracts_build_directory, file),
-              "utf8",
-              function(err, body) {
-                if (err) return reject(err);
-
-                try {
-                  body = JSON.parse(body);
-                } catch (e) {
-                  return reject(e);
-                }
-
-                resolve(body);
-              }
-            );
-          })
-      );
-
-      var contract_types = {};
-      var deployments = {};
-
-      Promise.all(promises)
-        .then(function(contracts) {
-          // contract_types first.
-          contracts.forEach(function(data) {
-            contract_types[data.contractName] = {
-              contract_name: data.contractName,
-              bytecode: data.bytecode,
-              abi: data.abi
-            };
-          });
-
-          //var network_cache = {};
-          var matching_promises = [];
-
-          contracts.forEach(function(data) {
-            Object.keys(data.networks).forEach(function(network_id) {
-              matching_promises.push(
-                new Promise(function(accept, reject) {
-                  // Go through each deployed network and see if this network matches.
-                  // Bail early if we foun done.
-                  async.each(
-                    deployed_networks,
-                    function(deployed_network, finished) {
-                      Networks.matchesNetwork(
-                        network_id,
-                        options.networks[deployed_network],
-                        function(err, matches) {
-                          if (err) return finished(err);
-                          if (matches) {
-                            var uri = uris[deployed_network];
-
-                            if (!deployments[uri]) {
-                              deployments[uri] = {};
-                            }
-
-                            deployments[uri][data.contractName] = {
-                              contract_type: data.contractName, // TODO: Handle conflict resolution
-                              address: data.networks[network_id].address
-                            };
-
-                            return finished("bail early");
-                          }
-                          finished();
-                        }
-                      );
-                    },
-                    function(err) {
-                      if (err && err !== "bail early") {
-                        return reject(err);
-                      }
-
-                      accept();
-                    }
-                  );
-                })
-              );
-            });
-          });
-
-          return Promise.all(matching_promises);
-        })
-        .then(function() {
-          var to_return = {
-            contract_types: contract_types,
-            deployments: deployments
-          };
-          if (callbackPassed) {
-            callback(null, to_return);
-            return;
+    const promises = files.map((file) => {
+      return new Promise((resolve, reject) => {
+        fs.readFile(
+          path.join(options.contracts_build_directory, file),
+          "utf8",
+          (error, data) => {
+            if (error) {
+              reject(error);
+            }
+            resolve(JSON.parse(data));
           }
-          return to_return;
-        })
-        .catch(error => {
-          if (callbackPassed) {
-            callback(error);
-          }
-          throw error;
-        });
+        );
+      });
     });
-  }
+
+    const contracts = await Promise.all(promises);
+
+    var contract_types = {};
+    var deployments = {};
+
+    // contract_types first.
+    contracts.forEach((data) => {
+      contract_types[data.contractName] = {
+        contract_name: data.contractName,
+        bytecode: data.bytecode,
+        abi: data.abi,
+      };
+    });
+
+    //var network_cache = {};
+    const matchingPromises = [];
+
+    contracts.forEach((data) => {
+      Object.keys(data.networks).forEach((network_id) => {
+        matchingPromises.push(
+          new Promise(async (accept, reject) => {
+            try {
+              // Go through each deployed network and see if this network matches.
+              for (const deployedNetwork of deployed_networks) {
+                const matches = await Networks.matchesNetwork(
+                  network_id,
+                  options.networks[deployedNetwork]
+                );
+                if (matches) {
+                  var uri = uris[deployed_network];
+
+                  if (!deployments[uri]) {
+                    deployments[uri] = {};
+                  }
+
+                  deployments[uri][data.contractName] = {
+                    contract_type: data.contractName, // TODO: Handle conflict resolution
+                    address: data.networks[network_id].address,
+                  };
+
+                  accept();
+                }
+              }
+            } catch (error) {
+              reject(error);
+            }
+          })
+        );
+      });
+    });
+
+    try {
+      await Promise.all(matchingPromises);
+      const toReturn = {
+        contract_types: contract_types,
+        deployments: deployments,
+      };
+      if (callbackPassed) {
+        callback(null, toReturn);
+        return;
+      }
+      return toReturn;
+    } catch (error) {
+      if (callbackPassed) {
+        return callback(error);
+      }
+      throw error;
+    }
+  },
 };
 
 module.exports = Package;

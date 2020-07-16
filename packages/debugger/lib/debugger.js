@@ -24,7 +24,7 @@ const Debugger = {
    * @param {{contracts: Array<Artifact>, files: Array<String>, provider: Web3Provider, compilations: Array<Compilation>}} options -
    * @return {Debugger} instance
    */
-  forTx: async function(txHash, options = {}) {
+  forTx: async function (txHash, options = {}) {
     let { contracts, files, provider, compilations, lightMode } = options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
@@ -48,7 +48,7 @@ const Debugger = {
    * @param {{contracts: Array<Artifact>, files: Array<String>, provider: Web3Provider, compilations: Array<Compilation>}} options -
    * @return {Debugger} instance
    */
-  forProject: async function(options = {}) {
+  forProject: async function (options = {}) {
     let { contracts, files, provider, compilations, lightMode } = options;
     if (!compilations) {
       compilations = Compilations.Utils.shimArtifacts(contracts, files);
@@ -74,16 +74,18 @@ const Debugger = {
    * @example
    * Debugger.selectors.trace.steps
    */
-  selectors: createNestedSelector({
-    ast: astSelector,
-    data: dataSelector,
-    trace: traceSelector,
-    evm: evmSelector,
-    solidity: soliditySelector,
-    stacktrace: stacktraceSelector,
-    session: sessionSelector,
-    controller: controllerSelector
-  })
+  get selectors() {
+    return createNestedSelector({
+      ast: astSelector,
+      data: dataSelector,
+      trace: traceSelector,
+      evm: evmSelector,
+      solidity: soliditySelector,
+      stacktrace: stacktraceSelector,
+      session: sessionSelector,
+      controller: controllerSelector,
+    });
+  },
 };
 
 export default Debugger;

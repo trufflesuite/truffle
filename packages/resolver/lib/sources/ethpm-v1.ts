@@ -50,20 +50,20 @@ export class EthPMv1 implements ResolverSource {
       abi: type.abi,
       contract_name: contract_name,
       networks: {},
-      unlinked_binary: type.bytecode
+      unlinked_binary: type.bytecode,
     };
 
     // Go through deployments and save all of them
-    Object.keys(lockfile.deployments || {}).forEach(function(blockchain) {
+    Object.keys(lockfile.deployments || {}).forEach(function (blockchain) {
       var deployments = lockfile.deployments[blockchain];
 
-      Object.keys(deployments).forEach(function(name) {
+      Object.keys(deployments).forEach(function (name) {
         var deployment = deployments[name];
         if (deployment.contract_type === contract_name) {
           json.networks[blockchain] = {
             events: {},
             links: {},
-            address: deployment.address
+            address: deployment.address,
           };
         }
       });
@@ -117,7 +117,7 @@ export class EthPMv1 implements ResolverSource {
   // i.e., if some_module/contracts/MyContract.sol imported "./AnotherContract.sol",
   // we're going to resolve it to some_module/contracts/AnotherContract.sol, ensuring
   // that when this path is evaluated this source is used again.
-  resolve_dependency_path(importPath: string, dependencyPath: string) {
+  resolveDependencyPath(importPath: string, dependencyPath: string) {
     var dirname = path.dirname(importPath);
     var resolved_dependency_path = path.join(dirname, dependencyPath);
 

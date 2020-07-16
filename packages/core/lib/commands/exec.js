@@ -3,39 +3,39 @@ const command = {
   description: "Execute a JS module within this Truffle environment",
   builder: {
     file: {
-      type: "string"
+      type: "string",
     },
     c: {
       type: "boolean",
-      default: false
+      default: false,
     },
     compile: {
       type: "boolean",
-      default: false
-    }
+      default: false,
+    },
   },
   help: {
-    usage: "truffle exec <script.js> [--network <name>]",
+    usage: "truffle exec <script.js> [--network <name>] [--compile]",
     options: [
       {
         option: "<script.js>",
         description:
           "JavaScript file to be executed. Can include path information if the script" +
-          " does not exist in the current\n                    directory. (required)"
+          " does not exist in the current\n                    directory. (required)",
       },
       {
         option: "--network <name>",
         description:
           "Specify the network to use, using artifacts specific to that network." +
-          " Network name must exist in the\n                    configuration."
+          " Network name must exist in the\n                    configuration.",
       },
       {
         option: "--compile",
-        description: "Compile contracts before executing the script."
-      }
-    ]
+        description: "Compile contracts before executing the script.",
+      },
+    ],
   },
-  run: async function(options) {
+  run: async function (options) {
     const Config = require("@truffle/config");
     const Contracts = require("@truffle/workflow-compile");
     const ConfigurationError = require("../errors/configurationerror");
@@ -76,7 +76,7 @@ const command = {
 
     // Just exec
     return Require.exec(config.with({ file }));
-  }
+  },
 };
 
 module.exports = command;

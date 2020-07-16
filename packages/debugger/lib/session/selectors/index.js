@@ -11,7 +11,7 @@ const session = createSelectorTree({
   /*
    * session.state
    */
-  state: state => state.session,
+  state: (state) => state.session,
 
   /**
    * session.info
@@ -36,6 +36,10 @@ const session = createSelectorTree({
               }
               let { contractName, compilationId, primarySource } = context;
 
+              debug("primarySource: %o", primarySource);
+              debug("compilationId: %s", compilationId);
+              debug("sources: %o", sources);
+
               let source =
                 primarySource !== undefined
                   ? sources[compilationId].byId[primarySource]
@@ -45,13 +49,13 @@ const session = createSelectorTree({
                 [address]: {
                   contractName,
                   source,
-                  binary
-                }
+                  binary,
+                },
               };
             }
           )
         )
-    )
+    ),
   },
 
   /**
@@ -62,19 +66,19 @@ const session = createSelectorTree({
      * session.transaction (selector)
      * contains the web3 transaction object
      */
-    _: createLeaf(["/state"], state => state.transaction),
+    _: createLeaf(["/state"], (state) => state.transaction),
 
     /**
      * session.transaction.receipt
      * contains the web3 receipt object
      */
-    receipt: createLeaf(["/state"], state => state.receipt),
+    receipt: createLeaf(["/state"], (state) => state.receipt),
 
     /**
      * session.transaction.block
      * contains the web3 block object
      */
-    block: createLeaf(["/state"], state => state.block)
+    block: createLeaf(["/state"], (state) => state.block),
   },
 
   /*
@@ -84,7 +88,7 @@ const session = createSelectorTree({
     /*
      * session.status.readyOrError
      */
-    readyOrError: createLeaf(["/state"], state => state.ready),
+    readyOrError: createLeaf(["/state"], (state) => state.ready),
 
     /*
      * session.status.ready
@@ -97,22 +101,22 @@ const session = createSelectorTree({
     /*
      * session.status.waiting
      */
-    waiting: createLeaf(["/state"], state => !state.ready),
+    waiting: createLeaf(["/state"], (state) => !state.ready),
 
     /*
      * session.status.error
      */
-    error: createLeaf(["/state"], state => state.lastLoadingError),
+    error: createLeaf(["/state"], (state) => state.lastLoadingError),
 
     /*
      * session.status.isError
      */
-    isError: createLeaf(["./error"], error => error !== null),
+    isError: createLeaf(["./error"], (error) => error !== null),
 
     /*
      * session.status.success
      */
-    success: createLeaf(["./error"], error => error === null),
+    success: createLeaf(["./error"], (error) => error === null),
 
     /*
      * session.status.errored
@@ -125,8 +129,13 @@ const session = createSelectorTree({
     /*
      * session.status.loaded
      */
-    loaded: createLeaf([trace.loaded], loaded => loaded)
-  }
+    loaded: createLeaf([trace.loaded], (loaded) => loaded),
+
+    /**
+     * session.status.lightMode
+     */
+    lightMode: createLeaf(["/state"], (state) => state.lightMode),
+  },
 });
 
 export default session;

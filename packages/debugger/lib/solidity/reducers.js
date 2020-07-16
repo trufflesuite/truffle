@@ -3,7 +3,7 @@ import { combineReducers } from "redux";
 import * as actions from "./actions";
 
 const DEFAULT_SOURCES = {
-  byCompilationId: {} //by compilation, then in an array
+  byCompilationId: {}, //by compilation, then in an array
 };
 
 function sources(state = DEFAULT_SOURCES, action) {
@@ -12,17 +12,21 @@ function sources(state = DEFAULT_SOURCES, action) {
      * Adding new sources
      */
     case actions.ADD_SOURCES:
+      //NOTE: this code assumes that we are only ever adding compilations
+      //wholesale, and never adding to existing ones!
       return {
-        byCompilationId: Object.assign(
-          {},
-          ...Object.entries(action.compilations).map(([id, compilation]) => ({
-            [id]: {
-              byId: compilation
-            }
-          }))
-        )
+        byCompilationId: {
+          ...state.byCompilationId,
+          ...Object.assign(
+            {},
+            ...Object.entries(action.compilations).map(([id, compilation]) => ({
+              [id]: {
+                byId: compilation,
+              },
+            }))
+          ),
+        },
       };
-
     /*
      * Default case
      */
@@ -32,7 +36,7 @@ function sources(state = DEFAULT_SOURCES, action) {
 }
 
 const info = combineReducers({
-  sources
+  sources,
 });
 
 function functionDepthStack(state = [], action) {
@@ -72,12 +76,6 @@ function nextFrameIsPhantom(state = null, action) {
       return false;
     case actions.EXTERNAL_RETURN:
       return false;
-    case actions.JUMP:
-      if (action.jumpDirection === "o") {
-        return false;
-      } else {
-        return state;
-      }
     case actions.EXTERNAL_CALL:
       return action.guard;
     case actions.RESET:
@@ -101,12 +99,12 @@ function spelunk(jump) {
 
 const proc = combineReducers({
   functionDepthStack,
-  nextFrameIsPhantom
+  nextFrameIsPhantom,
 });
 
 const reducer = combineReducers({
   info,
-  proc
+  proc,
 });
 
 export default reducer;

@@ -6,6 +6,10 @@ const semver = require("semver");
 const LoadingStrategy = require("./LoadingStrategy");
 const VersionRange = require("./VersionRange");
 
+// Set a sensible limit for maxBuffer
+// See https://github.com/nodejs/node/pull/23027
+const maxBuffer = 1024 * 1024 * 100;
+
 class Docker extends LoadingStrategy {
   async load() {
     const versionString = await this.validateAndGetSolcVersion();
@@ -16,8 +20,9 @@ class Docker extends LoadingStrategy {
 
     try {
       return {
-        compile: options => String(execSync(command, { input: options })),
-        version: () => versionString
+        compile: (options) =>
+          String(execSync(command, { input: options, maxBuffer })),
+        version: () => versionString,
       };
     } catch (error) {
       if (error.message === "No matching version found") {
@@ -29,8 +34,8 @@ class Docker extends LoadingStrategy {
 
   getDockerTags() {
     return request(this.config.dockerTagsUrl)
-      .then(list => JSON.parse(list).results.map(item => item.name))
-      .catch(error => {
+      .then((list) => JSON.parse(list).results.map((item) => item.name))
+      .catch((error) => {
         throw this.errors("noRequest", this.config.dockerTagsUrl, error);
       });
   }
@@ -44,7 +49,7 @@ class Docker extends LoadingStrategy {
     }
     const spinner = ora({
       text: "Downloading Docker image",
-      color: "red"
+      color: "red",
     }).start();
     try {
       execSync(`docker pull ethereum/solc:${image}`);

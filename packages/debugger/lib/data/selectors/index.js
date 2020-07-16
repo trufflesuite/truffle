@@ -4,9 +4,11 @@ const debug = debugModule("debugger:data:selectors");
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
 import flatten from "lodash.flatten";
+import semver from "semver";
 
-import { stableKeccak256 } from "lib/helpers";
+import { stableKeccak256, makePath } from "lib/helpers";
 
+import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
@@ -15,13 +17,24 @@ import * as Codec from "@truffle/codec";
 /**
  * @private
  */
-const identity = x => x;
+const identity = (x) => x;
 
-function findAncestorOfType(node, types, scopes) {
-  //note: I'm not including any protection against null in this function.
-  //You are advised to include "SourceUnit" as a fallback type.
+function findAncestorOfType(node, types, scopes, pointer = null, root = null) {
+  //note: you may want to include "SourceUnit" as a fallback type when using
+  //this function for convenience.
+  //you only need to pass pointer and root if you want this function to work
+  //from Yul.  Otherwise you can omit those and you'll get null if you happen
+  //to be in Yul.
   while (node && !types.includes(node.nodeType)) {
-    node = scopes[scopes[node.id].parentId].definition;
+    if (node.id !== undefined) {
+      node = scopes[scopes[node.id].parentId].definition;
+    } else {
+      if (pointer === null || root === null) {
+        return null;
+      }
+      pointer = pointer.replace(/\/[^/]*$/, ""); //chop off end
+      node = jsonpointer.get(root, pointer);
+    }
   }
   return node;
 }
@@ -49,7 +62,7 @@ function modifierForInvocation(invocation, scopes) {
       return rawNode;
     case "ContractDefinition":
       return rawNode.nodes.find(
-        node =>
+        (node) =>
           node.nodeType === "FunctionDefinition" &&
           Codec.Ast.Utils.functionKind(node) === "constructor"
       );
@@ -71,7 +84,7 @@ function debuggerContextToDecoderContext(context) {
     abi,
     payable,
     compiler,
-    compilationId
+    compilationId,
   } = context;
   return {
     context: contextHash,
@@ -83,7 +96,7 @@ function debuggerContextToDecoderContext(context) {
     abi: Codec.AbiData.Utils.computeSelectors(abi),
     payable,
     compiler,
-    compilationId
+    compilationId,
   };
 }
 
@@ -97,8 +110,8 @@ export const NOW_DEFINITION = {
   nodeType: "VariableDeclaration",
   typeDescriptions: {
     typeIdentifier: "t_uint256",
-    typeString: "uint256"
-  }
+    typeString: "uint256",
+  },
 };
 
 export const MSG_DEFINITION = {
@@ -108,8 +121,8 @@ export const MSG_DEFINITION = {
   nodeType: "VariableDeclaration",
   typeDescriptions: {
     typeIdentifier: "t_magic_message",
-    typeString: "msg"
-  }
+    typeString: "msg",
+  },
 };
 
 export const TX_DEFINITION = {
@@ -119,8 +132,8 @@ export const TX_DEFINITION = {
   nodeType: "VariableDeclaration",
   typeDescriptions: {
     typeIdentifier: "t_magic_transaction",
-    typeString: "tx"
-  }
+    typeString: "tx",
+  },
 };
 
 export const BLOCK_DEFINITION = {
@@ -130,8 +143,8 @@ export const BLOCK_DEFINITION = {
   nodeType: "VariableDeclaration",
   typeDescriptions: {
     typeIdentifier: "t_magic_block",
-    typeString: "block"
-  }
+    typeString: "block",
+  },
 };
 
 function spoofThisDefinition(contractName, contractId, contractKind) {
@@ -146,13 +159,13 @@ function spoofThisDefinition(contractName, contractId, contractKind) {
     nodeType: "VariableDeclaration",
     typeDescriptions: {
       typeIdentifier: "t_contract$_" + formattedName + "_$" + contractId,
-      typeString: contractKind + " " + contractName
-    }
+      typeString: contractKind + " " + contractName,
+    },
   };
 }
 
 const data = createSelectorTree({
-  state: state => state.data,
+  state: (state) => state.data,
 
   /**
    * data.views
@@ -163,7 +176,7 @@ const data = createSelectorTree({
      */
     atLastInstructionForSourceRange: createLeaf(
       [solidity.current.isSourceRangeFinal],
-      final => final
+      (final) => final
     ),
 
     /**
@@ -204,27 +217,27 @@ const data = createSelectorTree({
                   .concat(
                     //concatenate the variables lists from the base classes
                     ...linearizedBaseContractsFromBase.map(
-                      contractId =>
+                      (contractId) =>
                         scopes[compilationId][contractId].variables || []
                       //we need the || [] because contracts with no state variables
                       //have variables undefined rather than empty like you'd expect
                     )
                   )
                   .filter(
-                    variable =>
-                      inlined[compilationId][variable.id].definition
+                    (variable) =>
+                      inlined[compilationId][variable.astRef].definition
                         .visibility !== "private"
                     //filter out private variables from the base classes
                   )
                   //add in the variables for the contract itself -- note that here
                   //private variables are not filtered out!
                   .concat(scopes[compilationId][id].variables || [])
-                  .filter(variable => {
+                  .filter((variable) => {
                     //HACK: let's filter out those constants we don't know
                     //how to read.  they'll just clutter things up.
                     debug("variable %O", variable);
                     let definition =
-                      inlined[compilationId][variable.id].definition;
+                      inlined[compilationId][variable.astRef].definition;
                     return (
                       !definition.constant ||
                       Codec.Ast.Utils.isSimpleConstant(definition.value)
@@ -233,7 +246,7 @@ const data = createSelectorTree({
 
                 return { [id]: newScope };
               })
-            )
+            ),
           }))
         )
       ),
@@ -245,12 +258,12 @@ const data = createSelectorTree({
        * the raw scopes data, just with intermediate
        * layers cut out
        */
-      raw: createLeaf(["/info/scopes"], scopes =>
+      raw: createLeaf(["/info/scopes"], (scopes) =>
         Object.assign(
           {},
           ...Object.entries(scopes.byCompilationId).map(
-            ([compilationId, { byId: nodes }]) => ({
-              [compilationId]: nodes
+            ([compilationId, { byAstRef: nodes }]) => ({
+              [compilationId]: { ...nodes },
             })
           )
         )
@@ -274,10 +287,10 @@ const data = createSelectorTree({
                 ...Object.entries(nodes).map(([id, info]) => ({
                   [id]: {
                     ...info,
-                    variables: scopes[compilationId][id].variables
-                  }
+                    variables: scopes[compilationId][id].variables,
+                  },
                 }))
-              )
+              ),
             }))
           )
         ),
@@ -302,14 +315,14 @@ const data = createSelectorTree({
                       definition: jsonpointer.get(
                         sources[compilationId].byId[entry.sourceId].ast,
                         entry.pointer
-                      )
-                    }
+                      ),
+                    },
                   }))
-                )
+                ),
               }))
             )
-        )
-      }
+        ),
+      },
     },
 
     /*
@@ -326,7 +339,7 @@ const data = createSelectorTree({
             Object.entries(referenceDeclarations).map(
               ([compilationId, nodes]) =>
                 Object.values(nodes)
-                  .map(node =>
+                  .map((node) =>
                     Codec.Ast.Import.definitionToStoredType(
                       node,
                       compilationId,
@@ -336,7 +349,7 @@ const data = createSelectorTree({
                       referenceDeclarations[compilationId]
                     )
                   )
-                  .map(type => ({ [type.id]: type }))
+                  .map((type) => ({ [type.id]: type }))
             )
           )
         );
@@ -351,7 +364,7 @@ const data = createSelectorTree({
         "/info/userDefinedTypes",
         "/views/scopes/inlined",
         solidity.info.sources,
-        evm.info.contexts
+        evm.info.contexts,
       ],
       (userDefinedTypes, scopes, sources, contexts) =>
         Object.values(userDefinedTypes)
@@ -364,8 +377,14 @@ const data = createSelectorTree({
             debug("id: %O", id);
             debug("compilationId: %O", compilationId);
             let deployedContext = Object.values(contexts).find(
-              context =>
+              (context) =>
                 !context.isConstructor &&
+                context.compilationId === compilationId &&
+                context.contractId === id
+            );
+            let constructorContext = Object.values(contexts).find(
+              (context) =>
+                context.isConstructor &&
                 context.compilationId === compilationId &&
                 context.contractId === id
             );
@@ -376,10 +395,14 @@ const data = createSelectorTree({
               contractNode: scopes[compilationId][id].definition,
               compilationId,
               immutableReferences,
-              //we don't just use deployedContext because it might not exist!
+              //we don't just use deployedContext to get compiler because it might not exist!
               compiler:
                 sources[compilationId].byId[scopes[compilationId][id].sourceId]
-                  .compiler
+                  .compiler,
+              //the following three are only needed for decoding return values
+              abi: (deployedContext || {}).abi,
+              deployedContext,
+              constructorContext,
             };
           })
     ),
@@ -402,7 +425,7 @@ const data = createSelectorTree({
                     ? { [id]: nodes[id].definition }
                     : {}
               )
-            )
+            ),
           }))
         )
     ),
@@ -419,14 +442,14 @@ const data = createSelectorTree({
               (mappedPaths.byAddress[address] || { byType: {} }).byType
             ).map(({ bySlotAddress }) => Object.values(bySlotAddress))
           )
-          .filter(slot => slot.key !== undefined)
+          .filter((slot) => slot.key !== undefined)
     ),
 
     /*
      * data.views.blockNumber
      * returns block number as string
      */
-    blockNumber: createLeaf([evm.transaction.globals.block], block =>
+    blockNumber: createLeaf([evm.transaction.globals.block], (block) =>
       block.number.toString()
     ),
 
@@ -435,11 +458,11 @@ const data = createSelectorTree({
      * same as evm.current.codex.instances, but we just map address => binary,
      * we don't bother with context, and also the code is a Uint8Array
      */
-    instances: createLeaf([evm.current.codex.instances], instances =>
+    instances: createLeaf([evm.current.codex.instances], (instances) =>
       Object.assign(
         {},
         ...Object.entries(instances).map(([address, { binary }]) => ({
-          [address]: Codec.Conversion.toBytes(binary)
+          [address]: Codec.Conversion.toBytes(binary),
         }))
       )
     ),
@@ -453,16 +476,16 @@ const data = createSelectorTree({
      * 2a. we strip out everything but functions
      * 2b. abi is now an object, not an array, and indexed by these signatures
      */
-    contexts: createLeaf([evm.info.contexts], contexts =>
+    contexts: createLeaf([evm.info.contexts], (contexts) =>
       Object.assign(
         {},
         ...Object.values(contexts)
-          .filter(context => !context.isConstructor)
-          .map(context => ({
-            [context.contractId]: debuggerContextToDecoderContext(context)
+          .filter((context) => !context.isConstructor)
+          .map((context) => ({
+            [context.contractId]: debuggerContextToDecoderContext(context),
           }))
       )
-    )
+    ),
   },
 
   /**
@@ -472,7 +495,7 @@ const data = createSelectorTree({
     /**
      * data.info.scopes
      */
-    scopes: createLeaf(["/state"], state => state.info.scopes),
+    scopes: createLeaf(["/state"], (state) => state.info.scopes),
 
     /*
      * data.info.allocations
@@ -481,22 +504,33 @@ const data = createSelectorTree({
       /*
        * data.info.allocations.storage
        */
-      storage: createLeaf(["/state"], state => state.info.allocations.storage),
+      storage: createLeaf(
+        ["/state"],
+        (state) => state.info.allocations.storage
+      ),
 
       /**
        * data.info.allocations.state
        */
-      state: createLeaf(["/state"], state => state.info.allocations.state),
+      state: createLeaf(["/state"], (state) => state.info.allocations.state),
 
       /*
        * data.info.allocations.memory
        */
-      memory: createLeaf(["/state"], state => state.info.allocations.memory),
+      memory: createLeaf(["/state"], (state) => state.info.allocations.memory),
 
       /*
        * data.info.allocations.abi
        */
-      abi: createLeaf(["/state"], state => state.info.allocations.abi)
+      abi: createLeaf(["/state"], (state) => state.info.allocations.abi),
+
+      /*
+       * data.info.allocations.calldata
+       */
+      calldata: createLeaf(
+        ["/state"],
+        (state) => state.info.allocations.calldata
+      ),
     },
 
     /**
@@ -504,8 +538,8 @@ const data = createSelectorTree({
      */
     userDefinedTypes: createLeaf(
       ["/state"],
-      state => state.info.userDefinedTypes
-    )
+      (state) => state.info.userDefinedTypes
+    ),
   },
 
   /**
@@ -517,7 +551,7 @@ const data = createSelectorTree({
      */
     assignments: createLeaf(
       ["/state"],
-      state => state.proc.assignments
+      (state) => state.proc.assignments
       //note: this no longer fetches just the byId, but rather the whole
       //assignments object
     ),
@@ -525,7 +559,7 @@ const data = createSelectorTree({
     /*
      * data.proc.mappedPaths
      */
-    mappedPaths: createLeaf(["/state"], state => state.proc.mappedPaths),
+    mappedPaths: createLeaf(["/state"], (state) => state.proc.mappedPaths),
 
     /**
      * data.proc.decodingKeys
@@ -534,8 +568,8 @@ const data = createSelectorTree({
      */
     decodingKeys: createLeaf(
       ["./mappedPaths"],
-      mappedPaths => mappedPaths.decodingStarted
-    )
+      (mappedPaths) => mappedPaths.decodingStarted
+    ),
   },
 
   /**
@@ -552,7 +586,7 @@ const data = createSelectorTree({
       stack: createLeaf(
         [evm.current.state.stack],
 
-        words => (words || []).map(word => Codec.Conversion.toBytes(word))
+        (words) => (words || []).map((word) => Codec.Conversion.toBytes(word))
       ),
 
       /**
@@ -561,7 +595,7 @@ const data = createSelectorTree({
       memory: createLeaf(
         [evm.current.state.memory],
 
-        words => Codec.Conversion.toBytes(words.join(""))
+        (words) => Codec.Conversion.toBytes(words.join(""))
       ),
 
       /**
@@ -586,11 +620,11 @@ const data = createSelectorTree({
       storage: createLeaf(
         [evm.current.codex.storage],
 
-        mapping =>
+        (mapping) =>
           Object.assign(
             {},
             ...Object.entries(mapping).map(([address, word]) => ({
-              [`0x${address}`]: Codec.Conversion.toBytes(word)
+              [`0x${address}`]: Codec.Conversion.toBytes(word),
             }))
           )
       ),
@@ -614,18 +648,18 @@ const data = createSelectorTree({
           ...Object.assign(
             {},
             ...Object.entries(tx).map(([variable, value]) => ({
-              [variable]: Codec.Conversion.toBytes(value)
+              [variable]: Codec.Conversion.toBytes(value),
             }))
           ),
 
           ...Object.assign(
             {},
             ...Object.entries(block).map(([variable, value]) => ({
-              [variable]: Codec.Conversion.toBytes(value)
+              [variable]: Codec.Conversion.toBytes(value),
             }))
-          )
+          ),
         })
-      )
+      ),
     },
 
     /**
@@ -635,6 +669,16 @@ const data = createSelectorTree({
       [evm.current.context],
       ({ compilationId }) => compilationId
     ),
+
+    /**
+     * data.current.sourceId
+     */
+    sourceId: createLeaf([solidity.current.source], ({ id }) => id),
+
+    /**
+     * data.current.root
+     */
+    root: createLeaf([solidity.current.source], ({ ast }) => ast),
 
     /**
      * data.current.scopes (namespace)
@@ -660,7 +704,7 @@ const data = createSelectorTree({
       inlined: createLeaf(
         ["/views/scopes/inlined", "../compilationId"],
         (scopes, compilationId) => scopes[compilationId]
-      )
+      ),
     },
 
     /*
@@ -689,7 +733,7 @@ const data = createSelectorTree({
           "/info/allocations/state",
           "/views/userDefinedTypes",
           "../compilationId",
-          evm.current.context
+          evm.current.context,
         ],
         (
           allAllocations,
@@ -705,8 +749,8 @@ const data = createSelectorTree({
             {},
             ...Object.entries(allocations).map(([id, allocation]) => ({
               [id]: {
-                members: allocation.members.map(member => ({ ...member }))
-              }
+                members: allocation.members.map((member) => ({ ...member })),
+              },
             }))
           );
           //if we're not in a constructor, we don't need to actually transform it.
@@ -728,7 +772,7 @@ const data = createSelectorTree({
                   member.pointer = {
                     location: "memory",
                     start,
-                    length: Codec.Evm.Utils.WORD_SIZE
+                    length: Codec.Evm.Utils.WORD_SIZE,
                   };
                   start += Codec.Evm.Utils.WORD_SIZE;
                 }
@@ -744,16 +788,16 @@ const data = createSelectorTree({
                 [id]: {
                   members: Object.assign(
                     {},
-                    ...allocation.members.map(memberAllocation => ({
-                      [memberAllocation.definition.id]: memberAllocation
+                    ...allocation.members.map((memberAllocation) => ({
+                      [memberAllocation.definition.id]: memberAllocation,
                     }))
-                  )
-                }
+                  ),
+                },
               })
             )
           );
         }
-      )
+      ),
     },
 
     /**
@@ -762,9 +806,26 @@ const data = createSelectorTree({
     compiler: createLeaf([evm.current.context], ({ compiler }) => compiler),
 
     /**
+     * data.current.bareLetsInYulAreHit
+     */
+    bareLetsInYulAreHit: createLeaf(
+      ["./compiler"],
+      (compiler) =>
+        compiler !== undefined && //if no compiler we'll assume the old way I guess??
+        semver.satisfies(compiler.version, ">=0.6.8", {
+          includePrerelease: true,
+        })
+    ),
+
+    /**
      * data.current.node
      */
     node: createLeaf([solidity.current.node], identity),
+
+    /**
+     * data.current.pointer
+     */
+    pointer: createLeaf([solidity.current.pointer], identity),
 
     /**
      * data.current.scope
@@ -777,33 +838,39 @@ const data = createSelectorTree({
      * warning: may return null or similar, even though SourceUnit is included
      * as fallback
      */
-    contract: createLeaf(["./node", "./scopes/inlined"], (node, scopes) => {
-      const types = ["ContractDefinition", "SourceUnit"];
-      //SourceUnit included as fallback
-      return findAncestorOfType(node, types, scopes);
-    }),
+    contract: createLeaf(
+      ["./node", "./scopes/inlined", "./pointer", "./root"],
+      (node, scopes, pointer, root) => {
+        const types = ["ContractDefinition", "SourceUnit"];
+        //SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes, pointer, root);
+      }
+    ),
 
     /*
      * data.current.function
      * may be modifier rather than function!
      */
-    function: createLeaf(["./node", "./scopes/inlined"], (node, scopes) => {
-      const types = [
-        "FunctionDefinition",
-        "ModifierDefinition",
-        "ContractDefinition",
-        "SourceUnit"
-      ];
-      //SourceUnit included as fallback
-      return findAncestorOfType(node, types, scopes);
-    }),
+    function: createLeaf(
+      ["./node", "./scopes/inlined", "./pointer", "./root"],
+      (node, scopes, pointer, root) => {
+        const types = [
+          "FunctionDefinition",
+          "ModifierDefinition",
+          "ContractDefinition",
+          "SourceUnit",
+        ];
+        //SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes, pointer, root);
+      }
+    ),
 
     /*
      * data.current.inModifier
      */
     inModifier: createLeaf(
       ["./function"],
-      node => node && node.nodeType === "ModifierDefinition"
+      (node) => node && node.nodeType === "ModifierDefinition"
     ),
 
     /*
@@ -811,7 +878,7 @@ const data = createSelectorTree({
      */
     inFunctionOrModifier: createLeaf(
       ["./function"],
-      node =>
+      (node) =>
         node &&
         (node.nodeType === "FunctionDefinition" ||
           node.nodeType === "ModifierDefinition")
@@ -835,17 +902,17 @@ const data = createSelectorTree({
      * address
      */
 
-    address: createLeaf([evm.current.call], call => call.storageAddress),
+    address: createLeaf([evm.current.call], (call) => call.storageAddress),
 
-    /*
+    /**
      * data.current.functionsByProgramCounter
      */
     functionsByProgramCounter: createLeaf(
       [solidity.current.functionsByProgramCounter],
-      functions => functions
+      (functions) => functions
     ),
 
-    /*
+    /**
      * data.current.context
      */
     context: createLeaf([evm.current.context], debuggerContextToDecoderContext),
@@ -870,7 +937,7 @@ const data = createSelectorTree({
         "./modifierArgumentIndex",
         "/next/node",
         "/next/modifierInvocation",
-        evm.current.step.isContextChange
+        evm.current.step.isContextChange,
       ],
       (node, invocation, index, next, nextInvocation, isContextChange) => {
         //ensure: current instruction is not a context change (because if it is
@@ -881,9 +948,13 @@ const data = createSelectorTree({
         if (
           isContextChange ||
           !node ||
+          node.id === undefined ||
           !next ||
+          next.id === undefined ||
           !invocation ||
-          !nextInvocation
+          invocation.id === undefined ||
+          !nextInvocation ||
+          nextInvocation.id === undefined
         ) {
           return false;
         }
@@ -936,7 +1007,7 @@ const data = createSelectorTree({
         const types = [
           "ModifierInvocation",
           "InheritanceSpecifier",
-          "SourceUnit"
+          "SourceUnit",
         ];
         //again, SourceUnit included as fallback
         return findAncestorOfType(node, types, scopes);
@@ -951,7 +1022,7 @@ const data = createSelectorTree({
     modifierArgumentIndex: createLeaf(
       ["./scopes", "./node", "./modifierInvocation"],
       (scopes, node, invocation) => {
-        if (invocation.nodeType === "SourceUnit") {
+        if (!invocation || invocation.nodeType === "SourceUnit") {
           return undefined;
         }
 
@@ -959,7 +1030,7 @@ const data = createSelectorTree({
         let invocationPointer = scopes[invocation.id].pointer;
 
         //slice the invocation pointer off the beginning
-        let difference = pointer.replace(invocationPointer, "");
+        let difference = pointer.slice(invocationPointer.length);
         debug("difference %s", difference);
         let rawIndex = difference.match(/^\/arguments\/(\d+)/);
         //note that that \d+ is greedy
@@ -995,31 +1066,52 @@ const data = createSelectorTree({
        * data.current.identifiers (selector)
        *
        * returns identifers and corresponding definition node ID or builtin name
-       * (object entries look like [name]: {astId: id} or like [name]: {builtin: name}
+       * (object entries look like [name]: {astRef: astRef}, [name]: {builtin: name})
        */
       _: createLeaf(
-        ["/current/scopes/inlined", "/current/node"],
+        [
+          "/current/scopes/inlined",
+          "/current/node",
+          "/current/pointer",
+          "/current/sourceId",
+        ],
 
-        (scopes, scope) => {
+        (scopes, scope, pointer, sourceId) => {
           let variables = {};
           if (scope !== undefined) {
-            let cur = scope.id;
+            let cur =
+              scope.id !== undefined ? scope.id : makePath(sourceId, pointer);
 
-            do {
+            while (cur !== null && scopes[cur]) {
               variables = Object.assign(
                 variables,
                 ...(scopes[cur].variables || [])
-                  .filter(v => v.name !== "") //exclude anonymous output params
-                  .filter(v => variables[v.name] == undefined)
-                  .map(v => ({ [v.name]: { astId: v.id } }))
+                  .filter((variable) => variable.name !== "") //exclude anonymous output params
+                  .filter((variable) => variables[variable.name] == undefined) //don't add shadowed vars
+                  .map((variable) => ({
+                    [variable.name]: { astRef: variable.astRef },
+                  }))
               );
               //NOTE: because these assignments are processed in order, that means
               //that if a base class and derived class have variables with the same
               //name, the derived version will be processed later and therefore overwrite --
               //which is exactly what we want, so yay
 
-              cur = scopes[cur].parentId;
-            } while (cur != null);
+              if (scopes[cur].definition.nodeType === "YulFunctionDefinition") {
+                //Yul functions make the outside invisible
+                break;
+              }
+
+              if (scopes[cur].parentId !== undefined) {
+                cur = scopes[cur].parentId; //may be null!
+                //(undefined means we don't know what's up,
+                //null means there's nothing)
+              } else {
+                //in this case, cur must be a source-and-pointer, so we'll step
+                //up that way (skipping over any arrays)
+                cur = cur.replace(/\/[^/]*(\/\d+)?$/, "");
+              }
+            }
           }
 
           let builtins = {
@@ -1027,8 +1119,17 @@ const data = createSelectorTree({
             tx: { builtin: "tx" },
             block: { builtin: "block" },
             this: { builtin: "this" },
-            now: { builtin: "now" }
+            now: { builtin: "now" },
           };
+
+          if (
+            scope &&
+            (scope.nodeType.startsWith("Yul") ||
+              scope.nodeType === "InlineAssembly")
+          ) {
+            //builtins aren't visible in Yul
+            return variables;
+          }
 
           return { ...variables, ...builtins };
         }
@@ -1047,11 +1148,12 @@ const data = createSelectorTree({
           (scopes, identifiers, thisDefinition) => {
             let variables = Object.assign(
               {},
-              ...Object.entries(identifiers).map(([identifier, { astId }]) => {
-                if (astId !== undefined) {
-                  //will be undefined for builtins
-                  let { definition } = scopes[astId];
+              ...Object.entries(identifiers).map(([identifier, variable]) => {
+                if (variable.astRef !== undefined) {
+                  let { definition } = scopes[variable.astRef];
                   return { [identifier]: definition };
+                  //there used to be separate code for Yul variables here,
+                  //but now that's handled in definitionToType
                 } else {
                   return {}; //skip over builtins; we'll handle those separately
                 }
@@ -1061,7 +1163,7 @@ const data = createSelectorTree({
               msg: MSG_DEFINITION,
               tx: TX_DEFINITION,
               block: BLOCK_DEFINITION,
-              now: NOW_DEFINITION
+              now: NOW_DEFINITION,
             };
             //only include this when it has a proper definition
             if (thisDefinition) {
@@ -1076,17 +1178,15 @@ const data = createSelectorTree({
          *
          * returns a spoofed definition for the this variable
          */
-        this: createLeaf(
-          ["/current/contract"],
-          contractNode =>
-            contractNode && contractNode.nodeType === "ContractDefinition"
-              ? spoofThisDefinition(
-                  contractNode.name,
-                  contractNode.id,
-                  contractNode.contractKind
-                )
-              : null
-        )
+        this: createLeaf(["/current/contract"], (contractNode) =>
+          contractNode && contractNode.nodeType === "ContractDefinition"
+            ? spoofThisDefinition(
+                contractNode.name,
+                contractNode.id,
+                contractNode.contractKind
+              )
+            : null
+        ),
       },
 
       /**
@@ -1102,7 +1202,7 @@ const data = createSelectorTree({
           "/current/functionDepth", //for pruning things too deep on stack
           "/current/modifierDepth", //when it's useful
           "/current/inModifier",
-          "/current/address" //for contract variables
+          "/current/address", //for contract variables
         ],
 
         (
@@ -1117,53 +1217,51 @@ const data = createSelectorTree({
           Object.assign(
             {},
             ...Object.entries(identifiers).map(
-              ([identifier, { astId, builtin }]) => {
+              ([identifier, { astRef, builtin }]) => {
                 let id;
+                debug("astRef: %o", astRef);
+                debug("builtin: %s", builtin);
 
                 //is this an ordinary variable or a builtin?
-                if (astId !== undefined) {
+                if (astRef !== undefined) {
                   //if not a builtin, first check if it's a contract var
-                  debug("assignments: %O", assignments);
-                  debug("compilation: %s", compilationId);
-                  let matchIds = (
-                    (
-                      assignments.byCompilationId[compilationId] || {
-                        byAstId: {}
-                      }
-                    ).byAstId[astId] || []
-                  ).filter(
-                    idHash => assignments.byId[idHash].address === address
+                  let compilationAssignments =
+                    (assignments.byCompilationId[compilationId] || {})
+                      .byAstRef || {};
+                  id = (compilationAssignments[astRef] || []).find(
+                    (idHash) => assignments.byId[idHash].address === address
                   );
-                  if (matchIds.length > 0) {
-                    id = matchIds[0]; //there should only be one!
-                  }
+                  debug("id after global: %s", id);
 
                   //if not contract, it's local, so identify by stackframe
                   if (id === undefined) {
                     //if we're in a modifier, include modifierDepth
                     if (inModifier) {
                       id = stableKeccak256({
-                        astId,
+                        astRef,
                         compilationId,
                         stackframe: currentDepth,
-                        modifierDepth
+                        modifierDepth,
                       });
                     } else {
                       id = stableKeccak256({
-                        astId,
+                        astRef,
                         compilationId,
-                        stackframe: currentDepth
+                        stackframe: currentDepth,
                       });
                     }
                   }
+                  debug("id after local: %s", id);
                 } else {
                   //otherwise, it's a builtin
                   //NOTE: for now we assume there is only one assignment per
                   //builtin, but this will change in the future
+                  debug("builtin: %s", builtin);
                   id = assignments.byBuiltin[builtin][0];
                 }
 
                 //if we still didn't find it, oh well
+                debug("id: %s", id);
 
                 let { ref } = assignments.byId[id] || {};
                 if (!ref) {
@@ -1171,13 +1269,52 @@ const data = createSelectorTree({
                 }
 
                 return {
-                  [identifier]: ref
+                  [identifier]: ref,
                 };
               }
             )
           )
-      )
-    }
+      ),
+    },
+
+    /**
+     * data.current.returnStatus
+     */
+    returnStatus: createLeaf(
+      [evm.current.step.returnStatus],
+      (status) => (status === null ? undefined : status) //convert null to undefined to be safe
+    ),
+
+    /**
+     * data.current.returnAllocation
+     */
+    returnAllocation: createLeaf(
+      [evm.current.call, "/current/context", "/info/allocations/calldata"],
+      (
+        { data: calldata },
+        { context, isConstructor },
+        { constructorAllocations, functionAllocations }
+      ) => {
+        if (isConstructor) {
+          //we're in a constructor call
+          let allocation = constructorAllocations[context];
+          if (!allocation) {
+            return null;
+          }
+          return allocation.output;
+        } else {
+          //usual case
+          let selector = calldata.slice(0, 2 + 4 * 2); //extract first 4 bytes of hex string
+          debug("selector: %s", selector);
+          debug("bySelector: %o", functionAllocations[context]);
+          let allocation = (functionAllocations[context] || {})[selector];
+          if (!allocation) {
+            return null;
+          }
+          return allocation.output;
+        }
+      }
+    ),
   },
 
   /**
@@ -1196,8 +1333,18 @@ const data = createSelectorTree({
       stack: createLeaf(
         [evm.next.state.stack],
 
-        words => (words || []).map(word => Codec.Conversion.toBytes(word))
-      )
+        (words) => (words || []).map((word) => Codec.Conversion.toBytes(word))
+      ),
+
+      /**
+       * data.next.state.returndata
+       * NOTE: this is only for use by returnValue(); this is *not*
+       * an accurate reflection of the current contents of returndata!
+       * we don't track that at the moment
+       */
+      returndata: createLeaf([evm.current.step.returnValue], (data) =>
+        Codec.Conversion.toBytes(data)
+      ),
     },
 
     //HACK WARNING
@@ -1210,6 +1357,11 @@ const data = createSelectorTree({
     node: createLeaf([solidity.next.node], identity),
 
     /**
+     * data.next.pointer
+     */
+    pointer: createLeaf([solidity.next.pointer], identity),
+
+    /**
      * data.next.modifierInvocation
      * Note: yes, I'm just repeating the code from data.current here but with
      * invalid added
@@ -1220,13 +1372,13 @@ const data = createSelectorTree({
         //don't attempt this at a context change!
         //(also don't attempt this if we can't find the node for whatever
         //reason)
-        if (invalid || !node) {
+        if (invalid) {
           return undefined;
         }
         const types = [
           "ModifierInvocation",
           "InheritanceSpecifier",
-          "SourceUnit"
+          "SourceUnit",
         ];
         //again, SourceUnit included as fallback
         return findAncestorOfType(node, types, scopes);
@@ -1240,7 +1392,7 @@ const data = createSelectorTree({
       [
         "./modifierInvocation",
         "/current/scopes/inlined",
-        evm.current.step.isContextChange
+        evm.current.step.isContextChange,
       ],
       (invocation, scopes, invalid) => {
         if (invalid || !invocation || invocation.nodeType === "SourceUnit") {
@@ -1249,7 +1401,7 @@ const data = createSelectorTree({
 
         return modifierForInvocation(invocation, scopes);
       }
-    )
+    ),
     //END HACK WARNING
   },
 
@@ -1271,11 +1423,38 @@ const data = createSelectorTree({
       stack: createLeaf(
         [solidity.current.nextMapped],
 
-        step =>
-          ((step || {}).stack || []).map(word => Codec.Conversion.toBytes(word))
-      )
-    }
-  }
+        (step) =>
+          ((step || {}).stack || []).map((word) =>
+            Codec.Conversion.toBytes(word)
+          )
+      ),
+    },
+  },
+
+  /**
+   * data.nextOfSameDepth
+   */
+  nextOfSameDepth: {
+    /**
+     * data.nextOfSameDepth.state
+     * Yes, I'm just repeating the code for data.current.state.stack here but
+     * with an extra guard... *still* not worth the trouble to factor out
+     * HOWEVER, this one also returns null if there is no nextOfSameDepth
+     */
+    state: {
+      /**
+       * data.nextOfSameDepth.state.stack
+       */
+      stack: createLeaf(
+        [trace.nextOfSameDepth],
+
+        (step) =>
+          step
+            ? (step.stack || []).map((word) => Codec.Conversion.toBytes(word))
+            : null
+      ),
+    },
+  },
 });
 
 export default data;

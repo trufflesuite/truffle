@@ -46,6 +46,28 @@ export type ReturndataDecoding =
 export type DecodingMode = "full" | "abi";
 
 /**
+ * Used for representing decoded state variables.
+ * @category Output
+ */
+export interface StateVariable {
+  /**
+   * The name of the variable.  Note that due to inheritance, this may not be unique
+   * among the contract's state variables.
+   */
+  name: string;
+  /**
+   * The class of the contract that defined the variable, as a Format.Types.ContractType.
+   * Note that this class may differ from that of the contract being decoded, due
+   * to inheritance.
+   */
+  class: Format.Types.ContractType;
+  /**
+   * The decoded value of the variable.  Note this is a Format.Values.Result, so it may be an error.
+   */
+  value: Format.Values.Result;
+}
+
+/**
  * This type represents a transaction decoding for an ordinary function call to a known class;
  * not a constructor call, not a fallback call.
  * @Category Output
@@ -399,6 +421,11 @@ export interface BytecodeDecoding {
    */
   class: Format.Types.ContractType;
   /**
+   * Decodings for any immutable state variables the created contract contains.
+   * Omitted in ABI mode.
+   */
+  immutables?: StateVariable[];
+  /**
    * The bytecode of the contract that was created.
    */
   bytecode: string;
@@ -503,4 +530,5 @@ export interface DecoderOptions {
   allowRetry?: boolean; //turns on error-throwing for retry-allowed errors only
   abiPointerBase?: number; //what relative pointers should be considered relative to
   memoryVisited?: number[]; //for circularity detection
+  lengthOverride?: BN; //if present, causes the ABI decoder to use this length instead of reading it from the data
 }

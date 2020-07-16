@@ -12,7 +12,7 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
   Web3 = global.Web3;
 }
 
-(function(module) {
+(function (module) {
   // Accepts a contract object created with web3.eth.Contract or an address.
   function Contract(contract) {
     var instance = this;
@@ -33,10 +33,12 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
     instance.contract = contract;
 
     //for stacktracing in tests
-    instance.debugger = constructor.debugger;
+    if (constructor.debugger) {
+      instance.debugger = constructor.debugger;
+    }
 
     // User defined methods, overloaded methods, events
-    instance.abi.forEach(function(item) {
+    instance.abi.forEach(function (item) {
       switch (item.type) {
         case "function":
           var isConstant =
@@ -44,7 +46,7 @@ if (typeof Web3 === "object" && Object.keys(Web3).length === 0) {
 
           var signature = webUtils._jsonInterfaceMethodToString(item);
 
-          var method = function(constant, web3Method) {
+          var method = function (constant, web3Method) {
             var fn;
 
             constant

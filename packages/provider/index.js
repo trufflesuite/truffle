@@ -5,35 +5,35 @@ const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
 
 module.exports = {
-  wrap: function(provider, options) {
+  wrap: function (provider, options) {
     return wrapper.wrap(provider, options);
   },
 
-  create: function(options) {
+  create: function (options) {
     const provider = this.getProvider(options);
     return this.wrap(provider, options);
   },
 
-  getProvider: function(options) {
+  getProvider: function (options) {
     let provider;
     if (options.provider && typeof options.provider === "function") {
       provider = options.provider();
     } else if (options.provider) {
       provider = options.provider;
-    } else if (options.websockets) {
+    } else if (options.websockets || /^wss?:\/\//.test(options.url)) {
       provider = new Web3.providers.WebsocketProvider(
-        "ws://" + options.host + ":" + options.port
+        options.url || "ws://" + options.host + ":" + options.port
       );
     } else {
       provider = new Web3.providers.HttpProvider(
-        `http://${options.host}:${options.port}`,
+        options.url || `http://${options.host}:${options.port}`,
         { keepAlive: false }
       );
     }
     return provider;
   },
 
-  testConnection: function(options) {
+  testConnection: function (options) {
     let networkCheckTimeout, networkType;
     const { networks, network } = options;
     if (networks && networks[network]) {
@@ -55,20 +55,25 @@ module.exports = {
           "networks[networkName].networkCheckTimeout property to do this.";
         throw new Error(errorMessage);
       }, networkCheckTimeout);
-      interfaceAdapter
-        .getBlockNumber()
-        .then(() => {
-          clearTimeout(noResponseFromNetworkCall);
-          resolve(true);
-        })
-        .catch(error => {
-          console.log(
-            "> Something went wrong while attempting to connect " +
-              "to the network. Check your network configuration."
-          );
-          clearTimeout(noResponseFromNetworkCall);
-          reject(error);
-        });
+
+      const networkCheck = setInterval(() => {
+        interfaceAdapter
+          .getBlockNumber()
+          .then(() => {
+            clearTimeout(noResponseFromNetworkCall);
+            clearInterval(networkCheck);
+            resolve(true);
+          })
+          .catch((error) => {
+            console.log(
+              "> Something went wrong while attempting to connect " +
+                "to the network. Check your network configuration."
+            );
+            clearTimeout(noResponseFromNetworkCall);
+            clearInterval(networkCheck);
+            reject(error);
+          });
+      });
     });
-  }
+  },
 };

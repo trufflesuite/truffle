@@ -23,7 +23,7 @@ function* tickSaga() {
 }
 
 function* functionDepthSaga() {
-  if (yield select(solidity.current.willFail)) {
+  if (yield select(solidity.current.willReturn)) {
     //we do this case first so we can be sure we're not failing in any of the
     //other cases below!
     yield put(actions.externalReturn());
@@ -31,7 +31,11 @@ function* functionDepthSaga() {
     let jumpDirection = yield select(solidity.current.jumpDirection);
     debug("checking guard");
     let guard = yield select(solidity.current.nextFrameIsPhantom);
-    if (jumpDirection === "i" && guard) {
+    let nextSource = yield select(solidity.next.source);
+    if (jumpDirection === "i" && guard && nextSource.id !== undefined) {
+      //note: currently unmapped source will have id undefined, rather than
+      //id -1, in our internal representation.  Might want to change this
+      //later.
       yield put(actions.clearPhantomGuard());
     } else {
       yield put(actions.jump(jumpDirection));
@@ -41,8 +45,6 @@ function* functionDepthSaga() {
     debug("checking if guard needed");
     let guard = yield select(solidity.current.callRequiresPhantomFrame);
     yield put(actions.externalCall(guard));
-  } else if (yield select(solidity.current.willReturn)) {
-    yield put(actions.externalReturn());
   }
 }
 

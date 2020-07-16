@@ -4,13 +4,12 @@ const debug = debugModule("debugger:evm:reducers");
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
-import { keccak256 } from "lib/helpers";
 import * as Codec from "@truffle/codec";
 
 import BN from "bn.js";
 
 const DEFAULT_CONTEXTS = {
-  byContext: {}
+  byContext: {},
 };
 
 function contexts(state = DEFAULT_CONTEXTS, action) {
@@ -20,6 +19,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
      */
     case actions.ADD_CONTEXT:
       const {
+        context,
         contractName,
         binary,
         sourceMap,
@@ -30,18 +30,17 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
         abi,
         contractId,
         contractKind,
-        isConstructor
+        isConstructor,
+        externalSolidity,
       } = action;
       debug("action %O", action);
-      //NOTE: we take hash as *string*, not as bytes, because the binary may
-      //contain link references!
-      const context = keccak256({ type: "string", value: binary });
 
       return {
         ...state,
         byContext: {
           ...state.byContext,
           [context]: {
+            context,
             contractName,
             context,
             binary,
@@ -54,14 +53,10 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
             contractId,
             contractKind,
             isConstructor,
-            payable: Codec.AbiData.Utils.abiHasPayableFallback(abi)
-          }
-        }
-      };
-
-    case actions.NORMALIZE_CONTEXTS:
-      return {
-        byContext: Codec.Contexts.Utils.normalizeContexts(state.byContext)
+            externalSolidity,
+            payable: Codec.AbiData.Utils.abiHasPayableFallback(abi),
+          },
+        },
       };
 
     /*
@@ -73,12 +68,12 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
 }
 
 const info = combineReducers({
-  contexts
+  contexts,
 });
 
 const DEFAULT_TX = {
   gasprice: new BN(0),
-  origin: Codec.Evm.Utils.ZERO_ADDRESS
+  origin: Codec.Evm.Utils.ZERO_ADDRESS,
 };
 
 function tx(state = DEFAULT_TX, action) {
@@ -98,7 +93,7 @@ const DEFAULT_BLOCK = {
   difficulty: new BN(0),
   gaslimit: new BN(0),
   number: new BN(0),
-  timestamp: new BN(0)
+  timestamp: new BN(0),
 };
 
 function block(state = DEFAULT_BLOCK, action) {
@@ -114,7 +109,7 @@ function block(state = DEFAULT_BLOCK, action) {
 
 const globals = combineReducers({
   tx,
-  block
+  block,
 });
 
 function status(state = null, action) {
@@ -150,7 +145,7 @@ function initialCall(state = null, action) {
 const transaction = combineReducers({
   globals,
   status,
-  initialCall
+  initialCall,
 });
 
 function callstack(state = [], action) {
@@ -186,9 +181,9 @@ function callstack(state = [], action) {
 
 const DEFAULT_CODEX = [
   {
-    accounts: {}
+    accounts: {},
     //will be more here in the future!
-  }
+  },
 ];
 
 function codex(state = DEFAULT_CODEX, action) {
@@ -204,10 +199,10 @@ function codex(state = DEFAULT_CODEX, action) {
         ...frame.accounts[address], //may be undefined
         storage: {
           ...(frame.accounts[address] || {}).storage, //may be undefined
-          [slot]: value
-        }
-      }
-    }
+          [slot]: value,
+        },
+      },
+    },
   });
   //(note that {...undefined} just expands to {} and is OK)
 
@@ -220,17 +215,17 @@ function codex(state = DEFAULT_CODEX, action) {
         [address]: {
           ...existingPage,
           code: code,
-          context: context
-        }
-      }
+          context: context,
+        },
+      },
     };
   };
 
   //later: will add "force" parameter
-  const safePop = array => (array.length > 2 ? array.slice(0, -1) : array);
+  const safePop = (array) => (array.length > 2 ? array.slice(0, -1) : array);
 
   //later: will add "force" parameter
-  const safeSave = array =>
+  const safeSave = (array) =>
     array.length > 2
       ? array.slice(0, -2).concat([array[array.length - 1]])
       : array;
@@ -269,10 +264,10 @@ function codex(state = DEFAULT_CODEX, action) {
           [action.storageAddress]: {
             storage: {},
             code: "0x",
-            context: null
+            context: null,
             //there will be more here in the future!
-          }
-        }
+          },
+        },
       };
       return newState;
 
@@ -318,7 +313,7 @@ function codex(state = DEFAULT_CODEX, action) {
         //we're loading a value from a previous transaction!  That's not a
         //value that will get reverted if this call fails, so update *every*
         //stackframe
-        return state.map(frame =>
+        return state.map((frame) =>
           updateFrameStorage(frame, address, slot, value)
         );
       }
@@ -368,7 +363,7 @@ function codex(state = DEFAULT_CODEX, action) {
       //(this is a little HACKy, but it *should* be fine)
       debug("adding instance");
       const { address, binary, context } = action;
-      return state.map(frame =>
+      return state.map((frame) =>
         updateFrameCode(frame, address, binary, context)
       );
     }
@@ -380,13 +375,13 @@ function codex(state = DEFAULT_CODEX, action) {
 
 const proc = combineReducers({
   callstack,
-  codex
+  codex,
 });
 
 const reducer = combineReducers({
   info,
   transaction,
-  proc
+  proc,
 });
 
 export default reducer;

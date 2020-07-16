@@ -19,14 +19,16 @@ describe("migrate with [ @quorum ] interface", () => {
     config.network = "development";
     config.logger = logger;
     config.mocha = {
-      reporter: new Reporter(logger)
+      reporter: new Reporter(logger),
     };
 
     const provider = new Web3.providers.HttpProvider("http://localhost:22000", {
-      keepAlive: false
+      keepAlive: false,
     });
     web3 = new Web3(provider);
     networkId = await web3.eth.net.getId();
+    const accounts = await web3.eth.getAccounts();
+    await web3.eth.personal.unlockAccount(accounts[0], "", 8000);
   });
 
   it("runs migrations (sync & async/await)", async () => {
@@ -60,5 +62,5 @@ describe("migrate with [ @quorum ] interface", () => {
     assert(output.includes(network.address));
 
     console.log(output);
-  }).timeout(70000);
+  }).timeout(90000);
 }).timeout(10000);

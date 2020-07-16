@@ -6,6 +6,7 @@ const safeEval = require("safe-eval");
 
 const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
+const colors = require("colors");
 
 const selectors = require("@truffle/debugger").selectors;
 const {
@@ -15,14 +16,14 @@ const {
   controller,
   data,
   evm,
-  stacktrace
+  stacktrace,
 } = selectors;
 
 class DebugPrinter {
   constructor(config, session) {
     this.config = config;
     this.session = session;
-    this.select = expr => {
+    this.select = (expr) => {
       let selector, result;
 
       try {
@@ -63,6 +64,7 @@ class DebugPrinter {
 
   printSessionLoaded() {
     this.printAddressesAffected();
+    this.warnIfNoSteps();
     this.printHelp();
     debug("Help printed");
     this.printFile();
@@ -86,9 +88,19 @@ class DebugPrinter {
     );
   }
 
-  printHelp() {
+  warnIfNoSteps() {
+    if (this.session.view(trace.steps).length === 0) {
+      this.config.logger.log(
+        `${colors.bold(
+          "Warning:"
+        )} this transaction has no trace steps. This may happen if you are attempting to debug a transaction sent to an externally-owned account, or if the node you are connecting to failed to produce a trace for some reason. Please check your configuration and try again.`
+      );
+    }
+  }
+
+  printHelp(lastCommand) {
     this.config.logger.log("");
-    this.config.logger.log(DebugUtils.formatHelp());
+    this.config.logger.log(DebugUtils.formatHelp(lastCommand));
   }
 
   printFile() {
@@ -126,7 +138,7 @@ class DebugPrinter {
 
     // We were splitting on OS.EOL, but it turns out on Windows,
     // in some environments (perhaps?) line breaks are still denoted by just \n
-    const splitLines = str => str.split(/\r?\n/g);
+    const splitLines = (str) => str.split(/\r?\n/g);
 
     const lines = splitLines(source);
     const colorizedLines = splitLines(colorizedSource);
@@ -200,9 +212,9 @@ class DebugPrinter {
     }
 
     this.config.logger.log("");
-    expressions.forEach(function(expression) {
+    for (const expression of expressions) {
       this.config.logger.log("  " + expression);
-    });
+    }
   }
 
   printBreakpoints() {
@@ -213,9 +225,9 @@ class DebugPrinter {
         [compilationId]: Object.assign(
           {},
           ...Object.values(compilation.byId).map(({ id, sourcePath }) => ({
-            [id]: path.basename(sourcePath)
+            [id]: path.basename(sourcePath),
           }))
-        )
+        ),
       }))
     );
     let breakpoints = this.session.view(controller.breakpoints);
@@ -237,15 +249,14 @@ class DebugPrinter {
     }
   }
 
-  printRevertMessage() {
+  //this doesn't really *need* to be async as we could use codec directly, but, eh
+  async printRevertMessage() {
     this.config.logger.log(
       DebugUtils.truffleColors.red("Transaction halted with a RUNTIME ERROR.")
     );
     this.config.logger.log("");
-    let rawRevertMessage = this.session.view(evm.current.step.returnValue);
-    let revertDecodings = Codec.decodeRevert(
-      Codec.Conversion.toBytes(rawRevertMessage)
-    );
+    const revertDecodings = await this.session.returnValue(); //in this context we know it's a revert
+    debug("revertDecodings: %o", revertDecodings);
     switch (revertDecodings.length) {
       case 0:
         this.config.logger.log(
@@ -253,7 +264,7 @@ class DebugPrinter {
         );
         break;
       case 1:
-        let revertDecoding = revertDecodings[0];
+        const revertDecoding = revertDecodings[0];
         switch (revertDecoding.kind) {
           case "failure":
             this.config.logger.log(
@@ -261,7 +272,7 @@ class DebugPrinter {
             );
             break;
           case "revert":
-            let revertStringInfo = revertDecoding.arguments[0].value.value;
+            const revertStringInfo = revertDecoding.arguments[0].value.value;
             let revertString;
             switch (revertStringInfo.kind) {
               case "valid":
@@ -277,7 +288,9 @@ class DebugPrinter {
                 ).toString();
                 this.config.logger.log(`Revert message: ${revertString}`);
                 this.config.logger.log(
-                  "Warning: This message contained invalid UTF-8."
+                  `${colors.bold(
+                    "Warning:"
+                  )} This message contained invalid UTF-8.`
                 );
                 break;
             }
@@ -294,6 +307,131 @@ class DebugPrinter {
     this.config.logger.log(
       "Please inspect your transaction parameters and contract code to determine the meaning of this error."
     );
+  }
+
+  async printReturnValue() {
+    //note: when printing revert messages, this will do so in a somewhat
+    //different way than printRevertMessage does
+    const allocationFound = Boolean(
+      this.session.view(data.current.returnAllocation)
+    );
+    const decodings = await this.session.returnValue();
+    debug("decodings: %o", decodings);
+    if (!allocationFound && decodings.length === 0) {
+      //case 1: no allocation found, decoding failed
+      this.config.logger.log("");
+      this.config.logger.log(
+        "A value was returned but it could not be decoded."
+      );
+      this.config.logger.log("");
+    } else if (!allocationFound && decodings[0].status === true) {
+      //case 2: no allocation found, decoding succeeded, but not a revert
+      //(i.e. it's a presumed selfdestruct; no value was returned)
+      //do nothing
+    } else if (allocationFound && decodings.length === 0) {
+      //case 3: allocation found but decoding failed
+      this.config.logger.log("");
+      this.config.logger.log("The return value could not be decoded.");
+      this.config.logger.log("");
+    } else if (allocationFound && decodings[0].kind === "selfdestruct") {
+      //case 4: allocation found, apparent self-destruct (note due to the use of [0] this
+      //won't occur if no return value was expected, as return takes priority over selfdestruct)
+      //Oops -- in an actual selfdestruct, we won't have the code! >_>
+      //(Not until reconstruct mode exists...) Oh well, leaving this in
+      this.config.logger.log("");
+      this.config.logger.log(
+        "No value was returned even though one was expected.  This may indicate a self-destruct."
+      );
+      this.config.logger.log("");
+    } else if (decodings[0].kind === "failure") {
+      //case 5: revert (no message)
+      this.config.logger.log("");
+      this.config.logger.log("There was no revert message.");
+      this.config.logger.log("");
+    } else if (decodings[0].kind === "unknownbytecode") {
+      //case 6: unknown bytecode
+      this.config.logger.log("");
+      this.config.logger.log(
+        "Bytecode was returned, but it could not be identified."
+      );
+      this.config.logger.log("");
+    } else if (
+      decodings[0].kind === "return" &&
+      decodings[0].arguments.length === 0
+    ) {
+      //case 7: return values but with no content
+      //do nothing
+    } else if (decodings[0].kind === "bytecode") {
+      //case 8: known bytecode
+      this.config.logger.log("");
+      const decoding = decodings[0];
+      const contractKind = decoding.contractKind || "contract";
+      if (decoding.address !== undefined) {
+        this.config.logger.log(
+          `Returned bytecode for a ${contractKind} ${decoding.class.typeName} at ${decoding.address}.`
+        );
+      } else {
+        this.config.logger.log(
+          `Returned bytecode for a ${contractKind} ${decoding.class.typeName}.`
+        );
+      }
+      if (decoding.immutables && decoding.immutables.length > 0) {
+        this.config.logger.log("Immutable values:");
+        const prefixes = decoding.immutables.map(
+          ({ name, class: { typeName } }) => `${typeName}.${name}: `
+        );
+        const maxLength = Math.max(...prefixes.map((prefix) => prefix.length));
+        const paddedPrefixes = prefixes.map((prefix) =>
+          prefix.padStart(maxLength)
+        );
+        for (let index = 0; index < decoding.immutables.length; index++) {
+          const { value } = decoding.immutables[index];
+          const prefix = paddedPrefixes[index];
+          const formatted = DebugUtils.formatValue(value, maxLength);
+          this.config.logger.log(prefix + formatted);
+        }
+      }
+      this.config.logger.log("");
+    } else if (decodings[0].kind === "revert") {
+      //case 9: revert (with message)
+      this.config.logger.log("");
+      const prefix = "Revert string: ";
+      const value = decodings[0].arguments[0].value;
+      const formatted = DebugUtils.formatValue(value, prefix.length);
+      this.config.logger.log(prefix + formatted);
+      this.config.logger.log("");
+    } else if (
+      decodings[0].kind === "return" &&
+      decodings[0].arguments.length > 0
+    ) {
+      //case 10: actual return values to print!
+      this.config.logger.log("");
+      const values = decodings[0].arguments;
+      if (values.length === 1 && !values[0].name) {
+        //case 10a: if there's only one value and it's unnamed
+        const value = values[0].value;
+        const prefix = "Returned value: ";
+        const formatted = DebugUtils.formatValue(value, prefix.length);
+        this.config.logger.log(prefix + formatted);
+      } else {
+        //case 10b: otherwise
+        this.config.logger.log("Returned values:");
+        const prefixes = values.map(({ name }, index) =>
+          name ? `${name}: ` : `Component #${index + 1}: `
+        );
+        const maxLength = Math.max(...prefixes.map((prefix) => prefix.length));
+        const paddedPrefixes = prefixes.map((prefix) =>
+          prefix.padStart(maxLength)
+        );
+        for (let index = 0; index < values.length; index++) {
+          const { value } = values[index];
+          const prefix = paddedPrefixes[index];
+          const formatted = DebugUtils.formatValue(value, maxLength);
+          this.config.logger.log(prefix + formatted);
+        }
+      }
+      this.config.logger.log("");
+    }
   }
 
   printStacktrace(final) {
@@ -344,7 +482,7 @@ class DebugPrinter {
 
     this.config.logger.log();
 
-    variableKeys.forEach(name => {
+    variableKeys.forEach((name) => {
       let paddedName = name + ":";
 
       while (paddedName.length <= longestNameLength) {
@@ -376,7 +514,7 @@ class DebugPrinter {
     let variables = await this.session.variables();
 
     // converts all !<...> expressions to JS-valid selector requests
-    const preprocessSelectors = expr => {
+    const preprocessSelectors = (expr) => {
       const regex = /!<([^>]+)>/g;
       const select = "$"; // expect repl context to have this func
       const replacer = (_, selector) => `${select}("${selector}")`;
@@ -467,5 +605,5 @@ class DebugPrinter {
 }
 
 module.exports = {
-  DebugPrinter
+  DebugPrinter,
 };

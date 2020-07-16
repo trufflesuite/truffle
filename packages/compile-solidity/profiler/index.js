@@ -9,7 +9,7 @@ const semver = require("semver");
 const debug = require("debug")("compile:profiler");
 const { readAndParseArtifactFiles } = require("./readAndParseArtifactFiles");
 const {
-  minimumUpdatedTimePerSource
+  minimumUpdatedTimePerSource,
 } = require("./minimumUpdatedTimePerSource");
 const { findUpdatedFiles } = require("./findUpdatedFiles");
 const { isExplicitlyRelative } = require("./isExplicitlyRelative");
@@ -71,10 +71,10 @@ module.exports = {
     const compilationTargets = [];
     // Fetch the whole contract set
     findContracts(options.contracts_directory)
-      .then(sourcePaths => {
+      .then((sourcePaths) => {
         allPaths = sourcePaths;
         // Solidity test files might have been injected. Include them in the known set.
-        options.paths.forEach(_path => {
+        options.paths.forEach((_path) => {
           if (!allPaths.includes(_path)) {
             allPaths.push(_path);
           }
@@ -92,7 +92,7 @@ module.exports = {
         const supplierOptions = {
           parser: options.parser,
           events: options.events,
-          solcConfig: options.compilers.solc
+          solcConfig: options.compilers.solc,
         };
         const supplier = new CompilerSupplier(supplierOptions);
         return supplier.load();
@@ -107,7 +107,7 @@ module.exports = {
         );
         // Generate hash of all sources including external packages - passed to solc inputs.
         const resolvedPaths = Object.keys(resolved);
-        resolvedPaths.forEach(file => {
+        resolvedPaths.forEach((file) => {
           // Don't throw vyper files into solc!
           if (path.extname(file) !== ".vy")
             allSources[file] = resolved[file].body;
@@ -121,7 +121,7 @@ module.exports = {
         }
 
         // Seed compilationTargets with known updates
-        updates.forEach(update => compilationTargets.push(update));
+        updates.forEach((update) => compilationTargets.push(update));
 
         // While there are updated files in the queue, we take each one
         // and search the entire file corpus to find any sources that import it.
@@ -164,7 +164,7 @@ module.exports = {
 
         callback(null, allSources, compilationTargets);
       })
-      .catch(error => {
+      .catch((error) => {
         callback(error);
       });
   },
@@ -195,19 +195,16 @@ module.exports = {
         } else {
           file = candidate;
         }
-        const promise = new Promise((accept, reject) => {
-          resolver.resolve(file, parent, (err, body, absolutePath, source) => {
-            err ? reject(err) : accept({ file: absolutePath, body, source });
-          });
-        });
-        promises.push(promise);
+        promises.push(resolver.resolve(file, parent));
       }
 
       // Resolve everything known and add it to the map, then inspect each file's
       // imports and add those to the list of paths to resolve if we don't have it.
-      return Promise.all(promises).then(async results => {
+      return Promise.all(promises).then(async (results) => {
         // Generate the sources mapping
-        results.forEach(item => (mapping[item.file] = Object.assign({}, item)));
+        results.forEach(
+          (item) => (mapping[item.filePath] = Object.assign({}, item))
+        );
 
         // Queue unknown imports for the next resolver cycle
         while (results.length) {
@@ -216,7 +213,12 @@ module.exports = {
           // Inspect the imports
           let imports;
           try {
-            imports = await getImports(result.file, result, solc, parserSolc);
+            imports = await getImports(
+              result.filePath,
+              result,
+              solc,
+              parserSolc
+            );
           } catch (err) {
             if (err.message.includes("requires different compiler version")) {
               const contractSolcPragma = err.message.match(
@@ -236,9 +238,9 @@ module.exports = {
 
           // Detect unknown external packages / add them to the list of files to resolve
           // Keep track of location of this import because we need to report that.
-          imports.forEach(item => {
+          imports.forEach((item) => {
             if (!mapping[item])
-              allPaths.push({ file: item, parent: result.file });
+              allPaths.push({ file: item, parent: result.filePath });
           });
         }
       });
@@ -259,7 +261,7 @@ module.exports = {
   },
 
   convert_to_absolute_paths(paths, base) {
-    return paths.map(p => {
+    return paths.map((p) => {
       // If it's anabsolute paths, leave it alone.
       if (path.isAbsolute(p)) return p;
 
@@ -269,5 +271,5 @@ module.exports = {
       // Path must be explicitly releative, therefore make it absolute.
       return path.resolve(path.join(base, p));
     });
-  }
+  },
 };

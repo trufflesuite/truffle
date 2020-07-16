@@ -12,14 +12,13 @@ const getImports = (file, { body, source }, solc, parserSolc) => {
   else imports = Parser.parseImports(body, solc);
 
   // Convert explicitly relative dependencies of modules back into module paths.
-  return imports.map(
-    dependencyPath =>
-      isExplicitlyRelative(dependencyPath)
-        ? source.resolve_dependency_path(file, dependencyPath)
-        : dependencyPath
+  return imports.map((dependencyPath) =>
+    isExplicitlyRelative(dependencyPath)
+      ? source.resolveDependencyPath(file, dependencyPath)
+      : dependencyPath
   );
 };
 
 module.exports = {
-  getImports
+  getImports,
 };

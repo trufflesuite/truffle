@@ -236,7 +236,7 @@ for technical reasons we can't guarantee we can determine.
 
 @category Data
    */
-  Format
+  Format,
 };
 
 //now... various low-level stuff we want to export!
@@ -246,7 +246,7 @@ export {
   decodeEvent,
   decodeCalldata,
   decodeReturndata,
-  decodeRevert
+  decodeRevert,
 } from "./core";
 export { DecodingError, StopDecodingError } from "./errors";
 
@@ -271,9 +271,10 @@ export {
   RevertMessageDecoding,
   EmptyFailureDecoding,
   AbiArgument,
+  StateVariable,
   DecoderRequest,
   StorageRequest,
-  CodeRequest
+  CodeRequest,
 } from "./types";
 export * from "./common";
 
@@ -296,7 +297,7 @@ export {
    * Contains functions for dealing with raw bytestrings
    * @protected
    */
-  Bytes
+  Bytes,
   //Category: Common data location
   //[NOT making this an actual category for now
   //since there's nothing public in it]
@@ -319,7 +320,7 @@ export {
    * @protected
    * @category ABI data location
    */
-  Topic
+  Topic,
 };
 
 // data locations - solidity
@@ -368,7 +369,7 @@ export {
    *
    * @category Solidity data location
    */
-  AstConstant
+  AstConstant,
 };
 
 import * as Ast from "./ast";

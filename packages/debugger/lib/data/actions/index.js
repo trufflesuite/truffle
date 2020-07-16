@@ -6,16 +6,18 @@ export function scope(id, pointer, parentId, sourceId, compilationId) {
     pointer,
     parentId,
     sourceId,
-    compilationId
+    compilationId,
   };
 }
 
 export const DECLARE = "DATA_DECLARE_VARIABLE";
-export function declare(node, compilationId) {
+export function declare(name, astRef, scopeAstRef, compilationId) {
   return {
     type: DECLARE,
-    node,
-    compilationId
+    name,
+    astRef,
+    scopeAstRef,
+    compilationId,
   };
 }
 
@@ -23,7 +25,7 @@ export const ASSIGN = "DATA_ASSIGN";
 export function assign(assignments) {
   return {
     type: ASSIGN,
-    assignments
+    assignments,
   };
 }
 
@@ -41,7 +43,7 @@ export function mapPathAndAssign(
     slot,
     assignments,
     typeIdentifier,
-    parentType
+    parentType,
   };
 }
 
@@ -55,17 +57,18 @@ export function defineType(node, compilationId) {
   return {
     type: DEFINE_TYPE,
     node,
-    compilationId
+    compilationId,
   };
 }
 
 export const ALLOCATE = "DATA_ALLOCATE";
-export function allocate(storage, memory, abi, state) {
+export function allocate(storage, memory, abi, calldata, state) {
   return {
     type: ALLOCATE,
     storage,
     memory,
     abi,
-    state
+    calldata,
+    state,
   };
 }

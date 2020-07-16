@@ -15,7 +15,6 @@ import {
   isDelegateCallMnemonicBroad,
   isDelegateCallMnemonicStrict,
   isStaticCallMnemonic,
-  isNormalHaltingMnemonic
 } from "lib/helpers";
 
 const ZERO_WORD = "00".repeat(Codec.Evm.Utils.WORD_SIZE);
@@ -47,13 +46,13 @@ function determineFullContext(
     let context = contexts[contextId];
     return {
       ...context,
-      binary
+      binary,
     };
   } else {
     //otherwise we'll construct something default
     return {
       binary,
-      isConstructor
+      isConstructor,
     };
   }
 }
@@ -69,7 +68,7 @@ function createStepSelectors(step, state = null) {
      *
      * trace step info related to operation
      */
-    trace: createLeaf([step], step => {
+    trace: createLeaf([step], (step) => {
       if (!step) {
         return null;
       }
@@ -80,28 +79,30 @@ function createStepSelectors(step, state = null) {
     /**
      * .programCounter
      */
-    programCounter: createLeaf(["./trace"], step => (step ? step.pc : null)),
+    programCounter: createLeaf(["./trace"], (step) => (step ? step.pc : null)),
 
     /**
      * .isCall
      *
      * whether the opcode will switch to another calling context
      */
-    isCall: createLeaf(["./trace"], step => isCallMnemonic(step.op)),
+    isCall: createLeaf(["./trace"], (step) => isCallMnemonic(step.op)),
 
     /**
      * .isShortCall
      *
      * for calls that only take 6 arguments instead of 7
      */
-    isShortCall: createLeaf(["./trace"], step => isShortCallMnemonic(step.op)),
+    isShortCall: createLeaf(["./trace"], (step) =>
+      isShortCallMnemonic(step.op)
+    ),
 
     /**
      * .isDelegateCallBroad
      *
      * for calls that delegate storage
      */
-    isDelegateCallBroad: createLeaf(["./trace"], step =>
+    isDelegateCallBroad: createLeaf(["./trace"], (step) =>
       isDelegateCallMnemonicBroad(step.op)
     ),
 
@@ -110,14 +111,14 @@ function createStepSelectors(step, state = null) {
      *
      * for calls that additionally delegate sender and value
      */
-    isDelegateCallStrict: createLeaf(["./trace"], step =>
+    isDelegateCallStrict: createLeaf(["./trace"], (step) =>
       isDelegateCallMnemonicStrict(step.op)
     ),
 
     /**
      * .isStaticCall
      */
-    isStaticCall: createLeaf(["./trace"], step =>
+    isStaticCall: createLeaf(["./trace"], (step) =>
       isStaticCallMnemonic(step.op)
     ),
 
@@ -125,34 +126,22 @@ function createStepSelectors(step, state = null) {
      * .isCreate
      * (includes CREATE2)
      */
-    isCreate: createLeaf(["./trace"], step => isCreateMnemonic(step.op)),
+    isCreate: createLeaf(["./trace"], (step) => isCreateMnemonic(step.op)),
 
     /**
      * .isCreate2
      */
-    isCreate2: createLeaf(["./trace"], step => step.op === "CREATE2"),
-
-    /**
-     * .isHalting
-     *
-     * whether the instruction halts or returns from a calling context
-     * NOTE: this covers only ordinary halts, not exceptional halts;
-     * but it doesn't check the return status, so any normal halting
-     * instruction will qualify here
-     */
-    isHalting: createLeaf(["./trace"], step =>
-      isNormalHaltingMnemonic(step.op)
-    ),
+    isCreate2: createLeaf(["./trace"], (step) => step.op === "CREATE2"),
 
     /*
      * .isStore
      */
-    isStore: createLeaf(["./trace"], step => step.op === "SSTORE"),
+    isStore: createLeaf(["./trace"], (step) => step.op === "SSTORE"),
 
     /*
      * .isLoad
      */
-    isLoad: createLeaf(["./trace"], step => step.op === "SLOAD"),
+    isLoad: createLeaf(["./trace"], (step) => step.op === "SLOAD"),
 
     /*
      * .touchesStorage
@@ -162,11 +151,11 @@ function createStepSelectors(step, state = null) {
     touchesStorage: createLeaf(
       ["./isStore", "isLoad"],
       (stores, loads) => stores || loads
-    )
+    ),
   };
 
   if (state) {
-    const isRelative = path =>
+    const isRelative = (path) =>
       typeof path === "string" &&
       (path.startsWith("./") || path.startsWith("../"));
 
@@ -184,6 +173,20 @@ function createStepSelectors(step, state = null) {
           step.op === "JUMP" ||
           (step.op === "JUMPI" && stack[stack.length - 2] !== ZERO_WORD)
       ),
+
+      /**
+       * .valueStored
+       * the storage written, as determined by looking at the stack
+       * rather than at storage (since valueLoaded is now being done
+       * this way, may as well do valueStored this way as well and
+       * completely remove our dependence on the storage field!)
+       */
+      valueStored: createLeaf(["./isStore", state], (isStore, { stack }) => {
+        if (!isStore) {
+          return null;
+        }
+        return stack[stack.length - 2];
+      }),
 
       /**
        * .callAddress
@@ -221,7 +224,13 @@ function createStepSelectors(step, state = null) {
           const offset = parseInt(stack[stack.length - 2], 16) * 2;
           const length = parseInt(stack[stack.length - 3], 16) * 2;
 
-          return "0x" + memory.join("").substring(offset, offset + length);
+          return (
+            "0x" +
+            memory
+              .join("")
+              .substring(offset, offset + length)
+              .padEnd(length, "00")
+          );
         }
       ),
 
@@ -247,7 +256,13 @@ function createStepSelectors(step, state = null) {
           const offset = parseInt(stack[stack.length - 4 + argOffset], 16) * 2;
           const length = parseInt(stack[stack.length - 5 + argOffset], 16) * 2;
 
-          return "0x" + memory.join("").substring(offset, offset + length);
+          return (
+            "0x" +
+            memory
+              .join("")
+              .substring(offset, offset + length)
+              .padEnd(length, "00")
+          );
         }
       ),
 
@@ -317,11 +332,11 @@ function createStepSelectors(step, state = null) {
           "./createBinary",
           "/current/codex/instances",
           "/info/binaries/search",
-          "/info/contexts"
+          "/info/contexts",
         ],
         (address, binary, instances, search, contexts) =>
           determineFullContext({ address, binary }, instances, search, contexts)
-      )
+      ),
     });
   }
 
@@ -332,7 +347,7 @@ const evm = createSelectorTree({
   /**
    * evm.state
    */
-  state: state => state.evm,
+  state: (state) => state.evm,
 
   /**
    * evm.info
@@ -341,7 +356,7 @@ const evm = createSelectorTree({
     /**
      * evm.info.contexts
      */
-    contexts: createLeaf(["/state"], state => state.info.contexts.byContext),
+    contexts: createLeaf(["/state"], (state) => state.info.contexts.byContext),
 
     /**
      * evm.info.binaries
@@ -353,10 +368,10 @@ const evm = createSelectorTree({
        * returns function (binary) => context (returns the *ID* of the context)
        * (returns null on no match)
        */
-      search: createLeaf(["/info/contexts"], contexts => binary =>
+      search: createLeaf(["/info/contexts"], (contexts) => (binary) =>
         Codec.Contexts.Utils.findDebuggerContext(contexts, binary)
-      )
-    }
+      ),
+    },
   },
 
   /**
@@ -370,22 +385,25 @@ const evm = createSelectorTree({
       /*
        * evm.transaction.globals.tx
        */
-      tx: createLeaf(["/state"], state => state.transaction.globals.tx),
+      tx: createLeaf(["/state"], (state) => state.transaction.globals.tx),
       /*
        * evm.transaction.globals.block
        */
-      block: createLeaf(["/state"], state => state.transaction.globals.block)
+      block: createLeaf(["/state"], (state) => state.transaction.globals.block),
     },
 
     /*
      * evm.transaction.status
      */
-    status: createLeaf(["/state"], state => state.transaction.status),
+    status: createLeaf(["/state"], (state) => state.transaction.status),
 
     /*
      * evm.transaction.initialCall
      */
-    initialCall: createLeaf(["/state"], state => state.transaction.initialCall),
+    initialCall: createLeaf(
+      ["/state"],
+      (state) => state.transaction.initialCall
+    ),
 
     /*
      * evm.transaction.startingContext
@@ -395,13 +413,13 @@ const evm = createSelectorTree({
         "/current/callstack", //we're just getting bottom stackframe, so this is in fact tx-level
         "/current/codex/instances", //this should also be fine?
         "/info/binaries/search",
-        "/info/contexts"
+        "/info/contexts",
       ],
       (stack, instances, search, contexts) =>
         stack.length > 0
           ? determineFullContext(stack[0], instances, search, contexts)
           : null
-    )
+    ),
   },
 
   /**
@@ -411,7 +429,7 @@ const evm = createSelectorTree({
     /**
      * evm.current.callstack
      */
-    callstack: state => state.evm.proc.callstack,
+    callstack: (state) => state.evm.proc.callstack,
 
     /**
      * evm.current.call
@@ -419,7 +437,7 @@ const evm = createSelectorTree({
     call: createLeaf(
       ["./callstack"],
 
-      stack => (stack.length ? stack[stack.length - 1] : {})
+      (stack) => (stack.length ? stack[stack.length - 1] : {})
     ),
 
     /**
@@ -430,7 +448,7 @@ const evm = createSelectorTree({
         "./call",
         "./codex/instances",
         "/info/binaries/search",
-        "/info/contexts"
+        "/info/contexts",
       ],
       determineFullContext
     ),
@@ -442,9 +460,11 @@ const evm = createSelectorTree({
      */
     state: Object.assign(
       {},
-      ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
-        [param]: createLeaf([trace.step], step => step[param])
-      }))
+      ...["depth", "error", "gas", "memory", "stack", "storage"].map(
+        (param) => ({
+          [param]: createLeaf([trace.step], (step) => step[param]),
+        })
+      )
     ),
 
     /**
@@ -466,7 +486,7 @@ const evm = createSelectorTree({
           "./isCreate",
           "/nextOfSameDepth/state/stack",
           "./isCreate2",
-          "./create2Address"
+          "./create2Address",
         ],
         (isCreate, stack, isCreate2, create2Address) => {
           if (!isCreate) {
@@ -494,7 +514,7 @@ const evm = createSelectorTree({
                       "0xff" +
                       storageAddress.slice(2) +
                       stack[stack.length - 4] +
-                      keccak256({ type: "bytes", value: binary }).slice(2)
+                      keccak256({ type: "bytes", value: binary }).slice(2),
                   }).slice(
                     2 +
                       2 *
@@ -513,14 +533,13 @@ const evm = createSelectorTree({
        * are we doing a call or create for which there are no trace steps?
        * This can happen if:
        * 1. we call a precompile
-       * 2. we call an externally-owned account
+       * 2. we call an externally-owned account (or other account w/no code)
        * 3. we do a call or create but the call stack is exhausted
        * 4. we attempt to transfer more ether than we have
        */
       isInstantCallOrCreate: createLeaf(
-        ["./isCall", "./isCreate", "/current/state/depth", "/next/state/depth"],
-        (calls, creates, currentDepth, nextDepth) =>
-          (calls || creates) && currentDepth === nextDepth
+        ["./isCall", "./isCreate", "./isContextChange"],
+        (calls, creates, contextChange) => (calls || creates) && !contextChange
       ),
 
       /**
@@ -533,26 +552,39 @@ const evm = createSelectorTree({
       ),
 
       /**
+       * .isNormalHalting
+       */
+      isNormalHalting: createLeaf(
+        ["./isHalting", "./returnStatus"],
+        (isHalting, status) => isHalting && status
+      ),
+
+      /**
+       * .isHalting
+       *
+       * whether the instruction halts or returns from a calling context
+       * HACK: the check for stepsRemainining === 0 is a hack to cover
+       * the special case when there are no trace steps; normally this
+       * is unnecessary because the spoofed step past the end covers it
+       */
+      isHalting: createLeaf(
+        ["/current/state/depth", "/next/state/depth", trace.stepsRemaining],
+        (currentDepth, nextDepth, stepsRemaining) =>
+          nextDepth < currentDepth || stepsRemaining === 0
+      ),
+
+      /**
        * evm.current.step.isExceptionalHalting
        */
       isExceptionalHalting: createLeaf(
-        [
-          "./isHalting",
-          "/current/state/depth",
-          "/next/state/depth",
-          "./returnStatus"
-        ],
-        (halting, currentDepth, nextDepth, status) =>
-          halting
-            ? !status //if deliberately halting, check the return status
-            : nextDepth < currentDepth //if not on a deliberate halt, any halt
-        //is an exceptional halt
+        ["./isHalting", "./returnStatus"],
+        (isHalting, status) => isHalting && !status
       ),
 
       /**
        * evm.current.step.returnStatus
-       * checks the return status of the *current* halting instruction (for
-       * normal halts only)
+       * checks the return status of the *current* halting instruction
+       * returns null if not halting
        * (returns a boolean -- true for success, false for failure)
        */
       returnStatus: createLeaf(
@@ -560,7 +592,7 @@ const evm = createSelectorTree({
           "./isHalting",
           "/next/state",
           trace.stepsRemaining,
-          "/transaction/status"
+          "/transaction/status",
         ],
         (isHalting, { stack }, remaining, finalStatus) => {
           if (!isHalting) {
@@ -575,7 +607,7 @@ const evm = createSelectorTree({
         }
       ),
 
-      /*
+      /**
        * evm.current.step.returnValue
        *
        * for a [successful] RETURN or REVERT instruction, the value returned;
@@ -601,9 +633,32 @@ const evm = createSelectorTree({
           const offset = parseInt(stack[stack.length - 1], 16) * 2;
           const length = parseInt(stack[stack.length - 2], 16) * 2;
 
-          return "0x" + memory.join("").substring(offset, offset + length);
+          return (
+            "0x" +
+            memory
+              .join("")
+              .substring(offset, offset + length)
+              .padEnd(length, "00")
+          );
         }
-      )
+      ),
+
+      /**
+       * evm.current.step.valueLoaded
+       * the storage loaded on an SLOAD. determined by examining
+       * the next stack, rather than storage (we're avoiding
+       * relying on storage to support old versions of Geth and Besu)
+       * we do not include an initial "0x"
+       */
+      valueLoaded: createLeaf(
+        ["./isLoad", "/next/state"],
+        (isLoad, { stack }) => {
+          if (!isLoad) {
+            return null;
+          }
+          return stack[stack.length - 1];
+        }
+      ),
     },
 
     /**
@@ -614,7 +669,7 @@ const evm = createSelectorTree({
        * evm.current.codex (selector)
        * the whole codex! not that that's very much at the moment
        */
-      _: createLeaf(["/state"], state => state.proc.codex),
+      _: createLeaf(["/state"], (state) => state.proc.codex),
 
       /**
        * evm.current.codex.storage
@@ -634,17 +689,17 @@ const evm = createSelectorTree({
       /*
        * evm.current.codex.instances
        */
-      instances: createLeaf(["./_"], codex =>
+      instances: createLeaf(["./_"], (codex) =>
         Object.assign(
           {},
           ...Object.entries(codex[codex.length - 1].accounts).map(
             ([address, { code, context }]) => ({
-              [address]: { address, binary: code, context }
+              [address]: { address, binary: code, context },
             })
           )
         )
-      )
-    }
+      ),
+    },
   },
 
   /**
@@ -658,15 +713,17 @@ const evm = createSelectorTree({
      */
     state: Object.assign(
       {},
-      ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
-        [param]: createLeaf([trace.next], step => step[param])
-      }))
+      ...["depth", "error", "gas", "memory", "stack", "storage"].map(
+        (param) => ({
+          [param]: createLeaf([trace.next], (step) => step[param]),
+        })
+      )
     ),
 
     /*
      * evm.next.step
      */
-    step: createStepSelectors(trace.next, "./state")
+    step: createStepSelectors(trace.next, "./state"),
   },
 
   /**
@@ -680,11 +737,13 @@ const evm = createSelectorTree({
      */
     state: Object.assign(
       {},
-      ...["depth", "error", "gas", "memory", "stack", "storage"].map(param => ({
-        [param]: createLeaf([trace.nextOfSameDepth], step => step[param])
-      }))
-    )
-  }
+      ...["depth", "error", "gas", "memory", "stack", "storage"].map(
+        (param) => ({
+          [param]: createLeaf([trace.nextOfSameDepth], (step) => step[param]),
+        })
+      )
+    ),
+  },
 });
 
 export default evm;

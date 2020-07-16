@@ -6,10 +6,10 @@ import { combineReducers } from "redux";
 import * as actions from "./actions";
 
 import * as Codec from "@truffle/codec";
-import { makeAssignment } from "lib/helpers";
+import { makeAssignment, makePath } from "lib/helpers";
 
 const DEFAULT_SCOPES = {
-  byCompilationId: {}
+  byCompilationId: {},
 };
 
 function scopes(state = DEFAULT_SCOPES, action) {
@@ -19,73 +19,79 @@ function scopes(state = DEFAULT_SCOPES, action) {
 
   switch (action.type) {
     case actions.SCOPE: {
-      let { compilationId, id, sourceId, parentId, pointer } = action;
-
-      debug("action: %O", action);
+      const { compilationId, id, sourceId, parentId, pointer } = action;
+      const astRef = id !== undefined ? id : makePath(sourceId, pointer);
+      //astRef is used throughout the data saga.
+      //it identifies an AST node within a given compilation either by:
+      //1. its ast ID, if it has one, or
+      //2. a combination of its source index and its JSON pointer if not
 
       newState = {
         byCompilationId: {
           ...state.byCompilationId,
           [compilationId]: {
-            ...state.byCompilationId[compilationId] //just setting this up to avoid errors later
-          }
-        }
+            ...state.byCompilationId[compilationId], //just setting this up to avoid errors later
+          },
+        },
       };
 
       //apologies for this multi-stage setup, but JS is like that...
 
       newState.byCompilationId[compilationId] = {
-        byId: {
-          ...newState.byCompilationId[compilationId].byId
-        }
+        ...newState.byCompilationId[compilationId],
+        byAstRef: {
+          ...newState.byCompilationId[compilationId].byAstRef,
+        },
       };
 
-      scope = newState.byCompilationId[compilationId].byId[id];
+      scope = newState.byCompilationId[compilationId].byAstRef[astRef];
 
-      newState.byCompilationId[compilationId].byId[id] = {
+      newState.byCompilationId[compilationId].byAstRef[astRef] = {
         ...scope,
         id,
         sourceId,
-        parentId,
+        parentId, //may be null or undefined
         pointer,
-        compilationId
+        compilationId,
       };
 
       return newState;
     }
+
     case actions.DECLARE: {
-      let { compilationId, node } = action;
+      let { compilationId, name, astRef, scopeAstRef } = action;
 
       //note: we can assume the compilation already exists!
-      scope =
-        state.byCompilationId[compilationId].byId[action.node.scope] || {};
+      scope = state.byCompilationId[compilationId].byAstRef[scopeAstRef] || {};
       variables = scope.variables || [];
 
       return {
         byCompilationId: {
           ...state.byCompilationId,
           [compilationId]: {
-            byId: {
-              ...state.byCompilationId[compilationId].byId,
+            ...state.byCompilationId[compilationId],
+            byAstRef: {
+              ...state.byCompilationId[compilationId].byAstRef,
 
-              [node.scope]: {
+              [scopeAstRef]: {
                 ...scope,
 
                 variables: [
                   ...variables,
 
                   {
-                    name: node.name,
-                    id: node.id,
-                    compilationId
-                  }
-                ]
-              }
-            }
-          }
-        }
+                    name,
+                    astRef,
+                    compilationId,
+                  },
+                ],
+              },
+            },
+          },
+        },
       };
     }
+
     default:
       return state;
   }
@@ -103,7 +109,7 @@ function userDefinedTypes(state = [], action) {
     case actions.DEFINE_TYPE:
       return [
         ...state,
-        { id: action.node.id, compilationId: action.compilationId }
+        { id: action.node.id, compilationId: action.compilationId },
       ];
     default:
       return state;
@@ -114,7 +120,7 @@ const DEFAULT_ALLOCATIONS = {
   storage: {},
   memory: {},
   abi: {},
-  state: {}
+  state: {},
 };
 
 function allocations(state = DEFAULT_ALLOCATIONS, action) {
@@ -123,7 +129,8 @@ function allocations(state = DEFAULT_ALLOCATIONS, action) {
       storage: action.storage,
       memory: action.memory,
       abi: action.abi,
-      state: action.state
+      calldata: action.calldata,
+      state: action.state,
     };
   } else {
     return state; //not to be confused with action.state!
@@ -133,7 +140,7 @@ function allocations(state = DEFAULT_ALLOCATIONS, action) {
 const info = combineReducers({
   scopes,
   userDefinedTypes,
-  allocations
+  allocations,
 });
 
 const GLOBAL_ASSIGNMENTS = [
@@ -141,21 +148,21 @@ const GLOBAL_ASSIGNMENTS = [
   [{ builtin: "tx" }, { location: "special", special: "tx" }],
   [{ builtin: "block" }, { location: "special", special: "block" }],
   [{ builtin: "this" }, { location: "special", special: "this" }],
-  [{ builtin: "now" }, { location: "special", special: "timestamp" }] //we don't have an alias "now"
+  [{ builtin: "now" }, { location: "special", special: "timestamp" }], //we don't have an alias "now"
 ].map(([idObj, ref]) => makeAssignment(idObj, ref));
 
 const DEFAULT_ASSIGNMENTS = {
   byId: Object.assign(
     {}, //we start out with all globals assigned
-    ...GLOBAL_ASSIGNMENTS.map(assignment => ({ [assignment.id]: assignment }))
+    ...GLOBAL_ASSIGNMENTS.map((assignment) => ({ [assignment.id]: assignment }))
   ),
   byCompilationId: {}, //no regular variables assigned at start
   byBuiltin: Object.assign(
     {}, //again, all globals start assigned
-    ...GLOBAL_ASSIGNMENTS.map(assignment => ({
-      [assignment.builtin]: [assignment.id] //yes, that's a 1-element array
+    ...GLOBAL_ASSIGNMENTS.map((assignment) => ({
+      [assignment.builtin]: [assignment.id], //yes, that's a 1-element array
     }))
-  )
+  ),
 };
 
 function assignments(state = DEFAULT_ASSIGNMENTS, action) {
@@ -165,30 +172,31 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
       debug("action.type %O", action.type);
       debug("action.assignments %O", action.assignments);
       return Object.values(action.assignments).reduce((acc, assignment) => {
-        let { id, astId, compilationId } = assignment;
+        let { id, astRef, compilationId } = assignment;
         //we assume for now that only ordinary variables will be assigned this
         //way, and not globals; globals are handled in DEFAULT_ASSIGNMENTS
         return {
           ...acc,
           byId: {
             ...acc.byId,
-            [id]: assignment
+            [id]: assignment,
           },
           byCompilationId: {
             ...acc.byCompilationId,
             [compilationId]: {
-              byAstId: {
-                ...(acc.byCompilationId[compilationId] || {}).byAstId,
-                [astId]: [
+              ...acc.byCompilationId[compilationId],
+              byAstRef: {
+                ...(acc.byCompilationId[compilationId] || {}).byAstRef,
+                [astRef]: [
                   ...new Set([
-                    ...((acc.byCompilationId[compilationId] || { byAstId: {} })
-                      .byAstId[astId] || []),
-                    id
-                  ])
-                ]
-              }
-            }
-          }
+                    ...(((acc.byCompilationId[compilationId] || {}).byAstRef ||
+                      {})[astRef] || []),
+                    id,
+                  ]),
+                ],
+              },
+            },
+          },
         };
       }, state);
 
@@ -201,7 +209,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
 }
 
 const DEFAULT_PATHS = {
-  byAddress: {}
+  byAddress: {},
 };
 
 //WARNING: do *not* rely on mappedPaths to keep track of paths that do not
@@ -254,10 +262,10 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
           ...state.byAddress,
           [address]: {
             byType: {
-              ...(state.byAddress[address] || { byType: {} }).byType
-            }
-          }
-        }
+              ...(state.byAddress[address] || { byType: {} }).byType,
+            },
+          },
+        },
       };
 
       //now, let's add in the new type, if needed
@@ -267,11 +275,11 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
           bySlotAddress: {
             ...(
               newState.byAddress[address].byType[typeIdentifier] || {
-                bySlotAddress: {}
+                bySlotAddress: {},
               }
-            ).bySlotAddress
-          }
-        }
+            ).bySlotAddress,
+          },
+        },
       };
 
       let oldSlot =
@@ -298,7 +306,7 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
             path:
               newState.byAddress[address].byType[parentType].bySlotAddress[
                 parentAddress
-              ]
+              ],
           };
         } else {
           newSlot = slot;
@@ -321,12 +329,12 @@ function mappedPaths(state = DEFAULT_PATHS, action) {
 
 const proc = combineReducers({
   assignments,
-  mappedPaths
+  mappedPaths,
 });
 
 const reducer = combineReducers({
   info,
-  proc
+  proc,
 });
 
 export default reducer;

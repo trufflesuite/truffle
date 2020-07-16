@@ -11,23 +11,23 @@ import zipWith from "lodash.zipwith";
 import { popNWhere } from "lib/helpers";
 import * as Codec from "@truffle/codec";
 
-const identity = x => x;
+const identity = (x) => x;
 
 function generateReport(callstack, location, status, message) {
   //step 1: shift everything over by 1 and recombine :)
-  let locations = callstack.map(frame => frame.calledFromLocation);
+  let locations = callstack.map((frame) => frame.calledFromLocation);
   //remove initial null, add final location on end
   locations.shift();
   locations.push(location);
   debug("locations: %O", locations);
   const names = callstack.map(({ functionName, contractName }) => ({
     functionName,
-    contractName
+    contractName,
   }));
   debug("names: %O", names);
   let report = zipWith(locations, names, (location, nameInfo) => ({
     ...nameInfo,
-    location
+    location,
   }));
   //finally: set the status in the top frame
   //and the message in the bottom
@@ -61,7 +61,7 @@ function createMultistepSelectors(stepSelector) {
       /**
        * .pointer
        */
-      pointer: createLeaf([stepSelector.pointer], identity)
+      pointer: createLeaf([stepSelector.pointer], identity),
     },
 
     /**
@@ -71,7 +71,7 @@ function createMultistepSelectors(stepSelector) {
       ["./location/source", "./location/sourceRange"],
       ({ id, compilationId, sourcePath }, sourceRange) => ({
         source: { id, compilationId, sourcePath },
-        sourceRange
+        sourceRange,
       })
     ),
 
@@ -91,7 +91,7 @@ function createMultistepSelectors(stepSelector) {
               pointer.replace(/\/nodes\/\d+$/, "") //cut off end
             )
           : ast
-    )
+    ),
   };
 }
 
@@ -99,7 +99,7 @@ let stacktrace = createSelectorTree({
   /**
    * stacktrace.state
    */
-  state: state => state.stacktrace,
+  state: (state) => state.stacktrace,
 
   /**
    * stacktrace.current
@@ -108,24 +108,24 @@ let stacktrace = createSelectorTree({
     /**
      * stacktrace.current.callstack
      */
-    callstack: createLeaf(["/state"], state => state.proc.callstack),
+    callstack: createLeaf(["/state"], (state) => state.proc.callstack),
 
     /**
      * stacktrace.current.returnCounter
      */
-    returnCounter: createLeaf(["/state"], state => state.proc.returnCounter),
+    returnCounter: createLeaf(["/state"], (state) => state.proc.returnCounter),
 
     /**
      * stacktrace.current.lastPosition
      */
-    lastPosition: createLeaf(["/state"], state => state.proc.lastPosition),
+    lastPosition: createLeaf(["/state"], (state) => state.proc.lastPosition),
 
     /**
      * stacktrace.current.innerReturnPosition
      */
     innerReturnPosition: createLeaf(
       ["/state"],
-      state => state.proc.innerReturnPosition
+      (state) => state.proc.innerReturnPosition
     ),
 
     /**
@@ -133,7 +133,7 @@ let stacktrace = createSelectorTree({
      */
     innerReturnStatus: createLeaf(
       ["/state"],
-      state => state.proc.innerReturnStatus
+      (state) => state.proc.innerReturnStatus
     ),
 
     ...createMultistepSelectors(solidity.current),
@@ -176,25 +176,9 @@ let stacktrace = createSelectorTree({
     willReturn: createLeaf([solidity.current.willReturn], identity),
 
     /**
-     * stacktrace.current.willFail
-     */
-    willFail: createLeaf([solidity.current.willFail], identity),
-
-    /**
-     * stacktrace.current.willReturnOrFail
-     */
-    willReturnOrFail: createLeaf(
-      ["./willReturn", "./willFail"],
-      (willReturn, willFail) => willReturn || willFail
-    ),
-
-    /**
      * stacktrace.current.returnStatus
      */
-    returnStatus: createLeaf(
-      ["./willReturn", "./willFail"],
-      (returns, fails) => (returns ? true : fails ? false : null)
-    ),
+    returnStatus: createLeaf([evm.current.step.returnStatus], identity),
 
     /**
      * stacktrace.current.revertString
@@ -204,7 +188,7 @@ let stacktrace = createSelectorTree({
      */
     revertString: createLeaf(
       [evm.current.step.returnValue],
-      rawRevertMessage => {
+      (rawRevertMessage) => {
         let revertDecodings = Codec.decodeRevert(
           Codec.Conversion.toBytes(rawRevertMessage)
         );
@@ -263,7 +247,7 @@ let stacktrace = createSelectorTree({
         "./callstack",
         "./innerReturnPosition",
         "./innerReturnStatus",
-        "./revertString"
+        "./revertString",
       ],
       generateReport
     ),
@@ -280,28 +264,28 @@ let stacktrace = createSelectorTree({
         "./callstack",
         "./returnCounter",
         "./lastPosition",
-        "/current/strippedLocation"
+        "/current/strippedLocation",
       ],
       (callstack, returnCounter, lastPosition, currentLocation) =>
         generateReport(
           popNWhere(
             callstack,
             returnCounter,
-            frame => frame.type === "external"
+            (frame) => frame.type === "external"
           ),
           currentLocation || lastPosition,
           null,
           undefined
         )
-    )
+    ),
   },
 
   /**
    * stacktrace.next
    */
   next: {
-    ...createMultistepSelectors(solidity.next)
-  }
+    ...createMultistepSelectors(solidity.next),
+  },
 });
 
 export default stacktrace;

@@ -15,7 +15,7 @@ function contextRequiresPhantomStackframes(context) {
     context.compiler !== undefined && //(do NOT just put context.compiler here,
     //we need this to be a boolean, not undefined, because it gets put in the state)
     semver.satisfies(context.compiler.version, ">=0.5.1", {
-      includePrerelease: true
+      includePrerelease: true,
     }) &&
     !context.isConstructor //constructors should not get a phantom stackframe!
   );
@@ -42,7 +42,7 @@ function createMultistepSelectors(stepSelector) {
      */
     modifierDepth: createLeaf(
       ["./instruction"],
-      instruction => instruction.modifierDepth
+      (instruction) => instruction.modifierDepth
     ),
 
     /**
@@ -91,7 +91,7 @@ function createMultistepSelectors(stepSelector) {
     pointer: createLeaf(
       ["./pointerAndNode"],
 
-      pointerAndNode => (pointerAndNode ? pointerAndNode.pointer : null)
+      (pointerAndNode) => (pointerAndNode ? pointerAndNode.pointer : null)
     ),
 
     /**
@@ -101,7 +101,7 @@ function createMultistepSelectors(stepSelector) {
       ["./source", "./pointerAndNode"],
 
       ({ ast }, pointerAndNode) => (pointerAndNode ? pointerAndNode.node : ast)
-    )
+    ),
   };
 }
 
@@ -109,7 +109,7 @@ let solidity = createSelectorTree({
   /**
    * solidity.state
    */
-  state: state => state.solidity,
+  state: (state) => state.solidity,
 
   /**
    * solidity.info
@@ -119,7 +119,10 @@ let solidity = createSelectorTree({
      * solidity.info.sources
      * NOTE: grouped by compilation!
      */
-    sources: createLeaf(["/state"], state => state.info.sources.byCompilationId)
+    sources: createLeaf(
+      ["/state"],
+      (state) => state.info.sources.byCompilationId
+    ),
   },
 
   /**
@@ -132,7 +135,7 @@ let solidity = createSelectorTree({
     bottomStackframeRequiresPhantomFrame: createLeaf(
       [evm.transaction.startingContext],
       contextRequiresPhantomStackframes
-    )
+    ),
   },
 
   /**
@@ -147,7 +150,11 @@ let solidity = createSelectorTree({
     sources: createLeaf(
       ["/info/sources", evm.current.context],
       (sources, context) =>
-        context ? (sources[context.compilationId] || { byId: null }).byId : null
+        context
+          ? context.compilationId !== undefined
+            ? (sources[context.compilationId] || { byId: null }).byId
+            : [] //unknown context, return no sources
+          : null //no tx loaded, return null
     ),
 
     /**
@@ -156,34 +163,32 @@ let solidity = createSelectorTree({
     sourceMap: createLeaf(
       [evm.current.context],
 
-      context => (context ? context.sourceMap : null) //null when no tx loaded
+      (context) => (context ? context.sourceMap : null) //null when no tx loaded
     ),
 
     /**
      * solidity.current.humanReadableSourceMap
      */
-    humanReadableSourceMap: createLeaf(
-      ["./sourceMap"],
-      sourceMap =>
-        sourceMap ? SolidityUtils.getHumanReadableSourceMap(sourceMap) : null
+    humanReadableSourceMap: createLeaf(["./sourceMap"], (sourceMap) =>
+      sourceMap ? SolidityUtils.getHumanReadableSourceMap(sourceMap) : null
     ),
 
     /**
      * solidity.current.functionDepthStack
      */
-    functionDepthStack: state => state.solidity.proc.functionDepthStack,
+    functionDepthStack: (state) => state.solidity.proc.functionDepthStack,
 
     /**
      * solidity.current.nextFrameIsPhantom
      */
-    nextFrameIsPhantom: state => state.solidity.proc.nextFrameIsPhantom,
+    nextFrameIsPhantom: (state) => state.solidity.proc.nextFrameIsPhantom,
 
     /**
      * solidity.current.functionDepth
      */
     functionDepth: createLeaf(
       ["./functionDepthStack"],
-      stack => stack[stack.length - 1]
+      (stack) => stack[stack.length - 1]
     ),
 
     /**
@@ -219,11 +224,11 @@ let solidity = createSelectorTree({
     instructionAtProgramCounter: createLeaf(
       ["./instructions"],
 
-      instructions =>
+      (instructions) =>
         Object.assign(
           {},
-          ...instructions.map(instruction => ({
-            [instruction.pc]: instruction
+          ...instructions.map((instruction) => ({
+            [instruction.pc]: instruction,
           }))
         )
     ),
@@ -237,7 +242,7 @@ let solidity = createSelectorTree({
       [
         "./instructionAtProgramCounter",
         evm.current.step.programCounter,
-        evm.next.step.programCounter
+        evm.next.step.programCounter,
       ],
 
       (map, current, next) => {
@@ -264,7 +269,7 @@ let solidity = createSelectorTree({
         "./instructions",
         "./sources",
         "/views/findOverlappingRange",
-        evm.current.context
+        evm.current.context,
       ],
       (instructions, sources, functions, { compilationId }) =>
         //note: we can skip an explicit null check on sources here because
@@ -290,7 +295,7 @@ let solidity = createSelectorTree({
     /**
      * solidity.current.willJump
      */
-    willJump: createLeaf([evm.current.step.isJump], isJump => isJump),
+    willJump: createLeaf([evm.current.step.isJump], (isJump) => isJump),
 
     /**
      * solidity.current.jumpDirection
@@ -305,23 +310,20 @@ let solidity = createSelectorTree({
       [
         evm.current.step.isCall,
         evm.current.step.isCreate,
-        evm.current.step.isInstantCallOrCreate
+        evm.current.step.isInstantCallOrCreate,
       ],
       (isCall, isCreate, isInstant) => (isCall || isCreate) && !isInstant
     ),
 
     /**
      * solidity.current.willReturn
+     *
+     * covers both normal returns & failures
      */
     willReturn: createLeaf(
       [evm.current.step.isHalting],
-      isHalting => isHalting
+      (isHalting) => isHalting
     ),
-
-    /**
-     * solidity.current.willFail
-     */
-    willFail: createLeaf([evm.current.step.isExceptionalHalting], x => x),
 
     /**
      * solidity.current.nextMapped
@@ -334,7 +336,7 @@ let solidity = createSelectorTree({
       ["./instructionAtProgramCounter", trace.steps, trace.index],
       (map, steps, index) =>
         steps.slice(index + 1).find(({ pc }) => map[pc] && map[pc].file !== -1)
-    )
+    ),
   },
 
   /**
@@ -352,19 +354,19 @@ let solidity = createSelectorTree({
      * solidity.views.findOverlappingRange
      * grouped by compilation
      */
-    findOverlappingRange: createLeaf(["/info/sources"], compilations =>
+    findOverlappingRange: createLeaf(["/info/sources"], (compilations) =>
       Object.assign(
         {},
         ...Object.entries(compilations).map(
           ([compilationId, { byId: sources }]) => ({
             [compilationId]: sources.map(({ ast }) =>
               SolidityUtils.makeOverlapFunction(ast)
-            )
+            ),
           })
         )
       )
-    )
-  }
+    ),
+  },
 });
 
 export default solidity;

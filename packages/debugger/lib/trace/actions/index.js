@@ -2,7 +2,7 @@ export const SAVE_STEPS = "TRACE_SAVE_STEPS";
 export function saveSteps(steps) {
   return {
     type: SAVE_STEPS,
-    steps
+    steps,
   };
 }
 
@@ -39,4 +39,9 @@ export function unloadTransaction() {
 export const BACKTICK = "TRACE_BACKTICK";
 export function backtick() {
   return { type: BACKTICK };
+}
+
+export const SET_SUBMODULE_COUNT = "TRACE_SET_SUBMODULE_COUNT";
+export function setSubmoduleCount(count) {
+  return { type: SET_SUBMODULE_COUNT, count };
 }

@@ -8,7 +8,9 @@ import { Compilation, Contract, Source } from "./types";
 
 export function shimArtifacts(
   artifacts: Artifact[],
-  files?: string[]
+  files?: string[],
+  shimmedCompilationId = "shimmedcompilation",
+  externalSolidity = false
 ): Compilation[] {
   //note: always returns a one-element array (a single fictional compilation)
   let contracts: Contract[] = [];
@@ -28,7 +30,7 @@ export function shimArtifacts(
       source,
       ast,
       abi,
-      compiler
+      compiler,
     } = artifact;
 
     contractName = contractName || <string>contract_name;
@@ -38,7 +40,7 @@ export function shimArtifacts(
       sourcePath,
       source,
       ast: <Ast.AstNode>ast,
-      compiler
+      compiler,
     };
     //ast needs to be coerced because schema doesn't quite match our types here...
 
@@ -50,7 +52,7 @@ export function shimArtifacts(
       deployedSourceMap,
       immutableReferences,
       abi,
-      compiler
+      compiler,
     };
 
     //if files was passed, trust that to determine the source index
@@ -68,7 +70,7 @@ export function shimArtifacts(
       //contents if not)
       if (
         sources.every(
-          existingSource =>
+          (existingSource) =>
             existingSource.sourcePath !== sourcePath ||
             (!sourcePath &&
               !existingSource.sourcePath &&
@@ -110,12 +112,13 @@ export function shimArtifacts(
 
   return [
     {
-      id: "shimmedcompilation",
+      id: shimmedCompilationId,
       unreliableSourceOrder,
       sources,
       contracts,
-      compiler
-    }
+      compiler,
+      externalSolidity,
+    },
   ];
 }
 
@@ -136,7 +139,7 @@ export function getContractNode(
     contractName,
     sourceMap,
     deployedSourceMap,
-    primarySourceId
+    primarySourceId,
   } = contract;
   const { unreliableSourceOrder, sources } = compilation;
 
@@ -147,7 +150,7 @@ export function getContractNode(
   //compilation.
   if (primarySourceId !== undefined) {
     sourcesToCheck = [
-      sources.find(source => source && source.id === primarySourceId)
+      sources.find((source) => source && source.id === primarySourceId),
     ];
   } else if (!unreliableSourceOrder && (deployedSourceMap || sourceMap)) {
     let sourceId = extractPrimarySource(deployedSourceMap || sourceMap);
@@ -166,7 +169,7 @@ export function getContractNode(
       return undefined;
     }
     return source.ast.nodes.find(
-      node =>
+      (node) =>
         node.nodeType === "ContractDefinition" && node.name === contractName
     );
   }, undefined);

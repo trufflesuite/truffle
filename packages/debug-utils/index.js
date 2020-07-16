@@ -32,7 +32,31 @@ const commandReference = {
   "r": "reset",
   "t": "load new transaction",
   "T": "unload transaction",
-  "s": "print stacktrace"
+  "s": "print stacktrace",
+};
+
+const shortCommandReference = {
+  "o": "step over",
+  "i": "step into",
+  "u": "step out",
+  "n": "step next",
+  ";": "step instruction",
+  "p": "print state",
+  "l": "print context",
+  "h": "print help",
+  "v": "print variables",
+  ":": "evaluate",
+  "+": "add watch",
+  "-": "remove watch",
+  "?": "list watches & breakpoints",
+  "b": "add breakpoint",
+  "B": "remove breakpoint",
+  "c": "continue",
+  "q": "quit",
+  "r": "reset",
+  "t": "load",
+  "T": "unload",
+  "s": "stacktrace",
 };
 
 const truffleColors = {
@@ -46,7 +70,7 @@ const truffleColors = {
   blue: chalk.hex("#25A9E0"),
   comment: chalk.hsl(30, 20, 50),
   watermelon: chalk.hex("#E86591"),
-  periwinkle: chalk.hex("#7F9DD1")
+  periwinkle: chalk.hex("#7F9DD1"),
 };
 
 const DEFAULT_TAB_WIDTH = 8;
@@ -54,38 +78,26 @@ const DEFAULT_TAB_WIDTH = 8;
 var DebugUtils = {
   truffleColors, //make these externally available
 
-  gatherArtifacts: async function(config) {
+  gatherArtifacts: async function (config) {
     // Gather all available contract artifacts
     let files = await dir.promiseFiles(config.contracts_build_directory);
 
     var contracts = files
-      .filter(file_path => {
+      .filter((file_path) => {
         return path.extname(file_path) === ".json";
       })
-      .map(file_path => {
+      .map((file_path) => {
         return path.basename(file_path, ".json");
       })
-      .map(contract_name => {
+      .map((contract_name) => {
         return config.resolver.require(contract_name);
       });
 
     await Promise.all(
-      contracts.map(abstraction => abstraction.detectNetwork())
+      contracts.map((abstraction) => abstraction.detectNetwork())
     );
 
-    return contracts.map(contract => ({
-      contractName: contract.contractName,
-      source: contract.source,
-      sourceMap: contract.sourceMap,
-      sourcePath: contract.sourcePath,
-      bytecode: contract.bytecode,
-      immutableReferences: contract.immutableReferences,
-      abi: contract.abi,
-      ast: contract.ast,
-      deployedBytecode: contract.deployedBytecode,
-      deployedSourceMap: contract.deployedSourceMap,
-      compiler: contract.compiler
-    }));
+    return contracts;
   },
 
   //attempts to test whether a given compilation is a real compilation,
@@ -94,7 +106,7 @@ var DebugUtils = {
   //(anyway worst case failing it just results in a recompilation)
   //if it isn't real, but passes this test anyway... well, I'm hoping it should
   //still be usable all the same!
-  isUsableCompilation: function(compilation) {
+  isUsableCompilation: function (compilation) {
     //check #1: is the source order reliable?
     if (compilation.unreliableSourceOrder) {
       return false;
@@ -115,7 +127,7 @@ var DebugUtils = {
     //check #3: are there any AST ID collisions?
     let astIds = new Set();
 
-    let allIDsUnseenSoFar = node => {
+    let allIDsUnseenSoFar = (node) => {
       if (Array.isArray(node)) {
         return node.every(allIDsUnseenSoFar);
       } else if (node !== null && typeof node === "object") {
@@ -133,12 +145,12 @@ var DebugUtils = {
     };
 
     //now: walk each AST
-    return compilation.sources.every(
-      source => (source ? allIDsUnseenSoFar(source.ast) : true)
+    return compilation.sources.every((source) =>
+      source ? allIDsUnseenSoFar(source.ast) : true
     );
   },
 
-  formatStartMessage: function(withTransaction) {
+  formatStartMessage: function (withTransaction) {
     if (withTransaction) {
       return "Gathering information about your project and the transaction...";
     } else {
@@ -146,26 +158,26 @@ var DebugUtils = {
     }
   },
 
-  formatTransactionStartMessage: function() {
+  formatTransactionStartMessage: function () {
     return "Gathering information about the transaction...";
   },
 
-  formatCommandDescription: function(commandId) {
+  formatCommandDescription: function (commandId) {
     return (
       truffleColors.mint(`(${commandId})`) + " " + commandReference[commandId]
     );
   },
 
-  formatPrompt: function(network, txHash) {
+  formatPrompt: function (network, txHash) {
     return txHash !== undefined
       ? `debug(${network}:${txHash.substring(0, 10)}...)> `
       : `debug(${network})> `;
   },
 
-  formatAffectedInstances: function(instances) {
+  formatAffectedInstances: function (instances) {
     var hasAllSource = true;
 
-    var lines = Object.keys(instances).map(function(address) {
+    var lines = Object.keys(instances).map(function (address) {
       var instance = instances[address];
 
       if (instance.contractName) {
@@ -182,24 +194,22 @@ var DebugUtils = {
     if (!hasAllSource) {
       lines.push("");
       lines.push(
-        "Warning: The source code for one or more contracts could not be found."
+        `${chalk.bold(
+          "Warning:"
+        )} The source code for one or more contracts could not be found.`
       );
     }
 
     return lines.join(OS.EOL);
   },
 
-  formatHelp: function(lastCommand) {
-    if (!lastCommand) {
-      lastCommand = "n";
-    }
-
+  formatHelp: function (lastCommand = "n") {
     var prefix = [
       "Commands:",
       truffleColors.mint("(enter)") +
         " last command entered (" +
-        commandReference[lastCommand] +
-        ")"
+        shortCommandReference[lastCommand] +
+        ")",
     ];
 
     var commandSections = [
@@ -211,8 +221,8 @@ var DebugUtils = {
       ["b", "B", "c"],
       ["+", "-"],
       ["?"],
-      ["v", ":"]
-    ].map(function(shortcuts) {
+      ["v", ":"],
+    ].map(function (shortcuts) {
       return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });
 
@@ -223,7 +233,7 @@ var DebugUtils = {
     return lines.join(OS.EOL);
   },
 
-  tabsToSpaces: function(inputLine, tabLength = DEFAULT_TAB_WIDTH) {
+  tabsToSpaces: function (inputLine, tabLength = DEFAULT_TAB_WIDTH) {
     //note: I'm going to assume for these purposes that everything is
     //basically ASCII and I don't have to worry about astral planes or
     //grapheme clusters.  Sorry. :-/
@@ -252,13 +262,13 @@ var DebugUtils = {
     return line;
   },
 
-  formatLineNumberPrefix: function(line, number, cols) {
+  formatLineNumberPrefix: function (line, number, cols) {
     const prefix = String(number).padStart(cols) + ": ";
 
     return prefix + line;
   },
 
-  formatLinePointer: function(
+  formatLinePointer: function (
     line,
     startCol,
     endCol,
@@ -300,7 +310,7 @@ var DebugUtils = {
   //been split into lines here, they're not the raw text
   //ALSO: assuming here that colorized source has been detabbed
   //but that uncolorized source has not
-  formatRangeLines: function(
+  formatRangeLines: function (
     source,
     range,
     uncolorizedSource,
@@ -355,7 +365,7 @@ var DebugUtils = {
           pointerStart,
           pointerEnd,
           prefixLength
-        )
+        ),
       ],
       afterLines
     );
@@ -363,7 +373,7 @@ var DebugUtils = {
     return allLines.join(OS.EOL);
   },
 
-  formatBreakpointLocation: function(
+  formatBreakpointLocation: function (
     breakpoint,
     here,
     currentCompilationId,
@@ -391,7 +401,7 @@ var DebugUtils = {
     }
   },
 
-  formatInstruction: function(traceIndex, traceLength, instruction) {
+  formatInstruction: function (traceIndex, traceLength, instruction) {
     return (
       "(" +
       traceIndex +
@@ -402,7 +412,7 @@ var DebugUtils = {
     );
   },
 
-  formatPC: function(pc) {
+  formatPC: function (pc) {
     let hex = pc.toString(16);
     if (hex.length % 2 !== 0) {
       hex = "0" + hex; //ensure even length
@@ -410,7 +420,7 @@ var DebugUtils = {
     return "  PC = " + pc.toString() + " = 0x" + hex;
   },
 
-  formatStack: function(stack) {
+  formatStack: function (stack) {
     //stack here is an array of hex words (no "0x")
     var formatted = stack.map((item, index) => {
       item = truffleColors.orange(item);
@@ -433,7 +443,7 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatMemory: function(memory) {
+  formatMemory: function (memory) {
     //note memory here is an array of hex words (no "0x"),
     //not a single long hex string
 
@@ -463,14 +473,12 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatStorage: function(storage) {
+  formatStorage: function (storage) {
     //storage here is an object mapping hex words to hex words (no 0x)
 
     //first: sort the keys (slice to clone as sort is in-place)
     //note: we can use the default sort here; it will do the righ thing
-    let slots = Object.keys(storage)
-      .slice()
-      .sort();
+    let slots = Object.keys(storage).slice().sort();
 
     let formatted = slots.map((slot, index) => {
       if (
@@ -494,7 +502,7 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatCalldata: function(calldata) {
+  formatCalldata: function (calldata) {
     //takes a Uint8Array
     let selector = calldata.slice(0, Codec.Evm.Utils.SELECTOR_SIZE);
     let words = [];
@@ -546,12 +554,12 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatValue: function(value, indent = 0, nativized = false) {
+  formatValue: function (value, indent = 0, nativized = false) {
     let inspectOptions = {
       colors: true,
       depth: null,
       maxArrayLength: null,
-      breakLength: 30
+      breakLength: 30,
     };
     let valueToInspect = nativized
       ? value
@@ -567,7 +575,7 @@ var DebugUtils = {
       .join(OS.EOL);
   },
 
-  formatStacktrace: function(stacktrace, indent = 2) {
+  formatStacktrace: function (stacktrace, indent = 2) {
     //get message from stacktrace
     const message = stacktrace[0].message;
     //we want to print inner to outer, so first, let's
@@ -579,22 +587,28 @@ var DebugUtils = {
         name = `${contractName}.${functionName}`;
       } else if (contractName) {
         name = contractName;
+      } else if (functionName) {
+        name = functionName;
       } else {
         name = "unknown function";
       }
+      let locationString;
       if (location) {
         let {
           source: { sourcePath },
           sourceRange: {
             lines: {
-              start: { line, column }
-            }
-          }
+              start: { line, column },
+            },
+          },
         } = location;
-        return `at ${name} (${sourcePath}:${line + 1}:${column + 1})`; //add 1 to account for 0-indexing
+        locationString = sourcePath
+          ? `${sourcePath}:${line + 1}:${column + 1}` //add 1 to account for 0-indexing
+          : "unknown location";
       } else {
-        return `at ${name} (unknown location)`;
+        locationString = "unknown location";
       }
+      return `at ${name} (${locationString})`;
     });
     let status = stacktrace[0].status;
     if (status != undefined) {
@@ -604,17 +618,17 @@ var DebugUtils = {
             ? `Error: Improper return (caused message: ${message})`
             : "Error: Improper return (may be an unexpected self-destruct)"
           : message !== undefined
-            ? `Error: Revert (message: ${message})`
-            : "Error: Revert or exceptional halt"
+          ? `Error: Revert (message: ${message})`
+          : "Error: Revert or exceptional halt"
       );
     }
-    let indented = lines.map(
-      (line, index) => (index === 0 ? line : " ".repeat(indent) + line)
+    let indented = lines.map((line, index) =>
+      index === 0 ? line : " ".repeat(indent) + line
     );
     return indented.join(OS.EOL);
   },
 
-  colorize: function(code) {
+  colorize: function (code) {
     //I'd put these outside the function
     //but then it gives me errors, because
     //you can't just define self-referential objects like that...
@@ -680,7 +694,7 @@ var DebugUtils = {
       "templateVariable": chalk,
       "template-variable": chalk,
       "addition": chalk,
-      "deletion": chalk
+      "deletion": chalk,
     };
 
     const options = {
@@ -690,7 +704,7 @@ var DebugUtils = {
       //handling padding & numbering manually
       lineNumbers: false,
       stripIndent: false,
-      codePad: 0
+      codePad: 0,
       //NOTE: you might think you should pass highlight: true,
       //but you'd be wrong!  I don't understand this either
     };
@@ -701,7 +715,7 @@ var DebugUtils = {
   //note that this is written in terms of mutating things
   //rather than just using map() due to the need to handle
   //circular objects
-  cleanConstructors: function(object, seenSoFar = new Map()) {
+  cleanConstructors: function (object, seenSoFar = new Map()) {
     debug("object %o", object);
     if (seenSoFar.has(object)) {
       return seenSoFar.get(object);
@@ -740,7 +754,7 @@ var DebugUtils = {
             ([key, value]) => key !== "constructor" || value !== undefined
           )
           .map(([key, value]) => ({
-            [key]: value //don't clean yet!
+            [key]: value, //don't clean yet!
           }))
       );
       //set up new seenSoFar
@@ -757,15 +771,46 @@ var DebugUtils = {
   },
 
   //HACK
-  cleanThis: function(variables, replacement) {
+  cleanThis: function (variables, replacement) {
     return Object.assign(
       {},
-      ...Object.entries(variables).map(
-        ([variable, value]) =>
-          variable === "this" ? { [replacement]: value } : { [variable]: value }
+      ...Object.entries(variables).map(([variable, value]) =>
+        variable === "this" ? { [replacement]: value } : { [variable]: value }
       )
     );
-  }
+  },
+
+  /**
+   * HACK warning!  This function modifies the debugger state
+   * and should only be used in light mode, at startup, in a very specific way!
+   *
+   * let bugger = await Debugger.forTx(txHash, { lightMode: true, ... });
+   * const sources = await getTransactionSourcesBeforeStarting(bugger);
+   * await bugger.startFullMode();
+   *
+   * Don't go switching transactions after doing this, because there's no
+   * way at the moment to switch back into light mode in order to re-run
+   * this function.  You do *not* want to run this in full mode.
+   */
+  getTransactionSourcesBeforeStarting: async function (bugger) {
+    await bugger.reset();
+    let sources = {};
+    const { controller } = bugger.selectors;
+    while (!bugger.view(controller.current.trace.finished)) {
+      const source = bugger.view(controller.current.location.source);
+      const { compilationId, id } = source;
+      if (compilationId !== undefined && id !== undefined) {
+        sources[compilationId] = {
+          ...sources[compilationId],
+          [id]: source,
+        };
+      }
+      await bugger.stepNext();
+    }
+    await bugger.reset();
+    //flatten sources before returning
+    return [].concat(...Object.values(sources).map(Object.values));
+  },
 };
 
 module.exports = DebugUtils;

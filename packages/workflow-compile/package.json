@@ -8,24 +8,24 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.1.32",
+  "version": "2.1.41",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.58",
-    "@truffle/compile-solidity": "^4.3.3",
-    "@truffle/compile-vyper": "^1.0.53",
-    "@truffle/config": "^1.2.17",
-    "@truffle/expect": "^0.0.13",
-    "@truffle/external-compile": "^1.0.29",
-    "@truffle/resolver": "^5.1.12",
+    "@truffle/artifactor": "^4.0.67",
+    "@truffle/compile-solidity": "^4.3.12",
+    "@truffle/compile-vyper": "^1.0.61",
+    "@truffle/config": "^1.2.21",
+    "@truffle/expect": "^0.0.14",
+    "@truffle/external-compile": "^1.0.32",
+    "@truffle/resolver": "^6.0.8",
     "fs-extra": "^8.1.0"
   },
   "devDependencies": {
     "debug": "^4.1.1",
-    "mocha": "5.2.0"
+    "mocha": "8.0.1"
   },
   "publishConfig": {
     "access": "public"

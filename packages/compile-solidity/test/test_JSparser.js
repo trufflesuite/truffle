@@ -12,17 +12,17 @@ describe("JSparser", () => {
         settings: {
           optimizer: {
             enabled: false,
-            runs: 200
-          }
-        }
-      }
+            runs: 200,
+          },
+        },
+      },
     },
     quiet: true,
     contracts_build_directory: path.join(__dirname, "./build"),
-    working_directory: __dirname
+    working_directory: __dirname,
   };
 
-  it("resolves imports quickly when using solcjs parser instead of docker [ @native ]", done => {
+  it("resolves imports when using solcjs parser instead of docker [ @native ]", (done) => {
     options.compilers.solc.version = "0.4.22";
     options.compilers.solc.docker = true;
     options.contracts_directory = path.join(__dirname, "./sources/v0.4.x");
@@ -48,33 +48,7 @@ describe("JSparser", () => {
     });
   }).timeout(20000);
 
-  it("resolves imports quickly when using solcjs parser instead of native solc", done => {
-    options.compilers.solc.version = "native";
-    delete options.compilers.solc.docker;
-    options.contracts_directory = path.join(__dirname, "./sources/v0.6.x");
-
-    const paths = [];
-    paths.push(path.join(__dirname, "./sources/v0.6.x/ComplexOrdered.sol"));
-    paths.push(path.join(__dirname, "./sources/v0.6.x/InheritB.sol"));
-
-    options.paths = paths;
-    options.resolver = new Resolver(options);
-
-    const config = Config.default().merge(options);
-
-    compile.with_dependencies(config, (err, result) => {
-      if (err) return done(err);
-
-      // This contract imports / inherits
-      assert(
-        result["ComplexOrdered"].contract_name === "ComplexOrdered",
-        "Should have compiled"
-      );
-      done();
-    });
-  }).timeout(20000);
-
-  it("properly throws when passed an invalid parser value", done => {
+  it("properly throws when passed an invalid parser value", (done) => {
     options.compilers.solc.parser = "badParser";
     options.contracts_directory = path.join(__dirname, "./sources/v0.5.x");
 

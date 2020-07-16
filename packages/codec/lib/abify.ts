@@ -6,7 +6,7 @@ import * as Common from "@truffle/codec/common";
 import {
   CalldataDecoding,
   LogDecoding,
-  ReturndataDecoding
+  ReturndataDecoding,
 } from "@truffle/codec/types";
 import BN from "bn.js";
 import * as Conversion from "@truffle/codec/conversion";
@@ -31,7 +31,7 @@ export function abifyType(
       return {
         typeClass: "address",
         kind: "general",
-        typeHint: Format.Types.typeString(dataType)
+        typeHint: Format.Types.typeString(dataType),
       };
     case "function":
       switch (dataType.visibility) {
@@ -40,7 +40,7 @@ export function abifyType(
             typeClass: "function",
             visibility: "external",
             kind: "general",
-            typeHint: Format.Types.typeString(dataType)
+            typeHint: Format.Types.typeString(dataType),
           };
         case "internal": //these don't go in the ABI
           return undefined;
@@ -61,13 +61,13 @@ export function abifyType(
       const memberTypes = fullType.memberTypes.map(
         ({ name, type: memberType }) => ({
           name,
-          type: abifyType(memberType, userDefinedTypes)
+          type: abifyType(memberType, userDefinedTypes),
         })
       );
       return {
         typeClass: "tuple",
         typeHint: Format.Types.typeString(fullType),
-        memberTypes
+        memberTypes,
       };
     }
     case "enum": {
@@ -86,7 +86,7 @@ export function abifyType(
       return {
         typeClass: "uint",
         bits,
-        typeHint: Format.Types.typeString(fullType)
+        typeHint: Format.Types.typeString(fullType),
       };
     }
     //finally: arrays
@@ -94,7 +94,7 @@ export function abifyType(
       return {
         ...dataType,
         typeHint: Format.Types.typeString(dataType),
-        baseType: abifyType(dataType.baseType, userDefinedTypes)
+        baseType: abifyType(dataType.baseType, userDefinedTypes),
       };
     //default case: just leave as-is
     default:
@@ -115,7 +115,9 @@ export function abifyResult(
       //abify the type but leave the value alone
       return {
         ...(<Format.Values.AddressResult>result),
-        type: <Format.Types.AddressType>abifyType(result.type, userDefinedTypes)
+        type: <Format.Types.AddressType>(
+          abifyType(result.type, userDefinedTypes)
+        ),
       };
     case "contract": {
       let coercedResult = <Format.Values.ContractResult>result;
@@ -128,8 +130,8 @@ export function abifyResult(
             kind: "value",
             value: {
               asAddress: coercedResult.value.address,
-              rawAsHex: coercedResult.value.rawAddress
-            }
+              rawAsHex: coercedResult.value.rawAddress,
+            },
           };
         case "error":
           switch (coercedResult.error.kind) {
@@ -142,8 +144,8 @@ export function abifyResult(
                 error: {
                   kind: "AddressPaddingError",
                   paddingType: coercedResult.error.paddingType,
-                  raw: coercedResult.error.raw
-                }
+                  raw: coercedResult.error.raw,
+                },
               };
             default:
               //other contract errors are generic errors!
@@ -152,7 +154,7 @@ export function abifyResult(
                 ...coercedResult,
                 type: <Format.Types.AddressType>(
                   abifyType(result.type, userDefinedTypes)
-                )
+                ),
               };
           }
       }
@@ -166,7 +168,7 @@ export function abifyResult(
             ...coercedResult,
             type: <Format.Types.FunctionExternalType>(
               abifyType(result.type, userDefinedTypes)
-            )
+            ),
           };
         }
         case "internal": //these don't go in the ABI
@@ -183,7 +185,7 @@ export function abifyResult(
           let abifiedMembers = coercedResult.value.map(
             ({ name, value: member }) => ({
               name,
-              value: abifyResult(member, userDefinedTypes)
+              value: abifyResult(member, userDefinedTypes),
             })
           );
           return {
@@ -191,14 +193,14 @@ export function abifyResult(
             type: <Format.Types.StructType>(
               abifyType(result.type, userDefinedTypes)
             ), //note: may throw exception
-            value: abifiedMembers
+            value: abifiedMembers,
           };
         case "error":
           return {
             ...coercedResult,
             type: <Format.Types.StructType>(
               abifyType(result.type, userDefinedTypes)
-            ) //note: may throw exception
+            ), //note: may throw exception
           };
       }
     }
@@ -217,8 +219,8 @@ export function abifyResult(
             type: uintType,
             kind: "value",
             value: {
-              asBN: coercedResult.value.numericAsBN.clone()
-            }
+              asBN: coercedResult.value.numericAsBN.clone(),
+            },
           };
         case "error":
           switch (coercedResult.error.kind) {
@@ -227,8 +229,8 @@ export function abifyResult(
                 type: uintType,
                 kind: "value",
                 value: {
-                  asBN: coercedResult.error.rawAsBN.clone()
-                }
+                  asBN: coercedResult.error.rawAsBN.clone(),
+                },
               };
             case "EnumPaddingError":
               return {
@@ -237,8 +239,8 @@ export function abifyResult(
                 error: {
                   kind: "UintPaddingError",
                   paddingType: coercedResult.error.paddingType,
-                  raw: coercedResult.error.raw
-                }
+                  raw: coercedResult.error.raw,
+                },
               };
             case "EnumNotFoundDecodingError":
               let numericValue = coercedResult.error.rawAsBN.clone();
@@ -247,8 +249,8 @@ export function abifyResult(
                   type: uintType,
                   kind: "value",
                   value: {
-                    asBN: numericValue
-                  }
+                    asBN: numericValue,
+                  },
                 };
               } else {
                 return {
@@ -257,15 +259,15 @@ export function abifyResult(
                   error: {
                     kind: "UintPaddingError",
                     paddingType: "left", //we're dealing with ABI-encoded things so we can assume this
-                    raw: Conversion.toHexString(numericValue)
-                  }
+                    raw: Conversion.toHexString(numericValue),
+                  },
                 };
               }
             default:
               return {
                 type: uintType,
                 kind: "error",
-                error: coercedResult.error
+                error: coercedResult.error,
               };
           }
       }
@@ -277,7 +279,7 @@ export function abifyResult(
           if (coercedResult.reference !== undefined) {
             return undefined; //no circular values in the ABI!
           }
-          let abifiedMembers = coercedResult.value.map(member =>
+          let abifiedMembers = coercedResult.value.map((member) =>
             abifyResult(member, userDefinedTypes)
           );
           return {
@@ -285,14 +287,14 @@ export function abifyResult(
             type: <Format.Types.ArrayType>(
               abifyType(result.type, userDefinedTypes)
             ),
-            value: abifiedMembers
+            value: abifiedMembers,
           };
         case "error":
           return {
             ...coercedResult,
             type: <Format.Types.ArrayType>(
               abifyType(result.type, userDefinedTypes)
-            )
+            ),
           };
       }
     }
@@ -315,15 +317,15 @@ export function abifyCalldataDecoding(
       return {
         ...decoding,
         decodingMode: "abi",
-        arguments: decoding.arguments.map(argument => ({
+        arguments: decoding.arguments.map((argument) => ({
           ...argument,
-          value: abifyResult(argument.value, userDefinedTypes)
-        }))
+          value: abifyResult(argument.value, userDefinedTypes),
+        })),
       };
     default:
       return {
         ...decoding,
-        decodingMode: "abi"
+        decodingMode: "abi",
       };
   }
 }
@@ -339,10 +341,10 @@ export function abifyLogDecoding(
   return {
     ...decoding,
     decodingMode: "abi",
-    arguments: decoding.arguments.map(argument => ({
+    arguments: decoding.arguments.map((argument) => ({
       ...argument,
-      value: abifyResult(argument.value, userDefinedTypes)
-    }))
+      value: abifyResult(argument.value, userDefinedTypes),
+    })),
   };
 }
 
@@ -360,15 +362,21 @@ export function abifyReturndataDecoding(
       return {
         ...decoding,
         decodingMode: "abi",
-        arguments: decoding.arguments.map(argument => ({
+        arguments: decoding.arguments.map((argument) => ({
           ...argument,
-          value: abifyResult(argument.value, userDefinedTypes)
-        }))
+          value: abifyResult(argument.value, userDefinedTypes),
+        })),
+      };
+    case "bytecode":
+      return {
+        ...decoding,
+        decodingMode: "abi",
+        immutables: undefined,
       };
     default:
       return {
         ...decoding,
-        decodingMode: "abi"
+        decodingMode: "abi",
       };
   }
 }

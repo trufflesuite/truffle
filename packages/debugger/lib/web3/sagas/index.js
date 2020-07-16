@@ -8,7 +8,7 @@ import {
   fork,
   join,
   take,
-  put
+  put,
 } from "redux-saga/effects";
 import { prefixName } from "lib/helpers";
 
@@ -20,6 +20,25 @@ import Web3 from "web3"; //just for utils!
 import * as Codec from "@truffle/codec";
 
 import Web3Adapter from "../adapter";
+
+//the following two functions are for Besu compatibility
+function padStackAndMemory(steps) {
+  return steps.map((step) => ({
+    ...step,
+    stack: step.stack.map(padHexString),
+    memory: step.memory.map(padHexString),
+  }));
+}
+
+//turns Besu-style (begins with 0x, may be shorter than 64 hexdigits)
+//to Geth/Ganache-style (no 0x, always 64 hexdigits)
+//(I say 64 hexdigits rather than 32 bytes because Besu-style will use
+//non-whole numbers of bytes!)
+function padHexString(hexString) {
+  return hexString.startsWith("0x") //Besu-style or Geth/Ganache-style?
+    ? hexString.slice(2).padStart(2 * Codec.Evm.Utils.WORD_SIZE, "0") //convert Besu to Geth/Ganache
+    : hexString; //leave Geth/Ganache style alone
+}
 
 function* fetchTransactionInfo(adapter, { txHash }) {
   debug("inspecting transaction");
@@ -33,6 +52,7 @@ function* fetchTransactionInfo(adapter, { txHash }) {
   }
 
   debug("got trace");
+  trace = padStackAndMemory(trace); //for Besu compatibility
   yield put(actions.receiveTrace(trace));
 
   let tx = yield apply(adapter, adapter.getTransaction, [txHash]);
@@ -52,7 +72,7 @@ function* fetchTransactionInfo(adapter, { txHash }) {
     difficulty: new BN(block.difficulty),
     gaslimit: new BN(block.gasLimit),
     number: new BN(block.number),
-    timestamp: new BN(block.timestamp)
+    timestamp: new BN(block.timestamp),
   };
 
   if (tx.to != null) {
@@ -65,7 +85,7 @@ function* fetchTransactionInfo(adapter, { txHash }) {
         sender: tx.from,
         value: new BN(tx.value),
         gasprice: new BN(tx.gasPrice),
-        block: solidityBlock
+        block: solidityBlock,
       })
     );
   } else {
@@ -80,7 +100,7 @@ function* fetchTransactionInfo(adapter, { txHash }) {
         sender: tx.from,
         value: new BN(tx.value),
         gasprice: new BN(tx.gasPrice),
-        block: solidityBlock
+        block: solidityBlock,
       })
     );
   }
@@ -117,7 +137,7 @@ export function* inspectTransaction(txHash) {
     sender,
     value,
     gasprice,
-    block
+    block,
   } = yield take(actions.RECEIVE_CALL);
   debug("received call");
 
@@ -131,16 +151,20 @@ export function* inspectTransaction(txHash) {
     sender,
     value,
     gasprice,
-    block
+    block,
   };
 }
 
 //NOTE: the block argument is optional
 export function* obtainBinaries(addresses, block) {
-  let tasks = yield all(addresses.map(address => fork(receiveBinary, address)));
+  let tasks = yield all(
+    addresses.map((address) => fork(receiveBinary, address))
+  );
 
   debug("requesting binaries");
-  yield all(addresses.map(address => put(actions.fetchBinary(address, block))));
+  yield all(
+    addresses.map((address) => put(actions.fetchBinary(address, block)))
+  );
 
   let binaries = [];
   binaries = yield join(tasks);
@@ -152,7 +176,8 @@ export function* obtainBinaries(addresses, block) {
 
 function* receiveBinary(address) {
   let { binary } = yield take(
-    action => action.type == actions.RECEIVE_BINARY && action.address == address
+    (action) =>
+      action.type == actions.RECEIVE_BINARY && action.address == address
   );
   debug("got binary for %s", address);
 

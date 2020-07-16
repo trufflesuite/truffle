@@ -1,13 +1,13 @@
 const {
   Web3Shim,
-  createInterfaceAdapter
+  createInterfaceAdapter,
 } = require("@truffle/interface-adapter");
 const utils = require("../utils");
 const execute = require("../execute");
 const bootstrap = require("./bootstrap");
 const debug = require("debug")("contract:contract:constructorMethods");
 
-module.exports = Contract => ({
+module.exports = (Contract) => ({
   configureNetwork({ networkType, provider } = {}) {
     // otherwise use existing value as default (at most one of these)
     networkType = networkType || this.networkType;
@@ -45,15 +45,13 @@ module.exports = Contract => ({
 
     if (!this.bytecode || this.bytecode === "0x") {
       throw new Error(
-        `${
-          this.contractName
-        } error: contract binary not set. Can't deploy new instance.\n` +
+        `${this.contractName} error: contract binary not set. Can't deploy new instance.\n` +
           `This contract may be abstract, not implement an abstract parent's methods completely\n` +
           `or not invoke an inherited contract's constructor correctly\n`
       );
     }
 
-    var constructorABI = this.abi.filter(i => i.type === "constructor")[0];
+    var constructorABI = this.abi.filter((i) => i.type === "constructor")[0];
 
     return execute.deploy.call(this, constructorABI)(...arguments);
   },
@@ -76,6 +74,9 @@ module.exports = Contract => ({
   },
 
   async deployed() {
+    if (this.reloadJson) {
+      this.reloadJson(); //truffle test monkey-patches in this method
+    }
     utils.checkProvider(this);
     await this.detectNetwork();
     utils.checkNetworkArtifactMatch(this);
@@ -92,7 +93,7 @@ module.exports = Contract => ({
       class_defaults = {};
     }
 
-    Object.keys(class_defaults).forEach(key => {
+    Object.keys(class_defaults).forEach((key) => {
       const value = class_defaults[key];
       this.class_defaults[key] = value;
     });
@@ -163,7 +164,7 @@ module.exports = Contract => ({
       this.link(contract.contractName, contract.address);
 
       // Merge events so this contract knows about library's events
-      Object.keys(contract.events).forEach(topic => {
+      Object.keys(contract.events).forEach((topic) => {
         this.network.events[topic] = contract.events[topic];
       });
 
@@ -173,7 +174,7 @@ module.exports = Contract => ({
     // Case: Contract.link({<libraryName>: <address>, ... })
     if (typeof name === "object") {
       const obj = name;
-      Object.keys(obj).forEach(name => {
+      Object.keys(obj).forEach((name) => {
         const a = obj[name];
         this.link(name, a);
       });
@@ -184,7 +185,7 @@ module.exports = Contract => ({
     if (this._json.networks[this.network_id] == null) {
       this._json.networks[this.network_id] = {
         events: {},
-        links: {}
+        links: {},
       };
     }
 
@@ -231,12 +232,12 @@ module.exports = Contract => ({
     if (this.currentProvider) {
       temp.configureNetwork({
         provider: this.currentProvider,
-        networkType: this.networkType
+        networkType: this.networkType,
       });
     }
 
     // Copy over custom key/values to the contract class
-    Object.keys(json).forEach(key => {
+    Object.keys(json).forEach((key) => {
       if (key.indexOf("x-") !== 0) return;
       temp[key] = json[key];
     });
@@ -253,7 +254,7 @@ module.exports = Contract => ({
       return this._property_values[key] || fn.call(this);
     };
 
-    const setter = val => {
+    const setter = (val) => {
       if (fn.set != null) {
         fn.set.call(this, val);
         return;
@@ -276,5 +277,5 @@ module.exports = Contract => ({
     return this._json;
   },
 
-  decodeLogs: utils.decodeLogs
+  decodeLogs: utils.decodeLogs,
 });

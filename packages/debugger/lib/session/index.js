@@ -2,6 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:session");
 
 import * as Codec from "@truffle/codec";
+import { keccak256 } from "lib/helpers";
 
 import configureStore from "lib/store";
 
@@ -14,6 +15,8 @@ import * as dataSagas from "lib/data/sagas";
 import * as controllerSagas from "lib/controller/sagas";
 import * as sagas from "./sagas";
 import controllerSelector from "lib/controller/selectors";
+
+import { createNestedSelector } from "reselect-tree";
 
 import ast from "lib/ast/selectors";
 import trace from "lib/trace/selectors";
@@ -40,7 +43,7 @@ export default class Session {
      * @private
      */
     let { store, sagaMiddleware } = configureStore(reducer, rootSaga, [
-      moduleOptions
+      moduleOptions,
     ]);
     this._store = store;
     this._sagaMiddleware = sagaMiddleware;
@@ -136,7 +139,7 @@ export default class Session {
           ...source,
           compiler: source.compiler || compiler,
           compilationId: compilation.id,
-          id: index
+          id: index,
         };
       }
 
@@ -150,7 +153,7 @@ export default class Session {
           immutableReferences,
           abi,
           compiler,
-          primarySourceId
+          primarySourceId,
         } = contract;
 
         //hopefully we can get rid of this step eventually, but not yet
@@ -165,7 +168,7 @@ export default class Session {
         if (primarySourceId !== undefined) {
           //I'm assuming this finds it! it had better!
           primarySourceIndex = compilation.sources.findIndex(
-            source => source && source.id === primarySourceId
+            (source) => source && source.id === primarySourceId
           );
         }
         //otherwise leave it undefined
@@ -198,7 +201,8 @@ export default class Session {
             compilationId: compilation.id,
             contractId,
             contractKind,
-            isConstructor: true
+            externalSolidity: compilation.externalSolidity,
+            isConstructor: true,
           });
         }
 
@@ -214,11 +218,34 @@ export default class Session {
             compilationId: compilation.id,
             contractId,
             contractKind,
-            isConstructor: false
+            externalSolidity: compilation.externalSolidity,
+            isConstructor: false,
           });
         }
       }
     }
+
+    //now: turn contexts from array into object
+    contexts = Object.assign(
+      {},
+      ...contexts.map((context) => {
+        const contextHash = keccak256({
+          type: "string",
+          value: context.binary,
+        });
+        //NOTE: we take hash as *string*, not as bytes, because the binary may
+        //contain link references!
+        return {
+          [contextHash]: {
+            ...context,
+            context: contextHash,
+          },
+        };
+      })
+    );
+
+    //normalize contexts
+    contexts = Codec.Contexts.Utils.normalizeContexts(contexts);
 
     return { contexts, sources };
   }
@@ -253,7 +280,7 @@ export default class Session {
   }
 
   async doneStepping(stepperAction) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       let hasStarted = false;
       const unsubscribe = this._store.subscribe(() => {
         const isStepping = this.view(controllerSelector.isStepping);
@@ -386,6 +413,16 @@ export default class Session {
     return decoded;
   }
 
+  async returnValue() {
+    if (
+      !this.view(session.status.loaded) ||
+      !this.view(evm.current.step.isHalting)
+    ) {
+      return null;
+    }
+    return await this._runSaga(dataSagas.decodeReturnValue);
+  }
+
   callstack() {
     if (!this.view(session.status.loaded)) {
       return null;
@@ -404,6 +441,15 @@ export default class Session {
     return this; //for compatibility
   }
 
+  async addExternalCompilations(compilations) {
+    let { contexts, sources } = Session.normalize(compilations);
+    return await this.dispatch(actions.addCompilations(sources, contexts));
+  }
+
+  async startFullMode() {
+    return await this.dispatch(actions.startFullMode());
+  }
+
   get selectors() {
     return createNestedSelector({
       ast,
@@ -413,7 +459,7 @@ export default class Session {
       solidity,
       stacktrace,
       session,
-      controller: controllerSelector
+      controller: controllerSelector,
     });
   }
 }

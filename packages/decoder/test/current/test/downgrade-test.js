@@ -4,7 +4,7 @@ const Big = require("big.js");
 const clonedeep = require("lodash.clonedeep");
 
 const Decoder = require("../../..");
-const Codec = require("../../../../codec");
+const Codec = require("@truffle/codec");
 
 const DowngradeTest = artifacts.require("DowngradeTest");
 const DowngradeTestParent = artifacts.require("DowngradeTestParent");
@@ -80,7 +80,7 @@ async function runTestBody(
   fullMode = false
 ) {
   let decoder = await Decoder.forProject(web3.currentProvider, {
-    compilations: mangledCompilations
+    compilations: mangledCompilations,
   });
   let deployedContract = await DowngradeTest.new();
   let address = deployedContract.address;
@@ -129,26 +129,26 @@ async function runTestBody(
   }
 }
 
-contract("DowngradeTest", function(accounts) {
-  it("Correctly degrades on allocation when no node", async function() {
+contract("DowngradeTest", function (accounts) {
+  it("Correctly degrades on allocation when no node", async function () {
     let mangledCompilations = clonedeep(compilations);
-    let source = mangledCompilations[0].sources.find(x => x); //find defined source
+    let source = mangledCompilations[0].sources.find((x) => x); //find defined source
     source.ast = undefined;
 
     await runTestBody(mangledCompilations);
   });
 
-  it("Correctly degrades on allocation when error", async function() {
+  it("Correctly degrades on allocation when error", async function () {
     let mangledCompilations = clonedeep(compilations);
-    let source = mangledCompilations[0].sources.find(x => x); //find defined source
+    let source = mangledCompilations[0].sources.find((x) => x); //find defined source
 
     let contractNode = source.ast.nodes.find(
-      node =>
+      (node) =>
         node.nodeType === "ContractDefinition" && node.name === "DowngradeTest"
     );
 
     let structNode = contractNode.nodes.find(
-      node => node.nodeType === "StructDefinition" && node.name === "Pair"
+      (node) => node.nodeType === "StructDefinition" && node.name === "Pair"
     );
 
     structNode.nodeType = "Ninja"; //fake node type which will prevent
@@ -157,17 +157,17 @@ contract("DowngradeTest", function(accounts) {
     await runTestBody(mangledCompilations, true);
   });
 
-  it("Correctly degrades on decoding when error", async function() {
+  it("Correctly degrades on decoding when error", async function () {
     let mangledCompilations = clonedeep(compilations);
-    let source = mangledCompilations[0].sources.find(x => x); //find defined source
+    let source = mangledCompilations[0].sources.find((x) => x); //find defined source
 
     let contractNode = source.ast.nodes.find(
-      node =>
+      (node) =>
         node.nodeType === "ContractDefinition" && node.name === "DowngradeTest"
     );
 
     let enumNode = contractNode.nodes.find(
-      node => node.nodeType === "EnumDefinition" && node.name === "Ternary"
+      (node) => node.nodeType === "EnumDefinition" && node.name === "Ternary"
     );
 
     enumNode.nodeType = "Ninja"; //fake node type which will prevent
@@ -176,25 +176,25 @@ contract("DowngradeTest", function(accounts) {
     await runTestBody(mangledCompilations, true);
   });
 
-  it("Correctly abifies after finishing", async function() {
+  it("Correctly abifies after finishing", async function () {
     await runTestBody(compilations, false, true); //for once, we're not modifying it!
   });
 
-  it("Correctly decodes decimals", async function() {
+  it("Correctly decodes decimals", async function () {
     let mangledCompilations = clonedeep(compilations);
     let downgradeTest = mangledCompilations[0].contracts.find(
-      contract => contract.contractName === "DowngradeTest"
+      (contract) => contract.contractName === "DowngradeTest"
     );
 
     //HACK
     //Let's tweak that ABI a little before setting up the decoder...
     downgradeTest.abi.find(
-      abiEntry => abiEntry.name === "shhImADecimal"
+      (abiEntry) => abiEntry.name === "shhImADecimal"
     ).inputs[0].type = "fixed168x10";
 
     //...and now let's set up a decoder for our hacked-up contract artifact.
     let decoder = await Decoder.forProject(web3.currentProvider, {
-      compilations: mangledCompilations
+      compilations: mangledCompilations,
     });
 
     //the ethers encoder can't yet handle fixed-point
@@ -206,12 +206,12 @@ contract("DowngradeTest", function(accounts) {
       type: {
         typeClass: "fixed",
         bits: 168,
-        places: 10
+        places: 10,
       },
       kind: "value",
       value: {
-        asBig: tau
-      }
+        asBig: tau,
+      },
     };
     const encodedTau = Codec.AbiData.Encode.encodeTupleAbi([wrappedTau]);
     const hexTau = Codec.Conversion.toHexString(encodedTau);
@@ -225,7 +225,7 @@ contract("DowngradeTest", function(accounts) {
     let decimalResult = await web3.eth.sendTransaction({
       from: accounts[0],
       to: address,
-      data
+      data,
     });
 
     debug("decimalResult: %O", decimalResult);
@@ -250,14 +250,14 @@ contract("DowngradeTest", function(accounts) {
     assert(txDecoding.arguments[0].value.value.asBig.eq(tau));
   });
 
-  it("Correctly decodes inherited events when no node", async function() {
+  it("Correctly decodes inherited events when no node", async function () {
     let mangledCompilations = clonedeep(compilations);
-    let source = mangledCompilations[0].sources.find(x => x); //find defined source
+    let source = mangledCompilations[0].sources.find((x) => x); //find defined source
     source.ast = undefined;
 
     //...and now let's set up a decoder for our hacked-up contract artifact.
     let decoder = await Decoder.forProject(web3.currentProvider, {
-      compilations: mangledCompilations
+      compilations: mangledCompilations,
     });
 
     let deployedContract = await DowngradeTest.new();
@@ -277,8 +277,8 @@ contract("DowngradeTest", function(accounts) {
     assert.isEmpty(logDecodings[0].arguments);
   });
 
-  describe("Out-of-range enums", function() {
-    it("Doesn't include out-of-range enums in full mode", async function() {
+  describe("Out-of-range enums", function () {
+    it("Doesn't include out-of-range enums in full mode", async function () {
       let decoder = await Decoder.forProject(
         web3.currentProvider,
         { compilations } //not modifying for once!
@@ -301,17 +301,17 @@ contract("DowngradeTest", function(accounts) {
       assert.strictEqual(indexedLogDecodings[0].decodingMode, "full");
     });
 
-    it("Abifies correctly when failure occurs in first enum", async function() {
+    it("Abifies correctly when failure occurs in first enum", async function () {
       let mangledCompilations = clonedeep(compilations);
-      let source = mangledCompilations[0].sources.find(x => x); //find defined source
+      let source = mangledCompilations[0].sources.find((x) => x); //find defined source
 
       let contractNode = source.ast.nodes.find(
-        node =>
+        (node) =>
           node.nodeType === "ContractDefinition" &&
           node.name === "DowngradeTest"
       );
       let enumNode = contractNode.nodes.find(
-        node => node.nodeType === "EnumDefinition" && node.name === "Ternary"
+        (node) => node.nodeType === "EnumDefinition" && node.name === "Ternary"
       );
       enumNode.nodeType = "Ninja"; //fake node type which will prevent
       //the decoder from recognizing it as a enum definition
@@ -319,17 +319,17 @@ contract("DowngradeTest", function(accounts) {
       await runEnumTestBody(mangledCompilations);
     });
 
-    it("Abifies correctly when failure occurs in second enum", async function() {
+    it("Abifies correctly when failure occurs in second enum", async function () {
       let mangledCompilations = clonedeep(compilations);
-      let source = mangledCompilations[0].sources.find(x => x); //find defined source
+      let source = mangledCompilations[0].sources.find((x) => x); //find defined source
 
       let contractNode = source.ast.nodes.find(
-        node =>
+        (node) =>
           node.nodeType === "ContractDefinition" &&
           node.name === "DowngradeTest"
       );
       let enumNode = contractNode.nodes.find(
-        node =>
+        (node) =>
           node.nodeType === "EnumDefinition" && node.name === "PositionOnHill"
       );
       enumNode.nodeType = "Ninja"; //fake node type which will prevent
@@ -338,17 +338,17 @@ contract("DowngradeTest", function(accounts) {
     });
   });
 
-  it("Decodes external functions via additionalContexts", async function() {
+  it("Decodes external functions via additionalContexts", async function () {
     let mangledCompilations = clonedeep(compilations);
     let downgradeTest = mangledCompilations[0].contracts.find(
-      contract => contract.contractName === "DowngradeTest"
+      (contract) => contract.contractName === "DowngradeTest"
     );
     downgradeTest.deployedBytecode = undefined;
 
     let deployedContract = await DowngradeTest.new();
     let address = deployedContract.address;
     let decoder = await Decoder.forContractInstance(deployedContract, {
-      compilations: mangledCompilations
+      compilations: mangledCompilations,
     });
 
     let decodedFunction = await decoder.variable("doYouSeeMe");
@@ -370,13 +370,13 @@ contract("DowngradeTest", function(accounts) {
     assert.strictEqual(decodedFunction.value.selector, selector);
   });
 
-  it("Partially decodes internal functions when unreliable order", async function() {
+  it("Partially decodes internal functions when unreliable order", async function () {
     let mangledCompilations = clonedeep(compilations);
     mangledCompilations[0].unreliableSourceOrder = true;
 
     let deployedContract = await DowngradeTest.new();
     let decoder = await Decoder.forContractInstance(deployedContract, {
-      compilations: mangledCompilations
+      compilations: mangledCompilations,
     });
 
     let decodedFunction = await decoder.variable("canYouReadMe");
@@ -391,16 +391,16 @@ contract("DowngradeTest", function(accounts) {
     //we won't bother testing the PC values
   });
 
-  it("Decodes return values even with no deployedBytecode", async function() {
+  it("Decodes return values even with no deployedBytecode", async function () {
     let mangledCompilations = clonedeep(compilations);
     let downgradeTest = mangledCompilations[0].contracts.find(
-      contract => contract.contractName === "DowngradeTest"
+      (contract) => contract.contractName === "DowngradeTest"
     );
     downgradeTest.deployedBytecode = undefined;
 
     let deployedContract = await DowngradeTest.new();
     let decoder = await Decoder.forContract(DowngradeTest, {
-      compilations: mangledCompilations
+      compilations: mangledCompilations,
     });
 
     let abiEntry = DowngradeTest.abi.find(
@@ -413,7 +413,7 @@ contract("DowngradeTest", function(accounts) {
 
     let data = await web3.eth.call({
       to: deployedContract.address,
-      data: selector
+      data: selector,
     });
 
     let decodings = await decoder.decodeReturnValue(abiEntry, data);
@@ -426,7 +426,7 @@ contract("DowngradeTest", function(accounts) {
       Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
       {
         x: 107,
-        y: 683
+        y: 683,
       }
     );
     assert.strictEqual(
@@ -438,7 +438,7 @@ contract("DowngradeTest", function(accounts) {
 
 async function runEnumTestBody(mangledCompilations) {
   let decoder = await Decoder.forProject(web3.currentProvider, {
-    compilations: mangledCompilations
+    compilations: mangledCompilations,
   });
   let deployedContract = await DowngradeTest.new();
 
@@ -448,7 +448,7 @@ async function runEnumTestBody(mangledCompilations) {
     txArguments[2],
     txArguments[3],
     txArguments[0],
-    txArguments[1]
+    txArguments[1],
   ];
 
   let result = await deployedContract.enumSilliness(...txArguments);

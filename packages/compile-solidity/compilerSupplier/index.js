@@ -45,39 +45,33 @@ class CompilerSupplier {
     throw new Error(message);
   }
 
-  load() {
+  async load() {
     const userSpecification = this.version;
 
-    return new Promise(async (resolve, reject) => {
-      let strategy;
-      const useDocker = this.docker;
-      const useNative = userSpecification === "native";
-      const useSpecifiedLocal =
-        userSpecification && this.fileExists(userSpecification);
-      const isValidVersionRange = semver.validRange(userSpecification);
+    let strategy;
+    const useDocker = this.docker;
+    const useNative = userSpecification === "native";
+    const useSpecifiedLocal =
+      userSpecification && this.fileExists(userSpecification);
+    const isValidVersionRange = semver.validRange(userSpecification);
 
-      if (useDocker) {
-        strategy = new Docker(this.strategyOptions);
-      } else if (useNative) {
-        strategy = new Native(this.strategyOptions);
-      } else if (useSpecifiedLocal) {
-        strategy = new Local(this.strategyOptions);
-      } else if (isValidVersionRange) {
-        strategy = new VersionRange(this.strategyOptions);
-      }
+    if (useDocker) {
+      strategy = new Docker(this.strategyOptions);
+    } else if (useNative) {
+      strategy = new Native(this.strategyOptions);
+    } else if (useSpecifiedLocal) {
+      strategy = new Local(this.strategyOptions);
+    } else if (isValidVersionRange) {
+      strategy = new VersionRange(this.strategyOptions);
+    }
 
-      if (strategy) {
-        try {
-          const solc = await strategy.load(userSpecification);
-          const parserSolc = await this.loadParserSolc(this.parser, solc);
-          resolve({ solc, parserSolc });
-        } catch (error) {
-          reject(error);
-        }
-      } else {
-        reject(this.badInputError(userSpecification));
-      }
-    });
+    if (strategy) {
+      const solc = await strategy.load(userSpecification);
+      const parserSolc = await this.loadParserSolc(this.parser, solc);
+      return { solc, parserSolc };
+    } else {
+      throw this.badInputError(userSpecification);
+    }
   }
 
   async loadParserSolc(parser, solc) {
@@ -86,7 +80,7 @@ class CompilerSupplier {
       const solcVersion = solc.version();
       const normalizedSolcVersion = semver.coerce(solcVersion).version;
       const options = Object.assign({}, this.strategyOptions, {
-        version: normalizedSolcVersion
+        version: normalizedSolcVersion,
       });
       return await new VersionRange(options).load(normalizedSolcVersion);
     }
@@ -111,17 +105,17 @@ class CompilerSupplier {
   getReleases() {
     return new VersionRange(this.strategyOptions)
       .getSolcVersions()
-      .then(list => {
+      .then((list) => {
         const prereleases = list.builds
-          .filter(build => build["prerelease"])
-          .map(build => build["longVersion"]);
+          .filter((build) => build["prerelease"])
+          .map((build) => build["longVersion"]);
 
         const releases = Object.keys(list.releases);
 
         return {
           prereleases: prereleases,
           releases: releases,
-          latestRelease: list.latestRelease
+          latestRelease: list.latestRelease,
         };
       });
   }

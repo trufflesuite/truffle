@@ -23,6 +23,10 @@ export function typeString(definition: AstNode): string {
  * @category Definition Reading
  */
 export function typeStringWithoutLocation(definition: AstNode): string {
+  if (definition.nodeType === "YulTypedName") {
+    //for handling Yul variables
+    return "bytes32";
+  }
   return typeString(definition).replace(
     / (storage|memory|calldata)( slice)?$/,
     ""
@@ -37,6 +41,10 @@ export function typeStringWithoutLocation(definition: AstNode): string {
  * @category Definition Reading
  */
 export function typeClass(definition: AstNode): string {
+  if (definition.nodeType === "YulTypedName") {
+    //for handling Yul variables
+    return "bytes";
+  }
   return typeIdentifier(definition).match(/t_([^$_0-9]+)/)[1];
 }
 
@@ -85,6 +93,9 @@ export function visibility(definition: AstNode): Common.Visibility {
  * @category Definition Reading
  */
 export function specifiedSize(definition: AstNode): number {
+  if (definition.nodeType === "YulTypedName") {
+    return 32; //for handling Yul variables
+  }
   let specified = typeIdentifier(definition).match(/t_[a-z]+([0-9]+)/);
 
   if (!specified) {
@@ -253,8 +264,8 @@ export function spliceLocation(
       typeIdentifier: definition.typeDescriptions.typeIdentifier.replace(
         /_(storage|memory|calldata)(?=((_slice)?_ptr)?$)/,
         "_" + location
-      )
-    }
+      ),
+    },
   };
 }
 
@@ -265,8 +276,9 @@ export function spliceLocation(
  */
 export function regularizeTypeIdentifier(identifier: string): string {
   return identifier.replace(
-    /(?<=_(storage|memory|calldata))((_slice)?_ptr)?$/,
-    "_ptr"
+    /(_(storage|memory|calldata))((_slice)?_ptr)?$/,
+    "$1_ptr" //this used to use lookbehind for clarity, but Firefox...
+    //(see: https://github.com/trufflesuite/truffle/issues/3068 )
   );
 }
 
@@ -360,7 +372,7 @@ export function keyDefinition(definition: AstNode, scopes?: Scopes): AstNode {
       result = cloneDeep(definition);
       result.typeDescriptions = {
         typeIdentifier: keyIdentifier,
-        typeString: keyString
+        typeString: keyString,
       };
       return result;
 
@@ -370,7 +382,7 @@ export function keyDefinition(definition: AstNode, scopes?: Scopes): AstNode {
       result = cloneDeep(definition);
       result.typeDescriptions = {
         typeIdentifier: "t_uint256",
-        typeString: "uint256"
+        typeString: "uint256",
       };
       return result;
     default:
@@ -425,7 +437,7 @@ export function valueDefinition(definition: AstNode, scopes?: Scopes): AstNode {
   result = cloneDeep(definition);
   result.typeDescriptions = {
     typeIdentifier: valueIdentifier,
-    typeString: valueString
+    typeString: valueString,
   };
   return result;
 }
@@ -441,7 +453,7 @@ export function parameters(definition: AstNode): [AstNode[], AstNode[]] {
   if (typeObject.parameterTypes && typeObject.returnParameterTypes) {
     return [
       typeObject.parameterTypes.parameters,
-      typeObject.returnParameterTypes.parameters
+      typeObject.returnParameterTypes.parameters,
     ];
   } else {
     return undefined;
@@ -505,7 +517,7 @@ export function mutability(node: AstNode): Common.Mutability | undefined {
  */
 export function isContractPayable(definition: AstNode): boolean {
   return definition.nodes.some(
-    node =>
+    (node) =>
       node.nodeType === "FunctionDefinition" &&
       (functionKind(node) === "fallback" || functionKind(node) === "receive") &&
       mutability(node) === "payable"
@@ -572,7 +584,7 @@ function functionDefinitionToAbi(
         outputs,
         stateMutability,
         constant,
-        payable
+        payable,
       };
     case "constructor":
       inputs = parametersToAbi(
@@ -584,21 +596,21 @@ function functionDefinitionToAbi(
         type: "constructor",
         inputs,
         stateMutability,
-        payable
+        payable,
       };
     case "fallback":
       //note: need to coerce because of mutability restrictions
       return <AbiData.FallbackAbiEntry>{
         type: "fallback",
         stateMutability,
-        payable
+        payable,
       };
     case "receive":
       //note: need to coerce because of mutability restrictions
       return <AbiData.ReceiveAbiEntry>{
         type: "receive",
         stateMutability,
-        payable
+        payable,
       };
   }
 }
@@ -618,7 +630,7 @@ function eventDefinitionToAbi(
     type: "event",
     inputs,
     name,
-    anonymous
+    anonymous,
   };
 }
 
@@ -627,7 +639,7 @@ function parametersToAbi(
   referenceDeclarations: AstNodes,
   checkIndexed: boolean = false
 ): AbiData.AbiParameter[] {
-  return nodes.map(node =>
+  return nodes.map((node) =>
     parameterToAbi(node, referenceDeclarations, checkIndexed)
   );
 }
@@ -661,7 +673,7 @@ function parameterToAbi(
       type: baseAbi.type + arraySuffix,
       indexed,
       components: baseAbi.components,
-      internalType
+      internalType,
     };
   }
   let abiTypeString = toAbiType(node, referenceDeclarations);
@@ -687,7 +699,7 @@ function parameterToAbi(
     type: abiTypeString,
     indexed, //undefined if !checkedIndex
     components, //undefined if not a struct or (multidim) array of structs
-    internalType
+    internalType,
   };
 }
 
@@ -742,7 +754,7 @@ function getterDefinitionToAbi(
     outputs: outputsAbi,
     stateMutability: "view",
     constant: true,
-    payable: false
+    payable: false,
   };
 }
 
@@ -792,7 +804,8 @@ export function getterParameters(
       );
     }
     let outputs = referenceDeclaration.members.filter(
-      member => typeClass(member) !== "array" && typeClass(member) !== "mapping"
+      (member) =>
+        typeClass(member) !== "array" && typeClass(member) !== "mapping"
     );
     return { inputs, outputs }; //no need to wash name!
   } else {

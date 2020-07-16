@@ -3,23 +3,22 @@ const path = require("path");
 const OS = require("os");
 const BlockchainUtils = require("@truffle/blockchain-utils");
 const Provider = require("@truffle/provider");
-const async = require("async");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 
 const Networks = {
-  deployed: async function(options) {
+  deployed: async function (options) {
     let files;
     try {
       // Only read JSON files in directory
       files = fs
         .readdirSync(options.contracts_build_directory)
-        .filter(fn => fn.endsWith(".json"));
+        .filter((fn) => fn.endsWith(".json"));
     } catch (error) {
       // We can't read the directory. Act like we found nothing.
       files = [];
     }
 
-    const binaries = files.map(file => {
+    const binaries = files.map((file) => {
       const filePath = path.join(options.contracts_build_directory, file);
       const fileContents = fs.readFileSync(filePath, "utf8");
       return JSON.parse(fileContents);
@@ -54,7 +53,7 @@ const Networks = {
     return networks;
   },
 
-  display: async function(config) {
+  display: async function (config) {
     const networks = await this.deployed(config);
     const { networkNames, starNetworks } = Object.keys(networks)
       .sort()
@@ -73,7 +72,7 @@ const Networks = {
         { networkNames: [], starNetworks: [] }
       );
 
-    const unknownNetworks = networkNames.filter(networkName => {
+    const unknownNetworks = networkNames.filter((networkName) => {
       const configuredNetworks = Object.keys(config.networks);
       let found = false;
       for (let i = 0; i < configuredNetworks.length; i++) {
@@ -103,7 +102,7 @@ const Networks = {
           OS.EOL
       );
 
-      starNetworks.forEach(networkName => {
+      starNetworks.forEach((networkName) => {
         config.logger.log("    " + networkName);
       });
 
@@ -113,12 +112,12 @@ const Networks = {
       );
     }
 
-    networkNames.forEach(networkName => {
+    networkNames.forEach((networkName) => {
       config.logger.log("");
 
       let output = Object.keys(networks[networkName])
         .sort()
-        .map(contract_name => {
+        .map((contract_name) => {
           const address = networks[networkName][contract_name];
           return contract_name + ": " + address;
         });
@@ -151,15 +150,15 @@ const Networks = {
     config.logger.log("");
   },
 
-  clean: async function(config) {
+  clean: async function (config) {
     // Only read JSON files in directory
     let files = fs
       .readdirSync(config.contracts_build_directory)
-      .filter(fn => fn.endsWith(".json"));
+      .filter((fn) => fn.endsWith(".json"));
     const configuredNetworks = Object.keys(config.networks);
     const results = [];
 
-    files.forEach(file => {
+    files.forEach((file) => {
       const filePath = path.join(config.contracts_build_directory, file);
       const fileContents = fs.readFileSync(filePath, "utf8");
       const body = JSON.parse(fileContents);
@@ -199,70 +198,54 @@ const Networks = {
   },
 
   // Try to connect to every named network except for "test" and "development"
-  asURIs: function(options, networks, callback) {
-    if (typeof networks === "function") {
-      callback = networks;
-      networks = Object.keys(options.networks);
-    }
-
+  asURIs: async function (options, networks) {
     const result = {
       uris: {},
-      failed: []
+      failed: [],
     };
 
-    async.each(
-      networks,
-      (network_name, finished) => {
-        const provider = Provider.create(options.networks[network_name]);
-        BlockchainUtils.asURI(provider, (err, uri) => {
-          if (err) {
-            result.failed.push(network_name);
-          } else {
-            result.uris[network_name] = uri;
-          }
-          finished();
-        });
-      },
-      error => {
-        if (error) return callback(error);
-        callback(null, result);
+    for (const networkName of networks) {
+      const provider = Provider.create(options.networks[networkName]);
+      try {
+        const uri = await BlockchainUtils.asURI(provider);
+        result.uris[networkName] = uri;
+      } catch (error) {
+        result.failed.push(networkName);
       }
-    );
+    }
+
+    return result;
   },
 
-  matchesNetwork: async function(network_id, network_options, callback) {
+  matchesNetwork: async function (network_id, network_options) {
     const provider = Provider.create(network_options);
 
     const first = network_id + "";
     const second = network_options.network_id + "";
 
-    if (first === second) return callback(null, true);
+    if (first === second) return true;
 
     const isFirstANumber = isNaN(parseInt(network_id)) === false;
     const isSecondANumber =
       isNaN(parseInt(network_options.network_id)) === false;
 
     // If both network ids are numbers, then they don't match, and we should quit.
-    if (isFirstANumber && isSecondANumber) return callback(null, false);
+    if (isFirstANumber && isSecondANumber) return false;
 
     const interfaceAdapter = createInterfaceAdapter({
       provider,
-      networkType: network_options.type
+      networkType: network_options.type,
     });
 
-    try {
-      const currentNetworkID = await interfaceAdapter.getNetworkId();
-      if (first === currentNetworkID) return callback(null, true);
-      if (isFirstANumber === false)
-        BlockchainUtils.matches(first, provider, callback);
-      else {
-        // Nothing else to compare.
-        return callback(null, false);
-      }
-    } catch (error) {
-      return callback(error);
+    const currentNetworkID = await interfaceAdapter.getNetworkId();
+    if (first === currentNetworkID) return true;
+    if (isFirstANumber === false)
+      await BlockchainUtils.matches(first, provider);
+    else {
+      // Nothing else to compare.
+      return false;
     }
-  }
+  },
 };
 
 module.exports = Networks;

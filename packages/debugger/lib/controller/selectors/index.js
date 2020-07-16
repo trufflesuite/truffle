@@ -11,7 +11,7 @@ import trace from "lib/trace/selectors";
 /**
  * @private
  */
-const identity = x => x;
+const identity = (x) => x;
 
 function anyNonSkippedInRange(
   findOverlappingRange,
@@ -22,12 +22,20 @@ function anyNonSkippedInRange(
   let sourceEnd = sourceStart + sourceLength;
   return findOverlappingRange(sourceStart, sourceLength).some(
     ({ range, node }) =>
-      sourceStart <= range[0] && //we want to go by starting line
-      range[0] < sourceEnd &&
-      !isSkippedNodeType(node)
+      isOldStyleAssembly(node) ||
+      (sourceStart <= range[0] && //we want to go by starting line
+        range[0] < sourceEnd &&
+        !isSkippedNodeType(node))
     //NOTE: this doesn't actually catch everything skipped!  But doing better
     //is hard
   );
+}
+
+//catches InlineAssembly nodes from before 0.6.0.
+//We want to be able to place breakpoints if something merely *overlaps*
+//one of these, because, well, we can't really look inside and do better.
+function isOldStyleAssembly(node) {
+  return node.nodeType === "InlineAssembly" && !node.AST;
 }
 
 /**
@@ -37,7 +45,7 @@ const controller = createSelectorTree({
   /**
    * controller.state
    */
-  state: state => state.controller,
+  state: (state) => state.controller,
   /**
    * controller.current
    */
@@ -91,7 +99,7 @@ const controller = createSelectorTree({
       isMultiline: createLeaf(
         [solidity.current.isMultiline, "/current/trace/loaded"],
         (raw, loaded) => (loaded ? raw : false)
-      )
+      ),
     },
 
     /*
@@ -106,8 +114,8 @@ const controller = createSelectorTree({
       /**
        * controller.current.trace.loaded
        */
-      loaded: createLeaf([trace.loaded], identity)
-    }
+      loaded: createLeaf([trace.loaded], identity),
+    },
   },
 
   /**
@@ -117,7 +125,7 @@ const controller = createSelectorTree({
     /**
      * controller.breakpoints (selector)
      */
-    _: createLeaf(["/state"], state => state.breakpoints),
+    _: createLeaf(["/state"], (state) => state.breakpoints),
 
     /**
      * controller.breakpoints.resolver (selector)
@@ -129,7 +137,7 @@ const controller = createSelectorTree({
      */
     resolver: createLeaf(
       [solidity.info.sources, solidity.views.findOverlappingRange],
-      (sources, functions) => breakpoint => {
+      (sources, functions) => (breakpoint) => {
         let adjustedBreakpoint;
         if (breakpoint.node === undefined) {
           let line = breakpoint.line;
@@ -140,7 +148,7 @@ const controller = createSelectorTree({
           ];
           let findOverlappingRange =
             functions[breakpoint.compilationId][breakpoint.sourceId];
-          let lineLengths = source.split("\n").map(line => line.length);
+          let lineLengths = source.split("\n").map((line) => line.length);
           //why does neither JS nor lodash have a scan function like Haskell??
           //guess we'll have to do our scan manually
           let lineStarts = [0];
@@ -175,19 +183,19 @@ const controller = createSelectorTree({
         }
         return adjustedBreakpoint;
       }
-    )
+    ),
   },
 
   /**
    * controller.finished
    * deprecated alias for controller.current.trace.finished
    */
-  finished: createLeaf(["/current/trace/finished"], finished => finished),
+  finished: createLeaf(["/current/trace/finished"], (finished) => finished),
 
   /**
    * controller.isStepping
    */
-  isStepping: createLeaf(["./state"], state => state.isStepping)
+  isStepping: createLeaf(["./state"], (state) => state.isStepping),
 });
 
 export default controller;

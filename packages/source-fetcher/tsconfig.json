@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es5",
+    "downlevelIteration": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "lib": ["es2017"],
+    "paths": {
+    },
+    "rootDir": "lib",
+    "typeRoots": [
+      "./typings",
+      "../../**/node_modules/@types/debug"
+    ]
+
+  },
+  "include": [
+    "./lib/**/*.ts",
+    "./typings/**/*.d.ts"
+  ]
+
+}

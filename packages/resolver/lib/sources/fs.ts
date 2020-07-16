@@ -61,26 +61,29 @@ export class FS implements ResolverSource {
     importedFrom = importedFrom || "";
     const possiblePaths = [
       importPath,
-      path.join(path.dirname(importedFrom), importPath)
+      path.join(path.dirname(importedFrom), importPath),
     ];
 
     let body, filePath;
-    possiblePaths.forEach(possiblePath => {
+    for (const possiblePath of possiblePaths) {
       try {
         const resolvedSource = fs.readFileSync(possiblePath, {
-          encoding: "utf8"
+          encoding: "utf8",
         });
         body = resolvedSource;
         filePath = possiblePath;
+
+        return { body, filePath };
       } catch (error) {
         // do nothing
       }
-    });
+    }
+
     return { body, filePath };
   }
 
   // Here we're resolving from local files to local files, all absolute.
-  resolve_dependency_path(importPath: string, dependencyPath: string) {
+  resolveDependencyPath(importPath: string, dependencyPath: string) {
     const dirname = path.dirname(importPath);
     return path.resolve(path.join(dirname, dependencyPath));
   }

@@ -3,24 +3,24 @@ const assert = require("assert");
 const Config = require("@truffle/config");
 const compile = require("../index");
 
-describe("vyper compiler", function() {
-  this.timeout(10000);
+describe("vyper compiler", function () {
+  this.timeout(20000);
 
   const defaultSettings = {
     contracts_directory: path.join(__dirname, "./sources/"),
     quiet: true,
-    all: true
+    all: true,
   };
   const config = new Config().merge(defaultSettings);
 
-  it("compiles vyper contracts", function(done) {
-    compile.all(config, function(err, contracts, paths) {
+  it("compiles vyper contracts", function (done) {
+    compile.all(config, function (err, contracts, paths) {
       assert.equal(err, null, "Compiles without error");
 
-      paths.forEach(function(path) {
+      paths.forEach(function (path) {
         assert(
           [".vy", ".v.py", ".vyper.py"].some(
-            extension => path.indexOf(extension) !== -1
+            (extension) => path.indexOf(extension) !== -1
           ),
           "Paths have only vyper files"
         );
@@ -31,7 +31,7 @@ describe("vyper compiler", function() {
       [
         contracts.VyperContract1,
         contracts.VyperContract2,
-        contracts.VyperContract3
+        contracts.VyperContract3,
       ].forEach((contract, index) => {
         assert.notEqual(
           contract,
@@ -70,11 +70,11 @@ describe("vyper compiler", function() {
     });
   });
 
-  it("skips solidity contracts", function(done) {
-    compile.all(config, function(err, contracts, paths) {
+  it("skips solidity contracts", function (done) {
+    compile.all(config, function (err, contracts, paths) {
       assert.equal(err, null, "Compiles without error");
 
-      paths.forEach(function(path) {
+      paths.forEach(function (path) {
         assert.equal(path.indexOf(".sol"), -1, "Paths have no .sol files");
       });
 
@@ -88,23 +88,23 @@ describe("vyper compiler", function() {
     });
   });
 
-  describe("with external options set", function() {
+  describe("with external options set", function () {
     const configWithSourceMap = new Config().merge(defaultSettings).merge({
       compilers: {
         vyper: {
           settings: {
-            sourceMap: true
-          }
-        }
-      }
+            sourceMap: true,
+          },
+        },
+      },
     });
 
-    it("compiles when sourceMap option set true", function(done) {
-      compile.all(configWithSourceMap, function(err, contracts) {
+    it("compiles when sourceMap option set true", function (done) {
+      compile.all(configWithSourceMap, function (err, contracts) {
         [
           contracts.VyperContract1,
           contracts.VyperContract2,
-          contracts.VyperContract3
+          contracts.VyperContract3,
         ].forEach((contract, index) => {
           assert(
             contract.sourceMap,
