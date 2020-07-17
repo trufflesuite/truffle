@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.1.41",
+  "version": "2.1.42",
   "bin": {
     "_truffle_workflow_compile": "./bin/_truffle_workflow_compile"
   },
@@ -17,13 +17,13 @@
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/artifactor": "^4.0.67",
-    "@truffle/compile-solidity": "^4.3.12",
-    "@truffle/compile-vyper": "^1.0.61",
-    "@truffle/config": "^1.2.21",
+    "@truffle/artifactor": "^4.0.68",
+    "@truffle/compile-solidity": "^4.3.13",
+    "@truffle/compile-vyper": "^1.0.62",
+    "@truffle/config": "^1.2.22",
     "@truffle/expect": "^0.0.14",
-    "@truffle/external-compile": "^1.0.32",
-    "@truffle/resolver": "^6.0.8",
+    "@truffle/external-compile": "^1.0.33",
+    "@truffle/resolver": "^6.0.9",
     "fs-extra": "^8.1.0"
   },
   "devDependencies": {
