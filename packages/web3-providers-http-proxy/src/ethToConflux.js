@@ -15,25 +15,6 @@ const checksumAddress = util.sign.checksumAddress;
 const accountAddresses = [];
 const accounts = {};
 
-function formatInput(coreParamIndex = 0, epochParamIndex = 1) {
-  return function(params) {
-    let ci = coreParamIndex;
-    if (params[ci]) {
-      // format tx gas and gasPrice
-      if (params[ci].gas && Number.isInteger(params[ci].gas)) {
-        params[ci].gas = numToHex(params[ci].gas);
-      }
-      if (params[ci].gasPrice && Number.isInteger(params[ci].gasPrice)) {
-        params[ci].gasPrice = numToHex(params[ci].gasPrice);
-      }
-      if (params[ci].from) params[ci].from = checksumAddress(params[ci].from);
-      if (params[ci].to) params[ci].to = checksumAddress(params[ci].to);
-    }
-    mapParamsTagAtIndex(params, epochParamIndex);
-    return params;
-  };
-}
-
 const bridge = {
   eth_blockNumber: {
     method: "cfx_epochNumber",
@@ -67,10 +48,10 @@ const bridge = {
   eth_accounts: {
     method: "accounts",
     output: function(response) {
-      if (accountAddresses && accountAddresses.length > 0) {
+      if (response && accountAddresses && accountAddresses.length > 0) {
         response.result = accountAddresses;
         response.error = null;
-      } else if (response.result) {
+      } else if (response && response.result) {
         response.result = response.result.map(checksumAddress);
       }
       return response;
@@ -148,7 +129,7 @@ const bridge = {
   eth_getBlockByHash: {
     method: "cfx_getBlockByHash",
     output: function(response) {
-      if (response.result) {
+      if (response && response.result) {
         formatBlock(response.result);
       }
       return response;
@@ -162,7 +143,7 @@ const bridge = {
       return params;
     },
     output: function(response) {
-      if (response.result) {
+      if (response && response.result) {
         formatBlock(response.result);
       }
       return response;
@@ -172,7 +153,7 @@ const bridge = {
   eth_getTransactionByHash: {
     method: "cfx_getTransactionByHash",
     output: function(response) {
-      formatTx(response.result);
+      if (response && response.result) formatTx(response.result);
       return response;
     }
   },
@@ -185,7 +166,7 @@ const bridge = {
     method: "cfx_getStatus",
     output: function(response) {
       debug("convert cfx_getStatus response:", response);
-      if (response.result && response.result.chainId) {
+      if (response && response.result && response.result.chainId) {
         response.result = Number.parseInt(response.result.chainId);
       }
       return response;
@@ -196,7 +177,7 @@ const bridge = {
     method: "cfx_getStatus",
     output: function(response) {
       debug("convert cfx_getStatus response:", response);
-      if (response.result && response.result.chainId) {
+      if (response && response.result && response.result.chainId) {
         response.result = Number.parseInt(response.result.chainId) + 10000;
       }
       return response;
@@ -279,22 +260,19 @@ const bridge = {
         let newParams = [message, address, DEFAULT_PASSWORD];
         payload.method = "sign";
         payload.params = newParams;
-        debug("sign orign send ", payload);
+        // debug("sign orign send ", payload);
         orignSend(payload, callback);
       }
       // console.log("sign adapt send done");
     }
   }
 };
-
-// bridge["net_version"] = bridge.eth_chainId;
-
 function ethToConflux(options) {
   // it's better to use class
   setHost(options.url || `http://${options.host}:${options.port}`);
   setAccounts(options.privateKeys);
 
-  return async function(payload) {
+  adaptor = async function(payload) {
     // clone new one to avoid change old payload
     const oldPayload = payload;
     payload = deepClone(payload);
@@ -320,22 +298,44 @@ function ethToConflux(options) {
       (typeof handler.method == "function" && handler.method(payload.params)) ||
       handler.method;
     payload.params = await inputFn(payload.params);
-    // console.log(`Mapping "${oldMethod}" to "${newPayload.method}"`);
     debug("Mapping", oldPayload, "to", payload);
+
     return {
       adaptedOutputFn: handler.output || emptyFn,
       adaptedPayload: payload
     };
   };
+  adaptor.accounts = accounts;
+  return adaptor;
 }
 
 module.exports = ethToConflux;
 
 // helper methods===============================================
+
+function formatInput(txRelatedParamIndex = 0, epochParamIndex = 1) {
+  return function(params) {
+    let ti = txRelatedParamIndex;
+    if (params[ti]) {
+      // format tx gas and gasPrice
+      if (params[ti].gas && Number.isInteger(params[ti].gas)) {
+        params[ti].gas = numToHex(params[ti].gas);
+      }
+      if (params[ti].gasPrice && Number.isInteger(params[ti].gasPrice)) {
+        params[ti].gasPrice = numToHex(params[ti].gasPrice);
+      }
+      if (params[ti].from) params[ti].from = checksumAddress(params[ti].from);
+      if (params[ti].to) params[ti].to = checksumAddress(params[ti].to);
+    }
+    mapParamsTagAtIndex(params, epochParamIndex);
+    return params;
+  };
+}
+
 function formatTx(tx) {
   // blockNumber?   TODO maybe cause big problem
   tx.input = tx.data;
-  tx.status = delKeys(tx, [
+  delKeys(tx, [
     "chainId",
     "contractCreated",
     "data",
@@ -391,13 +391,16 @@ function formatBlock(block) {
 
 async function formatTxInput(options) {
   // simple handle to
-  if (options.to) {
-    options.to = "0x1" + options.to.slice(3);
-  }
-  if (options.data) {
-    let len = options.data.length;
-    len = (len - 6) % 32;
-    if (len == 0) options.to = "0x8" + options.to.slice(3);
+  // if (options.to) {
+  //   options.to = "0x1" + options.to.slice(3);
+  // }
+  // if (options.data) {
+  //   let len = options.data.length;
+  //   len = (len - 6) % 32;
+  //   if (len == 0) options.to = "0x8" + options.to.slice(3);
+  // }
+  if (options.value === undefined) {
+    options.value = "0x0";
   }
 
   if (options.nonce === undefined) {
@@ -408,7 +411,8 @@ async function formatTxInput(options) {
     options.gasPrice = this.defaultGasPrice;
   }
   if (options.gasPrice === undefined) {
-    options.gasPrice = (await this.getGasPrice()) || 1; // MIN_GAS_PRICE
+    const recommendGas = Number.parseInt(await this.getGasPrice());
+    options.gasPrice = numToHex(recommendGas || 1); // MIN_GAS_PRICE
   }
 
   if (options.gas === undefined) {
@@ -446,8 +450,6 @@ async function formatTxInput(options) {
     const status = await this.getStatus();
     options.chainId = status.chainId;
   }
-
-  // i.a.b=1;
 
   const forCfxSendTransaction = !getAccount(options.from);
   if (forCfxSendTransaction) {

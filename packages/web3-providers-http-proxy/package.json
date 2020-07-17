@@ -4,7 +4,7 @@
   "description": "",
   "main": "./src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha ./test/cfx.js"
   },
   "keywords": [],
   "author": "",
@@ -14,7 +14,7 @@
     "web3-core-helpers": "^1.2.9",
     "web3-providers-http": "^1.2.9",
     "xhr2-cookies": "^1.1.0",
-    "js-conflux-sdk": "^0.13.3"
+    "js-conflux-sdk": "^0.13.4"
   },
   "devDependencies": {
     "chai": "^4.2.0",
