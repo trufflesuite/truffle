@@ -6,8 +6,6 @@ import { Tx as web3Tx } from "web3/eth/types";
 // @ts-ignore
 import { Conflux, util } from "js-conflux-sdk";
 // @ts-ignore
-// import {util} from "js-conflux-sdk/util";
-// @ts-ignore
 import format from "js-conflux-sdk/src/util/format";
 import { ethToConflux, HttpProvider } from "web3-providers-http-proxy";
 
