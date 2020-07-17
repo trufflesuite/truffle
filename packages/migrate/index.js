@@ -145,6 +145,7 @@ const Migrate = {
 
     try {
       global.artifacts = clone.resolver;
+      global.config = clone;
       for (const migration of migrations) {
         await migration.run(clone);
       }
@@ -161,6 +162,7 @@ const Migrate = {
       throw error;
     } finally {
       delete global.artifacts;
+      delete global.config;
     }
   },
 
