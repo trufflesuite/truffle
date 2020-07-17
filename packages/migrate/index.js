@@ -145,7 +145,7 @@ const Migrate = {
 
     try {
       global.artifacts = clone.resolver;
-      global.config = clone;
+      global.config = clone.normalize(clone);
       for (const migration of migrations) {
         await migration.run(clone);
       }
