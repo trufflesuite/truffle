@@ -1,4 +1,4 @@
-Conflux-Truffle
+# Conflux-Truffle
 
 <img src="https://raw.githubusercontent.com/Pana/conflux-101/master/images/conflux&truffle.png" width="200">
 -----------------------
@@ -40,18 +40,12 @@ Conflux-Truffle comes bundled with a local development blockchain server that la
 
 ### Documentation
 
-Please see the [Conflux-Truffle Documentation](https://github.com/Pana/conflux-101/blob/master/docs/conflux-truffle.md) for guides, tips, and examples.
+Please see the [how-to-use](https://github.com/Conflux-Chain/conflux-truffle/blob/conflux/how-to-use.md) for guides, tips, and examples.
+Also could get Chinese version from [here](https://github.com/Pana/conflux-101/blob/master/docs/conflux-truffle.md).
 
 ### Change Log
 
-#### v0.0.6
-1. `cfxtruffle console` supports subcommand `cfxutil`
-2. `cfxtruffle console` supports auto sign transaction by configed privateKeys when `cfx.sendTransaction`
-3. enhanced error handle in `cfxtruffle console`
-
-#### v0.0.5
-1. Support config privateKeys for signing in local and send transaction to remote node
-2. Provide more detail info when execute rpc error in `cfxtruffle console`
+Please see the change logs from [here](https://github.com/Conflux-Chain/conflux-truffle/blob/conflux/CHANGE_LOG.md)
 
 ### License
 
