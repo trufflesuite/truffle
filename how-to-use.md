@@ -139,21 +139,21 @@ cfxtruffle also provide a command that enable us interact with a contract.
 ```sh
 $ cfxtruffle console  # run console in your project root, it will open a interactive console
 # initiate a contract instanse
-truffle(develop)> let instance = await MetaCoin.deployed()
-truffle(develop)> instance
+cfxtruffle(develop)> let instance = await MetaCoin.deployed()
+cfxtruffle(develop)> instance
 # invoke contract state query method
-truffle(develop)> let balance = await instance.getBalance(accounts[0])
-truffle(develop)> balance.toNumber()
+cfxtruffle(develop)> let balance = await instance.getBalance(accounts[0])
+cfxtruffle(develop)> balance.toNumber()
 # invoke contract state change method
-truffle(develop)> let result = await instance.sendCoin(accounts[1], 10, {from: accounts[0]})
-truffle(develop)> result
+cfxtruffle(develop)> let result = await instance.sendCoin(accounts[1], 10, {from: accounts[0]})
+cfxtruffle(develop)> result
 ```
 
 #### contract testing
 
 Truffle comes standard with an automated testing framework (built onto mocha and chai)
 
-Unit test code examples：
+Unit test code examples
 ```js
 const MetaCoin = artifacts.require("MetaCoin");
 
