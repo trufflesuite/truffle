@@ -115,9 +115,12 @@ describe("CFX TX relate RPCs", function() {
   });
 
   describe("#cfx_sendTransaction", function() {
+    this.timeout(5000);
     it("should send a simple transfer tx", async function() {
-      let payload = genRPCPayload("eth_getTransactionCount", [accounts[0]]);
-      let nonce = await promiseSend(payload);
+      let noncePayload = genRPCPayload("eth_getTransactionCount", [
+        accounts[0]
+      ]);
+      let nonce = await promiseSend(noncePayload);
       let txInfo = {
         from: accounts[0],
         to: accounts[1],
@@ -125,13 +128,13 @@ describe("CFX TX relate RPCs", function() {
         nonce
         // gasPrice: "0x2540be400"
       };
-      payload = genRPCPayload("eth_sendTransaction", [txInfo]);
-      let txHash = await promiseSend(payload);
+      let sendTxPayload = genRPCPayload("eth_sendTransaction", [txInfo]);
+      let txHash = await promiseSend(sendTxPayload);
       txHash.should.be.a("string");
 
       let receipt = await confirmTx(txHash);
       receipt.should.have.keys(ReceiptKeys);
-      receipt.should.have.property("status", 1);
+      receipt.should.have.property("status", "0x1");
     });
 
     it("should deploy an contract", async function() {
@@ -153,7 +156,7 @@ describe("CFX TX relate RPCs", function() {
       txHash.should.be.a("string");
 
       let receipt = await confirmTx(txHash);
-      receipt.should.have.property("status", 1);
+      receipt.should.have.property("status", "0x1");
     });
 
     it("should send an tx with all parameter", async function() {
@@ -177,11 +180,12 @@ describe("CFX TX relate RPCs", function() {
 
       let receipt = await confirmTx(txHash);
       receipt.should.have.keys(ReceiptKeys);
-      receipt.should.have.property("status", 1);
+      receipt.should.have.property("status", "0x1");
     });
   });
 
   describe("#cfx_getTransactionByHash", function() {
+    this.timeout(5000);
     it("get transaction by hash", async function() {
       let txInfo = {
         from: accounts[1],
@@ -199,6 +203,7 @@ describe("CFX TX relate RPCs", function() {
   });
 
   describe("#cfx_getTransactionReceipt", function() {
+    this.timeout(5000);
     it("should get tx receipt", async function() {
       let txInfo = {
         from: accounts[0],
@@ -224,6 +229,8 @@ describe("CFX TX relate RPCs", function() {
 });
 
 describe("CFX contract relate RPCs", function() {
+  this.timeout(30000);
+
   let accounts;
   let contractAddress = "";
 
@@ -246,7 +253,7 @@ describe("CFX contract relate RPCs", function() {
     payload = genRPCPayload("eth_sendTransaction", [txInfo]);
     let txHash = await promiseSend(payload);
     let receipt = await confirmTx(txHash);
-    receipt.should.have.property("status", 1);
+    receipt.should.have.property("status", "0x1");
     contractAddress = receipt.contractAddress;
     // console.log('The contract address: ', contractAddress);
   });

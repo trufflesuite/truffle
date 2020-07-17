@@ -167,7 +167,7 @@ contract('MetaCoin', (accounts) => {
 }
 ```
 
-run tests：
+run tests
 ```sh
 $ cfxtruffle test
 ```

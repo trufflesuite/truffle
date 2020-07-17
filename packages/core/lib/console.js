@@ -78,6 +78,7 @@ class Console extends EventEmitter {
           prompt: "cfxtruffle(" + this.options.network + ")> ",
           context: {
             cfx: this.web3.cfx,
+            cfxutil: this.web3.cfxutil,
             web3: this.web3,
             interfaceAdapter: this.interfaceAdapter,
             accounts: fetchedAccounts
@@ -205,7 +206,7 @@ class Console extends EventEmitter {
       // Strange indentation keeps column offset correct in stack traces
       source = `(async function() { try { ${
         assign ? `global.${RESULT} =` : "return"
-        } (
+      } (
   ${expression.trim()}
   ); } catch(e) { global.ERROR = e; throw e; } }())`;
 

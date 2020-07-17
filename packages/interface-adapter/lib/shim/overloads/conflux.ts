@@ -4,7 +4,9 @@ import PromiEventImpl from "web3-core-promievent";
 import { TxHash, Transaction, TransactionReceipt } from "lib/adapter/types";
 import { Tx as web3Tx } from "web3/eth/types";
 // @ts-ignore
-import { Conflux } from "js-conflux-sdk";
+import { Conflux, util } from "js-conflux-sdk";
+// @ts-ignore
+// import {util} from "js-conflux-sdk/util";
 // @ts-ignore
 import format from "js-conflux-sdk/src/util/format";
 import { ethToConflux, HttpProvider } from "web3-providers-http-proxy";
@@ -15,8 +17,10 @@ export const ConfluxDefinition = {
     // console.log("init network by conflux type");
 
     overrides.initCfx(web3);
-    overrides.setProviderProxy(web3);
+    overrides.provider(web3);
 
+    overrides.sendTransaction(web3);
+    overrides.cfxSendTransaction(web3);
     // overrides.getBlockNumber(web3);
     // overrides.getNetworkId(web3);
     // // overrides.getAccounts(web3);
@@ -26,7 +30,6 @@ export const ConfluxDefinition = {
     // overrides.getBalance(web3);
     // overrides.getCode(web3);
     // overrides.estimateGas(web3);
-    // overrides.sendTransaction(web3);
   }
 };
 
@@ -39,13 +42,16 @@ const overrides = {
       // @ts-ignore
       url: web3.currentProvider.host // TODO get network config from web3 object
       // @ts-ignore
-      // logger: console
     });
+
     // @ts-ignore
     web3.cfx = cfx;
+    // @ts-ignore
+    web3.cfxutil = util;
+    cfx.getAccounts = web3.eth.getAccounts;
   },
 
-  setProviderProxy: (web3: Web3Shim) => {
+  provider: (web3: Web3Shim) => {
     if (!(web3.currentProvider instanceof HttpProvider)) {
       let provider = new HttpProvider(
         // @ts-ignore
@@ -182,7 +188,19 @@ const overrides = {
 
   sendTransaction: (web3: Web3Shim) => {
     // @ts-ignore
-    let newMethod = function(
+    const oldMethod = web3.eth.sendTransaction;
+    const newMethod = function() {
+      checksumFields(arguments[0], "from", "to");
+      // @ts-ignore
+      return oldMethod(...arguments);
+    };
+    web3.eth.sendTransaction = newMethod;
+    return;
+  },
+
+  sendTransactionOld: (web3: Web3Shim) => {
+    // @ts-ignore
+    const newMethod = function(
       tx: web3Tx // @ts-ignore
     ) {
       // console.trace("\n-----------sendTransaction");
@@ -201,8 +219,24 @@ const overrides = {
       let promiEvent = createCfxPromiEvent(web3, cfxTx, password);
       return promiEvent.eventEmitter;
     };
-
     web3.eth.sendTransaction = newMethod;
+  },
+
+  cfxSendTransaction: (web3: Web3Shim) => {
+    if (web3.currentProvider instanceof HttpProvider) {
+      const old = cfx.sendTransaction;
+      // @ts-ignore
+      const ethToConfluxAdaptor = web3.currentProvider.chainAdaptor;
+      const accounts = ethToConfluxAdaptor.accounts;
+      const newMethod = function() {
+        const from = arguments[0].from;
+        if (from && typeof from === "string") {
+          arguments[0].from = accounts[from.toLowerCase()] || from;
+        }
+        return old(...arguments);
+      };
+      cfx.sendTransaction = newMethod;
+    }
   }
 };
 
@@ -310,4 +344,12 @@ async function cfxSendTransaction(options: any, password: string) {
   fmtOption.epochHeight = "0x" + fmtOption.epochHeight.toString(16);
   fmtOption.chainId = "0x" + fmtOption.chainId.toString(16);
   return this.provider.call("cfx_sendTransaction", fmtOption, password);
+}
+
+function checksumFields(input, ...fields) {
+  for (let field of fields) {
+    if (input[field]) {
+      input[field] = util.sign.checksumAddress(input[field]);
+    }
+  }
 }
