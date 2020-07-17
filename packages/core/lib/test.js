@@ -302,6 +302,7 @@ const Test = {
         return contract;
       }
     };
+    global.config = config.normalize(config);
 
     global[config.debugGlobal] = async operation => {
       if (!config.debug) {
