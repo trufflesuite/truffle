@@ -8,7 +8,7 @@ const EPOCH_MAP = {
   latest: "latest_state",
   pending: "latest_state"
 };
-const DEFAULT_PASSWORD = "123456";
+// const DEFAULT_PASSWORD = "123456";
 
 let cfx = undefined;
 const checksumAddress = util.sign.checksumAddress;
@@ -110,9 +110,10 @@ const bridge = {
         if (from) {
           let signedTx = from.signTransaction(params[0]);
           params[0] = "0x" + signedTx.encode(true).toString("hex");
-        } else if (params.length == 1) {
-          params.push(DEFAULT_PASSWORD);
         }
+        // else if (params.length == 1) {
+        //   params.push(DEFAULT_PASSWORD);
+        // }
       }
       return params;
     }
@@ -257,7 +258,8 @@ const bridge = {
         callback(null, response);
       } else {
         // console.log("start sign by rpc");
-        let newParams = [message, address, DEFAULT_PASSWORD];
+        // let newParams = [message, address, DEFAULT_PASSWORD];
+        let newParams = [message, address];
         payload.method = "sign";
         payload.params = newParams;
         // debug("sign orign send ", payload);
