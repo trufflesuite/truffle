@@ -10,7 +10,7 @@ export interface UpdatedOptions {
 
 export async function updated({
   paths,
-  contractsBuildDirectory
+  contractsBuildDirectory,
 }: UpdatedOptions): Promise<string[]> {
   const sourceFilesArtifacts = readAndParseArtifactFiles(
     paths,
@@ -39,7 +39,7 @@ function readAndParseArtifactFiles(
 ): SourceFilesArtifacts {
   const sourceFilesArtifacts: SourceFilesArtifacts = {};
   // Get all the source files and create an object out of them.
-  paths.forEach(sourceFile => {
+  paths.forEach((sourceFile) => {
     sourceFilesArtifacts[sourceFile] = [];
   });
   // Get all the artifact files, and read them, parsing them as JSON
@@ -56,8 +56,8 @@ function readAndParseArtifactFiles(
     }
   }
 
-  buildFiles = buildFiles.filter(file => path.extname(file) === ".json");
-  const jsonData = buildFiles.map(file => {
+  buildFiles = buildFiles.filter((file) => path.extname(file) === ".json");
+  const jsonData = buildFiles.map((file) => {
     const body = fse.readFileSync(
       path.join(contracts_build_directory, file),
       "utf8"
@@ -96,7 +96,7 @@ function findUpdatedFiles(
   const sourceFiles = Object.keys(sourceFilesArtifacts);
 
   let sourceFileStats: (fse.Stats | null)[];
-  sourceFileStats = sourceFiles.map(file => {
+  sourceFileStats = sourceFiles.map((file) => {
     try {
       return fse.statSync(file);
     } catch (error) {
@@ -122,7 +122,7 @@ function findUpdatedFiles(
 
       if (sourceFileUpdatedTime > artifactsUpdatedTime) return sourceFile;
     })
-    .filter(file => file);
+    .filter((file) => file);
 }
 
 function minimumUpdatedTimePerSource(
@@ -131,7 +131,7 @@ function minimumUpdatedTimePerSource(
   let sourceFilesArtifactsUpdatedTimes: SourceFilesArtifactsUpdatedTimes = {};
   // Get the minimum updated time for all of a source file's artifacts
   // (note: one source file might have multiple artifacts).
-  Object.keys(sourceFilesArtifacts).forEach(sourceFile => {
+  for (const sourceFile of Object.keys(sourceFilesArtifacts)) {
     const artifacts = sourceFilesArtifacts[sourceFile];
 
     sourceFilesArtifactsUpdatedTimes[sourceFile] = artifacts.reduce(
@@ -152,6 +152,6 @@ function minimumUpdatedTimePerSource(
     ) {
       sourceFilesArtifactsUpdatedTimes[sourceFile] = 0;
     }
-  });
+  }
   return sourceFilesArtifactsUpdatedTimes;
 }
