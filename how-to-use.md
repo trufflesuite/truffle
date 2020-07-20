@@ -134,7 +134,7 @@ $ cfxtruffle deploy # or cfxtruffle migrate
 
 #### interact with contract
 
-cfxtruffle also provide a command that enable us interact with a contract.
+cfxtruffle also provide a command that enable us interact with a contract convenient.
 
 ```sh
 $ cfxtruffle console  # run console in your project root, it will open a interactive console
@@ -147,7 +147,16 @@ cfxtruffle(develop)> balance.toNumber()
 # invoke contract state change method
 cfxtruffle(develop)> let result = await instance.sendCoin(accounts[1], 10, {from: accounts[0]})
 cfxtruffle(develop)> result
+# most truffle commands also available here
+cfxtruffle(develop)> compile
+cfxtruffle(develop)> networks
+# You can also access to `js-conflux-sdk`'s cfx, cfxutil
+cfxtruffle(develop)> let balance = await cfx.getBalance("0x-one-address")
+cfxtruffle(develop)> cfxutil.unit.fromCFXToDrip(123)
 ```
+
+For detail documentation check truffle [console](https://www.trufflesuite.com/docs/truffle/getting-started/using-truffle-develop-and-the-console) and [interact with contract](https://www.trufflesuite.com/docs/truffle/getting-started/interacting-with-your-contracts).
+And for the documentation of `js-conflux-sdk` find it [here](https://github.com/conflux-chain/js-conflux-sdk)
 
 #### contract testing
 
@@ -173,19 +182,20 @@ $ cfxtruffle test
 ```
 
 ## Deploy to remote node
-cfxtruffle now support deploy contract to a remote node, the only difference is set a `privateKeys` in truffle-config.
+cfxtruffle now support deploy contract to a remote node, the only work to do is set the `privateKeys` in truffle-config.
 
 ```js
 development: {
-    host: "127.0.0.1",     
+    host: "testnet-jsonrpc.conflux-chain.org",
     port: 12537,
     network_id: "*",       
     type: "conflux",
-    privateKeys: ["keys1xxxxxx", "keys1xxxxxx"], 
+    // the magic field
+    privateKeys: ["keys1xxxxxx", "keys1xxxxxx"],   // you can also directly set one key here: privateKeys: "one key"
 },
 ```
 
-## truffle command not support now
+## truffle commands not supported now
 
 * develop
 * build
