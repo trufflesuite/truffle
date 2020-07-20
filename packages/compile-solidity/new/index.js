@@ -1,6 +1,5 @@
 const debug = require("debug")("compile:new"); // eslint-disable-line no-unused-vars
 const path = require("path");
-const { promisify } = require("util");
 const expect = require("@truffle/expect");
 const findContracts = require("@truffle/contract-sources");
 const Config = require("@truffle/config");
@@ -30,7 +29,7 @@ const compile = async function(sources, options) {
 compile.all = async function(options) {
   const paths = [
     ...new Set([
-      ...(await promisify(findContracts)(options.contracts_directory)),
+      ...(await findContracts(options.contracts_directory)),
       ...(options.files || [])
     ])
   ];
@@ -52,12 +51,7 @@ compile.all = async function(options) {
 compile.necessary = async function(options) {
   options.logger = options.logger || console;
 
-  const paths = [
-    ...new Set([
-      ...(await promisify(Profiler.updated)(options)),
-      ...(options.files || [])
-    ])
-  ];
+  const paths = await Profiler.updated(options);
 
   return await compile.with_dependencies(
     Config.default()
