@@ -24,13 +24,13 @@ export async function resolveAllSources({
   resolve,
   paths,
   shouldIncludePath,
-  parseImports
+  parseImports,
 }: ResolveAllSourcesOptions): Promise<ResolvedSourcesMapping> {
   const mapping: ResolvedSourcesMapping = {};
   const allPaths: (UnresolvedSource | string)[] = paths.slice();
 
   // Begin generateMapping
-  function generateMapping() {
+  async function generateMapping() {
     const promises = [];
 
     // Dequeue all the known paths, generating resolver promises,
@@ -54,29 +54,29 @@ export async function resolveAllSources({
 
     // Resolve everything known and add it to the map, then inspect each file's
     // imports and add those to the list of paths to resolve if we don't have it.
-    return Promise.all(promises).then(async results => {
-      // Generate the sources mapping
-      for (const item of results) {
-        mapping[item.filePath] = Object.assign({}, item);
-      }
+    const results = await Promise.all(promises);
 
-      // Queue unknown imports for the next resolver cycle
-      while (results.length) {
-        const source = results.shift();
+    // Generate the sources mapping
+    for (const item of results) {
+      mapping[item.filePath] = Object.assign({}, item);
+    }
 
-        const imports = shouldIncludePath(source.filePath)
-          ? await getImports({ source, parseImports, shouldIncludePath })
-          : [];
+    // Queue unknown imports for the next resolver cycle
+    while (results.length) {
+      const source = results.shift();
 
-        // Detect unknown external packages / add them to the list of files to resolve
-        // Keep track of location of this import because we need to report that.
-        for (const item of imports) {
-          if (!mapping[item]) {
-            allPaths.push({ filePath: item, importedFrom: source.filePath });
-          }
+      const imports = shouldIncludePath(source.filePath)
+        ? await getImports({ source, parseImports, shouldIncludePath })
+        : [];
+
+      // Detect unknown external packages / add them to the list of files to resolve
+      // Keep track of location of this import because we need to report that.
+      for (const item of imports) {
+        if (!mapping[item]) {
+          allPaths.push({ filePath: item, importedFrom: source.filePath });
         }
       }
-    });
+    }
   }
   // End generateMapping
 
