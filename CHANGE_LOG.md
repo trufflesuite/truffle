@@ -1,6 +1,9 @@
 
 # Change Log
 
+## v0.0.7
+`cfxtruffle exec` supports context `cfx`
+
 ## v0.0.6
 1. `cfxtruffle console` supports subcommand `cfxutil`
 2. `cfxtruffle console` supports auto sign transaction by configed privateKeys when `cfx.sendTransaction`
