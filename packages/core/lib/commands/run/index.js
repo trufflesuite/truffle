@@ -1,3 +1,5 @@
+const { error } = require("@truffle/contract/lib/handlers");
+
 const command = {
   command: "run",
   description: "Run a third-party command",
@@ -12,9 +14,9 @@ const command = {
     ]
   },
   async run(options) {
-    const {promisify} = require("util");
+    const { promisify } = require("util");
     const Config = require("@truffle/config");
-    const Plugin = require("./plugin");
+    const { checkPluginConfig } = require("./checkPluginConfig");
     const Run = require("./run");
     const config = Config.detect(options);
 
@@ -26,15 +28,15 @@ const command = {
 
     const customCommand = options._[0];
 
-    if (config.plugins) {
-      let pluginConfigs = Plugin.load(config);
-      return await promisify(Run.run.bind(Run))(pluginConfigs, customCommand, config);
-    } else {
-      console.error(
-        "\nError: No plugins detected in the configuration file.\n"
-      );
+    try {
+      checkPluginConfig(config);
+    } catch (err) {
+      console.error(err);
       return;
     }
+
+    return await promisify(Run.run.bind(Run))(customCommand, config);
+    Run.run(customCommand, config, done);
   }
 };
 
