@@ -4,7 +4,7 @@ export function jumpIn(location, functionNode, contractNode) {
     type: JUMP_IN,
     location,
     functionNode,
-    contractNode
+    contractNode,
   };
 }
 
@@ -12,16 +12,17 @@ export const JUMP_OUT = "STACKTRACE_JUMP_OUT";
 export function jumpOut(location) {
   return {
     type: JUMP_OUT,
-    location
+    location,
   };
 }
 
 export const EXTERNAL_CALL = "STACKTRACE_EXTERNAL_CALL";
-export function externalCall(location, context) {
+export function externalCall(location, context, address) {
   return {
     type: EXTERNAL_CALL,
     location,
-    context
+    context,
+    address,
   };
 }
 
@@ -31,7 +32,7 @@ export function externalReturn(from, status, location) {
     type: EXTERNAL_RETURN,
     from,
     status,
-    location
+    location,
   };
 }
 
@@ -40,7 +41,7 @@ export function executeReturn(counter, location) {
   return {
     type: EXECUTE_RETURN,
     counter,
-    location
+    location,
   };
 }
 
@@ -48,20 +49,20 @@ export const UPDATE_POSITION = "STACKTRACE_UPDATE_POSITION";
 export function updatePosition(location) {
   return {
     type: UPDATE_POSITION,
-    location
+    location,
   };
 }
 
 export const RESET = "STACKTRACE_RESET";
 export function reset() {
   return {
-    type: RESET
+    type: RESET,
   };
 }
 
 export const UNLOAD_TRANSACTION = "STACKTRACE_UNLOAD_TRANSACTION";
 export function unloadTransaction() {
   return {
-    type: UNLOAD_TRANSACTION
+    type: UNLOAD_TRANSACTION,
   };
 }
