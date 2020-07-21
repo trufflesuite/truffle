@@ -11,7 +11,7 @@ describe("truffle init [ @standalone ]", () => {
     tempDir = tmp.dirSync({ unsafeCleanup: true });
     config = {
       working_directory: tempDir.name,
-      logger: { log: () => {} }
+      logger: { log: () => {} },
     };
   });
   afterEach(() => {
@@ -23,7 +23,7 @@ describe("truffle init [ @standalone ]", () => {
   }).timeout(30000);
 
   it("unboxes a project with a truffle config", async () => {
-    await CommandRunner.run("init", config);
+    await CommandRunner.run(`init ${tempDir.name}`, config);
     assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
   }).timeout(20000);
 

@@ -55,8 +55,13 @@ function normalizeInput([url, subDir]) {
   let destination = subDir ? subDir : "";
   let parsedUrl;
   try {
-    // attempts to parse url from :path/to/subDir
-    parsedUrl = url.match(/(.*):/)[1];
+    // the following matches only when there is a :path/to/subDir format
+    const match = url.match(/^.*\.com:.*:/);
+    if (match) {
+      parsedUrl = match[0].slice(0, -1);
+    } else {
+      parsedUrl = url;
+    }
 
     // handles instance where full url is being passed w/o a path in url
     if (parsedUrl.includes("http") && !parsedUrl.includes("//")) {
@@ -99,16 +104,16 @@ const command = {
         option: "<box_name>",
         description:
           "Name of the truffle box. If no box_name is specified, a default " +
-          "truffle box will be downloaded."
+          "truffle box will be downloaded.",
       },
       {
         option: "--force",
         description:
           "Unbox project in the current directory regardless of its " +
           "state. Be careful, this\n                    will potentially overwrite files " +
-          "that exist in the directory."
-      }
-    ]
+          "that exist in the directory.",
+      },
+    ],
   },
   run(options, done) {
     const Config = require("@truffle/config");
@@ -133,12 +138,12 @@ const command = {
     config.events.emit("unbox:start");
 
     Box.unbox(url, normalizedDestination, unboxOptions, config)
-      .then(async boxConfig => {
+      .then(async (boxConfig) => {
         await config.events.emit("unbox:succeed", { boxConfig });
         done();
       })
       .catch(done);
-  }
+  },
 };
 
 module.exports = command;
