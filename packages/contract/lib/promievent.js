@@ -5,7 +5,7 @@ const Web3PromiEvent = require("web3-core-promievent");
 function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
   const { resolve, reject, eventEmitter } = new Web3PromiEvent(justPromise);
 
-  originalStackTrace = new Error().stack;
+  const originalStackTrace = new Error().stack;
 
   function rejectHijacker(e) {
     debug("hijacking!");
@@ -29,7 +29,7 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
       getSolidityStackTrace = async () => undefined;
     }
 
-    getSolidityStackTrace().then(solidityStackTrace => {
+    getSolidityStackTrace().then((solidityStackTrace) => {
       debug("e.stack: %s", e.stack);
       debug("originalStackTrace: %s", originalStackTrace);
       debug("solidityStackTrace: %s", solidityStackTrace);
@@ -49,7 +49,7 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
           let [
             _,
             solidityFirstLine,
-            solidityRemaining
+            solidityRemaining,
           ] = solidityStackTrace.match(/^(.*?)\r?\n((.|\r|\n)*)$/);
 
           stackTrace = stackTrace.replace(
@@ -80,7 +80,7 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
 
 PromiEvent.resolve = Web3PromiEvent.resolve;
 
-PromiEvent.prototype.setTransactionHash = function(txHash) {
+PromiEvent.prototype.setTransactionHash = function (txHash) {
   debug("setting!");
   debug("hash: %s", txHash);
   this.txHash = txHash;
