@@ -1,7 +1,7 @@
-const path = require("path");
-const assert = require("assert");
-const Config = require("@truffle/config");
-const compile = require("../index");
+import path from "path";
+import assert from "assert";
+import Config from "@truffle/config";
+import compile from "../src/index";
 
 describe("ligo compiler", () => {
   const defaultSettings = {
@@ -16,7 +16,7 @@ describe("ligo compiler", () => {
     compile.all(config, (err, contracts, paths) => {
       assert.equal(err, null, "Compiles with an error!");
 
-      paths.forEach(path => {
+      paths!.forEach(path => {
         assert(
           [".ligo", ".mligo", ".religo"].some(
             extension => path.indexOf(extension) !== -1
@@ -73,7 +73,7 @@ describe("ligo compiler", () => {
     compile.all(config, (err, contracts, paths) => {
       assert.equal(err, null, "Compiled with an error");
 
-      paths.forEach(path => {
+      paths!.forEach(path => {
         assert.equal(
           path.indexOf(".sol"),
           -1,
