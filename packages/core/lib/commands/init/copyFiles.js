@@ -4,7 +4,7 @@ const { promptOverwrites } = require("./promptOverwrites");
 
 const copyFiles = async (destination, options) => {
   fse.ensureDirSync(destination);
-  const { force, logger } = options;
+  const { force, logger, events } = options;
   const sourcePath = path.join(__dirname, "initSource");
   const projectFiles = fse.readdirSync(sourcePath);
   const destinationContents = fse.readdirSync(destination);
@@ -25,6 +25,9 @@ const copyFiles = async (destination, options) => {
     shouldCopy = [...newContents, ...overwriteContents];
   }
 
+  await events.emit("init:copyingProjectFiles", {
+    destinationPath: destination,
+  });
   for (const file of shouldCopy) {
     fse.copySync(sourcePath, path.join(destination, file));
   }

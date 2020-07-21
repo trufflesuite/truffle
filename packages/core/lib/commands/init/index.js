@@ -28,11 +28,18 @@ const command = {
       destinationPath = config.working_directory;
     }
 
+    const { events } = config;
+    events.emit("init:start");
+
     copyFiles(destinationPath, config)
-      .then(() => {
+      .then(async () => {
+        await events.emit("init:succeed");
         done();
       })
-      .catch(done);
+      .catch(async (error) => {
+        await events.emit("init:fail", { error });
+        done(error);
+      });
   },
 };
 
