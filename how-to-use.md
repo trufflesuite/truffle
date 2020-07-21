@@ -33,7 +33,7 @@ $ docker pull confluxchain/conflux-rust
 # fast run a single node local chain
 $ docker run -p 12537:12537 --name cfx-node confluxchain/conflux-rust
 ```
-When this image start up, you will have 10 local gene accounts, each with 1000 CFX, you can directly use them to deploy your contract.
+When this image start up, you will have 10 local gene accounts, each with 1000 CFX, you can directly use them to deploy your contract(The accounts will be automatically unlocked).
 Note the default account password is `123456`.
 
 If you want use this image start a mainnet node, you can use your own Conflux config file, for example.
@@ -43,6 +43,12 @@ $ docker run -p 12537:12537 -v $(pwd)/run:/root/run --name cfx-node confluxchain
 ```
 The folder on your local machine should include these files: default.toml, log.yaml, throttling.toml
 The blockchain data will also save to your local folder.
+
+If you start conflux with your own config and want to use it with cfxtruffle, you need manual prepare several account with balance.
+1. `conflux rpc account rpc new`
+2. transfer CFX to your new accounts
+3. `conflux rpc account rpc unlock --address your-new-address`
+Then you can go with cfxtruffle.
 
 
 #### Direct run a rust client
@@ -70,7 +76,7 @@ $ ./conflux account new
 $ ./conflux account list
 ```
 
-Then you can transfer some CFX from `mining_author` to these accounts. With these local accounts have balance then you can start to use `cfxtruffle` to develop smart contract.
+Then you can transfer some CFX from `mining_author` to these accounts. With these local accounts have balance and unlocked then you can start to use `cfxtruffle` to develop smart contract.
 
 ```Recommend use conflux-rust docker```
 
