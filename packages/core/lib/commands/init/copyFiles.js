@@ -5,17 +5,7 @@ const { promptOverwrites } = require("./promptOverwrites");
 const copyFiles = async (destination, options) => {
   fse.ensureDirSync(destination);
   const { force, logger } = options;
-  const sourcePath = path.resolve(
-    path.join(
-      options.truffle_directory,
-      "../",
-      "core",
-      "lib",
-      "commands",
-      "init",
-      "source"
-    )
-  );
+  const sourcePath = path.join(__dirname, "initSource");
   const projectFiles = fse.readdirSync(sourcePath);
   const destinationContents = fse.readdirSync(destination);
 
