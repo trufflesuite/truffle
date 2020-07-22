@@ -152,7 +152,7 @@ class Console extends EventEmitter {
     if (
       this.command.getCommand(processedInput, this.options.noAliases) != null
     ) {
-      return this.command.run(processedInput, this.options, error => {
+      return this.command.runSpawn(processedInput, this.options, error => {
         if (error) {
           // Perform error handling ourselves.
           if (error instanceof TruffleError) {

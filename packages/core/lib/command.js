@@ -4,6 +4,8 @@ const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
 const { extractFlags } = require("./utils/utils"); // Contains utility methods
+const child = require("child_process").spawn;
+const path = require("path");
 
 class Command {
   constructor(commands) {
@@ -70,6 +72,89 @@ class Command {
       argv,
       command
     };
+  }
+
+  async runSpawn(inputStrings, options, callback) {
+    const args = path.resolve(path.join(__dirname, "../cli.js"));
+
+    const spawnOptions = { stdio: ["inherit", "inherit", "inherit", "ipc"] };
+
+    //stole the below code from the run function to ensure that the options being passed
+    // to cli.js respect the format required for the child process
+    const result = this.getCommand(inputStrings, options.noAliases);
+
+    if (result == null) {
+      return callback(
+        new TaskError(
+          "Cannot find command based on input: " + JSON.stringify(inputStrings)
+        )
+      );
+    }
+
+    const argv = result.argv;
+
+    // Remove the task name itself.
+    if (argv._) argv._.shift();
+
+    // We don't need this.
+    delete argv["$0"];
+
+    // Some options might throw if options is a Config object. If so, let's ignore those options.
+    const clone = {};
+    Object.keys(options).forEach(key => {
+      try {
+        clone[key] = options[key];
+      } catch (e) {
+        // Do nothing with values that throw.
+      }
+    });
+
+    // Check unsupported command line flag according to the option list in help
+    try {
+      // while in `console` & `develop`, input is passed as a string, not as an array
+      if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ");
+      // Method `extractFlags(args)` : Extracts the `--option` flags from arguments
+      const inputOptions = extractFlags(inputStrings);
+      const validOptions = result.command.help.options
+        .map(item => {
+          let opt = item.option.split(" ")[0];
+          return opt.startsWith("--") ? opt : null;
+        })
+        .filter(item => {
+          return item != null;
+        });
+
+      let invalidOptions = inputOptions.filter(
+        opt => !validOptions.includes(opt)
+      );
+
+      // TODO: Remove exception for 'truffle run' when plugin options support added.
+      if (invalidOptions.length > 0 && result.name !== "run") {
+        if (options.logger) {
+          const log = options.logger.log || options.logger.debug;
+          log(
+            "> Warning: possible unsupported (undocumented in help) command line option: " +
+              invalidOptions
+          );
+        }
+      }
+
+      const spawn = await child(
+        "node",
+        [args, inputStrings, validOptions, callback],
+        spawnOptions
+      );
+
+      spawn.on("error", function(data) {
+        console.log("stderr------", data.toString());
+      });
+      spawn.on("close", () => {
+        //this hangs, need to figure out what to do in order to fix it...
+        process.stdin.resume();
+      });
+    } catch (err) {
+      callback(err);
+    }
   }
 
   run(inputStrings, options, callback) {
