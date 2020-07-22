@@ -8,14 +8,14 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.4.0-tezos.12",
+  "version": "3.4.0-tezos.13",
   "main": "index.js",
   "scripts": {
     "test": "mocha ./test/* ./test/**/*"
   },
   "dependencies": {
     "@truffle/config": "^1.5.0-tezos.0",
-    "@truffle/deployer": "^3.2.0-tezos.16",
+    "@truffle/deployer": "^3.2.0-tezos.17",
     "@truffle/expect": "^0.1.0-tezos.0",
     "@truffle/interface-adapter": "^0.6.0-tezos.5",
     "@truffle/reporters": "^1.1.0-tezos.1",
