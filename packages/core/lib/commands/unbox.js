@@ -58,8 +58,15 @@ const command = {
   description: "Download a Truffle Box, a pre-built Truffle project",
   builder: {},
   help: {
-    usage: "truffle unbox [<box_name>] [--force]",
+    usage: "truffle unbox [destination] [<box_name>] [--force]",
     options: [
+      {
+        option: "destination",
+        description:
+          "Path to the directory in which you would like " +
+          "to unbox the project files. If destination is\n                  " +
+          "  not provided, this defaults to the current directory.",
+      },
       {
         option: "<box_name>",
         description:
