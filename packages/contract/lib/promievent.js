@@ -71,7 +71,7 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
   }
 
   this.resolve = resolve;
-  this.reject = rejectHijacker;
+  this.reject = rejectHijacker.bind(this);
   this.eventEmitter = eventEmitter;
   if (bugger) {
     this.debug = true;
