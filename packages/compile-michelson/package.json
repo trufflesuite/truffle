@@ -11,12 +11,15 @@
   "author": "CruzMolina <7537712+CruzMolina@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
   "license": "MIT",
-  "main": "index.js",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "directories": {
-    "tests": "tests"
+    "doc": "./README.md",
+    "lib": "./dist",
+    "test": "./tests"
   },
   "files": [
-    "index.js"
+    "./dist/src"
   ],
   "publishConfig": {
     "access": "public"
@@ -26,6 +29,8 @@
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
   "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build",
     "test": "./scripts/test.sh"
   },
   "bugs": {
@@ -33,11 +38,15 @@
   },
   "dependencies": {
     "@truffle/compile-solidity": "^4.3.0-tezos.12",
+    "@truffle/config": "^1.5.0-tezos.0",
     "@truffle/contract-sources": "^0.4.0-tezos.0",
+    "@types/minimatch": "^3.0.3",
     "minimatch": "^3.0.4"
   },
   "devDependencies": {
-    "@truffle/config": "^1.5.0-tezos.0",
-    "mocha": "5.2.0"
+    "@types/mocha": "^8.0.0",
+    "mocha": "8.0.1",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
   }
 }

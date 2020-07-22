@@ -3,5 +3,5 @@
 set -o errexit
 
 if [ "$CI" = true ]; then
-  mocha --timeout 10000 tests/ $@
+  mocha -r ts-node/register  tests/*.ts --timeout 10000 $@
 fi
