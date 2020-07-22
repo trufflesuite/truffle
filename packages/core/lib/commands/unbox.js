@@ -14,6 +14,12 @@ function normalizeURL(
     url = url.replace(/.git:/, ":");
   }
 
+  // rewrite https://github.com/truffle-box/metacoin format in
+  //         https://github.com:truffle-box/metacoin format
+  if (url.match(/.com\//)) {
+    url = url.replace(/.com\//, ".com:");
+  }
+
   // full URL already
   if (url.includes("://")) {
     return url;

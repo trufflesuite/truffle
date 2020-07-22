@@ -67,26 +67,6 @@ describe("truffle unbox [ @standalone ]", () => {
         }).timeout(20000);
       });
 
-      describe("full url + branch + relativePath", () => {
-        it("unboxes successfully", async () => {
-          await CommandRunner.run(
-            "unbox https://github.com/truffle-box/bare-box#truffle-test-branch:path/to/subDir --force",
-            config
-          );
-          assert(
-            fse.existsSync(
-              path.join(
-                tempDir.name,
-                "path",
-                "to",
-                "subDir",
-                "truffle-config.js"
-              )
-            )
-          );
-        }).timeout(20000);
-      });
-
       describe("origin/master", () => {
         it("unboxes successfully", async () => {
           await CommandRunner.run("unbox truffle-box/bare-box", config);
@@ -101,26 +81,6 @@ describe("truffle unbox [ @standalone ]", () => {
             config
           );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-        }).timeout(20000);
-      });
-
-      describe("origin/master#branch:relativePath", () => {
-        it("unboxes successfully", async () => {
-          await CommandRunner.run(
-            "unbox truffle-box/bare-box#truffle-test-branch:path/to/subDir --force",
-            config
-          );
-          assert(
-            fse.existsSync(
-              path.join(
-                tempDir.name,
-                "path",
-                "to",
-                "subDir",
-                "truffle-config.js"
-              )
-            )
-          );
         }).timeout(20000);
       });
 
@@ -142,26 +102,6 @@ describe("truffle unbox [ @standalone ]", () => {
         it("unboxes successfully", async () => {
           await CommandRunner.run("unbox bare#truffle-test-branch", config);
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-        }).timeout(20000);
-      });
-
-      describe("official truffle box + branch + relativePath", () => {
-        it("unboxes successfully", async () => {
-          await CommandRunner.run(
-            "unbox bare#truffle-test-branch:path/to/subDir --force",
-            config
-          );
-          assert(
-            fse.existsSync(
-              path.join(
-                tempDir.name,
-                "path",
-                "to",
-                "subDir",
-                "truffle-config.js"
-              )
-            )
-          );
         }).timeout(20000);
       });
 
@@ -196,26 +136,6 @@ describe("truffle unbox [ @standalone ]", () => {
             config
           );
           assert(fse.existsSync(path.join(tempDir.name, "truffle-config.js")));
-        }).timeout(20000);
-      });
-
-      describe("git@ ssh + branch + relativePath", () => {
-        it("unboxes successfully", async () => {
-          await CommandRunner.run(
-            "unbox git@github.com:truffle-box/bare-box#truffle-test-branch:path/to/subDir --force",
-            config
-          );
-          assert(
-            fse.existsSync(
-              path.join(
-                tempDir.name,
-                "path",
-                "to",
-                "subDir",
-                "truffle-config.js"
-              )
-            )
-          );
         }).timeout(20000);
       });
 
@@ -286,18 +206,6 @@ describe("truffle unbox [ @standalone ]", () => {
           } catch (error) {
             const output = logger.contents();
             assert(output.includes("doesn't exist."));
-          }
-        }).timeout(20000);
-      });
-
-      describe("absolutePaths", () => {
-        it("throws an error", async () => {
-          try {
-            await CommandRunner.run("unbox bare:/path/to/subDir", config);
-            assert(false, "This should have thrown an error.");
-          } catch (_error) {
-            const output = logger.contents();
-            assert(output.includes("not allowed!"));
           }
         }).timeout(20000);
       });
