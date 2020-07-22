@@ -20,6 +20,7 @@ describe("commands/unbox.js", () => {
     "truffle-box/bare-box",
     "bare",
     "git@github.com:truffle-box/bare-box",
+    "https://github.com:truffle-box/bare-box",
     "https://github.com/truffle-box/bare-box#master",
   ];
 
