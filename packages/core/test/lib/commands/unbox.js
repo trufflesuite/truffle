@@ -11,16 +11,9 @@ describe("commands/unbox.js", () => {
     "//",
     "/truffle-box/bare-box",
     "//truffle-box/bare-box#truffle-test-branch",
-    "//truffle-box/bare-box#truffle-test-branch:path/SubDir",
+    "//truffle-box/bare-box#truffle-test-branch",
     "/bare/",
     "//bare#truffle-test-branch",
-    "//bare#truffle-test-branch:path/SubDir",
-  ];
-  const absolutePaths = [
-    "https://github.com/truffle-box/bare-box:/path/SubDir",
-    "truffle-box/bare-box:/path/subDir",
-    "bare:/path/subDir",
-    "git@github.com:truffle-box/bare-box:/path/subDir",
   ];
   const validBoxInput = [
     "https://github.com/truffle-box/bare-box",
@@ -28,12 +21,6 @@ describe("commands/unbox.js", () => {
     "bare",
     "git@github.com:truffle-box/bare-box",
     "https://github.com/truffle-box/bare-box#master",
-  ];
-  const relativePaths = [
-    "https://github.com/truffle-box/bare-box:path/SubDir",
-    "truffle-box/bare-box:path/subDir",
-    "bare:path/subDir",
-    "git@github.com:truffle-box/bare-box:path/subDir",
   ];
 
   describe("run", () => {
@@ -66,18 +53,6 @@ describe("commands/unbox.js", () => {
           );
         });
       });
-
-      it("throws when passed an absolute unbox path", () => {
-        absolutePaths.forEach((path) => {
-          assert.throws(
-            () => {
-              unbox.run({ _: [`${path}`] });
-            },
-            Error,
-            "Error not thrown!"
-          );
-        });
-      });
     });
 
     describe("successful unboxes", () => {
@@ -87,18 +62,6 @@ describe("commands/unbox.js", () => {
           promises.push(
             new Promise((resolve) => {
               unbox.run({ _: [`${val}`], force: true }, () => resolve());
-            })
-          );
-        });
-        Promise.all(promises).then(() => done());
-      }).timeout(10000);
-
-      it("runs when passed a relative unbox path", (done) => {
-        let promises = [];
-        relativePaths.forEach((path) => {
-          promises.push(
-            new Promise((resolve) => {
-              unbox.run({ _: [`${path}`], force: true }, () => resolve());
             })
           );
         });

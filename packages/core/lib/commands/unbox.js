@@ -44,53 +44,13 @@ function normalizeURL(
   throw new Error("Box specified in invalid format");
 }
 
-function normalizeDestination(destination, working_directory) {
+function normalizeDestination(destination, workingDirectory) {
+  if (!destination) {
+    return workingDirectory;
+  }
   const path = require("path");
   if (path.isAbsolute(destination)) return destination;
-  return path.join(working_directory, destination);
-}
-
-function normalizeInput([url, subDir]) {
-  // The subDir argument will override paths in the url
-  let destination = subDir ? subDir : "";
-  let parsedUrl;
-  try {
-    // the following matches only when there is a :path/to/subDir format
-    const match = url.match(/^.*\.com:.*:/);
-    if (match) {
-      parsedUrl = match[0].slice(0, -1);
-    } else {
-      parsedUrl = url;
-    }
-
-    // handles instance where full url is being passed w/o a path in url
-    if (parsedUrl.includes("http") && !parsedUrl.includes("//")) {
-      return { url, destination };
-    }
-    // handles instance where git@ is being passed w/o a path in url
-    if (parsedUrl.includes("git") && !parsedUrl.includes("/")) {
-      return { url, destination };
-    }
-  } catch (_) {
-    // return url if regex fails (no path specified in url)
-    return { url, destination };
-  }
-
-  if (destination !== "") return { url, destination };
-
-  try {
-    // if a path was specified in the url
-    destination = url.match(/:(?!\/)(.*)/)[1]; // enforces relative paths
-    // parses again if passed url git@ with path
-    if (parsedUrl.includes("git@"))
-      destination = destination.match(/:(?!\/)(.*)/)[1];
-  } catch (_) {
-    throw new Error(
-      `${url} not allowed! Please use a relative path (:path/to/subDir)`
-    );
-  }
-  // returns the parsed url & relative path
-  return { url: parsedUrl, destination };
+  return path.join(workingDirectory, destination);
 }
 
 const command = {
@@ -122,7 +82,7 @@ const command = {
 
     const config = Config.default().with({ logger: console });
 
-    let { url, destination } = normalizeInput(options._);
+    let [url, destination] = options._;
 
     url = normalizeURL(url);
 
