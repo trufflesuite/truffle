@@ -79,8 +79,6 @@ class Command {
 
     const spawnOptions = { stdio: ["inherit", "inherit", "inherit", "ipc"] };
 
-    //stole the below code from the run function to ensure that the options being passed
-    // to cli.js respect the format required for the child process
     const result = this.getCommand(inputStrings, options.noAliases);
 
     if (result == null) {
@@ -90,14 +88,6 @@ class Command {
         )
       );
     }
-
-    const argv = result.argv;
-
-    // Remove the task name itself.
-    if (argv._) argv._.shift();
-
-    // We don't need this.
-    delete argv["$0"];
 
     // Some options might throw if options is a Config object. If so, let's ignore those options.
     const clone = {};
@@ -113,37 +103,8 @@ class Command {
     try {
       // while in `console` & `develop`, input is passed as a string, not as an array
       if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ");
-      // Method `extractFlags(args)` : Extracts the `--option` flags from arguments
-      const inputOptions = extractFlags(inputStrings);
-      const validOptions = result.command.help.options
-        .map(item => {
-          let opt = item.option.split(" ")[0];
-          return opt.startsWith("--") ? opt : null;
-        })
-        .filter(item => {
-          return item != null;
-        });
 
-      let invalidOptions = inputOptions.filter(
-        opt => !validOptions.includes(opt)
-      );
-
-      // TODO: Remove exception for 'truffle run' when plugin options support added.
-      if (invalidOptions.length > 0 && result.name !== "run") {
-        if (options.logger) {
-          const log = options.logger.log || options.logger.debug;
-          log(
-            "> Warning: possible unsupported (undocumented in help) command line option: " +
-              invalidOptions
-          );
-        }
-      }
-
-      const spawn = await child(
-        "node",
-        [args, inputStrings, validOptions, callback],
-        spawnOptions
-      );
+      const spawn = await child("node", [args, ...inputStrings], spawnOptions);
 
       spawn.on("error", function(data) {
         console.log("stderr------", data.toString());
