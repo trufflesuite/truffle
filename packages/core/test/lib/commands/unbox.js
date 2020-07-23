@@ -45,16 +45,20 @@ describe("commands/unbox.js", () => {
     });
 
     describe("Error handling", () => {
-      it("throws when passed an invalid box format", () => {
-        invalidBoxFormats.forEach((val) => {
-          assert.throws(
-            () => {
-              unbox.run({ _: [`${val}`] });
-            },
-            Error,
-            "Error not thrown!"
+      it("throws when passed an invalid box format", async () => {
+        const promises = [];
+        for (const path of invalidBoxFormats) {
+          promises.push(
+            new Promise((resolve) => {
+              const callback = (error) => {
+                error ? assert(true) : assert(false);
+                resolve();
+              };
+              unbox.run({ _: [`${path}`] }, callback);
+            })
           );
-        });
+        }
+        return Promise.all(promises);
       });
     });
 
