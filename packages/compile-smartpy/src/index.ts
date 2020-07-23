@@ -1,34 +1,45 @@
-const path = require("path");
-const { exec, spawn } = require("child_process");
-const fs = require("fs");
-const { promisify } = require("util");
+import path from "path";
+import { exec, spawn } from "child_process";
+import fs from "fs";
+import { promisify } from "util";
 const promisifiedMkdirp = promisify(require("mkdirp"));
-const colors = require("colors");
-const minimatch = require("minimatch");
-const find_contracts = require("@truffle/contract-sources");
-const Profiler = require("@truffle/compile-solidity/profiler");
+import colors from "colors";
+import minimatch from "minimatch";
+import find_contracts from "@truffle/contract-sources";
+import Profiler from "@truffle/compile-solidity/profiler";
+import TruffleConfig from "@truffle/config";
 
 const compiler = {
   name: "smartpy",
-  version: "trufflesuite/smartpy-basic:0.0.2"
+  version: "trufflesuite/smartpy-basic:0.0.2",
 };
 
 const SMARTPY_PATTERN = "**/*.py";
 
 // -------- TODO: Common with truffle-compile --------
 
-const compile = {};
+type CompileCallback = (
+  error?: any,
+  result?: any,
+  contractPaths?: Array<string>,
+  _compiler?: typeof compiler
+) => void;
+
+const compile: any = {};
 
 // contracts_directory: String. Directory where .py files can be found.
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.all = (options, callback) => {
-  find_contracts(options.contracts_directory, (err, files) => {
-    if (err) return callback(err);
+compile.all = (options: TruffleConfig, callback: CompileCallback) => {
+  find_contracts(
+    options.contracts_directory,
+    (err: Error, files: Array<string>) => {
+      if (err) return callback(err);
 
-    options.paths = files;
-    compile.with_dependencies(options, callback);
-  });
+      options.paths = files;
+      compile.with_dependencies(options, callback);
+    }
+  );
 };
 
 // contracts_directory: String. Directory where .py files can be found.
@@ -37,14 +48,14 @@ compile.all = (options, callback) => {
 //      in the build directory to see what needs to be compiled.
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-compile.necessary = (options, callback) => {
+compile.necessary = (options: TruffleConfig, callback: CompileCallback) => {
   options.logger = options.logger || console;
 
-  Profiler.updated(options, (err, updated) => {
+  Profiler.updated(options, (err: Error, updated: Array<string>) => {
     if (err) return callback(err);
 
     if (updated.length === 0 && options.quiet !== true) {
-      return callback(null, [], {});
+      return callback(null, {}, []);
     }
 
     options.paths = updated;
@@ -52,13 +63,16 @@ compile.necessary = (options, callback) => {
   });
 };
 
-compile.display = (paths, { quiet, working_directory, logger }) => {
+compile.display = (
+  paths: Array<string>,
+  { quiet, working_directory, logger }: TruffleConfig
+) => {
   if (quiet !== true) {
     if (!Array.isArray(paths)) {
       paths = Object.keys(paths);
     }
 
-    paths.sort().forEach(contract => {
+    paths.sort().forEach((contract) => {
       if (path.isAbsolute(contract)) {
         contract = `.${path.sep}${path.relative(working_directory, contract)}`;
       }
@@ -70,7 +84,7 @@ compile.display = (paths, { quiet, working_directory, logger }) => {
 // -------- End of common with truffle-compile --------
 
 // Check that SmartPy-Basic is available
-function checkSmartPy(callback) {
+function checkSmartPy(callback: CompileCallback) {
   exec(
     "docker run --rm -i trufflesuite/smartpy-basic:0.0.1 --help",
     (err, _stdout, stderr) => {
@@ -85,7 +99,11 @@ function checkSmartPy(callback) {
 }
 
 // Execute SmartPy-Basic for single source file
-function execSmartPy(sourcePath, entryPoint, options) {
+function execSmartPy(
+  sourcePath: string,
+  entryPoint: string,
+  options: TruffleConfig
+) {
   return new Promise((resolve, reject) => {
     // Note that the first volume parameter passed to docker needs to have a path
     // denoted in the format of of the host filesystem. The latter volume parameter,
@@ -127,16 +145,16 @@ function execSmartPy(sourcePath, entryPoint, options) {
       "compile",
       fullInternalSourcePath,
       `${entryPoint ? entryPoint : contractName}()`,
-      options.contracts_build_directory
+      options.contracts_build_directory,
     ]);
 
     let stderr = "";
 
-    docker.stderr.on("data", data => {
+    docker.stderr.on("data", (data) => {
       stderr += data;
     });
 
-    docker.on("close", code => {
+    docker.on("close", (code) => {
       if (code != 0 || stderr != "") {
         reject(
           `${stderr}\n${colors.red(
@@ -151,7 +169,7 @@ function execSmartPy(sourcePath, entryPoint, options) {
 }
 
 // compile all options.paths
-async function compileAll(options, callback) {
+async function compileAll(options: TruffleConfig, callback: CompileCallback) {
   const callbackPassed = typeof callback === "function";
   const entryPoint = options._[0] || undefined;
   options.logger = options.logger || console;
@@ -176,13 +194,13 @@ async function compileAll(options, callback) {
       options.contracts_build_directory
     );
 
-    currentBuildDirectoryContents.forEach(file => {
+    currentBuildDirectoryContents.forEach((file) => {
       const currentFilePath = `${options.contracts_build_directory}/${file}`;
       if (file.includes(".py")) {
         return fs.unlinkSync(currentFilePath);
       }
       if (file.includes(".tz.json")) {
-        const michelsonAsRawData = fs.readFileSync(currentFilePath);
+        const michelsonAsRawData = fs.readFileSync(currentFilePath, "utf-8");
         const michelsonJson = JSON.parse(michelsonAsRawData);
 
         michelson = JSON.stringify(michelsonJson);
@@ -205,13 +223,13 @@ async function compileAll(options, callback) {
       sourcePath,
       source: sourceContents,
       michelson,
-      compiler
+      compiler,
     };
 
     contracts.push(contractDefinition);
   }
 
-  const result = contracts.reduce((result, contract) => {
+  const result = contracts.reduce((result: any, contract: any) => {
     result[contract.contractName] = contract;
 
     return result;
@@ -222,16 +240,16 @@ async function compileAll(options, callback) {
 }
 
 // Check that SmartPy-Basic is available then forward to internal compile function
-function compileSmartPy(options, callback) {
+function compileSmartPy(options: TruffleConfig, callback: CompileCallback) {
   // filter out non-SmartPy paths
-  options.paths = options.paths.filter(path =>
+  options.paths = options.paths.filter((path: string) =>
     minimatch(path, SMARTPY_PATTERN)
   );
 
   // no SmartPy files found, no need to check SmartPy
   if (options.paths.length === 0) return callback(null, {}, []);
 
-  checkSmartPy(err => {
+  checkSmartPy((err) => {
     if (err) return callback(err);
 
     return compileAll(options, callback);
@@ -239,19 +257,25 @@ function compileSmartPy(options, callback) {
 }
 
 // append .py pattern to contracts_directory in options and return updated options
-function updateContractsDirectory(options) {
+function updateContractsDirectory(options: TruffleConfig) {
   return options.with({
-    contracts_directory: path.join(options.contracts_directory, SMARTPY_PATTERN)
+    contracts_directory: path.join(
+      options.contracts_directory,
+      SMARTPY_PATTERN
+    ),
   });
 }
 
 // wrapper for compile.all. only updates contracts_directory to find .py
-compileSmartPy.all = (options, callback) =>
+compileSmartPy.all = (options: TruffleConfig, callback: CompileCallback) =>
   compile.all(updateContractsDirectory(options), callback);
 
 // wrapper for compile.necessary. only updates contracts_directory to find .py
-compileSmartPy.necessary = (options, callback) =>
-  compile.necessary(updateContractsDirectory(options), callback);
+compileSmartPy.necessary = (
+  options: TruffleConfig,
+  callback: CompileCallback
+) => compile.necessary(updateContractsDirectory(options), callback);
 
 compile.with_dependencies = compileSmartPy;
+export = compileSmartPy;
 module.exports = compileSmartPy;
