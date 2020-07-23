@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "5.5.0-tezos.2",
+  "version": "5.5.0-tezos.3",
   "bin": {
     "truffle": "./cli.js",
     "truffle-exec": "./exec.js"
@@ -24,19 +24,19 @@
     "@truffle/contract": "^5.1.0-tezos.0",
     "@truffle/contract-sources": "^0.4.0-tezos.0",
     "@truffle/debug-utils": "^4.0.3-tezos.1",
-    "@truffle/debugger": "^7.1.1-tezos.13",
+    "@truffle/debugger": "^7.1.1-tezos.14",
     "@truffle/decoder": "^4.3.1-tezos.8",
-    "@truffle/deployer": "^3.2.0-tezos.18",
+    "@truffle/deployer": "^3.2.0-tezos.19",
     "@truffle/environment": "^0.2.2-tezos.14",
     "@truffle/error": "^0.1.0-tezos.0",
     "@truffle/expect": "^0.1.0-tezos.0",
     "@truffle/interface-adapter": "^0.6.0-tezos.5",
-    "@truffle/migrate": "^3.4.0-tezos.14",
+    "@truffle/migrate": "^3.4.0-tezos.15",
     "@truffle/provider": "^0.3.0-tezos.12",
     "@truffle/provisioner": "^0.3.0-tezos.1",
     "@truffle/require": "^2.1.0-tezos.5",
     "@truffle/resolver": "^5.2.0-tezos.16",
-    "@truffle/workflow-compile": "^2.4.0-tezos.2",
+    "@truffle/workflow-compile": "^2.4.0-tezos.3",
     "app-module-path": "^2.2.0",
     "async": "2.6.1",
     "bip39": "^2.2.0",

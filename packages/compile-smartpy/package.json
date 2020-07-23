@@ -1,6 +1,6 @@
 {
   "name": "@truffle/compile-smartpy",
-  "version": "0.1.1-tezos.10",
+  "version": "0.2.0-tezos.0",
   "description": "SmartPy compiler interface for truffle",
   "author": "CruzMolina <7537712+CruzMolina@users.noreply.github.com>",
   "homepage": "https://github.com/trufflesuite/truffle#readme",
