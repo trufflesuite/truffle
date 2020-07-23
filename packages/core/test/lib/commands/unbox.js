@@ -16,12 +16,14 @@ describe("commands/unbox.js", () => {
     "//bare#truffle-test-branch",
   ];
   const validBoxInput = [
-    "https://github.com/truffle-box/bare-box",
-    "truffle-box/bare-box",
     "bare",
-    "git@github.com:truffle-box/bare-box",
+    "truffle-box/bare-box",
+    "truffle-box/bare-box#master",
+    "https://github.com/truffle-box/bare-box",
     "https://github.com:truffle-box/bare-box",
     "https://github.com/truffle-box/bare-box#master",
+    "git@github.com:truffle-box/bare-box",
+    "git@github.com:truffle-box/bare-box#master",
   ];
 
   describe("run", () => {
