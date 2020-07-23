@@ -1,5 +1,7 @@
 
 # Change Log
+## v0.0.8
+support contract method `call` and `send` with options `storageLimit`,`epochHeight`,`chainId`
 
 ## v0.0.7
 `cfxtruffle exec` supports context `cfx`
