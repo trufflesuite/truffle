@@ -33,7 +33,10 @@ const Utils = {
       value: true,
       data: true,
       nonce: true,
-      privateFor: true
+      privateFor: true,
+      storageLimit: true,
+      epochHeight: true,
+      chainId: true
     };
 
     for (let field_name of Object.keys(val)) {
