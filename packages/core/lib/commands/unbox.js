@@ -1,63 +1,11 @@
-/*
- * returns a VCS url string given:
- * - a VCS url string
- * - a github `org/repo` string
- * - a string containing a repo under the `truffle-box` org
- */
-function normalizeURL(
-  url = "https://github.com:trufflesuite/truffle-init-default"
-) {
-  // remove the .git from the repo specifier
-  if (url.includes(".git")) {
-    url = url.replace(/.git$/, "");
-    url = url.replace(/.git#/, "#");
-    url = url.replace(/.git:/, ":");
-  }
-
-  // rewrite https://github.com/truffle-box/metacoin format in
-  //         https://github.com:truffle-box/metacoin format
-  if (url.match(/.com\//)) {
-    url = url.replace(/.com\//, ".com:");
-  }
-
-  // full URL already
-  if (url.includes("://")) {
-    return url;
-  }
-
-  if (url.includes("git@")) {
-    return url.replace("git@", "https://");
-  }
-
-  if (url.split("/").length === 2) {
-    // `org/repo`
-    return `https://github.com:${url}`;
-  }
-
-  if (!url.includes("/")) {
-    // repo name only
-    if (!url.includes("-box")) {
-      // check for branch
-      if (!url.includes("#")) {
-        url = `${url}-box`;
-      } else {
-        const index = url.indexOf("#");
-        url = `${url.substr(0, index)}-box${url.substr(index)}`;
-      }
-    }
-    return `https://github.com:truffle-box/${url}`;
-  }
-  throw new Error("Box specified in invalid format");
-}
-
-function normalizeDestination(destination, workingDirectory) {
+const normalizeDestination = (destination, workingDirectory) => {
   if (!destination) {
     return workingDirectory;
   }
   const path = require("path");
   if (path.isAbsolute(destination)) return destination;
   return path.join(workingDirectory, destination);
-}
+};
 
 const command = {
   command: "unbox",
@@ -96,8 +44,6 @@ const command = {
     const config = Config.default().with({ logger: console });
 
     let [url, destination] = options._;
-
-    url = normalizeURL(url);
 
     const normalizedDestination = normalizeDestination(
       destination,
