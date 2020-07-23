@@ -1,6 +1,6 @@
 {
   "name": "@truffle/compile-michelson",
-  "version": "0.1.1-tezos.0",
+  "version": "0.2.0-tezos.0",
   "description": "Michelson no-op compiler interface for truffle",
   "keywords": [
     "truffle",
