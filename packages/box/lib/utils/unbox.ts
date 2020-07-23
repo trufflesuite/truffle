@@ -7,6 +7,7 @@ import { parse as parseURL } from "url";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
 import { boxConfig, unboxOptions } from "typings";
+import { promisify } from "util";
 
 async function verifyURL(url: string) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
@@ -21,7 +22,7 @@ async function verifyURL(url: string) {
     method: "HEAD",
     uri: `https://${configURL.host}${configURL.path}`,
     resolveWithFullResponse: true,
-    simple: false
+    simple: false,
   };
 
   const { statusCode } = await rp(options);
@@ -37,15 +38,7 @@ async function verifyURL(url: string) {
 }
 
 function fetchRepository(url: string, dir: string) {
-  return new Promise((accept, reject) => {
-    // Download the package from github - download(url, dir, options, cb)
-    download(url, dir, error => {
-      if (error) {
-        reject(error);
-      }
-      accept();
-    });
-  });
+  return promisify(download)(url, dir);
 }
 
 function prepareToCopyFiles(tempDir: string, { ignore }: boxConfig) {
@@ -73,8 +66,8 @@ async function promptOverwrites(
         type: "confirm",
         name: "overwrite",
         message: `Overwrite ${file}?`,
-        default: false
-      }
+        default: false,
+      },
     ];
 
     const { overwrite } = await inquirer.prompt(overwriting);
@@ -98,10 +91,10 @@ async function copyTempIntoDestination(
   const destinationContents = fse.readdirSync(destination);
 
   const newContents = boxContents.filter(
-    filename => !destinationContents.includes(filename)
+    (filename) => !destinationContents.includes(filename)
   );
 
-  const contentCollisions = boxContents.filter(filename =>
+  const contentCollisions = boxContents.filter((filename) =>
     destinationContents.includes(filename)
   );
 
@@ -130,5 +123,5 @@ export = {
   fetchRepository,
   installBoxDependencies,
   prepareToCopyFiles,
-  verifyURL
+  verifyURL,
 };
