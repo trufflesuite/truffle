@@ -7,7 +7,61 @@ import fse from "fs-extra";
 import inquirer from "inquirer";
 import { sandboxOptions, unboxOptions } from "typings";
 
-function parseSandboxOptions(options: sandboxOptions) {
+/*
+ * accepts a number of different url and org/repo formats and returns the
+ * format required by https://www.npmjs.com/package/download-git-repo
+ * supported input formats are as follows:
+ *   - org/repo[#branch]
+ *   - https://github.com(/|:)<org>/<repo>[.git][#branch]
+ *   - git@github.com:<org>/<repo>[#branch]
+ */
+const normalizeURL = (
+  url = "https://github.com:trufflesuite/truffle-init-default"
+) => {
+  // remove the .git from the repo specifier
+  if (url.includes(".git")) {
+    url = url.replace(/.git$/, "");
+    url = url.replace(/.git#/, "#");
+    url = url.replace(/.git:/, ":");
+  }
+
+  // rewrite https://github.com/truffle-box/metacoin format in
+  //         https://github.com:truffle-box/metacoin format
+  if (url.match(/.com\//)) {
+    url = url.replace(/.com\//, ".com:");
+  }
+
+  // full URL already
+  if (url.includes("://")) {
+    return url;
+  }
+
+  if (url.includes("git@")) {
+    return url.replace("git@", "https://");
+  }
+
+  if (url.split("/").length === 2) {
+    // `org/repo`
+    return `https://github.com:${url}`;
+  }
+
+  if (!url.includes("/")) {
+    // repo name only
+    if (!url.includes("-box")) {
+      // check for branch
+      if (!url.includes("#")) {
+        url = `${url}-box`;
+      } else {
+        const index = url.indexOf("#");
+        url = `${url.substr(0, index)}-box${url.substr(index)}`;
+      }
+    }
+    return `https://github.com:truffle-box/${url}`;
+  }
+  throw new Error("Box specified in invalid format");
+};
+
+const parseSandboxOptions = (options: sandboxOptions) => {
   if (typeof options === "string") {
     // back compatibility for when `options` used to be `name`
     return {
@@ -15,7 +69,7 @@ function parseSandboxOptions(options: sandboxOptions) {
       unsafeCleanup: false,
       setGracefulCleanup: false,
       logger: console,
-      force: false
+      force: false,
     };
   } else if (typeof options === "object") {
     return {
@@ -23,10 +77,10 @@ function parseSandboxOptions(options: sandboxOptions) {
       unsafeCleanup: options.unsafeCleanup || false,
       setGracefulCleanup: options.setGracefulCleanup || false,
       logger: options.logger || console,
-      force: options.force || false
+      force: options.force || false,
     };
   }
-}
+};
 
 const Box = {
   unbox: async (
@@ -40,16 +94,18 @@ const Box = {
     const logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
       logger: options.logger,
-      force: options.force
+      force: options.force,
     };
 
     try {
+      const normalizedURL = normalizeURL(url);
+
       await Box.checkDir(options, destination);
       const tempDir = await utils.setUpTempDirectory(events);
       const tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
-      await utils.downloadBox(url, tempDirPath, events);
+      await utils.downloadBox(normalizedURL, tempDirPath, events);
 
       const boxConfig = await utils.readBoxConfig(tempDirPath);
 
@@ -85,8 +141,8 @@ const Box = {
             type: "confirm",
             name: "proceed",
             message: `Proceed anyway?`,
-            default: true
-          }
+            default: true,
+          },
         ];
         const answer = await inquirer.prompt(prompt);
         if (!answer.proceed) {
@@ -107,7 +163,7 @@ const Box = {
       unsafeCleanup,
       setGracefulCleanup,
       logger,
-      force
+      force,
     } = parseSandboxOptions(options);
 
     if (setGracefulCleanup) tmp.setGracefulCleanup();
@@ -116,13 +172,13 @@ const Box = {
     const tmpDir = tmp.dirSync({ unsafeCleanup });
     const unboxOptions = { logger, force };
     await Box.unbox(
-      `https://github.com/trufflesuite/truffle-init-${name}`,
+      `https://github.com:trufflesuite/truffle-init-${name}`,
       tmpDir.name,
       unboxOptions,
       config
     );
     return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
-  }
+  },
 };
 
 export = Box;

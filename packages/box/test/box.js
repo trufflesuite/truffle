@@ -6,7 +6,7 @@ const sinon = require("sinon");
 const Config = require("@truffle/config");
 const Box = require("../");
 const TRUFFLE_BOX_DEFAULT =
-  "git@github.com:trufflesuite/truffle-init-default.git";
+  "https://github.com:trufflesuite/truffle-init-default";
 const utils = require("../dist/lib/utils");
 let options, cleanupCallback, config;
 
