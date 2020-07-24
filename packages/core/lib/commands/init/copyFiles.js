@@ -10,10 +10,10 @@ const copyFiles = async (destination, options) => {
   const destinationContents = fse.readdirSync(destination);
 
   const newContents = projectFiles.filter(
-    (filename) => !destinationContents.includes(filename)
+    filename => !destinationContents.includes(filename)
   );
 
-  const contentCollisions = projectFiles.filter((filename) =>
+  const contentCollisions = projectFiles.filter(filename =>
     destinationContents.includes(filename)
   );
 
@@ -29,7 +29,7 @@ const copyFiles = async (destination, options) => {
     destinationPath: destination,
   });
   for (const file of shouldCopy) {
-    fse.copySync(sourcePath, path.join(destination, file));
+    fse.copySync(path.join(sourcePath, file), path.join(destination, file));
   }
 };
 
