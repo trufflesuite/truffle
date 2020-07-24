@@ -58,23 +58,21 @@ module.exports = {
 
       let networkCheckDelay = 1;
       (function networkCheck() {
-        setTimeout(() => {
-          interfaceAdapter
-            .getBlockNumber()
-            .then(() => {
-              clearTimeout(noResponseFromNetworkCall);
-              clearTimeout(networkCheck);
-              resolve(true);
-            })
-            .catch(error => {
-              console.log(
-                "> Something went wrong while attempting to connect " +
-                  "to the network. Check your network configuration."
-              );
-              clearTimeout(noResponseFromNetworkCall);
-              clearTimeout(networkCheck);
-              reject(error);
-            });
+        setTimeout(async () => {
+          try {
+            await interfaceAdapter.getBlockNumber();
+            clearTimeout(noResponseFromNetworkCall);
+            clearTimeout(networkCheck);
+            return resolve(true);
+          } catch (error) {
+            console.log(
+              "> Something went wrong while attempting to connect " +
+                "to the network. Check your network configuration."
+            );
+            clearTimeout(noResponseFromNetworkCall);
+            clearTimeout(networkCheck);
+            return reject(error);
+          }
           networkCheckDelay *= 2;
           networkCheck();
         }, networkCheckDelay);
