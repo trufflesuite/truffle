@@ -5,16 +5,16 @@ const wrapper = require("./wrapper");
 const DEFAULT_NETWORK_CHECK_TIMEOUT = 5000;
 
 module.exports = {
-  wrap: function(provider, options) {
+  wrap: function (provider, options) {
     return wrapper.wrap(provider, options);
   },
 
-  create: function(options) {
+  create: function (options) {
     const provider = this.getProvider(options);
     return this.wrap(provider, options);
   },
 
-  getProvider: function(options) {
+  getProvider: function (options) {
     let provider;
     if (options.provider && typeof options.provider === "function") {
       provider = options.provider();
@@ -33,7 +33,7 @@ module.exports = {
     return provider;
   },
 
-  testConnection: function(options) {
+  testConnection: function (options) {
     let networkCheckTimeout, networkType;
     const { networks, network } = options;
     if (networks && networks[network]) {
@@ -56,24 +56,27 @@ module.exports = {
         throw new Error(errorMessage);
       }, networkCheckTimeout);
 
-      const networkCheck = setInterval(() => {
-        interfaceAdapter
-          .getBlockNumber()
-          .then(() => {
+      let networkCheckDelay = 1;
+      (function networkCheck() {
+        setTimeout(async () => {
+          try {
+            await interfaceAdapter.getBlockNumber();
             clearTimeout(noResponseFromNetworkCall);
-            clearInterval(networkCheck);
-            resolve(true);
-          })
-          .catch(error => {
+            clearTimeout(networkCheck);
+            return resolve(true);
+          } catch (error) {
             console.log(
               "> Something went wrong while attempting to connect " +
                 "to the network. Check your network configuration."
             );
             clearTimeout(noResponseFromNetworkCall);
-            clearInterval(networkCheck);
-            reject(error);
-          });
-      });
+            clearTimeout(networkCheck);
+            return reject(error);
+          }
+          networkCheckDelay *= 2;
+          networkCheck();
+        }, networkCheckDelay);
+      })();
     });
-  }
+  },
 };
