@@ -1,6 +1,8 @@
+"use strict";
+
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
-const Networks = require("./networks");
+const Networks = require("@truffle/core/lib/networks");
 const EthPM = require("ethpm");
 const EthPMRegistry = require("ethpm-registry");
 const Web3 = require("web3");
@@ -9,8 +11,15 @@ const path = require("path");
 const fs = require("fs");
 const OS = require("os");
 
-const Package = {
-  install: async function(options, callback) {
+const PackageV1 = {
+  packages: async function (options, callback) {
+    console.log("V1 PACKAGES");
+    options; // for linter
+    callback; // for linter
+  },
+
+  install: async function (options, callback) {
+    console.log("V1 INSTALL");
     const callbackPassed = typeof callback === "function";
     expect.options(options, ["working_directory", "ethpm"]);
 
@@ -23,7 +32,7 @@ const Package = {
     const provider =
       options.ethpm.provider ||
       new Web3.providers.HttpProvider(options.ethpm.install_provider_uri, {
-        keepAlive: false
+        keepAlive: false,
       });
     let host = options.ethpm.ipfs_host;
 
@@ -112,7 +121,8 @@ const Package = {
     }
   },
 
-  publish: async function(options, callback) {
+  publish: async function (options, callback) {
+    console.log("V1 PACKAGES");
     const callbackPassed = typeof callback === "function";
     var self = this;
 
@@ -120,7 +130,7 @@ const Package = {
       "ethpm",
       "working_directory",
       "contracts_directory",
-      "networks"
+      "networks",
     ]);
 
     expect.options(options.ethpm, ["registry", "ipfs_host"]);
@@ -151,7 +161,7 @@ const Package = {
     var provider = options.provider;
     const interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
-      networkType: "ethereum"
+      networkType: "ethereum",
     });
     var host = options.ethpm.ipfs_host;
 
@@ -208,12 +218,12 @@ const Package = {
     }
   },
 
-  digest: function(options, callback) {
+  digest: function (options, callback) {
     callback(new Error("Not yet implemented"));
   },
 
   // Return a list of publishable artifacts
-  publishable_artifacts: async function(options, callback) {
+  publishable_artifacts: async function (options, callback) {
     const callbackPassed = typeof callback === "function";
     // Filter out "test" and "development" networks.
     const ifReservedNetworks = new Set(["test", "development"]);
@@ -289,7 +299,7 @@ const Package = {
       contract_types[data.contractName] = {
         contract_name: data.contractName,
         bytecode: data.bytecode,
-        abi: data.abi
+        abi: data.abi,
       };
     });
 
@@ -316,7 +326,7 @@ const Package = {
 
                   deployments[uri][data.contractName] = {
                     contract_type: data.contractName, // TODO: Handle conflict resolution
-                    address: data.networks[network_id].address
+                    address: data.networks[network_id].address,
                   };
 
                   accept();
@@ -334,7 +344,7 @@ const Package = {
       await Promise.all(matchingPromises);
       const toReturn = {
         contract_types: contract_types,
-        deployments: deployments
+        deployments: deployments,
       };
       if (callbackPassed) {
         callback(null, toReturn);
@@ -347,7 +357,7 @@ const Package = {
       }
       throw error;
     }
-  }
+  },
 };
 
-module.exports = Package;
+module.exports = PackageV1;
