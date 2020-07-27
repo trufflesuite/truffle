@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.4.0-tezos.15",
+  "version": "3.4.0-tezos.16",
   "main": "index.js",
   "scripts": {
     "test": "mocha ./test/* ./test/**/*"
@@ -19,7 +19,7 @@
     "@truffle/expect": "^0.1.0-tezos.0",
     "@truffle/interface-adapter": "^0.6.0-tezos.5",
     "@truffle/reporters": "^1.1.0-tezos.1",
-    "@truffle/require": "^2.1.0-tezos.5",
+    "@truffle/require": "^2.1.0-tezos.6",
     "emittery": "^0.4.0",
     "glob": "^7.1.6",
     "web3": "1.2.1"
