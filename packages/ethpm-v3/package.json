@@ -1,0 +1,30 @@
+{
+  "name": "ethpm-v3",
+  "version": "3.0.0",
+  "description": "ethereum package management v3",
+  "keywords": [
+    "ethpm",
+    "packages"
+  ],
+  "author": "Nick Gheorghita <nickgheorghita@gmail.com>",
+  "homepage": "http://www.ethpm.com",
+  "license": "MIT",
+  "main": "lib/ethpm-v3.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trufflesuite/truffle.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  }
+}
