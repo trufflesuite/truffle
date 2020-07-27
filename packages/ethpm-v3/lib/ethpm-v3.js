@@ -1,7 +1,9 @@
+"use strict";
+
 const expect = require("@truffle/expect");
-const Artifactor = require("@truffle/artifactor");
+//const Artifactor = require("@truffle/artifactor");
 const TruffleError = require("@truffle/error");
-const Contracts = require("@truffle/workflow-compile");
+//const Contracts = require("@truffle/workflow-compile");
 const { EthPM } = require("ethpm");
 const { EthpmURI } = require("ethpm/utils/uri");
 const { parseTruffleArtifacts } = require("ethpm/utils/truffle");
@@ -28,8 +30,9 @@ SUPPORTED_GENESIS_BLOCKS = {
   "a3c565fc15c7478862d50ccd6561e3c06b24cc509bf388941c25ea985ce32cb9": 42
 };
 
-const Package = {
+const PackageV3 = {
   packages: async (options, done) => {
+    console.log("V3 packages");
     try {
       expect.options(options, [
         "ethpm", // default ethpm settings
@@ -52,8 +55,8 @@ const Package = {
     }
 
     // Get network id from truffle-config
-    const network = options.network
-    const networkId = options.networks[network].network_id
+    const network = options.network;
+    const networkId = options.networks[network].network_id;
 
     // Create a web3 instance connected to the ethpm uri's registry blockchain
     const infuraUri = getInfuraEndpointForChainId(
@@ -70,7 +73,7 @@ const Package = {
     try {
       ethpm = await EthPM.configure({
         manifests: "ethpm/manifests/v3",
-        registries: "ethpm/registries/web3",
+        registries: "ethpm/registries/web3"
       }).connect({
         provider: provider,
         workingDirectory: options.working_directory,
@@ -86,18 +89,19 @@ const Package = {
     }
 
     // Get all packages on connected registry
-    const allPackages = await ethpm.registries.packages()
-    var allReleases = {}
+    const allPackages = await ethpm.registries.packages();
+    var allReleases = {};
     for (var i = 0; i < allPackages.length; i++) {
-      const pkg = allPackages[i]
-      const releases = await ethpm.registries.package(pkg).releases()
-      allReleases[pkg] = releases
+      const pkg = allPackages[i];
+      const releases = await ethpm.registries.package(pkg).releases();
+      allReleases[pkg] = releases;
     }
     // TODO: improve display
-    options.logger.log(allReleases)
+    options.logger.log(allReleases);
   },
 
   install: async (options, done) => {
+    console.log("V3 install");
     try {
       expect.options(options, [
         "ethpm", // default ethpm settings
@@ -146,18 +150,29 @@ const Package = {
       registryNetworkId = ethpmUri.chainId;
     } catch (err) {
       // Hande package id (xxx@1.0.0)
-      const packageData = options.ethpmUri.split("@")
+      const packageData = options.ethpmUri.split("@");
       if (packageData.length != 2) {
         // TODO make better error message - how to make a proper uri / id
-        done(new TruffleError(`Invalid ethpm uri or package id: ${options.ethpmUri}`));
+        done(
+          new TruffleError(
+            `Invalid ethpm uri or package id: ${options.ethpmUri}`
+          )
+        );
       }
       // Get network id from truffle-config
       const network = options.network;
       const networkId = options.networks[network].network_id;
-      
-      if (typeof options.ethpm.registryAddress === 'undefined' || typeof networkId === 'undefined') {
+
+      if (
+        typeof options.ethpm.registryAddress === "undefined" ||
+        typeof networkId === "undefined"
+      ) {
         // TODO useful doc link
-        done(new TruffleError(`Please provide a registryAddress in your ethpm truffle config where you want to publish your package.`));
+        done(
+          new TruffleError(
+            `Please provide a registryAddress in your ethpm truffle config where you want to publish your package.`
+          )
+        );
       }
       packageNameToInstall = packageData[0];
       packageVersionToInstall = packageData[1];
@@ -226,11 +241,7 @@ const Package = {
     if (!availablePackages.includes(packageNameToInstall)) {
       done(
         new TruffleError(
-          `Package: ${
-            packageNameToInstall
-          }, not found on registry at address: ${
-            registryAddress
-          }. Available packages include: ${availablePackages}`
+          `Package: ${packageNameToInstall}, not found on registry at address: ${registryAddress}. Available packages include: ${availablePackages}`
         )
       );
     }
@@ -240,16 +251,16 @@ const Package = {
       .package(packageNameToInstall)
       .release(packageVersionToInstall);
 
-    console.log("XXXXXXXXXXXXXXXX")
-    console.log(manifestUri)
-    console.log(registryAddress)
+    console.log("XXXXXXXXXXXXXXXX");
+    console.log(manifestUri);
+    console.log(registryAddress);
     // Install target manifest URI to working directory
     try {
       await ethpm.installer.install(manifestUri, registryAddress);
     } catch (err) {
       done(new TruffleError(`Install error: ${err.message}`));
     }
-    console.log("XXXXXXXXXXXXXXXX")
+    console.log("XXXXXXXXXXXXXXXX");
     options.logger.log(
       `Installed ${packageNameToInstall}@${packageVersionToInstall} to ${
         options.working_directory
@@ -268,53 +279,54 @@ const Package = {
     //const normalizedDeployments = {};
 
     //if (ethpmPackage.deployments) {
-      //ethpmPackage.deployments.forEach((value, key, _) => {
-        //const foundGenesisBlock = key.host.toLowerCase();
-        //if (!(foundGenesisBlock in SUPPORTED_GENESIS_BLOCKS)) {
-          //done(
-            //new TruffleError(
-              //`Blockchain uri detected with unsupported genesis block: ${foundGenesisBlock}`
-            //)
-          //);
-        //}
-        //normalizedDeployments[
-          //SUPPORTED_GENESIS_BLOCKS[foundGenesisBlock]
-        //] = value;
-      //});
+    //ethpmPackage.deployments.forEach((value, key, _) => {
+    //const foundGenesisBlock = key.host.toLowerCase();
+    //if (!(foundGenesisBlock in SUPPORTED_GENESIS_BLOCKS)) {
+    //done(
+    //new TruffleError(
+    //`Blockchain uri detected with unsupported genesis block: ${foundGenesisBlock}`
+    //)
+    //);
+    //}
+    //normalizedDeployments[
+    //SUPPORTED_GENESIS_BLOCKS[foundGenesisBlock]
+    //] = value;
+    //});
     //}
     //for (let contractType in ethpmPackage.contractTypes) {
-      //const contractData = ethpmPackage.contractTypes[contractType];
-      //const contractDeployments = {};
-      //for (let networkId of Object.keys(normalizedDeployments)) {
-        //for (let deployment of Object.values(
-          //normalizedDeployments[networkId]
-        //)) {
-          //if (deployment.contractType === contractType) {
-            //contractDeployments[networkId] = {
-              //address: deployment.address
-              //// links && events
-            //};
-          //}
-        //}
-      //}
-      //const contractSchema = convertContractTypeToContractSchema(
-        //contractData,
-        //contractDeployments
-      //);
+    //const contractData = ethpmPackage.contractTypes[contractType];
+    //const contractDeployments = {};
+    //for (let networkId of Object.keys(normalizedDeployments)) {
+    //for (let deployment of Object.values(
+    //normalizedDeployments[networkId]
+    //)) {
+    //if (deployment.contractType === contractType) {
+    //contractDeployments[networkId] = {
+    //address: deployment.address
+    //// links && events
+    //};
+    //}
+    //}
+    //}
+    //const contractSchema = convertContractTypeToContractSchema(
+    //contractData,
+    //contractDeployments
+    //);
 
-      //// seems like abi validation is too strict / outdated?
-      ////try {
-      ////await TruffleContractSchema.validate(contractSchema);
-      ////} catch (err) {
-      ////done(new TruffleError(`ethPM package import error: ${err.message}`));
-      ////}
-      //await artifactor.save(contractSchema);
+    //// seems like abi validation is too strict / outdated?
+    ////try {
+    ////await TruffleContractSchema.validate(contractSchema);
+    ////} catch (err) {
+    ////done(new TruffleError(`ethPM package import error: ${err.message}`));
+    ////}
+    //await artifactor.save(contractSchema);
     /*}*/
     options.logger.log("Saved artifacts.");
     done();
   },
 
   publish: async (options, done) => {
+    console.log("V3 publish");
     try {
       expect.options(options, [
         "contracts_build_directory",
@@ -325,7 +337,7 @@ const Package = {
         "networks",
         "working_directory"
       ]);
-      console.log(options.ethpm)
+      console.log(options.ethpm);
       expect.options(options.ethpm, [
         "ipfsHost",
         "ipfsPort",
@@ -373,7 +385,6 @@ const Package = {
       done(new TruffleError(`Unable to collect artifacts: ${err}`));
     }
 
-
     // Fetch ethpm.json config
     let ethpmConfig;
     try {
@@ -413,39 +424,39 @@ const Package = {
     const targetConfig = Object.assign(ethpmFields, ethpmConfig);
     const pkg = await ethpm.manifests.read(JSON.stringify(targetConfig));
     const manifest = await ethpm.manifests.write(pkg);
-    const manifestUri = await ethpm.storage.write(manifest);
-    console.log("generated manifest")
-    console.log(manifest)
+    //const manifestUri = await ethpm.storage.write(manifest);
+    console.log("generated manifest");
+    console.log(manifest);
 
     options.logger.log(`Publishing package to registry...`);
-/*    try {*/
-      //const w3 = new Web3(options.provider);
-      //const encodedTxData = ethpm.registries.registry.methods
-        //.release(
-          //ethpmConfig.package_name,
-          //ethpmConfig.version,
-          //manifestUri.href
-        //)
-        //.encodeABI();
-      //const tx = await w3.eth.signTransaction({
-        //from: options.provider.addresses[0],
-        //to: registryUri.address,
-        //gas: 4712388,
-        //gasPrice: 100000000000,
-        //data: encodedTxData
-      //});
-      //await w3.eth.sendSignedTransaction(tx.raw);
+    /*    try {*/
+    //const w3 = new Web3(options.provider);
+    //const encodedTxData = ethpm.registries.registry.methods
+    //.release(
+    //ethpmConfig.package_name,
+    //ethpmConfig.version,
+    //manifestUri.href
+    //)
+    //.encodeABI();
+    //const tx = await w3.eth.signTransaction({
+    //from: options.provider.addresses[0],
+    //to: registryUri.address,
+    //gas: 4712388,
+    //gasPrice: 100000000000,
+    //data: encodedTxData
+    //});
+    //await w3.eth.sendSignedTransaction(tx.raw);
     //} catch (err) {
-      //done(
-        //new TruffleError(
-          //`Error publishing package: ${err}.\nDoes ${
-            //ethpmConfig.package_name
-          //}@${ethpmConfig.version} already exist on registry: ${
-            //registryUri.raw
-          //}?`
-        //)
-      //);
-/*    }*/
+    //done(
+    //new TruffleError(
+    //`Error publishing package: ${err}.\nDoes ${
+    //ethpmConfig.package_name
+    //}@${ethpmConfig.version} already exist on registry: ${
+    //registryUri.raw
+    //}?`
+    //)
+    //);
+    /*    }*/
     done(
       options.logger.log(
         `Published ${ethpmConfig.package_name}@${ethpmConfig.version} to ${
@@ -494,7 +505,8 @@ async function getPublishableArtifacts(options, ethpm) {
   for (let networkId of Object.keys(artifactsGroupedByNetworkId)) {
     // handle artifacts without deployments
     // networkId will be an undefined string not obj
-    if (networkId === "undefined") { // typeof check?
+    if (networkId === "undefined") {
+      // typeof check?
       artifactsGroupedByNetworkId[networkId].forEach(item => {
         normalizedArtifacts.push(item);
       });
@@ -518,8 +530,8 @@ async function getPublishableArtifacts(options, ethpm) {
     options.contracts_directory,
     ethpm
   );
-  console.log("resolved sources")
-  console.log(sources)
+  console.log("resolved sources");
+  console.log(sources);
   return {
     resolvedSources: sources,
     resolvedContractTypes: parsedArtifacts.contractTypes,
@@ -565,39 +577,39 @@ function fetchInstalledBuildDependencies(workingDirectory) {
   return installedBuildDependencies;
 }
 
-function convertContractTypeToContractSchema(
-  contractData,
-  contractDeployments
-) {
-  return {
-    ...(contractData.abi && { abi: contractData.abi }),
-    ...(contractData.contractName && {
-      contractName: contractData.contractName
-    }),
-    ...(contractData.compiler && {
-      compiler: {
-        ...(contractData.compiler.name && {
-          name: contractData.compiler.name
-        }),
-        ...(contractData.compiler.version && {
-          version: contractData.compiler.version
-        })
-      }
-    }),
-    // idt these support linkrefs
-    ...(contractData.runtimeBytecode &&
-      contractData.runtimeBytecode.bytecode && {
-        deployedBytecode: contractData.runtimeBytecode.bytecode
-      }),
-    ...(contractData.deploymentBytecode &&
-      contractData.deploymentBytecode.bytecode && {
-        bytecode: contractData.deploymentBytecode.bytecode
-      }),
-    ...(contractDeployments && { networks: contractDeployments })
-    // source: sources?
-    // contract-schema doesn't define devdoc/userdoc but artifacts have it - can we include?
-  };
-}
+//function convertContractTypeToContractSchema(
+//contractData,
+//contractDeployments
+//) {
+//return {
+//...(contractData.abi && { abi: contractData.abi }),
+//...(contractData.contractName && {
+//contractName: contractData.contractName
+//}),
+//...(contractData.compiler && {
+//compiler: {
+//...(contractData.compiler.name && {
+//name: contractData.compiler.name
+//}),
+//...(contractData.compiler.version && {
+//version: contractData.compiler.version
+//})
+//}
+//}),
+//// idt these support linkrefs
+//...(contractData.runtimeBytecode &&
+//contractData.runtimeBytecode.bytecode && {
+//deployedBytecode: contractData.runtimeBytecode.bytecode
+//}),
+//...(contractData.deploymentBytecode &&
+//contractData.deploymentBytecode.bytecode && {
+//bytecode: contractData.deploymentBytecode.bytecode
+//}),
+//...(contractDeployments && { networks: contractDeployments })
+//// source: sources?
+//// contract-schema doesn't define devdoc/userdoc but artifacts have it - can we include?
+//};
+/*}*/
 
 async function convertNetworkIdToBlockchainUri(networkId, infuraKey) {
   validateSupportedChainId(networkId);
@@ -621,14 +633,15 @@ async function resolveSources(sourcePaths, contractsDirectory, ethpm) {
       const absolute = path.resolve(contractsDirectory, sourcePath);
       // resolve all sources to relative path
       const resolved = path.relative(contractsDirectory, absolute);
-      sources[resolved] = {  // this can lose ./ prefix
+      sources[resolved] = {
+        // this can lose ./ prefix
         urls: [ipfsHash.href],
-        type: 'solidity',
+        type: "solidity",
         installPath: `./${resolved}`
-      }
+      };
     }
   }
   return sources;
 }
 
-module.exports = Package;
+module.exports = PackageV3;

@@ -8,10 +8,11 @@ var command = {
   },
   run: async function(options, done) {
     var Config = require("@truffle/config");
-    var Package = require("../package");
+    //var PackageV1 = require("@truffle/ethpm-v1");
+    var PackageV3 = require("@truffle/ethpm-v3");
 
     var config = Config.detect(options);
-    await Package.publish(config, done);
+    await PackageV3.publish(config, done);
   }
 };
 
