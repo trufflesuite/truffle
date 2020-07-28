@@ -1,5 +1,3 @@
-"use strict";
-
 var assert = require("chai").assert;
 var Box = require("@truffle/box");
 var fs = require("fs-extra");
@@ -54,8 +52,8 @@ describe.skip("EthPM integration", function () {
       config.networks = {
         development: {
           network_id: blockchain_uri,
-          provider: provider,
-        },
+          provider: provider
+        }
       };
       config.network = "development";
       done();
@@ -67,7 +65,7 @@ describe.skip("EthPM integration", function () {
 
     GithubExamples.initialize(
       {
-        blockchain: blockchain_uri,
+        blockchain: blockchain_uri
       },
       function (err, results) {
         if (err) return done(err);
@@ -113,9 +111,9 @@ describe.skip("EthPM integration", function () {
         ethpm: {
           ipfs_host: host,
           registry: registry,
-          provider: provider,
+          provider: provider
         },
-        packages: ["owned"],
+        packages: ["owned"]
       }),
       function (err) {
         if (err) return done(err);
@@ -143,9 +141,9 @@ describe.skip("EthPM integration", function () {
         ethpm: {
           ipfs_host: host,
           registry: registry,
-          provider: provider,
+          provider: provider
         },
-        packages: ["transferable"],
+        packages: ["transferable"]
       }),
       function (err) {
         if (err) return done(err);
@@ -191,7 +189,7 @@ describe.skip("EthPM integration", function () {
         Contracts.compile(
           config.with({
             all: true,
-            quiet: true,
+            quiet: true
           }),
           function (err, result) {
             if (err) return done(err);
@@ -242,9 +240,9 @@ describe.skip("EthPM integration", function () {
         ethpm: {
           ipfs_host: host,
           registry: registry,
-          provider: provider,
+          provider: provider
         },
-        packages: ["safe-math-lib"],
+        packages: ["safe-math-lib"]
       }),
       function (err) {
         if (err) return done(err);

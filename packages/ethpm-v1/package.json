@@ -1,5 +1,5 @@
 {
-  "name": "ethpm-v1",
+  "name": "@truffle/ethpm-v1",
   "version": "1.0.0",
   "description": "ethereum package management v1",
   "keywords": [
@@ -10,6 +10,9 @@
   "homepage": "http://www.ethpm.com",
   "license": "MIT",
   "main": "lib/ethpm-v1.js",
+  "dependencies": {
+	"ethpm-registry": "0.1.0-next.3"
+  },
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -22,7 +25,7 @@
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "test": "echo \"hellp\""
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"

@@ -3,46 +3,44 @@ const command = {
   description: "Install a package from the Ethereum Package Registry",
   builder: {},
   help: {
-    usage: "truffle install <package_name>[@<version>]",
+    usage: "truffle install <packageId> [--alias]",
     options: [
       {
-        option: "package_name",
+        option: "packageId",
         description:
-          "Name of the package as listed in the Ethereum Package Registry. (required)",
+          "(required) Name of the package as listed in the Ethereum Package Registry. Format: packageName@version"
       },
       {
-        option: "<@version>",
+        option: "--alias",
         description:
-          "When specified, will install a specific version of the package, otherwise " +
-          "will install\n                    the latest version.",
-      },
-    ],
+          "A different name under which this package will be installed."
+      }
+    ]
   },
-  run: function (options, done) {
+  run: async function (options, done) {
     const Config = require("@truffle/config");
-    const PackageV1 = require("ethpm-v1");
-    const PackageV3 = require("ethpm-v3");
+    const PackageV1 = require("@truffle/ethpm-v1");
+    const PackageV3 = require("@truffle/ethpm-v3");
 
-    if (options._ && options._.length > 0) options.packages = options._;
+    if (options._ && options._.length == 0) {
+      done(new Error(`Please provide a packageId.`));
+    }
+    if (options._ && options._.length > 1) {
+      done(new Error(`Only one packageId can be installed at a time.`));
+    }
+    options.packageId = options._[0];
 
     const config = Config.detect(options);
 
     if (config.ethpm.version == "1") {
-      PackageV1.install(config)
-        .then(() => {
-          return done();
-        })
-        .catch(done);
+      await PackageV1.install(config);
     } else if (config.ethpm.version == "3") {
-      PackageV3.install(config)
-        .then(() => {
-          return done();
-        })
-        .catch(done);
+      await PackageV3.install(config);
     } else {
       done(new Error(`Unsupported ethpm version: ${config.ethpm.version}.`));
     }
-  },
+    done();
+  }
 };
 
 module.exports = command;

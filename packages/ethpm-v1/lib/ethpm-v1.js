@@ -12,14 +12,7 @@ const fs = require("fs");
 const OS = require("os");
 
 const PackageV1 = {
-  packages: async function (options, callback) {
-    console.log("V1 PACKAGES");
-    options; // for linter
-    callback; // for linter
-  },
-
   install: async function (options, callback) {
-    console.log("V1 INSTALL");
     const callbackPassed = typeof callback === "function";
     expect.options(options, ["working_directory", "ethpm"]);
 
@@ -32,7 +25,7 @@ const PackageV1 = {
     const provider =
       options.ethpm.provider ||
       new Web3.providers.HttpProvider(options.ethpm.install_provider_uri, {
-        keepAlive: false,
+        keepAlive: false
       });
     let host = options.ethpm.ipfs_host;
 
@@ -122,7 +115,6 @@ const PackageV1 = {
   },
 
   publish: async function (options, callback) {
-    console.log("V1 PACKAGES");
     const callbackPassed = typeof callback === "function";
     var self = this;
 
@@ -130,7 +122,7 @@ const PackageV1 = {
       "ethpm",
       "working_directory",
       "contracts_directory",
-      "networks",
+      "networks"
     ]);
 
     expect.options(options.ethpm, ["registry", "ipfs_host"]);
@@ -161,7 +153,7 @@ const PackageV1 = {
     var provider = options.provider;
     const interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
-      networkType: "ethereum",
+      networkType: "ethereum"
     });
     var host = options.ethpm.ipfs_host;
 
@@ -299,7 +291,7 @@ const PackageV1 = {
       contract_types[data.contractName] = {
         contract_name: data.contractName,
         bytecode: data.bytecode,
-        abi: data.abi,
+        abi: data.abi
       };
     });
 
@@ -326,7 +318,7 @@ const PackageV1 = {
 
                   deployments[uri][data.contractName] = {
                     contract_type: data.contractName, // TODO: Handle conflict resolution
-                    address: data.networks[network_id].address,
+                    address: data.networks[network_id].address
                   };
 
                   accept();
@@ -344,7 +336,7 @@ const PackageV1 = {
       await Promise.all(matchingPromises);
       const toReturn = {
         contract_types: contract_types,
-        deployments: deployments,
+        deployments: deployments
       };
       if (callbackPassed) {
         callback(null, toReturn);
@@ -357,7 +349,7 @@ const PackageV1 = {
       }
       throw error;
     }
-  },
+  }
 };
 
 module.exports = PackageV1;
