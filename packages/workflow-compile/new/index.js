@@ -1,26 +1,26 @@
 const debug = require("debug")("workflow-compile:new");
 const fse = require("fs-extra");
-const { prepareConfig, byContractName } = require("../utils");
+const { prepareConfig } = require("../utils");
 const { shimLegacy } = require("../shims");
 const { shimContract } = require("@truffle/compile-solidity/legacy/shims");
 const {
   reportCompilationStarted,
   reportNothingToCompile,
-  reportCompilationFinished
+  reportCompilationFinished,
 } = require("../reports");
 
 const SUPPORTED_COMPILERS = {
   solc: {
-    compiler: require("@truffle/compile-solidity/new")
+    compiler: require("@truffle/compile-solidity/new"),
   },
   vyper: {
     compiler: require("@truffle/compile-vyper"),
-    legacy: true
+    legacy: true,
   },
   external: {
     compiler: require("@truffle/external-compile"),
-    legacy: true
-  }
+    legacy: true,
+  },
 };
 
 async function compile(config) {
@@ -47,7 +47,7 @@ async function compile(config) {
       const compile = legacy ? shimLegacy(method) : method;
 
       return {
-        [name]: await compile(config)
+        [name]: await compile(config),
       };
     })
   );
@@ -81,7 +81,7 @@ const Contracts = {
 
     if (compilerUsed) {
       config.compilersInfo[compilerUsed.name] = {
-        version: compilerUsed.version
+        version: compilerUsed.version,
       };
     }
 
@@ -92,12 +92,12 @@ const Contracts = {
     if (config.events) {
       config.events.emit("compile:succeed", {
         contractsBuildDirectory: config.contracts_build_directory,
-        compilersInfo: config.compilersInfo
+        compilersInfo: config.compilersInfo,
       });
     }
     return {
       contracts,
-      compilations
+      compilations,
     };
   },
 
@@ -110,9 +110,9 @@ const Contracts = {
 
     await fse.ensureDir(config.contracts_build_directory);
 
-    const artifacts = byContractName(contracts.map(shimContract));
+    const artifacts = contracts.map(shimContract);
     await config.artifactor.saveAll(artifacts);
-  }
+  },
 };
 
 module.exports = Contracts;
