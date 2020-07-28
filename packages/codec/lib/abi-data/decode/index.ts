@@ -38,7 +38,7 @@ export function* decodeAbi(
         //dunno why TS is failing at this inference
         type: dataType,
         kind: "error" as const,
-        error: (<DecodingError>error).error
+        error: (<DecodingError>error).error,
       };
     }
     if (dynamic) {
@@ -67,7 +67,7 @@ export function* decodeAbiReferenceByAddress(
   base = base || 0; //in case base was undefined
   const {
     allocations: { abi: allocations },
-    state
+    state,
   } = info;
   debug("pointer %o", pointer);
   //this variable holds the location we should look to *next*
@@ -76,11 +76,15 @@ export function* decodeAbiReferenceByAddress(
     pointer.location === "stack" || pointer.location === "stackliteral"
       ? "calldata"
       : pointer.location;
+  if (pointer.location !== "stack" && pointer.location !== "stackliteral") {
+    //length overrides are only applicable when you're decoding a pointer
+    //from the stack!  otherwise they must be ignored!
+    lengthOverride = undefined;
+  }
 
   let rawValue: Uint8Array;
   try {
     rawValue = yield* read(pointer, state);
-    debug("state: %O", state);
   } catch (error) {
     if (strict) {
       throw new StopDecodingError((<DecodingError>error).error);
@@ -89,7 +93,7 @@ export function* decodeAbiReferenceByAddress(
       //dunno why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<DecodingError>error).error
+      error: (<DecodingError>error).error,
     };
   }
 
@@ -102,7 +106,7 @@ export function* decodeAbiReferenceByAddress(
   } catch (_) {
     let error = {
       kind: "OverlargePointersNotImplementedError" as const,
-      pointerAsBN: rawValueAsBN
+      pointerAsBN: rawValueAsBN,
     };
     if (strict) {
       throw new StopDecodingError(error);
@@ -111,7 +115,7 @@ export function* decodeAbiReferenceByAddress(
       //again with the TS failures...
       type: dataType,
       kind: "error" as const,
-      error
+      error,
     };
   }
   let startPosition = rawValueAsNumber + base;
@@ -129,7 +133,7 @@ export function* decodeAbiReferenceByAddress(
       //dunno why TS is failing here
       type: dataType,
       kind: "error" as const,
-      error: (<DecodingError>error).error
+      error: (<DecodingError>error).error,
     };
   }
   if (!dynamic) {
@@ -137,7 +141,7 @@ export function* decodeAbiReferenceByAddress(
     let staticPointer = {
       location,
       start: startPosition,
-      length: size
+      length: size,
     };
     return yield* decodeAbiReferenceStatic(
       dataType,
@@ -164,7 +168,7 @@ export function* decodeAbiReferenceByAddress(
             {
               location,
               start: startPosition,
-              length: Evm.Utils.WORD_SIZE
+              length: Evm.Utils.WORD_SIZE,
             },
             state
           );
@@ -176,7 +180,7 @@ export function* decodeAbiReferenceByAddress(
             //dunno why TS is failing here
             type: dataType,
             kind: "error" as const,
-            error: (<DecodingError>error).error
+            error: (<DecodingError>error).error,
           };
         }
         lengthAsBN = Conversion.toBN(rawLength);
@@ -190,7 +194,7 @@ export function* decodeAbiReferenceByAddress(
         throw new StopDecodingError({
           kind: "OverlongArrayOrStringStrictModeError" as const,
           lengthAsBN,
-          dataLength: state[location].length
+          dataLength: state[location].length,
         });
       }
       try {
@@ -207,15 +211,15 @@ export function* decodeAbiReferenceByAddress(
           kind: "error" as const,
           error: {
             kind: "OverlongArraysAndStringsNotImplementedError" as const,
-            lengthAsBN
-          }
+            lengthAsBN,
+          },
         };
       }
 
       let childPointer: Pointer.AbiDataPointer = {
         location,
         start: startPosition,
-        length
+        length,
       };
 
       return yield* Bytes.Decode.decodeBytes(
@@ -232,6 +236,7 @@ export function* decodeAbiReferenceByAddress(
         //note we don't increment start position; static arrays don't
         //include a length word!
       } else if (lengthOverride !== undefined) {
+        debug("override: %o", lengthOverride);
         //dynamic-length array, but with length override
         lengthAsBN = lengthOverride;
         //we don't increment start position; if a length override was
@@ -244,7 +249,7 @@ export function* decodeAbiReferenceByAddress(
             {
               location,
               start: startPosition,
-              length: Evm.Utils.WORD_SIZE
+              length: Evm.Utils.WORD_SIZE,
             },
             state
           );
@@ -256,7 +261,7 @@ export function* decodeAbiReferenceByAddress(
           return {
             type: dataType,
             kind: "error" as const,
-            error: (<DecodingError>error).error
+            error: (<DecodingError>error).error,
           };
         }
         lengthAsBN = Conversion.toBN(rawLength);
@@ -270,7 +275,7 @@ export function* decodeAbiReferenceByAddress(
         throw new StopDecodingError({
           kind: "OverlongArraysAndStringsNotImplementedError" as const,
           lengthAsBN,
-          dataLength: state[location].length
+          dataLength: state[location].length,
         });
       }
       try {
@@ -282,8 +287,8 @@ export function* decodeAbiReferenceByAddress(
           kind: "error" as const,
           error: {
             kind: "OverlongArraysAndStringsNotImplementedError" as const,
-            lengthAsBN
-          }
+            lengthAsBN,
+          },
         };
       }
 
@@ -301,7 +306,7 @@ export function* decodeAbiReferenceByAddress(
         return {
           type: dataType,
           kind: "error" as const,
-          error: (<DecodingError>error).error
+          error: (<DecodingError>error).error,
         };
       }
 
@@ -313,7 +318,7 @@ export function* decodeAbiReferenceByAddress(
             {
               location,
               start: startPosition + index * baseSize,
-              length: baseSize
+              length: baseSize,
             },
             info,
             { ...options, abiPointerBase: startPosition }
@@ -323,7 +328,7 @@ export function* decodeAbiReferenceByAddress(
       return {
         type: dataType,
         kind: "value" as const,
-        value: decodedChildren
+        value: decodedChildren,
       };
 
     case "struct":
@@ -369,7 +374,7 @@ export function* decodeAbiReferenceStatic(
         //array, well, we'll just have to deal with it
         let error = {
           kind: "OverlongArraysAndStringsNotImplementedError" as const,
-          lengthAsBN
+          lengthAsBN,
         };
         if (options.strictAbiMode) {
           throw new StopDecodingError(error);
@@ -377,7 +382,7 @@ export function* decodeAbiReferenceStatic(
         return {
           type: dataType,
           kind: "error" as const,
-          error
+          error,
         };
       }
       let baseSize: number;
@@ -391,7 +396,7 @@ export function* decodeAbiReferenceStatic(
         return {
           type: dataType,
           kind: "error" as const,
-          error: (<DecodingError>error).error
+          error: (<DecodingError>error).error,
         };
       }
 
@@ -403,7 +408,7 @@ export function* decodeAbiReferenceStatic(
             {
               location,
               start: pointer.start + index * baseSize,
-              length: baseSize
+              length: baseSize,
             },
             info,
             options
@@ -413,7 +418,7 @@ export function* decodeAbiReferenceStatic(
       return {
         type: dataType,
         kind: "value" as const,
-        value: decodedChildren
+        value: decodedChildren,
       };
 
     case "struct":
@@ -445,7 +450,7 @@ function* decodeAbiStructByPosition(
 ): Generator<DecoderRequest, Format.Values.StructResult, Uint8Array> {
   const {
     userDefinedTypes,
-    allocations: { abi: allocations }
+    allocations: { abi: allocations },
   } = info;
 
   const typeLocation = location === "calldata" ? "calldata" : null; //other abi locations are not valid type locations
@@ -455,7 +460,7 @@ function* decodeAbiStructByPosition(
   if (!structAllocation) {
     let error = {
       kind: "UserDefinedTypeNotFoundError" as const,
-      type: dataType
+      type: dataType,
     };
     if (options.strictAbiMode || options.allowRetry) {
       throw new StopDecodingError(error, true);
@@ -464,7 +469,7 @@ function* decodeAbiStructByPosition(
     return {
       type: dataType,
       kind: "error" as const,
-      error
+      error,
     };
   }
 
@@ -475,7 +480,7 @@ function* decodeAbiStructByPosition(
     const childPointer: Pointer.AbiDataPointer = {
       location,
       start: startPosition + memberPointer.start,
-      length: memberPointer.length
+      length: memberPointer.length,
     };
 
     let memberName = memberAllocation.name;
@@ -488,15 +493,15 @@ function* decodeAbiStructByPosition(
       name: memberName,
       value: yield* decodeAbi(memberType, childPointer, info, {
         ...options,
-        abiPointerBase: startPosition
-      })
+        abiPointerBase: startPosition,
+      }),
       //note that the base option is only needed in the dynamic case, but we're being indiscriminate
     });
   }
   return {
     type: dataType,
     kind: "value" as const,
-    value: decodedMembers
+    value: decodedMembers,
   };
 }
 
@@ -520,14 +525,14 @@ function* decodeAbiTupleByPosition(
     const childPointer: Pointer.AbiDataPointer = {
       location,
       start: position,
-      length: memberSize
+      length: memberSize,
     };
     decodedMembers.push({
       name,
       value: yield* decodeAbi(memberType, childPointer, info, {
         ...options,
-        abiPointerBase: startPosition
-      })
+        abiPointerBase: startPosition,
+      }),
       //note that the base option is only needed in the dynamic case, but we're being indiscriminate
     });
     position += memberSize;
@@ -535,6 +540,6 @@ function* decodeAbiTupleByPosition(
   return {
     type: dataType,
     kind: "value" as const,
-    value: decodedMembers
+    value: decodedMembers,
   };
 }
