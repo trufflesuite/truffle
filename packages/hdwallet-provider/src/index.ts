@@ -28,6 +28,127 @@ import { Callback, JsonRPCResponse } from "web3/providers";
 // See issue #65 for more
 const singletonNonceSubProvider = new NonceSubProvider();
 
+export interface MnemonicOptions {
+  phrase: string;
+  password?: string;
+}
+
+export interface Mnemonic {
+  phrase: string;
+  password: string;
+}
+
+export interface PrivateKeysOptions {
+  privateKeys: string | string[];
+}
+
+export interface CommonConstructorOptions {
+  url: string;
+  addressIndex?: number;
+  numberOfAddresses?: number;
+  sharedNonce?: boolean;
+  derivationPath?: string;
+}
+
+export type ConstructorOptions =
+  | (CommonConstructorOptions & MnemonicOptions)
+  | (CommonConstructorOptions & PrivateKeysOptions);
+
+const OPTIONS_DEFAULTS = {
+  ADDRESS_INDEX: 0,
+  NUMBER_OF_ADDRESSES: 10,
+  SHARED_NONCE: true,
+  DERIVATION_PATH: `m/44'/60'/0'/0/`
+};
+
+const getOptions = (
+  mnemonicOrPrivateKeysOrOptions: string | string[] | ConstructorOptions,
+  options: any[]
+): {
+  url: string;
+  addressIndex: number;
+  numberOfAddresses: number;
+  sharedNonce: boolean;
+  derivationPath: string;
+} => {
+  if (options.length) {
+    const [
+      url,
+      addressIndex = OPTIONS_DEFAULTS.ADDRESS_INDEX,
+      numberOfAddresses = OPTIONS_DEFAULTS.NUMBER_OF_ADDRESSES,
+      sharedNonce = OPTIONS_DEFAULTS.SHARED_NONCE,
+      derivationPath = OPTIONS_DEFAULTS.DERIVATION_PATH
+    ] = options;
+
+    return {
+      addressIndex,
+      numberOfAddresses,
+      sharedNonce,
+      derivationPath,
+      url
+    };
+  }
+
+  const {
+    url,
+    addressIndex = OPTIONS_DEFAULTS.ADDRESS_INDEX,
+    numberOfAddresses = OPTIONS_DEFAULTS.NUMBER_OF_ADDRESSES,
+    sharedNonce = OPTIONS_DEFAULTS.SHARED_NONCE,
+    derivationPath = OPTIONS_DEFAULTS.DERIVATION_PATH
+  } = mnemonicOrPrivateKeysOrOptions as ConstructorOptions;
+
+  return { addressIndex, numberOfAddresses, sharedNonce, derivationPath, url };
+};
+
+const getMnemonic = (
+  mnemonicOrPrivateKeysOrOptions: string | string[] | ConstructorOptions
+): { phrase: string | null; password: string } => {
+  const phrase =
+    typeof mnemonicOrPrivateKeysOrOptions === "string" &&
+    mnemonicOrPrivateKeysOrOptions.includes(" ")
+      ? mnemonicOrPrivateKeysOrOptions
+      : (mnemonicOrPrivateKeysOrOptions as MnemonicOptions).phrase || null;
+
+  const { password = "" } = mnemonicOrPrivateKeysOrOptions as MnemonicOptions;
+
+  return { phrase, password };
+};
+
+const getPrivateKeys = (
+  mnemonicOrPrivateKeysOrOptions: string | string[] | ConstructorOptions
+): string[] => {
+  if (Array.isArray(mnemonicOrPrivateKeysOrOptions)) {
+    return mnemonicOrPrivateKeysOrOptions;
+  }
+
+  return typeof mnemonicOrPrivateKeysOrOptions === "string"
+    ? [mnemonicOrPrivateKeysOrOptions]
+    : [];
+};
+
+const normalizeConstructorOptions = (
+  mnemonicOrPrivateKeysOrOptions: string | string[] | ConstructorOptions,
+  options: any[]
+): {
+  mnemonic: { phrase: string | null; password: string };
+  privateKeys: string[];
+  url: string | any;
+  addressIndex: number;
+  numberOfAddresses: number;
+  sharedNonce: boolean;
+  derivationPath: string;
+} => {
+  const parsedOptions = getOptions(mnemonicOrPrivateKeysOrOptions, options);
+  const mnemonic = getMnemonic(mnemonicOrPrivateKeysOrOptions);
+  const privateKeys = getPrivateKeys(mnemonicOrPrivateKeysOrOptions);
+
+  return {
+    mnemonic,
+    privateKeys,
+    ...parsedOptions
+  };
+};
+
 class HDWalletProvider {
   private hdwallet?: EthereumHDKey;
   private walletHdpath: string;
@@ -37,50 +158,52 @@ class HDWalletProvider {
   public engine: ProviderEngine;
 
   constructor(
-    mnemonic: string | string[],
-    provider: string | any,
-    addressIndex: number = 0,
-    numAddresses: number = 10,
-    shareNonce: boolean = true,
-    walletHdpath: string = `m/44'/60'/0'/0/`
+    mnemonicOrPrivateKeysOrOptions: string | string[] | ConstructorOptions,
+    ...args: any[]
   ) {
-    this.walletHdpath = walletHdpath;
+    const {
+      mnemonic,
+      privateKeys,
+      url,
+      addressIndex,
+      numberOfAddresses,
+      sharedNonce,
+      derivationPath
+    } = normalizeConstructorOptions(mnemonicOrPrivateKeysOrOptions, args);
+
+    this.walletHdpath = derivationPath;
     this.wallets = {};
     this.addresses = [];
     this.engine = new ProviderEngine();
 
-    if (!HDWalletProvider.isValidProvider(provider)) {
+    if (!HDWalletProvider.isValidProvider(url)) {
       throw new Error(
         [
-          `Malformed provider URL: '${provider}'`,
+          `Malformed provider URL: '${url}'`,
           "Please specify a correct URL, using the http, https, ws, or wss protocol.",
           ""
         ].join("\n")
       );
     }
 
-    // private helper to normalize given mnemonic
-    const normalizePrivateKeys = (
-      mnemonic: string | string[]
-    ): string[] | false => {
-      if (Array.isArray(mnemonic)) return mnemonic;
-      else if (mnemonic && !mnemonic.includes(" ")) return [mnemonic];
-      // if truthy, but no spaces in mnemonic
-      else return false; // neither an array nor valid value passed;
-    };
-
     // private helper to check if given mnemonic uses BIP39 passphrase protection
-    const checkBIP39Mnemonic = (mnemonic: string) => {
+    const checkBIP39Mnemonic = ({
+      phrase,
+      password
+    }: {
+      phrase: string;
+      password: string;
+    }) => {
       this.hdwallet = EthereumHDKey.fromMasterSeed(
-        bip39.mnemonicToSeedSync(mnemonic)
+        bip39.mnemonicToSeedSync(phrase, password)
       );
 
-      if (!bip39.validateMnemonic(mnemonic, wordlist)) {
+      if (!bip39.validateMnemonic(phrase, wordlist)) {
         throw new Error("Mnemonic invalid or undefined");
       }
 
       // crank the addresses out
-      for (let i = addressIndex; i < addressIndex + numAddresses; i++) {
+      for (let i = addressIndex; i < addressIndex + numberOfAddresses; i++) {
         const wallet = this.hdwallet
           .derivePath(this.walletHdpath + i)
           .getWallet();
@@ -104,10 +227,11 @@ class HDWalletProvider {
       }
     };
 
-    const privateKeys = normalizePrivateKeys(mnemonic);
-
-    if (!privateKeys) checkBIP39Mnemonic(mnemonic as string);
-    else ethUtilValidation(privateKeys);
+    if (mnemonic.phrase) {
+      checkBIP39Mnemonic(mnemonic as Mnemonic);
+    } else {
+      ethUtilValidation(privateKeys as string[]);
+    }
 
     const tmp_accounts = this.addresses;
     const tmp_wallets = this.wallets;
@@ -158,26 +282,26 @@ class HDWalletProvider {
       })
     );
 
-    !shareNonce
+    !sharedNonce
       ? this.engine.addProvider(new NonceSubProvider())
       : this.engine.addProvider(singletonNonceSubProvider);
 
     this.engine.addProvider(new FiltersSubprovider());
-    if (typeof provider === "string") {
+    if (typeof url === "string") {
       const providerProtocol = (
-        Url.parse(provider).protocol || "http:"
+        Url.parse(url).protocol || "http:"
       ).toLowerCase();
 
       switch (providerProtocol) {
         case "ws:":
         case "wss:":
-          this.engine.addProvider(new WebsocketProvider({ rpcUrl: provider }));
+          this.engine.addProvider(new WebsocketProvider({ rpcUrl: url }));
           break;
         default:
-          this.engine.addProvider(new RpcProvider({ rpcUrl: provider }));
+          this.engine.addProvider(new RpcProvider({ rpcUrl: url }));
       }
     } else {
-      this.engine.addProvider(new ProviderSubprovider(provider));
+      this.engine.addProvider(new ProviderSubprovider(url));
     }
 
     // Required by the provider engine.
@@ -224,4 +348,4 @@ class HDWalletProvider {
   }
 }
 
-export = HDWalletProvider;
+export default HDWalletProvider;
