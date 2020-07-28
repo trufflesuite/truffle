@@ -1,5 +1,5 @@
 {
-  "name": "ethpm-v3",
+  "name": "@truffle/ethpm-v3",
   "version": "3.0.0",
   "description": "ethereum package management v3",
   "keywords": [
@@ -10,6 +10,18 @@
   "homepage": "http://www.ethpm.com",
   "license": "MIT",
   "main": "lib/ethpm-v3.js",
+  "scripts": {
+    "test": "mocha ./tests/* --timeout 10000 --exit"
+  },
+  "dependencies": {
+    "ethpm": "0.1.0-next.25",
+    "ethpm-spec": "3.0.0",
+    "ethereum-ens": "0.8.0",
+    "semver": "7.3.2"
+  },
+  "devDependencies": {
+    "mocha": "8.0.1"
+  },
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -21,10 +33,10 @@
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle.git"
   },
-  "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
-  },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -4,31 +4,24 @@ var command = {
   builder: {},
   help: {
     usage: "truffle publish",
-    options: [],
+    options: []
   },
-  run: function (options, done) {
+  run: async function (options, done) {
     var Config = require("@truffle/config");
-    var PackageV1 = require("ethpm-v1");
-    var PackageV3 = require("ethpm-v3");
+    var PackageV1 = require("@truffle/ethpm-v1");
+    var PackageV3 = require("@truffle/ethpm-v3");
 
     var config = Config.detect(options);
 
     if (config.ethpm.version == "1") {
-      PackageV1.publish(config)
-        .then(() => {
-          return done();
-        })
-        .catch(done);
+      await PackageV1.publish(config);
     } else if (config.ethpm.version == "3") {
-      PackageV3.publish(config)
-        .then(() => {
-          return done();
-        })
-        .catch(done);
+      await PackageV3.publish(config);
     } else {
       done(new Error(`Unsupported ethpm version: ${config.ethpm.version}.`));
     }
-  },
+    done();
+  }
 };
 
 module.exports = command;

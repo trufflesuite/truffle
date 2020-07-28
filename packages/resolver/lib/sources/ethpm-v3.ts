@@ -1,14 +1,19 @@
 import path from "path";
 import fs from "fs";
+import glob from "glob";
 
 import { ContractObject } from "@truffle/contract-schema/spec";
 import { ResolverSource } from "../source";
 
-export class EthPMv1 implements ResolverSource {
+export class EthPMv3 implements ResolverSource {
   workingDirectory: string;
+  allEthpmFiles: any;
 
   constructor(workingDirectory: string) {
     this.workingDirectory = workingDirectory;
+    this.allEthpmFiles = glob.sync("**/*", {
+      cwd: path.join(this.workingDirectory, "_ethpm_packages"),
+    });
   }
 
   require(importPath: string) {
@@ -17,53 +22,54 @@ export class EthPMv1 implements ResolverSource {
     }
 
     // Look to see if we've compiled our own version first.
-    var contract_name = path.basename(importPath, ".sol");
+    var contractName = path.basename(importPath, ".sol");
 
-    // We haven't compiled our own version. Assemble from data in the lockfile.
+    // We haven't compiled our own version. Assemble from data in the manifest.
     var separator = importPath.indexOf("/");
     var package_name = importPath.substring(0, separator);
 
-    var install_directory = path.join(
-      this.workingDirectory,
-      "installed_contracts"
+    var install_directory = path.join(this.workingDirectory, "_ethpm_packages");
+    var manifest: any = path.join(
+      install_directory,
+      package_name,
+      "manifest.json"
     );
-    var lockfile: any = path.join(install_directory, package_name, "lock.json");
 
     try {
-      lockfile = fs.readFileSync(lockfile, "utf8");
+      manifest = fs.readFileSync(manifest, "utf8");
     } catch (e) {
       return null;
     }
 
-    lockfile = JSON.parse(lockfile);
+    manifest = JSON.parse(manifest);
 
     // TODO: contracts that reference other types
     // TODO: contract types that specify a hash as their key
     // TODO: imported name doesn't match type but matches deployment name
-    var contract_types = lockfile.contract_types || {};
-    var type = contract_types[contract_name];
+    var contractTypes = manifest.contractTypes || {};
+    var type = contractTypes[contractName];
 
     // No contract name of the type asked.
     if (!type) return null;
 
     var json: ContractObject = {
       abi: type.abi,
-      contract_name: contract_name,
+      contractName: contractName,
       networks: {},
-      unlinked_binary: type.bytecode
+      unlinked_binary: type.deploymentBytecode.bytecode,
     };
 
     // Go through deployments and save all of them
-    Object.keys(lockfile.deployments || {}).forEach(function(blockchain) {
-      var deployments = lockfile.deployments[blockchain];
+    Object.keys(manifest.deployments || {}).forEach(function (blockchain) {
+      var deployments = manifest.deployments[blockchain];
 
-      Object.keys(deployments).forEach(function(name) {
+      Object.keys(deployments).forEach(function (name) {
         var deployment = deployments[name];
-        if (deployment.contract_type === contract_name) {
+        if (deployment.contractType === contractName) {
           json.networks[blockchain] = {
             events: {},
             links: {},
-            address: deployment.address
+            address: deployment.address,
           };
         }
       });
@@ -80,9 +86,17 @@ export class EthPMv1 implements ResolverSource {
 
     // If nothing's found, body returns `undefined`
     var body;
+    var matches = this.allEthpmFiles.filter((p: any) => p.includes(importPath));
 
     while (true) {
-      var file_path = path.join(installDir, "installed_contracts", importPath);
+      // check for root level ethpm sources
+      var file_path = path.join(
+        installDir,
+        "_ethpm_packages",
+        package_name,
+        "_src",
+        internal_path
+      );
 
       try {
         body = fs.readFileSync(file_path, { encoding: "utf8" });
@@ -101,6 +115,19 @@ export class EthPMv1 implements ResolverSource {
         body = fs.readFileSync(file_path, { encoding: "utf8" });
         break;
       } catch (err) {}
+
+      // DOES NOT SUPPORT DUPLICATE IMPORT PATHS W/IN AGGREGATED PKGS
+      if (matches.length > 0) {
+        if (matches.length === 1) {
+          try {
+            body = fs.readFileSync(
+              path.join(installDir, "_ethpm_packages", matches[0]),
+              { encoding: "utf8" }
+            );
+            break;
+          } catch (err) {}
+        }
+      }
 
       // Recurse outwards until impossible
       var oldInstallDir = installDir;
