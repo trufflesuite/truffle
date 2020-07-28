@@ -49,7 +49,7 @@ const command = {
       {
         option: "--compiler <compiler-name>",
         description:
-          "Specify a single compiler to use (e.g. `--compiler=solc`)",
+          "Specify a single compiler to use (e.g. `--compiler=solc`). Specify `none` to skip compilation.",
       },
     ],
   },
