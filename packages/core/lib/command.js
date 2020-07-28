@@ -4,7 +4,7 @@ const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
 const { extractFlags } = require("./utils/utils"); // Contains utility methods
-const child = require("child_process").spawn;
+const child = require("child_process").spawnSync;
 const path = require("path");
 
 class Command {
@@ -13,7 +13,7 @@ class Command {
 
     let args = yargs();
 
-    Object.keys(this.commands).forEach(function(command) {
+    Object.keys(this.commands).forEach(function (command) {
       args = args.command(commands[command]);
     });
 
@@ -70,14 +70,14 @@ class Command {
     return {
       name: chosenCommand,
       argv,
-      command
+      command,
     };
   }
 
   async runSpawn(inputStrings, options, callback) {
     const args = path.resolve(path.join(__dirname, "../cli.js"));
 
-    const spawnOptions = { stdio: ["inherit", "inherit", "inherit", "ipc"] };
+    const spawnOptions = { stdio: ["inherit", "inherit", "inherit"] };
 
     const result = this.getCommand(inputStrings, options.noAliases);
 
@@ -104,15 +104,7 @@ class Command {
       // while in `console` & `develop`, input is passed as a string, not as an array
       if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ");
 
-      const spawn = await child("node", [args, ...inputStrings], spawnOptions);
-
-      spawn.on("error", function(data) {
-        console.log("stderr------", data.toString());
-      });
-      spawn.on("close", () => {
-        //this hangs, need to figure out what to do in order to fix it...
-        process.stdin.resume();
-      });
+      child("node", [args, ...inputStrings], spawnOptions);
     } catch (err) {
       callback(err);
     }
@@ -183,7 +175,7 @@ class Command {
       analytics.send({
         command: result.name ? result.name : "other",
         args: result.argv._,
-        version: bundled || "(unbundled) " + core
+        version: bundled || "(unbundled) " + core,
       });
     } catch (err) {
       callback(err);
