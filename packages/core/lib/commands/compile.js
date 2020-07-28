@@ -6,19 +6,19 @@ const command = {
   builder: {
     all: {
       type: "boolean",
-      default: false
+      default: false,
     },
     compiler: {
       type: "string",
-      default: null
+      default: null,
     },
     list: {
-      type: "string"
+      type: "string",
     },
     help: {
       type: "boolean",
-      default: "false"
-    }
+      default: "false",
+    },
   },
   help: {
     usage:
@@ -27,28 +27,33 @@ const command = {
       {
         option: "--all",
         description:
-          "Compile all contracts instead of only the contracts changed since last compile."
+          "Compile all contracts instead of only the contracts changed since last compile.",
       },
       {
         option: "--network <name>",
         description:
           "Specify the network to use, saving artifacts specific to that network. " +
-          " Network name must exist in the\n                    configuration."
+          " Network name must exist in the\n                    configuration.",
       },
       {
         option: "--list <filter>",
         description:
           "List all recent stable releases from solc-bin.  If filter is specified then it will display only " +
           "that\n                    type of release or docker tags. The filter parameter must be one of the following: " +
-          "prereleases,\n                    releases, latestRelease or docker."
+          "prereleases,\n                    releases, latestRelease or docker.",
       },
       {
         option: "--quiet",
-        description: "Suppress all compilation output."
-      }
-    ]
+        description: "Suppress all compilation output.",
+      },
+      {
+        option: "--compiler <compiler-name>",
+        description:
+          "Specify a single compiler to use (e.g. `--compiler=solc`)",
+      },
+    ],
   },
-  run: function(options, done) {
+  run: function (options, done) {
     const Contracts = require("@truffle/workflow-compile/new");
     const Config = require("@truffle/config");
     const config = Config.detect(options);
@@ -66,11 +71,11 @@ const command = {
     }
   },
 
-  listVersions: async function(options) {
+  listVersions: async function (options) {
     const { CompilerSupplier } = require("@truffle/compile-solidity");
     const supplier = new CompilerSupplier({
       solcConfig: options.compilers.solc,
-      events: options.events
+      events: options.events,
     });
 
     const log = options.logger.log;
@@ -92,7 +97,7 @@ const command = {
     return;
   },
 
-  shortener: function(key, val) {
+  shortener: function (key, val) {
     const defaultLength = 10;
 
     if (Array.isArray(val) && val.length > defaultLength) {
@@ -105,7 +110,7 @@ const command = {
     }
 
     return val;
-  }
+  },
 };
 
 module.exports = command;
