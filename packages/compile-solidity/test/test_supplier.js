@@ -18,7 +18,7 @@ describe("CompilerSupplier", function () {
     let oldPragmaFloatSource; // ^0.4.15
     let version4PragmaSource; // ^0.4.21
     let version5PragmaSource; // ^0.5.0
-    let version7PragmaSource; // ^0.7.0
+    let versionLatestPragmaSource; // Currently: ^0.7.0
     let compileConfig;
 
     const options = {
@@ -45,8 +45,8 @@ describe("CompilerSupplier", function () {
         "utf-8"
       );
 
-      const version7Pragma = await fse.readFile(
-        path.join(__dirname, "./sources/v0.7.x/Version7Pragma.sol"),
+      const versionLatestPragma = await fse.readFile(
+        path.join(__dirname, "./sources/v0.7.x/Version7Pragma.sol"), //update when necessary
         "utf-8"
       );
 
@@ -54,7 +54,7 @@ describe("CompilerSupplier", function () {
       oldPragmaFloatSource = { "OldPragmaFloat.sol": oldPragmaFloat };
       version4PragmaSource = { "NewPragma.sol": version4Pragma };
       version5PragmaSource = { "Version5Pragma.sol": version5Pragma };
-      version7PragmaSource = { "Version7Pragma.sol": version7Pragma };
+      versionLatestPragmaSource = { "Version7Pragma.sol": versionLatestPragma }; //update when necessary
     });
 
     it("compiles w/ default solc if no compiler specified (float)", async function () {
@@ -181,13 +181,13 @@ describe("CompilerSupplier", function () {
         const nativeSolcOptions = Config.default().merge(options);
 
         const { contracts } = await compile(
-          version7PragmaSource,
+          versionLatestPragmaSource,
           nativeSolcOptions
         );
-        const Version7Pragma = findOne("Version7Pragma", contracts);
-        assert(Version7Pragma.compiler.version.includes("0.7."));
+        const VersionLatestPragma = findOne("Version7Pragma", contracts); //update when necessary
+        assert(VersionLatestPragma.compiler.version.includes("0.7.")); //update when necessary
         assert(
-          Version7Pragma.contractName === "Version7Pragma",
+          VersionLatestPragma.contractName === "Version7Pragma", //update when necessary
           "Should have compiled"
         );
       });
