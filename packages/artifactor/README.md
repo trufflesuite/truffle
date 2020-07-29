@@ -99,6 +99,8 @@ Save many contracts to the filesystem at once. Returns a Promise.
         // ...
       },
       AnotherContract: {
+        abi: "...",
+        bytecode: "...",
         // ...
       }
     }
@@ -114,6 +116,7 @@ Save many contracts to the filesystem at once. Returns a Promise.
       },{
         contract_name: "AnotherContract",
         abi: "...",
+        bytecode: "...",
         // ...
       }
     ]
