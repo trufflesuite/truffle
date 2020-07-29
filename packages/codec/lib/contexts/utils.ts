@@ -8,7 +8,7 @@ import {
   DecoderContext,
   Context,
   Contexts,
-  DebuggerContexts
+  DebuggerContexts,
 } from "./types";
 import escapeRegExp from "lodash.escaperegexp";
 
@@ -80,7 +80,7 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   let newContexts: Contexts = Object.assign(
     {},
     ...Object.entries(contexts).map(([contextHash, context]) => ({
-      [contextHash]: { ...context }
+      [contextHash]: { ...context },
     }))
   );
 
@@ -176,28 +176,51 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   //but it's not worth the trouble to detect that either, because we really
   //don't support Solidity versions that old
   //note that the externalSolidity option should *only* be set for Solidity contracts!
+  const extractCbor = (binary: string) => {
+    const lastTwoBytes = binary.slice(2).slice(-2 * 2); //2 bytes * 2 for hex
+    //the slice(2) there may seem unnecessary; it's to handle the possibility that the contract
+    //has less than two bytes in its bytecode (that won't happen with Solidity, but let's be
+    //certain)
+    if (lastTwoBytes.length < 2 * 2) {
+      return undefined; //don't try to handle this case!
+    }
+    const cborLength: number = parseInt(lastTwoBytes, 16);
+    const cborEnd = binary.length - 2 * 2;
+    const cborStart = cborEnd - cborLength * 2;
+    //sanity check
+    if (cborStart < 2) {
+      //"0x"
+      return undefined; //don't try to handle this case!
+    }
+    return {
+      cborStart,
+      cborLength,
+      cborEnd,
+      cbor: binary.slice(cborStart, cborEnd),
+    };
+  };
+  const externalCbors = new Set(
+    Object.values(newContexts)
+      .filter(context => context.externalSolidity)
+      .map(context => extractCbor(context.binary).cbor)
+      .filter(cbor => cbor !== undefined)
+  );
   for (let context of Object.values(newContexts)) {
     if (context.externalSolidity) {
-      //last two bytes contain the cbor length
-      const lastTwoBytes = context.binary.slice(2).slice(-2 * 2); //2 bytes * 2 for hex
-      //the slice(2) there may seem unnecessary; it's to handle the possibility that the contract
-      //has less than two bytes in its bytecode (that won't happen with Solidity, but let's be
-      //certain)
-      if (lastTwoBytes.length < 2 * 2) {
-        continue; //don't try to handle this case!
+      let truncatedBinary = context.binary;
+      let cborInfo = extractCbor(truncatedBinary);
+      while (cborInfo && externalCbors.has(cborInfo.cbor)) {
+        const { cborStart, cborEnd, cborLength } = cborInfo;
+        //dot-out the cbor part of the binary
+        context.binary =
+          context.binary.slice(0, cborStart) +
+          "..".repeat(cborLength) +
+          context.binary.slice(cborEnd);
+        //cut off the final cbor & length; if the resulting cbor is among the external
+        //cbors, repeat
+        truncatedBinary = truncatedBinary.slice(0, cborStart);
+        cborInfo = extractCbor(truncatedBinary);
       }
-      const cborLength: number = parseInt(lastTwoBytes, 16);
-      const cborEnd = context.binary.length - 2 * 2;
-      const cborStart = cborEnd - cborLength * 2;
-      //sanity check
-      if (cborStart < 2) {
-        //"0x"
-        continue; //don't try to handle this case!
-      }
-      context.binary =
-        context.binary.slice(0, cborStart) +
-        "..".repeat(cborLength) +
-        context.binary.slice(cborEnd);
     }
   }
 
