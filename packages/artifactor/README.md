@@ -97,7 +97,7 @@ Save many contracts to the filesystem at once. Returns a Promise.
         abi: "...",
         bytecode: "...",
         // ...
-      }
+      },
       AnotherContract: {
         // ...
       }
