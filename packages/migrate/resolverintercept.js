@@ -5,7 +5,7 @@ class ResolverIntercept {
   }
 
   require(contractName) {
-    // remove file extension if added
+    // remove file extension if present on name
     const sanitizedContractName = contractName
       .replace(/^\.\//, "")
       .replace(/\.sol$/i, "");
