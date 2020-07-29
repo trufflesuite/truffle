@@ -45,7 +45,6 @@ class Artifactor {
 
     if (Array.isArray(artifactObjects)) {
       const tmpArtifactArray = artifactObjects;
-
       tmpArtifactArray.forEach(artifactObj => {
         newArtifactObjects[artifactObj.contract_name] = artifactObj;
       });
