@@ -10,8 +10,8 @@ class ResolverIntercept {
       .replace(/^\.\//, "")
       .replace(/\.sol$/i, "");
 
-    // TODO: Using the import path for relative files may result in multiple
-    // paths for the same file. This could return different objects since it won't be a cache hit.
+    // there may be more than one contract of the same name which will be
+    // problematic - only return the first one found in the cache for now
     for (const contract of this.cache) {
       if (contract.contract_name === sanitizedContractName) {
         return contract;
