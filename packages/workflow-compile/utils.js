@@ -35,16 +35,7 @@ function multiPromisify(func) {
     });
 }
 
-function byContractName(contracts) {
-  return contracts
-    .map(contract => ({
-      [contract.contractName || contract.contract_name]: contract
-    }))
-    .reduce((a, b) => Object.assign({}, a, b), {});
-}
-
 module.exports = {
   prepareConfig,
   multiPromisify,
-  byContractName
 };
