@@ -28,7 +28,9 @@ async function compile(config) {
   //
 
   const compilers = config.compiler
-    ? [config.compiler]
+    ? config.compiler === "none"
+      ? []
+      : [config.compiler]
     : Object.keys(config.compilers);
 
   // invoke compilers
