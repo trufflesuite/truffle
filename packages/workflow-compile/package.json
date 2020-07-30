@@ -9,9 +9,6 @@
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
   "version": "2.1.43",
-  "bin": {
-    "_truffle_workflow_compile": "./bin/_truffle_workflow_compile"
-  },
   "main": "index.js",
   "scripts": {
     "test": "mocha"
