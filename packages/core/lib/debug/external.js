@@ -105,8 +105,8 @@ class DebugExternalHandler {
         //compile the sources
         const externalConfig = this.config.with({
           compilers: {
-            solc: options,
-          },
+            solc: options
+          }
         });
         const { contracts, sourceIndexes: files } = await new DebugCompiler(
           externalConfig
@@ -118,7 +118,8 @@ class DebugExternalHandler {
         const newCompilations = Codec.Compilations.Utils.shimArtifacts(
           contracts,
           files,
-          compilationId
+          compilationId,
+          true //mark compilation as external Solidity
         );
         //add it!
         await this.bugger.addExternalCompilations(newCompilations);
@@ -169,5 +170,5 @@ function getAnUnknownAddress(bugger, addressesToSkip) {
 }
 
 module.exports = {
-  DebugExternalHandler,
+  DebugExternalHandler
 };
