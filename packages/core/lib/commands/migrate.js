@@ -4,41 +4,46 @@ const command = {
   builder: {
     "reset": {
       type: "boolean",
-      default: false,
+      default: false
     },
     "compile-all": {
-      describe: "recompile all contracts",
+      describe: "Recompile all contracts",
       type: "boolean",
-      default: false,
+      default: false
+    },
+    "compile-none": {
+      describe: "Do not compile contracts",
+      type: "boolean",
+      default: false
     },
     "dry-run": {
       describe: "Run migrations against an in-memory fork, for testing",
       type: "boolean",
-      default: false,
+      default: false
     },
     "skip-dry-run": {
       describe: "Skip the test or 'dry run' migrations",
       type: "boolean",
-      default: false,
+      default: false
     },
     "f": {
       describe: "Specify a migration number to run from",
-      type: "number",
+      type: "number"
     },
     "to": {
       describe: "Specify a migration number to run to",
-      type: "number",
+      type: "number"
     },
     "interactive": {
       describe: "Manually authorize deployments after seeing a preview",
       type: "boolean",
-      default: false,
+      default: false
     },
     "describe-json": {
       describe: "Adds extra verbosity to the status of an ongoing migration",
       type: "boolean",
-      default: false,
-    },
+      default: false
+    }
   },
   help: {
     usage:
@@ -52,55 +57,59 @@ const command = {
         option: "--reset",
         description:
           "Run all migrations from the beginning, instead of running from the last " +
-          "completed migration.",
+          "completed migration."
       },
       {
         option: "--f <number>",
         description:
           "Run contracts from a specific migration. The number refers to the prefix of " +
-          "the migration file.",
+          "the migration file."
       },
       {
         option: "--to <number>",
         description:
-          "Run contracts to a specific migration. The number refers to the prefix of the migration file.",
+          "Run contracts to a specific migration. The number refers to the prefix of the migration file."
       },
       {
         option: "--network <name>",
         description:
           "Specify the network to use, saving artifacts specific to that network. " +
-          "Network name must exist\n                    in the configuration.",
+          "Network name must exist\n                    in the configuration."
       },
       {
         option: "--compile-all",
         description:
           "Compile all contracts instead of intelligently choosing which contracts need to " +
-          "be compiled.",
+          "be compiled."
+      },
+      {
+        option: "--compile-none",
+        description: "Do not compile any contracts before migrating."
       },
       {
         option: "--verbose-rpc",
         description:
-          "Log communication between Truffle and the Ethereum client.",
+          "Log communication between Truffle and the Ethereum client."
       },
       {
         option: "--interactive",
         description:
-          "Prompt to confirm that the user wants to proceed after the dry run.",
+          "Prompt to confirm that the user wants to proceed after the dry run."
       },
       {
         option: "--dry-run",
-        description: "Only perform a test or 'dry run' migration.",
+        description: "Only perform a test or 'dry run' migration."
       },
       {
         option: "--skip-dry-run",
-        description: "Do not run a test or 'dry run' migration.",
+        description: "Do not run a test or 'dry run' migration."
       },
       {
         option: "--describe-json",
         description:
-          "Adds extra verbosity to the status of an ongoing migration",
-      },
-    ],
+          "Adds extra verbosity to the status of an ongoing migration"
+      }
+    ]
   },
 
   determineDryRunSettings: function (config, options) {
@@ -117,7 +126,7 @@ const command = {
       99, // Core
 
       7762959, // Musiccoin
-      61717561, // Aquachain
+      61717561 // Aquachain
     ];
 
     let dryRunOnly, skipDryRun;
@@ -188,6 +197,9 @@ const command = {
     tmp.setGracefulCleanup();
 
     const conf = Config.detect(options);
+    if (conf.compileNone || conf["compile-none"]) {
+      conf.compiler = "none";
+    }
 
     Contracts.compile(conf)
       .then(async () => {
@@ -195,7 +207,7 @@ const command = {
 
         const {
           dryRunOnly,
-          dryRunAndMigrations,
+          dryRunAndMigrations
         } = command.determineDryRunSettings(conf, options);
 
         if (dryRunOnly) {
@@ -209,7 +221,7 @@ const command = {
 
           let {
             config,
-            proceed,
+            proceed
           } = await command.prepareConfigForRealMigrations(
             currentBuild,
             options
@@ -227,7 +239,7 @@ const command = {
       // Copy artifacts to a temporary directory
       const temporaryDirectory = tmp.dirSync({
         unsafeCleanup: true,
-        prefix: "migrate-dry-run-",
+        prefix: "migrate-dry-run-"
       }).name;
 
       await promisifiedCopy(
@@ -260,7 +272,7 @@ const command = {
         }
       }
     }
-  },
+  }
 };
 
 module.exports = command;
