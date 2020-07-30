@@ -2,10 +2,6 @@ const debugModule = require("debug");
 const debug = debugModule("lib:debug:external");
 
 const Web3 = require("web3");
-const fs = require("fs-extra");
-const path = require("path");
-const tmp = require("tmp");
-tmp.setGracefulCleanup();
 
 const Codec = require("@truffle/codec");
 const Fetchers = require("@truffle/source-fetcher").default;
@@ -29,7 +25,7 @@ class DebugExternalHandler {
     debug("Fetchers: %o", Fetchers);
     const allFetchers = await Promise.all(
       Fetchers.map(
-        async (Fetcher) =>
+        async Fetcher =>
           await Fetcher.forNetworkId(
             networkId,
             this.config[Fetcher.fetcherName]
@@ -41,9 +37,7 @@ class DebugExternalHandler {
     let sortedFetchers = [];
     if (userFetcherNames) {
       for (let name of userFetcherNames) {
-        let Fetcher = allFetchers.find(
-          (Fetcher) => Fetcher.fetcherName === name
-        );
+        let Fetcher = allFetchers.find(Fetcher => Fetcher.fetcherName === name);
         if (Fetcher) {
           sortedFetchers.push(Fetcher);
         } else {
@@ -108,29 +102,15 @@ class DebugExternalHandler {
           //break out of the fetcher loop, since *no* fetcher will work here
           break;
         }
-        //make a temporary directory to store our downloads in
-        const sourceDirectory = tmp.dirSync({
-          unsafeCleanup: true,
-          prefix: "tmp-",
-        }).name;
-        debug("tempdir: %s", sourceDirectory);
-        //save the sources to the temporary directory
-        await Promise.all(
-          Object.entries(sources).map(async ([sourcePath, source]) => {
-            const temporaryPath = path.join(sourceDirectory, sourcePath);
-            await fs.outputFile(temporaryPath, source);
-          })
-        );
         //compile the sources
-        const temporaryConfig = this.config.with({
-          contracts_directory: sourceDirectory,
+        const externalConfig = this.config.with({
           compilers: {
-            solc: options,
-          },
+            solc: options
+          }
         });
         const { contracts, sourceIndexes: files } = await new DebugCompiler(
-          temporaryConfig
-        ).compile();
+          externalConfig
+        ).compile(sources);
         debug("contracts: %o", contracts);
         debug("files: %O", files);
         //shim the result
@@ -139,7 +119,7 @@ class DebugExternalHandler {
           contracts,
           files,
           compilationId,
-          true //externalSolidity flag
+          true //mark compilation as external Solidity
         );
         //add it!
         await this.bugger.addExternalCompilations(newCompilations);
@@ -185,10 +165,10 @@ function getUnknownAddresses(bugger) {
 
 function getAnUnknownAddress(bugger, addressesToSkip) {
   return getUnknownAddresses(bugger).find(
-    (address) => !addressesToSkip.has(address)
+    address => !addressesToSkip.has(address)
   );
 }
 
 module.exports = {
-  DebugExternalHandler,
+  DebugExternalHandler
 };
