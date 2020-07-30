@@ -28,125 +28,226 @@ import { Callback, JsonRPCResponse } from "web3/providers";
 // See issue #65 for more
 const singletonNonceSubProvider = new NonceSubProvider();
 
-export interface MnemonicOptions {
-  phrase: string;
-  password?: string;
-}
-
+/*
+ * type aliases for better readability around legacy positional arguments
+ */
+export type MnemonicPhrase = string;
+export type MnemonicPassword = string;
 export interface Mnemonic {
-  phrase: string;
-  password: string;
+  phrase: MnemonicPhrase;
+  password?: MnemonicPassword;
+}
+export type PrivateKey = string;
+export type Provider = any;
+export type ProviderUrl = string;
+export type ProviderOrUrl = Provider | ProviderUrl;
+export type AddressIndex = number;
+export type NumberOfAddresses = number;
+export type ShareNonce = boolean;
+export type DerivationPath = string;
+
+/*
+ * namespace wrapper for new constructor options interface
+ */
+export namespace NewConstructor {
+  export interface MnemonicSigningAuthority {
+    mnemonic: Mnemonic;
+  }
+
+  export interface PrivateKeySigningAuthority {
+    privateKeys: PrivateKey[];
+  }
+
+  export type SigningAuthority =
+    | MnemonicSigningAuthority
+    | PrivateKeySigningAuthority;
+
+  export interface CommonOptions {
+    providerOrUrl: ProviderOrUrl;
+    addressIndex?: AddressIndex;
+    numberOfAddresses?: NumberOfAddresses;
+    shareNonce?: ShareNonce;
+    derivationPath?: DerivationPath;
+  }
+
+  export type Options = SigningAuthority & CommonOptions;
+
+  // extract the mnemonic if that's the style used, or return undefined
+  export const getMnemonic = (
+    signingAuthority: SigningAuthority
+  ): Mnemonic | undefined => {
+    if ("mnemonic" in signingAuthority) {
+      return signingAuthority.mnemonic;
+    }
+  };
+
+  // extract the private keys if that's the style used, or return undefined
+  export const getPrivateKeys = (
+    signingAuthority: SigningAuthority
+  ): PrivateKey[] | undefined => {
+    if ("privateKeys" in signingAuthority) {
+      return signingAuthority.privateKeys;
+    }
+  };
 }
 
-export interface PrivateKeysOptions {
-  privateKeys: string | string[];
-}
+/*
+ * namespace wrapper for old-style positional arguments
+ */
+export namespace LegacyConstructor {
+  type PossibleArguments = [
+    /*
+     * required
+     */
+    MnemonicPhrase | PrivateKey[],
+    ProviderOrUrl,
 
-export interface CommonConstructorOptions {
-  url: string;
-  addressIndex?: number;
-  numberOfAddresses?: number;
-  sharedNonce?: boolean;
-  derivationPath?: string;
-}
+    /*
+     * optional
+     */
+    AddressIndex,
+    NumberOfAddresses,
+    ShareNonce,
+    DerivationPath
+  ];
 
-export type ConstructorOptions =
-  | (CommonConstructorOptions & MnemonicOptions)
-  | (CommonConstructorOptions & PrivateKeysOptions);
+  // (awful to have to do it this way)
+  export type Arguments =
+    | [PossibleArguments[0], PossibleArguments[1]]
+    | [PossibleArguments[0], PossibleArguments[1], PossibleArguments[2]]
+    | [
+        PossibleArguments[0],
+        PossibleArguments[1],
+        PossibleArguments[2],
+        PossibleArguments[3]
+      ]
+    | [
+        PossibleArguments[0],
+        PossibleArguments[1],
+        PossibleArguments[2],
+        PossibleArguments[3],
+        PossibleArguments[4]
+      ]
+    | [
+        PossibleArguments[0],
+        PossibleArguments[1],
+        PossibleArguments[2],
+        PossibleArguments[3],
+        PossibleArguments[4],
+        PossibleArguments[5]
+      ];
 
-const OPTIONS_DEFAULTS = {
-  ADDRESS_INDEX: 0,
-  NUMBER_OF_ADDRESSES: 10,
-  SHARED_NONCE: true,
-  DERIVATION_PATH: `m/44'/60'/0'/0/`
-};
+  // check that the first argument is a mnemonic phrase
+  const isMnemonicPhrase = (
+    mnemonicPhraseOrPrivateKeys: MnemonicPhrase | PrivateKey[]
+  ): mnemonicPhraseOrPrivateKeys is MnemonicPhrase =>
+    typeof mnemonicPhraseOrPrivateKeys === "string";
 
-const getOptions = (
-  mnemonicOrPrivateKeysOrOptions: string | string[] | ConstructorOptions,
-  options: any[]
-): {
-  url: string;
-  addressIndex: number;
-  numberOfAddresses: number;
-  sharedNonce: boolean;
-  derivationPath: string;
-} => {
-  if (options.length) {
+  // check that the first argument is a list of private keys
+  const isPrivateKeys = (
+    mnemonicPhraseOrPrivateKeys: MnemonicPhrase | PrivateKey[]
+  ): mnemonicPhraseOrPrivateKeys is PrivateKey[] =>
+    mnemonicPhraseOrPrivateKeys instanceof Array;
+
+  // turn polymorphic first argument into { mnemonic } or { privateKeys }
+  const getSigningAuthorityOptions = (
+    mnemonicPhraseOrPrivateKeys: MnemonicPhrase | PrivateKey[]
+  ): NewConstructor.SigningAuthority => {
+    if (isMnemonicPhrase(mnemonicPhraseOrPrivateKeys)) {
+      return {
+        mnemonic: {
+          phrase: mnemonicPhraseOrPrivateKeys
+        }
+      };
+    } else if (isPrivateKeys(mnemonicPhraseOrPrivateKeys)) {
+      return {
+        privateKeys: mnemonicPhraseOrPrivateKeys
+      };
+    } else {
+      throw new Error(
+        `First argument to new HDWalletProvider() must be a mnemonic phrase or a list of private keys. ` +
+          `Received: ${JSON.stringify(mnemonicPhraseOrPrivateKeys)}`
+      );
+    }
+  };
+
+  // convert legacy style positional arguments to new, single-arg options format
+  export const toOptions = (args: Arguments): NewConstructor.Options => {
+    // otherwise, if arguments match the old-style, extract properties and handle polymorphism
     const [
-      url,
-      addressIndex = OPTIONS_DEFAULTS.ADDRESS_INDEX,
-      numberOfAddresses = OPTIONS_DEFAULTS.NUMBER_OF_ADDRESSES,
-      sharedNonce = OPTIONS_DEFAULTS.SHARED_NONCE,
-      derivationPath = OPTIONS_DEFAULTS.DERIVATION_PATH
-    ] = options;
-
-    return {
+      mnemonicPhraseOrPrivateKeys,
+      providerOrUrl,
       addressIndex,
       numberOfAddresses,
-      sharedNonce,
-      derivationPath,
-      url
+      shareNonce,
+      derivationPath
+    ] = args;
+
+    const signingAuthority = getSigningAuthorityOptions(
+      mnemonicPhraseOrPrivateKeys
+    );
+
+    return {
+      ...signingAuthority,
+      providerOrUrl,
+      addressIndex,
+      numberOfAddresses,
+      shareNonce,
+      derivationPath
     };
-  }
-
-  const {
-    url,
-    addressIndex = OPTIONS_DEFAULTS.ADDRESS_INDEX,
-    numberOfAddresses = OPTIONS_DEFAULTS.NUMBER_OF_ADDRESSES,
-    sharedNonce = OPTIONS_DEFAULTS.SHARED_NONCE,
-    derivationPath = OPTIONS_DEFAULTS.DERIVATION_PATH
-  } = mnemonicOrPrivateKeysOrOptions as ConstructorOptions;
-
-  return { addressIndex, numberOfAddresses, sharedNonce, derivationPath, url };
-};
-
-const getMnemonic = (
-  mnemonicOrPrivateKeysOrOptions: string | string[] | ConstructorOptions
-): { phrase: string | null; password: string } => {
-  const phrase =
-    typeof mnemonicOrPrivateKeysOrOptions === "string" &&
-    mnemonicOrPrivateKeysOrOptions.includes(" ")
-      ? mnemonicOrPrivateKeysOrOptions
-      : (mnemonicOrPrivateKeysOrOptions as MnemonicOptions).phrase || null;
-
-  const { password = "" } = mnemonicOrPrivateKeysOrOptions as MnemonicOptions;
-
-  return { phrase, password };
-};
-
-const getPrivateKeys = (
-  mnemonicOrPrivateKeysOrOptions: string | string[] | ConstructorOptions
-): string[] => {
-  if (Array.isArray(mnemonicOrPrivateKeysOrOptions)) {
-    return mnemonicOrPrivateKeysOrOptions;
-  }
-
-  return typeof mnemonicOrPrivateKeysOrOptions === "string"
-    ? [mnemonicOrPrivateKeysOrOptions]
-    : [];
-};
-
-const normalizeConstructorOptions = (
-  mnemonicOrPrivateKeysOrOptions: string | string[] | ConstructorOptions,
-  options: any[]
-): {
-  mnemonic: { phrase: string | null; password: string };
-  privateKeys: string[];
-  url: string | any;
-  addressIndex: number;
-  numberOfAddresses: number;
-  sharedNonce: boolean;
-  derivationPath: string;
-} => {
-  const parsedOptions = getOptions(mnemonicOrPrivateKeysOrOptions, options);
-  const mnemonic = getMnemonic(mnemonicOrPrivateKeysOrOptions);
-  const privateKeys = getPrivateKeys(mnemonicOrPrivateKeysOrOptions);
-
-  return {
-    mnemonic,
-    privateKeys,
-    ...parsedOptions
   };
+}
+
+/*
+ * top-level polymorphic type
+ */
+export type ConstructorArguments =
+  | LegacyConstructor.Arguments // either the old-style tuple type
+  | [NewConstructor.Options]; // or a single argument for new-style options
+
+// type predicate guard to determine at runtime if arguments conform to
+// new-style constructor args.
+const matchesNewOptions = (
+  args: ConstructorArguments
+): args is [NewConstructor.Options] => {
+  // new-style means exactly one argument
+  if (args.length !== 1) {
+    return false;
+  }
+
+  const [options] = args;
+
+  // beyond that, determine based on property inclusion check for required keys
+  return (
+    "providerOrUrl" in options &&
+    ("mnemonic" in options || "privateKeys" in options)
+  );
+};
+
+// type predicate guard to determine at runtime if arguments conform to
+// old-style constructor args.
+const matchesLegacyArguments = (
+  args: ConstructorArguments
+): args is LegacyConstructor.Arguments =>
+  // first check for alternate (new-style) case for basic determination
+  !matchesNewOptions(args) &&
+  // then additionally make sure we have the two required options we need
+  args.filter(arg => arg !== undefined).length >= 2;
+
+// normalize arguments passed to constructor to match single, new-style options
+// argument
+const getOptions = (...args: ConstructorArguments): NewConstructor.Options => {
+  if (matchesNewOptions(args)) {
+    // if arguments already match new-style, no real transformation needed
+    const [options] = args;
+    return options;
+  } else if (matchesLegacyArguments(args)) {
+    return LegacyConstructor.toOptions(args);
+  } else {
+    throw new Error(
+      "Unknown arguments format passed to new HDWalletProvider. Please check your configuration and try again"
+    );
+  }
 };
 
 class HDWalletProvider {
@@ -157,29 +258,30 @@ class HDWalletProvider {
 
   public engine: ProviderEngine;
 
-  constructor(
-    mnemonicOrPrivateKeysOrOptions: string | string[] | ConstructorOptions,
-    ...args: any[]
-  ) {
+  constructor(...args: ConstructorArguments) {
     const {
-      mnemonic,
-      privateKeys,
-      url,
-      addressIndex,
-      numberOfAddresses,
-      sharedNonce,
-      derivationPath
-    } = normalizeConstructorOptions(mnemonicOrPrivateKeysOrOptions, args);
+      providerOrUrl, // required
+      addressIndex = 0,
+      numberOfAddresses = 10,
+      shareNonce = true,
+      derivationPath = `m/44'/60'/0'/0/`,
+
+      // what's left is either a mnemonic or a list of private keys
+      ...signingAuthority
+    } = getOptions(...args);
+
+    const mnemonic = NewConstructor.getMnemonic(signingAuthority);
+    const privateKeys = NewConstructor.getPrivateKeys(signingAuthority);
 
     this.walletHdpath = derivationPath;
     this.wallets = {};
     this.addresses = [];
     this.engine = new ProviderEngine();
 
-    if (!HDWalletProvider.isValidProvider(url)) {
+    if (!HDWalletProvider.isValidProvider(providerOrUrl)) {
       throw new Error(
         [
-          `Malformed provider URL: '${url}'`,
+          `Malformed provider URL: '${providerOrUrl}'`,
           "Please specify a correct URL, using the http, https, ws, or wss protocol.",
           ""
         ].join("\n")
@@ -192,7 +294,7 @@ class HDWalletProvider {
       password
     }: {
       phrase: string;
-      password: string;
+      password?: string;
     }) => {
       this.hdwallet = EthereumHDKey.fromMasterSeed(
         bip39.mnemonicToSeedSync(phrase, password)
@@ -227,11 +329,11 @@ class HDWalletProvider {
       }
     };
 
-    if (mnemonic.phrase) {
-      checkBIP39Mnemonic(mnemonic as Mnemonic);
-    } else {
-      ethUtilValidation(privateKeys as string[]);
-    }
+    if (mnemonic && mnemonic.phrase) {
+      checkBIP39Mnemonic(mnemonic);
+    } else if (privateKeys) {
+      ethUtilValidation(privateKeys);
+    } // no need to handle else case here, since matchesNewOptions() covers it
 
     const tmp_accounts = this.addresses;
     const tmp_wallets = this.wallets;
@@ -282,12 +384,14 @@ class HDWalletProvider {
       })
     );
 
-    !sharedNonce
+    !shareNonce
       ? this.engine.addProvider(new NonceSubProvider())
       : this.engine.addProvider(singletonNonceSubProvider);
 
     this.engine.addProvider(new FiltersSubprovider());
-    if (typeof url === "string") {
+    if (typeof providerOrUrl === "string") {
+      const url = providerOrUrl;
+
       const providerProtocol = (
         Url.parse(url).protocol || "http:"
       ).toLowerCase();
@@ -301,7 +405,8 @@ class HDWalletProvider {
           this.engine.addProvider(new RpcProvider({ rpcUrl: url }));
       }
     } else {
-      this.engine.addProvider(new ProviderSubprovider(url));
+      const provider = providerOrUrl;
+      this.engine.addProvider(new ProviderSubprovider(provider));
     }
 
     // Required by the provider engine.
