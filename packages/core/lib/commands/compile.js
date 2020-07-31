@@ -91,7 +91,7 @@ const command = {
           if (options.saveIntermediate) {
             // Get the filename the user provided to save the compilation results to
             const compilationOutputFile = path.resolve(
-              path.join(process.cwd(), options.saveIntermediate)
+              options.saveIntermediate
             );
 
             await fse.writeFile(
