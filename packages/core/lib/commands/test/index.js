@@ -113,7 +113,7 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: function (options, done) {
     const Config = require("@truffle/config");
     const { Environment, Develop } = require("@truffle/environment");
     const {
@@ -176,7 +176,7 @@ const command = {
 
       const ganacheOptions = {
         host: "127.0.0.1",
-        port: 7545,
+        port: 6545,
         network_id: 4447,
         mnemonic:
           "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
