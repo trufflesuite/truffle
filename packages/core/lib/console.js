@@ -196,7 +196,14 @@ class Console extends EventEmitter {
     // If our code includes an await, add special processing to ensure it's evaluated properly.
     if (match) {
       let assign = match[1];
-      const expression = match[2];
+
+      let expression;
+      if (match[2] && match[2].endsWith(";")) {
+        // strip off trailing ";" to prevent the expression below from erroring
+        expression = match[2].slice(0, -1);
+      } else {
+        expression = match[2];
+      }
 
       const RESULT = "__await_outside_result";
 
