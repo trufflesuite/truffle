@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "6.0.10",
+  "version": "6.0.11-save-intermediate.0",
   "main": "dist/lib/index.js",
   "files": [
     "dist"
@@ -20,7 +20,7 @@
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
-    "@truffle/contract": "^4.2.14",
+    "@truffle/contract": "^4.2.15-save-intermediate.0",
     "@truffle/expect": "^0.0.14",
     "@truffle/provisioner": "^0.2.0",
     "debug": "^4.1.1",
