@@ -197,13 +197,11 @@ class Console extends EventEmitter {
     if (match) {
       let assign = match[1];
 
-      let expression;
-      if (match[2] && match[2].endsWith(";")) {
-        // strip off trailing ";" to prevent the expression below from erroring
-        expression = match[2].slice(0, -1);
-      } else {
-        expression = match[2];
-      }
+      const expression =
+        match[2] && match[2].endsWith(";")
+          ? // strip off trailing ";" to prevent the expression below from erroring
+            match[2].slice(0, -1)
+          : match[2];
 
       const RESULT = "__await_outside_result";
 
