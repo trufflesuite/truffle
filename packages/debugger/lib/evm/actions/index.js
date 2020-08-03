@@ -42,6 +42,16 @@ export function addInstance(address, context, binary) {
   };
 }
 
+export const ADD_DISPLAY_INSTANCE = "EVM_ADD_DISPLAY_INSTANCE";
+export function addDisplayInstance(address, context, binary) {
+  return {
+    type: ADD_DISPLAY_INSTANCE,
+    address,
+    context,
+    binary
+  };
+}
+
 export const REFRESH_INSTANCE = "EVM_REFRESH_INSTANCE";
 export function refreshInstances(address, context) {
   return {

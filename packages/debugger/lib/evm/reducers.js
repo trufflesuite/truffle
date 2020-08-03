@@ -142,10 +142,36 @@ function initialCall(state = null, action) {
   }
 }
 
+const DEFAULT_DISPLAY_INSTANCES = { byAddress: {} };
+
+function displayInstances(state = DEFAULT_DISPLAY_INSTANCES, action) {
+  switch (action.type) {
+    case actions.ADD_INSTANCE:
+    case actions.ADD_DISPLAY_INSTANCE:
+      //includes both real and display instances
+      const { address, binary, context } = action;
+      return {
+        byAddress: {
+          ...state.byAddress,
+          [address]: {
+            address,
+            binary,
+            context
+          }
+        }
+      };
+    case actions.UNLOAD_TRANSACTION:
+      return DEFAULT_DISPLAY_INSTANCES;
+    default:
+      return state;
+  }
+}
+
 const transaction = combineReducers({
   globals,
   status,
-  initialCall
+  initialCall,
+  displayInstances
 });
 
 function callstack(state = [], action) {

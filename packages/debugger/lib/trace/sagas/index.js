@@ -2,7 +2,7 @@ import debugModule from "debug";
 const debug = debugModule("debugger:trace:sagas");
 
 import { take, takeEvery, put, select } from "redux-saga/effects";
-import { prefixName, isCallMnemonic } from "lib/helpers";
+import { prefixName, isCallMnemonic, isCreateMnemonic } from "lib/helpers";
 
 import * as Codec from "@truffle/codec";
 
@@ -70,18 +70,37 @@ export function* signalTickSagaCompletion() {
 export function* processTrace(steps) {
   yield put(actions.saveSteps(steps));
 
-  let addresses = [
+  let callAddresses = [
     ...new Set(
       steps
-        .map(
-          ({ op, stack }) =>
-            isCallMnemonic(op)
-              ? //if it's a call, just fetch the address off the stack
-                Codec.Evm.Utils.toAddress(stack[stack.length - 2])
-              : //if it's not a call, just return undefined (we've gone back to
-                //skipping creates)
-                undefined
+        .map(({ op, stack }) =>
+          isCallMnemonic(op)
+            ? //if it's a call, just fetch the address off the stack
+              Codec.Evm.Utils.toAddress(stack[stack.length - 2])
+            : //if it's not a call, just return undefined
+              undefined
         )
+        .filter(address => address !== undefined)
+    )
+  ];
+
+  let createAddresses = [
+    ...new Set(
+      steps
+        .map(({ op, depth }, index) => {
+          if (isCreateMnemonic(op)) {
+            //if it's a create, look ahead on the stack to when it returns
+            let returnStack = steps
+              .slice(index + 1)
+              .find(step => step.depth === depth).stack;
+            return Codec.Evm.Utils.toAddress(
+              returnStack[returnStack.length - 1]
+            );
+          } else {
+            //if it's not a create, just return undefined
+            return undefined;
+          }
+        })
         //filter out zero addresses from failed creates (as well as undefineds)
         .filter(
           address =>
@@ -90,7 +109,7 @@ export function* processTrace(steps) {
     )
   ];
 
-  return addresses;
+  return { calls: callAddresses, creations: createAddresses };
 }
 
 export function* reset() {

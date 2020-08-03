@@ -31,16 +31,24 @@ export function* addContext(context) {
 
 /**
  * Adds known deployed instance of binary at address
+ * by default adds it to the real, internal list of instances.
+ * however it can also add it to the external display-only list of instances.
+ * (note that I'm calling this "display-only", but really they're
+ * also used for, e.g., determining what external sources need fetching)
  *
  * @param {string} binary - may be undefined (e.g. precompiles)
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function* addInstance(address, binary) {
+export function* addInstance(address, binary, displayOnly = false) {
   const search = yield select(evm.info.binaries.search);
   const context = search(binary);
 
   //now, whether we needed a new context or not, add the instance
-  yield put(actions.addInstance(address, context, binary));
+  if (displayOnly) {
+    yield put(actions.addDisplayInstance(address, context, binary));
+  } else {
+    yield put(actions.addInstance(address, context, binary));
+  }
 
   return context;
 }
@@ -49,11 +57,13 @@ export function* addInstance(address, binary) {
 //context (used if new contexts have been added -- something
 //that currently only happens when adding external compilations)
 export function* refreshInstances() {
-  const instances = yield select(evm.current.codex.instances);
+  const instances = yield select(evm.transaction.displayInstances);
+  const codexInstances = yield select(evm.current.codex.instances);
   for (let [address, { binary }] of Object.entries(instances)) {
+    const displayOnly = !(address in codexInstances);
     const search = yield select(evm.info.binaries.search);
     const context = search(binary);
-    yield put(actions.addInstance(address, context, binary));
+    yield put(actions.addInstance(address, context, binary, displayOnly));
   }
 }
 

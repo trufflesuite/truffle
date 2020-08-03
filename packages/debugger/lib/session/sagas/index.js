@@ -159,27 +159,37 @@ function* fetchTx(txHash) {
 
   //get addresses created/called during transaction
   debug("processing trace for addresses");
-  let addresses = yield* trace.processTrace(result.trace);
+  let { calls, creations } = yield* trace.processTrace(result.trace);
   //add in the address of the call itself (if a call)
-  if (result.address && !addresses.includes(result.address)) {
-    addresses.push(result.address);
+  if (result.address && !calls.includes(result.address)) {
+    calls.push(result.address);
   }
+
   //if a create, only add in address if it was successful
   if (
     result.binary &&
     result.status &&
-    !addresses.includes(result.storageAddress)
+    !creations.includes(result.storageAddress)
   ) {
-    addresses.push(result.storageAddress);
+    creations.push(result.storageAddress);
   }
 
   let blockNumber = result.block.number.toString(); //a BN is not accepted
+  let addresses = [...calls, ...creations];
+  let creationStartIndex = calls.length;
   debug("obtaining binaries");
   let binaries = yield* web3.obtainBinaries(addresses, blockNumber);
 
   debug("recording instances");
   yield all(
-    addresses.map((address, i) => call(recordInstance, address, binaries[i]))
+    addresses.map((address, index) =>
+      call(
+        recordInstance,
+        address,
+        binaries[index],
+        index >= creationStartIndex
+      )
+    )
   );
 
   debug("sending initial call");
@@ -198,8 +208,8 @@ function* recordSources(sources) {
   yield* solidity.addSources(sources);
 }
 
-function* recordInstance(address, binary) {
-  yield* evm.addInstance(address, binary);
+function* recordInstance(address, binary, displayOnly) {
+  yield* evm.addInstance(address, binary, displayOnly);
 }
 
 function* ready() {
