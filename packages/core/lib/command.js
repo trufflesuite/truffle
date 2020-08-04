@@ -4,8 +4,6 @@ const { bundled, core } = require("../lib/version").info();
 const OS = require("os");
 const analytics = require("../lib/services/analytics");
 const { extractFlags } = require("./utils/utils"); // Contains utility methods
-const child = require("child_process").spawnSync;
-const path = require("path");
 
 class Command {
   constructor(commands) {
@@ -74,42 +72,6 @@ class Command {
     };
   }
 
-  async runSpawn(inputStrings, options, callback) {
-    const args = path.resolve(path.join(__dirname, "../cli.js"));
-
-    const spawnOptions = { stdio: ["inherit", "inherit", "inherit"] };
-
-    const result = this.getCommand(inputStrings, options.noAliases);
-
-    if (result == null) {
-      return callback(
-        new TaskError(
-          "Cannot find command based on input: " + JSON.stringify(inputStrings)
-        )
-      );
-    }
-
-    // Some options might throw if options is a Config object. If so, let's ignore those options.
-    const clone = {};
-    Object.keys(options).forEach(key => {
-      try {
-        clone[key] = options[key];
-      } catch (e) {
-        // Do nothing with values that throw.
-      }
-    });
-
-    // Check unsupported command line flag according to the option list in help
-    try {
-      // while in `console` & `develop`, input is passed as a string, not as an array
-      if (!Array.isArray(inputStrings)) inputStrings = inputStrings.split(" ");
-
-      child("node", [args, ...inputStrings], spawnOptions);
-    } catch (err) {
-      callback(err);
-    }
-  }
-
   run(inputStrings, options, callback) {
     const result = this.getCommand(inputStrings, options.noAliases);
 
@@ -172,6 +134,7 @@ class Command {
       const newOptions = Object.assign({}, clone, argv);
 
       result.command.run(newOptions, callback);
+
       analytics.send({
         command: result.name ? result.name : "other",
         args: result.argv._,

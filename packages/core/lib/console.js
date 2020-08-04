@@ -3,7 +3,7 @@ const Command = require("./command");
 const provision = require("@truffle/provisioner");
 const {
   Web3Shim,
-  createInterfaceAdapter
+  createInterfaceAdapter,
 } = require("@truffle/interface-adapter");
 const contract = require("@truffle/contract");
 const vm = require("vm");
@@ -12,6 +12,7 @@ const TruffleError = require("@truffle/error");
 const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");
+const child = require("child_process").spawnSync;
 
 const processInput = input => {
   const inputComponents = input.trim().split(" ");
@@ -38,7 +39,7 @@ class Console extends EventEmitter {
       "network_id",
       "provider",
       "resolver",
-      "build_directory"
+      "build_directory",
     ]);
 
     this.options = options;
@@ -48,11 +49,11 @@ class Console extends EventEmitter {
 
     this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
-      networkType: options.networks[options.network].type
+      networkType: options.networks[options.network].type,
     });
     this.web3 = new Web3Shim({
       provider: options.provider,
-      networkType: options.networks[options.network].type
+      networkType: options.networks[options.network].type,
     });
 
     // Bubble the ReplManager's exit event
@@ -79,10 +80,10 @@ class Console extends EventEmitter {
           context: {
             web3: this.web3,
             interfaceAdapter: this.interfaceAdapter,
-            accounts: fetchedAccounts
+            accounts: fetchedAccounts,
           },
           interpreter: this.interpret.bind(this),
-          done: callback
+          done: callback,
         });
 
         this.resetContractsInConsoleContext(abstractions);
@@ -147,12 +148,54 @@ class Console extends EventEmitter {
     this.repl.setContextVars(contextVars);
   }
 
+  runSpawn(inputStrings, options, callback) {
+    const args = path.resolve(path.join(__dirname, "../lib/console-child.js"));
+
+    const spawnOptions = { stdio: ["inherit", "inherit", "inherit"] };
+
+    try {
+      //serialize config networks entries
+      const configNetworks = {};
+      for (const key in options.networks) {
+        configNetworks[key] = JSON.stringify(options.networks[key]);
+      }
+
+      //passing config options without the resolver, which could not be adequatey serialized
+      const configOptions = {
+        working_directory: options.working_directory,
+        contracts_directory: options.contracts_directory,
+        contracts_build_directory: options.contracts_build_directory,
+        migrations_directory: options.migrations_directory,
+        network: options.network,
+        networks: configNetworks,
+        network_id: options.network_id,
+        provider: options.provider,
+        build_directory: options.build_directory,
+      };
+
+      child(
+        "node",
+        [args, inputStrings, JSON.stringify(configOptions)],
+        spawnOptions
+      );
+
+      //this may not be the right place to re-provision; TO-DO: take a closer look
+      try {
+        this.provision();
+      } catch (e) {
+        console.log(e);
+      }
+    } catch (err) {
+      callback(err);
+    }
+  }
+
   interpret(input, context, filename, callback) {
     const processedInput = processInput(input);
     if (
       this.command.getCommand(processedInput, this.options.noAliases) != null
     ) {
-      return this.command.runSpawn(processedInput, this.options, error => {
+      return this.runSpawn(processedInput, this.options, error => {
         if (error) {
           // Perform error handling ourselves.
           if (error instanceof TruffleError) {
@@ -222,7 +265,7 @@ class Console extends EventEmitter {
       const options = {
         displayErrors: true,
         breakOnSigint: true,
-        filename: filename
+        filename: filename,
       };
       return script.runInContext(context, options);
     };
