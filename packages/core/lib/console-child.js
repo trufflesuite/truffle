@@ -3,11 +3,6 @@ const TruffleError = require("@truffle/error");
 const Config = require("@truffle/config");
 const Web3 = require("web3");
 
-//just a stand-in, may need to make this more robust?
-function callback() {
-  return;
-}
-
 const inputStrings = process.argv[2];
 //deserialize options
 const options = JSON.parse(process.argv[3]);
@@ -50,6 +45,7 @@ command.run(inputStrings, configDetected, error => {
       // Bubble up all other unexpected errors.
       console.log(error.stack || error.toString());
     }
-    return callback();
+    process.exit(1);
   }
+  process.exit(0);
 });

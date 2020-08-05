@@ -12,7 +12,7 @@ const TruffleError = require("@truffle/error");
 const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");
-const child = require("child_process").spawnSync;
+const spawnSync = require("child_process").spawnSync;
 
 const processInput = input => {
   const inputComponents = input.trim().split(" ");
@@ -173,7 +173,7 @@ class Console extends EventEmitter {
         build_directory: options.build_directory,
       };
 
-      child(
+      spawnSync(
         "node",
         [args, inputStrings, JSON.stringify(configOptions)],
         spawnOptions
