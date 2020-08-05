@@ -5,7 +5,7 @@ import Web3 from "web3";
 import WalletProvider from "../dist";
 import { describe, it } from "mocha";
 
-describe("HD Wallet Provider", function() {
+describe("HD Wallet Provider", function () {
   const web3 = new Web3();
   const port = 8545;
   let server: any;
@@ -25,7 +25,7 @@ describe("HD Wallet Provider", function() {
     provider.engine.stop();
   });
 
-  it("provides for a mnemonic", function(done) {
+  it("provides for a mnemonic", function (done) {
     const truffleDevAccounts = [
       "0x627306090abab3a6e1400e9345bc60c78a8bef57",
       "0xf17f52151ebef6c7334fad080c5704d77216b732",
@@ -52,7 +52,7 @@ describe("HD Wallet Provider", function() {
     });
   });
 
-  it("throws on invalid mnemonic", function(done) {
+  it("throws on invalid mnemonic", function (done) {
     try {
       provider = new WalletProvider(
         "takoyaki is delicious",
@@ -65,25 +65,7 @@ describe("HD Wallet Provider", function() {
     }
   });
 
-  it("provides for a private key", function(done) {
-    const privateKey =
-      "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580"; //random valid private key generated with ethkey
-    provider = new WalletProvider(privateKey, `http://localhost:${port}`);
-    web3.setProvider(provider);
-
-    const addresses = provider.getAddresses();
-    assert.equal(addresses[0], "0xc515db5834d8f110eee96c3036854dbf1d87de2b");
-    addresses.forEach(address => {
-      assert(EthUtil.isValidAddress(address), "invalid address");
-    });
-
-    web3.eth.getBlockNumber((err, number) => {
-      assert(number === 0);
-      done();
-    });
-  });
-
-  it("provides for an array of private keys", function(done) {
+  it("provides for an array of private keys", function (done) {
     const privateKeys = [
       "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580",
       "9549f39decea7b7504e15572b2c6a72766df0281cea22bd1a3bc87166b1ca290"
