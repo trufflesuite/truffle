@@ -20,9 +20,7 @@ async function prepareGanache(
     const server = Ganache.server({
       time: genesisBlockTime
     });
-    server.listen(port, (err: Error) => {
-      if (err) reject(err);
-
+    server.listen(port, () => {
       const interfaceAdapter = createInterfaceAdapter({
         provider: new Web3.providers.HttpProvider(`http://127.0.0.1:${port}`),
         networkType: quorumEnabled ? "quorum" : "ethereum"
@@ -35,8 +33,8 @@ async function prepareGanache(
   });
 }
 
-describe("Quorum getBlock Overload", function() {
-  it("recovers block timestamp as hexstring instead of number w/ quorum=true", async function() {
+describe("Quorum getBlock Overload", function () {
+  it("recovers block timestamp as hexstring instead of number w/ quorum=true", async function () {
     return new Promise(async (resolve, reject) => {
       let preparedGanache;
       try {
@@ -56,7 +54,7 @@ describe("Quorum getBlock Overload", function() {
     });
   });
 
-  it("recovers block timestamp as number w/ quorum=false", async function() {
+  it("recovers block timestamp as number w/ quorum=false", async function () {
     return new Promise(async (resolve, reject) => {
       let preparedGanache;
       try {
