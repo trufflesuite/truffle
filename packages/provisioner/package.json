@@ -22,5 +22,8 @@
   },
   "devDependencies": {
     "typescript": "^3.9.7"
+  },
+  "dependencies": {
+    "@truffle/config": "^1.2.23"
   }
 }
