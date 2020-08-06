@@ -1,12 +1,12 @@
 import { ConstructorArguments } from "./types";
-import { NewConstructor } from "./NewConstructor";
-import { LegacyConstructor } from "./LegacyConstructor";
+import * as Constructor from "./constructor";
+import * as LegacyConstructor from "./legacyConstructor";
 
 // type predicate guard to determine at runtime if arguments conform to
 // new-style constructor args.
 const matchesNewOptions = (
   args: ConstructorArguments
-): args is [NewConstructor.Options] => {
+): args is [Constructor.Options] => {
   // new-style means exactly one argument
   if (args.length !== 1) {
     return false;
@@ -35,7 +35,7 @@ const matchesLegacyArguments = (
 // argument
 export const getOptions = (
   ...args: ConstructorArguments
-): NewConstructor.Options => {
+): Constructor.Options => {
   if (matchesNewOptions(args)) {
     // if arguments already match new-style, no real transformation needed
     const [options] = args;

@@ -1,5 +1,5 @@
-import { LegacyConstructor } from "./LegacyConstructor";
-import { NewConstructor } from "./NewConstructor";
+import * as LegacyConstructor from "./legacyConstructor";
+import * as Constructor from "./constructor";
 
 /*
  * type aliases for better readability around legacy positional arguments
@@ -24,4 +24,4 @@ export type DerivationPath = string;
  */
 export type ConstructorArguments =
   | LegacyConstructor.Arguments // either the old-style tuple type
-  | [NewConstructor.Options]; // or a single argument for new-style options
+  | [Constructor.Options]; // or a single argument for new-style options

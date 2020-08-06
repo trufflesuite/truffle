@@ -19,7 +19,7 @@ import Url from "url";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
 import { Callback, JsonRPCResponse } from "web3/providers";
 import { ConstructorArguments } from "./types";
-import { NewConstructor } from "./NewConstructor";
+import * as NewConstructor from "./constructor";
 import { getOptions } from "./getOptions";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
