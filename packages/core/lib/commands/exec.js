@@ -43,6 +43,7 @@ const command = {
     const { Environment } = require("@truffle/environment");
     const path = require("path");
     const OS = require("os");
+    const { promisify } = require("util");
 
     const config = Config.detect(options);
 
@@ -73,29 +74,17 @@ const command = {
 
         // `--compile`
         if (options.c || options.compile) {
-          return Contracts.compile(config, function(err) {
-            if (err) return done(err);
-
-            Require.exec(
-              config.with({
-                file: file
-              }),
-              done
-            );
-          });
+          return Contracts.compile(config);
         }
-
-        // Just exec
-        Require.exec(
-          config.with({
-            file: file
-          }),
-          done
-        );
+        return;
       })
-      .catch(error => {
-        done(error);
-      });
+      .then(() => {
+        return promisify(Require.exec.bind(Require))(config.with({ file }));
+      })
+      .then(() => {
+        done();
+      })
+      .catch(done);
   }
 };
 

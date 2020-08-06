@@ -116,6 +116,7 @@ const Build = {
             return callback(err);
           });
         }
+        return callback();
       });
     });
   }
