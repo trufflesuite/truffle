@@ -19,5 +19,8 @@
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/provisioner#readme",
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.7"
   }
 }
