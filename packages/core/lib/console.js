@@ -3,7 +3,7 @@ const Command = require("./command");
 const provision = require("@truffle/provisioner");
 const {
   Web3Shim,
-  createInterfaceAdapter,
+  createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 const contract = require("@truffle/contract");
 const vm = require("vm");
@@ -13,7 +13,7 @@ const fse = require("fs-extra");
 const path = require("path");
 const EventEmitter = require("events");
 
-const processInput = (input) => {
+const processInput = input => {
   const inputComponents = input.trim().split(" ");
   if (inputComponents.length === 0) return input;
 
@@ -38,7 +38,7 @@ class Console extends EventEmitter {
       "network_id",
       "provider",
       "resolver",
-      "build_directory",
+      "build_directory"
     ]);
 
     this.options = options;
@@ -48,11 +48,11 @@ class Console extends EventEmitter {
 
     this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
-      networkType: options.networks[options.network].type,
+      networkType: options.networks[options.network].type
     });
     this.web3 = new Web3Shim({
       provider: options.provider,
-      networkType: options.networks[options.network].type,
+      networkType: options.networks[options.network].type
     });
 
     // Bubble the ReplManager's exit event
@@ -71,7 +71,7 @@ class Console extends EventEmitter {
     this.options.repl = this.repl;
 
     try {
-      this.interfaceAdapter.getAccounts().then((fetchedAccounts) => {
+      this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
         const abstractions = this.provision();
 
         this.repl.start({
@@ -79,10 +79,10 @@ class Console extends EventEmitter {
           context: {
             web3: this.web3,
             interfaceAdapter: this.interfaceAdapter,
-            accounts: fetchedAccounts,
+            accounts: fetchedAccounts
           },
           interpreter: this.interpret.bind(this),
-          done: callback,
+          done: callback
         });
 
         this.resetContractsInConsoleContext(abstractions);
@@ -101,7 +101,7 @@ class Console extends EventEmitter {
       const unfilteredFiles = fse.readdirSync(
         this.options.contracts_build_directory
       );
-      files = unfilteredFiles.filter((file) => file.endsWith(".json"));
+      files = unfilteredFiles.filter(file => file.endsWith(".json"));
     } catch (error) {
       // Error reading the build directory? Must mean it doesn't exist or we don't have access to it.
       // Couldn't provision the contracts if we wanted. It's possible we're hiding very rare FS
@@ -112,7 +112,7 @@ class Console extends EventEmitter {
     let jsonBlobs = [];
     files = files || [];
 
-    files.forEach((file) => {
+    files.forEach(file => {
       try {
         const body = fse.readFileSync(
           path.join(this.options.contracts_build_directory, file),
@@ -124,7 +124,7 @@ class Console extends EventEmitter {
       }
     });
 
-    const abstractions = jsonBlobs.map((json) => {
+    const abstractions = jsonBlobs.map(json => {
       const abstraction = contract(json);
       provision(abstraction, this.options);
       return abstraction;
@@ -140,7 +140,7 @@ class Console extends EventEmitter {
 
     const contextVars = {};
 
-    abstractions.forEach((abstraction) => {
+    abstractions.forEach(abstraction => {
       contextVars[abstraction.contract_name] = abstraction;
     });
 
@@ -152,7 +152,7 @@ class Console extends EventEmitter {
     if (
       this.command.getCommand(processedInput, this.options.noAliases) != null
     ) {
-      return this.command.run(processedInput, this.options, (error) => {
+      return this.command.run(processedInput, this.options, error => {
         if (error) {
           // Perform error handling ourselves.
           if (error instanceof TruffleError) {
@@ -196,7 +196,12 @@ class Console extends EventEmitter {
     // If our code includes an await, add special processing to ensure it's evaluated properly.
     if (match) {
       let assign = match[1];
-      const expression = match[2];
+
+      const expression =
+        match[2] && match[2].endsWith(";")
+          ? // strip off trailing ";" to prevent the expression below from erroring
+            match[2].slice(0, -1)
+          : match[2];
 
       const RESULT = "__await_outside_result";
 
@@ -213,11 +218,11 @@ class Console extends EventEmitter {
         : null;
     }
 
-    const runScript = (script) => {
+    const runScript = script => {
       const options = {
         displayErrors: true,
         breakOnSigint: true,
-        filename: filename,
+        filename: filename
       };
       return script.runInContext(context, options);
     };
@@ -235,12 +240,12 @@ class Console extends EventEmitter {
     // async function or not. If our script is an async function,
     // this will ensure the console waits until that await is finished.
     Promise.resolve(runScript(script))
-      .then((value) => {
+      .then(value => {
         // If there's an assignment to run, run that.
         if (assignment) return runScript(vm.createScript(assignment));
         return value;
       })
-      .then((value) => {
+      .then(value => {
         // All good? Return the value (e.g., eval'd script or assignment)
         callback(null, value);
       })

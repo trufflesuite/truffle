@@ -11,8 +11,11 @@ import FiltersSubprovider from "@trufflesuite/web3-provider-engine/subproviders/
 import NonceSubProvider from "@trufflesuite/web3-provider-engine/subproviders/nonce-tracker";
 import HookedSubprovider from "@trufflesuite/web3-provider-engine/subproviders/hooked-wallet";
 import ProviderSubprovider from "@trufflesuite/web3-provider-engine/subproviders/provider";
+// @ts-ignore
+import RpcProvider from "@trufflesuite/web3-provider-engine/subproviders/rpc";
+// @ts-ignore
+import WebsocketProvider from "@trufflesuite/web3-provider-engine/subproviders/websocket";
 import Url from "url";
-import Web3 from "web3";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
 import { Callback, JsonRPCResponse } from "web3/providers";
 
@@ -51,7 +54,7 @@ class HDWalletProvider {
         [
           `Malformed provider URL: '${provider}'`,
           "Please specify a correct URL, using the http, https, ws, or wss protocol.",
-          "",
+          ""
         ].join("\n")
       );
     }
@@ -151,7 +154,7 @@ class HDWalletProvider {
         },
         signPersonalMessage(...args: any[]) {
           this.signMessage(...args);
-        },
+        }
       })
     );
 
@@ -161,10 +164,6 @@ class HDWalletProvider {
 
     this.engine.addProvider(new FiltersSubprovider());
     if (typeof provider === "string") {
-      // shim Web3 to give it expected sendAsync method. Needed if web3-engine-provider upgraded!
-      // Web3.providers.HttpProvider.prototype.sendAsync =
-      // Web3.providers.HttpProvider.prototype.send;
-      let subProvider;
       const providerProtocol = (
         Url.parse(provider).protocol || "http:"
       ).toLowerCase();
@@ -172,16 +171,11 @@ class HDWalletProvider {
       switch (providerProtocol) {
         case "ws:":
         case "wss:":
-          subProvider = new Web3.providers.WebsocketProvider(provider);
+          this.engine.addProvider(new WebsocketProvider({ rpcUrl: provider }));
           break;
         default:
-          // @ts-ignore: Incorrect typings in @types/web3
-          subProvider = new Web3.providers.HttpProvider(provider, {
-            keepAlive: false,
-          });
+          this.engine.addProvider(new RpcProvider({ rpcUrl: provider }));
       }
-
-      this.engine.addProvider(new ProviderSubprovider(subProvider));
     } else {
       this.engine.addProvider(new ProviderSubprovider(provider));
     }

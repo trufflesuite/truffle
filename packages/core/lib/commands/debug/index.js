@@ -3,18 +3,14 @@ const command = {
   description: "Interactively debug any transaction on the blockchain",
   builder: {
     "_": {
-      type: "string",
-    },
-    "network": {
-      describe: "Network to connect to",
-      type: "string",
+      type: "string"
     },
     "fetch-external": {
       describe: "Allow debugging of external contracts",
       alias: "x",
       type: "boolean",
-      default: false,
-    },
+      default: false
+    }
   },
   help: {
     usage:
@@ -22,19 +18,19 @@ const command = {
     options: [
       {
         option: "--network",
-        description: "Network to connect to.",
+        description: "Network to connect to."
       },
       {
         option: "--fetch-external",
         description:
-          "Allows debugging of external contracts with verified sources.  Alias: -x",
+          "Allows debugging of external contracts with verified sources.  Alias: -x"
       },
       {
         option: "<transaction_hash>",
         description:
-          "Transaction ID to use for debugging.  Mandatory if --fetch-external is passed.",
-      },
-    ],
+          "Transaction ID to use for debugging.  Mandatory if --fetch-external is passed."
+      }
+    ]
   },
   run: async function (options) {
     const debugModule = require("debug");
@@ -60,9 +56,9 @@ const command = {
         }
         return await new CLIDebugger(config, { txHash }).run();
       })
-      .then((interpreter) => interpreter.start(done))
+      .then(interpreter => interpreter.start(done))
       .catch(done);
-  },
+  }
 };
 
 module.exports = command;

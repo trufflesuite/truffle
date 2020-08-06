@@ -16,9 +16,10 @@ const Config = require("@truffle/config");
 // options.context: Object containing any global variables you'd like set when this
 //   function is run.
 const Require = {
-  file: options => {
+  file: function (options) {
     let source;
     const file = options.file;
+    const config = options.config;
 
     expect.options(options, ["file"]);
 
@@ -31,17 +32,22 @@ const Require = {
 
     // Provide all the globals listed here: https://nodejs.org/api/globals.html
     const context = {
-      Buffer: Buffer,
       __dirname: path.dirname(file),
       __filename: file,
-      clearImmediate: clearImmediate,
-      clearInterval: clearInterval,
-      clearTimeout: clearTimeout,
-      console: console,
-      exports: exports,
-      global: global,
+      Buffer,
+      clearImmediate,
+      clearInterval,
+      clearTimeout,
+      console,
+      exports,
+      global,
+      process,
+      setImmediate,
+      setInterval,
+      setTimeout,
+      config,
       module: m,
-      process: process,
+      artifacts: options.resolver,
       require: pkgPath => {
         // Ugh. Simulate a full require function for the file.
         pkgPath = pkgPath.trim();
@@ -72,11 +78,7 @@ const Require = {
           // Try global, and let the error throw.
           return originalrequire(pkgPath);
         }
-      },
-      artifacts: options.resolver,
-      setImmediate: setImmediate,
-      setInterval: setInterval,
-      setTimeout: setTimeout
+      }
     };
 
     // Now add contract names.
@@ -96,7 +98,7 @@ const Require = {
     return m.exports;
   },
 
-  exec: async function(options) {
+  exec: async function (options) {
     expect.options(options, [
       "contracts_build_directory",
       "file",
@@ -118,7 +120,8 @@ const Require = {
     const fn = this.file({
       file: options.file,
       context: { web3, interfaceAdapter },
-      resolver: options.resolver
+      resolver: options.resolver,
+      config: options
     });
     return fn();
   }

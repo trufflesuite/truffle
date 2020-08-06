@@ -11,23 +11,24 @@ import zipWith from "lodash.zipwith";
 import { popNWhere } from "lib/helpers";
 import * as Codec from "@truffle/codec";
 
-const identity = (x) => x;
+const identity = x => x;
 
 function generateReport(callstack, location, status, message) {
   //step 1: shift everything over by 1 and recombine :)
-  let locations = callstack.map((frame) => frame.calledFromLocation);
+  let locations = callstack.map(frame => frame.calledFromLocation);
   //remove initial null, add final location on end
   locations.shift();
   locations.push(location);
   debug("locations: %O", locations);
-  const names = callstack.map(({ functionName, contractName }) => ({
+  const names = callstack.map(({ functionName, contractName, address }) => ({
     functionName,
     contractName,
+    address
   }));
   debug("names: %O", names);
   let report = zipWith(locations, names, (location, nameInfo) => ({
     ...nameInfo,
-    location,
+    location
   }));
   //finally: set the status in the top frame
   //and the message in the bottom
@@ -61,7 +62,7 @@ function createMultistepSelectors(stepSelector) {
       /**
        * .pointer
        */
-      pointer: createLeaf([stepSelector.pointer], identity),
+      pointer: createLeaf([stepSelector.pointer], identity)
     },
 
     /**
@@ -71,7 +72,7 @@ function createMultistepSelectors(stepSelector) {
       ["./location/source", "./location/sourceRange"],
       ({ id, compilationId, sourcePath }, sourceRange) => ({
         source: { id, compilationId, sourcePath },
-        sourceRange,
+        sourceRange
       })
     ),
 
@@ -91,7 +92,7 @@ function createMultistepSelectors(stepSelector) {
               pointer.replace(/\/nodes\/\d+$/, "") //cut off end
             )
           : ast
-    ),
+    )
   };
 }
 
@@ -99,7 +100,7 @@ let stacktrace = createSelectorTree({
   /**
    * stacktrace.state
    */
-  state: (state) => state.stacktrace,
+  state: state => state.stacktrace,
 
   /**
    * stacktrace.current
@@ -108,24 +109,24 @@ let stacktrace = createSelectorTree({
     /**
      * stacktrace.current.callstack
      */
-    callstack: createLeaf(["/state"], (state) => state.proc.callstack),
+    callstack: createLeaf(["/state"], state => state.proc.callstack),
 
     /**
      * stacktrace.current.returnCounter
      */
-    returnCounter: createLeaf(["/state"], (state) => state.proc.returnCounter),
+    returnCounter: createLeaf(["/state"], state => state.proc.returnCounter),
 
     /**
      * stacktrace.current.lastPosition
      */
-    lastPosition: createLeaf(["/state"], (state) => state.proc.lastPosition),
+    lastPosition: createLeaf(["/state"], state => state.proc.lastPosition),
 
     /**
      * stacktrace.current.innerReturnPosition
      */
     innerReturnPosition: createLeaf(
       ["/state"],
-      (state) => state.proc.innerReturnPosition
+      state => state.proc.innerReturnPosition
     ),
 
     /**
@@ -133,7 +134,7 @@ let stacktrace = createSelectorTree({
      */
     innerReturnStatus: createLeaf(
       ["/state"],
-      (state) => state.proc.innerReturnStatus
+      state => state.proc.innerReturnStatus
     ),
 
     ...createMultistepSelectors(solidity.current),
@@ -181,6 +182,44 @@ let stacktrace = createSelectorTree({
     returnStatus: createLeaf([evm.current.step.returnStatus], identity),
 
     /**
+     * stacktrace.current.address
+     * Initial call can't be a delegate, so we just use the storage address
+     * (thus allowing us to handle both calls & creates in one)
+     */
+    address: createLeaf([evm.current.call], call => call.storageAddress),
+
+    /**
+     * stacktrace.current.callAddress
+     *
+     * Covers both calls and creates
+     * NOTE: for this selector, we treat delegates just like any other call!
+     * we want to report the *code* address here, not the storage address
+     * (exception: for creates we report the storage address, as that's where
+     * the code *will* live)
+     */
+    callAddress: createLeaf(
+      [
+        evm.current.step.isCall,
+        evm.current.step.isCreate,
+        evm.current.step.callAddress,
+        evm.current.step.createdAddress
+      ],
+      (isCall, isCreate, callAddress, createdAddress) => {
+        if (isCall) {
+          return callAddress;
+        } else if (isCreate) {
+          if (createdAddress !== Codec.Evm.Utils.ZERO_ADDRESS) {
+            return createdAddress;
+          } else {
+            return undefined; //if created address appears to be 0, omit it
+          }
+        } else {
+          return null; //I guess??
+        }
+      }
+    ),
+
+    /**
      * stacktrace.current.revertString
      * Crudely decodes the current revert string.
      * Not meant to account for crazy things, just there to produce
@@ -188,7 +227,7 @@ let stacktrace = createSelectorTree({
      */
     revertString: createLeaf(
       [evm.current.step.returnValue],
-      (rawRevertMessage) => {
+      rawRevertMessage => {
         let revertDecodings = Codec.decodeRevert(
           Codec.Conversion.toBytes(rawRevertMessage)
         );
@@ -247,7 +286,7 @@ let stacktrace = createSelectorTree({
         "./callstack",
         "./innerReturnPosition",
         "./innerReturnStatus",
-        "./revertString",
+        "./revertString"
       ],
       generateReport
     ),
@@ -264,28 +303,28 @@ let stacktrace = createSelectorTree({
         "./callstack",
         "./returnCounter",
         "./lastPosition",
-        "/current/strippedLocation",
+        "/current/strippedLocation"
       ],
       (callstack, returnCounter, lastPosition, currentLocation) =>
         generateReport(
           popNWhere(
             callstack,
             returnCounter,
-            (frame) => frame.type === "external"
+            frame => frame.type === "external"
           ),
           currentLocation || lastPosition,
           null,
           undefined
         )
-    ),
+    )
   },
 
   /**
    * stacktrace.next
    */
   next: {
-    ...createMultistepSelectors(solidity.next),
-  },
+    ...createMultistepSelectors(solidity.next)
+  }
 });
 
 export default stacktrace;

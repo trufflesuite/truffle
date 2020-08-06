@@ -98,17 +98,17 @@ let migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
-describe("Stack tracing", function() {
+describe("Stack tracing", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources, migrations);
@@ -116,7 +116,7 @@ describe("Stack tracing", function() {
     compilations = prepared.compilations;
   });
 
-  it("Generates correct stack trace on a revert", async function() {
+  it("Generates correct stack trace on a revert", async function () {
     this.timeout(12000);
     let instance = await abstractions.StacktraceTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
@@ -155,6 +155,8 @@ describe("Stack tracing", function() {
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
+    let addresses = report.map(({ address }) => address);
+    assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 1].location;
@@ -163,7 +165,7 @@ describe("Stack tracing", function() {
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
   });
 
-  it("Generates correct stack trace at an intermediate state", async function() {
+  it("Generates correct stack trace at an intermediate state", async function () {
     this.timeout(12000);
     let instance = await abstractions.StacktraceTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
@@ -206,6 +208,8 @@ describe("Stack tracing", function() {
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
+    let addresses = report.map(({ address }) => address);
+    assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isUndefined(status);
     let location = report[report.length - 1].location;
@@ -229,6 +233,8 @@ describe("Stack tracing", function() {
     ]);
     contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
+    addresses = report.map(({ address }) => address);
+    assert(addresses.every(address => address === instance.address));
     status = report[report.length - 1].status;
     assert.isUndefined(status);
     location = report[report.length - 1].location;
@@ -237,7 +243,7 @@ describe("Stack tracing", function() {
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
   });
 
-  it("Generates correct stack trace on paying an unpayable contract", async function() {
+  it("Generates correct stack trace on paying an unpayable contract", async function () {
     this.timeout(12000);
     let instance = await abstractions.StacktraceTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
@@ -277,6 +283,8 @@ describe("Stack tracing", function() {
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert(contractNames.every(name => name === "StacktraceTest"));
+    let addresses = report.map(({ address }) => address);
+    assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 2].location; //note, -2 because of undefined on top
@@ -285,7 +293,7 @@ describe("Stack tracing", function() {
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
   });
 
-  it("Generates correct stack trace on calling an invalid internal function", async function() {
+  it("Generates correct stack trace on calling an invalid internal function", async function () {
     this.timeout(12000);
     let instance = await abstractions.StacktraceTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
@@ -327,6 +335,8 @@ describe("Stack tracing", function() {
     assert.isUndefined(contractNames[contractNames.length - 1]);
     contractNames.pop();
     assert(contractNames.every(name => name === "StacktraceTest"));
+    let addresses = report.map(({ address }) => address);
+    assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 2].location; //note, -2 because of undefined on top
@@ -335,7 +345,7 @@ describe("Stack tracing", function() {
     assert.strictEqual(prevLocation.sourceRange.lines.start.line, callLine);
   });
 
-  it("Generates correct stack trace on unexpected self-destruct", async function() {
+  it("Generates correct stack trace on unexpected self-destruct", async function () {
     this.timeout(12000);
     let instance = await abstractions.StacktraceTest.deployed();
     //HACK: because this transaction fails, we have to extract the hash from
@@ -381,6 +391,14 @@ describe("Stack tracing", function() {
     assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
     contractNames.pop(); //second-top frame
     assert(contractNames.every(name => name === "StacktraceTest"));
+    let addresses = report.map(({ address }) => address);
+    assert.strictEqual(
+      addresses[addresses.length - 1],
+      addresses[addresses.length - 2]
+    );
+    addresses.pop();
+    addresses.pop();
+    assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isTrue(status);
     let location = report[report.length - 1].location;

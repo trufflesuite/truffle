@@ -1,0 +1,49 @@
+#!/usr/bin/env node
+
+// This file is a simple CLI for running workflow-compile
+// while saving the artifact files **and** the compilation results
+// Usage: _truffle_workflow_compile <output-file-for-compilation-results>
+
+const path = require("path");
+const fs = require("fs");
+const Contracts = require("../new");
+const TruffleConfig = require("@truffle/config");
+
+const argIndexForFile =
+  process.argv.findIndex(arg => path.basename(arg) === path.basename(__filename));
+
+if (
+  argIndexForFile < 0 ||
+  (argIndexForFile + 1) >= process.argv.length
+) {
+  throw new Error("Must provide a file to save compilation results to");
+}
+
+// Get the filename the user provided to save the compilation results to
+const compilationOutputFile = path.resolve(
+  path.join(
+    process.cwd(),
+    process.argv[argIndexForFile + 1]
+  )
+);
+
+// Load the truffle project configuration, throws if it can't find it
+const config = TruffleConfig.detect({ working_directory: process.cwd() });
+
+// compile all sources, regardless
+config.compileAll = true;
+
+(async () => {
+  // compile the contracts
+  const compilationOutput = await Contracts.compile(config);
+
+  // save artifact files
+  await Contracts.save(config, compilationOutput.contracts);
+
+  // save compilation output, overwriting if it exists
+  fs.writeFileSync(
+    compilationOutputFile,
+    JSON.stringify(compilationOutput),
+    { encoding: "utf8" }
+  );
+})();

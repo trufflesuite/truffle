@@ -2,7 +2,8 @@ const assert = require("assert");
 const unbox = require("../../../lib/commands/unbox");
 const Config = require("@truffle/config");
 const sinon = require("sinon");
-const temp = require("temp").track();
+const tmp = require("tmp");
+tmp.setGracefulCleanup();
 let tempDir, mockConfig;
 
 describe("commands/unbox.js", () => {
@@ -10,37 +11,29 @@ describe("commands/unbox.js", () => {
     "//",
     "/truffle-box/bare-box",
     "//truffle-box/bare-box#truffle-test-branch",
-    "//truffle-box/bare-box#truffle-test-branch:path/SubDir",
+    "//truffle-box/bare-box#truffle-test-branch",
     "/bare/",
-    "//bare#truffle-test-branch",
-    "//bare#truffle-test-branch:path/SubDir"
-  ];
-  const absolutePaths = [
-    "https://github.com/truffle-box/bare-box:/path/SubDir",
-    "truffle-box/bare-box:/path/subDir",
-    "bare:/path/subDir",
-    "git@github.com:truffle-box/bare-box:/path/subDir"
+    "//bare#truffle-test-branch"
   ];
   const validBoxInput = [
-    "https://github.com/truffle-box/bare-box",
-    "truffle-box/bare-box",
     "bare",
+    "truffle-box/bare-box",
+    "truffle-box/bare-box#master",
+    "https://github.com/truffle-box/bare-box",
+    "https://github.com:truffle-box/bare-box",
+    "https://github.com/truffle-box/bare-box#master",
     "git@github.com:truffle-box/bare-box",
-    "https://github.com/truffle-box/bare-box#master"
-  ];
-  const relativePaths = [
-    "https://github.com/truffle-box/bare-box:path/SubDir",
-    "truffle-box/bare-box:path/subDir",
-    "bare:path/subDir",
-    "git@github.com:truffle-box/bare-box:path/subDir"
+    "git@github.com:truffle-box/bare-box#master"
   ];
 
   describe("run", () => {
     beforeEach(() => {
-      tempDir = temp.mkdirSync();
+      tempDir = tmp.dirSync({
+        unsafeCleanup: true
+      });
       mockConfig = Config.default().with({
         logger: { log: () => {} },
-        working_directory: tempDir
+        working_directory: tempDir.name
       });
       mockConfig.events = {
         emit: () => {}
@@ -52,52 +45,32 @@ describe("commands/unbox.js", () => {
     });
 
     describe("Error handling", () => {
-      it("throws when passed an invalid box format", () => {
-        invalidBoxFormats.forEach(val => {
-          unbox
-            .run({ _: [`${val}`] })
-            .then(() => {
-              assert(false);
+      it("throws when passed an invalid box format", async () => {
+        const promises = [];
+        for (const path of invalidBoxFormats) {
+          promises.push(
+            new Promise(resolve => {
+              const callback = error => {
+                error ? assert(true) : assert(false);
+                resolve();
+              };
+              unbox.run({ _: [`${path}`] }, callback);
             })
-            .catch(() => {
-              assert(true);
-            });
-        });
-      });
-
-      it("throws when passed an absolute unbox path", () => {
-        absolutePaths.forEach(path => {
-          unbox
-            .run({ _: [`${path}`] })
-            .then(() => {
-              assert(false);
-            })
-            .catch(() => {
-              assert(true);
-            });
-        });
+          );
+        }
+        return Promise.all(promises);
       });
     });
 
     describe("successful unboxes", () => {
-      it("runs when passed valid box input", () => {
+      it("runs when passed valid box input", async () => {
         let promises = [];
         validBoxInput.forEach(val => {
-          promises.push(unbox.run({ _: [`${val}`], force: true }));
-        });
-        return Promise.all(promises)
-          .then(() => {
-            assert(true);
-          })
-          .catch(error => {
-            assert(false, error.message);
-          });
-      }).timeout(10000);
-
-      it("runs when passed a relative unbox path", () => {
-        let promises = [];
-        relativePaths.forEach(path => {
-          promises.push(unbox.run({ _: [`${path}`], force: true }));
+          promises.push(
+            new Promise(resolve => {
+              unbox.run({ _: [`${val}`], force: true }, () => resolve());
+            })
+          );
         });
         return Promise.all(promises)
           .then(() => {

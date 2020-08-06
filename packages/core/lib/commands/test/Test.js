@@ -3,7 +3,7 @@ const chai = require("chai");
 const path = require("path");
 const {
   Web3Shim,
-  createInterfaceAdapter,
+  createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
 const Contracts = require("@truffle/workflow-compile/new");
@@ -34,18 +34,18 @@ const Test = {
       "test_files",
       "network",
       "network_id",
-      "provider",
+      "provider"
     ]);
 
     const config = Config.default().merge(options);
 
-    config.test_files = config.test_files.map((testFile) => {
+    config.test_files = config.test_files.map(testFile => {
       return path.resolve(testFile);
     });
 
     const interfaceAdapter = createInterfaceAdapter({
       provider: config.provider,
-      networkType: config.networks[config.network].type,
+      networkType: config.networks[config.network].type
     });
 
     // `accounts` will be populated before each contract() invocation
@@ -54,7 +54,7 @@ const Test = {
       provider: config.provider,
       networkType: config.networks[config.network].type
         ? config.networks[config.network].type
-        : "web3js",
+        : "web3js"
     });
 
     // Override console.warn() because web3 outputs gross errors to it.
@@ -71,17 +71,17 @@ const Test = {
 
     const mocha = this.createMocha(config);
 
-    const jsTests = config.test_files.filter((file) => {
+    const jsTests = config.test_files.filter(file => {
       return path.extname(file) !== ".sol";
     });
 
-    const solTests = config.test_files.filter((file) => {
+    const solTests = config.test_files.filter(file => {
       return path.extname(file) === ".sol";
     });
 
     // Add Javascript tests because there's nothing we need to do with them.
     // Solidity tests will be handled later.
-    jsTests.forEach((file) => {
+    jsTests.forEach(file => {
       // There's an idiosyncracy in Mocha where the same file can't be run twice
       // unless we delete the `require` cache.
       // https://github.com/mochajs/mocha/issues/995
@@ -108,7 +108,7 @@ const Test = {
       testResolver
     );
 
-    const testContracts = solTests.map((testFilePath) => {
+    const testContracts = solTests.map(testFilePath => {
       return testResolver.require(testFilePath);
     });
 
@@ -135,7 +135,7 @@ const Test = {
       bugger = await Debugger.forProject({
         compilations: debuggerCompilations,
         provider: config.provider,
-        lightMode: true,
+        lightMode: true
       });
     }
 
@@ -147,16 +147,16 @@ const Test = {
       testResolver,
       runner,
       compilations: debuggerCompilations,
-      bugger,
+      bugger
     });
 
     // Finally, run mocha.
-    process.on("unhandledRejection", (reason) => {
+    process.on("unhandledRejection", reason => {
       throw reason;
     });
 
-    return new Promise((resolve) => {
-      this.mochaRunner = mocha.run((failures) => {
+    return new Promise(resolve => {
+      this.mochaRunner = mocha.run(failures => {
         config.logger.warn = warn;
         resolve(failures);
       });
@@ -207,7 +207,7 @@ const Test = {
       files: updated.concat(solidityTestFiles),
       resolver: testResolver,
       quiet: config.runnerOutputOnly || config.quiet,
-      quietWrite: true,
+      quietWrite: true
     });
     if (config.compileAllDebug) {
       let versionString = ((compileConfig.compilers || {}).solc || {}).version;
@@ -216,14 +216,14 @@ const Test = {
       //the following line works with prereleases
       const satisfies = semver.satisfies(versionString, ">=0.6.3", {
         includePrerelease: true,
-        loose: true,
+        loose: true
       });
       //the following line doesn't, despite the flag, but does work with version ranges
       const intersects =
         semver.validRange(versionString) &&
         semver.intersects(versionString, ">=0.6.3", {
           includePrerelease: true,
-          loose: true,
+          loose: true
         }); //intersects will throw if given undefined so must ward against
       if (satisfies || intersects) {
         compileConfig = compileConfig.merge({
@@ -231,11 +231,11 @@ const Test = {
             solc: {
               settings: {
                 debug: {
-                  revertStrings: "debug",
-                },
-              },
-            },
-          },
+                  revertStrings: "debug"
+                }
+              }
+            }
+          }
         });
       } else {
         config.logger.log(
@@ -252,7 +252,7 @@ const Test = {
 
     return {
       contracts,
-      compilations,
+      compilations
     };
   },
 
@@ -260,7 +260,7 @@ const Test = {
     const migrateConfig = config.with({
       reset: true,
       resolver: resolver,
-      quiet: true,
+      quiet: true
     });
     return Migrate.run(migrateConfig);
   },
@@ -280,14 +280,14 @@ const Test = {
     testResolver,
     runner,
     compilations,
-    bugger, //for stacktracing
+    bugger //for stacktracing
   }) {
     global.interfaceAdapter = interfaceAdapter;
     global.web3 = web3;
     global.assert = chai.assert;
     global.expect = chai.expect;
     global.artifacts = {
-      require: (importPath) => {
+      require: importPath => {
         let contract = testResolver.require(importPath);
         //HACK: both of the following should go by means
         //of the provisioner, but I'm not sure how to make
@@ -300,10 +300,11 @@ const Test = {
           contract.debugger = bugger;
         }
         return contract;
-      },
+      }
     };
+    global.config = config.normalize(config);
 
-    global[config.debugGlobal] = async (operation) => {
+    global[config.debugGlobal] = async operation => {
       if (!config.debug) {
         config.logger.log(
           `${colors.bold(
@@ -360,7 +361,7 @@ const Test = {
         template.bind(this, tests)();
       });
     };
-  },
+  }
 };
 
 module.exports = { Test };

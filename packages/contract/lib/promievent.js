@@ -5,7 +5,7 @@ const Web3PromiEvent = require("web3-core-promievent");
 function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
   const { resolve, reject, eventEmitter } = new Web3PromiEvent(justPromise);
 
-  originalStackTrace = new Error().stack;
+  const originalStackTrace = new Error().stack;
 
   function rejectHijacker(e) {
     debug("hijacking!");
@@ -71,7 +71,7 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
   }
 
   this.resolve = resolve;
-  this.reject = rejectHijacker;
+  this.reject = rejectHijacker.bind(this);
   this.eventEmitter = eventEmitter;
   if (bugger) {
     this.debug = true;
@@ -80,7 +80,7 @@ function PromiEvent(justPromise, bugger = undefined, isDeploy = false) {
 
 PromiEvent.resolve = Web3PromiEvent.resolve;
 
-PromiEvent.prototype.setTransactionHash = function(txHash) {
+PromiEvent.prototype.setTransactionHash = function (txHash) {
   debug("setting!");
   debug("hash: %s", txHash);
   this.txHash = txHash;

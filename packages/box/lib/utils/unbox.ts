@@ -1,12 +1,13 @@
 import fse from "fs-extra";
 import path from "path";
-import ghdownload from "github-download";
+import download from "download-git-repo";
 import rp from "request-promise-native";
 import vcsurl from "vcsurl";
 import { parse as parseURL } from "url";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
 import { boxConfig, unboxOptions } from "typings";
+import { promisify } from "util";
 
 async function verifyURL(url: string) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
@@ -37,12 +38,7 @@ async function verifyURL(url: string) {
 }
 
 function fetchRepository(url: string, dir: string) {
-  return new Promise((accept, reject) =>
-    // Download the package from github.
-    ghdownload(url, dir)
-      .on("err", reject)
-      .on("end", accept)
-  );
+  return promisify(download)(url, dir);
 }
 
 function prepareToCopyFiles(tempDir: string, { ignore }: boxConfig) {

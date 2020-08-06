@@ -7,15 +7,9 @@ const prepareConfigAndRunTests = ({ config, temporaryDirectory, files }) => {
 
   const testConfig = config.with({
     test_files: files,
-    contracts_build_directory: temporaryDirectory,
+    contracts_build_directory: temporaryDirectory
   });
   return Test.run(testConfig);
-};
-
-module.exports = {
-  copyArtifactsToTempDir,
-  determineTestFilesToRun,
-  prepareConfigAndRunTests,
 };
 
 module.exports = { prepareConfigAndRunTests };

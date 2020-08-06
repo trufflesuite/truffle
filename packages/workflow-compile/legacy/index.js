@@ -7,17 +7,17 @@ const { prepareConfig, multiPromisify } = require("../utils");
 const {
   reportCompilationStarted,
   reportNothingToCompile,
-  reportCompilationFinished,
+  reportCompilationFinished
 } = require("../reports");
 
 const SUPPORTED_COMPILERS = {
   solc: solcCompile,
   vyper: vyperCompile,
-  external: externalCompile,
+  external: externalCompile
 };
 
 const Contracts = {
-  collectCompilations: async (compilations) => {
+  collectCompilations: async compilations => {
     let result = { outputs: {}, contracts: {} };
 
     for (let compilation of await Promise.all(compilations)) {
@@ -67,7 +67,7 @@ const Contracts = {
       if (config.events) {
         config.events.emit("compile:succeed", {
           contractsBuildDirectory: config.contracts_build_directory,
-          compilersInfo: config.compilersInfo,
+          compilersInfo: config.compilersInfo
         });
       }
 
@@ -81,8 +81,14 @@ const Contracts = {
   },
 
   compileSources: async function (config, compilers) {
+    compilers = config.compiler
+      ? config.compiler === "none"
+        ? []
+        : [config.compiler]
+      : Object.keys(config.compilers);
+
     return Promise.all(
-      compilers.map(async (compiler) => {
+      compilers.map(async compiler => {
         const compile = SUPPORTED_COMPILERS[compiler];
         if (!compile) throw new Error("Unsupported compiler: " + compiler);
 
@@ -96,7 +102,7 @@ const Contracts = {
 
         if (compilerUsed) {
           config.compilersInfo[compilerUsed.name] = {
-            version: compilerUsed.version,
+            version: compilerUsed.version
           };
         }
 
@@ -116,7 +122,7 @@ const Contracts = {
   writeContracts: async (contracts, options) => {
     fse.ensureDirSync(options.contracts_build_directory);
     await options.artifactor.saveAll(contracts);
-  },
+  }
 };
 
 module.exports = Contracts;

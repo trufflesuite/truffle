@@ -1,5 +1,4 @@
 var assert = require("chai").assert;
-var temp = require("temp").track();
 var util = require("./util");
 
 // Clean up after solidity. Only remove solidity's listener,
@@ -15,7 +14,7 @@ var BlockchainUtils = require("@truffle/blockchain-utils");
 var contract = require("../");
 
 var log = {
-  log: debug,
+  log: debug
 };
 
 function getAndSetAccounts(contract, done) {
@@ -23,7 +22,7 @@ function getAndSetAccounts(contract, done) {
     .getAccounts()
     .then(function (accs) {
       contract.defaults({
-        from: accs[0],
+        from: accs[0]
       });
 
       done();
@@ -50,12 +49,12 @@ describe("Different networks: ", function () {
     network_one = Ganache.provider({
       network_id: network_one_id,
       seed: network_one_id,
-      logger: log,
+      logger: log
     });
     network_two = Ganache.provider({
       network_id: network_two_id,
       seed: network_two_id,
-      logger: log,
+      logger: log
     });
 
     network_one.__marker = "one";
@@ -88,11 +87,6 @@ describe("Different networks: ", function () {
       .catch(done);
   });
 
-  after(function (done) {
-    temp.cleanupSync();
-    done();
-  });
-
   it("does not deploy to the same network (eth_getCode)", function (done) {
     function getCode(firstContract, secondContract, callback) {
       firstContract.web3.eth.getCode(secondContract.address, callback);
@@ -120,7 +114,7 @@ describe("Different networks: ", function () {
     var AnotherExample = contract({
       contractName: "AnotherExample",
       abi: ExampleOne.abi,
-      binary: ExampleOne.binary,
+      binary: ExampleOne.binary
     });
 
     assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 0);
@@ -353,11 +347,11 @@ describe("Different networks: ", function () {
       contractName: "NetworkExample",
       abi: ExampleOne.abi,
       bytecode: ExampleOne.binary,
-      networks: {},
+      networks: {}
     };
 
     json.networks[uri] = {
-      address: "0x1234567890123456789012345678901234567890", // fake
+      address: "0x1234567890123456789012345678901234567890" // fake
     };
 
     var NetworkExample = contract(json);
@@ -365,7 +359,7 @@ describe("Different networks: ", function () {
     NetworkExample.setProvider(network_two);
 
     NetworkExample.defaults({
-      from: ExampleTwo.defaults().from, // Borrow the address from this one.
+      from: ExampleTwo.defaults().from // Borrow the address from this one.
     });
 
     const instance = await NetworkExample.deployed();
@@ -380,11 +374,11 @@ describe("Different networks: ", function () {
       contractName: "NetworkExampleTwo",
       abi: ExampleOne.abi,
       bytecode: ExampleOne.binary,
-      networks: {},
+      networks: {}
     };
 
     json.networks[uri] = {
-      address: "0x1234567890123456789012345678901234567890", // fake
+      address: "0x1234567890123456789012345678901234567890" // fake
     };
 
     var NetworkExample = contract(json);
@@ -392,7 +386,7 @@ describe("Different networks: ", function () {
     NetworkExample.setProvider(network_two);
 
     NetworkExample.defaults({
-      from: ExampleTwo.defaults().from, // Borrow the address from this one.
+      from: ExampleTwo.defaults().from // Borrow the address from this one.
     });
 
     // This is what makes this test different than others. We're going to set
@@ -414,11 +408,11 @@ describe("Different networks: ", function () {
       contractName: "NetworkExampleThree",
       abi: ExampleOne.abi,
       bytecode: ExampleOne.binary,
-      networks: {},
+      networks: {}
     };
 
     json.networks[uri] = {
-      address: "0x1234567890123456789012345678901234567890", // fake
+      address: "0x1234567890123456789012345678901234567890" // fake
     };
 
     var NetworkExample = contract(json);
@@ -439,7 +433,7 @@ describe("Different networks: ", function () {
     NetworkExample.setProvider(network_two);
 
     NetworkExample.defaults({
-      from: ExampleTwo.defaults().from, // Borrow the address from this one.
+      from: ExampleTwo.defaults().from // Borrow the address from this one.
     });
 
     // We're setting the id to a URI that matches the same network as an already set URI

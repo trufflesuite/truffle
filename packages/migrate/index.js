@@ -4,7 +4,7 @@ const glob = require("glob");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
 const Reporter = require("@truffle/reporters").migrationsV5;
-const Migration = require("./migration.js");
+const Migration = require("./Migration");
 const Emittery = require("emittery");
 
 /**
@@ -37,20 +37,18 @@ const Migrate = {
 
     const migrationsDir = config.migrations_directory;
     const directoryContents = glob.sync(`${migrationsDir}${path.sep}*`);
-    const files = directoryContents.filter((item) =>
-      fs.statSync(item).isFile()
-    );
+    const files = directoryContents.filter(item => fs.statSync(item).isFile());
 
     if (files.length === 0) return [];
 
     let migrations = files
-      .filter((file) => isNaN(parseInt(path.basename(file))) === false)
+      .filter(file => isNaN(parseInt(path.basename(file))) === false)
       .filter(
-        (file) =>
+        file =>
           path.extname(file).match(config.migrations_file_extension_regexp) !=
           null
       )
-      .map((file) => new Migration(file, Migrate.reporter, config));
+      .map(file => new Migration(file, Migrate.reporter, config));
 
     // Make sure to sort the prefixes as numbers and not strings.
     migrations = migrations.sort((a, b) => {
@@ -74,7 +72,7 @@ const Migrate = {
         "network",
         "network_id",
         "logger",
-        "from", // address doing deployment
+        "from" // address doing deployment
       ]);
 
       if (options.reset === true) {
@@ -106,7 +104,7 @@ const Migrate = {
 
     if (options.to) {
       migrations = migrations.filter(
-        (migration) => migration.number <= options.to
+        migration => migration.number <= options.to
       );
     }
     return await this.runMigrations(migrations, options);
@@ -122,7 +120,7 @@ const Migrate = {
     // changing the original options object passed in.
     const clone = {};
 
-    Object.keys(options).forEach((key) => (clone[key] = options[key]));
+    Object.keys(options).forEach(key => (clone[key] = options[key]));
 
     if (options.quiet) clone.logger = { log: function () {} };
 
@@ -142,27 +140,29 @@ const Migrate = {
 
     await this.emitter.emit("preAllMigrations", {
       dryRun: options.dryRun,
-      migrations,
+      migrations
     });
 
     try {
       global.artifacts = clone.resolver;
+      global.config = clone;
       for (const migration of migrations) {
         await migration.run(clone);
       }
       await this.emitter.emit("postAllMigrations", {
         dryRun: options.dryRun,
-        error: null,
+        error: null
       });
       return;
     } catch (error) {
       await this.emitter.emit("postAllMigrations", {
         dryRun: options.dryRun,
-        error: error.toString(),
+        error: error.toString()
       });
       throw error;
     } finally {
       delete global.artifacts;
+      delete global.config;
     }
   },
 
@@ -173,7 +173,7 @@ const Migrate = {
         abstraction.setProvider(provider);
         return abstraction;
       },
-      resolve: resolver.resolve,
+      resolve: resolver.resolve
     };
   },
 
@@ -189,14 +189,14 @@ const Migrate = {
 
     if (Migrations.isDeployed() === false) return 0;
 
-    const migrationsOnChain = async (migrationsAddress) => {
+    const migrationsOnChain = async migrationsAddress => {
       return (
         (await Migrations.interfaceAdapter.getCode(migrationsAddress)) !== "0x"
       );
     };
 
     // Two possible Migrations.sol's (lintable/unlintable)
-    const lastCompletedMigration = (migrationsInstance) => {
+    const lastCompletedMigration = migrationsInstance => {
       try {
         return migrationsInstance.last_completed_migration.call();
       } catch (error) {
@@ -221,7 +221,7 @@ const Migrate = {
       if (options.reset === true) return resolve(true);
 
       return this.lastCompletedMigration(options)
-        .then((number) => {
+        .then(number => {
           const migrations = this.assemble(options);
           while (migrations.length > 0) {
             if (migrations[0].number >= number) break;
@@ -232,9 +232,9 @@ const Migrate = {
             migrations.length > 1 || (migrations.length && number === 0)
           );
         })
-        .catch((error) => reject(error));
+        .catch(error => reject(error));
     });
-  },
+  }
 };
 
 module.exports = Migrate;

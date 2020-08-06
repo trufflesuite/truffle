@@ -124,6 +124,19 @@ module.exports = {
           "node_modules",
           "@truffle/core",
           "lib",
+          "commands",
+          "init",
+          "initSource"
+        ),
+        to: "initSource"
+      },
+      {
+        from: path.join(
+          __dirname,
+          "../..",
+          "node_modules",
+          "@truffle/core",
+          "lib",
           "testing",
           "Assert.sol"
         )

@@ -8,20 +8,19 @@ import {
   DecoderContext,
   Context,
   Contexts,
-  DebuggerContexts,
+  DebuggerContexts
 } from "./types";
 import escapeRegExp from "lodash.escaperegexp";
+const cbor = require("borc"); //importing this untyped, sorry!
 
 //I split these next two apart because the type system was giving me trouble
 export function findDecoderContext(
   contexts: DecoderContexts,
   binary: string
 ): DecoderContext | null {
-  debug("binary %s", binary);
-  let context = Object.values(contexts).find((context) =>
+  let context = Object.values(contexts).find(context =>
     matchContext(context, binary)
   );
-  debug("context found: %O", context);
   return context !== undefined ? context : null;
 }
 
@@ -29,11 +28,9 @@ export function findDebuggerContext(
   contexts: DebuggerContexts,
   binary: string
 ): string | null {
-  debug("binary %s", binary);
-  let context = Object.values(contexts).find((context) =>
+  let context = Object.values(contexts).find(context =>
     matchContext(context, binary)
   );
-  debug("context found: %O", context);
   return context !== undefined ? context.context : null;
 }
 
@@ -80,12 +77,11 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   let newContexts: Contexts = Object.assign(
     {},
     ...Object.entries(contexts).map(([contextHash, context]) => ({
-      [contextHash]: { ...context },
+      [contextHash]: { ...context }
     }))
   );
 
   debug("contexts cloned");
-  debug("cloned contexts: %O", newContexts);
 
   //next, we get all the library names and sort them descending by length.
   //We're going to want to go in descending order of length so that we
@@ -94,9 +90,9 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   //handle these with our more general check for link references at the end
   const fillerLength = 2 * Evm.Utils.ADDRESS_SIZE;
   let names = Object.values(newContexts)
-    .filter((context) => context.contractKind === "library")
-    .map((context) => context.contractName)
-    .filter((name) => name.length >= fillerLength - 3)
+    .filter(context => context.contractKind === "library")
+    .map(context => context.contractName)
+    .filter(name => name.length >= fillerLength - 3)
     //the -3 is for 2 leading underscores and 1 trailing
     .sort((name1, name2) => name2.length - name1.length);
 
@@ -106,7 +102,7 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   //unfortunately, str.replace() will only replace all if you use a /g regexp;
   //note that because names may contain '$', we need to escape them
   //(also we prepend "__" because that's the placeholder format)
-  let regexps = names.map((name) => new RegExp(escapeRegExp("__" + name), "g"));
+  let regexps = names.map(name => new RegExp(escapeRegExp("__" + name), "g"));
 
   debug("regexps prepared");
 
@@ -168,6 +164,8 @@ export function normalizeContexts(contexts: Contexts): Contexts {
     }
   }
 
+  debug("immutables complete");
+
   //one last step: if externalSolidity is set, we'll allow the CBOR to vary,
   //aside from the length (note: ideally here we would *only* dot-out the
   //metadata hash part of the CBOR, but, well, it's not worth the trouble
@@ -176,31 +174,92 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   //but it's not worth the trouble to detect that either, because we really
   //don't support Solidity versions that old
   //note that the externalSolidity option should *only* be set for Solidity contracts!
+  const externalCborInfo = Object.values(newContexts)
+    .filter(context => context.externalSolidity)
+    .map(context => extractCborInfo(context.binary))
+    .filter(
+      cborSegment =>
+        cborSegment !== undefined && isCborWithHash(cborSegment.cbor)
+    );
+  const cborRegexps = externalCborInfo.map(cborInfo => ({
+    input: new RegExp(cborInfo.cborSegment, "g"), //hex string so no need for escape
+    output: "..".repeat(cborInfo.cborLength) + cborInfo.cborLengthHex
+  }));
+  //HACK: we will replace *every* occurrence of *every* external CBOR occurring in
+  //*every* external Solidity context, in order to cover created contracts
+  //(including if there are multiple or recursive ones)
   for (let context of Object.values(newContexts)) {
     if (context.externalSolidity) {
-      //last two bytes contain the cbor length
-      const lastTwoBytes = context.binary.slice(2).slice(-2 * 2); //2 bytes * 2 for hex
-      //the slice(2) there may seem unnecessary; it's to handle the possibility that the contract
-      //has less than two bytes in its bytecode (that won't happen with Solidity, but let's be
-      //certain)
-      if (lastTwoBytes.length < 2 * 2) {
-        continue; //don't try to handle this case!
+      for (let { input, output } of cborRegexps) {
+        context.binary = context.binary.replace(input, output);
       }
-      const cborLength: number = parseInt(lastTwoBytes, 16);
-      const cborEnd = context.binary.length - 2 * 2;
-      const cborStart = cborEnd - cborLength * 2;
-      //sanity check
-      if (cborStart < 2) {
-        //"0x"
-        continue; //don't try to handle this case!
-      }
-      context.binary =
-        context.binary.slice(0, cborStart) +
-        "..".repeat(cborLength) +
-        context.binary.slice(cborEnd);
     }
   }
 
+  debug("external wildcards complete");
+
   //finally, return this mess!
   return newContexts;
+}
+
+interface CborInfo {
+  cborStart: number;
+  cborLength: number;
+  cborEnd: number;
+  cborLengthHex: string;
+  cbor: string;
+  cborSegment: string;
+}
+
+function extractCborInfo(binary: string): CborInfo | null {
+  const lastTwoBytes = binary.slice(2).slice(-2 * 2); //2 bytes * 2 for hex
+  //the slice(2) there may seem unnecessary; it's to handle the possibility that the contract
+  //has less than two bytes in its bytecode (that won't happen with Solidity, but let's be
+  //certain)
+  if (lastTwoBytes.length < 2 * 2) {
+    return null; //don't try to handle this case!
+  }
+  const cborLength: number = parseInt(lastTwoBytes, 16);
+  const cborEnd = binary.length - 2 * 2;
+  const cborStart = cborEnd - cborLength * 2;
+  //sanity check
+  if (cborStart < 2) {
+    //"0x"
+    return null; //don't try to handle this case!
+  }
+  const cbor = binary.slice(cborStart, cborEnd);
+  return {
+    cborStart,
+    cborLength,
+    cborEnd,
+    cborLengthHex: lastTwoBytes,
+    cbor,
+    cborSegment: cbor + lastTwoBytes
+  };
+}
+
+function isCborWithHash(encoded: string): boolean {
+  debug("checking cbor");
+  let decodedMultiple: any[];
+  try {
+    decodedMultiple = cbor.decodeAll(encoded);
+  } catch (_) {
+    debug("invalid cbor!");
+    return false;
+  }
+  debug("all decoded: %O", decodedMultiple);
+  if (decodedMultiple.length !== 1) {
+    return false;
+  }
+  let decoded = decodedMultiple[0];
+  if (typeof decoded !== "object") {
+    return false;
+  }
+  //borc sometimes returns maps and sometimes objects,
+  //so let's make things consistent by converting to a map
+  if (!(decoded instanceof Map)) {
+    decoded = new Map(Object.entries(decoded));
+  }
+  const hashKeys = ["bzzr0", "bzzr1", "ipfs"];
+  return hashKeys.some(key => decoded.has(key));
 }

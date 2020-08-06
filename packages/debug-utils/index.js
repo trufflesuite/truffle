@@ -32,7 +32,7 @@ const commandReference = {
   "r": "reset",
   "t": "load new transaction",
   "T": "unload transaction",
-  "s": "print stacktrace",
+  "s": "print stacktrace"
 };
 
 const shortCommandReference = {
@@ -56,7 +56,7 @@ const shortCommandReference = {
   "r": "reset",
   "t": "load",
   "T": "unload",
-  "s": "stacktrace",
+  "s": "stacktrace"
 };
 
 const truffleColors = {
@@ -70,7 +70,7 @@ const truffleColors = {
   blue: chalk.hex("#25A9E0"),
   comment: chalk.hsl(30, 20, 50),
   watermelon: chalk.hex("#E86591"),
-  periwinkle: chalk.hex("#7F9DD1"),
+  periwinkle: chalk.hex("#7F9DD1")
 };
 
 const DEFAULT_TAB_WIDTH = 8;
@@ -83,18 +83,18 @@ var DebugUtils = {
     let files = await dir.promiseFiles(config.contracts_build_directory);
 
     var contracts = files
-      .filter((file_path) => {
+      .filter(file_path => {
         return path.extname(file_path) === ".json";
       })
-      .map((file_path) => {
+      .map(file_path => {
         return path.basename(file_path, ".json");
       })
-      .map((contract_name) => {
+      .map(contract_name => {
         return config.resolver.require(contract_name);
       });
 
     await Promise.all(
-      contracts.map((abstraction) => abstraction.detectNetwork())
+      contracts.map(abstraction => abstraction.detectNetwork())
     );
 
     return contracts;
@@ -127,7 +127,7 @@ var DebugUtils = {
     //check #3: are there any AST ID collisions?
     let astIds = new Set();
 
-    let allIDsUnseenSoFar = (node) => {
+    let allIDsUnseenSoFar = node => {
       if (Array.isArray(node)) {
         return node.every(allIDsUnseenSoFar);
       } else if (node !== null && typeof node === "object") {
@@ -145,7 +145,7 @@ var DebugUtils = {
     };
 
     //now: walk each AST
-    return compilation.sources.every((source) =>
+    return compilation.sources.every(source =>
       source ? allIDsUnseenSoFar(source.ast) : true
     );
   },
@@ -209,7 +209,7 @@ var DebugUtils = {
       truffleColors.mint("(enter)") +
         " last command entered (" +
         shortCommandReference[lastCommand] +
-        ")",
+        ")"
     ];
 
     var commandSections = [
@@ -221,7 +221,7 @@ var DebugUtils = {
       ["b", "B", "c"],
       ["+", "-"],
       ["?"],
-      ["v", ":"],
+      ["v", ":"]
     ].map(function (shortcuts) {
       return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });
@@ -365,7 +365,7 @@ var DebugUtils = {
           pointerStart,
           pointerEnd,
           prefixLength
-        ),
+        )
       ],
       afterLines
     );
@@ -559,7 +559,7 @@ var DebugUtils = {
       colors: true,
       depth: null,
       maxArrayLength: null,
-      breakLength: 30,
+      breakLength: 30
     };
     let valueToInspect = nativized
       ? value
@@ -581,35 +581,39 @@ var DebugUtils = {
     //we want to print inner to outer, so first, let's
     //reverse
     stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
-    let lines = stacktrace.map(({ functionName, contractName, location }) => {
-      let name;
-      if (contractName && functionName) {
-        name = `${contractName}.${functionName}`;
-      } else if (contractName) {
-        name = contractName;
-      } else if (functionName) {
-        name = functionName;
-      } else {
-        name = "unknown function";
+    let lines = stacktrace.map(
+      ({ functionName, contractName, address, location }) => {
+        let name;
+        if (contractName && functionName) {
+          name = `${contractName}.${functionName}`;
+        } else if (contractName) {
+          name = contractName;
+        } else if (functionName) {
+          name = functionName;
+        } else {
+          name = "unknown function";
+        }
+        let locationString;
+        if (location) {
+          let {
+            source: { sourcePath },
+            sourceRange: {
+              lines: {
+                start: { line, column }
+              }
+            }
+          } = location;
+          locationString = sourcePath
+            ? `${sourcePath}:${line + 1}:${column + 1}` //add 1 to account for 0-indexing
+            : "unknown location";
+        } else {
+          locationString = "unknown location";
+        }
+        let addressString =
+          address !== undefined ? `address ${address}` : "unknown address";
+        return `at ${name} [${addressString}] (${locationString})`;
       }
-      let locationString;
-      if (location) {
-        let {
-          source: { sourcePath },
-          sourceRange: {
-            lines: {
-              start: { line, column },
-            },
-          },
-        } = location;
-        locationString = sourcePath
-          ? `${sourcePath}:${line + 1}:${column + 1}` //add 1 to account for 0-indexing
-          : "unknown location";
-      } else {
-        locationString = "unknown location";
-      }
-      return `at ${name} (${locationString})`;
-    });
+    );
     let status = stacktrace[0].status;
     if (status != undefined) {
       lines.unshift(
@@ -694,7 +698,7 @@ var DebugUtils = {
       "templateVariable": chalk,
       "template-variable": chalk,
       "addition": chalk,
-      "deletion": chalk,
+      "deletion": chalk
     };
 
     const options = {
@@ -704,7 +708,7 @@ var DebugUtils = {
       //handling padding & numbering manually
       lineNumbers: false,
       stripIndent: false,
-      codePad: 0,
+      codePad: 0
       //NOTE: you might think you should pass highlight: true,
       //but you'd be wrong!  I don't understand this either
     };
@@ -754,7 +758,7 @@ var DebugUtils = {
             ([key, value]) => key !== "constructor" || value !== undefined
           )
           .map(([key, value]) => ({
-            [key]: value, //don't clean yet!
+            [key]: value //don't clean yet!
           }))
       );
       //set up new seenSoFar
@@ -802,7 +806,7 @@ var DebugUtils = {
       if (compilationId !== undefined && id !== undefined) {
         sources[compilationId] = {
           ...sources[compilationId],
-          [id]: source,
+          [id]: source
         };
       }
       await bugger.stepNext();
@@ -810,7 +814,7 @@ var DebugUtils = {
     await bugger.reset();
     //flatten sources before returning
     return [].concat(...Object.values(sources).map(Object.values));
-  },
+  }
 };
 
 module.exports = DebugUtils;

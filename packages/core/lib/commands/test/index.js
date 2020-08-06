@@ -5,44 +5,44 @@ const command = {
     "show-events": {
       describe: "Show all test logs",
       type: "boolean",
-      default: false,
+      default: false
     },
     "compile-all-debug": {
       describe: "Compile in debug mode",
       type: "boolean",
-      default: false,
+      default: false
     },
     "debug": {
       describe: "Enable in-test debugging",
       type: "boolean",
-      default: false,
+      default: false
     },
     "debug-global": {
       describe: "Specify debug global function name",
-      default: "debug",
+      default: "debug"
     },
     "runner-output-only": {
       describe: "Suppress all output except for test runner output.",
       type: "boolean",
-      default: false,
+      default: false
     },
     "bail": {
       alias: "b",
       describe: "Bail after first test failure",
       type: "boolean",
-      default: false,
+      default: false
     },
     "stacktrace": {
       alias: "t",
       describe: "Produce Solidity stacktraces",
       type: "boolean",
-      default: false,
+      default: false
     },
     "stacktrace-extra": {
       describe: "Produce Solidity stacktraces and compile in debug mode",
       type: "boolean",
-      default: false,
-    },
+      default: false
+    }
   },
   help: {
     usage:
@@ -52,66 +52,66 @@ const command = {
         option: "<test_file>",
         description:
           "Name of the test file to be run. Can include path information if the file " +
-          "does not exist in the\n                    current directory.",
+          "does not exist in the\n                    current directory."
       },
       {
         option: "--compile-all",
         description:
           "Compile all contracts instead of intelligently choosing which contracts need " +
-          "to be compiled.",
+          "to be compiled."
       },
       {
         option: "--compile-all-debug",
         description:
           "Compile all contracts and do so in debug mode for extra revert info.  May " +
-          "cause errors on large\n                    contracts.",
+          "cause errors on large\n                    contracts."
       },
       {
         option: "--network <name>",
         description:
           "Specify the network to use, using artifacts specific to that network. Network " +
-          "name must exist\n                    in the configuration.",
+          "name must exist\n                    in the configuration."
       },
       {
         option: "--verbose-rpc",
         description:
-          "Log communication between Truffle and the Ethereum client.",
+          "Log communication between Truffle and the Ethereum client."
       },
       {
         option: "--show-events",
-        description: "Log all contract events.",
+        description: "Log all contract events."
       },
       {
         option: "--debug",
         description:
           "Provides global debug() function for in-test debugging. " +
-          "JS tests only; implies --compile-all.",
+          "JS tests only; implies --compile-all."
       },
       {
         option: "--debug-global <identifier>",
         description:
-          'Specify global identifier for debug function. Default: "debug"',
+          'Specify global identifier for debug function. Default: "debug"'
       },
       {
         option: "--runner-output-only",
-        description: "Suppress all output except for test runner output.",
+        description: "Suppress all output except for test runner output."
       },
       {
         option: "--bail",
-        description: "Bail after first test failure.  Alias: -b",
+        description: "Bail after first test failure.  Alias: -b"
       },
       {
         option: "--stacktrace",
         description:
           "Allows for mixed JS/Solidity stacktraces when a Truffle Contract transaction " +
           "or deployment\n                    reverts.  Does not apply to calls or gas estimates.  " +
-          "Implies --compile-all.  Experimental.  Alias: -t",
+          "Implies --compile-all.  Experimental.  Alias: -t"
       },
       {
         option: "--stacktrace-extra",
-        description: "Shortcut for --stacktrace --compile-all-debug.",
-      },
-    ],
+        description: "Shortcut for --stacktrace --compile-all-debug."
+      }
+    ]
   },
   run: async function (options) {
     const Config = require("@truffle/config");
@@ -147,7 +147,7 @@ const command = {
     files = determineTestFilesToRun({
       config,
       inputArgs,
-      inputFile: file,
+      inputFile: file
     });
 
     if (config.networks[config.network]) {
@@ -156,20 +156,22 @@ const command = {
       const numberOfFailures = await prepareConfigAndRunTests({
         config,
         files,
-        temporaryDirectory,
+        temporaryDirectory
       });
       return numberOfFailures;
     } else {
+      const getPort = require("get-port");
       const ipcOptions = { network: "test" };
 
+      const port = await getPort();
       const ganacheOptions = {
+        port,
         host: "127.0.0.1",
-        port: 7545,
         network_id: 4447,
         mnemonic:
           "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
         gasLimit: config.gas,
-        time: config.genesis_time,
+        time: config.genesis_time
       };
       const { disconnect } = await Develop.connectOrStart(
         ipcOptions,
@@ -181,12 +183,12 @@ const command = {
       const numberOfFailures = await prepareConfigAndRunTests({
         config,
         files,
-        temporaryDirectory,
+        temporaryDirectory
       });
       ipcDisconnect();
       return numberOfFailures;
     }
-  },
+  }
 };
 
 module.exports = command;
