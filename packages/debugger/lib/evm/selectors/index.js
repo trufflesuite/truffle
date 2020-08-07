@@ -376,31 +376,32 @@ const evm = createSelectorTree({
    * evm.transaction
    */
   transaction: {
-    /*
+    /**
      * evm.transaction.globals
      */
     globals: {
-      /*
+      /**
        * evm.transaction.globals.tx
        */
       tx: createLeaf(["/state"], state => state.transaction.globals.tx),
-      /*
+
+      /**
        * evm.transaction.globals.block
        */
       block: createLeaf(["/state"], state => state.transaction.globals.block)
     },
 
-    /*
+    /**
      * evm.transaction.status
      */
     status: createLeaf(["/state"], state => state.transaction.status),
 
-    /*
+    /**
      * evm.transaction.initialCall
      */
     initialCall: createLeaf(["/state"], state => state.transaction.initialCall),
 
-    /*
+    /**
      * evm.transaction.startingContext
      */
     startingContext: createLeaf(
@@ -414,6 +415,14 @@ const evm = createSelectorTree({
         stack.length > 0
           ? determineFullContext(stack[0], instances, search, contexts)
           : null
+    ),
+
+    /**
+     * evm.transaction.affectedInstances
+     */
+    affectedInstances: createLeaf(
+      ["/state"],
+      state => state.transaction.affectedInstances.byAddress
     )
   },
 

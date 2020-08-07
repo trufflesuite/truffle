@@ -19,9 +19,15 @@ const session = createSelectorTree({
   info: {
     /**
      * session.info.affectedInstances
+     * NOTE: this really belongs in session.transaction,
+     * but that would be a breaking change
      */
     affectedInstances: createLeaf(
-      [evm.current.codex.instances, evm.info.contexts, solidity.info.sources],
+      [
+        evm.transaction.affectedInstances,
+        evm.info.contexts,
+        solidity.info.sources
+      ],
 
       (instances, contexts, sources) =>
         Object.assign(

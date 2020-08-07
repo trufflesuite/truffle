@@ -5,10 +5,6 @@ const command = {
     "_": {
       type: "string"
     },
-    "network": {
-      describe: "Network to connect to",
-      type: "string"
-    },
     "fetch-external": {
       describe: "Allow debugging of external contracts",
       alias: "x",

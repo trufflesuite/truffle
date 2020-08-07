@@ -15,9 +15,7 @@ async function prepareGanache(
 ): Promise<{ server: Server; web3Shim: Web3Shim }> {
   return new Promise((resolve, reject) => {
     const server = Ganache.server();
-    server.listen(port, (err: Error) => {
-      if (err) reject(err);
-
+    server.listen(port, () => {
       const web3Shim = new Web3Shim({
         provider: new Web3.providers.HttpProvider(`http://127.0.0.1:${port}`),
         networkType: quorumEnabled ? "quorum" : "ethereum"

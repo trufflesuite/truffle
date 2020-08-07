@@ -1,5 +1,15 @@
+const Config = require("@truffle/config");
+
 const analytics = {
   send: function(eventObject) {
+    const userConfig = Config.getUserConfig();
+
+    if (!userConfig.get("enableAnalytics")) {
+      // don't bother with creating a new process if we already
+      // know the user doesn't want to send analytics
+      return;
+    }
+
     let analyticsPath;
     const path = require("path");
     if (typeof BUNDLE_ANALYTICS_FILENAME !== "undefined") {

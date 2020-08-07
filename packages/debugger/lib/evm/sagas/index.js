@@ -30,7 +30,8 @@ export function* addContext(context) {
 }
 
 /**
- * Adds known deployed instance of binary at address
+ * Adds to codex known deployed instance of binary at address
+ * (not to list of affected instances)
  *
  * @param {string} binary - may be undefined (e.g. precompiles)
  * @return {string} ID (0x-prefixed keccak of binary)
@@ -45,15 +46,38 @@ export function* addInstance(address, binary) {
   return context;
 }
 
-//goes through all instances and re-adds them with their new
+/**
+ * Adds known deployed instance of binary at address
+ * to list of affected instances, *not* to codex
+ *
+ * @param {string} binary - may be undefined (e.g. precompiles)
+ * @return {string} ID (0x-prefixed keccak of binary)
+ */
+export function* addAffectedInstance(address, binary) {
+  const search = yield select(evm.info.binaries.search);
+  const context = search(binary);
+
+  //now, whether we needed a new context or not, add the instance
+  yield put(actions.addAffectedInstance(address, context, binary));
+
+  return context;
+}
+
+//goes through all instances (codex & affected) and re-adds them with their new
 //context (used if new contexts have been added -- something
 //that currently only happens when adding external compilations)
 export function* refreshInstances() {
   const instances = yield select(evm.current.codex.instances);
+  const affectedInstances = yield select(evm.transaction.displayInstances);
   for (let [address, { binary }] of Object.entries(instances)) {
     const search = yield select(evm.info.binaries.search);
     const context = search(binary);
     yield put(actions.addInstance(address, context, binary));
+  }
+  for (let [address, { binary }] of Object.entries(affectedInstances)) {
+    const search = yield select(evm.info.binaries.search);
+    const context = search(binary);
+    yield put(actions.addAffectedInstance(address, context, binary));
   }
 }
 
