@@ -31,7 +31,11 @@ export class FS implements ResolverSource {
     searchPath = this.contractsBuildDirectory
   ) {
     // most cases we can use the `{name}.sol -> {name}.json` convention
+    // console.log(sourcePath);
+    // console.log(searchPath);
     const likelyFileBasename = path.basename(sourcePath, ".sol");
+    // console.log(likelyFileBasename);
+    // console.log(path.join(searchPath, `${likelyFileBasename}.json`));
     const likelyArtifactString = fs.readFileSync(
       path.join(searchPath, `${likelyFileBasename}.json`),
       "utf8"
@@ -41,22 +45,17 @@ export class FS implements ResolverSource {
     try {
       if (likelyArtifactString) {
         likelyArtifact = JSON.parse(likelyArtifactString);
+        return likelyArtifact;
       }
     } catch (e) {
       // do nothing, we'll handle this by doing a deeper search
-    }
-
-    if (
-      likelyArtifact &&
-      path.basename(likelyArtifact.sourcePath, ".sol") ===
-        path.basename(sourcePath, ".sol")
-    ) {
-      return likelyArtifact;
+      // console.log(e);
     }
 
     // we couldn't use the `{name}.sol --> {name}.json` convention, let's search
 
     const contractsBuildDirFiles = fs.readdirSync(searchPath);
+    // console.log(contractsBuildDirFiles);
     const filteredBuildArtifacts = contractsBuildDirFiles.filter(
       // we don't care about files that don't have the json extension
       // we also don't care about the file we already tried
@@ -73,9 +72,12 @@ export class FS implements ResolverSource {
         if (artifactString) {
           const artifact = JSON.parse(artifactString);
 
+          // console.log(artifact.sourcePath, sourcePath);
+
           if (
             path.basename(artifact.sourcePath, ".sol") ===
-            path.basename(sourcePath, ".sol")
+              path.basename(sourcePath, ".sol") ||
+            artifact.contractName === path.basename(sourcePath, ".sol")
           ) {
             return artifact;
           }
