@@ -82,7 +82,7 @@ class DebugPrinter {
     const affectedInstances = this.session.view(session.info.affectedInstances);
 
     this.config.logger.log("");
-    this.config.logger.log("Addresses called: (not created)");
+    this.config.logger.log("Addresses affected:");
     this.config.logger.log(
       DebugUtils.formatAffectedInstances(affectedInstances)
     );
@@ -368,9 +368,7 @@ class DebugPrinter {
       const contractKind = decoding.contractKind || "contract";
       if (decoding.address !== undefined) {
         this.config.logger.log(
-          `Returned bytecode for a ${contractKind} ${
-            decoding.class.typeName
-          } at ${decoding.address}.`
+          `Returned bytecode for a ${contractKind} ${decoding.class.typeName} at ${decoding.address}.`
         );
       } else {
         this.config.logger.log(
@@ -418,9 +416,8 @@ class DebugPrinter {
       } else {
         //case 10b: otherwise
         this.config.logger.log("Returned values:");
-        const prefixes = values.map(
-          ({ name }, index) =>
-            name ? `${name}: ` : `Component #${index + 1}: `
+        const prefixes = values.map(({ name }, index) =>
+          name ? `${name}: ` : `Component #${index + 1}: `
         );
         const maxLength = Math.max(...prefixes.map(prefix => prefix.length));
         const paddedPrefixes = prefixes.map(prefix =>

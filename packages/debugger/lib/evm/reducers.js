@@ -142,10 +142,34 @@ function initialCall(state = null, action) {
   }
 }
 
+const DEFAULT_AFFECTED_INSTANCES = { byAddress: {} };
+
+function affectedInstances(state = DEFAULT_AFFECTED_INSTANCES, action) {
+  switch (action.type) {
+    case actions.ADD_AFFECTED_INSTANCE:
+      const { address, binary, context } = action;
+      return {
+        byAddress: {
+          ...state.byAddress,
+          [address]: {
+            address,
+            binary,
+            context
+          }
+        }
+      };
+    case actions.UNLOAD_TRANSACTION:
+      return DEFAULT_AFFECTED_INSTANCES;
+    default:
+      return state;
+  }
+}
+
 const transaction = combineReducers({
   globals,
   status,
-  initialCall
+  initialCall,
+  affectedInstances
 });
 
 function callstack(state = [], action) {
