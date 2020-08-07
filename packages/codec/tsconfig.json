@@ -3,7 +3,7 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "declaration": true,
-    "target": "es2015",
+    "target": "es2016",
     "downlevelIteration": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
