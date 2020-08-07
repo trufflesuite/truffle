@@ -19,10 +19,12 @@ const session = createSelectorTree({
   info: {
     /**
      * session.info.affectedInstances
+     * NOTE: this really belongs in session.transaction,
+     * but that would be a breaking change
      */
     affectedInstances: createLeaf(
       [
-        evm.transaction.displayInstances,
+        evm.transaction.affectedInstances,
         evm.info.contexts,
         solidity.info.sources
       ],

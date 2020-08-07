@@ -418,11 +418,11 @@ const evm = createSelectorTree({
     ),
 
     /**
-     * evm.transaction.displayInstances
+     * evm.transaction.affectedInstances
      */
-    displayInstances: createLeaf(
+    affectedInstances: createLeaf(
       ["/state"],
-      state => state.transaction.displayInstances.byAddress
+      state => state.transaction.affectedInstances.byAddress
     )
   },
 

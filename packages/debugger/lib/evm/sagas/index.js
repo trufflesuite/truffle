@@ -30,40 +30,54 @@ export function* addContext(context) {
 }
 
 /**
- * Adds known deployed instance of binary at address
- * by default adds it to the real, internal list of instances.
- * however it can also add it to the external display-only list of instances.
- * (note that I'm calling this "display-only", but really they're
- * also used for, e.g., determining what external sources need fetching)
+ * Adds to codex known deployed instance of binary at address
+ * (not to list of affected instances)
  *
  * @param {string} binary - may be undefined (e.g. precompiles)
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function* addInstance(address, binary, displayOnly = false) {
+export function* addInstance(address, binary) {
   const search = yield select(evm.info.binaries.search);
   const context = search(binary);
 
   //now, whether we needed a new context or not, add the instance
-  if (displayOnly) {
-    yield put(actions.addDisplayInstance(address, context, binary));
-  } else {
-    yield put(actions.addInstance(address, context, binary));
-  }
+  yield put(actions.addInstance(address, context, binary));
 
   return context;
 }
 
-//goes through all instances and re-adds them with their new
+/**
+ * Adds known deployed instance of binary at address
+ * to list of affected instances, *not* to codex
+ *
+ * @param {string} binary - may be undefined (e.g. precompiles)
+ * @return {string} ID (0x-prefixed keccak of binary)
+ */
+export function* addAffectedInstance(address, binary) {
+  const search = yield select(evm.info.binaries.search);
+  const context = search(binary);
+
+  //now, whether we needed a new context or not, add the instance
+  yield put(actions.addAffectedInstance(address, context, binary));
+
+  return context;
+}
+
+//goes through all instances (codex & affected) and re-adds them with their new
 //context (used if new contexts have been added -- something
 //that currently only happens when adding external compilations)
 export function* refreshInstances() {
-  const instances = yield select(evm.transaction.displayInstances);
-  const codexInstances = yield select(evm.current.codex.instances);
+  const instances = yield select(evm.current.codex.instances);
+  const affectedInstances = yield select(evm.transaction.displayInstances);
   for (let [address, { binary }] of Object.entries(instances)) {
-    const displayOnly = !(address in codexInstances);
     const search = yield select(evm.info.binaries.search);
     const context = search(binary);
-    yield put(actions.addInstance(address, context, binary, displayOnly));
+    yield put(actions.addInstance(address, context, binary));
+  }
+  for (let [address, { binary }] of Object.entries(affectedInstances)) {
+    const search = yield select(evm.info.binaries.search);
+    const context = search(binary);
+    yield put(actions.addAffectedInstance(address, context, binary));
   }
 }
 

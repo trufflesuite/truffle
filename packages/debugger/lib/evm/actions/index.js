@@ -42,10 +42,10 @@ export function addInstance(address, context, binary) {
   };
 }
 
-export const ADD_DISPLAY_INSTANCE = "EVM_ADD_DISPLAY_INSTANCE";
-export function addDisplayInstance(address, context, binary) {
+export const ADD_AFFECTED_INSTANCE = "EVM_ADD_AFFECTED_INSTANCE";
+export function addAffectedInstance(address, context, binary) {
   return {
-    type: ADD_DISPLAY_INSTANCE,
+    type: ADD_AFFECTED_INSTANCE,
     address,
     context,
     binary

@@ -208,8 +208,12 @@ function* recordSources(sources) {
   yield* solidity.addSources(sources);
 }
 
-function* recordInstance(address, binary, displayOnly) {
-  yield* evm.addInstance(address, binary, displayOnly);
+function* recordInstance(address, binary, affectedInstanceOnly) {
+  yield* evm.addAffectedInstance(address, binary);
+  if (!affectedInstanceOnly) {
+    //add it as a real codex instance
+    yield* evm.addInstance(address, binary);
+  }
 }
 
 function* ready() {
