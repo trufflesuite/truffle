@@ -3,7 +3,7 @@
     "declaration": true,
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es2015",
+    "target": "es2016",
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
