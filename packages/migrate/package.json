@@ -8,18 +8,18 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.1.31",
+  "version": "3.1.32",
   "main": "index.js",
   "scripts": {
     "test": "mocha ./test/* ./test/**/*"
   },
   "dependencies": {
-    "@truffle/config": "^1.2.23",
-    "@truffle/deployer": "^3.1.31",
+    "@truffle/config": "^1.2.24",
+    "@truffle/deployer": "^3.1.32",
     "@truffle/expect": "^0.0.14",
-    "@truffle/interface-adapter": "^0.4.13",
+    "@truffle/interface-adapter": "^0.4.14",
     "@truffle/reporters": "^1.1.0",
-    "@truffle/require": "^2.0.46",
+    "@truffle/require": "^2.0.47",
     "emittery": "^0.4.0",
     "glob": "^7.1.6",
     "web3": "1.2.1"
