@@ -1,6 +1,6 @@
 {
   "name": "@truffle/compile-common",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Common compiler integration support infrastructure for Truffle",
   "main": "dist/src/index.js",
   "repository": "https://github.com/trufflesuite/truffle/tree/develop/packages/compile-common",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@truffle/contract-schema": "^3.2.3",
-    "@truffle/resolver": "^6.0.12",
+    "@truffle/resolver": "^6.0.13",
     "fs-extra": "^8.1.0"
   }
 }

@@ -7,7 +7,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.4.14",
+  "version": "0.4.15",
   "main": "dist/index.js",
   "directories": {
     "lib": "lib"
