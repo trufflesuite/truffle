@@ -6,7 +6,6 @@
     "ethpm",
     "packages"
   ],
-  "author": "Nick Gheorghita <nickgheorghita@gmail.com>",
   "homepage": "http://www.ethpm.com",
   "license": "MIT",
   "main": "lib/ethpm-v3.js",
@@ -14,7 +13,7 @@
     "test": "mocha ./tests/* --timeout 10000 --exit"
   },
   "dependencies": {
-    "ethpm": "0.1.0-next.25",
+    "ethpm": "0.1.0-next.26",
     "ethpm-spec": "3.0.0",
     "ethereum-ens": "0.8.0",
     "semver": "7.3.2"
@@ -24,7 +23,7 @@
   },
   "directories": {
     "lib": "lib",
-    "test": "__tests__"
+    "test": "tests"
   },
   "files": [
     "lib"

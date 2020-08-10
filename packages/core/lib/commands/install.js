@@ -7,8 +7,8 @@ const command = {
     options: [
       {
         option: "packageId",
-        description:
-          "(required) Name of the package as listed in the Ethereum Package Registry. Format: packageName@version"
+        description: `(required) Name of the package as listed in the Ethereum Package Registry. 
+          Accepted formats: packageName, packageName@version, ethpm URI, ipfs URI.`
       },
       {
         option: "--alias",

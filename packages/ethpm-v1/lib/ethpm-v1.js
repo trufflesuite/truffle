@@ -1,5 +1,3 @@
-"use strict";
-
 const expect = require("@truffle/expect");
 const TruffleError = require("@truffle/error");
 const Networks = require("@truffle/core/lib/networks");

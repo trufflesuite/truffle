@@ -1,81 +1,103 @@
-# `ethpm-v3`
+# truffle/ethpm-v3
 
-> TODO: description
+A package that provides truffle support for [ethpm v3](http://ethpm.github.io/ethpm-spec/v3-package-spec.html), the default version in truffle.
 
 ## Usage
+Installing an ethpm package in your truffle project will automatically generate an `_ethpm_packages/` directory to which the package assets will be written. This directory should be treated like a `node_modules/` directory, and not be edited directly.
 
+## Configuration
+To configure ethpm, define the following fields inside your `truffle-config.js`.
+
+```js
+{
+  // required to lookup a registry address via ens
+  ens: {
+    enabled: true    
+  },
+  // below are all of the default config values for ethpm
+  ethpm: {
+    ipfsHost: "ipfs.infura.io",
+    ipfsProtocol: "https",
+    ipfsPort: "5001",
+    registry: {
+      address: "0xabc", // ENS is supported here
+      network: "ropsten" // must match a network with an available provider defined in `networks` field
+    }
+    version: "3" // only supported versions include ("1", "3")
+  }
+}
 ```
-const ethpmV3 = require('ethpm-v3');
-```
 
-TODO:
-audit all error messages / include useful links to cli/docs/etc...
-useful comments throughout
-test all the different install scenarios
-- test auto semver detect
-warnings about trusting packages?
-ethpm-v1 tests
-truffle-config: ethpm/registry/network_id -> networkId
-should the network provider be a function? or instance?
-install from github blob uri
-
-is there a better display output workflow for sending publish tx
-do we want timeout errors? // what's the best pattern to catch errors? 
-
-how many deployments/chain does truffle support? if we migrate will it replace a deployment? (probably yes)
-
-there are no contractTypes in compilers from ethpm.js
-
-warning if ppl installed a package with insufficient artifacts - but expect them via deploy?
-
-- should we require `name` and `version` in ethpm.json?
-
-QUESTIONS:
-do we support ens in truffle config for the registry address?
-should the network provider be a function? or instance?
-truffle default registry?
-
-# questions
-- how to install `ethpm` npm package as different versions for `ethpm-v1` / `ethpm-v3`
-- can we enforce either v1 / v3 per project? combining manifests seems tricky..
-	- should we have a v1 and v3 resolver?
-
-todo: resolver source for both ethpmv1 & v3
-
-
+## List
 ```
 truffle packages
-````
-todo: test with big registry
-todo: test with no registry
-todo: test with invalid registry
-
 ```
-truffle install xxx@1.0.0
-truffle install ethpm://packages.eth:3/xxx@1.0.0
-truffle install ipfs://Qmasdfa --alias=awesome
+Reads all directly available packages on the connected registry.
+
+## Install
+
+### Install the latest version of a package from connected registry
+```
+truffle install owned
+```
+- Will throw an error requiring a specified version if package versioning does not follow semver.
+
+
+### Install a specific version of a package from connected registry
+```
+truffle install owned@1.0.0
 ```
 
-- supports either v1 or v3
+### Install the latest version of a package from any registry
+```
+truffle install owned ethpm://0x123/owned
+truffle install owned ethpm://0x123:1/owned
+```
+- will throw an error requiring a specified version if package versioning does not follow semver.
+- using an ethpm uri overrides the registry set in `truffle-config.js`
 
+### Install a specific version of a package from any registry
+```
+truffle install owned ethpm://0x123/owned@1.0.0
+truffle install owned ethpm://0x123:1/owned@1.0.0
+```
+```
+truffle install owned ethpm://libraries.snakecharemers.eth/owned@1.0.0
+truffle install owned ethpm://libraries.snakecharemers.eth:1/owned@1.0.0
+```
+
+### Install a package under an alias
+```
+truffle install owned@1.0.0 --alias owned-2
+```
+- This can be useful for installing multiple packages that have the same name (installed packages share a namespace).
+- This can be useful for adding custom identifiers to installed packages for whatever reason.
+
+## Publish
 ```
 truffle publish
-````
+```
 
-settings required in `ethpm.json`
+- Requires that a valid `ethpm.json` file exists in your project root directory.
+- Requires that provider for connected registry has release privileges on that registry.
+- Running `truffle publish` will automatically generate an ethpm manifest from available contract assets and publish it to the connected registry.
 
+#### Sample `ethpm.json`
+```jsonld=
+{
+    "name": "package-name", // required
+    "version": "0.1.0", // required
+    "meta": {
+        "license": "licenseType",
+        "authors": ["author-1", "author-2"],
+        "description": "Description of package.",
+        "keywords": ["keyword1", "keyword2"],
+        "links": {
+            "documentation": "www.documentation.com",
+            "repo": "www.repository.com",
+            "website": "www.website.com"
+        }
+    }
+}
+```
 
-
-escrow: QmNpLojZo471M357NTUZ1qKDwjUZrfYctWhzPtNFEXcSaL
-piper-coin: QmNbvXM5ig6Qtz6abRuG52KgjFqfXDyBCdRTz7QDENgxzv
-owned: QmcxvhkJJVpbxEAa6cgW3B6XwPJb79w9GpNUv2P2THUzZR
-safe-math-lib: QmWnPsiS3Xb8GvCDEBFnnKs8Yk4HaAX6rCqJAaQXGbCoPk
-standard-token: QmQNffBrmbB3TuBCtYfYsJWJVLssatWXa3H6CkGeyNUySA
-transferable: QmYX2yqyrpaJQugHQKnaWYcnkJEdnJC4exKaEVR3RK3TTf
-wallet-with-send: QmX95FoLeVAFbnbj1PEDQaXDAeccmjbK8Zbw4eos9PAxeA
-wallet: QmPtZxv9uEtr671XVjevHDacP9M4Tw9T7p6n1MS1xdyMeC
-
-
-ICEBOX:
-support github uris
-deploy a registry?

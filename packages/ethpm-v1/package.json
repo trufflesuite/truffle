@@ -6,7 +6,6 @@
     "ethpm",
     "packages"
   ],
-  "author": "Nick Gheorghita <nickgheorghita@gmail.com>",
   "homepage": "http://www.ethpm.com",
   "license": "MIT",
   "main": "lib/ethpm-v1.js",
@@ -15,7 +14,7 @@
   },
   "directories": {
     "lib": "lib",
-    "test": "__tests__"
+    "test": "tests"
   },
   "files": [
     "lib"
@@ -23,9 +22,6 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/trufflesuite/truffle.git"
-  },
-  "scripts": {
-    "test": "echo \"hellp\""
   },
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
