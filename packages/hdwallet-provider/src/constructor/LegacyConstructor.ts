@@ -7,7 +7,6 @@ import {
   ShareNonce,
   DerivationPath
 } from "./types";
-import * as Constructor from "./constructor";
 
 /*
  * namespace wrapper for old-style positional arguments
