@@ -1,58 +1,6 @@
-import {
-  MnemonicPhrase,
-  PrivateKey,
-  ProviderOrUrl,
-  AddressIndex,
-  NumberOfAddresses,
-  ShareNonce,
-  DerivationPath
-} from "./types";
-import * as Constructor from "./constructor";
-
-/*
- * namespace wrapper for old-style positional arguments
- */
-type PossibleArguments = [
-  /*
-   * required
-   */
-  MnemonicPhrase | PrivateKey[],
-  ProviderOrUrl,
-
-  /*
-   * optional
-   */
-  AddressIndex,
-  NumberOfAddresses,
-  ShareNonce,
-  DerivationPath
-];
-
-// (awful to have to do it this way)
-export type Arguments =
-  | [PossibleArguments[0], PossibleArguments[1]]
-  | [PossibleArguments[0], PossibleArguments[1], PossibleArguments[2]]
-  | [
-      PossibleArguments[0],
-      PossibleArguments[1],
-      PossibleArguments[2],
-      PossibleArguments[3]
-    ]
-  | [
-      PossibleArguments[0],
-      PossibleArguments[1],
-      PossibleArguments[2],
-      PossibleArguments[3],
-      PossibleArguments[4]
-    ]
-  | [
-      PossibleArguments[0],
-      PossibleArguments[1],
-      PossibleArguments[2],
-      PossibleArguments[3],
-      PossibleArguments[4],
-      PossibleArguments[5]
-    ];
+import { MnemonicPhrase, PrivateKey } from "./constructorTypes/types";
+import * as Constructor from "./constructorTypes/Constructor";
+import * as LegacyConstructor from "./constructorTypes/LegacyConstructor";
 
 // check that the first argument is a mnemonic phrase
 const isMnemonicPhrase = (
@@ -89,7 +37,9 @@ const getSigningAuthorityOptions = (
 };
 
 // convert legacy style positional arguments to new, single-arg options format
-export const toOptions = (args: Arguments): Constructor.Options => {
+export const toOptions = (
+  args: LegacyConstructor.Arguments
+): Constructor.Options => {
   // otherwise, if arguments match the old-style, extract properties and handle polymorphism
   const [
     mnemonicPhraseOrPrivateKeys,

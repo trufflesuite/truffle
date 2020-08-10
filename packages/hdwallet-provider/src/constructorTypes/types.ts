@@ -1,6 +1,3 @@
-import * as LegacyConstructor from "./legacyConstructor";
-import * as Constructor from "./constructor";
-
 /*
  * type aliases for better readability around legacy positional arguments
  */
@@ -18,10 +15,3 @@ export type AddressIndex = number;
 export type NumberOfAddresses = number;
 export type ShareNonce = boolean;
 export type DerivationPath = string;
-
-/*
- * top-level polymorphic type
- */
-export type ConstructorArguments =
-  | LegacyConstructor.Arguments // either the old-style tuple type
-  | [Constructor.Options]; // or a single argument for new-style options

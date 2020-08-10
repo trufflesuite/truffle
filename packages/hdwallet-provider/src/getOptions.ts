@@ -1,6 +1,7 @@
-import { ConstructorArguments } from "./types";
-import * as Constructor from "./constructor";
-import * as LegacyConstructor from "./legacyConstructor";
+import { ConstructorArguments } from "./constructorTypes/ConstructorArguments";
+import { toOptions } from "./toOptions";
+import * as Constructor from "./constructorTypes/Constructor";
+import * as LegacyConstructor from "./constructorTypes/LegacyConstructor";
 
 // type predicate guard to determine at runtime if arguments conform to
 // new-style constructor args.
@@ -41,7 +42,7 @@ export const getOptions = (
     const [options] = args;
     return options;
   } else if (matchesLegacyArguments(args)) {
-    return LegacyConstructor.toOptions(args);
+    return toOptions(args);
   } else {
     throw new Error(
       "Unknown arguments format passed to new HDWalletProvider. Please check your configuration and try again"

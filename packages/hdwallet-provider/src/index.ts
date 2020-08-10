@@ -18,9 +18,10 @@ import WebsocketProvider from "@trufflesuite/web3-provider-engine/subproviders/w
 import Url from "url";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
 import { Callback, JsonRPCResponse } from "web3/providers";
-import { ConstructorArguments } from "./types";
-import * as NewConstructor from "./constructor";
+import { ConstructorArguments } from "./constructorTypes/ConstructorArguments";
 import { getOptions } from "./getOptions";
+import { getPrivateKeys } from "./getPrivateKeys";
+import { getMnemonic } from "./getMnemonic";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 
@@ -51,8 +52,8 @@ class HDWalletProvider {
       ...signingAuthority
     } = getOptions(...args);
 
-    const mnemonic = NewConstructor.getMnemonic(signingAuthority);
-    const privateKeys = NewConstructor.getPrivateKeys(signingAuthority);
+    const mnemonic = getMnemonic(signingAuthority);
+    const privateKeys = getPrivateKeys(signingAuthority);
 
     this.walletHdpath = derivationPath;
     this.wallets = {};
