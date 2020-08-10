@@ -1,5 +1,5 @@
-import * as LegacyConstructor from "./legacyConstructor";
-import * as Constructor from "./constructor";
+import * as LegacyConstructor from "./LegacyConstructor";
+import * as Constructor from "./Constructor";
 
 /*
  * top-level polymorphic type

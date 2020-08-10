@@ -18,10 +18,10 @@ import WebsocketProvider from "@trufflesuite/web3-provider-engine/subproviders/w
 import Url from "url";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
 import { Callback, JsonRPCResponse } from "web3/providers";
-import { ConstructorArguments } from "./constructorTypes/ConstructorArguments";
-import { getOptions } from "./getOptions";
-import { getPrivateKeys } from "./getPrivateKeys";
-import { getMnemonic } from "./getMnemonic";
+import { ConstructorArguments } from "./constructor/ConstructorArguments";
+import { getOptions } from "./constructor/getOptions";
+import { getPrivateKeys } from "./constructor/getPrivateKeys";
+import { getMnemonic } from "./constructor/getMnemonic";
 
 // Important: do not use debug module. Reason: https://github.com/trufflesuite/truffle/issues/2374#issuecomment-536109086
 

@@ -9,7 +9,7 @@ import {
 } from "./types";
 
 /*
- * namespace wrapper for new constructor options interface
+ * namespace wrapper for constructor options interface
  */
 export interface MnemonicSigningAuthority {
   mnemonic: Mnemonic;
