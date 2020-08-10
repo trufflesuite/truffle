@@ -1,11 +1,9 @@
 # `ethpm-v1`
 
-> TODO: description
-
 ## Usage
 
 ```
 const ethpmV1 = require('ethpm-v1');
-
-// TODO: DEMONSTRATE API
 ```
+
+This package contains support for the deprecated v1 version of the ethpm specification for backwards compatibility purposes.

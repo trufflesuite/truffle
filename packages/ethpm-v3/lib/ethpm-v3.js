@@ -6,6 +6,7 @@ const semver = require("semver");
 const Web3 = require("web3");
 const path = require("path");
 const fs = require("fs");
+const { isAddress } = require("web3-utils");
 const TruffleContractSchema = require("@truffle/contract-schema");
 const utils = require("./utils");
 
@@ -108,12 +109,24 @@ const PackageV3 = {
       );
     }
 
+    options.logger.log(
+      `! Please use caution when interacting with installed packages.\n! Only use packages that are published on trusted registries, or whose assets you've verified directly.`
+    );
     options.logger.log("Fetching package manifest...");
-    var targetRegistry = options.ethpm.registry.address;
     var targetNetwork = options.ethpm.registry.network;
     var targetNetworkId = options.networks[targetNetwork].network_id;
     var provider = utils.pluckProviderFromConfig(options);
 
+    let targetRegistry;
+    if (!isAddress(options.ethpm.registry.address)) {
+      targetRegistry = await utils.resolveEnsName(
+        options.ethpm.registry.address,
+        provider,
+        options
+      );
+    } else {
+      targetRegistry = options.ethpm.registry.address;
+    }
     // Create an ethpm instance
     let ethpm;
     try {
@@ -148,7 +161,7 @@ const PackageV3 = {
     }
 
     // Parse ethpm URI || packageId
-    if (!manifestUri) {
+    if (!resolvedManifestUri) {
       // Parse ethpm uri
       if (
         options.packageId.startsWith("ethpm://") ||
@@ -173,12 +186,9 @@ const PackageV3 = {
           );
         }
 
-        if (
-          typeof targetRegistry === "undefined" ||
-          typeof targetNetworkId === "undefined"
-        ) {
+        if (!targetRegistry || !targetNetworkId) {
           throw new TruffleError(
-            `Missing an 'ethpm/registry/address' and 'ethpm/registry/network_id' in your truffle config for the target registry.`
+            `Missing an 'ethpm/registry/address' and 'ethpm/registry/network' in your truffle config for the target registry.`
           );
         }
         targetPackageName = packageData[0];
@@ -269,15 +279,11 @@ const PackageV3 = {
     if (ethpmPackage.deployments) {
       ethpmPackage.deployments.forEach((value, key, _) => {
         const foundGenesisBlock = key.host.toLowerCase();
-        if (!(foundGenesisBlock in utils.SUPPORTED_GENESIS_BLOCKS)) {
-          // we probably shouldn't throw here - just skip over unsupported deployments...
-          throw new TruffleError(
-            `Blockchain uri detected with unsupported genesis block: ${foundGenesisBlock}`
-          );
+        if (foundGenesisBlock in utils.SUPPORTED_GENESIS_BLOCKS) {
+          normalizedDeployments[
+            utils.SUPPORTED_GENESIS_BLOCKS[foundGenesisBlock]
+          ] = value;
         }
-        normalizedDeployments[
-          utils.SUPPORTED_GENESIS_BLOCKS[foundGenesisBlock]
-        ] = value;
       });
     }
 
@@ -459,7 +465,7 @@ const PackageV3 = {
     try {
       await w3.eth.sendSignedTransaction(tx.raw);
     } catch (err) {
-      options.logger.log(err);
+      options.logger.log(`Error publishing release data to registry: ${err}`);
       return;
     }
     options.logger.log(

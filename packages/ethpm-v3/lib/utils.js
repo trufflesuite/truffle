@@ -34,7 +34,8 @@ async function getPublishableArtifacts(options, ethpm) {
     return new TruffleError(msg);
   }
 
-  const artifactsGroupedByNetworkId = {};
+  const detectedNetworkIdsToBlockchainUris = {};
+  const detectedArtifacts = {};
   const sourcePaths = {};
 
   // group artifacts by network id to ensure consistency when converting networkId => blockchainUri
@@ -45,53 +46,52 @@ async function getPublishableArtifacts(options, ethpm) {
         "utf8"
       )
     );
-
     sourcePaths[fileContents.sourcePath] = fileContents.source;
+    detectedArtifacts[fileContents.sourcePath] = fileContents;
     const allDeploymentNetworkIds = Object.keys(fileContents.networks);
     allDeploymentNetworkIds.forEach(deploymentNetworkId => {
-      if (artifactsGroupedByNetworkId.hasOwnProperty(deploymentNetworkId)) {
-        artifactsGroupedByNetworkId[deploymentNetworkId].push(fileContents);
-      } else {
-        artifactsGroupedByNetworkId[deploymentNetworkId] = [fileContents];
-      }
+      detectedNetworkIdsToBlockchainUris[deploymentNetworkId] = "";
     });
   }
 
-  const normalizedArtifacts = [];
-  for (let networkId of Object.keys(artifactsGroupedByNetworkId)) {
-    // handle artifacts without deployments
-    // networkId will be an undefined string literal not raw undefined type
-    if (networkId === "undefined") {
-      artifactsGroupedByNetworkId[networkId].forEach(item => {
-        normalizedArtifacts.push(item);
-      });
-    } else {
-      // convert network ids to blockchain uri
-      let targetProvider;
-      for (let provider of Object.keys(options.networks)) {
-        if (
-          options.networks[provider].network_id == networkId &&
-          options.networks[provider].provider
-        ) {
-          targetProvider = options.networks[provider].provider();
-        }
+  // generate blockchainURI for each detected networkId
+  for (let networkId of Object.keys(detectedNetworkIdsToBlockchainUris)) {
+    let targetProvider;
+    for (let provider of Object.keys(options.networks)) {
+      if (
+        options.networks[provider].network_id == networkId &&
+        options.networks[provider].provider
+      ) {
+        targetProvider = options.networks[provider].provider();
       }
+    }
 
-      if (!targetProvider) {
-        throw new TruffleError(
-          `Missing provider for network id: ${networkId}. Please make sure there is an available provider in your truffle-config`
-        );
-      }
+    if (!targetProvider) {
+      throw new TruffleError(
+        `Missing provider for network id: ${networkId}. Please make sure there is an available provider in your truffle-config`
+      );
+    }
 
-      const blockchainUri = await getBlockchainUriForProvider(targetProvider);
-      artifactsGroupedByNetworkId[networkId].forEach(item => {
-        delete Object.assign(item.networks, {
-          [blockchainUri]: item.networks[networkId]
-        })[networkId];
-        normalizedArtifacts.push(item);
+    const blockchainUri = await getBlockchainUriForProvider(targetProvider);
+    detectedNetworkIdsToBlockchainUris[networkId] = blockchainUri;
+  }
+
+  // replace network ids with blockchain uri in detected artifacts
+  for (let artifactPath of Object.keys(detectedArtifacts)) {
+    var artifactDeployments = detectedArtifacts[artifactPath].networks;
+    if (Object.keys(artifactDeployments).length > 0) {
+      Object.keys(artifactDeployments).forEach(id => {
+        var matchingUri = detectedNetworkIdsToBlockchainUris[id];
+        artifactDeployments[matchingUri] = artifactDeployments[id];
+        delete artifactDeployments[id];
       });
+      detectedArtifacts[artifactPath].networks = artifactDeployments;
     }
   }
+
+  const normalizedArtifacts = Object.keys(detectedArtifacts).map(
+    key => detectedArtifacts[key]
+  );
   const parsedArtifacts = parseTruffleArtifacts(normalizedArtifacts);
   const sources = await resolveSources(
     sourcePaths,
@@ -104,6 +104,29 @@ async function getPublishableArtifacts(options, ethpm) {
     resolvedDeployments: parsedArtifacts.deployments,
     resolvedCompilers: parsedArtifacts.compilers
   };
+}
+
+async function resolveEnsName(address, provider, options) {
+  let resolvedAddress;
+  const w3 = new Web3(provider);
+  const connectedChainId = await w3.eth.net.getId();
+  if (connectedChainId != 1) {
+    throw new TruffleError("Invalid ethPM uri. Only mainnet ENS is supported.");
+  }
+  if (options.ens.enabled === false) {
+    throw new TruffleError(
+      "ENS must be enabled in truffle-config to use ENS names."
+    );
+  }
+  try {
+    var ens = new ENS(provider);
+    resolvedAddress = await ens.resolver(address).addr();
+  } catch (err) {
+    throw new TruffleError(
+      `Unable to resolve ENS name: ${address}. Reason: ${err.message}`
+    );
+  }
+  return resolvedAddress;
 }
 
 async function resolveEthpmUri(options, provider) {
@@ -129,24 +152,11 @@ async function resolveEthpmUri(options, provider) {
 
   // Resolve ENS names in ethpm uri
   if (!isAddress(ethpmUri.address)) {
-    if (ethpmUri.chainId != 1) {
-      throw new TruffleError(
-        "Invalid ethPM uri. ethPM URIs must use an ENS name for registries located on mainnet."
-      );
-    }
-    if (options.ens.enabled === false) {
-      throw new TruffleError(
-        "Invalid ethPM uri. ENS must be enabled in truffle-config to use ethPM uris with ENS names."
-      );
-    }
-    try {
-      var ens = new ENS(targetProvider);
-      targetRegistry = await ens.resolver(ethpmUri.address).addr();
-    } catch (err) {
-      throw new TruffleError(
-        `Unable to resolve ENS name: ${ethpmUri.address}. Reason: ${err.message}`
-      );
-    }
+    targetRegistry = await resolveEnsName(
+      ethpmUri.address,
+      targetProvider,
+      options
+    );
   } else {
     targetRegistry = ethpmUri.address;
   }
@@ -204,7 +214,6 @@ function convertContractTypeToContractSchema(
         })
       }
     }),
-    // idt these support linkrefs
     ...(contractData.runtimeBytecode &&
       contractData.runtimeBytecode.bytecode && {
         deployedBytecode: contractData.runtimeBytecode.bytecode
@@ -214,8 +223,6 @@ function convertContractTypeToContractSchema(
         bytecode: contractData.deploymentBytecode.bytecode
       }),
     ...(contractDeployments && { networks: contractDeployments })
-    // source: sources?
-    // contract-schema doesn't define devdoc/userdoc but artifacts have it - can we include?
   };
 }
 
@@ -241,7 +248,6 @@ async function resolveSources(sourcePaths, contractsDirectory, ethpm) {
       // resolve all sources to relative path
       const resolved = path.relative(contractsDirectory, absolute);
       sources[resolved] = {
-        // this can lose ./ prefix
         urls: [ipfsUri.href],
         type: "solidity",
         installPath: `./${resolved}`
@@ -264,6 +270,7 @@ function pluckProviderFromConfig(config) {
 module.exports = {
   getPublishableArtifacts,
   resolveEthpmUri,
+  resolveEnsName,
   convertContractTypeToContractSchema,
   fetchInstalledBuildDependencies,
   pluckProviderFromConfig,
