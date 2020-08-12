@@ -127,7 +127,12 @@ class Console extends EventEmitter {
   }
 
   runSpawn(inputStrings, options, callback) {
-    const args = path.resolve(path.join(__dirname, "../lib/console-child.js"));
+    let args;
+    if (typeof BUNDLE_CONSOLE_CHILD_FILENAME !== "undefined") {
+      args = path.join(__dirname, BUNDLE_CONSOLE_CHILD_FILENAME);
+    } else {
+      args = path.join(__dirname, "../lib/console-child.js");
+    }
 
     const spawnOptions = { stdio: ["inherit", "inherit", "inherit"] };
 
