@@ -61,7 +61,7 @@ class Console extends EventEmitter {
       this.interfaceAdapter.getAccounts().then(() => {
         const abstractions = this.provision();
 
-        repl.start({
+        this.repl = repl.start({
           prompt: "truffle(" + this.options.network + ")> ",
           eval: this.interpret.bind(this)
         });
@@ -171,6 +171,10 @@ class Console extends EventEmitter {
     } catch (err) {
       callback(err);
     }
+    this.repl.on("exit", () => {
+      process.exit();
+    });
+    this.repl.displayPrompt();
   }
 
   interpret(input, context, filename, callback) {
