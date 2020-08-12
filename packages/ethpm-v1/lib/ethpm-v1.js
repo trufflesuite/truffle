@@ -4,12 +4,66 @@ const Networks = require("@truffle/core/lib/networks");
 const EthPM = require("ethpm");
 const EthPMRegistry = require("ethpm-registry");
 const Web3 = require("web3");
+const registryAbi = require("./registryAbi");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
 const path = require("path");
 const fs = require("fs");
 const OS = require("os");
 
 const PackageV1 = {
+  packages: async options => {
+    try {
+      expect.options(options, [
+        "ethpm",
+        "logger",
+        "working_directory",
+        "contracts_build_directory",
+        "networks"
+      ]);
+    } catch (err) {
+      throw new TruffleError(
+        `Invalid ethpm configuration in truffle-config: ${err.message}`
+      );
+    }
+
+    const ethpmV1Network = "ropsten";
+    if (!options.networks[ethpmV1Network]) {
+      throw new TruffleError(
+        `Please include a provider in your networks config for the Ropsten testnet, the testnet where the ethpmV1 registry is deployed.`
+      );
+    }
+    const provider = options.networks["ropsten"].provider();
+    const web3 = new Web3(provider);
+    const ethpmV1RegistryAddress = "0x8011df4830b4f696cd81393997e5371b93338878";
+    var contract = new web3.eth.Contract(
+      registryAbi.abi,
+      ethpmV1RegistryAddress
+    );
+    var owner = await contract.methods.owner().call();
+
+    // Display info about connected registry
+    options.logger.log(
+      `Searching for packages published on registry located on the ethpm V1 registry: ${ethpmV1RegistryAddress}`
+    );
+    options.logger.log(`Registry controlled by : ${owner}`);
+
+    // Display info about all releases on registry
+    var numPackages = await contract.methods.getNumPackages().call();
+    for (var x = 0; x < numPackages; x++) {
+      let packageName = await contract.methods.getPackageName(x).call();
+      let releaseHashes = await contract.methods
+        .getAllPackageReleaseHashes(packageName)
+        .call();
+      options.logger.log(packageName);
+      for (let hash of releaseHashes) {
+        let releaseData = await contract.methods.getReleaseData(hash).call();
+        let version = `${releaseData.major}.${releaseData.minor}.${releaseData.patch}`;
+        options.logger.log(`- ${version} @ ${releaseData.releaseLockfileURI}`);
+      }
+    }
+    return;
+  },
+
   install: async function (options, callback) {
     const callbackPassed = typeof callback === "function";
     expect.options(options, ["working_directory", "ethpm"]);

@@ -1,45 +1,52 @@
+const { callbackify } = require("util");
+
 const command = {
   command: "install",
   description: "Install a package from the Ethereum Package Registry",
   builder: {},
   help: {
-    usage: "truffle install <packageId> [--alias]",
+    usage: "truffle install <package-identifier> [--alias]",
     options: [
       {
-        option: "packageId",
-        description: `(required) Name of the package as listed in the Ethereum Package Registry. 
-          Accepted formats: packageName, packageName@version, ethpm URI, ipfs URI.`
+        option: "packageIdentifier",
+        description: `(required) Name of the package as listed in the Ethereum Package Registry. Accepted formats: packageName, packageName@version, ethpm URI, ipfs URI.`
       },
       {
         option: "--alias",
-        description:
-          "A different name under which this package will be installed."
+        description: "A different name under which to install this package."
       }
     ]
   },
-  run: async function (options, done) {
+  run: function (options, done) {
     const Config = require("@truffle/config");
     const PackageV1 = require("@truffle/ethpm-v1");
     const PackageV3 = require("@truffle/ethpm-v3");
 
     if (options._ && options._.length == 0) {
-      done(new Error(`Please provide a packageId.`));
+      done(
+        new Error(
+          `Please provide a package identifier. Run 'truffle help install' for more information on valid package identifiers.`
+        )
+      );
     }
     if (options._ && options._.length > 1) {
-      done(new Error(`Only one packageId can be installed at a time.`));
+      done(
+        new Error(`Only one package identifier can be installed at a time.`)
+      );
     }
-    options.packageId = options._[0];
+    options.packageIdentifier = options._[0];
 
     const config = Config.detect(options);
+    let callbackFunction;
 
     if (config.ethpm.version == "1") {
-      await PackageV1.install(config);
+      callbackFunction = callbackify(PackageV1.install);
     } else if (config.ethpm.version == "3") {
-      await PackageV3.install(config);
+      callbackFunction = callbackify(PackageV3.install);
     } else {
       done(new Error(`Unsupported ethpm version: ${config.ethpm.version}.`));
     }
-    done();
+    callbackFunction(config, done);
   }
 };
 

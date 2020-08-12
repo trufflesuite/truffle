@@ -5,7 +5,7 @@ const fse = require("fs-extra");
 const path = require("path");
 let config;
 
-describe("truffle install [ @standalone ]", () => {
+describe("truffle install [standalone]", () => {
   before(async () => {
     config = await sandbox.create(
       path.join(__dirname, "../../sources/install/init")
@@ -14,9 +14,9 @@ describe("truffle install [ @standalone ]", () => {
   });
 
   it("unboxes successfully", async () => {
-    await CommandRunner.run("install zeppelin", config);
+    await CommandRunner.run("install owned", config);
     const theInstallDirExists = fse.pathExistsSync(
-      path.join(config.working_directory, "installed_contracts")
+      path.join(config.working_directory, "_ethpm_packages")
     );
     assert(theInstallDirExists);
   }).timeout(30000);

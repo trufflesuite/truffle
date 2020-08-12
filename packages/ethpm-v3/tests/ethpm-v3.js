@@ -198,7 +198,7 @@ describe("EthPM install", function () {
   });
 
   it("requires a valid package name and version to install", async () => {
-    config.packageId = `erc1319://${registry._address}:1`;
+    config.packageIdentifier = `erc1319://${registry._address}:1`;
     try {
       await PackageV3.install(config);
     } catch (error) {
@@ -209,7 +209,7 @@ describe("EthPM install", function () {
   });
 
   it("invalidates ethpm uris for packages not published on itself", async () => {
-    config.packageId = `erc1319://${registry._address}:1/invalid@1.0.0`;
+    config.packageIdentifier = `erc1319://${registry._address}:1/invalid@1.0.0`;
     try {
       await PackageV3.install(config);
     } catch (error) {
@@ -220,7 +220,7 @@ describe("EthPM install", function () {
   });
 
   it("successfully installs single dependency from EthPM", async () => {
-    config.packageId = `erc1319://${registry._address}:1/ens@1.0.0`;
+    config.packageIdentifier = `erc1319://${registry._address}:1/ens@1.0.0`;
     await PackageV3.install(config);
     const expected_ethpm_directory = path.resolve(
       path.join(config.working_directory, "_ethpm_packages")
@@ -238,7 +238,7 @@ describe("EthPM install", function () {
   });
 
   it("successfully installs and provisions a package with dependencies from EthPMv3", async () => {
-    config.packageId = `erc1319://${registry._address}:1/ens@1.0.0`;
+    config.packageIdentifier = `erc1319://${registry._address}:1/ens@1.0.0`;
     await PackageV3.install(config);
 
     // Write a contract that uses transferable, so it will be compiled.
@@ -263,7 +263,7 @@ describe("EthPM install", function () {
   // In addition, this package contains deployments. We need to make sure these deployments are available.
   it("successfully installs and provisions a deployed package with network artifacts from EthPM, without compiling v3", async () => {
     await Contracts.compile(config.with({ all: true, quiet: true }));
-    config.packageId = `erc1319://${registry._address}:1/ens@1.0.0`;
+    config.packageIdentifier = `erc1319://${registry._address}:1/ens@1.0.0`;
     await PackageV3.install(config);
 
     // Make sure we can resolve it.
@@ -289,7 +289,7 @@ describe("EthPM install", function () {
 
     const installed_package = "ethregistrar";
     const expected_contract_name = "BaseRegistrarImplementation";
-    config.packageId = `erc1319://${registry._address}:1/ethregistrar@3.0.0`;
+    config.packageIdentifier = `erc1319://${registry._address}:1/ethregistrar@3.0.0`;
     await PackageV3.install(config);
 
     var expected_manifest_path = path.join(

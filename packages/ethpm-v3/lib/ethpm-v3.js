@@ -38,6 +38,17 @@ const PackageV3 = {
       );
     }
 
+    let targetRegistry;
+    if (!isAddress(options.ethpm.registry.address)) {
+      targetRegistry = await utils.resolveEnsName(
+        options.ethpm.registry.address,
+        provider,
+        options
+      );
+    } else {
+      targetRegistry = options.ethpm.registry.address;
+    }
+
     var provider = utils.pluckProviderFromConfig(options);
 
     // Create an ethpm instance
@@ -48,7 +59,7 @@ const PackageV3 = {
       }).connect({
         provider: provider,
         workingDirectory: options.working_directory,
-        registryAddress: options.ethpm.registry.address,
+        registryAddress: targetRegistry,
         ipfs: {
           host: options.ethpm.ipfsHost,
           port: options.ethpm.ipfsPort,
@@ -61,7 +72,7 @@ const PackageV3 = {
 
     // Display info about connected registry
     options.logger.log(
-      `Searching for packages published on registry located at: ${options.ethpm.registry.address}`
+      `Searching for packages published on registry located at: ${targetRegistry}`
     );
     const owner = await ethpm.registries.registry.methods.owner().call();
     options.logger.log(`Registry controlled by account: ${owner}`);
@@ -85,7 +96,7 @@ const PackageV3 = {
     try {
       expect.options(options, [
         "ethpm",
-        "packageId",
+        "packageIdentifier",
         "logger",
         "working_directory",
         "contracts_build_directory",
@@ -155,17 +166,17 @@ const PackageV3 = {
     var resolvedManifestUri = false;
 
     // Parse IPFS URI
-    if (options.packageId.startsWith("ipfs://")) {
-      manifestUri = new URL(options.packageId);
+    if (options.packageIdentifier.startsWith("ipfs://")) {
+      manifestUri = new URL(options.packageIdentifier);
       resolvedManifestUri = true;
     }
 
-    // Parse ethpm URI || packageId
+    // Parse ethpm URI || packageIdentifier
     if (!resolvedManifestUri) {
       // Parse ethpm uri
       if (
-        options.packageId.startsWith("ethpm://") ||
-        options.packageId.startsWith("erc1319://")
+        options.packageIdentifier.startsWith("ethpm://") ||
+        options.packageIdentifier.startsWith("erc1319://")
       ) {
         const targetInstallInfo = await utils.resolveEthpmUri(
           options,
@@ -178,11 +189,11 @@ const PackageV3 = {
         // update provider if changed via ethpm uri
         provider = targetInstallInfo.targetProvider;
       } else {
-        // Parse packageId
-        const packageData = options.packageId.split("@");
+        // Parse packageIdentifier
+        const packageData = options.packageIdentifier.split("@");
         if (packageData.length > 2) {
           throw new TruffleError(
-            `Invalid ethpm uri or package id: ${options.packageId[0]}`
+            `Invalid ethpm uri or package id: ${options.packageIdentifier[0]}`
           );
         }
 
@@ -249,7 +260,7 @@ const PackageV3 = {
     // Check to make sure a manifest URI was located
     if (typeof manifestUri === "undefined") {
       throw new TruffleError(
-        `Unable to find a manifest URI for package ID: ${options.packageId}`
+        `Unable to find a manifest URI for package ID: ${options.packageIdentifier}`
       );
     }
 
@@ -369,6 +380,16 @@ const PackageV3 = {
     }
 
     var registryProvider = utils.pluckProviderFromConfig(options);
+    let targetRegistry;
+    if (!isAddress(options.ethpm.registry.address)) {
+      targetRegistry = await utils.resolveEnsName(
+        options.ethpm.registry.address,
+        registryProvider,
+        options
+      );
+    } else {
+      targetRegistry = options.ethpm.registry.address;
+    }
 
     // Create an ethpm instance
     let ethpm;
@@ -379,7 +400,7 @@ const PackageV3 = {
         registries: "ethpm/registries/web3"
       }).connect({
         provider: registryProvider,
-        registryAddress: options.ethpm.registry.address,
+        registryAddress: targetRegistry,
         ipfs: {
           host: options.ethpm.ipfsHost,
           port: options.ethpm.ipfsPort,
@@ -455,21 +476,20 @@ const PackageV3 = {
     const encodedTxData = ethpm.registries.registry.methods
       .release(ethpmConfig.name, ethpmConfig.version, manifestUri.href)
       .encodeABI();
-    const tx = await w3.eth.signTransaction({
-      from: fromAddress,
-      to: options.ethpm.registry.address,
-      gas: 4712388,
-      gasPrice: 100000000000,
-      data: encodedTxData
-    });
     try {
-      await w3.eth.sendSignedTransaction(tx.raw);
+      await w3.eth.sendTransaction({
+        from: fromAddress,
+        to: targetRegistry,
+        gas: 4712388,
+        gasPrice: 100000000000,
+        data: encodedTxData
+      });
     } catch (err) {
       options.logger.log(`Error publishing release data to registry: ${err}`);
       return;
     }
     options.logger.log(
-      `Published ${ethpmConfig.name}@${ethpmConfig.version} to ${options.ethpm.registry.address}\n`
+      `Published ${ethpmConfig.name}@${ethpmConfig.version} to ${targetRegistry}\n`
     );
     return;
   }
