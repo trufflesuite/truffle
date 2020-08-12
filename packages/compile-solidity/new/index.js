@@ -7,7 +7,6 @@ const Profiler = require("../profiler");
 const CompilerSupplier = require("../compilerSupplier");
 const { run } = require("../run");
 const { normalizeOptions } = require("../legacy/options");
-const { promisify } = require("util");
 
 // Most basic of the compile commands. Takes a hash of sources, where
 // the keys are file or module paths and the values are the bodies of
@@ -69,14 +68,22 @@ compile.with_dependencies = async function (options) {
   ]);
 
   const config = Config.default().merge(options);
+  const { allSources, required } = await new Promise((accept, reject) => {
+    Profiler.required_sources(
+      config.with({
+        paths: options.paths,
+        base_path: options.contracts_directory,
+        resolver: options.resolver
+      }),
+      (err, allSources, required) => {
+        if (err) {
+          return reject(err);
+        }
 
-  const { allSources, required } = await promisify(Profiler.required_sources)(
-    config.with({
-      paths: options.paths,
-      base_path: options.contracts_directory,
-      resolver: options.resolver
-    })
-  );
+        return accept({ allSources, required });
+      }
+    );
+  });
 
   const hasTargets = required.length;
 

@@ -1,7 +1,6 @@
 const debug = require("debug")("compile:run"); // eslint-disable-line no-unused-vars
 const OS = require("os");
 const semver = require("semver");
-
 const CompileError = require("./compileerror");
 const CompilerSupplier = require("./compilerSupplier");
 
@@ -13,18 +12,21 @@ async function run(rawSources, options) {
       compilerInfo: undefined
     };
   }
+
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
   const { sources, targets, originalSourcePaths } = collectSources(
     rawSources,
     options.compilationTargets
   );
+
   // construct solc compiler input
   const compilerInput = prepareCompilerInput({
     sources,
     targets,
     settings: options.compilers.solc.settings
   });
+
   // perform compilation
   const { compilerOutput, solcVersion } = await invokeCompiler({
     compilerInput,
