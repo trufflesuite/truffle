@@ -31,6 +31,7 @@ type CompiledContract = {
   };
   devdoc: object;
   userdoc: object;
+  immutableReferences: object;
 };
 
 type ContractObject = {
@@ -52,7 +53,7 @@ type ContractObject = {
   };
   devdoc: object;
   userdoc: object;
-  immutableReferences;
+  immutableReferences: object;
 };
 
 interface WorkflowCompileResult {
