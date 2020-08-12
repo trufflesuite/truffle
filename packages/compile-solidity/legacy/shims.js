@@ -1,4 +1,4 @@
-function shimOutput({ contracts: list, sourceIndexes, compilerInfo }) {
+function shimOutput({ contracts: list, sourceIndexes, compiler }) {
   const contracts = list
     // get old format
     .map(contract => shimContract(contract))
@@ -7,7 +7,7 @@ function shimOutput({ contracts: list, sourceIndexes, compilerInfo }) {
     // merge pairs
     .reduce((a, b) => Object.assign({}, a, b), {});
 
-  return [contracts, sourceIndexes, compilerInfo];
+  return [contracts, sourceIndexes, compiler];
 }
 
 function shimContract(contract) {

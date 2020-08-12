@@ -53,6 +53,7 @@ async function run(rawSources, options) {
   }
 
   // success case
+  // returns Compilation - see @truffle/compile-common
   return {
     sourceIndexes: processSources({
       compilerOutput,
@@ -64,7 +65,7 @@ async function run(rawSources, options) {
       solcVersion,
       originalSourcePaths
     }),
-    compilerInfo: {
+    compiler: {
       name: "solc",
       version: solcVersion
     }

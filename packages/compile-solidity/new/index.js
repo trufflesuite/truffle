@@ -97,6 +97,7 @@ compile.with_dependencies = async function (options) {
     normalizeOptions(options)
   );
   const { name, version } = compilerInfo;
+  // returns CompilerResult - see @truffle/compile-common
   return [
     {
       sourceIndexes,
