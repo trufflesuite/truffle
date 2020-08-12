@@ -20,7 +20,12 @@ export default class Web3Adapter {
         id: new Date().getTime()
       }
     );
-    if (result.error) {
+    if (!result.result) {
+      //we assume if there's no result then there is an error.
+      //note: some nodes may return an error even if there is a
+      //usable result, so we don't assume that the presence of
+      //an error means we should throw an error, but rather check
+      //for the absence of a result.
       throw new Error(result.error.message);
     } else {
       return result.result.structLogs;
