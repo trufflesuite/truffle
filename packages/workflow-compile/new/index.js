@@ -6,27 +6,26 @@ const { shimContract } = require("@truffle/compile-solidity/legacy/shims");
 const {
   reportCompilationStarted,
   reportNothingToCompile,
-  reportCompilationFinished,
+  reportCompilationFinished
 } = require("../reports");
 
 const SUPPORTED_COMPILERS = {
   solc: {
-    compiler: require("@truffle/compile-solidity/new"),
+    compiler: require("@truffle/compile-solidity/new")
   },
   vyper: {
     compiler: require("@truffle/compile-vyper"),
-    legacy: true,
+    legacy: true
   },
   external: {
     compiler: require("@truffle/external-compile"),
-    legacy: true,
-  },
+    legacy: true
+  }
 };
 
 async function compile(config) {
   // determine compiler(s) to use
   //
-
   const compilers = config.compiler
     ? config.compiler === "none"
       ? []
@@ -35,7 +34,6 @@ async function compile(config) {
 
   // invoke compilers
   //
-
   const rawCompilations = await Promise.all(
     compilers.map(async name => {
       const { compiler, legacy } = SUPPORTED_COMPILERS[name] || {};
@@ -48,29 +46,22 @@ async function compile(config) {
 
       const compile = legacy ? shimLegacy(method) : method;
 
-      return {
-        [name]: await compile(config),
-      };
+      // return from `compile` is an array of compilations
+      return await compile(config);
     })
   );
 
   // collect results
   //
+  const compilations = rawCompilations.reduce((a, compilations) => {
+    return a.concat(compilations);
+  }, []);
 
-  const compilations = rawCompilations.reduce(
-    (a, b) => Object.assign({}, a, b),
-    {}
-  );
+  const contracts = compilations.reduce((a, compilation) => {
+    return a.concat(compilation.contracts);
+  }, []);
 
-  const [compilerUsed] = Object.values(compilations)
-    .map(({ compilerInfo }) => compilerInfo)
-    .filter(compilerInfo => compilerInfo);
-
-  const contracts = Object.values(compilations)
-    .map(({ contracts }) => contracts)
-    .reduce((a, b) => [...a, ...b], []);
-
-  return { contracts, compilations, compilerUsed };
+  return { contracts, compilations };
 }
 
 const Contracts = {
@@ -79,13 +70,13 @@ const Contracts = {
 
     if (config.events) config.events.emit("compile:start");
 
-    const { contracts, compilations, compilerUsed } = await compile(config);
+    const { contracts, compilations } = await compile(config);
 
-    if (compilerUsed) {
-      config.compilersInfo[compilerUsed.name] = {
-        version: compilerUsed.version,
-      };
-    }
+    const compilers = compilations
+      .reduce((a, compilation) => {
+        return a.concat(compilation.compiler);
+      }, [])
+      .filter(compiler => compiler);
 
     if (contracts.length === 0 && config.events) {
       config.events.emit("compile:nothingToCompile");
@@ -94,12 +85,12 @@ const Contracts = {
     if (config.events) {
       config.events.emit("compile:succeed", {
         contractsBuildDirectory: config.contracts_build_directory,
-        compilersInfo: config.compilersInfo,
+        compilers
       });
     }
     return {
       contracts,
-      compilations,
+      compilations
     };
   },
 
@@ -114,7 +105,7 @@ const Contracts = {
 
     const artifacts = contracts.map(shimContract);
     await config.artifactor.saveAll(artifacts);
-  },
+  }
 };
 
 module.exports = Contracts;
