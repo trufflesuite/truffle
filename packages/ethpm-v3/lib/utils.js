@@ -62,7 +62,7 @@ async function getPublishableArtifacts(options, ethpm) {
         options.networks[provider].network_id == networkId &&
         options.networks[provider].provider
       ) {
-        targetProvider = options.networks[provider].provider();
+        targetProvider = pluckProviderFromConfig(options);
       }
     }
 
@@ -110,8 +110,11 @@ async function resolveEnsName(address, provider, options) {
   let resolvedAddress;
   const w3 = new Web3(provider);
   const connectedChainId = await w3.eth.net.getId();
-  if (connectedChainId != 1) {
-    throw new TruffleError("Invalid ethPM uri. Only mainnet ENS is supported.");
+  const supportedChainIds = [1, 3, 4, 5];
+  if (!supportedChainIds.includes(connectedChainId)) {
+    throw new TruffleError(
+      "Invalid ethPM uri. ENS is only supported on mainnet, ropsten, rinkeby & goerli."
+    );
   }
   if (options.ens.enabled === false) {
     throw new TruffleError(
@@ -132,7 +135,7 @@ async function resolveEnsName(address, provider, options) {
 async function resolveEthpmUri(options, provider) {
   let targetRegistry;
   var targetProvider = provider;
-  const ethpmUri = new EthpmURI(options.packageId);
+  const ethpmUri = new EthpmURI(options.packageIdentifier);
   const w3 = new Web3(targetProvider);
   const connectedChainId = await w3.eth.net.getId();
 

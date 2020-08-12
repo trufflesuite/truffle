@@ -17,7 +17,6 @@
     "./contracts/eip20/EIP20Interface.sol"
   ],
   "dependencies": {},
-  "manifest_version": 1,
-  "package_name": "tokens",
+  "name": "tokens",
   "version": "1.0.0"
 }

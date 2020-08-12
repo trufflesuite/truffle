@@ -37,9 +37,10 @@ export const getInitialConfig = ({
       ipfsProtocol: "https",
       ipfsPort: "5001",
       registry: {
-        address: "0x8011df4830b4f696cd81393997e5371b93338878",
+        address: "0xD230Dd91A049284a236f6ccba4412F647BDAAD9e",
         network: "ropsten"
-      }
+      },
+      version: "3"
     },
     ens: {
       enabled: false,
