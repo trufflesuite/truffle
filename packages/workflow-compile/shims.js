@@ -4,13 +4,13 @@ function shimLegacy(method) {
   return async config => {
     const compile = multiPromisify(method);
 
-    const [contracts, sourceIndexes, compilerInfo] = await compile(config);
+    const [contracts, sourceIndexes, compiler] = await compile(config);
 
     return [
       {
         contracts: shimContracts(contracts),
         sourceIndexes,
-        compilerInfo
+        compiler
       }
     ];
   };
