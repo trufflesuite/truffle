@@ -252,7 +252,6 @@ function* variablesAndMappingsSaga() {
   let storageAllocations = yield select(data.info.allocations.storage);
   let userDefinedTypes = yield select(data.views.userDefinedTypes);
   let currentAssignments = yield select(data.proc.assignments);
-  let mappedPaths = yield select(data.proc.mappedPaths);
   let currentDepth = yield select(data.current.functionDepth);
   let modifierDepth = yield select(data.current.modifierDepth);
   let inModifier = yield select(data.current.inModifier);
@@ -603,6 +602,22 @@ function* variablesAndMappingsSaga() {
         break;
       }
 
+      path = fetchBasePath(
+        compilationId,
+        baseExpression,
+        currentAssignments,
+        allocations,
+        currentDepth,
+        modifierDepth,
+        inModifier
+      );
+      //this may fail, so let's check for that
+      if (path === null) {
+        debug("bailed out due to failed path");
+        yield put(actions.assign(assignments));
+        break;
+      }
+
       let keyDefinition = Codec.Ast.Utils.keyDefinition(baseExpression, scopes);
       //if we're dealing with an array, this will just spoof up a uint
       //definition :)
@@ -623,16 +638,6 @@ function* variablesAndMappingsSaga() {
       //the path.  But that's OK, because the mappedPaths reducer will turn
       //it into an actual path.
       if (indexValue != null && indexValue.value) {
-        path = fetchBasePath(
-          compilationId,
-          baseExpression,
-          mappedPaths,
-          currentAssignments,
-          currentDepth,
-          modifierDepth,
-          inModifier
-        );
-
         let slot = { path };
 
         //we need to do things differently depending on whether we're dealing
@@ -720,12 +725,18 @@ function* variablesAndMappingsSaga() {
       path = fetchBasePath(
         compilationId,
         baseExpression,
-        mappedPaths,
         currentAssignments,
+        allocations,
         currentDepth,
         modifierDepth,
         inModifier
       );
+      //this may fail, so let's check for that
+      if (path === null) {
+        debug("bailed out due to failed path");
+        yield put(actions.assign(assignments));
+        break;
+      }
 
       slot = { path };
 
@@ -1043,13 +1054,13 @@ function assignParameters(
 function fetchBasePath(
   compilationId,
   baseNode,
-  mappedPaths,
   currentAssignments,
+  allocations,
   currentDepth,
   modifierDepth,
   inModifier
 ) {
-  let fullId = stableKeccak256(
+  const fullId = stableKeccak256(
     inModifier
       ? {
           compilationId,
@@ -1068,11 +1079,24 @@ function fetchBasePath(
   debug("fullId: %s", fullId);
   debug("currentAssignments: %O", currentAssignments);
   //base expression is an expression, and so has a literal assigned to
-  //it
-  let offset = Codec.Conversion.toBN(
-    currentAssignments.byId[fullId].ref.literal
-  );
-  return { offset };
+  //it (unless it doesn't, in which case we have to handle that case)
+  const baseAssignment = currentAssignments.byId[fullId];
+  if (baseAssignment) {
+    const offset = Codec.Conversion.toBN(baseAssignment.ref.literal);
+    return { offset };
+  }
+  //if nothing was assigned to the base expression, we have a fallback we'll attempt:
+  //we'll check if it's a top-level state variable and look up its allocation if so.
+  const referencedId = baseNode.referencedDeclaration;
+  if (referencedId != undefined) {
+    //deliberate use of !=
+    const allocation = allocations[referencedId];
+    if (allocation && allocation.pointer.location === "storage") {
+      return allocation.pointer.range.from.slot;
+    }
+  }
+  //if that doesn't work either, give up
+  return null;
 }
 
 export function* saga() {
