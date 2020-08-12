@@ -6,11 +6,13 @@ function shimLegacy(method) {
 
     const [contracts, sourceIndexes, compilerInfo] = await compile(config);
 
-    return {
-      contracts: shimContracts(contracts),
-      sourceIndexes,
-      compilerInfo
-    };
+    return [
+      {
+        contracts: shimContracts(contracts),
+        sourceIndexes,
+        compilerInfo
+      }
+    ];
   };
 }
 
