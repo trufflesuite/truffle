@@ -58,5 +58,5 @@ type ContractObject = {
 
 interface WorkflowCompileResult {
   compilations: Compilation[];
-  contracts: ContractObject[];
+  contracts: CompiledContract[];
 }
