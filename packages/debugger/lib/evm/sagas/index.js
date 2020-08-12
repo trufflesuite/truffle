@@ -68,7 +68,7 @@ export function* addAffectedInstance(address, binary) {
 //that currently only happens when adding external compilations)
 export function* refreshInstances() {
   const instances = yield select(evm.current.codex.instances);
-  const affectedInstances = yield select(evm.transaction.displayInstances);
+  const affectedInstances = yield select(evm.transaction.affectedInstances);
   for (let [address, { binary }] of Object.entries(instances)) {
     const search = yield select(evm.info.binaries.search);
     const context = search(binary);
