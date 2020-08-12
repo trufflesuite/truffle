@@ -1,9 +1,9 @@
-const ReplManager = require("./repl");
+const repl = require("repl");
 const Command = require("./command");
 const provision = require("@truffle/provisioner");
 const {
   Web3Shim,
-  createInterfaceAdapter,
+  createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 const contract = require("@truffle/contract");
 const vm = require("vm");
@@ -39,51 +39,31 @@ class Console extends EventEmitter {
       "network_id",
       "provider",
       "resolver",
-      "build_directory",
+      "build_directory"
     ]);
 
     this.options = options;
 
-    this.repl = options.repl || new ReplManager(options);
     this.command = new Command(tasks);
 
     this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
-      networkType: options.networks[options.network].type,
+      networkType: options.networks[options.network].type
     });
     this.web3 = new Web3Shim({
       provider: options.provider,
-      networkType: options.networks[options.network].type,
+      networkType: options.networks[options.network].type
     });
-
-    // Bubble the ReplManager's exit event
-    this.repl.on("exit", () => this.emit("exit"));
-
-    // Bubble the ReplManager's reset event
-    this.repl.on("reset", () => this.emit("reset"));
   }
 
-  start(callback) {
-    if (!this.repl) this.repl = new Repl(this.options);
-
-    // TODO: This should probalby be elsewhere.
-    // It's here to ensure the repl manager instance gets
-    // passed down to commands.
-    this.options.repl = this.repl;
-
+  start() {
     try {
-      this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
+      this.interfaceAdapter.getAccounts().then(() => {
         const abstractions = this.provision();
 
-        this.repl.start({
+        repl.start({
           prompt: "truffle(" + this.options.network + ")> ",
-          context: {
-            web3: this.web3,
-            interfaceAdapter: this.interfaceAdapter,
-            accounts: fetchedAccounts,
-          },
-          interpreter: this.interpret.bind(this),
-          done: callback,
+          eval: this.interpret.bind(this)
         });
 
         this.resetContractsInConsoleContext(abstractions);
@@ -144,8 +124,6 @@ class Console extends EventEmitter {
     abstractions.forEach(abstraction => {
       contextVars[abstraction.contract_name] = abstraction;
     });
-
-    this.repl.setContextVars(contextVars);
   }
 
   runSpawn(inputStrings, options, callback) {
@@ -170,7 +148,7 @@ class Console extends EventEmitter {
         networks: configNetworks,
         network_id: options.network_id,
         provider: options.provider,
-        build_directory: options.build_directory,
+        build_directory: options.build_directory
       };
 
       spawnSync(
@@ -265,7 +243,7 @@ class Console extends EventEmitter {
       const options = {
         displayErrors: true,
         breakOnSigint: true,
-        filename: filename,
+        filename: filename
       };
       return script.runInContext(context, options);
     };
