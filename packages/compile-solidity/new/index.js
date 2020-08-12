@@ -92,11 +92,11 @@ compile.with_dependencies = async function (options) {
     : this.display(allSources, options);
 
   options.compilationTargets = required;
-  const { sourceIndexes, contracts, compilerInfo } = await run(
+  const { sourceIndexes, contracts, compiler } = await run(
     allSources,
     normalizeOptions(options)
   );
-  const { name, version } = compilerInfo;
+  const { name, version } = compiler;
   // returns CompilerResult - see @truffle/compile-common
   return [
     {
