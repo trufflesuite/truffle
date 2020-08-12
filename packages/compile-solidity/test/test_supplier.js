@@ -24,7 +24,7 @@ describe("CompilerSupplier", function () {
     const options = {
       contracts_directory: "",
       solc: "",
-      quiet: true,
+      quiet: true
     };
 
     before("get code", async function () {
@@ -60,8 +60,11 @@ describe("CompilerSupplier", function () {
     it("compiles w/ default solc if no compiler specified (float)", async function () {
       const defaultOptions = Config.default().merge(options);
 
-      const { contracts } = await compile(version5PragmaSource, defaultOptions);
-      const Version5Pragma = findOne("Version5Pragma", contracts);
+      const compilations = await compile(version5PragmaSource, defaultOptions);
+      const Version5Pragma = findOne(
+        "Version5Pragma",
+        compilations[0].contracts
+      );
 
       assert(Version5Pragma.contractName === "Version5Pragma");
     });
@@ -70,13 +73,13 @@ describe("CompilerSupplier", function () {
       options.compilers = {
         solc: {
           version: "0.4.15",
-          settings: {},
-        },
+          settings: {}
+        }
       };
       const config = new Config().with(options);
 
-      const { contracts } = await compile(oldPragmaPinSource, config);
-      const OldPragmaPin = findOne("OldPragmaPin", contracts);
+      const compilations = await compile(oldPragmaPinSource, config);
+      const OldPragmaPin = findOne("OldPragmaPin", compilations[0].contracts);
 
       assert(OldPragmaPin.contractName === "OldPragmaPin");
     });
@@ -87,13 +90,16 @@ describe("CompilerSupplier", function () {
       options.compilers = {
         solc: {
           version: "0.4.16-nightly.2017.8.9+commit.81887bc7",
-          settings: {},
-        },
+          settings: {}
+        }
       };
 
       const config = Config.default().merge(options);
-      const { contracts } = await compile(oldPragmaFloatSource, config);
-      const OldPragmaFloat = findOne("OldPragmaFloat", contracts);
+      const compilations = await compile(oldPragmaFloatSource, config);
+      const OldPragmaFloat = findOne(
+        "OldPragmaFloat",
+        compilations[0].contracts
+      );
 
       assert(OldPragmaFloat.contractName === "OldPragmaFloat");
     });
@@ -106,17 +112,20 @@ describe("CompilerSupplier", function () {
 
       options.compilers = {
         solc: {
-          version: pathToSolc,
-        },
+          version: pathToSolc
+        }
       };
 
       const localPathOptions = Config.default().merge(options);
 
-      const { contracts } = await compile(
+      const compilations = await compile(
         version5PragmaSource,
         localPathOptions
       );
-      const Version5Pragma = findOne("Version5Pragma", contracts);
+      const Version5Pragma = findOne(
+        "Version5Pragma",
+        compilations[0].contracts
+      );
       assert(Version5Pragma.contractName === "Version5Pragma");
     });
 
@@ -137,7 +146,7 @@ describe("CompilerSupplier", function () {
       if (await fse.exists(expectedCache)) await fse.unlink(expectedCache);
 
       options.compilers = {
-        solc: { version: "0.4.21" },
+        solc: { version: "0.4.21" }
       };
 
       const cachedOptions = Config.default().merge(options);
@@ -154,10 +163,10 @@ describe("CompilerSupplier", function () {
       // got accessed / ran ok.
       await waitSecond();
 
-      const { contracts } = await compile(version4PragmaSource, cachedOptions);
+      const compilations = await compile(version4PragmaSource, cachedOptions);
 
       finalAccessTime = (await fse.stat(expectedCache)).atime.getTime();
-      const NewPragma = findOne("NewPragma", contracts);
+      const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
       assert(NewPragma.contractName === "NewPragma", "Should have compiled");
 
@@ -174,17 +183,20 @@ describe("CompilerSupplier", function () {
       it("compiles with native solc", async function () {
         options.compilers = {
           solc: {
-            version: "native",
-          },
+            version: "native"
+          }
         };
 
         const nativeSolcOptions = Config.default().merge(options);
 
-        const { contracts } = await compile(
+        const compilations = await compile(
           versionLatestPragmaSource,
           nativeSolcOptions
         );
-        const VersionLatestPragma = findOne("Version7Pragma", contracts); //update when necessary
+        const VersionLatestPragma = findOne(
+          "Version7Pragma",
+          compilations[0].contracts
+        ); //update when necessary
         assert(VersionLatestPragma.compiler.version.includes("0.7.")); //update when necessary
         assert(
           VersionLatestPragma.contractName === "Version7Pragma", //update when necessary
@@ -196,19 +208,19 @@ describe("CompilerSupplier", function () {
         options.compilers = {
           solc: {
             version: "0.4.22",
-            docker: true,
-          },
+            docker: true
+          }
         };
 
         const dockerizedSolcOptions = Config.default().merge(options);
 
         const expectedVersion = "0.4.22+commit.4cb486ee.Linux.g++";
 
-        const { contracts } = await compile(
+        const compilations = await compile(
           version4PragmaSource,
           dockerizedSolcOptions
         );
-        const NewPragma = findOne("NewPragma", contracts);
+        const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
         assert(NewPragma.compiler.version === expectedVersion);
         assert(NewPragma.contractName === "NewPragma", "Should have compiled");
@@ -227,24 +239,27 @@ describe("CompilerSupplier", function () {
               settings: {
                 optimizer: {
                   enabled: false,
-                  runs: 200,
-                },
-              },
-            },
+                  runs: 200
+                }
+              }
+            }
           },
           quiet: true,
           solc: "",
           contracts_build_directory: path.join(__dirname, "./build"),
           contracts_directory: path.join(__dirname, "./sources/v0.4.x"),
           working_directory: __dirname,
-          paths: paths,
+          paths: paths
         };
 
         options.resolver = new Resolver(options);
         options = Config.default().merge(options);
 
-        const { contracts } = await compile.with_dependencies(options);
-        const ComplexOrdered = findOne("ComplexOrdered", contracts);
+        const compilations = await compile.with_dependencies(options);
+        const ComplexOrdered = findOne(
+          "ComplexOrdered",
+          compilations[0].contracts
+        );
 
         // This contract imports / inherits
         assert(
@@ -258,8 +273,8 @@ describe("CompilerSupplier", function () {
           solc: {
             version: undefined,
             docker: true,
-            settings: {},
-          },
+            settings: {}
+          }
         };
         compileConfig = Config.default().merge(options);
 
@@ -281,8 +296,8 @@ describe("CompilerSupplier", function () {
           solc: {
             version: imageName,
             docker: true,
-            settings: {},
-          },
+            settings: {}
+          }
         };
         compileConfig = Config.default().merge(options);
 

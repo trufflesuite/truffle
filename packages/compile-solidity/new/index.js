@@ -19,7 +19,7 @@ const { normalizeOptions } = require("../legacy/options");
 //   logger: console
 // }
 const compile = async function (sources, options) {
-  return await run(sources, normalizeOptions(options));
+  return [await run(sources, normalizeOptions(options))];
 };
 
 // contracts_directory: String. Directory where .sol files can be found.
