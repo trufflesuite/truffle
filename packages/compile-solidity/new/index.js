@@ -19,7 +19,8 @@ const { normalizeOptions } = require("../legacy/options");
 //   logger: console
 // }
 const compile = async function (sources, options) {
-  return [await run(sources, normalizeOptions(options))];
+  const compilation = await run(sources, normalizeOptions(options));
+  return compilation.contracts.length > 0 ? [compilation] : [];
 };
 
 // contracts_directory: String. Directory where .sol files can be found.
@@ -98,13 +99,15 @@ compile.with_dependencies = async function (options) {
   );
   const { name, version } = compiler;
   // returns CompilerResult - see @truffle/compile-common
-  return [
-    {
-      sourceIndexes,
-      contracts,
-      compiler: { name, version }
-    }
-  ];
+  return contracts.length > 0
+    ? [
+        {
+          sourceIndexes,
+          contracts,
+          compiler: { name, version }
+        }
+      ]
+    : [];
 };
 
 compile.display = function (paths, options) {
