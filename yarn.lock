@@ -6436,10 +6436,10 @@ ethpm-spec@^1.0.1:
   dependencies:
     json-schema-to-markdown "^1.0.3"
 
-ethpm@0.0.16:
-  version "0.0.16"
-  resolved "https://registry.yarnpkg.com/ethpm/-/ethpm-0.0.16.tgz#c06b3eb3d969180f4fb2a49700b178457f9b6c94"
-  integrity sha512-EF7LPaofPDRu7LenMn+Q64NQeH8RSowJqjcYtYTsNM7Rgs5I2/0m4OTiU0QVQqwYhAj7a1DFBZfKFBs7+eONlg==
+ethpm@0.0.17:
+  version "0.0.17"
+  resolved "https://registry.yarnpkg.com/ethpm/-/ethpm-0.0.17.tgz#1ab31ea4fd24d6087a95e04894a7536de55b3386"
+  integrity sha512-dSPeqrkzWbQXsa0c8i98HtyvcIfKOaksSRlbWtrMeUj+oCcNPVhGzJfhAExRVxLp6ZE6HTl8PAR/t0AyfANLHQ==
   dependencies:
     async "^2.1.2"
     ethpm-spec "^1.0.1"
@@ -6447,10 +6447,10 @@ ethpm@0.0.16:
     glob "^7.1.1"
     ipfs-mini "^1.1.2"
     jsonschema "^1.1.1"
-    lodash "^4.17.1"
+    lodash "^4.17.20"
     node-dir "^0.1.16"
     semver "^5.3.0"
-    wget-improved "^1.4.0"
+    wget-improved "^1.5.0"
 
 event-emitter@^0.3.5, event-emitter@~0.3.5:
   version "0.3.5"
@@ -10321,10 +10321,15 @@ lodash@4.17.14:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.14.tgz#9ce487ae66c96254fe20b599f21b6816028078ba"
   integrity sha512-mmKYbW3GLuJeX+iGP+Y7Gp1AiGHGbXHCOh/jZmrawMmsE7MS4znI3RL2FsjbqOyMayHInjOeykW7PEajUk1/xw==
 
-lodash@^4.1.0, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.17.1, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.2, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.0, lodash@^4.2.1, lodash@^4.3.0, lodash@^4.8.0:
+lodash@^4.1.0, lodash@^4.14.0, lodash@^4.15.0, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.2, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.0, lodash@^4.2.1, lodash@^4.3.0, lodash@^4.8.0:
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
   integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
+
+lodash@^4.17.20:
+  version "4.17.20"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.20.tgz#b44a9b6297bcb698f1c51a3545a2b3b368d59c52"
+  integrity sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==
 
 log-driver@^1.2.7:
   version "1.2.7"
@@ -16711,7 +16716,7 @@ websocket@1.0.29, "websocket@github:web3-js/WebSocket-Node#polyfill/globalThis":
     typedarray-to-buffer "^3.1.5"
     yaeti "^0.0.6"
 
-wget-improved@^1.4.0:
+wget-improved@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/wget-improved/-/wget-improved-1.5.0.tgz#fc9e89379f6eba72a5586ccc9d52f5580616f20f"
   integrity sha512-t+G+g9SQSy2h2+dg7h54r9adllfdI0fHHtshbl1V4jwIIBj1c10SmHwjP8vFx9fn1dr9QuF27uC7xoZr9YwEmg==
