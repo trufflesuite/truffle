@@ -51,7 +51,7 @@ describe("Contracts.compile", () => {
       await Contracts.save(config, contracts);
 
       assert(
-        compilations.solc.sourceIndexes[0] ===
+        compilations[0].sourceIndexes[0] ===
           join(
             `${process.cwd()}/${config.contracts_directory}/${contractName}.sol`
           )
