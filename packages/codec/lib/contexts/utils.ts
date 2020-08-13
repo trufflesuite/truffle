@@ -178,8 +178,7 @@ export function normalizeContexts(contexts: Contexts): Contexts {
     .filter(context => context.externalSolidity)
     .map(context => extractCborInfo(context.binary))
     .filter(
-      cborSegment =>
-        cborSegment !== undefined && isCborWithHash(cborSegment.cbor)
+      cborSegment => cborSegment !== null && isCborWithHash(cborSegment.cbor)
     );
   const cborRegexps = externalCborInfo.map(cborInfo => ({
     input: new RegExp(cborInfo.cborSegment, "g"), //hex string so no need for escape
