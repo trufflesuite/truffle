@@ -41,7 +41,7 @@ class DebugInterpreter {
     this.txHash = txHash;
     this.lastCommand = "n";
     this.enabledExpressions = new Set();
-    this.repl;
+    this.repl = null;
   }
 
   async setOrClearBreakpoint(args, setOrClear) {

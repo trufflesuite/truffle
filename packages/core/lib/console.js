@@ -46,6 +46,8 @@ class Console extends EventEmitter {
 
     this.command = new Command(tasks);
 
+    this.repl = null;
+
     this.interfaceAdapter = createInterfaceAdapter({
       provider: options.provider,
       networkType: options.networks[options.network].type
@@ -143,26 +145,12 @@ class Console extends EventEmitter {
         configNetworks[key] = JSON.stringify(options.networks[key]);
       }
 
-      //passing config options without the resolver, which could not be adequatey serialized
-      const configOptions = {
-        working_directory: options.working_directory,
-        contracts_directory: options.contracts_directory,
-        contracts_build_directory: options.contracts_build_directory,
-        migrations_directory: options.migrations_directory,
-        network: options.network,
-        networks: configNetworks,
-        network_id: options.network_id,
-        provider: options.provider,
-        build_directory: options.build_directory
-      };
-
       spawnSync(
         "node",
-        [args, inputStrings, JSON.stringify(configOptions)],
+        [args, inputStrings, JSON.stringify({ networks: configNetworks })],
         spawnOptions
       );
 
-      //this may not be the right place to re-provision; TO-DO: take a closer look
       try {
         this.provision();
       } catch (e) {
@@ -171,9 +159,11 @@ class Console extends EventEmitter {
     } catch (err) {
       callback(err);
     }
+    //want repl to exit when it receives an exit command
     this.repl.on("exit", () => {
       process.exit();
     });
+    //display prompt when child repl process is finished
     this.repl.displayPrompt();
   }
 
