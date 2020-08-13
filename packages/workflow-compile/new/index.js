@@ -52,9 +52,14 @@ async function compile(config) {
   );
 
   // collect results
-  //
-  const compilations = rawCompilations.reduce((a, compilations) => {
-    return a.concat(compilations);
+  // flatten the array and remove compilations without results
+  const compilations = rawCompilations.reduce((a, compilationGroup) => {
+    compilationGroup.forEach(compilation => {
+      if (compilation.contracts.length > 0) {
+        a = a.concat(compilation);
+      }
+    });
+    return a;
   }, []);
 
   const contracts = compilations.reduce((a, compilation) => {
