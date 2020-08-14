@@ -165,16 +165,13 @@ export function normalizeContexts(contexts: Contexts): Contexts {
 
   debug("immutables complete");
 
-  //one last step: if externalSolidity is set, we'll allow the CBOR to vary,
-  //aside from the length (note: ideally here we would *only* dot-out the
-  //metadata hash part of the CBOR, but, well, it's not worth the trouble
-  //to detect that; doing that could potentially get pretty involved)
-  //NOTE: this will cause a problem with Solidity versions 0.4.6 and earlier,
-  //but it's not worth the trouble to detect that either, because we really
-  //don't support Solidity versions that old
-  //note that the externalSolidity option should *only* be set for Solidity contracts!
+  //one last step: where there's CBOR with a metadata hash, we'll allow the
+  //CBOR to vary, aside from the length (note: ideally here we would *only*
+  //dot-out the metadata hash part of the CBOR, but, well, it's not worth the
+  //trouble to detect that; doing that could potentially get pretty involved)
+  //note that if the code isn't Solidity, that's fine -- we just won't get
+  //valid CBOR and will not end up adding to our list of regular expressions
   const externalCborInfo = Object.values(newContexts)
-    .filter(context => context.externalSolidity)
     .map(context => extractCborInfo(context.binary))
     .filter(
       cborSegment => cborSegment !== null && isCborWithHash(cborSegment.cbor)
@@ -183,14 +180,12 @@ export function normalizeContexts(contexts: Contexts): Contexts {
     input: new RegExp(cborInfo.cborSegment, "g"), //hex string so no need for escape
     output: "..".repeat(cborInfo.cborLength) + cborInfo.cborLengthHex
   }));
-  //HACK: we will replace *every* occurrence of *every* external CBOR occurring in
-  //*every* external Solidity context, in order to cover created contracts
-  //(including if there are multiple or recursive ones)
+  //HACK: we will replace *every* occurrence of *every* external CBOR occurring
+  //in *every* context, in order to cover created contracts (including if there
+  //are multiple or recursive ones)
   for (let context of Object.values(newContexts)) {
-    if (context.externalSolidity) {
-      for (let { input, output } of cborRegexps) {
-        context.binary = context.binary.replace(input, output);
-      }
+    for (let { input, output } of cborRegexps) {
+      context.binary = context.binary.replace(input, output);
     }
   }
 

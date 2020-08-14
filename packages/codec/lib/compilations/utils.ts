@@ -15,16 +15,14 @@ import { Compilation, Contract, Source } from "./types";
 
 export function shimCompilations(
   inputCompilations: CompilerCompilation[],
-  shimmedCompilationIdPrefix = "shimmedcompilation",
-  externalSolidity = false
+  shimmedCompilationIdPrefix = "shimmedcompilation"
 ): Compilation[] {
   return inputCompilations.map(
     ({ contracts, sourceIndexes }, compilationIndex) =>
       shimContracts(
         contracts,
         sourceIndexes,
-        `${shimmedCompilationIdPrefix}Number(${compilationIndex})`,
-        externalSolidity
+        `${shimmedCompilationIdPrefix}Number(${compilationIndex})`
       )
   );
 }
@@ -37,11 +35,10 @@ export function shimCompilations(
 export function shimArtifacts(
   artifacts: (Artifact | CompiledContract)[],
   files?: string[],
-  shimmedCompilationId: string = "shimmedcompilation",
-  externalSolidity: boolean = false
+  shimmedCompilationId = "shimmedcompilation"
 ): Compilation[] {
   return [
-    shimContracts(artifacts, files, shimmedCompilationId, externalSolidity)
+    shimContracts(artifacts, files, shimmedCompilationId)
   ];
 }
 
@@ -52,8 +49,7 @@ export function shimArtifacts(
 export function shimContracts(
   artifacts: (Artifact | CompiledContract)[],
   files?: string[],
-  shimmedCompilationId: string = "shimmedcompilation",
-  externalSolidity: boolean = false
+  shimmedCompilationId: string = "shimmedcompilation"
 ): Compilation {
   let contracts: Contract[] = [];
   let sources: Source[] = [];
@@ -171,8 +167,7 @@ export function shimContracts(
     unreliableSourceOrder,
     sources,
     contracts,
-    compiler,
-    externalSolidity
+    compiler
   };
 }
 
