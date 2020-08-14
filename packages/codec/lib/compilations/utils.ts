@@ -166,7 +166,7 @@ export function shimContracts(
     sources,
     contracts,
     compiler
-  }
+  };
 }
 
 function sourceIndexForAst(ast: Ast.AstNode): number | undefined {
