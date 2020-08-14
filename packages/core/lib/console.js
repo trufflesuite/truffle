@@ -60,13 +60,17 @@ class Console extends EventEmitter {
 
   start() {
     try {
-      this.interfaceAdapter.getAccounts().then(() => {
+      this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
         const abstractions = this.provision();
 
         this.repl = repl.start({
           prompt: "truffle(" + this.options.network + ")> ",
           eval: this.interpret.bind(this)
         });
+
+        this.repl.context.web3 = this.web3;
+        this.repl.context.interfaceAdapter = this.interfaceAdapter;
+        this.repl.context.accounts = fetchedAccounts;
 
         this.resetContractsInConsoleContext(abstractions);
       });
