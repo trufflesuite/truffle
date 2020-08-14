@@ -6436,10 +6436,10 @@ ethpm-spec@^1.0.1:
   dependencies:
     json-schema-to-markdown "^1.0.3"
 
-ethpm@0.0.17:
-  version "0.0.17"
-  resolved "https://registry.yarnpkg.com/ethpm/-/ethpm-0.0.17.tgz#1ab31ea4fd24d6087a95e04894a7536de55b3386"
-  integrity sha512-dSPeqrkzWbQXsa0c8i98HtyvcIfKOaksSRlbWtrMeUj+oCcNPVhGzJfhAExRVxLp6ZE6HTl8PAR/t0AyfANLHQ==
+ethpm@0.0.18:
+  version "0.0.18"
+  resolved "https://registry.yarnpkg.com/ethpm/-/ethpm-0.0.18.tgz#0978fd23aac98df8d435ef1cdfe625977f593c31"
+  integrity sha512-MXeDPx4GsT66RYUGaKTAlK+S3H0r34e59neydh14sxW0oWeitJ2Kj/5/0LYeNC5xaKM9ARdhTfRLygA7Fxzx6A==
   dependencies:
     async "^2.1.2"
     ethpm-spec "^1.0.1"
@@ -6450,7 +6450,7 @@ ethpm@0.0.17:
     lodash "^4.17.20"
     node-dir "^0.1.16"
     semver "^5.3.0"
-    wget-improved "^1.5.0"
+    wget-improved "^3.2.1"
 
 event-emitter@^0.3.5, event-emitter@~0.3.5:
   version "0.3.5"
@@ -10975,7 +10975,7 @@ minimist@1.2.0, minimist@^1.1.0, minimist@^1.1.1, minimist@^1.1.3, minimist@^1.2
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.0.tgz#a35008b20f41383eec1fb914f4cd5df79a264284"
   integrity sha1-o1AIsg9BOD7sH7kU9M1d95omQoQ=
 
-minimist@^1.2.5:
+minimist@1.2.5, minimist@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
@@ -15423,10 +15423,10 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-tunnel@0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/tunnel/-/tunnel-0.0.2.tgz#f23bcd8b7a7b8a864261b2084f66f93193396334"
-  integrity sha1-8jvNi3p7ioZCYbIIT2b5MZM5YzQ=
+tunnel@0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/tunnel/-/tunnel-0.0.6.tgz#72f1314b34a5b192db012324df2cc587ca47f92c"
+  integrity sha512-1h/Lnq9yajKY2PEbBadPXj3VxsDDu844OnaAo52UVmIzIvwwtBPIuNvkjuzBlTWpfJyUbG3ez0KSBibQkj4ojg==
 
 tweetnacl-util@^0.15.0:
   version "0.15.0"
@@ -16716,13 +16716,13 @@ websocket@1.0.29, "websocket@github:web3-js/WebSocket-Node#polyfill/globalThis":
     typedarray-to-buffer "^3.1.5"
     yaeti "^0.0.6"
 
-wget-improved@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/wget-improved/-/wget-improved-1.5.0.tgz#fc9e89379f6eba72a5586ccc9d52f5580616f20f"
-  integrity sha512-t+G+g9SQSy2h2+dg7h54r9adllfdI0fHHtshbl1V4jwIIBj1c10SmHwjP8vFx9fn1dr9QuF27uC7xoZr9YwEmg==
+wget-improved@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/wget-improved/-/wget-improved-3.2.1.tgz#b71cbca9a9196f46f85c7c3ea7e61aa6e957d90a"
+  integrity sha512-bZmRufYav/OFRdS8LerCbzP3b/L8tjRwqap6NhqcvEAfZrBMFwqjtFzbVk2gutEWdG78WKJgIn9yveI+ENQSlA==
   dependencies:
-    minimist "1.2.0"
-    tunnel "0.0.2"
+    minimist "1.2.5"
+    tunnel "0.0.6"
 
 whatwg-fetch@2.0.4:
   version "2.0.4"
