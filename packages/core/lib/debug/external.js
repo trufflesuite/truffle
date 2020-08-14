@@ -118,8 +118,7 @@ class DebugExternalHandler {
         const newCompilations = Codec.Compilations.Utils.shimArtifacts(
           contracts,
           files,
-          compilationId,
-          true //mark compilation as external Solidity
+          compilationId
         );
         //add it!
         await this.bugger.addExternalCompilations(newCompilations);
