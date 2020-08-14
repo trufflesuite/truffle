@@ -18,17 +18,19 @@ const SolidityTest = {
     suite.timeout(runner.BEFORE_TIMEOUT);
 
     // Set up our runner's needs first.
-    suite.beforeAll("prepare suite", async function() {
+    suite.beforeAll("prepare suite", async function () {
       // This compiles some native contracts (including the assertion library
       // contracts) which need to be compiled before initializing the runner
       await self.compileNewAbstractInterface.bind(this)(runner);
       await runner.initialize.bind(runner)();
-      await self.deployTestDependencies.bind(
-        this
-      )(abstraction, dependencyPaths, runner);
+      await self.deployTestDependencies.bind(this)(
+        abstraction,
+        dependencyPaths,
+        runner
+      );
     });
 
-    suite.beforeEach("before test", async function() {
+    suite.beforeEach("before test", async function () {
       await runner.startTest(this);
     });
 
@@ -99,7 +101,7 @@ const SolidityTest = {
       }
     }
 
-    suite.afterEach("after test", async function() {
+    suite.afterEach("after test", async function () {
       await runner.endTest(this);
     });
 
@@ -121,7 +123,7 @@ const SolidityTest = {
       SafeSend = "NewSafeSend.sol";
     }
 
-    const { contracts } = await compile.with_dependencies(
+    const compilations = await compile.with_dependencies(
       runner.config.with({
         paths: [
           path.join(__dirname, "Assert.sol"),
@@ -143,6 +145,9 @@ const SolidityTest = {
         quiet: true
       })
     );
+    const contracts = compilations.reduce((a, compilation) => {
+      return a.concat(compilation.contracts);
+    }, []);
 
     // Set network values.
     for (let contract of contracts) {
