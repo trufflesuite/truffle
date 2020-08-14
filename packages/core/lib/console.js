@@ -151,7 +151,11 @@ class Console extends EventEmitter {
 
       spawnSync(
         "node",
-        [args, inputStrings, JSON.stringify({ networks: configNetworks })],
+        [
+          args,
+          inputStrings,
+          JSON.stringify({ networks: configNetworks, network: options.network })
+        ],
         spawnOptions
       );
 
