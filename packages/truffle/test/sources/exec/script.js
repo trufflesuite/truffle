@@ -1,6 +1,6 @@
 const Executable = artifacts.require('Executable');
 
-const exec = function(){
+const exec = function () {
   Executable
     .new()
     .then(instance => instance.x())
