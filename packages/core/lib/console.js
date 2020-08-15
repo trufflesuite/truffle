@@ -133,11 +133,11 @@ class Console extends EventEmitter {
   }
 
   runSpawn(inputStrings, options, callback) {
-    let args;
+    let childPath;
     if (typeof BUNDLE_CONSOLE_CHILD_FILENAME !== "undefined") {
-      args = path.join(__dirname, BUNDLE_CONSOLE_CHILD_FILENAME);
+      childPath = path.join(__dirname, BUNDLE_CONSOLE_CHILD_FILENAME);
     } else {
-      args = path.join(__dirname, "../lib/console-child.js");
+      childPath = path.join(__dirname, "../lib/console-child.js");
     }
 
     const spawnOptions = { stdio: ["inherit", "inherit", "inherit"] };
@@ -151,11 +151,7 @@ class Console extends EventEmitter {
 
       spawnSync(
         "node",
-        [
-          args,
-          inputStrings,
-          JSON.stringify({ networks: configNetworks, network: options.network })
-        ],
+        [childPath, inputStrings, options.network],
         spawnOptions
       );
 
