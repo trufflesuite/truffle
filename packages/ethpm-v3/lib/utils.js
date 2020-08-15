@@ -54,24 +54,33 @@ async function getPublishableArtifacts(options, ethpm) {
     });
   }
 
-  // generate blockchainURI for each detected networkId
-  for (let networkId of Object.keys(detectedNetworkIdsToBlockchainUris)) {
-    let targetProvider;
-    for (let provider of Object.keys(options.networks)) {
-      if (
-        options.networks[provider].network_id == networkId &&
-        options.networks[provider].provider
-      ) {
-        targetProvider = pluckProviderFromConfig(options);
-      }
-    }
-
-    if (!targetProvider) {
+  const requiredNetworkIds = Object.keys(detectedNetworkIdsToBlockchainUris);
+  const availableNetworkIds = Object.keys(options.networks).map(n =>
+    options.networks[n].network_id.toString()
+  );
+  for (let networkId of requiredNetworkIds) {
+    if (!availableNetworkIds.includes(networkId)) {
       throw new TruffleError(
-        `Missing provider for network id: ${networkId}. Please make sure there is an available provider in your truffle-config`
+        `Detected a deployment for network id: ${networkId}, but missing a provider for this network. Please make sure there is an available provider for this network id in your truffle-config.`
       );
     }
+  }
 
+  // generate blockchainURI for each detected networkId
+  for (let networkId of requiredNetworkIds) {
+    let targetProvider;
+    for (let provider of Object.keys(options.networks)) {
+      if (options.networks[provider].network_id == networkId) {
+        // handle ganache provider from tests
+        if (
+          options.networks[provider].provider.constructor.name == "Function"
+        ) {
+          targetProvider = options.networks[provider].provider();
+        } else {
+          targetProvider = options.networks[provider].provider;
+        }
+      }
+    }
     const blockchainUri = await getBlockchainUriForProvider(targetProvider);
     detectedNetworkIdsToBlockchainUris[networkId] = blockchainUri;
   }
@@ -79,14 +88,12 @@ async function getPublishableArtifacts(options, ethpm) {
   // replace network ids with blockchain uri in detected artifacts
   for (let artifactPath of Object.keys(detectedArtifacts)) {
     var artifactDeployments = detectedArtifacts[artifactPath].networks;
-    if (Object.keys(artifactDeployments).length > 0) {
-      Object.keys(artifactDeployments).forEach(id => {
-        var matchingUri = detectedNetworkIdsToBlockchainUris[id];
-        artifactDeployments[matchingUri] = artifactDeployments[id];
-        delete artifactDeployments[id];
-      });
-      detectedArtifacts[artifactPath].networks = artifactDeployments;
-    }
+    var updatedDeployments = {};
+    Object.keys(artifactDeployments).forEach(id => {
+      var matchingUri = detectedNetworkIdsToBlockchainUris[id];
+      updatedDeployments[matchingUri] = artifactDeployments[id];
+    });
+    detectedArtifacts[artifactPath].networks = updatedDeployments;
   }
 
   const normalizedArtifacts = Object.keys(detectedArtifacts).map(
@@ -270,13 +277,25 @@ function pluckProviderFromConfig(config) {
   }
 }
 
+async function displayRegistryPermissions(options, ethpm) {
+  try {
+    const owner = await ethpm.registries.registry.methods.owner().call();
+    options.logger.log(`Registry controlled by account: ${owner}`);
+  } catch (err) {
+    options.logger.log(
+      `This registry does not appear to have permissioned releases. This means that anybody can publish a package to this registry. Please be very careful before installing and interacting with packages on this registry.`
+    );
+  }
+}
+
 module.exports = {
-  getPublishableArtifacts,
-  resolveEthpmUri,
-  resolveEnsName,
   convertContractTypeToContractSchema,
+  displayRegistryPermissions,
+  getPublishableArtifacts,
   fetchInstalledBuildDependencies,
   pluckProviderFromConfig,
+  resolveEthpmUri,
+  resolveEnsName,
   SUPPORTED_CHAIN_IDS,
   SUPPORTED_GENESIS_BLOCKS
 };

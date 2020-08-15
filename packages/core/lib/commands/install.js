@@ -13,7 +13,7 @@ const command = {
       },
       {
         option: "--alias",
-        description: "A different name under which to install this package."
+        description: "An alternate name under which to install this package."
       }
     ]
   },
@@ -31,7 +31,9 @@ const command = {
     }
     if (options._ && options._.length > 1) {
       done(
-        new Error(`Only one package identifier can be installed at a time.`)
+        new Error(
+          `Multiple package identifiers detected. Only one package can be installed at a time.`
+        )
       );
     }
     options.packageIdentifier = options._[0];

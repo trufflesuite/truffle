@@ -38,6 +38,8 @@ const PackageV3 = {
       );
     }
 
+    var provider = utils.pluckProviderFromConfig(options);
+
     let targetRegistry;
     if (!isAddress(options.ethpm.registry.address)) {
       targetRegistry = await utils.resolveEnsName(
@@ -48,8 +50,6 @@ const PackageV3 = {
     } else {
       targetRegistry = options.ethpm.registry.address;
     }
-
-    var provider = utils.pluckProviderFromConfig(options);
 
     // Create an ethpm instance
     let ethpm;
@@ -74,11 +74,16 @@ const PackageV3 = {
     options.logger.log(
       `Searching for packages published on registry located at: ${targetRegistry}`
     );
-    const owner = await ethpm.registries.registry.methods.owner().call();
-    options.logger.log(`Registry controlled by account: ${owner}`);
+
+    // display owner / warning about unauthorized registries
+    await utils.displayRegistryPermissions(options, ethpm);
 
     // Display all packages from connected registry
     const allPackages = await ethpm.registries.packages();
+    if (allPackages.length == 0) {
+      options.logger.log(`0 packages found on this registry.`);
+    }
+
     for (var i = 0; i < allPackages.length; i++) {
       const packageName = allPackages[i];
       const allReleases = await ethpm.registries
@@ -123,6 +128,7 @@ const PackageV3 = {
     options.logger.log(
       `! Please use caution when interacting with installed packages.\n! Only use packages that are published on trusted registries, or whose assets you've verified directly.`
     );
+
     options.logger.log("Fetching package manifest...");
     var targetNetwork = options.ethpm.registry.network;
     var targetNetworkId = options.networks[targetNetwork].network_id;
@@ -159,6 +165,9 @@ const PackageV3 = {
     } catch (err) {
       throw new TruffleError(`Unable to configure ethpm: ${err.message}`);
     }
+
+    // display owner / warning about unauthorized registries
+    await utils.displayRegistryPermissions(options, ethpm);
 
     let manifestUri;
     let targetPackageName;
@@ -242,11 +251,10 @@ const PackageV3 = {
         const allReleases = await ethpm.registries
           .package(targetPackageName)
           .releases();
-        try {
-          targetVersion = semver.maxSatisfying(Object.keys(allReleases), "*");
-        } catch (err) {
+        targetVersion = semver.maxSatisfying(Object.keys(allReleases), "*");
+        if (!targetVersion) {
           throw new TruffleError(
-            `Releases on active version do not look like semver. Please specify a version of the package you want to install.`
+            `Releases for specified package (${targetPackageName}) do not look like semver. Please specify the version of the package you want to install.`
           );
         }
       }
@@ -308,7 +316,6 @@ const PackageV3 = {
           if (deployment.contractType === contractType) {
             contractDeployments[networkId] = {
               address: deployment.address
-              // links && events
             };
           }
         }

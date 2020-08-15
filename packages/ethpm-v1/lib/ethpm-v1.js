@@ -12,6 +12,9 @@ const OS = require("os");
 
 const PackageV1 = {
   packages: async options => {
+    options.logger.log(
+      `ethpmV1 is deprecated. Please consider updating your packages to ethpmV3.`
+    );
     try {
       expect.options(options, [
         "ethpm",
@@ -65,6 +68,9 @@ const PackageV1 = {
   },
 
   install: async function (options, callback) {
+    options.logger.log(
+      `ethpmV1 is deprecated. Please consider updating your packages to ethpmV3.`
+    );
     const callbackPassed = typeof callback === "function";
     expect.options(options, ["working_directory", "ethpm"]);
 
@@ -167,6 +173,9 @@ const PackageV1 = {
   },
 
   publish: async function (options, callback) {
+    options.logger.log(
+      `ethpmV1 is deprecated. Please consider updating your packages to ethpmV3.`
+    );
     const callbackPassed = typeof callback === "function";
     var self = this;
 
