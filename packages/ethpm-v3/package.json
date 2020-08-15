@@ -8,18 +8,19 @@
   ],
   "homepage": "http://www.ethpm.com",
   "license": "MIT",
-  "main": "lib/ethpm-v3.js",
+  "main": "./lib/ethpm-v3.js",
   "scripts": {
     "test": "mocha ./tests/* --timeout 10000 --exit"
   },
   "dependencies": {
-    "ethpm": "0.1.0-next.26",
-    "ethpm-spec": "3.0.0",
-    "ethereum-ens": "0.8.0",
-    "semver": "7.3.2"
+    "@truffle/error": "^0.0.10",
+    "ethpm": "0.1.0-next.30",
+    "ethpm-spec": "^3.0.0",
+    "ethereum-ens": "^0.8.0",
+    "semver": "^7.3.2"
   },
   "devDependencies": {
-    "mocha": "8.0.1"
+    "mocha": "^8.0.1"
   },
   "directories": {
     "lib": "lib",

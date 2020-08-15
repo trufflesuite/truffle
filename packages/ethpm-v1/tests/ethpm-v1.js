@@ -4,7 +4,8 @@ var fs = require("fs-extra");
 var glob = require("glob");
 var path = require("path");
 var Contracts = require("@truffle/workflow-compile");
-var PackageV1 = require("../lib/package.js");
+var PackageV1 = require("../lib/ethpm-v1.js");
+var GithubExamples = require("ethpm/lib/indexes/github-examples");
 var Blockchain = require("@truffle/blockchain-utils");
 var Ganache = require("ganache-core");
 var Resolver = require("@truffle/resolver");
@@ -29,35 +30,24 @@ describe.skip("EthPM integration", function () {
     );
   }
 
-  beforeEach("Create a Ganache provider and get a blockchain uri", function (
-    done
-  ) {
+  beforeEach("Create a Ganache provider and get a blockchain uri", async () => {
     provider = Ganache.provider();
-
-    Blockchain.asURI(provider, function (err, uri) {
-      if (err) return done(err);
-      blockchain_uri = uri;
-      done();
-    });
+    blockchain_uri = await Blockchain.asURI(provider);
   });
 
   // Super slow doing these in a beforeEach, but it ensures nothing conflicts.
-  beforeEach("Create a sandbox", function (done) {
+  beforeEach("Create a sandbox", async () => {
     this.timeout(20000);
-    Box.sandbox(function (err, result) {
-      if (err) return done(err);
-      config = result;
-      config.resolver = new Resolver(config);
-      config.artifactor = new Artifactor(config.contracts_build_directory);
-      config.networks = {
-        development: {
-          network_id: blockchain_uri,
-          provider: provider
-        }
-      };
-      config.network = "development";
-      done();
-    });
+    config = await Box.sandbox("default");
+    config.resolver = new Resolver(config);
+    config.artifactor = new Artifactor(config.contracts_build_directory);
+    config.networks = {
+      development: {
+        network_id: blockchain_uri,
+        provider: provider
+      }
+    };
+    config.network = "development";
   });
 
   beforeEach("Create a fake EthPM host and memory registry", function (done) {
