@@ -6,6 +6,7 @@ const safeEval = require("safe-eval");
 
 const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
+const colors = require("colors");
 
 const selectors = require("@truffle/debugger").selectors;
 const {
@@ -63,6 +64,7 @@ class DebugPrinter {
 
   printSessionLoaded() {
     this.printAddressesAffected();
+    this.warnIfNoSteps();
     this.printHelp();
     debug("Help printed");
     this.printFile();
@@ -80,15 +82,25 @@ class DebugPrinter {
     const affectedInstances = this.session.view(session.info.affectedInstances);
 
     this.config.logger.log("");
-    this.config.logger.log("Addresses called: (not created)");
+    this.config.logger.log("Addresses affected:");
     this.config.logger.log(
       DebugUtils.formatAffectedInstances(affectedInstances)
     );
   }
 
-  printHelp() {
+  warnIfNoSteps() {
+    if (this.session.view(trace.steps).length === 0) {
+      this.config.logger.log(
+        `${colors.bold(
+          "Warning:"
+        )} this transaction has no trace steps. This may happen if you are attempting to debug a transaction sent to an externally-owned account, or if the node you are connecting to failed to produce a trace for some reason. Please check your configuration and try again.`
+      );
+    }
+  }
+
+  printHelp(lastCommand) {
     this.config.logger.log("");
-    this.config.logger.log(DebugUtils.formatHelp());
+    this.config.logger.log(DebugUtils.formatHelp(lastCommand));
   }
 
   printFile() {
@@ -276,7 +288,9 @@ class DebugPrinter {
                 ).toString();
                 this.config.logger.log(`Revert message: ${revertString}`);
                 this.config.logger.log(
-                  "Warning: This message contained invalid UTF-8."
+                  `${colors.bold(
+                    "Warning:"
+                  )} This message contained invalid UTF-8.`
                 );
                 break;
             }
@@ -354,14 +368,28 @@ class DebugPrinter {
       const contractKind = decoding.contractKind || "contract";
       if (decoding.address !== undefined) {
         this.config.logger.log(
-          `Returned bytecode for a ${contractKind} ${
-            decoding.class.typeName
-          } at ${decoding.address}.`
+          `Returned bytecode for a ${contractKind} ${decoding.class.typeName} at ${decoding.address}.`
         );
       } else {
         this.config.logger.log(
           `Returned bytecode for a ${contractKind} ${decoding.class.typeName}.`
         );
+      }
+      if (decoding.immutables && decoding.immutables.length > 0) {
+        this.config.logger.log("Immutable values:");
+        const prefixes = decoding.immutables.map(
+          ({ name, class: { typeName } }) => `${typeName}.${name}: `
+        );
+        const maxLength = Math.max(...prefixes.map(prefix => prefix.length));
+        const paddedPrefixes = prefixes.map(prefix =>
+          prefix.padStart(maxLength)
+        );
+        for (let index = 0; index < decoding.immutables.length; index++) {
+          const { value } = decoding.immutables[index];
+          const prefix = paddedPrefixes[index];
+          const formatted = DebugUtils.formatValue(value, maxLength);
+          this.config.logger.log(prefix + formatted);
+        }
       }
       this.config.logger.log("");
     } else if (decodings[0].kind === "revert") {
@@ -388,9 +416,8 @@ class DebugPrinter {
       } else {
         //case 10b: otherwise
         this.config.logger.log("Returned values:");
-        const prefixes = values.map(
-          ({ name }, index) =>
-            name ? `${name}: ` : `Component #${index + 1}: `
+        const prefixes = values.map(({ name }, index) =>
+          name ? `${name}: ` : `Component #${index + 1}: `
         );
         const maxLength = Math.max(...prefixes.map(prefix => prefix.length));
         const paddedPrefixes = prefixes.map(prefix =>

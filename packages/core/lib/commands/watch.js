@@ -10,7 +10,15 @@ const command = {
     usage: "truffle watch",
     options: []
   },
-  run: function(options) {
+  run: function (options) {
+    const OS = require("os");
+    const deprecationMessage = colors.yellow(
+      `> The watch command is planned ` +
+        `for deprecation in version 6 of Truffle.${OS.EOL}` +
+        `> See https://github.com/trufflesuite/truffle/issues/3227 for more ` +
+        `information.`
+    );
+    console.log(deprecationMessage);
     const Config = require("@truffle/config");
     const sane = require("sane");
     const path = require("path");
@@ -59,7 +67,7 @@ const build = config => {
 
   config.logger.log("Rebuilding...");
 
-  Build.build(config, function(error) {
+  Build.build(config, function (error) {
     printSummary(config, error);
   });
 };

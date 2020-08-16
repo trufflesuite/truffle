@@ -4,9 +4,11 @@ const debug = debugModule("debugger:data:selectors");
 import { createSelectorTree, createLeaf } from "reselect-tree";
 import jsonpointer from "json-pointer";
 import flatten from "lodash.flatten";
+import semver from "semver";
 
-import { stableKeccak256 } from "lib/helpers";
+import { stableKeccak256, makePath } from "lib/helpers";
 
+import trace from "lib/trace/selectors";
 import evm from "lib/evm/selectors";
 import solidity from "lib/solidity/selectors";
 
@@ -17,11 +19,22 @@ import * as Codec from "@truffle/codec";
  */
 const identity = x => x;
 
-function findAncestorOfType(node, types, scopes) {
-  //note: I'm not including any protection against null in this function.
-  //You are advised to include "SourceUnit" as a fallback type.
+function findAncestorOfType(node, types, scopes, pointer = null, root = null) {
+  //note: you may want to include "SourceUnit" as a fallback type when using
+  //this function for convenience.
+  //you only need to pass pointer and root if you want this function to work
+  //from Yul.  Otherwise you can omit those and you'll get null if you happen
+  //to be in Yul.
   while (node && !types.includes(node.nodeType)) {
-    node = scopes[scopes[node.id].parentId].definition;
+    if (node.id !== undefined) {
+      node = scopes[scopes[node.id].parentId].definition;
+    } else {
+      if (pointer === null || root === null) {
+        return null;
+      }
+      pointer = pointer.replace(/\/[^/]*$/, ""); //chop off end
+      node = jsonpointer.get(root, pointer);
+    }
   }
   return node;
 }
@@ -212,7 +225,7 @@ const data = createSelectorTree({
                   )
                   .filter(
                     variable =>
-                      inlined[compilationId][variable.id].definition
+                      inlined[compilationId][variable.astRef].definition
                         .visibility !== "private"
                     //filter out private variables from the base classes
                   )
@@ -224,7 +237,7 @@ const data = createSelectorTree({
                     //how to read.  they'll just clutter things up.
                     debug("variable %O", variable);
                     let definition =
-                      inlined[compilationId][variable.id].definition;
+                      inlined[compilationId][variable.astRef].definition;
                     return (
                       !definition.constant ||
                       Codec.Ast.Utils.isSimpleConstant(definition.value)
@@ -249,8 +262,8 @@ const data = createSelectorTree({
         Object.assign(
           {},
           ...Object.entries(scopes.byCompilationId).map(
-            ([compilationId, { byId: nodes }]) => ({
-              [compilationId]: nodes
+            ([compilationId, { byAstRef: nodes }]) => ({
+              [compilationId]: { ...nodes }
             })
           )
         )
@@ -652,6 +665,16 @@ const data = createSelectorTree({
     ),
 
     /**
+     * data.current.sourceId
+     */
+    sourceId: createLeaf([solidity.current.source], ({ id }) => id),
+
+    /**
+     * data.current.root
+     */
+    root: createLeaf([solidity.current.source], ({ ast }) => ast),
+
+    /**
      * data.current.scopes (namespace)
      */
     scopes: {
@@ -777,9 +800,26 @@ const data = createSelectorTree({
     compiler: createLeaf([evm.current.context], ({ compiler }) => compiler),
 
     /**
+     * data.current.bareLetsInYulAreHit
+     */
+    bareLetsInYulAreHit: createLeaf(
+      ["./compiler"],
+      compiler =>
+        compiler !== undefined && //if no compiler we'll assume the old way I guess??
+        semver.satisfies(compiler.version, ">=0.6.8", {
+          includePrerelease: true
+        })
+    ),
+
+    /**
      * data.current.node
      */
     node: createLeaf([solidity.current.node], identity),
+
+    /**
+     * data.current.pointer
+     */
+    pointer: createLeaf([solidity.current.pointer], identity),
 
     /**
      * data.current.scope
@@ -792,26 +832,32 @@ const data = createSelectorTree({
      * warning: may return null or similar, even though SourceUnit is included
      * as fallback
      */
-    contract: createLeaf(["./node", "./scopes/inlined"], (node, scopes) => {
-      const types = ["ContractDefinition", "SourceUnit"];
-      //SourceUnit included as fallback
-      return findAncestorOfType(node, types, scopes);
-    }),
+    contract: createLeaf(
+      ["./node", "./scopes/inlined", "./pointer", "./root"],
+      (node, scopes, pointer, root) => {
+        const types = ["ContractDefinition", "SourceUnit"];
+        //SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes, pointer, root);
+      }
+    ),
 
     /*
      * data.current.function
      * may be modifier rather than function!
      */
-    function: createLeaf(["./node", "./scopes/inlined"], (node, scopes) => {
-      const types = [
-        "FunctionDefinition",
-        "ModifierDefinition",
-        "ContractDefinition",
-        "SourceUnit"
-      ];
-      //SourceUnit included as fallback
-      return findAncestorOfType(node, types, scopes);
-    }),
+    function: createLeaf(
+      ["./node", "./scopes/inlined", "./pointer", "./root"],
+      (node, scopes, pointer, root) => {
+        const types = [
+          "FunctionDefinition",
+          "ModifierDefinition",
+          "ContractDefinition",
+          "SourceUnit"
+        ];
+        //SourceUnit included as fallback
+        return findAncestorOfType(node, types, scopes, pointer, root);
+      }
+    ),
 
     /*
      * data.current.inModifier
@@ -896,9 +942,13 @@ const data = createSelectorTree({
         if (
           isContextChange ||
           !node ||
+          node.id === undefined ||
           !next ||
+          next.id === undefined ||
           !invocation ||
-          !nextInvocation
+          invocation.id === undefined ||
+          !nextInvocation ||
+          nextInvocation.id === undefined
         ) {
           return false;
         }
@@ -966,7 +1016,7 @@ const data = createSelectorTree({
     modifierArgumentIndex: createLeaf(
       ["./scopes", "./node", "./modifierInvocation"],
       (scopes, node, invocation) => {
-        if (invocation.nodeType === "SourceUnit") {
+        if (!invocation || invocation.nodeType === "SourceUnit") {
           return undefined;
         }
 
@@ -974,7 +1024,7 @@ const data = createSelectorTree({
         let invocationPointer = scopes[invocation.id].pointer;
 
         //slice the invocation pointer off the beginning
-        let difference = pointer.replace(invocationPointer, "");
+        let difference = pointer.slice(invocationPointer.length);
         debug("difference %s", difference);
         let rawIndex = difference.match(/^\/arguments\/(\d+)/);
         //note that that \d+ is greedy
@@ -1010,31 +1060,52 @@ const data = createSelectorTree({
        * data.current.identifiers (selector)
        *
        * returns identifers and corresponding definition node ID or builtin name
-       * (object entries look like [name]: {astId: id} or like [name]: {builtin: name}
+       * (object entries look like [name]: {astRef: astRef}, [name]: {builtin: name})
        */
       _: createLeaf(
-        ["/current/scopes/inlined", "/current/node"],
+        [
+          "/current/scopes/inlined",
+          "/current/node",
+          "/current/pointer",
+          "/current/sourceId"
+        ],
 
-        (scopes, scope) => {
+        (scopes, scope, pointer, sourceId) => {
           let variables = {};
           if (scope !== undefined) {
-            let cur = scope.id;
+            let cur =
+              scope.id !== undefined ? scope.id : makePath(sourceId, pointer);
 
-            do {
+            while (cur !== null && scopes[cur]) {
               variables = Object.assign(
                 variables,
                 ...(scopes[cur].variables || [])
-                  .filter(v => v.name !== "") //exclude anonymous output params
-                  .filter(v => variables[v.name] == undefined)
-                  .map(v => ({ [v.name]: { astId: v.id } }))
+                  .filter(variable => variable.name !== "") //exclude anonymous output params
+                  .filter(variable => variables[variable.name] == undefined) //don't add shadowed vars
+                  .map(variable => ({
+                    [variable.name]: { astRef: variable.astRef }
+                  }))
               );
               //NOTE: because these assignments are processed in order, that means
               //that if a base class and derived class have variables with the same
               //name, the derived version will be processed later and therefore overwrite --
               //which is exactly what we want, so yay
 
-              cur = scopes[cur].parentId;
-            } while (cur != null);
+              if (scopes[cur].definition.nodeType === "YulFunctionDefinition") {
+                //Yul functions make the outside invisible
+                break;
+              }
+
+              if (scopes[cur].parentId !== undefined) {
+                cur = scopes[cur].parentId; //may be null!
+                //(undefined means we don't know what's up,
+                //null means there's nothing)
+              } else {
+                //in this case, cur must be a source-and-pointer, so we'll step
+                //up that way (skipping over any arrays)
+                cur = cur.replace(/\/[^/]*(\/\d+)?$/, "");
+              }
+            }
           }
 
           let builtins = {
@@ -1044,6 +1115,15 @@ const data = createSelectorTree({
             this: { builtin: "this" },
             now: { builtin: "now" }
           };
+
+          if (
+            scope &&
+            (scope.nodeType.startsWith("Yul") ||
+              scope.nodeType === "InlineAssembly")
+          ) {
+            //builtins aren't visible in Yul
+            return variables;
+          }
 
           return { ...variables, ...builtins };
         }
@@ -1062,11 +1142,12 @@ const data = createSelectorTree({
           (scopes, identifiers, thisDefinition) => {
             let variables = Object.assign(
               {},
-              ...Object.entries(identifiers).map(([identifier, { astId }]) => {
-                if (astId !== undefined) {
-                  //will be undefined for builtins
-                  let { definition } = scopes[astId];
+              ...Object.entries(identifiers).map(([identifier, variable]) => {
+                if (variable.astRef !== undefined) {
+                  let { definition } = scopes[variable.astRef];
                   return { [identifier]: definition };
+                  //there used to be separate code for Yul variables here,
+                  //but now that's handled in definitionToType
                 } else {
                   return {}; //skip over builtins; we'll handle those separately
                 }
@@ -1091,16 +1172,14 @@ const data = createSelectorTree({
          *
          * returns a spoofed definition for the this variable
          */
-        this: createLeaf(
-          ["/current/contract"],
-          contractNode =>
-            contractNode && contractNode.nodeType === "ContractDefinition"
-              ? spoofThisDefinition(
-                  contractNode.name,
-                  contractNode.id,
-                  contractNode.contractKind
-                )
-              : null
+        this: createLeaf(["/current/contract"], contractNode =>
+          contractNode && contractNode.nodeType === "ContractDefinition"
+            ? spoofThisDefinition(
+                contractNode.name,
+                contractNode.id,
+                contractNode.contractKind
+              )
+            : null
         )
       },
 
@@ -1132,53 +1211,51 @@ const data = createSelectorTree({
           Object.assign(
             {},
             ...Object.entries(identifiers).map(
-              ([identifier, { astId, builtin }]) => {
+              ([identifier, { astRef, builtin }]) => {
                 let id;
+                debug("astRef: %o", astRef);
+                debug("builtin: %s", builtin);
 
                 //is this an ordinary variable or a builtin?
-                if (astId !== undefined) {
+                if (astRef !== undefined) {
                   //if not a builtin, first check if it's a contract var
-                  debug("assignments: %O", assignments);
-                  debug("compilation: %s", compilationId);
-                  let matchIds = (
-                    (
-                      assignments.byCompilationId[compilationId] || {
-                        byAstId: {}
-                      }
-                    ).byAstId[astId] || []
-                  ).filter(
+                  let compilationAssignments =
+                    (assignments.byCompilationId[compilationId] || {})
+                      .byAstRef || {};
+                  id = (compilationAssignments[astRef] || []).find(
                     idHash => assignments.byId[idHash].address === address
                   );
-                  if (matchIds.length > 0) {
-                    id = matchIds[0]; //there should only be one!
-                  }
+                  debug("id after global: %s", id);
 
                   //if not contract, it's local, so identify by stackframe
                   if (id === undefined) {
                     //if we're in a modifier, include modifierDepth
                     if (inModifier) {
                       id = stableKeccak256({
-                        astId,
+                        astRef,
                         compilationId,
                         stackframe: currentDepth,
                         modifierDepth
                       });
                     } else {
                       id = stableKeccak256({
-                        astId,
+                        astRef,
                         compilationId,
                         stackframe: currentDepth
                       });
                     }
                   }
+                  debug("id after local: %s", id);
                 } else {
                   //otherwise, it's a builtin
                   //NOTE: for now we assume there is only one assignment per
                   //builtin, but this will change in the future
+                  debug("builtin: %s", builtin);
                   id = assignments.byBuiltin[builtin][0];
                 }
 
                 //if we still didn't find it, oh well
+                debug("id: %s", id);
 
                 let { ref } = assignments.byId[id] || {};
                 if (!ref) {
@@ -1274,6 +1351,11 @@ const data = createSelectorTree({
     node: createLeaf([solidity.next.node], identity),
 
     /**
+     * data.next.pointer
+     */
+    pointer: createLeaf([solidity.next.pointer], identity),
+
+    /**
      * data.next.modifierInvocation
      * Note: yes, I'm just repeating the code from data.current here but with
      * invalid added
@@ -1284,7 +1366,7 @@ const data = createSelectorTree({
         //don't attempt this at a context change!
         //(also don't attempt this if we can't find the node for whatever
         //reason)
-        if (invalid || !node) {
+        if (invalid) {
           return undefined;
         }
         const types = [
@@ -1337,6 +1419,31 @@ const data = createSelectorTree({
 
         step =>
           ((step || {}).stack || []).map(word => Codec.Conversion.toBytes(word))
+      )
+    }
+  },
+
+  /**
+   * data.nextOfSameDepth
+   */
+  nextOfSameDepth: {
+    /**
+     * data.nextOfSameDepth.state
+     * Yes, I'm just repeating the code for data.current.state.stack here but
+     * with an extra guard... *still* not worth the trouble to factor out
+     * HOWEVER, this one also returns null if there is no nextOfSameDepth
+     */
+    state: {
+      /**
+       * data.nextOfSameDepth.state.stack
+       */
+      stack: createLeaf(
+        [trace.nextOfSameDepth],
+
+        step =>
+          step
+            ? (step.stack || []).map(word => Codec.Conversion.toBytes(word))
+            : null
       )
     }
   }

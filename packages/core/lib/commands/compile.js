@@ -1,4 +1,6 @@
 const format = JSON.stringify;
+const path = require("path");
+const fse = require("fs-extra");
 
 const command = {
   command: "compile",
@@ -21,7 +23,8 @@ const command = {
     }
   },
   help: {
-    usage: "truffle compile [--list <filter>] [--all] [--network <name>]",
+    usage:
+      "truffle compile [--list <filter>] [--all] [--network <name>] [--quiet]",
     options: [
       {
         option: "--all",
@@ -44,10 +47,22 @@ const command = {
       {
         option: "--quiet",
         description: "Suppress all compilation output."
+      },
+      {
+        option: "--compiler <compiler-name>",
+        description:
+          "Specify a single compiler to use (e.g. `--compiler=solc`). Specify `none` to skip compilation."
+      },
+      {
+        option: "--save-intermediate <output-file>",
+        internal: true,
+        description:
+          "Save the raw compiler results into <output-file>, overwriting any existing content."
       }
     ]
   },
-  run: function(options, done) {
+  run: function (options, done) {
+    const TruffleError = require("@truffle/error");
     const Contracts = require("@truffle/workflow-compile/new");
     const Config = require("@truffle/config");
     const config = Config.detect(options);
@@ -58,14 +73,43 @@ const command = {
         .then(() => done())
         .catch(done);
     } else {
+      if (
+        options.saveIntermediate === true ||
+        (typeof options.saveIntermediate === "string" &&
+          options.saveIntermediate.trim() === "")
+      ) {
+        // user asked to save the intermediate compilation results
+        // but didn't provide the file to save the results to
+        return done(
+          new TruffleError(
+            "You must provide a file to save compilation results to."
+          )
+        );
+      }
+
       Contracts.compile(config)
-        .then(({ contracts }) => Contracts.save(config, contracts))
+        .then(async compilationOutput => {
+          if (options.saveIntermediate) {
+            // Get the filename the user provided to save the compilation results to
+            const compilationOutputFile = path.resolve(
+              options.saveIntermediate
+            );
+
+            await fse.writeFile(
+              compilationOutputFile,
+              JSON.stringify(compilationOutput),
+              { encoding: "utf8" }
+            );
+          }
+
+          return Contracts.save(config, compilationOutput.contracts);
+        })
         .then(() => done())
         .catch(done);
     }
   },
 
-  listVersions: async function(options) {
+  listVersions: async function (options) {
     const { CompilerSupplier } = require("@truffle/compile-solidity");
     const supplier = new CompilerSupplier({
       solcConfig: options.compilers.solc,
@@ -91,7 +135,7 @@ const command = {
     return;
   },
 
-  shortener: function(key, val) {
+  shortener: function (key, val) {
     const defaultLength = 10;
 
     if (Array.isArray(val) && val.length > defaultLength) {

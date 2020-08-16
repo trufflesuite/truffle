@@ -11,10 +11,12 @@ export function scope(id, pointer, parentId, sourceId, compilationId) {
 }
 
 export const DECLARE = "DATA_DECLARE_VARIABLE";
-export function declare(node, compilationId) {
+export function declare(name, astRef, scopeAstRef, compilationId) {
   return {
     type: DECLARE,
-    node,
+    name,
+    astRef,
+    scopeAstRef,
     compilationId
   };
 }

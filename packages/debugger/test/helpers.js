@@ -26,7 +26,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 
   config.compilers = {
     solc: {
-      version: "0.6.6",
+      version: "0.6.11",
       settings: {
         optimizer: { enabled: false, runs: 200 },
         evmVersion: "constantinople"
@@ -46,7 +46,10 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   await migrate(config);
 
   let artifacts = await gatherArtifacts(config);
-  debug("artifacts: %o", artifacts.map(a => a.contractName));
+  debug(
+    "artifacts: %o",
+    artifacts.map(a => a.contractName)
+  );
 
   let abstractions = {};
   for (let name of contractNames) {
@@ -65,8 +68,8 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 
 export function getAccounts(provider) {
   let web3 = new Web3(provider);
-  return new Promise(function(accept, reject) {
-    web3.eth.getAccounts(function(err, accounts) {
+  return new Promise(function (accept, reject) {
+    web3.eth.getAccounts(function (err, accounts) {
       if (err) return reject(err);
       accept(accounts);
     });
@@ -139,13 +142,13 @@ export async function defaultMigrations(contractNames) {
 }
 
 export async function compile(config) {
-  return new Promise(function(accept, reject) {
+  return new Promise(function (accept, reject) {
     Contracts.compile(
       config.with({
         all: true,
         quiet: true
       }),
-      function(err, result) {
+      function (err, result) {
         if (err) return reject(err);
         const { contracts, outputs } = result;
         debug("result %O", result);
@@ -156,12 +159,12 @@ export async function compile(config) {
 }
 
 export async function migrate(config) {
-  return new Promise(function(accept, reject) {
+  return new Promise(function (accept, reject) {
     Migrate.run(
       config.with({
         quiet: true
       }),
-      function(err, contracts) {
+      function (err, contracts) {
         if (err) return reject(err);
         accept(contracts);
       }

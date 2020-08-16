@@ -6,7 +6,7 @@ import { combineReducers } from "redux";
 import * as actions from "./actions";
 
 import * as Codec from "@truffle/codec";
-import { makeAssignment } from "lib/helpers";
+import { makeAssignment, makePath } from "lib/helpers";
 
 const DEFAULT_SCOPES = {
   byCompilationId: {}
@@ -19,9 +19,12 @@ function scopes(state = DEFAULT_SCOPES, action) {
 
   switch (action.type) {
     case actions.SCOPE: {
-      let { compilationId, id, sourceId, parentId, pointer } = action;
-
-      debug("action: %O", action);
+      const { compilationId, id, sourceId, parentId, pointer } = action;
+      const astRef = id !== undefined ? id : makePath(sourceId, pointer);
+      //astRef is used throughout the data saga.
+      //it identifies an AST node within a given compilation either by:
+      //1. its ast ID, if it has one, or
+      //2. a combination of its source index and its JSON pointer if not
 
       newState = {
         byCompilationId: {
@@ -35,48 +38,50 @@ function scopes(state = DEFAULT_SCOPES, action) {
       //apologies for this multi-stage setup, but JS is like that...
 
       newState.byCompilationId[compilationId] = {
-        byId: {
-          ...newState.byCompilationId[compilationId].byId
+        ...newState.byCompilationId[compilationId],
+        byAstRef: {
+          ...newState.byCompilationId[compilationId].byAstRef
         }
       };
 
-      scope = newState.byCompilationId[compilationId].byId[id];
+      scope = newState.byCompilationId[compilationId].byAstRef[astRef];
 
-      newState.byCompilationId[compilationId].byId[id] = {
+      newState.byCompilationId[compilationId].byAstRef[astRef] = {
         ...scope,
         id,
         sourceId,
-        parentId,
+        parentId, //may be null or undefined
         pointer,
         compilationId
       };
 
       return newState;
     }
+
     case actions.DECLARE: {
-      let { compilationId, node } = action;
+      let { compilationId, name, astRef, scopeAstRef } = action;
 
       //note: we can assume the compilation already exists!
-      scope =
-        state.byCompilationId[compilationId].byId[action.node.scope] || {};
+      scope = state.byCompilationId[compilationId].byAstRef[scopeAstRef] || {};
       variables = scope.variables || [];
 
       return {
         byCompilationId: {
           ...state.byCompilationId,
           [compilationId]: {
-            byId: {
-              ...state.byCompilationId[compilationId].byId,
+            ...state.byCompilationId[compilationId],
+            byAstRef: {
+              ...state.byCompilationId[compilationId].byAstRef,
 
-              [node.scope]: {
+              [scopeAstRef]: {
                 ...scope,
 
                 variables: [
                   ...variables,
 
                   {
-                    name: node.name,
-                    id: node.id,
+                    name,
+                    astRef,
                     compilationId
                   }
                 ]
@@ -86,6 +91,7 @@ function scopes(state = DEFAULT_SCOPES, action) {
         }
       };
     }
+
     default:
       return state;
   }
@@ -166,7 +172,7 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
       debug("action.type %O", action.type);
       debug("action.assignments %O", action.assignments);
       return Object.values(action.assignments).reduce((acc, assignment) => {
-        let { id, astId, compilationId } = assignment;
+        let { id, astRef, compilationId } = assignment;
         //we assume for now that only ordinary variables will be assigned this
         //way, and not globals; globals are handled in DEFAULT_ASSIGNMENTS
         return {
@@ -178,12 +184,13 @@ function assignments(state = DEFAULT_ASSIGNMENTS, action) {
           byCompilationId: {
             ...acc.byCompilationId,
             [compilationId]: {
-              byAstId: {
-                ...(acc.byCompilationId[compilationId] || {}).byAstId,
-                [astId]: [
+              ...acc.byCompilationId[compilationId],
+              byAstRef: {
+                ...(acc.byCompilationId[compilationId] || {}).byAstRef,
+                [astRef]: [
                   ...new Set([
-                    ...((acc.byCompilationId[compilationId] || { byAstId: {} })
-                      .byAstId[astId] || []),
+                    ...(((acc.byCompilationId[compilationId] || {}).byAstRef ||
+                      {})[astRef] || []),
                     id
                   ])
                 ]

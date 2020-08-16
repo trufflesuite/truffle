@@ -19,9 +19,15 @@ const session = createSelectorTree({
   info: {
     /**
      * session.info.affectedInstances
+     * NOTE: this really belongs in session.transaction,
+     * but that would be a breaking change
      */
     affectedInstances: createLeaf(
-      [evm.current.codex.instances, evm.info.contexts, solidity.info.sources],
+      [
+        evm.transaction.affectedInstances,
+        evm.info.contexts,
+        solidity.info.sources
+      ],
 
       (instances, contexts, sources) =>
         Object.assign(
@@ -35,6 +41,10 @@ const session = createSelectorTree({
                 return { [address]: { binary } };
               }
               let { contractName, compilationId, primarySource } = context;
+
+              debug("primarySource: %o", primarySource);
+              debug("compilationId: %s", compilationId);
+              debug("sources: %o", sources);
 
               let source =
                 primarySource !== undefined
@@ -125,7 +135,12 @@ const session = createSelectorTree({
     /*
      * session.status.loaded
      */
-    loaded: createLeaf([trace.loaded], loaded => loaded)
+    loaded: createLeaf([trace.loaded], loaded => loaded),
+
+    /**
+     * session.status.lightMode
+     */
+    lightMode: createLeaf(["/state"], state => state.lightMode)
   }
 });
 

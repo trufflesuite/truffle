@@ -12,7 +12,7 @@ var command = {
     ]
   },
   builder: {},
-  run: function(options, callback) {
+  run: function (options, callback) {
     var commands = require("./index");
     if (options._.length === 0) {
       this.displayCommandHelp("help");
@@ -34,7 +34,7 @@ var command = {
       return callback();
     }
   },
-  displayCommandHelp: function(selectedCommand, subCommand) {
+  displayCommandHelp: function (selectedCommand, subCommand) {
     let commands = require("./index");
     let commandHelp, commandDescription;
 
@@ -53,10 +53,14 @@ var command = {
 
     if (commandHelp.options.length > 0) {
       console.log(`  Options: `);
-      commandHelp.options.forEach(option => {
+      for (const option of commandHelp.options) {
+        if (option.internal) {
+          continue;
+        }
+
         console.log(`                ${option.option}`);
         console.log(`                    ${option.description}`);
-      });
+      }
     }
     console.log("");
   }

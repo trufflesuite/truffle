@@ -59,11 +59,6 @@ interface StorageAllocationInfo {
   allocations: StorageAllocations;
 }
 
-interface DefinitionPair {
-  definition: Ast.AstNode;
-  definedIn?: Ast.AstNode;
-}
-
 //contracts contains only the contracts to be allocated; any base classes not
 //being allocated should just be in referenceDeclarations
 export function getStorageAllocations(
@@ -417,8 +412,8 @@ function allocateContractState(
     let arrayToGrabFrom = isConstant(variable.definition)
       ? constantVariableAllocations
       : isImmutable(variable.definition)
-        ? immutableVariableAllocations
-        : storageVariableAllocations;
+      ? immutableVariableAllocations
+      : storageVariableAllocations;
     contractAllocation.push(arrayToGrabFrom.shift()); //note that push and shift both modify!
   }
 

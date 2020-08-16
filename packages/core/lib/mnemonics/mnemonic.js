@@ -2,14 +2,15 @@
  * @module mnemonic;
  * @requires module:@truffle/config
  * @requires module:seedrandom
- * @requires module:bip39
+ * @requires module:ethereum-cryptography
  * @requires module:ethereumjs-wallet/hdkey
  * @requires module:crypto
  */
 
 const Config = require("@truffle/config");
 const defaultUserConfig = Config.getUserConfig();
-const bip39 = require("bip39");
+const bip39 = require("ethereum-cryptography/bip39");
+const { wordlist } = require("ethereum-cryptography/bip39/wordlists/english");
 const hdkey = require("ethereumjs-wallet/hdkey");
 const crypto = require("crypto");
 
@@ -18,13 +19,11 @@ const mnemonic = {
    * gets user-level mnemonic from user config, and if missing generates a new mnemonic
    * @returns {String} mnemonic
    */
-  getOrGenerateMnemonic: function() {
+  getOrGenerateMnemonic: function () {
     let mnemonic;
     const userMnemonicExists = defaultUserConfig.get("mnemonic");
     if (!userMnemonicExists) {
-      mnemonic = bip39.entropyToMnemonic(
-        crypto.randomBytes(16).toString("hex")
-      );
+      mnemonic = bip39.entropyToMnemonic(crypto.randomBytes(16), wordlist);
       defaultUserConfig.set({ mnemonic: mnemonic });
     } else {
       mnemonic = userMnemonicExists;
@@ -38,12 +37,12 @@ const mnemonic = {
    * @param {String}
    * @returns {Object} mnemonicObject
    */
-  getAccountsInfo: function(numAddresses) {
+  getAccountsInfo: function (numAddresses) {
     let mnemonic = this.getOrGenerateMnemonic();
     let accounts = [];
     let privateKeys = [];
 
-    let hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(mnemonic));
+    let hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeedSync(mnemonic));
     let addressIndex = 0;
     let walletHdpath = "m/44'/60'/0'/0/";
 

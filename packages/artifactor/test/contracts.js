@@ -2,7 +2,6 @@ const assert = require("chai").assert;
 const Artifactor = require("../");
 const contract = require("@truffle/contract");
 const Schema = require("@truffle/contract-schema");
-const temp = require("temp").track();
 const path = require("path");
 const fs = require("fs");
 const Config = require("@truffle/config");
@@ -11,6 +10,8 @@ const Compile = require("@truffle/compile-solidity/legacy");
 const Ganache = require("ganache-core");
 const Web3 = require("web3");
 const { promisify } = require("util");
+const tmp = require("tmp");
+tmp.setGracefulCleanup();
 
 describe("artifactor + require", () => {
   let Example, accounts, abi, bytecode, networkID, artifactor, config;
@@ -20,7 +21,7 @@ describe("artifactor + require", () => {
 
   before(() => web3.eth.net.getId().then(id => (networkID = id)));
 
-  before(async function() {
+  before(async function () {
     this.timeout(20000);
 
     const sourcePath = path.join(__dirname, "Example.sol");
@@ -65,14 +66,14 @@ describe("artifactor + require", () => {
     bytecode = compiled.bytecode;
 
     // Setup
-    const dirPath = temp.mkdirSync({
-      dir: path.resolve("./"),
+    const tempDir = tmp.dirSync({
+      unsafeCleanup: true,
       prefix: "tmp-test-contract-"
     });
 
-    const expectedFilepath = path.join(dirPath, "Example.json");
+    const expectedFilepath = path.join(tempDir.name, "Example.json");
 
-    artifactor = new Artifactor(dirPath);
+    artifactor = new Artifactor(tempDir.name);
 
     await artifactor
       .save({
@@ -101,11 +102,6 @@ describe("artifactor + require", () => {
       });
     })
   );
-
-  after(done => {
-    temp.cleanupSync();
-    done();
-  });
 
   it("should set the transaction hash of contract instantiation", () =>
     Example.new(1, { gas: 3141592 }).then(({ transactionHash }) => {

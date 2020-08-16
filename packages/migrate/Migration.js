@@ -7,7 +7,7 @@ const {
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 
-const ResolverIntercept = require("./resolverintercept");
+const ResolverIntercept = require("./ResolverIntercept");
 
 class Migration {
   constructor(file, reporter, config) {
@@ -45,9 +45,7 @@ class Migration {
     const unRunnable = !fn || !fn.length || fn.length == 0;
 
     if (unRunnable) {
-      const msg = `Migration ${
-        this.file
-      } invalid or does not take any parameters`;
+      const msg = `Migration ${this.file} invalid or does not take any parameters`;
       throw new Error(msg);
     }
 
@@ -78,8 +76,14 @@ class Migration {
       // Migrate without saving
       if (options.save === false) return;
 
-      // Write migrations record to chain
-      const Migrations = resolver.require("Migrations");
+      let Migrations;
+
+      // Attempt to write migrations record to chain
+      try {
+        Migrations = resolver.require("Migrations");
+      } catch (error) {
+        // do nothing, Migrations contract optional
+      }
 
       if (Migrations && Migrations.isDeployed()) {
         const message = `Saving migration to chain.`;

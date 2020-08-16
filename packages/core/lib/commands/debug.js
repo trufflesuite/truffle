@@ -1,31 +1,38 @@
 const command = {
   command: "debug",
-  description:
-    "Interactively debug any transaction on the blockchain (experimental)",
+  description: "Interactively debug any transaction on the blockchain",
   builder: {
-    _: {
+    "_": {
       type: "string"
     },
-    network: {
-      describe: "Network to connect to",
-      type: "string",
-      default: "development"
+    "fetch-external": {
+      describe: "Allow debugging of external contracts",
+      alias: "x",
+      type: "boolean",
+      default: false
     }
   },
   help: {
-    usage: "truffle debug [--network <network>] [<transaction_hash>]",
+    usage:
+      "truffle debug [--network <network>] [--fetch-external] [<transaction_hash>]",
     options: [
       {
         option: "--network",
-        description: "Network to connect to.  Default: development"
+        description: "Network to connect to."
+      },
+      {
+        option: "--fetch-external",
+        description:
+          "Allows debugging of external contracts with verified sources.  Alias: -x"
       },
       {
         option: "<transaction_hash>",
-        description: "Transaction ID to use for debugging."
+        description:
+          "Transaction ID to use for debugging.  Mandatory if --fetch-external is passed."
       }
     ]
   },
-  run: function(options, done) {
+  run: function (options, done) {
     const debugModule = require("debug");
     const debug = debugModule("lib:commands:debug");
 
@@ -40,7 +47,12 @@ const command = {
         await Environment.detect(config);
 
         const txHash = config._[0]; //may be undefined
-        return await new CLIDebugger(config).run(txHash);
+        if (config.fetchExternal && txHash === undefined) {
+          throw new Error(
+            "Fetch-external mode requires a specific transaction to debug"
+          );
+        }
+        return await new CLIDebugger(config, { txHash }).run();
       })
       .then(interpreter => interpreter.start(done))
       .catch(done);

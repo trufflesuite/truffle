@@ -20,9 +20,10 @@ function generateReport(callstack, location, status, message) {
   locations.shift();
   locations.push(location);
   debug("locations: %O", locations);
-  const names = callstack.map(({ functionName, contractName }) => ({
+  const names = callstack.map(({ functionName, contractName, address }) => ({
     functionName,
-    contractName
+    contractName,
+    address
   }));
   debug("names: %O", names);
   let report = zipWith(locations, names, (location, nameInfo) => ({
@@ -179,6 +180,44 @@ let stacktrace = createSelectorTree({
      * stacktrace.current.returnStatus
      */
     returnStatus: createLeaf([evm.current.step.returnStatus], identity),
+
+    /**
+     * stacktrace.current.address
+     * Initial call can't be a delegate, so we just use the storage address
+     * (thus allowing us to handle both calls & creates in one)
+     */
+    address: createLeaf([evm.current.call], call => call.storageAddress),
+
+    /**
+     * stacktrace.current.callAddress
+     *
+     * Covers both calls and creates
+     * NOTE: for this selector, we treat delegates just like any other call!
+     * we want to report the *code* address here, not the storage address
+     * (exception: for creates we report the storage address, as that's where
+     * the code *will* live)
+     */
+    callAddress: createLeaf(
+      [
+        evm.current.step.isCall,
+        evm.current.step.isCreate,
+        evm.current.step.callAddress,
+        evm.current.step.createdAddress
+      ],
+      (isCall, isCreate, callAddress, createdAddress) => {
+        if (isCall) {
+          return callAddress;
+        } else if (isCreate) {
+          if (createdAddress !== Codec.Evm.Utils.ZERO_ADDRESS) {
+            return createdAddress;
+          } else {
+            return undefined; //if created address appears to be 0, omit it
+          }
+        } else {
+          return null; //I guess??
+        }
+      }
+    ),
 
     /**
      * stacktrace.current.revertString

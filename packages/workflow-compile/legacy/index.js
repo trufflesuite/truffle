@@ -40,7 +40,7 @@ const Contracts = {
   // network_id: network id to link saved contract artifacts.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-  compile: async function(options, callback) {
+  compile: async function (options, callback) {
     const callbackPassed = typeof callback === "function";
     try {
       const config = prepareConfig(options);
@@ -80,7 +80,13 @@ const Contracts = {
     }
   },
 
-  compileSources: async function(config, compilers) {
+  compileSources: async function (config, compilers) {
+    compilers = config.compiler
+      ? config.compiler === "none"
+        ? []
+        : [config.compiler]
+      : Object.keys(config.compilers);
+
     return Promise.all(
       compilers.map(async compiler => {
         const compile = SUPPORTED_COMPILERS[compiler];

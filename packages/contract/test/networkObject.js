@@ -1,14 +1,11 @@
 var assert = require("chai").assert;
-var temp = require("temp").track();
 var util = require("./util");
 
-describe("Network Object [ @geth ]", function() {
+describe("Network Object [ @geth ]", function () {
   var Example;
   var network_id;
 
-  after(() => temp.cleanupSync());
-
-  it("errors when setting an invalid provider", function(done) {
+  it("errors when setting an invalid provider", function (done) {
     try {
       Example.setProvider(null);
       assert.fail("setProvider() should have thrown an error");
@@ -18,7 +15,7 @@ describe("Network Object [ @geth ]", function() {
     done();
   });
 
-  it("creates a network object when an address is set if no network specified", async function() {
+  it("creates a network object when an address is set if no network specified", async function () {
     var NewExample = await util.createExample();
 
     const result = await util.setUpProvider(NewExample);

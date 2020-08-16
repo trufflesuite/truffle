@@ -1,6 +1,6 @@
 const assert = require("assert");
 const Config = require("@truffle/config");
-const Migration = require("../migration");
+const Migration = require("../Migration");
 const sinon = require("sinon");
 let options,
   prepareForMigrationsReturn,

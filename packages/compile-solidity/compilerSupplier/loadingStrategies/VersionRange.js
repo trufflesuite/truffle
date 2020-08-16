@@ -62,10 +62,6 @@ class VersionRange extends LoadingStrategy {
     });
   }
 
-  getCommitFromVersion(versionString) {
-    return "commit." + versionString.match(/commit\.(.*?)\./)[1];
-  }
-
   getMostRecentVersionOfCompiler(versions) {
     return versions.reduce((mostRecentVersionFileName, fileName) => {
       const match = fileName.match(/v\d+\.\d+\.\d+.*/);

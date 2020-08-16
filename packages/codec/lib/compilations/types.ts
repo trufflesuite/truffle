@@ -41,6 +41,13 @@ export interface Compilation {
    * specified on each source and contract, but please don't actually do that.
    */
   compiler?: Compiler.CompilerVersion;
+  /**
+   * A flag intended for internal use to indicate that this compilation is not
+   * part of the user's Truffle project but rather is compiled from
+   * temporarily-downloaded external Solidity sources.  Again, this should only
+   * be used for Solidity compilations; it may cause irregularities otherwise.
+   */
+  externalSolidity?: boolean;
 }
 
 /**

@@ -7,9 +7,14 @@ import {
   Compilations,
   Contexts,
   CalldataDecoding,
-  LogDecoding
+  LogDecoding,
+  StateVariable
 } from "@truffle/codec";
 import Web3 from "web3";
+
+//this used to be defined here, so let's continue
+//to export it
+export { StateVariable };
 
 /**
  * This type represents information about a Truffle project that can be used to
@@ -69,27 +74,6 @@ export interface ContractState {
    * The contract's code, as a hexidecimal string.
    */
   code: string;
-}
-
-/**
- * This type represents one of the decoded contract's state variables.
- * @category Results
- */
-export interface StateVariable {
-  /**
-   * The name of the variable.  Note that due to inheritance, this may not be unique.
-   */
-  name: string;
-  /**
-   * The class of the contract that defined the variable, as a Format.Types.ContractType.
-   * Note that this class may differ from that of the contract being decoded, due
-   * to inheritance.
-   */
-  class: Format.Types.ContractType;
-  /**
-   * The decoded value of the variable.  Note this is a Format.Values.Result, so it may be an error.
-   */
-  value: Format.Values.Result;
 }
 
 /**

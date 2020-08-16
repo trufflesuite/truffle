@@ -3,7 +3,12 @@ import stringify from "json-stable-stringify";
 
 /** AST node types that are skipped by stepNext() to filter out some noise */
 export function isDeliberatelySkippedNodeType(node) {
-  const skippedTypes = ["ContractDefinition", "VariableDeclaration"];
+  const skippedTypes = [
+    "ContractDefinition",
+    "VariableDeclaration",
+    "YulVariableDeclaration",
+    "YulBlock"
+  ];
   return skippedTypes.includes(node.nodeType);
 }
 
@@ -11,7 +16,13 @@ export function isDeliberatelySkippedNodeType(node) {
 //these aren't the only types of skipped nodes, but determining all skipped
 //nodes would be too difficult
 export function isSkippedNodeType(node) {
-  const otherSkippedTypes = ["VariableDeclarationStatement", "Mapping"];
+  const otherSkippedTypes = [
+    "VariableDeclarationStatement",
+    "Mapping",
+    "Block",
+    "InlineAssembly", //definitely do *not* add to deliberately skipped!
+    "YulTypedName"
+  ];
   return (
     isDeliberatelySkippedNodeType(node) ||
     otherSkippedTypes.includes(node.nodeType) ||
@@ -29,6 +40,10 @@ export function prefixName(prefix, fn) {
   });
 
   return fn;
+}
+
+export function makePath(sourceId, pointer) {
+  return `${sourceId}:${pointer}`;
 }
 
 /**
@@ -54,7 +69,10 @@ export function popNWhere(array, numToRemove, predicate) {
  * @return 0x-prefix string of keccak256 hash
  */
 export function keccak256(...args) {
-  return Codec.Conversion.toHexString(Codec.Evm.Utils.keccak256(...args));
+  return Codec.Conversion.toHexString(
+    Codec.Evm.Utils.keccak256(...args),
+    Codec.Evm.Utils.WORD_SIZE
+  );
 }
 
 /**

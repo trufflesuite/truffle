@@ -3,15 +3,15 @@ const assert = require("chai").assert;
 const BN = require("bn.js");
 
 const Decoder = require("../../..");
-const Codec = require("../../../../codec");
+const Codec = require("@truffle/codec");
 
 const WireTest = artifacts.require("WireTest");
 const WireTestParent = artifacts.require("WireTestParent");
 const WireTestLibrary = artifacts.require("WireTestLibrary");
 const WireTestAbstract = artifacts.require("WireTestAbstract");
 
-contract("WireTest", function(_accounts) {
-  it("should correctly decode transactions and events", async function() {
+contract("WireTest", function (_accounts) {
+  it("should correctly decode transactions and events", async function () {
     let deployedContract = await WireTest.new(true, "0xdeadbeef", 2);
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
@@ -597,7 +597,7 @@ contract("WireTest", function(_accounts) {
     );
   });
 
-  it("disambiguates events when possible and not when impossible", async function() {
+  it("disambiguates events when possible and not when impossible", async function () {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await Decoder.forProject(web3.currentProvider, [
@@ -742,7 +742,7 @@ contract("WireTest", function(_accounts) {
     );
   });
 
-  it("Handles anonymous events", async function() {
+  it("Handles anonymous events", async function () {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await Decoder.forProject(web3.currentProvider, [
@@ -893,7 +893,7 @@ contract("WireTest", function(_accounts) {
     );
   });
 
-  it("Decodes return values", async function() {
+  it("Decodes return values", async function () {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await Decoder.forContract(WireTest, [

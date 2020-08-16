@@ -4,7 +4,6 @@ const debug = debugModule("debugger:evm:reducers");
 import { combineReducers } from "redux";
 
 import * as actions from "./actions";
-import { keccak256 } from "lib/helpers";
 import * as Codec from "@truffle/codec";
 
 import BN from "bn.js";
@@ -20,6 +19,7 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
      */
     case actions.ADD_CONTEXT:
       const {
+        context,
         contractName,
         binary,
         sourceMap,
@@ -30,18 +30,17 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
         abi,
         contractId,
         contractKind,
-        isConstructor
+        isConstructor,
+        externalSolidity
       } = action;
       debug("action %O", action);
-      //NOTE: we take hash as *string*, not as bytes, because the binary may
-      //contain link references!
-      const context = keccak256({ type: "string", value: binary });
 
       return {
         ...state,
         byContext: {
           ...state.byContext,
           [context]: {
+            context,
             contractName,
             context,
             binary,
@@ -54,14 +53,10 @@ function contexts(state = DEFAULT_CONTEXTS, action) {
             contractId,
             contractKind,
             isConstructor,
+            externalSolidity,
             payable: Codec.AbiData.Utils.abiHasPayableFallback(abi)
           }
         }
-      };
-
-    case actions.NORMALIZE_CONTEXTS:
-      return {
-        byContext: Codec.Contexts.Utils.normalizeContexts(state.byContext)
       };
 
     /*
@@ -147,10 +142,34 @@ function initialCall(state = null, action) {
   }
 }
 
+const DEFAULT_AFFECTED_INSTANCES = { byAddress: {} };
+
+function affectedInstances(state = DEFAULT_AFFECTED_INSTANCES, action) {
+  switch (action.type) {
+    case actions.ADD_AFFECTED_INSTANCE:
+      const { address, binary, context } = action;
+      return {
+        byAddress: {
+          ...state.byAddress,
+          [address]: {
+            address,
+            binary,
+            context
+          }
+        }
+      };
+    case actions.UNLOAD_TRANSACTION:
+      return DEFAULT_AFFECTED_INSTANCES;
+    default:
+      return state;
+  }
+}
+
 const transaction = combineReducers({
   globals,
   status,
-  initialCall
+  initialCall,
+  affectedInstances
 });
 
 function callstack(state = [], action) {

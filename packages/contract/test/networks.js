@@ -1,12 +1,11 @@
 var assert = require("chai").assert;
-var temp = require("temp").track();
 var util = require("./util");
 
 // Clean up after solidity. Only remove solidity's listener,
 // which happens to be the first.
 process.removeListener(
   "uncaughtException",
-  process.listeners("uncaughtException")[0] || function() {}
+  process.listeners("uncaughtException")[0] || function () {}
 );
 
 var debug = require("debug")("ganache-core");
@@ -21,7 +20,7 @@ var log = {
 function getAndSetAccounts(contract, done) {
   contract.web3.eth
     .getAccounts()
-    .then(function(accs) {
+    .then(function (accs) {
       contract.defaults({
         from: accs[0]
       });
@@ -31,7 +30,7 @@ function getAndSetAccounts(contract, done) {
     .catch(done);
 }
 
-describe("Different networks: ", function() {
+describe("Different networks: ", function () {
   var network_one;
   var network_two;
   var network_one_id;
@@ -39,7 +38,7 @@ describe("Different networks: ", function() {
   var ExampleOne;
   var ExampleTwo;
 
-  before("Compile", async function() {
+  before("Compile", async function () {
     this.timeout(10000);
     ExampleOne = await util.createExample();
     ExampleTwo = ExampleOne.clone();
@@ -64,48 +63,43 @@ describe("Different networks: ", function() {
     ExampleOne.setProvider(network_one);
     ExampleTwo.setProvider(network_two);
   }),
-    before("Get/set first network accounts", function(done) {
+    before("Get/set first network accounts", function (done) {
       getAndSetAccounts(ExampleOne, done);
     });
 
-  before("Get/set second network accounts", function(done) {
+  before("Get/set second network accounts", function (done) {
     getAndSetAccounts(ExampleTwo, done);
   });
 
   // Most tests rely on this. It was a test; now it's a before step.
-  before("can deploy to different networks", function(done) {
+  before("can deploy to different networks", function (done) {
     ExampleOne.new(1, { gas: 3141592 })
-      .then(function(example) {
+      .then(function (example) {
         ExampleOne.address = example.address;
         return ExampleTwo.new(1, { gas: 3141592 });
       })
-      .then(function(example) {
+      .then(function (example) {
         ExampleTwo.address = example.address;
       })
-      .then(function() {
+      .then(function () {
         done();
       })
       .catch(done);
   });
 
-  after(function(done) {
-    temp.cleanupSync();
-    done();
-  });
-
-  it("does not deploy to the same network (eth_getCode)", function(done) {
+  it("does not deploy to the same network (eth_getCode)", function (done) {
     function getCode(firstContract, secondContract, callback) {
       firstContract.web3.eth.getCode(secondContract.address, callback);
     }
 
-    getCode(ExampleOne, ExampleTwo, function(err, code) {
+    getCode(ExampleOne, ExampleTwo, function (err, code) {
       assert.equal(
         code,
         "0x",
         "ExampleTwo's address must not exist on ExampleOne's network"
       );
 
-      getCode(ExampleTwo, ExampleOne, function(err, code) {
+      getCode(ExampleTwo, ExampleOne, function (err, code) {
         assert.equal(
           code,
           "0x",
@@ -116,7 +110,7 @@ describe("Different networks: ", function() {
     });
   });
 
-  it("has no network if none set", function() {
+  it("has no network if none set", function () {
     var AnotherExample = contract({
       contractName: "AnotherExample",
       abi: ExampleOne.abi,
@@ -126,7 +120,7 @@ describe("Different networks: ", function() {
     assert.equal(Object.keys(AnotherExample.toJSON().networks).length, 0);
   });
 
-  it("auto-detects network when using deployed() as a thennable", function(done) {
+  it("auto-detects network when using deployed() as a thennable", function (done) {
     // For this test, we're using ExampleOne set up in the before() blocks. Note that
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for deployed(), and
@@ -144,7 +138,7 @@ describe("Different networks: ", function() {
     var execution_count = 0;
 
     Example.deployed()
-      .then(function(instance) {
+      .then(function (instance) {
         assert.equal(
           instance.address,
           Example.toJSON().networks[network_two_id].address
@@ -155,7 +149,7 @@ describe("Different networks: ", function() {
         execution_count = 1;
         return execution_count;
       })
-      .then(function(count) {
+      .then(function (count) {
         assert.equal(execution_count, 1);
         assert.equal(count, 1);
       })
@@ -163,17 +157,17 @@ describe("Different networks: ", function() {
       .catch(done);
   });
 
-  it("deployed() used as a thennable funnels errors correctly", function(done) {
+  it("deployed() used as a thennable funnels errors correctly", function (done) {
     var Example = contract(ExampleOne.toJSON());
 
     // No provider is set. Using deployed().then() should send errors down the promise chain.
     Example.deployed()
-      .then(function() {
+      .then(function () {
         assert.fail(
           "This function should never be run because there should have been an error."
         );
       })
-      .catch(function(err) {
+      .catch(function (err) {
         if (
           err.message.indexOf(
             "Please call setProvider() first before calling new()"
@@ -184,19 +178,19 @@ describe("Different networks: ", function() {
       });
   });
 
-  it("deployed() used as a thennable will error if contract hasn't been deployed to the network detected", function(done) {
+  it("deployed() used as a thennable will error if contract hasn't been deployed to the network detected", function (done) {
     var network_three = Ganache.provider();
 
     var Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_three);
 
     Example.deployed()
-      .then(function() {
+      .then(function () {
         assert.fail(
           "This function should never be run because there should have been an error."
         );
       })
-      .catch(function(err) {
+      .catch(function (err) {
         if (
           err.message.indexOf(
             "Example has not been deployed to detected network"
@@ -207,7 +201,7 @@ describe("Different networks: ", function() {
       });
   });
 
-  it("auto-detects network when using at() as a thennable", function(done) {
+  it("auto-detects network when using at() as a thennable", function (done) {
     // For this test, we're using ExampleOne set up in the before() blocks. Note that
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for at(), and
@@ -226,7 +220,7 @@ describe("Different networks: ", function() {
     var exampleTwoAddress = Example.toJSON().networks[network_two_id].address;
 
     Example.at(exampleTwoAddress)
-      .then(function(instance) {
+      .then(function (instance) {
         assert.equal(instance.address, exampleTwoAddress);
         assert.deepEqual(instance.abi, Example.abi);
 
@@ -235,7 +229,7 @@ describe("Different networks: ", function() {
         execution_count = 1;
         return execution_count;
       })
-      .then(function(count) {
+      .then(function (count) {
         assert.equal(execution_count, 1);
         assert.equal(count, 1);
       })
@@ -243,19 +237,19 @@ describe("Different networks: ", function() {
       .catch(done);
   });
 
-  it("at() used as a thennable funnels errors correctly", function(done) {
+  it("at() used as a thennable funnels errors correctly", function (done) {
     var Example = contract(ExampleOne.toJSON());
     Example.setProvider(network_one);
 
     // This address should have no code there. .at().then() should error before
     // letting you execute anything else.
     Example.at("0x1234567890123456789012345678901234567890")
-      .then(function() {
+      .then(function () {
         assert.fail(
           "This function should never be run because there should have been an error."
         );
       })
-      .catch(function(err) {
+      .catch(function (err) {
         if (
           err.message.indexOf(
             "Cannot create instance of Example; no code at address 0x1234567890123456789012345678901234567890"
@@ -266,7 +260,7 @@ describe("Different networks: ", function() {
       });
   });
 
-  it("new() detects the network before deploying", function(done) {
+  it("new() detects the network before deploying", function (done) {
     // For this test, we're using ExampleOne set up in the before() blocks. Note that
     // it has two networks, and the default network is the first one. We'll set the
     // provider to the second network, use the thennable version for at(), and
@@ -280,14 +274,14 @@ describe("Different networks: ", function() {
     assert.equal(Example.network_id, null);
 
     Example.new(1, { from: ExampleTwo.defaults().from, gas: 3141592 })
-      .then(function(instance) {
+      .then(function (instance) {
         assert.deepEqual(instance.abi, Example.abi);
       })
       .then(done)
       .catch(done);
   });
 
-  it("detects the network before sending a transaction", function() {
+  it("detects the network before sending a transaction", function () {
     // Here, we're going to use two of the same contract abstraction to test
     // network detection. The first is going to deploy a new contract, thus
     // detecting the network in the process of new(); we're then going to
@@ -306,19 +300,19 @@ describe("Different networks: ", function() {
     var from = ExampleTwo.defaults().from;
 
     return ExampleSetup.new(1, { from: from, gas: 3141592 })
-      .then(function(instance) {
+      .then(function (instance) {
         assert.equal(ExampleDetect.network_id, null);
         return ExampleDetect.at(instance.address);
       })
-      .then(function(example) {
+      .then(function (example) {
         return example.setValue(47, { from: from, gas: 3141592 });
       })
-      .then(function() {
+      .then(function () {
         assert.equal(ExampleDetect.network_id, network_two_id);
       });
   });
 
-  it("detects the network when making a call", function() {
+  it("detects the network when making a call", function () {
     // Here, we're going to use two of the same contract abstraction to test
     // network detection. The first is going to deploy a new contract, thus
     // detecting the network in the process of new(); we're then going to
@@ -334,14 +328,14 @@ describe("Different networks: ", function() {
     var from = ExampleTwo.defaults().from;
 
     return ExampleSetup.new(1, { from: from, gas: 3141592 })
-      .then(function(instance) {
+      .then(function (instance) {
         assert.equal(ExampleDetect.network_id, null);
         return ExampleDetect.at(instance.address);
       })
-      .then(function(example) {
+      .then(function (example) {
         return example.getValue({ from: from, gas: 3141592 });
       })
-      .then(function() {
+      .then(function () {
         assert.equal(ExampleDetect.network_id, network_two_id);
       });
   });

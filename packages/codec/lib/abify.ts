@@ -365,6 +365,12 @@ export function abifyReturndataDecoding(
           value: abifyResult(argument.value, userDefinedTypes)
         }))
       };
+    case "bytecode":
+      return {
+        ...decoding,
+        decodingMode: "abi",
+        immutables: undefined
+      };
     default:
       return {
         ...decoding,

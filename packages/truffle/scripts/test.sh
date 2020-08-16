@@ -4,8 +4,6 @@ set -o errexit
 
 if [ "$GETH" == true ]; then
   mocha --timeout 50000 --grep '@ganache|@standalone' --invert --colors $@
-elif [ "$QUORUM" == true ]; then
-  mocha --timeout 50000 --grep @quorum --colors $@
 elif [ "$FABRICEVM" == true ]; then
   mocha --timeout 50000 --grep @fabric-evm --colors $@
 elif [ "$COVERAGE" == true ]; then

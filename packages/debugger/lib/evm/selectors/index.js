@@ -173,6 +173,20 @@ function createStepSelectors(step, state = null) {
       ),
 
       /**
+       * .valueStored
+       * the storage written, as determined by looking at the stack
+       * rather than at storage (since valueLoaded is now being done
+       * this way, may as well do valueStored this way as well and
+       * completely remove our dependence on the storage field!)
+       */
+      valueStored: createLeaf(["./isStore", state], (isStore, { stack }) => {
+        if (!isStore) {
+          return null;
+        }
+        return stack[stack.length - 2];
+      }),
+
+      /**
        * .callAddress
        *
        * address transferred to by call operation
@@ -362,31 +376,32 @@ const evm = createSelectorTree({
    * evm.transaction
    */
   transaction: {
-    /*
+    /**
      * evm.transaction.globals
      */
     globals: {
-      /*
+      /**
        * evm.transaction.globals.tx
        */
       tx: createLeaf(["/state"], state => state.transaction.globals.tx),
-      /*
+
+      /**
        * evm.transaction.globals.block
        */
       block: createLeaf(["/state"], state => state.transaction.globals.block)
     },
 
-    /*
+    /**
      * evm.transaction.status
      */
     status: createLeaf(["/state"], state => state.transaction.status),
 
-    /*
+    /**
      * evm.transaction.initialCall
      */
     initialCall: createLeaf(["/state"], state => state.transaction.initialCall),
 
-    /*
+    /**
      * evm.transaction.startingContext
      */
     startingContext: createLeaf(
@@ -400,6 +415,14 @@ const evm = createSelectorTree({
         stack.length > 0
           ? determineFullContext(stack[0], instances, search, contexts)
           : null
+    ),
+
+    /**
+     * evm.transaction.affectedInstances
+     */
+    affectedInstances: createLeaf(
+      ["/state"],
+      state => state.transaction.affectedInstances.byAddress
     )
   },
 
@@ -542,13 +565,14 @@ const evm = createSelectorTree({
        * .isHalting
        *
        * whether the instruction halts or returns from a calling context
-       * NOTE: this covers only ordinary halts, not exceptional halts;
-       * but it doesn't check the return status, so any normal halting
-       * instruction will qualify here
+       * HACK: the check for stepsRemainining === 0 is a hack to cover
+       * the special case when there are no trace steps; normally this
+       * is unnecessary because the spoofed step past the end covers it
        */
       isHalting: createLeaf(
-        ["/current/state/depth", "/next/state/depth"],
-        (currentDepth, nextDepth) => nextDepth < currentDepth
+        ["/current/state/depth", "/next/state/depth", trace.stepsRemaining],
+        (currentDepth, nextDepth, stepsRemaining) =>
+          nextDepth < currentDepth || stepsRemaining === 0
       ),
 
       /**
@@ -585,7 +609,7 @@ const evm = createSelectorTree({
         }
       ),
 
-      /*
+      /**
        * evm.current.step.returnValue
        *
        * for a [successful] RETURN or REVERT instruction, the value returned;
@@ -618,6 +642,23 @@ const evm = createSelectorTree({
               .substring(offset, offset + length)
               .padEnd(length, "00")
           );
+        }
+      ),
+
+      /**
+       * evm.current.step.valueLoaded
+       * the storage loaded on an SLOAD. determined by examining
+       * the next stack, rather than storage (we're avoiding
+       * relying on storage to support old versions of Geth and Besu)
+       * we do not include an initial "0x"
+       */
+      valueLoaded: createLeaf(
+        ["./isLoad", "/next/state"],
+        (isLoad, { stack }) => {
+          if (!isLoad) {
+            return null;
+          }
+          return stack[stack.length - 1];
         }
       )
     },

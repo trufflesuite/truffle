@@ -6,7 +6,7 @@ const sinon = require("sinon");
 const Config = require("@truffle/config");
 const Box = require("../");
 const TRUFFLE_BOX_DEFAULT =
-  "git@github.com:trufflesuite/truffle-init-default.git";
+  "https://github.com:trufflesuite/truffle-init-default";
 const utils = require("../dist/lib/utils");
 let options, cleanupCallback, config;
 
@@ -82,7 +82,7 @@ describe("@truffle/box Box", () => {
         utils.downloadBox.restore();
       });
 
-      it("calls the cleanup function if it is available", function(done) {
+      it("calls the cleanup function if it is available", function (done) {
         Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config).catch(() => {
           assert(cleanupCallback.called);
           done();

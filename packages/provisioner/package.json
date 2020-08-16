@@ -1,9 +1,20 @@
 {
   "name": "@truffle/provisioner",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "Provision contract objects for use from multiple sources",
-  "main": "index.js",
-  "scripts": {},
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "directories": {
+    "doc": "./README.md",
+    "lib": "./dist"
+  },
+  "files": [
+    "./dist/src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build"
+  },
   "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/provisioner",
   "keywords": [
     "ethereum",
@@ -19,5 +30,11 @@
   "homepage": "https://github.com/trufflesuite/truffle/tree/master/packages/provisioner#readme",
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.7"
+  },
+  "dependencies": {
+    "@truffle/config": "^1.2.26"
   }
 }

@@ -1,7 +1,6 @@
 // Override artifactor
 const Config = require("@truffle/config");
 const { assert } = require("chai");
-const temp = require("temp").track();
 const contract = require("../");
 const Web3 = require("web3");
 const debug = require("debug")("ganache-core");
@@ -15,27 +14,27 @@ const { promisify } = require("util");
 // which happens to be the first.
 process.removeListener(
   "uncaughtException",
-  process.listeners("uncaughtException")[0] || function() {}
+  process.listeners("uncaughtException")[0] || function () {}
 );
 
 var log = {
   log: debug
 };
 
-describe("Library linking", function() {
+describe("Library linking", function () {
   var LibraryExample;
   var provider = Ganache.provider({ logger: log });
   var network_id;
   var web3 = new Web3();
   web3.setProvider(provider);
 
-  before(function() {
-    return web3.eth.net.getId().then(function(id) {
+  before(function () {
+    return web3.eth.net.getId().then(function (id) {
       network_id = id;
     });
   });
 
-  before(function() {
+  before(function () {
     LibraryExample = contract({
       contractName: "LibraryExample",
       abi: [],
@@ -46,12 +45,7 @@ describe("Library linking", function() {
     LibraryExample.setNetwork(network_id);
   });
 
-  after(function(done) {
-    temp.cleanupSync();
-    done();
-  });
-
-  it("leaves binary unlinked initially", function() {
+  it("leaves binary unlinked initially", function () {
     assert(
       LibraryExample.binary.indexOf(
         "__A_____________________________________"
@@ -59,7 +53,7 @@ describe("Library linking", function() {
     );
   });
 
-  it("links first library properly", function() {
+  it("links first library properly", function () {
     LibraryExample.link("A", "0x1234567890123456789012345678901234567890");
 
     assert(
@@ -72,7 +66,7 @@ describe("Library linking", function() {
     );
   });
 
-  it("links second library properly", function() {
+  it("links second library properly", function () {
     LibraryExample.link("B", "0x1111111111111111111111111111111111111111");
 
     assert(
@@ -85,7 +79,7 @@ describe("Library linking", function() {
     );
   });
 
-  it("allows for selective relinking", function() {
+  it("allows for selective relinking", function () {
     assert(
       LibraryExample.binary.indexOf("__A_____________________________________"),
       -1
@@ -104,7 +98,7 @@ describe("Library linking", function() {
   });
 });
 
-describe("Library linking with contract objects", function() {
+describe("Library linking with contract objects", function () {
   var ExampleLibrary;
   var ExampleLibraryConsumer;
   var accounts;
@@ -114,13 +108,13 @@ describe("Library linking with contract objects", function() {
   web3 = new Web3();
   web3.setProvider(provider);
 
-  before(function() {
-    return web3.eth.net.getId().then(function(id) {
+  before(function () {
+    return web3.eth.net.getId().then(function (id) {
       network_id = id;
     });
   });
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
 
     const exampleLibraryPath = path.join(
@@ -186,8 +180,8 @@ describe("Library linking with contract objects", function() {
     ExampleLibraryConsumer.setProvider(provider);
   });
 
-  before(function(done) {
-    web3.eth.getAccounts(function(err, accs) {
+  before(function (done) {
+    web3.eth.getAccounts(function (err, accs) {
       accounts = accs;
 
       ExampleLibrary.defaults({
@@ -205,30 +199,25 @@ describe("Library linking with contract objects", function() {
     });
   });
 
-  before("deploy library", function(done) {
+  before("deploy library", function (done) {
     ExampleLibrary.new({ gas: 3141592 })
-      .then(function(instance) {
+      .then(function (instance) {
         ExampleLibrary.address = instance.address;
       })
       .then(done)
       .catch(done);
   });
 
-  after(function(done) {
-    temp.cleanupSync();
-    done();
-  });
-
-  it("should consume library's events when linked", function(done) {
+  it("should consume library's events when linked", function (done) {
     ExampleLibraryConsumer.link(ExampleLibrary);
 
     assert.equal(Object.keys(ExampleLibraryConsumer.events || {}).length, 1);
 
     ExampleLibraryConsumer.new({ gas: 3141592 })
-      .then(function(consumer) {
+      .then(function (consumer) {
         return consumer.triggerLibraryEvent();
       })
-      .then(function(result) {
+      .then(function (result) {
         assert.equal(result.logs.length, 1);
         var log = result.logs[0];
         assert.equal(log.event, "LibraryEvent");

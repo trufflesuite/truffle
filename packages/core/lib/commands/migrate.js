@@ -7,7 +7,12 @@ const command = {
       default: false
     },
     "compile-all": {
-      describe: "recompile all contracts",
+      describe: "Recompile all contracts",
+      type: "boolean",
+      default: false
+    },
+    "compile-none": {
+      describe: "Do not compile contracts",
       type: "boolean",
       default: false
     },
@@ -78,6 +83,10 @@ const command = {
           "be compiled."
       },
       {
+        option: "--compile-none",
+        description: "Do not compile any contracts before migrating."
+      },
+      {
         option: "--verbose-rpc",
         description:
           "Log communication between Truffle and the Ethereum client."
@@ -103,7 +112,7 @@ const command = {
     ]
   },
 
-  determineDryRunSettings: function(config, options) {
+  determineDryRunSettings: function (config, options) {
     // Source: ethereum.stackexchange.com/questions/17051
     const networkWhitelist = [
       1, // Mainnet (ETH & ETC)
@@ -142,7 +151,7 @@ const command = {
     return { dryRunOnly, dryRunAndMigrations };
   },
 
-  prepareConfigForRealMigrations: async function(buildDir, options) {
+  prepareConfigForRealMigrations: async function (buildDir, options) {
     const Artifactor = require("@truffle/artifactor");
     const Resolver = require("@truffle/resolver");
     const Migrate = require("@truffle/migrate");
@@ -175,18 +184,22 @@ const command = {
     }
   },
 
-  run: function(options, done) {
+  run: function (options, done) {
     const Artifactor = require("@truffle/artifactor");
     const Resolver = require("@truffle/resolver");
     const Migrate = require("@truffle/migrate");
     const Contracts = require("@truffle/workflow-compile");
     const { Environment } = require("@truffle/environment");
     const Config = require("@truffle/config");
-    const temp = require("temp").track();
     const { promisify } = require("util");
     const promisifiedCopy = promisify(require("../copy"));
+    const tmp = require("tmp");
+    tmp.setGracefulCleanup();
 
     const conf = Config.detect(options);
+    if (conf.compileNone || conf["compile-none"]) {
+      conf.compiler = "none";
+    }
 
     Contracts.compile(conf)
       .then(async () => {
@@ -223,7 +236,10 @@ const command = {
     async function setupDryRunEnvironmentThenRunMigrations(config) {
       await Environment.fork(config);
       // Copy artifacts to a temporary directory
-      const temporaryDirectory = temp.mkdirSync("migrate-dry-run-");
+      const temporaryDirectory = tmp.dirSync({
+        unsafeCleanup: true,
+        prefix: "migrate-dry-run-"
+      }).name;
 
       await promisifiedCopy(
         config.contracts_build_directory,

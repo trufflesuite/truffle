@@ -109,21 +109,13 @@ function* stepNext() {
  * step.
  */
 function* stepInto() {
-  if (yield select(controller.current.willJump)) {
-    yield* stepNext();
-    return;
-  }
-
-  if (yield select(controller.current.location.isMultiline)) {
-    yield* stepOver();
-    return;
-  }
-
   const startingDepth = yield select(controller.current.functionDepth);
   const startingLocation = yield select(controller.current.location);
-  var currentDepth;
-  var currentLocation;
-  var finished;
+  debug("startingDepth: %d", startingDepth);
+  debug("starting source range: %O", (startingLocation || {}).sourceRange);
+  let currentDepth;
+  let currentLocation;
+  let finished;
 
   do {
     yield* stepNext();
@@ -131,20 +123,21 @@ function* stepInto() {
     currentDepth = yield select(controller.current.functionDepth);
     currentLocation = yield select(controller.current.location);
     finished = yield select(controller.current.trace.finished);
+    debug("currentDepth: %d", currentDepth);
+    debug("current source range: %O", (currentLocation || {}).sourceRange);
+    debug("finished: %o", finished);
   } while (
     //we aren't finished,
     !finished &&
     // the function stack has not increased,
     currentDepth <= startingDepth &&
     // we haven't changed files,
-    currentLocation.source.id === startingLocation.source.id &&
     currentLocation.source.compilationId ===
       startingLocation.source.compilationId &&
-    // the current source range begins on or after the starting range,
-    currentLocation.sourceRange.start >= startingLocation.sourceRange.start &&
-    // and the current range ends on or before the starting range ends
-    currentLocation.sourceRange.start + currentLocation.sourceRange.length <=
-      startingLocation.sourceRange.start + startingLocation.sourceRange.length
+    currentLocation.source.id === startingLocation.source.id &&
+    //and we haven't changed lines
+    currentLocation.sourceRange.lines.start.line ===
+      startingLocation.sourceRange.lines.start.line
   );
 }
 

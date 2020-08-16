@@ -14,8 +14,11 @@ function callstack(state = [], action) {
       newFrame = {
         type: "internal",
         calledFromLocation: location,
+        address: state[state.length - 1].address,
         functionName:
-          functionNode && functionNode.nodeType === "FunctionDefinition"
+          functionNode &&
+          (functionNode.nodeType === "FunctionDefinition" ||
+            functionNode.nodeType === "YulFunctionDefinition")
             ? functionNode.name
             : undefined,
         contractName:
@@ -38,6 +41,7 @@ function callstack(state = [], action) {
     case actions.EXTERNAL_CALL:
       newFrame = {
         type: "external",
+        address: action.address,
         calledFromLocation: action.location,
         functionName: undefined,
         contractName: action.context.contractName

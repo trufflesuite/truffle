@@ -113,7 +113,7 @@ const command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: function (options, done) {
     const Config = require("@truffle/config");
     const { Environment, Develop } = require("@truffle/environment");
     const {
@@ -172,18 +172,25 @@ const command = {
         })
         .catch(done);
     } else {
+      const getPort = require("get-port");
       const ipcOptions = { network: "test" };
 
-      const ganacheOptions = {
-        host: "127.0.0.1",
-        port: 7545,
-        network_id: 4447,
-        mnemonic:
-          "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-        gasLimit: config.gas,
-        time: config.genesis_time
-      };
-      Develop.connectOrStart(ipcOptions, ganacheOptions)
+      let ganacheOptions;
+      getPort()
+        .then(port => {
+          ganacheOptions = {
+            host: "127.0.0.1",
+            port,
+            network_id: 4447,
+            mnemonic:
+              "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
+            gasLimit: config.gas,
+            time: config.genesis_time
+          };
+        })
+        .then(() => {
+          return Develop.connectOrStart(ipcOptions, ganacheOptions);
+        })
         .then(({ disconnect }) => {
           ipcDisconnect = disconnect;
           return Environment.develop(config, ganacheOptions);

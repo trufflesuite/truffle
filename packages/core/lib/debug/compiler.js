@@ -5,10 +5,12 @@ class DebugCompiler {
     this.config = config;
   }
 
-  async compile() {
+  async compile(sources = undefined) {
     const compileConfig = this.config.with({ quiet: true });
 
-    const { contracts, sourceIndexes } = await compile.all(compileConfig);
+    const { contracts, sourceIndexes } = sources
+      ? await compile(sources, compileConfig) //used by external.js
+      : await compile.all(compileConfig);
 
     return { contracts, sourceIndexes };
   }

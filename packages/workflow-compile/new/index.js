@@ -1,6 +1,6 @@
 const debug = require("debug")("workflow-compile:new");
 const fse = require("fs-extra");
-const { prepareConfig, byContractName } = require("../utils");
+const { prepareConfig } = require("../utils");
 const { shimLegacy } = require("../shims");
 const { shimContract } = require("@truffle/compile-solidity/legacy/shims");
 const {
@@ -28,7 +28,9 @@ async function compile(config) {
   //
 
   const compilers = config.compiler
-    ? [config.compiler]
+    ? config.compiler === "none"
+      ? []
+      : [config.compiler]
     : Object.keys(config.compilers);
 
   // invoke compilers
@@ -110,7 +112,7 @@ const Contracts = {
 
     await fse.ensureDir(config.contracts_build_directory);
 
-    const artifacts = byContractName(contracts.map(shimContract));
+    const artifacts = contracts.map(shimContract);
     await config.artifactor.saveAll(artifacts);
   }
 };

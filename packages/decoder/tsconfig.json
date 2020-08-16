@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
+    "declaration": true,
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es5",
+    "target": "es2016",
     "downlevelIteration": true,
     "noImplicitAny": true,
     "moduleResolution": "node",

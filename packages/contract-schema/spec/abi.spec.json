@@ -22,7 +22,7 @@
         { "type": "string", "pattern": "^bytes(\\[[0-9]*\\])*$" },
         { "type": "string", "pattern": "^function(\\[[0-9]*\\])*$" },
         { "type": "string", "pattern": "^string(\\[[0-9]*\\])*$" },
-        { "type": "string", "pattern": "^tuple$" }
+        { "type": "string", "pattern": "^tuple(\\[[0-9]*\\])*$" }
       ]
     },
 
