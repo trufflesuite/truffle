@@ -1,4 +1,4 @@
-const copyArtifactsToTempDir = async config => {
+const copyArtifactsToTempDir = async (config) => {
   const { promisify } = require("util");
   const copy = require("../../copy");
   const fs = require("fs");
@@ -11,7 +11,7 @@ const copyArtifactsToTempDir = async config => {
   // exists.
   const temporaryDirectory = tmp.dirSync({
     unsafeCleanup: true,
-    prefix: "test-"
+    prefix: "test-",
   }).name;
   try {
     fs.statSync(config.contracts_build_directory);
@@ -35,7 +35,7 @@ const determineTestFilesToRun = ({ inputFile, inputArgs = [], config }) => {
   if (inputFile) {
     filesToRun.push(inputFile);
   } else if (inputArgs.length > 0) {
-    inputArgs.forEach(inputArg => filesToRun.push(inputArg));
+    inputArgs.forEach((inputArg) => filesToRun.push(inputArg));
   }
 
   if (filesToRun.length === 0) {
@@ -43,9 +43,9 @@ const determineTestFilesToRun = ({ inputFile, inputArgs = [], config }) => {
       `${config.test_directory}${path.sep}**${path.sep}*`
     );
     filesToRun =
-      directoryContents.filter(item => fs.statSync(item).isFile()) || [];
+      directoryContents.filter((item) => fs.statSync(item).isFile()) || [];
   }
-  return filesToRun.filter(file => {
+  return filesToRun.filter((file) => {
     return file.match(config.test_file_extension_regexp) !== null;
   });
 };
@@ -59,7 +59,7 @@ const prepareConfigAndRunTests = ({ config, temporaryDirectory, files }) => {
 
   const testConfig = config.with({
     test_files: files,
-    contracts_build_directory: temporaryDirectory
+    contracts_build_directory: temporaryDirectory,
   });
   return Test.run(testConfig);
 };
@@ -67,5 +67,5 @@ const prepareConfigAndRunTests = ({ config, temporaryDirectory, files }) => {
 module.exports = {
   copyArtifactsToTempDir,
   determineTestFilesToRun,
-  prepareConfigAndRunTests
+  prepareConfigAndRunTests,
 };

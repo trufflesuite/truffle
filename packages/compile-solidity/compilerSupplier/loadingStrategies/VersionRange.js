@@ -97,7 +97,7 @@ class VersionRange extends LoadingStrategy {
     const url = this.config.compilerRoots[index] + fileName;
     const { events } = this.config;
     events.emit("downloadCompiler:start", {
-      attemptNumber: index + 1
+      attemptNumber: index + 1,
     });
     try {
       const response = await request.get(url, { gzip: true, timeout: 30000 });

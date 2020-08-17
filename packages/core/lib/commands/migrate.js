@@ -218,6 +218,7 @@ const command = {
           conf.dryRun = true;
 
           await setupDryRunEnvironmentThenRunMigrations(conf);
+
           let {
             config,
             proceed

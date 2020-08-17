@@ -19,7 +19,7 @@ const mnemonic = {
    * gets user-level mnemonic from user config, and if missing generates a new mnemonic
    * @returns {String} mnemonic
    */
-  getOrGenerateMnemonic: function () {
+  getOrGenerateMnemonic: function() {
     let mnemonic;
     const userMnemonicExists = defaultUserConfig.get("mnemonic");
     if (!userMnemonicExists) {
@@ -37,7 +37,7 @@ const mnemonic = {
    * @param {String}
    * @returns {Object} mnemonicObject
    */
-  getAccountsInfo: function (numAddresses) {
+  getAccountsInfo: function(numAddresses) {
     let mnemonic = this.getOrGenerateMnemonic();
     let accounts = [];
     let privateKeys = [];

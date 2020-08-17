@@ -68,7 +68,7 @@ export function normalizeContexts(contexts: Contexts): Contexts {
   //really use the binary from the artifact directly -- neither for purposes
   //of matching, nor for purposes of decoding internal functions.  So, we
   //need to perform this normalization step on our contexts before using
-  //them.  Once we have @truffle/db, this step should largely go away.
+  //them.  Once we have truffle-db, this step should largely go away.
 
   debug("normalizing contexts");
 

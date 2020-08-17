@@ -24,9 +24,10 @@ export async function getImports({
   const imports = await parseImports(body);
 
   // Convert explicitly relative dependencies of modules back into module paths.
-  return imports.map(dependencyPath =>
-    isExplicitlyRelative(dependencyPath)
-      ? source.resolveDependencyPath(filePath, dependencyPath)
-      : dependencyPath
+  return imports.map(
+    dependencyPath =>
+      isExplicitlyRelative(dependencyPath)
+        ? source.resolveDependencyPath(filePath, dependencyPath)
+        : dependencyPath
   );
 }

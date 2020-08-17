@@ -18,7 +18,7 @@ const { normalizeOptions } = require("../legacy/options");
 //   quiet: false,
 //   logger: console
 // }
-const compile = async function (sources, options) {
+const compile = async function(sources, options) {
   return await run(sources, normalizeOptions(options));
 };
 
@@ -26,7 +26,7 @@ const compile = async function (sources, options) {
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
 // files: Array<String>. Explicit files to compile besides detected sources
-compile.all = async function (options) {
+compile.all = async function(options) {
   const paths = [
     ...new Set([
       ...(await findContracts(options.contracts_directory)),
@@ -35,7 +35,9 @@ compile.all = async function (options) {
   ];
 
   return await compile.with_dependencies(
-    Config.default().merge(options).merge({ paths })
+    Config.default()
+      .merge(options)
+      .merge({ paths })
   );
 };
 
@@ -46,17 +48,19 @@ compile.all = async function (options) {
 // quiet: Boolean. Suppress output. Defaults to false.
 // strict: Boolean. Return compiler warnings as errors. Defaults to false.
 // files: Array<String>. Explicit files to compile besides detected sources
-compile.necessary = async function (options) {
+compile.necessary = async function(options) {
   options.logger = options.logger || console;
 
   const paths = await Profiler.updated(options);
 
   return await compile.with_dependencies(
-    Config.default().merge(options).merge({ paths })
+    Config.default()
+      .merge(options)
+      .merge({ paths })
   );
 };
 
-compile.with_dependencies = async function (options) {
+compile.with_dependencies = async function(options) {
   options.logger = options.logger || console;
   options.contracts_directory = options.contracts_directory || process.cwd();
 
@@ -96,7 +100,7 @@ compile.with_dependencies = async function (options) {
   return await compile(allSources, options);
 };
 
-compile.display = function (paths, options) {
+compile.display = function(paths, options) {
   if (options.quiet !== true) {
     if (!Array.isArray(paths)) {
       paths = Object.keys(paths);

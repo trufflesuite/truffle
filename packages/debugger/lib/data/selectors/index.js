@@ -1172,14 +1172,16 @@ const data = createSelectorTree({
          *
          * returns a spoofed definition for the this variable
          */
-        this: createLeaf(["/current/contract"], contractNode =>
-          contractNode && contractNode.nodeType === "ContractDefinition"
-            ? spoofThisDefinition(
-                contractNode.name,
-                contractNode.id,
-                contractNode.contractKind
-              )
-            : null
+        this: createLeaf(
+          ["/current/contract"],
+          contractNode =>
+            contractNode && contractNode.nodeType === "ContractDefinition"
+              ? spoofThisDefinition(
+                  contractNode.name,
+                  contractNode.id,
+                  contractNode.contractKind
+                )
+              : null
         )
       },
 

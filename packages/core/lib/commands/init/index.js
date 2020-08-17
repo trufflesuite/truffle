@@ -10,9 +10,9 @@ const command = {
         description:
           "Initialize project in the current directory regardless of its " +
           "state. Be careful, this\n                    will potentially overwrite files " +
-          "that exist in the directory."
-      }
-    ]
+          "that exist in the directory.",
+      },
+    ],
   },
   run: function (options, done) {
     const { copyFiles } = require("./copyFiles");
@@ -36,11 +36,11 @@ const command = {
         await events.emit("init:succeed");
         done();
       })
-      .catch(async error => {
+      .catch(async (error) => {
         await events.emit("init:fail", { error });
         done(error);
       });
-  }
+  },
 };
 
 module.exports = command;

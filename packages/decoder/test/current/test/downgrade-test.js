@@ -129,8 +129,8 @@ async function runTestBody(
   }
 }
 
-contract("DowngradeTest", function (accounts) {
-  it("Correctly degrades on allocation when no node", async function () {
+contract("DowngradeTest", function(accounts) {
+  it("Correctly degrades on allocation when no node", async function() {
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
     source.ast = undefined;
@@ -138,7 +138,7 @@ contract("DowngradeTest", function (accounts) {
     await runTestBody(mangledCompilations);
   });
 
-  it("Correctly degrades on allocation when error", async function () {
+  it("Correctly degrades on allocation when error", async function() {
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -157,7 +157,7 @@ contract("DowngradeTest", function (accounts) {
     await runTestBody(mangledCompilations, true);
   });
 
-  it("Correctly degrades on decoding when error", async function () {
+  it("Correctly degrades on decoding when error", async function() {
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -176,11 +176,11 @@ contract("DowngradeTest", function (accounts) {
     await runTestBody(mangledCompilations, true);
   });
 
-  it("Correctly abifies after finishing", async function () {
+  it("Correctly abifies after finishing", async function() {
     await runTestBody(compilations, false, true); //for once, we're not modifying it!
   });
 
-  it("Correctly decodes decimals", async function () {
+  it("Correctly decodes decimals", async function() {
     let mangledCompilations = clonedeep(compilations);
     let downgradeTest = mangledCompilations[0].contracts.find(
       contract => contract.contractName === "DowngradeTest"
@@ -250,7 +250,7 @@ contract("DowngradeTest", function (accounts) {
     assert(txDecoding.arguments[0].value.value.asBig.eq(tau));
   });
 
-  it("Correctly decodes inherited events when no node", async function () {
+  it("Correctly decodes inherited events when no node", async function() {
     let mangledCompilations = clonedeep(compilations);
     let source = mangledCompilations[0].sources.find(x => x); //find defined source
     source.ast = undefined;
@@ -277,8 +277,8 @@ contract("DowngradeTest", function (accounts) {
     assert.isEmpty(logDecodings[0].arguments);
   });
 
-  describe("Out-of-range enums", function () {
-    it("Doesn't include out-of-range enums in full mode", async function () {
+  describe("Out-of-range enums", function() {
+    it("Doesn't include out-of-range enums in full mode", async function() {
       let decoder = await Decoder.forProject(
         web3.currentProvider,
         { compilations } //not modifying for once!
@@ -301,7 +301,7 @@ contract("DowngradeTest", function (accounts) {
       assert.strictEqual(indexedLogDecodings[0].decodingMode, "full");
     });
 
-    it("Abifies correctly when failure occurs in first enum", async function () {
+    it("Abifies correctly when failure occurs in first enum", async function() {
       let mangledCompilations = clonedeep(compilations);
       let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -319,7 +319,7 @@ contract("DowngradeTest", function (accounts) {
       await runEnumTestBody(mangledCompilations);
     });
 
-    it("Abifies correctly when failure occurs in second enum", async function () {
+    it("Abifies correctly when failure occurs in second enum", async function() {
       let mangledCompilations = clonedeep(compilations);
       let source = mangledCompilations[0].sources.find(x => x); //find defined source
 
@@ -338,7 +338,7 @@ contract("DowngradeTest", function (accounts) {
     });
   });
 
-  it("Decodes external functions via additionalContexts", async function () {
+  it("Decodes external functions via additionalContexts", async function() {
     let mangledCompilations = clonedeep(compilations);
     let downgradeTest = mangledCompilations[0].contracts.find(
       contract => contract.contractName === "DowngradeTest"
@@ -370,7 +370,7 @@ contract("DowngradeTest", function (accounts) {
     assert.strictEqual(decodedFunction.value.selector, selector);
   });
 
-  it("Partially decodes internal functions when unreliable order", async function () {
+  it("Partially decodes internal functions when unreliable order", async function() {
     let mangledCompilations = clonedeep(compilations);
     mangledCompilations[0].unreliableSourceOrder = true;
 
@@ -391,7 +391,7 @@ contract("DowngradeTest", function (accounts) {
     //we won't bother testing the PC values
   });
 
-  it("Decodes return values even with no deployedBytecode", async function () {
+  it("Decodes return values even with no deployedBytecode", async function() {
     let mangledCompilations = clonedeep(compilations);
     let downgradeTest = mangledCompilations[0].contracts.find(
       contract => contract.contractName === "DowngradeTest"

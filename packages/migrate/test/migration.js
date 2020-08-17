@@ -20,21 +20,21 @@ describe("Migration", () => {
         resolver,
         logger: "crushin it wit a loggerzzz",
         networks: {
-          "fake network": {}
+          "fake network": {},
         },
         network: "fake network",
         network_id: "this is also fake",
-        from: "Russia with love"
+        from: "Russia with love",
       }));
     fakeInterfaceAdapter = {
-      getBlock: sinon.stub().returns({ gasLimit: 2000 })
+      getBlock: sinon.stub().returns({ gasLimit: 2000 }),
     };
     context = { interfaceAdapter: fakeInterfaceAdapter };
     prepareForMigrationsReturn = {
       interfaceAdapter: fakeInterfaceAdapter,
       resolver,
       context,
-      deployer
+      deployer,
     };
     migration = new Migration("fake/file.js", undefined, options);
   });

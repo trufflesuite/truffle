@@ -4,7 +4,13 @@
   "title": "ABI",
 
   "type": "array",
-  "items": { "$ref": "#/definitions/ABIItem" },
+  "items": { "oneOf": [
+    { "$ref": "#/definitions/Event" },
+    { "$ref": "#/definitions/ConstructorFunction" },
+    { "$ref": "#/definitions/FallbackFunction" },
+    { "$ref": "#/definitions/ReceiveFunction" },
+    { "$ref": "#/definitions/NormalFunction" }
+  ]},
 
   "definitions": {
     "Name": {
@@ -169,12 +175,6 @@
 	"internalType": { "type": "string" }
       },
       "required": ["name", "type", "indexed"]
-    },
-    "ABIItem": { "oneOf": [
-      { "$ref": "#/definitions/Event" },
-      { "$ref": "#/definitions/ConstructorFunction" },
-      { "$ref": "#/definitions/FallbackFunction" },
-      { "$ref": "#/definitions/NormalFunction" }
-    ]}
+    }
   }
 }

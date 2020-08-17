@@ -29,8 +29,8 @@ async function prepareGanache(
   });
 }
 
-describe("fabric-evm getId Overload", function () {
-  it("returns networkID as valid string instead of number w/ fabric-evm=true", async function () {
+describe("fabric-evm getId Overload", function() {
+  it("returns networkID as valid string instead of number w/ fabric-evm=true", async function() {
     return new Promise(async (resolve, reject) => {
       let preparedGanache;
       try {
@@ -46,7 +46,7 @@ describe("fabric-evm getId Overload", function () {
     });
   });
 
-  it("returns networkID as number w/ fabric-evm=false", async function () {
+  it("returns networkID as number w/ fabric-evm=false", async function() {
     return new Promise(async (resolve, reject) => {
       let preparedGanache;
       try {

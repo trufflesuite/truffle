@@ -92,7 +92,9 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
   ): Promise<Types.SolcMetadata | null> {
     try {
       return await this.requestWithRetries<Types.SolcMetadata>({
-        uri: `https://${this.domain}/contract/${this.networkId}/${address}/metadata.json`,
+        uri: `https://${this.domain}/contract/${
+          this.networkId
+        }/${address}/metadata.json`,
         json: true //turns on auto-parsing
       });
     } catch (error) {
@@ -110,7 +112,9 @@ const SourcifyFetcher: FetcherConstructor = class SourcifyFetcher
     sourcePath: string
   ): Promise<string> {
     return await this.requestWithRetries<string>({
-      uri: `https://${this.domain}/contract/${this.networkId}/${address}/sources/${sourcePath}`
+      uri: `https://${this.domain}/contract/${
+        this.networkId
+      }/${address}/sources/${sourcePath}`
     });
   }
 

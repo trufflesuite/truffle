@@ -72,7 +72,7 @@ const Migrate = {
         "network",
         "network_id",
         "logger",
-        "from" // address doing deployment
+        "from", // address doing deployment
       ]);
 
       if (options.reset === true) {
@@ -140,7 +140,7 @@ const Migrate = {
 
     await this.emitter.emit("preAllMigrations", {
       dryRun: options.dryRun,
-      migrations
+      migrations,
     });
 
     try {
@@ -151,13 +151,13 @@ const Migrate = {
       }
       await this.emitter.emit("postAllMigrations", {
         dryRun: options.dryRun,
-        error: null
+        error: null,
       });
       return;
     } catch (error) {
       await this.emitter.emit("postAllMigrations", {
         dryRun: options.dryRun,
-        error: error.toString()
+        error: error.toString(),
       });
       throw error;
     } finally {
@@ -173,7 +173,7 @@ const Migrate = {
         abstraction.setProvider(provider);
         return abstraction;
       },
-      resolve: resolver.resolve
+      resolve: resolver.resolve,
     };
   },
 
@@ -234,7 +234,7 @@ const Migrate = {
         })
         .catch(error => reject(error));
     });
-  }
+  },
 };
 
 module.exports = Migrate;

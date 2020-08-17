@@ -11,7 +11,7 @@ branches:
     - next
 
     # other targets
-    - db
+    - truffle-db
 
 before_install:
   - npm install -g yarn
