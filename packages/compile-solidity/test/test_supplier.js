@@ -24,7 +24,7 @@ describe("CompilerSupplier", function () {
     const options = {
       contracts_directory: "",
       solc: "",
-      quiet: true
+      quiet: true,
     };
 
     before("get code", async function () {
@@ -70,8 +70,8 @@ describe("CompilerSupplier", function () {
       options.compilers = {
         solc: {
           version: "0.4.15",
-          settings: {}
-        }
+          settings: {},
+        },
       };
       const config = new Config().with(options);
 
@@ -87,8 +87,8 @@ describe("CompilerSupplier", function () {
       options.compilers = {
         solc: {
           version: "0.4.16-nightly.2017.8.9+commit.81887bc7",
-          settings: {}
-        }
+          settings: {},
+        },
       };
 
       const config = Config.default().merge(options);
@@ -106,8 +106,8 @@ describe("CompilerSupplier", function () {
 
       options.compilers = {
         solc: {
-          version: pathToSolc
-        }
+          version: pathToSolc,
+        },
       };
 
       const localPathOptions = Config.default().merge(options);
@@ -137,7 +137,7 @@ describe("CompilerSupplier", function () {
       if (await fse.exists(expectedCache)) await fse.unlink(expectedCache);
 
       options.compilers = {
-        solc: { version: "0.4.21" }
+        solc: { version: "0.4.21" },
       };
 
       const cachedOptions = Config.default().merge(options);
@@ -174,8 +174,8 @@ describe("CompilerSupplier", function () {
       it("compiles with native solc", async function () {
         options.compilers = {
           solc: {
-            version: "native"
-          }
+            version: "native",
+          },
         };
 
         const nativeSolcOptions = Config.default().merge(options);
@@ -196,8 +196,8 @@ describe("CompilerSupplier", function () {
         options.compilers = {
           solc: {
             version: "0.4.22",
-            docker: true
-          }
+            docker: true,
+          },
         };
 
         const dockerizedSolcOptions = Config.default().merge(options);
@@ -227,17 +227,17 @@ describe("CompilerSupplier", function () {
               settings: {
                 optimizer: {
                   enabled: false,
-                  runs: 200
-                }
-              }
-            }
+                  runs: 200,
+                },
+              },
+            },
           },
           quiet: true,
           solc: "",
           contracts_build_directory: path.join(__dirname, "./build"),
           contracts_directory: path.join(__dirname, "./sources/v0.4.x"),
           working_directory: __dirname,
-          paths: paths
+          paths: paths,
         };
 
         options.resolver = new Resolver(options);
@@ -258,8 +258,8 @@ describe("CompilerSupplier", function () {
           solc: {
             version: undefined,
             docker: true,
-            settings: {}
-          }
+            settings: {},
+          },
         };
         compileConfig = Config.default().merge(options);
 
@@ -281,8 +281,8 @@ describe("CompilerSupplier", function () {
           solc: {
             version: imageName,
             docker: true,
-            settings: {}
-          }
+            settings: {},
+          },
         };
         compileConfig = Config.default().merge(options);
 

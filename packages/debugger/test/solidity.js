@@ -145,17 +145,17 @@ let sources = {
   "BadTransfer.sol": __OVER_TRANSFER
 };
 
-describe("Solidity Debugging", function () {
+describe("Solidity Debugging", function() {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function () {
+  before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function () {
+  before("Prepare contracts and artifacts", async function() {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -163,7 +163,7 @@ describe("Solidity Debugging", function () {
     compilations = prepared.compilations;
   });
 
-  it("exposes functionality to stop at breakpoints", async function () {
+  it("exposes functionality to stop at breakpoints", async function() {
     // prepare
     let instance = await abstractions.NestedCall.deployed();
     let receipt = await instance.run();
@@ -196,7 +196,7 @@ describe("Solidity Debugging", function () {
     } while (!bugger.view(trace.finished));
   });
 
-  it("exposes functionality to stop at specified breakpoints", async function () {
+  it("exposes functionality to stop at specified breakpoints", async function() {
     // prepare
     let instance = await abstractions.NestedCall.deployed();
     let receipt = await instance.run();
@@ -223,7 +223,7 @@ describe("Solidity Debugging", function () {
     } while (!bugger.view(trace.finished));
   });
 
-  it("correctly resolves breakpoints", async function () {
+  it("correctly resolves breakpoints", async function() {
     // prepare
     let instance = await abstractions.AdjustTest.deployed();
     let receipt = await instance.run();
@@ -266,8 +266,8 @@ describe("Solidity Debugging", function () {
     assert.deepEqual(resolutions, expectedResolutions);
   });
 
-  describe("Function Depth", function () {
-    it("remains at 1 in absence of inner function calls", async function () {
+  describe("Function Depth", function() {
+    it("remains at 1 in absence of inner function calls", async function() {
       const maxExpected = 1;
 
       let instance = await abstractions.SingleCall.deployed();
@@ -292,7 +292,7 @@ describe("Solidity Debugging", function () {
       } while (!finished);
     });
 
-    it("is unaffected by precompiles", async function () {
+    it("is unaffected by precompiles", async function() {
       const numExpected = 0;
 
       let instance = await abstractions.SingleCall.deployed();
@@ -315,7 +315,7 @@ describe("Solidity Debugging", function () {
 
     //NOTE: this is same as previous test except for the transaction run;
     //not bothering to factor for now
-    it("is unaffected by overly large transfers", async function () {
+    it("is unaffected by overly large transfers", async function() {
       const numExpected = 0;
 
       let instance = await abstractions.BadTransferTest.deployed();
@@ -343,7 +343,7 @@ describe("Solidity Debugging", function () {
       }
     });
 
-    it("spelunks correctly", async function () {
+    it("spelunks correctly", async function() {
       // prepare
       let instance = await abstractions.NestedCall.deployed();
       let receipt = await instance.run();
@@ -377,7 +377,7 @@ describe("Solidity Debugging", function () {
       assert.deepEqual(actualSequence, expectedDepthSequence);
     });
 
-    it("unwinds correctly on call failure", async function () {
+    it("unwinds correctly on call failure", async function() {
       // prepare
       let instance = await abstractions.RevertTest.deployed();
       let receipt = await instance.run();

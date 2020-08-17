@@ -13,7 +13,7 @@ describe("commands/unbox.js", () => {
     "//truffle-box/bare-box#truffle-test-branch",
     "//truffle-box/bare-box#truffle-test-branch",
     "/bare/",
-    "//bare#truffle-test-branch"
+    "//bare#truffle-test-branch",
   ];
   const validBoxInput = [
     "bare",
@@ -23,20 +23,20 @@ describe("commands/unbox.js", () => {
     "https://github.com:truffle-box/bare-box",
     "https://github.com/truffle-box/bare-box#master",
     "git@github.com:truffle-box/bare-box",
-    "git@github.com:truffle-box/bare-box#master"
+    "git@github.com:truffle-box/bare-box#master",
   ];
 
   describe("run", () => {
     beforeEach(() => {
       tempDir = tmp.dirSync({
-        unsafeCleanup: true
+        unsafeCleanup: true,
       });
       mockConfig = Config.default().with({
         logger: { log: () => {} },
-        working_directory: tempDir.name
+        working_directory: tempDir.name,
       });
       mockConfig.events = {
-        emit: () => {}
+        emit: () => {},
       };
       sinon.stub(Config, "default").returns({ with: () => mockConfig });
     });
@@ -49,8 +49,8 @@ describe("commands/unbox.js", () => {
         const promises = [];
         for (const path of invalidBoxFormats) {
           promises.push(
-            new Promise(resolve => {
-              const callback = error => {
+            new Promise((resolve) => {
+              const callback = (error) => {
                 error ? assert(true) : assert(false);
                 resolve();
               };
@@ -63,11 +63,11 @@ describe("commands/unbox.js", () => {
     });
 
     describe("successful unboxes", () => {
-      it("runs when passed valid box input", done => {
+      it("runs when passed valid box input", (done) => {
         let promises = [];
-        validBoxInput.forEach(val => {
+        validBoxInput.forEach((val) => {
           promises.push(
-            new Promise(resolve => {
+            new Promise((resolve) => {
               unbox.run({ _: [`${val}`], force: true }, () => resolve());
             })
           );

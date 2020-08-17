@@ -20,8 +20,7 @@ class Docker extends LoadingStrategy {
 
     try {
       return {
-        compile: options =>
-          String(execSync(command, { input: options, maxBuffer })),
+        compile: options => String(execSync(command, { input: options, maxBuffer })),
         version: () => versionString
       };
     } catch (error) {

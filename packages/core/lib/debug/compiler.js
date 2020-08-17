@@ -17,5 +17,5 @@ class DebugCompiler {
 }
 
 module.exports = {
-  DebugCompiler
+  DebugCompiler,
 };

@@ -166,8 +166,10 @@ let solidity = createSelectorTree({
     /**
      * solidity.current.humanReadableSourceMap
      */
-    humanReadableSourceMap: createLeaf(["./sourceMap"], sourceMap =>
-      sourceMap ? SolidityUtils.getHumanReadableSourceMap(sourceMap) : null
+    humanReadableSourceMap: createLeaf(
+      ["./sourceMap"],
+      sourceMap =>
+        sourceMap ? SolidityUtils.getHumanReadableSourceMap(sourceMap) : null
     ),
 
     /**

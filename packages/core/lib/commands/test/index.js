@@ -113,7 +113,7 @@ const command = {
       }
     ]
   },
-  run: function (options, done) {
+  run: function(options, done) {
     const Config = require("@truffle/config");
     const { Environment, Develop } = require("@truffle/environment");
     const {

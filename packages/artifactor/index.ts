@@ -50,7 +50,9 @@ class Artifactor {
       tmpArtifactArray.forEach(artifactObj => {
         if (newArtifactObjects[artifactObj.contract_name]) {
           console.warn(
-            `${OS.EOL}> Duplicate contract names found for ${artifactObj.contract_name}.${OS.EOL}` +
+            `${OS.EOL}> Duplicate contract names found for ${
+              artifactObj.contract_name
+            }.${OS.EOL}` +
               `> This can cause errors and unknown behavior. Please rename one of your contracts.`
           );
         }

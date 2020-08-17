@@ -10,7 +10,7 @@ const command = {
     usage: "truffle watch",
     options: []
   },
-  run: function (options) {
+  run: function(options) {
     const OS = require("os");
     const deprecationMessage = colors.yellow(
       `> The watch command is planned ` +
@@ -67,7 +67,7 @@ const build = config => {
 
   config.logger.log("Rebuilding...");
 
-  Build.build(config, function (error) {
+  Build.build(config, function(error) {
     printSummary(config, error);
   });
 };

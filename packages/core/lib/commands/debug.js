@@ -32,7 +32,7 @@ const command = {
       }
     ]
   },
-  run: function (options, done) {
+  run: function(options, done) {
     const debugModule = require("debug");
     const debug = debugModule("lib:commands:debug");
 

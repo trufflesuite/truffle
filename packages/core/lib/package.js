@@ -10,7 +10,7 @@ const fs = require("fs");
 const OS = require("os");
 
 const Package = {
-  install: async function (options, callback) {
+  install: async function(options, callback) {
     const callbackPassed = typeof callback === "function";
     expect.options(options, ["working_directory", "ethpm"]);
 
@@ -112,7 +112,7 @@ const Package = {
     }
   },
 
-  publish: async function (options, callback) {
+  publish: async function(options, callback) {
     const callbackPassed = typeof callback === "function";
     var self = this;
 
@@ -208,12 +208,12 @@ const Package = {
     }
   },
 
-  digest: function (options, callback) {
+  digest: function(options, callback) {
     callback(new Error("Not yet implemented"));
   },
 
   // Return a list of publishable artifacts
-  publishable_artifacts: async function (options, callback) {
+  publishable_artifacts: async function(options, callback) {
     const callbackPassed = typeof callback === "function";
     // Filter out "test" and "development" networks.
     const ifReservedNetworks = new Set(["test", "development"]);

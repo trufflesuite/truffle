@@ -35,7 +35,7 @@ const command = {
       }
     ]
   },
-  run: function (options, done) {
+  run: function(options, done) {
     const Config = require("@truffle/config");
     const Contracts = require("@truffle/workflow-compile");
     const ConfigurationError = require("../errors/configurationerror");

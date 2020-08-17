@@ -304,7 +304,10 @@ class DebugInterpreter {
     }
 
     //split arguments for commands that want that; split on runs of spaces
-    splitArgs = cmd.trim().split(/ +/).slice(1);
+    splitArgs = cmd
+      .trim()
+      .split(/ +/)
+      .slice(1);
     debug("splitArgs %O", splitArgs);
 
     //warning: this bit *alters* cmd!

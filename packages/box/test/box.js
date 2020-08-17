@@ -82,7 +82,7 @@ describe("@truffle/box Box", () => {
         utils.downloadBox.restore();
       });
 
-      it("calls the cleanup function if it is available", function (done) {
+      it("calls the cleanup function if it is available", function(done) {
         Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config).catch(() => {
           assert(cleanupCallback.called);
           done();

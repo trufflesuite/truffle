@@ -24,7 +24,7 @@ export async function resolveAllSources({
   resolve,
   paths,
   shouldIncludePath,
-  parseImports
+  parseImports,
 }: ResolveAllSourcesOptions): Promise<ResolvedSourcesMapping> {
   const mapping: ResolvedSourcesMapping = {};
   const allPaths: (UnresolvedSource | string)[] = paths.slice();

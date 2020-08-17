@@ -412,8 +412,8 @@ function allocateContractState(
     let arrayToGrabFrom = isConstant(variable.definition)
       ? constantVariableAllocations
       : isImmutable(variable.definition)
-      ? immutableVariableAllocations
-      : storageVariableAllocations;
+        ? immutableVariableAllocations
+        : storageVariableAllocations;
     contractAllocation.push(arrayToGrabFrom.shift()); //note that push and shift both modify!
   }
 

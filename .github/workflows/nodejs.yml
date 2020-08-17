@@ -9,7 +9,7 @@ on:
     - next
 
     # other targets
-    - db
+    - truffle-db
 
   pull_request:
     branches:

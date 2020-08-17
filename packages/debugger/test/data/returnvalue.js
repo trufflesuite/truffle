@@ -68,17 +68,17 @@ let migrations = {
   "2_deploy_contracts.js": __MIGRATION
 };
 
-describe("Return value decoding", function () {
+describe("Return value decoding", function() {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function () {
+  before("Create Provider", async function() {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function () {
+  before("Prepare contracts and artifacts", async function() {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources, migrations);
@@ -86,7 +86,7 @@ describe("Return value decoding", function () {
     compilations = prepared.compilations;
   });
 
-  it("Decodes return values correctly", async function () {
+  it("Decodes return values correctly", async function() {
     this.timeout(9000);
 
     let instance = await abstractions.ReturnValues.deployed();
@@ -111,7 +111,7 @@ describe("Return value decoding", function () {
     assert.deepEqual(values, [-1, -2]);
   });
 
-  it("Decodes bytecode", async function () {
+  it("Decodes bytecode", async function() {
     this.timeout(12000);
 
     let instance = await abstractions.ReturnValues.new(false);
@@ -139,7 +139,7 @@ describe("Return value decoding", function () {
     );
   });
 
-  it("Decodes library bytecode", async function () {
+  it("Decodes library bytecode", async function() {
     this.timeout(12000);
 
     let instance = await abstractions.ReturnLibrary.new();
@@ -160,7 +160,7 @@ describe("Return value decoding", function () {
     assert.strictEqual(decoding.address, instance.address);
   });
 
-  it("Decodes bytecode from a default constructor", async function () {
+  it("Decodes bytecode from a default constructor", async function() {
     this.timeout(12000);
 
     let instance = await abstractions.Default.new();
@@ -188,7 +188,7 @@ describe("Return value decoding", function () {
     );
   });
 
-  it("Decodes messageless revert", async function () {
+  it("Decodes messageless revert", async function() {
     this.timeout(9000);
 
     //HACK: because this transaction makes web3 throw, we have to extract the hash from
@@ -212,7 +212,7 @@ describe("Return value decoding", function () {
     assert.strictEqual(decoding.kind, "failure");
   });
 
-  it("Decodes revert string", async function () {
+  it("Decodes revert string", async function() {
     this.timeout(9000);
 
     //HACK: because this transaction makes web3 throw, we have to extract the hash from

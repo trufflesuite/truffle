@@ -7,8 +7,8 @@ const Codec = require("@truffle/codec");
 const ShadowBase = artifacts.require("ShadowBase");
 const ShadowDerived = artifacts.require("ShadowDerived");
 
-contract("ShadowDerived", function (_accounts) {
-  it("Includes shadowed storage variables in variables", async function () {
+contract("ShadowDerived", function(_accounts) {
+  it("Includes shadowed storage variables in variables", async function() {
     let deployedContract = await ShadowDerived.deployed();
     let decoder = await Decoder.forContractInstance(deployedContract, [
       ShadowBase
@@ -22,7 +22,7 @@ contract("ShadowDerived", function (_accounts) {
     assert.equal(variables[3].class.typeName, "ShadowDerived");
   });
 
-  it("Fetches variables by name or qualified name", async function () {
+  it("Fetches variables by name or qualified name", async function() {
     let deployedContract = await ShadowDerived.deployed();
     let decoder = await Decoder.forContractInstance(deployedContract, [
       ShadowBase

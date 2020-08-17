@@ -26,7 +26,7 @@ const copyFiles = async (destination, options) => {
   }
 
   await events.emit("init:copyingProjectFiles", {
-    destinationPath: destination
+    destinationPath: destination,
   });
   for (const file of shouldCopy) {
     fse.copySync(path.join(sourcePath, file), path.join(destination, file));
