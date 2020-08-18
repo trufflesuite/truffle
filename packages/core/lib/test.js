@@ -8,10 +8,10 @@ const {
 const Config = require("@truffle/config");
 const Contracts = require("@truffle/workflow-compile/new");
 const Resolver = require("@truffle/resolver");
-const TestRunner = require("./testing/testrunner");
-const TestResolver = require("./testing/testresolver");
-const TestSource = require("./testing/testsource");
-const SolidityTest = require("./testing/soliditytest");
+const TestRunner = require("./testing/TestRunner");
+const TestResolver = require("./testing/TestResolver");
+const TestSource = require("./testing/TestSource");
+const SolidityTest = require("./testing/SolidityTest");
 const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/profiler");

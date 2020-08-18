@@ -1,4 +1,4 @@
-const Deployed = require("./deployed");
+const Deployed = require("./Deployed");
 const path = require("path");
 const fse = require("fs-extra");
 const contract = require("@truffle/contract");
