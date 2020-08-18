@@ -143,12 +143,6 @@ class Console extends EventEmitter {
     const spawnOptions = { stdio: ["inherit", "inherit", "inherit"] };
 
     try {
-      //serialize config networks entries
-      const configNetworks = {};
-      for (const key in options.networks) {
-        configNetworks[key] = JSON.stringify(options.networks[key]);
-      }
-
       spawnSync(
         "node",
         [childPath, inputStrings, options.network],
