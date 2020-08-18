@@ -1,7 +1,7 @@
 var assert = require("chai").assert;
 var Box = require("@truffle/box");
 var Migrate = require("@truffle/migrate");
-var Contracts = require("@truffle/workflow-compile");
+var Contracts = require("@truffle/workflow-compile/new");
 var Networks = require("../lib/networks");
 var path = require("path");
 var fs = require("fs-extra");
@@ -11,7 +11,7 @@ var Resolver = require("@truffle/resolver");
 var Artifactor = require("@truffle/artifactor");
 var Web3 = require("web3");
 
-describe("migrate", function() {
+describe("migrate", function () {
   var config;
 
   before("Create a sandbox", async () => {
@@ -35,15 +35,15 @@ describe("migrate", function() {
     });
   }
 
-  before("Get accounts and network id of network one", function() {
+  before("Get accounts and network id of network one", function () {
     return createProviderAndSetNetworkConfig("primary");
   });
 
-  before("Get accounts and network id of network one", function() {
+  before("Get accounts and network id of network one", function () {
     return createProviderAndSetNetworkConfig("secondary");
   });
 
-  after("Cleanup tmp files", function(done) {
+  after("Cleanup tmp files", function (done) {
     glob("tmp-*", (err, files) => {
       if (err) done(err);
       files.forEach(file => fs.removeSync(file));
@@ -75,7 +75,7 @@ describe("migrate", function() {
 
     config.network = "primary";
 
-    await Contracts.compile(config.with({ all: false, quiet: true }));
+    await Contracts.compileAndSave(config.with({ all: false, quiet: true }));
 
     await Migrate.run(config.with({ quiet: true }));
 
@@ -169,7 +169,7 @@ describe("migrate", function() {
       "Migrations contract should have an address on secondary network"
     );
 
-    Object.keys(networks["primary"]).forEach(function(contract_name) {
+    Object.keys(networks["primary"]).forEach(function (contract_name) {
       assert.notEqual(
         networks["secondary"][contract_name],
         networks["primary"][contract_name],

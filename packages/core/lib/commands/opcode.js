@@ -17,10 +17,10 @@ var command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: function (options, done) {
     var Config = require("@truffle/config");
     var TruffleError = require("@truffle/error");
-    var Contracts = require("@truffle/workflow-compile");
+    var Contracts = require("@truffle/workflow-compile/new");
     var CodeUtils = require("@truffle/code-utils");
 
     if (options._.length === 0) {
@@ -28,7 +28,7 @@ var command = {
     }
 
     var config = Config.detect(options);
-    Contracts.compile(config, function(err) {
+    Contracts.compileAndSave(config, function (err) {
       if (err) return done(err);
 
       var contractName = options._[0];
@@ -55,7 +55,7 @@ var command = {
 
       var indexLength = (opcodes.length + "").length;
 
-      opcodes.forEach(function(opcode, index) {
+      opcodes.forEach(function (opcode, index) {
         var strIndex = index + ":";
 
         while (strIndex.length < indexLength + 1) {

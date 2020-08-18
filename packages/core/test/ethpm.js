@@ -3,14 +3,14 @@ var Box = require("@truffle/box");
 var fs = require("fs-extra");
 var glob = require("glob");
 var path = require("path");
-var Contracts = require("@truffle/workflow-compile");
+var Contracts = require("@truffle/workflow-compile/new");
 var Package = require("../lib/package.js");
 var Blockchain = require("@truffle/blockchain-utils");
 var Ganache = require("ganache-core");
 var Resolver = require("@truffle/resolver");
 var Artifactor = require("@truffle/artifactor");
 
-describe.skip("EthPM integration", function() {
+describe.skip("EthPM integration", function () {
   var config;
   var host;
   var registry;
@@ -29,12 +29,12 @@ describe.skip("EthPM integration", function() {
     );
   }
 
-  beforeEach("Create a Ganache provider and get a blockchain uri", function(
+  beforeEach("Create a Ganache provider and get a blockchain uri", function (
     done
   ) {
     provider = Ganache.provider();
 
-    Blockchain.asURI(provider, function(err, uri) {
+    Blockchain.asURI(provider, function (err, uri) {
       if (err) return done(err);
       blockchain_uri = uri;
       done();
@@ -42,9 +42,9 @@ describe.skip("EthPM integration", function() {
   });
 
   // Super slow doing these in a beforeEach, but it ensures nothing conflicts.
-  beforeEach("Create a sandbox", function(done) {
+  beforeEach("Create a sandbox", function (done) {
     this.timeout(20000);
-    Box.sandbox(function(err, result) {
+    Box.sandbox(function (err, result) {
       if (err) return done(err);
       config = result;
       config.resolver = new Resolver(config);
@@ -60,14 +60,14 @@ describe.skip("EthPM integration", function() {
     });
   });
 
-  beforeEach("Create a fake EthPM host and memory registry", function(done) {
+  beforeEach("Create a fake EthPM host and memory registry", function (done) {
     this.timeout(30000); // I've had varrying runtimes with this block, likely due to networking.
 
     GithubExamples.initialize(
       {
         blockchain: blockchain_uri
       },
-      function(err, results) {
+      function (err, results) {
         if (err) return done(err);
 
         host = results.host;
@@ -78,7 +78,7 @@ describe.skip("EthPM integration", function() {
     );
   });
 
-  after("Cleanup tmp files", function(done) {
+  after("Cleanup tmp files", function (done) {
     glob("tmp-*", (err, files) => {
       if (err) done(err);
       files.forEach(file => fs.removeSync(file));
@@ -103,7 +103,7 @@ describe.skip("EthPM integration", function() {
   //   }
   // });
 
-  it("successfully installs single dependency from EthPM", function(done) {
+  it("successfully installs single dependency from EthPM", function (done) {
     this.timeout(30000); // Giving ample time for requests to time out.
 
     Package.install(
@@ -115,7 +115,7 @@ describe.skip("EthPM integration", function() {
         },
         packages: ["owned"]
       }),
-      function(err) {
+      function (err) {
         if (err) return done(err);
 
         var expected_install_directory = path.resolve(
@@ -132,7 +132,7 @@ describe.skip("EthPM integration", function() {
     );
   });
 
-  it("successfully installs and provisions a package with dependencies from EthPM", function(done) {
+  it("successfully installs and provisions a package with dependencies from EthPM", function (done) {
     this.timeout(30000); // Giving ample time for requests to time out.
     this.retries(2);
 
@@ -145,7 +145,7 @@ describe.skip("EthPM integration", function() {
         },
         packages: ["transferable"]
       }),
-      function(err) {
+      function (err) {
         if (err) return done(err);
 
         var expected_install_directory = path.resolve(
@@ -186,33 +186,33 @@ describe.skip("EthPM integration", function() {
         );
 
         // Compile all contracts, then provision them and see if we get contracts from our dependencies.
-        Contracts.compile(
+        Contracts.compileAndSave(
           config.with({
             all: true,
             quiet: true
           }),
-          function(err, result) {
+          function (err, result) {
             if (err) return done(err);
             let { contracts } = result;
 
             assert.isNotNull(contracts["owned"]);
             assert.isNotNull(contracts["transferable"]);
 
-            fs.readdir(config.contracts_build_directory, function(err, files) {
+            fs.readdir(config.contracts_build_directory, function (err, files) {
               if (err) return done(err);
 
               var found = [false, false];
               var search = ["owned", "transferable"];
 
-              search.forEach(function(contract_name, index) {
-                files.forEach(function(file) {
+              search.forEach(function (contract_name, index) {
+                files.forEach(function (file) {
                   if (path.basename(file, ".json") === contract_name) {
                     found[index] = true;
                   }
                 });
               });
 
-              found.forEach(function(isFound, index) {
+              found.forEach(function (isFound, index) {
                 assert(
                   isFound,
                   "Could not find built binary with name '" +
@@ -232,7 +232,7 @@ describe.skip("EthPM integration", function() {
   // For each of these examples, sources exist. However, including sources isn't required. This test
   // treats the package as if it had no sources; to do so, we simply don't compile its code.
   // In addition, this package contains deployments. We need to make sure these deployments are available.
-  it("successfully installs and provisions a deployed package with network artifacts from EthPM, without compiling", function(done) {
+  it("successfully installs and provisions a deployed package with network artifacts from EthPM, without compiling", function (done) {
     this.timeout(30000); // Giving ample time for requests to time out.
 
     Package.install(
@@ -244,7 +244,7 @@ describe.skip("EthPM integration", function() {
         },
         packages: ["safe-math-lib"]
       }),
-      function(err) {
+      function (err) {
         if (err) return done(err);
 
         // Make sure we can resolve it.
