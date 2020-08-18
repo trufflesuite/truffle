@@ -9,7 +9,10 @@ async function run(rawSources, options) {
     return {
       contracts: [],
       sourceIndexes: [],
-      compiler: undefined
+      compiler: {
+        name: undefined,
+        version: undefined
+      }
     };
   }
 
