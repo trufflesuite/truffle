@@ -1,14 +1,14 @@
-var assert = require("chai").assert;
-var Box = require("@truffle/box");
-var fs = require("fs-extra");
-var glob = require("glob");
-var path = require("path");
-var Contracts = require("@truffle/workflow-compile/new");
-var Package = require("../lib/package.js");
-var Blockchain = require("@truffle/blockchain-utils");
-var Ganache = require("ganache-core");
-var Resolver = require("@truffle/resolver");
-var Artifactor = require("@truffle/artifactor");
+const assert = require("chai").assert;
+const Box = require("@truffle/box");
+const fs = require("fs-extra");
+const glob = require("glob");
+const path = require("path");
+const Contracts = require("@truffle/workflow-compile/new");
+const Package = require("../lib/package.js");
+const Blockchain = require("@truffle/blockchain-utils");
+const Ganache = require("ganache-core");
+const Resolver = require("@truffle/resolver");
+const Artifactor = require("@truffle/artifactor");
 
 describe.skip("EthPM integration", function () {
   var config;
@@ -103,10 +103,10 @@ describe.skip("EthPM integration", function () {
   //   }
   // });
 
-  it("successfully installs single dependency from EthPM", function (done) {
+  it("successfully installs single dependency from EthPM", async function () {
     this.timeout(30000); // Giving ample time for requests to time out.
 
-    Package.install(
+    await Package.install(
       config.with({
         ethpm: {
           ipfs_host: host,
@@ -114,29 +114,21 @@ describe.skip("EthPM integration", function () {
           provider: provider
         },
         packages: ["owned"]
-      }),
-      function (err) {
-        if (err) return done(err);
-
-        var expected_install_directory = path.resolve(
-          path.join(config.working_directory, "installed_contracts", "owned")
-        );
-
-        assertFile(path.join(expected_install_directory, "ethpm.json"));
-        assertFile(
-          path.join(expected_install_directory, "contracts", "owned.sol")
-        );
-
-        done();
-      }
+      })
     );
+    const expected_install_directory = path.resolve(
+      path.join(config.working_directory, "installed_contracts", "owned")
+    );
+
+    assertFile(path.join(expected_install_directory, "ethpm.json"));
+    assertFile(path.join(expected_install_directory, "contracts", "owned.sol"));
   });
 
-  it("successfully installs and provisions a package with dependencies from EthPM", function (done) {
+  it("successfully installs and provisions a package with dependencies from EthPM", async function () {
     this.timeout(30000); // Giving ample time for requests to time out.
     this.retries(2);
 
-    Package.install(
+    await Package.install(
       config.with({
         ethpm: {
           ipfs_host: host,
@@ -144,89 +136,69 @@ describe.skip("EthPM integration", function () {
           provider: provider
         },
         packages: ["transferable"]
-      }),
-      function (err) {
-        if (err) return done(err);
-
-        var expected_install_directory = path.resolve(
-          path.join(config.working_directory, "installed_contracts")
-        );
-
-        assertFile(
-          path.join(expected_install_directory, "transferable", "ethpm.json")
-        );
-        assertFile(
-          path.join(
-            expected_install_directory,
-            "transferable",
-            "contracts",
-            "transferable.sol"
-          )
-        );
-        assertFile(
-          path.join(expected_install_directory, "owned", "ethpm.json")
-        );
-        assertFile(
-          path.join(
-            expected_install_directory,
-            "owned",
-            "contracts",
-            "owned.sol"
-          )
-        );
-
-        // Write a contract that uses transferable, so it will be compiled.
-        var contractSource =
-          "pragma solidity ^0.4.2; import 'transferable/transferable.sol'; contract MyContract {}";
-
-        fs.writeFileSync(
-          path.join(config.contracts_directory, "MyContract.sol"),
-          contractSource,
-          "utf8"
-        );
-
-        // Compile all contracts, then provision them and see if we get contracts from our dependencies.
-        Contracts.compileAndSave(
-          config.with({
-            all: true,
-            quiet: true
-          }),
-          function (err, result) {
-            if (err) return done(err);
-            let { contracts } = result;
-
-            assert.isNotNull(contracts["owned"]);
-            assert.isNotNull(contracts["transferable"]);
-
-            fs.readdir(config.contracts_build_directory, function (err, files) {
-              if (err) return done(err);
-
-              var found = [false, false];
-              var search = ["owned", "transferable"];
-
-              search.forEach(function (contract_name, index) {
-                files.forEach(function (file) {
-                  if (path.basename(file, ".json") === contract_name) {
-                    found[index] = true;
-                  }
-                });
-              });
-
-              found.forEach(function (isFound, index) {
-                assert(
-                  isFound,
-                  "Could not find built binary with name '" +
-                    search[index] +
-                    "'"
-                );
-              });
-
-              done();
-            });
-          }
-        );
-      }
+      })
     );
+    const expected_install_directory = path.resolve(
+      path.join(config.working_directory, "installed_contracts")
+    );
+
+    assertFile(
+      path.join(expected_install_directory, "transferable", "ethpm.json")
+    );
+    assertFile(
+      path.join(
+        expected_install_directory,
+        "transferable",
+        "contracts",
+        "transferable.sol"
+      )
+    );
+    assertFile(path.join(expected_install_directory, "owned", "ethpm.json"));
+    assertFile(
+      path.join(expected_install_directory, "owned", "contracts", "owned.sol")
+    );
+
+    // Write a contract that uses transferable, so it will be compiled.
+    const contractSource =
+      "pragma solidity ^0.4.2; import 'transferable/transferable.sol'; contract MyContract {}";
+
+    fs.writeFileSync(
+      path.join(config.contracts_directory, "MyContract.sol"),
+      contractSource,
+      "utf8"
+    );
+
+    // Compile all contracts, then provision them and see if we get contracts from our dependencies.
+    const { contracts } = await Contracts.compileAndSave(
+      config.with({
+        all: true,
+        quiet: true
+      })
+    );
+    const contractNames = contracts.reduce((a, contract) => {
+      return a.concat(contract.contractName);
+    }, []);
+    assert.isNotNull(contractNames["owned"]);
+    assert.isNotNull(contractNames["transferable"]);
+    const files = fs.readdirSync(config.contracts_build_directory);
+
+    const found = [false, false];
+    const search = ["owned", "transferable"];
+
+    search.forEach((contract_name, index) => {
+      files.forEach(file => {
+        if (path.basename(file, ".json") === contract_name) {
+          found[index] = true;
+        }
+      });
+    });
+
+    found.forEach((isFound, index) => {
+      assert(
+        isFound,
+        "Could not find built binary with name '" + search[index] + "'"
+      );
+    });
   });
 
   // For each of these examples, sources exist. However, including sources isn't required. This test

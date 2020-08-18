@@ -39,51 +39,37 @@ describe("compile", function () {
 
   afterEach("Clear MemoryStream", () => (output = ""));
 
-  it("compiles all initial contracts", function (done) {
+  it("compiles all initial contracts", async function () {
     this.timeout(10000);
-
-    Contracts.compileAndSave(
+    const { contracts } = await Contracts.compileAndSave(
       config.with({
         all: false,
         quiet: true
-      }),
-      function (err, result) {
-        if (err) return done(err);
-        let { contracts } = result;
-
-        assert.equal(
-          Object.keys(contracts).length,
-          3,
-          "Didn't compile the expected number of contracts"
-        );
-        done();
-      }
+      })
+    );
+    assert.equal(
+      Object.keys(contracts).length,
+      3,
+      "Didn't compile the expected number of contracts"
     );
   });
 
-  it("compiles no contracts after no updates", function (done) {
+  it("compiles no contracts after no updates", async function () {
     this.timeout(10000);
-
-    Contracts.compileAndSave(
+    const { contracts } = await Contracts.compileAndSave(
       config.with({
         all: false,
         quiet: true
-      }),
-      function (err, result) {
-        if (err) return done(err);
-        let { contracts } = result;
-
-        assert.equal(
-          Object.keys(contracts).length,
-          0,
-          "Compiled a contract even though we weren't expecting it"
-        );
-        done();
-      }
+      })
+    );
+    assert.equal(
+      Object.keys(contracts).length,
+      0,
+      "Compiled a contract even though we weren't expecting it"
     );
   });
 
-  it("compiles updated contract and its ancestors", function (done) {
+  it("compiles updated contract and its ancestors", async function () {
     this.timeout(10000);
 
     var file_to_update = path.resolve(
@@ -95,27 +81,20 @@ describe("compile", function () {
     var newTime = new Date().getTime();
     fs.utimesSync(file_to_update, newTime, newTime);
 
-    Contracts.compileAndSave(
+    const { contracts } = await Contracts.compileAndSave(
       config.with({
         all: false,
         quiet: true
-      }),
-      function (err, result) {
-        if (err) return done(err);
-        let { contracts } = result;
-
-        assert.equal(
-          Object.keys(contracts).length,
-          2,
-          "Expected MetaCoin and ConvertLib to be compiled"
-        );
-
-        // reset time
-        fs.utimesSync(file_to_update, stat.atime, stat.mtime);
-
-        done();
-      }
+      })
     );
+    assert.equal(
+      Object.keys(contracts).length,
+      2,
+      "Expected MetaCoin and ConvertLib to be compiled"
+    );
+
+    // reset time
+    fs.utimesSync(file_to_update, stat.atime, stat.mtime);
   });
 
   it("compiling shouldn't create any network artifacts", function () {

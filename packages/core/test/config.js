@@ -32,13 +32,12 @@ describe("config", function () {
     };
   });
 
-  before("Compile contracts", function (done) {
+  before("Compile contracts", async function () {
     this.timeout(10000);
-    Contracts.compileAndSave(
+    await Contracts.compileAndSave(
       config.with({
         quiet: true
-      }),
-      done
+      })
     );
   });
 

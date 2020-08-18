@@ -88,25 +88,18 @@ describe("NPM integration", function () {
     assert.fail("Source lookup should have errored but didn't");
   });
 
-  it("contract compiliation successfully picks up modules and their dependencies", function (done) {
+  it("successfully picks up modules and their dependencies during compilation", async function () {
     this.timeout(10000);
-
-    Contracts.compileAndSave(
+    const { contracts } = await Contracts.compileAndSave(
       config.with({
         quiet: true
-      }),
-      function (err, result) {
-        if (err) return done(err);
-        let { contracts } = result;
-
-        var contractNames = Object.keys(contracts);
-
-        assert.include(contractNames, "Parent");
-        assert.include(contractNames, "Module");
-        assert.include(contractNames, "ModuleDependency");
-
-        done();
-      }
+      })
     );
+    const contractNames = contracts.reduce((a, contract) => {
+      return a.concat(contract.contractName);
+    }, []);
+    assert.include(contractNames, "Parent");
+    assert.include(contractNames, "Module");
+    assert.include(contractNames, "ModuleDependency");
   });
 }).timeout(10000);
