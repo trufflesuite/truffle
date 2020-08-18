@@ -1,6 +1,6 @@
 const assert = require("chai").assert;
 const Box = require("@truffle/box");
-const Contracts = requiAndSavere("@truffle/workflow-compile/new");
+const Contracts = require("@truffle/workflow-compile/new");
 const Artifactor = require("@truffle/artifactor");
 const Resolver = require("@truffle/resolver");
 const MemoryStream = require("memorystream");
