@@ -1,0 +1,128 @@
+diff --git a/node_modules/eth-sig-util/node_modules/ethereumjs-abi/node_modules/ethereumjs-util/dist/index.js b/node_modules/eth-sig-util/node_modules/ethereumjs-abi/node_modules/ethereumjs-util/dist/index.js
+index aa4c08d..349ccfa 100644
+--- a/node_modules/eth-sig-util/node_modules/ethereumjs-abi/node_modules/ethereumjs-util/dist/index.js
++++ b/node_modules/eth-sig-util/node_modules/ethereumjs-abi/node_modules/ethereumjs-util/dist/index.js
+@@ -13,6 +13,7 @@ var assert = require('assert');
+ var rlp = require('rlp');
+ var BN = require('bn.js');
+ var createHash = require('create-hash');
++const bufferFrom = require('buffer-from');
+ 
+ /**
+  * the max integer that this VM can handle (a ```BN```)
+@@ -36,7 +37,7 @@ exports.SHA3_NULL_S = 'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045
+  * SHA3-256 hash of null (a ```Buffer```)
+  * @var {Buffer} SHA3_NULL
+  */
+-exports.SHA3_NULL = new Buffer(exports.SHA3_NULL_S, 'hex');
++exports.SHA3_NULL = bufferFrom(exports.SHA3_NULL_S, 'hex');
+ 
+ /**
+  * SHA3-256 of an RLP of an empty array (a ```String```)
+@@ -48,7 +49,7 @@ exports.SHA3_RLP_ARRAY_S = '1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a1
+  * SHA3-256 of an RLP of an empty array (a ```Buffer```)
+  * @var {Buffer} SHA3_RLP_ARRAY
+  */
+-exports.SHA3_RLP_ARRAY = new Buffer(exports.SHA3_RLP_ARRAY_S, 'hex');
++exports.SHA3_RLP_ARRAY = bufferFrom(exports.SHA3_RLP_ARRAY_S, 'hex');
+ 
+ /**
+  * SHA3-256 hash of the RLP of null  (a ```String```)
+@@ -60,7 +61,7 @@ exports.SHA3_RLP_S = '56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e3
+  * SHA3-256 hash of the RLP of null (a ```Buffer```)
+  * @var {Buffer} SHA3_RLP
+  */
+-exports.SHA3_RLP = new Buffer(exports.SHA3_RLP_S, 'hex');
++exports.SHA3_RLP = bufferFrom(exports.SHA3_RLP_S, 'hex');
+ 
+ /**
+  * [`BN`](https://github.com/indutny/bn.js)
+@@ -87,7 +88,7 @@ exports.secp256k1 = secp256k1;
+  * @return {Buffer}
+  */
+ exports.zeros = function (bytes) {
+-  var buf = new Buffer(bytes);
++  var buf = bufferFrom(bytes);
+   buf.fill(0);
+   return buf;
+ };
+@@ -154,20 +155,20 @@ exports.unpad = exports.stripZeros = function (a) {
+ exports.toBuffer = function (v) {
+   if (!Buffer.isBuffer(v)) {
+     if (Array.isArray(v)) {
+-      v = new Buffer(v);
++      v = bufferFrom(v);
+     } else if (typeof v === 'string') {
+       if (exports.isHexPrefixed(v)) {
+-        v = new Buffer(exports.padToEven(exports.stripHexPrefix(v)), 'hex');
++        v = bufferFrom(exports.padToEven(exports.stripHexPrefix(v)), 'hex');
+       } else {
+-        v = new Buffer(v);
++        v = bufferFrom(v);
+       }
+     } else if (typeof v === 'number') {
+       v = exports.intToBuffer(v);
+     } else if (v === null || v === undefined) {
+-      v = new Buffer([]);
++      v = bufferFrom([]);
+     } else if (v.toArray) {
+       // converts a BN to a Buffer
+-      v = new Buffer(v.toArray());
++      v = bufferFrom(v.toArray());
+     } else {
+       throw new Error('invalid type');
+     }
+@@ -200,7 +201,7 @@ exports.intToHex = function (i) {
+  */
+ exports.intToBuffer = function (i) {
+   var hex = exports.intToHex(i);
+-  return new Buffer(hex.slice(2), 'hex');
++  return bufferFrom(hex.slice(2), 'hex');
+ };
+ 
+ /**
+@@ -245,7 +246,7 @@ exports.fromSigned = function (num) {
+  * @return {Buffer}
+  */
+ exports.toUnsigned = function (num) {
+-  return new Buffer(num.toTwos(256).toArray());
++  return bufferFrom(num.toTwos(256).toArray());
+ };
+ 
+ /**
+@@ -342,7 +343,7 @@ exports.isValidPrivate = function (privateKey) {
+ exports.isValidPublic = function (publicKey, sanitize) {
+   if (publicKey.length === 64) {
+     // Convert to SEC1 for secp256k1
+-    return secp256k1.publicKeyVerify(Buffer.concat([new Buffer([4]), publicKey]));
++    return secp256k1.publicKeyVerify(Buffer.concat([bufferFrom([4]), publicKey]));
+   }
+ 
+   if (!sanitize) {
+@@ -537,7 +538,7 @@ exports.generateAddress = function (from, nonce) {
+     // read the RLP documentation for an answer if you dare
+     nonce = null;
+   } else {
+-    nonce = new Buffer(nonce.toArray());
++    nonce = bufferFrom(nonce.toArray());
+   }
+ 
+   // Only take the lower 160bits of the hash
+@@ -661,7 +662,7 @@ exports.defineProperties = function (self, fields, data) {
+       v = exports.toBuffer(v);
+ 
+       if (v.toString('hex') === '00' && !field.allowZero) {
+-        v = new Buffer([]);
++        v = bufferFrom([]);
+       }
+ 
+       if (field.allowLess && field.length) {
+@@ -699,7 +700,7 @@ exports.defineProperties = function (self, fields, data) {
+   // if the constuctor is passed data
+   if (data) {
+     if (typeof data === 'string') {
+-      data = new Buffer(exports.stripHexPrefix(data), 'hex');
++      data = bufferFrom(exports.stripHexPrefix(data), 'hex');
+     }
+ 
+     if (Buffer.isBuffer(data)) {

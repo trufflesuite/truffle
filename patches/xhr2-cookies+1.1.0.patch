@@ -1,0 +1,56 @@
+diff --git a/node_modules/xhr2-cookies/dist/xml-http-request-upload.js b/node_modules/xhr2-cookies/dist/xml-http-request-upload.js
+index 60ddb3e..43b6352 100644
+--- a/node_modules/xhr2-cookies/dist/xml-http-request-upload.js
++++ b/node_modules/xhr2-cookies/dist/xml-http-request-upload.js
+@@ -1,4 +1,5 @@
+ "use strict";
++const bufferFrom = require('buffer-from');
+ var __extends = (this && this.__extends) || (function () {
+     var extendStatics = Object.setPrototypeOf ||
+         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+@@ -32,13 +33,13 @@ var XMLHttpRequestUpload = /** @class */ (function (_super) {
+             if (data.length !== 0) {
+                 this._contentType = 'text/plain;charset=UTF-8';
+             }
+-            this._body = new Buffer(data, 'utf-8');
++            this._body = bufferFrom(data, 'utf-8');
+         }
+         else if (Buffer.isBuffer(data)) {
+             this._body = data;
+         }
+         else if (data instanceof ArrayBuffer) {
+-            var body = new Buffer(data.byteLength);
++            var body = bufferFrom(data.byteLength);
+             var view = new Uint8Array(data);
+             for (var i = 0; i < data.byteLength; i++) {
+                 body[i] = view[i];
+@@ -46,7 +47,7 @@ var XMLHttpRequestUpload = /** @class */ (function (_super) {
+             this._body = body;
+         }
+         else if (data.buffer && data.buffer instanceof ArrayBuffer) {
+-            var body = new Buffer(data.byteLength);
++            var body = bufferFrom(data.byteLength);
+             var offset = data.byteOffset;
+             var view = new Uint8Array(data.buffer);
+             for (var i = 0; i < data.byteLength; i++) {
+diff --git a/node_modules/xhr2-cookies/dist/xml-http-request.js b/node_modules/xhr2-cookies/dist/xml-http-request.js
+index d12254d..e6836eb 100644
+--- a/node_modules/xhr2-cookies/dist/xml-http-request.js
++++ b/node_modules/xhr2-cookies/dist/xml-http-request.js
+@@ -17,6 +17,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
+     }
+     return t;
+ };
++const bufferFrom = require('buffer-from');
+ Object.defineProperty(exports, "__esModule", { value: true });
+ var http = require("http");
+ var https = require("https");
+@@ -301,7 +302,7 @@ var XMLHttpRequest = /** @class */ (function (_super) {
+         if (this._response !== response) {
+             return;
+         }
+-        this._responseParts.push(new Buffer(data));
++        this._responseParts.push(bufferFrom(data));
+         this._loadedBytes += data.length;
+         if (this.readyState !== XMLHttpRequest.LOADING) {
+             this._setReadyState(XMLHttpRequest.LOADING);

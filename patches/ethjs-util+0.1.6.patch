@@ -1,0 +1,39 @@
+diff --git a/node_modules/ethjs-util/src/index.js b/node_modules/ethjs-util/src/index.js
+index 7e73f02..b35c7a4 100644
+--- a/node_modules/ethjs-util/src/index.js
++++ b/node_modules/ethjs-util/src/index.js
+@@ -1,5 +1,7 @@
+ const isHexPrefixed = require('is-hex-prefixed');
+ const stripHexPrefix = require('strip-hex-prefix');
++const alloc = require('buffer-alloc');
++const bufferFrom = require('buffer-from');
+ 
+ /**
+  * Pads a `String` to have an even length
+@@ -39,7 +41,7 @@ function intToHex(i) {
+ function intToBuffer(i) {
+   const hex = intToHex(i);
+ 
+-  return new Buffer(padToEven(hex.slice(2)), 'hex');
++  return alloc(padToEven(hex.slice(2)), 'hex');
+ }
+ 
+ /**
+@@ -79,7 +81,7 @@ function arrayContainsArray(superset, subset, some) {
+  * @returns {String} ascii string representation of hex value
+  */
+ function toUtf8(hex) {
+-  const bufferValue = new Buffer(padToEven(stripHexPrefix(hex).replace(/^0+|0+$/g, '')), 'hex');
++  const bufferValue = alloc(padToEven(stripHexPrefix(hex).replace(/^0+|0+$/g, '')), 'hex');
+ 
+   return bufferValue.toString('utf8');
+ }
+@@ -116,7 +118,7 @@ function toAscii(hex) {
+  * @returns {String} hex representation of input string
+  */
+ function fromUtf8(stringValue) {
+-  const str = new Buffer(stringValue, 'utf8');
++  const str = bufferFrom(stringValue, 'utf8');
+ 
+   return `0x${padToEven(str.toString('hex')).replace(/^0+|0+$/g, '')}`;
+ }

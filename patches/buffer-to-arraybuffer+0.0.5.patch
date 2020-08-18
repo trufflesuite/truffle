@@ -1,0 +1,12 @@
+diff --git a/node_modules/buffer-to-arraybuffer/buffer-to-arraybuffer.js b/node_modules/buffer-to-arraybuffer/buffer-to-arraybuffer.js
+index d79d1a2..b5829b3 100644
+--- a/node_modules/buffer-to-arraybuffer/buffer-to-arraybuffer.js
++++ b/node_modules/buffer-to-arraybuffer/buffer-to-arraybuffer.js
+@@ -1,5 +1,6 @@
+ (function(root) {
+-  var isArrayBufferSupported = (new Buffer(0)).buffer instanceof ArrayBuffer;
++  const alloc = require('buffer-alloc')
++  var isArrayBufferSupported = (alloc(0)).buffer instanceof ArrayBuffer;
+ 
+   var bufferToArrayBuffer = isArrayBufferSupported ? bufferToArrayBufferSlice : bufferToArrayBufferCycle;
+ 
