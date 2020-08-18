@@ -48,7 +48,6 @@
     "gql2ts": "^1.10.1",
     "jest": "^23.6.0",
     "jsondown": "^1.0.0",
-    "truffle-interface-adapter": "^0.2.5",
     "ts-jest": "^23.10.5",
     "ts-node-dev": "^1.0.0-pre.32",
     "tsconfig-paths": "^3.7.0",
@@ -57,7 +56,8 @@
   "dependencies": {
     "@gnd/graphql-tools": "^4.0.5-fix.0",
     "@gnd/jsonschema2graphql": "^1.0.15",
-    "@truffle/artifactor": "^4.0.32",
+    "@truffle/artifactor": "^4.0.74",
+    "@truffle/workflow-compile": "^2.1.48",
     "apollo-server": "^2.3.1",
     "fse": "^4.0.1",
     "graphql": "^14.0.2",
@@ -72,7 +72,6 @@
     "pouchdb-debug": "^7.1.1",
     "pouchdb-find": "^7.0.0",
     "source-map-support": "^0.5.9",
-    "truffle-workflow-compile": "^2.0.12",
     "web3": "1.2.2",
     "web3-utils": "1.2.2"
   },
