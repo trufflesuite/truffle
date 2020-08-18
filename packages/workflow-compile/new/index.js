@@ -99,6 +99,11 @@ const Contracts = {
     };
   },
 
+  async compileAndSave(options) {
+    const { contracts } = await this.compile(options);
+    await this.save(options, contracts);
+  },
+
   reportCompilationStarted,
   reportCompilationFinished,
   reportNothingToCompile,

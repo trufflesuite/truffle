@@ -7,16 +7,16 @@ const Server = require("../server");
 const Reporter = require("../reporter");
 const sandbox = require("../sandbox");
 
-describe("truffle exec [ @standalone ]", function() {
+describe("truffle exec [ @standalone ]", function () {
   let config;
   const project = path.join(__dirname, "../../sources/exec");
   const logger = new MemoryLogger();
 
-  before("set up the server", function(done) {
+  before("set up the server", function (done) {
     Server.start(done);
   });
 
-  after("stop server", function(done) {
+  after("stop server", function (done) {
     Server.stop(done);
   });
 
@@ -32,7 +32,7 @@ describe("truffle exec [ @standalone ]", function() {
     });
   });
 
-  it("runs script after compiling", async function() {
+  it("runs script after compiling", async function () {
     this.timeout(30000);
     await CommandRunner.run("compile", config);
     assert(
@@ -47,7 +47,7 @@ describe("truffle exec [ @standalone ]", function() {
   });
 
   // Check accuracy of next test
-  it("errors when run without compiling", async function() {
+  it("errors when run without compiling", async function () {
     this.timeout(30000);
     try {
       await CommandRunner.run("exec script.js", config);
@@ -57,7 +57,7 @@ describe("truffle exec [ @standalone ]", function() {
     }
   });
 
-  it("succeeds when -c flag is set", async function() {
+  it("succeeds when -c flag is set", async function () {
     this.timeout(30000);
     await CommandRunner.run("exec -c script.js", config);
     const output = logger.contents();
