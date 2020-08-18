@@ -105,19 +105,19 @@ const Build = {
       if (err) return callback(err);
 
       // If necessary. This prevents errors due to the .sol.js files not existing.
-      Contracts.compileAndSave(options, function (err) {
-        if (err) return callback(err);
-
-        if (builder) {
-          builder.build(options, function (err) {
-            if (typeof err === "string") {
-              return callback(new BuildError(err));
-            }
-            return callback(err);
-          });
-        }
-        return callback();
-      });
+      Contracts.compileAndSave(options)
+        .then(() => {
+          if (builder) {
+            builder.build(options, function (err) {
+              if (typeof err === "string") {
+                return callback(new BuildError(err));
+              }
+              return callback(err);
+            });
+          }
+          return callback();
+        })
+        .catch(callback);
     });
   }
 };
