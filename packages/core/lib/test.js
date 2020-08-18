@@ -118,7 +118,7 @@ const Test = {
 
     const solidityCompilationOutput = compilations.reduce(
       (a, compilation) => {
-        if (compilation.compiler.name === "solc") {
+        if (compilation.compiler && compilation.compiler.name === "solc") {
           a.sourceIndexes = a.sourceIndexes.concat(compilation.sourceIndexes);
           a.contracts = a.contracts.concat(compilation.contracts);
         }
