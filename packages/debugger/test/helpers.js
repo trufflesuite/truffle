@@ -35,8 +35,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   };
 
   await addContracts(config, sources);
-  let { contracts, files } = await compile(config);
-  let contractNames = Object.keys(contracts);
+  let { contractNames, files } = await compile(config);
 
   if (!migrations) {
     migrations = await defaultMigrations(contractNames);
@@ -142,20 +141,38 @@ export async function defaultMigrations(contractNames) {
 }
 
 export async function compile(config) {
-  return new Promise(function (accept, reject) {
-    Contracts.compileAndSave(
-      config.with({
-        all: true,
-        quiet: true
-      }),
-      function (err, result) {
-        if (err) return reject(err);
-        const { contracts, outputs } = result;
-        debug("result %O", result);
-        return accept({ contracts, files: outputs.solc });
+  const { compilations } = await Contracts.compileAndSave(
+    config.with({
+      all: true,
+      quiet: true
+    })
+  );
+  const collectedCompilationOutput = compilations.reduce(
+    (a, compilation) => {
+      if (compilation.compiler.name === "solc") {
+        for (const contract of compilation.contracts) {
+          a.contractNames = a.contractNames.concat(contract.contractName);
+        }
+        a.sourceIndexes = a.sourceIndexes.concat(compilation.sourceIndexes);
       }
-    );
-  });
+      return a;
+    },
+    { contractNames: [], sourceIndexes: [] }
+  );
+  const sourceIndexes = collectedCompilationOutput.sourceIndexes.filter(
+    (item, index) => {
+      return collectedCompilationOutput.sourceIndexes.indexOf(item) === index;
+    }
+  );
+  const contractNames = collectedCompilationOutput.contractNames.filter(
+    (item, index) => {
+      return collectedCompilationOutput.contractNames.indexOf(item) === index;
+    }
+  );
+  return {
+    contractNames,
+    files: sourceIndexes
+  };
 }
 
 export async function migrate(config) {

@@ -100,8 +100,12 @@ const Contracts = {
   },
 
   async compileAndSave(options) {
-    const { contracts } = await this.compile(options);
+    const { contracts, compilations } = await this.compile(options);
     await this.save(options, contracts);
+    return {
+      contracts,
+      compilations
+    };
   },
 
   reportCompilationStarted,
