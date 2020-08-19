@@ -1,4 +1,4 @@
-const Contracts = require("../new");
+const Contracts = require("../");
 const assert = require("assert");
 const { existsSync, removeSync } = require("fs-extra");
 const { join } = require("path");
