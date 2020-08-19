@@ -118,13 +118,19 @@ compile.display = function (paths, options) {
 
     const blacklistRegex = /^truffle\//;
 
-    paths.sort().forEach(contract => {
-      if (path.isAbsolute(contract)) {
-        contract =
-          "." + path.sep + path.relative(options.working_directory, contract);
-      }
-      if (contract.match(blacklistRegex)) return;
-      options.logger.log("> Compiling " + contract);
+    const sources = paths
+      .sort()
+      .map(contract => {
+        if (path.isAbsolute(contract)) {
+          contract =
+            "." + path.sep + path.relative(options.working_directory, contract);
+        }
+        if (contract.match(blacklistRegex)) return;
+        return contract;
+      })
+      .filter(contract => contract);
+    options.events.emit("compile:sourcesToCompile", {
+      sourceFileNames: sources
     });
   }
 };

@@ -67,7 +67,7 @@ compile.display = function (paths, options) {
 
     return contract;
   });
-  options.events.emit("compile:sourcesToCompile", sourceFileNames);
+  options.events.emit("compile:sourcesToCompile", { sourceFileNames });
 };
 
 // -------- End of common with @truffle/compile-solidity --------
@@ -141,7 +141,7 @@ async function compileAll(options) {
           const sourceContents = sourceBuffer.toString();
 
           const contractDefinition = {
-            contract_name: contractName,
+            contractName: contractName,
             sourcePath: sourcePath,
             source: sourceContents,
             abi: compiledContract.abi,
