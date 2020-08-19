@@ -36,13 +36,15 @@ describe("JSparser", () => {
 
     const config = Config.default().merge(options);
 
-    const result = await compile.withDependencies(config);
+    const compilationOutput = await compile.withDependencies(config);
+    const contractWasCompiled = compilationOutput.some(compilation => {
+      return compilation.contracts.some(contract => {
+        return contract.contract_name === "ComplexOrdered";
+      });
+    });
 
     // This contract imports / inherits
-    assert(
-      result["ComplexOrdered"].contract_name === "ComplexOrdered",
-      "Should have compiled"
-    );
+    assert(contractWasCompiled, "Should have compiled");
   }).timeout(20000);
 
   it("properly throws when passed an invalid parser value", async () => {
