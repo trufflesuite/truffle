@@ -255,7 +255,7 @@ describe("CompilerSupplier", function () {
         options.resolver = new Resolver(options);
         options = Config.default().merge(options);
 
-        const compilations = await compile.with_dependencies(options);
+        const compilations = await compile.withDependencies(options);
         const ComplexOrdered = findOne(
           "ComplexOrdered",
           compilations[0].contracts

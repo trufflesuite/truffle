@@ -35,7 +35,7 @@ compile.all = async function (options) {
     ])
   ];
 
-  return await compile.with_dependencies(
+  return await compile.withDependencies(
     Config.default().merge(options).merge({ paths })
   );
 };
@@ -52,12 +52,12 @@ compile.necessary = async function (options) {
 
   const paths = await Profiler.updated(options);
 
-  return await compile.with_dependencies(
+  return await compile.withDependencies(
     Config.default().merge(options).merge({ paths })
   );
 };
 
-compile.with_dependencies = async function (options) {
+compile.withDependencies = async function (options) {
   options.logger = options.logger || console;
   options.contracts_directory = options.contracts_directory || process.cwd();
 

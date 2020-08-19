@@ -36,7 +36,7 @@ describe("JSparser", () => {
 
     const config = Config.default().merge(options);
 
-    const result = await compile.with_dependencies(config);
+    const result = await compile.withDependencies(config);
 
     // This contract imports / inherits
     assert(
@@ -59,7 +59,7 @@ describe("JSparser", () => {
     const config = Config.default().merge(options);
 
     try {
-      await compile.with_dependencies(config);
+      await compile.withDependencies(config);
       assert(false, "this call should have failed!");
     } catch (error) {
       assert(error.message.match(/(Unsupported parser)/));

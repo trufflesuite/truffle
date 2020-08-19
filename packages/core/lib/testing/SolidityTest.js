@@ -123,7 +123,7 @@ const SolidityTest = {
       SafeSend = "NewSafeSend.sol";
     }
 
-    const compilations = await compile.with_dependencies(
+    const compilations = await compile.withDependencies(
       runner.config.with({
         paths: [
           path.join(__dirname, "Assert.sol"),
