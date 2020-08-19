@@ -143,7 +143,7 @@ export function toBytes(
 
     //note that the argument for toTwos is given in bits
     return new Uint8Array(
-      data.toTwos(length * 8).toArrayLike(Buffer.alloc as any, "be", length)
+      data.toTwos(length * 8).toArrayLike(Buffer, "be", length)
     ); //big-endian
   }
 }
