@@ -34,7 +34,7 @@ describe("vyper compiler", function () {
         `Compiled contracts have VyperContract${index + 1}`
       );
       assert.equal(
-        contract.contract_name,
+        contract.contractName,
         `VyperContract${index + 1}`,
         "Contract name is set correctly"
       );
