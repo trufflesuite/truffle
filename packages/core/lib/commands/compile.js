@@ -63,7 +63,7 @@ const command = {
   },
   run: function (options, done) {
     const TruffleError = require("@truffle/error");
-    const Contracts = require("@truffle/workflow-compile/new");
+    const Contracts = require("@truffle/workflow-compile");
     const Config = require("@truffle/config");
     const config = Config.detect(options);
 
