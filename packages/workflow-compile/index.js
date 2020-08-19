@@ -7,7 +7,7 @@ const {
   reportCompilationStarted,
   reportNothingToCompile,
   reportCompilationFinished
-} = require("../reports");
+} = require("./reports");
 
 const SUPPORTED_COMPILERS = {
   solc: {
