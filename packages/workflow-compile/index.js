@@ -11,7 +11,7 @@ const {
 
 const SUPPORTED_COMPILERS = {
   solc: {
-    compiler: require("@truffle/compile-solidity/new")
+    compiler: require("@truffle/compile-solidity")
   },
   vyper: {
     compiler: require("@truffle/compile-vyper"),

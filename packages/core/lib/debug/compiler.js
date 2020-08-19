@@ -1,4 +1,4 @@
-const compile = require("@truffle/compile-solidity/new");
+const compile = require("@truffle/compile-solidity");
 
 class DebugCompiler {
   constructor(config) {
