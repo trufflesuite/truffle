@@ -39,7 +39,7 @@ describe("JSparser", () => {
     const compilationOutput = await compile.withDependencies(config);
     const contractWasCompiled = compilationOutput.some(compilation => {
       return compilation.contracts.some(contract => {
-        return contract.contract_name === "ComplexOrdered";
+        return contract.contractName === "ComplexOrdered";
       });
     });
 
