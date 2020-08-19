@@ -101,7 +101,7 @@ const Contracts = {
 
   async compileAndSave(options) {
     const { contracts, compilations } = await this.compile(options);
-    await this.save(options, contracts);
+    await this.save(options, { contracts, compilations });
     return {
       contracts,
       compilations
@@ -112,7 +112,7 @@ const Contracts = {
   reportCompilationFinished,
   reportNothingToCompile,
 
-  async save(options, contracts) {
+  async save(options, { contracts, compilations }) {
     const config = prepareConfig(options);
 
     await fse.ensureDir(config.contracts_build_directory);

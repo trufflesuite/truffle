@@ -18,9 +18,7 @@ const utils = {
       contracts_build_directory: utils.buildDir,
       contracts_directory: utils.sourcesDir
     };
-
-    const compilation = await Contracts.compile(config);
-    await Contracts.save(config, compilation.contracts);
+    await Contracts.compileAndSave(config);
   },
 
   evm_mine: function (web3) {

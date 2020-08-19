@@ -257,9 +257,9 @@ const Test = {
       }
     }
     // Compile project contracts and test contracts
-    const { contracts, compilations } = await Contracts.compile(compileConfig);
-
-    await Contracts.save(compileConfig, contracts);
+    const { contracts, compilations } = await Contracts.compileAndSave(
+      compileConfig
+    );
 
     return {
       contracts,

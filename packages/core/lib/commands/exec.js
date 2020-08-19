@@ -81,7 +81,7 @@ const command = {
       .then(compilationOutput => {
         // save artifacts if compilation took place
         if (compilationOutput) {
-          return Contracts.save(config, compilationOutput.contracts);
+          return Contracts.save(config, compilationOutput);
         }
       })
       .then(() => {

@@ -37,8 +37,7 @@ describe("Contracts.compile", () => {
   describe("when config.all is true", () => {
     it("recompiles all contracts in contracts_directory", async () => {
       // initial compile
-      const { contracts } = await Contracts.compile(config);
-      await Contracts.save(config, contracts);
+      const { contracts } = await Contracts.compileAndSave(config);
 
       let contractName = contracts[0].contractName;
       assert(
@@ -47,8 +46,7 @@ describe("Contracts.compile", () => {
 
       // compile again
       config.all = true;
-      const { compilations } = await Contracts.compile(config);
-      await Contracts.save(config, contracts);
+      const { compilations } = await Contracts.compileAndSave(config);
 
       assert(
         compilations[0].sourceIndexes[0] ===
