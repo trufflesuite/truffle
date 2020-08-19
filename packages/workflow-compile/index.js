@@ -14,8 +14,7 @@ const SUPPORTED_COMPILERS = {
     compiler: require("@truffle/compile-solidity")
   },
   vyper: {
-    compiler: require("@truffle/compile-vyper"),
-    legacy: true
+    compiler: require("@truffle/compile-vyper")
   },
   external: {
     compiler: require("@truffle/external-compile"),
