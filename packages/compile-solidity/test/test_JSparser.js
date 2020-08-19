@@ -1,7 +1,7 @@
 const path = require("path");
 const assert = require("assert");
 const Resolver = require("@truffle/resolver");
-const compile = require("../legacy");
+const compile = require("../");
 const Config = require("@truffle/config");
 
 describe("JSparser", () => {
@@ -22,7 +22,7 @@ describe("JSparser", () => {
     working_directory: __dirname
   };
 
-  it("resolves imports when using solcjs parser instead of docker [ @native ]", done => {
+  it("resolves imports when using solcjs parser instead of docker [ @native ]", async () => {
     options.compilers.solc.version = "0.4.22";
     options.compilers.solc.docker = true;
     options.contracts_directory = path.join(__dirname, "./sources/v0.4.x");
@@ -36,19 +36,16 @@ describe("JSparser", () => {
 
     const config = Config.default().merge(options);
 
-    compile.with_dependencies(config, (err, result) => {
-      if (err) return done(err);
+    const result = await compile.with_dependencies(config);
 
-      // This contract imports / inherits
-      assert(
-        result["ComplexOrdered"].contract_name === "ComplexOrdered",
-        "Should have compiled"
-      );
-      done();
-    });
+    // This contract imports / inherits
+    assert(
+      result["ComplexOrdered"].contract_name === "ComplexOrdered",
+      "Should have compiled"
+    );
   }).timeout(20000);
 
-  it("properly throws when passed an invalid parser value", done => {
+  it("properly throws when passed an invalid parser value", async () => {
     options.compilers.solc.parser = "badParser";
     options.contracts_directory = path.join(__dirname, "./sources/v0.5.x");
 
@@ -61,14 +58,11 @@ describe("JSparser", () => {
 
     const config = Config.default().merge(options);
 
-    compile.with_dependencies(config, (err, result) => {
-      if (result) {
-        assert(false, "should have failed!");
-        done();
-      }
-
-      assert(err.message.match(/(Unsupported parser)/));
-      done();
-    });
+    try {
+      await compile.with_dependencies(config);
+      assert(false, "this call should have failed!");
+    } catch (error) {
+      assert(error.message.match(/(Unsupported parser)/));
+    }
   }).timeout(3000);
 });
