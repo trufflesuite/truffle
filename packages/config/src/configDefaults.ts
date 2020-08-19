@@ -20,7 +20,18 @@ export const getInitialConfig = ({
     truffle_directory,
     working_directory,
     network,
-    networks: {},
+    networks: {
+      develop: {
+        host: "127.0.0.1",
+        port: 9545,
+        network_id: 5777,
+        accounts: 10,
+        defaultEtherBalance: 100,
+        blockTime: 0,
+        gas: 0x6691b7,
+        gasPrice: 0x77359400
+      }
+    },
     verboseRpc: false,
     gas: null,
     gasPrice: null,

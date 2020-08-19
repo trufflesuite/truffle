@@ -54,7 +54,7 @@ const command = {
     const customConfig = config.networks.develop || {};
 
     const { mnemonic, accounts, privateKeys } = mnemonicInfo.getAccountsInfo(
-      customConfig.accounts || 10
+      customConfig.accounts
     );
 
     const onMissing = () => "**";
@@ -67,16 +67,16 @@ const command = {
     const ipcOptions = { log: options.log };
 
     const ganacheOptions = {
-      host: customConfig.host || "127.0.0.1",
-      port: customConfig.port || 9545,
-      network_id: customConfig.network_id || 5777,
-      total_accounts: customConfig.accounts || 10,
-      default_balance_ether: customConfig.defaultEtherBalance || 100,
-      blockTime: customConfig.blockTime || 0,
+      host: customConfig.host,
+      port: customConfig.port,
+      network_id: customConfig.network_id,
+      total_accounts: customConfig.accounts,
+      default_balance_ether: customConfig.defaultEtherBalance,
+      blockTime: customConfig.blockTime,
       fork: customConfig.fork,
       mnemonic,
-      gasLimit: customConfig.gas || 0x6691b7,
-      gasPrice: customConfig.gasPrice || 0x77359400,
+      gasLimit: customConfig.gas,
+      gasPrice: customConfig.gasPrice,
       noVMErrorsOnRPCResponse: true,
       time: config.genesis_time
     };
