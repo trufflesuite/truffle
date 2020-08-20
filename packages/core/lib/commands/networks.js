@@ -1,4 +1,6 @@
-var command = {
+const { callbackify } = require("util");
+
+const command = {
   command: "networks",
   description: "Show addresses for deployed contracts on each network",
   builder: {
@@ -19,22 +21,20 @@ var command = {
       }
     ]
   },
-  run: function(options, done) {
+  run: callbackify(async options => {
     const Config = require("@truffle/config");
     const Networks = require("../networks");
 
     const config = Config.detect(options);
 
     if (options.clean) {
-      Networks.clean(config)
-        .then(() => done())
-        .catch(done);
-    } else {
-      Networks.display(config)
-        .then(() => done())
-        .catch(done);
+      await Networks.clean(config);
+
+      return;
     }
-  }
+
+    await Networks.display(config);
+  })
 };
 
 module.exports = command;
