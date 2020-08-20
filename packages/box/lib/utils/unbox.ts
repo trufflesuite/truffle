@@ -44,19 +44,19 @@ async function verifyVCSURL(url: string) {
   }
 }
 
-async function verifyURL(url: string) {
-  if (url.startsWith("/")) {
-    return verifyLocalPath(url);
+async function verifySourcePath(sourcePath: string) {
+  if (sourcePath.startsWith("/")) {
+    return verifyLocalPath(sourcePath);
   }
-  return verifyVCSURL(url);
+  return verifyVCSURL(sourcePath);
 }
 
-function fetchRepository(url: string, dir: string) {
-  if (url.startsWith("/")) {
-    fse.copySync(url, dir);
+function fetchRepository(sourcePath: string, dir: string) {
+  if (sourcePath.startsWith("/")) {
+    fse.copySync(sourcePath, dir);
     return Promise.resolve();
   }
-  return promisify(download)(url, dir);
+  return promisify(download)(sourcePath, dir);
 }
 
 function prepareToCopyFiles(tempDir: string, { ignore }: boxConfig) {
@@ -141,5 +141,5 @@ export = {
   fetchRepository,
   installBoxDependencies,
   prepareToCopyFiles,
-  verifyURL
+  verifySourcePath
 };

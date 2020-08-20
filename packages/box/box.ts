@@ -9,16 +9,19 @@ import { sandboxOptions, unboxOptions } from "typings";
 
 /*
  * accepts a number of different url and org/repo formats and returns the
- * format required by https://www.npmjs.com/package/download-git-repo
+ * format required by https://www.npmjs.com/package/download-git-repo for remote URLs
+ * or absolute path to local folder if the source is local folder
+ *
  * supported input formats are as follows:
  *   - org/repo[#branch]
  *   - https://github.com(/|:)<org>/<repo>[.git][#branch]
  *   - git@github.com:<org>/<repo>[#branch]
+ *   - path to local folder (absolute, relative or ~/home)
  */
-const normalizeURL = (
+const normalizeSourcePath = (
   url = "https://github.com:trufflesuite/truffle-init-default"
 ) => {
-  if (url.startsWith(".") || url.startsWith("/")) {
+  if (url.startsWith(".") || url.startsWith("/") || url.startsWith("~")) {
     return path.resolve(path.normalize(url));
   }
   // remove the .git from the repo specifier
@@ -101,14 +104,14 @@ const Box = {
     };
 
     try {
-      const normalizedURL = normalizeURL(url);
+      const normalizedSourcePath = normalizeSourcePath(url);
 
       await Box.checkDir(options, destination);
       const tempDir = await utils.setUpTempDirectory(events);
       const tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
-      await utils.downloadBox(normalizedURL, tempDirPath, events);
+      await utils.downloadBox(normalizedSourcePath, tempDirPath, events);
 
       const boxConfig = await utils.readBoxConfig(tempDirPath);
 
