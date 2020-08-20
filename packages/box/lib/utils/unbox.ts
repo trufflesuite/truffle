@@ -9,14 +9,14 @@ import inquirer from "inquirer";
 import { boxConfig, unboxOptions } from "typings";
 import { promisify } from "util";
 
-function verifyLocalPath(url: string) {
-  const configPath = path.join(url, "truffle-box.json");
+function verifyLocalPath(localPath: string) {
+  const configPath = path.join(localPath, "truffle-box.json");
   fse.access(configPath).catch(e => {
-    throw new Error(`Truffle Box at path ${url} doesn't exist.`);
+    throw new Error(`Truffle Box at path ${localPath} doesn't exist.`);
   });
 }
 
-async function verifyGithubURL(url: string) {
+async function verifyVCSURL(url: string) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
   // will fail spectacularly in a way we can't catch, so we have to do it ourselves.
   const configURL = parseURL(
@@ -48,7 +48,7 @@ async function verifyURL(url: string) {
   if (url.startsWith("/")) {
     return verifyLocalPath(url);
   }
-  return verifyGithubURL(url);
+  return verifyVCSURL(url);
 }
 
 function fetchRepository(url: string, dir: string) {
