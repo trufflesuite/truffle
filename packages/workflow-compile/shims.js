@@ -1,21 +1,3 @@
-const { multiPromisify } = require("./utils");
-
-function shimLegacy(method) {
-  return async config => {
-    const compile = multiPromisify(method);
-
-    const [contracts, sourceIndexes, compiler] = await compile(config);
-
-    return [
-      {
-        contracts: shimContracts(contracts),
-        sourceIndexes,
-        compiler
-      }
-    ];
-  };
-}
-
 function shimContracts(contracts) {
   // convert to list
   return Object.values(contracts).map(shimContract);
