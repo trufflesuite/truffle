@@ -40,10 +40,10 @@ async function compile(config) {
     })
   );
 
-  // collect results
+  // collect results - rawCompilations is CompilerResult[]
   // flatten the array and remove compilations without results
-  const compilations = rawCompilations.reduce((a, compilationGroup) => {
-    compilationGroup.forEach(compilation => {
+  const compilations = rawCompilations.reduce((a, compilerResult) => {
+    compilerResult.forEach(compilation => {
       if (compilation.contracts.length > 0) {
         a = a.concat(compilation);
       }
@@ -55,6 +55,7 @@ async function compile(config) {
     return a.concat(compilation.contracts);
   }, []);
 
+  // return WorkflowCompileResult
   return { contracts, compilations };
 }
 
