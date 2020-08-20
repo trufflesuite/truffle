@@ -3,7 +3,7 @@
 const debug = require("debug")("external-compile");
 const { exec, execSync } = require("child_process");
 const resolve = require("path").resolve;
-const { callbackify, promisify } = require("util");
+const { promisify } = require("util");
 const glob = promisify(require("glob"));
 const fs = require("fs");
 const expect = require("@truffle/expect");
@@ -84,7 +84,7 @@ function* bufferLines() {
  * run a command, forwarding data to arbitrary logger.
  * invokes callback when process exits, error on nonzero exit code.
  */
-const runCommand = promisify(function(command, options, callback) {
+const runCommand = promisify(function (command, options, callback) {
   const { cwd, logger, input } = options;
   const child = exec(command, { cwd, input });
 
@@ -108,7 +108,7 @@ const runCommand = promisify(function(command, options, callback) {
   child.stdout.on("data", data => log(data.toString()));
   child.stderr.on("data", data => warn(data.toString()));
 
-  child.on("close", function(code) {
+  child.on("close", function (code) {
     // close streams to flush unterminated lines
     log(null);
     warn(null);
@@ -147,11 +147,11 @@ function decodeContents(contents) {
 }
 
 async function processTargets(targets, cwd, logger) {
-  const contracts = {};
+  const contracts = [];
   for (let target of targets) {
     let targetContracts = await processTarget(target, cwd, logger);
-    for (let [name, contract] of Object.entries(targetContracts)) {
-      contracts[name] = Schema.validate(contract);
+    for (let contract of Object.values(targetContracts)) {
+      contracts.push(Schema.validate(contract));
     }
   }
 
@@ -241,7 +241,7 @@ async function processTarget(target, cwd, logger) {
   }
 }
 
-const compile = callbackify(async function(options) {
+const compile = async function (options) {
   if (options.logger == null) {
     options.logger = console;
   }
@@ -260,8 +260,20 @@ const compile = callbackify(async function(options) {
   debug("running compile command: %s", command);
   await runCommand(command, { cwd, logger });
 
-  return await processTargets(targets, cwd, logger);
-});
+  const contracts = await processTargets(targets, cwd, logger);
+  return [
+    {
+      contracts,
+      // sourceIndexes is empty because we have no way of
+      // knowing for certain the source paths for the contracts
+      sourceIndexes: [],
+      compiler: {
+        name: "external",
+        version: undefined
+      }
+    }
+  ];
+};
 
 // required public interface
 compile.all = compile;

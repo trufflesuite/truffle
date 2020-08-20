@@ -1,7 +1,6 @@
 const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
 const { prepareConfig } = require("./utils");
-const { shimLegacy } = require("./shims");
 const { shimContract } = require("@truffle/compile-solidity/legacy/shims");
 const {
   reportCompilationStarted,
@@ -10,16 +9,9 @@ const {
 } = require("./reports");
 
 const SUPPORTED_COMPILERS = {
-  solc: {
-    compiler: require("@truffle/compile-solidity")
-  },
-  vyper: {
-    compiler: require("@truffle/compile-vyper")
-  },
-  external: {
-    compiler: require("@truffle/external-compile"),
-    legacy: true
-  }
+  solc: require("@truffle/compile-solidity"),
+  vyper: require("@truffle/compile-vyper"),
+  external: require("@truffle/external-compile")
 };
 
 async function compile(config) {
@@ -35,18 +27,16 @@ async function compile(config) {
   //
   const rawCompilations = await Promise.all(
     compilers.map(async name => {
-      const { compiler, legacy } = SUPPORTED_COMPILERS[name] || {};
+      const compiler = SUPPORTED_COMPILERS[name] || {};
       if (!compiler) throw new Error("Unsupported compiler: " + name);
 
-      const method =
+      const compileMethod =
         config.all === true || config.compileAll === true
           ? compiler.all
           : compiler.necessary;
 
-      const compile = legacy ? shimLegacy(method) : method;
-
       // return from `compile` is an array of compilations
-      return await compile(config);
+      return await compileMethod(config);
     })
   );
 
@@ -111,7 +101,7 @@ const Contracts = {
   reportCompilationFinished,
   reportNothingToCompile,
 
-  async save(options, { contracts, compilations }) {
+  async save(options, { contracts, _compilations }) {
     const config = prepareConfig(options);
 
     await fse.ensureDir(config.contracts_build_directory);
