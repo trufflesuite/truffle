@@ -1,20 +1,31 @@
 import { Profiler } from "./profiler";
 export { Profiler };
 
-type Compilation = {
+import { ContractObject } from "@truffle/contract-schema/spec";
+
+export type Compilation = {
   sourceIndexes: string[];
   contracts: CompiledContract[];
   compiler: {
-    name: string;
-    version: string;
+    name: string | undefined;
+    version: string | undefined;
   };
 };
 
-type CompilerResult = Compilation[];
+export type CompilerResult = Compilation[];
 
-type CompiledContract = {
+export interface Bytecode {
+  bytes: string;
+  linkReferences: LinkReference[];
+}
+
+export interface LinkReference {
+  offsets: number[];
+  name: string | null; // this will be the contractName of the library or some other identifier
+  length: number;
+}
+export type CompiledContract = {
   contractName: string;
-  contract_name: string;
   sourcePath: string;
   source: string;
   sourceMap: string;
@@ -23,8 +34,8 @@ type CompiledContract = {
   ast: object;
   abi: object[];
   metadata: string;
-  bytecode: string;
-  deployedBytecode: string;
+  bytecode: Bytecode;
+  deployedBytecode: Bytecode;
   compiler: {
     name: string;
     version: string;
@@ -34,29 +45,7 @@ type CompiledContract = {
   immutableReferences: object;
 };
 
-type ContractObject = {
-  contract_name: string;
-  sourcePath: string;
-  source: string;
-  sourceMap: string;
-  deployedSourceMap: string;
-  legacyAST: object;
-  ast: object;
-  abi: object[];
-  metadata: string;
-  bytecode: string;
-  deployedBytecode: string;
-  unlinked_binary: string;
-  compiler: {
-    name: string;
-    version: string;
-  };
-  devdoc: object;
-  userdoc: object;
-  immutableReferences: object;
-};
-
-interface WorkflowCompileResult {
+export interface WorkflowCompileResult {
   compilations: Compilation[];
   contracts: CompiledContract[];
 }
