@@ -18,6 +18,9 @@ import { sandboxOptions, unboxOptions } from "typings";
 const normalizeURL = (
   url = "https://github.com:trufflesuite/truffle-init-default"
 ) => {
+  if (url.startsWith(".") || url.startsWith("/")) {
+    return path.resolve(path.normalize(url));
+  }
   // remove the .git from the repo specifier
   if (url.includes(".git")) {
     url = url.replace(/.git$/, "");
@@ -69,7 +72,7 @@ const parseSandboxOptions = (options: sandboxOptions) => {
       unsafeCleanup: false,
       setGracefulCleanup: false,
       logger: console,
-      force: false,
+      force: false
     };
   } else if (typeof options === "object") {
     return {
@@ -77,7 +80,7 @@ const parseSandboxOptions = (options: sandboxOptions) => {
       unsafeCleanup: options.unsafeCleanup || false,
       setGracefulCleanup: options.setGracefulCleanup || false,
       logger: options.logger || console,
-      force: options.force || false,
+      force: options.force || false
     };
   }
 };
@@ -94,7 +97,7 @@ const Box = {
     const logger = options.logger || { log: () => {} };
     const unpackBoxOptions = {
       logger: options.logger,
-      force: options.force,
+      force: options.force
     };
 
     try {
@@ -141,8 +144,8 @@ const Box = {
             type: "confirm",
             name: "proceed",
             message: `Proceed anyway?`,
-            default: true,
-          },
+            default: true
+          }
         ];
         const answer = await inquirer.prompt(prompt);
         if (!answer.proceed) {
@@ -163,7 +166,7 @@ const Box = {
       unsafeCleanup,
       setGracefulCleanup,
       logger,
-      force,
+      force
     } = parseSandboxOptions(options);
 
     if (setGracefulCleanup) tmp.setGracefulCleanup();
@@ -178,7 +181,7 @@ const Box = {
       config
     );
     return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
-  },
+  }
 };
 
 export = Box;

@@ -9,7 +9,14 @@ import inquirer from "inquirer";
 import { boxConfig, unboxOptions } from "typings";
 import { promisify } from "util";
 
-async function verifyURL(url: string) {
+function verifyLocalPath(url: string) {
+  const configPath = path.join(url, "truffle-box.json");
+  fse.access(configPath).catch(e => {
+    throw new Error(`Truffle Box at path ${url} doesn't exist.`);
+  });
+}
+
+async function verifyGithubURL(url: string) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
   // will fail spectacularly in a way we can't catch, so we have to do it ourselves.
   const configURL = parseURL(
@@ -22,7 +29,7 @@ async function verifyURL(url: string) {
     method: "HEAD",
     uri: `https://${configURL.host}${configURL.path}`,
     resolveWithFullResponse: true,
-    simple: false,
+    simple: false
   };
 
   const { statusCode } = await rp(options);
@@ -37,7 +44,18 @@ async function verifyURL(url: string) {
   }
 }
 
+async function verifyURL(url: string) {
+  if (url.startsWith("/")) {
+    return verifyLocalPath(url);
+  }
+  return verifyGithubURL(url);
+}
+
 function fetchRepository(url: string, dir: string) {
+  if (url.startsWith("/")) {
+    fse.copySync(url, dir);
+    return Promise.resolve();
+  }
   return promisify(download)(url, dir);
 }
 
@@ -66,8 +84,8 @@ async function promptOverwrites(
         type: "confirm",
         name: "overwrite",
         message: `Overwrite ${file}?`,
-        default: false,
-      },
+        default: false
+      }
     ];
 
     const { overwrite } = await inquirer.prompt(overwriting);
@@ -91,10 +109,10 @@ async function copyTempIntoDestination(
   const destinationContents = fse.readdirSync(destination);
 
   const newContents = boxContents.filter(
-    (filename) => !destinationContents.includes(filename)
+    filename => !destinationContents.includes(filename)
   );
 
-  const contentCollisions = boxContents.filter((filename) =>
+  const contentCollisions = boxContents.filter(filename =>
     destinationContents.includes(filename)
   );
 
@@ -123,5 +141,5 @@ export = {
   fetchRepository,
   installBoxDependencies,
   prepareToCopyFiles,
-  verifyURL,
+  verifyURL
 };

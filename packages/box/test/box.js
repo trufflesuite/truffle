@@ -7,6 +7,7 @@ const Config = require("@truffle/config");
 const Box = require("../");
 const TRUFFLE_BOX_DEFAULT =
   "https://github.com:trufflesuite/truffle-init-default";
+const LOCAL_TRUFFLE_BOX = "./test/mock-local-box";
 const utils = require("../dist/lib/utils");
 let options, cleanupCallback, config;
 
@@ -34,6 +35,20 @@ describe("@truffle/box Box", () => {
 
     it("unboxes truffle box from github", done => {
       Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config).then(
+        truffleConfig => {
+          assert.ok(truffleConfig);
+
+          assert(
+            fse.existsSync(path.join(destination, "truffle-config.js")),
+            "Unboxed project should have truffle config."
+          );
+          done();
+        }
+      );
+    });
+
+    it("unboxes truffle box from local folder", done => {
+      Box.unbox(LOCAL_TRUFFLE_BOX, destination, {}, config).then(
         truffleConfig => {
           assert.ok(truffleConfig);
 
@@ -82,7 +97,7 @@ describe("@truffle/box Box", () => {
         utils.downloadBox.restore();
       });
 
-      it("calls the cleanup function if it is available", function(done) {
+      it("calls the cleanup function if it is available", function (done) {
         Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config).catch(() => {
           assert(cleanupCallback.called);
           done();
