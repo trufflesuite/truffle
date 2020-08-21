@@ -8,6 +8,7 @@ import { execSync } from "child_process";
 import inquirer from "inquirer";
 import { boxConfig, unboxOptions } from "typings";
 import { promisify } from "util";
+import ignore from "ignore";
 
 function verifyLocalPath(localPath: string) {
   const configPath = path.join(localPath, "truffle-box.json");
@@ -51,10 +52,26 @@ async function verifySourcePath(sourcePath: string) {
   return verifyVCSURL(sourcePath);
 }
 
-function fetchRepository(sourcePath: string, dir: string) {
+async function gitIgnoreFilter(sourcePath: string) {
+  const ignoreFilter = ignore();
+  try {
+    const gitIgnore = await fse.readFile(
+      path.join(sourcePath, ".gitignore"),
+      "utf8"
+    );
+    ignoreFilter.add(gitIgnore.split(/\r?\n/).map(p => p.replace(/\/$/, "")));
+  } catch (err) {}
+
+  return ignoreFilter;
+}
+
+async function fetchRepository(sourcePath: string, dir: string) {
   if (sourcePath.startsWith("/")) {
-    fse.copySync(sourcePath, dir);
-    return Promise.resolve();
+    const filter = await gitIgnoreFilter(sourcePath);
+    return fse.copy(sourcePath, dir, {
+      filter: file =>
+        sourcePath === file || !filter.ignores(path.relative(sourcePath, file))
+    });
   }
   return promisify(download)(sourcePath, dir);
 }
