@@ -9,9 +9,9 @@ const {
 } = require("./reports");
 
 const SUPPORTED_COMPILERS = {
-  solc: require("@truffle/compile-solidity"),
-  vyper: require("@truffle/compile-vyper"),
-  external: require("@truffle/external-compile")
+  solc: require("@truffle/compile-solidity").Compile,
+  vyper: require("@truffle/compile-vyper").Compile,
+  external: require("@truffle/external-compile").Compile
 };
 
 async function compile(config) {
@@ -27,13 +27,13 @@ async function compile(config) {
   //
   const rawCompilations = await Promise.all(
     compilers.map(async name => {
-      const compiler = SUPPORTED_COMPILERS[name];
-      if (!compiler) throw new Error("Unsupported compiler: " + name);
+      const { Compile } = SUPPORTED_COMPILERS[name];
+      if (!Compile) throw new Error("Unsupported compiler: " + name);
 
       const compileMethod =
         config.all === true || config.compileAll === true
-          ? compiler.all
-          : compiler.necessary;
+          ? Compile.all
+          : Compile.necessary;
 
       // return from `compile` is an array of compilations
       return await compileMethod(config);

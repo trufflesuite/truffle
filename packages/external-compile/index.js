@@ -275,12 +275,21 @@ const compile = async function (options) {
   ];
 };
 
-// required public interface
-compile.all = compile;
-compile.necessary = compile;
+const Compile = {
+  all: async function (options) {
+    return await compile(options);
+  },
+
+  necessary: async function (options) {
+    return await compile(options);
+  }
+};
 
 // specific exports
 compile.DEFAULT_ABI = DEFAULT_ABI;
 compile.processTarget = processTarget;
 
-module.exports = compile;
+module.exports = {
+  compile,
+  Compile
+};
