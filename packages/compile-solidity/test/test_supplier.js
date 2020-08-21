@@ -3,7 +3,7 @@ const fse = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
 const Resolver = require("@truffle/resolver");
-const { compile } = require("@truffle/compile-solidity");
+const { compile, Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
 const { findOne } = require("./helpers");
 
@@ -255,7 +255,7 @@ describe("CompilerSupplier", function () {
         options.resolver = new Resolver(options);
         options = Config.default().merge(options);
 
-        const compilations = await compile.withDependencies(options);
+        const compilations = await Compile.withDependencies(options);
         const ComplexOrdered = findOne(
           "ComplexOrdered",
           compilations[0].contracts
