@@ -36,7 +36,7 @@ const Compile = {
       ])
     ];
 
-    return await this.withDependencies(
+    return await Compile.withDependencies(
       Config.default().merge(options).merge({ paths })
     );
   },
@@ -53,7 +53,7 @@ const Compile = {
 
     const paths = await Profiler.updated(options);
 
-    return await this.withDependencies(
+    return await Compile.withDependencies(
       Config.default().merge(options).merge({ paths })
     );
   },
@@ -81,8 +81,8 @@ const Compile = {
     const hasTargets = compilationTargets.length;
 
     hasTargets
-      ? this.display(compilationTargets, options)
-      : this.display(allSources, options);
+      ? Compile.display(compilationTargets, options)
+      : Compile.display(allSources, options);
 
     options.compilationTargets = compilationTargets;
     const { sourceIndexes, contracts, compiler } = await run(

@@ -158,7 +158,7 @@ const Compile = {
       return path.match(/\.vy$|\.v.py$|\.vyper.py$/);
     });
     options.paths = updatedVyperPaths;
-    return await Compile.withDependencies(updatedOptions);
+    return await Compile.withDependencies(options);
   },
 
   withDependencies: async function (options) {

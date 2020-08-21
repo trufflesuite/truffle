@@ -27,7 +27,7 @@ async function compile(config) {
   //
   const rawCompilations = await Promise.all(
     compilers.map(async name => {
-      const { Compile } = SUPPORTED_COMPILERS[name];
+      const Compile = SUPPORTED_COMPILERS[name];
       if (!Compile) throw new Error("Unsupported compiler: " + name);
 
       const compileMethod =
