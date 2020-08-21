@@ -1,13 +1,11 @@
 "use strict";
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod };
-  };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetAllCompilations = exports.GetCompilationWithContracts = exports.GetCompilation = exports.AddCompilation = void 0;
 const graphql_tag_1 = __importDefault(require("graphql-tag"));
-exports.AddCompilation = graphql_tag_1.default`
+exports.AddCompilation = graphql_tag_1.default `
   mutation AddCompilation(
     $compilerName: String!
     $compilerVersion: String!
@@ -57,7 +55,7 @@ exports.AddCompilation = graphql_tag_1.default`
     }
   }
 `;
-exports.GetCompilation = graphql_tag_1.default`
+exports.GetCompilation = graphql_tag_1.default `
   query GetCompilation($id: ID!) {
     compilation(id: $id) {
       id
@@ -77,7 +75,7 @@ exports.GetCompilation = graphql_tag_1.default`
     }
   }
 `;
-exports.GetCompilationWithContracts = graphql_tag_1.default`
+exports.GetCompilationWithContracts = graphql_tag_1.default `
   query GetCompilation($id: ID!) {
     compilation(id: $id) {
       id
@@ -100,7 +98,7 @@ exports.GetCompilationWithContracts = graphql_tag_1.default`
     }
   }
 `;
-exports.GetAllCompilations = graphql_tag_1.default`
+exports.GetAllCompilations = graphql_tag_1.default `
   query getAllCompilations {
     compilations {
       compiler {

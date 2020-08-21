@@ -1,13 +1,11 @@
 "use strict";
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod };
-  };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AddContracts = exports.GetAllContracts = exports.GetContract = void 0;
 const graphql_tag_1 = __importDefault(require("graphql-tag"));
-exports.GetContract = graphql_tag_1.default`
+exports.GetContract = graphql_tag_1.default `
   query getContract($id: ID!) {
     contract(id: $id) {
       name
@@ -25,7 +23,7 @@ exports.GetContract = graphql_tag_1.default`
     }
   }
 `;
-exports.GetAllContracts = graphql_tag_1.default`
+exports.GetAllContracts = graphql_tag_1.default `
   query getAllContracts {
     contracts {
       name
@@ -51,7 +49,7 @@ exports.GetAllContracts = graphql_tag_1.default`
     }
   }
 `;
-exports.AddContracts = graphql_tag_1.default`
+exports.AddContracts = graphql_tag_1.default `
   mutation addContracts(
     $contractName: String
     $compilationId: ID!

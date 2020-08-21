@@ -1,49 +1,25 @@
 "use strict";
-var __awaiter =
-  (this && this.__awaiter) ||
-  function (thisArg, _arguments, P, generator) {
-    function adopt(value) {
-      return value instanceof P
-        ? value
-        : new P(function (resolve) {
-            resolve(value);
-          });
-    }
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
-      function fulfilled(value) {
-        try {
-          step(generator.next(value));
-        } catch (e) {
-          reject(e);
-        }
-      }
-      function rejected(value) {
-        try {
-          step(generator["throw"](value));
-        } catch (e) {
-          reject(e);
-        }
-      }
-      function step(result) {
-        result.done
-          ? resolve(result.value)
-          : adopt(result.value).then(fulfilled, rejected);
-      }
-      step((generator = generator.apply(thisArg, _arguments || [])).next());
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
-  };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.schema = void 0;
 const graphql_tools_1 = require("@gnd/graphql-tools");
 const schema_1 = require("@truffle/db/schema");
 exports.schema = graphql_tools_1.mergeSchemas({
-  schemas: [
-    // HACK github.com/apollographql/graphql-tools/issues/847
-    // fix seems to require nesting mergeSchemas so extend works
-    graphql_tools_1.mergeSchemas({
-      schemas: [
-        schema_1.schema,
-        `
+    schemas: [
+        // HACK github.com/apollographql/graphql-tools/issues/847
+        // fix seems to require nesting mergeSchemas so extend works
+        graphql_tools_1.mergeSchemas({
+            schemas: [
+                schema_1.schema,
+                `
         extend type Source {
           id: ID!
         }
@@ -78,10 +54,10 @@ exports.schema = graphql_tools_1.mergeSchemas({
           nameRecord: NameRecord!
         }
         `
-      ]
-    }),
-    // define entrypoints
-    `type Query {
+            ]
+        }),
+        // define entrypoints
+        `type Query {
       contractNames: [String]!
       contract(id: ID!): Contract
       compilation(id: ID!): Compilation
@@ -364,293 +340,254 @@ exports.schema = graphql_tools_1.mergeSchemas({
       projectsAdd(input:ProjectsAddInput!):ProjectsAddPayload
       projectNamesAssign(input: ProjectNamesAssignInput): ProjectNamesAssignPayload
     } `
-  ],
-  resolvers: {
-    Query: {
-      contractNames: {
-        resolve: (_, {}, { workspace }) => workspace.contractNames()
-      },
-      contracts: {
-        resolve: (_, {}, { workspace }) => workspace.contracts()
-      },
-      contract: {
-        resolve: (_, { id }, { workspace }) => workspace.contract({ id })
-      },
-      sources: {
-        resolve: (_, {}, { workspace }) => workspace.sources()
-      },
-      source: {
-        resolve: (_, { id }, { workspace }) => workspace.source({ id })
-      },
-      bytecodes: {
-        resolve: (_, {}, { workspace }) => workspace.bytecodes()
-      },
-      bytecode: {
-        resolve: (_, { id }, { workspace }) => workspace.bytecode({ id })
-      },
-      compilations: {
-        resolve: (_, {}, { workspace }) => workspace.compilations()
-      },
-      compilation: {
-        resolve: (_, { id }, { workspace }) => workspace.compilation({ id })
-      },
-      contractInstances: {
-        resolve: (_, {}, { workspace }) => workspace.contractInstances()
-      },
-      contractInstance: {
-        resolve: (_, { id }, { workspace }) =>
-          workspace.contractInstance({ id })
-      },
-      networks: {
-        resolve: (_, {}, { workspace }) => workspace.networks()
-      },
-      network: {
-        resolve: (_, { id }, { workspace }) => workspace.network({ id })
-      },
-      nameRecord: {
-        resolve: (_, { id }, { workspace }) => workspace.nameRecord({ id })
-      },
-      nameRecords: {
-        resolve: (_, {}, { workspace }) => workspace.nameRecords()
-      },
-      project: {
-        resolve: (_, { id }, { workspace }) => workspace.project({ id })
-      },
-      projects: {
-        resolve: (_, { id }, { workspace }) => workspace.projects()
-      }
-    },
-    Mutation: {
-      sourcesAdd: {
-        resolve: (_, { input }, { workspace }) =>
-          workspace.sourcesAdd({ input })
-      },
-      bytecodesAdd: {
-        resolve: (_, { input }, { workspace }) =>
-          workspace.bytecodesAdd({ input })
-      },
-      contractsAdd: {
-        resolve: (_, { input }, { workspace }) =>
-          workspace.contractsAdd({ input })
-      },
-      compilationsAdd: {
-        resolve: (_, { input }, { workspace }) =>
-          workspace.compilationsAdd({ input })
-      },
-      contractInstancesAdd: {
-        resolve: (_, { input }, { workspace }) =>
-          workspace.contractInstancesAdd({ input })
-      },
-      networksAdd: {
-        resolve: (_, { input }, { workspace }) =>
-          workspace.networksAdd({ input })
-      },
-      nameRecordsAdd: {
-        resolve: (_, { input }, { workspace }) =>
-          __awaiter(void 0, void 0, void 0, function* () {
-            return yield workspace.nameRecordsAdd({ input });
-          })
-      },
-      projectsAdd: {
-        resolve: (_, { input }, { workspace }) =>
-          workspace.projectsAdd({ input })
-      },
-      projectNamesAssign: {
-        resolve: (_, { input }, { workspace }) => {
-          return workspace.projectNamesAssign({ input });
-        }
-      }
-    },
-    Named: {
-      __resolveType: obj => {
-        if (obj.networkId) {
-          return "Network";
-        } else if (obj.abi) {
-          return "Contract";
-        } else {
-          return null;
-        }
-      }
-    },
-    NameRecord: {
-      resource: {
-        resolve: ({ type, resource: { id } }, _, { workspace }) =>
-          __awaiter(void 0, void 0, void 0, function* () {
-            switch (type) {
-              case "Contract":
-                return yield workspace.contract({ id });
-              case "Network":
-                return yield workspace.network({ id });
-              default:
-                return null;
+    ],
+    resolvers: {
+        Query: {
+            contractNames: {
+                resolve: (_, {}, { workspace }) => workspace.contractNames()
+            },
+            contracts: {
+                resolve: (_, {}, { workspace }) => workspace.contracts()
+            },
+            contract: {
+                resolve: (_, { id }, { workspace }) => workspace.contract({ id })
+            },
+            sources: {
+                resolve: (_, {}, { workspace }) => workspace.sources()
+            },
+            source: {
+                resolve: (_, { id }, { workspace }) => workspace.source({ id })
+            },
+            bytecodes: {
+                resolve: (_, {}, { workspace }) => workspace.bytecodes()
+            },
+            bytecode: {
+                resolve: (_, { id }, { workspace }) => workspace.bytecode({ id })
+            },
+            compilations: {
+                resolve: (_, {}, { workspace }) => workspace.compilations()
+            },
+            compilation: {
+                resolve: (_, { id }, { workspace }) => workspace.compilation({ id })
+            },
+            contractInstances: {
+                resolve: (_, {}, { workspace }) => workspace.contractInstances()
+            },
+            contractInstance: {
+                resolve: (_, { id }, { workspace }) => workspace.contractInstance({ id })
+            },
+            networks: {
+                resolve: (_, {}, { workspace }) => workspace.networks()
+            },
+            network: {
+                resolve: (_, { id }, { workspace }) => workspace.network({ id })
+            },
+            nameRecord: {
+                resolve: (_, { id }, { workspace }) => workspace.nameRecord({ id })
+            },
+            nameRecords: {
+                resolve: (_, {}, { workspace }) => workspace.nameRecords()
+            },
+            project: {
+                resolve: (_, { id }, { workspace }) => workspace.project({ id })
+            },
+            projects: {
+                resolve: (_, { id }, { workspace }) => workspace.projects()
             }
-          })
-      },
-      previous: {
-        resolve: ({ id }, _, { workspace }) => workspace.nameRecord({ id })
-      }
-    },
-    Project: {
-      resolve: {
-        resolve: ({ id }, { name, type }, { workspace }) =>
-          __awaiter(void 0, void 0, void 0, function* () {
-            return yield workspace.projectNames({
-              project: { id },
-              name,
-              type
-            });
-          })
-      },
-      network: {
-        resolve: ({ id }, { name }, { workspace }) =>
-          __awaiter(void 0, void 0, void 0, function* () {
-            const nameRecords = yield workspace.projectNames({
-              project: { id },
-              type: "Network",
-              name
-            });
-            if (nameRecords.length === 0) {
-              return;
-            }
-            const { resource } = nameRecords[0];
-            return yield workspace.network(resource);
-          })
-      },
-      contract: {
-        resolve: ({ id }, { name }, { workspace }) =>
-          __awaiter(void 0, void 0, void 0, function* () {
-            const nameRecords = yield workspace.projectNames({
-              project: { id },
-              type: "Contract",
-              name
-            });
-            if (nameRecords.length === 0) {
-              return;
-            }
-            const { resource } = nameRecords[0];
-            return yield workspace.contract(resource);
-          })
-      }
-    },
-    ProjectName: {
-      project: {
-        resolve: ({ project: { id } }, _, { workspace }) =>
-          workspace.project({ id })
-      },
-      nameRecord: {
-        resolve: ({ nameRecord: { id } }, _, { workspace }) =>
-          workspace.nameRecord({ id })
-      }
-    },
-    Compilation: {
-      sources: {
-        resolve: ({ sources }, _, { workspace }) =>
-          Promise.all(sources.map(source => workspace.source(source)))
-      },
-      processedSources: {
-        resolve: ({ id, processedSources }, _, { workspace }) =>
-          processedSources.map((processedSource, index) =>
-            Object.assign(Object.assign({}, processedSource), {
-              compilation: { id },
-              index
-            })
-          )
-      }
-    },
-    Contract: {
-      compilation: {
-        resolve: ({ compilation }, _, { workspace }) =>
-          workspace.compilation(compilation)
-      },
-      processedSource: {
-        fragment: `... on Contract { compilation { id } }`,
-        resolve: ({ processedSource, compilation }, _, { workspace }) =>
-          __awaiter(void 0, void 0, void 0, function* () {
-            const { processedSources } = yield workspace.compilation(
-              compilation
-            );
-            return processedSources[processedSource.index];
-          })
-      },
-      createBytecode: {
-        resolve: ({ createBytecode }, _, { workspace }) =>
-          workspace.bytecode(createBytecode)
-      },
-      callBytecode: {
-        resolve: ({ callBytecode }, _, { workspace }) =>
-          workspace.bytecode(callBytecode)
-      }
-    },
-    ContractInstance: {
-      network: {
-        resolve: ({ network }, _, { workspace }) =>
-          __awaiter(void 0, void 0, void 0, function* () {
-            return yield workspace.network(network);
-          })
-      },
-      contract: {
-        resolve: ({ contract }, _, { workspace }) =>
-          workspace.contract(contract)
-      },
-      callBytecode: {
-        resolve: ({ callBytecode }, _, { workspace }) =>
-          __awaiter(void 0, void 0, void 0, function* () {
-            let bytecode = yield workspace.bytecode(callBytecode.bytecode);
-            let linkValues = callBytecode.linkValues.map(
-              ({ value, linkReference }) => {
-                return {
-                  value: value,
-                  linkReference: bytecode.linkReferences[linkReference.index]
-                };
-              }
-            );
-            return {
-              bytecode: bytecode,
-              linkValues: linkValues
-            };
-          })
-      },
-      creation: {
-        resolve: (input, _, { workspace }) =>
-          __awaiter(void 0, void 0, void 0, function* () {
-            let bytecode = yield workspace.bytecode(
-              input.creation.constructor.createBytecode.bytecode
-            );
-            let transactionHash = input.creation.transactionHash;
-            let linkValues = input.creation.constructor.createBytecode.linkValues.map(
-              ({ value, linkReference }) => {
-                return {
-                  value: value,
-                  linkReference: bytecode.linkReferences[linkReference.index]
-                };
-              }
-            );
-            return {
-              transactionHash: transactionHash,
-              constructor: {
-                createBytecode: {
-                  bytecode: bytecode,
-                  linkValues: linkValues
+        },
+        Mutation: {
+            sourcesAdd: {
+                resolve: (_, { input }, { workspace }) => workspace.sourcesAdd({ input })
+            },
+            bytecodesAdd: {
+                resolve: (_, { input }, { workspace }) => workspace.bytecodesAdd({ input })
+            },
+            contractsAdd: {
+                resolve: (_, { input }, { workspace }) => workspace.contractsAdd({ input })
+            },
+            compilationsAdd: {
+                resolve: (_, { input }, { workspace }) => workspace.compilationsAdd({ input })
+            },
+            contractInstancesAdd: {
+                resolve: (_, { input }, { workspace }) => workspace.contractInstancesAdd({ input })
+            },
+            networksAdd: {
+                resolve: (_, { input }, { workspace }) => workspace.networksAdd({ input })
+            },
+            nameRecordsAdd: {
+                resolve: (_, { input }, { workspace }) => __awaiter(void 0, void 0, void 0, function* () {
+                    return yield workspace.nameRecordsAdd({ input });
+                })
+            },
+            projectsAdd: {
+                resolve: (_, { input }, { workspace }) => workspace.projectsAdd({ input })
+            },
+            projectNamesAssign: {
+                resolve: (_, { input }, { workspace }) => {
+                    return workspace.projectNamesAssign({ input });
                 }
-              }
-            };
-          })
-      }
-    },
-    ProcessedSource: {
-      source: {
-        resolve: ({ source }, _, { workspace }) => workspace.source(source)
-      },
-      contracts: {
-        resolve: ({ compilation, index }, _, { workspace }) =>
-          workspace.databases.find("contracts", {
-            selector: {
-              "compilation.id": compilation.id,
-              "processedSource.index": index
             }
-          })
-      }
+        },
+        Named: {
+            __resolveType: obj => {
+                if (obj.networkId) {
+                    return "Network";
+                }
+                else if (obj.abi) {
+                    return "Contract";
+                }
+                else {
+                    return null;
+                }
+            }
+        },
+        NameRecord: {
+            resource: {
+                resolve: ({ type, resource: { id } }, _, { workspace }) => __awaiter(void 0, void 0, void 0, function* () {
+                    switch (type) {
+                        case "Contract":
+                            return yield workspace.contract({ id });
+                        case "Network":
+                            return yield workspace.network({ id });
+                        default:
+                            return null;
+                    }
+                })
+            },
+            previous: {
+                resolve: ({ id }, _, { workspace }) => workspace.nameRecord({ id })
+            }
+        },
+        Project: {
+            resolve: {
+                resolve: ({ id }, { name, type }, { workspace }) => __awaiter(void 0, void 0, void 0, function* () {
+                    return yield workspace.projectNames({
+                        project: { id },
+                        name,
+                        type
+                    });
+                })
+            },
+            network: {
+                resolve: ({ id }, { name }, { workspace }) => __awaiter(void 0, void 0, void 0, function* () {
+                    const nameRecords = yield workspace.projectNames({
+                        project: { id },
+                        type: "Network",
+                        name
+                    });
+                    if (nameRecords.length === 0) {
+                        return;
+                    }
+                    const { resource } = nameRecords[0];
+                    return yield workspace.network(resource);
+                })
+            },
+            contract: {
+                resolve: ({ id }, { name }, { workspace }) => __awaiter(void 0, void 0, void 0, function* () {
+                    const nameRecords = yield workspace.projectNames({
+                        project: { id },
+                        type: "Contract",
+                        name
+                    });
+                    if (nameRecords.length === 0) {
+                        return;
+                    }
+                    const { resource } = nameRecords[0];
+                    return yield workspace.contract(resource);
+                })
+            }
+        },
+        ProjectName: {
+            project: {
+                resolve: ({ project: { id } }, _, { workspace }) => workspace.project({ id })
+            },
+            nameRecord: {
+                resolve: ({ nameRecord: { id } }, _, { workspace }) => workspace.nameRecord({ id })
+            }
+        },
+        Compilation: {
+            sources: {
+                resolve: ({ sources }, _, { workspace }) => Promise.all(sources.map(source => workspace.source(source)))
+            },
+            processedSources: {
+                resolve: ({ id, processedSources }, _, { workspace }) => processedSources.map((processedSource, index) => (Object.assign(Object.assign({}, processedSource), { compilation: { id }, index })))
+            }
+        },
+        Contract: {
+            compilation: {
+                resolve: ({ compilation }, _, { workspace }) => workspace.compilation(compilation)
+            },
+            processedSource: {
+                fragment: `... on Contract { compilation { id } }`,
+                resolve: ({ processedSource, compilation }, _, { workspace }) => __awaiter(void 0, void 0, void 0, function* () {
+                    const { processedSources } = yield workspace.compilation(compilation);
+                    return processedSources[processedSource.index];
+                })
+            },
+            createBytecode: {
+                resolve: ({ createBytecode }, _, { workspace }) => workspace.bytecode(createBytecode)
+            },
+            callBytecode: {
+                resolve: ({ callBytecode }, _, { workspace }) => workspace.bytecode(callBytecode)
+            }
+        },
+        ContractInstance: {
+            network: {
+                resolve: ({ network }, _, { workspace }) => __awaiter(void 0, void 0, void 0, function* () { return yield workspace.network(network); })
+            },
+            contract: {
+                resolve: ({ contract }, _, { workspace }) => workspace.contract(contract)
+            },
+            callBytecode: {
+                resolve: ({ callBytecode }, _, { workspace }) => __awaiter(void 0, void 0, void 0, function* () {
+                    let bytecode = yield workspace.bytecode(callBytecode.bytecode);
+                    let linkValues = callBytecode.linkValues.map(({ value, linkReference }) => {
+                        return {
+                            value: value,
+                            linkReference: bytecode.linkReferences[linkReference.index]
+                        };
+                    });
+                    return {
+                        bytecode: bytecode,
+                        linkValues: linkValues
+                    };
+                })
+            },
+            creation: {
+                resolve: (input, _, { workspace }) => __awaiter(void 0, void 0, void 0, function* () {
+                    let bytecode = yield workspace.bytecode(input.creation.constructor.createBytecode.bytecode);
+                    let transactionHash = input.creation.transactionHash;
+                    let linkValues = input.creation.constructor.createBytecode.linkValues.map(({ value, linkReference }) => {
+                        return {
+                            value: value,
+                            linkReference: bytecode.linkReferences[linkReference.index]
+                        };
+                    });
+                    return {
+                        transactionHash: transactionHash,
+                        constructor: {
+                            createBytecode: {
+                                bytecode: bytecode,
+                                linkValues: linkValues
+                            }
+                        }
+                    };
+                })
+            }
+        },
+        ProcessedSource: {
+            source: {
+                resolve: ({ source }, _, { workspace }) => workspace.source(source)
+            },
+            contracts: {
+                resolve: ({ compilation, index }, _, { workspace }) => workspace.databases.find("contracts", {
+                    selector: {
+                        "compilation.id": compilation.id,
+                        "processedSource.index": index
+                    }
+                })
+            }
+        }
     }
-  }
 });
 //# sourceMappingURL=schema.js.map

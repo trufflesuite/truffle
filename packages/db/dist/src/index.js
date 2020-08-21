@@ -10,16 +10,16 @@ const { TruffleDB } = require("./db");
 exports.TruffleDB = TruffleDB;
 const { ApolloServer } = require("apollo-server");
 const playgroundServer = config => {
-  const { context, schema } = new TruffleDB({
-    contracts_build_directory: config.contracts_build_directory,
-    contracts_directory: config.contracts_directory,
-    working_directory: config.working_directory
-  });
-  return new ApolloServer({
-    tracing: true,
-    schema: schema,
-    context: context
-  });
+    const { context, schema } = new TruffleDB({
+        contracts_build_directory: config.contracts_build_directory,
+        contracts_directory: config.contracts_directory,
+        working_directory: config.working_directory
+    });
+    return new ApolloServer({
+        tracing: true,
+        schema: schema,
+        context: context
+    });
 };
 exports.playgroundServer = playgroundServer;
 //# sourceMappingURL=index.js.map

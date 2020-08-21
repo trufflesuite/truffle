@@ -1,13 +1,11 @@
 "use strict";
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod };
-  };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AddContractInstances = exports.GetAllContractInstances = exports.GetContractInstance = void 0;
 const graphql_tag_1 = __importDefault(require("graphql-tag"));
-exports.GetContractInstance = graphql_tag_1.default`
+exports.GetContractInstance = graphql_tag_1.default `
   query GetContractInstance($id: ID!) {
     contractInstance(id: $id) {
       address
@@ -30,7 +28,7 @@ exports.GetContractInstance = graphql_tag_1.default`
     }
   }
 `;
-exports.GetAllContractInstances = graphql_tag_1.default`
+exports.GetAllContractInstances = graphql_tag_1.default `
   query getAllContractInstances {
     contractInstances {
       id
@@ -46,7 +44,7 @@ exports.GetAllContractInstances = graphql_tag_1.default`
     }
   }
 `;
-exports.AddContractInstances = graphql_tag_1.default`
+exports.AddContractInstances = graphql_tag_1.default `
   input ContractInstanceNetworkInput {
     id: ID!
   }

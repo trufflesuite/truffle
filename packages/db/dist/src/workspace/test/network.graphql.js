@@ -1,13 +1,11 @@
 "use strict";
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod };
-  };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AddNetworks = exports.GetAllNetworks = exports.GetNetwork = void 0;
 const graphql_tag_1 = __importDefault(require("graphql-tag"));
-exports.GetNetwork = graphql_tag_1.default`
+exports.GetNetwork = graphql_tag_1.default `
   query GetNetwork($id: ID!) {
     network(id: $id) {
       networkId
@@ -15,7 +13,7 @@ exports.GetNetwork = graphql_tag_1.default`
     }
   }
 `;
-exports.GetAllNetworks = graphql_tag_1.default`
+exports.GetAllNetworks = graphql_tag_1.default `
   query getAllNetworks {
     networks {
       id
@@ -23,7 +21,7 @@ exports.GetAllNetworks = graphql_tag_1.default`
     }
   }
 `;
-exports.AddNetworks = graphql_tag_1.default`
+exports.AddNetworks = graphql_tag_1.default `
   mutation AddNetworks(
     $networkId: NetworkId!
     $height: Int!

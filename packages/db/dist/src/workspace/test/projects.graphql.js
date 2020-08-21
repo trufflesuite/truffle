@@ -1,13 +1,11 @@
 "use strict";
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod };
-  };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AssignProjectName = exports.AddProject = exports.LookupNames = exports.GetProject = void 0;
 const graphql_tag_1 = __importDefault(require("graphql-tag"));
-exports.GetProject = graphql_tag_1.default`
+exports.GetProject = graphql_tag_1.default `
   query GetProject($id: ID!) {
     project(id: $id) {
       id
@@ -15,7 +13,7 @@ exports.GetProject = graphql_tag_1.default`
     }
   }
 `;
-exports.LookupNames = graphql_tag_1.default`
+exports.LookupNames = graphql_tag_1.default `
   query LookupNames(
     $projectId: ID!
     $networkName: String!
@@ -31,7 +29,7 @@ exports.LookupNames = graphql_tag_1.default`
     }
   }
 `;
-exports.AddProject = graphql_tag_1.default`
+exports.AddProject = graphql_tag_1.default `
   mutation AddProject($directory: String!) {
     projectsAdd(input: { projects: [{ directory: $directory }] }) {
       projects {
@@ -41,7 +39,7 @@ exports.AddProject = graphql_tag_1.default`
     }
   }
 `;
-exports.AssignProjectName = graphql_tag_1.default`
+exports.AssignProjectName = graphql_tag_1.default `
   mutation AssignProjectName(
     $projectId: ID!
     $name: String!

@@ -1,13 +1,11 @@
 "use strict";
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod };
-  };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AddBytecode = exports.GetBytecode = exports.GetAllBytecodes = void 0;
 const graphql_tag_1 = __importDefault(require("graphql-tag"));
-exports.GetAllBytecodes = graphql_tag_1.default`
+exports.GetAllBytecodes = graphql_tag_1.default `
   query GetAllBytecodes {
     bytecodes {
       id
@@ -24,7 +22,7 @@ exports.GetAllBytecodes = graphql_tag_1.default`
     }
   }
 `;
-exports.GetBytecode = graphql_tag_1.default`
+exports.GetBytecode = graphql_tag_1.default `
   query GetBytecode($id: ID!) {
     bytecode(id: $id) {
       id
@@ -37,7 +35,7 @@ exports.GetBytecode = graphql_tag_1.default`
     }
   }
 `;
-exports.AddBytecode = graphql_tag_1.default`
+exports.AddBytecode = graphql_tag_1.default `
   type linkReferenceInput {
     offsets: [Int]
     name: String
