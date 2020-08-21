@@ -1,7 +1,7 @@
 const path = require("path");
 const assert = require("assert");
 const Resolver = require("@truffle/resolver");
-const compile = require("../");
+const { Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
 
 describe("JSparser", () => {
@@ -61,7 +61,7 @@ describe("JSparser", () => {
     const config = Config.default().merge(options);
 
     try {
-      await compile.withDependencies(config);
+      await Compile.withDependencies(config);
       assert(false, "this call should have failed!");
     } catch (error) {
       assert(error.message.match(/(Unsupported parser)/));
