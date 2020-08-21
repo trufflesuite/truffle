@@ -285,11 +285,9 @@ const Compile = {
   }
 };
 
-// specific exports
-compile.DEFAULT_ABI = DEFAULT_ABI;
-compile.processTarget = processTarget;
-
 module.exports = {
   compile,
-  Compile
+  Compile,
+  DEFAULT_ABI,
+  processTarget
 };
