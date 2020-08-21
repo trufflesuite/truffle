@@ -70,7 +70,7 @@ const Compile = {
     ]);
 
     const config = Config.default().merge(options);
-    const { allSources, required } = await Profiler.requiredSources(
+    const { allSources, compilationTargets } = await Profiler.requiredSources(
       config.with({
         paths: options.paths,
         base_path: options.contracts_directory,
@@ -78,13 +78,13 @@ const Compile = {
       })
     );
 
-    const hasTargets = required.length;
+    const hasTargets = compilationTargets.length;
 
     hasTargets
-      ? this.display(required, options)
+      ? this.display(compilationTargets, options)
       : this.display(allSources, options);
 
-    options.compilationTargets = required;
+    options.compilationTargets = compilationTargets;
     const { sourceIndexes, contracts, compiler } = await run(
       allSources,
       normalizeOptions(options)
