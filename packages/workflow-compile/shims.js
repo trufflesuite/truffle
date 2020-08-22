@@ -75,7 +75,6 @@ function shimBytecode(bytecode) {
 }
 
 module.exports = {
-  shimLegacy,
   shimContracts,
   shimContract,
   shimBytecode
