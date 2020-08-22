@@ -137,7 +137,7 @@ const Compile = {
     );
     const files = await findContracts(fileSearchPattern);
     options.paths = files;
-    return await this.withDependencies(options);
+    return await Compile.withDependencies(options);
   },
 
   // contracts_directory: String. Directory where contract files can be found.
