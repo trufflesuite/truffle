@@ -1,7 +1,7 @@
 const TestCase = require("mocha/lib/test.js");
 const Suite = require("mocha/lib/suite.js");
 const Deployer = require("@truffle/deployer");
-const compile = require("@truffle/compile-solidity");
+const { Compile } = require("@truffle/compile-solidity");
 const { shimContract } = require("@truffle/compile-solidity/legacy/shims");
 const path = require("path");
 const semver = require("semver");
@@ -123,7 +123,7 @@ const SolidityTest = {
       SafeSend = "NewSafeSend.sol";
     }
 
-    const compilations = await compile.withDependencies(
+    const compilations = await Compile.withDependencies(
       runner.config.with({
         paths: [
           path.join(__dirname, "Assert.sol"),

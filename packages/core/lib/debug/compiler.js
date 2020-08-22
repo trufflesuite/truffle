@@ -1,4 +1,4 @@
-const compile = require("@truffle/compile-solidity");
+const { compile, Compile } = require("@truffle/compile-solidity");
 
 class DebugCompiler {
   constructor(config) {
@@ -10,7 +10,7 @@ class DebugCompiler {
 
     const { contracts, sourceIndexes } = sources
       ? await compile(sources, compileConfig) //used by external.js
-      : await compile.all(compileConfig);
+      : await Compile.all(compileConfig);
 
     return { contracts, sourceIndexes };
   }
