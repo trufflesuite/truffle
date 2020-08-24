@@ -107,7 +107,7 @@ const Contracts = {
 
     await fse.ensureDir(config.contracts_build_directory);
 
-    const artifacts = contracts.map(shims.newToLegacy.contract(contract));
+    const artifacts = contracts.map(shims.newToLegacy.contract);
     await config.artifactor.saveAll(artifacts);
   }
 };
