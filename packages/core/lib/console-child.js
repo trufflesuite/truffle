@@ -3,8 +3,10 @@ const TruffleError = require("@truffle/error");
 const Config = require("@truffle/config");
 const Web3 = require("web3");
 
-const inputStrings = process.argv[2];
-const network = process.argv[3];
+const input = process.argv[2].split(" -- ");
+
+const network = input[0].split(" ")[1];
+const inputStrings = input[1];
 
 //detect config so we can get the provider and resolver without having to serialize
 //and deserialize them
