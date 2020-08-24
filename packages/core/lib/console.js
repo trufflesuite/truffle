@@ -145,7 +145,7 @@ class Console extends EventEmitter {
     try {
       spawnSync(
         "node",
-        [childPath, inputStrings, options.network],
+        ["--no-deprecation", childPath, inputStrings, options.network],
         spawnOptions
       );
 
