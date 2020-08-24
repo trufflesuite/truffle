@@ -2,15 +2,14 @@ const Command = require("../lib/command");
 const TruffleError = require("@truffle/error");
 const Config = require("@truffle/config");
 const Web3 = require("web3");
+const yargs = require("yargs");
 
 const input = process.argv[2].split(" -- ");
-
-const network = input[0].split(" ")[1];
 const inputStrings = input[1];
 
 //detect config so we can get the provider and resolver without having to serialize
 //and deserialize them
-const detectedConfig = Config.detect({ network: network });
+const detectedConfig = Config.detect({ network: yargs(input[0]).network });
 const customConfig = detectedConfig.networks.develop || {};
 
 //need host and port for provider url
