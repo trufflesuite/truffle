@@ -66,7 +66,7 @@ describe("artifactor + require", () => {
       contract => contract.contractName === "Example"
     );
     const compiled = Schema.normalize(
-      shims.compiledContractToArtifact(exampleContract)
+      shims.newToLegacy.contract(exampleContract)
     );
     abi = compiled.abi;
     bytecode = compiled.bytecode;
