@@ -26,7 +26,7 @@ import solidity from "lib/solidity/selectors";
 import rootSaga from "./sagas";
 import reducer from "./reducers";
 
-import { shimBytecode } from "@truffle/compile-solidity/legacy/shims";
+import { shims } from "@truffle/compile-common";
 
 /**
  * Debugger Session
@@ -158,10 +158,10 @@ export default class Session {
 
         //hopefully we can get rid of this step eventually, but not yet
         if (typeof binary === "object") {
-          binary = shimBytecode(binary);
+          binary = shims.newToLegacy.shimBytecode(binary);
         }
         if (typeof deployedBinary === "object") {
-          deployedBinary = shimBytecode(deployedBinary);
+          deployedBinary = shims.newToLegacy.shimBytecode(deployedBinary);
         }
 
         let primarySourceIndex;

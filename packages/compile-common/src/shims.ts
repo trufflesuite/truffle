@@ -40,7 +40,7 @@ export namespace newToLegacy {
     };
   };
 
-  const shimBytecode = (bytecode: any): any => {
+  export const shimBytecode = (bytecode: any): any => {
     if (!bytecode) {
       return bytecode;
     }

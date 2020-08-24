@@ -34,7 +34,7 @@ import {
   VariableNotFoundError
 } from "./errors";
 //sorry for the untyped imports, but...
-const { shimBytecode } = require("@truffle/compile-solidity/legacy/shims");
+const { shims } = require("@truffle/compile-common");
 const SolidityUtils = require("@truffle/solidity-utils");
 
 /**
@@ -73,8 +73,10 @@ export class WireDecoder {
         let deployedContext: Contexts.DecoderContext | undefined = undefined;
         let constructorContext: Contexts.DecoderContext | undefined = undefined;
         const compiler = compilation.compiler || contract.compiler;
-        const deployedBytecode = shimBytecode(contract.deployedBytecode);
-        const bytecode = shimBytecode(contract.bytecode);
+        const deployedBytecode = shims.newToLegacy.shimBytecode(
+          contract.deployedBytecode
+        );
+        const bytecode = shims.newToLegacy.shimBytecode(contract.bytecode);
         if (deployedBytecode && deployedBytecode !== "0x") {
           deployedContext = Utils.makeContext(contract, node, compilation);
           this.contexts[deployedContext.context] = deployedContext;
@@ -105,9 +107,8 @@ export class WireDecoder {
     );
     this.deployedContexts = Object.assign(
       {},
-      ...Object.values(this.contexts).map(
-        context =>
-          !context.isConstructor ? { [context.context]: context } : {}
+      ...Object.values(this.contexts).map(context =>
+        !context.isConstructor ? { [context.context]: context } : {}
       )
     );
 
@@ -536,8 +537,10 @@ export class WireDecoder {
    */
 
   public async forArtifact(artifact: Artifact): Promise<ContractDecoder> {
-    const deployedBytecode = shimBytecode(artifact.deployedBytecode);
-    const bytecode = shimBytecode(artifact.bytecode);
+    const deployedBytecode = shims.newToLegacy.shimBytecode(
+      artifact.deployedBytecode
+    );
+    const bytecode = shims.newToLegacy.shimBytecode(artifact.bytecode);
 
     const { compilation, contract } = this.compilations.reduce(
       (foundSoFar: DecoderTypes.CompilationAndContract, compilation) => {
@@ -547,7 +550,7 @@ export class WireDecoder {
         const contractFound = compilation.contracts.find(contract => {
           if (bytecode) {
             return (
-              shimBytecode(contract.bytecode) === bytecode &&
+              shims.newToLegacy.shimBytecode(contract.bytecode) === bytecode &&
               contract.contractName ===
                 (artifact.contractName || <string>artifact.contract_name)
             );
@@ -555,7 +558,9 @@ export class WireDecoder {
             //I'll just go by one of bytecode or deployedBytecode;
             //no real need to check both
             return (
-              shimBytecode(contract.deployedBytecode) === deployedBytecode &&
+              shims.newToLegacy.shims.newToLegacy.shimBytecode(
+                contract.deployedBytecode
+              ) === deployedBytecode &&
               contract.contractName ===
                 (artifact.contractName || <string>artifact.contract_name)
             );
@@ -1149,7 +1154,9 @@ export class ContractInstanceDecoder {
       )
     );
 
-    const deployedBytecode = shimBytecode(this.contract.deployedBytecode);
+    const deployedBytecode = shims.newToLegacy.shimBytecode(
+      this.contract.deployedBytecode
+    );
 
     if (!deployedBytecode || deployedBytecode === "0x") {
       //if this contract does *not* have the deployedBytecode field, then the decoder core
@@ -1194,12 +1201,12 @@ export class ContractInstanceDecoder {
       this.compilation.sources.every(source => !source || source.ast)
     ) {
       //WARNING: untyped code in this block!
-      let asts: Ast.AstNode[] = this.compilation.sources.map(
-        source => (source ? source.ast : undefined)
+      let asts: Ast.AstNode[] = this.compilation.sources.map(source =>
+        source ? source.ast : undefined
       );
       let instructions = SolidityUtils.getProcessedInstructionsForBinary(
-        this.compilation.sources.map(
-          source => (source ? source.source : undefined)
+        this.compilation.sources.map(source =>
+          source ? source.source : undefined
         ),
         this.contractCode,
         SolidityUtils.getHumanReadableSourceMap(this.contract.deployedSourceMap)
