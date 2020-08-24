@@ -6,10 +6,10 @@ const path = require("path");
 const fs = require("fs");
 const Config = require("@truffle/config");
 const requireNoCache = require("require-nocache")(module);
-const Compile = require("@truffle/compile-solidity/legacy");
+const { compile } = require("@truffle/compile-solidity");
 const Ganache = require("ganache-core");
 const Web3 = require("web3");
-const { promisify } = require("util");
+const { shims } = require("@truffle/compile-common");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
 
@@ -19,14 +19,14 @@ describe("artifactor + require", () => {
   const web3 = new Web3();
   web3.setProvider(provider);
 
-  before(() => web3.eth.net.getId().then((id) => (networkID = id)));
+  before(() => web3.eth.net.getId().then(id => (networkID = id)));
 
   before(async function () {
     this.timeout(20000);
 
     const sourcePath = path.join(__dirname, "Example.sol");
     const sources = {
-      Example: fs.readFileSync(sourcePath, { encoding: "utf8" }),
+      Example: fs.readFileSync(sourcePath, { encoding: "utf8" })
     };
 
     const options = {
@@ -37,22 +37,23 @@ describe("artifactor + require", () => {
           settings: {
             optimizer: {
               enabled: false,
-              runs: 200,
-            },
-          },
-        },
+              runs: 200
+            }
+          }
+        }
       },
       logger: {
         log(stringToLog) {
           this.loggedStuff = this.loggedStuff + stringToLog;
         },
-        loggedStuff: "",
-      },
+        loggedStuff: ""
+      }
     };
     config = Config.default().with(options);
 
     // Compile first
-    const result = await promisify(Compile)(sources, config);
+    const compilations = await compile(sources, config);
+    const { contracts } = compilations[0];
 
     // Clean up after solidity. Only remove solidity's listener,
     // which happens to be the first.
@@ -61,14 +62,19 @@ describe("artifactor + require", () => {
       process.listeners("uncaughtException")[0] || (() => {})
     );
 
-    const compiled = Schema.normalize(result["Example"]);
+    const exampleContract = contracts.find(
+      contract => contract.contractName === "Example"
+    );
+    const compiled = Schema.normalize(
+      shims.compiledContractToArtifact(exampleContract)
+    );
     abi = compiled.abi;
     bytecode = compiled.bytecode;
 
     // Setup
     const tempDir = tmp.dirSync({
       unsafeCleanup: true,
-      prefix: "tmp-test-contract-",
+      prefix: "tmp-test-contract-"
     });
 
     const expectedFilepath = path.join(tempDir.name, "Example.json");
@@ -82,9 +88,9 @@ describe("artifactor + require", () => {
         bytecode,
         networks: {
           [`${networkID}`]: {
-            address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01",
-          },
-        },
+            address: "0xe6e1652a0397e078f434d6dda181b218cfd42e01"
+          }
+        }
       })
       .then(() => {
         const json = requireNoCache(expectedFilepath);
@@ -94,11 +100,11 @@ describe("artifactor + require", () => {
   });
 
   before(() =>
-    web3.eth.getAccounts().then((_accounts) => {
+    web3.eth.getAccounts().then(_accounts => {
       accounts = _accounts;
 
       Example.defaults({
-        from: accounts[0],
+        from: accounts[0]
       });
     })
   );
@@ -108,33 +114,33 @@ describe("artifactor + require", () => {
       assert(transactionHash, "transactionHash should be non-empty");
     }));
 
-  it("should get and set values via methods and get values via .call", (done) => {
+  it("should get and set values via methods and get values via .call", done => {
     let example;
     Example.new(1, { gas: 3141592 })
-      .then((instance) => {
+      .then(instance => {
         example = instance;
         return example.value.call();
       })
-      .then((value) => {
+      .then(value => {
         assert.equal(value.valueOf(), 1, "Starting value should be 1");
         return example.setValue(5);
       })
       .then(() => example.value.call())
-      .then((value) => {
+      .then(value => {
         assert.equal(parseInt(value), 5, "Ending value should be five");
       })
       .then(done)
       .catch(done);
   });
 
-  it("shouldn't synchronize constant functions", (done) => {
+  it("shouldn't synchronize constant functions", done => {
     let example;
     Example.new(5, { gas: 3141592 })
-      .then((instance) => {
+      .then(instance => {
         example = instance;
         return example.getValue();
       })
-      .then((value) => {
+      .then(value => {
         assert.equal(
           value.valueOf(),
           5,
@@ -145,26 +151,26 @@ describe("artifactor + require", () => {
       .catch(done);
   });
 
-  it("should allow BigNumbers as input parameters, and not confuse them as transaction objects", (done) => {
+  it("should allow BigNumbers as input parameters, and not confuse them as transaction objects", done => {
     // BigNumber passed on new()
     let example = null;
     Example.new("30", { gas: 3141592 })
-      .then((instance) => {
+      .then(instance => {
         example = instance;
         return example.value.call();
       })
-      .then((value) => {
+      .then(value => {
         assert.equal(parseInt(value), 30, "Starting value should be 30");
         // BigNumber passed in a transaction.
         return example.setValue("25", { gas: 3141592 });
       })
       .then(() => example.value.call())
-      .then((value) => {
+      .then(value => {
         assert.equal(parseInt(value), 25, "Ending value should be twenty-five");
         // BigNumber passed in a call.
         return example.parrot.call(865);
       })
-      .then((parrotValue) => {
+      .then(parrotValue => {
         assert.equal(
           parseInt(parrotValue),
           865,
@@ -175,10 +181,10 @@ describe("artifactor + require", () => {
       .catch(done);
   });
 
-  it("should return transaction hash, logs and receipt when using synchronised transactions", (done) => {
+  it("should return transaction hash, logs and receipt when using synchronised transactions", done => {
     let example = null;
     Example.new("1", { gas: 3141592 })
-      .then((instance) => {
+      .then(instance => {
         example = instance;
         return example.triggerEvent();
       })
@@ -213,17 +219,17 @@ describe("artifactor + require", () => {
   it("should trigger the fallback function when calling sendTransaction()", () => {
     let example = null;
     return Example.new("1", { gas: 3141592 })
-      .then((instance) => {
+      .then(instance => {
         example = instance;
         return example.fallbackTriggered();
       })
-      .then((triggered) => {
+      .then(triggered => {
         assert(
           triggered === false,
           "Fallback should not have been triggered yet"
         );
         return example.sendTransaction({
-          value: web3.utils.toWei("1", "ether"),
+          value: web3.utils.toWei("1", "ether")
         });
       })
       .then(
@@ -235,7 +241,7 @@ describe("artifactor + require", () => {
             })
           )
       )
-      .then((balance) => {
+      .then(balance => {
         assert(balance === web3.utils.toWei("1", "ether"));
       });
   });
@@ -243,11 +249,11 @@ describe("artifactor + require", () => {
   it("should trigger the fallback function when calling send() (shorthand notation)", () => {
     let example = null;
     return Example.new("1", { gas: 3141592 })
-      .then((instance) => {
+      .then(instance => {
         example = instance;
         return example.fallbackTriggered();
       })
-      .then((triggered) => {
+      .then(triggered => {
         assert(
           triggered === false,
           "Fallback should not have been triggered yet"
@@ -263,12 +269,12 @@ describe("artifactor + require", () => {
             })
           )
       )
-      .then((balance) => {
+      .then(balance => {
         assert(balance === web3.utils.toWei("1", "ether"));
       });
   });
 
-  it("errors when setting an invalid provider", (done) => {
+  it("errors when setting an invalid provider", done => {
     try {
       Example.setProvider(null);
       assert.fail("setProvider() should have thrown an error");
@@ -278,15 +284,15 @@ describe("artifactor + require", () => {
     done();
   });
 
-  it("creates a network object when an address is set if no network specified", (done) => {
+  it("creates a network object when an address is set if no network specified", done => {
     const NewExample = contract({
       abi,
-      bytecode,
+      bytecode
     });
 
     NewExample.setProvider(provider);
     NewExample.defaults({
-      from: accounts[0],
+      from: accounts[0]
     });
 
     assert.equal(NewExample.network_id, null);
@@ -307,29 +313,29 @@ describe("artifactor + require", () => {
       .catch(done);
   });
 
-  it("doesn't error when calling .links() or .events() with no network configuration", (done) => {
+  it("doesn't error when calling .links() or .events() with no network configuration", done => {
     const eventABI = {
       anonymous: false,
       inputs: [
         {
           indexed: true,
           name: "nameHash",
-          type: "bytes32",
+          type: "bytes32"
         },
         {
           indexed: true,
           name: "releaseHash",
-          type: "bytes32",
-        },
+          type: "bytes32"
+        }
       ],
       name: "PackageRelease",
-      type: "event",
+      type: "event"
     };
 
     const MyContract = contract({
       contractName: "MyContract",
       abi: [eventABI],
-      bytecode: "0x12345678",
+      bytecode: "0x12345678"
     });
 
     MyContract.setNetwork(5);

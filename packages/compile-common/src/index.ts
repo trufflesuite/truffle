@@ -1,5 +1,6 @@
 import { Profiler } from "./profiler";
-export { Profiler };
+import * as shims from "./shims";
+export { Profiler, shims };
 
 import { ContractObject } from "@truffle/contract-schema/spec";
 
@@ -24,6 +25,7 @@ export interface LinkReference {
   name: string | null; // this will be the contractName of the library or some other identifier
   length: number;
 }
+
 export type CompiledContract = {
   contractName: string;
   sourcePath: string;
