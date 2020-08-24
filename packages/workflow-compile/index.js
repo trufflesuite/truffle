@@ -1,7 +1,7 @@
 const debug = require("debug")("workflow-compile");
 const fse = require("fs-extra");
 const { prepareConfig } = require("./utils");
-const { shimContract } = require("@truffle/compile-solidity/legacy/shims");
+const { shims } = require("@truffle/compile-common");
 const {
   reportCompilationStarted,
   reportNothingToCompile,
@@ -107,7 +107,7 @@ const Contracts = {
 
     await fse.ensureDir(config.contracts_build_directory);
 
-    const artifacts = contracts.map(shimContract);
+    const artifacts = contracts.map(shims.newToLegacy.contract(contract));
     await config.artifactor.saveAll(artifacts);
   }
 };
