@@ -1,13 +1,13 @@
 var assert = require("chai").assert;
 var util = require("./util");
 
-describe("instance-instance / instance-constructor separation", function() {
+describe("instance-instance / instance-constructor separation", function () {
   var Example;
   var exampleA;
   var exampleB;
   var providerOptions = { vmErrorsOnRPCResponse: false };
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
 
     Example = await util.createExample();
@@ -20,7 +20,7 @@ describe("instance-instance / instance-constructor separation", function() {
     exampleB = await Example.new(2);
   });
 
-  it("instances should not hear each others events", function(done) {
+  it("instances should not hear each others events", function (done) {
     const events = [];
     const event = exampleA.ContractAddressEvent();
 
@@ -38,7 +38,7 @@ describe("instance-instance / instance-constructor separation", function() {
       .catch(assert.fail);
   });
 
-  it("constructor and instance namespaces should be separate", async function() {
+  it("constructor and instance namespaces should be separate", async function () {
     let isDeployed = Example.isDeployed(); // Constructor method returns boolean
     assert(isDeployed === false);
 

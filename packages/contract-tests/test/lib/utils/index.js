@@ -1,4 +1,4 @@
-const ens = require("../../../lib/utils/ens");
+const ens = require("@truffle/contract/lib/utils/ens");
 const assert = require("assert");
 const sinon = require("sinon");
 const Web3 = require("web3");

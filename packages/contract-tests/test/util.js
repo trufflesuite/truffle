@@ -5,7 +5,7 @@ const Web3 = require("web3");
 const Web3PromiEvent = require("web3-core-promievent");
 const Compile = require("@truffle/compile-solidity/legacy");
 const Config = require("@truffle/config");
-const contract = require("../");
+const contract = require("@truffle/contract");
 const path = require("path");
 const { promisify } = require("util");
 
@@ -22,21 +22,21 @@ var util = {
   realReceipt: null,
 
   // Compiles and instantiates (our friend) Example.sol
-  createExample: async function() {
+  createExample: async function () {
     return await util._createContractInstance(
       path.join(__dirname, "sources", "Example.sol"),
       "Example"
     );
   },
 
-  createABIV2UserDirectory: async function() {
+  createABIV2UserDirectory: async function () {
     return await util._createContractInstance(
       path.join(__dirname, "sources", "ABIV2UserDirectory.sol"),
       "ABIV2UserDirectory"
     );
   },
 
-  _createContractInstance: async function(sourcePath, contractName) {
+  _createContractInstance: async function (sourcePath, contractName) {
     var contractObj;
     const sources = {
       [sourcePath]: fs.readFileSync(sourcePath, { encoding: "utf8" })
@@ -71,7 +71,7 @@ var util = {
 
   // Spins up ganache with arbitrary options and
   // binds web3 & a contract instance to it.
-  setUpProvider: async function(instance, options) {
+  setUpProvider: async function (instance, options) {
     options = options || {};
     Object.assign(options, { logger: log, ws: true });
 
@@ -101,15 +101,15 @@ var util = {
   },
 
   // RPC Methods
-  evm_mine: function() {
-    return new Promise(function(accept, reject) {
+  evm_mine: function () {
+    return new Promise(function (accept, reject) {
       util.web3.currentProvider.send(
         {
           jsonrpc: "2.0",
           method: "evm_mine",
           id: new Date().getTime()
         },
-        function(err, result) {
+        function (err, result) {
           err ? reject(err) : accept(result);
         }
       );
@@ -117,7 +117,7 @@ var util = {
   },
 
   // Mocks for delayed tx resolution to simulate real clients
-  fakeSendTransaction: function(params) {
+  fakeSendTransaction: function (params) {
     util.fakePromiEvent = new Web3PromiEvent();
     var real = util.web3.eth.sendTransaction(params);
 
@@ -126,7 +126,7 @@ var util = {
       util.fakePromiEvent.eventEmitter.emit("transactionHash", hash);
     });
 
-    real.on("receipt", function(receipt) {
+    real.on("receipt", function (receipt) {
       util.realReceipt = receipt;
       this.removeAllListeners();
     });
@@ -134,7 +134,7 @@ var util = {
     return util.fakePromiEvent.eventEmitter;
   },
 
-  fakeReject: function(msg) {
+  fakeReject: function (msg) {
     var error = msg || "Transaction was not mined within 50 blocks";
     util.fakePromiEvent.reject(new Error(error));
   },
@@ -146,17 +146,17 @@ var util = {
     util.fakePromiEvent.reject(new Error(error));
   },
 
-  fakeNoReceipt: function() {
+  fakeNoReceipt: function () {
     return Promise.resolve(null);
   },
 
-  fakeGotReceipt: function(transactionHash) {
+  fakeGotReceipt: function (transactionHash) {
     // Verify we are polling for the right hash
     if (transactionHash === util.realHash)
       return Promise.resolve(util.realReceipt);
   },
 
-  waitMS: async function(ms) {
+  waitMS: async function (ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 };

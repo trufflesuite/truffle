@@ -4,8 +4,8 @@ var util = require("./util");
 // attribution where it's due - parts of this test are from this gist:
 // https://gist.github.com/ricmoo/e38d4d71dff7156033922d2e5de88d37
 
-describe("ABIEncoderV2", function() {
-  describe("structs in ABI", function() {
+describe("ABIEncoderV2", function () {
+  describe("structs in ABI", function () {
     let addUserReceipt;
     let userDirectory;
 
@@ -18,7 +18,7 @@ describe("ABIEncoderV2", function() {
       }
     };
 
-    before(async function() {
+    before(async function () {
       this.timeout(10000);
 
       UserDirectory = await util.createABIV2UserDirectory();
@@ -31,7 +31,7 @@ describe("ABIEncoderV2", function() {
       addUserReceipt = receipt;
     });
 
-    it("should allow structs as transaction arguments", async function() {
+    it("should allow structs as transaction arguments", async function () {
       assert.strictEqual(
         addUserReceipt.status,
         true,
@@ -39,7 +39,7 @@ describe("ABIEncoderV2", function() {
       );
     });
 
-    it("should allow structs in logs", async function() {
+    it("should allow structs in logs", async function () {
       const logs = addUserReceipt.logs;
 
       assert.strictEqual(logs.length, 1);
@@ -60,7 +60,7 @@ describe("ABIEncoderV2", function() {
       );
     });
 
-    it("should be capable of returning structs from calls", async function() {
+    it("should be capable of returning structs from calls", async function () {
       const returnedUser = await userDirectory.user(user.addr);
 
       // can't just do assert.deepStrictEqual(returnedUser, user) because
