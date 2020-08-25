@@ -25,8 +25,8 @@ const commandReference = {
   "+": "add watch expression (`+:<expr>`)",
   "-": "remove watch expression (-:<expr>)",
   "?": "list existing watch expressions and breakpoints",
-  "b": "add breakpoint",
-  "B": "remove breakpoint",
+  "b": "add breakpoint (can specify line in several ways; see docs)",
+  "B": "remove breakpoint (similar to adding, or `B all` to remove all)",
   "c": "continue until breakpoint",
   "q": "quit",
   "r": "reset",
@@ -218,11 +218,13 @@ var DebugUtils = {
 
     var commandSections = [
       ["o", "i", "u", "n"],
+      ["c"],
       [";"],
       ["p"],
       ["l", "s", "h"],
       ["q", "r", "t", "T"],
-      ["b", "B", "c"],
+      ["b"],
+      ["B"],
       ["+", "-"],
       ["?"],
       ["v", ":"]
