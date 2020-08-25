@@ -4,12 +4,8 @@
   "description": "Provision contract objects for use from multiple sources",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
-  "directories": {
-    "doc": "./README.md",
-    "lib": "./dist"
-  },
   "files": [
-    "./dist/src"
+    "dist"
   ],
   "scripts": {
     "build": "tsc",
