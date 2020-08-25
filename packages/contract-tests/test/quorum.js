@@ -1,11 +1,11 @@
 var assert = require("chai").assert;
 var util = require("./util");
 
-describe("Quorum", function() {
+describe("Quorum", function () {
   var Example;
   var providerOptions = { vmErrorsOnRPCResponse: false };
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
 
     Example = await util.createExample();
@@ -13,14 +13,14 @@ describe("Quorum", function() {
     return util.setUpProvider(Example, providerOptions);
   });
 
-  it("privateFor accepted as valid tx_param (send)", async function() {
+  it("privateFor accepted as valid tx_param (send)", async function () {
     const originalProvider = Example.currentProvider;
     const privateID = "ROAZBWtSacxXQrOe3FGAqJDyJjFePR5ce4TSIzmJ0Bc=";
 
     var transactionPayloads = [];
 
     var hookedProvider = {
-      sendAsync: function() {
+      sendAsync: function () {
         const payload = arguments[0];
 
         if (payload.method == "eth_sendTransaction") {

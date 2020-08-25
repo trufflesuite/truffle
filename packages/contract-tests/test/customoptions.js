@@ -1,8 +1,8 @@
 var assert = require("chai").assert;
-var contract = require("../");
+var contract = require("@truffle/contract");
 
-describe("Custom options", function() {
-  it("allows custom options", function() {
+describe("Custom options", function () {
+  it("allows custom options", function () {
     var Example = contract({
       "contractName": "Example",
       "abi": [],
