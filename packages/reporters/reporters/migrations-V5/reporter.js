@@ -36,6 +36,7 @@ class Reporter {
     this.blockSpinner = null;
     this.currentBlockWait = "";
     this.describeJson = describeJson;
+    this.networkSymbol = "ETH";
 
     this.messages = new MigrationsMessages(this);
   }
@@ -253,6 +254,20 @@ class Reporter {
     }
   }
 
+  /**
+   * Returns the symbol of the network based on the type of it. By default it returns ETH but
+   * if the network is rsk, it returns R-BTC.
+   * 
+   * @param {String} networkType Network Type
+   */
+  getNetworkSymbol(networkType){
+    if (networkType === "rsk"){
+      return "R-BTC";      
+    }
+
+    return "ETH";
+  }
+
   // ---------------------------- Interaction Handlers ---------------------------------------------
 
   async acceptDryRun() {
@@ -312,6 +327,7 @@ class Reporter {
     let data = {};
     data.number = this.summary[this.currentFileIndex].number;
     data.cost = this.getTotals().cost;
+    data.networkSymbol = this.networkSymbol;
     this.summary[this.currentFileIndex].totalCost = data.cost;
 
     let message = this.messages.steps("postMigrate", data);
@@ -378,6 +394,8 @@ class Reporter {
       // if geth returns null, try again!
       if (!block) return this.postDeploy(data);
 
+      this.networkSymbol = this.getNetworkSymbol(data.contract.interfaceAdapter.web3.networkType);
+
       data.timestamp = block.timestamp;
 
       const balance = await data.contract.interfaceAdapter.getBalance(tx.from);
@@ -393,6 +411,7 @@ class Reporter {
       data.value = web3Utils.fromWei(value, "ether");
       data.cost = web3Utils.fromWei(cost, "ether");
       data.balance = web3Utils.fromWei(balance, "ether");
+      data.networkSymbol = this.networkSymbol;
 
       this.currentGasTotal = this.currentGasTotal.add(gas);
       this.currentCostTotal = this.currentCostTotal.add(cost);
