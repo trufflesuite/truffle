@@ -42,7 +42,7 @@
     "debug": "^4.1.0",
     "exorcist": "^1.0.1",
     "ganache-core": "2.11.2",
-    "mocha": "8.0.1",
+    "mocha": "8.1.2",
     "sinon": "9.0.2",
     "uglify-es": "^3.3.9"
   },
