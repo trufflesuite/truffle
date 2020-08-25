@@ -1,11 +1,11 @@
 var assert = require("chai").assert;
 var util = require("./util");
 
-describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
+describe("Client appends errors (vmErrorsOnRPCResponse)", function () {
   var Example;
   var providerOptions = { vmErrorsOnRPCResponse: true }; // <--- TRUE
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
 
     Example = await util.createExample();
@@ -13,8 +13,8 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
     await util.setUpProvider(Example, providerOptions);
   });
 
-  describe(".new(): errors", function() {
-    it("should reject on OOG", async function() {
+  describe(".new(): errors", function () {
+    it("should reject on OOG", async function () {
       try {
         await Example.new(1, { gas: 10 });
         assert.fail();
@@ -23,7 +23,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("should emit OOG errors", function(done) {
+    it("should emit OOG errors", function (done) {
       Example.new(1, { gas: 10 })
         .on("error", error => {
           assert(error.message.includes("exceeds gas limit"), "Should OOG");
@@ -32,7 +32,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
         .catch(() => null);
     });
 
-    it("should error w/gas limit error if constructor reverts", async function() {
+    it("should error w/gas limit error if constructor reverts", async function () {
       try {
         await Example.new(13); // 13 fails a constructor require gate
         assert.fail();
@@ -49,7 +49,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("should error w/reason string if constructor reverts", async function() {
+    it("should error w/reason string if constructor reverts", async function () {
       try {
         await Example.new(2001); // 2001 fails a constructor require gate w/ a reason
         assert.fail();
@@ -71,7 +71,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
 
     // NB: constructor (?) message is unhelpful:
     // "Error: Invalid number of parameters for "undefined". Got 2 expected 1!""
-    it("should reject with web3 validation errors (constructor params)", async function() {
+    it("should reject with web3 validation errors (constructor params)", async function () {
       try {
         await Example.new(25, 25);
         assert.fail();
@@ -83,7 +83,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("should append original stacktrace for OOG errors", async function() {
+    it("should append original stacktrace for OOG errors", async function () {
       try {
         await Example.new(1, { gas: 10 });
         assert.fail();
@@ -108,9 +108,9 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
     });
   });
 
-  describe(".method(): errors", function() {
+  describe(".method(): errors", function () {
     // NB: call always takes +1 param: defaultBlock
-    it("should validate method arguments for .calls", async function() {
+    it("should validate method arguments for .calls", async function () {
       const example = await Example.new(5);
       try {
         await example.getValue("apples", "oranges", "pineapples");
@@ -123,7 +123,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("should validate method arguments for .sends", async function() {
+    it("should validate method arguments for .sends", async function () {
       const example = await Example.new(5);
       try {
         await example.setValue(5, 5);
@@ -136,7 +136,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("should reject on OOG", async function() {
+    it("should reject on OOG", async function () {
       const example = await Example.new(1);
       try {
         await example.setValue(10, { gas: 10 });
@@ -146,7 +146,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("should emit OOG errors", function(done) {
+    it("should emit OOG errors", function (done) {
       Example.new(1).then(example => {
         example
           .setValue(10, { gas: 10 })
@@ -161,7 +161,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       });
     });
 
-    it("errors with revert message", async function() {
+    it("errors with revert message", async function () {
       const example = await Example.new(1);
       try {
         await example.triggerRequireError();
@@ -176,7 +176,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("errors with reason string on revert", async function() {
+    it("errors with reason string on revert", async function () {
       const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError();
@@ -188,7 +188,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("errors with reason string on revert (gas specified)", async function() {
+    it("errors with reason string on revert (gas specified)", async function () {
       const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError({ gas: 200000 });
@@ -200,7 +200,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("errors with invalid opcode when gas specified", async function() {
+    it("errors with invalid opcode when gas specified", async function () {
       const example = await Example.new(1);
       try {
         await example.triggerAssertError({ gas: 200000 });
@@ -218,7 +218,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("errors with invalid opcode when gas not specified", async function() {
+    it("errors with invalid opcode when gas not specified", async function () {
       const example = await Example.new(1);
       try {
         await example.triggerAssertError();
@@ -230,7 +230,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
 
     // NB: this error is different than the `invalid` opcode error
     // produced when the vmErrors flag is on.
-    it("errors with OOG on internal OOG", async function() {
+    it("errors with OOG on internal OOG", async function () {
       this.timeout(40000);
 
       const example = await Example.new(1);
@@ -245,7 +245,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("should append original stacktrace for .calls", async function() {
+    it("should append original stacktrace for .calls", async function () {
       const example = await Example.new(1);
       try {
         await example.getValue("apples", "oranges", "pineapples");
@@ -270,7 +270,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("should append original stacktrace for .sends", async function() {
+    it("should append original stacktrace for .sends", async function () {
       const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError();
@@ -303,7 +303,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("should append original stacktrace for argument parsing error", async function() {
+    it("should append original stacktrace for argument parsing error", async function () {
       const example = await Example.new(1);
       try {
         await example.setValue("foo");
@@ -328,7 +328,7 @@ describe("Client appends errors (vmErrorsOnRPCResponse)", function() {
       }
     });
 
-    it("should append original stacktrace for OOG errors", async function() {
+    it("should append original stacktrace for OOG errors", async function () {
       const example = await Example.new(1);
       try {
         await example.setValue(10, { gas: 10 });
