@@ -4,16 +4,12 @@ const semver = require("semver");
 const CompileError = require("./compileerror");
 const CompilerSupplier = require("./compilerSupplier");
 
+// this function returns a Compilation - legacy/index.js and ./index.js
+// both check to make sure rawSources exist before calling this method
+// however, there is a check here that returns null if no sources exist
 async function run(rawSources, options) {
   if (Object.keys(rawSources).length === 0) {
-    return {
-      contracts: [],
-      sourceIndexes: [],
-      compiler: {
-        name: undefined,
-        version: undefined
-      }
-    };
+    return null;
   }
 
   // Ensure sources have operating system independent paths
