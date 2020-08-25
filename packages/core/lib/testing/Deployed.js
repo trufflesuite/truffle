@@ -1,9 +1,5 @@
 const web3Utils = require("web3-utils");
-const semver = require("semver");
-const Native = require("@truffle/compile-solidity/compilerSupplier/loadingStrategies/Native");
-const Local = require("@truffle/compile-solidity/compilerSupplier/loadingStrategies/Local");
-const path = require("path");
-const fs = require("fs-extra");
+const Version = require("./Version");
 
 var Deployed = {
   makeSolidityDeployedAddressesLibrary: function (
@@ -40,36 +36,14 @@ var Deployed = {
 
     source += "}";
 
-    //note: default version is 0.5.16 which does not require any modifications
-    //so we can skip this block for it
-    if (version) {
-      //if version was native or local, must determine what version that
-      //actually corresponds to
-      if (version === "native") {
-        version = new Native().load().version();
-      } else if (fs.existsSync(version) && path.isAbsolute(version)) {
-        version = new Local({ version }).load().version();
-      }
-      //otherwise, version is a version string or version range string
-      const versionBefore = semver.satisfies(version, "0.4.x || <0.4.0", {
-        includePrerelease: true,
-        loose: true
-      });
-      const rangeBefore =
-        semver.validRange(version) &&
-        semver.gtr("0.5.0", versionString, {
-          includePrerelease: true,
-          loose: true
-        }); //gtr will throw if given undefined so must ward against
-      if (versionBefore || rangeBefore) {
-        //remove "payable"s if we're before 0.5.0
-        source = source.replace(/ payable/gm, "");
-      }
-      //regardless of version, replace all pragmas with the new version
-      const coercedVersion =
-        semver.validRange(version) || semver.coerce(version).toString();
-      source = source.replace(/0\.5\.0/gm, coercedVersion);
+    version = Version.resolveVersionString(version);
+    if (!Version.versionIsAtLeast(version, "0.5.0")) {
+      //remove "payable"s if we're before 0.5.0
+      source = source.replace(/ payable/gm, "");
     }
+    //regardless of version, replace all pragmas with the new version
+    const coercedVersion = Version.coerce(version);
+    source = source.replace(/0\.5\.0/gm, coercedVersion);
 
     return source;
   },

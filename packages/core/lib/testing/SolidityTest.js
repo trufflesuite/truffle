@@ -1,11 +1,10 @@
 const TestCase = require("mocha/lib/test.js");
 const Suite = require("mocha/lib/suite.js");
 const Deployer = require("@truffle/deployer");
+const Version = require("./Version");
 const compile = require("@truffle/compile-solidity/new");
 const { shimContract } = require("@truffle/compile-solidity/legacy/shims");
 const path = require("path");
-const semver = require("semver");
-const Native = require("@truffle/compile-solidity/compilerSupplier/loadingStrategies/Native");
 const debug = require("debug")("lib:testing:soliditytest");
 
 let SafeSend;
@@ -18,17 +17,19 @@ const SolidityTest = {
     suite.timeout(runner.BEFORE_TIMEOUT);
 
     // Set up our runner's needs first.
-    suite.beforeAll("prepare suite", async function() {
+    suite.beforeAll("prepare suite", async function () {
       // This compiles some native contracts (including the assertion library
       // contracts) which need to be compiled before initializing the runner
       await self.compileNewAbstractInterface.bind(this)(runner);
       await runner.initialize.bind(runner)();
-      await self.deployTestDependencies.bind(
-        this
-      )(abstraction, dependencyPaths, runner);
+      await self.deployTestDependencies.bind(this)(
+        abstraction,
+        dependencyPaths,
+        runner
+      );
     });
 
-    suite.beforeEach("before test", async function() {
+    suite.beforeEach("before test", async function () {
       await runner.startTest(this);
     });
 
@@ -99,7 +100,7 @@ const SolidityTest = {
       }
     }
 
-    suite.afterEach("after test", async function() {
+    suite.afterEach("after test", async function () {
       await runner.endTest(this);
     });
 
@@ -110,16 +111,10 @@ const SolidityTest = {
     debug("compiling");
     const config = runner.config;
     let solcVersion = config.compilers.solc.version;
-    if (solcVersion === "native") {
-      solcVersion = new Native().load().version();
-    }
-    if (!solcVersion) {
-      SafeSend = "NewSafeSend.sol";
-    } else if (semver.lt(semver.coerce(solcVersion), "0.5.0")) {
-      SafeSend = "OldSafeSend.sol";
-    } else {
-      SafeSend = "NewSafeSend.sol";
-    }
+    solcVersion = Version.resolveVersionString(solcVersion);
+    SafeSend = Version.versionIsAtLeast(solcVersion, "0.5.0")
+      ? "NewSafeSend.sol"
+      : "OldSafeSend.sol";
 
     const { contracts } = await compile.with_dependencies(
       runner.config.with({
