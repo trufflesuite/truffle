@@ -11,6 +11,9 @@
   },
   "version": "0.2.21",
   "main": "index.js",
+  "scripts": {
+    "prepare": "exit 0"
+  },
   "dependencies": {
     "@truffle/artifactor": "^4.0.74",
     "@truffle/error": "^0.0.10",
