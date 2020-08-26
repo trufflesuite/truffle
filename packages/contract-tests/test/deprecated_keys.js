@@ -1,13 +1,13 @@
-var contract = require("../");
+var contract = require("@truffle/contract");
 var fs = require("fs");
 var assert = require("assert");
 var path = require("path");
 
-describe("Deprecated json keys", function() {
+describe("Deprecated json keys", function () {
   var MetaCoin_data;
   var MetaCoin;
 
-  before("read json data", function() {
+  before("read json data", function () {
     var data = fs.readFileSync(
       path.join(__dirname, "./sources/MetaCoin.json"),
       "utf8"
@@ -15,7 +15,7 @@ describe("Deprecated json keys", function() {
     MetaCoin_data = JSON.parse(data);
   });
 
-  it("successfully turns `unlinked_binary` into bytecode", function() {
+  it("successfully turns `unlinked_binary` into bytecode", function () {
     MetaCoin = contract(MetaCoin_data);
     assert.equal(MetaCoin.bytecode, MetaCoin_data.unlinked_binary);
   });

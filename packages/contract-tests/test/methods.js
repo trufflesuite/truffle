@@ -2,13 +2,13 @@ var assert = require("chai").assert;
 var BigNumber = require("bignumber.js");
 var util = require("./util");
 
-describe("Methods", function() {
+describe("Methods", function () {
   var Example;
   var accounts;
   var web3;
   var providerOptions = { vmErrorsOnRPCResponse: false };
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
 
     Example = await util.createExample();
@@ -19,8 +19,8 @@ describe("Methods", function() {
     });
   });
 
-  describe(".method(): success [ @geth ]", function() {
-    it("should get and set values via methods and get values via .call", async function() {
+  describe(".method(): success [ @geth ]", function () {
+    it("should get and set values via methods and get values via .call", async function () {
       let value;
       const example = await Example.new(1);
       value = await example.value.call();
@@ -33,7 +33,7 @@ describe("Methods", function() {
       assert.equal(parseInt(value), 5, "Ending value should be five");
     });
 
-    it("should execute constant functions as calls", async function() {
+    it("should execute constant functions as calls", async function () {
       const example = await Example.new(5);
       const value = await example.getValue();
 
@@ -44,7 +44,7 @@ describe("Methods", function() {
       );
     });
 
-    it("should execute overloaded solidity function calls", async function() {
+    it("should execute overloaded solidity function calls", async function () {
       const example = await Example.new(5);
       const valueA = await example.methods["overloadedGet()"]();
       const valueB = await example.methods["overloadedGet(uint256)"](5);
@@ -57,7 +57,7 @@ describe("Methods", function() {
       );
     });
 
-    it("should honor the defaultBlock parameter when called", async function() {
+    it("should honor the defaultBlock parameter when called", async function () {
       const expectedInitialValue = 5;
 
       const example = await Example.new(expectedInitialValue);
@@ -88,13 +88,13 @@ describe("Methods", function() {
       );
     });
 
-    it("should honor tx params when called", async function() {
+    it("should honor tx params when called", async function () {
       const example = await Example.new(5);
       const sender = await example.viewSender({ from: accounts[2] });
       assert.equal(sender, accounts[2]);
     });
 
-    it("should estimate gas", async function() {
+    it("should estimate gas", async function () {
       const example = await Example.new(5);
       const estimate = await example.setValue.estimateGas(25);
 
@@ -102,7 +102,7 @@ describe("Methods", function() {
       assert.isAbove(estimate, 0, "Estimate should be non-zero");
     });
 
-    it("should return hash, logs and receipt when using synchronised transactions", async function() {
+    it("should return hash, logs and receipt when using synchronised transactions", async function () {
       const example = await Example.new(1);
       const result = await example.triggerEvent({ from: accounts[2] });
       const log = result.logs[0];
@@ -128,7 +128,7 @@ describe("Methods", function() {
       assert.equal(8, log.args.num); // 8 is a magic number inside Example.sol
     });
 
-    it("should allow BigNumbers as input params, not treat them as tx objects", async function() {
+    it("should allow BigNumbers as input params, not treat them as tx objects", async function () {
       let value;
       const example = await Example.new(new BigNumber(30));
 
@@ -152,7 +152,7 @@ describe("Methods", function() {
       assert(numbers[1].toNumber() === 2);
     });
 
-    it("should allow BN's as input params, not treat them as tx objects", async function() {
+    it("should allow BN's as input params, not treat them as tx objects", async function () {
       let value;
       const example = await Example.new(new web3.utils.BN(30));
 
@@ -176,7 +176,7 @@ describe("Methods", function() {
       assert(numbers[1].toNumber() === 2);
     });
 
-    it("should output uint tuples as BN by default (call)", async function() {
+    it("should output uint tuples as BN by default (call)", async function () {
       let value;
       const example = await Example.new(1);
 
@@ -201,7 +201,7 @@ describe("Methods", function() {
       assert(web3.utils.isBN(value[2][1]));
     });
 
-    it("should output uint array values as BN by default (call)", async function() {
+    it("should output uint array values as BN by default (call)", async function () {
       let value;
       const example = await Example.new(1);
 
@@ -217,7 +217,7 @@ describe("Methods", function() {
       assert(web3.utils.isBN(value[1]));
     });
 
-    it("should output nested uint array values as BN by default (call)", async function() {
+    it("should output nested uint array values as BN by default (call)", async function () {
       let value;
       const example = await Example.new(1);
 
@@ -241,7 +241,7 @@ describe("Methods", function() {
       assert(web3.utils.isBN(value[1][1]));
     });
 
-    it("should output int values as BN by default (call)", async function() {
+    it("should output int values as BN by default (call)", async function () {
       let value;
       const example = await Example.new(1);
 
@@ -249,7 +249,7 @@ describe("Methods", function() {
       assert(web3.utils.isBN(value));
     });
 
-    it("should output uint tuples as BigNumber when set to 'BigNumber' (call)", async function() {
+    it("should output uint tuples as BigNumber when set to 'BigNumber' (call)", async function () {
       let value;
       Example.numberFormat = "BigNumber";
       const example = await Example.new(1);
@@ -277,7 +277,7 @@ describe("Methods", function() {
       Example.numberFormat = "BigNumber";
     });
 
-    it("should output int values as string when set to 'String' (call)", async function() {
+    it("should output int values as string when set to 'String' (call)", async function () {
       let value;
       Example.numberFormat = "String";
       const example = await Example.new(1);
@@ -287,9 +287,9 @@ describe("Methods", function() {
       Example.numberFormat = "BigNumber";
     });
 
-    it("should emit a transaction hash", function(done) {
-      Example.new(5).then(function(instance) {
-        instance.setValue(25).on("transactionHash", function(hash) {
+    it("should emit a transaction hash", function (done) {
+      Example.new(5).then(function (instance) {
+        instance.setValue(25).on("transactionHash", function (hash) {
           assert.isString(hash, "Transaction hash should be a string");
           assert.isOk(hash.length > 42, "Unexpected transaction hash");
           done();
@@ -297,9 +297,9 @@ describe("Methods", function() {
       });
     });
 
-    it("should emit a receipt", function(done) {
-      Example.new(5).then(function(instance) {
-        instance.setValue(25).on("receipt", function(receipt) {
+    it("should emit a receipt", function (done) {
+      Example.new(5).then(function (instance) {
+        instance.setValue(25).on("receipt", function (receipt) {
           assert.isObject(receipt, "receipt should be an object");
           assert.isDefined(
             receipt.transactionHash,
@@ -310,11 +310,11 @@ describe("Methods", function() {
       });
     });
 
-    it("should fire the confirmations event handler repeatedly", function(done) {
+    it("should fire the confirmations event handler repeatedly", function (done) {
       Example.new(5).then(example => {
         example
           .setValue(25)
-          .on("confirmation", function(number, receipt) {
+          .on("confirmation", function (number, receipt) {
             if (number === 3) {
               assert(receipt.status === true);
               this.removeAllListeners();
@@ -329,7 +329,7 @@ describe("Methods", function() {
       });
     });
 
-    it("should execute overloaded solidity fn sends", async function() {
+    it("should execute overloaded solidity fn sends", async function () {
       let hash;
       let value;
       const example = await Example.new(1);
@@ -360,7 +360,7 @@ describe("Methods", function() {
       assert.equal(parseInt(value), 25, "Ending value should be twenty five");
     });
 
-    it("should automatically fund a tx that costs more than default gas (90k)", async function() {
+    it("should automatically fund a tx that costs more than default gas (90k)", async function () {
       this.timeout(10000);
 
       const defaultGas = 90000;
@@ -373,9 +373,9 @@ describe("Methods", function() {
     });
   });
 
-  describe(".method(): errors [ @geth ]", function() {
+  describe(".method(): errors [ @geth ]", function () {
     // NB: call always takes +1 param: defaultBlock
-    it("should validate method arguments for .calls", async function() {
+    it("should validate method arguments for .calls", async function () {
       const example = await Example.new(5);
       try {
         await example.getValue("apples", "oranges", "pineapples");
@@ -388,7 +388,7 @@ describe("Methods", function() {
       }
     });
 
-    it("should validate method arguments for .sends", async function() {
+    it("should validate method arguments for .sends", async function () {
       const example = await Example.new(5);
       try {
         await example.setValue(5, 5);
@@ -401,7 +401,7 @@ describe("Methods", function() {
       }
     });
 
-    it("should reject on OOG", async function() {
+    it("should reject on OOG", async function () {
       const example = await Example.new(1);
       try {
         await example.setValue(10, { gas: 10 });
@@ -415,7 +415,7 @@ describe("Methods", function() {
       }
     });
 
-    it("should emit OOG errors", function(done) {
+    it("should emit OOG errors", function (done) {
       Example.new(1).then(example => {
         example
           .setValue(10, { gas: 10 })
@@ -431,7 +431,7 @@ describe("Methods", function() {
       });
     });
 
-    it("errors with execution reverted message", async function() {
+    it("errors with execution reverted message", async function () {
       const example = await Example.new(1);
       try {
         await example.triggerRequireError();
@@ -445,7 +445,7 @@ describe("Methods", function() {
       }
     });
 
-    it("errors with receipt & assert message when gas specified", async function() {
+    it("errors with receipt & assert message when gas specified", async function () {
       const example = await Example.new(1);
       try {
         await example.triggerAssertError({ gas: 200000 });
@@ -456,7 +456,7 @@ describe("Methods", function() {
       }
     });
 
-    it("errors with invalid opcode message when gas not specified", async function() {
+    it("errors with invalid opcode message when gas not specified", async function () {
       const example = await Example.new(1);
       try {
         await example.triggerAssertError();
@@ -470,7 +470,7 @@ describe("Methods", function() {
       }
     });
 
-    it("errors with gas allowance error on internal OOG", async function() {
+    it("errors with gas allowance error on internal OOG", async function () {
       this.timeout(25000);
 
       const example = await Example.new(1);
@@ -486,7 +486,7 @@ describe("Methods", function() {
       }
     });
 
-    it.skip("errors with a revert reason", async function() {
+    it.skip("errors with a revert reason", async function () {
       const example = await Example.new(1);
       try {
         // At the moment, this test can't rely on @truffle/contract's
@@ -509,7 +509,7 @@ describe("Methods", function() {
       }
     });
 
-    it("errors when setting `numberFormat` to invalid value", async function() {
+    it("errors when setting `numberFormat` to invalid value", async function () {
       try {
         Example.numberFormat = "bigNumber";
         assert.fail();
@@ -521,8 +521,8 @@ describe("Methods", function() {
     });
   });
 
-  describe("revert with reason (ganache only)", function() {
-    it("errors with receipt and revert message", async function() {
+  describe("revert with reason (ganache only)", function () {
+    it("errors with receipt and revert message", async function () {
       const example = await Example.new(1);
       try {
         await example.triggerRequireWithReasonError();
@@ -538,8 +538,8 @@ describe("Methods", function() {
 
   // This doesn't work on geth --dev because chainId is too high: 1337? Apparently
   // not configurable. Might work on a sub 100 id.
-  describe.skip("web3 wallet", function() {
-    it("should work with a web3.accounts.wallet account", async function() {
+  describe.skip("web3 wallet", function () {
+    it("should work with a web3.accounts.wallet account", async function () {
       let value;
 
       // Create and fund wallet account
@@ -567,8 +567,8 @@ describe("Methods", function() {
     });
   });
 
-  describe("sendTransaction() / send() [ @geth ]", function() {
-    it("should trigger the fallback function when calling sendTransaction()", async function() {
+  describe("sendTransaction() / send() [ @geth ]", function () {
+    it("should trigger the fallback function when calling sendTransaction()", async function () {
       const example = await Example.new(1);
       const triggered = await example.fallbackTriggered();
 
@@ -588,7 +588,7 @@ describe("Methods", function() {
       );
     });
 
-    it("should trigger the fallback function when calling send() (shorthand notation)", async function() {
+    it("should trigger the fallback function when calling send() (shorthand notation)", async function () {
       const example = await Example.new(1);
       const triggered = await example.fallbackTriggered();
 
@@ -603,7 +603,7 @@ describe("Methods", function() {
       assert(balance === web3.utils.toWei("1", "ether"));
     });
 
-    it("should accept tx params (send)", async function() {
+    it("should accept tx params (send)", async function () {
       const example = await Example.new(1);
       const eth = web3.utils.toWei("1", "ether");
       const sender = accounts[1];
@@ -626,7 +626,7 @@ describe("Methods", function() {
       );
     });
 
-    it("should accept a data param (sendTransaction)", async function() {
+    it("should accept a data param (sendTransaction)", async function () {
       const example = await Example.new(1);
 
       // use sendTransaction to deliver encoded calldata to set value

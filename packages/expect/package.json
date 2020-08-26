@@ -11,6 +11,7 @@
   "version": "0.0.14",
   "main": "index.js",
   "scripts": {
+    "prepare": "exit 0",
     "test": "mocha"
   },
   "devDependencies": {

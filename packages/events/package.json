@@ -6,6 +6,9 @@
   "keywords": [],
   "author": "Nick D'Andrea and Tyler Feickert",
   "license": "ISC",
+  "scripts": {
+    "prepare": "exit 0"
+  },
   "publishConfig": {
     "access": "public"
   },

@@ -13,6 +13,7 @@
     "truffle-exec": "./exec.js"
   },
   "scripts": {
+    "prepare": "exit 0",
     "test": "mocha ./test/** ./test/**/*"
   },
   "dependencies": {
