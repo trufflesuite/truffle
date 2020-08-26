@@ -10,7 +10,7 @@ const selectors = require("@truffle/debugger").selectors;
 const { session, solidity, trace, evm, controller } = selectors;
 
 const analytics = require("../services/analytics");
-const repl = require("repl");
+const ReplManager = require("../repl");
 
 const { DebugPrinter } = require("./printer");
 
@@ -40,8 +40,9 @@ class DebugInterpreter {
     this.printer = new DebugPrinter(config, session);
     this.txHash = txHash;
     this.lastCommand = "n";
+
+    this.repl = config.repl || new ReplManager(config);
     this.enabledExpressions = new Set();
-    this.repl = null;
   }
 
   async setOrClearBreakpoint(args, setOrClear) {
@@ -275,11 +276,21 @@ class DebugInterpreter {
       ? DebugUtils.formatPrompt(this.network, this.txHash)
       : DebugUtils.formatPrompt(this.network);
 
-    this.repl = repl.start({
-      prompt: prompt,
-      eval: util.callbackify(this.interpreter.bind(this)),
+    this.repl.start({
+      prompt,
+      interpreter: util.callbackify(this.interpreter.bind(this)),
       ignoreUndefined: true,
       done: terminate
+    });
+  }
+
+  setPrompt(prompt) {
+    this.repl.activate.bind(this.repl)({
+      prompt,
+      context: {},
+      //this argument only *adds* things, so it's safe to set it to {}
+      ignoreUndefined: true
+      //set to true because it's set to true below :P
     });
   }
 
@@ -293,7 +304,10 @@ class DebugInterpreter {
     }
 
     //split arguments for commands that want that; split on runs of spaces
-    splitArgs = cmd.trim().split(/ +/).slice(1);
+    splitArgs = cmd
+      .trim()
+      .split(/ +/)
+      .slice(1);
     debug("splitArgs %O", splitArgs);
 
     //warning: this bit *alters* cmd!
@@ -310,7 +324,7 @@ class DebugInterpreter {
 
     //quit if that's what we were given
     if (cmd === "q") {
-      process.exit();
+      return await util.promisify(this.repl.stop.bind(this.repl))();
     }
 
     let alreadyFinished = this.session.view(trace.finishedOrUnloaded);
@@ -393,7 +407,7 @@ class DebugInterpreter {
           if (this.session.view(selectors.session.status.success)) {
             txSpinner.succeed();
             //if successful, change prompt
-            this.repl.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
+            this.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
           } else {
             txSpinner.fail();
             loadFailed = true;
@@ -416,7 +430,7 @@ class DebugInterpreter {
         if (this.session.view(selectors.session.status.loaded)) {
           await this.session.unload();
           this.printer.print("Transaction unloaded.");
-          this.repl.setPrompt(DebugUtils.formatPrompt(this.network));
+          this.setPrompt(DebugUtils.formatPrompt(this.network));
         } else {
           this.printer.print("No transaction to unload.");
           this.printer.print("");
