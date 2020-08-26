@@ -70,17 +70,20 @@ class Console extends EventEmitter {
   start() {
     try {
       this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
-        this.provision();
+        const abstractions = this.provision();
 
         this.repl = repl.start({
           prompt: "truffle(" + this.options.network + ")> ",
           eval: this.interpret.bind(this)
         });
 
+        this.resetContractsInConsoleContext(abstractions);
+
+        // set these repl context vars after setting contracts to
+        // make sure they don't get overwritten
         this.repl.context.web3 = this.web3;
         this.repl.context.interfaceAdapter = this.interfaceAdapter;
         this.repl.context.accounts = fetchedAccounts;
-        this.repl.context = this.context;
       });
     } catch (error) {
       this.options.logger.log(
@@ -139,6 +142,11 @@ class Console extends EventEmitter {
     });
 
     this.context = this.setContextVars(contextVars);
+
+    // make sure the repl gets the new contracts in its context
+    if (this.repl) {
+      this.repl.context = this.context;
+    }
   }
 
   runSpawn(inputStrings, options, callback) {
@@ -149,6 +157,9 @@ class Console extends EventEmitter {
       childPath = path.join(__dirname, "../lib/console-child.js");
     }
 
+    // stderr is piped here because we don't need to repeatedly see the parent
+    // errors/warnings in child process - specifically the error re: having
+    // multiple config files
     const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
 
     const spawnInput = "--network " + options.network + " -- " + inputStrings;
@@ -159,11 +170,8 @@ class Console extends EventEmitter {
         spawnOptions
       );
 
-      try {
-        this.provision();
-      } catch (e) {
-        console.log(e);
-      }
+      // re-provision to ensure any changes are available in the repl
+      this.provision();
     } catch (err) {
       callback(err);
     }
