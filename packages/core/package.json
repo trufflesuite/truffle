@@ -24,7 +24,6 @@
     "@truffle/config": "^1.2.27",
     "@truffle/contract": "^4.2.19",
     "@truffle/contract-sources": "^0.1.7",
-    "@truffle/db": "^0.1.0-0",
     "@truffle/debug-utils": "^4.2.5",
     "@truffle/debugger": "^7.5.12",
     "@truffle/decoder": "^4.3.17",
