@@ -105,9 +105,8 @@ export class WireDecoder {
     );
     this.deployedContexts = Object.assign(
       {},
-      ...Object.values(this.contexts).map(
-        context =>
-          !context.isConstructor ? { [context.context]: context } : {}
+      ...Object.values(this.contexts).map(context =>
+        !context.isConstructor ? { [context.context]: context } : {}
       )
     );
 
@@ -889,8 +888,7 @@ export class ContractDecoder {
     abi: AbiData.FunctionAbiEntry,
     data: string,
     options: DecoderTypes.ReturnOptions = {},
-    additionalContexts: Contexts.DecoderContexts = {},
-    contextHash: string = this.contextHash
+    additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<ReturndataDecoding[]> {
     abi = {
       type: "function",
@@ -902,10 +900,10 @@ export class ContractDecoder {
 
     const selector = AbiData.Utils.abiSelector(abi);
     let allocation: AbiData.Allocate.ReturndataAllocation;
-    if (contextHash !== undefined) {
-      allocation = this.allocations.calldata.functionAllocations[contextHash][
-        selector
-      ].output;
+    if (this.contextHash !== undefined) {
+      allocation = this.allocations.calldata.functionAllocations[
+        this.contextHash
+      ][selector].output;
     } else {
       allocation = this.noBytecodeAllocations[selector].output;
     }
@@ -1194,12 +1192,12 @@ export class ContractInstanceDecoder {
       this.compilation.sources.every(source => !source || source.ast)
     ) {
       //WARNING: untyped code in this block!
-      let asts: Ast.AstNode[] = this.compilation.sources.map(
-        source => (source ? source.ast : undefined)
+      let asts: Ast.AstNode[] = this.compilation.sources.map(source =>
+        source ? source.ast : undefined
       );
       let instructions = SolidityUtils.getProcessedInstructionsForBinary(
-        this.compilation.sources.map(
-          source => (source ? source.source : undefined)
+        this.compilation.sources.map(source =>
+          source ? source.source : undefined
         ),
         this.contractCode,
         SolidityUtils.getHumanReadableSourceMap(this.contract.deployedSourceMap)
@@ -1657,8 +1655,7 @@ export class ContractInstanceDecoder {
       abi,
       data,
       options,
-      this.additionalContexts,
-      this.contextHash
+      this.additionalContexts
     );
   }
 
