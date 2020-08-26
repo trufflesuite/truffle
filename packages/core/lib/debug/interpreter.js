@@ -7,7 +7,7 @@ const ora = require("ora");
 
 const DebugUtils = require("@truffle/debug-utils");
 const selectors = require("@truffle/debugger").selectors;
-const { session, solidity, trace, evm, controller } = selectors;
+const { session, solidity, trace, evm, controller, stacktrace } = selectors;
 
 const analytics = require("../services/analytics");
 const repl = require("repl");
@@ -436,6 +436,15 @@ class DebugInterpreter {
         await this.printer.printRevertMessage();
         this.printer.print("");
         this.printer.printStacktrace(true); //final stacktrace
+        this.printer.print("");
+        this.printer.print(DebugUtils.truffleColors.red("Location of error:"));
+        const stacktraceReport = this.session.view(
+          stacktrace.current.finalReport
+        );
+        const recordedLocation =
+          stacktraceReport[stacktraceReport.length - 1].location;
+        this.printer.printFile(recordedLocation);
+        this.printer.printState(undefined, undefined, recordedLocation);
       } else {
         //case if transaction succeeded
         this.printer.print("Transaction completed successfully.");
@@ -521,8 +530,31 @@ class DebugInterpreter {
         break;
       case "l":
         if (this.session.view(selectors.session.status.loaded)) {
-          this.printer.printFile();
-          this.printer.printState(LINES_BEFORE_LONG, LINES_AFTER_LONG);
+          if (
+            !this.session.view(trace.finished) ||
+            this.session.view(evm.transaction.status)
+          ) {
+            this.printer.printFile();
+            this.printer.printState(LINES_BEFORE_LONG, LINES_AFTER_LONG);
+          } else {
+            //if finished and failed, print where things went wrong instead of the actual current
+            //location
+            this.printer.print("");
+            this.printer.print(
+              DebugUtils.truffleColors.red("Location of error:")
+            );
+            const stacktraceReport = this.session.view(
+              stacktrace.current.finalReport
+            );
+            const recordedLocation =
+              stacktraceReport[stacktraceReport.length - 1].location;
+            this.printer.printFile(recordedLocation);
+            this.printer.printState(
+              LINES_BEFORE_LONG,
+              LINES_AFTER_LONG,
+              recordedLocation
+            );
+          }
         }
         break;
       case ";":

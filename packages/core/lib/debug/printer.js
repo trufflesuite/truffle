@@ -103,11 +103,10 @@ class DebugPrinter {
     this.config.logger.log(DebugUtils.formatHelp(lastCommand));
   }
 
-  printFile() {
+  printFile(location = this.session.view(controller.current.location)) {
     let message = "";
 
-    debug("about to determine sourcePath");
-    const sourcePath = this.session.view(solidity.current.source).sourcePath;
+    const sourcePath = location.source.sourcePath;
 
     if (sourcePath) {
       message += path.basename(sourcePath);
@@ -119,10 +118,15 @@ class DebugPrinter {
     this.config.logger.log(message + ":");
   }
 
-  printState(contextBefore = 2, contextAfter = 0) {
-    const { id: sourceId, source, compilationId } = this.session.view(
-      solidity.current.source
-    );
+  printState(
+    contextBefore = 2,
+    contextAfter = 0,
+    location = this.session.view(controller.current.location)
+  ) {
+    const {
+      source: { id: sourceId, compilationId },
+      sourceRange: range
+    } = location;
 
     if (sourceId === undefined) {
       this.config.logger.log();
@@ -131,9 +135,13 @@ class DebugPrinter {
       return;
     }
 
+    const source = this.session.view(solidity.info.sources)[compilationId].byId[
+      sourceId
+    ].source;
+    //we don't just get extract this from the location because passed-in location may be
+    //missing the soure text
     const colorizedSource = this.colorizedSources[compilationId][sourceId];
 
-    const range = this.session.view(solidity.current.sourceRange);
     debug("range: %o", range);
 
     // We were splitting on OS.EOL, but it turns out on Windows,
