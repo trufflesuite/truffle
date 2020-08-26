@@ -25,6 +25,10 @@ const compile = function (sources, options, callback) {
     options = {};
   }
 
+  if (Object.keys(sources).length === 0) {
+    return callback(null, [{}, []]);
+  }
+
   // account for legacy settings
   options = normalizeOptions(options);
 

@@ -84,6 +84,11 @@ const Compile = {
       ? Compile.display(compilationTargets, options)
       : Compile.display(allSources, options);
 
+    // when there are no sources, don't call run
+    if (Object.keys(allSources).length === 0) {
+      return [];
+    }
+
     options.compilationTargets = compilationTargets;
     const { sourceIndexes, contracts, compiler } = await run(
       allSources,
