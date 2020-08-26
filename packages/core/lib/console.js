@@ -149,7 +149,7 @@ class Console extends EventEmitter {
       childPath = path.join(__dirname, "../lib/console-child.js");
     }
 
-    const spawnOptions = { stdio: ["inherit", "inherit", "inherit"] };
+    const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
 
     const spawnInput = "--network " + options.network + " -- " + inputStrings;
     try {
