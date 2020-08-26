@@ -42,6 +42,7 @@ class Console extends EventEmitter {
       "build_directory"
     ]);
 
+    this.context = {};
     this.options = options;
 
     this.command = new Command(tasks);
@@ -58,10 +59,18 @@ class Console extends EventEmitter {
     });
   }
 
+  setContextVars(obj) {
+    const context = {};
+    Object.keys(obj || {}).forEach(function (key) {
+      context[key] = obj[key];
+    });
+    return context;
+  }
+
   start() {
     try {
       this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
-        const abstractions = this.provision();
+        this.provision();
 
         this.repl = repl.start({
           prompt: "truffle(" + this.options.network + ")> ",
@@ -71,8 +80,7 @@ class Console extends EventEmitter {
         this.repl.context.web3 = this.web3;
         this.repl.context.interfaceAdapter = this.interfaceAdapter;
         this.repl.context.accounts = fetchedAccounts;
-
-        this.resetContractsInConsoleContext(abstractions);
+        this.repl.context = this.context;
       });
     } catch (error) {
       this.options.logger.log(
@@ -118,7 +126,6 @@ class Console extends EventEmitter {
     });
 
     this.resetContractsInConsoleContext(abstractions);
-
     return abstractions;
   }
 
@@ -130,6 +137,8 @@ class Console extends EventEmitter {
     abstractions.forEach(abstraction => {
       contextVars[abstraction.contract_name] = abstraction;
     });
+
+    this.context = this.setContextVars(contextVars);
   }
 
   runSpawn(inputStrings, options, callback) {
@@ -143,7 +152,6 @@ class Console extends EventEmitter {
     const spawnOptions = { stdio: ["inherit", "inherit", "inherit"] };
 
     const spawnInput = "--network " + options.network + " -- " + inputStrings;
-
     try {
       spawnSync(
         "node",
@@ -244,6 +252,8 @@ class Console extends EventEmitter {
         breakOnSigint: true,
         filename: filename
       };
+
+      vm.createContext(context);
       return script.runInContext(context, options);
     };
 
