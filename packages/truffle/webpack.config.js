@@ -39,6 +39,14 @@ module.exports = {
       "node_modules",
       "@truffle/core",
       "index.js"
+    ),
+    consoleChild: path.join(
+      __dirname,
+      "../..",
+      "node_modules",
+      "@truffle/core",
+      "lib",
+      "console-child.js"
     )
   },
 
@@ -110,7 +118,8 @@ module.exports = {
       BUNDLE_VERSION: JSON.stringify(pkg.version),
       BUNDLE_CHAIN_FILENAME: JSON.stringify("chain.bundled.js"),
       BUNDLE_ANALYTICS_FILENAME: JSON.stringify("analytics.bundled.js"),
-      BUNDLE_LIBRARY_FILENAME: JSON.stringify("library.bundled.js")
+      BUNDLE_LIBRARY_FILENAME: JSON.stringify("library.bundled.js"),
+      BUNDLE_CONSOLE_CHILD_FILENAME: JSON.stringify("consoleChild.bundled.js")
     }),
 
     // Put the shebang back on.

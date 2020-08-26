@@ -11,6 +11,7 @@
   "version": "0.2.20",
   "main": "index.js",
   "scripts": {
+    "prepare": "exit 0",
     "test": "mocha"
   },
   "types": "./typings/index.d.ts",

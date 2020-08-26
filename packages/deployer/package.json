@@ -11,6 +11,7 @@
   "version": "3.1.35",
   "main": "index.js",
   "scripts": {
+    "prepare": "exit 0",
     "test": "mocha --no-warnings --timeout 10000 --exit"
   },
   "dependencies": {

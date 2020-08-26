@@ -1,13 +1,13 @@
 var assert = require("chai").assert;
 var util = require("./util");
 
-describe("Events", function() {
+describe("Events", function () {
   var Example;
   var accounts;
   var web3;
   var providerOptions = { vmErrorsOnRPCResponse: false };
 
-  before(async function() {
+  before(async function () {
     this.timeout(10000);
 
     Example = await util.createExample();
@@ -18,11 +18,11 @@ describe("Events", function() {
     });
   });
 
-  it('should expose the "on" handler / format event correctly', function(done) {
+  it('should expose the "on" handler / format event correctly', function (done) {
     Example.new(1).then(example => {
       const event = example.ExampleEvent();
 
-      event.on("data", function(data) {
+      event.on("data", function (data) {
         assert.equal("ExampleEvent", data.event);
         assert.equal(accounts[0], data.args._from);
         assert.equal(8, data.args.num); // 8 is a magic number inside Example.sol
@@ -34,11 +34,11 @@ describe("Events", function() {
     });
   });
 
-  it('should expose the "once" handler', function(done) {
+  it('should expose the "once" handler', function (done) {
     Example.new(1).then(example => {
       const event = example.ExampleEvent();
 
-      event.once("data", function(data) {
+      event.once("data", function (data) {
         assert.equal("ExampleEvent", data.event);
         assert.equal(accounts[0], data.args._from);
         assert.equal(8, data.args.num); // 8 is a magic number inside Example.sol
@@ -50,7 +50,7 @@ describe("Events", function() {
     });
   });
 
-  it("should be possible to listen for events with a callback", function(done) {
+  it("should be possible to listen for events with a callback", function (done) {
     const callback = (err, data) => {
       assert.equal("ExampleEvent", data.event);
       assert.equal(accounts[0], data.args._from);
@@ -64,12 +64,12 @@ describe("Events", function() {
     });
   });
 
-  it("event emitter should fire repeatedly (without duplicates)", async function() {
+  it("event emitter should fire repeatedly (without duplicates)", async function () {
     let emitter;
     let counter = 0;
     const example = await Example.new(1);
 
-    example.ExampleEvent().on("data", function() {
+    example.ExampleEvent().on("data", function () {
       emitter = this;
       counter++;
     });
@@ -82,12 +82,12 @@ describe("Events", function() {
     emitter.removeAllListeners();
   });
 
-  it("event callback should fire repeatedly (without duplicates)", async function() {
+  it("event callback should fire repeatedly (without duplicates)", async function () {
     let counter = 0;
     let duplicate = false;
     const example = await Example.new(1);
 
-    example.ExampleEvent(function(err, res) {
+    example.ExampleEvent(function (err, res) {
       if (res === false) duplicate = true;
       counter++;
     });
@@ -99,14 +99,14 @@ describe("Events", function() {
     assert(duplicate === false, "must not fire duplicates as false result");
   });
 
-  it("should listen for `allEvents`", async function() {
+  it("should listen for `allEvents`", async function () {
     let emitter;
     const events = [];
     const eventNames = [];
     const signatures = ["ExampleEvent", "SpecialEvent"];
     const example = await Example.new(1);
 
-    example.allEvents().on("data", function(data) {
+    example.allEvents().on("data", function (data) {
       events.push(data);
       data.event && eventNames.push(data.event);
       emitter = this;
@@ -131,7 +131,7 @@ describe("Events", function() {
     emitter.removeAllListeners();
   });
 
-  it("should `getPastEvents`", async function() {
+  it("should `getPastEvents`", async function () {
     const signatures = ["ExampleEvent", "SpecialEvent"];
     const example = await Example.new(1);
     const options = { fromBlock: 0, toBlock: "latest" };
@@ -160,11 +160,11 @@ describe("Events", function() {
 
   // Event signature is:
   // NumberEvent(int numA, int indexed numB, address addrC, uint numD, uint);
-  it("should reformat numbers in events to BN by default", function(done) {
+  it("should reformat numbers in events to BN by default", function (done) {
     Example.new(1).then(example => {
       const event = example.NumberEvent();
 
-      event.once("data", function(data) {
+      event.once("data", function (data) {
         const args = data.args;
 
         assert(web3.utils.isBN(args[0])); // int named
