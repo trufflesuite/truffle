@@ -134,7 +134,6 @@ class Command {
       const newOptions = Object.assign({}, clone, argv);
 
       result.command.run(newOptions, callback);
-
       analytics.send({
         command: result.name ? result.name : "other",
         args: result.argv._,
