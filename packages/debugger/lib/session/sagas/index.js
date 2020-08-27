@@ -159,7 +159,9 @@ function* fetchTx(txHash) {
 
   //get addresses created/called during transaction
   debug("processing trace for addresses");
-  let { calls, creations } = yield* trace.processTrace(result.trace);
+  let { calls, creations, selfdestructs } = yield* trace.processTrace(
+    result.trace
+  );
   //add in the address of the call itself (if a call)
   if (result.address && !calls.includes(result.address)) {
     calls.push(result.address);
@@ -175,7 +177,7 @@ function* fetchTx(txHash) {
   }
 
   let blockNumber = result.block.number.toString(); //a BN is not accepted
-  let addresses = [...calls, ...creations];
+  let addresses = [...calls, ...creations, ...selfdestructs];
   let creationStartIndex = calls.length;
   debug("obtaining binaries");
   let binaries = yield* web3.obtainBinaries(addresses, blockNumber);

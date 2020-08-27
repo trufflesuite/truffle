@@ -141,3 +141,12 @@ export function isCreateMnemonic(op) {
   const creates = ["CREATE", "CREATE2"];
   return creates.includes(op);
 }
+
+/*
+ * Given a mmemonic, determine whether it's the mnemonic of a self-destruct
+ * instruction
+ */
+export function isSelfDestructMnemonic(op) {
+  const creates = ["SELFDESTRUCT", "SUICIDE"]; //latter name shouldn't be used anymore but let's be safe
+  return creates.includes(op);
+}
