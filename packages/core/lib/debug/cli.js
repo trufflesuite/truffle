@@ -2,6 +2,8 @@ const debugModule = require("debug");
 const debug = debugModule("lib:debug:cli");
 
 const ora = require("ora");
+const fs = require("fs-extra");
+const path = require("path");
 
 const Debugger = require("@truffle/debugger");
 const DebugUtils = require("@truffle/debug-utils");
@@ -64,16 +66,7 @@ class CLIDebugger {
 
   async getCompilations() {
     let artifacts;
-    try {
-      artifacts = await DebugUtils.gatherArtifacts(this.config);
-    } catch (error) {
-      //leave artifacts undefined if build directory doesn't exist
-      //(HACK, sorry for doing it this way!)
-      if (!error.message.startsWith("ENOENT")) {
-        //avoid swallowing other errors
-        throw error;
-      }
-    }
+    artifacts = await this.gatherArtifacts();
     if (artifacts) {
       let shimmedCompilations = Codec.Compilations.Utils.shimArtifacts(
         artifacts
@@ -155,6 +148,33 @@ class CLIDebugger {
 
   async buildInterpreter(session) {
     return new DebugInterpreter(this.config, session, this.txHash);
+  }
+
+  async gatherArtifacts() {
+    // Gather all available contract artifacts
+    // if build directory doesn't exist, return undefined to signal that
+    // a recompile is necessary
+    if (!fs.existsSync(this.config.contracts_build_directory)) {
+      return undefined;
+    }
+    const files = fs.readdirSync(this.config.contracts_build_directory);
+
+    let contracts = files
+      .filter(filePath => {
+        return path.extname(filePath) === ".json";
+      })
+      .map(filePath => {
+        return path.basename(filePath, ".json");
+      })
+      .map(contractName => {
+        return this.config.resolver.require(contractName);
+      });
+
+    await Promise.all(
+      contracts.map(abstraction => abstraction.detectNetwork())
+    );
+
+    return contracts;
   }
 }
 

@@ -20,8 +20,7 @@
     "chalk": "^2.4.2",
     "debug": "^4.1.0",
     "highlight.js": "^9.15.8",
-    "highlightjs-solidity": "^1.0.18",
-    "node-dir": "0.1.17"
+    "highlightjs-solidity": "^1.0.18"
   },
   "devDependencies": {
     "chai": "^4.2.0",

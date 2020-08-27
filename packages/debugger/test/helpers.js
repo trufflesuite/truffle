@@ -4,7 +4,6 @@ const debug = debugModule("test:helpers");
 import path from "path";
 import fs from "fs-extra";
 import Contracts from "@truffle/workflow-compile";
-import Debug from "@truffle/debug-utils";
 import Artifactor from "@truffle/artifactor";
 import Web3 from "web3";
 import Migrate from "@truffle/migrate";
@@ -46,7 +45,10 @@ export async function prepareContracts(provider, sources = {}, migrations) {
   await migrate(config);
 
   let artifacts = await gatherArtifacts(config);
-  debug("artifacts: %o", artifacts.map(a => a.contractName));
+  debug(
+    "artifacts: %o",
+    artifacts.map(a => a.contractName)
+  );
 
   let abstractions = {};
   for (let name of contractNames) {
@@ -65,8 +67,8 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 
 export function getAccounts(provider) {
   let web3 = new Web3(provider);
-  return new Promise(function(accept, reject) {
-    web3.eth.getAccounts(function(err, accounts) {
+  return new Promise(function (accept, reject) {
+    web3.eth.getAccounts(function (err, accounts) {
       if (err) return reject(err);
       accept(accounts);
     });
@@ -139,13 +141,13 @@ export async function defaultMigrations(contractNames) {
 }
 
 export async function compile(config) {
-  return new Promise(function(accept, reject) {
+  return new Promise(function (accept, reject) {
     Contracts.compile(
       config.with({
         all: true,
         quiet: true
       }),
-      function(err, result) {
+      function (err, result) {
         if (err) return reject(err);
         const { contracts, outputs } = result;
         debug("result %O", result);
@@ -156,12 +158,12 @@ export async function compile(config) {
 }
 
 export async function migrate(config) {
-  return new Promise(function(accept, reject) {
+  return new Promise(function (accept, reject) {
     Migrate.run(
       config.with({
         quiet: true
       }),
-      function(err, contracts) {
+      function (err, contracts) {
         if (err) return reject(err);
         accept(contracts);
       }
@@ -170,7 +172,23 @@ export async function migrate(config) {
 }
 
 export async function gatherArtifacts(config) {
-  return Debug.gatherArtifacts(config);
+  // Gather all available contract artifacts
+  const files = fs.readdirSync(config.contracts_build_directory);
+
+  let contracts = files
+    .filter(filePath => {
+      return path.extname(filePath) === ".json";
+    })
+    .map(filePath => {
+      return path.basename(filePath, ".json");
+    })
+    .map(contractName => {
+      return config.resolver.require(contractName);
+    });
+
+  await Promise.all(contracts.map(abstraction => abstraction.detectNetwork()));
+
+  return contracts;
 }
 
 export function lineOf(searchString, source) {
