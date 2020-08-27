@@ -455,7 +455,7 @@ const execute = {
   },
 
   // This gets attached to `.new` (declared as a static_method in `contract`)
-  // during bootstrapping as `estimate`
+  // during bootstrapping as `estimateGas`
   estimateDeployment: function () {
     const constructor = this;
 
@@ -478,6 +478,38 @@ const execute = {
           res.params
         );
         return instance.deploy(options).estimateGas(res.params);
+      });
+  },
+
+  // This gets attached to `.new` (declared as a static_method in `contract`)
+  // during bootstrapping as `request`
+  requestDeployment: function () {
+    const constructor = this;
+
+    const constructorABI = constructor.abi.filter(
+      i => i.type === "constructor"
+    )[0];
+
+    return execute
+      .prepareCall(constructor, constructorABI, arguments)
+      .then(res => {
+        //clone res.params
+        let tx = {};
+        for (let key in res.params) {
+          tx[key] = res.params[key];
+        }
+
+        const options = {
+          data: constructor.binary,
+          arguments: res.args
+        };
+
+        const instance = new constructor.web3.eth.Contract(
+          constructor.abi,
+          res.params
+        );
+        tx.data = instance.deploy(options).encodeABI();
+        return tx;
       });
   },
 
