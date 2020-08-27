@@ -28,7 +28,7 @@
     "@truffle/reporters": "^1.1.0",
     "@truffle/workflow-compile": "^2.1.48",
     "ganache-core": "2.11.2",
-    "mocha": "8.0.1",
+    "mocha": "8.1.2",
     "sinon": "9.0.2",
     "web3": "1.2.1"
   },

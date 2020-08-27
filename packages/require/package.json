@@ -22,7 +22,7 @@
     "web3": "1.2.1"
   },
   "devDependencies": {
-    "mocha": "8.0.1"
+    "mocha": "8.1.2"
   },
   "keywords": [
     "ethereum",
