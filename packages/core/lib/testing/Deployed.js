@@ -39,7 +39,7 @@ var Deployed = {
     version = Version.resolveVersionString(version);
     if (!Version.versionIsAtLeast(version, "0.5.0")) {
       //remove "payable"s if we're before 0.5.0
-      source = source.replace(/ payable/gm, "");
+      source = source.replace(/address payable/gm, "address");
     }
     //regardless of version, replace all pragmas with the new version
     const coercedVersion = Version.coerce(version);
