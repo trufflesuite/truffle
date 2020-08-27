@@ -17,11 +17,11 @@ const execute = {
    * @param  {Number} blockLimit  most recent network block.blockLimit
    * @return {Number}             gas estimate
    */
-  getGasEstimate: function(params, blockLimit) {
+  getGasEstimate: function (params, blockLimit) {
     const constructor = this;
     const interfaceAdapter = this.interfaceAdapter;
 
-    return new Promise(function(accept) {
+    return new Promise(function (accept) {
       // Always prefer specified gas - this includes gas set by class_defaults
       if (params.gas) return accept(params.gas);
       if (!constructor.autoGas) return accept();
@@ -55,7 +55,7 @@ const execute = {
    * @param  {Array}  _arguments    Arguments passed to method invocation
    * @return {Promise}              Resolves object w/ tx params disambiguated from arguments
    */
-  prepareCall: async function(constructor, methodABI, _arguments) {
+  prepareCall: async function (constructor, methodABI, _arguments) {
     let args = Array.prototype.slice.call(_arguments);
     let params = utils.getTxParams.call(constructor, methodABI, args);
 
@@ -83,7 +83,7 @@ const execute = {
    * @param  {Any}  arg
    * @return {Boolean}
    */
-  hasTxParams: function(arg) {
+  hasTxParams: function (arg) {
     return utils.is_object(arg) && !utils.is_big_number(arg);
   },
 
@@ -95,7 +95,7 @@ const execute = {
    * @param  {Array}  inputs     ABI segment defining method arguments
    * @return {Boolean}           true if final argument is `defaultBlock`
    */
-  hasDefaultBlock: function(args, lastArg, inputs) {
+  hasDefaultBlock: function (args, lastArg, inputs) {
     const hasDefaultBlock =
       !execute.hasTxParams(lastArg) && args.length > inputs.length;
     const hasDefaultBlockWithParams =
@@ -111,10 +111,10 @@ const execute = {
    * @param  {Object}   methodABI  Function ABI segment w/ inputs & outputs keys.
    * @return {Promise}             Return value of the call.
    */
-  call: function(fn, methodABI, address) {
+  call: function (fn, methodABI, address) {
     const constructor = this;
 
-    return function() {
+    return function () {
       let defaultBlock = constructor.web3.eth.defaultBlock || "latest";
       const args = Array.prototype.slice.call(arguments);
       const lastArg = args[args.length - 1];
@@ -161,11 +161,11 @@ const execute = {
    * @param  {String}   address    Deployed address of the targeted instance
    * @return {PromiEvent}          Resolves a transaction receipt (via the receipt handler)
    */
-  send: function(fn, methodABI, address) {
+  send: function (fn, methodABI, address) {
     const constructor = this;
     const web3 = constructor.web3;
 
-    return function() {
+    return function () {
       const promiEvent = new PromiEvent(false, constructor.debugger);
 
       execute
@@ -220,11 +220,11 @@ const execute = {
    * @param  {Object} constructorABI  Constructor ABI segment w/ inputs & outputs keys
    * @return {PromiEvent}             Resolves a TruffleContract instance
    */
-  deploy: function(constructorABI) {
+  deploy: function (constructorABI) {
     const constructor = this;
     const web3 = constructor.web3;
 
-    return function() {
+    return function () {
       let deferred;
       const promiEvent = new PromiEvent(false, constructor.debugger, true);
 
@@ -305,7 +305,7 @@ const execute = {
    * @param  {Function} fn  Solidity event method
    * @return {Emitter}      Event emitter
    */
-  event: function(fn) {
+  event: function (fn) {
     const constructor = this;
     const decode = utils.decodeLogs;
     let currentLogID = null;
@@ -315,7 +315,7 @@ const execute = {
       return id === currentLogID ? false : (currentLogID = id);
     }
 
-    return function(params, callback) {
+    return function (params, callback) {
       if (typeof params === "function") {
         callback = params;
         params = {};
@@ -323,7 +323,7 @@ const execute = {
 
       // As callback
       if (callback !== undefined) {
-        const intermediary = function(err, e) {
+        const intermediary = function (err, e) {
           if (err) return callback(err);
           if (!dedupe(e.id)) return;
           callback(null, decode.call(constructor, e, true)[0]);
@@ -363,7 +363,7 @@ const execute = {
    * Wraps web3 `allEvents`, with additional log decoding
    * @return {PromiEvent}  EventEmitter
    */
-  allEvents: function(web3Instance) {
+  allEvents: function (web3Instance) {
     const constructor = this;
     const decode = utils.decodeLogs;
     let currentLogID = null;
@@ -373,7 +373,7 @@ const execute = {
       return id === currentLogID ? false : (currentLogID = id);
     }
 
-    return function(params) {
+    return function (params) {
       const emitter = new EventEmitter();
 
       constructor.detectNetwork().then(() => {
@@ -402,11 +402,11 @@ const execute = {
    * Wraps web3 `getPastEvents`, with additional log decoding
    * @return {Promise}  Resolves array of event objects
    */
-  getPastEvents: function(web3Instance) {
+  getPastEvents: function (web3Instance) {
     const constructor = this;
     const decode = utils.decodeLogs;
 
-    return function(event, options) {
+    return function (event, options) {
       return web3Instance
         .getPastEvents(event, options)
         .then(events => decode.call(constructor, events, false));
@@ -419,9 +419,9 @@ const execute = {
    * @param  {Object}   methodABI  Function ABI segment w/ inputs & outputs keys.
    * @return {Promise}
    */
-  estimate: function(fn, methodABI) {
+  estimate: function (fn, methodABI) {
     const constructor = this;
-    return function() {
+    return function () {
       return execute
         .prepareCall(constructor, methodABI, arguments)
         .then(res => fn(...res.args).estimateGas(res.params));
@@ -434,18 +434,29 @@ const execute = {
    * @param  {Object}   methodABI  Function ABI segment w/ inputs & outputs keys.
    * @return {Promise}
    */
-  request: function(fn, methodABI) {
+  request: function (fn, methodABI, address) {
     const constructor = this;
-    return function() {
+    return function () {
       return execute
         .prepareCall(constructor, methodABI, arguments)
-        .then(res => fn(...res.args).request(res.params));
+        .then(res => {
+          //clone res.params
+          let tx = {};
+          for (let key in res.params) {
+            tx[key] = res.params[key];
+          }
+          //set to
+          tx.to = address;
+          //set data
+          tx.data = fn(...res.args).encodeABI();
+          return tx;
+        });
     };
   },
 
   // This gets attached to `.new` (declared as a static_method in `contract`)
   // during bootstrapping as `estimate`
-  estimateDeployment: function() {
+  estimateDeployment: function () {
     const constructor = this;
 
     const constructorABI = constructor.abi.filter(
@@ -479,7 +490,7 @@ const execute = {
   //input works the same as input to web3.sendTransaction
   //(well, OK, it's lacking some things there too, but again, good enough
   //for our purposes)
-  sendTransaction: function(web3, params, promiEvent, context) {
+  sendTransaction: function (web3, params, promiEvent, context) {
     //first off: if we don't need the debugger, let's not risk any errors on our part,
     //and just have web3 do everything
     if (!promiEvent || !promiEvent.debug) {
@@ -492,7 +503,7 @@ const execute = {
     return execute.sendTransactionManual(web3, params, promiEvent);
   },
 
-  sendTransactionManual: async function(web3, params, promiEvent) {
+  sendTransactionManual: async function (web3, params, promiEvent) {
     //note: to head off any potential problems with Webpack (contract *has* to
     //work on web!), I'm going to resort to manual promise creation rather than
     //using util.promisify :-/
