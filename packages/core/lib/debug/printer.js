@@ -443,7 +443,7 @@ class DebugPrinter {
   }
 
   printStacktrace(final) {
-    this.config.logger.log("Stacktrace:");
+    this.config.logger.log(final ? "Stacktrace:" : "Call stack:");
     let report = final
       ? this.session.view(stacktrace.current.finalReport)
       : this.session.view(stacktrace.current.report);

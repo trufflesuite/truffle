@@ -304,10 +304,7 @@ class DebugInterpreter {
     }
 
     //split arguments for commands that want that; split on runs of spaces
-    splitArgs = cmd
-      .trim()
-      .split(/ +/)
-      .slice(1);
+    splitArgs = cmd.trim().split(/ +/).slice(1);
     debug("splitArgs %O", splitArgs);
 
     //warning: this bit *alters* cmd!
@@ -544,15 +541,29 @@ class DebugInterpreter {
         break;
       case "l":
         if (this.session.view(selectors.session.status.loaded)) {
+          this.printer.printFile();
+          this.printer.printState(LINES_BEFORE_LONG, LINES_AFTER_LONG);
+        }
+        break;
+      case ";":
+        if (!this.session.view(trace.finishedOrUnloaded)) {
+          this.printer.printInstruction();
+          this.printer.printFile();
+          this.printer.printState();
+        }
+        await this.printer.printWatchExpressionsResults(
+          this.enabledExpressions
+        );
+        break;
+      case "s":
+        if (this.session.view(selectors.session.status.loaded)) {
+          //print final report if finished & failed, intermediate if not
           if (
-            !this.session.view(trace.finished) ||
-            this.session.view(evm.transaction.status)
+            this.session.view(trace.finished) &&
+            !this.session.view(evm.transaction.status)
           ) {
-            this.printer.printFile();
-            this.printer.printState(LINES_BEFORE_LONG, LINES_AFTER_LONG);
-          } else {
-            //if finished and failed, print where things went wrong instead of the actual current
-            //location
+            this.printer.printStacktrace(true); //print final stack trace
+            //Now: actually show the point where things went wrong
             this.printer.print("");
             this.printer.print(
               DebugUtils.truffleColors.red("Location of error:")
@@ -568,26 +579,9 @@ class DebugInterpreter {
               LINES_AFTER_LONG,
               recordedLocation
             );
+          } else {
+            this.printer.printStacktrace(false); //intermediate call stack
           }
-        }
-        break;
-      case ";":
-        if (!this.session.view(trace.finishedOrUnloaded)) {
-          this.printer.printInstruction();
-          this.printer.printFile();
-          this.printer.printState();
-        }
-        await this.printer.printWatchExpressionsResults(
-          this.enabledExpressions
-        );
-        break;
-      case "s":
-        if (this.session.view(selectors.session.status.loaded)) {
-          this.printer.printStacktrace(
-            //print final report if finished & failed, intermediate if not
-            this.session.view(trace.finished) &&
-              !this.session.view(evm.transaction.status)
-          );
         }
         break;
       case "o":
