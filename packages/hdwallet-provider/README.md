@@ -35,8 +35,8 @@ Parameters:
 | `privateKeys` | `string[]` | null | [ ] | Array containing 1 or more private keys. |
 | `providerOrUrl` | `string\|object` | `null` | [x] | URI or Ethereum client to send all other non-transaction-related Web3 requests |
 | `addressIndex` | `number` | `0` | [ ] | If specified, will tell the provider to manage the address at the index specified |
-| `numberOfAddresses` | `number` | `1` | [ ] | If specified, will create `number` addresses when instantiated |
-| `shareNonce` | `boolean` | `true` | [ ] | If false, a new WalletProvider will track its own nonce-state |
+| `numberOfAddresses` | `number` | `1` | [ ] | If specified, will create `numberOfAddresses` addresses when instantiated |
+| `shareNonce` | `boolean` | `true` | [ ] | If `false`, a new WalletProvider will track its own nonce-state |
 | `derivationPath` | `string` | `"m/44'/60'/0'/0/"` | [ ] | If specified, will tell the wallet engine what derivation path should use to derive addresses. |
 
 Some examples can be found below:
@@ -101,8 +101,8 @@ Parameters:
 | `mnemonic`/`privateKeys` | `string`/`string[]` | null | [x] | 12 word mnemonic which addresses are created from or array of private keys. |
 | `providerOrUrl` | `string\|object` | `null` | [x] | URI or Ethereum client to send all other non-transaction-related Web3 requests |
 | `addressIndex` | `number` | `0` | [ ] | If specified, will tell the provider to manage the address at the index specified |
-| `numberOfAddresses` | `number` | `1` | [ ] | If specified, will create `number` addresses when instantiated |
-| `shareNonce` | `boolean` | `true` | [ ] | If false, a new WalletProvider will track its own nonce-state |
+| `numberOfAddresses` | `number` | `1` | [ ] | If specified, will create `numberOfAddresses` addresses when instantiated |
+| `shareNonce` | `boolean` | `true` | [ ] | If `false`, a new WalletProvider will track its own nonce-state |
 | `derivationPath` | `string` | `"m/44'/60'/0'/0/"` | [ ] | If specified, will tell the wallet engine what derivation path should use to derive addresses. |
 
 Some examples can be found below:
