@@ -92,7 +92,7 @@ provider.engine.stop();
 
 ### Using positional arguments
 
-You can specify the following options in the order below:
+You can specify the following options in the order below. Pass `undefined` if you want to omit a parameter.
 
 Parameters:
 
@@ -115,6 +115,9 @@ let provider = new HDWalletProvider(mnemonic, "http://localhost:8545");
 
 // Or, alternatively pass in a zero-based address index.
 provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5);
+
+// If you want to omit `addressIndex` but pass `numberOfAddresses`
+provider = new HDWalletProvider(mnemonic, "http://localhost:8545", undefined, 4);
 
 // Or, use your own hierarchical derivation path
 provider = new HDWalletProvider(mnemonic, "http://localhost:8545", 5, 1, true, "m/44'/137'/0'/0/");
