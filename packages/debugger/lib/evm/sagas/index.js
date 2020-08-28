@@ -50,15 +50,29 @@ export function* addInstance(address, binary) {
  * Adds known deployed instance of binary at address
  * to list of affected instances, *not* to codex
  *
+ * creationBinary may also be specified
+ *
  * @param {string} binary - may be undefined (e.g. precompiles)
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function* addAffectedInstance(address, binary) {
+export function* addAffectedInstance(address, binary, creationBinary) {
   const search = yield select(evm.info.binaries.search);
   const context = search(binary);
+  let constructorArgs;
+
+  if (creationBinary) {
+    const creationContext = search(creationBinary);
+    if (creationContext) {
+      const contexts = yield select(evm.info.contexts);
+      const referenceBinary = contexts[creationContext].binary;
+      constructorArgs = creationBinary.slice(referenceBinary.length);
+    }
+  }
 
   //now, whether we needed a new context or not, add the instance
-  yield put(actions.addAffectedInstance(address, context, binary));
+  yield put(
+    actions.addAffectedInstance(address, context, binary, constructorArgs)
+  );
 
   return context;
 }

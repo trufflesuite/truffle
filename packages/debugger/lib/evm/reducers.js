@@ -147,14 +147,15 @@ const DEFAULT_AFFECTED_INSTANCES = { byAddress: {} };
 function affectedInstances(state = DEFAULT_AFFECTED_INSTANCES, action) {
   switch (action.type) {
     case actions.ADD_AFFECTED_INSTANCE:
-      const { address, binary, context } = action;
+      const { address, binary, context, constructorArgs } = action;
       return {
         byAddress: {
           ...state.byAddress,
           [address]: {
             address,
             binary,
-            context
+            context,
+            constructorArgs
           }
         }
       };

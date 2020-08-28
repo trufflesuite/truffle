@@ -33,7 +33,7 @@ const session = createSelectorTree({
         Object.assign(
           {},
           ...Object.entries(instances).map(
-            ([address, { context: contextId, binary }]) => {
+            ([address, { context: contextId, binary, constructorArgs }]) => {
               debug("instances %O", instances);
               debug("contexts %O", contexts);
               let context = contexts[contextId];
@@ -55,7 +55,8 @@ const session = createSelectorTree({
                 [address]: {
                   contractName,
                   source,
-                  binary
+                  binary,
+                  constructorArgs //will be defined only if created by this tx
                 }
               };
             }
