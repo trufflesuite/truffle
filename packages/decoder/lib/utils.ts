@@ -39,7 +39,7 @@ export function makeContext(
   const bytecode = isConstructor
     ? contract.bytecode
     : contract.deployedBytecode;
-  const binary: string = shims.newToLegacy.shimBytecode(bytecode);
+  const binary: string = shims.NewToLegacy.shimBytecode(bytecode);
   const hash = Codec.Conversion.toHexString(
     Codec.Evm.Utils.keccak256({
       type: "string",
@@ -90,7 +90,7 @@ function contractKind(
   //PUSH20 followed by 20 0s, in which case we'll assume it's a library
   //(note: this will fail to detect libraries from before Solidity 0.4.20)
   if (contract.deployedBytecode) {
-    const deployedBytecode = shims.newToLegacy.shimBytecode(
+    const deployedBytecode = shims.NewToLegacy.shimBytecode(
       contract.deployedBytecode
     );
     const pushAddressInstruction = (

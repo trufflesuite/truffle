@@ -158,10 +158,10 @@ export default class Session {
 
         //hopefully we can get rid of this step eventually, but not yet
         if (typeof binary === "object") {
-          binary = shims.newToLegacy.shimBytecode(binary);
+          binary = shims.NewToLegacy.shimBytecode(binary);
         }
         if (typeof deployedBinary === "object") {
-          deployedBinary = shims.newToLegacy.shimBytecode(deployedBinary);
+          deployedBinary = shims.NewToLegacy.shimBytecode(deployedBinary);
         }
 
         let primarySourceIndex;

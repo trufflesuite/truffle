@@ -1,2 +1,2 @@
-export * as newToLegacy from "./newToLegacy";
-export * as legacyToNew from "./legacyToNew";
+export * as LegacyToNew from "./LegacyToNew";
+export * as NewToLegacy from "./NewToLegacy";

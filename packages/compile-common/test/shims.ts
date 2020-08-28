@@ -1,17 +1,16 @@
 import assert from "assert";
 import { shims, Bytecode } from "../src";
-const { legacyToNew, newToLegacy } = shims;
 
-describe("newToLegacy.shimBytecode", () => {
+describe("shims.NewToLegacy.shimBytecode", () => {
   it("handles undefined", () => {
-    assert.equal(newToLegacy.shimBytecode(undefined), undefined);
+    assert.equal(shims.NewToLegacy.shimBytecode(undefined), undefined);
   });
 
   it("prepends 0x", () => {
     const bytes = "ffffffff";
 
     assert.equal(
-      newToLegacy.shimBytecode({ bytes, linkReferences: [] }),
+      shims.NewToLegacy.shimBytecode({ bytes, linkReferences: [] }),
       `0x${bytes}`
     );
   });
@@ -32,7 +31,7 @@ describe("newToLegacy.shimBytecode", () => {
     //                  0 1 2 3 4 5 6 7 8 9
     const expected = "0x00__hello_________00";
 
-    assert.equal(newToLegacy.shimBytecode(bytecode), expected);
+    assert.equal(shims.NewToLegacy.shimBytecode(bytecode), expected);
   });
 
   it("inlines a link reference with multiple offsets", () => {
@@ -51,7 +50,7 @@ describe("newToLegacy.shimBytecode", () => {
     //                  0 1 2 3 4 5 6 7 8 9
     const expected = "0x__hi____00__hi____00";
 
-    assert.equal(newToLegacy.shimBytecode(bytecode), expected);
+    assert.equal(shims.NewToLegacy.shimBytecode(bytecode), expected);
   });
 
   it("inlines two different link references", () => {
@@ -75,11 +74,11 @@ describe("newToLegacy.shimBytecode", () => {
     //                  0 1 2 3 4 5 6 7 8 9
     const expected = "0x__hi____00__there_00";
 
-    assert.equal(newToLegacy.shimBytecode(bytecode), expected);
+    assert.equal(shims.NewToLegacy.shimBytecode(bytecode), expected);
   });
 });
 
-describe("legacyToNew.shimBytecode", () => {
+describe("shims.LegacyToNew.shimBytecode", () => {
   it("removes 0x", function () {
     const bytes = "ffffffff";
     const expected = {
@@ -130,6 +129,6 @@ describe("legacyToNew.shimBytecode", () => {
       ]
     };
 
-    assert.deepEqual(legacyToNew.shimBytecode(bytecode), expected);
+    assert.deepEqual(shims.LegacyToNew.shimBytecode(bytecode), expected);
   });
 });
