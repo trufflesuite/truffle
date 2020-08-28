@@ -60,11 +60,7 @@ class Console extends EventEmitter {
   }
 
   setContextVars(obj) {
-    const context = {};
-    Object.keys(obj || {}).forEach(function (key) {
-      context[key] = obj[key];
-    });
-    return context;
+    return { ...obj };
   }
 
   start() {
