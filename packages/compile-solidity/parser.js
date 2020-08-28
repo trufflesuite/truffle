@@ -66,6 +66,8 @@ module.exports = {
           const matches = formattedMessage.match(
             /import[^'"]?.*("|')([^'"]+)("|')/
           );
+
+          // Return the item between the quotes.
           if (matches) return matches[2];
         }
       })
