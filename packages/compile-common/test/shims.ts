@@ -86,7 +86,7 @@ describe("shims.LegacyToNew.shimBytecode", () => {
       linkReferences: []
     } as Bytecode;
 
-    assert.deepEqual(legacyToNew.shimBytecode(`0x${bytes}`), expected);
+    assert.deepEqual(shims.LegacyToNew.shimBytecode(`0x${bytes}`), expected);
   });
 
   it("externalizes a link reference in underscores format", function () {
@@ -105,7 +105,7 @@ describe("shims.LegacyToNew.shimBytecode", () => {
       ]
     };
 
-    assert.deepEqual(legacyToNew.shimBytecode(bytecode), expected);
+    assert.deepEqual(shims.LegacyToNew.shimBytecode(bytecode), expected);
   });
 
   it("externalizes two different link references", function () {
