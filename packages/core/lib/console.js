@@ -58,10 +58,6 @@ class Console extends EventEmitter {
     });
   }
 
-  setContextVars(obj) {
-    return { ...obj };
-  }
-
   start() {
     try {
       this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
@@ -136,10 +132,9 @@ class Console extends EventEmitter {
 
     // make sure the repl gets the new contracts in its context
     if (this.repl) {
-      this.repl.context = {
-        ...this.repl.context,
-        ...this.setContextVars(contextVars)
-      };
+      Object.keys(contextVars || {}).forEach(key => {
+        this.repl.context[key] = contextVars[key];
+      });
     }
   }
 
