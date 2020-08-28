@@ -1,1 +1,1 @@
-export * as newToLegacy from "./newToLegacy";
+export * as NewToLegacy from "./NewToLegacy";
