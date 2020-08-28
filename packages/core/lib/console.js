@@ -42,7 +42,6 @@ class Console extends EventEmitter {
       "build_directory"
     ]);
 
-    this.context = {};
     this.options = options;
 
     this.command = new Command(tasks);
@@ -73,13 +72,11 @@ class Console extends EventEmitter {
           eval: this.interpret.bind(this)
         });
 
-        this.resetContractsInConsoleContext(abstractions);
-
-        // set these repl context vars after setting contracts to
-        // make sure they don't get overwritten
         this.repl.context.web3 = this.web3;
         this.repl.context.interfaceAdapter = this.interfaceAdapter;
         this.repl.context.accounts = fetchedAccounts;
+
+        this.resetContractsInConsoleContext(abstractions);
       });
     } catch (error) {
       this.options.logger.log(
@@ -137,11 +134,12 @@ class Console extends EventEmitter {
       contextVars[abstraction.contract_name] = abstraction;
     });
 
-    this.context = this.setContextVars(contextVars);
-
     // make sure the repl gets the new contracts in its context
     if (this.repl) {
-      this.repl.context = this.context;
+      this.repl.context = {
+        ...this.repl.context,
+        ...this.setContextVars(contextVars)
+      };
     }
   }
 
