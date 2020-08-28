@@ -16,6 +16,7 @@
     "@truffle/config": "^1.2.28",
     "download-git-repo": "^3.0.2",
     "fs-extra": "^8.1.0",
+    "ignore": "^5.1.8",
     "inquirer": "^7.0.0",
     "request": "^2.85.0",
     "request-promise-native": "^1.0.7",
