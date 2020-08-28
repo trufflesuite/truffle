@@ -11,8 +11,7 @@ const inputStrings = input[1];
 //and deserialize them
 const detectedConfig = Config.detect({ network: yargs(input[0]).argv.network });
 const customConfig = detectedConfig.networks.develop || {};
-// console.log("custom config? " + JSON.stringify(customConfig));
-// console.log("detected config " + JSON.stringify(detectedConfig));
+
 //need host and port for provider url
 const ganacheOptions = {
   host: customConfig.host || "127.0.0.1",
