@@ -61,8 +61,6 @@ class Console extends EventEmitter {
   start() {
     try {
       this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
-        const abstractions = this.provision();
-
         this.repl = repl.start({
           prompt: "truffle(" + this.options.network + ")> ",
           eval: this.interpret.bind(this)
@@ -72,7 +70,7 @@ class Console extends EventEmitter {
         this.repl.context.interfaceAdapter = this.interfaceAdapter;
         this.repl.context.accounts = fetchedAccounts;
 
-        this.resetContractsInConsoleContext(abstractions);
+        this.provision();
       });
     } catch (error) {
       this.options.logger.log(
@@ -131,11 +129,9 @@ class Console extends EventEmitter {
     });
 
     // make sure the repl gets the new contracts in its context
-    if (this.repl) {
-      Object.keys(contextVars || {}).forEach(key => {
-        this.repl.context[key] = contextVars[key];
-      });
-    }
+    Object.keys(contextVars || {}).forEach(key => {
+      this.repl.context[key] = contextVars[key];
+    });
   }
 
   runSpawn(inputStrings, options, callback) {
