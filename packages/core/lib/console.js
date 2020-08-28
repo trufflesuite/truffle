@@ -60,17 +60,21 @@ class Console extends EventEmitter {
 
   start() {
     try {
-      this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
-        this.repl = repl.start({
-          prompt: "truffle(" + this.options.network + ")> ",
-          eval: this.interpret.bind(this)
-        });
+      this.repl = repl.start({
+        prompt: "truffle(" + this.options.network + ")> ",
+        eval: this.interpret.bind(this)
+      });
 
+      this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
         this.repl.context.web3 = this.web3;
         this.repl.context.interfaceAdapter = this.interfaceAdapter;
         this.repl.context.accounts = fetchedAccounts;
+      });
+      this.provision();
 
-        this.provision();
+      //want repl to exit when it receives an exit command
+      this.repl.on("exit", () => {
+        process.exit();
       });
     } catch (error) {
       this.options.logger.log(
@@ -160,10 +164,7 @@ class Console extends EventEmitter {
     } catch (err) {
       callback(err);
     }
-    //want repl to exit when it receives an exit command
-    this.repl.on("exit", () => {
-      process.exit();
-    });
+
     //display prompt when child repl process is finished
     this.repl.displayPrompt();
   }
