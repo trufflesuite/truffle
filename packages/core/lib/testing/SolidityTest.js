@@ -155,7 +155,7 @@ const SolidityTest = {
       contract.default_network = config.default_network;
     }
 
-    await config.artifactor.saveAll(contracts.map(shims.newToLegacy.contract));
+    await config.artifactor.saveAll(contracts.map(shims.NewToLegacy.contract));
     debug("compiled");
   },
 

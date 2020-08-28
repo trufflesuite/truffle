@@ -73,10 +73,10 @@ export class WireDecoder {
         let deployedContext: Contexts.DecoderContext | undefined = undefined;
         let constructorContext: Contexts.DecoderContext | undefined = undefined;
         const compiler = compilation.compiler || contract.compiler;
-        const deployedBytecode = shims.newToLegacy.shimBytecode(
+        const deployedBytecode = shims.NewToLegacy.shimBytecode(
           contract.deployedBytecode
         );
-        const bytecode = shims.newToLegacy.shimBytecode(contract.bytecode);
+        const bytecode = shims.NewToLegacy.shimBytecode(contract.bytecode);
         if (deployedBytecode && deployedBytecode !== "0x") {
           deployedContext = Utils.makeContext(contract, node, compilation);
           this.contexts[deployedContext.context] = deployedContext;
@@ -537,10 +537,10 @@ export class WireDecoder {
    */
 
   public async forArtifact(artifact: Artifact): Promise<ContractDecoder> {
-    const deployedBytecode = shims.newToLegacy.shimBytecode(
+    const deployedBytecode = shims.NewToLegacy.shimBytecode(
       artifact.deployedBytecode
     );
-    const bytecode = shims.newToLegacy.shimBytecode(artifact.bytecode);
+    const bytecode = shims.NewToLegacy.shimBytecode(artifact.bytecode);
 
     const { compilation, contract } = this.compilations.reduce(
       (foundSoFar: DecoderTypes.CompilationAndContract, compilation) => {
@@ -550,7 +550,7 @@ export class WireDecoder {
         const contractFound = compilation.contracts.find(contract => {
           if (bytecode) {
             return (
-              shims.newToLegacy.shimBytecode(contract.bytecode) === bytecode &&
+              shims.NewToLegacy.shimBytecode(contract.bytecode) === bytecode &&
               contract.contractName ===
                 (artifact.contractName || <string>artifact.contract_name)
             );
@@ -558,9 +558,8 @@ export class WireDecoder {
             //I'll just go by one of bytecode or deployedBytecode;
             //no real need to check both
             return (
-              shims.newToLegacy.shims.newToLegacy.shimBytecode(
-                contract.deployedBytecode
-              ) === deployedBytecode &&
+              shims.NewToLegacy.shimBytecode(contract.deployedBytecode) ===
+                deployedBytecode &&
               contract.contractName ===
                 (artifact.contractName || <string>artifact.contract_name)
             );
@@ -1154,7 +1153,7 @@ export class ContractInstanceDecoder {
       )
     );
 
-    const deployedBytecode = shims.newToLegacy.shimBytecode(
+    const deployedBytecode = shims.NewToLegacy.shimBytecode(
       this.contract.deployedBytecode
     );
 

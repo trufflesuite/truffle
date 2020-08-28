@@ -3,13 +3,13 @@ import { shims } from "../src";
 
 describe("shimBytecode", () => {
   it("handles undefined", () => {
-    assert.equal(shims.newToLegacy.shimBytecode(undefined), undefined);
+    assert.equal(shims.NewToLegacy.shimBytecode(undefined), undefined);
   });
 
   it("prepends 0x", () => {
     const bytes = "ffffffff";
 
-    assert.equal(shims.newToLegacy.shimBytecode({ bytes }), `0x${bytes}`);
+    assert.equal(shims.NewToLegacy.shimBytecode({ bytes }), `0x${bytes}`);
   });
 
   it("inlines an external link reference into underscores format", () => {
@@ -28,7 +28,7 @@ describe("shimBytecode", () => {
     //                  0 1 2 3 4 5 6 7 8 9
     const expected = "0x00__hello_________00";
 
-    assert.equal(shims.newToLegacy.shimBytecode(bytecode), expected);
+    assert.equal(shims.NewToLegacy.shimBytecode(bytecode), expected);
   });
 
   it("inlines a link reference with multiple offsets", () => {
@@ -47,7 +47,7 @@ describe("shimBytecode", () => {
     //                  0 1 2 3 4 5 6 7 8 9
     const expected = "0x__hi____00__hi____00";
 
-    assert.equal(shims.newToLegacy.shimBytecode(bytecode), expected);
+    assert.equal(shims.NewToLegacy.shimBytecode(bytecode), expected);
   });
 
   it("inlines two different link references", () => {
@@ -71,6 +71,6 @@ describe("shimBytecode", () => {
     //                  0 1 2 3 4 5 6 7 8 9
     const expected = "0x__hi____00__there_00";
 
-    assert.equal(shims.newToLegacy.shimBytecode(bytecode), expected);
+    assert.equal(shims.NewToLegacy.shimBytecode(bytecode), expected);
   });
 });
