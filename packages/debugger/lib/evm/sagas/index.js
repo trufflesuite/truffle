@@ -58,20 +58,18 @@ export function* addInstance(address, binary) {
 export function* addAffectedInstance(address, binary, creationBinary) {
   const search = yield select(evm.info.binaries.search);
   const context = search(binary);
-  let constructorArgs;
-
-  if (creationBinary) {
-    const creationContext = search(creationBinary);
-    if (creationContext) {
-      const contexts = yield select(evm.info.contexts);
-      const referenceBinary = contexts[creationContext].binary;
-      constructorArgs = creationBinary.slice(referenceBinary.length);
-    }
-  }
+  const creationContext = creationBinary ? search(creationBinary) : null;
 
   //now, whether we needed a new context or not, add the instance
+  //note that these last two arguments may be undefined/null
   yield put(
-    actions.addAffectedInstance(address, context, binary, constructorArgs)
+    actions.addAffectedInstance(
+      address,
+      context,
+      binary,
+      creationBinary,
+      creationContext
+    )
   );
 
   return context;
@@ -88,10 +86,21 @@ export function* refreshInstances() {
     const context = search(binary);
     yield put(actions.addInstance(address, context, binary));
   }
-  for (let [address, { binary }] of Object.entries(affectedInstances)) {
+  for (let [address, { binary, creationBinary }] of Object.entries(
+    affectedInstances
+  )) {
     const search = yield select(evm.info.binaries.search);
     const context = search(binary);
-    yield put(actions.addAffectedInstance(address, context, binary));
+    const creationContext = creationBinary ? search(creationBinary) : null;
+    yield put(
+      actions.addAffectedInstance(
+        address,
+        context,
+        binary,
+        creationBinary,
+        creationContext
+      )
+    );
   }
 }
 
