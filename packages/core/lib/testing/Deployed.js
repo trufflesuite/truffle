@@ -1,5 +1,5 @@
 const web3Utils = require("web3-utils");
-const Version = require("./Version");
+const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 
 var Deployed = {
   makeSolidityDeployedAddressesLibrary: function (
@@ -36,13 +36,13 @@ var Deployed = {
 
     source += "}";
 
-    version = Version.resolveVersionString(version);
-    if (!Version.versionIsAtLeast(version, "0.5.0")) {
+    version = RangeUtils.resolveToRange(version);
+    if (!RangeUtils.rangeContainsAtLeast(version, "0.5.0")) {
       //remove "payable"s if we're before 0.5.0
       source = source.replace(/address payable/gm, "address");
     }
     //regardless of version, replace all pragmas with the new version
-    const coercedVersion = Version.coerce(version);
+    const coercedVersion = RangeUtils.coerce(version);
     source = source.replace(/0\.5\.0/gm, coercedVersion);
 
     return source;

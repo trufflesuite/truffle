@@ -1,7 +1,7 @@
 const TestCase = require("mocha/lib/test.js");
 const Suite = require("mocha/lib/suite.js");
 const Deployer = require("@truffle/deployer");
-const Version = require("./Version");
+const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 const compile = require("@truffle/compile-solidity/new");
 const { shimContract } = require("@truffle/compile-solidity/legacy/shims");
 const path = require("path");
@@ -111,8 +111,8 @@ const SolidityTest = {
     debug("compiling");
     const config = runner.config;
     let solcVersion = config.compilers.solc.version;
-    solcVersion = Version.resolveVersionString(solcVersion);
-    SafeSend = Version.versionIsAtLeast(solcVersion, "0.5.0")
+    solcVersion = RangeUtils.resolveToRange(solcVersion);
+    SafeSend = RangeUtils.rangeContainsAtLeast(solcVersion, "0.5.0")
       ? "NewSafeSend.sol"
       : "OldSafeSend.sol";
 
