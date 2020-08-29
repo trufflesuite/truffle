@@ -1,9 +1,8 @@
 const web3Utils = require("web3-utils");
-const semver = require("semver");
-const Native = require("@truffle/compile-solidity/compilerSupplier/loadingStrategies/Native");
+const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 
 var Deployed = {
-  makeSolidityDeployedAddressesLibrary: function(
+  makeSolidityDeployedAddressesLibrary: function (
     mapping,
     { solc: { version } }
   ) {
@@ -12,10 +11,10 @@ var Deployed = {
     var source = "";
     source +=
       "//SPDX-License-Identifier: MIT\n" +
-      "pragma solidity >= 0.5.0 < 0.7.0; \n\n library DeployedAddresses {" +
+      "pragma solidity >= 0.5.0 < 0.8.0; \n\n library DeployedAddresses {" +
       "\n";
 
-    Object.keys(mapping).forEach(function(name) {
+    Object.keys(mapping).forEach(function (name) {
       var address = mapping[name];
 
       var body = "revert();";
@@ -37,18 +36,20 @@ var Deployed = {
 
     source += "}";
 
-    if (version) {
-      if (version === "native") version = new Native().load().version();
-      const v = semver.coerce(version);
-      if (semver.lt(v, "0.5.0")) source = source.replace(/ payable/gm, "");
-      source = source.replace(/0\.5\.0/gm, v);
+    version = RangeUtils.resolveToRange(version);
+    if (!RangeUtils.rangeContainsAtLeast(version, "0.5.0")) {
+      //remove "payable"s if we're before 0.5.0
+      source = source.replace(/address payable/gm, "address");
     }
+    //regardless of version, replace all pragmas with the new version
+    const coercedVersion = RangeUtils.coerce(version);
+    source = source.replace(/0\.5\.0/gm, coercedVersion);
 
     return source;
   },
 
   // Pulled from ethereumjs-util, but I don't want all its dependencies at the moment.
-  toChecksumAddress: function(address) {
+  toChecksumAddress: function (address) {
     address = address.toLowerCase().replace("0x", "");
     const hash = web3Utils.sha3(address).replace("0x", "");
     var ret = "0x";
