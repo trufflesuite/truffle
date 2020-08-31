@@ -19,10 +19,9 @@ var command = {
       return callback();
     }
     var selectedCommand = options._[0];
-    var subCommand = options._[1];
 
     if (commands[selectedCommand]) {
-      this.displayCommandHelp(selectedCommand, subCommand);
+      this.displayCommandHelp(selectedCommand);
       return callback();
     } else {
       console.log(`\n  Cannot find the given command '${selectedCommand}'`);
@@ -34,22 +33,12 @@ var command = {
       return callback();
     }
   },
-  displayCommandHelp: function (selectedCommand, subCommand) {
+  displayCommandHelp: function (selectedCommand) {
     let commands = require("./index");
-    let commandHelp, commandDescription;
-
-    const chosenCommand = commands[selectedCommand];
-
-    if (subCommand && chosenCommand.subCommands[subCommand]) {
-      commandHelp = chosenCommand.subCommands[subCommand].help;
-      commandDescription = chosenCommand.subCommands[subCommand].description;
-    } else {
-      commandHelp = chosenCommand.help;
-      commandDescription = chosenCommand.description;
-    }
+    var commandHelp = commands[selectedCommand].help;
 
     console.log(`\n  Usage:        ${commandHelp.usage}`);
-    console.log(`  Description:  ${commandDescription}`);
+    console.log(`  Description:  ${commands[selectedCommand].description}`);
 
     if (commandHelp.options.length > 0) {
       console.log(`  Options: `);
