@@ -1,9 +1,11 @@
-function shimContracts(contracts) {
+import { Bytecode, CompiledContract, LinkReference } from "../types";
+
+export function shimContracts(contracts: any[]): CompiledContract[] {
   // convert to list
   return Object.values(contracts).map(shimContract);
 }
 
-function shimContract(contract) {
+export const shimContract = (contract: any): CompiledContract => {
   const {
     contractName,
     contract_name,
@@ -40,9 +42,9 @@ function shimContract(contract) {
     userdoc,
     immutableReferences
   };
-}
+};
 
-function shimBytecode(bytecode) {
+export function shimBytecode(bytecode: string): Bytecode {
   if (!bytecode) {
     return undefined;
   }
@@ -50,7 +52,7 @@ function shimBytecode(bytecode) {
     return bytecode;
   }
 
-  const linkReferences = [];
+  const linkReferences: LinkReference[] = [];
 
   const bytes = bytecode
     .slice(2) // remove 0x prefix
@@ -73,9 +75,3 @@ function shimBytecode(bytecode) {
 
   return { bytes, linkReferences };
 }
-
-module.exports = {
-  shimContracts,
-  shimContract,
-  shimBytecode
-};
