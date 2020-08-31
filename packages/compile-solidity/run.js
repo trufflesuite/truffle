@@ -219,10 +219,12 @@ function prepareOutputSelection({ targets = [] }) {
       "evm.bytecode.object",
       "evm.bytecode.linkReferences",
       "evm.bytecode.sourceMap",
+      "evm.bytecode.generatedSources",
       "evm.deployedBytecode.object",
       "evm.deployedBytecode.linkReferences",
       "evm.deployedBytecode.sourceMap",
       "evm.deployedBytecode.immutableReferences",
+      "evm.deployedBytecode.generatedSources",
       "userdoc",
       "devdoc"
     ]
@@ -362,10 +364,16 @@ function processContracts({
           contractName,
           contract: {
             evm: {
-              bytecode: { sourceMap, linkReferences, object: bytecode },
+              bytecode: {
+                sourceMap,
+                linkReferences,
+                generatedSources,
+                object: bytecode
+              },
               deployedBytecode: {
                 sourceMap: deployedSourceMap,
                 linkReferences: deployedLinkReferences,
+                generatedSources: deployedGeneratedSources,
                 immutableReferences,
                 object: deployedBytecode
               }
@@ -403,6 +411,8 @@ function processContracts({
           }),
           immutableReferences, //ideally this would be part of the deployedBytecode object,
           //but compatibility makes that impossible
+          generatedSources,
+          deployedGeneratedSources,
           compiler: {
             name: "solc",
             version: solcVersion
