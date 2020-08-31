@@ -12,6 +12,7 @@ const TestRunner = require("./testing/TestRunner");
 const TestResolver = require("./testing/TestResolver");
 const TestSource = require("./testing/TestSource");
 const SolidityTest = require("./testing/SolidityTest");
+const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 const expect = require("@truffle/expect");
 const Migrate = require("@truffle/migrate");
 const Profiler = require("@truffle/compile-solidity/profiler");
@@ -19,7 +20,6 @@ const originalrequire = require("original-require");
 const Codec = require("@truffle/codec");
 const debug = require("debug")("lib:test");
 const Debugger = require("@truffle/debugger");
-const semver = require("semver");
 
 let Mocha; // Late init with "mocha" or "mocha-parallel-tests"
 
@@ -222,21 +222,8 @@ const Test = {
     });
     if (config.compileAllDebug) {
       let versionString = ((compileConfig.compilers || {}).solc || {}).version;
-      //note: I'm relying here on the fact that the current
-      //default version, 0.5.16, is <0.6.3
-      //the following line works with prereleases
-      const satisfies = semver.satisfies(versionString, ">=0.6.3", {
-        includePrerelease: true,
-        loose: true
-      });
-      //the following line doesn't, despite the flag, but does work with version ranges
-      const intersects =
-        semver.validRange(versionString) &&
-        semver.intersects(versionString, ">=0.6.3", {
-          includePrerelease: true,
-          loose: true
-        }); //intersects will throw if given undefined so must ward against
-      if (satisfies || intersects) {
+      versionString = RangeUtils.resolveToRange(versionString);
+      if (RangeUtils.rangeContainsAtLeast(versionString, "0.6.3")) {
         compileConfig = compileConfig.merge({
           compilers: {
             solc: {

@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.2.3",
+  "version": "3.2.4",
   "main": "index.js",
   "directories": {
     "spec": "./spec"
@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "json-schema-to-typescript": "^5.5.0",
-    "mocha": "8.0.1",
+    "mocha": "8.1.2",
     "solc": "0.5.16"
   },
   "keywords": [

@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "6.0.15",
+  "version": "6.0.16",
   "main": "dist/lib/index.js",
   "files": [
     "dist"
@@ -20,9 +20,9 @@
   },
   "types": "dist/lib/index.d.ts",
   "dependencies": {
-    "@truffle/contract": "^4.2.19",
-    "@truffle/expect": "^0.0.14",
-    "@truffle/provisioner": "^0.2.4",
+    "@truffle/contract": "^4.2.20",
+    "@truffle/expect": "^0.0.15",
+    "@truffle/provisioner": "^0.2.5",
     "debug": "^4.1.1",
     "detect-installed": "^2.0.4",
     "get-installed-path": "^4.0.8",
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@types/node": "^13.11.1",
     "@types/sinon": "^9.0.0",
-    "mocha": "8.0.1",
+    "mocha": "8.1.2",
     "sinon": "9.0.2",
     "ts-node": "8.10.2",
     "typescript": "3.9.6"

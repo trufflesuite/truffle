@@ -3,9 +3,8 @@ const Suite = require("mocha/lib/suite.js");
 const Deployer = require("@truffle/deployer");
 const { Compile } = require("@truffle/compile-solidity");
 const { shims } = require("@truffle/compile-common");
+const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 const path = require("path");
-const semver = require("semver");
-const Native = require("@truffle/compile-solidity/compilerSupplier/loadingStrategies/Native");
 const debug = require("debug")("lib:testing:soliditytest");
 
 let SafeSend;
@@ -112,16 +111,10 @@ const SolidityTest = {
     debug("compiling");
     const config = runner.config;
     let solcVersion = config.compilers.solc.version;
-    if (solcVersion === "native") {
-      solcVersion = new Native().load().version();
-    }
-    if (!solcVersion) {
-      SafeSend = "NewSafeSend.sol";
-    } else if (semver.lt(semver.coerce(solcVersion), "0.5.0")) {
-      SafeSend = "OldSafeSend.sol";
-    } else {
-      SafeSend = "NewSafeSend.sol";
-    }
+    solcVersion = RangeUtils.resolveToRange(solcVersion);
+    SafeSend = RangeUtils.rangeContainsAtLeast(solcVersion, "0.5.0")
+      ? "NewSafeSend.sol"
+      : "OldSafeSend.sol";
 
     const compilations = await Compile.withDependencies(
       runner.config.with({

@@ -893,8 +893,7 @@ export class ContractDecoder {
     abi: AbiData.FunctionAbiEntry,
     data: string,
     options: DecoderTypes.ReturnOptions = {},
-    additionalContexts: Contexts.DecoderContexts = {},
-    contextHash: string = this.contextHash
+    additionalContexts: Contexts.DecoderContexts = {}
   ): Promise<ReturndataDecoding[]> {
     abi = {
       type: "function",
@@ -906,10 +905,10 @@ export class ContractDecoder {
 
     const selector = AbiData.Utils.abiSelector(abi);
     let allocation: AbiData.Allocate.ReturndataAllocation;
-    if (contextHash !== undefined) {
-      allocation = this.allocations.calldata.functionAllocations[contextHash][
-        selector
-      ].output;
+    if (this.contextHash !== undefined) {
+      allocation = this.allocations.calldata.functionAllocations[
+        this.contextHash
+      ][selector].output;
     } else {
       allocation = this.noBytecodeAllocations[selector].output;
     }
@@ -1663,8 +1662,7 @@ export class ContractInstanceDecoder {
       abi,
       data,
       options,
-      this.additionalContexts,
-      this.contextHash
+      this.additionalContexts
     );
   }
 

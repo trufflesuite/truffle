@@ -1,6 +1,4 @@
 var OS = require("os");
-var dir = require("node-dir");
-var path = require("path");
 var debug = require("debug")("debug-utils");
 var BN = require("bn.js");
 var util = require("util");
@@ -77,28 +75,6 @@ const DEFAULT_TAB_WIDTH = 8;
 
 var DebugUtils = {
   truffleColors, //make these externally available
-
-  gatherArtifacts: async function (config) {
-    // Gather all available contract artifacts
-    let files = await dir.promiseFiles(config.contracts_build_directory);
-
-    var contracts = files
-      .filter(file_path => {
-        return path.extname(file_path) === ".json";
-      })
-      .map(file_path => {
-        return path.basename(file_path, ".json");
-      })
-      .map(contract_name => {
-        return config.resolver.require(contract_name);
-      });
-
-    await Promise.all(
-      contracts.map(abstraction => abstraction.detectNetwork())
-    );
-
-    return contracts;
-  },
 
   //attempts to test whether a given compilation is a real compilation,
   //i.e., was compiled all at once.

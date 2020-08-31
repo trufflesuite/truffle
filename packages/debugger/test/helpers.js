@@ -4,7 +4,6 @@ const debug = debugModule("test:helpers");
 import path from "path";
 import fs from "fs-extra";
 import Contracts from "@truffle/workflow-compile";
-import Debug from "@truffle/debug-utils";
 import Artifactor from "@truffle/artifactor";
 import Web3 from "web3";
 import Migrate from "@truffle/migrate";
@@ -190,7 +189,23 @@ export async function migrate(config) {
 }
 
 export async function gatherArtifacts(config) {
-  return Debug.gatherArtifacts(config);
+  // Gather all available contract artifacts
+  const files = fs.readdirSync(config.contracts_build_directory);
+
+  let contracts = files
+    .filter(filePath => {
+      return path.extname(filePath) === ".json";
+    })
+    .map(filePath => {
+      return path.basename(filePath, ".json");
+    })
+    .map(contractName => {
+      return config.resolver.require(contractName);
+    });
+
+  await Promise.all(contracts.map(abstraction => abstraction.detectNetwork()));
+
+  return contracts;
 }
 
 export function lineOf(searchString, source) {

@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.2.20",
+  "version": "0.2.21",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
@@ -17,12 +17,12 @@
   "types": "./typings/index.d.ts",
   "dependencies": {
     "@truffle/error": "^0.0.10",
-    "@truffle/interface-adapter": "^0.4.15",
+    "@truffle/interface-adapter": "^0.4.16",
     "web3": "1.2.1"
   },
   "devDependencies": {
     "ganache-core": "2.11.2",
-    "mocha": "8.0.1"
+    "mocha": "8.1.2"
   },
   "keywords": [
     "ethereum",
