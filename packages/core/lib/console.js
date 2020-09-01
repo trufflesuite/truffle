@@ -60,19 +60,21 @@ class Console extends EventEmitter {
 
   start() {
     try {
+      this.repl = repl.start({
+        prompt: "truffle(" + this.options.network + ")> ",
+        eval: this.interpret.bind(this)
+      });
+
       this.interfaceAdapter.getAccounts().then(fetchedAccounts => {
-        const abstractions = this.provision();
-
-        this.repl = repl.start({
-          prompt: "truffle(" + this.options.network + ")> ",
-          eval: this.interpret.bind(this)
-        });
-
         this.repl.context.web3 = this.web3;
         this.repl.context.interfaceAdapter = this.interfaceAdapter;
         this.repl.context.accounts = fetchedAccounts;
+      });
+      this.provision();
 
-        this.resetContractsInConsoleContext(abstractions);
+      //want repl to exit when it receives an exit command
+      this.repl.on("exit", () => {
+        process.exit();
       });
     } catch (error) {
       this.options.logger.log(
@@ -118,7 +120,6 @@ class Console extends EventEmitter {
     });
 
     this.resetContractsInConsoleContext(abstractions);
-
     return abstractions;
   }
 
@@ -130,6 +131,11 @@ class Console extends EventEmitter {
     abstractions.forEach(abstraction => {
       contextVars[abstraction.contract_name] = abstraction;
     });
+
+    // make sure the repl gets the new contracts in its context
+    Object.keys(contextVars || {}).forEach(key => {
+      this.repl.context[key] = contextVars[key];
+    });
   }
 
   runSpawn(inputStrings, options, callback) {
@@ -140,10 +146,12 @@ class Console extends EventEmitter {
       childPath = path.join(__dirname, "../lib/console-child.js");
     }
 
-    const spawnOptions = { stdio: ["inherit", "inherit", "inherit"] };
+    // stderr is piped here because we don't need to repeatedly see the parent
+    // errors/warnings in child process - specifically the error re: having
+    // multiple config files
+    const spawnOptions = { stdio: ["inherit", "inherit", "pipe"] };
 
     const spawnInput = "--network " + options.network + " -- " + inputStrings;
-
     try {
       spawnSync(
         "node",
@@ -151,18 +159,12 @@ class Console extends EventEmitter {
         spawnOptions
       );
 
-      try {
-        this.provision();
-      } catch (e) {
-        console.log(e);
-      }
+      // re-provision to ensure any changes are available in the repl
+      this.provision();
     } catch (err) {
       callback(err);
     }
-    //want repl to exit when it receives an exit command
-    this.repl.on("exit", () => {
-      process.exit();
-    });
+
     //display prompt when child repl process is finished
     this.repl.displayPrompt();
   }
@@ -244,6 +246,8 @@ class Console extends EventEmitter {
         breakOnSigint: true,
         filename: filename
       };
+
+      vm.createContext(context);
       return script.runInContext(context, options);
     };
 
