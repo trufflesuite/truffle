@@ -87,6 +87,7 @@ function* stepNext() {
   } while (
     !finished &&
     (!upcoming ||
+      upcoming.source.internal ||
       !upcoming.node ||
       isDeliberatelySkippedNodeType(upcoming.node) ||
       (upcoming.sourceRange.start === starting.sourceRange.start &&
