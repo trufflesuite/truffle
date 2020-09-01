@@ -38,6 +38,8 @@ export function shimArtifacts(
     contractName = contractName || <string>contract_name;
     //dunno what's up w/ the type of contract_name, but it needs coercing
 
+    debug("contractName: %s", contractName);
+
     let sourceObject: Source = {
       sourcePath,
       source,
@@ -59,7 +61,13 @@ export function shimArtifacts(
 
     //if files was passed, trust that to determine the source index
     if (files) {
-      let index = files.indexOf(sourcePath);
+      const index = files.indexOf(sourcePath);
+      debug("sourcePath: %s", sourceObject.sourcePath);
+      debug("given index: %d", index);
+      debug(
+        "sources: %o",
+        sources.map(source => source.sourcePath)
+      );
       sources[index] = sourceObject;
       sourceObject.id = index.toString(); //HACK
       contractObject.primarySourceId = index.toString();
@@ -67,68 +75,45 @@ export function shimArtifacts(
       //we just trust files.  If files is bad, then, uh, too bad.
     } else {
       //if files *wasn't* passed, attempt to determine it from the ast
-      //first: is this already there? only add it if it's not.
-      //(we determine this by sourcePath if present, and the actual source
-      //contents if not)
-      if (
-        sources.every(
-          existingSource =>
-            existingSource.sourcePath !== sourcePath ||
-            (!sourcePath &&
-              !existingSource.sourcePath &&
-              existingSource.source !== source)
-        )
-      ) {
-        let index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
-        if (
-          !unreliableSourceOrder &&
-          index !== undefined &&
-          !(index in sources)
-        ) {
-          sources[index] = sourceObject;
-          sourceObject.id = index.toString(); //HACK
-          contractObject.primarySourceId = index.toString();
-        } else {
-          //if we fail, set the unreliable source order flag
-          unreliableSourceOrder = true;
-        }
-        if (unreliableSourceOrder) {
-          //in case of unreliable source order, we'll ignore what indices
-          //things are *supposed* to have and just append things to the end
-          sourceObject.id = sources.length.toString(); //HACK
-          contractObject.primarySourceId = sources.length.toString();
-          sources.push(sourceObject); //these lines don't commute, obviously!
-        }
+      let index = sourceIndexForAst(sourceObject.ast); //sourceObject.ast for typing reasons
+      ({ index, unreliableSourceOrder } = getIndexToAddAt(
+        sourceObject,
+        index,
+        sources,
+        unreliableSourceOrder
+      ));
+      if (index !== null) {
+        sources[index] = {
+          ...sourceObject,
+          id: index.toString()
+        };
+        contractObject.primarySourceId = index.toString();
       }
     }
 
     //now: add internal sources
-    for (const { ast, contents, id: index, name } of [
+    for (let { ast, contents, id: index, name } of [
       ...(generatedSources || []),
       ...(deployedGeneratedSources || [])
     ]) {
       const generatedSourceObject = {
         sourcePath: name,
         source: contents,
-        ast,
+        ast: <Ast.AstNode>ast,
         compiler, //gotten from above
         internal: true
       };
-      //yes, this is largely copypasted from above
-      if (!unreliableSourceOrder && !(index in sources)) {
-        sources[index] = sourceObject;
-        sourceObject.id = index.toString(); //HACK
-        contractObject.primarySourceId = index.toString();
-      } else {
-        //if we fail, set the unreliable source order flag
-        unreliableSourceOrder = true;
-      }
-      if (unreliableSourceOrder) {
-        //in case of unreliable source order, we'll ignore what indices
-        //things are *supposed* to have and just append things to the end
-        sourceObject.id = sources.length.toString(); //HACK
-        contractObject.primarySourceId = sources.length.toString();
-        sources.push(sourceObject); //these lines don't commute, obviously!
+      ({ index, unreliableSourceOrder } = getIndexToAddAt(
+        generatedSourceObject,
+        index,
+        sources,
+        unreliableSourceOrder
+      ));
+      if (index !== null) {
+        sources[index] = {
+          ...generatedSourceObject,
+          id: index.toString()
+        };
       }
     }
 
@@ -207,7 +192,7 @@ export function getContractNode(
   }, undefined);
 }
 
-/*
+/**
  * extract the primary source from a source map
  * (i.e., the source for the first instruction, found
  * between the second and third colons)
@@ -216,4 +201,55 @@ export function getContractNode(
  */
 function extractPrimarySource(sourceMap: string): number {
   return parseInt(sourceMap.match(/^[^:]+:[^:]+:([^:]+):/)[1]);
+}
+
+function getIndexToAddAt(
+  sourceObject: Source,
+  index: number,
+  sources: Source[],
+  unreliableSourceOrder: boolean
+): { index: number | null; unreliableSourceOrder: boolean } {
+  //first: is this already there? only add it if it's not.
+  //(we determine this by sourcePath if present, and the actual source
+  //contents if not)
+  debug("sourcePath: %s", sourceObject.sourcePath);
+  debug("given index: %d", index);
+  debug(
+    "sources: %o",
+    sources.map(source => source.sourcePath)
+  );
+  if (
+    sources.every(
+      existingSource =>
+        existingSource.sourcePath !== sourceObject.sourcePath ||
+        (!sourceObject.sourcePath &&
+          !existingSource.sourcePath &&
+          existingSource.source !== sourceObject.source)
+    )
+  ) {
+    if (unreliableSourceOrder || index === undefined || index in sources) {
+      //if we can't add it at the correct spot, set the
+      //unreliable source order flag
+      debug("collision!");
+      unreliableSourceOrder = true;
+    }
+    //otherwise, just leave things alone
+    if (unreliableSourceOrder) {
+      //in case of unreliable source order, we'll ignore what indices
+      //things are *supposed* to have and just append things to the end
+      index = sources.length;
+    }
+    return {
+      index,
+      unreliableSourceOrder
+    };
+  } else {
+    //return index: null indicates don't add this because it's
+    //already present
+    debug("already present, not adding");
+    return {
+      index: null,
+      unreliableSourceOrder
+    };
+  }
 }
