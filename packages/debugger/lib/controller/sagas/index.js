@@ -68,11 +68,16 @@ function* advance(action) {
  * Note: It might take multiple instructions to express the same section of code.
  * "Stepping", then, is stepping to the next logical item, not stepping to the next
  * instruction. See advance() if you'd like to advance by one instruction.
+ *
+ * Note that if you are not in an internal source, this function will not stop in one
+ * (unless it hits the end of the trace); you will need to use advance() to get into
+ * one.  However, if you are already in an internal source, this function will not
+ * automatically step all the way out of it.
  */
 function* stepNext() {
   const starting = yield select(controller.current.location);
 
-  var upcoming, finished;
+  let upcoming, finished;
 
   do {
     // advance at least once step
@@ -87,7 +92,7 @@ function* stepNext() {
   } while (
     !finished &&
     (!upcoming ||
-      upcoming.source.internal ||
+      (upcoming.source.internal && !starting.source.internal) ||
       !upcoming.node ||
       isDeliberatelySkippedNodeType(upcoming.node) ||
       (upcoming.sourceRange.start === starting.sourceRange.start &&
