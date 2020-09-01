@@ -12,7 +12,7 @@ import * as Codec from "@truffle/codec";
 import solidity from "lib/solidity/selectors";
 
 const __EXTERNALS = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract ExternalsTester {
 
@@ -22,7 +22,7 @@ contract ExternalsTester {
 
   ExternalsBase base;
 
-  constructor() public {
+  constructor() {
     base = new ExternalsDerived();
   }
 
@@ -52,7 +52,7 @@ contract ExternalsDerived is ExternalsBase {
 `;
 
 const __INTERNALS = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract InternalsBase {
 
@@ -96,7 +96,7 @@ contract InternalsTest is InternalsBase {
     emit Log(2); //BREAK HERE (DEPLOYED)
   }
 
-  constructor() public {
+  constructor() {
     function() internal plainFn;
     function() internal derivedFn;
     function() internal baseFn;
@@ -119,17 +119,17 @@ let sources = {
   "InternalsTest.sol": __INTERNALS
 };
 
-describe("Function Pointer Decoding", function() {
+describe("Function Pointer Decoding", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -137,7 +137,7 @@ describe("Function Pointer Decoding", function() {
     compilations = prepared.compilations;
   });
 
-  it("Decodes external function pointers correctly", async function() {
+  it("Decodes external function pointers correctly", async function () {
     this.timeout(3000);
 
     let instance = await abstractions.ExternalsTester.deployed();
@@ -177,7 +177,7 @@ describe("Function Pointer Decoding", function() {
     assert.equal(variables.stackFn.value.abi.name, "doThing");
   });
 
-  it("Decodes internal function pointers correctly (deployed)", async function() {
+  it("Decodes internal function pointers correctly (deployed)", async function () {
     this.timeout(3000);
 
     let instance = await abstractions.InternalsTest.deployed();
@@ -213,7 +213,7 @@ describe("Function Pointer Decoding", function() {
     assert.include(variables, expectedResult);
   });
 
-  it("Decodes internal function pointers correctly (constructor)", async function() {
+  it("Decodes internal function pointers correctly (constructor)", async function () {
     this.timeout(3000);
 
     let receipt = await abstractions.InternalsTest.new();

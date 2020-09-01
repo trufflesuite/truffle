@@ -14,7 +14,7 @@ import trace from "lib/trace/selectors";
 import SolidityUtils from "@truffle/solidity-utils";
 
 const __VARIABLES = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract Variables {
   event Result(uint256 result);
@@ -46,17 +46,17 @@ let sources = {
   "Variables.sol": __VARIABLES
 };
 
-describe("AST", function() {
+describe("AST", function () {
   var provider;
 
   var abstractions;
   var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
@@ -64,8 +64,8 @@ describe("AST", function() {
     compilations = prepared.compilations;
   });
 
-  describe("Node pointer", function() {
-    it("traverses", async function() {
+  describe("Node pointer", function () {
+    it("traverses", async function () {
       this.timeout(6000);
       let instance = await abstractions.Variables.deployed();
       let receipt = await instance.stack(4);
