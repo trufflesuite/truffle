@@ -16,7 +16,8 @@ export interface MnemonicSigningAuthority {
 }
 
 export interface PrivateKeySigningAuthority {
-  privateKeys: PrivateKey[];
+  privateKeys?: PrivateKey[];
+  privateKey?: PrivateKey;
 }
 
 export type SigningAuthority =

@@ -7,5 +7,7 @@ export const getPrivateKeys = (
 ): PrivateKey[] | undefined => {
   if ("privateKeys" in signingAuthority) {
     return signingAuthority.privateKeys;
+  } else if ("privateKey" in signingAuthority && signingAuthority.privateKey) {
+    return [signingAuthority.privateKey];
   }
 };

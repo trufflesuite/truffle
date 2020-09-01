@@ -2,22 +2,26 @@ import { MnemonicPhrase, PrivateKey } from "./types";
 import { ConstructorArguments } from "./ConstructorArguments";
 import * as Constructor from "./Constructor";
 import * as LegacyConstructor from "./LegacyConstructor";
+import { validateMnemonic } from "ethereum-cryptography/bip39";
+import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 
 // check that the first argument is a mnemonic phrase
 const isMnemonicPhrase = (
   mnemonicPhraseOrPrivateKeys: MnemonicPhrase | PrivateKey[]
 ): mnemonicPhraseOrPrivateKeys is MnemonicPhrase =>
-  typeof mnemonicPhraseOrPrivateKeys === "string";
+  typeof mnemonicPhraseOrPrivateKeys === "string" &&
+  validateMnemonic(mnemonicPhraseOrPrivateKeys, wordlist);
 
-// check that the first argument is a list of private keys
+// check that the first argument is a list of private keys or a single key
 const isPrivateKeys = (
-  mnemonicPhraseOrPrivateKeys: MnemonicPhrase | PrivateKey[]
+  mnemonicPhraseOrPrivateKeys: PrivateKey | PrivateKey[]
 ): mnemonicPhraseOrPrivateKeys is PrivateKey[] =>
-  mnemonicPhraseOrPrivateKeys instanceof Array;
+  mnemonicPhraseOrPrivateKeys instanceof Array ||
+  typeof mnemonicPhraseOrPrivateKeys === "string";
 
 // turn polymorphic first argument into { mnemonic } or { privateKeys }
 const getSigningAuthorityOptions = (
-  mnemonicPhraseOrPrivateKeys: MnemonicPhrase | PrivateKey[]
+  mnemonicPhraseOrPrivateKeys: MnemonicPhrase | PrivateKey | PrivateKey[]
 ): Constructor.SigningAuthority => {
   if (isMnemonicPhrase(mnemonicPhraseOrPrivateKeys)) {
     return {
@@ -26,12 +30,13 @@ const getSigningAuthorityOptions = (
       }
     };
   } else if (isPrivateKeys(mnemonicPhraseOrPrivateKeys)) {
-    return {
-      privateKeys: mnemonicPhraseOrPrivateKeys
-    };
+    return typeof mnemonicPhraseOrPrivateKeys === "string" ?
+      { privateKeys: [ mnemonicPhraseOrPrivateKeys ] } :
+      { privateKeys: mnemonicPhraseOrPrivateKeys };
   } else {
     throw new Error(
-      `First argument to new HDWalletProvider() must be a mnemonic phrase or a list of private keys. ` +
+      `First argument to new HDWalletProvider() must be a mnemonic phrase, a ` +
+      `single private key, or a list of private keys. ` +
         `Received: ${JSON.stringify(mnemonicPhraseOrPrivateKeys)}`
     );
   }
@@ -79,7 +84,7 @@ const matchesNewOptions = (
   // beyond that, determine based on property inclusion check for required keys
   return (
     "providerOrUrl" in options &&
-    ("mnemonic" in options || "privateKeys" in options)
+    ("mnemonic" in options || "privateKeys" in options || "privateKey" in options)
   );
 };
 
