@@ -172,17 +172,16 @@ const Box = {
       force
     } = parseSandboxOptions(options);
 
+    const boxPath = name === "default" ? undefined : name;
+    //if the box name is "default", we will set the path to undefined
+    //in order to get the old default box from unbox
+
     if (setGracefulCleanup) tmp.setGracefulCleanup();
 
     let config = new Config();
     const tmpDir = tmp.dirSync({ unsafeCleanup });
     const unboxOptions = { logger, force };
-    await Box.unbox(
-      `https://github.com:trufflesuite/truffle-init-${name}`,
-      tmpDir.name,
-      unboxOptions,
-      config
-    );
+    await Box.unbox(boxPath, tmpDir.name, unboxOptions, config);
     return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
   }
 };
