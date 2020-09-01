@@ -30,7 +30,9 @@ export function shimArtifacts(
       source,
       ast,
       abi,
-      compiler
+      compiler,
+      generatedSources,
+      deployedGeneratedSources
     } = artifact;
 
     contractName = contractName || <string>contract_name;
@@ -97,6 +99,36 @@ export function shimArtifacts(
           contractObject.primarySourceId = sources.length.toString();
           sources.push(sourceObject); //these lines don't commute, obviously!
         }
+      }
+    }
+
+    //now: add internal sources
+    for (const { ast, contents, id: index, name } of [
+      ...(generatedSources || []),
+      ...(deployedGeneratedSources || [])
+    ]) {
+      const generatedSourceObject = {
+        sourcePath: name,
+        source: contents,
+        ast,
+        compiler, //gotten from above
+        internal: true
+      };
+      //yes, this is largely copypasted from above
+      if (!unreliableSourceOrder && !(index in sources)) {
+        sources[index] = sourceObject;
+        sourceObject.id = index.toString(); //HACK
+        contractObject.primarySourceId = index.toString();
+      } else {
+        //if we fail, set the unreliable source order flag
+        unreliableSourceOrder = true;
+      }
+      if (unreliableSourceOrder) {
+        //in case of unreliable source order, we'll ignore what indices
+        //things are *supposed* to have and just append things to the end
+        sourceObject.id = sources.length.toString(); //HACK
+        contractObject.primarySourceId = sources.length.toString();
+        sources.push(sourceObject); //these lines don't commute, obviously!
       }
     }
 
