@@ -782,14 +782,16 @@ var DebugUtils = {
     const { controller } = bugger.selectors;
     while (!bugger.view(controller.current.trace.finished)) {
       const source = bugger.view(controller.current.location.source);
-      const { compilationId, id } = source;
-      if (compilationId !== undefined && id !== undefined) {
+      const { compilationId, id, internal } = source;
+      //stepInto should skip internal sources, but there still might be
+      //one at the end
+      if (!internal && compilationId !== undefined && id !== undefined) {
         sources[compilationId] = {
           ...sources[compilationId],
           [id]: source
         };
       }
-      await bugger.stepNext();
+      await bugger.stepInto();
     }
     await bugger.reset();
     //flatten sources before returning
