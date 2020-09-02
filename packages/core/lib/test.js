@@ -202,8 +202,14 @@ const Test = {
     const updated =
       (await Profiler.updated(config.with({ resolver: testResolver }))) || [];
 
+    let compiler;
+    if (config.compileNone || config["--compile-none"]) {
+      compiler = "none";
+    }
+
     let compileConfig = config.with({
       all: config.compileAll === true,
+      compiler,
       files: updated.concat(solidityTestFiles),
       resolver: testResolver,
       quiet: config.runnerOutputOnly || config.quiet,
