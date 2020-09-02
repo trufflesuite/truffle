@@ -222,8 +222,8 @@ function getIndexToAddAt(
     sources.every(
       existingSource =>
         existingSource.sourcePath !== sourceObject.sourcePath ||
-        (!sourceObject.sourcePath &&
-          !existingSource.sourcePath &&
+        ((!sourceObject.sourcePath || sourceObject.internal) &&
+          (!existingSource.sourcePath || existingSource.internal) &&
           existingSource.source !== sourceObject.source)
     )
   ) {
