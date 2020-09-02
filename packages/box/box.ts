@@ -7,6 +7,8 @@ import fse from "fs-extra";
 import inquirer from "inquirer";
 import { sandboxOptions, unboxOptions } from "typings";
 
+const defaultPath = "https://github.com:trufflesuite/truffle-init-default";
+
 /*
  * accepts a number of different url and org/repo formats and returns the
  * format required by https://www.npmjs.com/package/download-git-repo for remote URLs
@@ -18,9 +20,7 @@ import { sandboxOptions, unboxOptions } from "typings";
  *   - git@github.com:<org>/<repo>[#branch]
  *   - path to local folder (absolute, relative or ~/home)
  */
-const normalizeSourcePath = (
-  url = "https://github.com:trufflesuite/truffle-init-default"
-) => {
+const normalizeSourcePath = (url = defaultPath) => {
   if (url.startsWith(".") || url.startsWith("/") || url.startsWith("~")) {
     return path.resolve(path.normalize(url));
   }
@@ -172,17 +172,18 @@ const Box = {
       force
     } = parseSandboxOptions(options);
 
+    const boxPath = name.replace(/^default(?=#|$)/, defaultPath);
+    //ordinarily, this line will have no effect.  however, if the name is "default",
+    //possibly with a branch specification, this replaces it appropriately
+    //(this is necessary in order to keep using trufflesuite/truffle-init-default
+    //instead of truffle-box/etc)
+
     if (setGracefulCleanup) tmp.setGracefulCleanup();
 
     let config = new Config();
     const tmpDir = tmp.dirSync({ unsafeCleanup });
     const unboxOptions = { logger, force };
-    await Box.unbox(
-      `https://github.com:trufflesuite/truffle-init-${name}`,
-      tmpDir.name,
-      unboxOptions,
-      config
-    );
+    await Box.unbox(boxPath, tmpDir.name, unboxOptions, config);
     return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
   }
 };
