@@ -23,6 +23,15 @@ class CLIDebugger {
   async run() {
     this.config.logger.log("Starting Truffle Debugger...");
 
+    const session = await this.connect();
+
+    // initialize prompt/breakpoints/ui logic
+    const interpreter = await this.buildInterpreter(session);
+
+    return interpreter;
+  }
+
+  async connect() {
     // get compilations (either by shimming compiled artifacts,
     // or by doing a recompile)
     const compilations = this.compilations || (await this.getCompilations());
@@ -30,10 +39,7 @@ class CLIDebugger {
     // invoke @truffle/debugger
     const session = await this.startDebugger(compilations);
 
-    // initialize prompt/breakpoints/ui logic
-    const interpreter = await this.buildInterpreter(session);
-
-    return interpreter;
+    return session;
   }
 
   async fetchExternalSources(bugger) {
