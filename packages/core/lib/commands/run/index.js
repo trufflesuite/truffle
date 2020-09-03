@@ -13,8 +13,10 @@ const command = {
   },
   run(options, done) {
     const Config = require("@truffle/config");
+    const { Environment } = require("@truffle/environment");
     const Plugin = require("./plugin");
     const Run = require("./run");
+
     const config = Config.detect(options);
 
     if (options._.length === 0) {
@@ -27,7 +29,9 @@ const command = {
 
     if (config.plugins) {
       let pluginConfigs = Plugin.load(config);
-      Run.run(pluginConfigs, customCommand, config, done);
+      Environment.detect(config).then(() => {
+        Run.run(pluginConfigs, customCommand, config, done);
+      });
     } else {
       console.error(
         "\nError: No plugins detected in the configuration file.\n"
