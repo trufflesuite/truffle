@@ -7,8 +7,6 @@ if [ "$WINDOWS" == true ] && [ "$GETH" = false ]; then
     mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
 elif [ "$GETH" == true ]; then
   mocha --timeout 50000 --grep '@ganache|@standalone' --invert --colors $@
-elif [ "$QUORUM" == true ]; then
-  mocha --timeout 50000 --grep @quorum --colors $@
 elif [ "$FABRICEVM" == true ]; then
   mocha --timeout 50000 --grep @fabric-evm --colors $@
 elif [ "$COVERAGE" == true ]; then
@@ -16,5 +14,5 @@ elif [ "$COVERAGE" == true ]; then
 elif [ "$INTEGRATION" == true ]; then
   mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
 else
-  yarn build-cli && mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
+  yarn build && mocha --no-warnings --timeout 7000 --grep @geth --invert --colors $@
 fi

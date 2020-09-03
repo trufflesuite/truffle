@@ -6,12 +6,16 @@ var command = {
     usage: "truffle publish",
     options: []
   },
-  run: function(options, done) {
+  run: function (options, done) {
     var Config = require("@truffle/config");
     var Package = require("../package");
 
     var config = Config.detect(options);
-    Package.publish(config, done);
+    Package.publish(config)
+      .then(() => {
+        return done();
+      })
+      .catch(done);
   }
 };
 

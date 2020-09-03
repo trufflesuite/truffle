@@ -13,7 +13,7 @@ import trace from "lib/trace/selectors";
 import solidity from "lib/solidity/selectors";
 
 const __PRECOMPILE = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract HasPrecompile {
   event Called();
@@ -45,48 +45,45 @@ const TEST_CASES = [
   }
 ];
 
-describe("Precompiled Contracts", () => {
+describe("Precompiled Contracts", function () {
   let provider;
 
   let abstractions;
-  let artifacts;
-  let files;
+  let compilations;
 
   // object where key is selector name, value is list of results at step
   let results = {};
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
-  before("Initialize results", () => {
+  before("Initialize results", function () {
     // initialize results as mapping of selector to step results list
     for (let { name } of TEST_CASES) {
       results[name] = [];
     }
   });
 
-  before("Step through debugger", async function() {
+  before("Step through debugger", async function () {
     let instance = await abstractions.HasPrecompile.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
     let bugger = await Debugger.forTx(txHash, {
       provider,
-      files,
-      contracts: artifacts
+      compilations,
+      lightMode: true
     });
 
-    let session = bugger.connect();
     var finished; // is the trace finished?
 
     do {
@@ -94,7 +91,7 @@ describe("Precompiled Contracts", () => {
         let stepResult;
 
         try {
-          stepResult = { value: session.view(selector) };
+          stepResult = { value: bugger.view(selector) };
         } catch (e) {
           stepResult = { error: e };
         }
@@ -102,19 +99,19 @@ describe("Precompiled Contracts", () => {
         results[name].push(stepResult);
       }
 
-      await session.advance();
-      finished = session.view(trace.finished);
+      await bugger.advance();
+      finished = bugger.view(trace.finished);
     } while (!finished);
   });
 
-  before("remove final step results", () => {
+  before("remove final step results", function () {
     // since these include one step past end of trace
     for (let { name } of TEST_CASES) {
       results[name].pop();
     }
   });
 
-  it("never fails to know the trace step", async () => {
+  it("never fails to know the trace step", async function () {
     // remove last item (known to be undefined)
     const result = results["trace.step"];
 
@@ -127,7 +124,7 @@ describe("Precompiled Contracts", () => {
     }
   });
 
-  it("never fails to know EVM context", async () => {
+  it("never fails to know EVM context", async function () {
     const result = results["evm.current.context"];
 
     for (let step of result) {
@@ -140,7 +137,7 @@ describe("Precompiled Contracts", () => {
     }
   });
 
-  it("never throws an exception for missing source range", async () => {
+  it("never throws an exception for missing source range", async function () {
     const result = results["solidity.current.sourceRange"];
 
     for (let step of result) {

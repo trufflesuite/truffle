@@ -1,88 +1,26 @@
-/*
- * returns a VCS url string given:
- * - a VCS url string
- * - a github `org/repo` string
- * - a string containing a repo under the `truffle-box` org
- */
-function normalizeURL(
-  url = "https://github.com/trufflesuite/truffle-init-default"
-) {
-  // full URL already
-  if (url.includes("://") || url.includes("git@")) {
-    return url;
+const normalizeDestination = (destination, workingDirectory) => {
+  if (!destination) {
+    return workingDirectory;
   }
-
-  if (url.split("/").length === 2) {
-    // `org/repo`
-    return `https://github.com/${url}`;
-  }
-
-  if (!url.includes("/")) {
-    // repo name only
-    if (!url.includes("-box")) {
-      // check for branch
-      if (!url.includes("#")) {
-        url = `${url}-box`;
-      } else {
-        const index = url.indexOf("#");
-        url = `${url.substr(0, index)}-box${url.substr(index)}`;
-      }
-    }
-    return `https://github.com/truffle-box/${url}`;
-  }
-  throw new Error("Box specified in invalid format");
-}
-
-function normalizeDestination(destination, working_directory) {
   const path = require("path");
   if (path.isAbsolute(destination)) return destination;
-  return path.join(working_directory, destination);
-}
-
-function normalizeInput([url, subDir]) {
-  // The subDir argument will override paths in the url
-  let destination = subDir ? subDir : "";
-  let parsedUrl;
-  try {
-    // attempts to parse url from :path/to/subDir
-    parsedUrl = url.match(/(.*):/)[1];
-    // handles instance where full url is being passed w/o a path in url
-    if (parsedUrl.includes("http") && !parsedUrl.includes("//")) {
-      return { url, destination };
-    }
-    // handles instance where git@ is being passed w/o a path in url
-    if (parsedUrl.includes("git") && !parsedUrl.includes("/")) {
-      return { url, destination };
-    }
-  } catch (_) {
-    // return url if regex fails (no path specified in url)
-    return { url, destination };
-  }
-
-  if (destination !== "") return { url, destination };
-
-  try {
-    // if a path was specified in the url
-    destination = url.match(/:(?!\/)(.*)/)[1]; // enforces relative paths
-    // parses again if passed url git@ with path
-    if (parsedUrl.includes("git@"))
-      destination = destination.match(/:(?!\/)(.*)/)[1];
-  } catch (_) {
-    throw new Error(
-      `${url} not allowed! Please use a relative path (:path/to/subDir)`
-    );
-  }
-  // returns the parsed url & relative path
-  return { url: parsedUrl, destination };
-}
+  return path.join(workingDirectory, destination);
+};
 
 const command = {
   command: "unbox",
   description: "Download a Truffle Box, a pre-built Truffle project",
   builder: {},
   help: {
-    usage: "truffle unbox [<box_name>] [--force]",
+    usage: "truffle unbox [destination] [<box_name>] [--force]",
     options: [
+      {
+        option: "destination",
+        description:
+          "Path to the directory in which you would like " +
+          "to unbox the project files. If destination is\n                  " +
+          "  not provided, this defaults to the current directory."
+      },
       {
         option: "<box_name>",
         description:
@@ -105,8 +43,7 @@ const command = {
 
     const config = Config.default().with({ logger: console });
 
-    let { url, destination } = normalizeInput(options._);
-    url = normalizeURL(url);
+    let [url, destination] = options._;
 
     const normalizedDestination = normalizeDestination(
       destination,

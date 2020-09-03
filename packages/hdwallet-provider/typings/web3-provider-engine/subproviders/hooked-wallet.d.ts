@@ -1,1 +1,1 @@
-declare module "web3-provider-engine/subproviders/hooked-wallet";
+declare module "@trufflesuite/web3-provider-engine/subproviders/hooked-wallet";

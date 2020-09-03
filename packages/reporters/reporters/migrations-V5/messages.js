@@ -29,6 +29,10 @@ class MigrationsMessages {
     return `MIGRATION_STATUS:${JSON.stringify(msg)}`;
   }
 
+  decAndHex(num) {
+    return `${Number(num).toString(10)} (0x${Number(num).toString(16)})`;
+  }
+
   // ----------------------------------- Interactions ----------------------------------------------
 
   questions(kind) {
@@ -63,9 +67,7 @@ class MigrationsMessages {
       noLibName: () => `${prefix}Cannot link a library with no name.\n`,
 
       noLibAddress: () =>
-        `${prefix}"${
-          data.contract.contractName
-        }" has no address. Has it been deployed?\n`,
+        `${prefix}"${data.contract.contractName}" has no address. Has it been deployed?\n`,
 
       noBytecode: () =>
         `${prefix}"${data.contract.contractName}" ` +
@@ -81,14 +83,14 @@ class MigrationsMessages {
       intWithGas: () =>
         `${prefix}"${data.contract.contractName}" ran out of gas ` +
         `(using a value you set in your network config or deployment parameters.)\n` +
-        `   * Block limit:  ${data.blockLimit}\n` +
-        `   * Gas sent:     ${data.gas}\n`,
+        `   * Block limit:  ${this.decAndHex(data.blockLimit)}\n` +
+        `   * Gas sent:     ${this.decAndHex(data.gas)}\n`,
 
       intNoGas: () =>
         `${prefix}"${data.contract.contractName}" ran out of gas ` +
         `(using Truffle's estimate.)\n` +
-        `   * Block limit:  ${data.blockLimit}\n` +
-        `   * Gas sent:     ${data.estimate}\n` +
+        `   * Block limit:  ${this.decAndHex(data.blockLimit)}\n` +
+        `   * Gas sent:     ${this.decAndHex(data.estimate)}\n` +
         `   * Try:\n` +
         `      + Setting a higher gas estimate multiplier for this contract\n` +
         `      + Using the solc optimizer settings in 'truffle-config.js'\n` +
@@ -98,9 +100,7 @@ class MigrationsMessages {
         `        private network or test client (like ganache).\n`,
 
       oogNoGas: () =>
-        `${prefix}"${
-          data.contract.contractName
-        }" ran out of gas. Something in the constructor ` +
+        `${prefix}"${data.contract.contractName}" ran out of gas. Something in the constructor ` +
         `(ex: infinite loop) caused gas estimation to fail. Try:\n` +
         `   * Making your contract constructor more efficient\n` +
         `   * Setting the gas manually in your config or as a deployment parameter\n` +
@@ -109,32 +109,24 @@ class MigrationsMessages {
         `     private network or test client (like ganache).\n`,
 
       rvtReason: () =>
-        `${prefix}"${
-          data.contract.contractName
-        }" hit a require or revert statement ` +
+        `${prefix}"${data.contract.contractName}" hit a require or revert statement ` +
         `with the following reason given:\n` +
         `   * ${data.reason}\n`,
 
       rvtNoReason: () =>
-        `${prefix}"${
-          data.contract.contractName
-        }" hit a require or revert statement ` +
+        `${prefix}"${data.contract.contractName}" hit a require or revert statement ` +
         `somewhere in its constructor. Try:\n` +
         `   * Verifying that your constructor params satisfy all require conditions.\n` +
         `   * Adding reason strings to your require statements.\n`,
 
       asrtNoReason: () =>
-        `${prefix}"${
-          data.contract.contractName
-        }" hit an invalid opcode while deploying. Try:\n` +
+        `${prefix}"${data.contract.contractName}" hit an invalid opcode while deploying. Try:\n` +
         `   * Verifying that your constructor params satisfy all assert conditions.\n` +
         `   * Verifying your constructor code doesn't access an array out of bounds.\n` +
         `   * Adding reason strings to your assert statements.\n`,
 
       noMoney: () =>
-        `${prefix}"${
-          data.contract.contractName
-        }" could not deploy due to insufficient funds\n` +
+        `${prefix}"${data.contract.contractName}" could not deploy due to insufficient funds\n` +
         `   * Account:  ${data.from}\n` +
         `   * Balance:  ${data.balance} wei\n` +
         `   * Message:  ${data.error.message}\n` +
@@ -145,8 +137,8 @@ class MigrationsMessages {
       blockWithGas: () =>
         `${prefix}"${data.contract.contractName}" exceeded the block limit ` +
         `(with a gas value you set).\n` +
-        `   * Block limit:  ${data.blockLimit}\n` +
-        `   * Gas sent:     ${data.gas}\n` +
+        `   * Block limit:  ${this.decAndHex(data.blockLimit)}\n` +
+        `   * Gas sent:     ${this.decAndHex(data.gas)}\n` +
         `   * Try:\n` +
         `      + Sending less gas.\n` +
         `      + Setting a higher network block limit if you are on a\n` +
@@ -155,22 +147,18 @@ class MigrationsMessages {
       blockNoGas: () =>
         `${prefix}"${data.contract.contractName}" exceeded the block limit ` +
         `(using Truffle's estimate).\n` +
-        `   * Block limit: ${data.blockLimit}\n` +
+        `   * Block limit: ${this.decAndHex(data.blockLimit)}\n` +
         `   * Report this error in the Truffle issues on Github. It should not happen.\n` +
         `   * Try: setting gas manually in 'truffle-config.js' or as parameter to 'deployer.deploy'\n`,
 
       nonce: () =>
-        `${prefix}"${data.contract.contractName}" received: ${
-          data.error.message
-        }.\n` +
+        `${prefix}"${data.contract.contractName}" received: ${data.error.message}.\n` +
         `   * This error is common when Infura is under heavy network load.\n` +
         `   * Try: setting the 'confirmations' key in your network config\n` +
         `          to wait for several block confirmations between each deployment.\n`,
 
       geth: () =>
-        `${prefix}"${
-          data.contract.contractName
-        }" received a generic error from Geth that\n` +
+        `${prefix}"${data.contract.contractName}" received a generic error from Geth that\n` +
         `can be caused by hitting revert in a contract constructor or running out of gas.\n` +
         `   * ${data.estimateError.message}.\n` +
         `   * Try: + using the '--dry-run' option to reproduce this failure with clearer errors.\n` +
@@ -273,7 +261,7 @@ class MigrationsMessages {
         output +=
           `   > ${"account:".padEnd(20)} ${data.from}\n` +
           `   > ${"balance:".padEnd(20)} ${data.balance}\n` +
-          `   > ${"gas used:".padEnd(20)} ${data.gas}\n` +
+          `   > ${"gas used:".padEnd(20)} ${self.decAndHex(data.gas)}\n` +
           `   > ${"gas price:".padEnd(20)} ${data.gasPrice} gwei\n` +
           `   > ${"value sent:".padEnd(20)} ${data.value} ETH\n` +
           `   > ${"total cost:".padEnd(20)} ${data.cost} ETH\n`;
@@ -314,9 +302,7 @@ class MigrationsMessages {
       linking: () => {
         let output =
           self.underline(`Linking`) +
-          `\n   * Contract: ${data.contractName} <--> Library: ${
-            data.libraryName
-          } `;
+          `\n   * Contract: ${data.contractName} <--> Library: ${data.libraryName} `;
 
         if (!reporter.migration.dryRun)
           output += `(at address: ${data.libraryAddress})`;
@@ -395,7 +381,7 @@ class MigrationsMessages {
         output +=
           `> Network name:    '${data.network}'\n` +
           `> Network id:      ${data.networkId}\n` +
-          `> Block gas limit: ${data.blockLimit}\n`;
+          `> Block gas limit: ${self.decAndHex(data.blockLimit)}\n`;
 
         return output;
       },

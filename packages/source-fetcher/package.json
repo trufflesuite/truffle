@@ -1,0 +1,44 @@
+{
+  "name": "@truffle/source-fetcher",
+  "description": "Fetches verified source code from services such as Etherscan",
+  "license": "MIT",
+  "author": "Harry Altman <harry@trufflesuite.com>",
+  "homepage": "https://github.com/trufflesuite/truffle#readme",
+  "repository": "https://github.com/trufflesuite/truffle/tree/master/packages/source-fetcher",
+  "bugs": {
+    "url": "https://github.com/trufflesuite/truffle/issues"
+  },
+  "version": "0.2.3",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "yarn build"
+  },
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "debug": "^4.1.1",
+    "request-promise-native": "^1.0.8",
+    "source-map-support": "^0.5.19"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/request-promise-native": "^1.0.17",
+    "typescript": "3.9.6"
+  },
+  "keywords": [
+    "ethereum",
+    "etherscan",
+    "ipfs",
+    "solidity",
+    "verify-source"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

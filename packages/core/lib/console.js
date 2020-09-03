@@ -57,6 +57,9 @@ class Console extends EventEmitter {
 
     // Bubble the ReplManager's exit event
     this.repl.on("exit", () => this.emit("exit"));
+
+    // Bubble the ReplManager's reset event
+    this.repl.on("reset", () => this.emit("reset"));
   }
 
   start(callback) {
@@ -98,7 +101,7 @@ class Console extends EventEmitter {
       const unfilteredFiles = fse.readdirSync(
         this.options.contracts_build_directory
       );
-      files = unfilteredFiles.filter(file => file.match(".json") !== null);
+      files = unfilteredFiles.filter(file => file.endsWith(".json"));
     } catch (error) {
       // Error reading the build directory? Must mean it doesn't exist or we don't have access to it.
       // Couldn't provision the contracts if we wanted. It's possible we're hiding very rare FS
@@ -193,7 +196,12 @@ class Console extends EventEmitter {
     // If our code includes an await, add special processing to ensure it's evaluated properly.
     if (match) {
       let assign = match[1];
-      const expression = match[2];
+
+      const expression =
+        match[2] && match[2].endsWith(";")
+          ? // strip off trailing ";" to prevent the expression below from erroring
+            match[2].slice(0, -1)
+          : match[2];
 
       const RESULT = "__await_outside_result";
 

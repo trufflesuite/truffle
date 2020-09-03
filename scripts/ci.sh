@@ -28,22 +28,22 @@ run_geth() {
     GETH_PID=$!
   else
     sudo apt install -y jq
-    docker pull ethereum/client-go:latest
+    docker pull ethereum/client-go:stable
     docker run \
     -v /$PWD/scripts:/scripts \
     -d \
     -p 8545:8545 \
     -p 8546:8546 \
     -p 30303:30303 \
-    ethereum/client-go:latest \
+    ethereum/client-go:stable \
     $GETH_OPTIONS > /dev/null
   fi
 }
 
 if [ "$WINDOWS" = true ]; then
   if [ "$GETH" = true ]; then
-    # Do not quit if first test fails because we still have to run other test and then KILL!!! Geth. 
-    set +o errexit 
+    # Do not quit if first test fails because we still have to run other test and then KILL!!! Geth.
+    set +o errexit
     run_geth
     sleep 30
     lerna run --scope truffle test --stream -- --exit
@@ -60,7 +60,7 @@ if [ "$WINDOWS" = true ]; then
 
 elif [ "$INTEGRATION" = true ]; then
 
-sudo apt install -y jq
+  sudo apt install -y jq
   lerna run --scope truffle test --stream
 
 elif [ "$GETH" = true ]; then
@@ -69,18 +69,6 @@ elif [ "$GETH" = true ]; then
   sleep 30
   lerna run --scope truffle test --stream -- --exit
   lerna run --scope @truffle/contract test --stream -- --exit
-
-elif [ "$QUORUM" = true ]; then
-
-  sudo rm /usr/local/bin/docker-compose
-  curl -L https://github.com/docker/compose/releases/download/1.21.0/docker-compose-`uname -s`-`uname -m` > docker-compose
-  chmod +x docker-compose
-  sudo mv docker-compose /usr/local/bin
-  git clone https://github.com/jpmorganchase/quorum-examples
-  cd quorum-examples
-  docker-compose up -d
-  sleep 90
-  lerna run --scope truffle test --stream -- --exit
 
 elif [ "$COLONY" = true ]; then
 

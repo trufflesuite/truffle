@@ -1,15 +1,21 @@
-import * as bip39 from "bip39";
+import "source-map-support/register";
+import * as bip39 from "ethereum-cryptography/bip39";
+import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 import * as EthUtil from "ethereumjs-util";
 import ethJSWallet from "ethereumjs-wallet";
 import EthereumHDKey from "ethereumjs-wallet/hdkey";
 import Transaction from "ethereumjs-tx";
-import ProviderEngine from "web3-provider-engine";
-import FiltersSubprovider from "web3-provider-engine/subproviders/filters";
-import NonceSubProvider from "web3-provider-engine/subproviders/nonce-tracker";
-import HookedSubprovider from "web3-provider-engine/subproviders/hooked-wallet";
-import ProviderSubprovider from "web3-provider-engine/subproviders/provider";
+// @ts-ignore
+import ProviderEngine from "@trufflesuite/web3-provider-engine";
+import FiltersSubprovider from "@trufflesuite/web3-provider-engine/subproviders/filters";
+import NonceSubProvider from "@trufflesuite/web3-provider-engine/subproviders/nonce-tracker";
+import HookedSubprovider from "@trufflesuite/web3-provider-engine/subproviders/hooked-wallet";
+import ProviderSubprovider from "@trufflesuite/web3-provider-engine/subproviders/provider";
+// @ts-ignore
+import RpcProvider from "@trufflesuite/web3-provider-engine/subproviders/rpc";
+// @ts-ignore
+import WebsocketProvider from "@trufflesuite/web3-provider-engine/subproviders/websocket";
 import Url from "url";
-import Web3 from "web3";
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from "ethereum-protocol";
 import { Callback, JsonRPCResponse } from "web3/providers";
 
@@ -66,10 +72,10 @@ class HDWalletProvider {
     // private helper to check if given mnemonic uses BIP39 passphrase protection
     const checkBIP39Mnemonic = (mnemonic: string) => {
       this.hdwallet = EthereumHDKey.fromMasterSeed(
-        bip39.mnemonicToSeed(mnemonic)
+        bip39.mnemonicToSeedSync(mnemonic)
       );
 
-      if (!bip39.validateMnemonic(mnemonic)) {
+      if (!bip39.validateMnemonic(mnemonic, wordlist)) {
         throw new Error("Mnemonic invalid or undefined");
       }
 
@@ -158,19 +164,26 @@ class HDWalletProvider {
 
     this.engine.addProvider(new FiltersSubprovider());
     if (typeof provider === "string") {
-      // shim Web3 to give it expected sendAsync method. Needed if web3-engine-provider upgraded!
-      // Web3.providers.HttpProvider.prototype.sendAsync =
-      // Web3.providers.HttpProvider.prototype.send;
-      this.engine.addProvider(
-        new ProviderSubprovider(
-          // @ts-ignore
-          new Web3.providers.HttpProvider(provider, { keepAlive: false })
-        )
-      );
+      const providerProtocol = (
+        Url.parse(provider).protocol || "http:"
+      ).toLowerCase();
+
+      switch (providerProtocol) {
+        case "ws:":
+        case "wss:":
+          this.engine.addProvider(new WebsocketProvider({ rpcUrl: provider }));
+          break;
+        default:
+          this.engine.addProvider(new RpcProvider({ rpcUrl: provider }));
+      }
     } else {
       this.engine.addProvider(new ProviderSubprovider(provider));
     }
-    this.engine.start(); // Required by the provider engine.
+
+    // Required by the provider engine.
+    this.engine.start((err: any) => {
+      if (err) throw err;
+    });
   }
 
   public send(

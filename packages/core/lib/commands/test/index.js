@@ -7,6 +7,11 @@ const command = {
       type: "boolean",
       default: false
     },
+    "compile-all-debug": {
+      describe: "Compile in debug mode",
+      type: "boolean",
+      default: false
+    },
     "debug": {
       describe: "Enable in-test debugging",
       type: "boolean",
@@ -20,11 +25,28 @@ const command = {
       describe: "Suppress all output except for test runner output.",
       type: "boolean",
       default: false
+    },
+    "bail": {
+      alias: "b",
+      describe: "Bail after first test failure",
+      type: "boolean",
+      default: false
+    },
+    "stacktrace": {
+      alias: "t",
+      describe: "Produce Solidity stacktraces",
+      type: "boolean",
+      default: false
+    },
+    "stacktrace-extra": {
+      describe: "Produce Solidity stacktraces and compile in debug mode",
+      type: "boolean",
+      default: false
     }
   },
   help: {
     usage:
-      "truffle test [<test_file>] [--compile-all] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>]",
+      "truffle test [<test_file>] [--compile-all[-debug]] [--network <name>] [--verbose-rpc] [--show-events] [--debug] [--debug-global <identifier>] [--bail] [--stacktrace[-extra]]",
     options: [
       {
         option: "<test_file>",
@@ -37,6 +59,12 @@ const command = {
         description:
           "Compile all contracts instead of intelligently choosing which contracts need " +
           "to be compiled."
+      },
+      {
+        option: "--compile-all-debug",
+        description:
+          "Compile all contracts and do so in debug mode for extra revert info.  May " +
+          "cause errors on large\n                    contracts."
       },
       {
         option: "--network <name>",
@@ -67,10 +95,25 @@ const command = {
       {
         option: "--runner-output-only",
         description: "Suppress all output except for test runner output."
+      },
+      {
+        option: "--bail",
+        description: "Bail after first test failure.  Alias: -b"
+      },
+      {
+        option: "--stacktrace",
+        description:
+          "Allows for mixed JS/Solidity stacktraces when a Truffle Contract transaction " +
+          "or deployment\n                    reverts.  Does not apply to calls or gas estimates.  " +
+          "Implies --compile-all.  Experimental.  Alias: -t"
+      },
+      {
+        option: "--stacktrace-extra",
+        description: "Shortcut for --stacktrace --compile-all-debug."
       }
     ]
   },
-  run: function(options, done) {
+  run: function (options, done) {
     const Config = require("@truffle/config");
     const { Environment, Develop } = require("@truffle/environment");
     const {
@@ -92,8 +135,14 @@ const command = {
       Environment.detect(config).catch(done);
     }
 
-    // enables in-test debug() interrupt, forcing compileAll
-    if (config.debug) config.compileAll = true;
+    if (config.stacktraceExtra) {
+      config.stacktrace = true;
+      config.compileAllDebug = true;
+    }
+    // enables in-test debug() interrupt, or stacktraces, forcing compileAll
+    if (config.debug || config.stacktrace || config.compileAllDebug) {
+      config.compileAll = true;
+    }
 
     let ipcDisconnect, files;
     try {
@@ -123,39 +172,42 @@ const command = {
         })
         .catch(done);
     } else {
+      const getPort = require("get-port");
       const ipcOptions = { network: "test" };
 
-      const ganacheOptions = {
-        host: "127.0.0.1",
-        port: 7545,
-        network_id: 4447,
-        mnemonic:
-          "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
-        gasLimit: config.gas,
-        noVMErrorsOnRPCResponse: true,
-        time: config.genesis_time
-      };
-      Develop.connectOrStart(
-        ipcOptions,
-        ganacheOptions,
-        (started, disconnect) => {
+      let ganacheOptions;
+      getPort()
+        .then(port => {
+          ganacheOptions = {
+            host: "127.0.0.1",
+            port,
+            network_id: 4447,
+            mnemonic:
+              "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat",
+            gasLimit: config.gas,
+            time: config.genesis_time
+          };
+        })
+        .then(() => {
+          return Develop.connectOrStart(ipcOptions, ganacheOptions);
+        })
+        .then(({ disconnect }) => {
           ipcDisconnect = disconnect;
-          Environment.develop(config, ganacheOptions)
-            .then(() => copyArtifactsToTempDir(config))
-            .then(({ config, temporaryDirectory }) => {
-              return prepareConfigAndRunTests({
-                config,
-                files,
-                temporaryDirectory
-              });
-            })
-            .then(numberOfFailures => {
-              done.call(null, numberOfFailures);
-              ipcDisconnect();
-            })
-            .catch(done);
-        }
-      );
+          return Environment.develop(config, ganacheOptions);
+        })
+        .then(() => copyArtifactsToTempDir(config))
+        .then(({ config, temporaryDirectory }) => {
+          return prepareConfigAndRunTests({
+            config,
+            files,
+            temporaryDirectory
+          });
+        })
+        .then(numberOfFailures => {
+          done.call(null, numberOfFailures);
+          ipcDisconnect();
+        })
+        .catch(done);
     }
   }
 };

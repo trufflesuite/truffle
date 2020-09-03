@@ -3,33 +3,30 @@ import { combineReducers } from "redux";
 import * as actions from "./actions";
 
 const DEFAULT_SOURCES = {
-  byId: {}
+  byCompilationId: {} //by compilation, then in an array
 };
 
 function sources(state = DEFAULT_SOURCES, action) {
   switch (action.type) {
     /*
-     * Adding a new source
+     * Adding new sources
      */
-    case actions.ADD_SOURCE:
-      let { ast, source, sourcePath, compiler } = action;
-
-      let id = Object.keys(state.byId).length;
-
+    case actions.ADD_SOURCES:
+      //NOTE: this code assumes that we are only ever adding compilations
+      //wholesale, and never adding to existing ones!
       return {
-        byId: {
-          ...state.byId,
-
-          [id]: {
-            id,
-            ast,
-            source,
-            sourcePath,
-            compiler
-          }
+        byCompilationId: {
+          ...state.byCompilationId,
+          ...Object.assign(
+            {},
+            ...Object.entries(action.compilations).map(([id, compilation]) => ({
+              [id]: {
+                byId: compilation
+              }
+            }))
+          )
         }
       };
-
     /*
      * Default case
      */
@@ -79,12 +76,6 @@ function nextFrameIsPhantom(state = null, action) {
       return false;
     case actions.EXTERNAL_RETURN:
       return false;
-    case actions.JUMP:
-      if (action.jumpDirection === "o") {
-        return false;
-      } else {
-        return state;
-      }
     case actions.EXTERNAL_CALL:
       return action.guard;
     case actions.RESET:

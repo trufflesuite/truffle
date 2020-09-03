@@ -23,7 +23,12 @@ import {
   AddressValue,
   StringValue,
   FixedValue,
-  UfixedValue
+  UfixedValue,
+  EnumValue,
+  ContractValue,
+  ContractValueInfo,
+  ContractValueInfoKnown,
+  ContractValueInfoUnknown
 } from "./elementary";
 import * as Common from "@truffle/codec/common";
 import * as AbiData from "@truffle/codec/abi-data/types";
@@ -47,8 +52,6 @@ export type Result =
   | TupleResult
   | MagicResult
   | TypeResult
-  | EnumResult
-  | ContractResult
   | FunctionExternalResult
   | FunctionInternalResult;
 /**
@@ -64,13 +67,11 @@ export type Value =
   | TupleValue
   | MagicValue
   | TypeValue
-  | EnumValue
-  | ContractValue
   | FunctionExternalValue
   | FunctionInternalValue;
 
 /*
- * SECTION 2: Elementary values
+ * SECTION 2: Built-in elementary types
  */
 
 //NOTE: for technical reasons, the actual Value type definitions have been moved
@@ -90,7 +91,10 @@ export type ElementaryResult =
   | AddressResult
   | StringResult
   | FixedResult
-  | UfixedResult;
+  | UfixedResult
+  | EnumResult
+  | ContractResult;
+
 /**
  * A bytestring value or error (static or dynamic)
  *
@@ -166,7 +170,25 @@ export type FixedResult = FixedValue | Errors.FixedErrorResult;
 export type UfixedResult = UfixedValue | Errors.UfixedErrorResult;
 
 /*
- * SECTION 3: CONTAINER TYPES (including magic)
+ * SECTION 3: User-defined elementary types
+ */
+
+/**
+ * An enum value or error
+ *
+ * @Category User-defined elementary types
+ */
+export type EnumResult = EnumValue | Errors.EnumErrorResult;
+
+/**
+ * A contract value or error
+ *
+ * @Category User-defined elementary types
+ */
+export type ContractResult = ContractValue | Errors.ContractErrorResult;
+
+/*
+ * SECTION 4: Container types (including magic)
  */
 
 /**
@@ -296,7 +318,8 @@ export interface MagicValue {
 }
 
 /**
- * A type's value (or error)
+ * A type's value (or error); currently only allows contract types and
+ * enum types
  *
  * @Category Special container types (debugger-only)
  */
@@ -305,12 +328,20 @@ export type TypeResult = TypeValue | Errors.TypeErrorResult;
 /**
  * A type's value -- for now, we consider the value of a contract type to
  * consist of the values of its non-inherited state variables in the current
- * context.  May contain errors.
+ * context, and the value of an enum type to be an array of its possible options
+ * (as Values).  May contain errors.
  *
  * @Category Special container types (debugger-only)
  */
-export interface TypeValue {
-  type: Types.TypeType;
+export type TypeValue = TypeValueContract | TypeValueEnum;
+
+/**
+ * A contract type's value (see [[TypeValue]])
+ *
+ * @Category Special container types (debugger-only)
+ */
+export interface TypeValueContract {
+  type: Types.TypeTypeContract;
   kind: "value";
   /**
    * these must be stored in order!
@@ -318,107 +349,22 @@ export interface TypeValue {
   value: NameValuePair[];
 }
 
-/*
- * SECTION 4: ENUMS
- * (they didn't fit anywhere else :P )
- */
-
 /**
- * An enum value or error
+ * An enum type's value (see [[TypeValue]])
  *
- * @Category Other user-defined types
+ * @Category Special container types (debugger-only)
  */
-export type EnumResult = EnumValue | Errors.EnumErrorResult;
-
-/**
- * An enum value
- *
- * @Category Other user-defined types
- */
-export interface EnumValue {
-  type: Types.EnumType;
+export interface TypeValueEnum {
+  type: Types.TypeTypeEnum;
   kind: "value";
-  value: {
-    name: string;
-    /**
-     * the numeric value of the enum
-     */
-    numericAsBN: BN;
-  };
+  /**
+   * these must be stored in order!
+   */
+  value: EnumValue[];
 }
 
 /*
- * SECTION 5: CONTRACTS
- */
-
-/**
- * A contract value or error
- *
- * @Category Other user-defined types
- */
-export type ContractResult = ContractValue | Errors.ContractErrorResult;
-
-/**
- * A contract value; see [[ContractValueInfo]] for more detail
- *
- * @Category Other user-defined types
- */
-export interface ContractValue {
-  type: Types.ContractType;
-  kind: "value";
-  value: ContractValueInfo;
-}
-
-/**
- * There are two types -- one for contracts whose class we can identify, and one
- * for when we can't identify the class.
- *
- * @Category Other user-defined types
- */
-export type ContractValueInfo =
-  | ContractValueInfoKnown
-  | ContractValueInfoUnknown;
-
-/**
- * This type of ContractValueInfo is used when we can identify the class.
- *
- * @Category Other user-defined types
- */
-export interface ContractValueInfoKnown {
-  kind: "known";
-  /**
-   * formatted as address (leading "0x", checksum-cased);
-   * note that this is not an AddressResult!
-   */
-  address: string;
-  /**
-   * this is just a hexstring; no checksum (also may have padding beforehand)
-   */
-  rawAddress?: string;
-  class: Types.ContractType;
-  //may have more optional members defined later, but I'll leave these out for now
-}
-
-/**
- * This type of ContractValueInfo is used when we can't identify the class.
- *
- * @Category Other user-defined types
- */
-export interface ContractValueInfoUnknown {
-  kind: "unknown";
-  /**
-   * formatted as address (leading "0x", checksum-cased);
-   * note that this is not an AddressResult!
-   */
-  address: string;
-  /**
-   * this is just a hexstring; no checksum (also may have padding beforehand)
-   */
-  rawAddress?: string;
-}
-
-/*
- * SECTION 6: External functions
+ * SECTION 5: External functions
  */
 
 /**
@@ -499,7 +445,7 @@ export interface FunctionExternalValueInfoUnknown {
 }
 
 /*
- * SECTION 7: INTERNAL FUNCTIONS
+ * SECTION 6: Internal functions
  */
 
 /**
@@ -567,13 +513,16 @@ export interface FunctionInternalValueInfoException {
 }
 
 /**
- * This type is used when decoding internal functions from the high-level
- * decoding interface, which presently doesn't support detailed decoding of
- * internal functions.  (The debugger, however, supports it!  You can get this
- * detailed information in the debugger!)  You'll still get the program counter
- * values, but further information will be absent.  Note you'll get this even
- * if really it should decode to an error, because the decoding interface
- * doesn't have the information to determine that it's an error.
+ * This type is used when decoding internal functions in contexts that don't
+ * support full decoding of such functions.  The high-level decoding interface
+ * can currently only sometimes perform such a full decoding.
+ *
+ * In contexts where such full decoding isn't supported, you'll get one of
+ * these; so you'll still get the program counter values, but further
+ * information will be absent.  Note you'll get this even if really it should
+ * decode to an error, because if there's insufficient information to determine
+ * additional function information, there's necessarily insufficient
+ * information to determine if it should be an error.
  *
  * @Category Function types
  */

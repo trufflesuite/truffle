@@ -16,11 +16,11 @@ const command = {
       },
       {
         option: "get",
-        discription: "Get a Truffle config option value."
+        description: "Get a Truffle config option value."
       },
       {
         option: "set",
-        discription: "Set a Truffle config option value."
+        description: "Set a Truffle config option value."
       }
     ]
   },
@@ -35,7 +35,7 @@ const command = {
    * @param {Object} options
    * @param {Func} callback
    */
-  run: function(options, done) {
+  run: function (options, done) {
     const googleAnalytics = require("../services/analytics/google.js");
     const Config = require("@truffle/config");
     const OS = require("os");
@@ -95,7 +95,7 @@ const command = {
   }
 };
 
-const parse = function(args) {
+const parse = function (args) {
   if (args.length === 0) {
     return null;
   }

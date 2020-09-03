@@ -103,12 +103,9 @@ describe("truffle migrate --describe-json", () => {
   describe("when run on the most basic truffle project without --describe-json", () => {
     let contents;
 
-    it("runs the migration without throwing", done => {
-      CommandRunner.run("migrate --reset", config, error => {
-        assert(error === undefined, "error should be undefined here");
-        contents = logger.contents();
-        done();
-      });
+    it("runs the migration without throwing", async () => {
+      await CommandRunner.run("migrate --reset", config);
+      contents = logger.contents();
     }).timeout(20000);
 
     it("does not include any `MIGRATION_STATUS` lines", done => {
@@ -121,20 +118,16 @@ describe("truffle migrate --describe-json", () => {
     describe("with existing migration", () => {
       let statuses = [];
 
-      it("runs the migration without throwing", done => {
-        CommandRunner.run("migrate --reset --describe-json", config, error => {
-          assert(error === undefined, "error should be undefined here");
+      it("runs the migration without throwing", async () => {
+        await CommandRunner.run("migrate --reset --describe-json", config);
 
-          const contents = logger.contents();
-          statuses.push(
-            ...contents
-              .split("\n")
-              .filter(line => line.includes("MIGRATION_STATUS"))
-              .map(line => JSON.parse(line.replace("MIGRATION_STATUS:", "")))
-          );
-
-          done();
-        });
+        const contents = logger.contents();
+        statuses.push(
+          ...contents
+            .split("\n")
+            .filter(line => line.includes("MIGRATION_STATUS"))
+            .map(line => JSON.parse(line.replace("MIGRATION_STATUS:", "")))
+        );
       }).timeout(20000);
 
       verifyMigrationStatuses(statuses, "replacing");
@@ -155,20 +148,16 @@ describe("truffle migrate --describe-json", () => {
           .then(done);
       });
 
-      it("runs the migration without throwing", done => {
-        CommandRunner.run("migrate --describe-json", config, error => {
-          assert(error === undefined, "error should be undefined here");
+      it("runs the migration without throwing", async () => {
+        await CommandRunner.run("migrate --describe-json", config);
 
-          const contents = logger.contents();
-          statuses.push(
-            ...contents
-              .split("\n")
-              .filter(line => line.includes("MIGRATION_STATUS"))
-              .map(line => JSON.parse(line.replace("MIGRATION_STATUS:", "")))
-          );
-
-          done();
-        });
+        const contents = logger.contents();
+        statuses.push(
+          ...contents
+            .split("\n")
+            .filter(line => line.includes("MIGRATION_STATUS"))
+            .map(line => JSON.parse(line.replace("MIGRATION_STATUS:", "")))
+        );
       }).timeout(20000);
 
       verifyMigrationStatuses(statuses, "deploying");

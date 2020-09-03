@@ -1,6 +1,5 @@
 var repl = require("repl");
 var expect = require("@truffle/expect");
-var async = require("async");
 var EventEmitter = require("events");
 var inherits = require("util").inherits;
 
@@ -27,7 +26,7 @@ function ReplManager(options) {
   this.contexts = [];
 }
 
-ReplManager.prototype.start = function(options) {
+ReplManager.prototype.start = function (options) {
   var self = this;
 
   this.contexts.push({
@@ -45,48 +44,55 @@ ReplManager.prototype.start = function(options) {
       eval: this.interpret.bind(this)
     });
 
-    this.repl.on("exit", function() {
+    this.repl.on("exit", async function () {
       // If we exit for some reason, call done functions for good measure
       // then ensure the process is completely killed. Once the repl exits,
       // the process is in a bad state and can't be recovered (e.g., stdin is closed).
-      var doneFunctions = self.contexts.map(function(context) {
-        return context.done
-          ? function() {
-              context.done();
-            }
-          : function() {};
-      });
-      async.series(doneFunctions, function() {
+      try {
+        for (const context of self.contexts) {
+          if (context.done) await context.done();
+        }
+      } catch (error) {
+        throw error;
+      } finally {
         process.exit();
-      });
+      }
     });
   }
 
   // Bubble the internal repl's exit event
-  this.repl.on("exit", function() {
+  this.repl.on("exit", function () {
     self.emit("exit");
   });
 
+  // Bubble the internal repl's reset event
+  this.repl.on("reset", function () {
+    process.stdout.write("\u001B[2J\u001B[0;0f");
+    self.emit("reset");
+  });
+
+  this.repl.setPrompt(options.prompt);
+  this.setContextVars(options.context || {});
   this.activate(options);
 };
 
-ReplManager.prototype.setContextVars = function(obj) {
+ReplManager.prototype.setContextVars = function (obj) {
   var self = this;
   if (this.repl) {
-    Object.keys(obj || {}).forEach(function(key) {
+    Object.keys(obj || {}).forEach(function (key) {
       self.repl.context[key] = obj[key];
     });
   }
 };
 
-ReplManager.prototype.activate = function(session) {
+ReplManager.prototype.activate = function (session) {
   const { prompt, context, ignoreUndefined } = session;
   this.repl.setPrompt(prompt);
   this.repl.ignoreUndefined = ignoreUndefined;
   this.setContextVars(context);
 };
 
-ReplManager.prototype.stop = function(callback) {
+ReplManager.prototype.stop = function (callback) {
   var oldContext = this.contexts.pop();
 
   if (oldContext.done) {
@@ -113,7 +119,7 @@ ReplManager.prototype.stop = function(callback) {
   }
 };
 
-ReplManager.prototype.interpret = function(
+ReplManager.prototype.interpret = function (
   replInput,
   context,
   filename,

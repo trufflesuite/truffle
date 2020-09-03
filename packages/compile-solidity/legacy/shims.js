@@ -25,7 +25,8 @@ function shimContract(contract) {
     deployedBytecode,
     compiler,
     devdoc,
-    userdoc
+    userdoc,
+    immutableReferences
   } = contract;
 
   return {
@@ -43,13 +44,17 @@ function shimContract(contract) {
     unlinked_binary: shimBytecode(bytecode),
     compiler,
     devdoc,
-    userdoc
+    userdoc,
+    immutableReferences
   };
 }
 
 function shimBytecode(bytecode) {
   if (!bytecode) {
-    return;
+    return bytecode;
+  }
+  if (typeof bytecode === "string") {
+    return bytecode;
   }
 
   let { bytes, linkReferences } = bytecode;

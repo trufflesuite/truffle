@@ -1,3 +1,4 @@
+import "source-map-support/register";
 import opcodes from "./opcodes";
 import { opcodeObject } from "typings";
 
@@ -20,9 +21,9 @@ export = {
    */
   parseCode(hexString: string, numInstructions: number = null) {
     // Convert to an array of bytes
-    let code: Array<number> = (hexString.slice(2).match(/(..?)/g) || []).map(
-      hex => parseInt(hex, 16)
-    );
+    let code: Array<number> = (
+      hexString.slice(2).match(/(..?)/g) || []
+    ).map(hex => parseInt(hex, 16));
 
     let stripMetadata = numInstructions === null;
 

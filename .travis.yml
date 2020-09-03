@@ -23,17 +23,17 @@ script: yarn ci
 jobs:
   fast_finish: true
   include:
-    - node_js: 8
+    - node_js: 10
       env: FABRICEVM=true
       install:
         - yarn bootstrap
         - truffle obtain --solc=0.5.16
-    # WINDOWS -- BEGINNING -- 
+    # WINDOWS -- BEGINNING --
     - node_js: 10
       os: windows
-      env: 
+      env:
         # Use YARN_GPG=no so Travis doesn't freeze after finished build
-        - YARN_GPG=no WINDOWS=true 
+        - YARN_GPG=no WINDOWS=true
       before_install:
         - powershell Set-ExecutionPolicy -ExecutionPolicy unrestricted
         # We hav to use powershell to install geth on windows environment. Git Bash doesn't have package manager.
@@ -42,10 +42,10 @@ jobs:
       install:
         - yarn bootstrap
     # WINDOWS -- END --
-    # WINDOWS -- BEGINNING -- 
+    # WINDOWS -- BEGINNING --
     - node_js: 10
       os: windows
-      env: 
+      env:
         # Use YARN_GPG=no so Travis doesn't freeze after finished build. Run test with GETH
         - YARN_GPG=no WINDOWS=true GETH=true
       before_install:
@@ -56,20 +56,11 @@ jobs:
       install:
         - yarn bootstrap
     # WINDOWS -- END --
-    - node_js: 8
-      env: COVERAGE=true
-      install:
-        - yarn bootstrap
-        - truffle obtain --solc=0.5.16
-    - if: |
-        branch = develop AND \
-        type = push
-      node_js: 10
-      env: COLONY=true
-      install:
-        - yarn bootstrap
-        - truffle obtain --solc=0.5.16
   allow_failures:
+    - node_js: 10
+      env: FABRICEVM=true
+    - node_js: 10
+      env: COVERAGE=true
       - os: windows
       - env: COVERAGE=true
 

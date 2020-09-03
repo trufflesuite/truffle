@@ -4,7 +4,7 @@ const glob = require("glob");
 const expect = require("@truffle/expect");
 const Config = require("@truffle/config");
 const Reporter = require("@truffle/reporters").migrationsV5;
-const Migration = require("./migration.js");
+const Migration = require("./Migration");
 const Emittery = require("emittery");
 
 /**
@@ -17,16 +17,16 @@ const Migrate = {
   emitter: new Emittery(),
   logger: null,
 
-  launchReporter: function(config) {
+  launchReporter: function (config) {
     Migrate.reporter = new Reporter(config.describeJson || false);
     this.logger = config.logger;
   },
 
-  acceptDryRun: async function() {
+  acceptDryRun: async function () {
     return Migrate.reporter.acceptDryRun();
   },
 
-  assemble: function(options) {
+  assemble: function (options) {
     const config = Config.detect(options);
     if (
       !fs.existsSync(config.migrations_directory) ||
@@ -59,7 +59,7 @@ const Migrate = {
     return migrations;
   },
 
-  run: async function(options, callback) {
+  run: async function (options, callback) {
     const callbackPassed = typeof callback === "function";
     try {
       expect.options(options, [
@@ -94,7 +94,7 @@ const Migrate = {
     }
   },
 
-  runFrom: async function(number, options) {
+  runFrom: async function (number, options) {
     let migrations = this.assemble(options);
 
     while (migrations.length > 0) {
@@ -110,11 +110,11 @@ const Migrate = {
     return await this.runMigrations(migrations, options);
   },
 
-  runAll: async function(options) {
+  runAll: async function (options) {
     return await this.runFrom(0, options);
   },
 
-  runMigrations: async function(migrations, options) {
+  runMigrations: async function (migrations, options) {
     // Perform a shallow clone of the options object
     // so that we can override the provider option without
     // changing the original options object passed in.
@@ -122,7 +122,7 @@ const Migrate = {
 
     Object.keys(options).forEach(key => (clone[key] = options[key]));
 
-    if (options.quiet) clone.logger = { log: function() {} };
+    if (options.quiet) clone.logger = { log: function () {} };
 
     clone.resolver = this.wrapResolver(options.resolver, clone.provider);
 
@@ -144,6 +144,8 @@ const Migrate = {
     });
 
     try {
+      global.artifacts = clone.resolver;
+      global.config = clone;
       for (const migration of migrations) {
         await migration.run(clone);
       }
@@ -158,12 +160,15 @@ const Migrate = {
         error: error.toString()
       });
       throw error;
+    } finally {
+      delete global.artifacts;
+      delete global.config;
     }
   },
 
-  wrapResolver: function(resolver, provider) {
+  wrapResolver: function (resolver, provider) {
     return {
-      require: function(import_path, search_path) {
+      require: function (import_path, search_path) {
         const abstraction = resolver.require(import_path, search_path);
         abstraction.setProvider(provider);
         return abstraction;
@@ -172,16 +177,14 @@ const Migrate = {
     };
   },
 
-  lastCompletedMigration: async function(options) {
+  lastCompletedMigration: async function (options) {
     let Migrations;
 
     try {
       Migrations = options.resolver.require("Migrations");
     } catch (error) {
-      const message = `Could not find built Migrations contract: ${
-        error.message
-      }`;
-      throw new Error(message);
+      // don't throw, Migrations contract optional
+      return 0;
     }
 
     if (Migrations.isDeployed() === false) return 0;
@@ -213,7 +216,7 @@ const Migrate = {
     return parseInt(completedMigration);
   },
 
-  needsMigrating: function(options) {
+  needsMigrating: function (options) {
     return new Promise((resolve, reject) => {
       if (options.reset === true) return resolve(true);
 

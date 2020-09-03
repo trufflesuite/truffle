@@ -53,7 +53,7 @@ Each instance is tied to a specific address on the Ethereum network, and each in
 or equivalently in ES6 <sup>(node.js 8 or newer)</sup>:  
 
   ```javascript
-  const deployed = await MyContract.deployed();
+  const instance = await MyContract.deployed();
   const result = await instance.someFunction(5);  
   ```  
 
@@ -147,6 +147,10 @@ This function creates a new instance of the contract abstraction representing th
 #### `MyContract.deployed()`
 
 Creates an instance of the contract abstraction representing the contract at its deployed address. The deployed address is a special value given to @truffle/contract that, when set, saves the address internally so that the deployed address can be inferred from the given Ethereum network being used. This allows you to write code referring to a specific deployed contract without having to manage those addresses yourself. Like `at()`, `deployed()` is thenable, and will resolve to a contract abstraction instance representing the deployed contract after ensuring that code exists at that location and that that address exists on the network being used.
+
+#### `MyContract.transactionHash`
+
+This property accesses the hash of the transaction in which the contract was deployed. This field gets populated for contract objects created with `.deployed()` or `.new()` but not with `.at()`.
 
 #### `MyContract.link(instance)`
 
@@ -299,7 +303,7 @@ However, we can *get* the value using `getValue()`, using `.call()`. Calls are a
 
 ```javascript
 instance.getValue.call().then(function(val) {
-  // val reprsents the `value` storage object in the solidity contract
+  // val represents the `value` storage object in the solidity contract
   // since the contract returns that value.
 });
 ```

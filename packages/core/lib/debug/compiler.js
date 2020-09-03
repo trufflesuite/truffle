@@ -5,17 +5,12 @@ class DebugCompiler {
     this.config = config;
   }
 
-  async compile() {
-    //we need to set up a config object for the compiler.
-    //it's the same as the existing config, but we turn on quiet.
-    //unfortunately, we don't have Babel here, so cloning is annoying.
-    const compileConfig = Object.assign(
-      {},
-      ...Object.entries(this.config).map(([key, value]) => ({ [key]: value }))
-    ); //clone
-    compileConfig.quiet = true;
+  async compile(sources = undefined) {
+    const compileConfig = this.config.with({ quiet: true });
 
-    const { contracts, sourceIndexes } = await compile.all(compileConfig);
+    const { contracts, sourceIndexes } = sources
+      ? await compile(sources, compileConfig) //used by external.js
+      : await compile.all(compileConfig);
 
     return { contracts, sourceIndexes };
   }

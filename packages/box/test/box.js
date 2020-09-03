@@ -6,7 +6,8 @@ const sinon = require("sinon");
 const Config = require("@truffle/config");
 const Box = require("../");
 const TRUFFLE_BOX_DEFAULT =
-  "git@github.com:trufflesuite/truffle-init-default.git";
+  "https://github.com:trufflesuite/truffle-init-default";
+const LOCAL_TRUFFLE_BOX = "./test/sources/mock-local-box";
 const utils = require("../dist/lib/utils");
 let options, cleanupCallback, config;
 
@@ -46,6 +47,37 @@ describe("@truffle/box Box", () => {
       );
     });
 
+    it("unboxes truffle box from local folder", async () => {
+      const truffleConfig = await Box.unbox(
+        LOCAL_TRUFFLE_BOX,
+        destination,
+        {},
+        config
+      );
+      assert.ok(truffleConfig);
+
+      assert(
+        fse.existsSync(path.join(destination, "truffle-config.js")),
+        "Unboxed project should have truffle config."
+      );
+
+      // Assert the file is not there first.
+      assert(
+        fse.existsSync(path.join(destination, "truffle-init.json")) === false,
+        "truffle-init.json shouldn't be available to the user!"
+      );
+
+      assert(
+        fse.existsSync(path.join(destination, "build")) === false,
+        "shouldn't not copy files mentioned in .gitignore"
+      );
+
+      assert(
+        fse.existsSync(path.join(destination, ".env")) === false,
+        "shouldn't not copy files mentioned in .gitignore"
+      );
+    });
+
     it("does not copy the config files or ignored files in the config", () => {
       // Assert the file is not there first.
       assert(
@@ -82,7 +114,7 @@ describe("@truffle/box Box", () => {
         utils.downloadBox.restore();
       });
 
-      it("calls the cleanup function if it is available", function(done) {
+      it("calls the cleanup function if it is available", function (done) {
         Box.unbox(TRUFFLE_BOX_DEFAULT, destination, {}, config).catch(() => {
           assert(cleanupCallback.called);
           done();

@@ -58,3 +58,6 @@ typings/
 .env
 
 package-lock.json
+
+# commit the bin directory with scripts
+!bin

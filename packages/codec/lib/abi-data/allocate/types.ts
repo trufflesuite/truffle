@@ -4,15 +4,18 @@ import * as AbiData from "@truffle/codec/abi-data/types";
 import * as Contexts from "@truffle/codec/contexts/types";
 import * as Pointer from "@truffle/codec/pointer";
 import { DecodingMode } from "@truffle/codec/types";
+import { ImmutableReferences } from "@truffle/contract-schema/spec";
 import * as Format from "@truffle/codec/format";
 
-//for passing to calldata/event allocation functions
+//for passing to calldata/event/state allocation functions
 export interface ContractAllocationInfo {
-  abi: AbiData.Abi;
-  contractNode: Ast.AstNode;
-  deployedContext?: Contexts.DecoderContext;
-  constructorContext?: Contexts.DecoderContext;
-  compiler: Compiler.CompilerVersion;
+  abi?: AbiData.Abi; //needed for events & calldata
+  contractNode: Ast.AstNode; //needed for all 3
+  deployedContext?: Contexts.DecoderContext; //needed for events & calldata
+  constructorContext?: Contexts.DecoderContext; //needed for calldata
+  immutableReferences?: ImmutableReferences; //needed for state
+  compiler: Compiler.CompilerVersion; //needed for all 3
+  compilationId?: string; //needed for all 3
 }
 
 export interface AbiSizeInfo {
@@ -57,12 +60,12 @@ export interface CalldataAllocations {
 }
 
 export interface CalldataConstructorAllocations {
-  [contextHash: string]: CalldataAndReturndataAllocation;
+  [contextHash: string]: CalldataAndReturndataAllocation; //note: just constructor ones
 }
 
 export interface CalldataFunctionAllocations {
   [contextHash: string]: {
-    [selector: string]: CalldataAndReturndataAllocation;
+    [selector: string]: CalldataAndReturndataAllocation; //note: just function ones
   };
 }
 
@@ -126,23 +129,40 @@ export interface EventArgumentAllocation {
 }
 
 //now let's go back ands fill in returndata
-type ReturndataKind =
-  | "return"
-  | "revert"
-  | "failure"
-  | "selfdestruct"
-  | "bytecode";
+type ReturndataKind = FunctionReturndataKind | ConstructorReturndataKind;
 
-export interface ReturndataAllocation {
+type FunctionReturndataKind = "return" | "revert" | "failure" | "selfdestruct";
+type ConstructorReturndataKind = "bytecode";
+
+export type ReturndataAllocation =
+  | FunctionReturndataAllocation
+  | ConstructorReturndataAllocation;
+
+export interface FunctionReturndataAllocation {
+  kind: FunctionReturndataKind;
   selector: Uint8Array;
-  arguments: ReturndataArgumentAllocation[]; //ignored if kind="bytecode"
+  arguments: ReturndataArgumentAllocation[];
   allocationMode: DecodingMode;
-  kind: ReturndataKind;
+}
+
+export interface ConstructorReturndataAllocation {
+  kind: ConstructorReturndataKind;
+  selector: Uint8Array; //must be empty, but is required for type niceness
+  immutables?: ReturnImmutableAllocation[];
+  delegatecallGuard: boolean;
+  allocationMode: DecodingMode;
 }
 
 export interface ReturndataArgumentAllocation {
   name: string;
   type: Format.Types.Type;
+  pointer: Pointer.ReturndataPointer;
+}
+
+export interface ReturnImmutableAllocation {
+  name: string;
+  type: Format.Types.Type;
+  definedIn: Format.Types.ContractType;
   pointer: Pointer.ReturndataPointer;
 }
 

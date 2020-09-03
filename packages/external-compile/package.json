@@ -8,22 +8,23 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "1.0.27",
+  "version": "1.0.35",
   "main": "index.js",
   "scripts": {
+    "prepare": "exit 0",
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/contract-schema": "^3.0.22",
-    "@truffle/expect": "^0.0.13",
+    "@truffle/contract-schema": "^3.2.4",
+    "@truffle/expect": "^0.0.15",
     "debug": "^4.1.0",
     "glob": "^7.1.2",
     "web3-utils": "1.2.1"
   },
   "devDependencies": {
     "chai": "4.2.0",
-    "mocha": "5.2.0",
-    "temp": "^0.8.3"
+    "mocha": "8.1.2",
+    "tmp": "^0.2.1"
   },
   "keywords": [
     "ethereum",

@@ -1,3 +1,4 @@
+import "source-map-support/register";
 import utils from "./lib/utils";
 import tmp from "tmp";
 import path from "path";
@@ -6,7 +7,67 @@ import fse from "fs-extra";
 import inquirer from "inquirer";
 import { sandboxOptions, unboxOptions } from "typings";
 
-function parseSandboxOptions(options: sandboxOptions) {
+const defaultPath = "https://github.com:trufflesuite/truffle-init-default";
+
+/*
+ * accepts a number of different url and org/repo formats and returns the
+ * format required by https://www.npmjs.com/package/download-git-repo for remote URLs
+ * or absolute path to local folder if the source is local folder
+ *
+ * supported input formats are as follows:
+ *   - org/repo[#branch]
+ *   - https://github.com(/|:)<org>/<repo>[.git][#branch]
+ *   - git@github.com:<org>/<repo>[#branch]
+ *   - path to local folder (absolute, relative or ~/home)
+ */
+const normalizeSourcePath = (url = defaultPath) => {
+  if (url.startsWith(".") || url.startsWith("/") || url.startsWith("~")) {
+    return path.resolve(path.normalize(url));
+  }
+  // remove the .git from the repo specifier
+  if (url.includes(".git")) {
+    url = url.replace(/.git$/, "");
+    url = url.replace(/.git#/, "#");
+    url = url.replace(/.git:/, ":");
+  }
+
+  // rewrite https://github.com/truffle-box/metacoin format in
+  //         https://github.com:truffle-box/metacoin format
+  if (url.match(/.com\//)) {
+    url = url.replace(/.com\//, ".com:");
+  }
+
+  // full URL already
+  if (url.includes("://")) {
+    return url;
+  }
+
+  if (url.includes("git@")) {
+    return url.replace("git@", "https://");
+  }
+
+  if (url.split("/").length === 2) {
+    // `org/repo`
+    return `https://github.com:${url}`;
+  }
+
+  if (!url.includes("/")) {
+    // repo name only
+    if (!url.includes("-box")) {
+      // check for branch
+      if (!url.includes("#")) {
+        url = `${url}-box`;
+      } else {
+        const index = url.indexOf("#");
+        url = `${url.substr(0, index)}-box${url.substr(index)}`;
+      }
+    }
+    return `https://github.com:truffle-box/${url}`;
+  }
+  throw new Error("Box specified in invalid format");
+};
+
+const parseSandboxOptions = (options: sandboxOptions) => {
   if (typeof options === "string") {
     // back compatibility for when `options` used to be `name`
     return {
@@ -25,7 +86,7 @@ function parseSandboxOptions(options: sandboxOptions) {
       force: options.force || false
     };
   }
-}
+};
 
 const Box = {
   unbox: async (
@@ -43,12 +104,14 @@ const Box = {
     };
 
     try {
+      const normalizedSourcePath = normalizeSourcePath(url);
+
       await Box.checkDir(options, destination);
       const tempDir = await utils.setUpTempDirectory(events);
       const tempDirPath = tempDir.path;
       tempDirCleanup = tempDir.cleanupCallback;
 
-      await utils.downloadBox(url, tempDirPath, events);
+      await utils.downloadBox(normalizedSourcePath, tempDirPath, events);
 
       const boxConfig = await utils.readBoxConfig(tempDirPath);
 
@@ -109,17 +172,18 @@ const Box = {
       force
     } = parseSandboxOptions(options);
 
+    const boxPath = name.replace(/^default(?=#|$)/, defaultPath);
+    //ordinarily, this line will have no effect.  however, if the name is "default",
+    //possibly with a branch specification, this replaces it appropriately
+    //(this is necessary in order to keep using trufflesuite/truffle-init-default
+    //instead of truffle-box/etc)
+
     if (setGracefulCleanup) tmp.setGracefulCleanup();
 
     let config = new Config();
     const tmpDir = tmp.dirSync({ unsafeCleanup });
     const unboxOptions = { logger, force };
-    await Box.unbox(
-      `https://github.com/trufflesuite/truffle-init-${name}`,
-      tmpDir.name,
-      unboxOptions,
-      config
-    );
+    await Box.unbox(boxPath, tmpDir.name, unboxOptions, config);
     return Config.load(path.join(tmpDir.name, "truffle-config.js"), {});
   }
 };

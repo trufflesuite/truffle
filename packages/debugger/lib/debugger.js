@@ -1,6 +1,5 @@
 import debugModule from "debug";
 const debug = debugModule("debugger");
-import expect from "@truffle/expect";
 
 import Session from "./session";
 
@@ -12,45 +11,25 @@ import traceSelector from "./trace/selectors";
 import evmSelector from "./evm/selectors";
 import soliditySelector from "./solidity/selectors";
 import sessionSelector from "./session/selectors";
+import stacktraceSelector from "./stacktrace/selectors";
 import controllerSelector from "./controller/selectors";
 
-/**
- * @example
- * let session = Debugger
- *   .forTx(<txHash>, {
- *     contracts: [<contract obj>, ...],
- *     provider: <provider instance>
- *   })
- *   .connect();
- */
-export default class Debugger {
-  /**
-   * @param {Session} session - debugger session
-   * @private
-   */
-  constructor(session) {
-    /**
-     * @private
-     */
-    this._session = session;
-  }
+import { Compilations } from "@truffle/codec";
 
+const Debugger = {
   /**
    * Instantiates a Debugger for a given transaction hash.
    *
    * @param {String} txHash - transaction hash with leading "0x"
-   * @param {{contracts: Array<Contract>, files: Array<String>, provider: Web3Provider}} options -
+   * @param {{contracts: Array<Artifact>, files: Array<String>, provider: Web3Provider, compilations: Array<Compilation>}} options -
    * @return {Debugger} instance
    */
-  static async forTx(txHash, options = {}) {
-    expect.options(options, ["contracts", "provider"]);
-
-    let session = new Session(
-      options.contracts,
-      options.files,
-      options.provider,
-      txHash
-    );
+  forTx: async function (txHash, options = {}) {
+    let { contracts, files, provider, compilations, lightMode } = options;
+    if (!compilations) {
+      compilations = Compilations.Utils.shimArtifacts(contracts, files);
+    }
+    let session = new Session(compilations, provider, { lightMode }, txHash);
 
     try {
       await session.ready();
@@ -60,37 +39,26 @@ export default class Debugger {
       session.unload();
     }
 
-    return new this(session);
-  }
+    return session;
+  },
 
   /*
    * Instantiates a Debugger for a given project (with no transaction loaded)
    *
-   * @param {{contracts: Array<Contract>, files: Array<String>, provider: Web3Provider}} options -
+   * @param {{contracts: Array<Artifact>, files: Array<String>, provider: Web3Provider, compilations: Array<Compilation>}} options -
    * @return {Debugger} instance
    */
-  static async forProject(options = {}) {
-    expect.options(options, ["contracts", "provider"]);
-
-    let session = new Session(
-      options.contracts,
-      options.files,
-      options.provider
-    );
+  forProject: async function (options = {}) {
+    let { contracts, files, provider, compilations, lightMode } = options;
+    if (!compilations) {
+      compilations = Compilations.Utils.shimArtifacts(contracts, files);
+    }
+    let session = new Session(compilations, provider, { lightMode });
 
     await session.ready();
 
-    return new this(session);
-  }
-
-  /**
-   * Connects to the instantiated Debugger.
-   *
-   * @return {Session} session instance
-   */
-  connect() {
-    return this._session;
-  }
+    return session;
+  },
 
   /**
    * Exported selectors
@@ -106,27 +74,18 @@ export default class Debugger {
    * @example
    * Debugger.selectors.trace.steps
    */
-  static get selectors() {
+  get selectors() {
     return createNestedSelector({
       ast: astSelector,
       data: dataSelector,
       trace: traceSelector,
       evm: evmSelector,
       solidity: soliditySelector,
+      stacktrace: stacktraceSelector,
       session: sessionSelector,
       controller: controllerSelector
     });
   }
-}
+};
 
-/**
- * @typedef {Object} Contract
- * @property {string} contractName contract name
- * @property {string} source solidity source code
- * @property {string} sourcePath path to source file
- * @property {string} binary 0x-prefixed hex string with create bytecode
- * @property {string} sourceMap solidity source map for create bytecode
- * @property {Object} ast Abstract Syntax Tree from Solidity
- * @property {string} deployedBinary 0x-prefixed compiled binary (on chain)
- * @property {string} deployedSourceMap solidity source map for on-chain bytecode
- */
+export default Debugger;

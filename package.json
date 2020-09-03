@@ -20,7 +20,7 @@
     "lerna-update-wizard": "^0.16.0",
     "lint-staged": "^7.3.0",
     "nyc": "^13.0.1",
-    "prettier": "1.14.3",
+    "prettier": "^2.0.5",
     "prs-merged-since": "^1.1.0"
   },
   "workspaces": {

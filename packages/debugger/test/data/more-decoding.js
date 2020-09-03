@@ -11,11 +11,12 @@ import Debugger from "lib/debugger";
 
 import solidity from "lib/solidity/selectors";
 import data from "lib/data/selectors";
+import evm from "lib/evm/selectors";
 
 import * as Codec from "@truffle/codec";
 
 const __CONTAINERS = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract ContainersTest {
 
@@ -25,12 +26,6 @@ contract ContainersTest {
   //declare needed structs
   struct Wrapper {
     uint x;
-  }
-
-  struct HasMap {
-    uint x;
-    mapping(string => string) map;
-    uint y;
   }
 
   //declare storage variables to be tested
@@ -49,7 +44,6 @@ contract ContainersTest {
 
     //declare local variables to be tested
     uint[1] memory memoryStaticArray;
-    HasMap memory memoryStructWithMap;
     uint[2] storage localStorage = pointedAt;
 
     //set up variables with values
@@ -69,9 +63,6 @@ contract ContainersTest {
 
     memoryStaticArray[0] = 107;
 
-    memoryStructWithMap.x = 107;
-    memoryStructWithMap.y = 214;
-
     //for this one, let's mix how we access it
     localStorage[0] = 107;
     pointedAt[1] = 214;
@@ -83,11 +74,13 @@ contract ContainersTest {
 `;
 
 const __KEYSANDBYTES = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract ElementaryTest {
 
   event Done(); //makes a useful breakpoint
+
+  enum Ternary { Red, Green, Blue }
 
   //storage variables to be tested
   mapping(bool => bool) boolMap;
@@ -97,6 +90,8 @@ contract ElementaryTest {
   mapping(int => int) intMap;
   mapping(string => string) stringMap;
   mapping(address => address) addressMap;
+  mapping(ElementaryTest => ElementaryTest) contractMap;
+  mapping(Ternary => Ternary) enumMap;
 
   //constant state variables to try as mapping keys
   uint constant two = 2;
@@ -127,13 +122,17 @@ contract ElementaryTest {
     stringMap["0xdeadbeef"] = "0xdeadbeef";
     stringMap["12345"] = "12345";
 
+    contractMap[this] = this;
+
+    enumMap[Ternary.Blue] = Ternary.Blue;
+
     emit Done(); //break here
   }
 }
 `;
 
 const __SPLICING = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract SpliceTest {
   //splicing is (nontrivially) used in two contexts right now:
@@ -171,7 +170,7 @@ contract SpliceTest {
 `;
 
 const __INNERMAPS = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract ComplexMappingTest {
 
@@ -197,7 +196,7 @@ contract ComplexMappingTest {
 `;
 
 const __OVERFLOW = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract OverflowTest {
 
@@ -229,7 +228,7 @@ contract OverflowTest {
 `;
 
 const __BADBOOL = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract BadBoolTest {
 
@@ -242,7 +241,7 @@ contract BadBoolTest {
 `;
 
 const __CIRCULAR = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract CircularTest {
 
@@ -266,7 +265,7 @@ contract CircularTest {
 `;
 
 const __GLOBALDECLS = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 struct GlobalStruct {
   uint x;
@@ -301,57 +300,50 @@ let sources = {
   "GlobalDeclarations.sol": __GLOBALDECLS
 };
 
-describe("Further Decoding", function() {
+describe("Further Decoding", function () {
   var provider;
 
   var abstractions;
-  var artifacts;
-  var files;
+  var compilations;
 
-  before("Create Provider", async function() {
+  before("Create Provider", async function () {
     provider = Ganache.provider({ seed: "debugger", gasLimit: 7000000 });
   });
 
-  before("Prepare contracts and artifacts", async function() {
+  before("Prepare contracts and artifacts", async function () {
     this.timeout(30000);
 
     let prepared = await prepareContracts(provider, sources);
     abstractions = prepared.abstractions;
-    artifacts = prepared.artifacts;
-    files = prepared.files;
+    compilations = prepared.compilations;
   });
 
-  it("Decodes various reference types correctly", async function() {
+  it("Decodes various reference types correctly", async function () {
     this.timeout(12000);
 
     let instance = await abstractions.ContainersTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("break here", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
       memoryStaticArray: [107],
-      memoryStructWithMap: { x: 107, map: {}, y: 214 },
       localStorage: [107, 214],
       storageStructArray: [{ x: 107 }],
       storageArrayArray: [[2, 3]],
@@ -364,7 +356,7 @@ describe("Further Decoding", function() {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Decodes elementary types and mappings correctly", async function() {
+  it("Decodes elementary types and mappings correctly", async function () {
     this.timeout(12000);
 
     let instance = await abstractions.ElementaryTest.deployed();
@@ -372,25 +364,21 @@ describe("Further Decoding", function() {
     let txHash = receipt.tx;
     let address = instance.address;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("break here", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
     debug("variables %O", variables);
 
@@ -402,6 +390,8 @@ describe("Further Decoding", function() {
       intMap: { "-1": -1 },
       stringMap: { "0xdeadbeef": "0xdeadbeef", "12345": "12345" },
       addressMap: { [address]: address },
+      contractMap: { [address]: address },
+      enumMap: { "ElementaryTest.Ternary.Blue": "ElementaryTest.Ternary.Blue" },
       oneByte: "0xff",
       severalBytes: ["0xff"]
     };
@@ -409,32 +399,28 @@ describe("Further Decoding", function() {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Splices locations correctly", async function() {
+  it("Splices locations correctly", async function () {
     this.timeout(12000);
 
     let instance = await abstractions.SpliceTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("break here", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -450,26 +436,20 @@ describe("Further Decoding", function() {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Decodes inner mappings correctly and keeps path info", async function() {
+  it("Decodes inner mappings correctly and keeps path info", async function () {
     this.timeout(12000);
 
     let instance = await abstractions.ComplexMappingTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
-
-    let session = bugger.connect();
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
     //we're only testing storage so run till end
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
 
     const expectedResult = {
@@ -488,15 +468,16 @@ describe("Further Decoding", function() {
 
     assert.deepInclude(variables, expectedResult);
 
+    //let's get the ID of the current contract to use as an index
+    let contractId = bugger.view(evm.current.context).contractId;
+
     //get offsets of top-level variables for this contract
     //converting to numbers for convenience
     const startingOffsets = Object.values(
-      session.view(data.info.allocations.storage)
-    )
-      .find(({ definition }) => definition.name === "ComplexMappingTest")
-      .members.map(({ pointer }) => pointer.range.from.slot.offset);
+      bugger.view(data.current.allocations.state)[contractId].members
+    ).map(({ pointer }) => pointer.range.from.slot.offset);
 
-    const mappingKeys = session.view(data.views.mappingKeys);
+    const mappingKeys = bugger.view(data.views.mappingKeys);
     for (let slot of mappingKeys) {
       while (slot.path !== undefined) {
         slot = slot.path;
@@ -507,7 +488,7 @@ describe("Further Decoding", function() {
     }
   });
 
-  it("Cleans badly-encoded booleans used as mapping keys", async function() {
+  it("Cleans badly-encoded booleans used as mapping keys", async function () {
     this.timeout(12000);
 
     let instance = await abstractions.BadBoolTest.deployed();
@@ -521,18 +502,12 @@ describe("Further Decoding", function() {
     let receipt = await instance.sendTransaction({ data: selector + argument });
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    await session.continueUntilBreakpoint(); //run till end
+    await bugger.continueUntilBreakpoint(); //run till end
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
     debug("variables %O", variables);
 
@@ -543,25 +518,19 @@ describe("Further Decoding", function() {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Handles globally-declared structs and enums", async function() {
+  it("Handles globally-declared structs and enums", async function () {
     this.timeout(12000);
 
     let instance = await abstractions.GlobalDeclarationTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    await session.continueUntilBreakpoint(); //run till end
+    await bugger.continueUntilBreakpoint(); //run till end
 
     const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-      await session.variables()
+      await bugger.variables()
     );
     debug("variables %O", variables);
 
@@ -573,32 +542,28 @@ describe("Further Decoding", function() {
     assert.deepInclude(variables, expectedResult);
   });
 
-  it("Decodes circular structures", async function() {
+  it("Decodes circular structures", async function () {
     this.timeout(12000);
 
     let instance = await abstractions.CircularTest.deployed();
     let receipt = await instance.run();
     let txHash = receipt.tx;
 
-    let bugger = await Debugger.forTx(txHash, {
-      provider,
-      files,
-      contracts: artifacts
-    });
+    let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-    let session = bugger.connect();
-
-    let sourceId = session.view(solidity.current.source).id;
-    let source = session.view(solidity.current.source).source;
-    await session.addBreakpoint({
+    let sourceId = bugger.view(solidity.current.source).id;
+    let compilationId = bugger.view(solidity.current.source).compilationId;
+    let source = bugger.view(solidity.current.source).source;
+    await bugger.addBreakpoint({
       sourceId,
+      compilationId,
       line: lineOf("BREAK HERE", source)
     });
 
-    await session.continueUntilBreakpoint();
+    await bugger.continueUntilBreakpoint();
 
     const circular = Codec.Format.Utils.Inspect.nativize(
-      await session.variable("circular")
+      await bugger.variable("circular")
     );
 
     assert.strictEqual(circular.x, 3);
@@ -607,31 +572,27 @@ describe("Further Decoding", function() {
     assert.strictEqual(circular.children[0], circular);
   });
 
-  describe("Overflow", function() {
-    it("Discards padding on unsigned integers", async function() {
+  describe("Overflow", function () {
+    it("Discards padding on unsigned integers", async function () {
       let instance = await abstractions.OverflowTest.deployed();
       let receipt = await instance.unsignedTest();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, {
-        provider,
-        files,
-        contracts: artifacts
-      });
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-      let session = bugger.connect();
-
-      let sourceId = session.view(solidity.current.source).id;
-      let source = session.view(solidity.current.source).source;
-      await session.addBreakpoint({
+      let sourceId = bugger.view(solidity.current.source).id;
+      let compilationId = bugger.view(solidity.current.source).compilationId;
+      let source = bugger.view(solidity.current.source).source;
+      await bugger.addBreakpoint({
         sourceId,
+        compilationId,
         line: lineOf("BREAK UNSIGNED", source)
       });
 
-      await session.continueUntilBreakpoint();
+      await bugger.continueUntilBreakpoint();
 
       const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-        await session.variables()
+        await bugger.variables()
       );
       debug("variables %O", variables);
 
@@ -644,30 +605,26 @@ describe("Further Decoding", function() {
       assert.include(variables, expectedResult);
     });
 
-    it("Discards padding on signed integers", async function() {
+    it("Discards padding on signed integers", async function () {
       let instance = await abstractions.OverflowTest.deployed();
       let receipt = await instance.signedTest();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, {
-        provider,
-        files,
-        contracts: artifacts
-      });
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-      let session = bugger.connect();
-
-      let sourceId = session.view(solidity.current.source).id;
-      let source = session.view(solidity.current.source).source;
-      await session.addBreakpoint({
+      let sourceId = bugger.view(solidity.current.source).id;
+      let compilationId = bugger.view(solidity.current.source).compilationId;
+      let source = bugger.view(solidity.current.source).source;
+      await bugger.addBreakpoint({
         sourceId,
+        compilationId,
         line: lineOf("BREAK SIGNED", source)
       });
 
-      await session.continueUntilBreakpoint();
+      await bugger.continueUntilBreakpoint();
 
       const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-        await session.variables()
+        await bugger.variables()
       );
       debug("variables %O", variables);
 
@@ -680,30 +637,26 @@ describe("Further Decoding", function() {
       assert.include(variables, expectedResult);
     });
 
-    it("Discards padding on static bytestrings", async function() {
+    it("Discards padding on static bytestrings", async function () {
       let instance = await abstractions.OverflowTest.deployed();
       let receipt = await instance.rawTest();
       let txHash = receipt.tx;
 
-      let bugger = await Debugger.forTx(txHash, {
-        provider,
-        files,
-        contracts: artifacts
-      });
+      let bugger = await Debugger.forTx(txHash, { provider, compilations });
 
-      let session = bugger.connect();
-
-      let sourceId = session.view(solidity.current.source).id;
-      let source = session.view(solidity.current.source).source;
-      await session.addBreakpoint({
+      let sourceId = bugger.view(solidity.current.source).id;
+      let compilationId = bugger.view(solidity.current.source).compilationId;
+      let source = bugger.view(solidity.current.source).source;
+      await bugger.addBreakpoint({
         sourceId,
+        compilationId,
         line: lineOf("BREAK RAW", source)
       });
 
-      await session.continueUntilBreakpoint();
+      await bugger.continueUntilBreakpoint();
 
       const variables = Codec.Format.Utils.Inspect.nativizeVariables(
-        await session.variables()
+        await bugger.variables()
       );
       debug("variables %O", variables);
 

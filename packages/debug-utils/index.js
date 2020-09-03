@@ -1,6 +1,4 @@
 var OS = require("os");
-var dir = require("node-dir");
-var path = require("path");
 var debug = require("debug")("debug-utils");
 var BN = require("bn.js");
 var util = require("util");
@@ -31,7 +29,32 @@ const commandReference = {
   "q": "quit",
   "r": "reset",
   "t": "load new transaction",
-  "T": "unload transaction"
+  "T": "unload transaction",
+  "s": "print stacktrace"
+};
+
+const shortCommandReference = {
+  "o": "step over",
+  "i": "step into",
+  "u": "step out",
+  "n": "step next",
+  ";": "step instruction",
+  "p": "print state",
+  "l": "print context",
+  "h": "print help",
+  "v": "print variables",
+  ":": "evaluate",
+  "+": "add watch",
+  "-": "remove watch",
+  "?": "list watches & breakpoints",
+  "b": "add breakpoint",
+  "B": "remove breakpoint",
+  "c": "continue",
+  "q": "quit",
+  "r": "reset",
+  "t": "load",
+  "T": "unload",
+  "s": "stacktrace"
 };
 
 const truffleColors = {
@@ -48,41 +71,62 @@ const truffleColors = {
   periwinkle: chalk.hex("#7F9DD1")
 };
 
+const DEFAULT_TAB_WIDTH = 8;
+
 var DebugUtils = {
-  gatherArtifacts: async function(config) {
-    // Gather all available contract artifacts
-    let files = await dir.promiseFiles(config.contracts_build_directory);
+  truffleColors, //make these externally available
 
-    var contracts = files
-      .filter(file_path => {
-        return path.extname(file_path) === ".json";
-      })
-      .map(file_path => {
-        return path.basename(file_path, ".json");
-      })
-      .map(contract_name => {
-        return config.resolver.require(contract_name);
-      });
+  //attempts to test whether a given compilation is a real compilation,
+  //i.e., was compiled all at once.
+  //if it is real, it will definitely pass this test, barring a Solidity bug.
+  //(anyway worst case failing it just results in a recompilation)
+  //if it isn't real, but passes this test anyway... well, I'm hoping it should
+  //still be usable all the same!
+  isUsableCompilation: function (compilation) {
+    //check #1: is the source order reliable?
+    if (compilation.unreliableSourceOrder) {
+      return false;
+    }
 
-    await Promise.all(
-      contracts.map(abstraction => abstraction.detectNetwork())
+    //check #2: are source indices consecutive?
+    //(while nonconsecutivity should not be a problem by itself, this probably
+    //indicates a name collision of a sort that will be fatal for other
+    //reasons)
+    //NOTE: oddly, empty spots in an array will cause array.includes(undefined)
+    //to return true!  So I'm doing it this way even though it looks wrong
+    //(since the real concern is empty spots, not undefined, yet this turns
+    //this up anyhow)
+    if (compilation.sources.includes(undefined)) {
+      return false;
+    }
+
+    //check #3: are there any AST ID collisions?
+    let astIds = new Set();
+
+    let allIDsUnseenSoFar = node => {
+      if (Array.isArray(node)) {
+        return node.every(allIDsUnseenSoFar);
+      } else if (node !== null && typeof node === "object") {
+        if (node.id !== undefined) {
+          if (astIds.has(node.id)) {
+            return false;
+          } else {
+            astIds.add(node.id);
+          }
+        }
+        return Object.values(node).every(allIDsUnseenSoFar);
+      } else {
+        return true;
+      }
+    };
+
+    //now: walk each AST
+    return compilation.sources.every(source =>
+      source ? allIDsUnseenSoFar(source.ast) : true
     );
-
-    return contracts.map(contract => ({
-      contractName: contract.contractName,
-      source: contract.source,
-      sourceMap: contract.sourceMap,
-      sourcePath: contract.sourcePath,
-      binary: contract.binary,
-      abi: contract.abi,
-      ast: contract.ast,
-      deployedBinary: contract.deployedBinary,
-      deployedSourceMap: contract.deployedSourceMap,
-      compiler: contract.compiler
-    }));
   },
 
-  formatStartMessage: function(withTransaction) {
+  formatStartMessage: function (withTransaction) {
     if (withTransaction) {
       return "Gathering information about your project and the transaction...";
     } else {
@@ -90,26 +134,26 @@ var DebugUtils = {
     }
   },
 
-  formatTransactionStartMessage: function() {
+  formatTransactionStartMessage: function () {
     return "Gathering information about the transaction...";
   },
 
-  formatCommandDescription: function(commandId) {
+  formatCommandDescription: function (commandId) {
     return (
       truffleColors.mint(`(${commandId})`) + " " + commandReference[commandId]
     );
   },
 
-  formatPrompt: function(network, txHash) {
+  formatPrompt: function (network, txHash) {
     return txHash !== undefined
       ? `debug(${network}:${txHash.substring(0, 10)}...)> `
       : `debug(${network})> `;
   },
 
-  formatAffectedInstances: function(instances) {
+  formatAffectedInstances: function (instances) {
     var hasAllSource = true;
 
-    var lines = Object.keys(instances).map(function(address) {
+    var lines = Object.keys(instances).map(function (address) {
       var instance = instances[address];
 
       if (instance.contractName) {
@@ -123,26 +167,28 @@ var DebugUtils = {
       return " " + address + "(UNKNOWN)";
     });
 
+    if (lines.length === 0) {
+      lines.push("No affected addresses found.");
+    }
+
     if (!hasAllSource) {
       lines.push("");
       lines.push(
-        "Warning: The source code for one or more contracts could not be found."
+        `${chalk.bold(
+          "Warning:"
+        )} The source code for one or more contracts could not be found.`
       );
     }
 
     return lines.join(OS.EOL);
   },
 
-  formatHelp: function(lastCommand) {
-    if (!lastCommand) {
-      lastCommand = "n";
-    }
-
+  formatHelp: function (lastCommand = "n") {
     var prefix = [
       "Commands:",
       truffleColors.mint("(enter)") +
         " last command entered (" +
-        commandReference[lastCommand] +
+        shortCommandReference[lastCommand] +
         ")"
     ];
 
@@ -150,13 +196,13 @@ var DebugUtils = {
       ["o", "i", "u", "n"],
       [";"],
       ["p"],
-      ["l", "h"],
+      ["l", "s", "h"],
       ["q", "r", "t", "T"],
       ["b", "B", "c"],
       ["+", "-"],
       ["?"],
       ["v", ":"]
-    ].map(function(shortcuts) {
+    ].map(function (shortcuts) {
       return shortcuts.map(DebugUtils.formatCommandDescription).join(", ");
     });
 
@@ -167,41 +213,67 @@ var DebugUtils = {
     return lines.join(OS.EOL);
   },
 
-  formatLineNumberPrefix: function(line, number, cols, tab) {
-    if (!tab) {
-      tab = "  ";
+  tabsToSpaces: function (inputLine, tabLength = DEFAULT_TAB_WIDTH) {
+    //note: I'm going to assume for these purposes that everything is
+    //basically ASCII and I don't have to worry about astral planes or
+    //grapheme clusters.  Sorry. :-/
+    let line = "";
+    let counter = 0;
+    for (let i = 0; i < inputLine.length; i++) {
+      if (inputLine[i] === "\t") {
+        const remaining = tabLength - counter;
+        line += " ".repeat(remaining);
+        counter = 0;
+      } else if (inputLine[i] === "\n") {
+        line += "\n";
+        counter = 0;
+      } else if (inputLine[i] === "\r" && inputLine[i + 1] === "\n") {
+        line += "\n";
+        counter = 0;
+        i++;
+      } else {
+        line += inputLine[i];
+        counter++;
+        if (counter === tabLength) {
+          counter = 0;
+        }
+      }
     }
-
-    var prefix = number + "";
-    while (prefix.length < cols) {
-      prefix = " " + prefix;
-    }
-
-    prefix += ": ";
-    return prefix + line.replace(/\t/g, tab);
+    return line;
   },
 
-  formatLinePointer: function(line, startCol, endCol, padding, tab) {
-    if (!tab) {
-      tab = "  ";
-    }
+  formatLineNumberPrefix: function (line, number, cols) {
+    const prefix = String(number).padStart(cols) + ": ";
 
-    padding += 2; // account for ": "
-    var prefix = "";
-    while (prefix.length < padding) {
-      prefix += " ";
-    }
+    return prefix + line;
+  },
 
-    var output = "";
-    for (var i = 0; i < line.length; i++) {
-      var pointedAt = i >= startCol && i < endCol;
-      var isTab = line[i] === "\t";
+  formatLinePointer: function (
+    line,
+    startCol,
+    endCol,
+    padding,
+    tabLength = DEFAULT_TAB_WIDTH
+  ) {
+    const prefix = " ".repeat(padding + 2); //account for ": "
 
-      var additional;
-      if (isTab) {
-        additional = tab;
+    let output = "";
+    let counter = 0;
+    for (let i = 0; i < line.length; i++) {
+      let pointedAt = i >= startCol && i < endCol;
+
+      let additional;
+      if (line[i] === "\t") {
+        const remaining = tabLength - counter;
+        additional = " ".repeat(remaining);
+        debug("advancing %d", remaining);
+        counter = 0;
       } else {
         additional = " "; // just a space
+        counter++;
+        if (counter === tabLength) {
+          counter = 0;
+        }
       }
 
       if (pointedAt) {
@@ -216,7 +288,9 @@ var DebugUtils = {
 
   //NOTE: source and uncolorizedSource here have already
   //been split into lines here, they're not the raw text
-  formatRangeLines: function(
+  //ALSO: assuming here that colorized source has been detabbed
+  //but that uncolorized source has not
+  formatRangeLines: function (
     source,
     range,
     uncolorizedSource,
@@ -279,9 +353,10 @@ var DebugUtils = {
     return allLines.join(OS.EOL);
   },
 
-  formatBreakpointLocation: function(
+  formatBreakpointLocation: function (
     breakpoint,
     here,
+    currentCompilationId,
     currentSourceId,
     sourceNames
   ) {
@@ -294,15 +369,19 @@ var DebugUtils = {
     } else {
       baseMessage = `line ${breakpoint.line + 1}`;
     }
-    if (breakpoint.sourceId !== currentSourceId) {
-      let sourceName = sourceNames[breakpoint.sourceId];
+    if (
+      breakpoint.compilationId !== currentCompilationId ||
+      breakpoint.sourceId !== currentSourceId
+    ) {
+      let sourceName =
+        sourceNames[breakpoint.compilationId][breakpoint.sourceId];
       return baseMessage + ` in ${sourceName}`;
     } else {
       return baseMessage;
     }
   },
 
-  formatInstruction: function(traceIndex, traceLength, instruction) {
+  formatInstruction: function (traceIndex, traceLength, instruction) {
     return (
       "(" +
       traceIndex +
@@ -313,7 +392,7 @@ var DebugUtils = {
     );
   },
 
-  formatPC: function(pc) {
+  formatPC: function (pc) {
     let hex = pc.toString(16);
     if (hex.length % 2 !== 0) {
       hex = "0" + hex; //ensure even length
@@ -321,7 +400,7 @@ var DebugUtils = {
     return "  PC = " + pc.toString() + " = 0x" + hex;
   },
 
-  formatStack: function(stack) {
+  formatStack: function (stack) {
     //stack here is an array of hex words (no "0x")
     var formatted = stack.map((item, index) => {
       item = truffleColors.orange(item);
@@ -344,7 +423,7 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatMemory: function(memory) {
+  formatMemory: function (memory) {
     //note memory here is an array of hex words (no "0x"),
     //not a single long hex string
 
@@ -374,14 +453,12 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatStorage: function(storage) {
+  formatStorage: function (storage) {
     //storage here is an object mapping hex words to hex words (no 0x)
 
     //first: sort the keys (slice to clone as sort is in-place)
     //note: we can use the default sort here; it will do the righ thing
-    let slots = Object.keys(storage)
-      .slice()
-      .sort();
+    let slots = Object.keys(storage).slice().sort();
 
     let formatted = slots.map((slot, index) => {
       if (
@@ -405,7 +482,7 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatCalldata: function(calldata) {
+  formatCalldata: function (calldata) {
     //takes a Uint8Array
     let selector = calldata.slice(0, Codec.Evm.Utils.SELECTOR_SIZE);
     let words = [];
@@ -457,7 +534,7 @@ var DebugUtils = {
     return formatted.join(OS.EOL);
   },
 
-  formatValue: function(value, indent = 0, nativized = false) {
+  formatValue: function (value, indent = 0, nativized = false) {
     let inspectOptions = {
       colors: true,
       depth: null,
@@ -478,7 +555,64 @@ var DebugUtils = {
       .join(OS.EOL);
   },
 
-  colorize: function(code) {
+  formatStacktrace: function (stacktrace, indent = 2) {
+    //get message from stacktrace
+    const message = stacktrace[0].message;
+    //we want to print inner to outer, so first, let's
+    //reverse
+    stacktrace = stacktrace.slice().reverse(); //reverse is in-place so clone first
+    let lines = stacktrace.map(
+      ({ functionName, contractName, address, location }) => {
+        let name;
+        if (contractName && functionName) {
+          name = `${contractName}.${functionName}`;
+        } else if (contractName) {
+          name = contractName;
+        } else if (functionName) {
+          name = functionName;
+        } else {
+          name = "unknown function";
+        }
+        let locationString;
+        if (location) {
+          let {
+            source: { sourcePath },
+            sourceRange: {
+              lines: {
+                start: { line, column }
+              }
+            }
+          } = location;
+          locationString = sourcePath
+            ? `${sourcePath}:${line + 1}:${column + 1}` //add 1 to account for 0-indexing
+            : "unknown location";
+        } else {
+          locationString = "unknown location";
+        }
+        let addressString =
+          address !== undefined ? `address ${address}` : "unknown address";
+        return `at ${name} [${addressString}] (${locationString})`;
+      }
+    );
+    let status = stacktrace[0].status;
+    if (status != undefined) {
+      lines.unshift(
+        status
+          ? message !== undefined
+            ? `Error: Improper return (caused message: ${message})`
+            : "Error: Improper return (may be an unexpected self-destruct)"
+          : message !== undefined
+          ? `Error: Revert (message: ${message})`
+          : "Error: Revert or exceptional halt"
+      );
+    }
+    let indented = lines.map((line, index) =>
+      index === 0 ? line : " ".repeat(indent) + line
+    );
+    return indented.join(OS.EOL);
+  },
+
+  colorize: function (code) {
     //I'd put these outside the function
     //but then it gives me errors, because
     //you can't just define self-referential objects like that...
@@ -565,7 +699,7 @@ var DebugUtils = {
   //note that this is written in terms of mutating things
   //rather than just using map() due to the need to handle
   //circular objects
-  cleanConstructors: function(object, seenSoFar = new Map()) {
+  cleanConstructors: function (object, seenSoFar = new Map()) {
     debug("object %o", object);
     if (seenSoFar.has(object)) {
       return seenSoFar.get(object);
@@ -621,14 +755,45 @@ var DebugUtils = {
   },
 
   //HACK
-  cleanThis: function(variables, replacement) {
+  cleanThis: function (variables, replacement) {
     return Object.assign(
       {},
-      ...Object.entries(variables).map(
-        ([variable, value]) =>
-          variable === "this" ? { [replacement]: value } : { [variable]: value }
+      ...Object.entries(variables).map(([variable, value]) =>
+        variable === "this" ? { [replacement]: value } : { [variable]: value }
       )
     );
+  },
+
+  /**
+   * HACK warning!  This function modifies the debugger state
+   * and should only be used in light mode, at startup, in a very specific way!
+   *
+   * let bugger = await Debugger.forTx(txHash, { lightMode: true, ... });
+   * const sources = await getTransactionSourcesBeforeStarting(bugger);
+   * await bugger.startFullMode();
+   *
+   * Don't go switching transactions after doing this, because there's no
+   * way at the moment to switch back into light mode in order to re-run
+   * this function.  You do *not* want to run this in full mode.
+   */
+  getTransactionSourcesBeforeStarting: async function (bugger) {
+    await bugger.reset();
+    let sources = {};
+    const { controller } = bugger.selectors;
+    while (!bugger.view(controller.current.trace.finished)) {
+      const source = bugger.view(controller.current.location.source);
+      const { compilationId, id } = source;
+      if (compilationId !== undefined && id !== undefined) {
+        sources[compilationId] = {
+          ...sources[compilationId],
+          [id]: source
+        };
+      }
+      await bugger.stepNext();
+    }
+    await bugger.reset();
+    //flatten sources before returning
+    return [].concat(...Object.values(sources).map(Object.values));
   }
 };
 

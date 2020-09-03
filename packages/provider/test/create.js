@@ -3,14 +3,14 @@ const Ganache = require("ganache-core");
 const Provider = require("../index");
 const Web3 = require("web3");
 
-describe("Provider", function() {
+describe("Provider", function () {
   let server;
   const port = 12345;
   const host = "127.0.0.1";
 
   before("Initialize Ganache server", done => {
     server = Ganache.server({});
-    server.listen(port, function(err) {
+    server.listen(port, function (err) {
       assert.ifError(err);
       done();
     });
@@ -22,6 +22,32 @@ describe("Provider", function() {
 
   it("accepts host and port", async () => {
     const provider = Provider.create({ host, port });
+    assert(provider);
+
+    try {
+      await Provider.testConnection({ provider });
+    } catch (error) {
+      assert.fail(error.message);
+    }
+  });
+
+  it("accepts url", async () => {
+    const provider = Provider.create({ url: `http://${host}:${port}` });
+    assert(provider);
+
+    try {
+      await Provider.testConnection({ provider });
+    } catch (error) {
+      assert.fail(error.message);
+    }
+  });
+
+  it("accepts uses url before host/port", async () => {
+    const provider = Provider.create({
+      url: `http://${host}:${port}`,
+      host: "invalidhost",
+      port: 42
+    });
     assert(provider);
 
     try {
@@ -61,7 +87,7 @@ describe("Provider", function() {
 
   it("accepts a function that returns a provider instance", async () => {
     const provider = Provider.create({
-      provider: function() {
+      provider: function () {
         return new Ganache.provider();
       }
     });

@@ -42,15 +42,14 @@ let options = { logger: console };
 
 const inputArguments = process.argv.slice(2);
 const userWantsGeneralHelp =
-  (inputArguments[0] === "help" || inputArguments[0] === "--help") &&
-  inputArguments.length === 1;
+  inputArguments.length === 1 && ["help", "--help"].includes(inputArguments[0]);
 
 if (userWantsGeneralHelp) {
   command.displayGeneralHelp();
   process.exit(0);
 }
 
-command.run(inputArguments, options, function(err) {
+command.run(inputArguments, options, function (err) {
   if (err) {
     if (err instanceof TaskError) {
       analytics.send({

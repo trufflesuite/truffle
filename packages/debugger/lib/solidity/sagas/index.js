@@ -10,8 +10,8 @@ import * as trace from "lib/trace/sagas";
 
 import solidity from "../selectors";
 
-export function* addSource(source, sourcePath, ast, compiler) {
-  yield put(actions.addSource(source, sourcePath, ast, compiler));
+export function* addSources(compilations) {
+  yield put(actions.addSources(compilations));
 }
 
 function* tickSaga() {
@@ -23,33 +23,28 @@ function* tickSaga() {
 }
 
 function* functionDepthSaga() {
-  if (yield select(solidity.current.willFail)) {
+  if (yield select(solidity.current.willReturn)) {
     //we do this case first so we can be sure we're not failing in any of the
     //other cases below!
     yield put(actions.externalReturn());
-  } else if (
-    yield select(solidity.current.willCallOrCreateButInstantlyReturn)
-  ) {
-    //do nothing
-    //again, we put this second so we can be sure the other cases are not this
   } else if (yield select(solidity.current.willJump)) {
     let jumpDirection = yield select(solidity.current.jumpDirection);
     debug("checking guard");
     let guard = yield select(solidity.current.nextFrameIsPhantom);
-    if (jumpDirection === "i" && guard) {
+    let nextSource = yield select(solidity.next.source);
+    if (jumpDirection === "i" && guard && nextSource.id !== undefined) {
+      //note: currently unmapped source will have id undefined, rather than
+      //id -1, in our internal representation.  Might want to change this
+      //later.
       yield put(actions.clearPhantomGuard());
     } else {
       yield put(actions.jump(jumpDirection));
     }
-  } else if (
-    (yield select(solidity.current.willCall)) ||
-    (yield select(solidity.current.willCreate))
-  ) {
+  } else if (yield select(solidity.current.willCall)) {
+    //note: includes creations; does not include insta-returns
     debug("checking if guard needed");
     let guard = yield select(solidity.current.callRequiresPhantomFrame);
     yield put(actions.externalCall(guard));
-  } else if (yield select(solidity.current.willReturn)) {
-    yield put(actions.externalReturn());
   }
 }
 

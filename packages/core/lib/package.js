@@ -5,13 +5,13 @@ const EthPM = require("ethpm");
 const EthPMRegistry = require("ethpm-registry");
 const Web3 = require("web3");
 const { createInterfaceAdapter } = require("@truffle/interface-adapter");
-const async = require("async");
 const path = require("path");
 const fs = require("fs");
 const OS = require("os");
 
 const Package = {
-  install: async function(options, callback) {
+  install: async function (options, callback) {
+    const callbackPassed = typeof callback === "function";
     expect.options(options, ["working_directory", "ethpm"]);
 
     expect.options(options.ethpm, ["registry", "ipfs_host"]);
@@ -50,7 +50,11 @@ const Package = {
           provider
         );
       } catch (error) {
-        callback(error);
+        if (callbackPassed) {
+          callback(error);
+          return;
+        }
+        throw error;
       }
     }
 
@@ -68,42 +72,48 @@ const Package = {
         return pkg.installDependency(package_name, version);
       });
 
-      Promise.all(promises)
-        .then(() => {
-          if (options.packages.length > 0) {
-            console.log("");
-            console.log("Successfully installed the following package(s)...");
-            console.log("==================================================");
-            options.packages.forEach(singlePackage => {
-              console.log(`> ${singlePackage}`);
-            });
-            console.log("");
-          }
-          callback();
-        })
-        .catch(callback);
+      await Promise.all(promises);
+      if (options.packages.length > 0) {
+        console.log("");
+        console.log("Successfully installed the following package(s)...");
+        console.log("==================================================");
+        options.packages.forEach(singlePackage => {
+          console.log(`> ${singlePackage}`);
+        });
+        console.log("");
+      }
+      if (callbackPassed) {
+        callback();
+      }
+      return;
     } else {
-      fs.access(
-        path.join(options.working_directory, "ethpm.json"),
-        fs.constants.R_OK,
-        error => {
-          let manifest;
-
-          // If the ethpm.json file doesn't exist, use the config as the manifest.
-          if (error) manifest = options;
-
-          pkg
-            .install(manifest)
-            .then(() => {
-              callback();
-            })
-            .catch(callback);
+      let manifest;
+      try {
+        fs.accessSync(
+          path.join(options.working_directory, "ethpm.json"),
+          fs.constants.R_OK
+        );
+      } catch (_error) {
+        // If the ethpm.json file doesn't exist, use the config as the manifest.
+        manifest = options;
+      }
+      try {
+        await pkg.install(manifest);
+        if (callbackPassed) {
+          callback();
         }
-      );
+      } catch (error) {
+        if (callbackPassed) {
+          callback(error);
+          return;
+        }
+        throw error;
+      }
     }
   },
 
-  publish: function(options, callback) {
+  publish: async function (options, callback) {
+    const callbackPassed = typeof callback === "function";
     var self = this;
 
     expect.options(options, [
@@ -121,15 +131,19 @@ const Package = {
     var ropsten = options.networks.ropsten;
 
     if (!ropsten) {
-      return callback(
-        new TruffleError(
-          "You need to have a `ropsten` network configured in order to publish to the Ethereum Package Registry. See the following link for an example configuration:" +
-            OS.EOL +
-            OS.EOL +
-            "    http://truffleframework.com/tutorials/using-infura-custom-provider" +
-            OS.EOL
-        )
-      );
+      const message =
+        "You need to have a `ropsten` network configured in " +
+        "order to publish to the Ethereum Package Registry. See the " +
+        "following link for an example configuration:" +
+        OS.EOL +
+        OS.EOL +
+        "    http://truffleframework.com/tutorials/using-infura-custom-provider" +
+        OS.EOL;
+      if (callbackPassed) {
+        callback(new TruffleError(message));
+        return;
+      }
+      throw new TruffleError(message);
     }
 
     options.network = "ropsten";
@@ -141,7 +155,7 @@ const Package = {
     });
     var host = options.ethpm.ipfs_host;
 
-    if (host instanceof EthPM.hosts.IPFS === false) {
+    if (!(host instanceof EthPM.hosts.IPFS)) {
       host = new EthPM.hosts.IPFS(
         options.ethpm.ipfs_host,
         options.ethpm.ipfs_port,
@@ -151,204 +165,188 @@ const Package = {
 
     options.logger.log("Finding publishable artifacts...");
 
-    self.publishable_artifacts(options, function(err, artifacts) {
-      if (err) return callback(err);
+    try {
+      const artifacts = await self.publishable_artifacts(options);
 
-      interfaceAdapter
-        .getAccounts()
-        .then(async accs => {
-          var registry = await EthPMRegistry.use(
-            options.ethpm.registry,
-            accs[0],
-            provider
-          );
-          var pkg = new EthPM(options.working_directory, host, registry);
+      const accs = await interfaceAdapter.getAccounts();
+      var registry = await EthPMRegistry.use(
+        options.ethpm.registry,
+        accs[0],
+        provider
+      );
+      var pkg = new EthPM(options.working_directory, host, registry);
+      let manifest;
+      try {
+        fs.accessSync(
+          path.join(options.working_directory, "ethpm.json"),
+          fs.constants.R_OK
+        );
+      } catch (error) {
+        // If the ethpm.json file doesn't exist, use the config as the manifest.
+        manifest = options;
+      }
 
-          fs.access(
-            path.join(options.working_directory, "ethpm.json"),
-            fs.constants.R_OK,
-            function(err) {
-              var manifest;
+      options.logger.log("Uploading sources and publishing to registry...");
 
-              // If the ethpm.json file doesn't exist, use the config as the manifest.
-              if (err) {
-                manifest = options;
-              }
-
-              options.logger.log(
-                "Uploading sources and publishing to registry..."
-              );
-
-              // TODO: Gather contract_types and deployments
-              pkg
-                .publish(
-                  artifacts.contract_types,
-                  artifacts.deployments,
-                  manifest
-                )
-                .then(function(lockfile) {
-                  // If we get here, publishing was a success.
-                  options.logger.log(
-                    "+ " + lockfile.package_name + "@" + lockfile.version
-                  );
-                  callback();
-                })
-                .catch(callback);
-            }
-          );
-        })
-        .catch(callback);
-    });
+      // TODO: Gather contract_types and deployments
+      const lockfile = await pkg.publish(
+        artifacts.contract_types,
+        artifacts.deployments,
+        manifest
+      );
+      // If we get here, publishing was a success.
+      options.logger.log("+ " + lockfile.package_name + "@" + lockfile.version);
+      if (callbackPassed) {
+        callback();
+      }
+      return;
+    } catch (error) {
+      if (callbackPassed) {
+        return callback(error);
+      }
+      throw error;
+    }
   },
 
-  digest: function(options, callback) {
-    // async.parallel({
-    //   contracts: provision.bind(provision, options, false),
-    //   files: dir.files.bind(dir, options.contracts_directory)
-    // }, function(err, results) {
-    //   if (err) return callback(err);
-    //
-    //   results.contracts = results.contracts.map(function(contract) {
-    //     return contract.contract_name;
-    //   });
-    //
-    //   callback(null, results);
-    // });
+  digest: function (options, callback) {
     callback(new Error("Not yet implemented"));
   },
 
   // Return a list of publishable artifacts
-  publishable_artifacts: function(options, callback) {
+  publishable_artifacts: async function (options, callback) {
+    const callbackPassed = typeof callback === "function";
     // Filter out "test" and "development" networks.
-    var deployed_networks = Object.keys(options.networks).filter(function(
-      network_name
-    ) {
-      return network_name !== "test" && network_name !== "development";
-    });
+    const ifReservedNetworks = new Set(["test", "development"]);
+    var deployed_networks = Object.keys(options.networks).filter(
+      name => !ifReservedNetworks.has(name)
+    );
 
     // Now get the URIs of each network that's been deployed to.
-    Networks.asURIs(options, deployed_networks, function(err, result) {
-      if (err) return callback(err);
-
-      var uris = result.uris;
-
-      if (result.failed.length > 0) {
-        return callback(
-          new Error(
-            "Could not connect to the following networks: " +
-              result.failed.join(", ") +
-              ". These networks have deployed artifacts that can't be published as a package without an active and accessible connection. Please ensure clients for each network are up and running prior to publishing, or use the -n option to specify specific networks you'd like published."
-          )
-        );
+    let result;
+    try {
+      result = await Networks.asURIs(options, deployed_networks);
+    } catch (error) {
+      if (callbackPassed) {
+        return callback(err);
       }
+      throw err;
+    }
 
-      var files = fs.readdirSync(options.contracts_build_directory);
-      files = files.filter(file => file.includes(".json"));
+    var uris = result.uris;
 
-      if (!files.length) {
-        var msg =
-          "Could not locate any publishable artifacts in " +
-          options.contracts_build_directory +
-          ". " +
-          "Run `truffle compile` before publishing.";
-
-        return callback(new Error(msg));
+    if (result.failed.length > 0) {
+      const message =
+        "Could not connect to the following networks: " +
+        result.failed.join(", ") +
+        ". These networks have deployed " +
+        "artifacts that can't be published as a package without an active " +
+        "and accessible connection. Please ensure clients for each " +
+        "network are up and running prior to publishing, or use the -n " +
+        "option to specify specific networks you'd like published.";
+      if (callbackPassed) {
+        return callback(new Error(message));
       }
+      throw new Error(message);
+    }
 
-      var promises = files.map(function(file) {
-        return new Promise(function(accept, reject) {
-          fs.readFile(
-            path.join(options.contracts_build_directory, file),
-            "utf8",
-            function(err, body) {
-              if (err) return reject(err);
+    var files = fs.readdirSync(options.contracts_build_directory);
+    files = files.filter(file => file.endsWith(".json"));
 
-              try {
-                body = JSON.parse(body);
-              } catch (e) {
-                return reject(e);
-              }
+    if (!files.length) {
+      const message =
+        "Could not locate any publishable artifacts in " +
+        options.contracts_build_directory +
+        ". " +
+        "Run `truffle compile` before publishing.";
+      if (callbackPassed) {
+        return callback(new Error(message));
+      }
+      throw new Error(message);
+    }
 
-              accept(body);
+    const promises = files.map(file => {
+      return new Promise((resolve, reject) => {
+        fs.readFile(
+          path.join(options.contracts_build_directory, file),
+          "utf8",
+          (error, data) => {
+            if (error) {
+              reject(error);
             }
-          );
-        });
+            resolve(JSON.parse(data));
+          }
+        );
       });
-
-      var contract_types = {};
-      var deployments = {};
-
-      Promise.all(promises)
-        .then(function(contracts) {
-          // contract_types first.
-          contracts.forEach(function(data) {
-            contract_types[data.contractName] = {
-              contract_name: data.contractName,
-              bytecode: data.bytecode,
-              abi: data.abi
-            };
-          });
-
-          //var network_cache = {};
-          var matching_promises = [];
-
-          contracts.forEach(function(data) {
-            Object.keys(data.networks).forEach(function(network_id) {
-              matching_promises.push(
-                new Promise(function(accept, reject) {
-                  // Go through each deployed network and see if this network matches.
-                  // Bail early if we foun done.
-                  async.each(
-                    deployed_networks,
-                    function(deployed_network, finished) {
-                      Networks.matchesNetwork(
-                        network_id,
-                        options.networks[deployed_network],
-                        function(err, matches) {
-                          if (err) return finished(err);
-                          if (matches) {
-                            var uri = uris[deployed_network];
-
-                            if (!deployments[uri]) {
-                              deployments[uri] = {};
-                            }
-
-                            deployments[uri][data.contractName] = {
-                              contract_type: data.contractName, // TODO: Handle conflict resolution
-                              address: data.networks[network_id].address
-                            };
-
-                            return finished("bail early");
-                          }
-                          finished();
-                        }
-                      );
-                    },
-                    function(err) {
-                      if (err && err !== "bail early") {
-                        return reject(err);
-                      }
-
-                      accept();
-                    }
-                  );
-                })
-              );
-            });
-          });
-
-          return Promise.all(matching_promises);
-        })
-        .then(function() {
-          var to_return = {
-            contract_types: contract_types,
-            deployments: deployments
-          };
-
-          callback(null, to_return);
-        })
-        .catch(callback);
     });
+
+    const contracts = await Promise.all(promises);
+
+    var contract_types = {};
+    var deployments = {};
+
+    // contract_types first.
+    contracts.forEach(data => {
+      contract_types[data.contractName] = {
+        contract_name: data.contractName,
+        bytecode: data.bytecode,
+        abi: data.abi
+      };
+    });
+
+    //var network_cache = {};
+    const matchingPromises = [];
+
+    contracts.forEach(data => {
+      Object.keys(data.networks).forEach(network_id => {
+        matchingPromises.push(
+          new Promise(async (accept, reject) => {
+            try {
+              // Go through each deployed network and see if this network matches.
+              for (const deployedNetwork of deployed_networks) {
+                const matches = await Networks.matchesNetwork(
+                  network_id,
+                  options.networks[deployedNetwork]
+                );
+                if (matches) {
+                  var uri = uris[deployed_network];
+
+                  if (!deployments[uri]) {
+                    deployments[uri] = {};
+                  }
+
+                  deployments[uri][data.contractName] = {
+                    contract_type: data.contractName, // TODO: Handle conflict resolution
+                    address: data.networks[network_id].address
+                  };
+
+                  accept();
+                }
+              }
+            } catch (error) {
+              reject(error);
+            }
+          })
+        );
+      });
+    });
+
+    try {
+      await Promise.all(matchingPromises);
+      const toReturn = {
+        contract_types: contract_types,
+        deployments: deployments
+      };
+      if (callbackPassed) {
+        callback(null, toReturn);
+        return;
+      }
+      return toReturn;
+    } catch (error) {
+      if (callbackPassed) {
+        return callback(error);
+      }
+      throw error;
+    }
   }
 };
 

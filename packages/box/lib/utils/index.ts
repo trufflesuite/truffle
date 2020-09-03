@@ -8,12 +8,12 @@ import path from "path";
 import { boxConfig, unboxOptions } from "typings";
 
 export = {
-  downloadBox: async (url: string, destination: string, events: any) => {
+  downloadBox: async (source: string, destination: string, events: any) => {
     events.emit("unbox:downloadingBox:start");
 
     try {
-      await unbox.verifyURL(url);
-      await unbox.fetchRepository(url, destination);
+      await unbox.verifySourcePath(source);
+      await unbox.fetchRepository(source, destination);
       events.emit("unbox:downloadingBox:succeed");
     } catch (error) {
       events.emit("unbox:fail");
@@ -38,7 +38,6 @@ export = {
   setUpTempDirectory: (events: any) => {
     events.emit("unbox:preparingToDownload:start");
     const options = {
-      dir: process.cwd(),
       unsafeCleanup: true
     };
     try {

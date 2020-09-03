@@ -40,13 +40,31 @@ const sanitizedValue = dirtyValueArray => {
   return sanitizedValueArray;
 };
 
+// filter `signature` property from an event
+const sanitizeEvent = dirtyEvent =>
+  Object.entries(dirtyEvent).reduce(
+    (acc, [property, value]) =>
+      property === "signature"
+        ? acc
+        : Object.assign(acc, { [property]: value }),
+    {}
+  );
+
+// sanitize aggregrate events given a `network-object.spec.json#events` object
+const sanitizeAllEvents = dirtyEvents =>
+  Object.entries(dirtyEvents).reduce(
+    (acc, [property, event]) =>
+      Object.assign(acc, { [property]: sanitizeEvent(event) }),
+    {}
+  );
+
 var properties = {
   contractName: {
     sources: ["contractName", "contract_name"]
   },
   abi: {
     sources: ["abi", "interface"],
-    transform: function(value) {
+    transform: function (value) {
       if (typeof value === "string") {
         try {
           value = JSON.parse(value);
@@ -65,7 +83,7 @@ var properties = {
   },
   bytecode: {
     sources: ["bytecode", "binary", "unlinked_binary", "evm.bytecode.object"],
-    transform: function(value) {
+    transform: function (value) {
       if (value && value.indexOf("0x") !== 0) {
         value = "0x" + value;
       }
@@ -78,13 +96,14 @@ var properties = {
       "runtimeBytecode",
       "evm.deployedBytecode.object"
     ],
-    transform: function(value) {
+    transform: function (value) {
       if (value && value.indexOf("0x") !== 0) {
         value = "0x" + value;
       }
       return value;
     }
   },
+  immutableReferences: {},
   sourceMap: {
     sources: ["sourceMap", "srcmap", "evm.bytecode.sourceMap"]
   },
@@ -99,7 +118,7 @@ var properties = {
   sourcePath: {},
   ast: {},
   legacyAST: {
-    transform: function(value, obj) {
+    transform: function (value, obj) {
       var schemaVersion = obj.schemaVersion || "0.0.0";
 
       // legacyAST introduced in v2.0.0
@@ -112,14 +131,32 @@ var properties = {
   },
   compiler: {},
   networks: {
-    transform: function(value, obj) {
-      if (value === undefined) {
-        value = {};
+    /**
+     * Normalize a networks object. Currently this makes sure `events` are
+     * always sanitized and `links` is extracted when copying from
+     * a TruffleContract context object.
+     *
+     * @param {object} value - the target object
+     * @param {object | TruffleContract} obj - the context, or source object.
+     * @return {object} The normalized Network object
+     */
+    transform: function (value = {}, obj) {
+      // Sanitize value's events for known networks
+      Object.keys(value).forEach(networkId => {
+        if (value[networkId].events) {
+          value[networkId].events = sanitizeAllEvents(value[networkId].events);
+        }
+      });
+
+      // Set and sanitize the current networks property from the
+      // TruffleContract. Note: obj is a TruffleContract if it has
+      // `network_id` attribute
+      const networkId = obj.network_id;
+      if (networkId && value.hasOwnProperty(networkId)) {
+        value[networkId].links = obj.links;
+        value[networkId].events = sanitizeAllEvents(obj.events);
       }
-      if (obj.network_id && value[obj.network_id]) {
-        value[obj.network_id].events = obj.events;
-        value[obj.network_id].links = obj.links;
-      }
+
       return value;
     }
   },
@@ -128,7 +165,7 @@ var properties = {
   },
   updatedAt: {
     sources: ["updatedAt", "updated_at"],
-    transform: function(value) {
+    transform: function (value) {
       if (typeof value === "number") {
         value = new Date(value).toISOString();
       }
@@ -148,12 +185,12 @@ var properties = {
  */
 function getter(key, transform) {
   if (transform === undefined) {
-    transform = function(x) {
+    transform = function (x) {
       return x;
     };
   }
 
-  return function(obj) {
+  return function (obj) {
     try {
       return transform(obj[key]);
     } catch (e) {
@@ -174,8 +211,8 @@ function getter(key, transform) {
  */
 function chain() {
   var getters = Array.prototype.slice.call(arguments);
-  return function(obj) {
-    return getters.reduce(function(cur, get) {
+  return function (obj) {
+    return getters.reduce(function (cur, get) {
       return get(cur);
     }, obj);
   };
@@ -188,7 +225,7 @@ var TruffleContractSchema = {
   // Return a promise to validate a contract object
   // - Resolves as validated `contractObj`
   // - Rejects with list of errors from schema validator
-  validate: function(contractObj) {
+  validate: function (contractObj) {
     var ajv = new Ajv({ verbose: true });
     ajv.addSchema(abiSchema);
     ajv.addSchema(networkObjectSchema);
@@ -233,12 +270,12 @@ var TruffleContractSchema = {
 
   // accepts as argument anything that can be turned into a contract object
   // returns a contract object
-  normalize: function(objDirty, options) {
+  normalize: function (objDirty, options) {
     options = options || {};
     var normalized = {};
 
     // iterate over each property
-    Object.keys(properties).forEach(function(key) {
+    Object.keys(properties).forEach(function (key) {
       var property = properties[key];
       var value; // normalized value || undefined
 
@@ -252,7 +289,7 @@ var TruffleContractSchema = {
         // string refers to path to value in objDirty, split and chain
         // getters
         if (typeof source === "string") {
-          var traversals = source.split(".").map(function(k) {
+          var traversals = source.split(".").map(function (k) {
             return getter(k);
           });
           source = chain.apply(null, traversals);
@@ -274,7 +311,7 @@ var TruffleContractSchema = {
     });
 
     // Copy x- options
-    Object.keys(objDirty).forEach(function(key) {
+    Object.keys(objDirty).forEach(function (key) {
       if (key.indexOf("x-") === 0) {
         normalized[key] = getter(key)(objDirty);
       }

@@ -23,13 +23,8 @@ declare class Web3ProviderEngine implements Provider {
   ): void;
   addProvider(provider: any): void;
   // start block polling
-  start(callback?: () => void): void;
+  start(callback?: (error?: Error) => void): void;
   // stop block polling
   stop(): void;
 }
 export default Web3ProviderEngine;
-
-declare module "web3-provider-engine/subproviders/provider";
-declare module "web3-provider-engine/subproviders/hooked-wallet";
-declare module "web3-provider-engine/subproviders/nonce-tracker";
-declare module "web3-provider-engine/subproviders/filters";

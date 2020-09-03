@@ -8,20 +8,21 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "2.0.34",
+  "version": "2.0.51",
   "main": "require.js",
   "scripts": {
+    "prepare": "exit 0",
     "test": "mocha"
   },
   "dependencies": {
-    "@truffle/config": "^1.2.12",
-    "@truffle/expect": "^0.0.13",
-    "@truffle/interface-adapter": "^0.4.3",
+    "@truffle/config": "^1.2.28",
+    "@truffle/expect": "^0.0.15",
+    "@truffle/interface-adapter": "^0.4.16",
     "original-require": "1.0.1",
     "web3": "1.2.1"
   },
   "devDependencies": {
-    "mocha": "5.2.0"
+    "mocha": "8.1.2"
   },
   "keywords": [
     "ethereum",
