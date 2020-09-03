@@ -52,7 +52,7 @@ contract ExternalsDerived is ExternalsBase {
 `;
 
 const __INTERNALS = `
-pragma solidity ^0.7.0;
+pragma solidity ^0.7.1;
 
 contract InternalsBase {
 
@@ -72,6 +72,10 @@ library InternalsLib {
   }
 }
 
+function freeFn() {
+  InternalsLib.libraryFn();
+}
+
 contract InternalsTest is InternalsBase {
 
   function inherited() public override {
@@ -85,12 +89,15 @@ contract InternalsTest is InternalsBase {
     function() internal derivedFn;
     function() internal baseFn;
     function() internal libFn;
+    function() internal storedFreeFn;
+    function() internal undefFn;
     function() internal readFromConstructor;
 
     plainFn = run;
     derivedFn = InternalsTest.inherited;
     baseFn = InternalsBase.inherited;
     libFn = InternalsLib.libraryFn;
+    storedFreeFn = freeFn;
     readFromConstructor = storageFn;
 
     emit Log(2); //BREAK HERE (DEPLOYED)
@@ -101,11 +108,14 @@ contract InternalsTest is InternalsBase {
     function() internal derivedFn;
     function() internal baseFn;
     function() internal libFn;
+    function() internal storedFreeFn;
+    function() internal undefFn;
 
     plainFn = run;
     derivedFn = InternalsTest.inherited;
     baseFn = InternalsBase.inherited;
     libFn = InternalsLib.libraryFn;
+    storedFreeFn = freeFn;
 
     storageFn = run;
 
@@ -206,6 +216,8 @@ describe("Function Pointer Decoding", function () {
       derivedFn: "InternalsTest.inherited",
       baseFn: "InternalsBase.inherited",
       libFn: "InternalsLib.libraryFn",
+      storedFreeFn: "freeFn",
+      undefFn: "assert(false)",
       storageFn: "InternalsTest.run",
       readFromConstructor: "InternalsTest.run"
     };
@@ -241,6 +253,8 @@ describe("Function Pointer Decoding", function () {
       derivedFn: "InternalsTest.inherited",
       baseFn: "InternalsBase.inherited",
       libFn: "InternalsLib.libraryFn",
+      storedFreeFn: "freeFn",
+      undefFn: "assert(false)",
       storageFn: "InternalsTest.run"
     };
 
