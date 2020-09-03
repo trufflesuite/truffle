@@ -90,6 +90,7 @@ contract InternalsTest is InternalsBase {
     function() internal baseFn;
     function() internal libFn;
     function() internal storedFreeFn;
+    function() internal undefFn;
     function() internal readFromConstructor;
 
     plainFn = run;
@@ -108,6 +109,7 @@ contract InternalsTest is InternalsBase {
     function() internal baseFn;
     function() internal libFn;
     function() internal storedFreeFn;
+    function() internal undefFn;
 
     plainFn = run;
     derivedFn = InternalsTest.inherited;
@@ -215,6 +217,7 @@ describe("Function Pointer Decoding", function () {
       baseFn: "InternalsBase.inherited",
       libFn: "InternalsLib.libraryFn",
       storedFreeFn: "freeFn",
+      undefFn: "assert(false)",
       storageFn: "InternalsTest.run",
       readFromConstructor: "InternalsTest.run"
     };
@@ -251,6 +254,7 @@ describe("Function Pointer Decoding", function () {
       baseFn: "InternalsBase.inherited",
       libFn: "InternalsLib.libraryFn",
       storedFreeFn: "freeFn",
+      undefFn: "assert(false)",
       storageFn: "InternalsTest.run"
     };
 
