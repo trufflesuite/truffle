@@ -641,7 +641,8 @@ export function decodeInternalFunction(
   }
   let name = functionEntry.name;
   let mutability = functionEntry.mutability;
-  let definedIn = Evm.Import.functionTableEntryToType(functionEntry);
+  let definedIn = Evm.Import.functionTableEntryToType(functionEntry); //may be null
+  let id = Evm.Import.makeInternalFunctionId(functionEntry);
   return {
     type: dataType,
     kind: "value" as const,
@@ -651,6 +652,7 @@ export function decodeInternalFunction(
       deployedProgramCounter: deployedPc,
       constructorProgramCounter: constructorPc,
       name,
+      id,
       definedIn,
       mutability
     }
