@@ -19,6 +19,16 @@ import * as Codec from "@truffle/codec";
  */
 const identity = x => x;
 
+function solidityVersionHasNoNow(compiler) {
+  return (
+    compiler &&
+    //want to include prerelease versions of 0.7.0
+    semver.satisfies(compiler.version, "~0.7 || >=0.7.0", {
+      includePrerelease: true
+    })
+  );
+}
+
 function findAncestorOfType(node, types, scopes, pointer = null, root = null) {
   //note: you may want to include "SourceUnit" as a fallback type when using
   //this function for convenience.
@@ -1125,7 +1135,7 @@ const data = createSelectorTree({
             return variables;
           }
 
-          return { ...variables, ...builtins };
+          return { ...builtins, ...variables };
         }
       ),
 
@@ -1137,9 +1147,9 @@ const data = createSelectorTree({
          * definitions for current variables, by identifier
          */
         _: createLeaf(
-          ["/current/scopes/inlined", "../_", "./this"],
+          ["/current/scopes/inlined", "../_", "./this", "/current/compiler"],
 
-          (scopes, identifiers, thisDefinition) => {
+          (scopes, identifiers, thisDefinition, compiler) => {
             let variables = Object.assign(
               {},
               ...Object.entries(identifiers).map(([identifier, variable]) => {
@@ -1156,14 +1166,18 @@ const data = createSelectorTree({
             let builtins = {
               msg: MSG_DEFINITION,
               tx: TX_DEFINITION,
-              block: BLOCK_DEFINITION,
-              now: NOW_DEFINITION
+              block: BLOCK_DEFINITION
             };
             //only include this when it has a proper definition
             if (thisDefinition) {
               builtins.this = thisDefinition;
             }
-            return { ...variables, ...builtins };
+            //only include now on versions prior to 0.7.0
+            if (!solidityVersionHasNoNow(compiler)) {
+              debug("adding now");
+              builtins.now = NOW_DEFINITION;
+            }
+            return { ...builtins, ...variables };
           }
         ),
 
@@ -1172,16 +1186,14 @@ const data = createSelectorTree({
          *
          * returns a spoofed definition for the this variable
          */
-        this: createLeaf(
-          ["/current/contract"],
-          contractNode =>
-            contractNode && contractNode.nodeType === "ContractDefinition"
-              ? spoofThisDefinition(
-                  contractNode.name,
-                  contractNode.id,
-                  contractNode.contractKind
-                )
-              : null
+        this: createLeaf(["/current/contract"], contractNode =>
+          contractNode && contractNode.nodeType === "ContractDefinition"
+            ? spoofThisDefinition(
+                contractNode.name,
+                contractNode.id,
+                contractNode.contractKind
+              )
+            : null
         )
       },
 
