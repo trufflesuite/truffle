@@ -14,7 +14,9 @@ describe("Parser", () => {
     "../../../path/to/AnotherDep.sol",
     "ethpmpackage/Contract.sol",
     "./somePath.sol",
-    "./someImportWithNoSpace.sol"
+    "./someImportWithNoSpace.sol",
+    "../../someRelativeMultilineImport.sol",
+    "someAbsoluteMultilineImport.sol"
   ];
 
   before("get code", async () => {
