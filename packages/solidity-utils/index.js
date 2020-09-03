@@ -200,12 +200,28 @@ var SolidityUtils = {
       {},
       ...instructions
         .filter(instruction => instruction.name === "JUMPDEST")
-        .filter(instruction => instruction.file !== -1)
-        //note that the designated invalid function *does* have an associated
-        //file, so it *is* safe to just filter out the ones that don't
         .map(instruction => {
           debug("instruction %O", instruction);
           let sourceId = instruction.file;
+          //first off, a special case: if the file is -1, check for designated
+          //invalid and if it's not that give up
+          //(designated invalid gets file -1 in some Solidity versions)
+          if (sourceId === -1) {
+            //yeah, this is copypasted from below
+            let nextInstruction = instructions[instruction.index + 1] || {};
+            if (nextInstruction.name === "INVALID") {
+              //designated invalid, include it
+              return {
+                [instruction.pc]: {
+                  isDesignatedInvalid: true
+                }
+              };
+            } else {
+              //not designated invalid, filter it out
+              return {};
+            }
+          }
+          //now we proceed with the normal case
           let findOverlappingRange = overlapFunctions[sourceId];
           let ast = asts[sourceId];
           if (!ast) {
