@@ -15,14 +15,13 @@ export interface MnemonicSigningAuthority {
   mnemonic: Mnemonic;
 }
 
-export interface PrivateKeySigningAuthority {
-  privateKeys?: PrivateKey[];
-  privateKey?: PrivateKey;
+export interface PrivateKeysSigningAuthority {
+  privateKeys: PrivateKey[];
 }
 
 export type SigningAuthority =
   | MnemonicSigningAuthority
-  | PrivateKeySigningAuthority;
+  | PrivateKeysSigningAuthority;
 
 export interface CommonOptions {
   providerOrUrl: ProviderOrUrl;
