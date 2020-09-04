@@ -12,12 +12,13 @@ const isMnemonicPhrase = (
   typeof credentials === "string" &&
   validateMnemonic(credentials, wordlist);
 
-// check that the first argument is a list of private keys or a single key
+// check that the first argument is a list of private keys
 const isPrivateKeys = (
   credentials: LegacyConstructor.Credentials
 ): credentials is PrivateKey[] =>
   credentials instanceof Array;
 
+// check that the first argument is a single private key (default case for invalid mnemonics)
 const isPrivateKey = (
   credentials: LegacyConstructor.Credentials
 ): credentials is PrivateKey =>
