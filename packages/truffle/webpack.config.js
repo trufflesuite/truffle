@@ -39,14 +39,14 @@ module.exports = {
       "node_modules",
       "@truffle/core",
       "index.js"
-    ),
+    )
   },
 
   target: "node",
   node: {
     // For this option, see here: https://github.com/webpack/webpack/issues/1599
     __dirname: false,
-    __filename: false,
+    __filename: false
   },
   context: rootDir,
 
@@ -54,12 +54,12 @@ module.exports = {
     path: outputDir,
     filename: "[name].bundled.js",
     library: "",
-    libraryTarget: "commonjs",
+    libraryTarget: "commonjs"
   },
   devtool: "source-map",
 
   optimization: {
-    minimize: false,
+    minimize: false
   },
 
   module: {
@@ -69,11 +69,11 @@ module.exports = {
         test: /\.js$/,
         include: [
           path.resolve(__dirname, "../core"),
-          path.resolve(__dirname, "../environment"),
+          path.resolve(__dirname, "../environment")
         ],
-        use: "shebang-loader",
-      },
-    ],
+        use: "shebang-loader"
+      }
+    ]
   },
 
   externals: [
@@ -82,6 +82,7 @@ module.exports = {
     // module that's a dependency of Truffle instead.
     /^original-require$/,
     /^mocha$/,
+    /^js-interpreter$/ //do *not* bundle this
   ],
 
   resolve: {
@@ -96,12 +97,12 @@ module.exports = {
         "bn.js"
       ),
       "original-fs": path.join(__dirname, "./nil.js"),
-      "scrypt": "js-scrypt",
-    },
+      "scrypt": "js-scrypt"
+    }
   },
 
   stats: {
-    warnings: false,
+    warnings: false
   },
 
   plugins: [
@@ -109,7 +110,7 @@ module.exports = {
       BUNDLE_VERSION: JSON.stringify(pkg.version),
       BUNDLE_CHAIN_FILENAME: JSON.stringify("chain.bundled.js"),
       BUNDLE_ANALYTICS_FILENAME: JSON.stringify("analytics.bundled.js"),
-      BUNDLE_LIBRARY_FILENAME: JSON.stringify("library.bundled.js"),
+      BUNDLE_LIBRARY_FILENAME: JSON.stringify("library.bundled.js")
     }),
 
     // Put the shebang back on.
@@ -128,7 +129,7 @@ module.exports = {
           "init",
           "initSource"
         ),
-        to: "initSource",
+        to: "initSource"
       },
       {
         from: path.join(
@@ -139,7 +140,7 @@ module.exports = {
           "lib",
           "testing",
           "Assert.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -150,7 +151,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertAddress.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -161,7 +162,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertAddressArray.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -172,7 +173,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertAddressPayableArray.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -183,7 +184,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertBalance.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -194,7 +195,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertBool.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -205,7 +206,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertBytes32.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -216,7 +217,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertBytes32Array.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -227,7 +228,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertGeneral.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -238,7 +239,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertInt.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -249,7 +250,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertIntArray.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -260,7 +261,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertString.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -271,7 +272,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertUint.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -282,7 +283,7 @@ module.exports = {
           "lib",
           "testing",
           "AssertUintArray.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -293,7 +294,7 @@ module.exports = {
           "lib",
           "testing",
           "NewSafeSend.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -304,7 +305,7 @@ module.exports = {
           "lib",
           "testing",
           "OldSafeSend.sol"
-        ),
+        )
       },
       {
         from: path.join(
@@ -318,13 +319,13 @@ module.exports = {
           "templates/"
         ),
         to: "templates",
-        flatten: true,
-      },
+        flatten: true
+      }
     ]),
 
     new CleanWebpackPlugin(),
 
     // Make web3 1.0 packable
-    new webpack.IgnorePlugin(/^electron$/),
-  ],
+    new webpack.IgnorePlugin(/^electron$/)
+  ]
 };

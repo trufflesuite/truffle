@@ -61,7 +61,6 @@
     "node-ipc": "^9.1.1",
     "ora": "^3.4.0",
     "original-require": "1.0.1",
-    "safe-eval": "^0.4.1",
     "sane": "^4.0.2",
     "semver": "^6.3.0",
     "source-map-support": "^0.5.19",
@@ -87,5 +86,8 @@
       "url": "https://github.com/tcoulter"
     }
   ],
-  "namespace": "consensys"
+  "namespace": "consensys",
+  "optionalDependencies": {
+    "js-interpreter": "^2.2.0"
+  }
 }

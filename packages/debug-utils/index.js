@@ -1,6 +1,5 @@
 var OS = require("os");
 var debug = require("debug")("debug-utils");
-var BN = require("bn.js");
 var util = require("util");
 var Codec = require("@truffle/codec");
 
@@ -693,65 +692,6 @@ var DebugUtils = {
       //but you'd be wrong!  I don't understand this either
     };
     return chromafi(code, options);
-  },
-
-  //HACK
-  //note that this is written in terms of mutating things
-  //rather than just using map() due to the need to handle
-  //circular objects
-  cleanConstructors: function (object, seenSoFar = new Map()) {
-    debug("object %o", object);
-    if (seenSoFar.has(object)) {
-      return seenSoFar.get(object);
-    }
-
-    if (Array.isArray(object)) {
-      //array case
-      let output = object.slice(); //clone
-      //set up new seenSoFar
-      let seenNow = new Map(seenSoFar);
-      seenNow.set(object, output);
-      for (let index in output) {
-        output[index] = DebugUtils.cleanConstructors(output[index], seenNow);
-      }
-      return output;
-    }
-
-    //HACK -- due to safeEval altering things, it's possible for isBN() to
-    //throw an error here
-    try {
-      //we do not want to alter BNs!
-      //(or other special objects, but that's just BNs right now)
-      if (BN.isBN(object)) {
-        return object;
-      }
-    } catch (e) {
-      //if isBN threw an error, it's not a BN, so move on
-    }
-
-    if (object && typeof object === "object") {
-      //generic object case
-      let output = Object.assign(
-        {},
-        ...Object.entries(object)
-          .filter(
-            ([key, value]) => key !== "constructor" || value !== undefined
-          )
-          .map(([key, value]) => ({
-            [key]: value //don't clean yet!
-          }))
-      );
-      //set up new seenSoFar
-      let seenNow = new Map(seenSoFar);
-      seenNow.set(object, output);
-      for (let field in output) {
-        output[field] = DebugUtils.cleanConstructors(output[field], seenNow);
-      }
-      return output;
-    }
-
-    //for strings, numbers, etc
-    return object;
   },
 
   //HACK

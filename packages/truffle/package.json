@@ -67,5 +67,8 @@
       "url": "https://github.com/tcoulter"
     }
   ],
-  "namespace": "consensys"
+  "namespace": "consensys",
+  "optionalDependencies": {
+    "js-interpreter": "^2.2.0"
+  }
 }
