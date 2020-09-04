@@ -205,24 +205,5 @@ describe("HD Wallet Provider", function () {
       const number = await web3.eth.getBlockNumber();
       assert(number === 0);
     });
-
-    it("provides for a private key", async () => {
-      const privateKey =
-        "3f841bf589fdf83a521e55d51afddc34fa65351161eead24f064855fc29c9580"; //random valid private key generated with ethkey
-      provider = new HDWalletProvider({
-        privateKey,
-        providerOrUrl: `http://localhost:${port}`
-      });
-      web3.setProvider(provider);
-
-      const addresses = provider.getAddresses();
-      assert.equal(addresses[0], "0xc515db5834d8f110eee96c3036854dbf1d87de2b");
-      addresses.forEach(address => {
-        assert(EthUtil.isValidAddress(address), "invalid address");
-      });
-
-      const number = await web3.eth.getBlockNumber();
-      assert(number === 0);
-    });
   });
 });

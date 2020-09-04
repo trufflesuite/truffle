@@ -93,7 +93,7 @@ const matchesNewOptions = (
   // beyond that, determine based on property inclusion check for required keys
   return (
     "providerOrUrl" in options &&
-    ("mnemonic" in options || "privateKeys" in options || "privateKey" in options)
+    ("mnemonic" in options || "privateKeys" in options)
   );
 };
 
