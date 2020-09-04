@@ -117,6 +117,13 @@ class HDWalletProvider {
       ethUtilValidation(privateKeys);
     } // no need to handle else case here, since matchesNewOptions() covers it
 
+    if (this.addresses.length === 0) {
+      throw new Error(
+        `Could not create addresses from your mnemonic or private key(s). ` +
+          `Please check that your inputs are correct.`
+      );
+    }
+
     const tmp_accounts = this.addresses;
     const tmp_wallets = this.wallets;
 

@@ -8,6 +8,8 @@ import {
   DerivationPath
 } from "./types";
 
+export type Credentials = MnemonicPhrase | PrivateKey | PrivateKey[];
+
 /*
  * namespace wrapper for old-style positional arguments
  */
@@ -15,7 +17,7 @@ type PossibleArguments = [
   /*
    * required
    */
-  MnemonicPhrase | PrivateKey[],
+  Credentials,
   ProviderOrUrl,
 
   /*
