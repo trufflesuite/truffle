@@ -7,37 +7,46 @@ import { wordlist } from "ethereum-cryptography/bip39/wordlists/english";
 
 // check that the first argument is a mnemonic phrase
 const isMnemonicPhrase = (
-  mnemonicPhraseOrPrivateKeys: MnemonicPhrase | PrivateKey[]
-): mnemonicPhraseOrPrivateKeys is MnemonicPhrase =>
-  typeof mnemonicPhraseOrPrivateKeys === "string" &&
-  validateMnemonic(mnemonicPhraseOrPrivateKeys, wordlist);
+  credentials: LegacyConstructor.Credentials
+): credentials is MnemonicPhrase =>
+  typeof credentials === "string" &&
+  validateMnemonic(credentials, wordlist);
 
 // check that the first argument is a list of private keys or a single key
 const isPrivateKeys = (
-  mnemonicPhraseOrPrivateKeys: PrivateKey | PrivateKey[]
-): mnemonicPhraseOrPrivateKeys is PrivateKey[] =>
-  mnemonicPhraseOrPrivateKeys instanceof Array ||
-  typeof mnemonicPhraseOrPrivateKeys === "string";
+  credentials: LegacyConstructor.Credentials
+): credentials is PrivateKey[] =>
+  credentials instanceof Array;
+
+const isPrivateKey = (
+  credentials: LegacyConstructor.Credentials
+): credentials is PrivateKey =>
+  !isPrivateKeys(credentials) &&
+  !isMnemonicPhrase(credentials);
 
 // turn polymorphic first argument into { mnemonic } or { privateKeys }
 const getSigningAuthorityOptions = (
-  mnemonicPhraseOrPrivateKeys: MnemonicPhrase | PrivateKey | PrivateKey[]
+  credentials: LegacyConstructor.Credentials
 ): Constructor.SigningAuthority => {
-  if (isMnemonicPhrase(mnemonicPhraseOrPrivateKeys)) {
+  if (isMnemonicPhrase(credentials)) {
     return {
       mnemonic: {
-        phrase: mnemonicPhraseOrPrivateKeys
+        phrase: credentials
       }
     };
-  } else if (isPrivateKeys(mnemonicPhraseOrPrivateKeys)) {
-    return typeof mnemonicPhraseOrPrivateKeys === "string" ?
-      { privateKeys: [ mnemonicPhraseOrPrivateKeys ] } :
-      { privateKeys: mnemonicPhraseOrPrivateKeys };
-  } else {
+  } else if (isPrivateKeys(credentials)) {
+    return {
+      privateKeys: credentials
+    };
+  } else if (isPrivateKey(credentials)) { // if(...) included for explicitness
+    return {
+      privateKeys: [credentials]
+    };
+  } else { // this won't be reached until/unless we validate private key(s)
     throw new Error(
       `First argument to new HDWalletProvider() must be a mnemonic phrase, a ` +
       `single private key, or a list of private keys. ` +
-        `Received: ${JSON.stringify(mnemonicPhraseOrPrivateKeys)}`
+        `Received: ${JSON.stringify(credentials)}`
     );
   }
 };
