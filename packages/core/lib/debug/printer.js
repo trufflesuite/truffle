@@ -539,6 +539,15 @@ class DebugPrinter {
       return;
     }
 
+    // converts all !<...> expressions to JS-valid selector requests
+    const preprocessSelectors = expr => {
+      const regex = /!<([^>]+)>/g;
+      const select = "$"; // expect repl context to have this func
+      const replacer = (_, selector) => `${select}("${selector}")`;
+
+      return expr.replace(regex, replacer);
+    };
+
     //HACK
     //if we're not in the single-variable case, we'll need to do some
     //things to Javascriptify our variables so that the JS syntax for
@@ -573,26 +582,50 @@ class DebugPrinter {
     );
     //note that pseudoThis contains no dollar signs to screw things up
 
+    expr = preprocessSelectors(expr);
+
     debug("making interpreter");
-    const interpreter = new Interpreter(expr, function (
-      interpreter,
-      globalObject
-    ) {
-      for (const [variable, value] of Object.entries(context)) {
-        try {
-          debug("variable: %s", variable);
-          //note: circular objects wll raise an exception here and get excluded.
-          interpreter.setProperty(
-            globalObject,
-            variable,
-            interpreter.nativeToPseudo(value)
-          );
-        } catch (_) {
-          debug("failure");
-          //just omit things that don't work
+    const select = this.select;
+    let interpreter;
+    try {
+      interpreter = new Interpreter(expr, function (interpreter, globalObject) {
+        //first let's set up our select function (which will be called $)
+        interpreter.setProperty(
+          globalObject,
+          "$",
+          interpreter.createNativeFunction(selectorName => {
+            debug("selecting %s", selectorName);
+            return interpreter.nativeToPseudo(select(selectorName));
+          })
+        );
+        //now let's set up the variables
+        for (const [variable, value] of Object.entries(context)) {
+          try {
+            debug("variable: %s", variable);
+            //note: circular objects wll raise an exception here and get excluded.
+            interpreter.setProperty(
+              globalObject,
+              variable,
+              interpreter.nativeToPseudo(value)
+            );
+          } catch (_) {
+            debug("failure");
+            //just omit things that don't work
+          }
         }
+      });
+    } catch (e) {
+      //if something goes wrong while making the interpreter, we'll treat the same
+      //as if something goes wrong running it
+      //(something going wrong *making* it would be e.g. a parse error)
+      if (!suppress) {
+        this.config.logger.log(e);
+        return;
+      } else {
+        this.config.logger.log(DebugUtils.formatValue(undefined, indent, true));
+        return;
       }
-    });
+    }
     debug("ready");
 
     try {
