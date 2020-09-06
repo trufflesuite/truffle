@@ -150,6 +150,36 @@ describe("HD Wallet Provider", function () {
       assert(number === 0);
     });
 
+    it("provides for a mnemonic with a password", async () => {
+      const accounts = [
+        "0x01d4195e36a244ceb6d6e2e55de1c406bf6089a0",
+        "0x7e8f0f01542d14c1bfb9f07957ff61cade44abf3",
+        "0x0d016902df6e479e766d7e1fb33efea4b779ac75",
+        "0x7916ae4fdfe95a0487bb8742e73a2c44c7118702",
+        "0x3bc32e23620a567d3cd2b41cc16c869f9923737e",
+        "0x2b91922e2c17010bdae3ebfdb1fd608faae5c56a",
+        "0xebc846a7ac330add2fc2ae8ea7cb1e76bad9447c",
+        "0xcd7cbdef0dd539bfad28d995679575f0cebc940c",
+        "0x11f1a3fa0e5c70fe6538aeb020ecca0faf6f7f70",
+        "0x0a0d53ca0a996bf6bb4994514c3b6eb0c2b45e24"
+      ];
+      const mnemonicPhrase =
+        "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
+      provider = new HDWalletProvider({
+        mnemonic: {
+          phrase: mnemonicPhrase,
+          password: "yummy"
+        },
+        providerOrUrl: `http://localhost:${port}`
+      });
+
+      assert.deepEqual(provider.getAddresses(), accounts);
+      web3.setProvider(provider);
+
+      const number = await web3.eth.getBlockNumber();
+      assert(number === 0);
+    });
+
     it("throws on invalid mnemonic", () => {
       try {
         provider = new HDWalletProvider({
