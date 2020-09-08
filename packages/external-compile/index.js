@@ -276,11 +276,11 @@ const compile = async function (options) {
 };
 
 const Compile = {
-  all: async function (options) {
+  async all(options) {
     return await compile(options);
   },
 
-  necessary: async function (options) {
+  async necessary(options) {
     return await compile(options);
   }
 };

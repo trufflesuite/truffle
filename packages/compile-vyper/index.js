@@ -130,7 +130,7 @@ const Compile = {
   // contracts_directory: String. Directory where contract files can be found.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-  all: async function (options) {
+  async all(options) {
     const fileSearchPattern = path.join(
       options.contracts_directory,
       VYPER_PATTERN
@@ -145,7 +145,7 @@ const Compile = {
   //      in the build directory to see what needs to be compiled.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-  necessary: async function (options) {
+  async necessary(options) {
     options.logger = options.logger || console;
     const updated = await Profiler.updated(options);
 
@@ -161,11 +161,11 @@ const Compile = {
     return await Compile.withDependencies(options);
   },
 
-  withDependencies: async function (options) {
+  async withDependencies(options) {
     return await compile(options);
   },
 
-  display: function (paths, options) {
+  async display(paths, options) {
     if (!Array.isArray(paths)) {
       paths = Object.keys(paths);
     }

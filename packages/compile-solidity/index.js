@@ -28,7 +28,7 @@ const Compile = {
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   // files: Array<String>. Explicit files to compile besides detected sources
-  all: async function (options) {
+  async all(options) {
     const paths = [
       ...new Set([
         ...(await findContracts(options.contracts_directory)),
@@ -48,7 +48,7 @@ const Compile = {
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
   // files: Array<String>. Explicit files to compile besides detected sources
-  necessary: async function (options) {
+  async necessary(options) {
     options.logger = options.logger || console;
 
     const paths = await Profiler.updated(options);
@@ -58,7 +58,7 @@ const Compile = {
     );
   },
 
-  withDependencies: async function (options) {
+  async withDependencies(options) {
     options.logger = options.logger || console;
     options.contracts_directory = options.contracts_directory || process.cwd();
 
@@ -107,7 +107,7 @@ const Compile = {
       : [];
   },
 
-  display: function (paths, options) {
+  display(paths, options) {
     if (options.quiet !== true) {
       if (!Array.isArray(paths)) {
         paths = Object.keys(paths);
