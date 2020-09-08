@@ -1,5 +1,6 @@
 import {
   Mnemonic,
+  MnemonicPhrase,
   PrivateKey,
   ProviderOrUrl,
   AddressIndex,
@@ -11,8 +12,13 @@ import {
 /*
  * namespace wrapper for constructor options interface
  */
+
 export interface MnemonicSigningAuthority {
   mnemonic: Mnemonic;
+}
+
+export interface MnemonicPhraseSigningAuthority {
+  mnemonic: MnemonicPhrase;
 }
 
 export interface PrivateKeysSigningAuthority {
@@ -21,6 +27,11 @@ export interface PrivateKeysSigningAuthority {
 
 export type SigningAuthority =
   | MnemonicSigningAuthority
+  | PrivateKeysSigningAuthority;
+
+export type InputSigningAuthority =
+  | MnemonicSigningAuthority
+  | MnemonicPhraseSigningAuthority
   | PrivateKeysSigningAuthority;
 
 export interface CommonOptions {
@@ -32,3 +43,4 @@ export interface CommonOptions {
 }
 
 export type Options = SigningAuthority & CommonOptions;
+export type InputOptions = InputSigningAuthority & CommonOptions;

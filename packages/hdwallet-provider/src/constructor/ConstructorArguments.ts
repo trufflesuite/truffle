@@ -6,4 +6,4 @@ import * as Constructor from "./Constructor";
  */
 export type ConstructorArguments =
   | LegacyConstructor.Arguments // either the old-style tuple type
-  | [Constructor.Options]; // or a single argument for new-style options
+  | [Constructor.InputOptions]; // or polymorphic new-style options

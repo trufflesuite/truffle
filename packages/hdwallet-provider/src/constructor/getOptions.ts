@@ -52,8 +52,23 @@ const getSigningAuthorityOptions = (
   }
 };
 
+const fromInputOptions = (
+  options: Constructor.InputOptions
+): Constructor.Options => {
+  if ("mnemonic" in options && typeof options.mnemonic === "string") {
+    return {
+      ...options,
+      mnemonic: {
+        phrase: options.mnemonic
+      }
+    };
+  } else {
+    return options as Constructor.Options;
+  }
+}
+
 // convert legacy style positional arguments to new, single-arg options format
-const toOptions = (
+const fromArguments = (
   args: LegacyConstructor.Arguments
 ): Constructor.Options => {
   // otherwise, if arguments match the old-style, extract properties and handle polymorphism
@@ -79,11 +94,12 @@ const toOptions = (
     derivationPath
   };
 };
+
 // type predicate guard to determine at runtime if arguments conform to
 // new-style constructor args.
-const matchesNewOptions = (
+const matchesNewInputOptions = (
   args: ConstructorArguments
-): args is [Constructor.Options] => {
+): args is [Constructor.InputOptions] => {
   // new-style means exactly one argument
   if (args.length !== 1) {
     return false;
@@ -94,9 +110,11 @@ const matchesNewOptions = (
   // beyond that, determine based on property inclusion check for required keys
   return (
     "providerOrUrl" in options &&
-    ("mnemonic" in options || "privateKeys" in options)
+    ("privateKeys" in options || "mnemonic" in options)
   );
 };
+
+
 
 // type predicate guard to determine at runtime if arguments conform to
 // old-style constructor args.
@@ -104,7 +122,7 @@ const matchesLegacyArguments = (
   args: ConstructorArguments
 ): args is LegacyConstructor.Arguments =>
   // first check for alternate (new-style) case for basic determination
-  !matchesNewOptions(args) &&
+  !matchesNewInputOptions(args) &&
   // then additionally make sure we have the two required options we need
   args.filter(arg => arg !== undefined).length >= 2;
 
@@ -113,12 +131,12 @@ const matchesLegacyArguments = (
 export const getOptions = (
   ...args: ConstructorArguments
 ): Constructor.Options => {
-  if (matchesNewOptions(args)) {
+  if (matchesNewInputOptions(args)) {
     // if arguments already match new-style, no real transformation needed
     const [options] = args;
-    return options;
+    return fromInputOptions(options);
   } else if (matchesLegacyArguments(args)) {
-    return toOptions(args);
+    return fromArguments(args);
   } else {
     throw new Error(
       "Unknown arguments format passed to new HDWalletProvider. Please check your configuration and try again"
