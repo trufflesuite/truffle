@@ -584,66 +584,63 @@ class DebugPrinter {
 
     expr = preprocessSelectors(expr);
 
-    debug("making interpreter");
-    const select = this.select;
-    let interpreter;
     try {
-      interpreter = new Interpreter(expr, function (interpreter, globalObject) {
-        //first let's set up our select function (which will be called $)
-        interpreter.setProperty(
-          globalObject,
-          "$",
-          interpreter.createNativeFunction(selectorName => {
-            debug("selecting %s", selectorName);
-            return interpreter.nativeToPseudo(select(selectorName));
-          })
-        );
-        //now let's set up the variables
-        for (const [variable, value] of Object.entries(context)) {
-          try {
-            debug("variable: %s", variable);
-            //note: circular objects wll raise an exception here and get excluded.
-            interpreter.setProperty(
-              globalObject,
-              variable,
-              interpreter.nativeToPseudo(value)
-            );
-          } catch (_) {
-            debug("failure");
-            //just omit things that don't work
-          }
-        }
-      });
-    } catch (e) {
-      //if something goes wrong while making the interpreter, we'll treat the same
-      //as if something goes wrong running it
-      //(something going wrong *making* it would be e.g. a parse error)
-      if (!suppress) {
-        this.config.logger.log(e);
-        return;
-      } else {
-        this.config.logger.log(DebugUtils.formatValue(undefined, indent, true));
-        return;
-      }
-    }
-    debug("ready");
-
-    try {
-      debug("running");
-      interpreter.run();
-      const result = interpreter.pseudoToNative(interpreter.value);
-      debug("got value");
+      const result = this.safelyEvaluateWithSelectors(expr, context);
       const formatted = DebugUtils.formatValue(result, indent, true);
       this.config.logger.log(formatted);
       this.config.logger.log();
     } catch (e) {
-      debug("uh-oh");
       if (!suppress) {
         this.config.logger.log(e);
       } else {
         this.config.logger.log(DebugUtils.formatValue(undefined, indent, true));
       }
     }
+  }
+
+  //evaluates expression with the variables in context,
+  //but also has `$` as a variable that is the select function
+  safelyEvaluateWithSelectors(expression, context) {
+    if (!Interpreter) {
+      //note: we shouldn't hit this branch due to a check earlier
+      throw new Error(
+        "Error: Use of expressions (as opposed to individual variables) requires the optional js-interpreter dependency."
+      );
+    }
+
+    const select = this.select;
+    let interpreter;
+    interpreter = new Interpreter(expression, function (
+      interpreter,
+      globalObject
+    ) {
+      //first let's set up our select function (which will be called $)
+      interpreter.setProperty(
+        globalObject,
+        "$",
+        interpreter.createNativeFunction(selectorName => {
+          debug("selecting %s", selectorName);
+          return interpreter.nativeToPseudo(select(selectorName));
+        })
+      );
+      //now let's set up the variables
+      for (const [variable, value] of Object.entries(context)) {
+        try {
+          debug("variable: %s", variable);
+          //note: circular objects wll raise an exception here and get excluded.
+          interpreter.setProperty(
+            globalObject,
+            variable,
+            interpreter.nativeToPseudo(value)
+          );
+        } catch (_) {
+          debug("failure");
+          //just omit things that don't work
+        }
+      }
+    });
+    interpreter.run();
+    return interpreter.pseudoToNative(interpreter.value);
   }
 }
 
