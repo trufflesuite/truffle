@@ -1,7 +1,7 @@
 import assert from "assert";
-import { shims } from "../src";
+import { shims, Bytecode } from "../src";
 
-describe("shimBytecode", () => {
+describe("shims.NewToLegacy.shimBytecode", () => {
   it("handles undefined", () => {
     assert.equal(shims.NewToLegacy.shimBytecode(undefined), undefined);
   });
@@ -9,7 +9,10 @@ describe("shimBytecode", () => {
   it("prepends 0x", () => {
     const bytes = "ffffffff";
 
-    assert.equal(shims.NewToLegacy.shimBytecode({ bytes }), `0x${bytes}`);
+    assert.equal(
+      shims.NewToLegacy.shimBytecode({ bytes, linkReferences: [] }),
+      `0x${bytes}`
+    );
   });
 
   it("inlines an external link reference into underscores format", () => {
@@ -72,5 +75,60 @@ describe("shimBytecode", () => {
     const expected = "0x__hi____00__there_00";
 
     assert.equal(shims.NewToLegacy.shimBytecode(bytecode), expected);
+  });
+});
+
+describe("shims.LegacyToNew.shimBytecode", () => {
+  it("removes 0x", function () {
+    const bytes = "ffffffff";
+    const expected = {
+      bytes,
+      linkReferences: []
+    } as Bytecode;
+
+    assert.deepEqual(shims.LegacyToNew.shimBytecode(`0x${bytes}`), expected);
+  });
+
+  it("externalizes a link reference in underscores format", function () {
+    //                  0 1 2 3 4 5 6 7 8 9
+    const bytecode = "0x00__hello_________00";
+
+    const expected = {
+      //      0 1 2 3 4 5 6 7 8 9
+      bytes: "00000000000000000000",
+      linkReferences: [
+        {
+          offsets: [1],
+          length: 8,
+          name: "hello"
+        }
+      ]
+    };
+
+    assert.deepEqual(shims.LegacyToNew.shimBytecode(bytecode), expected);
+  });
+
+  it("externalizes two different link references", function () {
+    //                  0 1 2 3 4 5 6 7 8 9
+    const bytecode = "0x__hi____00__there_00";
+
+    const expected = {
+      //      0 1 2 3 4 5 6 7 8 9
+      bytes: "00000000000000000000",
+      linkReferences: [
+        {
+          offsets: [0],
+          length: 4,
+          name: "hi"
+        },
+        {
+          offsets: [5],
+          length: 4,
+          name: "there"
+        }
+      ]
+    };
+
+    assert.deepEqual(shims.LegacyToNew.shimBytecode(bytecode), expected);
   });
 });
