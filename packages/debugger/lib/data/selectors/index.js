@@ -39,7 +39,10 @@ function findAncestorOfType(node, types, scopes, pointer = null, root = null) {
     if (node.id !== undefined) {
       node = scopes[scopes[node.id].parentId].definition;
     } else {
-      if (pointer === null || root === null) {
+      if (pointer === null || root === null || pointer === "") {
+        //if we're trying to go up from the root but are still in Yul,
+        //or if we weren't given pointer and root at all,
+        //admit failure and return null
         return null;
       }
       pointer = pointer.replace(/\/[^/]*$/, ""); //chop off end
@@ -1414,11 +1417,11 @@ const data = createSelectorTree({
   },
 
   /**
-   * data.nextMapped
+   * data.nextUserStep
    */
-  nextMapped: {
+  nextUserStep: {
     /**
-     * data.nextMapped.state
+     * data.nextUserStep.state
      * Yes, I'm just repeating the code for data.current.state.stack here;
      * not worth the trouble to factor out
      * HACK: this assumes we're not about to change context! don't use this if we
@@ -1426,10 +1429,10 @@ const data = createSelectorTree({
      */
     state: {
       /**
-       * data.nextMapped.state.stack
+       * data.nextUserStep.state.stack
        */
       stack: createLeaf(
-        [solidity.current.nextMapped],
+        [solidity.current.nextUserStep],
 
         step =>
           ((step || {}).stack || []).map(word => Codec.Conversion.toBytes(word))

@@ -210,10 +210,10 @@ function* variablesAndMappingsSaga() {
   switch (node.nodeType) {
     case "IndexAccess":
     case "MemberAccess":
-      stack = yield select(data.nextMapped.state.stack);
+      stack = yield select(data.nextUserStep.state.stack);
       //HACK: unfortunately, in some cases, data.next.state.stack gets the wrong
-      //results due to unmapped instructions intervening.  So, we get the stack at
-      //the next *mapped* stack instead.  This is something of a hack and won't
+      //results due to unmapped/internal instructions intervening.  So, we get the stack at
+      //the next mapped-to-user-source stack instead.  This is something of a hack and won't
       //work if we're about to change context, but it should work in the cases that
       //need it.
       break;

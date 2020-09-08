@@ -46,10 +46,11 @@ class DebugPrinter {
     )) {
       this.colorizedSources[compilationId] = {};
       for (const source of compilation.byId) {
-        const id = source.id;
-        const raw = source.source;
+        const { id, source: raw, internal: yul } = source;
+        //for now, we assume internal sources are Yul and
+        //user sources are Solidity
         const detabbed = DebugUtils.tabsToSpaces(raw);
-        const colorized = DebugUtils.colorize(detabbed);
+        const colorized = DebugUtils.colorize(detabbed, yul);
         this.colorizedSources[compilationId][id] = colorized;
       }
     }

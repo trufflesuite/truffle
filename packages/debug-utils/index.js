@@ -614,7 +614,7 @@ var DebugUtils = {
     return indented.join(OS.EOL);
   },
 
-  colorize: function (code) {
+  colorize: function (code, yul = false) {
     //I'd put these outside the function
     //but then it gives me errors, because
     //you can't just define self-referential objects like that...
@@ -694,7 +694,19 @@ var DebugUtils = {
       //NOTE: you might think you should pass highlight: true,
       //but you'd be wrong!  I don't understand this either
     };
-    return chromafi(code, options);
+    if (!yul) {
+      //normal case: solidity
+      return chromafi(code, options);
+    } else {
+      //HACK: stick the code in an assembly block since we don't
+      //have a separate Yul language for HLJS at the moment,
+      //colorize it there, then extract it after colorization
+      const wrappedCode = "assembly {\n" + code + "\n}";
+      const colorizedWrapped = chromafi(wrappedCode, options);
+      const firstNewLine = colorizedWrapped.indexOf("\n");
+      const lastNewLine = colorizedWrapped.lastIndexOf("\n");
+      return colorizedWrapped.slice(firstNewLine + 1, lastNewLine);
+    }
   },
 
   //HACK
@@ -784,14 +796,16 @@ var DebugUtils = {
     const { controller } = bugger.selectors;
     while (!bugger.view(controller.current.trace.finished)) {
       const source = bugger.view(controller.current.location.source);
-      const { compilationId, id } = source;
-      if (compilationId !== undefined && id !== undefined) {
+      const { compilationId, id, internal } = source;
+      //stepInto should skip internal sources, but there still might be
+      //one at the end
+      if (!internal && compilationId !== undefined && id !== undefined) {
         sources[compilationId] = {
           ...sources[compilationId],
           [id]: source
         };
       }
-      await bugger.stepNext();
+      await bugger.stepInto();
     }
     await bugger.reset();
     //flatten sources before returning
