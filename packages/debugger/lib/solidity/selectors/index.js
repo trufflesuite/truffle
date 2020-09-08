@@ -323,15 +323,14 @@ let solidity = createSelectorTree({
     ),
 
     /**
-     * solidity.current.nextMapped
-     * returns the next trace step after this one which is sourcemapped
+     * solidity.current.nextUserStep
+     * returns the next trace step after this one which is sourcemapped to
+     * a user source (not -1 or an internal source)
      * HACK: this assumes we're not about to change context! don't use this if
      * we are!
      * ALSO, this may return undefined, so be prepared for that
-     * NOTE: this selector is now somewhat misnamed, as mapped instructions are
-     * now also skipped over if they point to an internal source
      */
-    nextMapped: createLeaf(
+    nextUserStep: createLeaf(
       [
         "./instructionAtProgramCounter",
         "/current/sources",

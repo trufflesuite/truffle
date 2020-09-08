@@ -1403,11 +1403,11 @@ const data = createSelectorTree({
   },
 
   /**
-   * data.nextMapped
+   * data.nextUserStep
    */
-  nextMapped: {
+  nextUserStep: {
     /**
-     * data.nextMapped.state
+     * data.nextUserStep.state
      * Yes, I'm just repeating the code for data.current.state.stack here;
      * not worth the trouble to factor out
      * HACK: this assumes we're not about to change context! don't use this if we
@@ -1415,10 +1415,10 @@ const data = createSelectorTree({
      */
     state: {
       /**
-       * data.nextMapped.state.stack
+       * data.nextUserStep.state.stack
        */
       stack: createLeaf(
-        [solidity.current.nextMapped],
+        [solidity.current.nextUserStep],
 
         step =>
           ((step || {}).stack || []).map(word => Codec.Conversion.toBytes(word))
