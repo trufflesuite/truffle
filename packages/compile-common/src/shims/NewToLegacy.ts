@@ -1,6 +1,6 @@
 import { LinkReference, CompiledContract } from "../types";
 
-export const contract = (contract: CompiledContract): any => {
+export function forContract(contract: CompiledContract): any {
   const {
     contractName,
     sourcePath,
@@ -29,17 +29,17 @@ export const contract = (contract: CompiledContract): any => {
     ast,
     abi,
     metadata,
-    bytecode: shimBytecode(bytecode),
-    deployedBytecode: shimBytecode(deployedBytecode),
-    unlinked_binary: shimBytecode(bytecode),
+    bytecode: forBytecode(bytecode),
+    deployedBytecode: forBytecode(deployedBytecode),
+    unlinked_binary: forBytecode(bytecode),
     compiler,
     devdoc,
     userdoc,
     immutableReferences
   };
-};
+}
 
-export const shimBytecode = (bytecode: any): any => {
+export function forBytecode(bytecode: any): any {
   if (!bytecode) {
     return bytecode;
   }
@@ -84,4 +84,4 @@ export const shimBytecode = (bytecode: any): any => {
   );
 
   return `0x${bytes}`;
-};
+}

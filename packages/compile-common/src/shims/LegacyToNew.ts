@@ -1,11 +1,11 @@
 import { Bytecode, CompiledContract, LinkReference } from "../types";
 
-export function shimContracts(contracts: any[]): CompiledContract[] {
+export function forContracts(contracts: any[]): CompiledContract[] {
   // convert to list
-  return Object.values(contracts).map(shimContract);
+  return Object.values(contracts).map(forContract);
 }
 
-export const shimContract = (contract: any): CompiledContract => {
+export function forContract(contract: any): CompiledContract {
   const {
     contractName,
     contract_name,
@@ -35,16 +35,16 @@ export const shimContract = (contract: any): CompiledContract => {
     ast,
     abi,
     metadata,
-    bytecode: shimBytecode(bytecode),
-    deployedBytecode: shimBytecode(deployedBytecode),
+    bytecode: forBytecode(bytecode),
+    deployedBytecode: forBytecode(deployedBytecode),
     compiler,
     devdoc,
     userdoc,
     immutableReferences
   };
-};
+}
 
-export function shimBytecode(bytecode: string): Bytecode {
+export function forBytecode(bytecode: string): Bytecode {
   if (!bytecode) {
     return undefined;
   }

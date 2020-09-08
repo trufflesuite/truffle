@@ -9,7 +9,7 @@ import * as Codec from "@truffle/codec";
 import * as Types from "./types";
 
 //sorry for the untyped import, but...
-const { shims } = require("@truffle/compile-common");
+const { Shims } = require("@truffle/compile-common");
 
 //NOTE: Definitely do not use this in real code!  For tests only!
 //for convenience: invokes the nativize method on all the given variables, and changes them to
@@ -39,7 +39,7 @@ export function makeContext(
   const bytecode = isConstructor
     ? contract.bytecode
     : contract.deployedBytecode;
-  const binary: string = shims.NewToLegacy.shimBytecode(bytecode);
+  const binary: string = Shims.NewToLegacy.forBytecode(bytecode);
   const hash = Codec.Conversion.toHexString(
     Codec.Evm.Utils.keccak256({
       type: "string",
@@ -90,7 +90,7 @@ function contractKind(
   //PUSH20 followed by 20 0s, in which case we'll assume it's a library
   //(note: this will fail to detect libraries from before Solidity 0.4.20)
   if (contract.deployedBytecode) {
-    const deployedBytecode = shims.NewToLegacy.shimBytecode(
+    const deployedBytecode = Shims.NewToLegacy.forBytecode(
       contract.deployedBytecode
     );
     const pushAddressInstruction = (

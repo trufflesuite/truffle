@@ -9,7 +9,7 @@ const requireNoCache = require("require-nocache")(module);
 const { compile } = require("@truffle/compile-solidity");
 const Ganache = require("ganache-core");
 const Web3 = require("web3");
-const { shims } = require("@truffle/compile-common");
+const { Shims } = require("@truffle/compile-common");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
 
@@ -66,7 +66,7 @@ describe("artifactor + require", () => {
       contract => contract.contractName === "Example"
     );
     const compiled = Schema.normalize(
-      shims.NewToLegacy.contract(exampleContract)
+      Shims.NewToLegacy.forContract(exampleContract)
     );
     abi = compiled.abi;
     bytecode = compiled.bytecode;

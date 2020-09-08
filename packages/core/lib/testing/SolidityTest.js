@@ -2,7 +2,7 @@ const TestCase = require("mocha/lib/test.js");
 const Suite = require("mocha/lib/suite.js");
 const Deployer = require("@truffle/deployer");
 const { Compile } = require("@truffle/compile-solidity");
-const { shims } = require("@truffle/compile-common");
+const { Shims } = require("@truffle/compile-common");
 const RangeUtils = require("@truffle/compile-solidity/compilerSupplier/rangeUtils");
 const path = require("path");
 const debug = require("debug")("lib:testing:soliditytest");
@@ -148,7 +148,9 @@ const SolidityTest = {
       contract.default_network = config.default_network;
     }
 
-    await config.artifactor.saveAll(contracts.map(shims.NewToLegacy.contract));
+    await config.artifactor.saveAll(
+      contracts.map(Shims.NewToLegacy.forContract)
+    );
     debug("compiled");
   },
 

@@ -1,3 +1,3 @@
 export { Profiler } from "./profiler";
-export * as shims from "./shims";
+export * as Shims from "./shims";
 export * from "./types";

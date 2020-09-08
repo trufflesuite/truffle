@@ -1,16 +1,16 @@
 import assert from "assert";
-import { shims, Bytecode } from "../src";
+import { Shims, Bytecode } from "../src";
 
-describe("shims.NewToLegacy.shimBytecode", () => {
+describe("Shims.NewToLegacy.forBytecode", () => {
   it("handles undefined", () => {
-    assert.equal(shims.NewToLegacy.shimBytecode(undefined), undefined);
+    assert.equal(Shims.NewToLegacy.forBytecode(undefined), undefined);
   });
 
   it("prepends 0x", () => {
     const bytes = "ffffffff";
 
     assert.equal(
-      shims.NewToLegacy.shimBytecode({ bytes, linkReferences: [] }),
+      Shims.NewToLegacy.forBytecode({ bytes, linkReferences: [] }),
       `0x${bytes}`
     );
   });
@@ -31,7 +31,7 @@ describe("shims.NewToLegacy.shimBytecode", () => {
     //                  0 1 2 3 4 5 6 7 8 9
     const expected = "0x00__hello_________00";
 
-    assert.equal(shims.NewToLegacy.shimBytecode(bytecode), expected);
+    assert.equal(Shims.NewToLegacy.forBytecode(bytecode), expected);
   });
 
   it("inlines a link reference with multiple offsets", () => {
@@ -50,7 +50,7 @@ describe("shims.NewToLegacy.shimBytecode", () => {
     //                  0 1 2 3 4 5 6 7 8 9
     const expected = "0x__hi____00__hi____00";
 
-    assert.equal(shims.NewToLegacy.shimBytecode(bytecode), expected);
+    assert.equal(Shims.NewToLegacy.forBytecode(bytecode), expected);
   });
 
   it("inlines two different link references", () => {
@@ -74,11 +74,11 @@ describe("shims.NewToLegacy.shimBytecode", () => {
     //                  0 1 2 3 4 5 6 7 8 9
     const expected = "0x__hi____00__there_00";
 
-    assert.equal(shims.NewToLegacy.shimBytecode(bytecode), expected);
+    assert.equal(Shims.NewToLegacy.forBytecode(bytecode), expected);
   });
 });
 
-describe("shims.LegacyToNew.shimBytecode", () => {
+describe("Shims.LegacyToNew.forBytecode", () => {
   it("removes 0x", function () {
     const bytes = "ffffffff";
     const expected = {
@@ -86,7 +86,7 @@ describe("shims.LegacyToNew.shimBytecode", () => {
       linkReferences: []
     } as Bytecode;
 
-    assert.deepEqual(shims.LegacyToNew.shimBytecode(`0x${bytes}`), expected);
+    assert.deepEqual(Shims.LegacyToNew.forBytecode(`0x${bytes}`), expected);
   });
 
   it("externalizes a link reference in underscores format", function () {
@@ -105,7 +105,7 @@ describe("shims.LegacyToNew.shimBytecode", () => {
       ]
     };
 
-    assert.deepEqual(shims.LegacyToNew.shimBytecode(bytecode), expected);
+    assert.deepEqual(Shims.LegacyToNew.forBytecode(bytecode), expected);
   });
 
   it("externalizes two different link references", function () {
@@ -129,6 +129,6 @@ describe("shims.LegacyToNew.shimBytecode", () => {
       ]
     };
 
-    assert.deepEqual(shims.LegacyToNew.shimBytecode(bytecode), expected);
+    assert.deepEqual(Shims.LegacyToNew.forBytecode(bytecode), expected);
   });
 });
