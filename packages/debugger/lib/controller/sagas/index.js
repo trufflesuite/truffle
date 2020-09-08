@@ -229,7 +229,8 @@ function* continueUntilBreakpoint(action) {
   let currentCompilationId = currentLocation.source.compilationId;
 
   do {
-    yield* stepNext();
+    yield* advance(); //note: this avoids using stepNext in order to
+    //allow breakpoints in internal sources to work properly
 
     //note these two have not been updated yet; they'll be updated a
     //few lines down.  but at this point these are still the previous
