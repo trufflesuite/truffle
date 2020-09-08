@@ -40,8 +40,9 @@ Conflux-Truffle comes bundled with a local development blockchain server that la
 
 ### Documentation
 
-Please see the [how-to-use](https://github.com/Conflux-Chain/conflux-truffle/blob/conflux/how-to-use.md) for guides, tips, and examples.
-Also could get Chinese version from [here](https://github.com/Pana/conflux-101/blob/master/docs/conflux-truffle.md).
+[How to guide](https://github.com/Conflux-Chain/conflux-truffle/blob/conflux/how-to-use.md)
+[Chinese version how-to](https://github.com/Pana/conflux-101/blob/master/docs/conflux-truffle.md)
+[Ultimate tutorial (More detailed guide)](./ultimate-guide.md)
 
 ### Change Log
 
