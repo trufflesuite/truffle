@@ -8,14 +8,14 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "0.0.14",
+  "version": "0.0.15",
   "main": "index.js",
   "scripts": {
     "prepare": "exit 0",
     "test": "mocha"
   },
   "devDependencies": {
-    "mocha": "8.0.1"
+    "mocha": "8.1.2"
   },
   "keywords": [
     "ethereum",

@@ -10,8 +10,8 @@ const WireTestParent = artifacts.require("WireTestParent");
 const WireTestLibrary = artifacts.require("WireTestLibrary");
 const WireTestAbstract = artifacts.require("WireTestAbstract");
 
-contract("WireTest", function(_accounts) {
-  it("should correctly decode transactions and events", async function() {
+contract("WireTest", function (_accounts) {
+  it("should correctly decode transactions and events", async function () {
     let deployedContract = await WireTest.new(true, "0xdeadbeef", 2);
     let address = deployedContract.address;
     let constructorHash = deployedContract.transactionHash;
@@ -597,7 +597,7 @@ contract("WireTest", function(_accounts) {
     );
   });
 
-  it("disambiguates events when possible and not when impossible", async function() {
+  it("disambiguates events when possible and not when impossible", async function () {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await Decoder.forProject(web3.currentProvider, [
@@ -742,7 +742,7 @@ contract("WireTest", function(_accounts) {
     );
   });
 
-  it("Handles anonymous events", async function() {
+  it("Handles anonymous events", async function () {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await Decoder.forProject(web3.currentProvider, [
@@ -893,7 +893,7 @@ contract("WireTest", function(_accounts) {
     );
   });
 
-  it("Decodes return values", async function() {
+  it("Decodes return values", async function () {
     let deployedContract = await WireTest.deployed();
 
     const decoder = await Decoder.forContract(WireTest, [
@@ -956,5 +956,70 @@ contract("WireTest", function(_accounts) {
     assert.lengthOf(sdDecodings, 1);
     assert.strictEqual(sdDecodings[0].kind, "selfdestruct");
     assert.strictEqual(sdDecodings[0].decodingMode, "full");
+  });
+
+  it("Decodes return values when given superclass", async function () {
+    const deployedContract = await WireTest.deployed();
+
+    let decoder = await Decoder.forContractAt(
+      WireTestParent,
+      deployedContract.address,
+      [WireTest, WireTestParent, WireTestLibrary, WireTestAbstract]
+    );
+
+    let abiEntry = WireTestParent.abi.find(
+      ({ type, name }) => type === "function" && name === "inheritedReturn"
+    );
+    let selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+
+    //we need the raw return data, and contract.call() does not exist yet,
+    //so we're going to have to use web3.eth.call()
+
+    let data = await web3.eth.call({
+      to: deployedContract.address,
+      data: selector
+    });
+
+    let decodings = await decoder.decodeReturnValue(abiEntry, data);
+    assert.lengthOf(decodings, 1);
+    let decoding = decodings[0];
+    assert.strictEqual(decoding.kind, "return");
+    assert.strictEqual(decoding.decodingMode, "full");
+    assert.lengthOf(decoding.arguments, 1);
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+      1
+    );
+
+    //now again, but with an abstract contract
+    decoder = await Decoder.forContractAt(
+      WireTestAbstract,
+      deployedContract.address,
+      [WireTest, WireTestParent, WireTestLibrary, WireTestAbstract]
+    );
+
+    abiEntry = WireTestAbstract.abi.find(
+      ({ type, name }) => type === "function" && name === "overriddenReturn"
+    );
+    selector = web3.eth.abi.encodeFunctionSignature(abiEntry);
+
+    //we need the raw return data, and contract.call() does not exist yet,
+    //so we're going to have to use web3.eth.call()
+
+    data = await web3.eth.call({
+      to: deployedContract.address,
+      data: selector
+    });
+
+    decodings = await decoder.decodeReturnValue(abiEntry, data);
+    assert.lengthOf(decodings, 1);
+    decoding = decodings[0];
+    assert.strictEqual(decoding.kind, "return");
+    assert.strictEqual(decoding.decodingMode, "full");
+    assert.lengthOf(decoding.arguments, 1);
+    assert.strictEqual(
+      Codec.Format.Utils.Inspect.nativize(decoding.arguments[0].value),
+      2
+    );
   });
 });

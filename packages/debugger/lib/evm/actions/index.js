@@ -43,12 +43,20 @@ export function addInstance(address, context, binary) {
 }
 
 export const ADD_AFFECTED_INSTANCE = "EVM_ADD_AFFECTED_INSTANCE";
-export function addAffectedInstance(address, context, binary) {
+export function addAffectedInstance(
+  address,
+  context,
+  binary,
+  creationBinary,
+  creationContext
+) {
   return {
     type: ADD_AFFECTED_INSTANCE,
     address,
     context,
-    binary
+    binary,
+    creationBinary, //may be undefined
+    creationContext
   };
 }
 

@@ -12,7 +12,7 @@ import solidity from "lib/solidity/selectors";
 import stacktrace from "lib/stacktrace/selectors";
 
 const __STACKTRACE = `
-pragma solidity ^0.6.6;
+pragma solidity ^0.7.0;
 
 contract StacktraceTest {
 
@@ -32,7 +32,7 @@ contract StacktraceTest {
     emit Num(1);
   }
 
-  constructor() public payable {
+  constructor() payable {
   }
 
   function run3(bool succeed) public {
@@ -83,7 +83,7 @@ contract Boom {
 `;
 
 let sources = {
-  "StacktraceTest.sol": __STACKTRACE,
+  "StacktraceTest.sol": __STACKTRACE
 };
 
 const __MIGRATION = `
@@ -95,7 +95,7 @@ module.exports = function(deployer) {
 `;
 
 let migrations = {
-  "2_deploy_contracts.js": __MIGRATION,
+  "2_deploy_contracts.js": __MIGRATION
 };
 
 describe("Stack tracing", function () {
@@ -132,7 +132,7 @@ describe("Stack tracing", function () {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       compilations,
-      lightMode: true,
+      lightMode: true
     });
 
     let source = bugger.view(solidity.current.source);
@@ -151,12 +151,12 @@ describe("Stack tracing", function () {
       "run2",
       undefined,
       "run1",
-      "runRequire",
+      "runRequire"
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
-    assert(contractNames.every((name) => name === "StacktraceTest"));
+    assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
-    assert(addresses.every((address) => address === instance.address));
+    assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 1].location;
@@ -181,7 +181,7 @@ describe("Stack tracing", function () {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       compilations,
-      lightMode: true,
+      lightMode: true
     });
 
     let source = bugger.view(solidity.current.source);
@@ -190,7 +190,7 @@ describe("Stack tracing", function () {
     let breakpoint = {
       sourceId: source.id,
       compilationId: source.compilationId,
-      line: breakLine,
+      line: breakLine
     };
     await bugger.addBreakpoint(breakpoint);
     await bugger.continueUntilBreakpoint(); //run till EMIT
@@ -204,12 +204,12 @@ describe("Stack tracing", function () {
       "run2",
       undefined,
       "run1",
-      "runRequire",
+      "runRequire"
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
-    assert(contractNames.every((name) => name === "StacktraceTest"));
+    assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
-    assert(addresses.every((address) => address === instance.address));
+    assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isUndefined(status);
     let location = report[report.length - 1].location;
@@ -229,12 +229,12 @@ describe("Stack tracing", function () {
       "run2",
       undefined,
       "run1",
-      "runRequire",
+      "runRequire"
     ]);
     contractNames = report.map(({ contractName }) => contractName);
-    assert(contractNames.every((name) => name === "StacktraceTest"));
+    assert(contractNames.every(name => name === "StacktraceTest"));
     addresses = report.map(({ address }) => address);
-    assert(addresses.every((address) => address === instance.address));
+    assert(addresses.every(address => address === instance.address));
     status = report[report.length - 1].status;
     assert.isUndefined(status);
     location = report[report.length - 1].location;
@@ -259,7 +259,7 @@ describe("Stack tracing", function () {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       compilations,
-      lightMode: true,
+      lightMode: true
     });
 
     let source = bugger.view(solidity.current.source);
@@ -279,12 +279,12 @@ describe("Stack tracing", function () {
       undefined,
       "run1",
       "runPay",
-      undefined,
+      undefined
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
-    assert(contractNames.every((name) => name === "StacktraceTest"));
+    assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
-    assert(addresses.every((address) => address === instance.address));
+    assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 2].location; //note, -2 because of undefined on top
@@ -309,7 +309,7 @@ describe("Stack tracing", function () {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       compilations,
-      lightMode: true,
+      lightMode: true
     });
 
     let source = bugger.view(solidity.current.source);
@@ -329,14 +329,14 @@ describe("Stack tracing", function () {
       undefined,
       "run1",
       "runInternal",
-      undefined,
+      undefined
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert.isUndefined(contractNames[contractNames.length - 1]);
     contractNames.pop();
-    assert(contractNames.every((name) => name === "StacktraceTest"));
+    assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
-    assert(addresses.every((address) => address === instance.address));
+    assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isFalse(status);
     let location = report[report.length - 2].location; //note, -2 because of undefined on top
@@ -361,7 +361,7 @@ describe("Stack tracing", function () {
     let bugger = await Debugger.forTx(txHash, {
       provider,
       compilations,
-      lightMode: true,
+      lightMode: true
     });
 
     let source = bugger.view(solidity.current.source);
@@ -383,14 +383,14 @@ describe("Stack tracing", function () {
       "run1",
       "runBoom",
       undefined,
-      "boom",
+      "boom"
     ]);
     let contractNames = report.map(({ contractName }) => contractName);
     assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
     contractNames.pop(); //top frame
     assert.strictEqual(contractNames[contractNames.length - 1], "Boom");
     contractNames.pop(); //second-top frame
-    assert(contractNames.every((name) => name === "StacktraceTest"));
+    assert(contractNames.every(name => name === "StacktraceTest"));
     let addresses = report.map(({ address }) => address);
     assert.strictEqual(
       addresses[addresses.length - 1],
@@ -398,7 +398,7 @@ describe("Stack tracing", function () {
     );
     addresses.pop();
     addresses.pop();
-    assert(addresses.every((address) => address === instance.address));
+    assert(addresses.every(address => address === instance.address));
     let status = report[report.length - 1].status;
     assert.isTrue(status);
     let location = report[report.length - 1].location;

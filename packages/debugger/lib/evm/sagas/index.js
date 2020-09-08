@@ -50,15 +50,27 @@ export function* addInstance(address, binary) {
  * Adds known deployed instance of binary at address
  * to list of affected instances, *not* to codex
  *
+ * creationBinary may also be specified
+ *
  * @param {string} binary - may be undefined (e.g. precompiles)
  * @return {string} ID (0x-prefixed keccak of binary)
  */
-export function* addAffectedInstance(address, binary) {
+export function* addAffectedInstance(address, binary, creationBinary) {
   const search = yield select(evm.info.binaries.search);
   const context = search(binary);
+  const creationContext = creationBinary ? search(creationBinary) : null;
 
   //now, whether we needed a new context or not, add the instance
-  yield put(actions.addAffectedInstance(address, context, binary));
+  //note that these last two arguments may be undefined/null
+  yield put(
+    actions.addAffectedInstance(
+      address,
+      context,
+      binary,
+      creationBinary,
+      creationContext
+    )
+  );
 
   return context;
 }
@@ -74,10 +86,21 @@ export function* refreshInstances() {
     const context = search(binary);
     yield put(actions.addInstance(address, context, binary));
   }
-  for (let [address, { binary }] of Object.entries(affectedInstances)) {
+  for (let [address, { binary, creationBinary }] of Object.entries(
+    affectedInstances
+  )) {
     const search = yield select(evm.info.binaries.search);
     const context = search(binary);
-    yield put(actions.addAffectedInstance(address, context, binary));
+    const creationContext = creationBinary ? search(creationBinary) : null;
+    yield put(
+      actions.addAffectedInstance(
+        address,
+        context,
+        binary,
+        creationBinary,
+        creationContext
+      )
+    );
   }
 }
 
