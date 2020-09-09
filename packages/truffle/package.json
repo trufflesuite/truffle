@@ -69,6 +69,6 @@
   ],
   "namespace": "consensys",
   "optionalDependencies": {
-    "js-interpreter": "^2.2.0"
+    "js-interpreter": "2.2.0"
   }
 }
