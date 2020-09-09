@@ -35,7 +35,9 @@ class DebugPrinter {
       }
 
       // throws its own exception
-      result = this.session.view(selector);
+      // note: we avoid using this.session so that this
+      // can be called from js-interpreter
+      result = session.view(selector);
 
       return result;
     };
