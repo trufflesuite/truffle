@@ -31,7 +31,12 @@ if (!semver.satisfies(process.version, ">=" + minimumNodeVersion)) {
 
 const Command = require("./lib/command");
 
-const command = new Command(require("./lib/commands"));
+// enable Truffle to run both from the bundles out of packages/dist
+// and using the raw JS directly - we inject BUNDLE_VERSION when building
+const command =
+  typeof BUNDLE_VERSION !== "undefined"
+    ? new Command(require("./commands.bundled.js"))
+    : new Command(require("./lib/commands"));
 
 // This should be removed when issue is resolved upstream:
 // https://github.com/ethereum/web3.js/issues/1648
@@ -49,7 +54,7 @@ if (userWantsGeneralHelp) {
   process.exit(0);
 }
 
-command.run(inputArguments, options, function(err) {
+command.run(inputArguments, options, function (err) {
   if (err) {
     if (err instanceof TaskError) {
       analytics.send({

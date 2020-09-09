@@ -47,6 +47,14 @@ module.exports = {
       "@truffle/core",
       "lib",
       "console-child.js"
+    ),
+    commands: path.join(
+      __dirname,
+      "../..",
+      "node_modules",
+      "@truffle/core",
+      "lib",
+      "commands/index.js"
     )
   },
 
@@ -89,7 +97,9 @@ module.exports = {
     // Here, we leave it as an external, and use the original-require
     // module that's a dependency of Truffle instead.
     /^original-require$/,
-    /^mocha$/
+    /^mocha$/,
+    // this is the commands portion shared by cli.js and console-child.js
+    /^\.\/commands.bundled.js$/
   ],
 
   resolve: {
