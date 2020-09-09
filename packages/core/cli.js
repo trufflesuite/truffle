@@ -31,7 +31,7 @@ if (!semver.satisfies(process.version, ">=" + minimumNodeVersion)) {
 
 const Command = require("./lib/command");
 
-const command = new Command(require("./lib/commands"));
+const command = new Command(require("./commands.bundled.js"));
 
 // This should be removed when issue is resolved upstream:
 // https://github.com/ethereum/web3.js/issues/1648
@@ -49,7 +49,7 @@ if (userWantsGeneralHelp) {
   process.exit(0);
 }
 
-command.run(inputArguments, options, function(err) {
+command.run(inputArguments, options, function (err) {
   if (err) {
     if (err instanceof TaskError) {
       analytics.send({

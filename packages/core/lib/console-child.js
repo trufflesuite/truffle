@@ -29,7 +29,7 @@ detectedConfig.networks.develop = {
   }
 };
 
-const command = new Command(require("../lib/commands"));
+const command = new Command(require("./commands.bundled.js"));
 
 command.run(inputStrings, detectedConfig, error => {
   if (error) {
