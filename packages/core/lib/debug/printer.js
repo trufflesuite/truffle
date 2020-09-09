@@ -6,13 +6,7 @@ const path = require("path");
 const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
 const colors = require("colors");
-
-var Interpreter;
-try {
-  Interpreter = require("js-interpreter");
-} catch (_) {
-  //leave Interpreter undefined
-}
+const Interpreter = require("js-interpreter");
 
 const selectors = require("@truffle/debugger").selectors;
 const {
@@ -531,14 +525,6 @@ class DebugPrinter {
     }
     debug("expression case");
 
-    //check: is Interpreter available?
-    if (!Interpreter) {
-      this.config.logger.log(
-        "Error: Use of expressions (as opposed to individual variables) requires the optional js-interpreter dependency."
-      );
-      return;
-    }
-
     // converts all !<...> expressions to JS-valid selector requests
     const preprocessSelectors = expr => {
       const regex = /!<([^>]+)>/g;
@@ -601,13 +587,6 @@ class DebugPrinter {
   //evaluates expression with the variables in context,
   //but also has `$` as a variable that is the select function
   safelyEvaluateWithSelectors(expression, context) {
-    if (!Interpreter) {
-      //note: we shouldn't hit this branch due to a check earlier
-      throw new Error(
-        "Error: Use of expressions (as opposed to individual variables) requires the optional js-interpreter dependency."
-      );
-    }
-
     const select = this.select;
     let interpreter;
     interpreter = new Interpreter(expression, function (

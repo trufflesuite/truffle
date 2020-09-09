@@ -9314,7 +9314,7 @@ jquery@^3.4.1:
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.4.1.tgz#714f1f8d9dde4bdfa55764ba37ef214630d80ef2"
   integrity sha512-36+AdBzCL+y6qjw5Tx7HgzeGCzC81MDDgaUP8ld2zhx58HdqXGoBd+tHdrBMiyjGQs0Hxs/MLZTu/eHNJJuWPw==
 
-js-interpreter@^2.2.0:
+js-interpreter@2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/js-interpreter/-/js-interpreter-2.2.0.tgz#a4f8699f833898f43e5deadffef52310e4649432"
   integrity sha512-eZq/kAEjxahuGowG91tWLVgzPuLGGqyakTFF7JPlblV6b/Uu9EOnYxs5EOSVQlKwHoq7MND0gu1zk3OGs5a6Iw==

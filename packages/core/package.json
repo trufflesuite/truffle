@@ -56,6 +56,7 @@
     "get-port": "^5.1.1",
     "glob": "^7.1.4",
     "hdkey": "^1.1.0",
+    "js-interpreter": "2.2.0",
     "mocha": "8.1.2",
     "node-emoji": "^1.8.1",
     "node-ipc": "^9.1.1",
@@ -86,8 +87,5 @@
       "url": "https://github.com/tcoulter"
     }
   ],
-  "namespace": "consensys",
-  "optionalDependencies": {
-    "js-interpreter": "2.2.0"
-  }
+  "namespace": "consensys"
 }
