@@ -2,11 +2,11 @@ const debugModule = require("debug");
 const debug = debugModule("lib:debug:printer");
 
 const path = require("path");
-const safeEval = require("safe-eval");
 
 const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
 const colors = require("colors");
+const Interpreter = require("js-interpreter");
 
 const selectors = require("@truffle/debugger").selectors;
 const {
@@ -35,7 +35,9 @@ class DebugPrinter {
       }
 
       // throws its own exception
-      result = this.session.view(selector);
+      // note: we avoid using this.session so that this
+      // can be called from js-interpreter
+      result = session.view(selector);
 
       return result;
     };
@@ -522,15 +524,6 @@ class DebugPrinter {
   async evalAndPrintExpression(raw, indent, suppress) {
     let variables = await this.session.variables();
 
-    // converts all !<...> expressions to JS-valid selector requests
-    const preprocessSelectors = expr => {
-      const regex = /!<([^>]+)>/g;
-      const select = "$"; // expect repl context to have this func
-      const replacer = (_, selector) => `${select}("${selector}")`;
-
-      return expr.replace(regex, replacer);
-    };
-
     //if we're just dealing with a single variable, handle that case
     //separately (so that we can do things in a better way for that
     //case)
@@ -541,18 +534,22 @@ class DebugPrinter {
       this.config.logger.log();
       return;
     }
+    debug("expression case");
+
+    // converts all !<...> expressions to JS-valid selector requests
+    const preprocessSelectors = expr => {
+      const regex = /!<([^>]+)>/g;
+      const select = "$"; // expect repl context to have this func
+      const replacer = (_, selector) => `${select}("${selector}")`;
+
+      return expr.replace(regex, replacer);
+    };
 
     //HACK
     //if we're not in the single-variable case, we'll need to do some
     //things to Javascriptify our variables so that the JS syntax for
     //using them is closer to the Solidity syntax
-    variables = Codec.Format.Utils.Inspect.nativizeVariables(variables);
-
-    let context = Object.assign(
-      { $: this.select },
-
-      variables
-    );
+    let context = Codec.Format.Utils.Inspect.nativizeVariables(variables);
 
     //HACK -- we can't use "this" as a variable name, so we're going to
     //find an available replacement name, and then modify the context
@@ -585,31 +582,55 @@ class DebugPrinter {
     expr = preprocessSelectors(expr);
 
     try {
-      let result = safeEval(expr, context);
-      result = DebugUtils.cleanConstructors(result); //HACK
+      const result = this.safelyEvaluateWithSelectors(expr, context);
       const formatted = DebugUtils.formatValue(result, indent, true);
       this.config.logger.log(formatted);
       this.config.logger.log();
     } catch (e) {
-      // HACK: safeEval edits the expression to capture the result, which
-      // produces really weird output when there are errors. e.g.,
-      //
-      //   evalmachine.<anonymous>:1
-      //   SAFE_EVAL_857712=a
-      //   ^
-      //
-      //   ReferenceError: a is not defined
-      //     at evalmachine.<anonymous>:1:1
-      //     at ContextifyScript.Script.runInContext (vm.js:59:29)
-      //
-      // We want to hide this from the user if there's an error.
-      e.stack = e.stack.replace(/SAFE_EVAL_\d+=/, "");
       if (!suppress) {
         this.config.logger.log(e);
       } else {
         this.config.logger.log(DebugUtils.formatValue(undefined, indent, true));
       }
     }
+  }
+
+  //evaluates expression with the variables in context,
+  //but also has `$` as a variable that is the select function
+  safelyEvaluateWithSelectors(expression, context) {
+    const select = this.select;
+    let interpreter;
+    interpreter = new Interpreter(expression, function (
+      interpreter,
+      globalObject
+    ) {
+      //first let's set up our select function (which will be called $)
+      interpreter.setProperty(
+        globalObject,
+        "$",
+        interpreter.createNativeFunction(selectorName => {
+          debug("selecting %s", selectorName);
+          return interpreter.nativeToPseudo(select(selectorName));
+        })
+      );
+      //now let's set up the variables
+      for (const [variable, value] of Object.entries(context)) {
+        try {
+          debug("variable: %s", variable);
+          //note: circular objects wll raise an exception here and get excluded.
+          interpreter.setProperty(
+            globalObject,
+            variable,
+            interpreter.nativeToPseudo(value)
+          );
+        } catch (_) {
+          debug("failure");
+          //just omit things that don't work
+        }
+      }
+    });
+    interpreter.run();
+    return interpreter.pseudoToNative(interpreter.value);
   }
 }
 

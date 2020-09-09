@@ -11,8 +11,7 @@
   "version": "4.2.7",
   "main": "index.js",
   "scripts": {
-    "prepare": "exit 0",
-    "test": "mocha"
+    "prepare": "exit 0"
   },
   "dependencies": {
     "@truffle/codec": "^0.6.0",
@@ -24,8 +23,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "8.1.2",
-    "safe-eval": "^0.4.1"
+    "mocha": "8.1.2"
   },
   "publishConfig": {
     "access": "public"
