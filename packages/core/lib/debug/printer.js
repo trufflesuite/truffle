@@ -478,33 +478,36 @@ class DebugPrinter {
   }
 
   async printVariables() {
-    let variables = await this.session.variables();
+    const values = await this.session.variables();
+    const sections = this.session.view(data.current.identifiers.sections);
 
-    debug("variables %o", variables);
-
-    const variableKeys = Object.keys(variables);
-
-    // Get the length of the longest name.
-    const longestNameLength = variableKeys.reduce((longest, name) => {
-      return name.length > longest ? name.length : longest;
-    }, -Infinity);
+    const sectionNames = {
+      builtin: "Solidity built-ins",
+      contract: "Contract variables",
+      local: "Local variables"
+    };
 
     this.config.logger.log();
 
-    variableKeys.forEach(name => {
-      let paddedName = name + ":";
-
-      while (paddedName.length <= longestNameLength) {
-        paddedName = " " + paddedName;
+    for (const [section, variables] of Object.entries(sections)) {
+      if (variables.length > 0) {
+        this.config.logger.log(sectionNames[section] + ":");
+        // Get the length of the longest name.
+        const longestNameLength = variables.reduce((longest, name) => {
+          return name.length > longest ? name.length : longest;
+        }, -Infinity);
+        for (const variable of variables) {
+          const paddedName = variable.padStart(longestNameLength) + ":";
+          const value = values[variable];
+          const formatted = DebugUtils.formatValue(
+            value,
+            longestNameLength + 5
+          );
+          this.config.logger.log("  " + paddedName, formatted);
+        }
+        this.config.logger.log();
       }
-
-      const value = variables[name];
-      const formatted = DebugUtils.formatValue(value, longestNameLength + 5);
-
-      this.config.logger.log("  " + paddedName, formatted);
-    });
-
-    this.config.logger.log();
+    }
   }
 
   /**
