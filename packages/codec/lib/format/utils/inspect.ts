@@ -17,8 +17,8 @@ interface InspectOptions {
 function cleanStylize(options: InspectOptions) {
   return Object.assign(
     {},
-    ...Object.entries(options).map(
-      ([key, value]) => (key === "stylize" ? {} : { [key]: value })
+    ...Object.entries(options).map(([key, value]) =>
+      key === "stylize" ? {} : { [key]: value }
     )
   );
 }
@@ -126,12 +126,12 @@ export class ResultInspector {
           case "mapping":
             return util.inspect(
               new Map(
-                (<Format.Values.MappingValue>this.result).value.map(
-                  ({ key, value }) => [
-                    new ResultInspector(key),
-                    new ResultInspector(value)
-                  ]
-                )
+                (<Format.Values.MappingValue>(
+                  this.result
+                )).value.map(({ key, value }) => [
+                  new ResultInspector(key),
+                  new ResultInspector(value)
+                ])
               ),
               options
             );
@@ -232,9 +232,7 @@ export class ResultInspector {
                     break;
                   case "invalid":
                   case "unknown":
-                    firstLine = `[Function: Unknown selector ${
-                      coercedResult.value.selector
-                    } of`;
+                    firstLine = `[Function: Unknown selector ${coercedResult.value.selector} of`;
                     break;
                 }
                 let secondLine = `${contractString}]`;
@@ -254,23 +252,24 @@ export class ResultInspector {
                 );
                 switch (coercedResult.value.kind) {
                   case "function":
-                    return options.stylize(
-                      `[Function: ${coercedResult.value.definedIn.typeName}.${
-                        coercedResult.value.name
-                      }]`,
-                      "special"
-                    );
+                    if (coercedResult.value.definedIn) {
+                      return options.stylize(
+                        `[Function: ${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}]`,
+                        "special"
+                      );
+                    } else {
+                      return options.stylize(
+                        `[Function: ${coercedResult.value.name}]`,
+                        "special"
+                      );
+                    }
                   case "exception":
                     return coercedResult.value.deployedProgramCounter === 0
                       ? options.stylize(`[Function: <zero>]`, "special")
                       : options.stylize(`[Function: assert(false)]`, "special");
                   case "unknown":
                     let firstLine = `[Function: decoding not supported (raw info:`;
-                    let secondLine = `deployed PC=${
-                      coercedResult.value.deployedProgramCounter
-                    }, constructor PC=${
-                      coercedResult.value.constructorProgramCounter
-                    })]`;
+                    let secondLine = `deployed PC=${coercedResult.value.deployedProgramCounter}, constructor PC=${coercedResult.value.constructorProgramCounter})]`;
                     let breakingSpace =
                       firstLine.length + secondLine.length + 1 >
                       options.breakLength
@@ -290,35 +289,21 @@ export class ResultInspector {
         let errorResult = <Format.Errors.ErrorResult>this.result; //the hell?? why couldn't it make this inference??
         switch (errorResult.error.kind) {
           case "UintPaddingError":
-            return `Uint has incorrect padding (expected padding: ${
-              errorResult.error.paddingType
-            }) (raw value ${errorResult.error.raw})`;
+            return `Uint has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "IntPaddingError":
-            return `Int has incorrect padding (expected padding: ${
-              errorResult.error.paddingType
-            }) (raw value ${errorResult.error.raw})`;
+            return `Int has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "UintPaddingError":
-            return `Ufixed has (expected padding: ${
-              errorResult.error.paddingType
-            }) (raw value ${errorResult.error.raw})`;
+            return `Ufixed has (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "FixedPaddingError":
-            return `Fixed has incorrect padding (expected padding: ${
-              errorResult.error.paddingType
-            }) (raw value ${errorResult.error.raw})`;
+            return `Fixed has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "BoolOutOfRangeError":
             return `Invalid boolean (numeric value ${errorResult.error.rawAsBN.toString()})`;
           case "BoolPaddingError":
-            return `Boolean has incorrect padding (expected padding: ${
-              errorResult.error.paddingType
-            }) (raw value ${errorResult.error.raw})`;
+            return `Boolean has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "BytesPaddingError":
-            return `Bytestring has extra trailing bytes (padding error) (raw value ${
-              errorResult.error.raw
-            })`;
+            return `Bytestring has extra trailing bytes (padding error) (raw value ${errorResult.error.raw})`;
           case "AddressPaddingError":
-            return `Address has incorrect padding (expected padding: ${
-              errorResult.error.paddingType
-            }) (raw value ${errorResult.error.raw})`;
+            return `Address has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "EnumOutOfRangeError":
             return `Invalid ${enumTypeName(
               errorResult.error.type
@@ -336,39 +321,21 @@ export class ResultInspector {
               errorResult.error.type.id
             } (numeric value ${errorResult.error.rawAsBN.toString()})`;
           case "ContractPaddingError":
-            return `Contract address has incorrect padding (expected padding: ${
-              errorResult.error.paddingType
-            }) (raw value ${errorResult.error.raw})`;
+            return `Contract address has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "FunctionExternalNonStackPaddingError":
-            return `External function has incorrect padding (expected padding: ${
-              errorResult.error.paddingType
-            }) (raw value ${errorResult.error.raw})`;
+            return `External function has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "FunctionExternalStackPaddingError":
-            return `External function address or selector has extra leading bytes (padding error) (raw address ${
-              errorResult.error.rawAddress
-            }, raw selector ${errorResult.error.rawSelector})`;
+            return `External function address or selector has extra leading bytes (padding error) (raw address ${errorResult.error.rawAddress}, raw selector ${errorResult.error.rawSelector})`;
           case "FunctionInternalPaddingError":
-            return `Internal function has incorrect padding (expected padding: ${
-              errorResult.error.paddingType
-            }) (raw value ${errorResult.error.raw})`;
+            return `Internal function has incorrect padding (expected padding: ${errorResult.error.paddingType}) (raw value ${errorResult.error.raw})`;
           case "NoSuchInternalFunctionError":
-            return `Invalid function (Deployed PC=${
-              errorResult.error.deployedProgramCounter
-            }, constructor PC=${
-              errorResult.error.constructorProgramCounter
-            }) of contract ${errorResult.error.context.typeName}`;
+            return `Invalid function (Deployed PC=${errorResult.error.deployedProgramCounter}, constructor PC=${errorResult.error.constructorProgramCounter}) of contract ${errorResult.error.context.typeName}`;
           case "DeployedFunctionInConstructorError":
-            return `Deployed-style function (PC=${
-              errorResult.error.deployedProgramCounter
-            }) in constructor`;
+            return `Deployed-style function (PC=${errorResult.error.deployedProgramCounter}) in constructor`;
           case "MalformedInternalFunctionError":
-            return `Malformed internal function w/constructor PC only (value: ${
-              errorResult.error.constructorProgramCounter
-            })`;
+            return `Malformed internal function w/constructor PC only (value: ${errorResult.error.constructorProgramCounter})`;
           case "IndexedReferenceTypeError": //for this one we'll bother with some line-wrapping
-            let firstLine = `Cannot decode indexed parameter of reference type ${
-              errorResult.error.type.typeClass
-            }`;
+            let firstLine = `Cannot decode indexed parameter of reference type ${errorResult.error.type.typeClass}`;
             let secondLine = `(raw value ${errorResult.error.raw})`;
             let breakingSpace =
               firstLine.length + secondLine.length + 1 > options.breakLength
@@ -433,9 +400,7 @@ function formatCircular(loopLength: number, options: InspectOptions): string {
 function enumFullName(value: Format.Values.EnumValue): string {
   switch (value.type.kind) {
     case "local":
-      return `${value.type.definingContractName}.${value.type.typeName}.${
-        value.value.name
-      }`;
+      return `${value.type.definingContractName}.${value.type.typeName}.${value.value.name}`;
     case "global":
       return `${value.type.typeName}.${value.value.name}`;
   }
@@ -624,9 +589,9 @@ function nativizeWithTable(
     case "magic":
       return Object.assign(
         {},
-        ...Object.entries((<Format.Values.MagicValue>result).value).map(
-          ([key, value]) => ({ [key]: nativize(value) })
-        )
+        ...Object.entries(
+          (<Format.Values.MagicValue>result).value
+        ).map(([key, value]) => ({ [key]: nativize(value) }))
       );
     case "enum":
       return enumFullName(<Format.Values.EnumValue>result);
@@ -638,26 +603,22 @@ function nativizeWithTable(
           let coercedResult = <Format.Values.FunctionExternalValue>result;
           switch (coercedResult.value.kind) {
             case "known":
-              return `${coercedResult.value.contract.class.typeName}(${
-                coercedResult.value.contract.address
-              }).${coercedResult.value.abi.name}`;
+              return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).${coercedResult.value.abi.name}`;
             case "invalid":
-              return `${coercedResult.value.contract.class.typeName}(${
-                coercedResult.value.contract.address
-              }).call(${coercedResult.value.selector}...)`;
+              return `${coercedResult.value.contract.class.typeName}(${coercedResult.value.contract.address}).call(${coercedResult.value.selector}...)`;
             case "unknown":
-              return `${coercedResult.value.contract.address}.call(${
-                coercedResult.value.selector
-              }...)`;
+              return `${coercedResult.value.contract.address}.call(${coercedResult.value.selector}...)`;
           }
         }
         case "internal": {
           let coercedResult = <Format.Values.FunctionInternalValue>result;
           switch (coercedResult.value.kind) {
             case "function":
-              return `${coercedResult.value.definedIn.typeName}.${
-                coercedResult.value.name
-              }`;
+              if (coercedResult.value.definedIn) {
+                return `${coercedResult.value.definedIn.typeName}.${coercedResult.value.name}`;
+              } else {
+                return coercedResult.value.name;
+              }
             case "exception":
               return coercedResult.value.deployedProgramCounter === 0
                 ? `<zero>`

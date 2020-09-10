@@ -8,8 +8,16 @@ import { execSync } from "child_process";
 import inquirer from "inquirer";
 import { boxConfig, unboxOptions } from "typings";
 import { promisify } from "util";
+import ignore from "ignore";
 
-async function verifyURL(url: string) {
+function verifyLocalPath(localPath: string) {
+  const configPath = path.join(localPath, "truffle-box.json");
+  fse.access(configPath).catch(e => {
+    throw new Error(`Truffle Box at path ${localPath} doesn't exist.`);
+  });
+}
+
+async function verifyVCSURL(url: string) {
   // Next let's see if the expected repository exists. If it doesn't, ghdownload
   // will fail spectacularly in a way we can't catch, so we have to do it ourselves.
   const configURL = parseURL(
@@ -22,7 +30,7 @@ async function verifyURL(url: string) {
     method: "HEAD",
     uri: `https://${configURL.host}${configURL.path}`,
     resolveWithFullResponse: true,
-    simple: false,
+    simple: false
   };
 
   const { statusCode } = await rp(options);
@@ -37,8 +45,35 @@ async function verifyURL(url: string) {
   }
 }
 
-function fetchRepository(url: string, dir: string) {
-  return promisify(download)(url, dir);
+async function verifySourcePath(sourcePath: string) {
+  if (sourcePath.startsWith("/")) {
+    return verifyLocalPath(sourcePath);
+  }
+  return verifyVCSURL(sourcePath);
+}
+
+async function gitIgnoreFilter(sourcePath: string) {
+  const ignoreFilter = ignore();
+  try {
+    const gitIgnore = await fse.readFile(
+      path.join(sourcePath, ".gitignore"),
+      "utf8"
+    );
+    ignoreFilter.add(gitIgnore.split(/\r?\n/).map(p => p.replace(/\/$/, "")));
+  } catch (err) {}
+
+  return ignoreFilter;
+}
+
+async function fetchRepository(sourcePath: string, dir: string) {
+  if (sourcePath.startsWith("/")) {
+    const filter = await gitIgnoreFilter(sourcePath);
+    return fse.copy(sourcePath, dir, {
+      filter: file =>
+        sourcePath === file || !filter.ignores(path.relative(sourcePath, file))
+    });
+  }
+  return promisify(download)(sourcePath, dir);
 }
 
 function prepareToCopyFiles(tempDir: string, { ignore }: boxConfig) {
@@ -66,8 +101,8 @@ async function promptOverwrites(
         type: "confirm",
         name: "overwrite",
         message: `Overwrite ${file}?`,
-        default: false,
-      },
+        default: false
+      }
     ];
 
     const { overwrite } = await inquirer.prompt(overwriting);
@@ -91,10 +126,10 @@ async function copyTempIntoDestination(
   const destinationContents = fse.readdirSync(destination);
 
   const newContents = boxContents.filter(
-    (filename) => !destinationContents.includes(filename)
+    filename => !destinationContents.includes(filename)
   );
 
-  const contentCollisions = boxContents.filter((filename) =>
+  const contentCollisions = boxContents.filter(filename =>
     destinationContents.includes(filename)
   );
 
@@ -123,5 +158,5 @@ export = {
   fetchRepository,
   installBoxDependencies,
   prepareToCopyFiles,
-  verifyURL,
+  verifySourcePath
 };

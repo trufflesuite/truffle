@@ -26,7 +26,9 @@ function shimContract(contract) {
     compiler,
     devdoc,
     userdoc,
-    immutableReferences
+    immutableReferences,
+    generatedSources,
+    deployedGeneratedSources
   } = contract;
 
   return {
@@ -45,7 +47,9 @@ function shimContract(contract) {
     compiler,
     devdoc,
     userdoc,
-    immutableReferences
+    immutableReferences,
+    generatedSources,
+    deployedGeneratedSources
   };
 }
 
