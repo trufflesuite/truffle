@@ -1,7 +1,7 @@
 var assert = require("chai").assert;
 var Box = require("@truffle/box");
 var Migrate = require("@truffle/migrate");
-var Contracts = require("@truffle/workflow-compile");
+var WorkflowCompile = require("@truffle/workflow-compile");
 var Networks = require("../lib/networks");
 var path = require("path");
 var fs = require("fs-extra");
@@ -75,7 +75,9 @@ describe("migrate", function () {
 
     config.network = "primary";
 
-    await Contracts.compileAndSave(config.with({ all: false, quiet: true }));
+    await WorkflowCompile.compileAndSave(
+      config.with({ all: false, quiet: true })
+    );
 
     await Migrate.run(config.with({ quiet: true }));
 

@@ -2,7 +2,7 @@ var assert = require("chai").assert;
 var fs = require("fs-extra");
 var glob = require("glob");
 var Box = require("@truffle/box");
-var Contracts = require("@truffle/workflow-compile");
+var WorkflowCompile = require("@truffle/workflow-compile");
 var Ganache = require("ganache-core");
 var provision = require("@truffle/provisioner");
 var Resolver = require("@truffle/resolver");
@@ -34,7 +34,7 @@ describe("config", function () {
 
   before("Compile contracts", async function () {
     this.timeout(10000);
-    await Contracts.compileAndSave(
+    await WorkflowCompile.compileAndSave(
       config.with({
         quiet: true
       })

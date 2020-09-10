@@ -5,7 +5,7 @@ var path = require("path");
 var fse = require("fs-extra");
 var Resolver = require("@truffle/resolver");
 var Artifactor = require("@truffle/artifactor");
-var Contracts = require("@truffle/workflow-compile");
+var WorkflowCompile = require("@truffle/workflow-compile");
 
 describe("NPM integration", function () {
   var config;
@@ -90,7 +90,7 @@ describe("NPM integration", function () {
 
   it("successfully picks up modules and their dependencies during compilation", async function () {
     this.timeout(10000);
-    const { contracts } = await Contracts.compileAndSave(
+    const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         quiet: true
       })

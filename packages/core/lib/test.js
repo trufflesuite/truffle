@@ -6,7 +6,7 @@ const {
   createInterfaceAdapter
 } = require("@truffle/interface-adapter");
 const Config = require("@truffle/config");
-const Contracts = require("@truffle/workflow-compile");
+const WorkflowCompile = require("@truffle/workflow-compile");
 const Resolver = require("@truffle/resolver");
 const TestRunner = require("./testing/TestRunner");
 const TestResolver = require("./testing/TestResolver");
@@ -244,7 +244,7 @@ const Test = {
       }
     }
     // Compile project contracts and test contracts
-    const { contracts, compilations } = await Contracts.compileAndSave(
+    const { contracts, compilations } = await WorkflowCompile.compileAndSave(
       compileConfig
     );
 

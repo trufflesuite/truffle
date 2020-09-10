@@ -20,7 +20,7 @@ const command = {
   run: function (options, done) {
     const Config = require("@truffle/config");
     const TruffleError = require("@truffle/error");
-    const Contracts = require("@truffle/workflow-compile");
+    const WorkflowCompile = require("@truffle/workflow-compile");
     const CodeUtils = require("@truffle/code-utils");
 
     if (options._.length === 0) {
@@ -28,7 +28,7 @@ const command = {
     }
 
     var config = Config.detect(options);
-    Contracts.compileAndSave(config)
+    WorkflowCompile.compileAndSave(config)
       .then(() => {
         const contractName = options._[0];
         let Contract;

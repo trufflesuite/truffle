@@ -63,7 +63,7 @@ const command = {
   },
   run: function (options, done) {
     const TruffleError = require("@truffle/error");
-    const Contracts = require("@truffle/workflow-compile");
+    const WorkflowCompile = require("@truffle/workflow-compile");
     const Config = require("@truffle/config");
     const config = Config.detect(options);
 
@@ -87,7 +87,7 @@ const command = {
         );
       }
 
-      Contracts.compile(config)
+      WorkflowCompile.compile(config)
         .then(async compilationOutput => {
           if (options.saveIntermediate) {
             // Get the filename the user provided to save the compilation results to
@@ -102,7 +102,7 @@ const command = {
             );
           }
 
-          return Contracts.save(config, compilationOutput);
+          return WorkflowCompile.save(config, compilationOutput);
         })
         .then(() => done())
         .catch(done);

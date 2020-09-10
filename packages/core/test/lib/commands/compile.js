@@ -1,6 +1,6 @@
 const assert = require("chai").assert;
 const Box = require("@truffle/box");
-const Contracts = require("@truffle/workflow-compile");
+const WorkflowCompile = require("@truffle/workflow-compile");
 const Artifactor = require("@truffle/artifactor");
 const Resolver = require("@truffle/resolver");
 const MemoryStream = require("memorystream");
@@ -41,7 +41,7 @@ describe("compile", function () {
 
   it("compiles all initial contracts", async function () {
     this.timeout(10000);
-    const { contracts } = await Contracts.compileAndSave(
+    const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
         quiet: true
@@ -56,7 +56,7 @@ describe("compile", function () {
 
   it("compiles no contracts after no updates", async function () {
     this.timeout(10000);
-    const { contracts } = await Contracts.compileAndSave(
+    const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
         quiet: true
@@ -81,7 +81,7 @@ describe("compile", function () {
     var newTime = new Date().getTime();
     fs.utimesSync(file_to_update, newTime, newTime);
 
-    const { contracts } = await Contracts.compileAndSave(
+    const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         all: false,
         quiet: true
@@ -177,29 +177,4 @@ describe("compile", function () {
       });
     });
   });
-
-  // TODO: Kept this as a comment because I'm confused if it applies.
-  // Since the binary and abi are updated with every compile, and they're not within
-  // the networks object anymore, it may not matter when that specific network changed.
-
-  // it('compiles all contracts after multiple changes after a change in network', function(done) {
-  //   this.timeout(10000);
-  //
-  //   config.network = "secondary";
-  //
-  //   Contracts.compile(config.with({
-  //     all: false,
-  //     quiet: true
-  //   }), function(err, contracts) {
-  //     if (err) return done(err);
-  //
-  //     assert.equal(Object.keys(contracts).length, 3, "Expected all contracts to be compiled on a second network");
-  //     done();
-  //   });
-  // });
-  //
-  // it('contracts should now have two networks', function() {
-  //   var contract = config.resolver.require("MetaCoin.sol");
-  //   assert.equal(contract.networks().length, 2, "Expected the contract to be managing two networks");
-  // });
 }).timeout(10000);

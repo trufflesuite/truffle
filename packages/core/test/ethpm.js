@@ -3,7 +3,7 @@ const Box = require("@truffle/box");
 const fs = require("fs-extra");
 const glob = require("glob");
 const path = require("path");
-const Contracts = require("@truffle/workflow-compile");
+const WorkflowCompile = require("@truffle/workflow-compile");
 const Package = require("../lib/package.js");
 const Blockchain = require("@truffle/blockchain-utils");
 const Ganache = require("ganache-core");
@@ -169,7 +169,7 @@ describe.skip("EthPM integration", function () {
     );
 
     // Compile all contracts, then provision them and see if we get contracts from our dependencies.
-    const { contracts } = await Contracts.compileAndSave(
+    const { contracts } = await WorkflowCompile.compileAndSave(
       config.with({
         all: true,
         quiet: true

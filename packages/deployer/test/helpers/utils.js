@@ -1,5 +1,5 @@
 const TruffleContract = require("@truffle/contract");
-const Contracts = require("@truffle/workflow-compile");
+const WorkflowCompile = require("@truffle/workflow-compile");
 const path = require("path");
 const fs = require("fs-extra");
 
@@ -18,7 +18,7 @@ const utils = {
       contracts_build_directory: utils.buildDir,
       contracts_directory: utils.sourcesDir
     };
-    await Contracts.compileAndSave(config);
+    await WorkflowCompile.compileAndSave(config);
   },
 
   evm_mine: function (web3) {

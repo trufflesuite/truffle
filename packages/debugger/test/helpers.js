@@ -3,7 +3,7 @@ const debug = debugModule("test:helpers");
 
 import path from "path";
 import fs from "fs-extra";
-import Contracts from "@truffle/workflow-compile";
+import WorkflowCompile from "@truffle/workflow-compile";
 import Artifactor from "@truffle/artifactor";
 import Web3 from "web3";
 import Migrate from "@truffle/migrate";
@@ -140,7 +140,7 @@ export async function defaultMigrations(contractNames) {
 }
 
 export async function compile(config) {
-  const { compilations } = await Contracts.compileAndSave(
+  const { compilations } = await WorkflowCompile.compileAndSave(
     config.with({
       all: true,
       quiet: true

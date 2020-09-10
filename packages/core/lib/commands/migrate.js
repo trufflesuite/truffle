@@ -188,7 +188,7 @@ const command = {
     const Artifactor = require("@truffle/artifactor");
     const Resolver = require("@truffle/resolver");
     const Migrate = require("@truffle/migrate");
-    const Contracts = require("@truffle/workflow-compile");
+    const WorkflowCompile = require("@truffle/workflow-compile");
     const { Environment } = require("@truffle/environment");
     const Config = require("@truffle/config");
     const { promisify } = require("util");
@@ -201,7 +201,7 @@ const command = {
       conf.compiler = "none";
     }
 
-    Contracts.compileAndSave(conf)
+    WorkflowCompile.compileAndSave(conf)
       .then(async () => {
         await Environment.detect(conf);
 
