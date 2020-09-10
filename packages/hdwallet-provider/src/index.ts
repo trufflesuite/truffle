@@ -242,4 +242,4 @@ class HDWalletProvider {
   }
 }
 
-export default HDWalletProvider;
+export = HDWalletProvider;
