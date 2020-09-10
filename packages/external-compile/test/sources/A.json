@@ -1,0 +1,205 @@
+{
+  "contractName": "A",
+  "abi": [],
+  "metadata": "{\"compiler\":{\"version\":\"0.6.12+commit.27d51765\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/tyler/src/work/reproduce/2020/09/09/test/contracts/A.sol\":\"A\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/tyler/src/work/reproduce/2020/09/09/test/contracts/A.sol\":{\"keccak256\":\"0xe1ce9fb46a4d91606e1f4b2c0b8ef59f980e1df473d29a714fc4fe37901653eb\",\"urls\":[\"bzz-raw://11a00dc8a3664b30c6b884f80a4ccc8934668098b65bc137a95f2f25d174b4af\",\"dweb:/ipfs/QmdF7tpekfz6SoJCBiqqTAtqbKcdcQGEppA2ZApKBQGLeW\"]}},\"version\":1}",
+  "bytecode": "0x60806040526005600055348015601457600080fd5b50603f8060226000396000f3fe6080604052600080fdfea264697066735822122054305d3698403f70e4fdf176417f1869c05a4ea315553b29b8d92961c56e24f564736f6c634300060c0033",
+  "deployedBytecode": "0x6080604052600080fdfea264697066735822122054305d3698403f70e4fdf176417f1869c05a4ea315553b29b8d92961c56e24f564736f6c634300060c0033",
+  "immutableReferences": {},
+  "sourceMap": "25:33:0:-:0;;;54:1;40:15;;25:33;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "25:33:0:-:0;;;;;",
+  "source": "pragma solidity ^0.6.0;\n\ncontract A {\n  uint possum = 5;\n}\n\n",
+  "sourcePath": "/Users/tyler/src/work/reproduce/2020/09/09/test/contracts/A.sol",
+  "ast": {
+    "absolutePath": "/Users/tyler/src/work/reproduce/2020/09/09/test/contracts/A.sol",
+    "exportedSymbols": {
+      "A": [
+        5
+      ]
+    },
+    "id": 6,
+    "license": null,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:0"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 5,
+        "linearizedBaseContracts": [
+          5
+        ],
+        "name": "A",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 4,
+            "mutability": "mutable",
+            "name": "possum",
+            "nodeType": "VariableDeclaration",
+            "overrides": null,
+            "scope": 5,
+            "src": "40:15:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 2,
+              "name": "uint",
+              "nodeType": "ElementaryTypeName",
+              "src": "40:4:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "35",
+              "id": 3,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "54:1:0",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_5_by_1",
+                "typeString": "int_const 5"
+              },
+              "value": "5"
+            },
+            "visibility": "internal"
+          }
+        ],
+        "scope": 6,
+        "src": "25:33:0"
+      }
+    ],
+    "src": "0:60:0"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/tyler/src/work/reproduce/2020/09/09/test/contracts/A.sol",
+    "exportedSymbols": {
+      "A": [
+        5
+      ]
+    },
+    "id": 6,
+    "license": null,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1,
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:0"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 5,
+        "linearizedBaseContracts": [
+          5
+        ],
+        "name": "A",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 4,
+            "mutability": "mutable",
+            "name": "possum",
+            "nodeType": "VariableDeclaration",
+            "overrides": null,
+            "scope": 5,
+            "src": "40:15:0",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 2,
+              "name": "uint",
+              "nodeType": "ElementaryTypeName",
+              "src": "40:4:0",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "35",
+              "id": 3,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "54:1:0",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_5_by_1",
+                "typeString": "int_const 5"
+              },
+              "value": "5"
+            },
+            "visibility": "internal"
+          }
+        ],
+        "scope": 6,
+        "src": "25:33:0"
+      }
+    ],
+    "src": "0:60:0"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.6.12+commit.27d51765.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.2.4",
+  "updatedAt": "2020-09-10T17:52:07.249Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}

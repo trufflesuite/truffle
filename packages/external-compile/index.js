@@ -9,6 +9,7 @@ const fs = require("fs");
 const expect = require("@truffle/expect");
 const Schema = require("@truffle/contract-schema");
 const web3Utils = require("web3-utils");
+const { Shims } = require("@truffle/compile-common");
 
 const DEFAULT_ABI = [
   {
@@ -263,7 +264,7 @@ const compile = async function (options) {
   const contracts = await processTargets(targets, cwd, logger);
   return [
     {
-      contracts,
+      contracts: contracts.map(Shims.LegacyToNew.forContract),
       // sourceIndexes is empty because we have no way of
       // knowing for certain the source paths for the contracts
       sourceIndexes: [],
