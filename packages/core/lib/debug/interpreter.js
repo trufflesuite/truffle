@@ -10,7 +10,7 @@ const selectors = require("@truffle/debugger").selectors;
 const { session, solidity, trace, evm, controller, stacktrace } = selectors;
 
 const analytics = require("../services/analytics");
-const ReplManager = require("../repl");
+const repl = require("repl");
 
 const { DebugPrinter } = require("./printer");
 
@@ -40,9 +40,8 @@ class DebugInterpreter {
     this.printer = new DebugPrinter(config, session);
     this.txHash = txHash;
     this.lastCommand = "n";
-
-    this.repl = config.repl || new ReplManager(config);
     this.enabledExpressions = new Set();
+    this.repl = null;
   }
 
   async setOrClearBreakpoint(args, setOrClear) {
@@ -276,21 +275,11 @@ class DebugInterpreter {
       ? DebugUtils.formatPrompt(this.network, this.txHash)
       : DebugUtils.formatPrompt(this.network);
 
-    this.repl.start({
-      prompt,
-      interpreter: util.callbackify(this.interpreter.bind(this)),
+    this.repl = repl.start({
+      prompt: prompt,
+      eval: util.callbackify(this.interpreter.bind(this)),
       ignoreUndefined: true,
       done: terminate
-    });
-  }
-
-  setPrompt(prompt) {
-    this.repl.activate.bind(this.repl)({
-      prompt,
-      context: {},
-      //this argument only *adds* things, so it's safe to set it to {}
-      ignoreUndefined: true
-      //set to true because it's set to true below :P
     });
   }
 
@@ -321,7 +310,7 @@ class DebugInterpreter {
 
     //quit if that's what we were given
     if (cmd === "q") {
-      return await util.promisify(this.repl.stop.bind(this.repl))();
+      process.exit();
     }
 
     let alreadyFinished = this.session.view(trace.finishedOrUnloaded);
@@ -404,7 +393,7 @@ class DebugInterpreter {
           if (this.session.view(selectors.session.status.success)) {
             txSpinner.succeed();
             //if successful, change prompt
-            this.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
+            this.repl.setPrompt(DebugUtils.formatPrompt(this.network, cmdArgs));
           } else {
             txSpinner.fail();
             loadFailed = true;
@@ -427,7 +416,7 @@ class DebugInterpreter {
         if (this.session.view(selectors.session.status.loaded)) {
           await this.session.unload();
           this.printer.print("Transaction unloaded.");
-          this.setPrompt(DebugUtils.formatPrompt(this.network));
+          this.repl.setPrompt(DebugUtils.formatPrompt(this.network));
         } else {
           this.printer.print("No transaction to unload.");
           this.printer.print("");
