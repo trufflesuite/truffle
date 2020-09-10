@@ -12,45 +12,6 @@ function shimOutput({ contracts: list, sourceIndexes, compiler }) {
   return [contracts, sourceIndexes, compiler];
 }
 
-function shimContract(contract) {
-  const {
-    contractName,
-    sourcePath,
-    source,
-    sourceMap,
-    deployedSourceMap,
-    legacyAST,
-    ast,
-    abi,
-    metadata,
-    bytecode,
-    deployedBytecode,
-    compiler,
-    devdoc,
-    userdoc,
-    immutableReferences
-  } = contract;
-
-  return {
-    contract_name: contractName,
-    sourcePath,
-    source,
-    sourceMap,
-    deployedSourceMap,
-    legacyAST,
-    ast,
-    abi,
-    metadata,
-    bytecode: shimBytecode(bytecode),
-    deployedBytecode: shimBytecode(deployedBytecode),
-    unlinked_binary: shimBytecode(bytecode),
-    compiler,
-    devdoc,
-    userdoc,
-    immutableReferences
-  };
-}
-
 function shimBytecode(bytecode) {
   if (!bytecode) {
     return bytecode;
@@ -94,6 +55,5 @@ function shimBytecode(bytecode) {
 
 module.exports = {
   shimOutput,
-  shimContract,
   shimBytecode
 };
