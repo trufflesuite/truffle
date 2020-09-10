@@ -1201,6 +1201,37 @@ const data = createSelectorTree({
       },
 
       /**
+       * data.current.identifiers.sections
+       * intended for use by Teams Debugger
+       */
+      sections: createLeaf(["./refs"], refs => {
+        let sections = {
+          builtin: [],
+          contract: [],
+          local: []
+        };
+        for (const [identifier, ref] of Object.entries(refs)) {
+          switch (ref.location) {
+            case "special":
+              sections.builtin.push(identifier);
+              break;
+            case "stack":
+              sections.local.push(identifier);
+              break;
+            case "storage":
+            case "code":
+            case "nowhere":
+            case "memory":
+            case "definition":
+              sections.contract.push(identifier);
+              break;
+            //other cases shouldn't happen
+          }
+        }
+        return sections;
+      }),
+
+      /**
        * data.current.identifiers.refs
        *
        * current variables' value refs
