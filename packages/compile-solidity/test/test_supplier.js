@@ -60,7 +60,10 @@ describe("CompilerSupplier", function () {
     it("compiles w/ default solc if no compiler specified (float)", async function () {
       const defaultOptions = Config.default().merge(options);
 
-      const compilations = await compile(version5PragmaSource, defaultOptions);
+      const { compilations } = await compile(
+        version5PragmaSource,
+        defaultOptions
+      );
       const Version5Pragma = findOne(
         "Version5Pragma",
         compilations[0].contracts
@@ -78,7 +81,7 @@ describe("CompilerSupplier", function () {
       };
       const config = new Config().with(options);
 
-      const compilations = await compile(oldPragmaPinSource, config);
+      const { compilations } = await compile(oldPragmaPinSource, config);
       const OldPragmaPin = findOne("OldPragmaPin", compilations[0].contracts);
 
       assert(OldPragmaPin.contractName === "OldPragmaPin");
@@ -95,7 +98,7 @@ describe("CompilerSupplier", function () {
       };
 
       const config = Config.default().merge(options);
-      const compilations = await compile(oldPragmaFloatSource, config);
+      const { compilations } = await compile(oldPragmaFloatSource, config);
       const OldPragmaFloat = findOne(
         "OldPragmaFloat",
         compilations[0].contracts
@@ -118,7 +121,7 @@ describe("CompilerSupplier", function () {
 
       const localPathOptions = Config.default().merge(options);
 
-      const compilations = await compile(
+      const { compilations } = await compile(
         version5PragmaSource,
         localPathOptions
       );
@@ -163,7 +166,10 @@ describe("CompilerSupplier", function () {
       // got accessed / ran ok.
       await waitSecond();
 
-      const compilations = await compile(version4PragmaSource, cachedOptions);
+      const { compilations } = await compile(
+        version4PragmaSource,
+        cachedOptions
+      );
 
       finalAccessTime = (await fse.stat(expectedCache)).atime.getTime();
       const NewPragma = findOne("NewPragma", compilations[0].contracts);
@@ -189,7 +195,7 @@ describe("CompilerSupplier", function () {
 
         const nativeSolcOptions = Config.default().merge(options);
 
-        const compilations = await compile(
+        const { compilations } = await compile(
           versionLatestPragmaSource,
           nativeSolcOptions
         );
@@ -216,7 +222,7 @@ describe("CompilerSupplier", function () {
 
         const expectedVersion = "0.4.22+commit.4cb486ee.Linux.g++";
 
-        const compilations = await compile(
+        const { compilations } = await compile(
           version4PragmaSource,
           dockerizedSolcOptions
         );
@@ -255,7 +261,7 @@ describe("CompilerSupplier", function () {
         options.resolver = new Resolver(options);
         options = Config.default().merge(options);
 
-        const compilations = await Compile.withDependencies(options);
+        const { compilations } = await Compile.withDependencies(options);
         const ComplexOrdered = findOne(
           "ComplexOrdered",
           compilations[0].contracts

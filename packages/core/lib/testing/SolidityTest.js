@@ -116,7 +116,7 @@ const SolidityTest = {
       ? "NewSafeSend.sol"
       : "OldSafeSend.sol";
 
-    const compilations = await Compile.withDependencies(
+    const { compilations } = await Compile.withDependencies(
       runner.config.with({
         paths: [
           path.join(__dirname, "Assert.sol"),

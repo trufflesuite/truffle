@@ -36,8 +36,8 @@ describe("JSparser", () => {
 
     const config = Config.default().merge(options);
 
-    const compilationOutput = await Compile.withDependencies(config);
-    const contractWasCompiled = compilationOutput.some(compilation => {
+    const { compilations } = await Compile.withDependencies(config);
+    const contractWasCompiled = compilations.some(compilation => {
       return compilation.contracts.some(contract => {
         return contract.contractName === "ComplexOrdered";
       });

@@ -8,11 +8,21 @@ class DebugCompiler {
   async compile(sources = undefined) {
     const compileConfig = this.config.with({ quiet: true });
 
-    const { contracts, sourceIndexes } = sources
+    const { compilations } = sources
       ? await compile(sources, compileConfig) //used by external.js
       : await Compile.all(compileConfig);
 
-    return { contracts, sourceIndexes };
+    return compilations.reduce(
+      (a, compilation) => {
+        a.contracts = a.contracts.concat(compilation.contracts);
+        a.sourceIndexes = a.sourceIndexes.concat(compilation.sourceIndexes);
+        return a;
+      },
+      {
+        contracts: [],
+        sourceIndexes: []
+      }
+    );
   }
 }
 
