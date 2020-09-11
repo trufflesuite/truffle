@@ -262,18 +262,20 @@ const compile = async function (options) {
   await runCommand(command, { cwd, logger });
 
   const contracts = await processTargets(targets, cwd, logger);
-  return [
-    {
-      contracts: contracts.map(Shims.LegacyToNew.forContract),
-      // sourceIndexes is empty because we have no way of
-      // knowing for certain the source paths for the contracts
-      sourceIndexes: [],
-      compiler: {
-        name: "external",
-        version: undefined
+  return {
+    compilations: [
+      {
+        contracts: contracts.map(Shims.LegacyToNew.forContract),
+        // sourceIndexes is empty because we have no way of
+        // knowing for certain the source paths for the contracts
+        sourceIndexes: [],
+        compiler: {
+          name: "external",
+          version: undefined
+        }
       }
-    }
-  ];
+    ]
+  };
 };
 
 const Compile = {

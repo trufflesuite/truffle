@@ -20,7 +20,9 @@ const { normalizeOptions } = require("./legacy/options");
 // }
 const compile = async function (sources, options) {
   const compilation = await run(sources, normalizeOptions(options));
-  return compilation.contracts.length > 0 ? [compilation] : [];
+  return compilation.contracts.length > 0
+    ? { compilations: [compilation] }
+    : { compilations: [] };
 };
 
 const Compile = {
@@ -86,7 +88,7 @@ const Compile = {
 
     // when there are no sources, don't call run
     if (Object.keys(allSources).length === 0) {
-      return [];
+      return { compilations: [] };
     }
 
     options.compilationTargets = compilationTargets;
@@ -97,14 +99,16 @@ const Compile = {
     const { name, version } = compiler;
     // returns CompilerResult - see @truffle/compile-common
     return contracts.length > 0
-      ? [
-          {
-            sourceIndexes,
-            contracts,
-            compiler: { name, version }
-          }
-        ]
-      : [];
+      ? {
+          compilations: [
+            {
+              sourceIndexes,
+              contracts,
+              compiler: { name, version }
+            }
+          ]
+        }
+      : { compilations: [] };
   },
 
   display(paths, options) {

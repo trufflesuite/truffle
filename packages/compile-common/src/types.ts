@@ -9,7 +9,9 @@ export type Compilation = {
   };
 };
 
-export type CompilerResult = Compilation[];
+export interface CompilerResult {
+  compilations: Compilation[];
+}
 
 export interface Bytecode {
   bytes: string;

@@ -101,13 +101,15 @@ async function compileAll(options) {
   const contracts = await Promise.all(promises);
 
   const compilerInfo = { name: "vyper", version: compiler.version };
-  return [
-    {
-      compiler: compilerInfo,
-      contracts,
-      sourceIndexes: options.paths
-    }
-  ];
+  return {
+    compilations: [
+      {
+        compiler: compilerInfo,
+        contracts,
+        sourceIndexes: options.paths
+      }
+    ]
+  };
 }
 
 // Check that vyper is available then forward to internal compile function
@@ -119,7 +121,7 @@ async function compile(options) {
 
   // no vyper files found, no need to check vyper
   if (options.paths.length === 0) {
-    return [];
+    return { compilations: [] };
   }
 
   await checkVyper();
@@ -150,7 +152,7 @@ const Compile = {
     const updated = await Profiler.updated(options);
 
     if (updated.length === 0 && options.quiet !== true) {
-      return [];
+      return { compilations: [] };
     }
 
     // filter out only Vyper files
