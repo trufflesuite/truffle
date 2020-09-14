@@ -155,7 +155,7 @@ class Command {
           OS.EOL +
           "Usage: truffle <command> [options]"
       )
-      .epilog("See more at http://truffleframework.com/docs")
+      .epilog("See more at http://trufflesuite.com/docs")
       .showHelp();
   }
 }

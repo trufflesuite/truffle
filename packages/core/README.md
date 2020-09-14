@@ -35,11 +35,11 @@ $ truffle init
 
 From there, you can run `truffle compile`, `truffle migrate` and `truffle test` to compile your contracts, deploy those contracts to the network, and run their associated unit tests.
 
-See [the documentation](http://truffleframework.com/docs/) for more details.
+See [the documentation](http://trufflesuite.com/docs/) for more details.
 
 ### Documentation
 
-Please see the [Official Truffle Documentation](http://truffleframework.com/docs/) for guides, tips, and examples.
+Please see the [Official Truffle Documentation](http://trufflesuite.com/docs/) for guides, tips, and examples.
 
 ### Contributing
 

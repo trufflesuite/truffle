@@ -300,7 +300,7 @@ function detectErrors({
         OS.EOL,
         `Please update your truffle config or pragma statement(s).`,
         OS.EOL,
-        `(See https://truffleframework.com/docs/truffle/reference/configuration#compiler-configuration `,
+        `(See https://trufflesuite.com/docs/truffle/reference/configuration#compiler-configuration `,
         `for information on`,
         OS.EOL,
         `configuring Truffle to use a specific solc compiler version.)`
