@@ -3,7 +3,7 @@ const path = require("path");
 const expect = require("@truffle/expect");
 const findContracts = require("@truffle/contract-sources");
 const Config = require("@truffle/config");
-const Profiler = require("./profiler");
+const { Profiler } = require("@truffle/compile-common");
 const CompilerSupplier = require("../compilerSupplier");
 const { run } = require("../run");
 const { normalizeOptions } = require("./options");
@@ -59,16 +59,16 @@ compile.all = function (options, callback) {
 compile.necessary = function (options, callback) {
   options.logger = options.logger || console;
 
-  Profiler.updated(options, function (err, updated) {
-    if (err) return callback(err);
+  Profiler.updated(options)
+    .then(updated => {
+      if (updated.length === 0 && options.quiet !== true) {
+        return callback(null, [], {});
+      }
 
-    if (updated.length === 0 && options.quiet !== true) {
-      return callback(null, [], {});
-    }
-
-    options.paths = updated;
-    compile.with_dependencies(options, callback);
-  });
+      options.paths = updated;
+      compile.with_dependencies(options, callback);
+    })
+    .catch(callback);
 };
 
 compile.with_dependencies = function (options, callback) {
