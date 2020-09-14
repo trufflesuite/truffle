@@ -242,49 +242,52 @@ async function processTarget(target, cwd, logger) {
   }
 }
 
-const compile = async function (options) {
-  if (options.logger == null) {
-    options.logger = console;
-  }
-
-  expect.options(options, ["compilers"]);
-  expect.options(options.compilers, ["external"]);
-  expect.options(options.compilers.external, ["command", "targets"]);
-
-  const { command, targets } = options.compilers.external;
-  const cwd =
-    options.compilers.external.workingDirectory ||
-    options.compilers.external.working_directory || // just in case
-    options.working_directory;
-  const logger = options.logger;
-
-  debug("running compile command: %s", command);
-  await runCommand(command, { cwd, logger });
-
-  const contracts = await processTargets(targets, cwd, logger);
-  return {
-    compilations: [
-      {
-        contracts: contracts.map(Shims.LegacyToNew.forContract),
-        // sourceIndexes is empty because we have no way of
-        // knowing for certain the source paths for the contracts
-        sourceIndexes: [],
-        compiler: {
-          name: "external",
-          version: undefined
-        }
-      }
-    ]
-  };
-};
-
 const Compile = {
   async all(options) {
-    return await compile(options);
+    return await Compile.sources(options);
   },
 
   async necessary(options) {
-    return await compile(options);
+    return await Compile.sources(options);
+  },
+
+  // the `sources` argument here is currently unused as the user is
+  // responsible for dealing with compiling their sources
+  // @ts-ignore
+  async sources({ sources, options }) {
+    if (options.logger == null) {
+      options.logger = console;
+    }
+
+    expect.options(options, ["compilers"]);
+    expect.options(options.compilers, ["external"]);
+    expect.options(options.compilers.external, ["command", "targets"]);
+
+    const { command, targets } = options.compilers.external;
+    const cwd =
+      options.compilers.external.workingDirectory ||
+      options.compilers.external.working_directory || // just in case
+      options.working_directory;
+    const logger = options.logger;
+
+    debug("running compile command: %s", command);
+    await runCommand(command, { cwd, logger });
+
+    const contracts = await processTargets(targets, cwd, logger);
+    return {
+      compilations: [
+        {
+          contracts: contracts.map(Shims.LegacyToNew.forContract),
+          // sourceIndexes is empty because we have no way of
+          // knowing for certain the source paths for the contracts
+          sourceIndexes: [],
+          compiler: {
+            name: "external",
+            version: undefined
+          }
+        }
+      ]
+    };
   }
 };
 

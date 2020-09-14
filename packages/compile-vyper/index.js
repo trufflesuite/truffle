@@ -112,24 +112,24 @@ async function compileAll({ sources, options }) {
   };
 }
 
-// Check that vyper is available then forward to internal compile function
-async function compile({ sources = [], options }) {
-  // filter out non-vyper paths
-  const vyperFiles = sources.filter(path => minimatch(path, VYPER_PATTERN));
-
-  // no vyper files found, no need to check vyper
-  if (sources.length === 0) {
-    return { compilations: [] };
-  }
-
-  await checkVyper();
-  return await compileAll({
-    sources: vyperFiles,
-    options
-  });
-}
-
 const Compile = {
+  // Check that vyper is available then forward to internal compile function
+  async sources({ sources = [], options }) {
+    // filter out non-vyper paths
+    const vyperFiles = sources.filter(path => minimatch(path, VYPER_PATTERN));
+
+    // no vyper files found, no need to check vyper
+    if (sources.length === 0) {
+      return { compilations: [] };
+    }
+
+    await checkVyper();
+    return await compileAll({
+      sources: vyperFiles,
+      options
+    });
+  },
+
   // contracts_directory: String. Directory where contract files can be found.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
@@ -141,7 +141,7 @@ const Compile = {
     const files = await findContracts(fileSearchPattern);
     options.paths = files;
 
-    return await compile(options);
+    return await Compile.sources(options);
   },
 
   // contracts_directory: String. Directory where contract files can be found.
@@ -161,7 +161,7 @@ const Compile = {
     const updatedVyperPaths = updated.filter(path => {
       return path.match(/\.vy$|\.v.py$|\.vyper.py$/);
     });
-    return await compile({
+    return await Compile.sources({
       sources: updatedVyperPaths,
       options
     });
@@ -187,6 +187,5 @@ const Compile = {
 };
 
 module.exports = {
-  compile,
   Compile
 };

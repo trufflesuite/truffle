@@ -3,7 +3,7 @@ const fse = require("fs-extra");
 const path = require("path");
 const assert = require("assert");
 const Resolver = require("@truffle/resolver");
-const { compile, Compile } = require("@truffle/compile-solidity");
+const { Compile } = require("@truffle/compile-solidity");
 const Config = require("@truffle/config");
 const { findOne } = require("./helpers");
 
@@ -60,7 +60,7 @@ describe("CompilerSupplier", function () {
     it("compiles w/ default solc if no compiler specified (float)", async function () {
       const defaultOptions = Config.default().merge(options);
 
-      const { compilations } = await compile({
+      const { compilations } = await Compile.sources({
         sources: version5PragmaSource,
         options: defaultOptions
       });
@@ -81,7 +81,7 @@ describe("CompilerSupplier", function () {
       };
       const config = new Config().with(options);
 
-      const { compilations } = await compile({
+      const { compilations } = await Compile.sources({
         sources: oldPragmaPinSource,
         options: config
       });
@@ -101,7 +101,7 @@ describe("CompilerSupplier", function () {
       };
 
       const config = Config.default().merge(options);
-      const { compilations } = await compile({
+      const { compilations } = await Compile.sources({
         sources: oldPragmaFloatSource,
         options: config
       });
@@ -127,7 +127,7 @@ describe("CompilerSupplier", function () {
 
       const localPathOptions = Config.default().merge(options);
 
-      const { compilations } = await compile({
+      const { compilations } = await Compile.sources({
         sources: version5PragmaSource,
         options: localPathOptions
       });
@@ -161,7 +161,7 @@ describe("CompilerSupplier", function () {
       const cachedOptions = Config.default().merge(options);
 
       // Run compiler, expecting solc to be downloaded and cached.
-      await compile({
+      await Compile.sources({
         sources: version4PragmaSource,
         options: cachedOptions
       });
@@ -175,7 +175,7 @@ describe("CompilerSupplier", function () {
       // got accessed / ran ok.
       await waitSecond();
 
-      const { compilations } = await compile({
+      const { compilations } = await Compile.sources({
         sources: version4PragmaSource,
         options: cachedOptions
       });
@@ -204,7 +204,7 @@ describe("CompilerSupplier", function () {
 
         const nativeSolcOptions = Config.default().merge(options);
 
-        const { compilations } = await compile({
+        const { compilations } = await Compile.sources({
           sources: versionLatestPragmaSource,
           options: nativeSolcOptions
         });
@@ -231,7 +231,7 @@ describe("CompilerSupplier", function () {
 
         const expectedVersion = "0.4.22+commit.4cb486ee.Linux.g++";
 
-        const { compilations } = await compile({
+        const { compilations } = await Compile.sources({
           sources: version4PragmaSource,
           options: dockerizedSolcOptions
         });
@@ -295,7 +295,7 @@ describe("CompilerSupplier", function () {
 
         let error;
         try {
-          await compile({
+          await Compile.sources({
             sources: version4PragmaSource,
             options: compileConfig
           });
@@ -321,7 +321,7 @@ describe("CompilerSupplier", function () {
 
         let error;
         try {
-          await compile({
+          await Compile.sources({
             sources: version4PragmaSource,
             options: compileConfig
           });

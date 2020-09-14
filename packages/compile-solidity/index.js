@@ -8,24 +8,17 @@ const CompilerSupplier = require("./compilerSupplier");
 const { run } = require("./run");
 const { normalizeOptions } = require("./legacy/options");
 
-// Most basic of the compile commands. Takes a hash of sources, where
-// the keys are file or module paths and the values are the bodies of
-// the contracts. Does not evaulate dependencies that aren't already given.
-//
-// Default options:
-// {
-//   strict: false,
-//   quiet: false,
-//   logger: console
-// }
-const compile = async function ({ sources, options }) {
-  const compilation = await run(sources, normalizeOptions(options));
-  return compilation.contracts.length > 0
-    ? { compilations: [compilation] }
-    : { compilations: [] };
-};
-
 const Compile = {
+  // Most basic of the compile commands. Takes a hash of sources, where
+  // the keys are file or module paths and the values are the bodies of
+  // the contracts. Does not evaulate dependencies that aren't already given.
+  async sources({ sources, options }) {
+    const compilation = await run(sources, normalizeOptions(options));
+    return compilation.contracts.length > 0
+      ? { compilations: [compilation] }
+      : { compilations: [] };
+  },
+
   // contracts_directory: String. Directory where .sol files can be found.
   // quiet: Boolean. Suppress output. Defaults to false.
   // strict: Boolean. Return compiler warnings as errors. Defaults to false.
@@ -38,9 +31,10 @@ const Compile = {
       ])
     ];
 
-    return await Compile.withDependencies(
-      Config.default().merge(options).merge({ paths })
-    );
+    return await Compile.sourcesWithDependencies({
+      sources: paths,
+      options: Config.default().merge(options)
+    });
   },
 
   // contracts_directory: String. Directory where .sol files can be found.
@@ -55,12 +49,13 @@ const Compile = {
 
     const paths = await Profiler.updated(options);
 
-    return await Compile.withDependencies(
-      Config.default().merge(options).merge({ paths })
-    );
+    return await Compile.sourcesWithDependencies({
+      sources: paths,
+      options: Config.default().merge(options)
+    });
   },
 
-  async withDependencies(options) {
+  async sourcesWithDependencies({ sources, options }) {
     options.logger = options.logger || console;
     options.contracts_directory = options.contracts_directory || process.cwd();
 
@@ -74,7 +69,7 @@ const Compile = {
     const config = Config.default().merge(options);
     const { allSources, compilationTargets } = await Profiler.requiredSources(
       config.with({
-        paths: options.paths,
+        paths: sources,
         base_path: options.contracts_directory,
         resolver: options.resolver
       })
@@ -140,7 +135,6 @@ const Compile = {
 };
 
 module.exports = {
-  compile,
   Compile,
   CompilerSupplier
 };

@@ -6,7 +6,7 @@ const path = require("path");
 const fs = require("fs");
 const Config = require("@truffle/config");
 const requireNoCache = require("require-nocache")(module);
-const { compile } = require("@truffle/compile-solidity");
+const { Compile } = require("@truffle/compile-solidity");
 const Ganache = require("ganache-core");
 const Web3 = require("web3");
 const { Shims } = require("@truffle/compile-common");
@@ -52,7 +52,7 @@ describe("artifactor + require", () => {
     config = Config.default().with(options);
 
     // Compile first
-    const { compilations } = await compile({
+    const { compilations } = await Compile.sources({
       sources,
       options: config
     });
