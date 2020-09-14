@@ -253,7 +253,6 @@ const Compile = {
 
   // the `sources` argument here is currently unused as the user is
   // responsible for dealing with compiling their sources
-  // @ts-ignore
   async sources({ sources, options }) {
     if (options.logger == null) {
       options.logger = console;
