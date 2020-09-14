@@ -98,7 +98,10 @@ describe("Compile - solidity ^0.4.0", function () {
       const sources = {};
       sources["SimpleOrdered.sol"] = simpleOrderedSource;
 
-      const { compilations } = await compile(sources, compileOptions);
+      const { compilations } = await compile({
+        sources,
+        options: compileOptions
+      });
 
       const SimpleOrdered = findOne("SimpleOrdered", compilations[0].contracts);
       const abi = SimpleOrdered.abi.map(({ name }) => name);
@@ -151,7 +154,10 @@ describe("Compile - solidity ^0.4.0", function () {
       sources["ComplexOrdered.sol"] = complexOrderedSource;
       sources["InheritB.sol"] = inheritedSource;
 
-      const { compilations } = await compile(sources, compileOptions);
+      const { compilations } = await compile({
+        sources,
+        options: compileOptions
+      });
       const ComplexOrdered = findOne(
         "ComplexOrdered",
         compilations[0].contracts
@@ -167,7 +173,10 @@ describe("Compile - solidity ^0.4.0", function () {
       sources["ComplexOrdered.sol"] = complexOrderedSource;
       sources["InheritB.sol"] = inheritedSource;
 
-      const { compilations } = await compile(sources, compileOptions);
+      const { compilations } = await compile({
+        sources,
+        options: compileOptions
+      });
       const Empty = findOne("Empty", compilations[0].contracts);
       assert.equal(Empty.abi.length, 0);
     });

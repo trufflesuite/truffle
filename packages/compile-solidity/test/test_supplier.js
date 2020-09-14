@@ -60,10 +60,10 @@ describe("CompilerSupplier", function () {
     it("compiles w/ default solc if no compiler specified (float)", async function () {
       const defaultOptions = Config.default().merge(options);
 
-      const { compilations } = await compile(
-        version5PragmaSource,
-        defaultOptions
-      );
+      const { compilations } = await compile({
+        sources: version5PragmaSource,
+        options: defaultOptions
+      });
       const Version5Pragma = findOne(
         "Version5Pragma",
         compilations[0].contracts
@@ -81,7 +81,10 @@ describe("CompilerSupplier", function () {
       };
       const config = new Config().with(options);
 
-      const { compilations } = await compile(oldPragmaPinSource, config);
+      const { compilations } = await compile({
+        sources: oldPragmaPinSource,
+        options: config
+      });
       const OldPragmaPin = findOne("OldPragmaPin", compilations[0].contracts);
 
       assert(OldPragmaPin.contractName === "OldPragmaPin");
@@ -98,7 +101,10 @@ describe("CompilerSupplier", function () {
       };
 
       const config = Config.default().merge(options);
-      const { compilations } = await compile(oldPragmaFloatSource, config);
+      const { compilations } = await compile({
+        sources: oldPragmaFloatSource,
+        options: config
+      });
       const OldPragmaFloat = findOne(
         "OldPragmaFloat",
         compilations[0].contracts
@@ -121,10 +127,10 @@ describe("CompilerSupplier", function () {
 
       const localPathOptions = Config.default().merge(options);
 
-      const { compilations } = await compile(
-        version5PragmaSource,
-        localPathOptions
-      );
+      const { compilations } = await compile({
+        sources: version5PragmaSource,
+        options: localPathOptions
+      });
       const Version5Pragma = findOne(
         "Version5Pragma",
         compilations[0].contracts
@@ -155,7 +161,10 @@ describe("CompilerSupplier", function () {
       const cachedOptions = Config.default().merge(options);
 
       // Run compiler, expecting solc to be downloaded and cached.
-      await compile(version4PragmaSource, cachedOptions);
+      await compile({
+        sources: version4PragmaSource,
+        options: cachedOptions
+      });
 
       assert(await fse.exists(expectedCache), "Should have cached compiler");
 
@@ -166,10 +175,10 @@ describe("CompilerSupplier", function () {
       // got accessed / ran ok.
       await waitSecond();
 
-      const { compilations } = await compile(
-        version4PragmaSource,
-        cachedOptions
-      );
+      const { compilations } = await compile({
+        sources: version4PragmaSource,
+        options: cachedOptions
+      });
 
       finalAccessTime = (await fse.stat(expectedCache)).atime.getTime();
       const NewPragma = findOne("NewPragma", compilations[0].contracts);
@@ -195,10 +204,10 @@ describe("CompilerSupplier", function () {
 
         const nativeSolcOptions = Config.default().merge(options);
 
-        const { compilations } = await compile(
-          versionLatestPragmaSource,
-          nativeSolcOptions
-        );
+        const { compilations } = await compile({
+          sources: versionLatestPragmaSource,
+          options: nativeSolcOptions
+        });
         const VersionLatestPragma = findOne(
           "Version7Pragma",
           compilations[0].contracts
@@ -222,10 +231,10 @@ describe("CompilerSupplier", function () {
 
         const expectedVersion = "0.4.22+commit.4cb486ee.Linux.g++";
 
-        const { compilations } = await compile(
-          version4PragmaSource,
-          dockerizedSolcOptions
-        );
+        const { compilations } = await compile({
+          sources: version4PragmaSource,
+          options: dockerizedSolcOptions
+        });
         const NewPragma = findOne("NewPragma", compilations[0].contracts);
 
         assert(NewPragma.compiler.version === expectedVersion);
@@ -286,7 +295,10 @@ describe("CompilerSupplier", function () {
 
         let error;
         try {
-          await compile(version4PragmaSource, compileConfig);
+          await compile({
+            sources: version4PragmaSource,
+            options: compileConfig
+          });
         } catch (err) {
           error = err;
         }
@@ -309,7 +321,10 @@ describe("CompilerSupplier", function () {
 
         let error;
         try {
-          await compile(version4PragmaSource, compileConfig);
+          await compile({
+            sources: version4PragmaSource,
+            options: compileConfig
+          });
         } catch (err) {
           error = err;
         }

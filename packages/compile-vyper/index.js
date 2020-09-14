@@ -56,14 +56,14 @@ function execVyper(options, sourcePath, callback) {
   });
 }
 
-// compile all options.paths
-async function compileAll(options) {
+// compile all sources
+async function compileAll({ sources, options }) {
   options.logger = options.logger || console;
 
-  Compile.display(options.paths, options);
+  Compile.display(sources, options);
 
   const promises = [];
-  options.paths.forEach(sourcePath => {
+  sources.forEach(sourcePath => {
     promises.push(
       new Promise((resolve, reject) => {
         execVyper(options, sourcePath, function (error, compiledContract) {
@@ -113,19 +113,20 @@ async function compileAll(options) {
 }
 
 // Check that vyper is available then forward to internal compile function
-async function compile(options) {
+async function compile({ sources = [], options }) {
   // filter out non-vyper paths
-  options.paths = options.paths.filter(function (path) {
-    return minimatch(path, VYPER_PATTERN);
-  });
+  const vyperFiles = sources.filter(path => minimatch(path, VYPER_PATTERN));
 
   // no vyper files found, no need to check vyper
-  if (options.paths.length === 0) {
+  if (sources.length === 0) {
     return { compilations: [] };
   }
 
   await checkVyper();
-  return await compileAll(options);
+  return await compileAll({
+    sources: vyperFiles,
+    options
+  });
 }
 
 const Compile = {
@@ -139,7 +140,8 @@ const Compile = {
     );
     const files = await findContracts(fileSearchPattern);
     options.paths = files;
-    return await Compile.withDependencies(options);
+
+    return await compile(options);
   },
 
   // contracts_directory: String. Directory where contract files can be found.
@@ -159,12 +161,10 @@ const Compile = {
     const updatedVyperPaths = updated.filter(path => {
       return path.match(/\.vy$|\.v.py$|\.vyper.py$/);
     });
-    options.paths = updatedVyperPaths;
-    return await Compile.withDependencies(options);
-  },
-
-  async withDependencies(options) {
-    return await compile(options);
+    return await compile({
+      sources: updatedVyperPaths,
+      options
+    });
   },
 
   async display(paths, options) {

@@ -35,7 +35,6 @@ async function compile(config) {
           ? Compile.all
           : Compile.necessary;
 
-      // return from `compile` is an array of compilations
       return await compileMethod(config);
     })
   );

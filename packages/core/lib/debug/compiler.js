@@ -9,7 +9,7 @@ class DebugCompiler {
     const compileConfig = this.config.with({ quiet: true });
 
     const { compilations } = sources
-      ? await compile(sources, compileConfig) //used by external.js
+      ? await compile({ sources, options: compileConfig }) //used by external.js
       : await Compile.all(compileConfig);
 
     return compilations.reduce(

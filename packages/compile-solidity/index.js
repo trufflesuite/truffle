@@ -18,7 +18,7 @@ const { normalizeOptions } = require("./legacy/options");
 //   quiet: false,
 //   logger: console
 // }
-const compile = async function (sources, options) {
+const compile = async function ({ sources, options }) {
   const compilation = await run(sources, normalizeOptions(options));
   return compilation.contracts.length > 0
     ? { compilations: [compilation] }

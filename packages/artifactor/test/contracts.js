@@ -52,7 +52,10 @@ describe("artifactor + require", () => {
     config = Config.default().with(options);
 
     // Compile first
-    const { compilations } = await compile(sources, config);
+    const { compilations } = await compile({
+      sources,
+      options: config
+    });
     const { contracts } = compilations[0];
 
     // Clean up after solidity. Only remove solidity's listener,
