@@ -36,7 +36,7 @@ describe("JSparser", () => {
 
     const config = Config.default().merge(options);
 
-    const { compilations } = await Compile.withDependencies(config);
+    const { compilations } = await Compile.sourcesWithDependencies(config);
     const contractWasCompiled = compilations.some(compilation => {
       return compilation.contracts.some(contract => {
         return contract.contractName === "ComplexOrdered";
@@ -61,7 +61,7 @@ describe("JSparser", () => {
     const config = Config.default().merge(options);
 
     try {
-      await Compile.withDependencies(config);
+      await Compile.sourcesWithDependencies(config);
       assert(false, "this call should have failed!");
     } catch (error) {
       assert(error.message.match(/(Unsupported parser)/));

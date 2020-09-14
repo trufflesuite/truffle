@@ -1,7 +1,7 @@
 const debug = require("debug")("compile:test:test_ordering");
 const fs = require("fs");
 const path = require("path");
-const { compile } = require("@truffle/compile-solidity");
+const { Compile } = require("@truffle/compile-solidity");
 const CompilerSupplier = require("../compilerSupplier");
 const assert = require("assert");
 const { findOne } = require("./helpers");
@@ -98,7 +98,7 @@ describe("Compile - solidity ^0.4.0", function () {
       const sources = {};
       sources["SimpleOrdered.sol"] = simpleOrderedSource;
 
-      const { compilations } = await compile({
+      const { compilations } = await Compile.sources({
         sources,
         options: compileOptions
       });
@@ -154,7 +154,7 @@ describe("Compile - solidity ^0.4.0", function () {
       sources["ComplexOrdered.sol"] = complexOrderedSource;
       sources["InheritB.sol"] = inheritedSource;
 
-      const { compilations } = await compile({
+      const { compilations } = await Compile.sources({
         sources,
         options: compileOptions
       });
@@ -173,7 +173,7 @@ describe("Compile - solidity ^0.4.0", function () {
       sources["ComplexOrdered.sol"] = complexOrderedSource;
       sources["InheritB.sol"] = inheritedSource;
 
-      const { compilations } = await compile({
+      const { compilations } = await Compile.sources({
         sources,
         options: compileOptions
       });
