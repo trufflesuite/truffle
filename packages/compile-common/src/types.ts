@@ -43,6 +43,8 @@ export type CompiledContract = {
   devdoc: object;
   userdoc: object;
   immutableReferences: object;
+  generatedSources: any;
+  deployedGeneratedSources: any;
 };
 
 export interface WorkflowCompileResult {
