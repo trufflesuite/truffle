@@ -39,6 +39,22 @@ module.exports = {
       "node_modules",
       "@truffle/core",
       "index.js"
+    ),
+    consoleChild: path.join(
+      __dirname,
+      "../..",
+      "node_modules",
+      "@truffle/core",
+      "lib",
+      "console-child.js"
+    ),
+    commands: path.join(
+      __dirname,
+      "../..",
+      "node_modules",
+      "@truffle/core",
+      "lib",
+      "commands/index.js"
     )
   },
 
@@ -81,7 +97,9 @@ module.exports = {
     // Here, we leave it as an external, and use the original-require
     // module that's a dependency of Truffle instead.
     /^original-require$/,
-    /^mocha$/
+    /^mocha$/,
+    // this is the commands portion shared by cli.js and console-child.js
+    /^\.\/commands.bundled.js$/
   ],
 
   resolve: {
@@ -109,7 +127,8 @@ module.exports = {
       BUNDLE_VERSION: JSON.stringify(pkg.version),
       BUNDLE_CHAIN_FILENAME: JSON.stringify("chain.bundled.js"),
       BUNDLE_ANALYTICS_FILENAME: JSON.stringify("analytics.bundled.js"),
-      BUNDLE_LIBRARY_FILENAME: JSON.stringify("library.bundled.js")
+      BUNDLE_LIBRARY_FILENAME: JSON.stringify("library.bundled.js"),
+      BUNDLE_CONSOLE_CHILD_FILENAME: JSON.stringify("consoleChild.bundled.js")
     }),
 
     // Put the shebang back on.

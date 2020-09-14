@@ -25,7 +25,7 @@ export async function prepareContracts(provider, sources = {}, migrations) {
 
   config.compilers = {
     solc: {
-      version: "0.6.11",
+      version: "0.7.1",
       settings: {
         optimizer: { enabled: false, runs: 200 },
         evmVersion: "constantinople"
@@ -78,17 +78,11 @@ export async function createSandbox() {
   const config = await Box.sandbox({
     unsafeCleanup: true,
     setGracefulCleanup: true,
-    name: "default"
+    name: "bare-box"
   });
   config.resolver = new Resolver(config);
   config.artifactor = new Artifactor(config.contracts_build_directory);
   config.networks = {};
-
-  await fs.remove(path.join(config.contracts_directory, "MetaCoin.sol"));
-  await fs.remove(path.join(config.contracts_directory, "ConvertLib.sol"));
-  await fs.remove(
-    path.join(config.migrations_directory, "2_deploy_contracts.js")
-  );
 
   return config;
 }

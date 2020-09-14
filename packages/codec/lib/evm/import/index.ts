@@ -6,6 +6,10 @@ import { InternalFunction } from "@truffle/codec/evm/types";
 export function functionTableEntryToType(
   functionEntry: InternalFunction
 ): Format.Types.ContractTypeNative {
+  if (functionEntry.contractNode === null) {
+    //for free functions
+    return null;
+  }
   return {
     typeClass: "contract" as const,
     kind: "native" as const,
@@ -14,4 +18,10 @@ export function functionTableEntryToType(
     contractKind: functionEntry.contractKind,
     payable: functionEntry.contractPayable
   };
+}
+
+export function makeInternalFunctionId(
+  functionEntry: InternalFunction
+): string {
+  return `${functionEntry.compilationId}:${functionEntry.id}`;
 }

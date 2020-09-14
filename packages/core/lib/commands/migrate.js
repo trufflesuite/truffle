@@ -49,9 +49,9 @@ const command = {
     usage:
       "truffle migrate [--reset] [--f <number>] [--to <number>] [--network <name>]\n" +
       "                                " + // spacing to align with previous line
-      "[--compile-all] [--verbose-rpc] [--interactive] [--dry-run]\n" +
+      "[--compile-all] [--compile-none] [--verbose-rpc] [--interactive]\n" +
       "                                " + // spacing to align with previous line
-      "[--skip-dry-run] [--describe-json]",
+      "[--skip-dry-run] [--describe-json] [--dry-run]",
     options: [
       {
         option: "--reset",

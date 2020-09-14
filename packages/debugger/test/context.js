@@ -11,7 +11,7 @@ import Debugger from "lib/debugger";
 import sessionSelector from "lib/session/selectors";
 
 const __OUTER = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 import "./InnerContract.sol";
 
@@ -20,7 +20,7 @@ contract OuterContract {
 
   InnerContract inner;
 
-  constructor(address _inner) public {
+  constructor(address _inner) {
     inner = InnerContract(_inner);
   }
 
@@ -33,7 +33,7 @@ contract OuterContract {
 `;
 
 const __INNER = `
-pragma solidity ^0.6.1;
+pragma solidity ^0.7.0;
 
 contract InnerContract {
   event Inner();
@@ -45,7 +45,7 @@ contract InnerContract {
 `;
 
 const __IMMUTABLE = `
-pragma solidity ^0.6.5;
+pragma solidity ^0.7.0;
 
 contract ImmutableTest {
   uint immutable x = 35;
@@ -63,7 +63,7 @@ library TestLibrary {
 `;
 
 const __CREATION = `
-pragma solidity ^0.6.5;
+pragma solidity ^0.7.0;
 
 contract CreationTest {
   function run() public {
@@ -73,7 +73,7 @@ contract CreationTest {
 
 contract Created {
   uint it;
-  constructor(uint x) public {
+  constructor(uint x) {
     it = x;
   }
 }

@@ -23,11 +23,6 @@ describe("Truffle Library APIs [ @standalone ]", () => {
     assert(truffle.create.migration, "create.migration undefined");
   });
 
-  it("truffle.console API definition", () => {
-    // This one returns a constructor.
-    assert(truffle.console, "console undefined");
-  });
-
   it("truffle.contracts API definition", () => {
     assert(truffle.contracts.compile, "contracts.compile undefined");
     assert(

@@ -492,7 +492,14 @@ export interface FunctionInternalValueInfoKnown {
   deployedProgramCounter: number;
   constructorProgramCounter: number;
   name: string;
-  definedIn: Types.ContractType;
+  /**
+   * Is null for a free function
+   */
+  definedIn: Types.ContractType | null;
+  /**
+   * An internal opaque ID
+   */
+  id: string;
   mutability?: Common.Mutability;
   //may have more optional fields added later
 }

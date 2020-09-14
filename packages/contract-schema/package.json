@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/trufflesuite/truffle/issues"
   },
-  "version": "3.2.4",
+  "version": "3.2.5",
   "main": "index.js",
   "directories": {
     "spec": "./spec"
