@@ -244,11 +244,19 @@ async function processTarget(target, cwd, logger) {
 
 const Compile = {
   async all(options) {
-    return await Compile.sources(options);
+    return await Compile.sources({
+      // currently you cannot specify sources here
+      sources: undefined,
+      options
+    });
   },
 
   async necessary(options) {
-    return await Compile.sources(options);
+    return await Compile.sources({
+      // currently you cannot specify sources here
+      sources: undefined,
+      options
+    });
   },
 
   // the `sources` argument here is currently unused as the user is

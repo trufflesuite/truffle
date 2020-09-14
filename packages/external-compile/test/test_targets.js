@@ -6,7 +6,6 @@ const web3 = {};
 web3.utils = require("web3-utils");
 const tmp = require("tmp");
 tmp.setGracefulCleanup();
-const { compile } = require("../");
 
 const { processTarget, DEFAULT_ABI } = require("..");
 
@@ -117,32 +116,6 @@ describe("Compilation Targets", () => {
       const processed = await processTarget(target, cwd);
 
       assert.equal(processed[contractName].bytecode, bytecode);
-    });
-  });
-
-  describe("compile(options)", () => {
-    const options = {
-      compilers: {
-        external: {
-          command: "echo 'dummy command!'",
-          targets: [
-            {
-              path: path.resolve("./test/sources/A.json")
-            }
-          ]
-        }
-      }
-    };
-
-    it("outputs an array", async () => {
-      const result = await compile(options);
-      assert(Array.isArray(result));
-    });
-
-    it("returns contracts with bytecode in 'new' format (non-string)", async () => {
-      const [{ contracts }] = await compile(options);
-      assert(typeof contracts[0].bytecode !== "string");
-      assert(typeof contracts[0].bytecode === "object");
     });
   });
 });
