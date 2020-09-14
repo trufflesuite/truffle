@@ -2,11 +2,11 @@ const debugModule = require("debug");
 const debug = debugModule("lib:debug:printer");
 
 const path = require("path");
-const safeEval = require("safe-eval");
 
 const DebugUtils = require("@truffle/debug-utils");
 const Codec = require("@truffle/codec");
 const colors = require("colors");
+const Interpreter = require("js-interpreter");
 
 const selectors = require("@truffle/debugger").selectors;
 const {
@@ -35,7 +35,9 @@ class DebugPrinter {
       }
 
       // throws its own exception
-      result = this.session.view(selector);
+      // note: we avoid using this.session so that this
+      // can be called from js-interpreter
+      result = session.view(selector);
 
       return result;
     };
@@ -46,10 +48,11 @@ class DebugPrinter {
     )) {
       this.colorizedSources[compilationId] = {};
       for (const source of compilation.byId) {
-        const id = source.id;
-        const raw = source.source;
+        const { id, source: raw, internal: yul } = source;
+        //for now, we assume internal sources are Yul and
+        //user sources are Solidity
         const detabbed = DebugUtils.tabsToSpaces(raw);
-        const colorized = DebugUtils.colorize(detabbed);
+        const colorized = DebugUtils.colorize(detabbed, yul);
         this.colorizedSources[compilationId][id] = colorized;
       }
     }
@@ -103,11 +106,10 @@ class DebugPrinter {
     this.config.logger.log(DebugUtils.formatHelp(lastCommand));
   }
 
-  printFile() {
+  printFile(location = this.session.view(controller.current.location)) {
     let message = "";
 
-    debug("about to determine sourcePath");
-    const sourcePath = this.session.view(solidity.current.source).sourcePath;
+    const sourcePath = location.source.sourcePath;
 
     if (sourcePath) {
       message += path.basename(sourcePath);
@@ -119,10 +121,15 @@ class DebugPrinter {
     this.config.logger.log(message + ":");
   }
 
-  printState(contextBefore = 2, contextAfter = 0) {
-    const { id: sourceId, source, compilationId } = this.session.view(
-      solidity.current.source
-    );
+  printState(
+    contextBefore = 2,
+    contextAfter = 0,
+    location = this.session.view(controller.current.location)
+  ) {
+    const {
+      source: { id: sourceId, compilationId },
+      sourceRange: range
+    } = location;
 
     if (sourceId === undefined) {
       this.config.logger.log();
@@ -131,9 +138,13 @@ class DebugPrinter {
       return;
     }
 
+    const source = this.session.view(solidity.info.sources)[compilationId].byId[
+      sourceId
+    ].source;
+    //we don't just get extract this from the location because passed-in location may be
+    //missing the soure text
     const colorizedSource = this.colorizedSources[compilationId][sourceId];
 
-    const range = this.session.view(solidity.current.sourceRange);
     debug("range: %o", range);
 
     // We were splitting on OS.EOL, but it turns out on Windows,
@@ -435,7 +446,7 @@ class DebugPrinter {
   }
 
   printStacktrace(final) {
-    this.config.logger.log("Stacktrace:");
+    this.config.logger.log(final ? "Stacktrace:" : "Call stack:");
     let report = final
       ? this.session.view(stacktrace.current.finalReport)
       : this.session.view(stacktrace.current.report);
@@ -469,33 +480,36 @@ class DebugPrinter {
   }
 
   async printVariables() {
-    let variables = await this.session.variables();
+    const values = await this.session.variables();
+    const sections = this.session.view(data.current.identifiers.sections);
 
-    debug("variables %o", variables);
-
-    const variableKeys = Object.keys(variables);
-
-    // Get the length of the longest name.
-    const longestNameLength = variableKeys.reduce((longest, name) => {
-      return name.length > longest ? name.length : longest;
-    }, -Infinity);
+    const sectionNames = {
+      builtin: "Solidity built-ins",
+      contract: "Contract variables",
+      local: "Local variables"
+    };
 
     this.config.logger.log();
 
-    variableKeys.forEach(name => {
-      let paddedName = name + ":";
-
-      while (paddedName.length <= longestNameLength) {
-        paddedName = " " + paddedName;
+    for (const [section, variables] of Object.entries(sections)) {
+      if (variables.length > 0) {
+        this.config.logger.log(sectionNames[section] + ":");
+        // Get the length of the longest name.
+        const longestNameLength = variables.reduce((longest, name) => {
+          return name.length > longest ? name.length : longest;
+        }, -Infinity);
+        for (const variable of variables) {
+          const paddedName = variable.padStart(longestNameLength) + ":";
+          const value = values[variable];
+          const formatted = DebugUtils.formatValue(
+            value,
+            longestNameLength + 5
+          );
+          this.config.logger.log("  " + paddedName, formatted);
+        }
+        this.config.logger.log();
       }
-
-      const value = variables[name];
-      const formatted = DebugUtils.formatValue(value, longestNameLength + 5);
-
-      this.config.logger.log("  " + paddedName, formatted);
-    });
-
-    this.config.logger.log();
+    }
   }
 
   /**
@@ -513,15 +527,6 @@ class DebugPrinter {
   async evalAndPrintExpression(raw, indent, suppress) {
     let variables = await this.session.variables();
 
-    // converts all !<...> expressions to JS-valid selector requests
-    const preprocessSelectors = expr => {
-      const regex = /!<([^>]+)>/g;
-      const select = "$"; // expect repl context to have this func
-      const replacer = (_, selector) => `${select}("${selector}")`;
-
-      return expr.replace(regex, replacer);
-    };
-
     //if we're just dealing with a single variable, handle that case
     //separately (so that we can do things in a better way for that
     //case)
@@ -532,18 +537,22 @@ class DebugPrinter {
       this.config.logger.log();
       return;
     }
+    debug("expression case");
+
+    // converts all !<...> expressions to JS-valid selector requests
+    const preprocessSelectors = expr => {
+      const regex = /!<([^>]+)>/g;
+      const select = "$"; // expect repl context to have this func
+      const replacer = (_, selector) => `${select}("${selector}")`;
+
+      return expr.replace(regex, replacer);
+    };
 
     //HACK
     //if we're not in the single-variable case, we'll need to do some
     //things to Javascriptify our variables so that the JS syntax for
     //using them is closer to the Solidity syntax
-    variables = Codec.Format.Utils.Inspect.nativizeVariables(variables);
-
-    let context = Object.assign(
-      { $: this.select },
-
-      variables
-    );
+    let context = Codec.Format.Utils.Inspect.nativizeVariables(variables);
 
     //HACK -- we can't use "this" as a variable name, so we're going to
     //find an available replacement name, and then modify the context
@@ -576,31 +585,55 @@ class DebugPrinter {
     expr = preprocessSelectors(expr);
 
     try {
-      let result = safeEval(expr, context);
-      result = DebugUtils.cleanConstructors(result); //HACK
+      const result = this.safelyEvaluateWithSelectors(expr, context);
       const formatted = DebugUtils.formatValue(result, indent, true);
       this.config.logger.log(formatted);
       this.config.logger.log();
     } catch (e) {
-      // HACK: safeEval edits the expression to capture the result, which
-      // produces really weird output when there are errors. e.g.,
-      //
-      //   evalmachine.<anonymous>:1
-      //   SAFE_EVAL_857712=a
-      //   ^
-      //
-      //   ReferenceError: a is not defined
-      //     at evalmachine.<anonymous>:1:1
-      //     at ContextifyScript.Script.runInContext (vm.js:59:29)
-      //
-      // We want to hide this from the user if there's an error.
-      e.stack = e.stack.replace(/SAFE_EVAL_\d+=/, "");
       if (!suppress) {
         this.config.logger.log(e);
       } else {
         this.config.logger.log(DebugUtils.formatValue(undefined, indent, true));
       }
     }
+  }
+
+  //evaluates expression with the variables in context,
+  //but also has `$` as a variable that is the select function
+  safelyEvaluateWithSelectors(expression, context) {
+    const select = this.select;
+    let interpreter;
+    interpreter = new Interpreter(expression, function (
+      interpreter,
+      globalObject
+    ) {
+      //first let's set up our select function (which will be called $)
+      interpreter.setProperty(
+        globalObject,
+        "$",
+        interpreter.createNativeFunction(selectorName => {
+          debug("selecting %s", selectorName);
+          return interpreter.nativeToPseudo(select(selectorName));
+        })
+      );
+      //now let's set up the variables
+      for (const [variable, value] of Object.entries(context)) {
+        try {
+          debug("variable: %s", variable);
+          //note: circular objects wll raise an exception here and get excluded.
+          interpreter.setProperty(
+            globalObject,
+            variable,
+            interpreter.nativeToPseudo(value)
+          );
+        } catch (_) {
+          debug("failure");
+          //just omit things that don't work
+        }
+      }
+    });
+    interpreter.run();
+    return interpreter.pseudoToNative(interpreter.value);
   }
 }
 
