@@ -55,7 +55,7 @@ export class TruffleDB {
     return await execute(this.schema, document, null, this.context, variables);
   }
 
-  *loadNames(
+  *generateLoadNames(
     project: DataModel.IProject,
     contractsByCompilation: Array<DataModel.IContract[]>
   ): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
@@ -98,7 +98,7 @@ export class TruffleDB {
     }
 
     if (names === true) {
-      const namesLoader = this.loadNames(
+      const namesLoader = this.generateLoadNames(
         cur.value.project,
         cur.value.contractsByCompilation
       );
