@@ -9,9 +9,6 @@ const { run } = require("./run");
 const { normalizeOptions } = require("./legacy/options");
 
 const Compile = {
-  // Most basic of the compile commands. Takes a hash of sources, where
-  // the keys are file or module paths and the values are the bodies of
-  // the contracts. Does not evaulate dependencies that aren't already given.
   async sources({ sources, options }) {
     const compilation = await run(sources, normalizeOptions(options));
     return compilation.contracts.length > 0
