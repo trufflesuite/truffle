@@ -4,9 +4,16 @@ import { schema } from "@truffle/db/data";
 import { generateCompileLoad } from "@truffle/db/loaders/commands";
 import {
   WorkflowCompileResult,
-  WorkspaceRequest
+  WorkspaceRequest,
+  WorkspaceResponse,
+  toIdObject
 } from "@truffle/db/loaders/types";
 import { Workspace } from "@truffle/db/workspace";
+import {
+  generateProjectNamesAssign,
+  generateProjectNameResolve
+} from "@truffle/db/loaders/resources/projects";
+import { generateNameRecordsLoad } from "@truffle/db/loaders/resources/nameRecords";
 
 interface IConfig {
   contracts_build_directory: string;
@@ -48,7 +55,30 @@ export class TruffleDB {
     return await execute(this.schema, document, null, this.context, variables);
   }
 
-  async loadCompilations(result: WorkflowCompileResult) {
+  *loadNames(
+    project: DataModel.IProject,
+    contractsByCompilation: Array<DataModel.IContract[]>
+  ): Generator<WorkspaceRequest, any, WorkspaceResponse<string>> {
+    for (const contracts of contractsByCompilation) {
+      let getCurrent = function* (name, type) {
+        return yield* generateProjectNameResolve(
+          toIdObject(project),
+          name,
+          type
+        );
+      };
+
+      const nameRecords = yield* generateNameRecordsLoad(
+        contracts,
+        "Contract",
+        getCurrent
+      );
+
+      yield* generateProjectNamesAssign(toIdObject(project), nameRecords);
+    }
+  }
+
+  async loadCompilations(result: WorkflowCompileResult, names: boolean) {
     const saga = generateCompileLoad(result, {
       directory: this.context.workingDirectory
     });
@@ -65,6 +95,17 @@ export class TruffleDB {
       const response = await this.query(request, variables);
 
       cur = saga.next(response);
+    }
+
+    if (names === true) {
+      const namesLoader = this.loadNames(
+        cur.value.project,
+        cur.value.contractsByCompilation
+      );
+      let curNames = namesLoader.next();
+      while (!curNames.done) {
+        curNames = namesLoader.next();
+      }
     }
 
     return cur.value;

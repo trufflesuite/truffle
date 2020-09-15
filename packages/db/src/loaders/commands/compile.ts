@@ -34,10 +34,6 @@ export function* generateCompileLoad(
   // start by adding loading the project resource
   const project = yield* generateProjectLoad(directory);
 
-  const getCurrent = function*(name, type) {
-    return yield* generateProjectNameResolve(toIdObject(project), name, type);
-  };
-
   const resultCompilations = processResultCompilations(result);
 
   // for each compilation returned by workflow-compile:
@@ -70,6 +66,7 @@ export function* generateCompileLoad(
   //
   // again going one compilation at a time (for impl. convenience; HACK)
   // (@cds-amal reminds that "premature optimization is the root of all evil")
+  let contractsByCompilation = [];
   for (const [compilationIndex, compilation] of compilations.entries()) {
     const resultCompilation = resultCompilations[compilationIndex];
     const bytecodes = compilationBytecodes[compilationIndex];
@@ -90,17 +87,10 @@ export function* generateCompileLoad(
     }
 
     const contracts = yield* generateContractsLoad(loadableContracts);
-
-    const nameRecords = yield* generateNameRecordsLoad(
-      contracts,
-      "Contract",
-      getCurrent
-    );
-
-    yield* generateProjectNamesAssign(toIdObject(project), nameRecords);
+    contractsByCompilation.push(contracts);
   }
 
-  return { project, compilations };
+  return { project, compilations, contractsByCompilation };
 }
 
 function processResultCompilations(
@@ -117,13 +107,15 @@ function processResultCompilation({
 }: WorkflowCompileResult["compilations"][string]): CompilationData {
   const contractsBySourcePath: {
     [sourcePath: string]: CompiledContract[];
-  } = contracts.map(contract => [contract.sourcePath, contract]).reduce(
-    (obj, [sourcePath, contract]: [string, CompiledContract]) => ({
-      ...obj,
-      [sourcePath]: [...(obj[sourcePath] || []), contract]
-    }),
-    {}
-  );
+  } = contracts
+    .map(contract => [contract.sourcePath, contract])
+    .reduce(
+      (obj, [sourcePath, contract]: [string, CompiledContract]) => ({
+        ...obj,
+        [sourcePath]: [...(obj[sourcePath] || []), contract]
+      }),
+      {}
+    );
 
   return {
     // PRECONDITION: all contracts in the same compilation **must** have the

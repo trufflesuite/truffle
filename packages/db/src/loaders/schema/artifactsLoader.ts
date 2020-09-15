@@ -87,7 +87,12 @@ export class ArtifactsLoader {
   async load(): Promise<void> {
     const result = await Contracts.compile(this.config);
 
-    const { project, compilations } = await this.db.loadCompilations(result);
+    // second parameter in loadCompilation is for whether or not we need
+    // to update nameRecords (i.e. is this happening in test)
+    const { project, compilations } = await this.db.loadCompilations(
+      result,
+      true
+    );
 
     //map contracts and contract instances to compiler
     await Promise.all(
@@ -111,9 +116,10 @@ export class ArtifactsLoader {
           .map(processedSource => processedSource.contracts)
           .flat();
 
-        const contracts = result.compilations[compiler.name].contracts.map(
-          ({ contractName }) =>
-            processedSourceContracts.find(({ name }) => name === contractName)
+        const contracts = result.compilations[
+          compiler.name
+        ].contracts.map(({ contractName }) =>
+          processedSourceContracts.find(({ name }) => name === contractName)
         );
 
         if (networks[0].length) {
