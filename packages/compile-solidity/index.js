@@ -16,10 +16,6 @@ const Compile = {
       : { compilations: [] };
   },
 
-  // contracts_directory: String. Directory where .sol files can be found.
-  // quiet: Boolean. Suppress output. Defaults to false.
-  // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-  // files: Array<String>. Explicit files to compile besides detected sources
   async all(options) {
     const paths = [
       ...new Set([
@@ -34,13 +30,6 @@ const Compile = {
     });
   },
 
-  // contracts_directory: String. Directory where .sol files can be found.
-  // build_directory: String. Optional. Directory where .sol.js files can be found. Only required if `all` is false.
-  // all: Boolean. Compile all sources found. Defaults to true. If false, will compare sources against built files
-  //      in the build directory to see what needs to be compiled.
-  // quiet: Boolean. Suppress output. Defaults to false.
-  // strict: Boolean. Return compiler warnings as errors. Defaults to false.
-  // files: Array<String>. Explicit files to compile besides detected sources
   async necessary(options) {
     options.logger = options.logger || console;
 
