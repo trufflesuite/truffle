@@ -1,30 +1,31 @@
 const debug = require("debug")("compile:run"); // eslint-disable-line no-unused-vars
 const OS = require("os");
 const semver = require("semver");
-
 const CompileError = require("./compileerror");
 const CompilerSupplier = require("./compilerSupplier");
 
+// this function returns a Compilation - legacy/index.js and ./index.js
+// both check to make sure rawSources exist before calling this method
+// however, there is a check here that returns null if no sources exist
 async function run(rawSources, options) {
   if (Object.keys(rawSources).length === 0) {
-    return {
-      contracts: [],
-      sourceIndexes: [],
-      compilerInfo: undefined
-    };
+    return null;
   }
+
   // Ensure sources have operating system independent paths
   // i.e., convert backslashes to forward slashes; things like C: are left intact.
   const { sources, targets, originalSourcePaths } = collectSources(
     rawSources,
     options.compilationTargets
   );
+
   // construct solc compiler input
   const compilerInput = prepareCompilerInput({
     sources,
     targets,
     settings: options.compilers.solc.settings
   });
+
   // perform compilation
   const { compilerOutput, solcVersion } = await invokeCompiler({
     compilerInput,
@@ -51,6 +52,7 @@ async function run(rawSources, options) {
   }
 
   // success case
+  // returns Compilation - see @truffle/compile-common
   return {
     sourceIndexes: processSources({
       compilerOutput,
@@ -62,7 +64,7 @@ async function run(rawSources, options) {
       solcVersion,
       originalSourcePaths
     }),
-    compilerInfo: {
+    compiler: {
       name: "solc",
       version: solcVersion
     }

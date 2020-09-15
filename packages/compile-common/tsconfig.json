@@ -12,6 +12,7 @@
     "paths": {
     },
     "rootDir": ".",
+    "types": ["mocha"],
     "typeRoots": [
       "../../node_modules/@types/fs-extra"
     ]
