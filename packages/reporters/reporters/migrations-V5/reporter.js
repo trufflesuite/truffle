@@ -36,7 +36,7 @@ class Reporter {
     this.blockSpinner = null;
     this.currentBlockWait = "";
     this.describeJson = describeJson;
-    this.networkSymbol = "ETH";
+    this.networkSymbol = "";
 
     this.messages = new MigrationsMessages(this);
   }
@@ -254,20 +254,6 @@ class Reporter {
     }
   }
 
-  /**
-   * Returns the symbol of the network based on the type of it. By default it returns ETH but
-   * if the network is rsk, it returns R-BTC.
-   * 
-   * @param {String} networkType Network Type
-   */
-  getNetworkSymbol(networkType){
-    if (networkType === "rsk"){
-      return "R-BTC";      
-    }
-
-    return "ETH";
-  }
-
   // ---------------------------- Interaction Handlers ---------------------------------------------
 
   async acceptDryRun() {
@@ -394,7 +380,7 @@ class Reporter {
       // if geth returns null, try again!
       if (!block) return this.postDeploy(data);
 
-      this.networkSymbol = this.getNetworkSymbol(data.contract.interfaceAdapter.web3.networkType);
+      this.networkSymbol = data.contract.interfaceAdapter.getSymbol();
 
       data.timestamp = block.timestamp;
 

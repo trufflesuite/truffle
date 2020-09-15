@@ -53,4 +53,8 @@ export class Web3InterfaceAdapter implements InterfaceAdapter {
   public getBlockNumber() {
     return this.web3.eth.getBlockNumber();
   }
+
+  public getSymbol() {
+    return "ETH";
+  }
 }

@@ -29,4 +29,5 @@ export interface InterfaceAdapter {
   getCode(address: string): Promise<string>;
   getAccounts(): Promise<string[]>;
   estimateGas(transactionConfig: Transaction): Promise<number>;
+  getSymbol(): string;
 }
