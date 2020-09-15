@@ -72,6 +72,7 @@ export function* generateCompileLoad(
   //
   // again going one compilation at a time (for impl. convenience; HACK)
   // (@cds-amal reminds that "premature optimization is the root of all evil")
+  let contractsByCompilation = [];
   for (const [compilationIndex, compilation] of compilations.entries()) {
     const resultCompilation = resultCompilations[compilationIndex];
     const bytecodes = compilationBytecodes[compilationIndex];
@@ -92,17 +93,10 @@ export function* generateCompileLoad(
     }
 
     const contracts = yield* generateContractsLoad(loadableContracts);
-
-    const nameRecords = yield* generateNameRecordsLoad(
-      contracts,
-      "Contract",
-      getCurrent
-    );
-
-    yield* generateProjectNamesAssign(toIdObject(project), nameRecords);
+    contractsByCompilation.push(contracts);
   }
 
-  return { project, compilations };
+  return { project, compilations, contractsByCompilation };
 }
 
 function processResultCompilations(

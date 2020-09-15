@@ -91,7 +91,12 @@ export class ArtifactsLoader {
       this.config
     );
 
-    const { project, compilations } = await this.db.loadCompilations(result);
+    // second parameter in loadCompilation is for whether or not we need
+    // to update nameRecords (i.e. is this happening in test)
+    const { project, compilations } = await this.db.loadCompilations(
+      result,
+      true
+    );
 
     //map contracts and contract instances to compiler
     await Promise.all(
