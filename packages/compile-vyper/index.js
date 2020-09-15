@@ -106,7 +106,7 @@ async function compileAll({ sources, options }) {
       {
         compiler: compilerInfo,
         contracts,
-        sourceIndexes: options.paths
+        sourceIndexes: sources
       }
     ]
   };
@@ -139,9 +139,11 @@ const Compile = {
       VYPER_PATTERN
     );
     const files = await findContracts(fileSearchPattern);
-    options.paths = files;
 
-    return await Compile.sources(options);
+    return await Compile.sources({
+      sources: files,
+      options
+    });
   },
 
   // contracts_directory: String. Directory where contract files can be found.

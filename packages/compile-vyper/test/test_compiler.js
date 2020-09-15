@@ -14,7 +14,7 @@ describe("vyper compiler", function () {
   const config = new Config().merge(defaultSettings);
 
   it("compiles vyper contracts", async function () {
-    const compilations = await Compile.all(config);
+    const { compilations } = await Compile.all(config);
     const { contracts, sourceIndexes } = compilations[0];
     sourceIndexes.forEach(path => {
       assert(
@@ -63,7 +63,7 @@ describe("vyper compiler", function () {
   });
 
   it("skips solidity contracts", async function () {
-    const compilations = await Compile.all(config);
+    const { compilations } = await Compile.all(config);
     const { contracts, sourceIndexes } = compilations[0];
 
     sourceIndexes.forEach(path => {
@@ -87,7 +87,7 @@ describe("vyper compiler", function () {
     });
 
     it("compiles when sourceMap option set true", async () => {
-      const compilations = await Compile.all(configWithSourceMap);
+      const { compilations } = await Compile.all(configWithSourceMap);
       const { contracts } = compilations[0];
       contracts.forEach((contract, index) => {
         assert(
