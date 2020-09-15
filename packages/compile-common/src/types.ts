@@ -59,7 +59,7 @@ export interface Compiler {
     sources,
     options
   }: {
-    sources: string[];
+    sources: object;
     options: object;
   }) => Promise<CompilerResult>;
 }
