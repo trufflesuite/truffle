@@ -31,12 +31,14 @@ describe("JSparser", () => {
     paths.push(path.join(__dirname, "./sources/v0.4.x/ComplexOrdered.sol"));
     paths.push(path.join(__dirname, "./sources/v0.4.x/InheritB.sol"));
 
-    options.paths = paths;
     options.resolver = new Resolver(options);
 
     const config = Config.default().merge(options);
 
-    const { compilations } = await Compile.sourcesWithDependencies(config);
+    const { compilations } = await Compile.sourcesWithDependencies({
+      sources: paths,
+      options: config
+    });
     const contractWasCompiled = compilations.some(compilation => {
       return compilation.contracts.some(contract => {
         return contract.contractName === "ComplexOrdered";
@@ -55,13 +57,15 @@ describe("JSparser", () => {
     paths.push(path.join(__dirname, "./sources/v0.5.x/ComplexOrdered.sol"));
     paths.push(path.join(__dirname, "./sources/v0.5.x/InheritB.sol"));
 
-    options.paths = paths;
     options.resolver = new Resolver(options);
 
     const config = Config.default().merge(options);
 
     try {
-      await Compile.sourcesWithDependencies(config);
+      await Compile.sourcesWithDependencies({
+        sources: paths,
+        options: config
+      });
       assert(false, "this call should have failed!");
     } catch (error) {
       assert(error.message.match(/(Unsupported parser)/));

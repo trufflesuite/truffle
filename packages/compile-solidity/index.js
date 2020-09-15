@@ -60,7 +60,6 @@ const Compile = {
     options.contracts_directory = options.contracts_directory || process.cwd();
 
     expect.options(options, [
-      "paths",
       "working_directory",
       "contracts_directory",
       "resolver"

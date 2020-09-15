@@ -270,7 +270,10 @@ describe("CompilerSupplier", function () {
         options.resolver = new Resolver(options);
         options = Config.default().merge(options);
 
-        const { compilations } = await Compile.sourcesWithDependencies(options);
+        const { compilations } = await Compile.sourcesWithDependencies({
+          sources: paths,
+          options
+        });
         const ComplexOrdered = findOne(
           "ComplexOrdered",
           compilations[0].contracts
