@@ -41,9 +41,7 @@ Some examples can be found below:
 ```javascript
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const Web3 = require("web3");
-const mnemonicPhrase = {
-  phrase: "mountains supernatural bird..."; // 12 word mnemonic
-};
+const mnemonicPhrase = "mountains supernatural bird..."; // 12 word mnemonic
 let provider = new HDWalletProvider({
   mnemonic: {
     phrase: mnemonicPhrase
