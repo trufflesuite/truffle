@@ -271,7 +271,7 @@ describe("CompilerSupplier", function () {
         options = Config.default().merge(options);
 
         const { compilations } = await Compile.sourcesWithDependencies({
-          sources: paths,
+          paths,
           options
         });
         const ComplexOrdered = findOne(

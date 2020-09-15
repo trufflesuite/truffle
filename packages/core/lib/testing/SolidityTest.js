@@ -117,7 +117,7 @@ const SolidityTest = {
       : "OldSafeSend.sol";
 
     const { compilations } = await Compile.sourcesWithDependencies({
-      sources: [
+      paths: [
         path.join(__dirname, "Assert.sol"),
         path.join(__dirname, "AssertAddress.sol"),
         path.join(__dirname, "AssertAddressArray.sol"),

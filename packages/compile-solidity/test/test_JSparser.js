@@ -36,7 +36,7 @@ describe("JSparser", () => {
     const config = Config.default().merge(options);
 
     const { compilations } = await Compile.sourcesWithDependencies({
-      sources: paths,
+      paths,
       options: config
     });
     const contractWasCompiled = compilations.some(compilation => {
@@ -63,7 +63,7 @@ describe("JSparser", () => {
 
     try {
       await Compile.sourcesWithDependencies({
-        sources: paths,
+        paths,
         options: config
       });
       assert(false, "this call should have failed!");

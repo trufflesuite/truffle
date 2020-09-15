@@ -9,6 +9,8 @@ const { run } = require("./run");
 const { normalizeOptions } = require("./legacy/options");
 
 const Compile = {
+  // this takes an object with keys being the name and values being source
+  // material as well as an options object
   async sources({ sources, options }) {
     const compilation = await run(sources, normalizeOptions(options));
     return compilation.contracts.length > 0
@@ -25,7 +27,7 @@ const Compile = {
     ];
 
     return await Compile.sourcesWithDependencies({
-      sources: paths,
+      paths,
       options: Config.default().merge(options)
     });
   },
@@ -36,12 +38,13 @@ const Compile = {
     const paths = await Profiler.updated(options);
 
     return await Compile.sourcesWithDependencies({
-      sources: paths,
+      paths,
       options: Config.default().merge(options)
     });
   },
 
-  async sourcesWithDependencies({ sources, options }) {
+  // this takes an array of paths and options
+  async sourcesWithDependencies({ paths, options }) {
     options.logger = options.logger || console;
     options.contracts_directory = options.contracts_directory || process.cwd();
 
@@ -54,7 +57,7 @@ const Compile = {
     const config = Config.default().merge(options);
     const { allSources, compilationTargets } = await Profiler.requiredSources(
       config.with({
-        paths: sources,
+        paths,
         base_path: options.contracts_directory,
         resolver: options.resolver
       })
