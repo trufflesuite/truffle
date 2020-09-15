@@ -52,15 +52,14 @@ export interface WorkflowCompileResult {
   contracts: CompiledContract[];
 }
 
-export type CompileFunction = ({
-  sources,
-  options
-}: {
-  sources: object;
-  options: object;
-}) => Promise<CompilerResult>;
-
 export interface Compiler {
   all: (options: object) => Promise<CompilerResult>;
   necessary: (options: object) => Promise<CompilerResult>;
+  sources: ({
+    sources,
+    options
+  }: {
+    sources: string[];
+    options: object;
+  }) => Promise<CompilerResult>;
 }
