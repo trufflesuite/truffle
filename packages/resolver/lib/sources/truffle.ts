@@ -7,8 +7,8 @@ export class Truffle implements ResolverSource {
   async resolve(importPath: string) {
     let body, filePath;
     if (importPath === "truffle/Console.sol") {
-      // @ts-ignore
       const actualImportPath =
+        // @ts-ignore
         typeof BUNDLE_VERSION !== "undefined"
           ? path.resolve(__dirname, path.basename(importPath))
           : path.resolve(
