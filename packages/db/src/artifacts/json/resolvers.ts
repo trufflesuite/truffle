@@ -1,4 +1,4 @@
-import fs from "fs";
+import * as fse from "fs-extra";
 import { shimBytecode } from "@truffle/workflow-compile/shims";
 
 const TruffleResolver = require("@truffle/resolver");
@@ -67,7 +67,7 @@ export const resolvers = {
     },
     contractNames: {
       resolve(_, {}, context: IContext): string[] {
-        const contents = fs.readdirSync(context.artifactsDirectory);
+        const contents = fse.readdirSync(context.artifactsDirectory);
 
         return contents
           .filter(filename => filename.endsWith(".json"))

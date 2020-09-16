@@ -1,4 +1,3 @@
-import fs from "fs";
 import path from "path";
 import { TruffleDB } from "@truffle/db";
 import { shimBytecode } from "@truffle/workflow-compile/shims";

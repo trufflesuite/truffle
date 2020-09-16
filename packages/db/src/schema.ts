@@ -1,11 +1,11 @@
-import fs from "fs";
+import * as fse from "fs-extra";
 import path from "path";
 
 import { makeExecutableSchema } from "@gnd/graphql-tools";
 
 export function readSchema() {
   const schemaFile = path.join(__dirname, "schema.graphql");
-  const typeDefs = fs.readFileSync(schemaFile).toString();
+  const typeDefs = fse.readFileSync(schemaFile).toString();
 
   return makeExecutableSchema({
     typeDefs,

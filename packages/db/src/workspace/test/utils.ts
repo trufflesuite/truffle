@@ -7,7 +7,6 @@ import { Workspace, schema } from "@truffle/db/workspace";
 export { generateId } from "@truffle/db/helpers";
 
 import tmp from "tmp";
-import * as fse from "fs-extra";
 
 export const fixturesDirectory = path.join(
   __dirname, // db/src/db/test
