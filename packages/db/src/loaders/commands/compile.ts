@@ -1,4 +1,3 @@
-import { TruffleDB } from "@truffle/db/db";
 import {
   WorkflowCompileResult,
   CompilationData,
@@ -117,13 +116,15 @@ function processResultCompilation({
 }: WorkflowCompileResult["compilations"][string]): CompilationData {
   const contractsBySourcePath: {
     [sourcePath: string]: CompiledContract[];
-  } = contracts.map(contract => [contract.sourcePath, contract]).reduce(
-    (obj, [sourcePath, contract]: [string, CompiledContract]) => ({
-      ...obj,
-      [sourcePath]: [...(obj[sourcePath] || []), contract]
-    }),
-    {}
-  );
+  } = contracts
+    .map(contract => [contract.sourcePath, contract])
+    .reduce(
+      (obj, [sourcePath, contract]: [string, CompiledContract]) => ({
+        ...obj,
+        [sourcePath]: [...(obj[sourcePath] || []), contract]
+      }),
+      {}
+    );
 
   return {
     // PRECONDITION: all contracts in the same compilation **must** have the

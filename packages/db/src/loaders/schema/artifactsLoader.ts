@@ -1,4 +1,3 @@
-import gql from "graphql-tag";
 import { TruffleDB } from "@truffle/db/db";
 import * as Contracts from "@truffle/workflow-compile/new";
 import { ContractObject } from "@truffle/contract-schema/spec";
@@ -111,9 +110,10 @@ export class ArtifactsLoader {
           .map(processedSource => processedSource.contracts)
           .flat();
 
-        const contracts = result.compilations[compiler.name].contracts.map(
-          ({ contractName }) =>
-            processedSourceContracts.find(({ name }) => name === contractName)
+        const contracts = result.compilations[
+          compiler.name
+        ].contracts.map(({ contractName }) =>
+          processedSourceContracts.find(({ name }) => name === contractName)
         );
 
         if (networks[0].length) {

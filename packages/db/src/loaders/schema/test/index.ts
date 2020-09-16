@@ -1,4 +1,3 @@
-import fs from "fs";
 import path from "path";
 import gql from "graphql-tag";
 import { TruffleDB } from "@truffle/db";
